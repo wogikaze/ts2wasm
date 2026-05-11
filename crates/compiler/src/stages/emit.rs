@@ -13,11 +13,8 @@ impl TempWatPath {
         use std::sync::atomic::{AtomicU32, Ordering};
         static WAT_COUNTER: AtomicU32 = AtomicU32::new(0);
         let unique = WAT_COUNTER.fetch_add(1, Ordering::Relaxed);
-        let path = std::env::temp_dir().join(format!(
-            "ts2wasm-{}-{}.wat",
-            std::process::id(),
-            unique
-        ));
+        let path =
+            std::env::temp_dir().join(format!("ts2wasm-{}-{}.wat", std::process::id(), unique));
         fs::write(&path, wat).map_err(|error| Diagnostic {
             code: DiagCode::BackendIo,
             message: format!("failed to write temporary wat {}: {error}", path.display()),

@@ -1,3 +1,9 @@
+use super::runtime_intrinsic::RuntimeIntrinsic;
+use super::types::{
+    FuncId, FunctionCallKind, LocalId, LoweredArraySlot, LoweredExpr, LoweredProgram, LoweredStmt,
+};
+use crate::builtin::{BuiltinId, BuiltinResult};
+use ts2wasm_shared::{DiagCode, Diagnostic};
 pub fn validate_lowered(program: &LoweredProgram) -> Result<(), Vec<Diagnostic>> {
     let mut errors = Vec::new();
     let num_funcs = program.functions.len();
@@ -46,7 +52,8 @@ fn validate_functions(program: &LoweredProgram, errors: &mut Vec<Diagnostic>) {
                 ),
                 span: None,
 
-                phase: None,});
+                phase: None,
+            });
         }
 
         for (param_index, local_id) in function.params.iter().enumerate() {
@@ -59,7 +66,8 @@ fn validate_functions(program: &LoweredProgram, errors: &mut Vec<Diagnostic>) {
                     ),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
         }
 
@@ -74,7 +82,8 @@ fn validate_functions(program: &LoweredProgram, errors: &mut Vec<Diagnostic>) {
                     ),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             } else if rest_param_index + 1 != function.params.len() {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
@@ -84,7 +93,8 @@ fn validate_functions(program: &LoweredProgram, errors: &mut Vec<Diagnostic>) {
                     ),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
         }
 
@@ -100,7 +110,8 @@ fn validate_functions(program: &LoweredProgram, errors: &mut Vec<Diagnostic>) {
                     ),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
         }
     }
@@ -117,7 +128,8 @@ fn validate_top_level_locals(program: &LoweredProgram, errors: &mut Vec<Diagnost
                 ),
                 span: None,
 
-                phase: None,});
+                phase: None,
+            });
         }
     }
 }
@@ -168,7 +180,9 @@ fn validate_stmt(
             validate_stmts(then_body, local_count, num_funcs, program, errors);
             validate_stmts(else_body, local_count, num_funcs, program, errors);
         }
-        LoweredStmt::While { condition, body, .. } => {
+        LoweredStmt::While {
+            condition, body, ..
+        } => {
             validate_expr(condition, local_count, num_funcs, program, errors, true);
             validate_stmts(body, local_count, num_funcs, program, errors);
         }
@@ -195,7 +209,8 @@ fn validate_stmt(
                     message: "try-catch must have at least a catch or finally block".to_owned(),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
         }
         LoweredStmt::Switch { expr, cases, .. } => {
@@ -207,7 +222,9 @@ fn validate_stmt(
                 validate_stmts(body, local_count, num_funcs, program, errors);
             }
         }
-        LoweredStmt::DoWhile { body, condition, .. } => {
+        LoweredStmt::DoWhile {
+            body, condition, ..
+        } => {
             validate_stmts(body, local_count, num_funcs, program, errors);
             validate_expr(condition, local_count, num_funcs, program, errors, true);
         }
@@ -317,7 +334,9 @@ fn validate_expr(
         LoweredExpr::Number(_, _) => {}
         LoweredExpr::BigIntLiteral { .. } => {}
         LoweredExpr::Local(id, _) => check_local_id(*id, local_count, errors),
-        LoweredExpr::EnvCellNew(expr, _) => validate_expr(expr, local_count, num_funcs, program, errors, true),
+        LoweredExpr::EnvCellNew(expr, _) => {
+            validate_expr(expr, local_count, num_funcs, program, errors, true)
+        }
         LoweredExpr::EnvCellGet(cell, _) => check_local_id(*cell, local_count, errors),
         LoweredExpr::EnvCellSet { cell, expr, .. } => {
             check_local_id(*cell, local_count, errors);
@@ -375,7 +394,8 @@ fn validate_expr(
                             ),
                             span: None,
 
-                            phase: None,});
+                            phase: None,
+                        });
                     } else {
                         let func = &program.functions[func_id.0];
                         let min_required = func.min_required_params;
@@ -390,7 +410,8 @@ fn validate_expr(
                                 ),
                                 span: None,
 
-                                phase: None,});
+                                phase: None,
+                            });
                         } // Extra args beyond params are allowed (JS semantics)
                     }
                 }
@@ -409,7 +430,8 @@ fn validate_expr(
                             ),
                             span: None,
 
-                            phase: None,});
+                            phase: None,
+                        });
                     }
                     if value_required
                         && matches!(builtin.result(), BuiltinResult::EffectOnly)
@@ -423,12 +445,15 @@ fn validate_expr(
                             ),
                             span: None,
 
-                            phase: None,});
+                            phase: None,
+                        });
                     }
                 }
             }
         }
-        LoweredExpr::RuntimeCall { intrinsic, args, .. } => {
+        LoweredExpr::RuntimeCall {
+            intrinsic, args, ..
+        } => {
             for arg in args {
                 validate_expr(arg, local_count, num_funcs, program, errors, true);
             }
@@ -438,7 +463,8 @@ fn validate_expr(
                     message: "ArrayPushMany must include an array receiver argument".to_owned(),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             if *intrinsic == RuntimeIntrinsic::ArrayPushGrow && args.len() != 2 {
                 errors.push(Diagnostic {
@@ -446,16 +472,17 @@ fn validate_expr(
                     message: "ArrayPushGrow must include an array receiver and value".to_owned(),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             if *intrinsic == RuntimeIntrinsic::HeapClosureCall && args.is_empty() {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
-                    message: "HeapClosureCall must include a closure receiver argument"
-                        .to_owned(),
+                    message: "HeapClosureCall must include a closure receiver argument".to_owned(),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             if *intrinsic == RuntimeIntrinsic::PrivateFieldGet
                 && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand, _), LoweredExpr::Number(slot, _)] if *brand > 0 && *slot >= 0)
@@ -489,7 +516,8 @@ fn validate_expr(
                         .to_owned(),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
         }
         LoweredExpr::ArrayNew { elements, .. } => {
@@ -558,18 +586,23 @@ fn validate_expr(
             if *private_slot_count > 0 && !private_brand.is_some_and(|brand| brand > 0) {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
-                    message: "class instances with private slots must include a positive private brand".to_owned(),
+                    message:
+                        "class instances with private slots must include a positive private brand"
+                            .to_owned(),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             if *private_slot_count > u16::MAX as usize {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
-                    message: "class private slot count exceeds runtime metadata capacity".to_owned(),
+                    message: "class private slot count exceeds runtime metadata capacity"
+                        .to_owned(),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             validate_constructor_arity(*constructor, args, num_funcs, program, errors);
             for arg in args {
@@ -603,7 +636,8 @@ fn validate_expr(
                         .to_owned(),
                 span: None,
 
-                phase: None,});
+                phase: None,
+            });
         }
         LoweredExpr::ArrowFn {
             func_id,
@@ -665,7 +699,14 @@ fn validate_expr(
         }
         LoweredExpr::Block { stmts, result, .. } => {
             validate_stmts(stmts, local_count, num_funcs, program, errors);
-            validate_expr(result, local_count, num_funcs, program, errors, value_required);
+            validate_expr(
+                result,
+                local_count,
+                num_funcs,
+                program,
+                errors,
+                value_required,
+            );
         }
     }
 }
@@ -680,7 +721,8 @@ fn check_local_id(id: LocalId, local_count: usize, errors: &mut Vec<Diagnostic>)
             ),
             span: None,
 
-            phase: None,});
+            phase: None,
+        });
     }
 }
 
@@ -694,7 +736,8 @@ fn check_func_id(id: FuncId, num_funcs: usize, errors: &mut Vec<Diagnostic>) {
             ),
             span: None,
 
-            phase: None,});
+            phase: None,
+        });
     }
 }
 
@@ -721,7 +764,8 @@ fn validate_constructor_arity(
             ),
             span: None,
 
-            phase: None,});
+            phase: None,
+        });
     } else if func.rest_param_index.is_none() {
         let max_allowed = func.params.len().saturating_sub(1);
         if args.len() > max_allowed {
@@ -736,7 +780,8 @@ fn validate_constructor_arity(
                 ),
                 span: None,
 
-                phase: None,});
+                phase: None,
+            });
         }
     }
 }

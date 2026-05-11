@@ -1,5 +1,19 @@
-include!("lowered/validate.rs");
-include!("lowered/types.rs");
-include!("lowered/runtime_intrinsic.rs");
-include!("lowered/program.rs");
-mod resolver;
+// Replaced include! with real module boundaries
+pub mod program;
+pub mod resolver;
+pub mod runtime_intrinsic;
+pub mod types;
+pub mod validate;
+
+// Re-exports for backward compatibility
+pub use program::lower_program;
+pub(crate) use program::*;
+pub use runtime_intrinsic::RuntimeIntrinsic;
+pub(crate) use types::*;
+pub use types::{
+    BuiltinErrorConstructor, ClassPrivateFieldSlots, ClassPrototypeRef, ClosureRepresentation,
+    FuncId, FunctionCallKind, InferredType, LocalId, LoweredArraySlot, LoweredBinaryOp,
+    LoweredExpr, LoweredFunction, LoweredLogicalAssignOp, LoweredProgram, LoweredStmt,
+    LoweredUnaryOp, ModuleInfo, Validated,
+};
+pub use validate::validate_lowered;

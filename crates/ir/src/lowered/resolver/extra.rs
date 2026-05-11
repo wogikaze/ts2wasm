@@ -6,6 +6,7 @@ use super::{
     is_set_prototype_property_expr, is_static_copy_safe_object_prop_value, lowered_binding_default,
     string_constructor_arrow_callback, unary_plus_arrow_callback, unsupported_array_map_diagnostic,
 };
+use crate::binding_pattern::{ArrayBinding, BindingDefault, BindingPattern, ObjectBinding};
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
 use crate::lowered::*;
 use ts2wasm_frontend::{BinaryOp, OBJECT_SPREAD_SENTINEL, SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp};
@@ -427,7 +428,8 @@ impl<'a> Resolver<'a> {
                     None => LoweredExpr::Undefined(Span::generated("undef")),
                 };
                 let signature = self
-                    .symbols.function_signatures
+                    .symbols
+                    .function_signatures
                     .get(&func_id)
                     .copied()
                     .unwrap_or_default();
@@ -588,7 +590,9 @@ impl<'a> Resolver<'a> {
         )?;
         self.functions.next_func_id = lowered.next_func_id;
         self.functions.generated_functions.push(lowered.function);
-        self.functions.generated_functions.extend(lowered.generated_functions);
+        self.functions
+            .generated_functions
+            .extend(lowered.generated_functions);
 
         let explicit_args = [
             element,
@@ -717,7 +721,8 @@ impl<'a> Resolver<'a> {
             return Ok(None);
         };
         if self
-            .classes.local_classes
+            .classes
+            .local_classes
             .get(&local_id)
             .is_some_and(|class_name| class_name == "Set")
         {
@@ -742,7 +747,8 @@ impl<'a> Resolver<'a> {
             return Ok(None);
         };
         if self
-            .classes.local_classes
+            .classes
+            .local_classes
             .get(&local_id)
             .is_some_and(|class_name| class_name == "Map")
         {
@@ -764,7 +770,8 @@ impl<'a> Resolver<'a> {
         let Ok(local_id) = self.resolve_local(name) else {
             return false;
         };
-        self.classes.local_classes
+        self.classes
+            .local_classes
             .get(&local_id)
             .is_some_and(|class_name| class_name == "Set")
     }
@@ -777,7 +784,8 @@ impl<'a> Resolver<'a> {
         let Ok(local_id) = self.resolve_local(name) else {
             return false;
         };
-        self.classes.local_classes
+        self.classes
+            .local_classes
             .get(&local_id)
             .is_some_and(|class_name| class_name == "Map")
     }
@@ -901,7 +909,10 @@ impl<'a> Resolver<'a> {
                 if self.captures.env_cell_locals.contains(&local_id) {
                     return None;
                 }
-                self.facts.static_object_literal_locals.get(&local_id).cloned()
+                self.facts
+                    .static_object_literal_locals
+                    .get(&local_id)
+                    .cloned()
             }
             _ => None,
         }
@@ -1335,7 +1346,8 @@ impl<'a> Resolver<'a> {
 
         let func_id = self.resolve_func(func_name)?;
         if self
-            .symbols.function_signatures
+            .symbols
+            .function_signatures
             .get(&func_id)
             .is_some_and(|signature| signature.needs_receiver)
         {
@@ -1369,7 +1381,8 @@ impl<'a> Resolver<'a> {
         args: &[ResolvedExpr],
     ) -> Result<Vec<LoweredExpr>, Diagnostic> {
         let signature = self
-            .symbols.function_signatures
+            .symbols
+            .function_signatures
             .get(&func_id)
             .copied()
             .unwrap_or_default();
@@ -1458,7 +1471,9 @@ impl<'a> Resolver<'a> {
             return None;
         };
         let local_id = self.resolve_local(name).ok()?;
-        if self.facts.array_locals.contains(&local_id) && !self.captures.env_cell_locals.contains(&local_id) {
+        if self.facts.array_locals.contains(&local_id)
+            && !self.captures.env_cell_locals.contains(&local_id)
+        {
             Some(local_id)
         } else {
             None
@@ -1476,7 +1491,8 @@ impl<'a> Resolver<'a> {
         if self.captures.env_cell_locals.contains(&local_id) {
             return None;
         }
-        self.classes.local_classes
+        self.classes
+            .local_classes
             .get(&local_id)
             .is_some_and(|class_name| class_name == "Set")
             .then_some(local_id)
@@ -1491,7 +1507,8 @@ impl<'a> Resolver<'a> {
             return Ok(());
         };
         let mutable_captures = self
-            .functions.class_method_mutable_captures
+            .functions
+            .class_method_mutable_captures
             .get(&method_id)
             .map(Vec::as_slice)
             .unwrap_or(&[]);
@@ -1505,7 +1522,8 @@ impl<'a> Resolver<'a> {
                 span: None,
 
                 phase: None,})?;
-            if mutable_captures.contains(capture) && !self.captures.env_cell_locals.contains(&local) {
+            if mutable_captures.contains(capture) && !self.captures.env_cell_locals.contains(&local)
+            {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: format!(
@@ -1531,7 +1549,8 @@ impl<'a> Resolver<'a> {
             return Ok(());
         };
         let mutable_captures = self
-            .functions.function_mutable_captures
+            .functions
+            .function_mutable_captures
             .get(&func_id)
             .map(Vec::as_slice)
             .unwrap_or(&[]);
@@ -1545,7 +1564,8 @@ impl<'a> Resolver<'a> {
                 span: None,
 
                 phase: None,})?;
-            if mutable_captures.contains(capture) && !self.captures.env_cell_locals.contains(&local) {
+            if mutable_captures.contains(capture) && !self.captures.env_cell_locals.contains(&local)
+            {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: format!(
@@ -1725,7 +1745,8 @@ impl<'a> Resolver<'a> {
             "name" => Ok(LoweredExpr::String(name.to_owned(), Span::generated("str"))),
             "length" => {
                 let signature = self
-                    .symbols.function_signatures
+                    .symbols
+                    .function_signatures
                     .get(&func_id)
                     .copied()
                     .unwrap_or_default();
@@ -1878,7 +1899,9 @@ impl<'a> Resolver<'a> {
         )?;
         self.functions.next_func_id = lowered.next_func_id;
         self.functions.generated_functions.push(lowered.function);
-        self.functions.generated_functions.extend(lowered.generated_functions);
+        self.functions
+            .generated_functions
+            .extend(lowered.generated_functions);
 
         Ok(LoweredExpr::ArrowFn {
             func_id,
@@ -2007,7 +2030,9 @@ impl<'a> Resolver<'a> {
         )?;
         self.functions.next_func_id = lowered.next_func_id;
         self.functions.generated_functions.push(lowered.function);
-        self.functions.generated_functions.extend(lowered.generated_functions);
+        self.functions
+            .generated_functions
+            .extend(lowered.generated_functions);
 
         Ok(LoweredExpr::ArrowFn {
             func_id,
@@ -2090,7 +2115,8 @@ impl<'a> Resolver<'a> {
             .iter()
             .map(|capture| self.resolve_local(capture))
             .collect::<Result<Vec<_>, _>>()?;
-        self.facts.arrow_locals
+        self.facts
+            .arrow_locals
             .insert(local_id, ArrowClosure { func_id, captures });
         Ok(())
     }
@@ -2103,7 +2129,8 @@ impl<'a> Resolver<'a> {
     }
 
     pub(crate) fn resolve_local(&self, name: &str) -> Result<LocalId, Diagnostic> {
-        self.locals.scopes
+        self.locals
+            .scopes
             .iter()
             .rev()
             .find_map(|scope| scope.get(name).copied())
@@ -2117,7 +2144,8 @@ impl<'a> Resolver<'a> {
     }
 
     pub(crate) fn resolve_func(&self, name: &str) -> Result<FuncId, Diagnostic> {
-        self.symbols.function_ids
+        self.symbols
+            .function_ids
             .get(name)
             .copied()
             .ok_or_else(|| Diagnostic {
@@ -2149,13 +2177,18 @@ impl<'a> Resolver<'a> {
         let mut current = Some(class_name.to_owned());
         while let Some(class) = current {
             if let Some(id) = self
-                .classes.class_method_ids
+                .classes
+                .class_method_ids
                 .get(&(class.clone(), method.to_owned()))
                 .copied()
             {
                 return Some(id);
             }
-            current = self.classes.class_parents.get(&class).and_then(|p| p.clone());
+            current = self
+                .classes
+                .class_parents
+                .get(&class)
+                .and_then(|p| p.clone());
         }
         None
     }
@@ -2168,27 +2201,34 @@ impl<'a> Resolver<'a> {
         let mut current = Some(class_name.to_owned());
         while let Some(class) = current {
             if let Some(id) = self
-                .classes.class_static_method_ids
+                .classes
+                .class_static_method_ids
                 .get(&(class.clone(), method.to_owned()))
                 .copied()
             {
                 return Some(id);
             }
-            current = self.classes.class_parents.get(&class).and_then(|p| p.clone());
+            current = self
+                .classes
+                .class_parents
+                .get(&class)
+                .and_then(|p| p.clone());
         }
         None
     }
 
     pub(super) fn current_private_method_id(&self, method: &str) -> Option<FuncId> {
         let class_name = self.classes.current_class.as_ref()?;
-        self.classes.class_method_ids
+        self.classes
+            .class_method_ids
             .get(&(class_name.clone(), method.to_owned()))
             .copied()
     }
 
     pub(super) fn current_static_private_method_id(&self, method: &str) -> Option<FuncId> {
         let class_name = self.classes.current_class.as_ref()?;
-        self.classes.class_static_method_ids
+        self.classes
+            .class_static_method_ids
             .get(&(class_name.clone(), method.to_owned()))
             .copied()
     }
@@ -2196,7 +2236,8 @@ impl<'a> Resolver<'a> {
     pub(super) fn current_static_private_field_local_name(&self, key: &str) -> Option<String> {
         let class_name = self.classes.current_class.as_ref()?;
         let field_name = key.strip_prefix('#')?;
-        self.classes.class_static_private_fields
+        self.classes
+            .class_static_private_fields
             .get(class_name)
             .and_then(|fields| fields.get(field_name))
             .cloned()
@@ -2205,7 +2246,8 @@ impl<'a> Resolver<'a> {
     pub(super) fn current_static_private_getter_id(&self, key: &str) -> Option<FuncId> {
         let class_name = self.classes.current_class.as_ref()?;
         let getter_name = key.strip_prefix('#')?;
-        self.classes.class_static_method_ids
+        self.classes
+            .class_static_method_ids
             .get(&(class_name.clone(), format!("#get::{getter_name}")))
             .copied()
     }
@@ -2213,7 +2255,8 @@ impl<'a> Resolver<'a> {
     pub(super) fn current_static_private_setter_id(&self, key: &str) -> Option<FuncId> {
         let class_name = self.classes.current_class.as_ref()?;
         let setter_name = key.strip_prefix('#')?;
-        self.classes.class_static_method_ids
+        self.classes
+            .class_static_method_ids
             .get(&(class_name.clone(), format!("#set::{setter_name}")))
             .copied()
     }
@@ -2221,7 +2264,9 @@ impl<'a> Resolver<'a> {
     pub(super) fn is_same_class_static_private_receiver(&self, object: &ResolvedExpr) -> bool {
         match object {
             ResolvedExpr::This { .. } => self.resolve_local("this").is_err(),
-            ResolvedExpr::Ident(name) => self.classes.current_class.as_deref() == Some(name.as_str()),
+            ResolvedExpr::Ident(name) => {
+                self.classes.current_class.as_deref() == Some(name.as_str())
+            }
             _ => false,
         }
     }
@@ -2237,7 +2282,8 @@ impl<'a> Resolver<'a> {
         key: &str,
     ) -> Option<FuncId> {
         let getter_name = key.strip_prefix('#')?;
-        self.classes.class_method_ids
+        self.classes
+            .class_method_ids
             .get(&(class_name.to_owned(), format!("#get::{getter_name}")))
             .copied()
     }
@@ -2253,7 +2299,8 @@ impl<'a> Resolver<'a> {
         key: &str,
     ) -> Option<FuncId> {
         let setter_name = key.strip_prefix('#')?;
-        self.classes.class_method_ids
+        self.classes
+            .class_method_ids
             .get(&(class_name.to_owned(), format!("#set::{setter_name}")))
             .copied()
     }
@@ -2283,7 +2330,8 @@ impl<'a> Resolver<'a> {
             phase: None,
         })?;
         let Some(mut slot) = self
-            .classes.class_private_fields
+            .classes
+            .class_private_fields
             .get(class_name)
             .and_then(|fields| fields.get(field_name))
             .copied()
@@ -2305,7 +2353,12 @@ impl<'a> Resolver<'a> {
 
     fn root_class_name(&self, class_name: &str) -> String {
         let mut current = class_name.to_owned();
-        while let Some(parent) = self.classes.class_parents.get(&current).and_then(|p| p.clone()) {
+        while let Some(parent) = self
+            .classes
+            .class_parents
+            .get(&current)
+            .and_then(|p| p.clone())
+        {
             current = parent;
         }
         current
@@ -2318,7 +2371,8 @@ impl<'a> Resolver<'a> {
     ) -> Result<u32, Diagnostic> {
         let root = self.root_class_name(class_name);
         let constructor = self
-            .classes.class_constructor_ids
+            .classes
+            .class_constructor_ids
             .get(&root)
             .copied()
             .ok_or_else(|| Diagnostic {
@@ -2338,7 +2392,12 @@ impl<'a> Resolver<'a> {
     }
 
     pub(super) fn ancestor_private_slot_count(&self, class_name: &str) -> usize {
-        match self.classes.class_parents.get(class_name).and_then(|p| p.as_ref()) {
+        match self
+            .classes
+            .class_parents
+            .get(class_name)
+            .and_then(|p| p.as_ref())
+        {
             Some(parent) => self.private_slot_count(parent),
             None => 0,
         }
@@ -2346,7 +2405,8 @@ impl<'a> Resolver<'a> {
 
     pub(super) fn private_slot_count(&self, class_name: &str) -> usize {
         let own = self
-            .classes.class_private_fields
+            .classes
+            .class_private_fields
             .get(class_name)
             .map_or(0, HashMap::len);
         own + self.ancestor_private_slot_count(class_name)
@@ -2355,7 +2415,8 @@ impl<'a> Resolver<'a> {
     pub(super) fn class_has_instance_private_brand(&self, class_name: &str) -> bool {
         self.private_slot_count(class_name) > 0
             || self
-                .classes.class_method_ids
+                .classes
+                .class_method_ids
                 .keys()
                 .any(|(owner, method)| owner == class_name && method.starts_with('#'))
     }
@@ -2376,7 +2437,8 @@ impl<'a> Resolver<'a> {
     pub(super) fn expr_has_private_progress_storage(&self, expr: &ResolvedExpr) -> bool {
         match expr {
             ResolvedExpr::This { .. } => self
-                .classes.current_class
+                .classes
+                .current_class
                 .as_ref()
                 .is_some_and(|class_name| self.class_has_private_progress_storage(class_name)),
             ResolvedExpr::Ident(name) => self
@@ -2391,13 +2453,15 @@ impl<'a> Resolver<'a> {
     }
 
     pub(super) fn local_has_private_progress_storage(&self, local: LocalId) -> bool {
-        self.classes.local_classes
+        self.classes
+            .local_classes
             .get(&local)
             .is_some_and(|class_name| self.class_has_private_progress_storage(class_name))
     }
 
     pub(super) fn class_has_private_progress_storage(&self, class_name: &str) -> bool {
-        self.classes.class_private_fields
+        self.classes
+            .class_private_fields
             .get(class_name)
             .is_some_and(|fields| !fields.is_empty())
     }
@@ -2428,7 +2492,8 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local_id| {
                 self.facts.regexp_literal_locals.contains(&local_id)
                     || self
-                        .classes.local_classes
+                        .classes
+                        .local_classes
                         .get(&local_id)
                         .is_some_and(|class_name| class_name == "RegExp")
             }),
@@ -2453,8 +2518,12 @@ impl<'a> Resolver<'a> {
     }
 
     pub(super) fn update_control_flow_bigint_assignment(&mut self, local_id: LocalId) {
-        self.facts.control_flow_bigint_div_rem_locals.remove(&local_id);
-        self.facts.control_flow_mixed_bigint_locals.remove(&local_id);
+        self.facts
+            .control_flow_bigint_div_rem_locals
+            .remove(&local_id);
+        self.facts
+            .control_flow_mixed_bigint_locals
+            .remove(&local_id);
     }
 
     pub(super) fn update_heap_closure_local(
@@ -2527,10 +2596,9 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Object(props) => props
                 .iter()
                 .any(|(key, _)| key == SYMBOL_ITERATOR_OBJECT_KEY),
-            ResolvedExpr::Ident(name) => self
-                .resolve_local(name)
-                .ok()
-                .is_some_and(|local_id| self.facts.symbol_iterator_object_locals.contains(&local_id)),
+            ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local_id| {
+                self.facts.symbol_iterator_object_locals.contains(&local_id)
+            }),
             _ => false,
         }
     }
@@ -2823,11 +2891,15 @@ impl<'a> Resolver<'a> {
         expr: &ResolvedExpr,
     ) {
         if let Some(props) = self.static_copy_safe_object_literal_props(expr) {
-            self.facts.static_object_literal_locals.insert(local_id, props);
+            self.facts
+                .static_object_literal_locals
+                .insert(local_id, props);
             self.update_static_object_literal_alias_sources(local_id, expr);
         } else {
             self.facts.static_object_literal_locals.remove(&local_id);
-            self.facts.static_object_literal_alias_sources.remove(&local_id);
+            self.facts
+                .static_object_literal_alias_sources
+                .remove(&local_id);
         }
     }
 
@@ -2837,14 +2909,18 @@ impl<'a> Resolver<'a> {
         expr: &ResolvedExpr,
     ) {
         let ResolvedExpr::FunctionExpr { params, .. } = expr else {
-            self.facts.static_function_array_like_locals.remove(&local_id);
+            self.facts
+                .static_function_array_like_locals
+                .remove(&local_id);
             return;
         };
         if params
             .iter()
             .any(|param| param.default.is_some() || param.is_rest)
         {
-            self.facts.static_function_array_like_locals.remove(&local_id);
+            self.facts
+                .static_function_array_like_locals
+                .remove(&local_id);
             return;
         }
         self.facts.static_function_array_like_locals.insert(
@@ -2856,7 +2932,9 @@ impl<'a> Resolver<'a> {
     }
 
     pub(super) fn invalidate_static_function_array_like_local(&mut self, local_id: LocalId) {
-        self.facts.static_function_array_like_locals.remove(&local_id);
+        self.facts
+            .static_function_array_like_locals
+            .remove(&local_id);
     }
 
     pub(super) fn update_static_function_array_like_index(
@@ -2865,7 +2943,10 @@ impl<'a> Resolver<'a> {
         index: &ResolvedExpr,
         value: &ResolvedExpr,
     ) {
-        let Some(static_receiver) = self.facts.static_function_array_like_locals.get_mut(&local_id)
+        let Some(static_receiver) = self
+            .facts
+            .static_function_array_like_locals
+            .get_mut(&local_id)
         else {
             return;
         };
@@ -2887,7 +2968,10 @@ impl<'a> Resolver<'a> {
         name: &str,
     ) -> Option<Vec<ResolvedExpr>> {
         let local_id = self.resolve_local(name).ok()?;
-        let static_receiver = self.facts.static_function_array_like_locals.get(&local_id)?;
+        let static_receiver = self
+            .facts
+            .static_function_array_like_locals
+            .get(&local_id)?;
         static_receiver
             .elements
             .iter()
@@ -2897,15 +2981,20 @@ impl<'a> Resolver<'a> {
 
     pub(super) fn invalidate_static_object_literal_local(&mut self, local_id: LocalId) {
         self.facts.static_object_literal_locals.remove(&local_id);
-        self.facts.static_object_literal_alias_sources.remove(&local_id);
+        self.facts
+            .static_object_literal_alias_sources
+            .remove(&local_id);
         let dependent_aliases = self
-            .facts.static_object_literal_alias_sources
+            .facts
+            .static_object_literal_alias_sources
             .iter()
             .filter_map(|(alias, sources)| sources.contains(&local_id).then_some(*alias))
             .collect::<Vec<_>>();
         for alias in dependent_aliases {
             self.facts.static_object_literal_locals.remove(&alias);
-            self.facts.static_object_literal_alias_sources.remove(&alias);
+            self.facts
+                .static_object_literal_alias_sources
+                .remove(&alias);
         }
     }
 
@@ -2933,7 +3022,10 @@ impl<'a> Resolver<'a> {
                 if self.captures.env_cell_locals.contains(&local_id) {
                     return None;
                 }
-                self.facts.static_object_literal_locals.get(&local_id).cloned()
+                self.facts
+                    .static_object_literal_locals
+                    .get(&local_id)
+                    .cloned()
             }
             _ => None,
         }
@@ -2944,17 +3036,21 @@ impl<'a> Resolver<'a> {
         local_id: LocalId,
         expr: &ResolvedExpr,
     ) {
-        self.facts.static_object_literal_alias_sources.remove(&local_id);
+        self.facts
+            .static_object_literal_alias_sources
+            .remove(&local_id);
         if let ResolvedExpr::Ident(name) = expr
             && let Ok(source_id) = self.resolve_local(name)
         {
             let mut sources = self
-                .facts.static_object_literal_alias_sources
+                .facts
+                .static_object_literal_alias_sources
                 .get(&source_id)
                 .cloned()
                 .unwrap_or_default();
             sources.insert(source_id);
-            self.facts.static_object_literal_alias_sources
+            self.facts
+                .static_object_literal_alias_sources
                 .insert(local_id, sources);
         }
     }
@@ -2990,7 +3086,8 @@ impl<'a> Resolver<'a> {
         match expr {
             ResolvedExpr::Array(_) => true,
             ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local_id| {
-                self.facts.array_locals.contains(&local_id) && !self.captures.env_cell_locals.contains(&local_id)
+                self.facts.array_locals.contains(&local_id)
+                    && !self.captures.env_cell_locals.contains(&local_id)
             }),
             // Logical OR/AND where either side produces a dense array
             // (e.g., `x || []`, `x && []`)
@@ -3183,7 +3280,10 @@ impl<'a> Resolver<'a> {
         match expr {
             ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local_id| {
                 self.facts.bigint_locals.contains(&local_id)
-                    || self.facts.control_flow_bigint_div_rem_locals.contains(&local_id)
+                    || self
+                        .facts
+                        .control_flow_bigint_div_rem_locals
+                        .contains(&local_id)
             }),
             ResolvedExpr::Unary { op, expr } => {
                 *op == UnaryOp::Negate && self.resolved_expr_is_bigint_div_rem_operand(expr)
@@ -3196,13 +3296,16 @@ impl<'a> Resolver<'a> {
         let ResolvedExpr::Ident(name) = expr else {
             return false;
         };
-        self.resolve_local(name)
-            .ok()
-            .is_some_and(|local_id| self.facts.control_flow_mixed_bigint_locals.contains(&local_id))
+        self.resolve_local(name).ok().is_some_and(|local_id| {
+            self.facts
+                .control_flow_mixed_bigint_locals
+                .contains(&local_id)
+        })
     }
 
     pub(super) fn bigint_div_rem_candidate_locals(&self) -> HashSet<LocalId> {
-        self.facts.bigint_locals
+        self.facts
+            .bigint_locals
             .union(&self.facts.control_flow_bigint_div_rem_locals)
             .copied()
             .collect()
@@ -4751,10 +4854,15 @@ impl<'a> Resolver<'a> {
                 phase: None,})?;
 
         let mut parent_constructors = Vec::new();
-        let mut current = self.classes.class_parents.get(class_name).and_then(|p| p.clone());
+        let mut current = self
+            .classes
+            .class_parents
+            .get(class_name)
+            .and_then(|p| p.clone());
         while let Some(parent) = current {
             let parent_constructor = self
-                .classes.class_constructor_ids
+                .classes
+                .class_constructor_ids
                 .get(&parent)
                 .copied()
                 .ok_or_else(|| Diagnostic {
@@ -4768,7 +4876,11 @@ impl<'a> Resolver<'a> {
                     phase: None,
                 })?;
             parent_constructors.push(parent_constructor);
-            current = self.classes.class_parents.get(&parent).and_then(|p| p.clone());
+            current = self
+                .classes
+                .class_parents
+                .get(&parent)
+                .and_then(|p| p.clone());
         }
 
         Ok(ClassPrototypeRef {

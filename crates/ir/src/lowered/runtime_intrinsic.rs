@@ -375,7 +375,9 @@ impl RuntimeIntrinsic {
             RuntimeIntrinsic::BigIntRem => "BigIntRem",
             RuntimeIntrinsic::BigIntDivisionByZeroRangeError => "BigIntDivisionByZeroRangeError",
             RuntimeIntrinsic::BigIntMixedArithmeticTypeError => "BigIntMixedArithmeticTypeError",
-            RuntimeIntrinsic::BigIntStringComparisonBoundaryError => "BigIntStringComparisonBoundaryError",
+            RuntimeIntrinsic::BigIntStringComparisonBoundaryError => {
+                "BigIntStringComparisonBoundaryError"
+            }
             RuntimeIntrinsic::BigIntBitwiseNot => "BigIntBitwiseNot",
             RuntimeIntrinsic::BigIntBitwiseAnd => "BigIntBitwiseAnd",
             RuntimeIntrinsic::BigIntBitwiseOr => "BigIntBitwiseOr",

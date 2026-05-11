@@ -1,7 +1,15 @@
-use super::*;
-use crate::builtin_resolved::ResolvedArrayElement;
+use super::FunctionSignature;
+use crate::RuntimeIntrinsic;
+use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
+use crate::lowered::types::FuncId;
+use std::collections::HashMap;
+use ts2wasm_frontend::UnaryOp;
+use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
-pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<RuntimeIntrinsic> {
+pub(crate) fn resolve_method_to_runtime_fn(
+    object: &ResolvedExpr,
+    method: &str,
+) -> Option<RuntimeIntrinsic> {
     if let ResolvedExpr::Ident(name) = object {
         if name == "Math" {
             return match method {
@@ -32,7 +40,9 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
                 "entries" => Some(RuntimeIntrinsic::ObjectEntries),
                 "hasOwnProperty" => Some(RuntimeIntrinsic::ObjectHasOwnProperty),
                 "hasOwn" => Some(RuntimeIntrinsic::ObjectHasOwn),
-                "getOwnPropertyDescriptor" => Some(RuntimeIntrinsic::ObjectGetOwnPropertyDescriptor),
+                "getOwnPropertyDescriptor" => {
+                    Some(RuntimeIntrinsic::ObjectGetOwnPropertyDescriptor)
+                }
                 "getPrototypeOf" => Some(RuntimeIntrinsic::ObjectGetPrototypeOf),
                 "setPrototypeOf" => Some(RuntimeIntrinsic::ObjectSetPrototypeOf),
                 "seal" => Some(RuntimeIntrinsic::ObjectSeal),
@@ -126,11 +136,14 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
     }
 }
 
-pub(super) fn unsupported_annex_b_string_method(_method: &str, _span: Span) -> Option<Diagnostic> {
+pub(crate) fn unsupported_annex_b_string_method(_method: &str, _span: Span) -> Option<Diagnostic> {
     None
 }
 
-pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Option<RuntimeIntrinsic> {
+pub(crate) fn collection_method_runtime_fn(
+    class_name: &str,
+    method: &str,
+) -> Option<RuntimeIntrinsic> {
     match (class_name, method) {
         ("DataView", "getInt32") => Some(RuntimeIntrinsic::DataViewGetInt32),
         ("DataView", "setInt32") => Some(RuntimeIntrinsic::DataViewSetInt32),
@@ -217,7 +230,7 @@ fn is_typed_array_class(class_name: &str) -> bool {
     )
 }
 
-pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<RuntimeIntrinsic> {
+pub(crate) fn collection_method_runtime_fn_arg(method: &str) -> Option<RuntimeIntrinsic> {
     // Methods whose WASM runtime function takes only the receiver (no callback)
     match method {
         "every" => Some(RuntimeIntrinsic::ArrayEvery),
@@ -258,14 +271,14 @@ pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<RuntimeIn
 }
 
 /// Returns true for array methods whose WASM runtime function doesn't accept user callbacks
-pub(super) fn is_identity_array_method(method: &str) -> bool {
+pub(crate) fn is_identity_array_method(method: &str) -> bool {
     matches!(
         method,
         "every" | "some" | "find" | "findIndex" | "findLast" | "findLastIndex" | "filter"
     )
 }
 
-pub(super) fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {
+pub(crate) fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {
     match arg {
         ResolvedExpr::Number(_) => true,
         ResolvedExpr::Unary { op, expr } if *op == UnaryOp::Negate => {
@@ -275,11 +288,11 @@ pub(super) fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {
     }
 }
 
-pub(super) fn is_json_static_call(object: &ResolvedExpr, method: &str) -> bool {
+pub(crate) fn is_json_static_call(object: &ResolvedExpr, method: &str) -> bool {
     matches!(object, ResolvedExpr::Ident(name) if name == "JSON") && method == "stringify"
 }
 
-pub(super) fn validate_json_stringify_args(
+pub(crate) fn validate_json_stringify_args(
     args: &[ResolvedExpr],
     span: Span,
     function_ids: &HashMap<String, FuncId>,
@@ -294,7 +307,8 @@ pub(super) fn validate_json_stringify_args(
             ),
             span: Some(span),
 
-            phase: None,});
+            phase: None,
+        });
     }
 
     if let Some(replacer) = args.get(1) {
@@ -341,7 +355,7 @@ pub(super) fn validate_json_stringify_args(
     Ok(())
 }
 
-pub(super) fn is_supported_json_stringify_space(
+pub(crate) fn is_supported_json_stringify_space(
     space: &ResolvedExpr,
     function_ids: &HashMap<String, FuncId>,
 ) -> bool {
@@ -367,7 +381,7 @@ pub(super) fn is_supported_json_stringify_space(
     }
 }
 
-pub(super) fn is_supported_json_stringify_boxed_space(
+pub(crate) fn is_supported_json_stringify_boxed_space(
     class_name: &str,
     args: &[ResolvedExpr],
 ) -> bool {
@@ -382,7 +396,7 @@ pub(super) fn is_supported_json_stringify_boxed_space(
     }
 }
 
-pub(super) fn is_json_stringify_number_space_arg(arg: &ResolvedExpr) -> bool {
+pub(crate) fn is_json_stringify_number_space_arg(arg: &ResolvedExpr) -> bool {
     matches!(arg, ResolvedExpr::Number(_))
         || matches!(
             arg,
@@ -391,7 +405,7 @@ pub(super) fn is_json_stringify_number_space_arg(arg: &ResolvedExpr) -> bool {
         )
 }
 
-pub(super) fn is_json_stringify_primitive_space_arg(arg: &ResolvedExpr) -> bool {
+pub(crate) fn is_json_stringify_primitive_space_arg(arg: &ResolvedExpr) -> bool {
     matches!(
         arg,
         ResolvedExpr::Number(_)
@@ -402,7 +416,7 @@ pub(super) fn is_json_stringify_primitive_space_arg(arg: &ResolvedExpr) -> bool 
     )
 }
 
-pub(super) fn is_supported_json_stringify_replacer_array(
+pub(crate) fn is_supported_json_stringify_replacer_array(
     elements: &[ResolvedArrayElement],
     function_ids: &HashMap<String, FuncId>,
 ) -> bool {
@@ -414,12 +428,12 @@ pub(super) fn is_supported_json_stringify_replacer_array(
     })
 }
 
-pub(super) enum JsonStringifyReplacerEntry {
+pub(crate) enum JsonStringifyReplacerEntry {
     Key(String),
     Ignored,
 }
 
-pub(super) fn json_stringify_replacer_entry(
+pub(crate) fn json_stringify_replacer_entry(
     element: &ResolvedExpr,
     function_ids: &HashMap<String, FuncId>,
 ) -> Option<JsonStringifyReplacerEntry> {
@@ -457,7 +471,7 @@ pub(super) fn json_stringify_replacer_entry(
     }
 }
 
-pub(super) fn json_stringify_boxed_replacer_entry(
+pub(crate) fn json_stringify_boxed_replacer_entry(
     class_name: &str,
     args: &[ResolvedExpr],
 ) -> Option<JsonStringifyReplacerEntry> {
@@ -477,7 +491,7 @@ pub(super) fn json_stringify_boxed_replacer_entry(
     }
 }
 
-pub(super) fn json_stringify_number_key(element: &ResolvedExpr) -> Option<String> {
+pub(crate) fn json_stringify_number_key(element: &ResolvedExpr) -> Option<String> {
     match element {
         ResolvedExpr::Number(value) => Some(value.to_string()),
         ResolvedExpr::Unary { op, expr }
@@ -493,7 +507,7 @@ pub(super) fn json_stringify_number_key(element: &ResolvedExpr) -> Option<String
     }
 }
 
-pub(super) fn json_stringify_replacer_keys(
+pub(crate) fn json_stringify_replacer_keys(
     args: &[ResolvedExpr],
     function_ids: &HashMap<String, FuncId>,
 ) -> Option<Vec<String>> {
@@ -515,7 +529,7 @@ pub(super) fn json_stringify_replacer_keys(
     }
 }
 
-pub(super) fn json_stringify_function_replacer_id(
+pub(crate) fn json_stringify_function_replacer_id(
     replacer: &ResolvedExpr,
     function_ids: &HashMap<String, FuncId>,
 ) -> Option<FuncId> {
@@ -525,7 +539,7 @@ pub(super) fn json_stringify_function_replacer_id(
     }
 }
 
-pub(super) fn is_json_stringify_side_effect_free_static_value(value: &ResolvedExpr) -> bool {
+pub(crate) fn is_json_stringify_side_effect_free_static_value(value: &ResolvedExpr) -> bool {
     match value {
         ResolvedExpr::Number(_)
         | ResolvedExpr::BigIntLiteral { .. }
@@ -549,11 +563,11 @@ pub(super) fn is_json_stringify_side_effect_free_static_value(value: &ResolvedEx
     }
 }
 
-pub(super) fn is_ignored_json_stringify_replacer_ident(name: &str) -> bool {
+pub(crate) fn is_ignored_json_stringify_replacer_ident(name: &str) -> bool {
     matches!(name, "Symbol" | "Number" | "String" | "Boolean" | "Object")
 }
 
-pub(super) fn is_ignored_json_stringify_replacer_call(
+pub(crate) fn is_ignored_json_stringify_replacer_call(
     callee: &ResolvedExpr,
     args: &[ResolvedExpr],
 ) -> bool {
@@ -561,7 +575,7 @@ pub(super) fn is_ignored_json_stringify_replacer_call(
         && args.iter().all(is_json_stringify_primitive_space_arg)
 }
 
-pub(super) fn should_ignore_json_stringify_space(
+pub(crate) fn should_ignore_json_stringify_space(
     space: &ResolvedExpr,
     function_ids: &HashMap<String, FuncId>,
 ) -> bool {
@@ -579,11 +593,11 @@ pub(super) fn should_ignore_json_stringify_space(
     ) || is_ignored_json_stringify_boxed_space(space)
 }
 
-pub(super) fn is_ignored_json_stringify_space_ident(name: &str) -> bool {
+pub(crate) fn is_ignored_json_stringify_space_ident(name: &str) -> bool {
     matches!(name, "Symbol" | "Number" | "String" | "Boolean" | "Object")
 }
 
-pub(super) fn is_ignored_json_stringify_space_call(
+pub(crate) fn is_ignored_json_stringify_space_call(
     callee: &ResolvedExpr,
     args: &[ResolvedExpr],
 ) -> bool {
@@ -591,7 +605,7 @@ pub(super) fn is_ignored_json_stringify_space_call(
         && args.iter().all(is_json_stringify_primitive_space_arg)
 }
 
-pub(super) fn is_ignored_json_stringify_boxed_space(space: &ResolvedExpr) -> bool {
+pub(crate) fn is_ignored_json_stringify_boxed_space(space: &ResolvedExpr) -> bool {
     matches!(
         space,
         ResolvedExpr::New {
@@ -603,7 +617,7 @@ pub(super) fn is_ignored_json_stringify_boxed_space(space: &ResolvedExpr) -> boo
     )
 }
 
-pub(super) fn json_stringify_boxed_space_value(space: &ResolvedExpr) -> Option<&ResolvedExpr> {
+pub(crate) fn json_stringify_boxed_space_value(space: &ResolvedExpr) -> Option<&ResolvedExpr> {
     match space {
         ResolvedExpr::New {
             class_name, args, ..
@@ -615,7 +629,7 @@ pub(super) fn json_stringify_boxed_space_value(space: &ResolvedExpr) -> Option<&
     }
 }
 
-pub(super) fn json_stringify_replacer_diagnostic(kind: &str, span: Span) -> Diagnostic {
+pub(crate) fn json_stringify_replacer_diagnostic(kind: &str, span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: format!(
@@ -623,15 +637,15 @@ pub(super) fn json_stringify_replacer_diagnostic(kind: &str, span: Span) -> Diag
         ),
         span: Some(span),
 
-
-            phase: None,}
+        phase: None,
+    }
 }
 
-pub(super) fn is_date_now_live_time_call(object: &ResolvedExpr, method: &str) -> bool {
+pub(crate) fn is_date_now_live_time_call(object: &ResolvedExpr, method: &str) -> bool {
     matches!(object, ResolvedExpr::Ident(name) if name == "Date") && method == "now"
 }
 
-pub(super) fn is_date_now_expr(expr: &ResolvedExpr) -> bool {
+pub(crate) fn is_date_now_expr(expr: &ResolvedExpr) -> bool {
     matches!(
         expr,
         ResolvedExpr::MethodCall {
@@ -643,11 +657,11 @@ pub(super) fn is_date_now_expr(expr: &ResolvedExpr) -> bool {
     )
 }
 
-pub(super) fn is_annex_b_date_method(method: &str) -> bool {
+pub(crate) fn is_annex_b_date_method(method: &str) -> bool {
     matches!(method, "getYear" | "setYear" | "toGMTString")
 }
 
-pub(super) fn unsupported_annex_b_date_method_diagnostic(
+pub(crate) fn unsupported_annex_b_date_method_diagnostic(
     method: &str,
     span: Option<Span>,
 ) -> Diagnostic {
@@ -658,11 +672,11 @@ pub(super) fn unsupported_annex_b_date_method_diagnostic(
         ),
         span,
 
-
-            phase: None,}
+        phase: None,
+    }
 }
 
-pub(super) fn is_local_tz_date_method(method: &str) -> bool {
+pub(crate) fn is_local_tz_date_method(method: &str) -> bool {
     matches!(
         method,
         "getFullYear"
@@ -676,7 +690,7 @@ pub(super) fn is_local_tz_date_method(method: &str) -> bool {
     )
 }
 
-pub(super) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String, Diagnostic> {
+pub(crate) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String, Diagnostic> {
     if !(1..=2).contains(&args.len()) {
         return Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
@@ -686,7 +700,8 @@ pub(super) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String
             ),
             span: None,
 
-            phase: None,});
+            phase: None,
+        });
     }
     let ResolvedExpr::String(pattern) = &args[0] else {
         return Err(Diagnostic {
@@ -696,7 +711,8 @@ pub(super) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String
                     .to_owned(),
             span: None,
 
-            phase: None,});
+            phase: None,
+        });
     };
     let flags = match args.get(1) {
         Some(ResolvedExpr::String(flags)) => flags.as_str(),
@@ -708,7 +724,8 @@ pub(super) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String
                         .to_owned(),
                 span: None,
 
-                phase: None,});
+                phase: None,
+            });
         }
         None => "",
     };
@@ -717,7 +734,7 @@ pub(super) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String
     Ok(raw)
 }
 
-pub(super) fn regexp_test_runtime(
+pub(crate) fn regexp_test_runtime(
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
@@ -735,7 +752,8 @@ pub(super) fn regexp_test_runtime(
             ),
             span: Some(span),
 
-            phase: None,});
+            phase: None,
+        });
     }
     match object {
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
@@ -754,7 +772,7 @@ pub(super) fn regexp_test_runtime(
     }
 }
 
-pub(super) fn regexp_string_match_runtime(
+pub(crate) fn regexp_string_match_runtime(
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
@@ -773,7 +791,8 @@ pub(super) fn regexp_string_match_runtime(
             ),
             span: Some(span),
 
-            phase: None,});
+            phase: None,
+        });
     }
     if !matches!(object, ResolvedExpr::String(_) | ResolvedExpr::Ident(_)) {
         return Ok(None);
@@ -796,13 +815,14 @@ pub(super) fn regexp_string_match_runtime(
                 ),
                 span: Some(span),
 
-                phase: None,});
+                phase: None,
+            });
         }
     }
     Ok(Some(vec![args[0].clone(), object.clone()]))
 }
 
-pub(super) fn regexp_exec_runtime(
+pub(crate) fn regexp_exec_runtime(
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
@@ -820,7 +840,8 @@ pub(super) fn regexp_exec_runtime(
             ),
             span: Some(span),
 
-            phase: None,});
+            phase: None,
+        });
     }
     match object {
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
@@ -839,11 +860,11 @@ pub(super) fn regexp_exec_runtime(
     }
 }
 
-pub(super) fn looks_like_regexp_literal(raw: &str) -> bool {
+pub(crate) fn looks_like_regexp_literal(raw: &str) -> bool {
     raw.starts_with('/') && raw[1..].contains('/')
 }
 
-pub(super) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<(), Diagnostic> {
+pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<(), Diagnostic> {
     let Some(delimiter) = raw.rfind('/') else {
         return Err(unsupported_regexp_literal(
             context,
@@ -966,17 +987,17 @@ pub(super) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
     Ok(())
 }
 
-pub(super) fn unsupported_regexp_literal(context: &str, raw: &str, reason: &str) -> Diagnostic {
+pub(crate) fn unsupported_regexp_literal(context: &str, raw: &str, reason: &str) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: format!("issue-051: {context} `{raw}` is not supported yet: {reason}"),
         span: None,
 
-
-        phase: None,}
+        phase: None,
+    }
 }
 
-pub(super) fn unsupported_regexp_compile_diagnostic(span: Option<Span>) -> Diagnostic {
+pub(crate) fn unsupported_regexp_compile_diagnostic(span: Option<Span>) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: "issue-051: RegExp.prototype.compile is not supported in this subset; create a new RegExp(\"plain\") value instead"

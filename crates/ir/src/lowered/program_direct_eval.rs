@@ -1,12 +1,17 @@
-use crate::builtin_resolved::ResolvedArrayElement;
-use super::*;
+use super::{
+    DirectEvalBlockFunctionEnv, block_contains_arguments, block_contains_this,
+    direct_iife_body_has_static_eval_block_function_binding,
+};
+use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
 
-pub(super) fn collect_direct_eval_block_function_env(program: &[ResolvedStmt]) -> DirectEvalBlockFunctionEnv {
+pub(crate) fn collect_direct_eval_block_function_env(
+    program: &[ResolvedStmt],
+) -> DirectEvalBlockFunctionEnv {
     let mut env = DirectEvalBlockFunctionEnv::default();
     collect_direct_eval_block_function_env_from_stmts(program, &mut env);
     env
 }
-pub(super) fn collect_direct_eval_block_function_env_from_stmts(
+pub(crate) fn collect_direct_eval_block_function_env_from_stmts(
     stmts: &[ResolvedStmt],
     env: &mut DirectEvalBlockFunctionEnv,
 ) {
@@ -89,7 +94,7 @@ pub(super) fn collect_direct_eval_block_function_env_from_stmts(
     }
 }
 
-pub(super) fn collect_direct_eval_block_function_iife_env(
+pub(crate) fn collect_direct_eval_block_function_iife_env(
     body: &[ResolvedStmt],
     env: &mut DirectEvalBlockFunctionEnv,
 ) {
@@ -103,7 +108,10 @@ pub(super) fn collect_direct_eval_block_function_iife_env(
         else {
             continue;
         };
-        if !params.is_empty() || block_contains_this(function_body) || block_contains_arguments(function_body) {
+        if !params.is_empty()
+            || block_contains_this(function_body)
+            || block_contains_arguments(function_body)
+        {
             continue;
         }
         env.env_cell_names.insert(name.clone());
@@ -112,7 +120,7 @@ pub(super) fn collect_direct_eval_block_function_iife_env(
     }
 }
 
-pub(super) fn collect_direct_eval_function_assignment_env(
+pub(crate) fn collect_direct_eval_function_assignment_env(
     function_name: &str,
     body: &[ResolvedStmt],
     env: &mut DirectEvalBlockFunctionEnv,
@@ -215,7 +223,7 @@ pub(super) fn collect_direct_eval_function_assignment_env(
     }
 }
 
-pub(super) fn collect_direct_eval_function_assignment_expr(
+pub(crate) fn collect_direct_eval_function_assignment_expr(
     function_name: &str,
     expr: &ResolvedExpr,
     env: &mut DirectEvalBlockFunctionEnv,

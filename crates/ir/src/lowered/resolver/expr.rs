@@ -7,6 +7,7 @@ use super::{
     string_constructor_arrow_callback, string_split_arrow_separator, unary_plus_arrow_callback,
     unsupported_array_map_diagnostic, unsupported_array_sort_diagnostic,
 };
+use crate::builtin::{BuiltinId, BuiltinPropertyId};
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 use crate::lowered::*;
 use ts2wasm_frontend::{BinaryOp, UnaryOp};

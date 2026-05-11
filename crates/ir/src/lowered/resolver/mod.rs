@@ -57,6 +57,7 @@ pub(crate) struct Modules {
 
 pub(crate) struct Facts {
     pub(crate) arrow_locals: HashMap<LocalId, ArrowClosure>,
+    #[allow(dead_code)]
     pub(crate) heap_closure_locals: HashSet<LocalId>,
     pub(crate) nullish_locals: HashSet<LocalId>,
     pub(crate) regexp_literal_locals: HashSet<LocalId>,
@@ -409,7 +410,9 @@ impl<'a> Resolver<'a> {
                 // callback that calls `instance.once(...)`).
                 let expr_class = self.infer_class_for_expr(expr);
                 if let Some(class_name) = &expr_class {
-                    self.classes.local_classes.insert(local_id, class_name.clone());
+                    self.classes
+                        .local_classes
+                        .insert(local_id, class_name.clone());
                 }
                 let function_props = self.function_props_for_object_expr(expr);
                 let lowered = if let ResolvedExpr::ArrowFn {
@@ -476,7 +479,9 @@ impl<'a> Resolver<'a> {
                 // can resolve the class of this local.
                 let expr_class = self.infer_class_for_expr(expr);
                 if let Some(class_name) = &expr_class {
-                    self.classes.local_classes.insert(local_id, class_name.clone());
+                    self.classes
+                        .local_classes
+                        .insert(local_id, class_name.clone());
                 } else {
                     self.classes.local_classes.remove(&local_id);
                 }

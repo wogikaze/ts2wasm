@@ -1,11 +1,8 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
-use super::binding_pattern::{
-    parse_binding_pattern, ArrayBinding, BindingDefault, BindingPattern, ObjectBinding,
-};
-use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
-use super::builtin_resolved::{ClassMethodKind, ResolvedExpr, ResolvedParam, ResolvedStmt};
-use ts2wasm_frontend::{BinaryOp, LogicalAssignOp, UnaryOp};
+use crate::RuntimeIntrinsic;
+use crate::builtin::BuiltinId;
+use crate::lowered::validate::validate_lowered;
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -14,10 +11,10 @@ pub struct LocalId(pub usize);
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FuncId(pub usize);
 
-type ClassConstructorMap = HashMap<String, FuncId>;
-type ClassMethodMap = HashMap<(String, String), FuncId>;
+pub(crate) type ClassConstructorMap = HashMap<String, FuncId>;
+pub(crate) type ClassMethodMap = HashMap<(String, String), FuncId>;
 pub type ClassPrivateFieldSlots = HashMap<String, HashMap<String, usize>>;
-pub type ClassStaticPrivateFields = HashMap<String, HashMap<String, String>>;
+pub(crate) type ClassStaticPrivateFields = HashMap<String, HashMap<String, String>>;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ClassPrototypeRef {

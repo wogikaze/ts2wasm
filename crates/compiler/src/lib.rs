@@ -16,13 +16,12 @@ use ts2wasm_frontend::BinaryOp;
 use ts2wasm_frontend::Expr;
 #[cfg(test)]
 use ts2wasm_frontend::Stmt;
-use ts2wasm_frontend::{
-    Lexer, Parser, validate_type_reference_directives,
-};
+use ts2wasm_frontend::{Lexer, Parser, validate_type_reference_directives};
 use ts2wasm_ir::builtin_resolver;
 use ts2wasm_ir::lowered;
 use ts2wasm_ir::name_resolver;
 
+use crate::stages::emit::write_wasm_from_wat;
 use crate::stages::lower::{
     build_multi_section_file, lower_static_named_import_bindings_for_build,
     lower_static_named_import_reads_for_build, populate_static_module_exports_for_build,
@@ -32,7 +31,6 @@ use crate::stages::resolve::{
     ensure_runtime_feature_gates, validate_host_deny, validate_optimized_hir_slice,
     validate_typescript_semantics_for_path,
 };
-use crate::stages::emit::write_wasm_from_wat;
 
 #[allow(unused_imports)]
 pub use stages::*;
@@ -46,7 +44,6 @@ pub use ts2wasm_frontend::{
     collect_typescript_diagnostics,
 };
 pub use ts2wasm_ir::OptimizationLevel;
-
 
 /// A compilation result that carries a value plus a list of diagnostics
 /// (warnings, notes, etc.) that did not prevent compilation from completing.
@@ -186,7 +183,6 @@ pub fn build_file_with_host_deny(
         diagnostics: lower_diagnostics,
     })
 }
-
 
 #[cfg(test)]
 mod tests {

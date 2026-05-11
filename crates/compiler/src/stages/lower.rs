@@ -6,7 +6,7 @@ use ts2wasm_backend_wasm as backend;
 use ts2wasm_frontend::{
     DiagCode, Diagnostic, Expr, Span, Stmt, validate_type_reference_directives,
 };
-use ts2wasm_ir::{OptimizationLevel, lowered, builtin_resolver, name_resolver};
+use ts2wasm_ir::{OptimizationLevel, builtin_resolver, lowered, name_resolver};
 
 use crate::module_graph::ModuleGraph;
 use crate::stages::parse::{self, parse_program, validate_ast};
@@ -416,8 +416,7 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                         span: specifier.local_span,
                         is_var: false,
                     });
-                    local_name_to_index
-                        .insert(binding.local_name.clone(), lowered_statement_index);
+                    local_name_to_index.insert(binding.local_name.clone(), lowered_statement_index);
                     named_imports.push(binding);
                     lowered_statement_index += 1;
                 }
@@ -859,8 +858,7 @@ pub(crate) fn build_multi_section_file(
         })?;
     }
     let wat = backend::emit_wat(&validated).map_err(|d| d.with_phase("backend"))?;
-    crate::stages::emit::write_wasm_from_wat(&wat, output)
-        .map_err(|d| d.with_phase("backend"))?;
+    crate::stages::emit::write_wasm_from_wat(&wat, output).map_err(|d| d.with_phase("backend"))?;
     Ok(crate::CompileReport {
         value: (),
         diagnostics: lower_diagnostics,
@@ -885,17 +883,15 @@ fn lower_source_as_module_body(
         return Ok(None);
     }
 
-    let name_resolved =
-        name_resolver::resolve_names(&body.rewritten_program)
-            .map_err(|d| d.with_phase("name-resolver"))?;
+    let name_resolved = name_resolver::resolve_names(&body.rewritten_program)
+        .map_err(|d| d.with_phase("name-resolver"))?;
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)
         .map_err(|d| d.with_phase("builtin-resolver"))?;
     crate::stages::resolve::validate_typescript_semantics_for_path(semantic_path, &resolved)
         .map_err(|d| d.with_phase("semantic-validator"))?;
     crate::stages::resolve::validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)
         .map_err(|d| d.with_phase("hir-validator"))?;
-    let lowered_module =
-        lowered::lower_program(&resolved).map_err(|d| d.with_phase("lowering"))?;
+    let lowered_module = lowered::lower_program(&resolved).map_err(|d| d.with_phase("lowering"))?;
 
     let mut statements = lowered_module.top_level_statements;
     for export in &body.module_exports {

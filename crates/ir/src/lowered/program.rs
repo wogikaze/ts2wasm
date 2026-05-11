@@ -1,13 +1,20 @@
-use crate::builtin_resolved::ResolvedArrayElement;
+use super::types::*;
+use crate::binding_pattern::parse_binding_pattern;
+use crate::builtin_resolved::{
+    ClassMethodKind, ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt,
+};
+use std::collections::{HashMap, HashSet};
+use ts2wasm_frontend::{BinaryOp, LogicalAssignOp, UnaryOp};
+use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 #[path = "program_builtins.rs"]
-mod program_builtins;
+pub(crate) mod program_builtins;
 #[path = "program_captures.rs"]
-mod program_captures;
+pub(crate) mod program_captures;
 #[path = "program_direct_eval.rs"]
-mod program_direct_eval;
-use program_builtins::*;
-use program_captures::*;
-use program_direct_eval::*;
+pub(crate) mod program_direct_eval;
+pub(crate) use program_builtins::*;
+pub(crate) use program_captures::*;
+pub(crate) use program_direct_eval::*;
 pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnostic> {
     let function_ids = collect_function_ids(program)?;
     let generator_function_names = collect_generator_function_names(program);
@@ -47,7 +54,11 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
     for stmt in program {
         match stmt {
             ResolvedStmt::Function {
-                name, params, body, is_async, ..
+                name,
+                params,
+                body,
+                is_async,
+                ..
             } => {
                 let func_id = function_ids[name];
                 let params_with_captures = function_params_with_captures(
@@ -213,7 +224,9 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                             in_constructor: false,
                             next_func_id,
                             self_closure: None,
-                            recursion_depth: *function_recursion_depths.get(&method_id).unwrap_or(&0),
+                            recursion_depth: *function_recursion_depths
+                                .get(&method_id)
+                                .unwrap_or(&0),
                         },
                     )?;
                     next_func_id = lowered.next_func_id;
@@ -225,7 +238,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
         }
     }
 
-    let mut resolver = resolver::Resolver::new(
+    let mut resolver = crate::lowered::resolver::Resolver::new(
         &function_ids,
         &function_signatures,
         &function_captures,
@@ -280,7 +293,10 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                 let ctor_id = Some(function_ids[&ctor_key]);
                 let mut instance_methods = Vec::new();
                 let mut static_methods = Vec::new();
-                for method in methods.iter().filter(|method| method.kind == ClassMethodKind::Method) {
+                for method in methods
+                    .iter()
+                    .filter(|method| method.kind == ClassMethodKind::Method)
+                {
                     let key = class_method_key(name, &method.name);
                     let method_id = function_ids[&key];
                     if let Some(stripped) = method.name.strip_prefix("static::") {
@@ -320,9 +336,11 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         ClassStaticInitializer::PrivateField {
                             field, initializer, ..
                         } => {
-                            top_level_statements.push(
-                                resolver.lower_class_static_private_field(name, field, initializer)?,
-                            );
+                            top_level_statements.push(resolver.lower_class_static_private_field(
+                                name,
+                                field,
+                                initializer,
+                            )?);
                         }
                         ClassStaticInitializer::Block { block, .. } => {
                             top_level_statements
@@ -344,7 +362,8 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
             message: "function id allocation left an unfilled function slot".to_owned(),
             span: None,
 
-            phase: None,})?;
+            phase: None,
+        })?;
     generated_functions.sort_by_key(|function| function.id.0);
     functions.extend(generated_functions);
 
@@ -376,21 +395,21 @@ impl ClassStaticInitializer<'_> {
     }
 }
 
-struct FunctionLowering {
-    function: LoweredFunction,
-    generated_functions: Vec<LoweredFunction>,
-    next_func_id: usize,
+pub(crate) struct FunctionLowering {
+    pub(crate) function: LoweredFunction,
+    pub(crate) generated_functions: Vec<LoweredFunction>,
+    pub(crate) next_func_id: usize,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-struct FunctionSignature {
-    explicit_params: usize,
-    needs_receiver: bool,
-    needs_arguments: bool,
-    has_rest: bool,
-    metadata_length: Option<usize>,
-    returns_heap_closure: bool,
-    returns_dense_array: bool,
+pub(crate) struct FunctionSignature {
+    pub(crate) explicit_params: usize,
+    pub(crate) needs_receiver: bool,
+    pub(crate) needs_arguments: bool,
+    pub(crate) has_rest: bool,
+    pub(crate) metadata_length: Option<usize>,
+    pub(crate) returns_heap_closure: bool,
+    pub(crate) returns_dense_array: bool,
 }
 
 fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, FuncId>, Diagnostic> {
@@ -402,18 +421,14 @@ fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, Func
     let concrete_names: HashSet<&str> = program
         .iter()
         .filter_map(|s| match s {
-            ResolvedStmt::Function { name, body, .. } if !body.is_empty() => {
-                Some(name.as_str())
-            }
+            ResolvedStmt::Function { name, body, .. } if !body.is_empty() => Some(name.as_str()),
             _ => None,
         })
         .collect();
 
     for stmt in program {
         match stmt {
-            ResolvedStmt::Function {
-                name, body, ..
-            } => {
+            ResolvedStmt::Function { name, body, .. } => {
                 if function_ids.contains_key(name.as_str()) {
                     // Allow bodyless overloads to reuse an existing name.
                     // Only body-ful (concrete function body) duplicates are errors.
@@ -423,7 +438,8 @@ fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, Func
                             message: format!("duplicate function definition: `{name}`"),
                             span: None,
 
-                            phase: None,});
+                            phase: None,
+                        });
                     }
                     continue;
                 }
@@ -447,7 +463,8 @@ fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, Func
                         message: format!("duplicate constructor definition: `{name}`"),
                         span: None,
 
-                        phase: None,});
+                        phase: None,
+                    });
                 }
                 function_ids.insert(ctor_key, FuncId(next_func_id));
                 next_func_id += 1;
@@ -467,7 +484,8 @@ fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, Func
                             ),
                             span: None,
 
-                            phase: None,});
+                            phase: None,
+                        });
                     }
                     function_ids.insert(method_key, FuncId(next_func_id));
                     next_func_id += 1;
@@ -724,9 +742,7 @@ fn collect_array_map_callback_function_names_in_expr(
         }
         ResolvedExpr::OptionalComputedIndex { object, index, .. }
         | ResolvedExpr::PropertyAssignDynamic {
-            object,
-            key: index,
-            ..
+            object, key: index, ..
         } => {
             collect_array_map_callback_function_names_in_expr(object, names);
             collect_array_map_callback_function_names_in_expr(index, names);
@@ -879,7 +895,10 @@ fn collect_block_arrow_fn_mutable_captures(stmts: &[ResolvedStmt]) -> HashSet<St
     for stmt in stmts {
         match stmt {
             ResolvedStmt::Return(expr) if matches!(expr, ResolvedExpr::ArrowFn { .. }) => {
-                if let ResolvedExpr::ArrowFn { body, body_stmts, .. } = expr {
+                if let ResolvedExpr::ArrowFn {
+                    body, body_stmts, ..
+                } = expr
+                {
                     let mut arrow_captures = Vec::new();
                     collect_expr_captures(body, &HashSet::new(), &mut arrow_captures);
                     collect_stmt_captures(body_stmts, &HashSet::new(), &mut arrow_captures);
@@ -891,7 +910,10 @@ fn collect_block_arrow_fn_mutable_captures(stmts: &[ResolvedStmt]) -> HashSet<St
                 }
             }
             ResolvedStmt::Expr(expr) if matches!(expr, ResolvedExpr::ArrowFn { .. }) => {
-                if let ResolvedExpr::ArrowFn { body, body_stmts, .. } = expr {
+                if let ResolvedExpr::ArrowFn {
+                    body, body_stmts, ..
+                } = expr
+                {
                     let mut arrow_captures = Vec::new();
                     collect_expr_captures(body, &HashSet::new(), &mut arrow_captures);
                     collect_stmt_captures(body_stmts, &HashSet::new(), &mut arrow_captures);
@@ -904,7 +926,10 @@ fn collect_block_arrow_fn_mutable_captures(stmts: &[ResolvedStmt]) -> HashSet<St
             }
             ResolvedStmt::Return(..) | ResolvedStmt::Expr(..) | ResolvedStmt::Throw(..) => {}
             ResolvedStmt::Let(_, expr) => {
-                if let ResolvedExpr::ArrowFn { body, body_stmts, .. } = expr {
+                if let ResolvedExpr::ArrowFn {
+                    body, body_stmts, ..
+                } = expr
+                {
                     let mut arrow_captures = Vec::new();
                     collect_expr_captures(body, &HashSet::new(), &mut arrow_captures);
                     collect_stmt_captures(body_stmts, &HashSet::new(), &mut arrow_captures);
@@ -915,7 +940,11 @@ fn collect_block_arrow_fn_mutable_captures(stmts: &[ResolvedStmt]) -> HashSet<St
                     }
                 }
             }
-            ResolvedStmt::If { then_body, else_body, .. } => {
+            ResolvedStmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
                 mutable_captures.extend(collect_block_arrow_fn_mutable_captures(then_body));
                 mutable_captures.extend(collect_block_arrow_fn_mutable_captures(else_body));
             }
@@ -927,7 +956,12 @@ fn collect_block_arrow_fn_mutable_captures(stmts: &[ResolvedStmt]) -> HashSet<St
             | ResolvedStmt::ForOf { body, .. } => {
                 mutable_captures.extend(collect_block_arrow_fn_mutable_captures(body));
             }
-            ResolvedStmt::TryCatch { try_block, catch_block, finally_block, .. } => {
+            ResolvedStmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
                 mutable_captures.extend(collect_block_arrow_fn_mutable_captures(try_block));
                 if let Some(block) = catch_block {
                     mutable_captures.extend(collect_block_arrow_fn_mutable_captures(block));
@@ -945,8 +979,9 @@ fn collect_block_arrow_fn_mutable_captures(stmts: &[ResolvedStmt]) -> HashSet<St
                 mutable_captures.extend(collect_block_arrow_fn_mutable_captures(statements));
             }
             ResolvedStmt::Labeled { body, .. } => {
-                mutable_captures
-                    .extend(collect_block_arrow_fn_mutable_captures(std::slice::from_ref(body)));
+                mutable_captures.extend(collect_block_arrow_fn_mutable_captures(
+                    std::slice::from_ref(body),
+                ));
             }
             ResolvedStmt::Assign(..)
             | ResolvedStmt::DestructureLet { .. }
@@ -1180,12 +1215,12 @@ fn is_static_private_field_local_name(name: &str) -> bool {
 }
 
 #[derive(Default)]
-struct DirectEvalBlockFunctionEnv {
+pub(crate) struct DirectEvalBlockFunctionEnv {
     env_cell_names: HashSet<String>,
     heap_closure_names: HashSet<String>,
 }
 
-fn block_contains_this(stmts: &[ResolvedStmt]) -> bool {
+pub(super) fn block_contains_this(stmts: &[ResolvedStmt]) -> bool {
     stmts.iter().any(stmt_contains_this)
 }
 
@@ -1397,15 +1432,17 @@ fn compute_recursion_depths(
     let mut func_to_idx: HashMap<FuncId, usize> = HashMap::new();
     let mut next_idx = 0;
     for (name, &id) in function_ids {
-        if (call_graph.contains_key(&id) || program.iter().any(|stmt| match stmt {
-            ResolvedStmt::Function { name: n, .. } => n == name,
-            ResolvedStmt::ClassDecl { name: n, .. } => n == name,
-            _ => false,
-        }))
-            && let std::collections::hash_map::Entry::Vacant(e) = func_to_idx.entry(id) {
-                e.insert(next_idx);
-                next_idx += 1;
-            }
+        if (call_graph.contains_key(&id)
+            || program.iter().any(|stmt| match stmt {
+                ResolvedStmt::Function { name: n, .. } => n == name,
+                ResolvedStmt::ClassDecl { name: n, .. } => n == name,
+                _ => false,
+            }))
+            && let std::collections::hash_map::Entry::Vacant(e) = func_to_idx.entry(id)
+        {
+            e.insert(next_idx);
+            next_idx += 1;
+        }
     }
 
     let n = func_to_idx.len();
@@ -1421,9 +1458,10 @@ fn compute_recursion_depths(
             for callee_name in callee_names {
                 if let Some(&callee_id) = function_ids.get(callee_name.as_str())
                     && let Some(&callee_idx) = func_to_idx.get(&callee_id)
-                        && !adj[caller_idx].contains(&callee_idx) {
-                            adj[caller_idx].push(callee_idx);
-                        }
+                    && !adj[caller_idx].contains(&callee_idx)
+                {
+                    adj[caller_idx].push(callee_idx);
+                }
             }
         }
     }
@@ -1501,10 +1539,18 @@ fn compute_recursion_depths(
 fn collect_call_targets_in_stmts(stmts: &[ResolvedStmt], targets: &mut HashSet<String>) {
     for stmt in stmts {
         match stmt {
-            ResolvedStmt::Let(_, expr) | ResolvedStmt::Assign(_, expr) | ResolvedStmt::Expr(expr) | ResolvedStmt::Return(expr) | ResolvedStmt::Throw(expr) => {
+            ResolvedStmt::Let(_, expr)
+            | ResolvedStmt::Assign(_, expr)
+            | ResolvedStmt::Expr(expr)
+            | ResolvedStmt::Return(expr)
+            | ResolvedStmt::Throw(expr) => {
                 collect_call_targets_in_expr(expr, targets);
             }
-            ResolvedStmt::If { condition, then_body, else_body } => {
+            ResolvedStmt::If {
+                condition,
+                then_body,
+                else_body,
+            } => {
                 collect_call_targets_in_expr(condition, targets);
                 collect_call_targets_in_stmts(then_body, targets);
                 collect_call_targets_in_stmts(else_body, targets);
@@ -1513,7 +1559,12 @@ fn collect_call_targets_in_stmts(stmts: &[ResolvedStmt], targets: &mut HashSet<S
                 collect_call_targets_in_expr(condition, targets);
                 collect_call_targets_in_stmts(body, targets);
             }
-            ResolvedStmt::For { init, condition, body, .. } => {
+            ResolvedStmt::For {
+                init,
+                condition,
+                body,
+                ..
+            } => {
                 if let Some(init) = init {
                     collect_call_targets_in_stmts(std::slice::from_ref(init.as_ref()), targets);
                 }
@@ -1526,7 +1577,12 @@ fn collect_call_targets_in_stmts(stmts: &[ResolvedStmt], targets: &mut HashSet<S
                 collect_call_targets_in_expr(iter, targets);
                 collect_call_targets_in_stmts(body, targets);
             }
-            ResolvedStmt::TryCatch { try_block, catch_block, finally_block, .. } => {
+            ResolvedStmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
                 collect_call_targets_in_stmts(try_block, targets);
                 if let Some(block) = catch_block {
                     collect_call_targets_in_stmts(block, targets);
@@ -1556,7 +1612,10 @@ fn collect_call_targets_in_stmts(stmts: &[ResolvedStmt], targets: &mut HashSet<S
                 // Nested functions: walk their body too
                 collect_call_targets_in_stmts(body, targets);
             }
-            ResolvedStmt::AmbientValue(_) | ResolvedStmt::Break { .. } | ResolvedStmt::Continue { .. } | ResolvedStmt::ClassDecl { .. } => {}
+            ResolvedStmt::AmbientValue(_)
+            | ResolvedStmt::Break { .. }
+            | ResolvedStmt::Continue { .. }
+            | ResolvedStmt::ClassDecl { .. } => {}
         }
     }
 }
@@ -1576,7 +1635,12 @@ fn collect_call_targets_in_expr(expr: &ResolvedExpr, targets: &mut HashSet<Strin
                 collect_call_targets_in_expr(arg, targets);
             }
         }
-        ResolvedExpr::MethodCall { object, method, args, .. } => {
+        ResolvedExpr::MethodCall {
+            object,
+            method,
+            args,
+            ..
+        } => {
             // Record method name as a potential call target
             // (methods could be called on any object, including `this`)
             targets.insert(method.clone());
@@ -1592,11 +1656,19 @@ fn collect_call_targets_in_expr(expr: &ResolvedExpr, targets: &mut HashSet<Strin
             collect_call_targets_in_expr(expr, targets);
         }
         ResolvedExpr::Binary { left, right, .. }
-        | ResolvedExpr::ComputedIndex { object: left, index: right } => {
+        | ResolvedExpr::ComputedIndex {
+            object: left,
+            index: right,
+        } => {
             collect_call_targets_in_expr(left, targets);
             collect_call_targets_in_expr(right, targets);
         }
-        ResolvedExpr::Ternary { condition, then_expr, else_expr, .. } => {
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
             collect_call_targets_in_expr(condition, targets);
             collect_call_targets_in_expr(then_expr, targets);
             collect_call_targets_in_expr(else_expr, targets);
@@ -1622,7 +1694,9 @@ fn collect_call_targets_in_expr(expr: &ResolvedExpr, targets: &mut HashSet<Strin
             collect_call_targets_in_expr(key, targets);
             collect_call_targets_in_expr(expr, targets);
         }
-        ResolvedExpr::LogicalComputedMemberAssign { object, key, expr, .. } => {
+        ResolvedExpr::LogicalComputedMemberAssign {
+            object, key, expr, ..
+        } => {
             collect_call_targets_in_expr(object, targets);
             collect_call_targets_in_expr(key, targets);
             collect_call_targets_in_expr(expr, targets);
@@ -1786,8 +1860,8 @@ fn stmt_returns_any_name(stmt: &ResolvedStmt, names: &HashSet<String>) -> bool {
             .any(|(_, body)| block_returns_any_name(body, names)),
         ResolvedStmt::Labeled { body, .. } => stmt_returns_any_name(body, names),
         ResolvedStmt::Block { statements, .. } => block_returns_any_name(statements, names),
-            ResolvedStmt::AmbientValue(_)
-            | ResolvedStmt::Function { .. }
+        ResolvedStmt::AmbientValue(_)
+        | ResolvedStmt::Function { .. }
         | ResolvedStmt::Let(_, _)
         | ResolvedStmt::DestructureLet { .. }
         | ResolvedStmt::Assign(_, _)
@@ -1839,8 +1913,7 @@ fn stmt_contains_this(stmt: &ResolvedStmt) -> bool {
         ResolvedStmt::Switch { expr, cases } => {
             expr_contains_this(expr)
                 || cases.iter().any(|(case_expr, body)| {
-                    case_expr.as_ref().is_some_and(expr_contains_this)
-                        || block_contains_this(body)
+                    case_expr.as_ref().is_some_and(expr_contains_this) || block_contains_this(body)
                 })
         }
         ResolvedStmt::For {
@@ -1862,8 +1935,8 @@ fn stmt_contains_this(stmt: &ResolvedStmt) -> bool {
             expr_contains_this(expr)
         }
         ResolvedStmt::Block { statements, .. } => block_contains_this(statements),
-            ResolvedStmt::AmbientValue(_)
-            | ResolvedStmt::Function { .. }
+        ResolvedStmt::AmbientValue(_)
+        | ResolvedStmt::Function { .. }
         | ResolvedStmt::ClassDecl { .. }
         | ResolvedStmt::Break { .. }
         | ResolvedStmt::Continue { .. } => false,
@@ -1947,11 +2020,13 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
     }
 }
 
-fn block_contains_arguments(stmts: &[ResolvedStmt]) -> bool {
+pub(super) fn block_contains_arguments(stmts: &[ResolvedStmt]) -> bool {
     stmts.iter().any(stmt_contains_arguments)
 }
 
-fn direct_iife_body_has_static_eval_block_function_binding(stmts: &[ResolvedStmt]) -> bool {
+pub(crate) fn direct_iife_body_has_static_eval_block_function_binding(
+    stmts: &[ResolvedStmt],
+) -> bool {
     stmts.iter().any(|stmt| {
         matches!(
             stmt,
@@ -1960,7 +2035,7 @@ fn direct_iife_body_has_static_eval_block_function_binding(stmts: &[ResolvedStmt
     })
 }
 
-fn direct_iife_body_has_unsupported_return(stmts: &[ResolvedStmt]) -> bool {
+pub(crate) fn direct_iife_body_has_unsupported_return(stmts: &[ResolvedStmt]) -> bool {
     stmts.iter().any(stmt_has_direct_return)
 }
 
@@ -2064,7 +2139,8 @@ fn stmt_contains_arguments(stmt: &ResolvedStmt) -> bool {
             update,
             body,
         } => {
-            init.as_ref().is_some_and(|stmt| stmt_contains_arguments(stmt))
+            init.as_ref()
+                .is_some_and(|stmt| stmt_contains_arguments(stmt))
                 || condition.as_ref().is_some_and(expr_contains_arguments)
                 || update.as_ref().is_some_and(expr_contains_arguments)
                 || block_contains_arguments(body)
@@ -2117,9 +2193,9 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
             expr_contains_arguments(object) || expr_contains_arguments(expr)
         }
-        ResolvedExpr::LogicalComputedPropertyAssign { object, key, expr, .. } => {
-            object == "arguments" || expr_contains_arguments(key) || expr_contains_arguments(expr)
-        }
+        ResolvedExpr::LogicalComputedPropertyAssign {
+            object, key, expr, ..
+        } => object == "arguments" || expr_contains_arguments(key) || expr_contains_arguments(expr),
         ResolvedExpr::LogicalComputedMemberAssign {
             object, key, expr, ..
         } => {
@@ -2131,9 +2207,9 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
             ResolvedArrayElement::Present(expr) => expr_contains_arguments(expr),
             ResolvedArrayElement::Hole => false,
         }),
-        ResolvedExpr::Object(props) => {
-            props.iter().any(|(_, value)| expr_contains_arguments(value))
-        }
+        ResolvedExpr::Object(props) => props
+            .iter()
+            .any(|(_, value)| expr_contains_arguments(value)),
         ResolvedExpr::ComputedIndex { object, index } => {
             expr_contains_arguments(object) || expr_contains_arguments(index)
         }
@@ -2174,23 +2250,23 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
     }
 }
 
-struct LowerFunctionOptions<'a> {
-    current_class: Option<&'a str>,
-    in_constructor: bool,
-    next_func_id: usize,
-    self_closure: Option<SelfClosureOptions<'a>>,
+pub(crate) struct LowerFunctionOptions<'a> {
+    pub(crate) current_class: Option<&'a str>,
+    pub(crate) in_constructor: bool,
+    pub(crate) next_func_id: usize,
+    pub(crate) self_closure: Option<SelfClosureOptions<'a>>,
     /// Recursion depth for this function (0 = not recursive, 1+ = recursive).
-    recursion_depth: usize,
+    pub(crate) recursion_depth: usize,
 }
 
-struct SelfClosureOptions<'a> {
-    name: &'a str,
-    func_id: FuncId,
-    capture_names: &'a [String],
+pub(crate) struct SelfClosureOptions<'a> {
+    pub(crate) name: &'a str,
+    pub(crate) func_id: FuncId,
+    pub(crate) capture_names: &'a [String],
 }
 
 #[allow(clippy::too_many_arguments)]
-fn lower_function(
+pub(super) fn lower_function(
     id: FuncId,
     params: &[ResolvedParam],
     body: &[ResolvedStmt],
@@ -2236,7 +2312,7 @@ fn lower_function(
         });
     }
 
-    let (mut resolver, param_ids) = resolver::Resolver::with_params(
+    let (mut resolver, param_ids) = crate::lowered::resolver::Resolver::with_params(
         function_ids,
         function_signatures,
         function_captures,
@@ -2282,7 +2358,8 @@ fn lower_function(
                         .to_owned(),
                     span: param.span,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             let param_local = resolver.resolve_local(&param.name)?;
             if let Some(default) = &param.default {
@@ -2294,18 +2371,20 @@ fn lower_function(
                         right: Box::new(LoweredExpr::Undefined(Span::generated("undefined"))),
                         span: Span::generated("binary"),
                     },
-                    then_body: vec![LoweredStmt::Assign(param_local, lowered_default, Span::generated("assign"))],
+                    then_body: vec![LoweredStmt::Assign(
+                        param_local,
+                        lowered_default,
+                        Span::generated("assign"),
+                    )],
                     else_body: vec![],
                     span: Span::generated("if_stmt"),
                 });
             }
-            body_with_defaults.extend(
-                resolver.lower_binding_pattern_declarations(
-                    &pattern,
-                    LoweredExpr::Local(param_local, Span::generated("local")),
-                    None,
-                )?,
-            );
+            body_with_defaults.extend(resolver.lower_binding_pattern_declarations(
+                &pattern,
+                LoweredExpr::Local(param_local, Span::generated("local")),
+                None,
+            )?);
             continue;
         }
         if param.is_rest {
@@ -2315,15 +2394,13 @@ fn lower_function(
             if let Some(inner) = param.name.strip_prefix("...")
                 && let Some(rest_pattern) = parse_binding_pattern(inner, param.span)?
             {
-                    let param_local = resolver.resolve_local(inner)?;
-                    body_with_defaults.extend(
-                        resolver.lower_binding_pattern_declarations(
-                            &rest_pattern,
-                            LoweredExpr::Local(param_local, Span::generated("local")),
-                            None,
-                        )?,
-                    );
-                }
+                let param_local = resolver.resolve_local(inner)?;
+                body_with_defaults.extend(resolver.lower_binding_pattern_declarations(
+                    &rest_pattern,
+                    LoweredExpr::Local(param_local, Span::generated("local")),
+                    None,
+                )?);
+            }
             continue;
         } else if let Some(default) = &param.default {
             let param_local = resolver.resolve_local(&param.name)?;
@@ -2336,7 +2413,11 @@ fn lower_function(
                     right: Box::new(LoweredExpr::Undefined(Span::generated("undefined"))),
                     span: Span::generated("binary"),
                 },
-                then_body: vec![LoweredStmt::Assign(param_local, lowered_default, Span::generated("assign"))],
+                then_body: vec![LoweredStmt::Assign(
+                    param_local,
+                    lowered_default,
+                    Span::generated("assign"),
+                )],
                 else_body: vec![],
                 span: Span::generated("if_stmt"),
             });
@@ -2367,7 +2448,7 @@ fn lower_function(
     })
 }
 
-fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnostic> {
+pub(super) fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnostic> {
     match op {
         BinaryOp::Add => Ok(LoweredBinaryOp::Add),
         BinaryOp::Subtract => Ok(LoweredBinaryOp::Subtract),
@@ -2398,11 +2479,12 @@ fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnostic> {
             message: format!("binary operator {:?} not yet supported", op),
             span: None,
 
-            phase: None,}),
+            phase: None,
+        }),
     }
 }
 
-fn lower_logical_assign_op(op: LogicalAssignOp) -> LoweredLogicalAssignOp {
+pub(super) fn lower_logical_assign_op(op: LogicalAssignOp) -> LoweredLogicalAssignOp {
     match op {
         LogicalAssignOp::And => LoweredLogicalAssignOp::And,
         LogicalAssignOp::Or => LoweredLogicalAssignOp::Or,
@@ -2410,28 +2492,29 @@ fn lower_logical_assign_op(op: LogicalAssignOp) -> LoweredLogicalAssignOp {
     }
 }
 
-fn lower_unary_op(op: UnaryOp) -> Result<LoweredUnaryOp, Diagnostic> {
+pub(super) fn lower_unary_op(op: UnaryOp) -> Result<LoweredUnaryOp, Diagnostic> {
     match op {
         UnaryOp::Not => Ok(LoweredUnaryOp::Not),
         UnaryOp::Plus => Ok(LoweredUnaryOp::Plus),
         UnaryOp::Negate => Ok(LoweredUnaryOp::Negate),
         UnaryOp::TypeOf => Ok(LoweredUnaryOp::TypeOf),
         UnaryOp::Delete => Ok(LoweredUnaryOp::Delete),
-        UnaryOp::Increment
-        | UnaryOp::Decrement
-        | UnaryOp::PreIncrement
-        | UnaryOp::PreDecrement => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!("issue-268: unary operator {:?} not yet supported", op),
-            span: None,
+        UnaryOp::Increment | UnaryOp::Decrement | UnaryOp::PreIncrement | UnaryOp::PreDecrement => {
+            Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("issue-268: unary operator {:?} not yet supported", op),
+                span: None,
 
-            phase: None,}),
+                phase: None,
+            })
+        }
         UnaryOp::BitwiseNot => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!("unary operator {:?} not yet supported", op),
             span: None,
 
-            phase: None,}),
+            phase: None,
+        }),
         UnaryOp::Void => Ok(LoweredUnaryOp::Void),
     }
 }
