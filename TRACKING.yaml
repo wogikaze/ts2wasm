@@ -8,20 +8,6 @@ meta:
     roadmap_source: docs/roadmap.md
     closed_source: docs/done-tracking.yaml
 open:
-  - id: 238
-    title: "Differentiate getter/setter from regular methods in class body (W9a)"
-    priority: P2
-    type: feature
-    area: ir
-    status: open
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: W9a
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_getter_setter)'"
-    non_goals:
-      - "No Object.defineProperty getter/setter support."
-
   - id: 239
     title: "Support super.prop in static methods (W9a)"
     priority: P2
@@ -77,7 +63,29 @@ open:
       - "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output"
     non_goals:
       - "No new runtime implementation."
-active: []
+active:
+  - id: 238
+    title: "Differentiate getter/setter from regular methods in class body (W9a)"
+    priority: P2
+    type: feature
+    area: ir
+    status: active
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: W9a
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_getter_setter)'"
+    non_goals:
+      - "No Object.defineProperty getter/setter support."
+    plan:
+      goal: "Keep class getter/setter syntax distinguishable from regular methods through frontend/IR handling without adding descriptor runtime support"
+      files:
+        - "crates/ir/src/builtin_resolved.rs: add ClassMethodKind"
+        - "crates/ir/src/builtin_resolver.rs: classify public accessor methods"
+        - "crates/ir/src/lowered/program.rs: omit public accessors from regular method tables"
+        - "crates/cli/tests/ir_lowering.rs: cover accessors not emitted as regular methods"
+        - "fixtures/classes/class-getter-setter.ts: acceptance fixture"
+      acceptance: "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_getter_setter)'"
 done:
   - id: 237
     title: "Implement public field initializers in class constructor (W9a)"

@@ -77,6 +77,35 @@ fn class_method_shadowed_outer_name_is_not_issue_289_capture() {
 }
 
 #[test]
+fn class_public_accessors_are_not_regular_methods_in_class_decl() {
+    use ts2wasm_ir::lowered::LoweredStmt;
+
+    let program = parse_and_resolve(
+        r#"
+        class Box {
+          get value() { return 1; }
+          set value(next) { this.next = next; }
+          method() { return 2; }
+        }
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[0] {
+        LoweredStmt::ClassDecl {
+            methods,
+            static_methods,
+            ..
+        } => {
+            assert_eq!(methods.len(), 1);
+            assert_eq!(methods[0].0, "method");
+            assert!(static_methods.is_empty());
+        }
+        other => panic!("unexpected class decl statement: {other:?}"),
+    }
+}
+
+#[test]
 fn lowering_passes_immutable_class_method_outer_local_capture() {
     use ts2wasm_ir::lowered::{FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
 

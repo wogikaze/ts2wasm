@@ -27,7 +27,7 @@ use super::binding_pattern::parse_binding_pattern;
 use super::builtin::BuiltinId;
 use super::builtin::BuiltinPropertyId;
 use super::builtin_resolved::{
-    ClassMethod, ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt,
+    ClassMethod, ClassMethodKind, ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt,
 };
 
 const BIGINT_FROM_VALUE_RUNTIME_CALL: &str = "__ts2wasm_bigint_from_value";
@@ -1212,6 +1212,7 @@ fn resolve_stmt_with_outer_bindings(
                             statics.push((stripped.to_owned(), ResolvedExpr::Undefined));
                             methods.push(ClassMethod {
                                 name: method_name.clone(),
+                                kind: class_method_kind(method_name),
                                 params: resolved_params,
                                 body: resolved_body,
                                 captures,
@@ -1219,6 +1220,7 @@ fn resolve_stmt_with_outer_bindings(
                         } else {
                             methods.push(ClassMethod {
                                 name: method_name.clone(),
+                                kind: class_method_kind(method_name),
                                 params: resolved_params,
                                 body: resolved_body,
                                 captures,
@@ -1426,6 +1428,17 @@ fn resolve_stmt_with_outer_bindings(
             span: None,
 
             phase: None,}),
+    }
+}
+
+fn class_method_kind(method_name: &str) -> ClassMethodKind {
+    let name = method_name.strip_prefix("static::").unwrap_or(method_name);
+    if name.starts_with("get ") {
+        ClassMethodKind::Getter
+    } else if name.starts_with("set ") {
+        ClassMethodKind::Setter
+    } else {
+        ClassMethodKind::Method
     }
 }
 

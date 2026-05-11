@@ -102,6 +102,7 @@ pub(super) fn resolve_private_elements(
                     } else {
                         format!("#{name}")
                     },
+                    kind: ClassMethodKind::Method,
                     params: params
                         .iter()
                         .map(|(param_name, default, is_rest)| {
@@ -144,6 +145,7 @@ pub(super) fn resolve_private_elements(
                     } else {
                         private_getter_method_name(name)
                     },
+                    kind: ClassMethodKind::Method,
                     params: Vec::new(),
                     body: body
                         .iter()
@@ -188,6 +190,7 @@ pub(super) fn resolve_private_elements(
                     } else {
                         private_setter_method_name(name)
                     },
+                    kind: ClassMethodKind::Method,
                     params: vec![ResolvedParam {
                         name: param.clone(),
                         default: None,

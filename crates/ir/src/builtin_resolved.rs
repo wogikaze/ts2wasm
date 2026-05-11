@@ -107,9 +107,17 @@ pub enum ResolvedStmt {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ClassMethod {
     pub name: String,
+    pub kind: ClassMethodKind,
     pub params: Vec<ResolvedParam>,
     pub body: Vec<ResolvedStmt>,
     pub captures: Vec<String>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ClassMethodKind {
+    Method,
+    Getter,
+    Setter,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

@@ -280,7 +280,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                 let ctor_id = Some(function_ids[&ctor_key]);
                 let mut instance_methods = Vec::new();
                 let mut static_methods = Vec::new();
-                for method in methods {
+                for method in methods.iter().filter(|method| method.kind == ClassMethodKind::Method) {
                     let key = class_method_key(name, &method.name);
                     let method_id = function_ids[&key];
                     if let Some(stripped) = method.name.strip_prefix("static::") {
