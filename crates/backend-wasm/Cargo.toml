@@ -14,6 +14,7 @@ ts2wasm-source = { path = "../source" }
 ts2wasm-diagnostic = { path = "../diagnostic" }
 ts2wasm-syntax = { path = "../syntax" }
 ts2wasm-resolve = { path = "../resolve" }
+ts2wasm-semantics = { path = "../semantics" }
 ts2wasm-ir = { path = "../ir" }
 ts2wasm-runtime-abi = { path = "../runtime-abi" }
 ts2wasm-runtime-catalog = { path = "../runtime-catalog" }

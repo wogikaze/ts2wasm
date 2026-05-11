@@ -5,6 +5,8 @@ members = [
     "crates/source",
     "crates/diagnostic",
     "crates/syntax",
+    "crates/resolve",
+    "crates/semantics",
     "crates/frontend",
     "crates/ir",
     "crates/runtime-abi",

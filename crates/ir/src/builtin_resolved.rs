@@ -1,8 +1,8 @@
 use ts2wasm_syntax::{BinaryOp, LogicalAssignOp, UnaryOp};
 use ts2wasm_source::Span;
 
-use super::binding_pattern::BindingPattern;
 use super::builtin::{BuiltinId, BuiltinPropertyId};
+use crate::binding_pattern::BindingPattern;
 
 pub type ResolvedConstructor = (Vec<ResolvedParam>, Vec<ResolvedStmt>);
 
