@@ -81,40 +81,12 @@ impl WatEmitter<'_> {
     ) {
         let pad = " ".repeat(indent);
         match expr {
-            LoweredExpr::Number(value, _) => {
-                if ValueTag::can_encode_number(*value) {
-                    writer.i32_const(indent, ValueTag::encode_number(*value));
-                } else {
-                    writer.i32_const(indent, *value);
-
-                    writer.call(indent, RuntimeFn::NumberFromI32.symbol());
-                }
-            }
-            LoweredExpr::String(value, _) => {
-                writer.i32_const(indent, self.string_value(value) as i32);
-            }
-            LoweredExpr::BigIntLiteral {
-                decimal,
-                sign,
-                limb_low,
-                limb_high,
-                ..
-            } => {
-                let decimal_src = self.string_offset(decimal) + Layout::STRING_HEADER_SIZE;
-                let decimal_len = self.string_len(decimal);
-                let limb_count = if *sign == 0 { 0 } else { 1 };
-                writer.i32_const(indent, *sign);
-                writer.i32_const(indent, limb_count);
-                writer.i32_const(indent, *limb_low as i32);
-                writer.i32_const(indent, *limb_high as i32);
-                writer.i32_const(indent, decimal_src as i32);
-                writer.i32_const(indent, decimal_len as i32);
-                writer.call(indent, RuntimeFn::MakeBigIntLiteral.symbol());
-            }
-            LoweredExpr::Bool(true, _) => writer.i32_const(indent, ValueTag::TRUE),
-            LoweredExpr::Bool(false, _) => writer.i32_const(indent, ValueTag::FALSE),
-            LoweredExpr::Null(_) => writer.i32_const(indent, ValueTag::NULL),
-            LoweredExpr::Undefined(_) => writer.i32_const(indent, ValueTag::UNDEFINED),
+            LoweredExpr::Number(..)
+            | LoweredExpr::String(..)
+            | LoweredExpr::BigIntLiteral { .. }
+            | LoweredExpr::Bool(..)
+            | LoweredExpr::Null(..)
+            | LoweredExpr::Undefined(..) => self.emit_literal_expr(writer, expr, indent, frame),
             LoweredExpr::This(_) => {
                 // validate_lowered rejects residual `this`; supported receivers lower to Local.
                 writer.unreachable(indent)
@@ -142,146 +114,18 @@ impl WatEmitter<'_> {
                 }
             },
             LoweredExpr::Local(local_id, _) => writer.local_get(indent, local_index(*local_id)),
-            LoweredExpr::EnvCellNew(expr, _) => {
-                self.emit_expr(writer, expr, indent, frame);
-                writer.local_set(indent, frame.heap_value_tmp());
-                self.emit_gc_root_mirror_index(
-                    writer.output_mut(),
-                    &pad,
-                    frame.heap_value_tmp(),
-                    frame,
-                );
-                writer.push_str(&format!(
-                    "{pad}(local.set {} (call {} (i32.const {})))\n",
-                    frame.heap_base_tmp(),
-                    RuntimeFn::AllocHeap.symbol(),
-                    Layout::ARRAY_HEADER_SIZE + ENV_CELL_SLOT_COUNT * 4,
-                ));
-                self.emit_gc_root_mirror_index(
-                    writer.output_mut(),
-                    &pad,
-                    frame.heap_base_tmp(),
-                    frame,
-                );
-                writer.push_str(&format!(
-                    "{pad}(i32.store (local.get {}) (i32.const {ENV_CELL_SLOT_COUNT}))\n",
-                    frame.heap_base_tmp(),
-                ));
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {ENV_CELL_VALUE_OFFSET})) (local.get {}))\n",
-                    frame.heap_base_tmp(),
-                    frame.heap_value_tmp(),
-                ));
-                writer.push_str(&format!(
-                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
-                    frame.heap_base_tmp(),
-                    ValueTag::ARRAY_TAG,
-                ));
+            LoweredExpr::EnvCellNew(..)
+            | LoweredExpr::EnvCellGet(..)
+            | LoweredExpr::EnvCellSet { .. } => {
+                self.emit_env_cell_expr(writer, expr, indent, frame)
             }
-            LoweredExpr::EnvCellGet(cell, _) => {
-                writer.push_str(&format!(
-                    "{pad}(i32.load (i32.add (i32.and (local.get {}) (i32.const {})) (i32.const {ENV_CELL_VALUE_OFFSET})))\n",
-                    local_index(*cell),
-                    ValueTag::HEAP_MASK,
-                ));
+            LoweredExpr::PropertyDelete { .. } | LoweredExpr::PropertyDeleteDynamic { .. } => {
+                self.emit_property_delete_expr(writer, expr, indent, frame)
             }
-            LoweredExpr::EnvCellSet { cell, expr, .. } => {
-                self.emit_expr(writer, expr, indent, frame);
-                writer.local_tee(indent, frame.heap_value_tmp());
-                self.emit_gc_root_mirror_index(
-                    writer.output_mut(),
-                    &pad,
-                    frame.heap_value_tmp(),
-                    frame,
-                );
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (i32.and (local.get {}) (i32.const {})) (i32.const {ENV_CELL_VALUE_OFFSET})) (local.get {}))\n",
-                    local_index(*cell),
-                    ValueTag::HEAP_MASK,
-                    frame.heap_value_tmp(),
-                ));
+            LoweredExpr::PropertyIn { .. } | LoweredExpr::PropertyInDynamic { .. } => {
+                self.emit_property_in_expr(writer, expr, indent, frame)
             }
-            LoweredExpr::PropertyDelete { object, key, .. } => {
-                self.emit_expr(writer, object, indent, frame);
-                let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
-                let key_len = self.string_len(key);
-                writer.i32_const(indent, key_ptr as i32);
-                writer.i32_const(indent, key_len as i32);
-                writer.call(indent, RuntimeFn::PropertyDelete.symbol());
-            }
-            LoweredExpr::PropertyDeleteDynamic { object, key, .. } => {
-                self.emit_expr(writer, object, indent, frame);
-                writer.local_set(indent, frame.heap_base_tmp());
-                self.emit_gc_root_mirror_index(
-                    writer.output_mut(),
-                    &pad,
-                    frame.heap_base_tmp(),
-                    frame,
-                );
-                self.emit_expr(writer, key, indent, frame);
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
-                writer.local_set(indent, frame.heap_value_tmp());
-                writer.local_get(indent, frame.heap_base_tmp());
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.local_get(indent, frame.heap_value_tmp());
-                writer.call(indent, RuntimeFn::PropertyDelete.symbol());
-            }
-            LoweredExpr::PropertyIn { obj, key, .. } => {
-                self.emit_expr(writer, obj, indent, frame);
-                let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
-                let key_len = self.string_len(key);
-                writer.i32_const(indent, key_ptr as i32);
-                writer.i32_const(indent, key_len as i32);
-                writer.call(indent, RuntimeFn::PropertyHas.symbol());
-            }
-            LoweredExpr::PropertyInDynamic { obj, key, .. } => {
-                self.emit_expr(writer, obj, indent, frame);
-                writer.local_set(indent, frame.heap_base_tmp());
-                self.emit_gc_root_mirror_index(
-                    writer.output_mut(),
-                    &pad,
-                    frame.heap_base_tmp(),
-                    frame,
-                );
-                self.emit_expr(writer, key, indent, frame);
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
-                writer.local_set(indent, frame.heap_value_tmp());
-                writer.local_get(indent, frame.heap_base_tmp());
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.local_get(indent, frame.heap_value_tmp());
-                writer.call(indent, RuntimeFn::PropertyHas.symbol());
-            }
-            LoweredExpr::Unary { op, expr, .. } => {
-                self.emit_expr(writer, expr, indent, frame);
-                match op {
-                    LoweredUnaryOp::Not => {
-                        writer.line_fmt(indent, format_args!("(call {})", RuntimeFn::Not.symbol()))
-                    }
-                    LoweredUnaryOp::Plus => {
-                        writer.call(indent, "$primitive_to_number_for_equality");
-                    }
-                    LoweredUnaryOp::Negate => writer.line_fmt(
-                        indent,
-                        format_args!("(call {})", RuntimeFn::Negate.symbol()),
-                    ),
-                    LoweredUnaryOp::TypeOf => writer.line_fmt(
-                        indent,
-                        format_args!("(call {})", RuntimeFn::TypeOf.symbol()),
-                    ),
-                    LoweredUnaryOp::Delete => {
-                        // Delete is handled as a special case in the AST
-                        // This should not be reached if delete is properly lowered
-                        writer.i32_const(indent, 0)
-                    }
-                    LoweredUnaryOp::Void => {
-                        // Evaluate expr for side effects, drop result, produce undefined
-                        writer.drop(indent);
-                        writer.i32_const(indent, 0);
-                    }
-                }
-            }
+            LoweredExpr::Unary { .. } => self.emit_unary_expr(writer, expr, indent, frame),
             LoweredExpr::Assign { local, expr, .. } => {
                 self.emit_expr(writer, expr, indent, frame);
                 writer.local_tee(indent, local_index(*local));
@@ -332,220 +176,7 @@ impl WatEmitter<'_> {
                     writer, object, key, *op, expr, indent, frame,
                 );
             }
-            LoweredExpr::Binary {
-                left, op, right, ..
-            } => {
-                if *op == LoweredBinaryOp::And {
-                    let lhs_tmp = frame.switch_value_tmp();
-                    self.emit_expr(writer, left, indent, frame);
-                    writer.local_set(indent, lhs_tmp);
-                    writer.if_result(indent, "i32");
-                    writer.push_str(&format!(
-                        "{pad}  (call {}\n",
-                        RuntimeFn::TruthyBool.symbol()
-                    ));
-                    writer.push_str(&format!("{pad}    (local.get {})\n", lhs_tmp));
-                    writer.push_str(&format!("{pad}  )\n"));
-                    writer.then(indent);
-                    self.emit_expr(writer, right, indent + 4, &frame.child_temp_frame());
-                    writer.push_str(&format!("{pad}  )\n"));
-                    writer.line_fmt(
-                        indent,
-                        format_args!(
-                            "{pad}  (else\n{pad}    (local.get {})\n{pad}  ))\n",
-                            lhs_tmp
-                        ),
-                    );
-                    return;
-                }
-                if *op == LoweredBinaryOp::Or {
-                    let lhs_tmp = frame.switch_value_tmp();
-                    self.emit_expr(writer, left, indent, frame);
-                    writer.local_set(indent, lhs_tmp);
-                    writer.if_result(indent, "i32");
-                    writer.push_str(&format!(
-                        "{pad}  (call {}\n",
-                        RuntimeFn::TruthyBool.symbol()
-                    ));
-                    writer.push_str(&format!("{pad}    (local.get {})\n", lhs_tmp));
-                    writer.push_str(&format!("{pad}  )\n"));
-                    writer.line_fmt(
-                        indent,
-                        format_args!("{pad}  (then\n{pad}    (local.get {})\n{pad}  )\n", lhs_tmp),
-                    );
-                    writer.r#else(indent);
-                    self.emit_expr(writer, right, indent + 4, &frame.child_temp_frame());
-                    writer.push_str(&format!("{pad}  ))\n"));
-                    return;
-                }
-                if *op == LoweredBinaryOp::NullishCoalesce {
-                    let lhs_tmp = frame.switch_value_tmp();
-                    self.emit_expr(writer, left, indent, frame);
-                    writer.local_set(indent, lhs_tmp);
-                    writer.if_result(indent, "i32");
-                    writer.line_fmt(indent, format_args!("{pad}  (i32.or\n{pad}    (i32.eq (local.get {}) (i32.const {}))\n{pad}    (i32.eq (local.get {}) (i32.const {})))\n", lhs_tmp, ValueTag::UNDEFINED, lhs_tmp, ValueTag::NULL));
-                    writer.then(indent);
-                    self.emit_expr(writer, right, indent + 4, &frame.child_temp_frame());
-                    writer.push_str(&format!("{pad}  )\n"));
-                    writer.line_fmt(
-                        indent,
-                        format_args!(
-                            "{pad}  (else\n{pad}    (local.get {})\n{pad}  ))\n",
-                            lhs_tmp
-                        ),
-                    );
-                    return;
-                }
-                let left_ty = left.inferred_type();
-                let right_ty = right.inferred_type();
-                match op {
-                    LoweredBinaryOp::Add
-                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
-                    {
-                        self.emit_expr(writer, left, indent, frame);
-                        self.emit_expr(writer, right, indent, frame);
-                        writer.line_fmt(
-                            indent,
-                            format_args!("(call {})", RuntimeFn::AddFast.symbol()),
-                        );
-                    }
-                    LoweredBinaryOp::Add
-                        if left_ty == InferredType::String && right_ty == InferredType::String =>
-                    {
-                        self.emit_expr(writer, left, indent, frame);
-                        self.emit_expr(writer, right, indent, frame);
-                        writer.line_fmt(
-                            indent,
-                            format_args!("(call {})", RuntimeFn::Concat.symbol()),
-                        );
-                    }
-                    LoweredBinaryOp::Subtract
-                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
-                    {
-                        self.emit_expr(writer, left, indent, frame);
-                        self.emit_expr(writer, right, indent, frame);
-                        writer.line_fmt(
-                            indent,
-                            format_args!("(call {})", RuntimeFn::SubFast.symbol()),
-                        );
-                    }
-                    LoweredBinaryOp::Multiply
-                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
-                    {
-                        self.emit_expr(writer, left, indent, frame);
-                        self.emit_expr(writer, right, indent, frame);
-                        writer.line_fmt(
-                            indent,
-                            format_args!("(call {})", RuntimeFn::MulFast.symbol()),
-                        );
-                    }
-                    LoweredBinaryOp::Power
-                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
-                    {
-                        self.emit_expr(writer, left, indent, frame);
-                        self.emit_expr(writer, right, indent, frame);
-                        writer.line_fmt(
-                            indent,
-                            format_args!("(call {})", RuntimeFn::MathPow.symbol()),
-                        );
-                    }
-                    LoweredBinaryOp::Divide
-                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
-                    {
-                        self.emit_expr(writer, left, indent, frame);
-                        self.emit_expr(writer, right, indent, frame);
-                        writer.line_fmt(
-                            indent,
-                            format_args!("(call {})", RuntimeFn::DivFast.symbol()),
-                        );
-                    }
-                    LoweredBinaryOp::Modulo
-                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
-                    {
-                        self.emit_expr(writer, left, indent, frame);
-                        self.emit_expr(writer, right, indent, frame);
-                        writer.line_fmt(
-                            indent,
-                            format_args!("(call {})", RuntimeFn::ModFast.symbol()),
-                        );
-                    }
-                    LoweredBinaryOp::Less
-                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
-                    {
-                        self.emit_expr(writer, left, indent, frame);
-                        self.emit_expr(writer, right, indent, frame);
-                        writer.line_fmt(
-                            indent,
-                            format_args!("(call {})", RuntimeFn::LessFast.symbol()),
-                        );
-                    }
-                    LoweredBinaryOp::LessEqual
-                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
-                    {
-                        self.emit_expr(writer, left, indent, frame);
-                        self.emit_expr(writer, right, indent, frame);
-                        writer.call(indent, RuntimeFn::LessEqualFast.symbol());
-                    }
-                    LoweredBinaryOp::Greater
-                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
-                    {
-                        self.emit_expr(writer, left, indent, frame);
-                        self.emit_expr(writer, right, indent, frame);
-                        writer.call(indent, RuntimeFn::GreaterFast.symbol());
-                    }
-                    LoweredBinaryOp::GreaterEqual
-                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
-                    {
-                        self.emit_expr(writer, left, indent, frame);
-                        self.emit_expr(writer, right, indent, frame);
-                        writer.call(indent, RuntimeFn::GreaterEqualFast.symbol());
-                    }
-                    _ => {
-                        let runtime_fn = match op {
-                            LoweredBinaryOp::Add => RuntimeFn::Add,
-                            LoweredBinaryOp::Subtract => RuntimeFn::Sub,
-                            LoweredBinaryOp::Multiply => RuntimeFn::Mul,
-                            LoweredBinaryOp::Power => RuntimeFn::MathPow,
-                            LoweredBinaryOp::Divide => RuntimeFn::Div,
-                            LoweredBinaryOp::Modulo => RuntimeFn::Mod,
-                            LoweredBinaryOp::BitwiseAnd => RuntimeFn::BitwiseAnd,
-                            LoweredBinaryOp::BitwiseXor => RuntimeFn::BitwiseXor,
-                            LoweredBinaryOp::BitwiseOr => RuntimeFn::BitwiseOr,
-                            LoweredBinaryOp::Less => RuntimeFn::Less,
-                            LoweredBinaryOp::LessEqual => RuntimeFn::LessEqual,
-                            LoweredBinaryOp::Greater => RuntimeFn::Greater,
-                            LoweredBinaryOp::GreaterEqual => RuntimeFn::GreaterEqual,
-                            LoweredBinaryOp::StrictEqual => RuntimeFn::StrictEqual,
-                            LoweredBinaryOp::EqualEqual => RuntimeFn::EqualEqual,
-                            LoweredBinaryOp::BangEqual => RuntimeFn::BangEqual,
-                            LoweredBinaryOp::StrictNotEqual => RuntimeFn::StrictNotEqual,
-                            LoweredBinaryOp::And => RuntimeFn::And,
-                            LoweredBinaryOp::Or => RuntimeFn::Or,
-                            LoweredBinaryOp::NullishCoalesce => unreachable!(
-                                "nullish coalescing is emitted as a short-circuit expression"
-                            ),
-                        };
-                        if expr_may_collect(right) && !expr_uses_caller_backend_tmp(right) {
-                            let lhs_tmp = frame.switch_value_tmp();
-                            self.emit_expr(writer, left, indent, frame);
-                            writer.local_set(indent, lhs_tmp);
-                            self.emit_gc_root_mirror_index(
-                                writer.output_mut(),
-                                &pad,
-                                lhs_tmp,
-                                frame,
-                            );
-                            writer.local_get(indent, lhs_tmp);
-                            self.emit_expr(writer, right, indent, frame);
-                            writer.call(indent, runtime_fn.symbol());
-                            return;
-                        }
-                        self.emit_expr(writer, left, indent, frame);
-                        self.emit_expr(writer, right, indent, frame);
-                        writer.call(indent, runtime_fn.symbol());
-                    }
-                }
-            }
+            LoweredExpr::Binary { .. } => self.emit_binary_expr(writer, expr, indent, frame),
             LoweredExpr::Call { kind, args, .. } => match kind {
                 FunctionCallKind::User(func_id) => {
                     self.emit_user_call_args(writer, *func_id, args, indent, frame);
@@ -595,196 +226,15 @@ impl WatEmitter<'_> {
                     format_args!("(call {})", RuntimeFn::GetLength.symbol()),
                 );
             }
-            LoweredExpr::ObjectNew {
-                props,
-                non_enumerable,
-                ..
-            } => {
-                let prop_count = props.len();
-                let prop_capacity = prop_count + 8;
-                let size =
-                    Layout::OBJECT_HEADER_SIZE + (prop_capacity as u32) * Layout::OBJECT_ENTRY_SIZE;
-                writer.push_str(&format!(
-                    "{pad}(local.set {} (call {} (i32.const {})))\n",
-                    frame.heap_base_tmp(),
-                    RuntimeFn::AllocHeap.symbol(),
-                    size,
-                ));
-                self.emit_gc_root_mirror_index(
-                    writer.output_mut(),
-                    &pad,
-                    frame.heap_base_tmp(),
-                    frame,
-                );
-                writer.push_str(&format!(
-                    "{pad}(i32.store (local.get {}) (i32.const {}))\n",
-                    frame.heap_base_tmp(),
-                    prop_count,
-                ));
-                let flags = non_enumerable << Layout::OBJECT_NON_ENUM_SHIFT;
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
-                    frame.heap_base_tmp(),
-                    Layout::OBJECT_FLAGS_OFFSET,
-                    flags,
-                ));
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 0))\n",
-                    frame.heap_base_tmp(),
-                    Layout::OBJECT_PROTOTYPE_OFFSET,
-                ));
-                let child_frame = frame.child_temp_frame();
-                for (i, (key, val)) in props.iter().enumerate() {
-                    let entry_offset =
-                        Layout::OBJECT_ENTRIES_OFFSET + (i as u32) * Layout::OBJECT_ENTRY_SIZE;
-                    let key_raw = self.string_value(key);
-                    writer.push_str(&format!(
-                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
-                        frame.heap_base_tmp(),
-                        entry_offset,
-                        key_raw,
-                    ));
-                    self.emit_expr(writer, val, indent, &child_frame);
-                    writer.local_set(indent, child_frame.heap_value_tmp());
-                    writer.push_str(&format!(
-                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
-                        frame.heap_base_tmp(),
-                        entry_offset + Layout::OBJECT_VALUE_OFFSET,
-                        child_frame.heap_value_tmp(),
-                    ));
-                }
-                writer.push_str(&format!(
-                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
-                    frame.heap_base_tmp(),
-                    ValueTag::OBJECT_TAG,
-                ));
+            LoweredExpr::ObjectNew { .. } | LoweredExpr::ErrorNew { .. } => {
+                self.emit_object_or_error_new_expr(writer, expr, indent, frame)
             }
-            LoweredExpr::ErrorNew {
-                constructor,
-                message,
-                ..
-            } => {
-                let prop_count = 2;
-                let prop_capacity = prop_count + 8;
-                let size =
-                    Layout::OBJECT_HEADER_SIZE + (prop_capacity as u32) * Layout::OBJECT_ENTRY_SIZE;
-                writer.push_str(&format!(
-                    "{pad}(local.set {} (call {} (i32.const {})))\n",
-                    frame.heap_base_tmp(),
-                    RuntimeFn::AllocHeap.symbol(),
-                    size,
-                ));
-                self.emit_gc_root_mirror_index(
-                    writer.output_mut(),
-                    &pad,
-                    frame.heap_base_tmp(),
-                    frame,
-                );
-                writer.push_str(&format!(
-                    "{pad}(i32.store (local.get {}) (i32.const {}))\n",
-                    frame.heap_base_tmp(),
-                    prop_count,
-                ));
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 0))\n",
-                    frame.heap_base_tmp(),
-                    Layout::OBJECT_FLAGS_OFFSET,
-                ));
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (global.get ${}))\n",
-                    frame.heap_base_tmp(),
-                    Layout::OBJECT_PROTOTYPE_OFFSET,
-                    builtin_error_prototype_global(*constructor),
-                ));
-                let key_raw = self.string_value("message");
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
-                    frame.heap_base_tmp(),
-                    Layout::OBJECT_ENTRIES_OFFSET,
-                    key_raw,
-                ));
-                self.emit_expr(writer, message, indent, frame);
-                writer.local_set(indent, frame.heap_value_tmp());
-                self.emit_gc_root_mirror_index(
-                    writer.output_mut(),
-                    &pad,
-                    frame.heap_value_tmp(),
-                    frame,
-                );
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
-                    frame.heap_base_tmp(),
-                    Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
-                    frame.heap_value_tmp(),
-                ));
-                let stack_entry_offset = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE;
-                let stack_key_raw = self.string_value("stack");
-                let stack_prefix_raw = self.string_value(builtin_error_stack_prefix(*constructor));
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
-                    frame.heap_base_tmp(),
-                    stack_entry_offset,
-                    stack_key_raw,
-                ));
-                writer.i32_const(indent, stack_prefix_raw as i32);
-                writer.local_get(indent, frame.heap_value_tmp());
-                writer.line_fmt(
-                    indent,
-                    format_args!("(call {})", RuntimeFn::Concat.symbol()),
-                );
-                writer.local_set(indent, frame.heap_value_tmp());
-                self.emit_gc_root_mirror_index(
-                    writer.output_mut(),
-                    &pad,
-                    frame.heap_value_tmp(),
-                    frame,
-                );
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
-                    frame.heap_base_tmp(),
-                    stack_entry_offset + Layout::OBJECT_VALUE_OFFSET,
-                    frame.heap_value_tmp(),
-                ));
-                writer.push_str(&format!(
-                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
-                    frame.heap_base_tmp(),
-                    ValueTag::OBJECT_TAG,
-                ));
-            }
-            LoweredExpr::PropertyGet { obj, key, .. } => {
-                let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
-                let key_len = self.string_len(key);
-                self.emit_expr(writer, obj, indent, frame);
-                writer.i32_const(indent, key_ptr as i32);
-                writer.i32_const(indent, key_len as i32);
-                writer.call(indent, RuntimeFn::PropertyGet.symbol());
-            }
-            LoweredExpr::OptionalPropertyGet { obj, key, .. } => {
-                self.emit_optional_property_get(writer, obj, key, indent, frame);
-            }
-            LoweredExpr::PropertyGetDynamic { obj, key, .. } => {
-                self.emit_expr(writer, obj, indent, frame);
-                writer.local_set(indent, frame.heap_base_tmp());
-                self.emit_gc_root_mirror_index(
-                    writer.output_mut(),
-                    &pad,
-                    frame.heap_base_tmp(),
-                    frame,
-                );
-                self.emit_expr(writer, key, indent, frame);
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
-                writer.local_set(indent, frame.heap_value_tmp());
-                writer.local_get(indent, frame.heap_base_tmp());
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.local_get(indent, frame.heap_value_tmp());
-                writer.call(indent, RuntimeFn::PropertyGet.symbol());
-            }
-            LoweredExpr::OptionalIndex { object, index, .. } => {
-                self.emit_optional_index(writer, object, index, indent, frame);
-            }
-            LoweredExpr::OptionalCall { callee, call, .. } => {
-                self.emit_optional_call(writer, callee, call, indent, frame);
+            LoweredExpr::PropertyGet { .. }
+            | LoweredExpr::OptionalPropertyGet { .. }
+            | LoweredExpr::PropertyGetDynamic { .. }
+            | LoweredExpr::OptionalIndex { .. }
+            | LoweredExpr::OptionalCall { .. } => {
+                self.emit_property_access_expr(writer, expr, indent, frame)
             }
             LoweredExpr::MethodCall {
                 object: _,
@@ -794,93 +244,11 @@ impl WatEmitter<'_> {
                 // Lowering/validation should reject residual MethodCall before backend.
                 writer.unreachable(indent);
             }
-            LoweredExpr::RuntimeCall {
-                intrinsic, args, ..
-            } => {
-                if *intrinsic == RuntimeIntrinsic::ArrayPushMany {
-                    self.emit_array_push_many_call(writer, args, indent, frame);
-                    return;
-                }
-                if *intrinsic == RuntimeIntrinsic::ArrayPushGrow {
-                    self.emit_array_push_grow_call(writer, args, indent, frame);
-                    return;
-                }
-                if *intrinsic == RuntimeIntrinsic::HeapClosureCall {
-                    self.emit_heap_closure_dispatch(writer, args, indent, frame);
-                    return;
-                }
-                if *intrinsic == RuntimeIntrinsic::PrivateFieldGet {
-                    self.emit_private_field_get(writer, args, indent, frame);
-                    return;
-                }
-                if *intrinsic == RuntimeIntrinsic::PrivateFieldSet {
-                    self.emit_private_field_set(writer, args, indent, frame);
-                    return;
-                }
-                if *intrinsic == RuntimeIntrinsic::PrivateBrandCheck {
-                    self.emit_private_brand_check(writer, args, indent, frame);
-                    return;
-                }
-                if (*intrinsic == RuntimeIntrinsic::StringIncludes
-                    || *intrinsic == RuntimeIntrinsic::StringStartsWith
-                    || *intrinsic == RuntimeIntrinsic::StringEndsWith)
-                    && args.len() == 2
-                {
-                    // No position specified, default to 0 (undefined → start from beginning)
-                    for arg in args {
-                        self.emit_expr(writer, arg, indent, frame);
-                    }
-                    writer.i32_const(indent, 0);
-                } else if *intrinsic == RuntimeIntrinsic::StringSubstr && args.len() == 2 {
-                    // No length specified: pad with undefined (0) → means "go to end"
-                    for arg in args {
-                        self.emit_expr(writer, arg, indent, frame);
-                    }
-                    writer.push_str(&format!("{pad}(i32.const 0)\n")); // undefined
-                } else {
-                    for arg in args {
-                        self.emit_expr(writer, arg, indent, frame);
-                    }
-                }
-                let fn_name = super::runtime_fn::runtime_fn_from_name(intrinsic.name())
-                    .map(|f| f.symbol())
-                    .unwrap_or_else(|| intrinsic.name());
-                writer.line_fmt(indent, format_args!("(call {})", fn_name));
+            LoweredExpr::RuntimeCall { .. } => {
+                self.emit_runtime_call_expr(writer, expr, indent, frame)
             }
-            LoweredExpr::PropertySet {
-                object, key, value, ..
-            } => {
-                self.emit_expr(writer, object, indent, frame);
-                let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
-                let key_len = self.string_len(key);
-                writer.i32_const(indent, key_ptr as i32);
-                writer.i32_const(indent, key_len as i32);
-                self.emit_expr(writer, value, indent, frame);
-                writer.call(indent, RuntimeFn::PropertySet.symbol());
-            }
-            LoweredExpr::PropertySetDynamic {
-                object,
-                index,
-                value,
-                ..
-            } => {
-                self.emit_expr(writer, object, indent, frame);
-                writer.local_set(indent, frame.heap_base_tmp());
-                self.emit_gc_root_mirror_index(
-                    writer.output_mut(),
-                    &pad,
-                    frame.heap_base_tmp(),
-                    frame,
-                );
-                self.emit_expr(writer, index, indent, frame);
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
-                writer.local_set(indent, frame.heap_value_tmp());
-                writer.local_get(indent, frame.heap_base_tmp());
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.local_get(indent, frame.heap_value_tmp());
-                self.emit_expr(writer, value, indent, frame);
-                writer.call(indent, RuntimeFn::PropertySet.symbol());
+            LoweredExpr::PropertySet { .. } | LoweredExpr::PropertySetDynamic { .. } => {
+                self.emit_property_set_expr(writer, expr, indent, frame)
             }
             LoweredExpr::ModuleLoad { module_id, .. } => {
                 writer.push_str(&format!(
@@ -889,103 +257,9 @@ impl WatEmitter<'_> {
                     module_id,
                 ));
             }
-            LoweredExpr::New {
-                constructor,
-                prototype,
-                args,
-                base_local,
-                private_brand,
-                private_slot_count,
-                ..
-            } => {
-                // Pre-allocate an object with room for constructor property writes.
-                let object_size = Layout::OBJECT_HEADER_SIZE
-                    + (CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY * Layout::OBJECT_ENTRY_SIZE)
-                    + ((*private_slot_count as u32) * PRIVATE_FIELD_SLOT_SIZE);
-                writer.push_str(&format!(
-                    "{pad}(local.set {} (call {} (i32.const {})))\n",
-                    local_index(*base_local),
-                    RuntimeFn::AllocHeap.symbol(),
-                    object_size,
-                ));
-                writer.push_str(&format!(
-                    "{pad}(i32.store (local.get {}) (i32.const 0))\n",
-                    local_index(*base_local),
-                ));
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (global.get ${}))\n",
-                    local_index(*base_local),
-                    Layout::OBJECT_PROTOTYPE_OFFSET,
-                    class_prototype_global(prototype.constructor),
-                ));
-                if private_brand.is_some() {
-                    let metadata = private_field_metadata(
-                        private_brand.unwrap_or(0),
-                        *private_slot_count as u32,
-                    );
-                    writer.push_str(&format!(
-                        "{pad}(i32.store (i32.add (i32.sub (local.get {}) (i32.const {})) (i32.const {})) (i32.const {}))\n",
-                        local_index(*base_local),
-                        Layout::GC_HEADER_SIZE,
-                        Layout::GC_RESERVED_OFFSET,
-                        metadata,
-                    ));
-                }
-
-                // Call constructor with implicit `this` first argument.
-                if let Some(func) = self.program.functions.get(constructor.0) {
-                    if let Some(rest_index) = func.rest_param_index {
-                        writer.push_str(&format!(
-                            "{pad}(i32.or (local.get {}) (i32.const {}))\n",
-                            local_index(*base_local),
-                            ValueTag::OBJECT,
-                        ));
-                        let explicit_fixed_count = rest_index.saturating_sub(1);
-                        for arg_index in 0..explicit_fixed_count {
-                            if let Some(arg) = args.get(arg_index) {
-                                self.emit_expr(writer, arg, indent, frame);
-                            } else {
-                                writer.i32_const(indent, ValueTag::UNDEFINED);
-                            }
-                        }
-                        let rest_start = explicit_fixed_count.min(args.len());
-                        self.emit_array_literal(writer, &args[rest_start..], indent, frame);
-                    } else {
-                        writer.push_str(&format!(
-                            "{pad}(i32.or (local.get {}) (i32.const {}))\n",
-                            local_index(*base_local),
-                            ValueTag::OBJECT,
-                        ));
-                        for arg in args {
-                            self.emit_expr(writer, arg, indent, frame);
-                        }
-                        for _ in (args.len() + 1)..func.params.len() {
-                            writer.i32_const(indent, ValueTag::UNDEFINED);
-                        }
-                    }
-                }
-                writer.push_str(&format!("{pad}(call ${})\n", function_symbol(*constructor)));
-                writer.drop(indent);
-
-                writer.push_str(&format!(
-                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
-                    local_index(*base_local),
-                    ValueTag::OBJECT,
-                ));
-            }
-            LoweredExpr::ClassPrototype(prototype, _) => {
-                writer.push_str(&format!(
-                    "{pad}(i32.or (global.get ${}) (i32.const {}))\n",
-                    class_prototype_global(prototype.constructor),
-                    ValueTag::OBJECT,
-                ));
-            }
-            LoweredExpr::BuiltinErrorPrototype(constructor, _) => {
-                writer.push_str(&format!(
-                    "{pad}(i32.or (global.get ${}) (i32.const {}))\n",
-                    builtin_error_prototype_global(*constructor),
-                    ValueTag::OBJECT,
-                ));
+            LoweredExpr::New { .. } => self.emit_new_expr(writer, expr, indent, frame),
+            LoweredExpr::ClassPrototype(..) | LoweredExpr::BuiltinErrorPrototype(..) => {
+                self.emit_prototype_expr(writer, expr, indent)
             }
             LoweredExpr::Block { stmts, result, .. } => {
                 self.emit_statements(writer, stmts, indent, &mut LoopContext::default(), frame);
@@ -1961,5 +1235,914 @@ impl WatEmitter<'_> {
         writer.push_str(&format!("{pad}(local.get {key_len})\n"));
         writer.push_str(&format!("{pad}(local.get {rhs})\n"));
         writer.call(indent, RuntimeFn::PropertySet.symbol());
+    }
+
+    fn emit_literal_expr(
+        &self,
+        writer: &mut WatWriter,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        match expr {
+            LoweredExpr::Number(value, _) => {
+                if ValueTag::can_encode_number(*value) {
+                    writer.i32_const(indent, ValueTag::encode_number(*value));
+                } else {
+                    writer.i32_const(indent, *value);
+
+                    writer.call(indent, RuntimeFn::NumberFromI32.symbol());
+                }
+            }
+            LoweredExpr::String(value, _) => {
+                writer.i32_const(indent, self.string_value(value) as i32);
+            }
+            LoweredExpr::BigIntLiteral {
+                decimal,
+                sign,
+                limb_low,
+                limb_high,
+                ..
+            } => {
+                let decimal_src = self.string_offset(decimal) + Layout::STRING_HEADER_SIZE;
+                let decimal_len = self.string_len(decimal);
+                let limb_count = if *sign == 0 { 0 } else { 1 };
+                writer.i32_const(indent, *sign);
+                writer.i32_const(indent, limb_count);
+                writer.i32_const(indent, *limb_low as i32);
+                writer.i32_const(indent, *limb_high as i32);
+                writer.i32_const(indent, decimal_src as i32);
+                writer.i32_const(indent, decimal_len as i32);
+                writer.call(indent, RuntimeFn::MakeBigIntLiteral.symbol());
+            }
+            LoweredExpr::Bool(true, _) => writer.i32_const(indent, ValueTag::TRUE),
+            LoweredExpr::Bool(false, _) => writer.i32_const(indent, ValueTag::FALSE),
+            LoweredExpr::Null(_) => writer.i32_const(indent, ValueTag::NULL),
+            LoweredExpr::Undefined(_) => writer.i32_const(indent, ValueTag::UNDEFINED),
+            _ => writer.unreachable(indent),
+        }
+    }
+
+    fn emit_env_cell_expr(
+        &self,
+        writer: &mut WatWriter,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        match expr {
+            LoweredExpr::EnvCellNew(expr, _) => {
+                self.emit_expr(writer, expr, indent, frame);
+                writer.local_set(indent, frame.heap_value_tmp());
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_value_tmp(),
+                    frame,
+                );
+                writer.push_str(&format!(
+                    "{pad}(local.set {} (call {} (i32.const {})))\n",
+                    frame.heap_base_tmp(),
+                    RuntimeFn::AllocHeap.symbol(),
+                    Layout::ARRAY_HEADER_SIZE + ENV_CELL_SLOT_COUNT * 4,
+                ));
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_base_tmp(),
+                    frame,
+                );
+                writer.push_str(&format!(
+                    "{pad}(i32.store (local.get {}) (i32.const {ENV_CELL_SLOT_COUNT}))\n",
+                    frame.heap_base_tmp(),
+                ));
+                writer.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {ENV_CELL_VALUE_OFFSET})) (local.get {}))\n",
+                    frame.heap_base_tmp(),
+                    frame.heap_value_tmp(),
+                ));
+                writer.push_str(&format!(
+                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+                    frame.heap_base_tmp(),
+                    ValueTag::ARRAY_TAG,
+                ));
+            }
+            LoweredExpr::EnvCellGet(cell, _) => {
+                writer.push_str(&format!(
+                    "{pad}(i32.load (i32.add (i32.and (local.get {}) (i32.const {})) (i32.const {ENV_CELL_VALUE_OFFSET})))\n",
+                    local_index(*cell),
+                    ValueTag::HEAP_MASK,
+                ));
+            }
+            LoweredExpr::EnvCellSet { cell, expr, .. } => {
+                self.emit_expr(writer, expr, indent, frame);
+                writer.local_tee(indent, frame.heap_value_tmp());
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_value_tmp(),
+                    frame,
+                );
+                writer.push_str(&format!(
+                    "{pad}(i32.store (i32.add (i32.and (local.get {}) (i32.const {})) (i32.const {ENV_CELL_VALUE_OFFSET})) (local.get {}))\n",
+                    local_index(*cell),
+                    ValueTag::HEAP_MASK,
+                    frame.heap_value_tmp(),
+                ));
+            }
+            _ => writer.unreachable(indent),
+        }
+    }
+
+    fn emit_property_delete_expr(
+        &self,
+        writer: &mut WatWriter,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        match expr {
+            LoweredExpr::PropertyDelete { object, key, .. } => {
+                self.emit_expr(writer, object, indent, frame);
+                let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
+                let key_len = self.string_len(key);
+                writer.i32_const(indent, key_ptr as i32);
+                writer.i32_const(indent, key_len as i32);
+                writer.call(indent, RuntimeFn::PropertyDelete.symbol());
+            }
+            LoweredExpr::PropertyDeleteDynamic { object, key, .. } => {
+                self.emit_expr(writer, object, indent, frame);
+                writer.local_set(indent, frame.heap_base_tmp());
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_base_tmp(),
+                    frame,
+                );
+                self.emit_expr(writer, key, indent, frame);
+                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
+                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
+                writer.local_set(indent, frame.heap_value_tmp());
+                writer.local_get(indent, frame.heap_base_tmp());
+                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
+                writer.local_get(indent, frame.heap_value_tmp());
+                writer.call(indent, RuntimeFn::PropertyDelete.symbol());
+            }
+            _ => writer.unreachable(indent),
+        }
+    }
+
+    fn emit_property_in_expr(
+        &self,
+        writer: &mut WatWriter,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        match expr {
+            LoweredExpr::PropertyIn { obj, key, .. } => {
+                self.emit_expr(writer, obj, indent, frame);
+                let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
+                let key_len = self.string_len(key);
+                writer.i32_const(indent, key_ptr as i32);
+                writer.i32_const(indent, key_len as i32);
+                writer.call(indent, RuntimeFn::PropertyHas.symbol());
+            }
+            LoweredExpr::PropertyInDynamic { obj, key, .. } => {
+                self.emit_expr(writer, obj, indent, frame);
+                writer.local_set(indent, frame.heap_base_tmp());
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_base_tmp(),
+                    frame,
+                );
+                self.emit_expr(writer, key, indent, frame);
+                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
+                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
+                writer.local_set(indent, frame.heap_value_tmp());
+                writer.local_get(indent, frame.heap_base_tmp());
+                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
+                writer.local_get(indent, frame.heap_value_tmp());
+                writer.call(indent, RuntimeFn::PropertyHas.symbol());
+            }
+            _ => writer.unreachable(indent),
+        }
+    }
+
+    fn emit_unary_expr(
+        &self,
+        writer: &mut WatWriter,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let LoweredExpr::Unary {
+            op, expr: inner, ..
+        } = expr
+        else {
+            writer.unreachable(indent);
+            return;
+        };
+        self.emit_expr(writer, inner, indent, frame);
+        match op {
+            LoweredUnaryOp::Not => {
+                writer.line_fmt(indent, format_args!("(call {})", RuntimeFn::Not.symbol()))
+            }
+            LoweredUnaryOp::Plus => {
+                writer.call(indent, "$primitive_to_number_for_equality");
+            }
+            LoweredUnaryOp::Negate => writer.line_fmt(
+                indent,
+                format_args!("(call {})", RuntimeFn::Negate.symbol()),
+            ),
+            LoweredUnaryOp::TypeOf => writer.line_fmt(
+                indent,
+                format_args!("(call {})", RuntimeFn::TypeOf.symbol()),
+            ),
+            LoweredUnaryOp::Delete => {
+                // Delete is handled as a special case in the AST
+                // This should not be reached if delete is properly lowered
+                writer.i32_const(indent, 0)
+            }
+            LoweredUnaryOp::Void => {
+                // Evaluate expr for side effects, drop result, produce undefined
+                writer.drop(indent);
+                writer.i32_const(indent, 0);
+            }
+        }
+    }
+
+    fn emit_binary_expr(
+        &self,
+        writer: &mut WatWriter,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let LoweredExpr::Binary {
+            left, op, right, ..
+        } = expr
+        else {
+            writer.unreachable(indent);
+            return;
+        };
+        if *op == LoweredBinaryOp::And {
+            let lhs_tmp = frame.switch_value_tmp();
+            self.emit_expr(writer, left, indent, frame);
+            writer.local_set(indent, lhs_tmp);
+            writer.if_result(indent, "i32");
+            writer.push_str(&format!(
+                "{pad}  (call {}\n",
+                RuntimeFn::TruthyBool.symbol()
+            ));
+            writer.push_str(&format!("{pad}    (local.get {})\n", lhs_tmp));
+            writer.push_str(&format!("{pad}  )\n"));
+            writer.then(indent);
+            self.emit_expr(writer, right, indent + 4, &frame.child_temp_frame());
+            writer.push_str(&format!("{pad}  )\n"));
+            writer.line_fmt(
+                indent,
+                format_args!(
+                    "{pad}  (else\n{pad}    (local.get {})\n{pad}  ))\n",
+                    lhs_tmp
+                ),
+            );
+            return;
+        }
+        if *op == LoweredBinaryOp::Or {
+            let lhs_tmp = frame.switch_value_tmp();
+            self.emit_expr(writer, left, indent, frame);
+            writer.local_set(indent, lhs_tmp);
+            writer.if_result(indent, "i32");
+            writer.push_str(&format!(
+                "{pad}  (call {}\n",
+                RuntimeFn::TruthyBool.symbol()
+            ));
+            writer.push_str(&format!("{pad}    (local.get {})\n", lhs_tmp));
+            writer.push_str(&format!("{pad}  )\n"));
+            writer.line_fmt(
+                indent,
+                format_args!("{pad}  (then\n{pad}    (local.get {})\n{pad}  )\n", lhs_tmp),
+            );
+            writer.r#else(indent);
+            self.emit_expr(writer, right, indent + 4, &frame.child_temp_frame());
+            writer.push_str(&format!("{pad}  ))\n"));
+            return;
+        }
+        if *op == LoweredBinaryOp::NullishCoalesce {
+            let lhs_tmp = frame.switch_value_tmp();
+            self.emit_expr(writer, left, indent, frame);
+            writer.local_set(indent, lhs_tmp);
+            writer.if_result(indent, "i32");
+            writer.line_fmt(indent, format_args!("{pad}  (i32.or\n{pad}    (i32.eq (local.get {}) (i32.const {}))\n{pad}    (i32.eq (local.get {}) (i32.const {})))\n", lhs_tmp, ValueTag::UNDEFINED, lhs_tmp, ValueTag::NULL));
+            writer.then(indent);
+            self.emit_expr(writer, right, indent + 4, &frame.child_temp_frame());
+            writer.push_str(&format!("{pad}  )\n"));
+            writer.line_fmt(
+                indent,
+                format_args!(
+                    "{pad}  (else\n{pad}    (local.get {})\n{pad}  ))\n",
+                    lhs_tmp
+                ),
+            );
+            return;
+        }
+        let left_ty = left.inferred_type();
+        let right_ty = right.inferred_type();
+        match op {
+            LoweredBinaryOp::Add
+                if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+            {
+                self.emit_expr(writer, left, indent, frame);
+                self.emit_expr(writer, right, indent, frame);
+                writer.line_fmt(
+                    indent,
+                    format_args!("(call {})", RuntimeFn::AddFast.symbol()),
+                );
+            }
+            LoweredBinaryOp::Add
+                if left_ty == InferredType::String && right_ty == InferredType::String =>
+            {
+                self.emit_expr(writer, left, indent, frame);
+                self.emit_expr(writer, right, indent, frame);
+                writer.line_fmt(
+                    indent,
+                    format_args!("(call {})", RuntimeFn::Concat.symbol()),
+                );
+            }
+            LoweredBinaryOp::Subtract
+                if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+            {
+                self.emit_expr(writer, left, indent, frame);
+                self.emit_expr(writer, right, indent, frame);
+                writer.line_fmt(
+                    indent,
+                    format_args!("(call {})", RuntimeFn::SubFast.symbol()),
+                );
+            }
+            LoweredBinaryOp::Multiply
+                if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+            {
+                self.emit_expr(writer, left, indent, frame);
+                self.emit_expr(writer, right, indent, frame);
+                writer.line_fmt(
+                    indent,
+                    format_args!("(call {})", RuntimeFn::MulFast.symbol()),
+                );
+            }
+            LoweredBinaryOp::Power
+                if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+            {
+                self.emit_expr(writer, left, indent, frame);
+                self.emit_expr(writer, right, indent, frame);
+                writer.line_fmt(
+                    indent,
+                    format_args!("(call {})", RuntimeFn::MathPow.symbol()),
+                );
+            }
+            LoweredBinaryOp::Divide
+                if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+            {
+                self.emit_expr(writer, left, indent, frame);
+                self.emit_expr(writer, right, indent, frame);
+                writer.line_fmt(
+                    indent,
+                    format_args!("(call {})", RuntimeFn::DivFast.symbol()),
+                );
+            }
+            LoweredBinaryOp::Modulo
+                if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+            {
+                self.emit_expr(writer, left, indent, frame);
+                self.emit_expr(writer, right, indent, frame);
+                writer.line_fmt(
+                    indent,
+                    format_args!("(call {})", RuntimeFn::ModFast.symbol()),
+                );
+            }
+            LoweredBinaryOp::Less
+                if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+            {
+                self.emit_expr(writer, left, indent, frame);
+                self.emit_expr(writer, right, indent, frame);
+                writer.line_fmt(
+                    indent,
+                    format_args!("(call {})", RuntimeFn::LessFast.symbol()),
+                );
+            }
+            LoweredBinaryOp::LessEqual
+                if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+            {
+                self.emit_expr(writer, left, indent, frame);
+                self.emit_expr(writer, right, indent, frame);
+                writer.call(indent, RuntimeFn::LessEqualFast.symbol());
+            }
+            LoweredBinaryOp::Greater
+                if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+            {
+                self.emit_expr(writer, left, indent, frame);
+                self.emit_expr(writer, right, indent, frame);
+                writer.call(indent, RuntimeFn::GreaterFast.symbol());
+            }
+            LoweredBinaryOp::GreaterEqual
+                if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+            {
+                self.emit_expr(writer, left, indent, frame);
+                self.emit_expr(writer, right, indent, frame);
+                writer.call(indent, RuntimeFn::GreaterEqualFast.symbol());
+            }
+            _ => {
+                let runtime_fn = match op {
+                    LoweredBinaryOp::Add => RuntimeFn::Add,
+                    LoweredBinaryOp::Subtract => RuntimeFn::Sub,
+                    LoweredBinaryOp::Multiply => RuntimeFn::Mul,
+                    LoweredBinaryOp::Power => RuntimeFn::MathPow,
+                    LoweredBinaryOp::Divide => RuntimeFn::Div,
+                    LoweredBinaryOp::Modulo => RuntimeFn::Mod,
+                    LoweredBinaryOp::BitwiseAnd => RuntimeFn::BitwiseAnd,
+                    LoweredBinaryOp::BitwiseXor => RuntimeFn::BitwiseXor,
+                    LoweredBinaryOp::BitwiseOr => RuntimeFn::BitwiseOr,
+                    LoweredBinaryOp::Less => RuntimeFn::Less,
+                    LoweredBinaryOp::LessEqual => RuntimeFn::LessEqual,
+                    LoweredBinaryOp::Greater => RuntimeFn::Greater,
+                    LoweredBinaryOp::GreaterEqual => RuntimeFn::GreaterEqual,
+                    LoweredBinaryOp::StrictEqual => RuntimeFn::StrictEqual,
+                    LoweredBinaryOp::EqualEqual => RuntimeFn::EqualEqual,
+                    LoweredBinaryOp::BangEqual => RuntimeFn::BangEqual,
+                    LoweredBinaryOp::StrictNotEqual => RuntimeFn::StrictNotEqual,
+                    LoweredBinaryOp::And => RuntimeFn::And,
+                    LoweredBinaryOp::Or => RuntimeFn::Or,
+                    LoweredBinaryOp::NullishCoalesce => {
+                        unreachable!("nullish coalescing is emitted as a short-circuit expression")
+                    }
+                };
+                if expr_may_collect(right) && !expr_uses_caller_backend_tmp(right) {
+                    let lhs_tmp = frame.switch_value_tmp();
+                    self.emit_expr(writer, left, indent, frame);
+                    writer.local_set(indent, lhs_tmp);
+                    self.emit_gc_root_mirror_index(writer.output_mut(), &pad, lhs_tmp, frame);
+                    writer.local_get(indent, lhs_tmp);
+                    self.emit_expr(writer, right, indent, frame);
+                    writer.call(indent, runtime_fn.symbol());
+                    return;
+                }
+                self.emit_expr(writer, left, indent, frame);
+                self.emit_expr(writer, right, indent, frame);
+                writer.call(indent, runtime_fn.symbol());
+            }
+        }
+    }
+
+    fn emit_object_or_error_new_expr(
+        &self,
+        writer: &mut WatWriter,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        match expr {
+            LoweredExpr::ObjectNew {
+                props,
+                non_enumerable,
+                ..
+            } => {
+                let prop_count = props.len();
+                let prop_capacity = prop_count + 8;
+                let size =
+                    Layout::OBJECT_HEADER_SIZE + (prop_capacity as u32) * Layout::OBJECT_ENTRY_SIZE;
+                writer.push_str(&format!(
+                    "{pad}(local.set {} (call {} (i32.const {})))\n",
+                    frame.heap_base_tmp(),
+                    RuntimeFn::AllocHeap.symbol(),
+                    size,
+                ));
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_base_tmp(),
+                    frame,
+                );
+                writer.push_str(&format!(
+                    "{pad}(i32.store (local.get {}) (i32.const {}))\n",
+                    frame.heap_base_tmp(),
+                    prop_count,
+                ));
+                let flags = non_enumerable << Layout::OBJECT_NON_ENUM_SHIFT;
+                writer.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+                    frame.heap_base_tmp(),
+                    Layout::OBJECT_FLAGS_OFFSET,
+                    flags,
+                ));
+                writer.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 0))\n",
+                    frame.heap_base_tmp(),
+                    Layout::OBJECT_PROTOTYPE_OFFSET,
+                ));
+                let child_frame = frame.child_temp_frame();
+                for (i, (key, val)) in props.iter().enumerate() {
+                    let entry_offset =
+                        Layout::OBJECT_ENTRIES_OFFSET + (i as u32) * Layout::OBJECT_ENTRY_SIZE;
+                    let key_raw = self.string_value(key);
+                    writer.push_str(&format!(
+                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+                        frame.heap_base_tmp(),
+                        entry_offset,
+                        key_raw,
+                    ));
+                    self.emit_expr(writer, val, indent, &child_frame);
+                    writer.local_set(indent, child_frame.heap_value_tmp());
+                    writer.push_str(&format!(
+                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
+                        frame.heap_base_tmp(),
+                        entry_offset + Layout::OBJECT_VALUE_OFFSET,
+                        child_frame.heap_value_tmp(),
+                    ));
+                }
+                writer.push_str(&format!(
+                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+                    frame.heap_base_tmp(),
+                    ValueTag::OBJECT_TAG,
+                ));
+            }
+            LoweredExpr::ErrorNew {
+                constructor,
+                message,
+                ..
+            } => {
+                let prop_count = 2;
+                let prop_capacity = prop_count + 8;
+                let size =
+                    Layout::OBJECT_HEADER_SIZE + (prop_capacity as u32) * Layout::OBJECT_ENTRY_SIZE;
+                writer.push_str(&format!(
+                    "{pad}(local.set {} (call {} (i32.const {})))\n",
+                    frame.heap_base_tmp(),
+                    RuntimeFn::AllocHeap.symbol(),
+                    size,
+                ));
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_base_tmp(),
+                    frame,
+                );
+                writer.push_str(&format!(
+                    "{pad}(i32.store (local.get {}) (i32.const {}))\n",
+                    frame.heap_base_tmp(),
+                    prop_count,
+                ));
+                writer.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 0))\n",
+                    frame.heap_base_tmp(),
+                    Layout::OBJECT_FLAGS_OFFSET,
+                ));
+                writer.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (global.get ${}))\n",
+                    frame.heap_base_tmp(),
+                    Layout::OBJECT_PROTOTYPE_OFFSET,
+                    builtin_error_prototype_global(*constructor),
+                ));
+                let key_raw = self.string_value("message");
+                writer.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+                    frame.heap_base_tmp(),
+                    Layout::OBJECT_ENTRIES_OFFSET,
+                    key_raw,
+                ));
+                self.emit_expr(writer, message, indent, frame);
+                writer.local_set(indent, frame.heap_value_tmp());
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_value_tmp(),
+                    frame,
+                );
+                writer.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
+                    frame.heap_base_tmp(),
+                    Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
+                    frame.heap_value_tmp(),
+                ));
+                let stack_entry_offset = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE;
+                let stack_key_raw = self.string_value("stack");
+                let stack_prefix_raw = self.string_value(builtin_error_stack_prefix(*constructor));
+                writer.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+                    frame.heap_base_tmp(),
+                    stack_entry_offset,
+                    stack_key_raw,
+                ));
+                writer.i32_const(indent, stack_prefix_raw as i32);
+                writer.local_get(indent, frame.heap_value_tmp());
+                writer.line_fmt(
+                    indent,
+                    format_args!("(call {})", RuntimeFn::Concat.symbol()),
+                );
+                writer.local_set(indent, frame.heap_value_tmp());
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_value_tmp(),
+                    frame,
+                );
+                writer.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
+                    frame.heap_base_tmp(),
+                    stack_entry_offset + Layout::OBJECT_VALUE_OFFSET,
+                    frame.heap_value_tmp(),
+                ));
+                writer.push_str(&format!(
+                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+                    frame.heap_base_tmp(),
+                    ValueTag::OBJECT_TAG,
+                ));
+            }
+            _ => writer.unreachable(indent),
+        }
+    }
+
+    fn emit_property_access_expr(
+        &self,
+        writer: &mut WatWriter,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        match expr {
+            LoweredExpr::PropertyGet { obj, key, .. } => {
+                let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
+                let key_len = self.string_len(key);
+                self.emit_expr(writer, obj, indent, frame);
+                writer.i32_const(indent, key_ptr as i32);
+                writer.i32_const(indent, key_len as i32);
+                writer.call(indent, RuntimeFn::PropertyGet.symbol());
+            }
+            LoweredExpr::OptionalPropertyGet { obj, key, .. } => {
+                self.emit_optional_property_get(writer, obj, key, indent, frame);
+            }
+            LoweredExpr::PropertyGetDynamic { obj, key, .. } => {
+                self.emit_expr(writer, obj, indent, frame);
+                writer.local_set(indent, frame.heap_base_tmp());
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_base_tmp(),
+                    frame,
+                );
+                self.emit_expr(writer, key, indent, frame);
+                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
+                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
+                writer.local_set(indent, frame.heap_value_tmp());
+                writer.local_get(indent, frame.heap_base_tmp());
+                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
+                writer.local_get(indent, frame.heap_value_tmp());
+                writer.call(indent, RuntimeFn::PropertyGet.symbol());
+            }
+            LoweredExpr::OptionalIndex { object, index, .. } => {
+                self.emit_optional_index(writer, object, index, indent, frame);
+            }
+            LoweredExpr::OptionalCall { callee, call, .. } => {
+                self.emit_optional_call(writer, callee, call, indent, frame);
+            }
+            _ => writer.unreachable(indent),
+        }
+    }
+
+    fn emit_runtime_call_expr(
+        &self,
+        writer: &mut WatWriter,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let LoweredExpr::RuntimeCall {
+            intrinsic, args, ..
+        } = expr
+        else {
+            writer.unreachable(indent);
+            return;
+        };
+        if *intrinsic == RuntimeIntrinsic::ArrayPushMany {
+            self.emit_array_push_many_call(writer, args, indent, frame);
+            return;
+        }
+        if *intrinsic == RuntimeIntrinsic::ArrayPushGrow {
+            self.emit_array_push_grow_call(writer, args, indent, frame);
+            return;
+        }
+        if *intrinsic == RuntimeIntrinsic::HeapClosureCall {
+            self.emit_heap_closure_dispatch(writer, args, indent, frame);
+            return;
+        }
+        if *intrinsic == RuntimeIntrinsic::PrivateFieldGet {
+            self.emit_private_field_get(writer, args, indent, frame);
+            return;
+        }
+        if *intrinsic == RuntimeIntrinsic::PrivateFieldSet {
+            self.emit_private_field_set(writer, args, indent, frame);
+            return;
+        }
+        if *intrinsic == RuntimeIntrinsic::PrivateBrandCheck {
+            self.emit_private_brand_check(writer, args, indent, frame);
+            return;
+        }
+        if (*intrinsic == RuntimeIntrinsic::StringIncludes
+            || *intrinsic == RuntimeIntrinsic::StringStartsWith
+            || *intrinsic == RuntimeIntrinsic::StringEndsWith)
+            && args.len() == 2
+        {
+            // No position specified, default to 0 (undefined → start from beginning)
+            for arg in args {
+                self.emit_expr(writer, arg, indent, frame);
+            }
+            writer.i32_const(indent, 0);
+        } else if *intrinsic == RuntimeIntrinsic::StringSubstr && args.len() == 2 {
+            // No length specified: pad with undefined (0) → means "go to end"
+            for arg in args {
+                self.emit_expr(writer, arg, indent, frame);
+            }
+            writer.push_str(&format!("{pad}(i32.const 0)\n")); // undefined
+        } else {
+            for arg in args {
+                self.emit_expr(writer, arg, indent, frame);
+            }
+        }
+        let fn_name = super::runtime_fn::runtime_fn_from_name(intrinsic.name())
+            .map(|f| f.symbol())
+            .unwrap_or_else(|| intrinsic.name());
+        writer.line_fmt(indent, format_args!("(call {})", fn_name));
+    }
+
+    fn emit_property_set_expr(
+        &self,
+        writer: &mut WatWriter,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        match expr {
+            LoweredExpr::PropertySet {
+                object, key, value, ..
+            } => {
+                self.emit_expr(writer, object, indent, frame);
+                let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
+                let key_len = self.string_len(key);
+                writer.i32_const(indent, key_ptr as i32);
+                writer.i32_const(indent, key_len as i32);
+                self.emit_expr(writer, value, indent, frame);
+                writer.call(indent, RuntimeFn::PropertySet.symbol());
+            }
+            LoweredExpr::PropertySetDynamic {
+                object,
+                index,
+                value,
+                ..
+            } => {
+                self.emit_expr(writer, object, indent, frame);
+                writer.local_set(indent, frame.heap_base_tmp());
+                self.emit_gc_root_mirror_index(
+                    writer.output_mut(),
+                    &pad,
+                    frame.heap_base_tmp(),
+                    frame,
+                );
+                self.emit_expr(writer, index, indent, frame);
+                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
+                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
+                writer.local_set(indent, frame.heap_value_tmp());
+                writer.local_get(indent, frame.heap_base_tmp());
+                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
+                writer.local_get(indent, frame.heap_value_tmp());
+                self.emit_expr(writer, value, indent, frame);
+                writer.call(indent, RuntimeFn::PropertySet.symbol());
+            }
+            _ => writer.unreachable(indent),
+        }
+    }
+
+    fn emit_new_expr(
+        &self,
+        writer: &mut WatWriter,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let LoweredExpr::New {
+            constructor,
+            prototype,
+            args,
+            base_local,
+            private_brand,
+            private_slot_count,
+            ..
+        } = expr
+        else {
+            writer.unreachable(indent);
+            return;
+        };
+        // Pre-allocate an object with room for constructor property writes.
+        let object_size = Layout::OBJECT_HEADER_SIZE
+            + (CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY * Layout::OBJECT_ENTRY_SIZE)
+            + ((*private_slot_count as u32) * PRIVATE_FIELD_SLOT_SIZE);
+        writer.push_str(&format!(
+            "{pad}(local.set {} (call {} (i32.const {})))\n",
+            local_index(*base_local),
+            RuntimeFn::AllocHeap.symbol(),
+            object_size,
+        ));
+        writer.push_str(&format!(
+            "{pad}(i32.store (local.get {}) (i32.const 0))\n",
+            local_index(*base_local),
+        ));
+        writer.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (global.get ${}))\n",
+            local_index(*base_local),
+            Layout::OBJECT_PROTOTYPE_OFFSET,
+            class_prototype_global(prototype.constructor),
+        ));
+        if private_brand.is_some() {
+            let metadata =
+                private_field_metadata(private_brand.unwrap_or(0), *private_slot_count as u32);
+            writer.push_str(&format!(
+                "{pad}(i32.store (i32.add (i32.sub (local.get {}) (i32.const {})) (i32.const {})) (i32.const {}))\n",
+                local_index(*base_local),
+                Layout::GC_HEADER_SIZE,
+                Layout::GC_RESERVED_OFFSET,
+                metadata,
+            ));
+        }
+
+        // Call constructor with implicit `this` first argument.
+        if let Some(func) = self.program.functions.get(constructor.0) {
+            if let Some(rest_index) = func.rest_param_index {
+                writer.push_str(&format!(
+                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+                    local_index(*base_local),
+                    ValueTag::OBJECT,
+                ));
+                let explicit_fixed_count = rest_index.saturating_sub(1);
+                for arg_index in 0..explicit_fixed_count {
+                    if let Some(arg) = args.get(arg_index) {
+                        self.emit_expr(writer, arg, indent, frame);
+                    } else {
+                        writer.i32_const(indent, ValueTag::UNDEFINED);
+                    }
+                }
+                let rest_start = explicit_fixed_count.min(args.len());
+                self.emit_array_literal(writer, &args[rest_start..], indent, frame);
+            } else {
+                writer.push_str(&format!(
+                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+                    local_index(*base_local),
+                    ValueTag::OBJECT,
+                ));
+                for arg in args {
+                    self.emit_expr(writer, arg, indent, frame);
+                }
+                for _ in (args.len() + 1)..func.params.len() {
+                    writer.i32_const(indent, ValueTag::UNDEFINED);
+                }
+            }
+        }
+        writer.push_str(&format!("{pad}(call ${})\n", function_symbol(*constructor)));
+        writer.drop(indent);
+
+        writer.push_str(&format!(
+            "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+            local_index(*base_local),
+            ValueTag::OBJECT,
+        ));
+    }
+
+    fn emit_prototype_expr(&self, writer: &mut WatWriter, expr: &LoweredExpr, indent: usize) {
+        let pad = " ".repeat(indent);
+        match expr {
+            LoweredExpr::ClassPrototype(prototype, _) => {
+                writer.push_str(&format!(
+                    "{pad}(i32.or (global.get ${}) (i32.const {}))\n",
+                    class_prototype_global(prototype.constructor),
+                    ValueTag::OBJECT,
+                ));
+            }
+            LoweredExpr::BuiltinErrorPrototype(constructor, _) => {
+                writer.push_str(&format!(
+                    "{pad}(i32.or (global.get ${}) (i32.const {}))\n",
+                    builtin_error_prototype_global(*constructor),
+                    ValueTag::OBJECT,
+                ));
+            }
+            _ => writer.unreachable(indent),
+        }
     }
 }
