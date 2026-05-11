@@ -33,15 +33,16 @@ mod wat_writer;
 use ts2wasm_ir::lowered::{LoweredProgram, Validated};
 pub use ts2wasm_shared::{DiagCode, Diagnostic};
 
-pub(crate) use runtime_fn::RuntimeFn;
+pub use runtime_fn::{RuntimeFn, runtime_fn_from_name};
 pub use runtime_link_plan::{LinkPlanSnapshot, emit_link_plan_snapshot_json};
+pub use ts2wasm_ir::lowered::RuntimeIntrinsic;
 
 pub fn emit_canonical_manifest_json(program: &LoweredProgram) -> String {
     capability_manifest::emit_canonical_manifest_json(program)
 }
 
 pub fn has_node_host_imports(program: &LoweredProgram) -> bool {
-    let link_plan = runtime_link_plan::RuntimeLinkPlan::from_program(program);
+    let link_plan = runtime_link_plan::build_runtime_link_plan(program);
     link_plan.required_imports().iter().any(|import| {
         let spec = import.spec();
         spec.module.contains("host") || spec.module.contains("node")
@@ -60,7 +61,7 @@ pub fn emit_wasm_binary_mvp(program: &Validated<LoweredProgram>) -> Result<Vec<u
 }
 
 pub fn program_requires_read_stdin_bytes_runtime(program: &LoweredProgram) -> bool {
-    runtime_link_plan::RuntimeLinkPlan::from_program(program)
+    runtime_link_plan::build_runtime_link_plan(program)
         .required_runtime_functions()
         .contains(&runtime_fn::RuntimeFn::ReadStdinBytes)
 }
