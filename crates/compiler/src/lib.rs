@@ -27,9 +27,6 @@ use crate::stages::lower::{
     build_multi_section_file, lower_static_named_import_bindings_for_build,
     lower_static_named_import_reads_for_build, populate_static_module_exports_for_build,
 };
-#[cfg(test)]
-use crate::stages::parse::parse_program;
-
 use crate::stages::parse::{split_file_name_sections, validate_ast};
 use crate::stages::resolve::{
     ensure_runtime_feature_gates, validate_host_deny, validate_optimized_hir_slice,
