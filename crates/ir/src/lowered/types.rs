@@ -6,6 +6,10 @@ use crate::binding_pattern::{
 use crate::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 use crate::builtin_resolved::{ClassMethodKind, ResolvedExpr, ResolvedParam, ResolvedStmt};
 use crate::lowered::RuntimeFn;
+use crate::lowered::hir::HirProgram;
+use crate::lowered::mir::MirProgram;
+use crate::lowered::hir_validate::validate_hir;
+use crate::lowered::mir_validate::validate_mir;
 use crate::lowered::validate::validate_lowered;
 use ts2wasm_shared::{
     BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, OBJECT_SPREAD_SENTINEL,
@@ -582,6 +586,76 @@ impl Validated<LoweredProgram> {
     }
     pub fn take_warnings(&mut self) -> Vec<Diagnostic> {
         std::mem::take(&mut self.non_fatal)
+    }
+}
+
+impl Validated<HirProgram> {
+    /// Validate `program` and return a `Validated` wrapper.
+    pub fn new_hir(program: HirProgram) -> Result<(Self, Vec<Diagnostic>), Diagnostic> {
+        let mut non_fatal = Vec::new();
+        if let Err(errors) = validate_hir(&program) {
+            for e in errors {
+                if e.code == DiagCode::InvariantViolation {
+                    return Err(Diagnostic {
+                        code: e.code,
+                        message: e.message,
+                        span: e.span,
+                        phase: None,
+                    });
+                }
+                non_fatal.push(e);
+            }
+        }
+        Ok((
+            Self {
+                inner: program,
+                non_fatal: non_fatal.clone(),
+            },
+            non_fatal,
+        ))
+    }
+
+    pub fn program(&self) -> &HirProgram {
+        &self.inner
+    }
+
+    pub fn into_inner(self) -> HirProgram {
+        self.inner
+    }
+}
+
+impl Validated<MirProgram> {
+    /// Validate `program` and return a `Validated` wrapper.
+    pub fn new_mir(program: MirProgram) -> Result<(Self, Vec<Diagnostic>), Diagnostic> {
+        let mut non_fatal = Vec::new();
+        if let Err(errors) = validate_mir(&program) {
+            for e in errors {
+                if e.code == DiagCode::InvariantViolation {
+                    return Err(Diagnostic {
+                        code: e.code,
+                        message: e.message,
+                        span: e.span,
+                        phase: None,
+                    });
+                }
+                non_fatal.push(e);
+            }
+        }
+        Ok((
+            Self {
+                inner: program,
+                non_fatal: non_fatal.clone(),
+            },
+            non_fatal,
+        ))
+    }
+
+    pub fn program(&self) -> &MirProgram {
+        &self.inner
+    }
+
+    pub fn into_inner(self) -> MirProgram {
+        self.inner
     }
 }
 

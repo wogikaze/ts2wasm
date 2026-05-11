@@ -5,10 +5,12 @@ pub mod completion;
 pub mod ctx;
 pub mod facts;
 pub mod hir;
+pub mod hir_validate;
 pub mod hir_dump;
 pub mod lower;
 pub mod mir;
 pub mod mir_dump;
+pub mod mir_validate;
 pub mod object_kernel;
 pub mod program;
 pub mod resolver;
@@ -27,4 +29,6 @@ pub use types::{
     InferredType, LocalId, LoweredArraySlot, LoweredBinaryOp, LoweredExpr, LoweredFunction,
     LoweredLogicalAssignOp, LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo, Validated,
 };
+pub use hir_validate::validate_hir;
+pub use mir_validate::validate_mir;
 pub use validate::validate_lowered;
