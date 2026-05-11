@@ -8,50 +8,6 @@ meta:
     roadmap_source: docs/roadmap.md
     closed_source: docs/done-tracking.yaml
 open:
-- id: 274
-  title: Extract RuntimeFn/RuntimeSpec/RuntimeLinkPlan into independent runtime-catalog crate
-  priority: P3
-  type: refactor
-  area: backend
-  status: open
-  created: 2026-05-11
-  updated: 2026-05-11
-  roadmap: P11-architecture-hardening
-  acceptance:
-  - cargo test -p ts2wasm-runtime-catalog
-  - cargo test -p ts2wasm-backend-wasm
-  - cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli
-  - test -f crates/runtime-catalog/Cargo.toml
-  - grep -R "pub enum RuntimeFn" crates/backend-wasm/src
-  - grep -R "pub struct RuntimeSpec" crates/backend-wasm/src
-  - grep -R "pub struct RuntimeLinkPlan" crates/backend-wasm/src
-  - grep -R "pub enum HostImport" crates/backend-wasm/src
-  - grep -R "ts2wasm_runtime_catalog::RuntimeFn" crates/backend-wasm/src
-  - grep -Eq "ts2wasm-(frontend|ir|compiler|backend-wasm|cli)" crates/runtime-catalog/Cargo.toml
-  non_goals:
-  - No replacement of IR RuntimeIntrinsic with RuntimeFn in this issue.
-  - No change to runtime function semantics.
-  - No change to WAT emission or ABI layout.
-  - No change to capability semantics or manifest output.
-  plan:
-    goal: 'Extract RuntimeFn enum, RuntimeSpec, RuntimeLinkPlan, and HostImport from backend-wasm into ts2wasm-runtime-catalog.
-      backend-wasm imports catalog types from the new crate. IR migration from RuntimeIntrinsic to RuntimeFn is deferred to
-      a follow-up issue.
-
-      '
-    files:
-    - crates/runtime-catalog/Cargo.toml
-    - crates/runtime-catalog/src/lib.rs
-    - crates/runtime-catalog/src/runtime_fn.rs: RuntimeFn enum + RuntimeSpec
-    - crates/runtime-catalog/src/link_plan.rs: RuntimeLinkPlan
-    - crates/runtime-catalog/src/host_import.rs: HostImport
-    - crates/runtime-catalog/src/domain.rs: RuntimeDomain
-    - crates/backend-wasm/Cargo.toml: add runtime-catalog dependency
-    - crates/backend-wasm/src/**: import catalog types from ts2wasm_runtime_catalog
-  notes: 'This removes the backend-wasm ownership of the runtime catalog. It does not yet eliminate IR RuntimeIntrinsic; that
-    is handled by the follow-up RuntimeFn migration issue.
-
-    '
 - id: 276
   title: Reduce oversized function violations below 10 and split known P10 hotspots
   priority: P3
@@ -624,6 +580,55 @@ open:
     '
 active: []
 done:
+- id: 274
+  title: Extract RuntimeFn/RuntimeSpec/RuntimeLinkPlan into independent runtime-catalog crate
+  priority: P3
+  type: refactor
+  area: backend
+  status: done
+  created: 2026-05-11
+  updated: 2026-05-11
+  roadmap: P11-architecture-hardening
+  acceptance:
+  - cargo test -p ts2wasm-runtime-catalog
+  - cargo test -p ts2wasm-backend-wasm
+  - cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli
+  - test -f crates/runtime-catalog/Cargo.toml
+  - grep -R "pub enum RuntimeFn" crates/backend-wasm/src
+  - grep -R "pub struct RuntimeSpec" crates/backend-wasm/src
+  - grep -R "pub struct RuntimeLinkPlan" crates/backend-wasm/src
+  - grep -R "pub enum HostImport" crates/backend-wasm/src
+  - grep -R "ts2wasm_runtime_catalog::RuntimeFn" crates/backend-wasm/src
+  - grep -Eq "ts2wasm-(frontend|ir|compiler|backend-wasm|cli)" crates/runtime-catalog/Cargo.toml
+  non_goals:
+  - No replacement of IR RuntimeIntrinsic with RuntimeFn in this issue.
+  - No change to runtime function semantics.
+  - No change to WAT emission or ABI layout.
+  - No change to capability semantics or manifest output.
+  plan:
+    goal: 'Extract RuntimeFn enum, RuntimeSpec, RuntimeLinkPlan, and HostImport from backend-wasm into ts2wasm-runtime-catalog.
+      backend-wasm imports catalog types from the new crate. IR migration from RuntimeIntrinsic to RuntimeFn is deferred to
+      a follow-up issue.
+
+      '
+    files:
+    - crates/runtime-catalog/Cargo.toml
+    - crates/runtime-catalog/src/lib.rs
+    - crates/runtime-catalog/src/runtime_fn.rs: RuntimeFn enum + RuntimeSpec
+    - crates/runtime-catalog/src/link_plan.rs: RuntimeLinkPlan
+    - crates/runtime-catalog/src/host_import.rs: HostImport
+    - crates/runtime-catalog/src/domain.rs: RuntimeDomain
+    - crates/backend-wasm/Cargo.toml: add runtime-catalog dependency
+    - crates/backend-wasm/src/**: import catalog types from ts2wasm_runtime_catalog
+  notes: 'This removes the backend-wasm ownership of the runtime catalog. It does not yet eliminate IR RuntimeIntrinsic; that
+    is handled by the follow-up RuntimeFn migration issue.
+
+    '
+  evidence:
+    commit: df206e303
+    commands:
+    - cargo check => exit 0 (warnings only)
+    - test -f crates/runtime-catalog/Cargo.toml => exit 0
 - id: 301
   title: Remove remaining backend-wasm to frontend dependency violations
   priority: P2
