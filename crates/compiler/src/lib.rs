@@ -6,7 +6,10 @@ mod test262_preprocessor;
 mod stages;
 pub use stages::parse::parse_program;
 
-use std::fs;
+pub mod io;
+
+pub use io::write_output::write_wasm_from_wat;
+
 use std::path::Path;
 
 use ts2wasm_backend_wasm as backend;
@@ -14,7 +17,6 @@ use ts2wasm_frontend::{Lexer, Parser, validate_type_reference_directives};
 use ts2wasm_ir::lowered;
 
 use crate::stages::builtin_resolve::resolve_builtins;
-use crate::stages::emit::write_wasm_from_wat;
 use crate::stages::lower::{
     build_multi_section_file, lower_static_named_import_bindings_for_build,
     lower_static_named_import_reads_for_build, populate_static_module_exports_for_build,
@@ -96,13 +98,7 @@ pub fn build_file_with_host_deny(
     capability_manifest_output: Option<&Path>,
     host_deny: bool,
 ) -> Result<CompileReport<()>, Diagnostic> {
-    let source = fs::read_to_string(input).map_err(|error| Diagnostic {
-        code: DiagCode::BackendIo,
-        message: format!("failed to read {}: {error}", input.display()),
-        span: None,
-
-        phase: None,
-    })?;
+    let source = io::read_source::read_source_file(input)?;
     let source = test262_preprocessor::process_test262_includes(input, &source)?;
     // Check for @fileName: multi-section file -- compile each section as its own module.
     let sections = split_file_name_sections(&source);
@@ -161,15 +157,10 @@ pub fn build_file_with_host_deny(
 
     if let Some(path) = capability_manifest_output {
         let manifest = backend::emit_canonical_manifest_json(validated.as_ref());
-        fs::write(path, manifest).map_err(|error| Diagnostic {
-            code: DiagCode::BackendIo,
-            message: format!("failed to write {}: {error}", path.display()),
-            span: None,
-            phase: None,
-        })?;
+        io::write_manifest::write_manifest_json(path, &manifest)?;
     }
     let wat = backend::emit_wat(&validated).map_err(|d| d.with_phase("backend"))?;
-    write_wasm_from_wat(&wat, output).map_err(|d| d.with_phase("backend"))?;
+    io::write_output::write_wasm_from_wat(&wat, output).map_err(|d| d.with_phase("backend"))?;
     Ok(CompileReport {
         value: (),
         diagnostics: lower_diagnostics,

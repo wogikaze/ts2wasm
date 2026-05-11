@@ -1,5 +1,4 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
-use std::fs;
 use std::path::{Path, PathBuf};
 
 use ts2wasm_backend_wasm as backend;
@@ -850,15 +849,10 @@ pub(crate) fn build_multi_section_file(
 
     if let Some(path) = capability_manifest_output {
         let manifest = backend::emit_canonical_manifest_json(validated.as_ref());
-        fs::write(path, manifest).map_err(|error| Diagnostic {
-            code: DiagCode::BackendIo,
-            message: format!("failed to write {}: {error}", path.display()),
-            span: None,
-            phase: None,
-        })?;
+        crate::io::write_manifest::write_manifest_json(path, &manifest)?;
     }
     let wat = backend::emit_wat(&validated).map_err(|d| d.with_phase("backend"))?;
-    crate::stages::emit::write_wasm_from_wat(&wat, output).map_err(|d| d.with_phase("backend"))?;
+    crate::io::write_output::write_wasm_from_wat(&wat, output).map_err(|d| d.with_phase("backend"))?;
     Ok(crate::CompileReport {
         value: (),
         diagnostics: lower_diagnostics,
@@ -945,12 +939,7 @@ fn lower_static_module_body_for_build(
     module_id: usize,
     specifier: String,
 ) -> Result<Option<lowered::ModuleInfo>, Diagnostic> {
-    let source = fs::read_to_string(path).map_err(|error| Diagnostic {
-        code: DiagCode::BackendIo,
-        message: format!("failed to read {}: {error}", path.display()),
-        span: None,
-        phase: None,
-    })?;
+    let source = crate::io::read_source::read_source_file(path)?;
     validate_type_reference_directives(&source)?;
     let program = parse_program(&source)?;
     validate_ast(&program)?;
@@ -1318,12 +1307,7 @@ fn lowers_to_top_level_statement(stmt: &Stmt) -> bool {
 }
 
 fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, Diagnostic> {
-    let source = fs::read_to_string(path).map_err(|error| Diagnostic {
-        code: DiagCode::BackendIo,
-        message: format!("failed to read {}: {error}", path.display()),
-        span: None,
-        phase: None,
-    })?;
+    let source = crate::io::read_source::read_source_file(path)?;
     validate_type_reference_directives(&source)?;
     let program = parse_program(&source)?;
     validate_ast(&program)?;
