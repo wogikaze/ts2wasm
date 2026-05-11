@@ -338,6 +338,224 @@ open:
         - "scripts/check/architecture-rules.py: update DEFAULT_MAX_FILE_LINES constant and allowlist"
         - "See docs/24-architecture-decoupling-and-llm-friendly-sizing.md §4.1 for phase details"
       acceptance: "Architecture check enforces file size limit at each phased threshold; remaining oversized files have explicit allowlist entries"
+  - id: 270
+    title: "Add RuntimeDomain enum to categorize RuntimeFn variants (P10)"
+    priority: P2
+    type: refactor
+    area: backend
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "grep -q 'enum RuntimeDomain' crates/backend-wasm/src/runtime/domain.rs"
+      - "grep -q 'fn domain' crates/backend-wasm/src/runtime_fn.rs"
+    non_goals:
+      - "No change to RuntimeFn variant count or semantics."
+      - "No change to wasm emission behavior."
+    plan:
+      goal: "Define RuntimeDomain enum (Core/Array/Object/String/BigInt/Date/Host/Promise) and add RuntimeFn::domain() method; prerequisite for runtime_fn_impl.rs domain split (258) and runtime_builder.rs domain dispatch (259)"
+      files:
+        - "crates/backend-wasm/src/runtime/domain.rs: RuntimeDomain enum"
+        - "crates/backend-wasm/src/runtime_fn.rs: add RuntimeFn::domain() method"
+      acceptance: "RuntimeDomain enum exists; every RuntimeFn variant has a domain; arch check verifies no domainless variant"
+  - id: 271
+    title: "Extract function/closure lowering domain from extra.rs into resolver/function.rs (P10)"
+    priority: P2
+    type: refactor
+    area: ir
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "test -f crates/ir/src/lowered/resolver/function.rs"
+      - "! grep -q 'fn lower_arrow_fn' crates/ir/src/lowered/resolver/extra.rs"
+    non_goals:
+      - "No change to closure/arrow function lowering semantics."
+      - "No change to wasm output."
+    plan:
+      goal: "Move arrow function, function expression, closure capture, and nested function methods from extra.rs (1633 lines) into dedicated resolver/function.rs domain module"
+      files:
+        - "crates/ir/src/lowered/resolver/function.rs: function/closure lowering"
+        - "crates/ir/src/lowered/resolver/extra.rs: remove moved methods"
+        - "crates/ir/src/lowered/resolver/mod.rs: register domain module"
+      acceptance: "resolver/function.rs exists with arrow/closure methods; extra.rs shrinks accordingly; cargo check passes"
+  - id: 272
+    title: "Create resolver/string.rs for string/regexp lowering domain (P10)"
+    priority: P3
+    type: refactor
+    area: ir
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "test -f crates/ir/src/lowered/resolver/string.rs"
+      - "grep -q 'fn lower_string_literal' crates/ir/src/lowered/resolver/string.rs"
+    non_goals:
+      - "No change to string/regexp lowering semantics."
+      - "No change to wasm output."
+    plan:
+      goal: "Create resolver/string.rs for string literal lowering, regexp literal lowering, and string-related helper methods currently scattered in extra.rs and expr.rs"
+      files:
+        - "crates/ir/src/lowered/resolver/string.rs: string/regexp lowering"
+        - "crates/ir/src/lowered/resolver/extra.rs: remove string helpers to new module"
+        - "crates/ir/src/lowered/resolver/mod.rs: register domain module"
+      acceptance: "resolver/string.rs exists with string literal/regexp methods; cargo check passes"
+  - id: 273
+    title: "Create resolver/module.rs for module semantics domain (P10)"
+    priority: P3
+    type: refactor
+    area: ir
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "test -f crates/ir/src/lowered/resolver/module.rs"
+    non_goals:
+      - "No change to module resolution or import lowering semantics."
+      - "No change to wasm output."
+    plan:
+      goal: "Create resolver/module.rs for module import/export lowering, consolidating module graph, specifier resolution, and import rewrite paths currently scattered in extra.rs and compiler pipeline"
+      files:
+        - "crates/ir/src/lowered/resolver/module.rs: module lowering domain"
+        - "crates/ir/src/lowered/resolver/extra.rs: remove module helpers to new module"
+        - "crates/ir/src/lowered/resolver/mod.rs: register domain module"
+      acceptance: "resolver/module.rs exists; module-related helpers moved from extra.rs; cargo check passes"
+  - id: 274
+    title: "Extract RuntimeFn/RuntimeSpec/RuntimeLinkPlan into independent runtime-catalog crate (P10)"
+    priority: P3
+    type: refactor
+    area: backend
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "test -f crates/runtime-catalog/Cargo.toml"
+      - "! grep -q 'RuntimeFn' crates/backend-wasm/src/runtime_fn.rs"
+    non_goals:
+      - "No change to runtime function semantics."
+      - "No change to WAT emission or ABI layout."
+    plan:
+      goal: "Extract RuntimeFn enum, RuntimeSpec, RuntimeLinkPlan, and HostImport from backend-wasm into its own crate (ts2wasm-runtime-catalog), enabling IR to reference typed RuntimeFn directly instead of String"
+      files:
+        - "crates/runtime-catalog/Cargo.toml"
+        - "crates/runtime-catalog/src/lib.rs"
+        - "crates/runtime-catalog/src/runtime_fn.rs: RuntimeFn enum + RuntimeSpec"
+        - "crates/runtime-catalog/src/link_plan.rs: RuntimeLinkPlan"
+        - "crates/backend-wasm/Cargo.toml: add runtime-catalog dependency, remove types"
+        - "crates/ir/Cargo.toml: add runtime-catalog dependency (optional)"
+      acceptance: "independent runtime-catalog crate exists; backend-wasm imports from it; IR can optionally depend on it for typed RuntimeFn references"
+  - id: 275
+    title: "Split runtime/core/emit.rs below 1500 lines (P10)"
+    priority: P2
+    type: refactor
+    area: backend
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "wc -l < crates/backend-wasm/src/runtime/core/emit.rs | xargs -I{} test {} -lt 1500"
+    non_goals:
+      - "No change to core runtime function WAT semantics."
+      - "No change to RuntimeFn variant count."
+    plan:
+      goal: "Split runtime/core/emit.rs (4326 lines) into submodules grouped by core runtime domain (type conversion, arithmetic, comparison, control flow, memory, etc.)"
+      files:
+        - "crates/backend-wasm/src/runtime/core/mod.rs: domain dispatch"
+        - "crates/backend-wasm/src/runtime/core/conversion.rs: type conversion emit"
+        - "crates/backend-wasm/src/runtime/core/arithmetic.rs: arithmetic emit"
+        - "crates/backend-wasm/src/runtime/core/comparison.rs: comparison emit"
+        - "crates/backend-wasm/src/runtime/core/control.rs: control flow emit"
+        - "crates/backend-wasm/src/runtime/core/memory.rs: memory/allocation emit"
+        - "crates/backend-wasm/src/runtime/core/emit.rs: thin top-level dispatch"
+      acceptance: "runtime/core/emit.rs < 1500 lines; submodule files exist with focused WAT emission methods"
+  - id: 276
+    title: "Break down oversized functions below 300 lines across codebase (P10)"
+    priority: P3
+    type: refactor
+    area: cross
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "mise run check architecture 2>&1 | grep -v 'WARN' | grep -c 'function.*lines' | xargs -I{} test {} -lt 10"
+    non_goals:
+      - "No change to runtime semantics or wasm output."
+      - "Function reduction beyond 300-line target is deferred."
+    plan:
+      goal: "Break down known oversized functions: emit_json_parse (1357), emit_expr (921), Lexer::tokenize (863), lower_variable_array_callback_method (842), emit_statement_with_label (756), RuntimeFn::spec (2318) into focused sub-functions of 300 lines or fewer"
+      files:
+        - "crates/backend-wasm/src/expr_emit.rs: break up emit_expr"
+        - "crates/backend-wasm/src/statement_emit.rs: break up emit_statement_with_label"
+        - "crates/backend-wasm/src/runtime_fn_impl.rs: break up RuntimeFn::spec"
+        - "crates/backend-wasm/src/json/emit.rs: break up emit_json_parse"
+        - "crates/frontend/src/lexer.rs: break up tokenize"
+        - "crates/ir/src/lowered/resolver/array.rs: break up lower_variable_array_callback_method"
+      acceptance: "All functions listed in docs/24 §4.2 are below 300 lines; architecture check passes with reduced violations"
+  - id: 277
+    title: "Add remaining architecture fitness checks for span/catalog/validate coverage (P10)"
+    priority: P3
+    type: test
+    area: tooling
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "mise run check architecture"
+      - "grep -q 'no_span_none_for_source' scripts/check/architecture-rules.py"
+      - "grep -q 'no_raw_runtime_symbol_outside_catalog' scripts/check/architecture-rules.py"
+      - "grep -q 'lowered_expr_validate_coverage' scripts/check/architecture-rules.py"
+    non_goals:
+      - "No change to existing violations (blocked by pre-existing allowlist only)."
+      - "No change to backend or compiler behavior."
+    plan:
+      goal: "Add architecture checks for remaining §15 items: no Diagnostic { span: None } for source-origin errors, no raw $runtime_symbol strings outside runtime catalog, every LoweredExpr variant covered by validate_lowered"
+      files:
+        - "scripts/check/architecture-rules.py: add 3 new checks"
+      acceptance: "Architecture check catches span gaps, raw symbol leaks, and validate_lowered coverage gaps in new code"
+  - id: 278
+    title: "Create proper catalog.rs for each RuntimeFn domain (P10)"
+    priority: P3
+    type: refactor
+    area: backend
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "test -f crates/backend-wasm/src/runtime/array/catalog.rs && grep -q 'RuntimeFn' crates/backend-wasm/src/runtime/array/catalog.rs"
+      - "test -f crates/backend-wasm/src/runtime/string/catalog.rs && grep -q 'RuntimeFn' crates/backend-wasm/src/runtime/string/catalog.rs"
+      - "test -f crates/backend-wasm/src/runtime/object/catalog.rs && grep -q 'RuntimeFn' crates/backend-wasm/src/runtime/object/catalog.rs"
+    non_goals:
+      - "No change to RuntimeFn variant count or semantics."
+      - "runtime_fn_impl.rs split into runtime/spec/ is tracked separately (258)."
+    plan:
+      goal: "Add or populate catalog.rs for each runtime domain directory (array/object/string/bigint/date/host/promise/core) with domain-specific RuntimeFn re-exports or sub-lists, enabling modular catalog maintenance"
+      files:
+        - "crates/backend-wasm/src/runtime/array/catalog.rs: array RuntimeFn catalog"
+        - "crates/backend-wasm/src/runtime/string/catalog.rs: string RuntimeFn catalog"
+        - "crates/backend-wasm/src/runtime/object/catalog.rs: object RuntimeFn catalog"
+        - "crates/backend-wasm/src/runtime/bigint/catalog.rs: bigint RuntimeFn catalog"
+        - "crates/backend-wasm/src/runtime/date/catalog.rs: date RuntimeFn catalog"
+        - "crates/backend-wasm/src/runtime/host/catalog.rs: host RuntimeFn catalog"
+        - "crates/backend-wasm/src/runtime/promise/catalog.rs: promise RuntimeFn catalog"
+        - "crates/backend-wasm/src/runtime/core/catalog.rs: core RuntimeFn catalog"
+      acceptance: "Every runtime domain directory has a populated catalog.rs; domain-specific RuntimeFn variants are listed in their respective catalog"
 active: []
 done:
   - id: 250
