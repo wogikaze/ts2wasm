@@ -12,7 +12,10 @@ use ts2wasm_runtime_catalog::{
     Capability, GLOBALS_EXCEPTION_RUNTIME, HostAbi, HostImport, RuntimeFn, RuntimeGlobal,
     runtime_fn_from_name,
 };
-pub use ts2wasm_runtime_catalog::{LinkPlanSnapshot, RuntimeLinkPlan, emit_link_plan_snapshot};
+pub use ts2wasm_runtime_catalog::{
+    LinkPlanSnapshot, RuntimeLinkPlan, ValidatedRuntimeLinkPlan, emit_link_plan_snapshot,
+    validate_runtime_link_plan,
+};
 
 /// Build a RuntimeLinkPlan from a lowered program by walking the full IR.
 pub fn build_runtime_link_plan(program: &LoweredProgram) -> RuntimeLinkPlan {
@@ -51,6 +54,13 @@ pub fn build_runtime_link_plan(program: &LoweredProgram) -> RuntimeLinkPlan {
     }
     plan.populate_derived_sets();
     plan
+}
+
+/// Build a validated RuntimeLinkPlan from a lowered program.
+/// Returns `Ok(ValidatedRuntimeLinkPlan)` on success.
+pub fn build_validated_runtime_link_plan(program: &LoweredProgram) -> Result<ValidatedRuntimeLinkPlan, String> {
+    let plan = build_runtime_link_plan(program);
+    validate_runtime_link_plan(plan)
 }
 
 /// Generate a JSON snapshot of the RuntimeLinkPlan for a given lowered program.

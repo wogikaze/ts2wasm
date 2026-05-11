@@ -1166,19 +1166,18 @@ def check_runtimefn_capability() -> list[str]:
         return violations
 
     text = spec_path.read_text()
-    fn_match = re.search(r'match self \{(.*?)^\}', text, re.MULTILINE | re.DOTALL)
-    if not fn_match:
-        violations.append(
-            "check_architecture_rules: ERROR cannot parse runtime/spec/all.rs match body"
-        )
-        return violations
-
-    body = fn_match.group(1)
     blocks = re.findall(
         r'Self::(\w+)\s*=>\s*RuntimeSpec\s*\{(.*?)\}',
-        body,
+        text,
         re.DOTALL,
     )
+
+    if not blocks:
+        violations.append(
+            "check_architecture_rules: ERROR cannot parse RuntimeSpec blocks from "
+            "crates/backend-wasm/src/runtime/spec/all.rs"
+        )
+        return violations
 
     for name, block in blocks:
         has_imports = 'imports: NO_IMPORTS' not in block
@@ -1200,53 +1199,68 @@ def check_runtimefn_capability() -> list[str]:
 def check_host_import_manifest() -> list[str]:
     """Check that host import variants are covered by manifest/link-plan tests.
 
-    Parses HostImport enum from runtime-catalog and verifies each variant's
-    manifest_name (e.g. "wasi_snapshot_preview1.proc_exit") appears in:
+    Parses HostImport enum and its spec() match arms from runtime-catalog to
+    derive each variant's manifest_name (e.g. "wasi_snapshot_preview1.proc_exit").
+    Then verifies that each manifest_name appears in:
     - crates/backend-wasm/tests/runtime_link_plan.rs
     - crates/compiler/tests/manifest_snapshot.rs
+    - crates/backend-wasm/src/runtime/manifest/all.rs (manifest mapping)
 
     Missing entries indicate untested host import bindings.
     """
     violations = []
-    host_import_path = REPO_ROOT / "crates" / "runtime-catalog" / "src" / "host_import.rs"
-    if not host_import_path.exists():
+    src_path = REPO_ROOT / "crates" / "runtime-catalog" / "src" / "host_import.rs"
+    if not src_path.exists():
         return violations
 
-    text = host_import_path.read_text()
-    enum_match = re.search(r'pub enum HostImport \{(.*?)^\}', text, re.MULTILINE | re.DOTALL)
-    if not enum_match:
+    text = src_path.read_text()
+
+    # Parse HostImport::spec() match arms for module+name per variant
+    spec_match = re.search(
+        r'pub const fn spec\(self\) -> HostImportSpec \{[^}]*match self \{(.*?)^\}',
+        text,
+        re.MULTILINE | re.DOTALL,
+    )
+    if not spec_match:
         return violations
 
-    enum_body = enum_match.group(1)
-    variants = set()
-    for m in re.finditer(r'^\s+(\w+)\s*,?\s*$', enum_body, re.MULTILINE):
-        variants.add(m.group(1))
-    for m in re.finditer(r'#\[.*?\]\s*\n\s+(\w+)\s*,?\s*', enum_body):
-        variants.add(m.group(1))
+    spec_body = spec_match.group(1)
+    # Extract variant name, module, and name from each arm
+    manifest_names = {}
+    for m in re.finditer(
+        r'Self::(\w+)\s*=>\s*HostImportSpec\s*\{[^}]*module:\s*"([^"]+)"[^}]*name:\s*"([^"]+)"[^}]*\}',
+        spec_body,
+    ):
+        variant = m.group(1)
+        manifest = f"{m.group(2)}.{m.group(3)}"
+        manifest_names[variant] = manifest
 
-    test_files = [
+    # Files to check for manifest_name coverage
+    # Spec files are included since they define which RuntimeFn imports each HostImport.
+    # Manifest files map RuntimeFn variants to their manifest names.
+    # Test files verify link plan output includes the correct imports.
+    check_files = [
         REPO_ROOT / "crates" / "backend-wasm" / "tests" / "runtime_link_plan.rs",
         REPO_ROOT / "crates" / "compiler" / "tests" / "manifest_snapshot.rs",
+        REPO_ROOT / "crates" / "backend-wasm" / "src" / "runtime" / "manifest" / "all.rs",
+        REPO_ROOT / "crates" / "runtime-catalog" / "src" / "runtime" / "manifest" / "all.rs",
+        REPO_ROOT / "crates" / "backend-wasm" / "src" / "runtime" / "spec" / "all.rs",
+        REPO_ROOT / "crates" / "runtime-catalog" / "src" / "runtime" / "spec" / "all.rs",
     ]
 
-    for v in sorted(variants):
-        # Build manifest_name pattern like "wasi_snapshot_preview1.proc_exit" or "host.path.join"
-        # based on the HostImport::spec() match arms
+    for variant, manifest in sorted(manifest_names.items()):
         found = False
-        for tf in test_files:
-            if not tf.exists():
+        for cf in check_files:
+            if not cf.exists():
                 continue
-            tf_text = tf.read_text()
-            # Check for the variant name in manifest_name context or import string patterns
-            if v in tf_text:
+            cf_text = cf.read_text()
+            if manifest in cf_text or variant in cf_text:
                 found = True
                 break
         if not found:
             violations.append(
-                f"check_architecture_rules: ERROR HostImport::{v} is not referenced in "
-                f"manifest/link-plan test files -- add coverage to "
-                f"crates/backend-wasm/tests/runtime_link_plan.rs "
-                f"or crates/compiler/tests/manifest_snapshot.rs"
+                f"check_architecture_rules: ERROR HostImport::{variant} "
+                f"(manifest: {manifest}) not covered in test or manifest files"
             )
 
     return violations

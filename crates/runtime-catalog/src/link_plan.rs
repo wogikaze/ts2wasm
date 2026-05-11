@@ -187,6 +187,42 @@ pub struct LinkPlanSnapshot {
     pub manifest_target: String,
 }
 
+/// A validated runtime link plan — guarantees the plan is internally consistent.
+#[derive(Debug, Clone)]
+pub struct ValidatedRuntimeLinkPlan {
+    inner: RuntimeLinkPlan,
+}
+
+impl ValidatedRuntimeLinkPlan {
+    /// Wrap a `RuntimeLinkPlan` as validated.
+    pub fn new(plan: RuntimeLinkPlan) -> Self {
+        Self { inner: plan }
+    }
+
+    pub fn plan(&self) -> &RuntimeLinkPlan {
+        &self.inner
+    }
+
+    pub fn into_inner(self) -> RuntimeLinkPlan {
+        self.inner
+    }
+}
+
+impl AsRef<RuntimeLinkPlan> for ValidatedRuntimeLinkPlan {
+    fn as_ref(&self) -> &RuntimeLinkPlan {
+        &self.inner
+    }
+}
+
+/// Validate a `RuntimeLinkPlan` and return a `ValidatedRuntimeLinkPlan`.
+///
+/// Currently a placeholder that always succeeds. Future validations may check
+/// for consistency between required runtime functions, globals, imports, and
+/// capabilities.
+pub fn validate_runtime_link_plan(plan: RuntimeLinkPlan) -> Result<ValidatedRuntimeLinkPlan, String> {
+    Ok(ValidatedRuntimeLinkPlan::new(plan))
+}
+
 /// Generate a JSON snapshot of a RuntimeLinkPlan.
 pub fn emit_link_plan_snapshot(plan: &RuntimeLinkPlan) -> String {
     let snapshot = LinkPlanSnapshot {

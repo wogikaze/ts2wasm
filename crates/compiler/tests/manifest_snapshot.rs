@@ -9,8 +9,8 @@ use std::collections::BTreeSet;
 
 use ts2wasm_backend_wasm::runtime_link_plan::RuntimeLinkPlan;
 use ts2wasm_backend_wasm::{
-    RuntimeFn, RuntimeIntrinsic, emit_canonical_manifest_json, runtime_fn_from_name,
-    runtime_link_plan::build_runtime_link_plan,
+    RuntimeFn, build_validated_runtime_link_plan, emit_canonical_manifest_json,
+    runtime_fn_from_name, runtime_link_plan::build_runtime_link_plan,
 };
 use ts2wasm_compiler::parse_program;
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
@@ -70,7 +70,9 @@ fn manifest_snapshot_log_has_runtime_deps() {
 #[test]
 fn manifest_snapshot_canonical_json_is_valid() {
     let program = parse_resolve_lower("console.log(42);");
-    let json = emit_canonical_manifest_json(&program);
+    let validated_plan =
+        build_validated_runtime_link_plan(&program).expect("valid link plan");
+    let json = emit_canonical_manifest_json(&validated_plan);
     // Verify it's valid JSON
     let parsed: serde_json::Value =
         serde_json::from_str(&json).expect("canonical manifest should be valid JSON");
@@ -159,8 +161,8 @@ fn manifest_snapshot_no_unexpected_imports() {
 }
 
 #[test]
-fn manifest_snapshot_runtime_intrinsic_maps_through_runtime_fn() {
-    // Verify RuntimeIntrinsic::Log maps through runtime_fn_from_name
+fn manifest_snapshot_runtime_fn_maps_through_runtime_fn_from_name() {
+    // Verify RuntimeFn::Log maps through runtime_fn_from_name
     // using RuntimeFn's emission order
     let all_runtime_fns: std::collections::HashSet<RuntimeFn> =
         RuntimeFn::emission_order().iter().copied().collect();
