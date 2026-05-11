@@ -14,8 +14,7 @@ use ts2wasm_ir::optimizer::{OptimizationLevel, OptimizedHirProgram};
 use ts2wasm_ir::semantic::{HirExpr, HirProgram, HirRelationalOp, HirStmt};
 
 use super::{
-    backend, build_multi_section_file, builtin_resolver, lowered, name_resolver,
-    split_file_name_sections, test262_preprocessor,
+    backend, build_multi_section_file, lowered, split_file_name_sections, test262_preprocessor,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -202,9 +201,9 @@ fn build_dump_pipeline(
     eprintln!("[pipeline] module_graph");
     super::module_graph::validate_entry_module_graph(input, &ast)?;
     eprintln!("[pipeline] resolve_names");
-    let name_resolved = name_resolver::resolve_names(&ast)?;
+    let name_resolved = ts2wasm_ir::name_resolver::resolve_names(&ast)?;
     eprintln!("[pipeline] resolve_builtins");
-    let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
+    let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&name_resolved)?;
     super::validate_typescript_semantics_for_path(input, &resolved)?;
     eprintln!("[pipeline] build_typed_ir");
     let typed_ir = build_typed_ir(&resolved);

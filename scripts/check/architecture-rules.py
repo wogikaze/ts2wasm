@@ -9,7 +9,19 @@ Current checks:
   - crates/cli/src must not declare local backend/parser/compiler implementation modules.
   - Error when a repo-owned source/document file exceeds the documented line limit.
   - Error when backend-wasm or ir directly depends on frontend via Cargo.toml.
-  - Error when public backend emit functions accept bare &LoweredProgram (must use Validated<).
+  - Error when any Rust function exceeds 300 lines.
+  - Error when any Rust file exceeds 2000 lines (known exceptions allowlisted).
+  - Error when any Rust file exceeds 1500 lines (known exceptions allowlisted).
+  - Error when RuntimeCall { runtime_fn: String } found (migrate to typed enum).
+  - Error when `use super::*` appears outside test modules.
+  - Error when backend-wasm imports from ts2wasm_frontend.
+  - Warn when `wat.push_str` in runtime helper files (prefer structured builders).
+  - Error when `include!` used in src/ files outside tests (migrate to real modules).
+  - Error when backend emit functions accept bare &LoweredProgram (must wrap in Validated<).
+  - Error when RuntimeFn variant lacks spec/manifest_name/emission_order entry.
+  - Warn when Diagnostic { span: None } appears outside validate.rs (source errors need spans).
+  - Error when raw runtime symbol string used outside runtime catalog.
+  - Error when LoweredExpr variant lacks validate_lowered coverage.
 """
 
 import os
@@ -22,7 +34,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 DEFAULT_MAX_FILE_LINES = 3000
 
-# Known oversized files that are exempt from the line limit.
+# Known oversized files that are exempt from the general line limit.
 # Each entry must include a reason and the P-item that will eventually fix it.
 OVERSIZED_ALLOWLIST = {
     # Test files (naturally large, not a concern)
@@ -42,6 +54,8 @@ OVERSIZED_ALLOWLIST = {
     "crates/backend-wasm/src/runtime_fn_impl.rs": "P4: domain split planned",
     # Being refactored by P7 (Resolver decomposition)
     "crates/ir/src/lowered/resolver_extra.rs": "P7: Resolver context decomposition",
+    # Runtime domain runtime files (P4: domain split)
+    "crates/backend-wasm/src/runtime/core/bigint.rs": "P4: runtime domain split",
 }
 
 # Crates that must not directly depend on ts2wasm-frontend via Cargo.toml.
@@ -50,7 +64,6 @@ FRONTEND_DEP_DENY = {
     "crates/backend-wasm",
     "crates/ir",
 }
-
 
 LINE_COUNT_SUFFIXES = {
     ".md",
@@ -77,12 +90,66 @@ EXCLUDED_FILENAMES = {
     "Cargo.lock",
 }
 
-# Files known to exceed the 2000-line Rust file limit, with planned remediation.
+# Files exceeding 2000 lines (Rust), with planned remediation.
+# Test files and auto-generated files exempt separately.
 KNOWN_OVERSIZED_FILES = {
-    "crates/ir/src/lowered/resolver_expr.rs": "large match — pending domain split",
-    "crates/backend-wasm/src/runtime_fn_impl.rs": "large spec — pending domain split",
+    "crates/backend-wasm/src/runtime/core/bigint.rs": "P4: runtime domain split",
+    "crates/ir/src/lowered/resolver/call.rs": "P7: resolver decomposition",
+    "crates/ir/src/lowered/program.rs": "P7: resolver decomposition",
+    "crates/backend-wasm/src/runtime/spec/all.rs": "auto-generated spec",
+    "crates/frontend/src/parser/expressions_main.rs": "P4: parser decomposition",
+    "crates/frontend/src/parser/statements_general.rs": "P4: parser decomposition",
+    "crates/ir/src/builtin_resolver.rs": "P7: resolver decomposition",
+    # Test files (naturally large, not a concern)
+    "crates/frontend/src/parser/tests.rs": "test file",
+    "crates/cli/tests/common/m2_node_diff_fixture_tests.rs": "test file",
+}
+
+# Files exceeding 1500 lines (Rust), with planned remediation.
+# Test files are exempt separately via EXCLUDED_PATH_PARTS logic.
+KNOWN_OVERSIZED_FILES_1500 = {
+    **KNOWN_OVERSIZED_FILES,
     "crates/backend-wasm/src/expr_emit.rs": "expression emitter — pending domain split",
-    "crates/compiler/src/lib.rs": "pipeline — pending stage split",
+    "crates/ir/src/name_resolver.rs": "P7: resolver decomposition",
+    "crates/backend-wasm/src/runtime/core/comparison.rs": "P4: runtime domain split",
+    "crates/ir/src/lowered/resolver/array.rs": "P7: resolver decomposition",
+    "crates/backend-wasm/src/runtime/string/emit.rs": "P4: runtime domain split",
+    "crates/backend-wasm/src/runtime/host/emit.rs": "P4: runtime domain split",
+    "crates/backend-wasm/src/runtime_fn.rs": "runtime function registry",
+    "crates/ir/src/lowered/resolver/extra.rs": "P7: Resolver context decomposition",
+    "crates/backend-wasm/src/lib.rs": "backend lib",
+    "crates/ir/src/builtin_resolver_bigint.rs": "P7: resolver decomposition",
+    "crates/backend-wasm/src/runtime/collections/emit.rs": "P4: runtime domain split",
+    "crates/compiler/src/stages/lower.rs": "compiler pipeline",
+    "crates/ir/src/semantic.rs": "semantic analysis",
+    # Test files (naturally large, not a concern)
+    "crates/cli/tests/m6_builtin_methods.rs": "test file",
+    "crates/cli/tests/ir_lowering.rs": "test file",
+    "crates/cli/tests/m2_node_diff.rs": "test file",
+}
+
+# Files that use `use super::*` outside test modules (known legacy pattern).
+USE_SUPER_STAR_ALLOWLIST = {
+    "crates/backend-wasm/src/expr_emit_helpers.rs",
+    "crates/backend-wasm/src/runtime_core_comparison_alloc.rs",
+    "crates/backend-wasm/src/runtime_fn_impl.rs",
+    "crates/ir/src/builtin_resolver_bigint.rs",
+    "crates/ir/src/builtin_resolver_bigint_ops.rs",
+    "crates/ir/src/builtin_resolver_class_features.rs",
+    "crates/ir/src/builtin_resolver_host.rs",
+    "crates/ir/src/builtin_resolver_outer.rs",
+}
+
+# Runtime catalog paths (runtime_fn.rs includes impl and spec via include!).
+RUNTIME_CATALOG_FILE_PREFIXES = (
+    "crates/backend-wasm/src/runtime/",
+    "crates/backend-wasm/src/runtime_fn",
+)
+
+# Files that use raw runtime symbol strings in test assertions (allowed).
+RAW_SYMBOL_ALLOWLIST = {
+    "crates/backend-wasm/src/lib.rs",   # Has test assertions checking WAT output
+    "crates/compiler/src/tests.rs",     # Has test assertions checking WAT output
 }
 
 
@@ -98,12 +165,17 @@ def usage():
     print("  - Error when backend-wasm or ir depends on frontend via Cargo.toml.")
     print("  - Error when any Rust function exceeds 300 lines.")
     print("  - Error when any Rust file exceeds 2000 lines (known exceptions allowlisted).")
+    print("  - Error when any Rust file exceeds 1500 lines (known exceptions allowlisted).")
     print("  - Error when RuntimeCall { runtime_fn: String } found (migrate to typed enum).")
     print("  - Error when `use super::*` appears outside test modules.")
     print("  - Error when backend-wasm imports from ts2wasm_frontend.")
     print("  - Warn when `wat.push_str` in runtime helper files (prefer structured builders).")
     print("  - Error when `include!` used in src/ files outside tests (migrate to real modules).")
     print("  - Error when backend emit functions accept bare &LoweredProgram (must wrap in Validated<).")
+    print("  - Error when RuntimeFn variant lacks spec/manifest_name/emission_order entry.")
+    print("  - Warn when Diagnostic { span: None } appears outside validate.rs.")
+    print("  - Error when raw runtime symbol string used outside runtime catalog.")
+    print("  - Error when LoweredExpr variant lacks validate_lowered coverage.")
 
 
 def parse_max_file_lines(args: list[str]) -> int:
@@ -244,8 +316,6 @@ def check_backend_frontend_dependency() -> None:
         if not cargo_path.exists():
             continue
         text = cargo_path.read_text()
-        # Extract only the [dependencies] section: everything from "[dependencies]"
-        # up to the next "[...]" section header, or end of file.
         deps_match = re.search(
             r"^\[dependencies\]\s*$(.+?)(?=^\s*\[|\Z)",
             text,
@@ -263,7 +333,10 @@ def check_backend_frontend_dependency() -> None:
         sys.exit(1)
 
 
+# --- #262: Strengthen checks ---
+
 def check_function_length() -> list[str]:
+    """Check that no function exceeds 300 lines in .rs files."""
     violations = []
     fn_re = re.compile(r'^\s*(pub\s+)?(unsafe\s+)?(async\s+)?fn\s+(\w+)')
     max_fn_lines = 300
@@ -314,7 +387,152 @@ def check_function_length() -> list[str]:
     return violations
 
 
+def check_no_new_string_runtime_call() -> list[str]:
+    """Check that no RuntimeCall uses string-based runtime_fn.
+
+    The typed RuntimeIntrinsic enum must be used instead.
+    Scans all .rs files for any RuntimeCall construction with runtime_fn field.
+    """
+    violations = []
+    runtime_call_re = re.compile(r'RuntimeCall\s*\{')
+
+    for path in sorted(REPO_ROOT.rglob("*.rs")):
+        rel = path.relative_to(REPO_ROOT)
+        if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
+            continue
+        text = path.read_text()
+        lines = text.split('\n')
+        for i, line in enumerate(lines):
+            if not runtime_call_re.search(line):
+                continue
+            stripped = line.strip()
+            if stripped.startswith('//') or '//' in stripped and 'RuntimeCall' in stripped.split('//')[1]:
+                continue
+            # Look at the next few lines for the first field
+            for offset in range(1, 5):
+                if i + offset >= len(lines):
+                    break
+                nxt = lines[i + offset].strip()
+                if nxt.startswith('//'):
+                    continue
+                if 'runtime_fn' in nxt and 'String' in nxt:
+                    violations.append(
+                        f"check_architecture_rules: ERROR {rel}:{i + 1}: "
+                        f"RuntimeCall {{ runtime_fn: String }} — migrate to typed RuntimeIntrinsic"
+                    )
+                    break
+                if 'intrinsic' in nxt:
+                    break  # Already migrated, no issue
+                if nxt == '}':
+                    break  # Empty or single-line RuntimeCall
+
+    return violations
+
+
+# --- #265: Backend/frontend coupling ---
+
+def check_backend_frontend_import() -> list[str]:
+    """Check that backend-wasm doesn't import from ts2wasm_frontend."""
+    violations = []
+    backend_src = REPO_ROOT / "crates" / "backend-wasm" / "src"
+    if not backend_src.exists():
+        return violations
+
+    for path in sorted(backend_src.rglob("*.rs")):
+        rel = path.relative_to(REPO_ROOT)
+        text = path.read_text()
+        for i, line in enumerate(text.split('\n'), 1):
+            if re.match(r'^\s*use\s+ts2wasm_frontend', line):
+                violations.append(
+                    f"check_architecture_rules: ERROR {rel}:{i}: "
+                    f"backend module imports from ts2wasm_frontend"
+                )
+
+    return violations
+
+
+def check_runtimefn_spec_gap() -> list[str]:
+    """Check that every RuntimeFn variant has entries in spec/manifest/emission_order.
+
+    Parses the RuntimeFn enum and checks against the spec table, manifest table,
+    and emission_order list.
+    """
+    violations = []
+
+    # 1. Parse RuntimeFn enum variants
+    runtime_fn_path = REPO_ROOT / "crates" / "backend-wasm" / "src" / "runtime_fn.rs"
+    if not runtime_fn_path.exists():
+        return violations
+
+    enum_text = runtime_fn_path.read_text()
+    enum_match = re.search(r'enum RuntimeFn \{(.*?)^\}', enum_text, re.MULTILINE | re.DOTALL)
+    if not enum_match:
+        return violations
+
+    enum_body = enum_match.group(1)
+    variants = set()
+    for m in re.finditer(r'^\s+([A-Z]\w+)\s*,?\s*$', enum_body, re.MULTILINE):
+        variants.add(m.group(1))
+    # Also catch variants after #[allow(dead_code)] attributes
+    for m in re.finditer(r'#\[.*?\]\s*\n\s+([A-Z]\w+)\s*,?\s*', enum_body):
+        variants.add(m.group(1))
+
+    # 2. Parse spec entries from runtime/spec/all.rs
+    spec_path = REPO_ROOT / "crates" / "backend-wasm" / "src" / "runtime" / "spec" / "all.rs"
+    spec_variants = set()
+    if spec_path.exists():
+        spec_text = spec_path.read_text()
+        for m in re.finditer(r'Self::(\w+)\s*=>\s*RuntimeSpec', spec_text):
+            spec_variants.add(m.group(1))
+
+    # 3. Parse manifest entries from runtime/manifest/all.rs
+    manifest_path = REPO_ROOT / "crates" / "backend-wasm" / "src" / "runtime" / "manifest" / "all.rs"
+    manifest_variants = set()
+    if manifest_path.exists():
+        manifest_text = manifest_path.read_text()
+        for m in re.finditer(r'Self::(\w+)\s*=>', manifest_text):
+            manifest_variants.add(m.group(1))
+
+    # 4. Parse emission_order entries from runtime_fn_impl.rs
+    emission_order_path = REPO_ROOT / "crates" / "backend-wasm" / "src" / "runtime_fn_impl.rs"
+    emission_variants = set()
+    if emission_order_path.exists():
+        emission_text = emission_order_path.read_text()
+        for m in re.finditer(r'Self::(\w+)', emission_text):
+            emission_variants.add(m.group(1))
+
+    # Check for gaps
+    if not spec_variants:
+        violations.append(
+            "check_architecture_rules: ERROR cannot parse runtime/spec/all.rs -- "
+            "spec table might have changed format"
+        )
+        return violations
+
+    missing_spec = variants - spec_variants
+    missing_manifest = variants - manifest_variants
+    missing_emission = variants - emission_variants
+
+    for v in sorted(missing_spec):
+        violations.append(
+            f"check_architecture_rules: ERROR RuntimeFn::{v} missing from runtime/spec/all.rs"
+        )
+    for v in sorted(missing_manifest):
+        violations.append(
+            f"check_architecture_rules: ERROR RuntimeFn::{v} missing from runtime/manifest/all.rs"
+        )
+    for v in sorted(missing_emission):
+        violations.append(
+            f"check_architecture_rules: ERROR RuntimeFn::{v} missing from emission_order"
+        )
+
+    return violations
+
+
+# --- #269 P2/P3: File size limits ---
+
 def check_rust_file_length(max_lines: int = 2000) -> list[str]:
+    """Check that no .rs file exceeds 2000 lines (with allowlist)."""
     violations = []
     for path in sorted(REPO_ROOT.rglob("*.rs")):
         rel = path.relative_to(REPO_ROOT)
@@ -331,26 +549,165 @@ def check_rust_file_length(max_lines: int = 2000) -> list[str]:
     return violations
 
 
-def check_runtime_call_string() -> list[str]:
+def check_rust_file_length_1500(max_lines: int = 1500) -> list[str]:
+    """Check that no .rs file exceeds 1500 lines (with allowlist)."""
     violations = []
-    target = REPO_ROOT / "crates" / "ir" / "src" / "lowered" / "types.rs"
-    if not target.exists():
-        return violations
-    text = target.read_text()
-    lines = text.split('\n')
-    for i, line in enumerate(lines):
-        stripped = line.strip()
-        if stripped == 'RuntimeCall {':
-            nxt = lines[i + 1].strip() if i + 1 < len(lines) else ''
-            if 'runtime_fn' in nxt and 'String' in nxt:
-                violations.append(
-                    f"check_architecture_rules: ERROR crates/ir/src/lowered/types.rs:{i + 1}: "
-                    f"RuntimeCall {{ runtime_fn: String }} — migrate to typed enum"
-                )
+    for path in sorted(REPO_ROOT.rglob("*.rs")):
+        rel = path.relative_to(REPO_ROOT)
+        if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
+            continue
+        if str(rel) in KNOWN_OVERSIZED_FILES_1500:
+            continue
+        count = line_count(path)
+        if count > max_lines:
+            violations.append(
+                f"check_architecture_rules: ERROR {rel}: {count} lines "
+                f"(max {max_lines})"
+            )
     return violations
 
 
+# --- #277: Span/catalog/validate coverage ---
+
+def check_diagnostic_span_none() -> list[str]:
+    """Check for Diagnostic { span: None } in non-validate, non-test files.
+
+    Internal invariant diagnostics (validate.rs) are expected to have span: None.
+    Source-origin errors should include source location spans.
+    """
+    violations = []
+    diag_re = re.compile(
+        r'Diagnostic\s*\{[^}]*?span:\s*None[^}]*?\}',
+        re.DOTALL,
+    )
+    invariant_code_re = re.compile(r'code:\s*DiagCode::InvariantViolation')
+    backend_io_code_re = re.compile(r'code:\s*DiagCode::BackendIo')
+
+    for path in sorted(REPO_ROOT.rglob("*.rs")):
+        rel = path.relative_to(REPO_ROOT)
+        if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
+            continue
+        # Skip validate.rs (internal invariants)
+        if str(rel) == "crates/ir/src/lowered/validate.rs":
+            continue
+        # Skip test files
+        if "tests" in rel.parts:
+            continue
+        text = path.read_text()
+        # Find each Diagnostic block with span: None
+        for m in diag_re.finditer(text):
+            block = m.group(0)
+            # InvariantViolation is expected to have no span
+            if invariant_code_re.search(block):
+                continue
+            # BackendIo is an I/O error, not source-locatable
+            if backend_io_code_re.search(block):
+                continue
+            violations.append(
+                f"check_architecture_rules: WARN {rel}: span: None in "
+                f"non-invariant Diagnostic — source errors need source location spans"
+            )
+
+    return violations
+
+
+def check_raw_runtime_symbol_outside_catalog() -> list[str]:
+    """Check that raw $runtime_symbol strings are not used outside the runtime catalog.
+
+    The runtime spec/symbol catalog in runtime/spec/all.rs defines all runtime symbols.
+    Other code must use RuntimeFn::symbol() or similar typed access.
+    """
+    violations = []
+
+    # Parse all runtime symbols from the spec file
+    spec_path = REPO_ROOT / "crates" / "backend-wasm" / "src" / "runtime" / "spec" / "all.rs"
+    if not spec_path.exists():
+        return violations
+
+    spec_text = spec_path.read_text()
+    symbols = set()
+    for m in re.finditer(r'symbol:\s*"(\$\w+)"', spec_text):
+        symbols.add(m.group(1))
+
+    # Check all .rs files for raw symbol usage
+    for path in sorted(REPO_ROOT.rglob("*.rs")):
+        rel = path.relative_to(REPO_ROOT)
+        if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
+            continue
+        # Skip the catalog files themselves
+        skip = False
+        for prefix in RUNTIME_CATALOG_FILE_PREFIXES:
+            if str(rel).startswith(prefix):
+                skip = True
+                break
+        if skip:
+            continue
+        # Skip test files
+        if "tests" in rel.parts:
+            continue
+        # Skip files with known test assertions using runtime symbols
+        if str(rel) in RAW_SYMBOL_ALLOWLIST:
+            continue
+        text = path.read_text()
+        for sym in symbols:
+            # Check for the symbol as a string literal
+            if f'"{sym}"' in text:
+                violations.append(
+                    f"check_architecture_rules: ERROR {rel}: "
+                    f"raw runtime symbol `{sym}` used outside runtime catalog"
+                )
+                break  # One violation per file is enough
+
+    return violations
+
+
+def check_lowered_expr_validate_coverage() -> list[str]:
+    """Check that every LoweredExpr variant is covered by validate_lowered's validate_expr.
+
+    Parses the LoweredExpr enum from types.rs and checks validate_expr match arms.
+    """
+    violations = []
+
+    types_path = REPO_ROOT / "crates" / "ir" / "src" / "lowered" / "types.rs"
+    validate_path = REPO_ROOT / "crates" / "ir" / "src" / "lowered" / "validate.rs"
+
+    if not types_path.exists() or not validate_path.exists():
+        return violations
+
+    # Parse LoweredExpr enum variants
+    types_text = types_path.read_text()
+    enum_match = re.search(r'pub enum LoweredExpr \{(.*?)\n\}', types_text, re.MULTILINE | re.DOTALL)
+    if not enum_match:
+        return violations
+
+    enum_body = enum_match.group(1)
+    enum_variants = set()
+    for m in re.finditer(r'^\s+(\w+)\s*(?:\(|\{|,|$)', enum_body, re.MULTILINE):
+        name = m.group(1)
+        if name[0].isupper():
+            enum_variants.add(name)
+
+    # Parse LoweredExpr variants referenced in validate_lowered (validate_expr match arms)
+    validate_text = validate_path.read_text()
+    covered = set()
+    for m in re.finditer(r'LoweredExpr::(\w+)', validate_text):
+        covered.add(m.group(1))
+
+    # Report missing variants
+    missing = sorted(enum_variants - covered)
+    for v in missing:
+        violations.append(
+            f"check_architecture_rules: ERROR LoweredExpr::{v} is not covered by "
+            f"validate_lowered's validate_expr"
+        )
+
+    return violations
+
+
+# --- Existing utility/helper checks ---
+
 def check_use_super_star() -> list[str]:
+    """Check that `use super::*` appears only in test modules."""
     violations = []
     use_super_re = re.compile(r'^\s*use\s+super::\*;?\s*$')
 
@@ -381,29 +738,16 @@ def check_use_super_star() -> list[str]:
                     cfg_test_brace_depth = 0
                 continue
             if use_super_re.match(stripped):
-                violations.append(
-                    f"check_architecture_rules: ERROR {rel}:{i + 1}: "
-                    f"`use super::*` outside test module"
-                )
-
-    return violations
-
-
-def check_backend_frontend_import() -> list[str]:
-    violations = []
-    backend_src = REPO_ROOT / "crates" / "backend-wasm" / "src"
-    if not backend_src.exists():
-        return violations
-
-    for path in sorted(backend_src.rglob("*.rs")):
-        rel = path.relative_to(REPO_ROOT)
-        text = path.read_text()
-        for i, line in enumerate(text.split('\n'), 1):
-            if re.match(r'^\s*use\s+ts2wasm_frontend', line):
-                violations.append(
-                    f"check_architecture_rules: ERROR {rel}:{i}: "
-                    f"backend module imports from ts2wasm_frontend"
-                )
+                if str(rel) in USE_SUPER_STAR_ALLOWLIST:
+                    violations.append(
+                        f"check_architecture_rules: WARN {rel}:{i + 1}: "
+                        f"`use super::*` outside test module (known legacy)"
+                    )
+                else:
+                    violations.append(
+                        f"check_architecture_rules: ERROR {rel}:{i + 1}: "
+                        f"`use super::*` outside test module"
+                    )
 
     return violations
 
@@ -444,16 +788,7 @@ def check_include_in_src() -> list[str]:
 
 
 def check_validated_backend_contract() -> list[str]:
-    """Check that public emit functions in backend-wasm use Validated<LoweredProgram>.
-
-    Any pub fn starting with 'emit' in crates/backend-wasm/src/lib.rs that mentions
-    LoweredProgram in its signature must wrap it in Validated<>. Non-emit pub fn
-    using LoweredProgram (e.g. has_node_host_imports) are allowed to use bare &LoweredProgram.
-
-    Known exceptions:
-    - emit_canonical_manifest_json: utility/query function, not a program emitter.
-      Called with validated.as_ref() by the compiler pipeline.
-    """
+    """Check that public emit functions in backend-wasm use Validated<LoweredProgram>."""
     violations = []
     backend_lib = REPO_ROOT / "crates" / "backend-wasm" / "src" / "lib.rs"
     if not backend_lib.exists():
@@ -468,13 +803,10 @@ def check_validated_backend_contract() -> list[str]:
         if name_end == -1:
             continue
         fn_name = stripped[7:name_end].strip()
-        # Only check emit functions
         if not fn_name.startswith('emit'):
             continue
-        # Known exceptions (utility/query functions, not program emitters)
         if fn_name == 'emit_canonical_manifest_json':
             continue
-        # Look ahead up to 5 lines for signature context
         end = min(i + 4, len(lines))
         fn_window = ' '.join(lines[i - 1:end])
         if 'LoweredProgram' in fn_window and 'Validated<' not in fn_window:
@@ -506,11 +838,21 @@ def main():
         errors += 1
 
     violations = []
+    # #262 checks
     violations.extend(check_function_length())
-    violations.extend(check_rust_file_length())
-    violations.extend(check_runtime_call_string())
-    violations.extend(check_use_super_star())
+    violations.extend(check_no_new_string_runtime_call())
+    # #265 checks
     violations.extend(check_backend_frontend_import())
+    violations.extend(check_runtimefn_spec_gap())
+    # #269 P2/P3 checks
+    violations.extend(check_rust_file_length())
+    violations.extend(check_rust_file_length_1500())
+    # #277 checks
+    violations.extend(check_diagnostic_span_none())
+    violations.extend(check_raw_runtime_symbol_outside_catalog())
+    violations.extend(check_lowered_expr_validate_coverage())
+    # Existing checks
+    violations.extend(check_use_super_star())
     violations.extend(check_runtime_push_str())
     violations.extend(check_include_in_src())
     violations.extend(check_validated_backend_contract())

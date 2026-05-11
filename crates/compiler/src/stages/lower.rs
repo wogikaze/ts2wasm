@@ -840,11 +840,11 @@ pub(crate) fn build_multi_section_file(
 
     let (validated, lower_diagnostics) =
         lowered::Validated::new(lowered).map_err(|d| d.with_phase("backend"))?;
-    crate::stages::resolve::ensure_runtime_feature_gates(validated.as_ref())
+    crate::stages::validate::ensure_runtime_feature_gates(validated.as_ref())
         .map_err(|d| d.with_phase("runtime-gate"))?;
 
     if host_deny {
-        crate::stages::resolve::validate_host_deny(validated.as_ref())
+        crate::stages::validate::validate_host_deny(validated.as_ref())
             .map_err(|d| d.with_phase("runtime-gate"))?;
     }
 
@@ -887,9 +887,9 @@ fn lower_source_as_module_body(
         .map_err(|d| d.with_phase("name-resolver"))?;
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)
         .map_err(|d| d.with_phase("builtin-resolver"))?;
-    crate::stages::resolve::validate_typescript_semantics_for_path(semantic_path, &resolved)
+    crate::stages::validate::validate_typescript_semantics_for_path(semantic_path, &resolved)
         .map_err(|d| d.with_phase("semantic-validator"))?;
-    crate::stages::resolve::validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)
+    crate::stages::validate::validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)
         .map_err(|d| d.with_phase("hir-validator"))?;
     let lowered_module = lowered::lower_program(&resolved).map_err(|d| d.with_phase("lowering"))?;
 
@@ -962,8 +962,8 @@ fn lower_static_module_body_for_build(
 
     let name_resolved = name_resolver::resolve_names(&body.rewritten_program)?;
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
-    crate::stages::resolve::validate_typescript_semantics_for_path(path, &resolved)?;
-    crate::stages::resolve::validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
+    crate::stages::validate::validate_typescript_semantics_for_path(path, &resolved)?;
+    crate::stages::validate::validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
     let lowered_module = lowered::lower_program(&resolved)?;
 
     let mut statements = lowered_module.top_level_statements;
