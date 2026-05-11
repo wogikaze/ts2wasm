@@ -11,9 +11,8 @@ pub(crate) use program::*;
 pub use runtime_intrinsic::RuntimeIntrinsic;
 pub(crate) use types::*;
 pub use types::{
-    BuiltinErrorConstructor, ClassPrivateFieldSlots, ClassPrototypeRef, ClosureRepresentation,
-    FuncId, FunctionCallKind, InferredType, LocalId, LoweredArraySlot, LoweredBinaryOp,
-    LoweredExpr, LoweredFunction, LoweredLogicalAssignOp, LoweredProgram, LoweredStmt,
-    LoweredUnaryOp, ModuleInfo, Validated,
+    BuiltinErrorConstructor, ClassPrototypeRef, ClosureRepresentation, FuncId, FunctionCallKind,
+    InferredType, LocalId, LoweredArraySlot, LoweredBinaryOp, LoweredExpr, LoweredFunction,
+    LoweredLogicalAssignOp, LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo, Validated,
 };
 pub use validate::validate_lowered;
