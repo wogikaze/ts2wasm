@@ -195,6 +195,7 @@ impl Parser {
         let mut static_blocks = Vec::new();
         let mut private_elements = Vec::new();
         let mut ts_private_field_names = Vec::<String>::new();
+        let mut public_field_initializers = Vec::<Stmt>::new();
         while !matches!(self.peek(), Some(Token::RightBrace)) {
             if self.is_at_end() {
                 return Err(Diagnostic {
@@ -323,8 +324,17 @@ impl Parser {
                 if has_private_modifier {
                     ts_private_field_names.push(method_name.clone());
                 }
-                if self.consume(TokenKind::Equal) {
-                    let _ = self.expression()?;
+                let value = if self.consume(TokenKind::Equal) {
+                    self.expression()?
+                } else {
+                    Expr::Undefined { span: method_span }
+                };
+                if !is_static {
+                    public_field_initializers.push(class_field_initializer(
+                        &method_name,
+                        value,
+                        method_span,
+                    ));
                 }
                 self.consume(TokenKind::Semicolon);
                 continue;
@@ -335,7 +345,14 @@ impl Parser {
                     ts_private_field_names.push(method_name.clone());
                 }
                 self.expect(TokenKind::Equal)?;
-                let _ = self.expression()?;
+                let value = self.expression()?;
+                if !is_static {
+                    public_field_initializers.push(class_field_initializer(
+                        &method_name,
+                        value,
+                        method_span,
+                    ));
+                }
                 self.consume(TokenKind::Semicolon);
                 continue;
             }
@@ -344,6 +361,13 @@ impl Parser {
                     ts_private_field_names.push(method_name.clone());
                 }
                 self.expect(TokenKind::Semicolon)?;
+                if !is_static {
+                    public_field_initializers.push(class_field_initializer(
+                        &method_name,
+                        Expr::Undefined { span: method_span },
+                        method_span,
+                    ));
+                }
                 continue;
             }
 
@@ -505,6 +529,60 @@ impl Parser {
                     end: method_end,
                 },
             });
+        }
+
+        if !public_field_initializers.is_empty() {
+            if let Some(Stmt::Function {
+                body: method_body, ..
+            }) = body.iter_mut().find(|stmt| {
+                matches!(stmt, Stmt::Function { name, .. } if name == "constructor")
+            }) {
+                let merged = merge_constructor_initializers(
+                    public_field_initializers,
+                    std::mem::take(method_body),
+                    extends.is_some(),
+                    "issue-237: public fields in derived constructors require a leading super(...) call",
+                )?;
+                *method_body = merged;
+            } else {
+                let constructor_body = if extends.is_some() {
+                    let super_span = Span {
+                        start: span_start,
+                        end: span_start,
+                    };
+                    let mut constructor_body = vec![Stmt::Expr {
+                        expr: Expr::Call {
+                            callee: Box::new(Expr::Ident {
+                                name: "super".to_owned(),
+                                span: super_span,
+                            }),
+                            args: Vec::new(),
+                            span: super_span,
+                        },
+                        span: super_span,
+                    }];
+                    constructor_body.extend(public_field_initializers);
+                    constructor_body
+                } else {
+                    public_field_initializers
+                };
+                body.insert(
+                    0,
+                    Stmt::Function {
+                        name: "constructor".to_owned(),
+                        params: Vec::new(),
+                        body: constructor_body,
+                        is_generator: false,
+                        is_async: false,
+                        is_ambient: false,
+                        overload_signature: false,
+                        span: Span {
+                            start: span_start,
+                            end: span_start,
+                        },
+                    },
+                );
+            }
         }
 
         let end = self.expect(TokenKind::RightBrace)?.end;

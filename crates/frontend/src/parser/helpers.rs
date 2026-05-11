@@ -1,11 +1,19 @@
 fn parameter_property_assignment(name: &str, span: Span) -> Stmt {
+    class_field_initializer(
+        name,
+        Expr::Ident {
+            name: name.to_owned(),
+            span,
+        },
+        span,
+    )
+}
+
+fn class_field_initializer(name: &str, value: Expr, span: Span) -> Stmt {
     let expr = Expr::PropertyAssign {
         object: Box::new(Expr::This { span }),
         property: name.to_owned(),
-        value: Box::new(Expr::Ident {
-            name: name.to_owned(),
-            span,
-        }),
+        value: Box::new(value),
         span,
     };
     Stmt::Expr { expr, span }
@@ -15,6 +23,20 @@ fn merge_constructor_parameter_property_assignments(
     assignments: Vec<Stmt>,
     body: Vec<Stmt>,
     has_extends: bool,
+) -> Result<Vec<Stmt>, Diagnostic> {
+    merge_constructor_initializers(
+        assignments,
+        body,
+        has_extends,
+        "issue-226: parameter properties in derived constructors require a leading super(...) call",
+    )
+}
+
+fn merge_constructor_initializers(
+    assignments: Vec<Stmt>,
+    body: Vec<Stmt>,
+    has_extends: bool,
+    derived_error: &str,
 ) -> Result<Vec<Stmt>, Diagnostic> {
     if !has_extends {
         let mut merged = assignments;
@@ -34,8 +56,7 @@ fn merge_constructor_parameter_property_assignments(
 
     Err(Diagnostic {
         code: DiagCode::UnsupportedSyntax,
-        message: "issue-226: parameter properties in derived constructors require a leading super(...) call"
-            .to_owned(),
+        message: derived_error.to_owned(),
         span: body.first().map(Stmt::span),
 
         phase: None,})

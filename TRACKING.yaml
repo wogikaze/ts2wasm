@@ -8,20 +8,6 @@ meta:
     roadmap_source: docs/roadmap.md
     closed_source: docs/done-tracking.yaml
 open:
-  - id: 237
-    title: "Implement public field initializers in class constructor (W9a)"
-    priority: P1
-    type: feature
-    area: ir
-    status: open
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: W9a
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_field_initializers"
-    non_goals:
-      - "No computed property field names."
-
   - id: 238
     title: "Differentiate getter/setter from regular methods in class body (W9a)"
     priority: P2
@@ -91,7 +77,28 @@ open:
       - "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output"
     non_goals:
       - "No new runtime implementation."
-active: []
+active:
+  - id: 237
+    title: "Implement public field initializers in class constructor (W9a)"
+    priority: P1
+    type: feature
+    area: ir
+    status: active
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: W9a
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_field_initializers"
+    non_goals:
+      - "No computed property field names."
+    plan:
+      goal: "Lower public class field initializers into constructor-time assignments"
+      files:
+        - "crates/frontend/src/parser/helpers.rs: share constructor initializer merging"
+        - "crates/frontend/src/parser/statements_class.rs: retain public fields as constructor assignments"
+        - "crates/frontend/src/parser/tests.rs: cover synthetic constructor field assignments"
+        - "fixtures/classes/class-field-initializers.ts: acceptance fixture"
+      acceptance: "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_field_initializers"
 done:
   - id: 236
     title: "Implement new.target metaproperty (W9a)"

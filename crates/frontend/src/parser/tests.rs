@@ -1769,6 +1769,49 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_public_field_initializers_as_constructor_assignments() {
+        let program =
+            parse_program("class C { a = 1; b: number = this.a + 2; c; getValue() { return this.b; } }")
+                .unwrap();
+
+        let Stmt::ClassDecl { body, .. } = &program[0] else {
+            panic!("expected class declaration");
+        };
+        let Stmt::Function {
+            name,
+            body: constructor_body,
+            ..
+        } = &body[0]
+        else {
+            panic!("expected synthetic constructor");
+        };
+
+        assert_eq!(name, "constructor");
+        assert_eq!(constructor_body.len(), 3);
+        for (stmt, expected_name) in constructor_body.iter().zip(["a", "b", "c"]) {
+            let Stmt::Expr {
+                expr:
+                    Expr::PropertyAssign {
+                        object, property, ..
+                    },
+                ..
+            } = stmt
+            else {
+                panic!("expected field assignment, got {stmt:?}");
+            };
+            assert!(matches!(object.as_ref(), Expr::This { .. }));
+            assert_eq!(property, expected_name);
+        }
+        assert!(matches!(
+            &constructor_body[2],
+            Stmt::Expr {
+                expr: Expr::PropertyAssign { value, .. },
+                ..
+            } if matches!(value.as_ref(), Expr::Undefined { .. })
+        ));
+    }
+
+    #[test]
     fn parses_private_class_elements_as_distinct_class_elements() {
         let program = parse_program(
             "class C { #x = 1; static #y; #m(value) { return value; } get #z() { return 1; } set #z(value) {} }",
