@@ -181,6 +181,163 @@ open:
       files:
         - "scripts/check/architecture-rules.py: add 3+ new checks"
       acceptance: "Architecture check catches new violations without blocking pre-existing ones"
+  - id: 263
+    title: "Define HIR/MIR/Wasm IR layer boundaries in lowered IR (P10)"
+    priority: P2
+    type: refactor
+    area: ir
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "mise run check architecture"
+      - "test -f crates/ir/src/lowered/hir.rs && grep -q 'enum HirExpr' crates/ir/src/lowered/hir.rs"
+      - "test -f crates/ir/src/lowered/mir.rs && grep -q 'enum MirExpr' crates/ir/src/lowered/mir.rs"
+    non_goals:
+      - "No change to lowering semantics or wasm output."
+      - "No change to RuntimeFn catalog or runtime ABI."
+    plan:
+      goal: "Split LoweredExpr into HIR (JS semantics, no WASM layout) and MIR (runtime ABI, typed RuntimeFn calls) layers; current LoweredExpr becomes a pass-through container"
+      files:
+        - "crates/ir/src/lowered/hir.rs: HIR enum with JS semantic operations (JsAdd, GetProp, etc.)"
+        - "crates/ir/src/lowered/mir.rs: MIR enum with runtime ABI operations (CallRuntime, WasmPrimitive, etc.)"
+        - "crates/ir/src/lowered/lower.rs: HIR→MIR lowering pass"
+        - "crates/ir/src/lowered/types.rs: simplify LoweredExpr to compose HIR/MIR"
+      acceptance: "HIR/MIR types defined; HIR→MIR lowering pass exists; existing tests pass"
+  - id: 264
+    title: "Replace raw WAT string emission with typed WatWriter API (P10)"
+    priority: P2
+    type: refactor
+    area: backend
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "grep -q 'struct WatWriter' crates/backend-wasm/src/wat_writer.rs"
+      - "mise run check architecture"
+    non_goals:
+      - "No change to generated WAT content or wasm binary."
+      - "No change to runtime function WAT implementations (can be incremental)."
+    plan:
+      goal: "Introduce a typed WatWriter that prevents bracket/indent/stack discipline errors by providing structured methods (call_runtime, local_get, i32_const, block, etc.) instead of raw wat.push_str calls"
+      files:
+        - "crates/backend-wasm/src/wat_writer.rs: WatWriter struct with typed methods"
+        - "crates/backend-wasm/src/expr_emit.rs: use WatWriter in place of raw push_str"
+        - "crates/backend-wasm/src/statement_emit.rs: use WatWriter"
+        - "crates/backend-wasm/src/emitter/mod.rs: thread WatWriter through emit methods"
+      acceptance: "New code uses WatWriter; existing emit functions are incrementally migrated; no regressions"
+  - id: 265
+    title: "Add remaining architecture fitness functions for backend/frontend coupling (P10)"
+    priority: P3
+    type: test
+    area: tooling
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "mise run check architecture"
+      - "grep -q 'backend_frontend_dep' scripts/check/architecture-rules.py"
+      - "grep -q 'no_runtimefn_spec_gap' scripts/check/architecture-rules.py || grep -q 'no_runtime_fn_all_gap' scripts/check/architecture-rules.py"
+    non_goals:
+      - "No change to existing file/function size violations (tracked separately)."
+      - "No change to backend or compiler behavior."
+    plan:
+      goal: "Add architecture checks from docs/24 §15: backend→frontend dependency ban, RuntimeFn::all/enum variant completeness check, RuntimeSpec coverage check, host import manifest coverage check"
+      files:
+        - "scripts/check/architecture-rules.py: add 4+ new checks"
+      acceptance: "Architecture check catches: backend imports from frontend, RuntimeFn variants missing from all/spec, host imports without manifest coverage"
+  - id: 266
+    title: "Implement Object Semantics Kernel (OrdinaryGet/Set/etc.) in lowered IR (P10)"
+    priority: P2
+    type: feature
+    area: ir
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "test -f crates/ir/src/lowered/object_kernel.rs && grep -qE 'OrdinaryGet|OrdinarySet' crates/ir/src/lowered/object_kernel.rs"
+    non_goals:
+      - "No change to RuntimeFn catalog or runtime ABI."
+      - "Completion Record kernel is tracked separately (issue 267)."
+    plan:
+      goal: "Consolidate property access/assignment/delete/in operations into shared OrdinaryGet/OrdinarySet/OrdinaryHasProperty/OrdinaryDelete internal operations, reducing duplication across property-related lowering paths"
+      files:
+        - "crates/ir/src/lowered/object_kernel.rs: object internal method dispatch"
+        - "crates/ir/src/lowered/resolver/expr.rs: use kernel for property arms"
+        - "crates/ir/src/lowered/resolver/extra.rs: use kernel for spread/copy operations"
+      acceptance: "Object kernel functions exist and are used by property-lowering paths; existing tests pass"
+  - id: 267
+    title: "Implement Completion Record kernel for control flow lowering (P10)"
+    priority: P2
+    type: feature
+    area: ir
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "test -f crates/ir/src/lowered/completion.rs && grep -qE 'CompletionRecord|CompletionKind' crates/ir/src/lowered/completion.rs"
+    non_goals:
+      - "No change to RuntimeFn catalog or runtime ABI."
+      - "Async/await support is out of scope."
+    plan:
+      goal: "Introduce Completion Record (status/value/target) representation in lowered IR to correctly handle return/throw/break/continue through try/finally/with blocks"
+      files:
+        - "crates/ir/src/lowered/completion.rs: CompletionRecord/CompletionKind types"
+        - "crates/ir/src/lowered/resolver/expr.rs: use for return/throw/break/continue lowering"
+        - "crates/ir/src/lowered/resolver/extra.rs: use for try/finally lowering"
+      acceptance: "Completion Record types defined and integrated into control flow lowering; try/finally produces correct WAT"
+  - id: 268
+    title: "Remove backend-wasm dependency on ts2wasm-frontend (P10)"
+    priority: P2
+    type: refactor
+    area: backend
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "! grep -q 'ts2wasm-frontend' crates/backend-wasm/Cargo.toml"
+      - "mise run check architecture"
+    non_goals:
+      - "No change to wasm emission behavior."
+      - "No change to runtime function semantics."
+    plan:
+      goal: "Remove ts2wasm-frontend from backend-wasm/Cargo.toml [dependencies] by migrating remaining frontend type imports to shared types"
+      files:
+        - "crates/backend-wasm/Cargo.toml: remove ts2wasm-frontend dependency"
+        - "crates/backend-wasm/src/*.rs: migrate remaining frontend imports to shared types"
+      acceptance: "crates/backend-wasm/Cargo.toml has no ts2wasm-frontend dependency; no ts2wasm_frontend imports in crates/backend-wasm/src/"
+  - id: 269
+    title: "Reduce file size limit DEFAULT_MAX_FILE_LINES from 4100 in phases (P10)"
+    priority: P3
+    type: refactor
+    area: tooling
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "mise run check architecture"
+      - "grep -q '3000' scripts/check/architecture-rules.py && ! grep -q 'MAX_FILE_LINES = 4100' scripts/check/architecture-rules.py"
+    non_goals:
+      - "No change to allowlisted files (existing oversized files remain allowed)."
+      - "No change to backend or compiler behavior."
+    plan:
+      goal: "Lower DEFAULT_MAX_FILE_LINES from 4100 to 3000 (phase 1), then 2000 (phase 2), then 1500 (phase 3), each with allowlist updates for files that still exceed the threshold"
+      files:
+        - "scripts/check/architecture-rules.py: update DEFAULT_MAX_FILE_LINES constant and allowlist"
+        - "See docs/24-architecture-decoupling-and-llm-friendly-sizing.md §4.1 for phase details"
+      acceptance: "Architecture check enforces file size limit at each phased threshold; remaining oversized files have explicit allowlist entries"
 active: []
 done:
   - id: 250
