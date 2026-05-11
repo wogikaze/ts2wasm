@@ -80,7 +80,7 @@ export function useTestData() {
 export function useCoverageData() {
   const [coverage, setCoverage] = useState<CoverageData>({
     total: 0,
-    implemented: 0,
+build_implemented: 0,
     unimplemented: 0,
     future: 0,
     byPriority: { p0: 0, p1: 0, p2: 0, p3: 0, future: 0 }
