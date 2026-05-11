@@ -5,7 +5,7 @@ use ts2wasm_ir::lowered::{
     ClosureRepresentation, FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp,
     LoweredProgram, LoweredStmt, LoweredUnaryOp,
 };
-use ts2wasm_ir::RuntimeIntrinsic;
+use ts2wasm_ir::lowered::RuntimeIntrinsic;
 use ts2wasm_runtime_abi::ValueTag;
 
 use super::runtime_fn::{
@@ -762,7 +762,7 @@ mod tests {
     use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{
         FuncId, FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt,
-        ModuleInfo,
+        ModuleInfo, RuntimeIntrinsic,
     };
 
     use super::{HostImport, RuntimeFn, RuntimeGlobal, RuntimeLinkPlan};

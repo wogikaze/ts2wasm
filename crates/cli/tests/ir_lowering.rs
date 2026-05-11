@@ -321,7 +321,7 @@ fn lowering_routes_regexp_literal_test_to_runtime_call() {
             },
             _,
         ) => {
-            assert_eq!(ref intrinsic, "RegExpTest");
+            assert_eq!(*intrinsic, RuntimeIntrinsic::RegexpTest);
             assert_eq!(args.len(), 2);
         }
         other => panic!("unexpected lowered statement: {other:?}"),
@@ -352,7 +352,7 @@ fn lowering_routes_new_regexp_test_to_runtime_call() {
             },
             _,
         ) => {
-            assert_eq!(ref intrinsic, "RegExpTest");
+            assert_eq!(*intrinsic, RuntimeIntrinsic::RegexpTest);
             assert_eq!(args.len(), 2);
         }
         other => panic!("unexpected lowered RegExp test statement: {other:?}"),
@@ -384,7 +384,7 @@ fn lowering_routes_new_regexp_with_g_flag_test_to_runtime_call() {
             },
             _,
         ) => {
-            assert_eq!(ref intrinsic, "RegExpTest");
+            assert_eq!(*intrinsic, RuntimeIntrinsic::RegexpTest);
             assert_eq!(args.len(), 2);
         }
         other => panic!("unexpected lowered RegExp test statement: {other:?}"),
@@ -406,7 +406,7 @@ fn lowering_routes_direct_new_regexp_test_to_runtime_call() {
             },
             _,
         ) => {
-            assert_eq!(ref intrinsic, "RegExpTest");
+            assert_eq!(*intrinsic, RuntimeIntrinsic::RegexpTest);
             assert_eq!(args.len(), 2);
         }
         other => panic!("unexpected lowered direct new RegExp.prototype.test statement: {other:?}"),

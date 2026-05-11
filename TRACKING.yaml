@@ -8,33 +8,6 @@ meta:
     roadmap_source: docs/roadmap.md
     closed_source: docs/done-tracking.yaml
 open:
-  - id: 251
-    title: "Replace include! with real module boundaries in lowered.rs (P9)"
-    priority: P1
-    type: refactor
-    area: ir
-    status: open
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: ""
-    acceptance:
-      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
-      - "mise run check architecture"
-      - "grep -q 'pub mod types;' crates/ir/src/lowered.rs"
-      - "grep -q 'pub mod program;' crates/ir/src/lowered.rs"
-      - "! grep -q 'include!(' crates/ir/src/lowered.rs"
-    non_goals:
-      - "No change to resolver/ expr/extra module structure (already real modules)."
-      - "No change to public API or lowered type definitions."
-    plan:
-      goal: "Replace include!(lowered/types.rs) etc. with pub mod + pub use in lowered.rs"
-      files:
-        - "crates/ir/src/lowered.rs: convert include! to mod"
-        - "crates/ir/src/lowered/types.rs: standalone source file (no change)"
-        - "crates/ir/src/lowered/program.rs: standalone source file (no change)"
-        - "crates/ir/src/lowered/validate.rs: standalone source file (no change)"
-        - "crates/ir/src/lowered/runtime_intrinsic.rs: standalone source file (no change)"
-      acceptance: "pub mod types; pub mod program; pub mod validate; pub mod runtime_intrinsic; in lowered.rs; no include! remains"
   - id: 250
     title: "Split lower_expr branches from resolver/expr.rs into domain modules (P9)"
     priority: P1

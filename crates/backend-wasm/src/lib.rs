@@ -102,7 +102,7 @@ mod tests {
     use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{
         ClassPrototypeRef, FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr,
-        LoweredFunction, LoweredProgram, LoweredStmt, ModuleInfo, Validated,
+        LoweredFunction, LoweredProgram, LoweredStmt, ModuleInfo, RuntimeIntrinsic, Validated,
     };
     use ts2wasm_ir::{builtin_resolver, lowered, name_resolver};
     use ts2wasm_runtime_abi::{Layout, ValueTag};
