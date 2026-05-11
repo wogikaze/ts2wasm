@@ -9,6 +9,105 @@ meta:
     closed_source: docs/done-tracking.yaml
 open:
 done:
+- id: 293
+  title: Add pseudo-intrinsic variants to RuntimeFn / RuntimeIntrinsic enum
+  priority: P10
+  type: refactor
+  area: runtime-catalog
+  status: done
+  created: 2026-05-12
+  updated: 2026-05-12
+  roadmap: P10-runtime-intrinsic-refactor
+  acceptance:
+  - cargo nextest run -p ts2wasm-runtime-catalog
+  - cargo nextest run -p ts2wasm-backend-wasm --test runtime_intrinsic_mapping
+  - grep "ArrayPushMany" crates/runtime-catalog/src/runtime_fn.rs
+  - grep "pseudo" crates/runtime-catalog/src/runtime/manifest/all.rs
+  evidence:
+    commit: PLACEHOLDER
+    commands:
+    - cargo check -p ts2wasm-ir -p ts2wasm-runtime-catalog -p ts2wasm-backend-wasm -p ts2wasm-compiler => pass
+    - cargo nextest run -p ts2wasm-backend-wasm --test runtime_intrinsic_mapping => pass
+    - cargo fmt --all --check => pass
+- id: 291
+  title: Re-export RuntimeFn from ir as RuntimeIntrinsic and remove duplicate enum
+  priority: P10
+  type: refactor
+  area: ir
+  status: done
+  created: 2026-05-12
+  updated: 2026-05-12
+  roadmap: P10-runtime-intrinsic-refactor
+  acceptance:
+  - grep "^pub use" crates/ir/src/lowered/runtime_intrinsic.rs | grep RuntimeFn
+  - cargo nextest run -p ts2wasm-ir
+  - grep -v "^pub enum RuntimeIntrinsic" crates/ir/src/lowered/runtime_intrinsic.rs
+  evidence:
+    commit: PLACEHOLDER
+    commands:
+    - cargo check -p ts2wasm-ir -p ts2wasm-runtime-catalog -p ts2wasm-backend-wasm => pass
+    - cargo fmt --all --check => pass
+    - cargo nextest run -p ts2wasm-ir => pass
+- id: 289
+  title: Add HirDump framework and hir snapshot tests
+  priority: P10
+  type: test
+  area: ir
+  status: done
+  created: 2026-05-12
+  updated: 2026-05-12
+  roadmap: P10-ir-dump-debug
+  acceptance:
+  - cargo nextest run -p ts2wasm-ir::hir_snapshot
+  - grep "fn dump_hir_program" crates/ir/src/lowered/hir_dump.rs
+  - grep "HirDump" crates/ir/src/lowered/hir_dump.rs
+  evidence:
+    commit: PLACEHOLDER
+    commands:
+    - cargo check -p ts2wasm-ir => pass
+    - cargo nextest run -p ts2wasm-ir => pass
+    - cargo fmt --all --check => pass
+- id: 288
+  title: Add MirDump framework and mir snapshot tests
+  priority: P10
+  type: test
+  area: ir
+  status: done
+  created: 2026-05-12
+  updated: 2026-05-12
+  roadmap: P10-ir-dump-debug
+  acceptance:
+  - cargo nextest run -p ts2wasm-ir::mir_snapshot
+  - grep "fn dump_mir_program" crates/ir/src/lowered/mir_dump.rs
+  - grep "MirDump" crates/ir/src/lowered/mir_dump.rs
+  evidence:
+    commit: PLACEHOLDER
+    commands:
+    - cargo check -p ts2wasm-ir => pass
+    - cargo nextest run -p ts2wasm-ir => pass
+    - cargo fmt --all --check => pass
+- id: 287
+  title: Add RuntimeFn variants missing from runtime_fn_from_name mapping
+  priority: P10
+  type: fix
+  area: runtime-catalog
+  status: done
+  created: 2026-05-12
+  updated: 2026-05-12
+  roadmap: P10-runtime-intrinsic-refactor
+  acceptance:
+  - cargo nextest run -p ts2wasm-runtime-catalog
+  - cargo nextest run -p ts2wasm-backend-wasm --test runtime_intrinsic_mapping
+  - cargo nextest run -p ts2wasm-backend-wasm --test host_import_capability
+  - cargo nextest run -p ts2wasm-backend-wasm --test runtime_link_plan
+  evidence:
+    commit: PLACEHOLDER
+    commands:
+    - cargo check -p ts2wasm-ir -p ts2wasm-runtime-catalog -p ts2wasm-backend-wasm -p ts2wasm-compiler => pass
+    - cargo nextest run -p ts2wasm-backend-wasm --test runtime_intrinsic_mapping => pass
+    - cargo nextest run -p ts2wasm-backend-wasm --test host_import_capability => pass
+    - cargo nextest run -p ts2wasm-backend-wasm --test runtime_link_plan => pass
+    - cargo fmt --all --check => pass
 - id: 298
   title: Break backend JSON runtime emitter into parser, serializer, value, string, and error modules
   priority: P3
