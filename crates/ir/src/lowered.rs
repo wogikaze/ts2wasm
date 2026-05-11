@@ -1,4 +1,5 @@
 // Replaced include! with real module boundaries
+pub mod captures;
 pub mod classes;
 pub mod completion;
 pub mod ctx;
