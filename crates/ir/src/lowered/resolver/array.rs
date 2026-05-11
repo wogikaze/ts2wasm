@@ -1885,7 +1885,6 @@ impl<'a> super::Resolver<'a> {
         let result_expr = LoweredExpr::Local(result, Span::generated("local"));
         Ok((init_stmts, while_body, result_expr))
     }
-
 }
 
 fn dense_array_like_object_elements(props: &[(String, ResolvedExpr)]) -> Option<Vec<ResolvedExpr>> {

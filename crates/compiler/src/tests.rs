@@ -501,10 +501,11 @@ console.log(value);
     let graph = build_entry_module_graph(&entry, &program).expect("graph should build");
     let static_module_binding = lower_static_named_import_bindings_for_build(&program, &graph)
         .expect("static named import binding should lower");
-    let name_resolved = name_resolver::resolve_names(&static_module_binding.rewritten_program)
-        .expect("names should resolve");
-    let resolved =
-        builtin_resolver::resolve_builtins(&name_resolved).expect("builtins should resolve");
+    let name_resolved =
+        ts2wasm_ir::name_resolver::resolve_names(&static_module_binding.rewritten_program)
+            .expect("names should resolve");
+    let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&name_resolved)
+        .expect("builtins should resolve");
     let lowered_program = lowered::lower_program(&resolved).expect("program should lower");
     let lowered_program = lower_static_named_import_reads_for_build(
         lowered_program,
@@ -573,8 +574,9 @@ export default 2;
     let graph = build_entry_module_graph(&entry, &program).expect("graph should build");
     let static_module_binding = lower_static_named_import_bindings_for_build(&program, &graph)
         .expect("static default export binding should lower");
-    let name_resolved = name_resolver::resolve_names(&static_module_binding.rewritten_program)
-        .expect("synthetic default locals should not collide");
+    let name_resolved =
+        ts2wasm_ir::name_resolver::resolve_names(&static_module_binding.rewritten_program)
+            .expect("synthetic default locals should not collide");
 
     let names = static_module_binding
         .rewritten_program
@@ -625,10 +627,11 @@ fn static_function_export_lowering_populates_entry_module_export() {
         other => panic!("unexpected rewritten export function stmt: {other:?}"),
     }
 
-    let name_resolved = name_resolver::resolve_names(&static_module_binding.rewritten_program)
-        .expect("rewritten function export should resolve");
-    let resolved =
-        builtin_resolver::resolve_builtins(&name_resolved).expect("builtins should resolve");
+    let name_resolved =
+        ts2wasm_ir::name_resolver::resolve_names(&static_module_binding.rewritten_program)
+            .expect("rewritten function export should resolve");
+    let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&name_resolved)
+        .expect("builtins should resolve");
     let lowered_program = lowered::lower_program(&resolved).expect("program should lower");
     let lowered_program = populate_static_module_exports_for_build(
         lowered_program,

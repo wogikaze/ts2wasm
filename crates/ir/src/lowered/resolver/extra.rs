@@ -2,9 +2,8 @@ use std::collections::HashSet;
 
 use super::{
     Resolver, StaticFunctionArrayLike, is_invalid_date_constructor_expr,
-    is_set_prototype_property_expr, is_static_copy_safe_object_prop_value,
-    lowered_binding_default, string_constructor_arrow_callback,
-    unary_plus_arrow_callback,
+    is_set_prototype_property_expr, is_static_copy_safe_object_prop_value, lowered_binding_default,
+    string_constructor_arrow_callback, unary_plus_arrow_callback,
 };
 use crate::binding_pattern::{ArrayBinding, BindingDefault, BindingPattern, ObjectBinding};
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
@@ -983,4 +982,3 @@ impl<'a> Resolver<'a> {
             .collect()
     }
 }
-

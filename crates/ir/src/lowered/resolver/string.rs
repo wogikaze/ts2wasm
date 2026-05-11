@@ -44,10 +44,7 @@ impl<'a> super::Resolver<'a> {
         }
     }
 
-    pub(super) fn resolved_expr_static_string_value(
-        &self,
-        expr: &ResolvedExpr,
-    ) -> Option<String> {
+    pub(super) fn resolved_expr_static_string_value(&self, expr: &ResolvedExpr) -> Option<String> {
         match expr {
             ResolvedExpr::String(value) => Some(value.clone()),
             ResolvedExpr::Ident(name) => {
