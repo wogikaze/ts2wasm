@@ -9,7 +9,7 @@ use ts2wasm_frontend::{
 };
 use ts2wasm_ir::builtin::BuiltinId;
 use ts2wasm_ir::builtin_resolved::ResolvedStmt;
-use ts2wasm_ir::lowered::LoweredProgram;
+use ts2wasm_ir::lowered::{LoweredProgram, Validated};
 use ts2wasm_ir::optimizer::{OptimizationLevel, OptimizedHirProgram};
 use ts2wasm_ir::semantic::{HirExpr, HirProgram, HirRelationalOp, HirStmt};
 
@@ -146,7 +146,14 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
             push_optional_typed_ir_section(&mut out, &pipeline.typed_ir)?;
             push_optional_optimized_ir_section(&mut out, &pipeline.optimized_ir)?;
             push_section(&mut out, "lowered", &format!("{:#?}", pipeline.lowered));
-            let wat = backend::emit_wat(&pipeline.lowered)?;
+            let (validated, _) =
+                Validated::new(pipeline.lowered.clone()).map_err(|d| Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: d.message,
+                    span: d.span,
+                    phase: None,
+                })?;
+            let wat = backend::emit_wat(&validated)?;
             push_section(&mut out, "wat", &wat);
         }
         DumpPhase::Resolved => {
@@ -162,7 +169,14 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
             push_section(&mut out, "lowered", &format!("{:#?}", pipeline.lowered));
         }
         DumpPhase::Wat => {
-            let wat = backend::emit_wat(&pipeline.lowered)?;
+            let (validated, _) =
+                Validated::new(pipeline.lowered.clone()).map_err(|d| Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: d.message,
+                    span: d.span,
+                    phase: None,
+                })?;
+            let wat = backend::emit_wat(&validated)?;
             push_section(&mut out, "wat", &wat);
         }
         DumpPhase::Tokens | DumpPhase::Ast => unreachable!("handled before full pipeline"),

@@ -144,18 +144,16 @@ pub fn build_file_with_host_deny(
         &module_graph,
         &static_module_binding.module_exports,
     )?;
-    let diagnostics = match lowered::validate_lowered(&lowered) {
-        Ok(()) => vec![],
-        Err(errs) => errs,
-    };
-    ensure_runtime_feature_gates(&lowered).map_err(|d| d.with_phase("runtime-gate"))?;
+    let (validated, lower_diagnostics) =
+        ts2wasm_ir::lowered::Validated::new(lowered).map_err(|d| d.with_phase("backend"))?;
+    ensure_runtime_feature_gates(validated.as_ref()).map_err(|d| d.with_phase("runtime-gate"))?;
 
     if host_deny {
-        validate_host_deny(&lowered).map_err(|d| d.with_phase("runtime-gate"))?;
+        validate_host_deny(validated.as_ref()).map_err(|d| d.with_phase("runtime-gate"))?;
     }
 
     if let Some(path) = capability_manifest_output {
-        let manifest = backend::emit_canonical_manifest_json(&lowered);
+        let manifest = backend::emit_canonical_manifest_json(validated.as_ref());
         fs::write(path, manifest).map_err(|error| Diagnostic {
             code: DiagCode::BackendIo,
             message: format!("failed to write {}: {error}", path.display()),
@@ -163,11 +161,11 @@ pub fn build_file_with_host_deny(
             phase: None,
         })?;
     }
-    let wat = backend::emit_wat(&lowered).map_err(|d| d.with_phase("backend"))?;
+    let wat = backend::emit_wat(&validated).map_err(|d| d.with_phase("backend"))?;
     write_wasm_from_wat(&wat, output).map_err(|d| d.with_phase("backend"))?;
     Ok(CompileReport {
         value: (),
-        diagnostics,
+        diagnostics: lower_diagnostics,
     })
 }
 
@@ -1131,18 +1129,16 @@ fn build_multi_section_file(
         modules,
     };
 
-    let diagnostics = match lowered::validate_lowered(&lowered) {
-        Ok(()) => vec![],
-        Err(errs) => errs,
-    };
-    ensure_runtime_feature_gates(&lowered).map_err(|d| d.with_phase("runtime-gate"))?;
+    let (validated, lower_diagnostics) =
+        ts2wasm_ir::lowered::Validated::new(lowered).map_err(|d| d.with_phase("backend"))?;
+    ensure_runtime_feature_gates(validated.as_ref()).map_err(|d| d.with_phase("runtime-gate"))?;
 
     if host_deny {
-        validate_host_deny(&lowered).map_err(|d| d.with_phase("runtime-gate"))?;
+        validate_host_deny(validated.as_ref()).map_err(|d| d.with_phase("runtime-gate"))?;
     }
 
     if let Some(path) = capability_manifest_output {
-        let manifest = backend::emit_canonical_manifest_json(&lowered);
+        let manifest = backend::emit_canonical_manifest_json(validated.as_ref());
         fs::write(path, manifest).map_err(|error| Diagnostic {
             code: DiagCode::BackendIo,
             message: format!("failed to write {}: {error}", path.display()),
@@ -1150,11 +1146,11 @@ fn build_multi_section_file(
             phase: None,
         })?;
     }
-    let wat = backend::emit_wat(&lowered).map_err(|d| d.with_phase("backend"))?;
+    let wat = backend::emit_wat(&validated).map_err(|d| d.with_phase("backend"))?;
     write_wasm_from_wat(&wat, output).map_err(|d| d.with_phase("backend"))?;
     Ok(CompileReport {
         value: (),
-        diagnostics,
+        diagnostics: lower_diagnostics,
     })
 }
 
@@ -2736,8 +2732,10 @@ console.log(value);
         lowered::validate_lowered(&lowered_program)
             .expect("module statements should validate as lowered IR");
 
-        let wat = backend::emit_wat(&lowered_program)
-            .expect("lowered module metadata should remain buildable");
+        let (validated, _diags) =
+            ts2wasm_ir::lowered::Validated::new(lowered_program).expect("already validated above");
+        let wat =
+            backend::emit_wat(&validated).expect("lowered module metadata should remain buildable");
         assert!(wat.contains("$module_require"));
         assert!(wat.contains("$property_get"));
         assert!(wat.contains("$module_exports_set"));

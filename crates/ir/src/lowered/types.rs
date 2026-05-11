@@ -521,3 +521,55 @@ impl LoweredExpr {
         }
     }
 }
+
+/// A validated wrapper that guarantees the inner program has passed
+/// `validate_lowered`. Fatal validation errors (InvariantViolation) are
+/// rejected at construction time. Non-fatal diagnostics are returned alongside
+/// the wrapper so callers can report them without blocking emission.
+///
+/// Backend APIs should accept `&Validated<LoweredProgram>` instead of
+/// `&LoweredProgram` to enforce the contract at the type level.
+#[derive(Debug)]
+pub struct Validated<T> {
+    inner: T,
+    non_fatal: Vec<Diagnostic>,
+}
+
+impl Validated<LoweredProgram> {
+    /// Validate `program` and return a `Validated` wrapper.
+    ///
+    /// Returns `Err` only for fatal errors (InvariantViolation).
+    /// Non-fatal diagnostics are returned in the tuple alongside the wrapper.
+    pub fn new(program: LoweredProgram) -> Result<(Self, Vec<Diagnostic>), Diagnostic> {
+        let mut non_fatal = Vec::new();
+        if let Err(errors) = validate_lowered(&program) {
+            for e in errors {
+                if e.code == DiagCode::InvariantViolation {
+                    return Err(Diagnostic {
+                        code: e.code,
+                        message: e.message,
+                        span: e.span,
+                        phase: None,
+                    });
+                }
+                non_fatal.push(e);
+            }
+        }
+        Ok((Self { inner: program, non_fatal: non_fatal.clone() }, non_fatal))
+    }
+
+    /// Borrow the inner program.
+    pub fn as_ref(&self) -> &LoweredProgram {
+        &self.inner
+    }
+
+    /// Access non-fatal diagnostics collected during validation.
+    pub fn non_fatal_diagnostics(&self) -> &[Diagnostic] {
+        &self.non_fatal
+    }
+
+    /// Consume the wrapper and return the inner program.
+    pub fn into_inner(self) -> LoweredProgram {
+        self.inner
+    }
+}

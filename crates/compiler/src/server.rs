@@ -468,8 +468,10 @@ fn compile_source_text_with_emit(
     match emit_mode {
         EmitMode::Check => Ok(None),
         EmitMode::Wasm => {
+            let (validated, _) = ts2wasm_ir::lowered::Validated::new(lowered)
+                .map_err(|d| d.with_phase("backend"))?;
             let output = tmpdir.join(format!("{}.wasm", id));
-            ts2wasm_backend_wasm::emit_wat(&lowered)
+            ts2wasm_backend_wasm::emit_wat(&validated)
                 .map_err(|d| d.with_phase("backend"))
                 .and_then(|wat| write_wasm_from_wat(&wat, &output))
                 .map_err(|d| d.with_phase("backend"))?;

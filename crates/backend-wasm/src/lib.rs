@@ -22,7 +22,7 @@ mod wasm_binary;
 mod wat_writer;
 
 pub use ts2wasm_frontend::{DiagCode, Diagnostic};
-use ts2wasm_ir::lowered::LoweredProgram;
+use ts2wasm_ir::lowered::{LoweredProgram, Validated};
 
 pub(crate) use runtime_fn::RuntimeFn;
 pub use runtime_link_plan::{LinkPlanSnapshot, emit_link_plan_snapshot_json};
@@ -39,48 +39,15 @@ pub fn has_node_host_imports(program: &LoweredProgram) -> bool {
     })
 }
 
-pub fn emit_wat(program: &LoweredProgram) -> Result<String, Diagnostic> {
-    if let Err(errors) = ts2wasm_ir::lowered::validate_lowered(program) {
-        // Only fatal errors (InvariantViolation) block WAT emission.
-        // UnsupportedModule etc. produce valid WAT (runtime handles the issue).
-        let fatal = errors
-            .into_iter()
-            .find(|e| e.code == DiagCode::InvariantViolation);
-        if let Some(fatal) = fatal {
-            return Err(Diagnostic {
-                code: DiagCode::InvariantViolation,
-                message: format!(
-                    "refusing to emit WAT from invalid lowered IR: [{:?}] {}",
-                    fatal.code, fatal.message
-                ),
-                span: fatal.span,
-
-                phase: None,
-            });
-        }
-    }
-    emitter::emit_wat(program)
+pub fn emit_wat(program: &Validated<LoweredProgram>) -> Result<String, Diagnostic> {
+    // Validated guarantees no fatal InvariantViolation errors.
+    // Non-fatal diagnostics (UnsupportedModule etc.) produce valid WAT.
+    emitter::emit_wat(program.as_ref())
 }
 
-pub fn emit_wasm_binary_mvp(program: &LoweredProgram) -> Result<Vec<u8>, Diagnostic> {
-    if let Err(errors) = ts2wasm_ir::lowered::validate_lowered(program) {
-        let fatal = errors
-            .into_iter()
-            .find(|e| e.code == DiagCode::InvariantViolation);
-        if let Some(fatal) = fatal {
-            return Err(Diagnostic {
-                code: DiagCode::InvariantViolation,
-                message: format!(
-                    "refusing to emit wasm binary from invalid lowered IR: [{:?}] {}",
-                    fatal.code, fatal.message
-                ),
-                span: fatal.span,
-
-                phase: None,
-            });
-        }
-    }
-    binary_mvp::emit_wasm_binary_mvp(program)
+pub fn emit_wasm_binary_mvp(program: &Validated<LoweredProgram>) -> Result<Vec<u8>, Diagnostic> {
+    // Validated guarantees no fatal InvariantViolation errors.
+    binary_mvp::emit_wasm_binary_mvp(program.as_ref())
 }
 
 pub fn program_requires_read_stdin_bytes_runtime(program: &LoweredProgram) -> bool {
@@ -127,7 +94,7 @@ mod tests {
     use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{
         ClassPrototypeRef, FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr,
-        LoweredFunction, LoweredProgram, LoweredStmt, ModuleInfo,
+        LoweredFunction, LoweredProgram, LoweredStmt, ModuleInfo, Validated,
     };
     use ts2wasm_ir::{builtin_resolver, lowered, name_resolver};
     use ts2wasm_runtime_abi::{Layout, ValueTag};
@@ -149,7 +116,7 @@ mod tests {
             modules: vec![],
         };
 
-        let err = emit_wat(&program).expect_err("emit_wat must reject residual MethodCall");
+        let err = Validated::new(program).expect_err("Validated must reject residual MethodCall");
         assert_eq!(err.code, DiagCode::InvariantViolation);
         assert!(err.message.contains("MethodCall"));
     }
@@ -166,7 +133,7 @@ mod tests {
             modules: vec![],
         };
 
-        let err = emit_wat(&program).expect_err("emit_wat must reject residual this");
+        let err = Validated::new(program).expect_err("Validated must reject residual this");
         assert_eq!(err.code, DiagCode::InvariantViolation);
         assert!(err.message.contains("issue-211: residual `this`"));
     }
@@ -174,12 +141,13 @@ mod tests {
     #[test]
     fn direct_wasm_binary_mvp_runs_basics_hello_like_wat_path() {
         let program = lower_fixture("../../fixtures/basics-hello/hello.ts");
+        let (validated, _) = Validated::new(program).expect("hello fixture should pass validation");
         let direct_wasm =
-            emit_wasm_binary_mvp(&program).expect("hello fixture should emit direct wasm binary");
+            emit_wasm_binary_mvp(&validated).expect("hello fixture should emit direct wasm binary");
         assert_binary_imports_fd_write(&direct_wasm);
 
         let manifest: serde_json::Value =
-            serde_json::from_str(&emit_canonical_manifest_json(&program))
+            serde_json::from_str(&emit_canonical_manifest_json(validated.as_ref()))
                 .expect("manifest should be valid JSON");
         assert_eq!(manifest["wasi"]["stdout"], true);
         assert!(
@@ -190,7 +158,7 @@ mod tests {
                 .any(|reason| reason == "console.log")
         );
 
-        let wat = emit_wat(&program).expect("hello fixture should still emit WAT");
+        let wat = emit_wat(&validated).expect("hello fixture should still emit WAT");
         let temp_dir = unique_temp_dir("direct-wasm-binary-mvp");
         fs::create_dir_all(&temp_dir).expect("temp dir should be created");
         let direct_path = temp_dir.join("hello-direct.wasm");
@@ -232,7 +200,8 @@ mod tests {
             modules: vec![],
         };
 
-        let err = emit_wasm_binary_mvp(&program).expect_err("non-console.log shape is out of MVP");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let err = emit_wasm_binary_mvp(&v).expect_err("non-console.log shape is out of MVP");
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(err.message.contains("direct wasm binary MVP"));
     }
@@ -252,9 +221,10 @@ mod tests {
             functions: vec![],
             modules: vec![],
         };
+        let (v, _) = Validated::new(program).expect("should validate");
         let direct_wasm =
-            emit_wasm_binary_mvp(&program).expect("number literal should emit direct wasm binary");
-        let wat = emit_wat(&program).expect("should emit WAT");
+            emit_wasm_binary_mvp(&v).expect("number literal should emit direct wasm binary");
+        let wat = emit_wat(&v).expect("should emit WAT");
         let temp_dir = unique_temp_dir("direct-wasm-binary-mvp-number");
         fs::create_dir_all(&temp_dir).expect("temp dir should be created");
         let direct_path = temp_dir.join("direct.wasm");
@@ -303,9 +273,10 @@ mod tests {
             functions: vec![],
             modules: vec![],
         };
+        let (v, _) = Validated::new(program).expect("should validate");
         let direct_wasm =
-            emit_wasm_binary_mvp(&program).expect("local variable should emit direct wasm binary");
-        let wat = emit_wat(&program).expect("should emit WAT");
+            emit_wasm_binary_mvp(&v).expect("local variable should emit direct wasm binary");
+        let wat = emit_wat(&v).expect("should emit WAT");
         let temp_dir = unique_temp_dir("direct-wasm-binary-mvp-local");
         fs::create_dir_all(&temp_dir).expect("temp dir should be created");
         let direct_path = temp_dir.join("direct.wasm");
@@ -354,9 +325,10 @@ mod tests {
             functions: vec![],
             modules: vec![],
         };
-        let direct_wasm = emit_wasm_binary_mvp(&program)
-            .expect("binary expression should emit direct wasm binary");
-        let wat = emit_wat(&program).expect("should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let direct_wasm =
+            emit_wasm_binary_mvp(&v).expect("binary expression should emit direct wasm binary");
+        let wat = emit_wat(&v).expect("should emit WAT");
         let temp_dir = unique_temp_dir("direct-wasm-binary-mvp-binary");
         fs::create_dir_all(&temp_dir).expect("temp dir should be created");
         let direct_path = temp_dir.join("direct.wasm");
@@ -411,9 +383,10 @@ mod tests {
             functions: vec![],
             modules: vec![],
         };
-        let direct_wasm = emit_wasm_binary_mvp(&program)
-            .expect("multiple statements should emit direct wasm binary");
-        let wat = emit_wat(&program).expect("should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let direct_wasm =
+            emit_wasm_binary_mvp(&v).expect("multiple statements should emit direct wasm binary");
+        let wat = emit_wat(&v).expect("should emit WAT");
         let temp_dir = unique_temp_dir("direct-wasm-binary-mvp-multi");
         fs::create_dir_all(&temp_dir).expect("temp dir should be created");
         let direct_path = temp_dir.join("direct.wasm");
@@ -466,7 +439,8 @@ mod tests {
             modules: vec![],
         };
 
-        let wat = emit_wat(&program).expect("object allocation should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("object allocation should emit WAT");
 
         assert!(wat.contains(&format!(
             "(memory (export \"memory\") {} {})",
@@ -528,7 +502,8 @@ mod tests {
             modules: vec![],
         };
 
-        let wat = emit_wat(&program).expect("object allocation should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("object allocation should emit WAT");
 
         assert!(wat.contains("(func $gc_sweep"));
         assert!(wat.contains("(global.get $gc_free_list)"));
@@ -575,7 +550,8 @@ mod tests {
             modules: vec![],
         };
 
-        let wat = emit_wat(&program).expect("string concat should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("string concat should emit WAT");
         let concat_start = wat.find("(func $concat").expect("concat should be emitted");
         let concat_end = wat[concat_start + 1..]
             .find("\n  (func ")
@@ -605,7 +581,8 @@ mod tests {
             modules: vec![],
         };
 
-        let wat = emit_wat(&program).expect("top-level local root should emit WAT");
+        let (v, _) = Validated::new(program.clone()).expect("should validate");
+        let wat = emit_wat(&v).expect("top-level local root should emit WAT");
         let backend_root_count = LocalFrame::new(0, None).backend_local_count();
         let root_count = program.top_level_locals.len() + backend_root_count;
         let root_bytes = root_count * std::mem::size_of::<u32>();
@@ -668,7 +645,8 @@ mod tests {
             modules: vec![],
         };
 
-        let wat = emit_wat(&program).expect("function local root should emit WAT");
+        let (v, _) = Validated::new(program.clone()).expect("should validate");
+        let wat = emit_wat(&v).expect("function local root should emit WAT");
         let func_wat = wat_function(&wat, "func_0");
         let backend_root_count = LocalFrame::new(0, None).backend_local_count();
         let static_root_bytes = backend_root_count * std::mem::size_of::<u32>();
@@ -728,7 +706,8 @@ mod tests {
         let program =
             lower_fixture("../../fixtures/core-semantics/ordinary-function-closure-make-adder.ts");
 
-        let wat = emit_wat(&program).expect("returned closure fixture should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("returned closure fixture should emit WAT");
 
         assert!(wat.contains("(i32.const -2)"));
         assert!(wat.contains("(i32.const 20)"));
@@ -745,7 +724,8 @@ mod tests {
         let program =
             lower_fixture("../../fixtures/core-semantics/ordinary-function-closure-gc-pressure.ts");
 
-        let wat = emit_wat(&program).expect("returned closure GC fixture should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("returned closure GC fixture should emit WAT");
 
         assert!(wat.contains("(func $gc_mark_object_payload"));
         assert!(wat.contains("(i32.const -2)"));
@@ -765,9 +745,8 @@ mod tests {
     fn env_cells_are_tagged_array_payloads_for_gc_tracing() {
         let program =
             lower_fixture("../../fixtures/core-semantics/class-method-mutable-outer-capture.ts");
-
-        let wat =
-            emit_wat(&program).expect("mutable class method env cell fixture should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("mutable class method env cell fixture should emit WAT");
 
         // Env cell: ARRAY_HEADER_SIZE=20 + ENV_CELL_SLOT_COUNT*4=4 = 24 bytes
         assert!(
@@ -839,7 +818,8 @@ mod tests {
             modules: vec![],
         };
 
-        let wat = emit_wat(&program).expect("object graph allocation should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("object graph allocation should emit WAT");
 
         assert!(wat.contains("(func $gc_mark_payload_header"));
         assert!(wat.contains("(func $gc_mark_value"));
@@ -881,7 +861,8 @@ mod tests {
             }],
         };
 
-        let wat = emit_wat(&program).expect("module runtime should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("module runtime should emit WAT");
 
         assert!(wat.contains("(call $gc_mark_module_cache_roots)"));
         assert!(wat.contains("(func $gc_mark_module_cache_roots"));
@@ -894,7 +875,8 @@ mod tests {
     #[test]
     fn array_push_grow_emits_dedicated_helper_boundary() {
         let program = lower_fixture("../../fixtures/core-semantics/array-push-recursive-growth.ts");
-        let wat = emit_wat(&program).expect("array push growth fixture should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("array push growth fixture should emit WAT");
 
         assert!(wat.contains("(func $array_push_grow"));
         assert!(wat.contains("(call $array_push_grow)"));
@@ -936,7 +918,8 @@ mod tests {
             modules: vec![],
         };
 
-        let wat = emit_wat(&program).expect("non-module program should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("non-module program should emit WAT");
 
         assert!(!wat.contains("$module_require"));
         assert!(!wat.contains("$module_exports_set"));
@@ -985,7 +968,8 @@ mod tests {
             ],
         };
 
-        let wat = emit_wat(&program).expect("module initializers should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("module initializers should emit WAT");
 
         assert!(wat.contains("(func $module_init_2"));
         assert!(wat.contains("(func $module_init_1"));
@@ -1038,7 +1022,8 @@ mod tests {
             modules: vec![],
         };
 
-        let wat = emit_wat(&program).expect("class prototype root should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("class prototype root should emit WAT");
 
         assert!(wat.contains("(global $class_proto_0 (mut i32) (i32.const 0))"));
         assert!(wat.contains("(call $gc_mark_value (i32.or (global.get $class_proto_0)"));
@@ -1093,7 +1078,8 @@ mod tests {
             modules: vec![],
         };
 
-        let wat = emit_wat(&program).expect("private field guard fixture should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("private field guard fixture should emit WAT");
         assert!(wat.contains(&format!("(i32.const {})", Layout::GC_RESERVED_OFFSET)));
 
         let temp_dir = unique_temp_dir("private-field-plain-object-guard");
@@ -1198,7 +1184,8 @@ mod tests {
             modules: vec![],
         };
 
-        let wat = emit_wat(&program).expect("private field brand fixture should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("private field brand fixture should emit WAT");
         assert!(wat.contains("(i32.const 65537)"));
 
         let temp_dir = unique_temp_dir("private-field-brand-guard");
@@ -1272,7 +1259,8 @@ mod tests {
             modules: vec![],
         };
 
-        let wat = emit_wat(&program).expect("private field brand mismatch fixture should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("private field brand mismatch fixture should emit WAT");
         let temp_dir = unique_temp_dir("private-field-brand-mismatch");
         fs::create_dir_all(&temp_dir).expect("temp dir should be created");
         let wat_path = temp_dir.join("guard.wat");
@@ -1371,7 +1359,8 @@ mod tests {
             modules: vec![],
         };
 
-        let wat = emit_wat(&program).expect("private field catchable TypeError should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("private field catchable TypeError should emit WAT");
         let temp_dir = unique_temp_dir("private-field-catchable-type-error");
         fs::create_dir_all(&temp_dir).expect("temp dir should be created");
         let wat_path = temp_dir.join("guard.wat");
@@ -1482,7 +1471,8 @@ mod tests {
             modules: vec![],
         };
 
-        let wat = emit_wat(&program).expect("private brand check should emit WAT");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("private brand check should emit WAT");
         assert!(wat.contains("(i32.const 65536)"));
 
         let temp_dir = unique_temp_dir("private-brand-check-zero-slot");
@@ -1512,7 +1502,8 @@ mod tests {
     fn math_random_imports_wasi_random_get() {
         let program = math_random_program();
 
-        let wat = emit_wat(&program).expect("Math.random should emit with WASI random");
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("Math.random should emit with WASI random");
 
         assert!(wat.contains("(import \"wasi_snapshot_preview1\" \"random_get\""));
         assert!(wat.contains("(call $random_get"));
