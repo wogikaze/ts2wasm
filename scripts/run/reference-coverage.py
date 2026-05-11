@@ -810,6 +810,9 @@ def main():
     if len(sys.argv) < 2:
         usage()
         sys.exit(1)
+    if sys.argv[1] in ("--help", "-h"):
+        usage()
+        sys.exit(0)
     
     suite = sys.argv[1]
     args = sys.argv[2:]
@@ -993,6 +996,10 @@ def main():
             "blocked": 0,
             "build_only": 0,
             "skip_with_reason": 0,
+            "executable_build_pass": 0,
+            "differential_pass": 0,
+            "negative_compile_pass": 0,
+            "conformance_pass": 0,
             "unsupported_diagcodes": {},
             "unsupported_features": {},
             "status": "in-progress",
@@ -1019,6 +1026,10 @@ def main():
             print("blocked=0")
             print("build_only=0")
             print("skip_with_reason=0")
+            print("executable_build_pass=0")
+            print("differential_pass=0")
+            print("negative_compile_pass=0")
+            print("conformance_pass=0")
             print("unsupported_diagcodes=")
             print("unsupported_features=")
             print("semantic_enabled=0")
@@ -1075,6 +1086,7 @@ def main():
         blocked = 0
         oracle_skipped = 0
         build_only = 0
+        negative_compile_pass = 0
         total_duration_ms = 0
         completed = 0
         total = len(files)
@@ -1251,7 +1263,7 @@ def main():
 
         def consume_record(jsonl_out, record, status):
             nonlocal passed, failed, unsupported, blocked, oracle_skipped, build_only, total_duration_ms
-            nonlocal completed, last_progress
+            nonlocal completed, last_progress, negative_compile_pass
             if record:
                 jsonl_out.write(record + "\n")
                 try:
@@ -1259,7 +1271,16 @@ def main():
                 except json.JSONDecodeError:
                     pass
             if status == "pass":
-                passed += 1
+                # Detect negative compile passes (expected field starts with "negative")
+                try:
+                    rec_data = json.loads(record)
+                    expected = rec_data.get("expected", "")
+                    if isinstance(expected, str) and expected.startswith("negative"):
+                        negative_compile_pass += 1
+                    else:
+                        passed += 1
+                except (json.JSONDecodeError, TypeError):
+                    passed += 1
             elif status in ("fail", "mismatch", "runtime_error"):
                 failed += 1
             elif status == "unsupported":
@@ -1944,6 +1965,10 @@ def main():
         if os.environ.get("TS2WASM_REFERENCE_COVERAGE_SHOW_CASE_DURATION_SUM") == "1":
             print(f"CaseDurationSum: {total_duration_ms}ms", file=sys.stderr)
 
+        differential_pass = passed
+        executable_build_pass = passed + build_only + oracle_skipped
+        conformance_pass = differential_pass + negative_compile_pass
+
         summary = {
             "suite": suite,
             "passed": passed,
@@ -1953,6 +1978,10 @@ def main():
             "oracle_skipped": oracle_skipped,
             "build_only": build_only,
             "total": passed + build_only + oracle_skipped + failed + unsupported + blocked,
+            "executable_build_pass": executable_build_pass,
+            "differential_pass": differential_pass,
+            "negative_compile_pass": negative_compile_pass,
+            "conformance_pass": conformance_pass,
             "duration_ms": wall_duration_ms,
             "wall_duration_ms": wall_duration_ms,
             "case_duration_sum_ms": total_duration_ms,
@@ -2735,6 +2764,12 @@ def main():
                 server_proc.kill()
                 server_proc.wait()
     
+    # Compute derived metrics
+    negative_compile_pass = verified_negative_count
+    differential_pass = semantic_pass_count
+    executable_build_pass = build_pass_count - verified_negative_count
+    conformance_pass = differential_pass + negative_compile_pass
+
     # Build unsupported diagcodes string
     unsupported_diagcodes = ",".join(
         f"{code}:{count}" for code, count in 
@@ -2772,6 +2807,10 @@ def main():
         "verified_negative": verified_negative_count,
         "build_only": build_only_count,
         "skip_with_reason": skip_count,
+        "executable_build_pass": executable_build_pass,
+        "differential_pass": differential_pass,
+        "negative_compile_pass": negative_compile_pass,
+        "conformance_pass": conformance_pass,
         "duration_ms": int(round((time.perf_counter() - coverage_started_at) * 1000)),
         "unsupported_diagcodes": unsupported_diag_counts,
         "unsupported_features": unsupported_feature_counts,
@@ -2896,6 +2935,10 @@ def main():
         print(f"verified_negative={verified_negative_count}")
         print(f"build_only={build_only_count}")
         print(f"skip_with_reason={skip_count}")
+        print(f"executable_build_pass={executable_build_pass}")
+        print(f"differential_pass={differential_pass}")
+        print(f"negative_compile_pass={negative_compile_pass}")
+        print(f"conformance_pass={conformance_pass}")
         print(f"unsupported_diagcodes={unsupported_diagcodes}")
         print(f"unsupported_features={unsupported_features}")
         print(f"semantic_enabled={1 if semantic_enabled else 0}")
