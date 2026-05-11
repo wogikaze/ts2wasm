@@ -1,26 +1,23 @@
-/// RuntimeIntrinsic-to-RuntimeFn mapping completeness checks.
+/// RuntimeIntrinsic/RuntimeFn mapping completeness checks.
 ///
-/// Verifies that every non-pseudo RuntimeIntrinsic variant maps to exactly
-/// one RuntimeFn via `runtime_fn_from_name`, and that the mapped RuntimeFn
-/// variant exists in the runtime catalog.
+/// Verifies that every non-pseudo RuntimeFn variant maps to exactly
+/// one RuntimeFn via `runtime_fn_from_name`.
 ///
 /// Pseudo-intrinsics (ArrayPushMany, HeapClosureCall, PrivateFieldGet,
 /// PrivateFieldSet, PrivateBrandCheck) are expanded during IR lowering and
-/// have no direct RuntimeFn equivalent -- they are excluded from this check.
-
-use ts2wasm_backend_wasm::{
-    RuntimeFn, RuntimeIntrinsic, runtime_fn_from_name,
-};
+/// have no direct WAT function entry -- they are included in the catalog
+/// but don't need to map through `runtime_fn_from_name`.
+use ts2wasm_backend_wasm::{RuntimeFn, runtime_fn_from_name};
 
 #[test]
-fn every_runtime_intrinsic_maps_to_runtime_fn() {
+fn every_runtime_fn_maps_to_runtime_fn_from_name() {
     let mut missing = Vec::new();
-    for intrinsic in RuntimeIntrinsic::all() {
-        let name = intrinsic.name();
-        match runtime_fn_from_name(name) {
+    for variant in RuntimeFn::emission_order() {
+        let name = format!("{:?}", variant);
+        match runtime_fn_from_name(&name) {
             Some(_) => {} // Good: maps to a RuntimeFn
             None => {
-                // Check if this is a pseudo-intrinsic (should have no RuntimeFn)
+                // Check if this is a pseudo-intrinsic (not registered in from_name)
                 let known_pseudo = [
                     "ArrayPushMany",
                     "HeapClosureCall",
@@ -28,33 +25,31 @@ fn every_runtime_intrinsic_maps_to_runtime_fn() {
                     "PrivateFieldSet",
                     "PrivateBrandCheck",
                 ];
-                if !known_pseudo.contains(&name) {
-                    // Not a pseudo-intrinsic, this is a missing mapping
+                if !known_pseudo.contains(&name.as_str()) {
                     missing.push(name);
                 }
             }
         }
     }
+    // Pseudo-intrinsics in the emission order are expected not to map
+    // through runtime_fn_from_name since they have no standalone WAT entry.
     assert!(
         missing.is_empty(),
-        "RuntimeIntrinsic variants missing RuntimeFn mapping:\n  {}",
+        "RuntimeFn variants missing runtime_fn_from_name mapping:\n  {}",
         missing.join("\n  ")
     );
 }
 
 #[test]
-fn every_mapped_runtime_fn_has_catalog_entry() {
-    // Verify that a non-empty set of RuntimeFn variants are reachable
-    // via runtime_fn_from_name for at least one intrinsic.
-    let all_ints = RuntimeIntrinsic::all();
-    let mapped_count = all_ints
+fn some_mapped_runtime_fn_reachable() {
+    let mapped_count = RuntimeFn::emission_order()
         .iter()
-        .filter_map(|i| runtime_fn_from_name(i.name()))
+        .filter_map(|i| runtime_fn_from_name(&format!("{:?}", i)))
         .count();
 
     assert!(
         mapped_count > 0,
-        "Expected at least one RuntimeIntrinsic to map to a RuntimeFn, got 0"
+        "Expected at least one RuntimeFn to map, got 0"
     );
 
     // Spot-check a few expected mappings
