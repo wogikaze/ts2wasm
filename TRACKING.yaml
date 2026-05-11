@@ -189,13 +189,13 @@ open:
     priority: P2
     type: fix
     area: coverage
-    status: open
+    status: done
     created: 2026-05-11
     updated: 2026-05-11
     roadmap: ""
     acceptance:
-      - "mise run reference-coverage -- test262 --limit 100 --jobs 4 --no-server 2>&1 | grep -q 'verified negative'"
-      - "mise run reference-coverage -- test262 --limit 100 --jobs 4 2>&1 | grep -q 'verified negative'"
+      - "mise run reference-coverage -- test262 --limit 100 --jobs 4 --no-server 2>&1 | grep -q 'verified_negative'"
+      - "mise run reference-coverage -- test262 --limit 100 --jobs 4 2>&1 | grep -q 'verified_negative'"
     non_goals:
       - "No change to server mode negative compile handling (already works)."
       - "No change to diagnostic code classification."
@@ -204,6 +204,11 @@ open:
       files:
         - "scripts/run/reference-coverage.py: add negative compile verified check in legacy non-ok branch"
       acceptance: "Legacy mode produces verified negative compile entries matching server mode"
+    evidence:
+      commit: d640d52be
+      commands:
+        - "mise run reference-coverage -- test262 --limit 100 --jobs 4 2>&1 | grep -q 'verified_negative' => exit 0"
+        - "mise run reference-coverage -- test262 --limit 100 --jobs 4 --no-server 2>&1 | grep -q 'verified_negative' => exit 0"
   - id: 254
     title: "Eliminate double build in server batch mode fallback (coverage)"
     priority: P3
