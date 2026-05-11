@@ -1,4 +1,8 @@
 use crate::runtime_fn::HostImportSpec;
+use crate::wasm_ir::{
+    WasmDataSegment, WasmExport, WasmExportKind, WasmFunction, WasmGlobal, WasmImport, WasmInstr,
+    WasmMemory, WasmModule, WasmValType,
+};
 
 // ---------------------------------------------------------------------------
 // Existing types — preserved exactly.
