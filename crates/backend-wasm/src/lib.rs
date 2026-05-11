@@ -2,6 +2,7 @@ mod binary_mvp;
 mod capability_manifest;
 mod emitter;
 mod expr_emit;
+mod runtime;
 mod runtime_arrays;
 mod runtime_dispatch_array;
 mod runtime_dispatch_bigint;
