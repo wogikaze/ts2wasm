@@ -7,6 +7,180 @@ meta:
     canonical_source: TRACKING.yaml
     roadmap_source: docs/roadmap.md
     closed_source: docs/done-tracking.yaml
+open:
+  - id: 256
+    title: "Introduce Validated<LoweredProgram> wrapper struct (P10)"
+    priority: P1
+    type: refactor
+    area: ir
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "mise run check architecture"
+      - "grep -q 'struct Validated' crates/ir/src/lowered/validate.rs"
+      - "grep -q 'Validated<LoweredProgram>' crates/backend-wasm/src/lib.rs"
+    non_goals:
+      - "No change to lowered IR semantics."
+      - "No change to wasm output."
+    plan:
+      goal: "Implement Validated<T> wrapper that ensures backend emit functions only accept validated LoweredProgram"
+      files:
+        - "crates/ir/src/lowered/validate.rs: Validated<T> struct definition"
+        - "crates/backend-wasm/src/lib.rs: emit_wat accepts &Validated<LoweredProgram>"
+        - "crates/compiler/src/lib.rs: wrap before passing to backend"
+      acceptance: "Backend API enforces Validated<LoweredProgram> at type level; arch check verifies no new bare &LoweredProgram emit functions"
+  - id: 257
+    title: "Replace RuntimeCall { runtime_fn: String } with typed intrinsic (P10)"
+    priority: P1
+    type: refactor
+    area: ir
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "! grep -q 'runtime_fn: String' crates/ir/src/lowered/types.rs"
+      - "mise run check architecture"
+    non_goals:
+      - "No change to runtime function semantics or WAT emission."
+      - "No change to RuntimeLinkPlan or RuntimeFn catalog."
+    plan:
+      goal: "Replace LoweredExpr::RuntimeCall { runtime_fn: String } with a typed enum (RuntimeIntrinsic or shared RuntimeFn reference)"
+      files:
+        - "crates/ir/src/lowered/types.rs: add RuntimeIntrinsic enum or import RuntimeFn"
+        - "crates/ir/src/lowered/program_builtins.rs: use typed variant"
+        - "crates/ir/src/lowered/resolver/*.rs: use typed variant"
+        - "crates/backend-wasm/src/expr_emit.rs: match on typed variant"
+      acceptance: "No String-based RuntimeCall in lowered IR; typed intrinsic or RuntimeFn reference used throughout"
+  - id: 258
+    title: "Domain-split runtime_fn_impl.rs spec/manifest/emission tables (P10)"
+    priority: P2
+    type: refactor
+    area: backend
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "wc -l < crates/backend-wasm/src/runtime_fn_impl.rs | xargs -I{} test {} -lt 1500"
+      - "test -d crates/backend-wasm/src/runtime/spec/"
+    non_goals:
+      - "No change to RuntimeFn variant count or semantics."
+      - "No change to runtime builder dispatch."
+    plan:
+      goal: "Split runtime_fn_impl.rs (RuntimeSpec, manifest_name, emission_order tables) into runtime/spec/ domain modules"
+      files:
+        - "crates/backend-wasm/src/runtime/spec/core.rs: core RuntimeSpec entries"
+        - "crates/backend-wasm/src/runtime/spec/array.rs: array RuntimeSpec entries"
+        - "crates/backend-wasm/src/runtime/spec/object.rs: object RuntimeSpec entries"
+        - "crates/backend-wasm/src/runtime/spec/string.rs: string RuntimeSpec entries"
+        - "crates/backend-wasm/src/runtime/spec/mod.rs: aggregate all domain specs"
+        - "crates/backend-wasm/src/runtime_fn_impl.rs: thin dispatch"
+      acceptance: "runtime_fn_impl.rs < 1500 lines; runtime/spec/ directory exists with domain modules"
+  - id: 259
+    title: "Domain-dispatch runtime_builder.rs match arms (P10)"
+    priority: P2
+    type: refactor
+    area: backend
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "wc -l < crates/backend-wasm/src/runtime_builder.rs | xargs -I{} test {} -lt 500"
+      - "mise run check architecture"
+    non_goals:
+      - "No change to runtime function WAT content."
+      - "No change to RuntimeFn variant count."
+    plan:
+      goal: "Replace runtime_builder.rs giant match with domain-dispatched calls to runtime/<domain>/emit.rs functions"
+      files:
+        - "crates/backend-wasm/src/runtime_builder.rs: thin domain dispatch"
+        - "crates/backend-wasm/src/runtime/core/emit.rs: receives core RuntimeFn variants"
+        - "crates/backend-wasm/src/runtime/array/emit.rs: receives array RuntimeFn variants"
+        - "crates/backend-wasm/src/runtime/object/emit.rs: receives object RuntimeFn variants"
+        - "crates/backend-wasm/src/runtime/string/emit.rs: receives string RuntimeFn variants"
+      acceptance: "runtime_builder.rs < 500 lines; each domain's emit.rs handles its own RuntimeFn variants"
+  - id: 260
+    title: "Split compiler/src/lib.rs pipeline stages into modules (P10)"
+    priority: P2
+    type: refactor
+    area: compiler
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "wc -l < crates/compiler/src/lib.rs | xargs -I{} test {} -lt 300"
+      - "test -d crates/compiler/src/stages/"
+    non_goals:
+      - "No change to compilation pipeline behavior."
+      - "No change to CLI interface or output format."
+    plan:
+      goal: "Extract individual pipeline stages (parse, name_resolve, builtin_resolve, lower, validate, emit, etc.) from compiler/src/lib.rs into compiler/src/stages/"
+      files:
+        - "crates/compiler/src/lib.rs: thin orchestration"
+        - "crates/compiler/src/stages/parse.rs"
+        - "crates/compiler/src/stages/name_resolve.rs"
+        - "crates/compiler/src/stages/builtin_resolve.rs"
+        - "crates/compiler/src/stages/lower.rs"
+        - "crates/compiler/src/stages/validate.rs"
+        - "crates/compiler/src/stages/emit.rs"
+      acceptance: "compiler/src/lib.rs < 300 lines; compiler/src/stages/ directory exists"
+  - id: 261
+    title: "Decompose Resolver context into LoweringCtx structs (P10)"
+    priority: P1
+    type: refactor
+    area: ir
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "grep -q 'struct LoweringCtx' crates/ir/src/lowered/ctx.rs"
+      - "grep -q 'struct SymbolEnv' crates/ir/src/lowered/symbols.rs"
+      - "grep -q 'struct ClassEnv' crates/ir/src/lowered/classes.rs"
+    non_goals:
+      - "No change to lowering semantics or wasm output."
+      - "No change to domain module functions (array/call/class/object)."
+    plan:
+      goal: "Extract Resolver struct fields into grouped sub-structs (SymbolEnv, ClassEnv, StaticFacts, etc.) to reduce coupling"
+      files:
+        - "crates/ir/src/lowered/ctx.rs: LoweringCtx struct combining all sub-contexts"
+        - "crates/ir/src/lowered/symbols.rs: SymbolEnv / name resolution context"
+        - "crates/ir/src/lowered/classes.rs: ClassEnv / class hierarchy context"
+        - "crates/ir/src/lowered/facts.rs: StaticFacts / array/bigint/string facts"
+        - "crates/ir/src/lowered/resolver/mod.rs: use LoweringCtx instead of flat fields"
+      acceptance: "Resolver no longer has 20+ flat fields; fields are grouped into LoweringCtx sub-structs"
+  - id: 262
+    title: "Strengthen architecture checks for new violations (P10)"
+    priority: P3
+    type: test
+    area: tooling
+    status: open
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "mise run check architecture"
+      - "grep -q 'no_new_string_runtime_call' scripts/check/architecture-rules.py || grep -q 'RuntimeCall.*String' scripts/check/architecture-rules.py"
+      - "grep -q 'function_length' scripts/check/architecture-rules.py"
+    non_goals:
+      - "No change to existing file line limit violations (each handled by phased allowable increase)."
+      - "No change to backend or compiler behavior."
+    plan:
+      goal: "Add architecture checks for: no new String-based RuntimeCall, no function > 300 lines in new code, no backend frontend imports in new modules"
+      files:
+        - "scripts/check/architecture-rules.py: add 3+ new checks"
+      acceptance: "Architecture check catches new violations without blocking pre-existing ones"
 active: []
 done:
   - id: 250
