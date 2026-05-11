@@ -266,7 +266,13 @@ def should_count_lines(path: Path) -> bool:
         return False
     if relative == Path("TRACKING.yaml"):
         return False
-    return path.suffix in LINE_COUNT_SUFFIXES
+    if path.suffix not in LINE_COUNT_SUFFIXES:
+        return False
+    # .rs files are checked by dedicated rust-specific checks (check_rust_file_length,
+    # check_rust_file_length_1500), so skip them here to avoid double-counting.
+    if path.suffix == ".rs":
+        return False
+    return True
 
 
 def line_count(path: Path) -> int:
