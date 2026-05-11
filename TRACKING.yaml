@@ -8,6 +8,58 @@ meta:
     roadmap_source: docs/roadmap.md
     closed_source: docs/done-tracking.yaml
 open:
+- id: 276
+  title: Reduce oversized functions to below 10 violations
+  priority: P3
+  type: refactor
+  area: cross
+  status: open
+  created: 2026-05-11
+  updated: 2026-05-12
+  roadmap: P11-llm-friendly-sizing
+  acceptance:
+  - mis run check architecture 2>&1 | grep -c 'function.*lines'
+  non_goals:
+  - No semantic change to existing functions.
+  - No test coverage regression.
+  plan:
+    goal: Split 37 oversized functions to fewer than 10.
+    files:
+    - scripts/check/architecture-rules.py
+  notes: 'emit_json_parse (1354 lines) already split into 10 sub-methods. 37 other
+    violations remain: RuntimeFn::spec (2318), tokenize (863), lower_expr (921),
+    emit_statement_with_label (756), etc. Next step: resolve merge conflicts in
+    crates/ir/src/lowered/resolver_expr.rs.
+    '
+- id: 297
+  title: Split call-related expressions from resolver/expr.rs into call/ sub-modules
+  priority: P3
+  type: refactor
+  area: ir
+  status: open
+  created: 2026-05-12
+  updated: 2026-05-12
+  roadmap: P11-llm-friendly-sizing
+  acceptance:
+  - test -f crates/ir/src/lowered/resolver/call/mod.rs
+  - test -f crates/ir/src/lowered/resolver/call/user.rs
+  non_goals:
+  - No semantic change to call resolution.
+  plan:
+    goal: Extract call-pattern detection into call/user.rs, call/method.rs, call/constructor.rs, etc.
+    files:
+    - crates/ir/src/lowered/resolver/call/mod.rs
+    - crates/ir/src/lowered/resolver/call/user.rs
+    - crates/ir/src/lowered/resolver/call/method.rs
+    - crates/ir/src/lowered/resolver/call/constructor.rs
+    - crates/ir/src/lowered/resolver/call/builtin.rs
+    - crates/ir/src/lowered/resolver/call/callback.rs
+    - crates/ir/src/lowered/resolver/call/receiver.rs
+    - crates/ir/src/lowered/resolver/call/spread.rs
+  notes: 'Implemented in worktree agent-a7751ee3 commit aae630fe0 but cannot be
+    cherry-picked due to resolver_expr.rs being deleted/refactored on master.
+    Code exists in worktree for manual re-integration.
+    '
 done:
 - id: 293
   title: Add pseudo-intrinsic variants to RuntimeFn / RuntimeIntrinsic enum
@@ -24,7 +76,7 @@ done:
   - grep "ArrayPushMany" crates/runtime-catalog/src/runtime_fn.rs
   - grep "pseudo" crates/runtime-catalog/src/runtime/manifest/all.rs
   evidence:
-    commit: PLACEHOLDER
+    commit: b0a0710af
     commands:
     - cargo check -p ts2wasm-ir -p ts2wasm-runtime-catalog -p ts2wasm-backend-wasm -p ts2wasm-compiler => pass
     - cargo nextest run -p ts2wasm-backend-wasm --test runtime_intrinsic_mapping => pass
@@ -43,7 +95,7 @@ done:
   - cargo nextest run -p ts2wasm-ir
   - grep -v "^pub enum RuntimeIntrinsic" crates/ir/src/lowered/runtime_intrinsic.rs
   evidence:
-    commit: PLACEHOLDER
+    commit: 0ba29a3f7
     commands:
     - cargo check -p ts2wasm-ir -p ts2wasm-runtime-catalog -p ts2wasm-backend-wasm => pass
     - cargo fmt --all --check => pass
@@ -62,7 +114,7 @@ done:
   - grep "fn dump_hir_program" crates/ir/src/lowered/hir_dump.rs
   - grep "HirDump" crates/ir/src/lowered/hir_dump.rs
   evidence:
-    commit: PLACEHOLDER
+    commit: 9e7a49d2a
     commands:
     - cargo check -p ts2wasm-ir => pass
     - cargo nextest run -p ts2wasm-ir => pass
@@ -81,7 +133,7 @@ done:
   - grep "fn dump_mir_program" crates/ir/src/lowered/mir_dump.rs
   - grep "MirDump" crates/ir/src/lowered/mir_dump.rs
   evidence:
-    commit: PLACEHOLDER
+    commit: a1315f615
     commands:
     - cargo check -p ts2wasm-ir => pass
     - cargo nextest run -p ts2wasm-ir => pass
@@ -101,7 +153,7 @@ done:
   - cargo nextest run -p ts2wasm-backend-wasm --test host_import_capability
   - cargo nextest run -p ts2wasm-backend-wasm --test runtime_link_plan
   evidence:
-    commit: PLACEHOLDER
+    commit: d2769b5fa
     commands:
     - cargo check -p ts2wasm-ir -p ts2wasm-runtime-catalog -p ts2wasm-backend-wasm -p ts2wasm-compiler => pass
     - cargo nextest run -p ts2wasm-backend-wasm --test runtime_intrinsic_mapping => pass
