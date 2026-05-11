@@ -1,4 +1,5 @@
-use ts2wasm_shared::{ArrayLiteralElement, Diagnostic, Expr, Span};
+use ts2wasm_shared::{ArrayLiteralElement, Diagnostic, Expr};
+use ts2wasm_source::Span;
 
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 

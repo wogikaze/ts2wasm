@@ -1,6 +1,7 @@
 use crate::builtin_resolved::ResolvedExpr;
 use crate::lowered::*;
-use ts2wasm_shared::{DiagCode, Diagnostic, OBJECT_SPREAD_SENTINEL, Span};
+use ts2wasm_shared::{DiagCode, Diagnostic, OBJECT_SPREAD_SENTINEL};
+use ts2wasm_source::Span;
 
 impl super::Resolver {
     pub(super) fn lower_object_literal_props(

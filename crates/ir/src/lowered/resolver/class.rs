@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use super::program_builtins::looks_like_regexp_literal;
 use crate::builtin_resolved::ResolvedExpr;
 use crate::lowered::*;
-use ts2wasm_shared::{DiagCode, Diagnostic, Span};
+use ts2wasm_shared::{DiagCode, Diagnostic};
+use ts2wasm_source::Span;
 
 impl super::Resolver {
     pub(super) fn append_class_method_captures(

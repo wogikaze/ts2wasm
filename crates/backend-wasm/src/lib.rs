@@ -110,7 +110,8 @@ mod tests {
     };
     use ts2wasm_runtime_abi::{Layout, ValueTag};
     use ts2wasm_shared::test_helpers::unique_temp_dir;
-    use ts2wasm_shared::{DiagCode, Span};
+use ts2wasm_shared::{DiagCode};
+use ts2wasm_source::Span;
 
     #[test]
     fn emit_wat_rejects_residual_method_call_before_emission() {

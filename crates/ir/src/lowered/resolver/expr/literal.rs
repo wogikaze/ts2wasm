@@ -5,7 +5,8 @@ use super::super::{
 use crate::builtin::BuiltinId;
 use crate::builtin_resolved::ResolvedExpr;
 use crate::lowered::*;
-use ts2wasm_shared::{Span, Diagnostic};
+use ts2wasm_shared::{Diagnostic};
+use ts2wasm_source::Span;
 
 impl super::super::Resolver {
     pub(super) fn lower_builtin_call_expr(

@@ -17,7 +17,8 @@ use crate::lowered::facts::{ArrowClosure, StaticFacts};
 use crate::lowered::symbols::SymbolEnv;
 use crate::lowered::*;
 use ts2wasm_shared::{BinaryOp, UnaryOp};
-use ts2wasm_shared::{DiagCode, Diagnostic, Span};
+use ts2wasm_shared::{DiagCode, Diagnostic};
+use ts2wasm_source::Span;
 
 /// New Resolver with ctx: LoweringCtx.
 /// All mutable state is owned by ctx. Borrowed function maps are cloned into ctx on construction.

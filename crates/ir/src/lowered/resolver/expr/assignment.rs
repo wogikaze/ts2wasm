@@ -4,7 +4,8 @@ use super::super::{
 };
 use crate::builtin_resolved::ResolvedExpr;
 use crate::lowered::*;
-use ts2wasm_shared::{DiagCode, Diagnostic, LogicalAssignOp, Span};
+use ts2wasm_shared::{DiagCode, Diagnostic, LogicalAssignOp};
+use ts2wasm_source::Span;
 
 impl super::super::Resolver {
     pub(super) fn lower_assign_expr(

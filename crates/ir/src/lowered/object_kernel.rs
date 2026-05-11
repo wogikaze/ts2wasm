@@ -16,7 +16,7 @@
 //!   let get_expr = object_kernel::ordinary_get(obj_expr, "length", span);
 
 use crate::lowered::{LoweredExpr, LoweredUnaryOp, RuntimeFn};
-use ts2wasm_shared::Span;
+use ts2wasm_source::Span;
 
 /// OrdinaryGet ([[Get]]): `obj.key`
 ///

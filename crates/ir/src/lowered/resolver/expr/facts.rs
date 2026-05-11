@@ -8,7 +8,8 @@ use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 use crate::lowered::facts::StaticFunctionArrayLike;
 use crate::lowered::*;
 use std::collections::HashSet;
-use ts2wasm_shared::{BinaryOp, DiagCode, Diagnostic, OBJECT_SPREAD_SENTINEL, SYMBOL_ITERATOR_OBJECT_KEY, Span, UnaryOp};
+use ts2wasm_shared::{BinaryOp, DiagCode, Diagnostic, OBJECT_SPREAD_SENTINEL, SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp};
+use ts2wasm_source::Span;
 
 impl super::super::Resolver {
     pub(crate) fn update_bigint_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {

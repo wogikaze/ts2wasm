@@ -13,8 +13,9 @@ use crate::lowered::mir_validate::validate_mir;
 use crate::lowered::validate::validate_lowered;
 use ts2wasm_shared::{
     BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, OBJECT_SPREAD_SENTINEL,
-    SYMBOL_ITERATOR_OBJECT_KEY, Span, UnaryOp,
+    SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp,
 };
+use ts2wasm_source::Span;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct LocalId(pub usize);

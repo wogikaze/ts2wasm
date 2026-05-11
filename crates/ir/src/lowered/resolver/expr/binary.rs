@@ -1,7 +1,8 @@
 use crate::builtin_resolved::ResolvedExpr;
 use crate::lowered::*;
 use crate::lowered::BuiltinErrorConstructor;
-use ts2wasm_shared::{BinaryOp, DiagCode, Diagnostic, Span};
+use ts2wasm_shared::{BinaryOp, DiagCode, Diagnostic};
+use ts2wasm_source::Span;
 
 impl super::super::Resolver {
     pub(super) fn lower_binary_expr(

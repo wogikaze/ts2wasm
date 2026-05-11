@@ -216,6 +216,7 @@ dependencies = [
  "ts2wasm-runtime-abi",
  "ts2wasm-runtime-catalog",
  "ts2wasm-shared",
+ "ts2wasm-source",
 ]
 
 [[package]]
@@ -241,6 +242,7 @@ dependencies = [
  "ts2wasm-frontend",
  "ts2wasm-ir",
  "ts2wasm-runtime-abi",
+ "ts2wasm-source",
 ]
 
 [[package]]
@@ -250,6 +252,7 @@ dependencies = [
  "serde",
  "serde_json",
  "ts2wasm-shared",
+ "ts2wasm-source",
 ]
 
 [[package]]
@@ -260,6 +263,7 @@ dependencies = [
  "ts2wasm-runtime-abi",
  "ts2wasm-runtime-catalog",
  "ts2wasm-shared",
+ "ts2wasm-source",
 ]
 
 [[package]]
@@ -281,7 +285,12 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+ "ts2wasm-source",
 ]
+
+[[package]]
+name = "ts2wasm-source"
+version = "0.1.0"
 
 [[package]]
 name = "unicode-ident"

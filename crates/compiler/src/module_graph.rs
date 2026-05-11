@@ -598,7 +598,7 @@ mod tests {
     use std::fs;
     use std::path::PathBuf;
 
-    use ts2wasm_frontend::Span;
+    use ts2wasm_source::Span;
 
     use super::*;
 

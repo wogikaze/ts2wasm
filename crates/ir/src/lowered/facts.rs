@@ -16,7 +16,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 use crate::lowered::{ClosureRepresentation, FuncId, LocalId, LoweredExpr};
-use ts2wasm_shared::Span;
+use ts2wasm_source::Span;
 
 /// Static analysis facts tracked during lowering.
 ///

@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use ts2wasm_frontend::{DiagCode, Diagnostic, Lexer, Parser, Span, SpannedToken, Stmt, Token};
+use ts2wasm_frontend::{DiagCode, Diagnostic, Lexer, Parser, SpannedToken, Stmt, Token};
+use ts2wasm_source::Span;
 
 pub fn parse_program(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
     let tokens = Lexer::new(source).tokenize()?;

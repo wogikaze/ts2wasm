@@ -2,6 +2,7 @@
 members = [
     "crates/cli",
     "crates/shared",
+    "crates/source",
     "crates/frontend",
     "crates/ir",
     "crates/runtime-abi",

@@ -1,3 +1,5 @@
+use ts2wasm_source::Span;
+
 /// Source-originating diagnostic with mandatory span.
 /// Used for user-facing errors (unsupported syntax, unresolved names, etc.).
 #[derive(Debug, Clone)]
@@ -266,23 +268,10 @@ pub enum DiagCode {
     TypeScriptTypeCheck,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub struct Span {
-    pub start: usize,
-    pub end: usize,
-}
-
-impl Span {
-    /// Create a generated/inferred span for synthetic nodes.
-    /// Use only for compiler-generated nodes; real source spans must come from the AST.
-    pub fn generated(_label: &'static str) -> Self {
-        Self { start: 0, end: 0 }
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use super::{DiagCode, Diagnostic, Span};
+    use super::{DiagCode, Diagnostic};
+    use ts2wasm_source::Span;
 
     fn unsupported(message: &str) -> Diagnostic {
         Diagnostic {

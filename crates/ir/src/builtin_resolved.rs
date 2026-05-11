@@ -1,4 +1,5 @@
-use ts2wasm_shared::{BinaryOp, LogicalAssignOp, Span, UnaryOp};
+use ts2wasm_shared::{BinaryOp, LogicalAssignOp, UnaryOp};
+use ts2wasm_source::Span;
 
 use super::binding_pattern::BindingPattern;
 use super::builtin::{BuiltinId, BuiltinPropertyId};

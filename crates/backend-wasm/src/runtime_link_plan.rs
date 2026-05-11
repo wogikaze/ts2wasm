@@ -569,7 +569,7 @@ mod tests {
         FuncId, FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt,
         ModuleInfo,
     };
-    use ts2wasm_shared::Span;
+    use ts2wasm_source::Span;
 
     use super::build_runtime_link_plan;
     use ts2wasm_runtime_catalog::{HostImport, RuntimeFn, RuntimeGlobal};

@@ -5,7 +5,8 @@ use crate::binding_pattern::{ArrayBinding, BindingDefault, BindingPattern, Objec
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
 use crate::lowered::*;
 use std::collections::HashSet;
-use ts2wasm_shared::{DiagCode, Diagnostic, Span};
+use ts2wasm_shared::{DiagCode, Diagnostic};
+use ts2wasm_source::Span;
 
 impl super::super::Resolver {
     pub(crate) fn lower_binding_pattern_declarations(

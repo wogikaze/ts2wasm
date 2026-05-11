@@ -18,5 +18,6 @@ pub use capability::{
     CapabilityManifest, ClockCapabilities, FilesystemCapabilities, NodeHostCapabilities,
     WasiCapabilities,
 };
-pub use diagnostic::{DiagCode, Diagnostic, InternalDiagnostic, SourceDiagnostic, Span};
+pub use diagnostic::{DiagCode, Diagnostic, InternalDiagnostic, SourceDiagnostic};
+pub use ts2wasm_source::Span;
 pub use test_status::{TestRecord, TestStatus, TrackingId};
