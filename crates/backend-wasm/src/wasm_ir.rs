@@ -316,6 +316,37 @@ impl WasmModule {
 }
 
 // ---------------------------------------------------------------------------
+// Runtime signature validation
+// ---------------------------------------------------------------------------
+
+use super::runtime_fn::{RuntimeFn, RuntimeSignature};
+
+/// Validate that a runtime call's expected stack effect matches the
+/// function's declared signature.
+///
+/// # Panics
+///
+/// Panics if `expected_params` or `expected_results` differ from
+/// `runtime_fn.stack_effect()`.
+pub fn check_runtime_signature(
+    runtime_fn: RuntimeFn,
+    expected_params: usize,
+    expected_results: usize,
+) {
+    let sig = runtime_fn.stack_effect();
+    assert_eq!(
+        sig.params, expected_params,
+        "RuntimeFn {:?}: expected {} params, declared {}",
+        runtime_fn, expected_params, sig.params,
+    );
+    assert_eq!(
+        sig.results, expected_results,
+        "RuntimeFn {:?}: expected {} results, declared {}",
+        runtime_fn, expected_results, sig.results,
+    );
+}
+
+// ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
@@ -405,5 +436,93 @@ mod tests {
         assert_eq!(imp.func_symbol, "$fd_write");
         assert_eq!(imp.params, vec![WasmValType::I32; 4]);
         assert_eq!(imp.results, vec![WasmValType::I32]);
+    }
+
+    #[test]
+    fn runtime_signature_stack_effect_basics() {
+        // 1 param, 1 result (common case)
+        assert_eq!(
+            RuntimeFn::TruthyBool.stack_effect(),
+            RuntimeSignature {
+                params: 1,
+                results: 1
+            },
+        );
+        // 0 params, 1 result
+        assert_eq!(
+            RuntimeFn::PrivateBrandTypeError.stack_effect(),
+            RuntimeSignature {
+                params: 0,
+                results: 1
+            },
+        );
+        // 2 params, 1 result
+        assert_eq!(
+            RuntimeFn::ArrayGet.stack_effect(),
+            RuntimeSignature {
+                params: 2,
+                results: 1
+            },
+        );
+        // 3 params, 1 result
+        assert_eq!(
+            RuntimeFn::PropertyGet.stack_effect(),
+            RuntimeSignature {
+                params: 3,
+                results: 1
+            },
+        );
+        // 4 params, 1 result
+        assert_eq!(
+            RuntimeFn::PropertySet.stack_effect(),
+            RuntimeSignature {
+                params: 4,
+                results: 1
+            },
+        );
+        // 6 params, 1 result
+        assert_eq!(
+            RuntimeFn::MakeBigIntLiteral.stack_effect(),
+            RuntimeSignature {
+                params: 6,
+                results: 1
+            },
+        );
+        // 1 param, 0 results
+        assert_eq!(
+            RuntimeFn::ModuleExportsAssign.stack_effect(),
+            RuntimeSignature {
+                params: 1,
+                results: 0
+            },
+        );
+        // 3 params, 0 results
+        assert_eq!(
+            RuntimeFn::ModuleExportsSet.stack_effect(),
+            RuntimeSignature {
+                params: 3,
+                results: 0
+            },
+        );
+    }
+
+    #[test]
+    fn runtime_signature_check_pass() {
+        check_runtime_signature(RuntimeFn::TruthyBool, 1, 1);
+        check_runtime_signature(RuntimeFn::ArrayGet, 2, 1);
+        check_runtime_signature(RuntimeFn::PropertySet, 4, 1);
+        check_runtime_signature(RuntimeFn::ModuleExportsAssign, 1, 0);
+    }
+
+    #[test]
+    #[should_panic(expected = "PropertySet: expected 3 params, declared 4")]
+    fn runtime_signature_check_fail_params() {
+        check_runtime_signature(RuntimeFn::PropertySet, 3, 1);
+    }
+
+    #[test]
+    #[should_panic(expected = "TruthyBool: expected 0 results, declared 1")]
+    fn runtime_signature_check_fail_results() {
+        check_runtime_signature(RuntimeFn::TruthyBool, 1, 0);
     }
 }

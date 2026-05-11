@@ -534,6 +534,18 @@ pub struct RuntimeSpec {
     pub result: RuntimeResult,
 }
 
+/// Stack-effect signature for a runtime function call.
+///
+/// Describes how many i32 values the function consumes (params) and
+/// produces (results) on the wasm stack.  All runtime functions use
+/// i32 for heap pointers, so per-type tracking is deferred to the
+/// backend layer.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RuntimeSignature {
+    pub params: usize,
+    pub results: usize,
+}
+
 const NO_DEPS: &[RuntimeFn] = &[];
 const NO_GLOBALS: &[RuntimeGlobal] = &[];
 const NO_IMPORTS: &[HostImport] = &[];
@@ -1598,6 +1610,97 @@ impl RuntimeFn {
 
     pub const fn is_value(self) -> bool {
         matches!(self.result(), RuntimeResult::Value)
+    }
+
+    /// Return the expected stack-effect signature for this runtime function.
+    ///
+    /// Most runtime functions take 1 heap pointer (i32) and return 1
+    /// heap pointer.  Functions that differ are listed explicitly.
+    pub const fn stack_effect(self) -> RuntimeSignature {
+        match self {
+            // 0 params, 1 result
+            Self::PrivateBrandTypeError => RuntimeSignature {
+                params: 0,
+                results: 1,
+            },
+
+            // 1 param, 0 results (side-effect only)
+            Self::ModuleExportsAssign => RuntimeSignature {
+                params: 1,
+                results: 0,
+            },
+
+            // 1 param, 1 result
+            Self::AllocHeap
+            | Self::GetLength
+            | Self::ModuleRequire
+            | Self::Not
+            | Self::Negate
+            | Self::TruthyBool
+            | Self::TypeOf
+            | Self::NumberFromI32
+            | Self::ObjectKeys => RuntimeSignature {
+                params: 1,
+                results: 1,
+            },
+
+            // 2 params, 1 result
+            Self::ArrayGet
+            | Self::Index
+            | Self::AddFast
+            | Self::Add
+            | Self::SubFast
+            | Self::MulFast
+            | Self::DivFast
+            | Self::ModFast
+            | Self::Concat
+            | Self::Less
+            | Self::LessFast
+            | Self::LessEqual
+            | Self::LessEqualFast
+            | Self::Greater
+            | Self::GreaterFast
+            | Self::GreaterEqual
+            | Self::GreaterEqualFast
+            | Self::MathPow
+            | Self::StrictEqual
+            | Self::ValueToStringInto
+            | Self::ArrayPush
+            | Self::ArrayPushGrow => RuntimeSignature {
+                params: 2,
+                results: 1,
+            },
+
+            // 3 params, 1 result
+            Self::PropertyGet | Self::PropertyDelete | Self::PropertyHas => RuntimeSignature {
+                params: 3,
+                results: 1,
+            },
+
+            // 3 params, 0 results
+            Self::ModuleExportsSet => RuntimeSignature {
+                params: 3,
+                results: 0,
+            },
+
+            // 4 params, 1 result
+            Self::PropertySet => RuntimeSignature {
+                params: 4,
+                results: 1,
+            },
+
+            // 6 params, 1 result
+            Self::MakeBigIntLiteral => RuntimeSignature {
+                params: 6,
+                results: 1,
+            },
+
+            // Default: 1 param, 1 result (most common pattern)
+            _ => RuntimeSignature {
+                params: 1,
+                results: 1,
+            },
+        }
     }
 
     /// Get the manifest name for this runtime function (derived from symbol).
