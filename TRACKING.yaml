@@ -8,21 +8,6 @@ meta:
     roadmap_source: docs/roadmap.md
     closed_source: docs/done-tracking.yaml
 open:
-  - id: 236
-    title: "Implement new.target metaproperty (W9a)"
-    priority: P1
-    type: feature
-    area: backend
-    status: open
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: W9a
-    acceptance:
-      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_new_target_in_class"
-      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(new_target)'"
-    non_goals:
-      - "No function-level new.target (not in class constructor)."
-
   - id: 237
     title: "Implement public field initializers in class constructor (W9a)"
     priority: P1
@@ -106,5 +91,30 @@ open:
       - "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output"
     non_goals:
       - "No new runtime implementation."
-active: []
-
+active:
+  - id: 236
+    title: "Implement new.target metaproperty (W9a)"
+    priority: P1
+    type: feature
+    area: backend
+    status: active
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: W9a
+    acceptance:
+      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_new_target_in_class"
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(new_target)'"
+    non_goals:
+      - "No function-level new.target (not in class constructor)."
+    plan:
+      goal: "Parse new.target in class constructors and emit as runtime value"
+      files:
+        - "crates/frontend/src/ast.rs: Add Expr::NewTarget variant"
+        - "crates/frontend/src/parser/expressions_main.rs: Parse new.target as MemberExpression"
+        - "crates/ir/src/name_resolver.rs: Resolve new.target in class context"
+        - "crates/ir/src/builtin_resolver.rs: Builtin pass for new.target"
+        - "crates/ir/src/builtin_resolved.rs: Add ResolvedExpr::NewTarget"
+        - "crates/ir/src/lowered/resolver_expr.rs: Lower constructor new.target to the current class prototype"
+        - "crates/compiler/src/dump.rs: Preserve new.target in AST dumps"
+        - "fixtures/classes/class-new-target.ts: Add semantic fixture"
+      acceptance: "cargo test parses_new_target_in_class && new-target fixture node_diff pass"

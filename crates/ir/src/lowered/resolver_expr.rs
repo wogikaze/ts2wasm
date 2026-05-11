@@ -33,6 +33,27 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::Undefined(Span::generated("undef")))
                 }
             },
+            ResolvedExpr::NewTarget { span } => {
+                if !self.in_constructor {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "issue-236: new.target is only supported in class constructors"
+                            .to_owned(),
+                        span: Some(*span),
+                        phase: None,
+                    });
+                }
+                let class_name = self.current_class.clone().ok_or_else(|| Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-236: new.target requires a class constructor context".to_owned(),
+                    span: Some(*span),
+                    phase: None,
+                })?;
+                Ok(LoweredExpr::ClassPrototype(
+                    self.class_prototype_ref(&class_name)?,
+                    *span,
+                ))
+            }
             ResolvedExpr::Ident(name) => {
                 // Handle special global constants Infinity and NaN
                 // Note: These are approximated as max/min representable numbers due to small-int number model

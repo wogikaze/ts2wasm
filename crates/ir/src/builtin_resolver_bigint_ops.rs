@@ -410,6 +410,7 @@ pub(super) fn collect_assigned_names_in_expr(expr: &Expr, names: &mut HashSet<St
         | Expr::Null { .. }
         | Expr::Undefined { .. }
         | Expr::This { .. }
+        | Expr::NewTarget { .. }
         | Expr::Ident { .. } => {}
     }
 }
@@ -884,5 +885,6 @@ pub(super) fn expr_contains_bigint(expr: &Expr) -> bool {
         | Expr::This { .. }
         | Expr::Undefined { .. }
         | Expr::Ident { .. } => false,
+        Expr::NewTarget { .. } => false,
     }
 }

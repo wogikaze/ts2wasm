@@ -1,15 +1,8 @@
-// Test new.target in constructor
-class Base {
-  constructor() {
-    console.log(typeof new.target);
-  }
+class NewTargetBox {
+    constructor() {
+        this.isSelf = new.target === NewTargetBox;
+    }
 }
 
-class Child extends Base {
-  constructor() {
-    super();
-  }
-}
-
-new Base();
-new Child();
+let value = new NewTargetBox();
+console.log(value.isSelf);

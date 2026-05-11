@@ -4465,6 +4465,7 @@ fn expr_contains_super_ref(expr: &ResolvedExpr) -> bool {
         | ResolvedExpr::Null
         | ResolvedExpr::Undefined
         | ResolvedExpr::This { .. }
+        | ResolvedExpr::NewTarget { .. }
         | ResolvedExpr::Ident(_) => false,
     }
 }

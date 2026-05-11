@@ -945,6 +945,7 @@ fn unparse_expr(expr: &Expr) -> String {
             }
         }
         Expr::This { .. } => "this".to_owned(),
+        Expr::NewTarget { .. } => "new.target".to_owned(),
     }
 }
 

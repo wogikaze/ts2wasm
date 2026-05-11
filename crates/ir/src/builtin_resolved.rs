@@ -128,6 +128,9 @@ pub enum ResolvedExpr {
     This {
         span: Span,
     },
+    NewTarget {
+        span: Span,
+    },
     Await {
         expr: Box<ResolvedExpr>,
     },

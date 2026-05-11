@@ -2771,3 +2771,8 @@ fn class_expression_named_fixture_matches_node_output() {
 fn class_super_arrow_fixture_matches_node_output() {
     assert_fixture_matches_node("fixtures/classes/class-super-arrow.ts");
 }
+
+#[test]
+fn new_target_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes/class-new-target.ts");
+}

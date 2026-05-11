@@ -754,6 +754,7 @@ impl BigIntStaticBuiltinFolder {
             | Expr::Null { .. }
             | Expr::Undefined { .. }
             | Expr::This { .. }
+            | Expr::NewTarget { .. }
             | Expr::Ident { .. } => expr.clone(),
         }
     }
@@ -1437,6 +1438,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::Null { .. } => Ok(ResolvedExpr::Null),
         Expr::Undefined { .. } => Ok(ResolvedExpr::Undefined),
         Expr::This { span } => Ok(ResolvedExpr::This { span: *span }),
+        Expr::NewTarget { span } => Ok(ResolvedExpr::NewTarget { span: *span }),
         Expr::Await { expr, .. } => {
             // Resolve the inner expression and wrap in Await
             Ok(ResolvedExpr::Await {

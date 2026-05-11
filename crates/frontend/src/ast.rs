@@ -511,6 +511,9 @@ pub enum Expr {
         interface_heritage: Vec<Expr>,
         span: Span,
     },
+    NewTarget {
+        span: Span,
+    },
     This {
         span: Span,
     },
@@ -612,6 +615,7 @@ impl Expr {
             | Self::PropertyAssign { span, .. }
             | Self::IndexAssign { span, .. }
             | Self::ClassExpr { span, .. }
+            | Self::NewTarget { span }
             | Self::This { span } => *span,
         }
     }

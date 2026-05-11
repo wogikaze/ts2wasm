@@ -1177,6 +1177,20 @@ impl Parser {
             let fn_span = self.expect(TokenKind::Function)?;
             self.function_expression(fn_span)
         } else if let Some(new_span) = self.consume_span(TokenKind::New) {
+            // new.target metaproperty
+            if self.peek() == Some(&Token::Dot)
+                && matches!(self.peek_n(1), Some(Token::Ident(name)) if name == "target")
+            {
+                self.advance(); // consume '.'
+                self.advance(); // consume 'target' ident
+                let end = self.prev_span().map(|s| s.end).unwrap_or(new_span.end);
+                return Ok(Expr::NewTarget {
+                    span: Span {
+                        start: new_span.start,
+                        end,
+                    },
+                });
+            }
             let expr = self.call_member_no_call()?;
             self.try_consume_typescript_new_type_arguments(&expr)?;
             let mut args = Vec::new();
@@ -2269,6 +2283,7 @@ fn parser_expr_is_bigint_literal_operand(expr: &Expr) -> bool {
         | Expr::ArrowFn { .. }
         | Expr::PropertyAssign { .. }
         | Expr::IndexAssign { .. }
+        | Expr::NewTarget { .. }
         | Expr::TypeOf { .. }
         | Expr::Await { .. }
         | Expr::Spread { .. } => false,

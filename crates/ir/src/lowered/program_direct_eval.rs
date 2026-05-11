@@ -324,6 +324,7 @@ pub(super) fn collect_direct_eval_function_assignment_expr(
         | ResolvedExpr::FunctionExpr { .. }
         | ResolvedExpr::ClassExpr { .. }
         | ResolvedExpr::This { .. }
+        | ResolvedExpr::NewTarget { .. }
         | ResolvedExpr::Ident(_)
         | ResolvedExpr::ModuleLoad { .. }
         | ResolvedExpr::Number(_)

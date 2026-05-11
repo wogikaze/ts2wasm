@@ -747,6 +747,7 @@ fn collect_array_map_callback_function_names_in_expr(
         | ResolvedExpr::Null
         | ResolvedExpr::Undefined
         | ResolvedExpr::This { .. }
+        | ResolvedExpr::NewTarget { .. }
         | ResolvedExpr::Ident(_)
         | ResolvedExpr::ModuleLoad { .. } => {}
     }
@@ -1667,6 +1668,7 @@ fn collect_call_targets_in_expr(expr: &ResolvedExpr, targets: &mut HashSet<Strin
             collect_call_targets_in_expr(expr, targets);
         }
         ResolvedExpr::This { .. }
+        | ResolvedExpr::NewTarget { .. }
         | ResolvedExpr::Ident(_)
         | ResolvedExpr::Number(_)
         | ResolvedExpr::BigIntLiteral { .. }
@@ -1872,6 +1874,7 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
     match expr {
         ResolvedExpr::Await { expr } => expr_contains_this(expr),
         ResolvedExpr::This { .. } => true,
+        ResolvedExpr::NewTarget { .. } => false,
         ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => expr_contains_this(expr),
         ResolvedExpr::Binary { left, right, .. } => {
             expr_contains_this(left) || expr_contains_this(right)
@@ -2160,6 +2163,7 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::ArrowFn { body, .. } => expr_contains_arguments(body),
         ResolvedExpr::FunctionExpr { .. } | ResolvedExpr::ClassExpr { .. } => false,
         ResolvedExpr::This { .. }
+        | ResolvedExpr::NewTarget { .. }
         | ResolvedExpr::Number(_)
         | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)

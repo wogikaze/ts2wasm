@@ -1719,6 +1719,36 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_new_target_in_class() {
+        let program = parse_program("class C { constructor() { this.is_self = new.target === C; } }")
+            .unwrap();
+
+        let Stmt::ClassDecl { body, .. } = &program[0] else {
+            panic!("expected class declaration");
+        };
+        let Stmt::Function {
+            body: constructor_body,
+            ..
+        } = &body[0]
+        else {
+            panic!("expected constructor function");
+        };
+        let Stmt::Expr {
+            expr: Expr::PropertyAssign { value, .. },
+            ..
+        } = &constructor_body[0]
+        else {
+            panic!("expected constructor property assignment");
+        };
+        let Expr::Binary { left, right, .. } = value.as_ref() else {
+            panic!("expected new.target comparison");
+        };
+
+        assert!(matches!(left.as_ref(), Expr::NewTarget { .. }));
+        assert!(matches!(right.as_ref(), Expr::Ident { name, .. } if name == "C"));
+    }
+
+    #[test]
     fn parses_class_static_block_as_distinct_class_element() {
         let program = parse_program("class C { static { console.log(1); } }").unwrap();
 

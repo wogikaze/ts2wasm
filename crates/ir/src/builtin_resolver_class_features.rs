@@ -499,6 +499,7 @@ pub(super) fn validate_static_block_expr(expr: &Expr) -> Result<(), Diagnostic> 
             "`super` in class static blocks is not supported",
             *span,
         )),
+        Expr::NewTarget { .. } => Ok(()),
         Expr::Unary { expr, .. }
         | Expr::TypeOf { expr, .. }
         | Expr::Assign { expr, .. }

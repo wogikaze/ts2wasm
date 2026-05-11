@@ -4,6 +4,7 @@ use super::*;
 pub(super) fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], captures: &mut Vec<String>) {
     match expr {
         ResolvedExpr::This { .. } => push_capture("this", params, captures),
+        ResolvedExpr::NewTarget { .. } => {}
         ResolvedExpr::Ident(name) => push_capture(name, params, captures),
         ResolvedExpr::Await { expr } => {
             collect_arrow_captures(expr, params, captures);
@@ -472,6 +473,7 @@ pub(super) fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bo
         | ResolvedExpr::FunctionExpr { .. }
         | ResolvedExpr::ClassExpr { .. }
         | ResolvedExpr::This { .. }
+        | ResolvedExpr::NewTarget { .. }
         | ResolvedExpr::Ident(_)
         | ResolvedExpr::ModuleLoad { .. }
         | ResolvedExpr::Number(_)
