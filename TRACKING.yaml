@@ -35,13 +35,14 @@ open:
       - "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output"
     non_goals:
       - "No new runtime implementation."
-active:
+active: []
+done:
   - id: 240
     title: "Support extends null (W9a)"
     priority: P2
     type: feature
     area: backend
-    status: active
+    status: done
     created: 2026-05-11
     updated: 2026-05-11
     roadmap: W9a
@@ -56,7 +57,13 @@ active:
         - "crates/cli/tests/m8_oop_classes.rs: build smoke hook"
         - "crates/ir/src/builtin_resolver.rs: treat extends null as no parent constructor"
       acceptance: "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_extends_null"
-done:
+    evidence:
+      commit: de6cb18c3
+      commands:
+        - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_extends_null => exit 0"
+        - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes -E 'test(class_extends)' => exit 0"
+        - "cargo fmt --all --check => exit 0"
+        - "git diff --check => exit 0"
   - id: 239
     title: "Support super.prop in static methods (W9a)"
     priority: P2
