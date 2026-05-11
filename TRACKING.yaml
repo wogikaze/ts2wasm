@@ -355,35 +355,6 @@ open:
     temporary mapping layer.
 
     '
-- id: 294
-  title: Add RuntimeLinkPlan structure tests for minimal imports, dependencies, and runtime strings
-  priority: P2
-  type: test
-  area: backend
-  status: open
-  created: 2026-05-11
-  updated: 2026-05-11
-  roadmap: P11-architecture-hardening
-  acceptance:
-  - cargo test -p ts2wasm-backend-wasm runtime_link_plan
-  - grep -R "RuntimeLinkPlan" crates/backend-wasm/tests crates/compiler/tests
-  - grep -R "no unnecessary imports\|minimal imports\|required_runtime_functions" crates/backend-wasm/tests crates/compiler/tests
-  non_goals:
-  - No new runtime functions.
-  - No change to import/capability policy.
-  plan:
-    goal: 'Add structural tests that assert RuntimeLinkPlan includes required runtime functions, dependencies, imports, capabilities,
-      and runtime strings, while excluding unnecessary imports.
-
-      '
-    files:
-    - crates/backend-wasm/tests/runtime_link_plan.rs
-    - crates/compiler/tests/runtime_link_plan_snapshot.rs
-    - crates/backend-wasm/src/link_plan.rs
-    - crates/backend-wasm/src/runtime/spec/**
-  notes: 'Differential tests are not enough. Link plan minimality is part of the security and standalone contract.
-
-    '
 - id: 295
   title: Add raw runtime symbol and host import string hardening across backend
   priority: P3
@@ -580,6 +551,39 @@ open:
     '
 active: []
 done:
+- id: 294
+  title: Add RuntimeLinkPlan structure tests for minimal imports, dependencies, and runtime strings
+  priority: P2
+  type: test
+  area: backend
+  status: done
+  created: 2026-05-11
+  updated: 2026-05-11
+  roadmap: P11-architecture-hardening
+  acceptance:
+  - cargo test -p ts2wasm-backend-wasm runtime_link_plan
+  - grep -R "RuntimeLinkPlan" crates/backend-wasm/tests crates/compiler/tests
+  - grep -R "no unnecessary imports\|minimal imports\|required_runtime_functions" crates/backend-wasm/tests crates/compiler/tests
+  non_goals:
+  - No new runtime functions.
+  - No change to import/capability policy.
+  plan:
+    goal: 'Add structural tests that assert RuntimeLinkPlan includes required runtime functions, dependencies, imports, capabilities,
+      and runtime strings, while excluding unnecessary imports.
+
+      '
+    files:
+    - crates/backend-wasm/tests/runtime_link_plan.rs
+    - crates/compiler/tests/runtime_link_plan_snapshot.rs
+    - crates/backend-wasm/src/link_plan.rs
+    - crates/backend-wasm/src/runtime/spec/**
+  notes: 'Differential tests are not enough. Link plan minimality is part of the security and standalone contract.
+
+    '
+  evidence:
+    commit: a1c233c4d
+    commands:
+    - cargo test -p ts2wasm-backend-wasm runtime_link_plan => exit 0
 - id: 274
   title: Extract RuntimeFn/RuntimeSpec/RuntimeLinkPlan into independent runtime-catalog crate
   priority: P3
