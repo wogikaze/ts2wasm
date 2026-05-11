@@ -13,7 +13,7 @@ open:
     priority: P1
     type: refactor
     area: ir
-    status: open
+    status: done
     created: 2026-05-11
     updated: 2026-05-11
     roadmap: ""
@@ -250,6 +250,44 @@ open:
       acceptance: "stdout summary includes build_only=N"
 active: []
 done:
+  - id: 250
+    title: "Split lower_expr branches from resolver/expr.rs into domain modules (P9)"
+    priority: P1
+    type: refactor
+    area: ir
+    status: done
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: ""
+    acceptance:
+      - "cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli"
+      - "mise run check architecture"
+      - "wc -l crates/ir/src/lowered/resolver/expr.rs | awk '{print $1}' | xargs -I{} test {} -lt 2000"
+      - "test -f crates/ir/src/lowered/resolver/array.rs || test -d crates/ir/src/lowered/resolver/array"
+      - "test -f crates/ir/src/lowered/resolver/call.rs || test -d crates/ir/src/lowered/resolver/call"
+      - "test -f crates/ir/src/lowered/resolver/object.rs || test -d crates/ir/src/lowered/resolver/object"
+    non_goals:
+      - "No change to LoweredExpr type definition or RuntimeIntrinsic."
+      - "No change to lowering behavior or wasm output."
+    plan:
+      goal: "Extract array literal, object literal, call/method call, and class branches from lower_expr into resolver/array/, resolver/object/, resolver/call/, resolver/class/ modules; lower_expr becomes dispatcher"
+      files:
+        - "crates/ir/src/lowered/resolver/expr.rs: shrink to dispatcher match"
+        - "crates/ir/src/lowered/resolver/array.rs or array/: array lowering"
+        - "crates/ir/src/lowered/resolver/object.rs or object/: object lowering"
+        - "crates/ir/src/lowered/resolver/call.rs or call/: call/method call lowering"
+      acceptance: "resolver/expr.rs < 2000 lines; array/object/call domain modules exist"
+    evidence:
+      commit: b7b71d950
+      commands:
+        - "wc -l crates/ir/src/lowered/resolver/expr.rs => 1122 (< 2000)"
+        - "test -f crates/ir/src/lowered/resolver/array.rs => exists"
+        - "test -f crates/ir/src/lowered/resolver/call.rs => exists"
+        - "test -f crates/ir/src/lowered/resolver/object.rs => exists"
+        - "test -f crates/ir/src/lowered/resolver/class.rs => exists"
+        - "cargo fmt --all --check => exit 0"
+        - "cargo check -p ts2wasm-ir => 0 errors, 6 pre-existing warnings"
+        - "cargo nextest run -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler -p ts2wasm-cli --no-fail-fast => 988 passed (same as master baseline)"
   - id: 242
     title: "Upgrade class fixtures from build_smoke to semantic_diff (W9a)"
     priority: P2
