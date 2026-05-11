@@ -2776,3 +2776,8 @@ fn class_super_arrow_fixture_matches_node_output() {
 fn new_target_fixture_matches_node_output() {
     assert_fixture_matches_node("fixtures/classes/class-new-target.ts");
 }
+
+#[test]
+fn class_field_initialization_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes/class-field-initializers.ts");
+}

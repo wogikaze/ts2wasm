@@ -8,20 +8,6 @@ meta:
     roadmap_source: docs/roadmap.md
     closed_source: docs/done-tracking.yaml
 open:
-  - id: 241
-    title: "Pre-allocate class fields capacity for new expression (W9a)"
-    priority: P2
-    type: feature
-    area: backend
-    status: open
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: W9a
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_field_initialization)'"
-    non_goals:
-      - "No private field slot reallocation after construction."
-
   - id: 242
     title: "Upgrade class fixtures from build_smoke to semantic_diff (W9a)"
     priority: P2
@@ -35,7 +21,27 @@ open:
       - "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output"
     non_goals:
       - "No new runtime implementation."
-active: []
+active:
+  - id: 241
+    title: "Pre-allocate class fields capacity for new expression (W9a)"
+    priority: P2
+    type: feature
+    area: backend
+    status: active
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: W9a
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_field_initialization)'"
+    non_goals:
+      - "No private field slot reallocation after construction."
+    plan:
+      goal: "Ensure public class field initialization survives new-expression allocation and matches Node output"
+      files:
+        - "fixtures/classes/class-field-initializers.ts: semantic fixture"
+        - "crates/cli/tests/common/m2_node_diff_fixture_tests.rs: node-diff coverage"
+        - "crates/backend-wasm/src/expr_emit.rs: verified existing class instance public slot capacity"
+      acceptance: "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_field_initialization)'"
 done:
   - id: 240
     title: "Support extends null (W9a)"
