@@ -113,6 +113,11 @@ fn build_smoke_class_super_arrow() {
 }
 
 #[test]
+fn build_smoke_class_super_static() {
+    assert_fixture_build_smoke("classes/class-super-static.ts");
+}
+
+#[test]
 fn build_smoke_class_getter_setter() {
     assert_fixture_build_smoke("classes/class-getter-setter.ts");
 }

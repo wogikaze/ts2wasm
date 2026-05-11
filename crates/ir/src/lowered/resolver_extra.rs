@@ -1964,6 +1964,25 @@ impl<'a> Resolver<'a> {
         None
     }
 
+    pub(super) fn resolve_static_class_method(
+        &self,
+        class_name: &str,
+        method: &str,
+    ) -> Option<FuncId> {
+        let mut current = Some(class_name.to_owned());
+        while let Some(class) = current {
+            if let Some(id) = self
+                .class_static_method_ids
+                .get(&(class.clone(), method.to_owned()))
+                .copied()
+            {
+                return Some(id);
+            }
+            current = self.class_parents.get(&class).and_then(|p| p.clone());
+        }
+        None
+    }
+
     pub(super) fn current_private_method_id(&self, method: &str) -> Option<FuncId> {
         let class_name = self.current_class.as_ref()?;
         self.class_method_ids

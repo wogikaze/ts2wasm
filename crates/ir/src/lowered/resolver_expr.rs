@@ -2124,20 +2124,23 @@ impl<'a> Resolver<'a> {
                                 span: Some(*span),
 
                                 phase: None,})?;
-                        let method_id = self
-                            .resolve_class_method(&parent_name, method)
-                            .ok_or_else(|| Diagnostic {
-                                code: DiagCode::UnsupportedSyntax,
-                                message: format!(
-                                    "super method `{}.{}` not found",
-                                    parent_name, method
-                                ),
-                                span: Some(*span),
+                        let mut lowered_args = Vec::new();
+                        let method_id = if let Ok(this_local) = self.resolve_local("this") {
+                            lowered_args.push(LoweredExpr::Local(
+                                this_local,
+                                Span::generated("local"),
+                            ));
+                            self.resolve_class_method(&parent_name, method)
+                        } else {
+                            self.resolve_static_class_method(&parent_name, method)
+                        }
+                        .ok_or_else(|| Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!("super method `{}.{}` not found", parent_name, method),
+                            span: Some(*span),
 
-                                phase: None,})?;
-
-                        let mut lowered_args =
-                            vec![LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))];
+                            phase: None,
+                        })?;
                         lowered_args.extend(
                             args.iter()
                                 .map(|e| self.lower_expr(e))

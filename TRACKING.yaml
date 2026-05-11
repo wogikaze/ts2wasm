@@ -8,20 +8,6 @@ meta:
     roadmap_source: docs/roadmap.md
     closed_source: docs/done-tracking.yaml
 open:
-  - id: 239
-    title: "Support super.prop in static methods (W9a)"
-    priority: P2
-    type: feature
-    area: ir
-    status: open
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: W9a
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_super_static"
-    non_goals:
-      - "No super() in static methods (not valid JS)."
-
   - id: 240
     title: "Support extends null (W9a)"
     priority: P2
@@ -63,7 +49,27 @@ open:
       - "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output"
     non_goals:
       - "No new runtime implementation."
-active: []
+active:
+  - id: 239
+    title: "Support super.prop in static methods (W9a)"
+    priority: P2
+    type: feature
+    area: ir
+    status: active
+    created: 2026-05-11
+    updated: 2026-05-11
+    roadmap: W9a
+    acceptance:
+      - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_super_static"
+    non_goals:
+      - "No super() in static methods (not valid JS)."
+    plan:
+      goal: "Build static class methods that read inherited static methods/properties through super.prop"
+      files:
+        - "fixtures/classes/class-super-static.ts: acceptance fixture if missing"
+        - "crates/cli/tests/m8_oop_classes.rs: build smoke hook if missing"
+        - "crates/ir/src/lowered/resolver_expr.rs: super.prop lowering in static method context"
+      acceptance: "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_super_static"
 done:
   - id: 238
     title: "Differentiate getter/setter from regular methods in class body (W9a)"
