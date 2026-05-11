@@ -15,18 +15,14 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
-use crate::lowered::LocalId;
+use crate::lowered::{ClosureRepresentation, FuncId, LocalId, LoweredExpr};
+use ts2wasm_shared::Span;
 
 /// Static analysis facts tracked during lowering.
 ///
 /// These are the inferred properties of locals that enable optimization
 /// decisions (e.g., using ArrayPush for known arrays, selecting BigInt
 /// division/remainder precision based on control flow).
-///
-/// Note: `arrow_locals` is intentionally omitted from this struct because
-/// `ArrowClosure` (defined in `resolver/mod.rs`) has private fields and a
-/// different lifecycle. When the Resolver is migrated to use `LoweringCtx`,
-/// `ArrowClosure` should be moved here or made fully public.
 pub struct StaticFacts {
     // ------------------------------------------------------------------
     // From resolver/mod.rs `Facts`:
@@ -73,6 +69,8 @@ pub struct StaticFacts {
     pub env_cell_locals: HashSet<LocalId>,
     /// Names that use heap-allocated closure representation.
     pub heap_closure_names: HashSet<String>,
+    /// Arrow closure locals: local_id → ArrowClosure (for inline arrow fn expansion).
+    pub arrow_locals: HashMap<LocalId, ArrowClosure>,
 }
 
 /// Tracks the known elements of a function-parameter-based array-like value
@@ -80,6 +78,25 @@ pub struct StaticFacts {
 #[derive(Debug, Clone)]
 pub struct StaticFunctionArrayLike {
     pub elements: Vec<Option<ResolvedArrayElement>>,
+}
+
+/// Tracks an arrow function closure that can be inlined or heap-allocated.
+#[derive(Debug, Clone)]
+pub struct ArrowClosure {
+    pub func_id: FuncId,
+    pub captures: Vec<LocalId>,
+}
+
+impl ArrowClosure {
+    /// Convert this closure to a lowered expression with the given representation.
+    pub fn to_expr(&self, representation: ClosureRepresentation) -> LoweredExpr {
+        LoweredExpr::ArrowFn {
+            func_id: self.func_id,
+            captures: self.captures.clone(),
+            representation,
+            span: Span::generated("arrow_fn"),
+        }
+    }
 }
 
 impl StaticFacts {
@@ -105,6 +122,7 @@ impl StaticFacts {
             env_cell_names: HashSet::new(),
             env_cell_locals: HashSet::new(),
             heap_closure_names: HashSet::new(),
+            arrow_locals: HashMap::new(),
         }
     }
 
@@ -118,6 +136,21 @@ impl StaticFacts {
         facts.env_cell_names = env_cell_names;
         facts.heap_closure_names = heap_closure_names;
         facts.generator_function_names = generator_function_names;
+        facts
+    }
+
+    /// Create a StaticFacts with pre-populated capture, generator, and arrow closure data.
+    pub fn with_facts(
+        env_cell_names: HashSet<String>,
+        heap_closure_names: HashSet<String>,
+        generator_function_names: HashSet<String>,
+        arrow_locals: HashMap<LocalId, ArrowClosure>,
+    ) -> Self {
+        let mut facts = Self::new();
+        facts.env_cell_names = env_cell_names;
+        facts.heap_closure_names = heap_closure_names;
+        facts.generator_function_names = generator_function_names;
+        facts.arrow_locals = arrow_locals;
         facts
     }
 

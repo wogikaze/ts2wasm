@@ -1,11 +1,12 @@
 use std::collections::HashSet;
 
-use super::{ArrowClosure, binding_param_names};
+use super::binding_param_names;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::lowered::facts::ArrowClosure;
 use crate::lowered::*;
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
-impl<'a> super::Resolver<'a> {
+impl super::Resolver {
     pub(super) fn lower_arrow_fn(
         &mut self,
         params: &[String],
@@ -86,8 +87,8 @@ impl<'a> super::Resolver<'a> {
             lowered_params.push(rp);
         }
 
-        let func_id = FuncId(self.functions.next_func_id);
-        self.functions.next_func_id += 1;
+        let func_id = FuncId(self.ctx.functions.next_func_id);
+        self.ctx.functions.next_func_id += 1;
         let mut lowered_body_stmts: Vec<ResolvedStmt> = body_stmts.to_vec();
         lowered_body_stmts.push(ResolvedStmt::Return((*body).clone()));
         let lowered = lower_function(
@@ -95,21 +96,21 @@ impl<'a> super::Resolver<'a> {
             &lowered_params,
             &lowered_body_stmts,
             false,
-            self.symbols.function_ids,
-            self.symbols.function_signatures,
-            self.functions.function_captures,
-            self.functions.function_mutable_captures,
-            self.functions.class_method_captures,
-            self.functions.class_method_mutable_captures,
-            &self.captures.env_cell_names,
-            &self.captures.heap_closure_names,
-            self.classes.class_parents.clone(),
-            self.classes.class_private_fields.clone(),
-            self.classes.class_static_private_fields.clone(),
+            &self.ctx.symbols.function_ids,
+            &self.ctx.symbols.function_signatures,
+            &self.ctx.functions.function_captures,
+            &self.ctx.functions.function_mutable_captures,
+            &self.ctx.functions.class_method_captures,
+            &self.ctx.functions.class_method_mutable_captures,
+            &self.ctx.facts.env_cell_names,
+            &self.ctx.facts.heap_closure_names,
+            self.ctx.classes.class_parents.clone(),
+            self.ctx.classes.class_private_fields.clone(),
+            self.ctx.classes.class_static_private_fields.clone(),
             LowerFunctionOptions {
-                current_class: self.classes.current_class.as_deref(),
+                current_class: self.ctx.classes.current_class.as_deref(),
                 in_constructor: false,
-                next_func_id: self.functions.next_func_id,
+                next_func_id: self.ctx.functions.next_func_id,
                 self_closure: active_self_name.map(|name| SelfClosureOptions {
                     name,
                     func_id,
@@ -118,9 +119,13 @@ impl<'a> super::Resolver<'a> {
                 recursion_depth: 0,
             },
         )?;
-        self.functions.next_func_id = lowered.next_func_id;
-        self.functions.generated_functions.push(lowered.function);
-        self.functions
+        self.ctx.functions.next_func_id = lowered.next_func_id;
+        self.ctx
+            .functions
+            .generated_functions
+            .push(lowered.function);
+        self.ctx
+            .functions
             .generated_functions
             .extend(lowered.generated_functions);
 
@@ -191,7 +196,7 @@ impl<'a> super::Resolver<'a> {
             .collect::<Vec<_>>();
         if mutable_captures
             .iter()
-            .any(|capture| !self.captures.env_cell_names.contains(capture))
+            .any(|capture| !self.ctx.facts.env_cell_names.contains(capture))
         {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -215,50 +220,54 @@ impl<'a> super::Resolver<'a> {
             span: None,
         }));
 
-        let func_id = FuncId(self.functions.next_func_id);
-        self.functions.next_func_id += 1;
+        let func_id = FuncId(self.ctx.functions.next_func_id);
+        self.ctx.functions.next_func_id += 1;
         let self_closure = (!name.is_empty())
             .then_some(SelfClosureOptions {
                 name,
                 func_id,
                 capture_names: &capture_names,
             })
-            .filter(|_| !self.captures.env_cell_names.contains(name));
+            .filter(|_| !self.ctx.facts.env_cell_names.contains(name));
 
         let lowered = lower_function(
             func_id,
             &lowered_params,
             body,
             false,
-            self.symbols.function_ids,
-            self.symbols.function_signatures,
-            self.functions.function_captures,
-            self.functions.function_mutable_captures,
-            self.functions.class_method_captures,
-            self.functions.class_method_mutable_captures,
-            &self.captures.env_cell_names,
-            &self.captures.heap_closure_names,
-            self.classes.class_parents.clone(),
-            self.classes.class_private_fields.clone(),
-            self.classes.class_static_private_fields.clone(),
+            &self.ctx.symbols.function_ids,
+            &self.ctx.symbols.function_signatures,
+            &self.ctx.functions.function_captures,
+            &self.ctx.functions.function_mutable_captures,
+            &self.ctx.functions.class_method_captures,
+            &self.ctx.functions.class_method_mutable_captures,
+            &self.ctx.facts.env_cell_names,
+            &self.ctx.facts.heap_closure_names,
+            self.ctx.classes.class_parents.clone(),
+            self.ctx.classes.class_private_fields.clone(),
+            self.ctx.classes.class_static_private_fields.clone(),
             LowerFunctionOptions {
-                current_class: self.classes.current_class.as_deref(),
+                current_class: self.ctx.classes.current_class.as_deref(),
                 in_constructor: false,
-                next_func_id: self.functions.next_func_id,
+                next_func_id: self.ctx.functions.next_func_id,
                 self_closure,
                 recursion_depth: 0,
             },
         )?;
-        self.functions.next_func_id = lowered.next_func_id;
-        self.functions.generated_functions.push(lowered.function);
-        self.functions
+        self.ctx.functions.next_func_id = lowered.next_func_id;
+        self.ctx
+            .functions
+            .generated_functions
+            .push(lowered.function);
+        self.ctx
+            .functions
             .generated_functions
             .extend(lowered.generated_functions);
 
         Ok(LoweredExpr::ArrowFn {
             func_id,
             captures,
-            representation: if self.captures.heap_closure_names.contains(name) {
+            representation: if self.ctx.facts.heap_closure_names.contains(name) {
                 ClosureRepresentation::HeapObject
             } else {
                 ClosureRepresentation::DirectLocalToken
@@ -300,7 +309,7 @@ impl<'a> super::Resolver<'a> {
             binding_param_names(params.iter().map(|param| (param.name.as_str(), param.span)))?
                 .into_iter()
                 .collect::<HashSet<_>>();
-        if !self.captures.env_cell_names.contains(name) {
+        if !self.ctx.facts.env_cell_names.contains(name) {
             excluded.insert(name.to_owned());
         }
         collect_declared_names_in_stmts(body, &mut excluded);
@@ -314,13 +323,18 @@ impl<'a> super::Resolver<'a> {
     }
 
     pub(crate) fn declare_local(&mut self, name: &str) -> Result<LocalId, Diagnostic> {
-        let scope = self.locals.scopes.last_mut().expect("scope must exist");
+        let scope = self
+            .ctx
+            .symbols
+            .scopes
+            .last_mut()
+            .expect("scope must exist");
         if let Some(&existing) = scope.get(name) {
             return Ok(existing);
         }
-        let local_id = LocalId(self.locals.next_local_id);
-        self.locals.next_local_id += 1;
-        self.locals.locals.push(local_id);
+        let local_id = LocalId(self.ctx.symbols.next_local_id);
+        self.ctx.symbols.next_local_id += 1;
+        self.ctx.symbols.locals.push(local_id);
         scope.insert(name.to_owned(), local_id);
         Ok(local_id)
     }
@@ -336,21 +350,23 @@ impl<'a> super::Resolver<'a> {
             .iter()
             .map(|capture| self.resolve_local(capture))
             .collect::<Result<Vec<_>, _>>()?;
-        self.facts
+        self.ctx
+            .facts
             .arrow_locals
             .insert(local_id, ArrowClosure { func_id, captures });
         Ok(())
     }
 
     pub(super) fn alloc_temp(&mut self) -> LocalId {
-        let id = LocalId(self.locals.next_local_id);
-        self.locals.next_local_id += 1;
-        self.locals.locals.push(id);
+        let id = LocalId(self.ctx.symbols.next_local_id);
+        self.ctx.symbols.next_local_id += 1;
+        self.ctx.symbols.locals.push(id);
         id
     }
 
     pub(crate) fn resolve_local(&self, name: &str) -> Result<LocalId, Diagnostic> {
-        self.locals
+        self.ctx
+            .symbols
             .scopes
             .iter()
             .rev()
@@ -365,7 +381,8 @@ impl<'a> super::Resolver<'a> {
     }
 
     pub(crate) fn resolve_func(&self, name: &str) -> Result<FuncId, Diagnostic> {
-        self.symbols
+        self.ctx
+            .symbols
             .function_ids
             .get(name)
             .copied()
@@ -393,9 +410,9 @@ impl<'a> super::Resolver<'a> {
                 }
             )
         {
-            self.captures.heap_closure_locals.insert(local_id);
+            self.ctx.facts.heap_closure_locals.insert(local_id);
         } else {
-            self.captures.heap_closure_locals.remove(&local_id);
+            self.ctx.facts.heap_closure_locals.remove(&local_id);
         }
     }
 }

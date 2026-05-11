@@ -3,7 +3,7 @@ use crate::builtin_resolved::ResolvedExpr;
 use crate::lowered::*;
 use ts2wasm_shared::{BinaryOp, DiagCode, Diagnostic, Span};
 
-impl<'a> super::Resolver<'a> {
+impl super::Resolver {
     pub(super) fn static_string_spread_value(&self, spread_expr: &ResolvedExpr) -> Option<String> {
         self.resolved_expr_static_string_value(spread_expr)
     }
@@ -30,17 +30,17 @@ impl<'a> super::Resolver<'a> {
 
     pub(super) fn update_regexp_literal_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
         if matches!(expr, ResolvedExpr::String(raw) if looks_like_regexp_literal(raw)) {
-            self.facts.regexp_literal_locals.insert(local_id);
+            self.ctx.facts.regexp_literal_locals.insert(local_id);
         } else {
-            self.facts.regexp_literal_locals.remove(&local_id);
+            self.ctx.facts.regexp_literal_locals.remove(&local_id);
         }
     }
 
     pub(super) fn update_string_literal_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
         if let Some(value) = self.resolved_expr_static_string_value(expr) {
-            self.facts.string_literal_locals.insert(local_id, value);
+            self.ctx.facts.string_literal_locals.insert(local_id, value);
         } else {
-            self.facts.string_literal_locals.remove(&local_id);
+            self.ctx.facts.string_literal_locals.remove(&local_id);
         }
     }
 
@@ -49,10 +49,10 @@ impl<'a> super::Resolver<'a> {
             ResolvedExpr::String(value) => Some(value.clone()),
             ResolvedExpr::Ident(name) => {
                 let local_id = self.resolve_local(name).ok()?;
-                if self.captures.env_cell_locals.contains(&local_id) {
+                if self.ctx.facts.env_cell_locals.contains(&local_id) {
                     return None;
                 }
-                self.facts.string_literal_locals.get(&local_id).cloned()
+                self.ctx.facts.string_literal_locals.get(&local_id).cloned()
             }
             ResolvedExpr::Binary { left, op, right } if *op == BinaryOp::Add => {
                 let mut value = self.resolved_expr_static_string_value(left)?;

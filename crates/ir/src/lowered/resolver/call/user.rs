@@ -12,7 +12,7 @@ use crate::lowered::*;
 use std::collections::HashMap;
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
-impl<'a> super::super::Resolver<'a> {
+impl<'a> super::super::Resolver {
     pub(crate) fn lower_call_expr(
         &mut self,
         callee: &ResolvedExpr,
@@ -70,7 +70,7 @@ impl<'a> super::super::Resolver<'a> {
         }
 
         if let Ok(local_id) = self.resolve_local(func_name)
-            && let Some(closure) = self.facts.arrow_locals.get(&local_id).cloned()
+            && let Some(closure) = self.ctx.facts.arrow_locals.get(&local_id).cloned()
         {
             let mut lowered_args = self.lower_call_args(args)?;
             lowered_args.extend(
@@ -89,9 +89,9 @@ impl<'a> super::super::Resolver<'a> {
         }
 
         if let Ok(local_id) = self.resolve_local(func_name)
-            && self.captures.heap_closure_locals.contains(&local_id)
+            && self.ctx.facts.heap_closure_locals.contains(&local_id)
         {
-            let receiver = if self.captures.env_cell_locals.contains(&local_id) {
+            let receiver = if self.ctx.facts.env_cell_locals.contains(&local_id) {
                 LoweredExpr::EnvCellGet(local_id, Span::generated("env_cell_get"))
             } else {
                 LoweredExpr::Local(local_id, Span::generated("local"))
@@ -107,7 +107,7 @@ impl<'a> super::super::Resolver<'a> {
         }
 
         if func_name == "super" {
-            if !self.classes.in_constructor {
+            if !self.ctx.classes.in_constructor {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "super(...) is only supported in constructors".to_owned(),
@@ -117,6 +117,7 @@ impl<'a> super::super::Resolver<'a> {
                 });
             }
             let class_name = self
+                .ctx
                 .classes
                 .current_class
                 .as_ref()
@@ -128,6 +129,7 @@ impl<'a> super::super::Resolver<'a> {
                     phase: None,
                 })?;
             let parent_name = self
+                .ctx
                 .classes
                 .class_parents
                 .get(class_name)
@@ -140,6 +142,7 @@ impl<'a> super::super::Resolver<'a> {
                     phase: None,
                 })?;
             let parent_ctor = self
+                .ctx
                 .classes
                 .class_constructor_ids
                 .get(&parent_name)
@@ -219,7 +222,7 @@ impl<'a> super::super::Resolver<'a> {
         // not extracted methods but simply uninitialized variables,
         // and deserve a more precise diagnostic.
         if let Ok(local_id) = self.resolve_local(func_name)
-            && self.facts.nullish_locals.contains(&local_id)
+            && self.ctx.facts.nullish_locals.contains(&local_id)
         {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -238,7 +241,7 @@ impl<'a> super::super::Resolver<'a> {
                 // Check if this local is a function parameter (e.g., typed
                 // through a conditional type alias) for a more specific diagnostic.
                 if let Ok(local_id) = self.resolve_local(func_name)
-                    && self.locals.param_locals.contains(&local_id)
+                    && self.ctx.symbols.param_locals.contains(&local_id)
                 {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
@@ -267,6 +270,7 @@ impl<'a> super::super::Resolver<'a> {
             }
             Err(_)
                 if self
+                    .ctx
                     .classes
                     .class_constructor_ids
                     .contains_key(func_name.as_str()) =>
@@ -304,6 +308,7 @@ impl<'a> super::super::Resolver<'a> {
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
         if self
+            .ctx
             .symbols
             .function_signatures
             .get(&func_id)
@@ -495,6 +500,7 @@ impl<'a> super::super::Resolver<'a> {
             "name" => Ok(LoweredExpr::String(name.to_owned(), Span::generated("str"))),
             "length" => {
                 let signature = self
+                    .ctx
                     .symbols
                     .function_signatures
                     .get(&func_id)

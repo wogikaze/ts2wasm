@@ -20,6 +20,7 @@ pub mod validate;
 pub use program::lower_program;
 pub(crate) use program::*;
 pub use runtime_intrinsic::RuntimeIntrinsic;
+pub(crate) use symbols::FunctionSignature;
 pub(crate) use types::*;
 pub use types::{
     BuiltinErrorConstructor, ClassPrototypeRef, ClosureRepresentation, FuncId, FunctionCallKind,

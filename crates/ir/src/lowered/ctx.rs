@@ -23,7 +23,7 @@ use std::collections::HashMap;
 use crate::lowered::classes::ClassEnv;
 use crate::lowered::facts::StaticFacts;
 use crate::lowered::symbols::SymbolEnv;
-use crate::lowered::{FuncId, ModuleInfo};
+use crate::lowered::{FuncId, LoweredFunction, ModuleInfo};
 
 /// Combined lowering context wrapping all sub-contexts.
 ///
@@ -63,7 +63,7 @@ pub struct FunctionsContext {
     /// Next available function ID.
     pub next_func_id: usize,
     /// Functions generated during lowering (closures, arrow functions, etc.).
-    pub generated_functions: Vec<FuncId>,
+    pub generated_functions: Vec<LoweredFunction>,
 }
 
 /// Module environment for the lowering pass.

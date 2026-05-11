@@ -11,7 +11,7 @@ use crate::lowered::*;
 use std::collections::HashMap;
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
-impl<'a> super::super::Resolver<'a> {
+impl<'a> super::super::Resolver {
     pub(crate) fn lower_function_call_args(
         &mut self,
         func_id: FuncId,
@@ -19,6 +19,7 @@ impl<'a> super::super::Resolver<'a> {
         args: &[ResolvedExpr],
     ) -> Result<Vec<LoweredExpr>, Diagnostic> {
         let signature = self
+            .ctx
             .symbols
             .function_signatures
             .get(&func_id)
@@ -109,8 +110,8 @@ impl<'a> super::super::Resolver<'a> {
             return None;
         };
         let local_id = self.resolve_local(name).ok()?;
-        if self.facts.array_locals.contains(&local_id)
-            && !self.captures.env_cell_locals.contains(&local_id)
+        if self.ctx.facts.array_locals.contains(&local_id)
+            && !self.ctx.facts.env_cell_locals.contains(&local_id)
         {
             Some(local_id)
         } else {
@@ -126,10 +127,11 @@ impl<'a> super::super::Resolver<'a> {
             return None;
         };
         let local_id = self.resolve_local(name).ok()?;
-        if self.captures.env_cell_locals.contains(&local_id) {
+        if self.ctx.facts.env_cell_locals.contains(&local_id) {
             return None;
         }
-        self.classes
+        self.ctx
+            .classes
             .local_classes
             .get(&local_id)
             .is_some_and(|class_name| class_name == "Set")
@@ -141,10 +143,11 @@ impl<'a> super::super::Resolver<'a> {
         func_id: FuncId,
         lowered_args: &mut Vec<LoweredExpr>,
     ) -> Result<(), Diagnostic> {
-        let Some(captures) = self.functions.function_captures.get(&func_id) else {
+        let Some(captures) = self.ctx.functions.function_captures.get(&func_id) else {
             return Ok(());
         };
         let mutable_captures = self
+            .ctx
             .functions
             .function_mutable_captures
             .get(&func_id)
@@ -160,7 +163,8 @@ impl<'a> super::super::Resolver<'a> {
                 span: None,
 
                 phase: None,})?;
-            if mutable_captures.contains(capture) && !self.captures.env_cell_locals.contains(&local)
+            if mutable_captures.contains(capture)
+                && !self.ctx.facts.env_cell_locals.contains(&local)
             {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
@@ -198,11 +202,11 @@ impl<'a> super::super::Resolver<'a> {
         };
 
         if let Ok(local_id) = self.resolve_local(func_name) {
-            if self.facts.nullish_locals.contains(&local_id) {
+            if self.ctx.facts.nullish_locals.contains(&local_id) {
                 return Ok(LoweredExpr::Undefined(Span::generated("undef")));
             }
 
-            if let Some(closure) = self.facts.arrow_locals.get(&local_id).cloned() {
+            if let Some(closure) = self.ctx.facts.arrow_locals.get(&local_id).cloned() {
                 let mut lowered_args = self.lower_call_args(args)?;
                 lowered_args.extend(
                     closure
@@ -229,6 +233,7 @@ impl<'a> super::super::Resolver<'a> {
 
         let func_id = self.resolve_func(func_name)?;
         if self
+            .ctx
             .symbols
             .function_signatures
             .get(&func_id)

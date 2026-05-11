@@ -3,6 +3,7 @@ use crate::binding_pattern::parse_binding_pattern;
 use crate::builtin_resolved::{
     ClassMethodKind, ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt,
 };
+use crate::lowered::symbols::FunctionSignature;
 use std::collections::{HashMap, HashSet};
 use ts2wasm_shared::{BinaryOp, LogicalAssignOp, UnaryOp};
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
@@ -352,7 +353,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
             _ => top_level_statements.push(resolver.lower_stmt(stmt)?),
         }
     }
-    generated_functions.extend(resolver.functions.generated_functions);
+    generated_functions.extend(resolver.ctx.functions.generated_functions);
 
     let mut functions = functions_by_id
         .into_iter()
@@ -369,9 +370,9 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
 
     Ok(LoweredProgram {
         top_level_statements,
-        top_level_locals: resolver.locals.locals,
+        top_level_locals: resolver.ctx.symbols.locals,
         functions,
-        modules: resolver.modules.modules,
+        modules: resolver.ctx.modules.modules,
     })
 }
 
@@ -399,17 +400,6 @@ pub(crate) struct FunctionLowering {
     pub(crate) function: LoweredFunction,
     pub(crate) generated_functions: Vec<LoweredFunction>,
     pub(crate) next_func_id: usize,
-}
-
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub(crate) struct FunctionSignature {
-    pub(crate) explicit_params: usize,
-    pub(crate) needs_receiver: bool,
-    pub(crate) needs_arguments: bool,
-    pub(crate) has_rest: bool,
-    pub(crate) metadata_length: Option<usize>,
-    pub(crate) returns_heap_closure: bool,
-    pub(crate) returns_dense_array: bool,
 }
 
 fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, FuncId>, Diagnostic> {
@@ -2438,13 +2428,13 @@ pub(super) fn lower_function(
             uses_receiver: signature.needs_receiver,
             min_required_params: min_required,
             rest_param_index,
-            locals: resolver.locals.locals,
+            locals: resolver.ctx.symbols.locals,
             body: body_with_defaults,
             recursion_depth: options.recursion_depth,
             is_async,
         },
-        generated_functions: resolver.functions.generated_functions,
-        next_func_id: resolver.functions.next_func_id,
+        generated_functions: resolver.ctx.functions.generated_functions,
+        next_func_id: resolver.ctx.functions.next_func_id,
     })
 }
 

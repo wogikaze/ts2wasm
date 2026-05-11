@@ -1,17 +1,18 @@
 use std::collections::HashSet;
 
 use super::{
-    Resolver, StaticFunctionArrayLike, is_invalid_date_constructor_expr,
-    is_set_prototype_property_expr, is_static_copy_safe_object_prop_value, lowered_binding_default,
+    Resolver, is_invalid_date_constructor_expr, is_set_prototype_property_expr,
+    is_static_copy_safe_object_prop_value, lowered_binding_default,
     string_constructor_arrow_callback, unary_plus_arrow_callback,
 };
 use crate::binding_pattern::{ArrayBinding, BindingDefault, BindingPattern, ObjectBinding};
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
+use crate::lowered::facts::StaticFunctionArrayLike;
 use crate::lowered::*;
 use ts2wasm_shared::{BinaryOp, OBJECT_SPREAD_SENTINEL, SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp};
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
-impl<'a> Resolver<'a> {
+impl Resolver {
     pub(crate) fn lower_binding_pattern_declarations(
         &mut self,
         pattern: &BindingPattern,
@@ -230,26 +231,28 @@ impl<'a> Resolver<'a> {
 
     pub(super) fn update_bigint_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
         if self.resolved_expr_is_bigint(expr) {
-            self.facts.bigint_locals.insert(local_id);
+            self.ctx.facts.bigint_locals.insert(local_id);
         } else {
-            self.facts.bigint_locals.remove(&local_id);
+            self.ctx.facts.bigint_locals.remove(&local_id);
         }
     }
 
     pub(super) fn update_control_flow_bigint_assignment(&mut self, local_id: LocalId) {
-        self.facts
+        self.ctx
+            .facts
             .control_flow_bigint_div_rem_locals
             .remove(&local_id);
-        self.facts
+        self.ctx
+            .facts
             .control_flow_mixed_bigint_locals
             .remove(&local_id);
     }
 
     pub(super) fn update_nullish_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
         if self.resolved_expr_is_nullish(expr) {
-            self.facts.nullish_locals.insert(local_id);
+            self.ctx.facts.nullish_locals.insert(local_id);
         } else {
-            self.facts.nullish_locals.remove(&local_id);
+            self.ctx.facts.nullish_locals.remove(&local_id);
         }
     }
 
@@ -259,21 +262,21 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Ident(name) => self
                 .resolve_local(name)
                 .ok()
-                .is_some_and(|local_id| self.facts.nullish_locals.contains(&local_id)),
+                .is_some_and(|local_id| self.ctx.facts.nullish_locals.contains(&local_id)),
             _ => false,
         }
     }
 
     pub(super) fn update_array_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
         if let Some(slots) = self.resolved_expr_static_array_slots(expr) {
-            self.facts.array_locals.insert(local_id);
-            self.facts.static_array_slots.insert(local_id, slots);
+            self.ctx.facts.array_locals.insert(local_id);
+            self.ctx.facts.static_array_slots.insert(local_id, slots);
         } else if self.resolved_expr_produces_dense_array(expr) {
-            self.facts.array_locals.insert(local_id);
-            self.facts.static_array_slots.remove(&local_id);
+            self.ctx.facts.array_locals.insert(local_id);
+            self.ctx.facts.static_array_slots.remove(&local_id);
         } else {
-            self.facts.array_locals.remove(&local_id);
-            self.facts.static_array_slots.remove(&local_id);
+            self.ctx.facts.array_locals.remove(&local_id);
+            self.ctx.facts.static_array_slots.remove(&local_id);
         }
     }
 
@@ -283,9 +286,15 @@ impl<'a> Resolver<'a> {
         expr: &ResolvedExpr,
     ) {
         if self.resolved_expr_has_symbol_iterator_property(expr) {
-            self.facts.symbol_iterator_object_locals.insert(local_id);
+            self.ctx
+                .facts
+                .symbol_iterator_object_locals
+                .insert(local_id);
         } else {
-            self.facts.symbol_iterator_object_locals.remove(&local_id);
+            self.ctx
+                .facts
+                .symbol_iterator_object_locals
+                .remove(&local_id);
         }
     }
 
@@ -295,7 +304,10 @@ impl<'a> Resolver<'a> {
                 .iter()
                 .any(|(key, _)| key == SYMBOL_ITERATOR_OBJECT_KEY),
             ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local_id| {
-                self.facts.symbol_iterator_object_locals.contains(&local_id)
+                self.ctx
+                    .facts
+                    .symbol_iterator_object_locals
+                    .contains(&local_id)
             }),
             _ => false,
         }
@@ -311,7 +323,7 @@ impl<'a> Resolver<'a> {
         let ResolvedExpr::Ident(name) = callee.as_ref() else {
             return false;
         };
-        self.facts.generator_function_names.contains(name)
+        self.ctx.facts.generator_function_names.contains(name)
     }
 
     pub(super) fn unsupported_generator_spread_diagnostic() -> Diagnostic {
@@ -589,13 +601,18 @@ impl<'a> Resolver<'a> {
         expr: &ResolvedExpr,
     ) {
         if let Some(props) = self.static_copy_safe_object_literal_props(expr) {
-            self.facts
+            self.ctx
+                .facts
                 .static_object_literal_locals
                 .insert(local_id, props);
             self.update_static_object_literal_alias_sources(local_id, expr);
         } else {
-            self.facts.static_object_literal_locals.remove(&local_id);
-            self.facts
+            self.ctx
+                .facts
+                .static_object_literal_locals
+                .remove(&local_id);
+            self.ctx
+                .facts
                 .static_object_literal_alias_sources
                 .remove(&local_id);
         }
@@ -607,7 +624,8 @@ impl<'a> Resolver<'a> {
         expr: &ResolvedExpr,
     ) {
         let ResolvedExpr::FunctionExpr { params, .. } = expr else {
-            self.facts
+            self.ctx
+                .facts
                 .static_function_array_like_locals
                 .remove(&local_id);
             return;
@@ -616,12 +634,13 @@ impl<'a> Resolver<'a> {
             .iter()
             .any(|param| param.default.is_some() || param.is_rest)
         {
-            self.facts
+            self.ctx
+                .facts
                 .static_function_array_like_locals
                 .remove(&local_id);
             return;
         }
-        self.facts.static_function_array_like_locals.insert(
+        self.ctx.facts.static_function_array_like_locals.insert(
             local_id,
             StaticFunctionArrayLike {
                 elements: vec![None; params.len()],
@@ -630,7 +649,8 @@ impl<'a> Resolver<'a> {
     }
 
     pub(super) fn invalidate_static_function_array_like_local(&mut self, local_id: LocalId) {
-        self.facts
+        self.ctx
+            .facts
             .static_function_array_like_locals
             .remove(&local_id);
     }
@@ -642,6 +662,7 @@ impl<'a> Resolver<'a> {
         value: &ResolvedExpr,
     ) {
         let Some(static_receiver) = self
+            .ctx
             .facts
             .static_function_array_like_locals
             .get_mut(&local_id)
@@ -657,7 +678,7 @@ impl<'a> Resolver<'a> {
             return;
         };
         if index < static_receiver.elements.len() {
-            static_receiver.elements[index] = Some(value.clone());
+            static_receiver.elements[index] = Some(ResolvedArrayElement::Present(value.clone()));
         }
     }
 
@@ -667,30 +688,40 @@ impl<'a> Resolver<'a> {
     ) -> Option<Vec<ResolvedExpr>> {
         let local_id = self.resolve_local(name).ok()?;
         let static_receiver = self
+            .ctx
             .facts
             .static_function_array_like_locals
             .get(&local_id)?;
         static_receiver
             .elements
             .iter()
-            .cloned()
+            .map(|elem| match elem {
+                Some(ResolvedArrayElement::Present(expr)) => Some(expr.clone()),
+                _ => None,
+            })
             .collect::<Option<Vec<_>>>()
     }
 
     pub(super) fn invalidate_static_object_literal_local(&mut self, local_id: LocalId) {
-        self.facts.static_object_literal_locals.remove(&local_id);
-        self.facts
+        self.ctx
+            .facts
+            .static_object_literal_locals
+            .remove(&local_id);
+        self.ctx
+            .facts
             .static_object_literal_alias_sources
             .remove(&local_id);
         let dependent_aliases = self
+            .ctx
             .facts
             .static_object_literal_alias_sources
             .iter()
             .filter_map(|(alias, sources)| sources.contains(&local_id).then_some(*alias))
             .collect::<Vec<_>>();
         for alias in dependent_aliases {
-            self.facts.static_object_literal_locals.remove(&alias);
-            self.facts
+            self.ctx.facts.static_object_literal_locals.remove(&alias);
+            self.ctx
+                .facts
                 .static_object_literal_alias_sources
                 .remove(&alias);
         }
@@ -717,10 +748,11 @@ impl<'a> Resolver<'a> {
             }
             ResolvedExpr::Ident(name) => {
                 let local_id = self.resolve_local(name).ok()?;
-                if self.captures.env_cell_locals.contains(&local_id) {
+                if self.ctx.facts.env_cell_locals.contains(&local_id) {
                     return None;
                 }
-                self.facts
+                self.ctx
+                    .facts
                     .static_object_literal_locals
                     .get(&local_id)
                     .cloned()
@@ -734,20 +766,23 @@ impl<'a> Resolver<'a> {
         local_id: LocalId,
         expr: &ResolvedExpr,
     ) {
-        self.facts
+        self.ctx
+            .facts
             .static_object_literal_alias_sources
             .remove(&local_id);
         if let ResolvedExpr::Ident(name) = expr
             && let Ok(source_id) = self.resolve_local(name)
         {
             let mut sources = self
+                .ctx
                 .facts
                 .static_object_literal_alias_sources
                 .get(&source_id)
                 .cloned()
                 .unwrap_or_default();
             sources.insert(source_id);
-            self.facts
+            self.ctx
+                .facts
                 .static_object_literal_alias_sources
                 .insert(local_id, sources);
         }
@@ -757,8 +792,8 @@ impl<'a> Resolver<'a> {
         match expr {
             ResolvedExpr::Array(_) => true,
             ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local_id| {
-                self.facts.array_locals.contains(&local_id)
-                    && !self.captures.env_cell_locals.contains(&local_id)
+                self.ctx.facts.array_locals.contains(&local_id)
+                    && !self.ctx.facts.env_cell_locals.contains(&local_id)
             }),
             // Logical OR/AND where either side produces a dense array
             // (e.g., `x || []`, `x && []`)
@@ -792,7 +827,7 @@ impl<'a> Resolver<'a> {
                 ResolvedExpr::Ident(name) => self
                     .resolve_func(name)
                     .ok()
-                    .and_then(|func_id| self.symbols.function_signatures.get(&func_id))
+                    .and_then(|func_id| self.ctx.symbols.function_signatures.get(&func_id))
                     .is_some_and(|signature| signature.returns_dense_array),
                 _ => false,
             },
@@ -802,17 +837,17 @@ impl<'a> Resolver<'a> {
 
     pub(super) fn update_native_set_add_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
         if is_set_prototype_property_expr(expr, "add") {
-            self.facts.native_set_add_locals.insert(local_id);
+            self.ctx.facts.native_set_add_locals.insert(local_id);
         } else {
-            self.facts.native_set_add_locals.remove(&local_id);
+            self.ctx.facts.native_set_add_locals.remove(&local_id);
         }
     }
 
     pub(super) fn update_invalid_date_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
         if is_invalid_date_constructor_expr(expr) {
-            self.facts.invalid_date_locals.insert(local_id);
+            self.ctx.facts.invalid_date_locals.insert(local_id);
         } else {
-            self.facts.invalid_date_locals.remove(&local_id);
+            self.ctx.facts.invalid_date_locals.remove(&local_id);
         }
     }
 
@@ -822,7 +857,7 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Ident(name) => self
                 .resolve_local(name)
                 .ok()
-                .is_some_and(|local_id| self.facts.invalid_date_locals.contains(&local_id)),
+                .is_some_and(|local_id| self.ctx.facts.invalid_date_locals.contains(&local_id)),
             _ => false,
         }
     }
@@ -833,7 +868,7 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Ident(name) => self
                 .resolve_local(name)
                 .ok()
-                .is_some_and(|local_id| self.facts.array_locals.contains(&local_id)),
+                .is_some_and(|local_id| self.ctx.facts.array_locals.contains(&local_id)),
             _ => false,
         }
     }
@@ -858,7 +893,7 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Ident(name) => self
                 .resolve_local(name)
                 .ok()
-                .and_then(|local_id| self.facts.static_array_slots.get(&local_id).cloned()),
+                .and_then(|local_id| self.ctx.facts.static_array_slots.get(&local_id).cloned()),
             _ => None,
         }
     }
@@ -873,18 +908,18 @@ impl<'a> Resolver<'a> {
         let Ok(local_id) = self.resolve_local(name) else {
             return;
         };
-        if !self.facts.static_array_slots.contains_key(&local_id) {
+        if !self.ctx.facts.static_array_slots.contains_key(&local_id) {
             return;
         }
         let ResolvedExpr::Number(index) = key.as_ref() else {
-            self.facts.static_array_slots.remove(&local_id);
+            self.ctx.facts.static_array_slots.remove(&local_id);
             return;
         };
-        let Some(slots) = self.facts.static_array_slots.get_mut(&local_id) else {
+        let Some(slots) = self.ctx.facts.static_array_slots.get_mut(&local_id) else {
             return;
         };
         if *index < 0 || *index as usize >= slots.len() {
-            self.facts.static_array_slots.remove(&local_id);
+            self.ctx.facts.static_array_slots.remove(&local_id);
             return;
         }
         slots[*index as usize] = ResolvedArrayElement::Present(value.as_ref().clone());
@@ -896,14 +931,14 @@ impl<'a> Resolver<'a> {
                 ResolvedExpr::Ident(name) => self
                     .resolve_func(name)
                     .ok()
-                    .and_then(|func_id| self.symbols.function_signatures.get(&func_id))
+                    .and_then(|func_id| self.ctx.symbols.function_signatures.get(&func_id))
                     .is_some_and(|signature| signature.returns_heap_closure),
                 _ => false,
             },
             ResolvedExpr::Ident(name) => self
                 .resolve_local(name)
                 .ok()
-                .is_some_and(|local_id| self.captures.heap_closure_locals.contains(&local_id)),
+                .is_some_and(|local_id| self.ctx.facts.heap_closure_locals.contains(&local_id)),
             _ => false,
         }
     }
@@ -914,7 +949,7 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Ident(name) => self
                 .resolve_local(name)
                 .ok()
-                .is_some_and(|local_id| self.facts.bigint_locals.contains(&local_id)),
+                .is_some_and(|local_id| self.ctx.facts.bigint_locals.contains(&local_id)),
             ResolvedExpr::Unary { op, expr } => {
                 *op == UnaryOp::Negate && self.resolved_expr_is_bigint(expr)
             }
@@ -950,8 +985,9 @@ impl<'a> Resolver<'a> {
     pub(super) fn resolved_expr_is_bigint_div_rem_operand(&self, expr: &ResolvedExpr) -> bool {
         match expr {
             ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local_id| {
-                self.facts.bigint_locals.contains(&local_id)
+                self.ctx.facts.bigint_locals.contains(&local_id)
                     || self
+                        .ctx
                         .facts
                         .control_flow_bigint_div_rem_locals
                         .contains(&local_id)
@@ -968,16 +1004,18 @@ impl<'a> Resolver<'a> {
             return false;
         };
         self.resolve_local(name).ok().is_some_and(|local_id| {
-            self.facts
+            self.ctx
+                .facts
                 .control_flow_mixed_bigint_locals
                 .contains(&local_id)
         })
     }
 
     pub(super) fn bigint_div_rem_candidate_locals(&self) -> HashSet<LocalId> {
-        self.facts
+        self.ctx
+            .facts
             .bigint_locals
-            .union(&self.facts.control_flow_bigint_div_rem_locals)
+            .union(&self.ctx.facts.control_flow_bigint_div_rem_locals)
             .copied()
             .collect()
     }

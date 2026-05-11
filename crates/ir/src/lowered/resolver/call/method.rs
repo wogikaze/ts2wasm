@@ -13,7 +13,7 @@ use crate::lowered::*;
 use std::collections::HashMap;
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
-impl<'a> super::super::Resolver<'a> {
+impl<'a> super::super::Resolver {
     pub(crate) fn lower_method_call_expr(
         &mut self,
         object: &ResolvedExpr,
@@ -90,7 +90,7 @@ impl<'a> super::super::Resolver<'a> {
         if method == "call"
             && let ResolvedExpr::Ident(name) = object
             && let Ok(local_id) = self.resolve_local(name)
-            && self.facts.native_set_add_locals.contains(&local_id)
+            && self.ctx.facts.native_set_add_locals.contains(&local_id)
         {
             return Some(self.lower_native_set_add_call(args, span)).transpose();
         }
@@ -111,7 +111,7 @@ impl<'a> super::super::Resolver<'a> {
                 let same_class_static_receiver = match object {
                     ResolvedExpr::This { .. } => self.resolve_local("this").is_err(),
                     ResolvedExpr::Ident(name) => {
-                        self.classes.current_class.as_deref() == Some(name.as_str())
+                        self.ctx.classes.current_class.as_deref() == Some(name.as_str())
                     }
                     _ => false,
                 };
@@ -151,7 +151,7 @@ impl<'a> super::super::Resolver<'a> {
             let receiver = if matches!(object, ResolvedExpr::This { .. }) {
                 LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))
             } else {
-                let class_name = self.classes.current_class.clone().ok_or_else(|| Diagnostic {
+                let class_name = self.ctx.classes.current_class.clone().ok_or_else(|| Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: format!(
                         "issue-255: private method `{method}` call requires declaring class context"
@@ -200,13 +200,13 @@ impl<'a> super::super::Resolver<'a> {
             validate_json_stringify_args(
                 args,
                 span,
-                self.symbols.function_ids,
-                self.symbols.function_signatures,
+                &self.ctx.symbols.function_ids,
+                &self.ctx.symbols.function_signatures,
             )?;
             let mut lowered_args = Vec::with_capacity(3);
             let value = if let (ResolvedExpr::Object(props), Some(replacer_keys)) = (
                 &args[0],
-                json_stringify_replacer_keys(args, self.symbols.function_ids),
+                json_stringify_replacer_keys(args, &self.ctx.symbols.function_ids),
             ) {
                 let mut lowered_props = Vec::new();
                 for allowed_key in replacer_keys {
@@ -235,9 +235,10 @@ impl<'a> super::super::Resolver<'a> {
             lowered_args.push(match args.get(1) {
                 Some(ResolvedExpr::Array(_)) => LoweredExpr::Null(Span::generated("null")),
                 Some(replacer) => {
-                    if let Some(func_id) =
-                        json_stringify_function_replacer_id(replacer, self.symbols.function_ids)
-                    {
+                    if let Some(func_id) = json_stringify_function_replacer_id(
+                        replacer,
+                        &self.ctx.symbols.function_ids,
+                    ) {
                         LoweredExpr::Number(func_id.0 as i32, Span::generated("num"))
                     } else {
                         self.lower_expr(replacer)?
@@ -247,7 +248,10 @@ impl<'a> super::super::Resolver<'a> {
             });
             lowered_args.push(match args.get(2) {
                 Some(space)
-                    if should_ignore_json_stringify_space(space, self.symbols.function_ids) =>
+                    if should_ignore_json_stringify_space(
+                        space,
+                        &self.ctx.symbols.function_ids,
+                    ) =>
                 {
                     LoweredExpr::Undefined(Span::generated("undef"))
                 }
@@ -800,6 +804,7 @@ impl<'a> super::super::Resolver<'a> {
         if let ResolvedExpr::Ident(receiver_name) = object
             && let Ok(obj_local) = self.resolve_local(receiver_name)
             && let Some(method_id) = self
+                .ctx
                 .classes
                 .object_function_props
                 .get(&obj_local)
@@ -921,6 +926,7 @@ impl<'a> super::super::Resolver<'a> {
 
         if matches!(object, ResolvedExpr::This { .. }) {
             let class_name = self
+                .ctx
                 .classes
                 .current_class
                 .as_ref()
@@ -1160,7 +1166,7 @@ impl<'a> super::super::Resolver<'a> {
             && !args.is_empty()
             && matches!(&args[0], ResolvedExpr::ArrowFn { .. })
             && let Ok(obj_local) = self.resolve_local(receiver_name)
-            && let Some(class_name) = self.classes.local_classes.get(&obj_local)
+            && let Some(class_name) = self.ctx.classes.local_classes.get(&obj_local)
             && (class_name == "Map" || class_name == "Set")
         {
             let is_map = *class_name == "Map";
@@ -1174,7 +1180,7 @@ impl<'a> super::super::Resolver<'a> {
 
         // Local class runtime_fn
         if let Ok(obj_local) = self.resolve_local(receiver_name)
-            && let Some(class_name) = self.classes.local_classes.get(&obj_local)
+            && let Some(class_name) = self.ctx.classes.local_classes.get(&obj_local)
             && let Some(intrinsic) = collection_method_runtime_fn(class_name, method)
         {
             if class_name == "RegExp" && args.len() > 1 {
@@ -1225,6 +1231,7 @@ impl<'a> super::super::Resolver<'a> {
         // super.method
         if receiver_name == "super" {
             let class_name = self
+                .ctx
                 .classes
                 .current_class
                 .as_ref()
@@ -1236,6 +1243,7 @@ impl<'a> super::super::Resolver<'a> {
                     phase: None,
                 })?;
             let parent_name = self
+                .ctx
                 .classes
                 .class_parents
                 .get(class_name)
@@ -1277,6 +1285,7 @@ impl<'a> super::super::Resolver<'a> {
 
         // Static method dispatch
         if let Some(method_id) = self
+            .ctx
             .classes
             .class_static_method_ids
             .get(&(receiver_name.to_owned(), method.to_owned()))
@@ -1313,7 +1322,7 @@ impl<'a> super::super::Resolver<'a> {
         ];
         let number_methods = ["toFixed", "toExponential", "toPrecision"];
         let promise_methods = ["then", "catch", "finally"];
-        let class_name_str = match self.classes.local_classes.get(&obj_local) {
+        let class_name_str = match self.ctx.classes.local_classes.get(&obj_local) {
             Some(c) => c.clone(),
             None if array_like_methods.contains(&method) => "Array".to_owned(),
             None if number_methods.contains(&method) => "Number".to_owned(),

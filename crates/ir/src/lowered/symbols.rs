@@ -42,7 +42,7 @@ pub struct SymbolEnv {
 }
 
 /// Function signature metadata used during lowering.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct FunctionSignature {
     /// Number of explicit parameters (excluding captures).
     pub explicit_params: usize,

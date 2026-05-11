@@ -2,7 +2,7 @@ use crate::builtin_resolved::ResolvedExpr;
 use crate::lowered::*;
 use ts2wasm_shared::{DiagCode, Diagnostic, OBJECT_SPREAD_SENTINEL, Span};
 
-impl<'a> super::Resolver<'a> {
+impl super::Resolver {
     pub(super) fn lower_object_literal_props(
         &mut self,
         props: &[(String, ResolvedExpr)],
@@ -119,10 +119,11 @@ impl<'a> super::Resolver<'a> {
             ResolvedExpr::Object(spread_props) => Some(spread_props.clone()),
             ResolvedExpr::Ident(name) => {
                 let local_id = self.resolve_local(name).ok()?;
-                if self.captures.env_cell_locals.contains(&local_id) {
+                if self.ctx.facts.env_cell_locals.contains(&local_id) {
                     return None;
                 }
-                self.facts
+                self.ctx
+                    .facts
                     .static_object_literal_locals
                     .get(&local_id)
                     .cloned()

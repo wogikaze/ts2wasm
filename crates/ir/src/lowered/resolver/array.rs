@@ -5,7 +5,7 @@ use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam,
 use crate::lowered::*;
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
-impl<'a> super::Resolver<'a> {
+impl super::Resolver {
     pub(super) fn lower_array_literal(
         &mut self,
         elements: &[ResolvedArrayElement],
@@ -347,6 +347,7 @@ impl<'a> super::Resolver<'a> {
                     None => LoweredExpr::Undefined(Span::generated("undef")),
                 };
                 let signature = self
+                    .ctx
                     .symbols
                     .function_signatures
                     .get(&func_id)
@@ -441,7 +442,7 @@ impl<'a> super::Resolver<'a> {
             .collect::<Vec<_>>();
         if mutable_captures
             .iter()
-            .any(|capture| !self.captures.env_cell_names.contains(capture))
+            .any(|capture| !self.ctx.facts.env_cell_names.contains(capture))
         {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -465,16 +466,16 @@ impl<'a> super::Resolver<'a> {
             span: None,
         }));
 
-        let func_id = FuncId(self.functions.next_func_id);
-        self.functions.next_func_id += 1;
+        let func_id = FuncId(self.ctx.functions.next_func_id);
+        self.ctx.functions.next_func_id += 1;
         let self_closure = (!name.is_empty())
             .then_some(SelfClosureOptions {
                 name,
                 func_id,
                 capture_names: &capture_names,
             })
-            .filter(|_| !self.captures.env_cell_names.contains(name));
-        let mut function_signatures = self.symbols.function_signatures.clone();
+            .filter(|_| !self.ctx.facts.env_cell_names.contains(name));
+        let mut function_signatures = self.ctx.symbols.function_signatures.clone();
         function_signatures.insert(
             func_id,
             FunctionSignature {
@@ -488,28 +489,32 @@ impl<'a> super::Resolver<'a> {
             &lowered_params,
             body,
             false,
-            self.symbols.function_ids,
+            &self.ctx.symbols.function_ids,
             &function_signatures,
-            self.functions.function_captures,
-            self.functions.function_mutable_captures,
-            self.functions.class_method_captures,
-            self.functions.class_method_mutable_captures,
-            &self.captures.env_cell_names,
-            &self.captures.heap_closure_names,
-            self.classes.class_parents.clone(),
-            self.classes.class_private_fields.clone(),
-            self.classes.class_static_private_fields.clone(),
+            &self.ctx.functions.function_captures,
+            &self.ctx.functions.function_mutable_captures,
+            &self.ctx.functions.class_method_captures,
+            &self.ctx.functions.class_method_mutable_captures,
+            &self.ctx.facts.env_cell_names,
+            &self.ctx.facts.heap_closure_names,
+            self.ctx.classes.class_parents.clone(),
+            self.ctx.classes.class_private_fields.clone(),
+            self.ctx.classes.class_static_private_fields.clone(),
             LowerFunctionOptions {
-                current_class: self.classes.current_class.as_deref(),
+                current_class: self.ctx.classes.current_class.as_deref(),
                 in_constructor: false,
-                next_func_id: self.functions.next_func_id,
+                next_func_id: self.ctx.functions.next_func_id,
                 self_closure,
                 recursion_depth: 0,
             },
         )?;
-        self.functions.next_func_id = lowered.next_func_id;
-        self.functions.generated_functions.push(lowered.function);
-        self.functions
+        self.ctx.functions.next_func_id = lowered.next_func_id;
+        self.ctx
+            .functions
+            .generated_functions
+            .push(lowered.function);
+        self.ctx
+            .functions
             .generated_functions
             .extend(lowered.generated_functions);
 
@@ -599,7 +604,7 @@ impl<'a> super::Resolver<'a> {
         let Ok(local_id) = self.resolve_local(name) else {
             return Ok(None);
         };
-        if self.facts.array_locals.contains(&local_id) {
+        if self.ctx.facts.array_locals.contains(&local_id) {
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeIntrinsic::ArrayConcat,
                 args: vec![
@@ -626,7 +631,7 @@ impl<'a> super::Resolver<'a> {
         let Ok(local_id) = self.resolve_local(name) else {
             return false;
         };
-        self.facts.array_locals.contains(&local_id)
+        self.ctx.facts.array_locals.contains(&local_id)
     }
 
     pub(super) fn lower_set_spread_operand(
@@ -640,6 +645,7 @@ impl<'a> super::Resolver<'a> {
             return Ok(None);
         };
         if self
+            .ctx
             .classes
             .local_classes
             .get(&local_id)
@@ -666,6 +672,7 @@ impl<'a> super::Resolver<'a> {
             return Ok(None);
         };
         if self
+            .ctx
             .classes
             .local_classes
             .get(&local_id)
@@ -689,7 +696,8 @@ impl<'a> super::Resolver<'a> {
         let Ok(local_id) = self.resolve_local(name) else {
             return false;
         };
-        self.classes
+        self.ctx
+            .classes
             .local_classes
             .get(&local_id)
             .is_some_and(|class_name| class_name == "Set")
@@ -703,7 +711,8 @@ impl<'a> super::Resolver<'a> {
         let Ok(local_id) = self.resolve_local(name) else {
             return false;
         };
-        self.classes
+        self.ctx
+            .classes
             .local_classes
             .get(&local_id)
             .is_some_and(|class_name| class_name == "Map")

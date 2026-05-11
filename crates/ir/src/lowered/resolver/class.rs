@@ -5,16 +5,17 @@ use crate::builtin_resolved::ResolvedExpr;
 use crate::lowered::*;
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
-impl<'a> super::Resolver<'a> {
+impl super::Resolver {
     pub(super) fn append_class_method_captures(
         &self,
         method_id: FuncId,
         lowered_args: &mut Vec<LoweredExpr>,
     ) -> Result<(), Diagnostic> {
-        let Some(captures) = self.functions.class_method_captures.get(&method_id) else {
+        let Some(captures) = self.ctx.functions.class_method_captures.get(&method_id) else {
             return Ok(());
         };
         let mutable_captures = self
+            .ctx
             .functions
             .class_method_mutable_captures
             .get(&method_id)
@@ -30,7 +31,8 @@ impl<'a> super::Resolver<'a> {
                 span: None,
 
                 phase: None,})?;
-            if mutable_captures.contains(capture) && !self.captures.env_cell_locals.contains(&local)
+            if mutable_captures.contains(capture)
+                && !self.ctx.facts.env_cell_locals.contains(&local)
             {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
@@ -52,6 +54,7 @@ impl<'a> super::Resolver<'a> {
         let mut current = Some(class_name.to_owned());
         while let Some(class) = current {
             if let Some(id) = self
+                .ctx
                 .classes
                 .class_method_ids
                 .get(&(class.clone(), method.to_owned()))
@@ -60,6 +63,7 @@ impl<'a> super::Resolver<'a> {
                 return Some(id);
             }
             current = self
+                .ctx
                 .classes
                 .class_parents
                 .get(&class)
@@ -76,6 +80,7 @@ impl<'a> super::Resolver<'a> {
         let mut current = Some(class_name.to_owned());
         while let Some(class) = current {
             if let Some(id) = self
+                .ctx
                 .classes
                 .class_static_method_ids
                 .get(&(class.clone(), method.to_owned()))
@@ -84,6 +89,7 @@ impl<'a> super::Resolver<'a> {
                 return Some(id);
             }
             current = self
+                .ctx
                 .classes
                 .class_parents
                 .get(&class)
@@ -93,25 +99,28 @@ impl<'a> super::Resolver<'a> {
     }
 
     pub(super) fn current_private_method_id(&self, method: &str) -> Option<FuncId> {
-        let class_name = self.classes.current_class.as_ref()?;
-        self.classes
+        let class_name = self.ctx.classes.current_class.as_ref()?;
+        self.ctx
+            .classes
             .class_method_ids
             .get(&(class_name.clone(), method.to_owned()))
             .copied()
     }
 
     pub(super) fn current_static_private_method_id(&self, method: &str) -> Option<FuncId> {
-        let class_name = self.classes.current_class.as_ref()?;
-        self.classes
+        let class_name = self.ctx.classes.current_class.as_ref()?;
+        self.ctx
+            .classes
             .class_static_method_ids
             .get(&(class_name.clone(), method.to_owned()))
             .copied()
     }
 
     pub(super) fn current_static_private_field_local_name(&self, key: &str) -> Option<String> {
-        let class_name = self.classes.current_class.as_ref()?;
+        let class_name = self.ctx.classes.current_class.as_ref()?;
         let field_name = key.strip_prefix('#')?;
-        self.classes
+        self.ctx
+            .classes
             .class_static_private_fields
             .get(class_name)
             .and_then(|fields| fields.get(field_name))
@@ -119,18 +128,20 @@ impl<'a> super::Resolver<'a> {
     }
 
     pub(super) fn current_static_private_getter_id(&self, key: &str) -> Option<FuncId> {
-        let class_name = self.classes.current_class.as_ref()?;
+        let class_name = self.ctx.classes.current_class.as_ref()?;
         let getter_name = key.strip_prefix('#')?;
-        self.classes
+        self.ctx
+            .classes
             .class_static_method_ids
             .get(&(class_name.clone(), format!("#get::{getter_name}")))
             .copied()
     }
 
     pub(super) fn current_static_private_setter_id(&self, key: &str) -> Option<FuncId> {
-        let class_name = self.classes.current_class.as_ref()?;
+        let class_name = self.ctx.classes.current_class.as_ref()?;
         let setter_name = key.strip_prefix('#')?;
-        self.classes
+        self.ctx
+            .classes
             .class_static_method_ids
             .get(&(class_name.clone(), format!("#set::{setter_name}")))
             .copied()
@@ -140,14 +151,14 @@ impl<'a> super::Resolver<'a> {
         match object {
             ResolvedExpr::This { .. } => self.resolve_local("this").is_err(),
             ResolvedExpr::Ident(name) => {
-                self.classes.current_class.as_deref() == Some(name.as_str())
+                self.ctx.classes.current_class.as_deref() == Some(name.as_str())
             }
             _ => false,
         }
     }
 
     pub(super) fn current_private_getter_id(&self, key: &str) -> Option<FuncId> {
-        let class_name = self.classes.current_class.as_ref()?;
+        let class_name = self.ctx.classes.current_class.as_ref()?;
         self.private_getter_id_for_class(class_name, key)
     }
 
@@ -157,14 +168,15 @@ impl<'a> super::Resolver<'a> {
         key: &str,
     ) -> Option<FuncId> {
         let getter_name = key.strip_prefix('#')?;
-        self.classes
+        self.ctx
+            .classes
             .class_method_ids
             .get(&(class_name.to_owned(), format!("#get::{getter_name}")))
             .copied()
     }
 
     pub(super) fn current_private_setter_id(&self, key: &str) -> Option<FuncId> {
-        let class_name = self.classes.current_class.as_ref()?;
+        let class_name = self.ctx.classes.current_class.as_ref()?;
         self.private_setter_id_for_class(class_name, key)
     }
 
@@ -174,7 +186,8 @@ impl<'a> super::Resolver<'a> {
         key: &str,
     ) -> Option<FuncId> {
         let setter_name = key.strip_prefix('#')?;
-        self.classes
+        self.ctx
+            .classes
             .class_method_ids
             .get(&(class_name.to_owned(), format!("#set::{setter_name}")))
             .copied()
@@ -195,7 +208,7 @@ impl<'a> super::Resolver<'a> {
                 phase: None,
             });
         };
-        let class_name = self.classes.current_class.as_ref().ok_or_else(|| Diagnostic {
+        let class_name = self.ctx.classes.current_class.as_ref().ok_or_else(|| Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!(
                 "issue-255: private field `#{field_name}` access requires declaring class context"
@@ -205,6 +218,7 @@ impl<'a> super::Resolver<'a> {
             phase: None,
         })?;
         let Some(mut slot) = self
+            .ctx
             .classes
             .class_private_fields
             .get(class_name)
@@ -229,6 +243,7 @@ impl<'a> super::Resolver<'a> {
     fn root_class_name(&self, class_name: &str) -> String {
         let mut current = class_name.to_owned();
         while let Some(parent) = self
+            .ctx
             .classes
             .class_parents
             .get(&current)
@@ -246,6 +261,7 @@ impl<'a> super::Resolver<'a> {
     ) -> Result<u32, Diagnostic> {
         let root = self.root_class_name(class_name);
         let constructor = self
+            .ctx
             .classes
             .class_constructor_ids
             .get(&root)
@@ -268,6 +284,7 @@ impl<'a> super::Resolver<'a> {
 
     pub(super) fn ancestor_private_slot_count(&self, class_name: &str) -> usize {
         match self
+            .ctx
             .classes
             .class_parents
             .get(class_name)
@@ -280,6 +297,7 @@ impl<'a> super::Resolver<'a> {
 
     pub(super) fn private_slot_count(&self, class_name: &str) -> usize {
         let own = self
+            .ctx
             .classes
             .class_private_fields
             .get(class_name)
@@ -290,6 +308,7 @@ impl<'a> super::Resolver<'a> {
     pub(super) fn class_has_instance_private_brand(&self, class_name: &str) -> bool {
         self.private_slot_count(class_name) > 0
             || self
+                .ctx
                 .classes
                 .class_method_ids
                 .keys()
@@ -312,6 +331,7 @@ impl<'a> super::Resolver<'a> {
     pub(super) fn expr_has_private_progress_storage(&self, expr: &ResolvedExpr) -> bool {
         match expr {
             ResolvedExpr::This { .. } => self
+                .ctx
                 .classes
                 .current_class
                 .as_ref()
@@ -328,14 +348,16 @@ impl<'a> super::Resolver<'a> {
     }
 
     pub(super) fn local_has_private_progress_storage(&self, local: LocalId) -> bool {
-        self.classes
+        self.ctx
+            .classes
             .local_classes
             .get(&local)
             .is_some_and(|class_name| self.class_has_private_progress_storage(class_name))
     }
 
     pub(super) fn class_has_private_progress_storage(&self, class_name: &str) -> bool {
-        self.classes
+        self.ctx
+            .classes
             .class_private_fields
             .get(class_name)
             .is_some_and(|fields| !fields.is_empty())
@@ -347,7 +369,7 @@ impl<'a> super::Resolver<'a> {
             ResolvedExpr::Ident(name) => self
                 .resolve_local(name)
                 .ok()
-                .and_then(|local_id| self.classes.local_classes.get(&local_id))
+                .and_then(|local_id| self.ctx.classes.local_classes.get(&local_id))
                 .is_some_and(|class_name| class_name == "Date"),
             _ => false,
         }
@@ -365,8 +387,9 @@ impl<'a> super::Resolver<'a> {
             ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => true,
             ResolvedExpr::New { class_name, .. } => class_name == "RegExp",
             ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local_id| {
-                self.facts.regexp_literal_locals.contains(&local_id)
+                self.ctx.facts.regexp_literal_locals.contains(&local_id)
                     || self
+                        .ctx
                         .classes
                         .local_classes
                         .get(&local_id)
@@ -380,8 +403,7 @@ impl<'a> super::Resolver<'a> {
         &self,
         class_name: &str,
     ) -> Result<ClassPrototypeRef, Diagnostic> {
-        let constructor = self
-            .classes.class_constructor_ids
+        let constructor = self.ctx.classes.class_constructor_ids
             .get(class_name)
             .copied()
             .ok_or_else(|| Diagnostic {
@@ -396,12 +418,14 @@ impl<'a> super::Resolver<'a> {
 
         let mut parent_constructors = Vec::new();
         let mut current = self
+            .ctx
             .classes
             .class_parents
             .get(class_name)
             .and_then(|p| p.clone());
         while let Some(parent) = current {
             let parent_constructor = self
+                .ctx
                 .classes
                 .class_constructor_ids
                 .get(&parent)
@@ -418,6 +442,7 @@ impl<'a> super::Resolver<'a> {
                 })?;
             parent_constructors.push(parent_constructor);
             current = self
+                .ctx
                 .classes
                 .class_parents
                 .get(&parent)
@@ -437,7 +462,7 @@ impl<'a> super::Resolver<'a> {
             ResolvedExpr::Ident(name) => self
                 .resolve_local(name)
                 .ok()
-                .and_then(|local_id| self.classes.local_classes.get(&local_id).cloned()),
+                .and_then(|local_id| self.ctx.classes.local_classes.get(&local_id).cloned()),
             _ => None,
         }
     }

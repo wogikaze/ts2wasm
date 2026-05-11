@@ -11,7 +11,7 @@ use crate::lowered::*;
 use std::collections::HashMap;
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
-impl<'a> super::super::Resolver<'a> {
+impl<'a> super::super::Resolver {
     pub(crate) fn lower_new_expr(
         &mut self,
         class_name: &str,
