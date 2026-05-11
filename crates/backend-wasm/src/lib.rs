@@ -21,8 +21,8 @@ mod string_intern;
 mod wasm_binary;
 mod wat_writer;
 
-pub use ts2wasm_frontend::{DiagCode, Diagnostic};
 use ts2wasm_ir::lowered::{LoweredProgram, Validated};
+pub use ts2wasm_shared::{DiagCode, Diagnostic};
 
 pub(crate) use runtime_fn::RuntimeFn;
 pub use runtime_link_plan::{LinkPlanSnapshot, emit_link_plan_snapshot_json};
@@ -89,7 +89,6 @@ mod tests {
     use std::fs;
     use std::path::Path;
     use std::process::Command;
-    use ts2wasm_frontend::{DiagCode, Span};
     use ts2wasm_frontend::{Lexer, Parser};
     use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{
@@ -99,6 +98,7 @@ mod tests {
     use ts2wasm_ir::{builtin_resolver, lowered, name_resolver};
     use ts2wasm_runtime_abi::{Layout, ValueTag};
     use ts2wasm_shared::test_helpers::unique_temp_dir;
+    use ts2wasm_shared::{DiagCode, Span};
 
     #[test]
     fn emit_wat_rejects_residual_method_call_before_emission() {

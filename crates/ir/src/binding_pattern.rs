@@ -1,4 +1,4 @@
-use ts2wasm_frontend::{DiagCode, Diagnostic, Span};
+use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ArrayBinding {

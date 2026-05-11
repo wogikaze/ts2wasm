@@ -6,9 +6,9 @@ use super::binding_pattern::{
 use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 use super::builtin_resolved::{ClassMethodKind, ResolvedExpr, ResolvedParam, ResolvedStmt};
 use ts2wasm_frontend::{
-    BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, OBJECT_SPREAD_SENTINEL, Span,
-    SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp,
+    BinaryOp, LogicalAssignOp, OBJECT_SPREAD_SENTINEL, SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp,
 };
+use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct LocalId(pub usize);

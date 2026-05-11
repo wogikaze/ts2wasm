@@ -12,6 +12,7 @@ Current checks:
 """
 
 import os
+import re
 import sys
 import subprocess
 import shutil
@@ -217,14 +218,25 @@ def check_cli_thin_wrapper_boundary() -> None:
 
 
 def check_backend_frontend_dependency() -> None:
-    """Check that backend-wasm and ir don't directly depend on frontend via Cargo.toml."""
+    """Check that backend-wasm and ir don't directly depend on frontend via Cargo.toml [dependencies].
+
+    Only checks the [dependencies] section (normal dependencies).
+    Permits ts2wasm-frontend in [dev-dependencies] and [build-dependencies].
+    """
     found = False
     for crate_rel in FRONTEND_DEP_DENY:
         cargo_path = REPO_ROOT / crate_rel / "Cargo.toml"
         if not cargo_path.exists():
             continue
         text = cargo_path.read_text()
-        if "ts2wasm-frontend" in text:
+        # Extract only the [dependencies] section: everything from "[dependencies]"
+        # up to the next "[...]" section header, or end of file.
+        deps_match = re.search(
+            r"^\[dependencies\]\s*$(.+?)(?=^\s*\[|\Z)",
+            text,
+            re.MULTILINE | re.DOTALL,
+        )
+        if deps_match and "ts2wasm-frontend" in deps_match.group(1):
             print(
                 f"check_architecture_rules: ERROR {crate_rel}/Cargo.toml depends on "
                 f"ts2wasm-frontend; this violates the layer architecture. "
