@@ -91,13 +91,14 @@ open:
       - "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output"
     non_goals:
       - "No new runtime implementation."
-active:
+active: []
+done:
   - id: 236
     title: "Implement new.target metaproperty (W9a)"
     priority: P1
     type: feature
     area: backend
-    status: active
+    status: done
     created: 2026-05-11
     updated: 2026-05-11
     roadmap: W9a
@@ -118,3 +119,8 @@ active:
         - "crates/compiler/src/dump.rs: Preserve new.target in AST dumps"
         - "fixtures/classes/class-new-target.ts: Add semantic fixture"
       acceptance: "cargo test parses_new_target_in_class && new-target fixture node_diff pass"
+    evidence:
+      commit: ee22238de
+      commands:
+        - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_new_target_in_class => exit 0"
+        - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(new_target)' => exit 0"
