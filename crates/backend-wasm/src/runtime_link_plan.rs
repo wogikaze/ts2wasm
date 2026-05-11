@@ -9,13 +9,11 @@ use ts2wasm_runtime_abi::ValueTag;
 
 // Re-export catalog types so existing `super::runtime_link_plan::RuntimeLinkPlan`
 // import paths continue to work.
-pub use ts2wasm_runtime_catalog::{
-    emit_link_plan_snapshot, LinkPlanSnapshot, RuntimeLinkPlan,
-};
 use ts2wasm_runtime_catalog::{
-    runtime_fn_from_name, Capability, GLOBALS_EXCEPTION_RUNTIME, HostAbi, HostImport, RuntimeFn,
-    RuntimeGlobal,
+    Capability, GLOBALS_EXCEPTION_RUNTIME, HostAbi, HostImport, RuntimeFn, RuntimeGlobal,
+    runtime_fn_from_name,
 };
+pub use ts2wasm_runtime_catalog::{LinkPlanSnapshot, RuntimeLinkPlan, emit_link_plan_snapshot};
 
 /// Build a RuntimeLinkPlan from a lowered program by walking the full IR.
 pub fn build_runtime_link_plan(program: &LoweredProgram) -> RuntimeLinkPlan {
@@ -363,9 +361,7 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
                         plan.add_required_runtime(RuntimeFn::GreaterEqual);
                     }
                 }
-                LoweredBinaryOp::StrictEqual => {
-                    plan.add_required_runtime(RuntimeFn::StrictEqual)
-                }
+                LoweredBinaryOp::StrictEqual => plan.add_required_runtime(RuntimeFn::StrictEqual),
                 LoweredBinaryOp::EqualEqual => plan.add_required_runtime(RuntimeFn::EqualEqual),
                 LoweredBinaryOp::BangEqual => plan.add_required_runtime(RuntimeFn::BangEqual),
                 LoweredBinaryOp::StrictNotEqual => {
@@ -527,7 +523,7 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
             {
                 plan.add_required_runtime(RuntimeFn::PrivateBrandTypeError);
             }
-            if let Some(runtime_fn_enum) = runtime_fn_from_name(intrinsic.name()) {
+            if let Some(runtime_fn_enum) = runtime_fn_from_name(&format!("{:?}", intrinsic)) {
                 plan.add_required_runtime(runtime_fn_enum);
             }
             for arg in args {

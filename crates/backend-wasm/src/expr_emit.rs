@@ -61,7 +61,7 @@ impl WatEmitter<'_> {
                 ..
             } => super::runtime_fn::runtime_fn_from_builtin(*builtin).is_value(),
             LoweredExpr::RuntimeCall { intrinsic, .. } => {
-                super::runtime_fn::runtime_fn_from_name(intrinsic.name())
+                super::runtime_fn::runtime_fn_from_name(&format!("{:?}", intrinsic))
                     .map(|f| f.is_value())
                     .unwrap_or(true)
             }
@@ -1976,9 +1976,9 @@ impl WatEmitter<'_> {
                 self.emit_expr(writer, arg, indent, frame);
             }
         }
-        let fn_name = super::runtime_fn::runtime_fn_from_name(intrinsic.name())
-            .map(|f| f.symbol())
-            .unwrap_or_else(|| intrinsic.name());
+        let fn_name = super::runtime_fn::runtime_fn_from_name(&format!("{:?}", intrinsic))
+            .map(|f| f.symbol().to_owned())
+            .unwrap_or_else(|| format!("{:?}", intrinsic));
         writer.line_fmt(indent, format_args!("(call {})", fn_name));
     }
 
