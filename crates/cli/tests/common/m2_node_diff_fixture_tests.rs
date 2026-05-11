@@ -1753,6 +1753,11 @@ fn class_basic_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn class_basic_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes-and-inheritance/class-basic.ts");
+}
+
+#[test]
 fn class_static_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/classes-and-inheritance/class-static.ts");
 }

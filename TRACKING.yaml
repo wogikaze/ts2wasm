@@ -7,13 +7,14 @@ meta:
     canonical_source: TRACKING.yaml
     roadmap_source: docs/roadmap.md
     closed_source: docs/done-tracking.yaml
-open:
+open: []
+active:
   - id: 242
     title: "Upgrade class fixtures from build_smoke to semantic_diff (W9a)"
     priority: P2
     type: test
     area: runtime
-    status: open
+    status: active
     created: 2026-05-11
     updated: 2026-05-11
     roadmap: W9a
@@ -21,7 +22,12 @@ open:
       - "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output"
     non_goals:
       - "No new runtime implementation."
-active: []
+    plan:
+      goal: "Promote supported class fixtures from build smoke to node-diff semantic coverage"
+      files:
+        - "crates/cli/tests/common/m2_node_diff_fixture_tests.rs: class semantic fixture coverage"
+        - "fixtures/classes-and-inheritance/class-basic.ts: acceptance fixture"
+      acceptance: "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output"
 done:
   - id: 241
     title: "Pre-allocate class fields capacity for new expression (W9a)"
