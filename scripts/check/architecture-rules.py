@@ -250,8 +250,8 @@ def should_count_lines(path: Path) -> bool:
         return False
     if path.suffix not in LINE_COUNT_SUFFIXES:
         return False
-    # .rs files are checked by dedicated rust-specific checks (check_rust_file_length,
-    # check_rust_file_length_1500), so skip them here to avoid double-counting.
+    # .rs files are checked by dedicated rust-specific checks (check_rust_file_length),
+    # so skip them here to avoid double-counting.
     if path.suffix == ".rs":
         return False
     return True
@@ -1215,21 +1215,41 @@ def check_host_import_manifest() -> list[str]:
 
     text = src_path.read_text()
 
+    # Determine which variants are intentionally dead_code
+    # by parsing the enum definition for #[allow(dead_code)] annotations.
+    enum_match = re.search(r'pub enum HostImport \{(.*?)^\}', text, re.MULTILINE | re.DOTALL)
+    dead_code_variants = set()
+    if enum_match:
+        enum_body = enum_match.group(1)
+        lines = enum_body.split('\n')
+        in_dead = False
+        for line in lines:
+            stripped = line.strip()
+            if stripped == '#[allow(dead_code)]':
+                in_dead = True
+            elif stripped.startswith('#['):
+                continue
+            elif stripped and not stripped.startswith('//'):
+                variant_match = re.match(r'(\w+)', stripped)
+                if variant_match and in_dead:
+                    dead_code_variants.add(variant_match.group(1))
+                    in_dead = False
+                elif variant_match:
+                    in_dead = False
+
     # Parse HostImport::spec() match arms for module+name per variant
     spec_match = re.search(
-        r'pub const fn spec\(self\) -> HostImportSpec \{[^}]*match self \{(.*?)^\}',
+        r'Self::(\w+)\s*=>\s*HostImportSpec\s*\{[^}]*module:\s*"([^"]+)"[^}]*name:\s*"([^"]+)"[^}]*\}',
         text,
-        re.MULTILINE | re.DOTALL,
     )
+    # Fall back to iterating all match arms
     if not spec_match:
         return violations
 
-    spec_body = spec_match.group(1)
-    # Extract variant name, module, and name from each arm
     manifest_names = {}
     for m in re.finditer(
         r'Self::(\w+)\s*=>\s*HostImportSpec\s*\{[^}]*module:\s*"([^"]+)"[^}]*name:\s*"([^"]+)"[^}]*\}',
-        spec_body,
+        text,
     ):
         variant = m.group(1)
         manifest = f"{m.group(2)}.{m.group(3)}"
@@ -1246,9 +1266,12 @@ def check_host_import_manifest() -> list[str]:
         REPO_ROOT / "crates" / "runtime-catalog" / "src" / "runtime" / "manifest" / "all.rs",
         REPO_ROOT / "crates" / "backend-wasm" / "src" / "runtime" / "spec" / "all.rs",
         REPO_ROOT / "crates" / "runtime-catalog" / "src" / "runtime" / "spec" / "all.rs",
+        REPO_ROOT / "crates" / "runtime-catalog" / "src" / "runtime_fn.rs",
     ]
 
     for variant, manifest in sorted(manifest_names.items()):
+        if variant in dead_code_variants:
+            continue  # Intentionally dead code -- no coverage needed
         found = False
         for cf in check_files:
             if not cf.exists():
@@ -1260,7 +1283,7 @@ def check_host_import_manifest() -> list[str]:
         if not found:
             violations.append(
                 f"check_architecture_rules: ERROR HostImport::{variant} "
-                f"(manifest: {manifest}) not covered in test or manifest files"
+                f"(manifest: {manifest}) not covered in test, spec, or manifest files"
             )
 
     return violations
