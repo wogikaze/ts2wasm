@@ -17,11 +17,11 @@ use builtin_resolver_host::*;
 use builtin_resolver_outer::*;
 use std::collections::{HashMap, HashSet};
 
-use ts2wasm_frontend::{
+use ts2wasm_runtime_abi::ValueTag;
+use ts2wasm_shared::{
     ArrayLiteralElement, BinaryOp, ClassPrivateElement, ClassStaticBlock, DiagCode, Diagnostic,
     Expr, Span, Stmt, UnaryOp,
 };
-use ts2wasm_runtime_abi::ValueTag;
 
 use super::binding_pattern::parse_binding_pattern;
 use super::builtin::BuiltinId;

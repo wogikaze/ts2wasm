@@ -1,5 +1,5 @@
 use super::*;
-use ts2wasm_frontend::ArrayLiteralElement;
+use ts2wasm_shared::ast::ArrayLiteralElement;
 
 pub(super) fn collect_top_level_bindings(program: &[Stmt]) -> Result<HashSet<String>, Diagnostic> {
     let mut bindings = HashSet::new();

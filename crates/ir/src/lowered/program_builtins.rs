@@ -721,7 +721,7 @@ pub(super) fn regexp_test_runtime(
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
-    span: ts2wasm_frontend::Span,
+    span: Span,
 ) -> Result<Option<Vec<ResolvedExpr>>, Diagnostic> {
     if method != "test" {
         return Ok(None);
@@ -758,7 +758,7 @@ pub(super) fn regexp_string_match_runtime(
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
-    span: ts2wasm_frontend::Span,
+    span: Span,
 ) -> Result<Option<Vec<ResolvedExpr>>, Diagnostic> {
     if method != "match" && method != "search" {
         return Ok(None);
@@ -806,7 +806,7 @@ pub(super) fn regexp_exec_runtime(
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
-    span: ts2wasm_frontend::Span,
+    span: Span,
 ) -> Result<Option<Vec<ResolvedExpr>>, Diagnostic> {
     if method != "exec" {
         return Ok(None);

@@ -1,4 +1,4 @@
-use ts2wasm_frontend::{
+use ts2wasm_shared::{
     ArrayLiteralElement, BinaryOp, DiagCode, Diagnostic, Expr, Span, Stmt, UnaryOp,
 };
 

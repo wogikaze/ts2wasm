@@ -5,7 +5,7 @@ use super::binding_pattern::{
 };
 use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 use super::builtin_resolved::{ClassMethodKind, ResolvedExpr, ResolvedParam, ResolvedStmt};
-use ts2wasm_frontend::{
+use ts2wasm_shared::{
     BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, OBJECT_SPREAD_SENTINEL, Span,
     SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp,
 };
