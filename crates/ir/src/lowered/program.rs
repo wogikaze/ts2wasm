@@ -334,7 +334,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
             _ => top_level_statements.push(resolver.lower_stmt(stmt)?),
         }
     }
-    generated_functions.extend(resolver.generated_functions);
+    generated_functions.extend(resolver.functions.generated_functions);
 
     let mut functions = functions_by_id
         .into_iter()
@@ -350,9 +350,9 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
 
     Ok(LoweredProgram {
         top_level_statements,
-        top_level_locals: resolver.locals,
+        top_level_locals: resolver.locals.locals,
         functions,
-        modules: resolver.modules,
+        modules: resolver.modules.modules,
     })
 }
 
@@ -2357,13 +2357,13 @@ fn lower_function(
             uses_receiver: signature.needs_receiver,
             min_required_params: min_required,
             rest_param_index,
-            locals: resolver.locals,
+            locals: resolver.locals.locals,
             body: body_with_defaults,
             recursion_depth: options.recursion_depth,
             is_async,
         },
-        generated_functions: resolver.generated_functions,
-        next_func_id: resolver.next_func_id,
+        generated_functions: resolver.functions.generated_functions,
+        next_func_id: resolver.functions.next_func_id,
     })
 }
 

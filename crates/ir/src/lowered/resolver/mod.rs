@@ -9,61 +9,90 @@ use crate::lowered::*;
 use ts2wasm_frontend::{BinaryOp, UnaryOp};
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
-pub(super) struct Resolver<'a> {
-    function_ids: &'a HashMap<String, FuncId>,
-    function_signatures: &'a HashMap<FuncId, FunctionSignature>,
-    function_captures: &'a HashMap<FuncId, Vec<String>>,
-    function_mutable_captures: &'a HashMap<FuncId, Vec<String>>,
-    class_method_captures: &'a HashMap<FuncId, Vec<String>>,
-    class_method_mutable_captures: &'a HashMap<FuncId, Vec<String>>,
-    env_cell_names: HashSet<String>,
-    env_cell_locals: HashSet<LocalId>,
-    heap_closure_names: HashSet<String>,
-    scopes: Vec<HashMap<String, LocalId>>,
-    next_local_id: usize,
+pub(crate) struct Symbols<'a> {
+    pub(crate) function_ids: &'a HashMap<String, FuncId>,
+    pub(crate) function_signatures: &'a HashMap<FuncId, FunctionSignature>,
+}
+
+pub(crate) struct Locals {
+    pub(crate) scopes: Vec<HashMap<String, LocalId>>,
+    pub(crate) next_local_id: usize,
     pub(crate) locals: Vec<LocalId>,
+    pub(crate) param_locals: HashSet<LocalId>,
+}
+
+pub(crate) struct Functions<'a> {
+    pub(crate) function_captures: &'a HashMap<FuncId, Vec<String>>,
+    pub(crate) function_mutable_captures: &'a HashMap<FuncId, Vec<String>>,
+    pub(crate) class_method_captures: &'a HashMap<FuncId, Vec<String>>,
+    pub(crate) class_method_mutable_captures: &'a HashMap<FuncId, Vec<String>>,
     pub(crate) next_func_id: usize,
     pub(crate) generated_functions: Vec<LoweredFunction>,
-    arrow_locals: HashMap<LocalId, ArrowClosure>,
-    heap_closure_locals: HashSet<LocalId>,
-    nullish_locals: HashSet<LocalId>,
-    module_ids: HashMap<String, usize>,
+}
+
+pub(crate) struct Captures {
+    pub(crate) env_cell_names: HashSet<String>,
+    pub(crate) env_cell_locals: HashSet<LocalId>,
+    pub(crate) heap_closure_names: HashSet<String>,
+    pub(crate) heap_closure_locals: HashSet<LocalId>,
+}
+
+pub(crate) struct Classes {
+    pub(crate) class_constructor_ids: HashMap<String, FuncId>,
+    pub(crate) class_method_ids: HashMap<(String, String), FuncId>,
+    pub(crate) class_static_method_ids: HashMap<(String, String), FuncId>,
+    pub(crate) class_parents: HashMap<String, Option<String>>,
+    pub(crate) class_private_fields: ClassPrivateFieldSlots,
+    pub(crate) class_static_private_fields: ClassStaticPrivateFields,
+    pub(crate) local_classes: HashMap<LocalId, String>,
+    pub(crate) object_function_props: HashMap<LocalId, HashMap<String, FuncId>>,
+    pub(crate) current_class: Option<String>,
+    pub(crate) in_constructor: bool,
+}
+
+pub(crate) struct Modules {
+    pub(crate) module_ids: HashMap<String, usize>,
     pub(crate) modules: Vec<ModuleInfo>,
-    class_constructor_ids: HashMap<String, FuncId>,
-    class_method_ids: HashMap<(String, String), FuncId>,
-    class_static_method_ids: HashMap<(String, String), FuncId>,
-    class_parents: HashMap<String, Option<String>>,
-    class_private_fields: ClassPrivateFieldSlots,
-    class_static_private_fields: ClassStaticPrivateFields,
-    local_classes: HashMap<LocalId, String>,
-    object_function_props: HashMap<LocalId, HashMap<String, FuncId>>,
-    param_locals: HashSet<LocalId>,
-    regexp_literal_locals: HashSet<LocalId>,
-    invalid_date_locals: HashSet<LocalId>,
-    bigint_locals: HashSet<LocalId>,
-    control_flow_bigint_div_rem_locals: HashSet<LocalId>,
-    control_flow_mixed_bigint_locals: HashSet<LocalId>,
-    array_locals: HashSet<LocalId>,
-    static_array_slots: HashMap<LocalId, Vec<ResolvedArrayElement>>,
-    symbol_iterator_object_locals: HashSet<LocalId>,
-    static_object_literal_locals: HashMap<LocalId, Vec<(String, ResolvedExpr)>>,
-    static_object_literal_alias_sources: HashMap<LocalId, HashSet<LocalId>>,
-    static_function_array_like_locals: HashMap<LocalId, StaticFunctionArrayLike>,
-    string_literal_locals: HashMap<LocalId, String>,
-    native_set_add_locals: HashSet<LocalId>,
-    generator_function_names: HashSet<String>,
-    current_class: Option<String>,
-    in_constructor: bool,
+}
+
+pub(crate) struct Facts {
+    pub(crate) arrow_locals: HashMap<LocalId, ArrowClosure>,
+    pub(crate) heap_closure_locals: HashSet<LocalId>,
+    pub(crate) nullish_locals: HashSet<LocalId>,
+    pub(crate) regexp_literal_locals: HashSet<LocalId>,
+    pub(crate) invalid_date_locals: HashSet<LocalId>,
+    pub(crate) bigint_locals: HashSet<LocalId>,
+    pub(crate) control_flow_bigint_div_rem_locals: HashSet<LocalId>,
+    pub(crate) control_flow_mixed_bigint_locals: HashSet<LocalId>,
+    pub(crate) array_locals: HashSet<LocalId>,
+    pub(crate) static_array_slots: HashMap<LocalId, Vec<ResolvedArrayElement>>,
+    pub(crate) symbol_iterator_object_locals: HashSet<LocalId>,
+    pub(crate) static_object_literal_locals: HashMap<LocalId, Vec<(String, ResolvedExpr)>>,
+    pub(crate) static_object_literal_alias_sources: HashMap<LocalId, HashSet<LocalId>>,
+    pub(crate) static_function_array_like_locals: HashMap<LocalId, StaticFunctionArrayLike>,
+    pub(crate) string_literal_locals: HashMap<LocalId, String>,
+    pub(crate) native_set_add_locals: HashSet<LocalId>,
+    pub(crate) generator_function_names: HashSet<String>,
+}
+
+pub(super) struct Resolver<'a> {
+    pub(crate) symbols: Symbols<'a>,
+    pub(crate) locals: Locals,
+    pub(crate) functions: Functions<'a>,
+    pub(crate) captures: Captures,
+    pub(crate) classes: Classes,
+    pub(crate) modules: Modules,
+    pub(crate) facts: Facts,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-struct ArrowClosure {
+pub(crate) struct ArrowClosure {
     func_id: FuncId,
     captures: Vec<LocalId>,
 }
 
 #[derive(Debug, Clone)]
-struct StaticFunctionArrayLike {
+pub(crate) struct StaticFunctionArrayLike {
     elements: Vec<Option<ResolvedExpr>>,
 }
 
@@ -98,50 +127,65 @@ impl<'a> Resolver<'a> {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
             class_maps(function_ids);
         Self {
-            function_ids,
-            function_signatures,
-            function_captures,
-            function_mutable_captures,
-            class_method_captures,
-            class_method_mutable_captures,
-            env_cell_names: env_cell_names.clone(),
-            env_cell_locals: HashSet::new(),
-            heap_closure_names: heap_closure_names.clone(),
-            scopes: vec![HashMap::new()],
-            next_local_id: 0,
-            locals: Vec::new(),
-            next_func_id,
-            generated_functions: Vec::new(),
-            arrow_locals: HashMap::new(),
-            heap_closure_locals: HashSet::new(),
-            nullish_locals: HashSet::new(),
-            module_ids: HashMap::new(),
-            modules: Vec::new(),
-            class_constructor_ids,
-            class_method_ids,
-            class_static_method_ids,
-            class_parents,
-            class_private_fields,
-            class_static_private_fields,
-            local_classes: HashMap::new(),
-            object_function_props: HashMap::new(),
-            param_locals: HashSet::new(),
-            regexp_literal_locals: HashSet::new(),
-            invalid_date_locals: HashSet::new(),
-            bigint_locals: HashSet::new(),
-            control_flow_bigint_div_rem_locals: HashSet::new(),
-            control_flow_mixed_bigint_locals: HashSet::new(),
-            array_locals: HashSet::new(),
-            static_array_slots: HashMap::new(),
-            symbol_iterator_object_locals: HashSet::new(),
-            static_object_literal_locals: HashMap::new(),
-            static_object_literal_alias_sources: HashMap::new(),
-            static_function_array_like_locals: HashMap::new(),
-            string_literal_locals: HashMap::new(),
-            native_set_add_locals: HashSet::new(),
-            generator_function_names,
-            current_class: None,
-            in_constructor: false,
+            symbols: Symbols {
+                function_ids,
+                function_signatures,
+            },
+            locals: Locals {
+                scopes: vec![HashMap::new()],
+                next_local_id: 0,
+                locals: Vec::new(),
+                param_locals: HashSet::new(),
+            },
+            functions: Functions {
+                function_captures,
+                function_mutable_captures,
+                class_method_captures,
+                class_method_mutable_captures,
+                next_func_id,
+                generated_functions: Vec::new(),
+            },
+            captures: Captures {
+                env_cell_names: env_cell_names.clone(),
+                env_cell_locals: HashSet::new(),
+                heap_closure_names: heap_closure_names.clone(),
+                heap_closure_locals: HashSet::new(),
+            },
+            classes: Classes {
+                class_constructor_ids,
+                class_method_ids,
+                class_static_method_ids,
+                class_parents,
+                class_private_fields,
+                class_static_private_fields,
+                local_classes: HashMap::new(),
+                object_function_props: HashMap::new(),
+                current_class: None,
+                in_constructor: false,
+            },
+            modules: Modules {
+                module_ids: HashMap::new(),
+                modules: Vec::new(),
+            },
+            facts: Facts {
+                arrow_locals: HashMap::new(),
+                heap_closure_locals: HashSet::new(),
+                nullish_locals: HashSet::new(),
+                regexp_literal_locals: HashSet::new(),
+                invalid_date_locals: HashSet::new(),
+                bigint_locals: HashSet::new(),
+                control_flow_bigint_div_rem_locals: HashSet::new(),
+                control_flow_mixed_bigint_locals: HashSet::new(),
+                array_locals: HashSet::new(),
+                static_array_slots: HashMap::new(),
+                symbol_iterator_object_locals: HashSet::new(),
+                static_object_literal_locals: HashMap::new(),
+                static_object_literal_alias_sources: HashMap::new(),
+                static_function_array_like_locals: HashMap::new(),
+                string_literal_locals: HashMap::new(),
+                native_set_add_locals: HashSet::new(),
+                generator_function_names,
+            },
         }
     }
 
@@ -166,50 +210,65 @@ impl<'a> Resolver<'a> {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
             class_maps(function_ids);
         let mut resolver = Self {
-            function_ids,
-            function_signatures,
-            function_captures,
-            function_mutable_captures,
-            class_method_captures,
-            class_method_mutable_captures,
-            env_cell_names: env_cell_names.clone(),
-            env_cell_locals: HashSet::new(),
-            heap_closure_names: heap_closure_names.clone(),
-            scopes: vec![HashMap::new()],
-            next_local_id: 0,
-            locals: Vec::new(),
-            next_func_id,
-            generated_functions: Vec::new(),
-            arrow_locals: HashMap::new(),
-            heap_closure_locals: HashSet::new(),
-            nullish_locals: HashSet::new(),
-            module_ids: HashMap::new(),
-            modules: Vec::new(),
-            class_constructor_ids,
-            class_method_ids,
-            class_static_method_ids,
-            class_parents,
-            class_private_fields,
-            class_static_private_fields,
-            local_classes: HashMap::new(),
-            object_function_props: HashMap::new(),
-            param_locals: HashSet::new(),
-            regexp_literal_locals: HashSet::new(),
-            invalid_date_locals: HashSet::new(),
-            bigint_locals: HashSet::new(),
-            control_flow_bigint_div_rem_locals: HashSet::new(),
-            control_flow_mixed_bigint_locals: HashSet::new(),
-            array_locals: HashSet::new(),
-            static_array_slots: HashMap::new(),
-            symbol_iterator_object_locals: HashSet::new(),
-            static_object_literal_locals: HashMap::new(),
-            static_object_literal_alias_sources: HashMap::new(),
-            static_function_array_like_locals: HashMap::new(),
-            string_literal_locals: HashMap::new(),
-            native_set_add_locals: HashSet::new(),
-            generator_function_names: HashSet::new(),
-            current_class: current_class.map(ToOwned::to_owned),
-            in_constructor,
+            symbols: Symbols {
+                function_ids,
+                function_signatures,
+            },
+            locals: Locals {
+                scopes: vec![HashMap::new()],
+                next_local_id: 0,
+                locals: Vec::new(),
+                param_locals: HashSet::new(),
+            },
+            functions: Functions {
+                function_captures,
+                function_mutable_captures,
+                class_method_captures,
+                class_method_mutable_captures,
+                next_func_id,
+                generated_functions: Vec::new(),
+            },
+            captures: Captures {
+                env_cell_names: env_cell_names.clone(),
+                env_cell_locals: HashSet::new(),
+                heap_closure_names: heap_closure_names.clone(),
+                heap_closure_locals: HashSet::new(),
+            },
+            classes: Classes {
+                class_constructor_ids,
+                class_method_ids,
+                class_static_method_ids,
+                class_parents,
+                class_private_fields,
+                class_static_private_fields,
+                local_classes: HashMap::new(),
+                object_function_props: HashMap::new(),
+                current_class: current_class.map(ToOwned::to_owned),
+                in_constructor,
+            },
+            modules: Modules {
+                module_ids: HashMap::new(),
+                modules: Vec::new(),
+            },
+            facts: Facts {
+                arrow_locals: HashMap::new(),
+                heap_closure_locals: HashSet::new(),
+                nullish_locals: HashSet::new(),
+                regexp_literal_locals: HashSet::new(),
+                invalid_date_locals: HashSet::new(),
+                bigint_locals: HashSet::new(),
+                control_flow_bigint_div_rem_locals: HashSet::new(),
+                control_flow_mixed_bigint_locals: HashSet::new(),
+                array_locals: HashSet::new(),
+                static_array_slots: HashMap::new(),
+                symbol_iterator_object_locals: HashSet::new(),
+                static_object_literal_locals: HashMap::new(),
+                static_object_literal_alias_sources: HashMap::new(),
+                static_function_array_like_locals: HashMap::new(),
+                string_literal_locals: HashMap::new(),
+                native_set_add_locals: HashSet::new(),
+                generator_function_names: HashSet::new(),
+            },
         };
         let mut param_ids = Vec::new();
         let mut seen_params = HashMap::new();
@@ -226,24 +285,26 @@ impl<'a> Resolver<'a> {
                 });
             }
             seen_params.insert(clean_name.to_owned(), ());
-            let local_id = LocalId(resolver.next_local_id);
-            resolver.next_local_id += 1;
+            let local_id = LocalId(resolver.locals.next_local_id);
+            resolver.locals.next_local_id += 1;
             resolver
+                .locals
                 .scopes
                 .last_mut()
                 .expect("function scope must exist")
                 .insert(clean_name.to_owned(), local_id);
-            if resolver.env_cell_names.contains(clean_name) {
-                resolver.env_cell_locals.insert(local_id);
+            if resolver.captures.env_cell_names.contains(clean_name) {
+                resolver.captures.env_cell_locals.insert(local_id);
             }
-            if resolver.heap_closure_names.contains(clean_name) {
-                resolver.heap_closure_locals.insert(local_id);
+            if resolver.captures.heap_closure_names.contains(clean_name) {
+                resolver.captures.heap_closure_locals.insert(local_id);
             }
-            resolver.param_locals.insert(local_id);
+            resolver.locals.param_locals.insert(local_id);
             if let Some(current_class) = current_class
                 && param == "this"
             {
                 resolver
+                    .classes
                     .local_classes
                     .insert(local_id, current_class.to_owned());
             }
@@ -268,9 +329,9 @@ impl<'a> Resolver<'a> {
         &mut self,
         statements: &[ResolvedStmt],
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
-        self.scopes.push(HashMap::new());
+        self.locals.scopes.push(HashMap::new());
         let lowered = self.lower_block(statements);
-        self.scopes.pop();
+        self.locals.scopes.pop();
         lowered
     }
 
@@ -312,9 +373,9 @@ impl<'a> Resolver<'a> {
             });
         }
 
-        self.scopes.push(HashMap::new());
+        self.locals.scopes.push(HashMap::new());
         let lowered = self.lower_block(body);
-        self.scopes.pop();
+        self.locals.scopes.pop();
         lowered.map(|statements| Some(LoweredStmt::Block(statements, Span::generated("block"))))
     }
 
@@ -348,7 +409,7 @@ impl<'a> Resolver<'a> {
                 // callback that calls `instance.once(...)`).
                 let expr_class = self.infer_class_for_expr(expr);
                 if let Some(class_name) = &expr_class {
-                    self.local_classes.insert(local_id, class_name.clone());
+                    self.classes.local_classes.insert(local_id, class_name.clone());
                 }
                 let function_props = self.function_props_for_object_expr(expr);
                 let lowered = if let ResolvedExpr::ArrowFn {
@@ -362,8 +423,8 @@ impl<'a> Resolver<'a> {
                 } else {
                     self.lower_expr(expr)?
                 };
-                let lowered = if self.env_cell_names.contains(name) {
-                    self.env_cell_locals.insert(local_id);
+                let lowered = if self.captures.env_cell_names.contains(name) {
+                    self.captures.env_cell_locals.insert(local_id);
                     LoweredExpr::EnvCellNew(Box::new(lowered), Span::generated("env_cell_new"))
                 } else {
                     lowered
@@ -372,7 +433,7 @@ impl<'a> Resolver<'a> {
                     func_id, captures, ..
                 } = &lowered
                 {
-                    self.arrow_locals.insert(
+                    self.facts.arrow_locals.insert(
                         local_id,
                         ArrowClosure {
                             func_id: *func_id,
@@ -380,11 +441,11 @@ impl<'a> Resolver<'a> {
                         },
                     );
                 } else {
-                    self.arrow_locals.remove(&local_id);
+                    self.facts.arrow_locals.remove(&local_id);
                 }
                 self.update_heap_closure_local(local_id, expr, &lowered);
-                if self.heap_closure_names.contains(name) {
-                    self.heap_closure_locals.insert(local_id);
+                if self.captures.heap_closure_names.contains(name) {
+                    self.captures.heap_closure_locals.insert(local_id);
                 }
                 self.update_nullish_local(local_id, expr);
                 self.update_bigint_local(local_id, expr);
@@ -397,9 +458,9 @@ impl<'a> Resolver<'a> {
                 self.update_native_set_add_local(local_id, expr);
                 self.update_invalid_date_local(local_id, expr);
                 if let Some(props) = function_props {
-                    self.object_function_props.insert(local_id, props);
+                    self.classes.object_function_props.insert(local_id, props);
                 } else {
-                    self.object_function_props.remove(&local_id);
+                    self.classes.object_function_props.remove(&local_id);
                 }
                 self.update_regexp_literal_local(local_id, expr);
                 Ok(LoweredStmt::Let(
@@ -415,9 +476,9 @@ impl<'a> Resolver<'a> {
                 // can resolve the class of this local.
                 let expr_class = self.infer_class_for_expr(expr);
                 if let Some(class_name) = &expr_class {
-                    self.local_classes.insert(local_id, class_name.clone());
+                    self.classes.local_classes.insert(local_id, class_name.clone());
                 } else {
-                    self.local_classes.remove(&local_id);
+                    self.classes.local_classes.remove(&local_id);
                 }
                 let function_props = self.function_props_for_object_expr(expr);
                 let lowered = self.lower_expr(expr)?;
@@ -425,7 +486,7 @@ impl<'a> Resolver<'a> {
                     func_id, captures, ..
                 } = &lowered
                 {
-                    self.arrow_locals.insert(
+                    self.facts.arrow_locals.insert(
                         local_id,
                         ArrowClosure {
                             func_id: *func_id,
@@ -433,7 +494,7 @@ impl<'a> Resolver<'a> {
                         },
                     );
                 } else {
-                    self.arrow_locals.remove(&local_id);
+                    self.facts.arrow_locals.remove(&local_id);
                 }
                 self.update_heap_closure_local(local_id, expr, &lowered);
                 self.update_nullish_local(local_id, expr);
@@ -446,12 +507,12 @@ impl<'a> Resolver<'a> {
                 self.update_native_set_add_local(local_id, expr);
                 self.update_invalid_date_local(local_id, expr);
                 if let Some(props) = function_props {
-                    self.object_function_props.insert(local_id, props);
+                    self.classes.object_function_props.insert(local_id, props);
                 } else {
-                    self.object_function_props.remove(&local_id);
+                    self.classes.object_function_props.remove(&local_id);
                 }
                 self.update_regexp_literal_local(local_id, expr);
-                if self.env_cell_locals.contains(&local_id) {
+                if self.captures.env_cell_locals.contains(&local_id) {
                     Ok(LoweredStmt::Expr(
                         LoweredExpr::EnvCellSet {
                             cell: local_id,
@@ -484,7 +545,7 @@ impl<'a> Resolver<'a> {
                     && args.len() == 1
                     && let ResolvedExpr::Ident(name) = object.as_ref()
                     && let Ok(local_id) = self.resolve_local(name)
-                    && self.array_locals.contains(&local_id)
+                    && self.facts.array_locals.contains(&local_id)
                 {
                     return Ok(LoweredStmt::Assign(
                         local_id,
@@ -511,25 +572,25 @@ impl<'a> Resolver<'a> {
                 else_body,
             } => {
                 let condition = self.lower_expr(condition)?;
-                let incoming_bigint_locals = self.bigint_locals.clone();
-                let incoming_div_rem_locals = self.control_flow_bigint_div_rem_locals.clone();
-                let incoming_mixed_locals = self.control_flow_mixed_bigint_locals.clone();
+                let incoming_bigint_locals = self.facts.bigint_locals.clone();
+                let incoming_div_rem_locals = self.facts.control_flow_bigint_div_rem_locals.clone();
+                let incoming_mixed_locals = self.facts.control_flow_mixed_bigint_locals.clone();
 
                 let then_body = self.lower_nested_block(then_body)?;
-                let then_add_sub_bigint_locals = self.bigint_locals.clone();
+                let then_add_sub_bigint_locals = self.facts.bigint_locals.clone();
                 let then_div_rem_bigint_locals = self.bigint_div_rem_candidate_locals();
-                let then_mixed_locals = self.control_flow_mixed_bigint_locals.clone();
+                let then_mixed_locals = self.facts.control_flow_mixed_bigint_locals.clone();
 
-                self.bigint_locals = incoming_bigint_locals.clone();
-                self.control_flow_bigint_div_rem_locals = incoming_div_rem_locals.clone();
-                self.control_flow_mixed_bigint_locals = incoming_mixed_locals.clone();
+                self.facts.bigint_locals = incoming_bigint_locals.clone();
+                self.facts.control_flow_bigint_div_rem_locals = incoming_div_rem_locals.clone();
+                self.facts.control_flow_mixed_bigint_locals = incoming_mixed_locals.clone();
 
                 let else_body = self.lower_nested_block(else_body)?;
-                let else_add_sub_bigint_locals = self.bigint_locals.clone();
+                let else_add_sub_bigint_locals = self.facts.bigint_locals.clone();
                 let else_div_rem_bigint_locals = self.bigint_div_rem_candidate_locals();
-                let else_mixed_locals = self.control_flow_mixed_bigint_locals.clone();
+                let else_mixed_locals = self.facts.control_flow_mixed_bigint_locals.clone();
 
-                self.bigint_locals = then_add_sub_bigint_locals
+                self.facts.bigint_locals = then_add_sub_bigint_locals
                     .intersection(&else_add_sub_bigint_locals)
                     .copied()
                     .collect();
@@ -544,11 +605,11 @@ impl<'a> Resolver<'a> {
                     .filter(|local| !definite_div_rem_locals.contains(local))
                     .collect::<HashSet<_>>();
 
-                self.control_flow_bigint_div_rem_locals = definite_div_rem_locals
-                    .difference(&self.bigint_locals)
+                self.facts.control_flow_bigint_div_rem_locals = definite_div_rem_locals
+                    .difference(&self.facts.bigint_locals)
                     .copied()
                     .collect();
-                self.control_flow_mixed_bigint_locals = branch_mixed_locals;
+                self.facts.control_flow_mixed_bigint_locals = branch_mixed_locals;
                 Ok(LoweredStmt::If {
                     condition,
                     then_body,
@@ -567,7 +628,7 @@ impl<'a> Resolver<'a> {
                     && let Some(closure) = self
                         .resolve_local(name)
                         .ok()
-                        .and_then(|local| self.arrow_locals.get(&local))
+                        .and_then(|local| self.facts.arrow_locals.get(&local))
                 {
                     return Ok(LoweredStmt::Return(
                         closure.to_expr(ClosureRepresentation::HeapObject),
@@ -608,8 +669,8 @@ impl<'a> Resolver<'a> {
                 name, params, body, ..
             } => {
                 let local_id = self.declare_local(name)?;
-                if self.env_cell_names.contains(name) {
-                    self.env_cell_locals.insert(local_id);
+                if self.captures.env_cell_names.contains(name) {
+                    self.captures.env_cell_locals.insert(local_id);
                 }
                 let closure = self.lower_nested_function(name, params, body)?;
                 if let LoweredExpr::ArrowFn {
@@ -621,9 +682,9 @@ impl<'a> Resolver<'a> {
                 } = &closure
                 {
                     if matches!(representation, ClosureRepresentation::HeapObject) {
-                        self.heap_closure_locals.insert(local_id);
+                        self.captures.heap_closure_locals.insert(local_id);
                     } else {
-                        self.arrow_locals.insert(
+                        self.facts.arrow_locals.insert(
                             local_id,
                             ArrowClosure {
                                 func_id: *func_id,
@@ -632,8 +693,8 @@ impl<'a> Resolver<'a> {
                         );
                     }
                 }
-                self.nullish_locals.remove(&local_id);
-                if self.env_cell_locals.contains(&local_id) {
+                self.facts.nullish_locals.remove(&local_id);
+                if self.captures.env_cell_locals.contains(&local_id) {
                     Ok(LoweredStmt::Block(
                         vec![
                             LoweredStmt::Let(
@@ -719,7 +780,7 @@ impl<'a> Resolver<'a> {
                 update,
                 body,
             } => {
-                self.scopes.push(HashMap::new());
+                self.locals.scopes.push(HashMap::new());
                 let resolved_init = init
                     .as_ref()
                     .map(|s| self.lower_stmt(s))
@@ -732,7 +793,7 @@ impl<'a> Resolver<'a> {
                     body: self.lower_nested_block(body)?,
                     span: Span::generated("for"),
                 };
-                self.scopes.pop();
+                self.locals.scopes.pop();
                 Ok(resolved)
             }
             ResolvedStmt::ForIn { var, iter, body } => {
@@ -756,7 +817,7 @@ impl<'a> Resolver<'a> {
                 let lowered_iter = if let ResolvedExpr::Ident(name) = iter
                     && let Ok(local_id) = self.resolve_local(name)
                 {
-                    let class_name = self.local_classes.get(&local_id);
+                    let class_name = self.classes.local_classes.get(&local_id);
                     if class_name.is_some_and(|c| c == "Set") {
                         LoweredExpr::RuntimeCall {
                             intrinsic: RuntimeIntrinsic::SetValuesArray,
@@ -845,9 +906,9 @@ impl<'a> Resolver<'a> {
         class_name: &str,
         f: impl FnOnce(&mut Self) -> Result<T, Diagnostic>,
     ) -> Result<T, Diagnostic> {
-        let previous = self.current_class.replace(class_name.to_owned());
+        let previous = self.classes.current_class.replace(class_name.to_owned());
         let result = f(self);
-        self.current_class = previous;
+        self.classes.current_class = previous;
         result
     }
 }

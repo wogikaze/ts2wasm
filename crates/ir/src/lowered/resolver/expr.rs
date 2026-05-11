@@ -46,7 +46,7 @@ impl<'a> Resolver<'a> {
                 }
             },
             ResolvedExpr::NewTarget { span } => {
-                if !self.in_constructor {
+                if !self.classes.in_constructor {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: "issue-236: new.target is only supported in class constructors"
@@ -55,7 +55,7 @@ impl<'a> Resolver<'a> {
                         phase: None,
                     });
                 }
-                let class_name = self.current_class.clone().ok_or_else(|| Diagnostic {
+                let class_name = self.classes.current_class.clone().ok_or_else(|| Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-236: new.target requires a class constructor context".to_owned(),
                     span: Some(*span),
@@ -122,7 +122,7 @@ impl<'a> Resolver<'a> {
                         phase: None,});
                 }
                 match self.resolve_local(name) {
-                    Ok(local) if self.env_cell_locals.contains(&local) => Ok(LoweredExpr::EnvCellGet(local, Span::generated("env_cell_get"))),
+                    Ok(local) if self.captures.env_cell_locals.contains(&local) => Ok(LoweredExpr::EnvCellGet(local, Span::generated("env_cell_get"))),
                     Ok(local) => Ok(LoweredExpr::Local(local, Span::generated("local"))),
                     Err(_) if name == "arguments" => Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
@@ -130,7 +130,7 @@ impl<'a> Resolver<'a> {
                         span: None,
 
                         phase: None,}),
-                    Err(_) if self.class_constructor_ids.contains_key(name.as_str()) => {
+                    Err(_) if self.classes.class_constructor_ids.contains_key(name.as_str()) => {
                         Ok(LoweredExpr::ClassPrototype(self.class_prototype_ref(name)?, Span::generated("class_proto")))
                     }
                     Err(err) => Err(err),
@@ -427,7 +427,7 @@ impl<'a> Resolver<'a> {
                 self.invalidate_static_object_literal_local(local);
                 self.invalidate_static_function_array_like_local(local);
                 let expr = Box::new(self.lower_expr(expr)?);
-                if self.env_cell_locals.contains(&local) {
+                if self.captures.env_cell_locals.contains(&local) {
                     Ok(LoweredExpr::EnvCellSet { cell: local, expr ,
                     span: Span::generated("env_cell_set"),})
                 } else {
@@ -583,7 +583,7 @@ impl<'a> Resolver<'a> {
                 }
 
                 if let Ok(local_id) = self.resolve_local(func_name)
-                    && let Some(closure) = self.arrow_locals.get(&local_id).cloned()
+                    && let Some(closure) = self.facts.arrow_locals.get(&local_id).cloned()
                 {
                     let mut lowered_args = self.lower_call_args(args)?;
                     lowered_args.extend(closure.captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
@@ -595,9 +595,9 @@ impl<'a> Resolver<'a> {
                 }
 
                 if let Ok(local_id) = self.resolve_local(func_name)
-                    && self.heap_closure_locals.contains(&local_id)
+                    && self.captures.heap_closure_locals.contains(&local_id)
                 {
-                    let receiver = if self.env_cell_locals.contains(&local_id) {
+                    let receiver = if self.captures.env_cell_locals.contains(&local_id) {
                         LoweredExpr::EnvCellGet(local_id, Span::generated("env_cell_get"))
                     } else {
                         LoweredExpr::Local(local_id, Span::generated("local"))
@@ -612,7 +612,7 @@ impl<'a> Resolver<'a> {
                 }
 
                 if func_name == "super" {
-                    if !self.in_constructor {
+                    if !self.classes.in_constructor {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: "super(...) is only supported in constructors".to_owned(),
@@ -620,14 +620,14 @@ impl<'a> Resolver<'a> {
 
                             phase: None,});
                     }
-                    let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
+                    let class_name = self.classes.current_class.as_ref().ok_or_else(|| Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: "super(...) requires class context".to_owned(),
                         span: None,
 
                         phase: None,})?;
                     let parent_name = self
-                        .class_parents
+                        .classes.class_parents
                         .get(class_name)
                         .and_then(|p| p.clone())
                         .ok_or_else(|| Diagnostic {
@@ -637,7 +637,7 @@ impl<'a> Resolver<'a> {
 
                             phase: None,})?;
                     let parent_ctor = self
-                        .class_constructor_ids
+                        .classes.class_constructor_ids
                         .get(&parent_name)
                         .copied()
                         .ok_or_else(|| Diagnostic {
@@ -715,7 +715,7 @@ impl<'a> Resolver<'a> {
                 // not extracted methods but simply uninitialized variables,
                 // and deserve a more precise diagnostic.
                 if let Ok(local_id) = self.resolve_local(func_name)
-                    && self.nullish_locals.contains(&local_id) {
+                    && self.facts.nullish_locals.contains(&local_id) {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: format!(
@@ -732,7 +732,7 @@ impl<'a> Resolver<'a> {
                         // Check if this local is a function parameter (e.g., typed
                         // through a conditional type alias) for a more specific diagnostic.
                         if let Ok(local_id) = self.resolve_local(func_name)
-                            && self.param_locals.contains(&local_id)
+                            && self.locals.param_locals.contains(&local_id)
                         {
                             return Err(Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
@@ -757,7 +757,7 @@ impl<'a> Resolver<'a> {
 
                             span: Span::generated("runtime_call"),});
                     }
-                    Err(_) if self.class_constructor_ids.contains_key(func_name.as_str()) => {
+                    Err(_) if self.classes.class_constructor_ids.contains_key(func_name.as_str()) => {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: format!(
@@ -775,7 +775,7 @@ impl<'a> Resolver<'a> {
                         phase: None,}),
                 };
                 if self
-                    .function_signatures
+                    .symbols.function_signatures
                     .get(&func_id)
                     .is_some_and(|signature| signature.needs_receiver)
                 {
@@ -833,14 +833,14 @@ impl<'a> Resolver<'a> {
                     return Err(private_storage_observable_access_diagnostic(Some(*span)));
                 }
                 if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "super") {
-                    let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
+                    let class_name = self.classes.current_class.as_ref().ok_or_else(|| Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: "super property access requires class context".to_owned(),
                         span: Some(*span),
 
                         phase: None,})?;
                     let parent_name = self
-                        .class_parents
+                        .classes.class_parents
                         .get(class_name)
                         .and_then(|p| p.clone())
                         .ok_or_else(|| Diagnostic {
@@ -874,7 +874,7 @@ impl<'a> Resolver<'a> {
                                 span: Some(*span),
 
                                 phase: None,})?;
-                            return Ok(if self.env_cell_locals.contains(&local) {
+                            return Ok(if self.captures.env_cell_locals.contains(&local) {
                                 LoweredExpr::EnvCellGet(local, Span::generated("env_cell_get"))
                             } else {
                                 LoweredExpr::Local(local, Span::generated("local"))
@@ -920,7 +920,7 @@ impl<'a> Resolver<'a> {
                         let receiver = if matches!(object.as_ref(), ResolvedExpr::This { .. }) {
                             LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))
                         } else {
-                            let class_name = self.current_class.clone().ok_or_else(|| Diagnostic {
+                            let class_name = self.classes.current_class.clone().ok_or_else(|| Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
                                 message: format!(
                                     "issue-255: private getter `{key}` access requires declaring class context"
@@ -982,7 +982,7 @@ impl<'a> Resolver<'a> {
                     && let ResolvedExpr::Ident(receiver_name) = object.as_ref()
                     && let Ok(obj_local) = self.resolve_local(receiver_name)
                     && self
-                        .local_classes
+                        .classes.local_classes
                         .get(&obj_local)
                         .is_some_and(|class_name| class_name == "Set")
                 {
@@ -996,7 +996,7 @@ impl<'a> Resolver<'a> {
                     && let ResolvedExpr::Ident(receiver_name) = object.as_ref()
                     && let Ok(obj_local) = self.resolve_local(receiver_name)
                     && self
-                        .local_classes
+                        .classes.local_classes
                         .get(&obj_local)
                         .is_some_and(|class_name| class_name == "Map")
                 {
@@ -1044,14 +1044,14 @@ impl<'a> Resolver<'a> {
                 }
                 // super['prop'] — look up on parent prototype using dynamic key
                 if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "super") {
-                    let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
+                    let class_name = self.classes.current_class.as_ref().ok_or_else(|| Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: "super computed access requires class context".to_owned(),
                         span: None,
 
                         phase: None,})?;
                     let parent_name = self
-                        .class_parents
+                        .classes.class_parents
                         .get(class_name)
                         .and_then(|p| p.clone())
                         .ok_or_else(|| Diagnostic {
@@ -1148,7 +1148,7 @@ impl<'a> Resolver<'a> {
                 if method == "call"
                     && let ResolvedExpr::Ident(name) = object.as_ref()
                     && let Ok(local_id) = self.resolve_local(name)
-                    && self.native_set_add_locals.contains(&local_id)
+                    && self.facts.native_set_add_locals.contains(&local_id)
                 {
                     return self.lower_native_set_add_call(args, *span);
                 }
@@ -1168,7 +1168,7 @@ impl<'a> Resolver<'a> {
                         let same_class_static_receiver = match object.as_ref() {
                             ResolvedExpr::This { .. } => self.resolve_local("this").is_err(),
                             ResolvedExpr::Ident(name) => {
-                                self.current_class.as_deref() == Some(name.as_str())
+                                self.classes.current_class.as_deref() == Some(name.as_str())
                             }
                             _ => false,
                         };
@@ -1205,7 +1205,7 @@ impl<'a> Resolver<'a> {
                     let receiver = if matches!(object.as_ref(), ResolvedExpr::This { .. }) {
                         LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))
                     } else {
-                        let class_name = self.current_class.clone().ok_or_else(|| Diagnostic {
+                        let class_name = self.classes.current_class.clone().ok_or_else(|| Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: format!(
                                 "issue-255: private method `{method}` call requires declaring class context"
@@ -1236,14 +1236,14 @@ impl<'a> Resolver<'a> {
                     validate_json_stringify_args(
                         args,
                         *span,
-                        self.function_ids,
-                        self.function_signatures,
+                        self.symbols.function_ids,
+                        self.symbols.function_signatures,
                     )?;
                     let mut lowered_args = Vec::with_capacity(3);
                     let value = if let (
                         ResolvedExpr::Object(props),
                         Some(replacer_keys),
-                    ) = (&args[0], json_stringify_replacer_keys(args, self.function_ids))
+                    ) = (&args[0], json_stringify_replacer_keys(args, self.symbols.function_ids))
                     {
                         let mut lowered_props = Vec::new();
                         for allowed_key in replacer_keys {
@@ -1272,7 +1272,7 @@ impl<'a> Resolver<'a> {
                         Some(ResolvedExpr::Array(_)) => LoweredExpr::Null(Span::generated("null")),
                         Some(replacer) => {
                             if let Some(func_id) =
-                                json_stringify_function_replacer_id(replacer, self.function_ids)
+                                json_stringify_function_replacer_id(replacer, self.symbols.function_ids)
                             {
                                 LoweredExpr::Number(func_id.0 as i32, Span::generated("num"))
                             } else {
@@ -1283,7 +1283,7 @@ impl<'a> Resolver<'a> {
                     });
                     lowered_args.push(match args.get(2) {
                         Some(space)
-                            if should_ignore_json_stringify_space(space, self.function_ids) =>
+                            if should_ignore_json_stringify_space(space, self.symbols.function_ids) =>
                         {
                             LoweredExpr::Undefined(Span::generated("undef"))
                         }
@@ -1715,7 +1715,7 @@ impl<'a> Resolver<'a> {
                     if let ResolvedExpr::Ident(receiver_name) = object.as_ref()
                         && let Ok(obj_local) = self.resolve_local(receiver_name)
                         && let Some(method_id) = self
-                            .object_function_props
+                            .classes.object_function_props
                             .get(&obj_local)
                             .and_then(|props| props.get(method))
                             .copied()
@@ -1835,7 +1835,7 @@ impl<'a> Resolver<'a> {
                     }
 
                     if matches!(object.as_ref(), ResolvedExpr::This { .. }) {
-                        let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
+                        let class_name = self.classes.current_class.as_ref().ok_or_else(|| Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: "this.method(...) requires class context".to_owned(),
                             span: Some(*span),
@@ -2059,7 +2059,7 @@ impl<'a> Resolver<'a> {
                         && !args.is_empty()
                         && matches!(&args[0], ResolvedExpr::ArrowFn { .. })
                         && let Ok(obj_local) = self.resolve_local(receiver_name)
-                        && let Some(class_name) = self.local_classes.get(&obj_local)
+                        && let Some(class_name) = self.classes.local_classes.get(&obj_local)
                         && (class_name == "Map" || class_name == "Set")
                     {
                         let is_map = *class_name == "Map";
@@ -2072,7 +2072,7 @@ impl<'a> Resolver<'a> {
                     }
 
                     if let Ok(obj_local) = self.resolve_local(receiver_name)
-                        && let Some(class_name) = self.local_classes.get(&obj_local)
+                        && let Some(class_name) = self.classes.local_classes.get(&obj_local)
                         && let Some(intrinsic) = collection_method_runtime_fn(class_name, method)
                     {
                         if class_name == "RegExp" && args.len() > 1 {
@@ -2118,14 +2118,14 @@ impl<'a> Resolver<'a> {
                     }
 
                     if receiver_name == "super" {
-                        let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
+                        let class_name = self.classes.current_class.as_ref().ok_or_else(|| Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: "super.method(...) requires class context".to_owned(),
                             span: Some(*span),
 
                             phase: None,})?;
                         let parent_name = self
-                            .class_parents
+                            .classes.class_parents
                             .get(class_name)
                             .and_then(|p| p.clone())
                             .ok_or_else(|| Diagnostic {
@@ -2166,7 +2166,7 @@ impl<'a> Resolver<'a> {
                     }
 
                     if let Some(method_id) = self
-                        .class_static_method_ids
+                        .classes.class_static_method_ids
                         .get(&(receiver_name.clone(), method.clone()))
                         .copied()
                     {
@@ -2191,7 +2191,7 @@ impl<'a> Resolver<'a> {
                         "findIndex", "some", "every", "reduce", "flatMap"];
                     let number_methods = ["toFixed", "toExponential", "toPrecision"];
                     let promise_methods = ["then", "catch", "finally"];
-                    let class_name_str = match self.local_classes.get(&obj_local) {
+                    let class_name_str = match self.classes.local_classes.get(&obj_local) {
                         Some(c) => c.clone(),
                         None if array_like_methods.contains(&method.as_str()) => "Array".to_owned(),
                         None if number_methods.contains(&method.as_str()) => "Number".to_owned(),
@@ -2278,7 +2278,7 @@ impl<'a> Resolver<'a> {
 
                                 phase: None,})?;
                             let expr = Box::new(self.lower_expr(value)?);
-                            return Ok(if self.env_cell_locals.contains(&local) {
+                            return Ok(if self.captures.env_cell_locals.contains(&local) {
                                 LoweredExpr::EnvCellSet { cell: local, expr ,
                                 span: Span::generated("env_cell_set"),}
                             } else {
@@ -2315,7 +2315,7 @@ impl<'a> Resolver<'a> {
                         let receiver = if matches!(object.as_ref(), ResolvedExpr::This { .. }) {
                             LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))
                         } else {
-                            let class_name = self.current_class.clone().ok_or_else(|| Diagnostic {
+                            let class_name = self.classes.current_class.clone().ok_or_else(|| Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
                                 message: format!(
                                     "issue-255: private setter `{key}` assignment requires declaring class context"
@@ -2364,14 +2364,14 @@ impl<'a> Resolver<'a> {
                 }
                 // super.prop = value — writes to `this`, not the parent prototype
                 if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "super") {
-                    let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
+                    let class_name = self.classes.current_class.as_ref().ok_or_else(|| Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: "super property assignment requires class context".to_owned(),
                         span: Some(*span),
 
                         phase: None,})?;
                     let _parent_name = self
-                        .class_parents
+                        .classes.class_parents
                         .get(class_name)
                         .and_then(|p| p.clone())
                         .ok_or_else(|| Diagnostic {
@@ -2409,14 +2409,14 @@ impl<'a> Resolver<'a> {
                 }
                 // super['prop'] = value — writes to `this`, not the parent prototype
                 if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "super") {
-                    let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
+                    let class_name = self.classes.current_class.as_ref().ok_or_else(|| Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: "super computed assignment requires class context".to_owned(),
                         span: None,
 
                         phase: None,})?;
                     let _parent_name = self
-                        .class_parents
+                        .classes.class_parents
                         .get(class_name)
                         .and_then(|p| p.clone())
                         .ok_or_else(|| Diagnostic {
