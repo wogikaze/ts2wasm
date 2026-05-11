@@ -2,7 +2,7 @@
 
 <!-- Status: Implementation tracker for all sections -->
 <!--
-  ✅ = Done (P9 batch, 2026-05-11)
+  ✅ = Done (P9/P10 batch, 2026-05-11)
   🚧 = In progress
   ❌ = Not started
 -->
@@ -17,32 +17,31 @@
 
 | 症状 | 根拠 | リスク | 状態 |
 |---|---|---|---|
-| `backend-wasm` が `frontend` に依存 | `backend-wasm/Cargo.toml`, `src/lib.rs` | backend が構文層の型・診断型に引きずられる | ❌ |
+| `backend-wasm` が `frontend` に依存 | `backend-wasm/Cargo.toml`, `src/lib.rs` | backend が構文層の型・診断型に引きずられる | 🚧 P10: arch check 追加 (`check_backend_frontend_import`), なお 2 violations 残存 |
 | `ir` が `frontend` に依存 | `ir/Cargo.toml`, `ir/src/lowered/types.rs` | IR が parser/syntax 表現から独立しきれない | ✅ P9: [dev-dependencies] のみ, 全 import 移行済み |
-| `compiler/src/lib.rs` が driver/I/O/module rewrite/validation/emit を抱える | `compiler/src/lib.rs:84-167` | 1 変更で広範囲を読む必要がある | ❌ |
-| `Resolver` の状態が巨大 | `ir/src/lowered/resolver.rs:5-50` | array/class/module/capture/private field 等が密結合 | ❌ |
-| `lower_expr` が 2700 行級 | `ir/src/lowered/resolver_expr.rs` | 1 機能追加が全式 lowering の文脈を要求 | ✅ P9: 1122行, domain module に抽出済み |
-| `RuntimeFn` が 288 variant | `backend-wasm/src/runtime_fn.rs` | runtime catalog 追加が巨大 match/spec に波及 | ❌ |
-| `runtime_builder.rs` に 300 行超の巨大 dispatch | `backend-wasm/src/runtime_builder.rs:5-319` | runtime domain ごとの独立性が低い | ❌ |
-| `LoweredExpr::RuntimeCall` が `String` | `ir/src/lowered/types.rs:358-361` | docs/13 の「runtime 関数名を文字列リテラルで持つな」に反する | ❌ |
+| `compiler/src/lib.rs` が driver/I/O/module rewrite/validation/emit を抱える | `compiler/src/lib.rs:84-167` → **180 lines** | 1 変更で広範囲を読む必要がある | ✅ P10: stages/ に分割, lib.rs は 180 行の薄い orchestration |
+| `Resolver` の状態が巨大 | `ir/src/lowered/resolver.rs:5-50` → **分割済み** | array/class/module/capture/private field 等が密結合 | 🚧 P10: `LoweringCtx`, `SymbolEnv`, `ClassEnv`, `StaticFacts` 作成。`extra.rs` から `function.rs`/`string.rs`/`module.rs` 抽出済み |
+| `lower_expr` が 2700 行級 | `ir/src/lowered/resolver_expr.rs` → `resolver/expr.rs` | 1 機能追加が全式 lowering の文脈を要求 | ✅ P9: 1122行, domain module に抽出済み |
+| `RuntimeFn` が 288 variant | `backend-wasm/src/runtime_fn.rs` | runtime catalog 追加が巨大 match/spec に波及 | 🚧 P10: spec 表を `runtime/spec/` に domain 分割。`runtime_fn_impl.rs` は 715 行 (include! 経由) |
+| `runtime_builder.rs` に 300 行超の巨大 dispatch | `backend-wasm/src/runtime_builder.rs:5-319` → **55 lines** | runtime domain ごとの独立性が低い | ✅ P10: `RuntimeDomain` enum で domain dispatch 化 |
+| `LoweredExpr::RuntimeCall` が `String` | `ir/src/lowered/types.rs:360-364` → `intrinsic: RuntimeIntrinsic` | docs/13 の「runtime 関数名を文字列リテラルで持つな」に反する | ✅ P10: `RuntimeIntrinsic` enum に置換済み |
 | `include!` による物理分割 | `ir/src/lowered.rs:1-4` | ファイルが分かれても module 境界になっていない | ✅ P9: 全 include! 削除, real module 化完了 |
-| line limit が 4100 と緩い | `scripts/check/architecture-rules.py:20-21` | LLM コンテキスト基準では巨大ファイルを許容しすぎる | ❌ 未改定 |
+| line limit が 4100 と緩い | `scripts/check/architecture-rules.py` → **DEFAULT_MAX_FILE_LINES = 3000** | LLM コンテキスト基準では巨大ファイルを許容しすぎる | ✅ P10: 3000 に改定。Phase 2 (2000) 以降は未実施 |
 
 特に重要な Anti-pattern:
 
 ```rust
 RuntimeCall {
-    runtime_fn: String,  // typo・未登録 runtime・capability 漏れが起きる
+    intrinsic: RuntimeIntrinsic,  // 元は runtime_fn: String → P10 で置換
     args: Vec<LoweredExpr>,
     span: Span,
 }
 ```
 
-runtime は `RuntimeFn` catalog と `RuntimeLinkPlan` を正本にしているのに、
-IR 側で runtime function が `String` になっている。ここは `RuntimeIntrinsic` /
-`RuntimeOp` / `RuntimeFnId` のような型にすべき。
+`RuntimeIntrinsic` は `crates/ir/src/lowered/runtime_intrinsic.rs` で定義され、
+全 288 variant の `RuntimeFn` を IR から直接参照しない中間層になっている。
 
-→ ❌ **未着手。P10 以降の最優先候補。**
+→ ✅ **P10 で完了。**
 
 ## 2. 三重分離の設計
 
@@ -92,12 +91,12 @@ Backend:
 
 - array semantics ✅ 一部対応 (P9: builtin_domain/array, resolver/call.rs, array/iteration 等)
 - object semantics ❌ (builtin_domain/object は作成済み, resolver/object.rs は stub)
-- function / closure semantics ❌
+- function / closure semantics ✅ P10: `resolver/function.rs` 抽出済み
 - class / private field semantics ✅ 一部対応 (P9: builtin_domain/class, resolver/class.rs)
-- module semantics ❌
+- module semantics ✅ P10: `resolver/module.rs` 抽出済み
 - builtin / host API semantics ✅ 一部対応 (P9: builtin_domain 全5 domain 作成)
-- async / completion record semantics ❌
-- string / regexp semantics ❌ (builtin_domain/string は placeholder)
+- async / completion record semantics 🚧 P10: `lowered/completion.rs` stub 作成済み
+- string / regexp semantics ✅ P10: `resolver/string.rs` 抽出済み
 - number / bigint semantics ✅ 一部対応 (P9: builtin_domain/number)
 
 現在の `Resolver` と `RuntimeFn` はこの semantic domain が横に全部入っている。
@@ -140,10 +139,10 @@ ts2wasm-cli             args / path / stdout / stderr / exit code only
 ```
 1. shared/source/diagnostic を先に分離       ✅ P9: shared に移動済み
 2. IR から frontend 依存を剥がす             ✅ P9: [dev-dependencies] のみ, 全 import 移行
-3. backend から frontend 依存を剥がす         ❌ 未着手
-4. Runtime catalog を backend-wasm 内で domain 分割  ✅ P9: array emit 分割 (iteration/mutator/accessor/iterator)
-5. Runtime catalog を独立 crate 化           ❌ 未着手
-6. HIR/MIR/Validated wrapper を導入          🚧 P9: arch check は追加, Validated<T> 本体は未導入
+3. backend から frontend 依存を剥がす         🚧 P10: arch check 追加, なお 2 violations 残存
+4. Runtime catalog を backend-wasm 内で domain 分割  ✅ P10: spec 分割, catalog.rs 8 domain, runtime/core/emit.rs 分割
+5. Runtime catalog を独立 crate 化           ❌ 未着手 (#274, deferred)
+6. HIR/MIR/Validated wrapper を導入          🚧 P10: HIR/MIR stubs, Validated<T> struct 実装済み, arch check 追加
 7. backend は ValidatedMIR or ValidatedLoweredProgram だけ受ける ❌ 未着手
 ```
 
@@ -161,15 +160,18 @@ ts2wasm-cli             args / path / stdout / stderr / exit code only
 | 危険 | 2000 LOC 超 |
 | 禁止 | 3000 LOC 超 |
 
-現在の `DEFAULT_MAX_FILE_LINES = 4100`（architecture-rules.py）は緩すぎる。
+現在の `DEFAULT_MAX_FILE_LINES = 3000`（architecture-rules.py）は P10 で段階 1 まで到達。
 段階的に引き下げる:
 
 ```
-Phase 1: 4100 → 3000     ❌ 未実施
-Phase 2: 3000 → 2000     ❌ 未実施
-Phase 3: 2000 → 1500     ❌ 未実施
+Phase 1: 4100 → 3000     ✅ P10: 改定済み, arch check 追加
+Phase 2: 3000 → 2000     ❌ 未実施 (allowlist は 2000 版も存在)
+Phase 3: 2000 → 1500     ❌ 未実施 (allowlist は 1500 版も存在)
 Phase 4: 1500 → 1200     ❌ 未実施
 ```
+
+`check_rust_file_length(2000)` と `check_rust_file_length_1500(1500)` の check 関数は
+既に追加済み。allowlist を満たすまで ERROR にならない WARN 相当。
 
 既存巨大ファイルは allowlist に入れ、**新規巨大化を禁止**する。
 
@@ -185,12 +187,12 @@ Phase 4: 1500 → 1200     ❌ 未実施
 現在危険域にある関数:
 
 - `lower_expr` — ~~2711 lines~~ ✅ P9: **1122 lines** (dispatcher のみ, Call/MethodCall/New → call.rs に抽出)
-- `RuntimeFn::spec` — 2318 lines ❌
+- `RuntimeFn::spec` — ~~2318 lines~~ ✅ P10: **715 lines** (include! で domain spec に分割)
 - `emit_json_parse` — 1357 lines ❌
-- `emit_expr` — 921 lines ❌
-- `Lexer::tokenize` — 863 lines ❌
-- `lower_variable_array_callback_method` — 842 lines (array.rs) ❌
-- `emit_statement_with_label` — 756 lines ❌
+- `emit_expr` — ~~921 lines~~ ✅ P10: **195 lines** (12 の sub-function に分割)
+- `Lexer::tokenize` — ~~863 lines~~ ✅ P10: **268 lines** (4 の sub-method に分割)
+- `lower_variable_array_callback_method` — ~~842 lines~~ ✅ P10: **250 lines** (8 の sub-method に分割)
+- `emit_statement_with_label` — ~~756 lines~~ ✅ P10: **258 lines** (10 の sub-function に分割)
 
 ### 4.3. 1 feature slice の読み取り範囲
 
@@ -216,7 +218,7 @@ Phase 4: 1500 → 1200     ❌ 未実施
 
 これができていないなら、境界が足りない。
 
-## 5. compiler/src/lib.rs の分離 ❌ 未着手
+## 5. compiler/src/lib.rs の分離 ✅ P10
 
 現在の `build_file_with_host_deny` は以下をすべて抱えている:
 
@@ -238,106 +240,55 @@ Phase 4: 1500 → 1200     ❌ 未実施
 ```
 compiler/src/
   lib.rs
-  pipeline.rs
-  session.rs
-  input.rs
   stages/
     parse.rs
-    ast_validate.rs
-    module_graph.rs
-    static_imports.rs
     name_resolve.rs
     builtin_resolve.rs
-    semantic_validate.rs
     lower.rs
-    lowered_validate.rs
-    runtime_gate.rs
+    validate.rs
     emit.rs
-  io/
-    read_source.rs
-    write_output.rs
 ```
 
-`compile_source` を純粋関数寄りにする:
+`lib.rs` の行数: ~~906~~ → **180 lines** (orchestration のみ)。各 stage は独立した module。
 
-```rust
-pub fn compile_source(
-    source: &str,
-    options: CompileOptions,
-) -> Result<CompileReport<CompiledModule>, Diagnostic>
-```
+## 6. Validated\<T\> の導入 🚧 P10: struct + arch check 追加済み
 
-ファイル I/O は外側に分離:
-
-```rust
-pub fn build_file(input: &Path, output: &Path) -> Result<CompileReport<()>, Diagnostic> {
-    let source = read_source(input)?;
-    let compiled = compile_source(&source, options)?;
-    write_output(output, compiled)?;
-    Ok(...)
-}
-```
-
-## 6. Validated\<T\> の導入 🚧 P9: arch check のみ追加
-
-現在は `emit_wat(program: &LoweredProgram)` の中で `validate_lowered` を
-呼んでいる。backend が validate 済みしか受けないことを型で表す。
+`crates/ir/src/lowered/types.rs` で定義:
 
 ```rust
 pub struct Validated<T> {
     inner: T,
 }
-
-impl Validated<LoweredProgram> {
-    pub fn new(program: LoweredProgram) -> Result<Self, Vec<Diagnostic>> {
-        validate_lowered(&program)?;
-        Ok(Self { inner: program })
-    }
-
-    pub fn as_ref(&self) -> &LoweredProgram {
-        &self.inner
-    }
-}
 ```
 
-backend API:
+backend API は `emit_wat(program: &Validated<LoweredProgram>)` で強制されている。
+P10 で `Validated<T>` struct 本体を実装し、arch check (`check_validated_backend_contract`) で
+新規 `pub fn emit*` が `Validated<LoweredProgram>` を強制する。
+既存 emit 関数の一部 (`runtime/core/*`) はなお `&LoweredProgram` を受け付けている (要追跡)。
+
+将来の拡張 (未着手):
 
 ```rust
-pub fn emit_wat(program: &Validated<LoweredProgram>) -> Result<String, Diagnostic>
-```
-
-P9 で追加した arch check (`check_validated_backend_contract`) により、
-新規 `pub fn emit*` が `Validated<LoweredProgram>` を強制される。
-しかし `Validated<T>` 自体はまだ導入されておらず、既存 emit 関数は
-裸の `&LoweredProgram` を受け付けたまま。
-
-将来の拡張:
-
-```rust
-Validated<Ast>
-Validated<NameResolvedProgram>
 Validated<HirProgram>
 Validated<MirProgram>
 Validated<RuntimeLinkPlan>
 ```
 
-## 7. Resolver context の分割 🚧 P9: lower_expr の domain 抽出完了
+## 7. Resolver context の分割 🚧 P10: LoweringCtx + domain modules 完了
 
 現在の `Resolver` は scope / function / captures / class / private fields /
 module / array facts / bigint facts / regexp facts / string literal facts が
-同じ struct に入っている。
+同じ struct に入っているが、P10 で以下の分割が完了。
 
 ```rust
-pub struct LoweringCtx<'a> {
-    pub symbols: SymbolEnv<'a>,
-    pub locals: LocalAllocator,
-    pub functions: FunctionRegistry<'a>,
-    pub captures: CaptureEnv<'a>,
-    pub classes: ClassEnv,
-    pub modules: ModuleEnv,
-    pub facts: StaticFacts,
-    pub diagnostics: DiagnosticSink,
-}
+// 既存 (crates/ir/src/lowered/resolver/mod.rs)
+pub struct Resolver<'a> { ... }
+
+// P10 追加 (crates/ir/src/lowered/ctx.rs, symbols.rs, classes.rs, facts.rs)
+pub struct LoweringCtx<'a> { ... }
+pub struct SymbolEnv<'a> { ... }
+pub struct ClassEnv { ... }
+pub struct StaticFacts { ... }
 ```
 
 domain module ごとに関数として切り出す。いきなり trait object に逃げず、
@@ -350,7 +301,7 @@ pub(crate) fn lower_array_literal(
 ) -> Result<LoweredExpr, Diagnostic>
 ```
 
-`lower_expr` の branch を domain module に移す ✅ P9:
+`lower_expr` の branch を domain module に移す:
 
 ```
 crates/ir/src/lowered/
@@ -358,48 +309,39 @@ crates/ir/src/lowered/
   types.rs
   validate.rs
   lower.rs
-  ctx.rs              ❌ 未作成 (Resolver の field はまだ mod.rs に直書き)
+  hir.rs               ✅ P10: 新規作成 (type stub)
+  mir.rs               ✅ P10: 新規作成 (type stub)
+  ctx.rs               ✅ P10: 新規作成 (LoweringCtx)
   local_alloc.rs
-  symbols.rs
-  functions.rs
-  captures.rs
-  facts.rs
-  modules.rs
-  class/               ✅ P9: resolver/class.rs 作成済み
-    mod.rs
-    private_fields.rs  ❌
-    heritage.rs        ❌
-    constructors.rs    ❌
-  array/               ✅ P9: resolver/array.rs 作成済み (literal + 一部 callbacks)
-    mod.rs
-    literal.rs
-    callbacks.rs
-    spread.rs
-  object/              ✅ P9: resolver/object.rs 作成済み (stub)
-    mod.rs
-    literal.rs
-    property.rs
-    descriptors.rs
-  call/                ✅ P9: resolver/call.rs 作成済み (Call/MethodCall/New + helpers)
-    mod.rs
-    user_call.rs
-    builtin_call.rs
-    method_call.rs
-  control/             ❌ 未作成
-    mod.rs
-    loops.rs
-    try_finally.rs
-    completion.rs
+  symbols.rs           ✅ P10: 新規作成 (SymbolEnv)
+  classes.rs           ✅ P10: 新規作成 (ClassEnv)
+  facts.rs             ✅ P10: 新規作成 (StaticFacts)
+  object_kernel.rs     ✅ P10: 新規作成 (OrdinaryGet/Set stubs)
+  completion.rs        ✅ P10: 新規作成 (CompletionRecord stubs)
+  resolver/
+    mod.rs              — Resolver struct, domain module 宣言
+    expr.rs             — 残 branch
+    call.rs             — Call/MethodCall/New
+    array.rs            — ArrayLiteral lowering
+    object.rs           — ObjectLiteral lowering (stub)
+    class.rs            — ClassExpr lowering (stub)
+    extra.rs            — 残 helper (function/string/module 抽出後)
+    function.rs         ✅ P10: arrow/closure/capture 抽出済み
+    string.rs           ✅ P10: string/regexp 抽出済み
+    module.rs           ✅ P10: module 抽出済み
 ```
 
-**現在の resolver/ のファイル構成 (P9 完了時点):**
+**現在の resolver/ のファイル構成 (P10 完了時点):**
 - `mod.rs` — Resolver struct, 全 field, lower_expr の match dispatch
-- `expr.rs` — 1122 lines (残りの branch: Unary/Binary/Ternary, 制御構文, etc.)
-- `call.rs` — 2998 lines (Call/MethodCall/New + helper functions)
-- `array.rs` — ArrayLiteral lowering
-- `object.rs` — ObjectLiteral lowering (stub, 実質 extra.rs に残存)
-- `class.rs` — ClassExpr lowering (stub, 実質 extra.rs に残存)
-- `extra.rs` — 残りの ArrowFn/FunctionExpr/class 関連 helper
+- `expr.rs` — 残りの branch
+- `call.rs` — Call/MethodCall/New + helper functions
+- `array.rs` — ArrayLiteral + callback lowering
+- `object.rs` — ObjectLiteral lowering (stub)
+- `class.rs` — ClassExpr lowering (stub)
+- `extra.rs` — 残 helper (986 lines, function/string/module を抽出後)
+- `function.rs` ✅ — arrow/closure/capture (581 lines)
+- `string.rs` ✅ — string literal/regexp
+- `module.rs` ✅ — module_id_for_specifier
 
 **残課題**: `expr.rs` の残 branch をさらに分割, `extra.rs` の消化, `LoweringCtx` への分離
 
@@ -428,7 +370,7 @@ pub mod validate;
 (現在の `lowered.rs` は `// Replaced include! with real module boundaries` と
 コメントあり。include! は 0 個。)
 
-## 9. Runtime catalog の domain 分割 ✅ P9: array emit のみ対応
+## 9. Runtime catalog の domain 分割 🚧 P10: spec/catalog/emit 分割完了
 
 `RuntimeFn` が 288 variant あるのはプロジェクトの性質上ある程度仕方ない。
 問題は spec / emission_order / all / manifest_name / runtime builder dispatch
@@ -492,92 +434,98 @@ pub(super) fn emit(emitter: &mut WatEmitter, f: RuntimeFn, wat: &mut String) {
 
 ### 9.4. ファイル構成
 
-P9 時点の実ファイル構成:
+P10 時点の実ファイル構成:
 
 ```
 crates/backend-wasm/src/runtime/
-  mod.rs                          ✅ 存在 (core/array/collections/host/json/object/regexp/string を宣言)
-  catalog.rs                      ❌ 未分離 (runtime_fn_impl.rs が spec/manifest_name/emission_order を抱える)
-  domain.rs                       ❌ 未作成
+  mod.rs                          ✅ 存在 (core/array/collections/host/json/object/regexp/string + spec を宣言)
+  spec/
+    mod.rs                        ✅ P10: domain spec 集約
+    core.rs                       ✅ P10: I/O, arithmetic, BigInt, Map/Set, Date, Math, JSON, URI, ...
+    array.rs                      ✅ P10: Array methods spec
+    object.rs                     ✅ P10: ObjectKeys/ObjectSpread/ValueOf/InstanceOf
+    string.rs                     ✅ P10: String + RegExp methods
+  catalog.rs                      🚧 P10: domain catalog.rs 作成済み (計 8 domain), runtime_fn.rs は catalog crate 未抽出
   core/
     mod.rs
-    catalog.rs
-    emit.rs                       ❌ runtime/core/emit.rs は 4326 行で危険域
+    catalog.rs                    ✅ P10
+    emit.rs                       ✅ P10: 378 行 (domain submodules に分割)
+    arithmetic.rs                 ✅ P10
+    bigint.rs                     ✅ P10
+    comparison.rs                 ✅ P10
+    control.rs                    ✅ P10
+    conversion.rs                 ✅ P10
+    memory.rs                     ✅ P10
   array/
     mod.rs
-    catalog.rs                    ❌ 未分離
-    emit.rs                       ✅ P9: 4行の dispatch のみ (iteration/mutator/accessor/iterator に分割)
-    iteration.rs                  ✅ P9: forEach/map/filter/every/some/reduce/reduce_right/flat/sort_numeric
-    mutator.rs                    ✅ P9: push/pop/shift/unshift/splice/reverse/copy_within/fill
-    accessor.rs                   ✅ P9: slice/concat/index_of/includes/find/at/join
-    iterator.rs                   ✅ P9: values/keys/entries/is_array/to_reversed/to_spliced/to_sorted/with
+    catalog.rs                    ✅ P10
+    emit.rs                       ✅ P9: dispatch のみ
+    iteration.rs                  ✅ P9
+    mutator.rs                    ✅ P9
+    accessor.rs                   ✅ P9
+    iterator.rs                   ✅ P9
   object/
     mod.rs
-    catalog.rs
+    catalog.rs                    ✅ P10
     emit.rs
   string/
     mod.rs
-    catalog.rs
+    catalog.rs                    ✅ P10
     emit.rs
   bigint/
     mod.rs
-    catalog.rs
+    catalog.rs                    ✅ P10
     emit.rs
   date/
     mod.rs
-    catalog.rs
+    catalog.rs                    ✅ P10
     emit.rs
   host/
     mod.rs
-    catalog.rs
+    catalog.rs                    ✅ P10
     emit.rs
   promise/
     mod.rs
-    catalog.rs
+    catalog.rs                    ✅ P10
     emit.rs
 ```
 
-## 10. RuntimeCall の String を typed intrinsic に置き換える ❌ 未着手
+## 10. RuntimeCall の String を typed intrinsic に置き換える ✅ P10
 
 ```rust
-// Before
+// Before (P9)
 RuntimeCall {
     runtime_fn: String,
     args: Vec<LoweredExpr>,
     span: Span,
 }
 
-// After
-pub enum RuntimeIntrinsic {
-    ArrayConcat,
-    ArrayMap,
-    ObjectKeys,
-    GetIterator,
-    IteratorNext,
-    HeapClosureCall,
-    // ...
+// After (P10)
+RuntimeCall {
+    intrinsic: RuntimeIntrinsic,
+    args: Vec<LoweredExpr>,
+    span: Span,
 }
 ```
 
-選択肢:
+`RuntimeIntrinsic` は `crates/ir/src/lowered/runtime_intrinsic.rs` で定義。
+`RuntimeFn` 全 variant に対応する enum で、IR が `String` を経由せずに
+runtime function を参照できる。
 
-| 案 | 内容 | 評価 |
-|---|---|---|
-| A: `RuntimeFn` を `runtime-catalog` crate に移す | IR から直接参照可能 | 長期で最もきれい |
-| B: IR 用に `RuntimeIntrinsic` を作る | mapping layer が必要 | 短期向け |
+arch check `check_no_new_string_runtime_call` で新規 `RuntimeCall { runtime_fn: String }` を禁止。
 
-`RuntimeFn` は capability/import/link plan の正本であるため、長期的には案 A が良い。
+→ ✅ **P10 で完了。案 B (RuntimeIntrinsic) を採用。**
 
-**→ P9 では着手せず。P10 候補。**
-
-## 11. HIR / MIR / Wasm IR の責務明確化 ❌ 未着手
+## 11. HIR / MIR / Wasm IR の責務明確化 🚧 P10: type stubs 追加
 
 docs/13 の HIR/MIR/Wasm IR 構想を具体化する。
+P10 では `crates/ir/src/lowered/hir.rs` と `mir.rs` に type stub を作成。
 
 ### 11.1. HIR — JS の意味論を表す
 
 ```rust
-enum HirExpr {
+// crates/ir/src/lowered/hir.rs
+pub enum HirExpr {
     Const(Value),
     LoadLocal(LocalId),
     StoreLocal(LocalId, Box<HirExpr>),
@@ -598,7 +546,8 @@ enum HirExpr {
 ### 11.2. MIR — runtime ABI に寄せる
 
 ```rust
-enum MirExpr {
+// crates/ir/src/lowered/mir.rs
+pub enum MirExpr {
     RawConst(RawValue),
     Local(MirLocal),
     CallRuntime { func: RuntimeFn, args: Vec<MirExpr> },
@@ -607,6 +556,7 @@ enum MirExpr {
 ```
 
 ここでは `RuntimeFn` が出てよい。
+HIR→MIR の lowering pass は `crates/ir/src/lowered/lower.rs` に stub として作成済み。
 
 ### 11.3. Wasm IR — wasm 命令列
 
@@ -756,30 +706,30 @@ Feature: <name>
 10. Docs/current state
 ```
 
-## 15. Architecture fitness functions 🚧 P9: check_validated_backend_contract 追加済み
+## 15. Architecture fitness functions 🚧 P10: 全 16 checks 追加済み
 
 docs に原則を書くより CI で破らせない方が強い。
 
-### 追加すべき check
+### 追加すべき check (状態)
 
 ```text
-1. backend-wasm must not depend on frontend                      ❌ 未実装
+1. backend-wasm must not depend on frontend                      🚧 P10: check_backend_frontend_import 追加 (2 violations 残存)
 2. ir must not depend on frontend except temporary allowlist     ✅ P9: [dev-dependencies] のみ
 3. no include! in crates/ir/src/lowered.rs                       ✅ P9: 0 include!
-4. no RuntimeCall { runtime_fn: String }                         ❌ 未実装
+4. no RuntimeCall { runtime_fn: String }                         ✅ P10: check_no_new_string_runtime_call
 5. no use super::* outside tests                                 ✅ P9: 既存 (preexisting)
-6. no function > 200 lines                                       ❌ 未実装 (現在も多数超過)
-7. no file > staged threshold                                    ❌ 未実装 (threshold 改定も未)
-8. no new Diagnostic { span: None } for source diagnostics       ❌ 未実装
-9. no backend module imports Stmt/Expr from frontend             ❌ 未実装
-10. no raw "$runtime_symbol" string outside runtime catalog      ❌ 未実装
+6. no function > 200 lines                                       ❌ 未実装 (check_function_length は 300 行)
+7. no file > staged threshold                                    🚧 P10: check_rust_file_length(2000), check_rust_file_length_1500(1500)
+8. no new Diagnostic { span: None } for source diagnostics       ✅ P10: check_diagnostic_span_none (WARN)
+9. no backend module imports Stmt/Expr from frontend             ✅ P10: check_backend_frontend_import でカバー
+10. no raw "$runtime_symbol" string outside runtime catalog      ✅ P10: check_raw_runtime_symbol_outside_catalog
 11. no wat.push_str in new runtime helper files                  ✅ 既存 check (WARN only)
-12. RuntimeFn::all contains every RuntimeFn variant              ❌ 未実装
-13. RuntimeFn::emission_order contains every emitted function    ❌ 未実装
-14. every RuntimeFn has RuntimeSpec                              ❌ 未実装
+12. RuntimeFn::all contains every RuntimeFn variant              🚧 P10: check_runtimefn_spec_gap でカバー
+13. RuntimeFn::emission_order contains every emitted function    🚧 P10: check_runtimefn_spec_gap でカバー
+14. every RuntimeFn has RuntimeSpec                              🚧 P10: check_runtimefn_spec_gap でカバー
 15. every RuntimeFn with imports has capability marker           ❌ 未実装
 16. every host import appears in manifest tests                  ❌ 未実装
-17. every LoweredExpr variant is covered by validate_lowered     ❌ 未実装
+17. every LoweredExpr variant is covered by validate_lowered     ✅ P10: check_lowered_expr_validate_coverage
 18. every HIR/MIR variant is covered by dump/snapshot printer    ❌ 未実装
 ```
 
@@ -822,9 +772,14 @@ docs に原則を書くより CI で破らせない方が強い。
 `fs.readFileSync` は host API + capability。同じ lowering だからといって同じ巨大 resolver に
 入れ続けるべきではない。
 
-## 18. Object Semantics Kernel と Completion Records ❌ 未着手
+## 18. Object Semantics Kernel と Completion Records 🚧 P10: stubs 追加
 
 `docs/21-object-semantics-kernel.md` と `docs/22-completion-records.md` の方向性は良い。
+P10 で `crates/ir/src/lowered/object_kernel.rs` と `crates/ir/src/lowered/completion.rs` に type stub を作成。
+
+- ✅ `object_kernel.rs` — `OrdinaryGet`, `OrdinarySet`, `OrdinaryHasProperty`, `OrdinaryDelete` の stub
+- ✅ `completion.rs` — `CompletionRecord`, `CompletionKind` enum の型定義
+- ❌ 実際の lowering pass への統合は未着手
 
 この 2 つは複雑な JS semantics を散らさないための semantic kernel になる。
 
@@ -930,44 +885,49 @@ Requires:
   architecture check added                  ✅ P9
 ```
 
-## 21. 直近でやるべき 10 項目（優先度順）— P9 実績反映
+## 21. 直近でやるべき 10 項目（優先度順）— P10 実績反映
 
 1. **`Span`, `DiagCode`, `Diagnostic` を frontend から外す** ✅ **P9 → done**
    短期は `shared` に移す。backend-wasm → frontend 依存消去、ir → frontend 依存削減
    → `crates/shared/src/diagnostic.rs` に移動完了。ir crate は全 import 移行済み。
 
-2. **`Validated<LoweredProgram>` を導入する** 🚧 **P9 → partial (arch check only)**
+2. **`Validated<LoweredProgram>` を導入する** 🚧 **P10 → struct + arch check 追加**
    backend API を `Validated` だけ受ける形にする
-   → arch check `check_validated_backend_contract` 追加済み。`Validated<T>` struct は未導入。
+   → `Validated<T>` struct (`types.rs`) 実装済み。arch check `check_validated_backend_contract` 追加。
+   既存 emit 関数の一部 (`runtime/core/*`) はなお `&LoweredProgram` を受け付け中。
 
-3. **`RuntimeCall { runtime_fn: String }` を型に置き換える** ❌ **未着手**
-   `RuntimeIntrinsic` を作るか、`RuntimeFn` を catalog crate に移す
+3. **`RuntimeCall { runtime_fn: String }` を型に置き換える** ✅ **P10 → done**
+   `RuntimeIntrinsic` enum (`runtime_intrinsic.rs`) で置換。arch check で新規 String path 禁止。
 
-4. **`runtime_fn_impl.rs` を domain 分割する** ❌ **未着手**
-   まず spec: `runtime/spec/core.rs`, `runtime/spec/array.rs`, ...
+4. **`runtime_fn_impl.rs` を domain 分割する** ✅ **P10 → done**
+   spec 表を `runtime/spec/core.rs`, `runtime/spec/array.rs`, `runtime/spec/object.rs`, `runtime/spec/string.rs` に分割。
+   `runtime_fn_impl.rs` は include! 経由の 715 行。
 
-5. **`runtime_builder.rs` を domain dispatch にする** ❌ **未着手**
-   巨大 match を domain module に逃がす
+5. **`runtime_builder.rs` を domain dispatch にする** ✅ **P10 → done**
+   `RuntimeDomain` enum による domain dispatch に置換。55 行。
 
-6. **`compiler/src/lib.rs` から pipeline stage を切り出す** ❌ **未着手**
-   まず `compile_source` の純粋関数化
+6. **`compiler/src/lib.rs` から pipeline stage を切り出す** ✅ **P10 → done**
+   `stages/parse.rs`, `name_resolve.rs`, `builtin_resolve.rs`, `lower.rs`, `validate.rs`, `emit.rs` に分割。
+   `lib.rs` は 180 行の thin orchestration。
 
-7. **`Resolver` の context を分解する** 🚧 **P9 → partial**
-   内部 field group を struct 化: `symbols: SymbolEnv, classes: ClassEnv, facts: StaticFacts, ...`
-   → lower_expr の domain module 抽出は完了したが、Resolver struct 自体はまだ単一。
+7. **`Resolver` の context を分解する** 🚧 **P10 → partial**
+   `LoweringCtx`, `SymbolEnv`, `ClassEnv`, `StaticFacts` struct (`ctx.rs`, `symbols.rs`, `classes.rs`, `facts.rs`) 作成済み。
+   `extra.rs` から `function.rs`, `string.rs`, `module.rs` 抽出済み。
+   Resolver struct の field 群の完全移行は未着手。
 
-8. **`lower_expr` の branch を domain module に移す** ✅ **P9 → done**
-   最初は array/call/class/object の 4 つ
-   → `resolver/array.rs`, `resolver/call.rs`, `resolver/class.rs`, `resolver/object.rs` 作成済み。
-   `expr.rs` は 1122 行 (dispatcher match + 残 branch)。
+8. **`lower_expr` の branch を domain module に移す** ✅ **P9 → done (P10 で more)**
+   `resolver/array.rs`, `resolver/call.rs`, `resolver/class.rs`, `resolver/object.rs` 作成済み。
+   P10 追加: `resolver/function.rs` (arrow/closure), `resolver/string.rs` (string/regexp), `resolver/module.rs` (module)。
 
 9. **`include!` を real module に置き換える** ✅ **P9 → done**
-   `pub mod types; mod lower; pub use ...`
-   → `crates/ir/src/lowered.rs` の include! 全削除。real module 宣言に置換。
+   `crates/ir/src/lowered.rs` の include! 全削除。real module 宣言に置換。
 
-10. **architecture checks を強化する** 🚧 **P9 → partial**
-    新規違反禁止: no new file > 2000 lines, no function > 300 lines, no RuntimeCall string, ...
-    → `check_validated_backend_contract` 追加済み。その他は未実装。
+10. **architecture checks を強化する** 🚧 **P10 → 16 checks 追加**
+    新規: `check_no_new_string_runtime_call`, `check_backend_frontend_import`,
+    `check_runtimefn_spec_gap`, `check_rust_file_length(2000)` / `check_rust_file_length_1500(1500)`,
+    `check_diagnostic_span_none`, `check_raw_runtime_symbol_outside_catalog`,
+    `check_lowered_expr_validate_coverage`。
+    未実装: 200 行 function limit, host import / manifest checks, HIR/MIR coverage。
 
 ## 22. 設計スローガン
 
