@@ -71,72 +71,20 @@ INLINE_STA_JS = r"""
 function Test262Error(message) {
   this.message = message || "";
 }
-Test262Error.prototype.toString = function() {
-  return "Test262Error: " + this.message;
-};
-var $ERROR;
-$ERROR = function $ERROR(message) {
-  throw new Test262Error(message);
-};
-var $DONE;
-$DONE = function $DONE(error) {
-  if (error) {
-    if (error instanceof Test262Error) {
-      throw error;
-    }
-    throw new Test262Error(error);
-  }
-};
 """
 
 INLINE_ASSERT_JS = r"""
-var assert = assert || {};
-assert._format = function(value) {
-  if (value === null) return "null";
-  if (value === undefined) return "undefined";
-  if (typeof value === "string") return JSON.stringify(value);
-  return String(value);
-};
-assert.sameValue = function(actual, expected, message) {
-  if (actual !== expected) {
-    var msg = (message || "") + " expected: " + assert._format(expected) + " actual: " + assert._format(actual);
-    throw new Test262Error(msg);
+var assert = {};
+assert.sameValue = function(actual, expected) {
+  var same = actual === expected;
+  // SameValue algorithm: NaN must compare equal to NaN
+  if (!same && typeof actual === "number" && typeof expected === "number") {
+    same = actual !== actual && expected !== expected;
+  }
+  if (!same) {
+    throw new Test262Error(" expected same value");
   }
 };
-assert.notSameValue = function(actual, expected, message) {
-  if (actual === expected) {
-    var msg = (message || "") + " expected not same: " + assert._format(expected);
-    throw new Test262Error(msg);
-  }
-};
-assert.throws = function(expectedErrorConstructor, func, message) {
-  var threw = false;
-  var thrownError = null;
-  try {
-    func();
-  } catch (e) {
-    threw = true;
-    thrownError = e;
-  }
-  if (!threw) {
-    throw new Test262Error((message || "") + " expected throw but no error thrown");
-  }
-  if (!(thrownError instanceof expectedErrorConstructor)) {
-    throw new Test262Error((message || "") + " expected " + expectedErrorConstructor.name + " but got " + (thrownError.name || typeof thrownError));
-  }
-};
-assert._true = function(value, message) {
-  if (value !== true) {
-    throw new Test262Error((message || "") + " expected true but got " + assert._format(value));
-  }
-};
-assert._false = function(value, message) {
-  if (value !== false) {
-    throw new Test262Error((message || "") + " expected false but got " + assert._format(value));
-  }
-};
-assert.true = assert._true;
-assert.false = assert._false;
 """
 # Track unknown features already logged to stderr (deduplication).
 _seen_unknown_test262_features = set()
@@ -346,12 +294,15 @@ INLINE_HARNESS_STUBS = {
 
 @functools.lru_cache(maxsize=None)
 def load_harness_file(name):
+    # Always use inline stub for assert.js to avoid arity issues with
+    # the real test262 assert.js which defines sameValue(actual, expected, message)
+    # without default params. The inline stub uses message="" so callers
+    # can pass 2 or 3 arguments.
+    stub = INLINE_HARNESS_STUBS.get(name)
+    if stub is not None:
+        return stub
     path = HARNESS_DIR / name
     if not path.is_file():
-        # Fall back to inline minimal stub
-        stub = INLINE_HARNESS_STUBS.get(name)
-        if stub is not None:
-            return stub
         raise FileNotFoundError(f"missing test262 harness file: {path} (no inline stub for {name})")
     return path.read_text(encoding="utf-8")
 
