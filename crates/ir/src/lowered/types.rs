@@ -1,15 +1,15 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::lowered::validate::validate_lowered;
-use crate::lowered::RuntimeIntrinsic;
 use crate::binding_pattern::{
     ArrayBinding, BindingDefault, BindingPattern, ObjectBinding, parse_binding_pattern,
 };
 use crate::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 use crate::builtin_resolved::{ClassMethodKind, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::lowered::RuntimeIntrinsic;
+use crate::lowered::validate::validate_lowered;
 use ts2wasm_shared::{
-    BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, OBJECT_SPREAD_SENTINEL, Span,
-    SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp,
+    BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, OBJECT_SPREAD_SENTINEL,
+    SYMBOL_ITERATOR_OBJECT_KEY, Span, UnaryOp,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -479,7 +479,9 @@ impl LoweredExpr {
                 LoweredUnaryOp::Not => InferredType::Boolean,
                 _ => InferredType::Unknown,
             },
-            Self::Binary { left, op, right, .. } => match op {
+            Self::Binary {
+                left, op, right, ..
+            } => match op {
                 LoweredBinaryOp::Add => match (left.inferred_type(), right.inferred_type()) {
                     (InferredType::Number, InferredType::Number) => InferredType::Number,
                     (InferredType::String, InferredType::String) => InferredType::String,
@@ -509,9 +511,9 @@ impl LoweredExpr {
                 | LoweredBinaryOp::EqualEqual
                 | LoweredBinaryOp::BangEqual
                 | LoweredBinaryOp::StrictNotEqual => InferredType::Boolean,
-                LoweredBinaryOp::And
-                | LoweredBinaryOp::Or
-                | LoweredBinaryOp::NullishCoalesce => InferredType::Unknown,
+                LoweredBinaryOp::And | LoweredBinaryOp::Or | LoweredBinaryOp::NullishCoalesce => {
+                    InferredType::Unknown
+                }
             },
             Self::Assign { expr, .. } => expr.inferred_type(),
             Self::LogicalAssign { .. }
