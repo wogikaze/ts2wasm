@@ -40,6 +40,33 @@ pub(crate) struct HostImportSpec {
     pub result: &'static str,
 }
 
+/// Semantic domain classification for RuntimeFn variants.
+/// Enables domain-based dispatch in the runtime builder.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
+pub(crate) enum RuntimeDomain {
+    Core,
+    Operator,
+    TypeCoercion,
+    Number,
+    BigInt,
+    String,
+    Array,
+    Object,
+    MapSet,
+    TypedArray,
+    Date,
+    Math,
+    Json,
+    RegExp,
+    Promise,
+    Task,
+    Symbol,
+    Iterator,
+    Module,
+    Host,
+    Encoding,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) enum RuntimeFn {
     /// M6-1 stdin path returns a byte-backed string; full UTF-8 decode is a later slice.

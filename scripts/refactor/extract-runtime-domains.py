@@ -231,12 +231,21 @@ def write_domain_files(by_domain):
     SPEC_DIR.mkdir(parents=True, exist_ok=True)
     MANIFEST_DIR.mkdir(parents=True, exist_ok=True)
 
+    # Collect all arms for combined files (index 1 = indentation level)
+    all_spec_arms = []  # (domain, arm_text)
+    all_manifest_arms = []  # (domain, arm_text)
+
     for domain in sorted(by_domain):
         data = by_domain[domain]
         spec_arms = data.get("spec", [])
         manifest_arms = data.get("manifest", [])
 
-        # Write spec file
+        for arm in spec_arms:
+            all_spec_arms.append((domain, arm))
+        for arm in manifest_arms:
+            all_manifest_arms.append((domain, arm))
+
+        # Write per-domain spec file
         spec_path = SPEC_DIR / f"{domain.lower()}.rs"
         with open(spec_path, "w") as f:
             f.write(f"// Domain: {domain} -- auto-generated.\n")
@@ -245,19 +254,41 @@ def write_domain_files(by_domain):
                 f.write(f"            {arm}\n")
         print(f"  spec/{domain.lower()}.rs: {len(spec_arms)} arms")
 
-        # Write manifest file
+        # Write per-domain manifest file
         manifest_path = MANIFEST_DIR / f"{domain.lower()}.rs"
         with open(manifest_path, "w") as f:
             f.write(f"// Domain: {domain} -- auto-generated.\n")
             f.write("// Regenerate with: python3 scripts/refactor/extract-runtime-domains.py\n\n")
             for arm in manifest_arms:
-                # Ensure trailing comma for include! compatibility
                 if not arm.rstrip().endswith(','):
                     arm += ','
                 f.write(f"            {arm}\n")
         print(f"  manifest/{domain.lower()}.rs: {len(manifest_arms)} arms")
 
+    # Write combined spec file (full match block for single include!() call)
+    combined_spec_path = SPEC_DIR / "all.rs"
+    with open(combined_spec_path, "w") as f:
+        f.write("// Combined spec arms -- auto-generated.\n")
+        f.write("// Regenerate with: python3 scripts/refactor/extract-runtime-domains.py\n\n")
+        f.write("match self {\n")
+        for domain, arm in all_spec_arms:
+            f.write(f"            {arm}\n")
+        f.write("        }\n")
+    print(f"  spec/all.rs: {len(all_spec_arms)} arms combined")
+
+    # Write combined manifest file (full match block)
+    combined_manifest_path = MANIFEST_DIR / "all.rs"
+    with open(combined_manifest_path, "w") as f:
+        f.write("// Combined manifest arms -- auto-generated.\n")
+        f.write("// Regenerate with: python3 scripts/refactor/extract-runtime-domains.py\n\n")
+        f.write("match self {\n")
+        for domain, arm in all_manifest_arms:
+            f.write(f"            {arm}\n")
+        f.write("        }\n")
+    print(f"  manifest/all.rs: {len(all_manifest_arms)} arms combined")
+
     print(f"\nWrote {len(by_domain)} domain files to {SPEC_DIR} and {MANIFEST_DIR}")
+    print(f"Also wrote combined all.rs files with include!()-compatible format")
 
 
 def main():
