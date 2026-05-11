@@ -21,13 +21,14 @@ open:
       - "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output"
     non_goals:
       - "No new runtime implementation."
-active:
+active: []
+done:
   - id: 241
     title: "Pre-allocate class fields capacity for new expression (W9a)"
     priority: P2
     type: feature
     area: backend
-    status: active
+    status: done
     created: 2026-05-11
     updated: 2026-05-11
     roadmap: W9a
@@ -42,7 +43,13 @@ active:
         - "crates/cli/tests/common/m2_node_diff_fixture_tests.rs: node-diff coverage"
         - "crates/backend-wasm/src/expr_emit.rs: verified existing class instance public slot capacity"
       acceptance: "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_field_initialization)'"
-done:
+    evidence:
+      commit: 0880c7f78
+      commands:
+        - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_field_initialization)' => exit 0"
+        - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_field_initializers => exit 0"
+        - "cargo fmt --all --check => exit 0"
+        - "git diff --check => exit 0"
   - id: 240
     title: "Support extends null (W9a)"
     priority: P2
