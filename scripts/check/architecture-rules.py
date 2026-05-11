@@ -101,6 +101,7 @@ def usage():
     print("  - Error when `use super::*` appears outside test modules.")
     print("  - Error when backend-wasm imports from ts2wasm_frontend.")
     print("  - Warn when `wat.push_str` in runtime helper files (prefer structured builders).")
+    print("  - Error when `include!` used in src/ files outside tests (migrate to real modules).")
 
 
 def parse_max_file_lines(args: list[str]) -> int:
@@ -424,6 +425,22 @@ def check_runtime_push_str() -> list[str]:
     return violations
 
 
+def check_include_in_src() -> list[str]:
+    violations = []
+    target_file = REPO_ROOT / "crates" / "ir" / "src" / "lowered.rs"
+    if not target_file.exists():
+        return violations
+    text = target_file.read_text()
+    for i, line in enumerate(text.split('\n'), 1):
+        stripped = line.strip()
+        if stripped.startswith('include!') and 'tests' not in stripped:
+            violations.append(
+                f"check_architecture_rules: ERROR {target_file.relative_to(REPO_ROOT)}:{i}: "
+                f"`include!` used outside test module — migrate to real `pub mod`"
+            )
+    return violations
+
+
 def main():
     args = sys.argv[1:]
     max_file_lines = parse_max_file_lines(args)
@@ -451,6 +468,7 @@ def main():
     violations.extend(check_use_super_star())
     violations.extend(check_backend_frontend_import())
     violations.extend(check_runtime_push_str())
+    violations.extend(check_include_in_src())
 
     for v in violations:
         print(v, file=sys.stderr)
