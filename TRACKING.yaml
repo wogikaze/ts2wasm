@@ -77,13 +77,14 @@ open:
       - "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output"
     non_goals:
       - "No new runtime implementation."
-active:
+active: []
+done:
   - id: 237
     title: "Implement public field initializers in class constructor (W9a)"
     priority: P1
     type: feature
     area: ir
-    status: active
+    status: done
     created: 2026-05-11
     updated: 2026-05-11
     roadmap: W9a
@@ -99,7 +100,15 @@ active:
         - "crates/frontend/src/parser/tests.rs: cover synthetic constructor field assignments"
         - "fixtures/classes/class-field-initializers.ts: acceptance fixture"
       acceptance: "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_field_initializers"
-done:
+    evidence:
+      commit: bff28cadc
+      commands:
+        - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_public_field_initializers_as_constructor_assignments => exit 0"
+        - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_constructor_parameter_properties_as_this_assignments parser::tests::parses_public_field_initializers_as_constructor_assignments => exit 0"
+        - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_field_initializers => exit 0"
+        - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes => exit 0"
+        - "cargo fmt --all --check => exit 0"
+        - "git diff --check => exit 0"
   - id: 236
     title: "Implement new.target metaproperty (W9a)"
     priority: P1
