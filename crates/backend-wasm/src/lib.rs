@@ -39,8 +39,8 @@ pub use runtime_link_plan::{
     LinkPlanSnapshot, build_runtime_link_plan, emit_link_plan_snapshot_json,
 };
 
-pub fn emit_canonical_manifest_json(program: &LoweredProgram) -> String {
-    capability_manifest::emit_canonical_manifest_json(program)
+pub fn emit_canonical_manifest_json(program: &Validated<LoweredProgram>) -> String {
+    capability_manifest::emit_canonical_manifest_json(program.as_ref())
 }
 
 pub fn has_node_host_imports(program: &LoweredProgram) -> bool {

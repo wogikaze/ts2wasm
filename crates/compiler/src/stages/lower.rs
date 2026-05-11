@@ -848,7 +848,7 @@ pub(crate) fn build_multi_section_file(
     }
 
     if let Some(path) = capability_manifest_output {
-        let manifest = backend::emit_canonical_manifest_json(validated.as_ref());
+        let manifest = backend::emit_canonical_manifest_json(&validated);
         crate::io::write_manifest::write_manifest_json(path, &manifest)?;
     }
     let wat = backend::emit_wat(&validated).map_err(|d| d.with_phase("backend"))?;

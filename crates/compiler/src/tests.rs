@@ -792,7 +792,7 @@ fn direct_wasm_binary_mvp_runs_basics_hello_like_wat_path() {
     assert_binary_imports_fd_write(&direct_wasm);
 
     let manifest: serde_json::Value =
-        serde_json::from_str(&backend::emit_canonical_manifest_json(validated.as_ref()))
+        serde_json::from_str(&backend::emit_canonical_manifest_json(&validated))
             .expect("manifest should be valid JSON");
     assert_eq!(manifest["wasi"]["stdout"], true);
     assert!(

@@ -49,7 +49,8 @@ fn assert_linker_snapshot(fixture_name: &str) {
         .unwrap_or_else(|e| panic!("failed to read {fixture_name}.ts: {e}"));
 
     let lowered = compile_to_lowered(&source);
-    let actual_json = ts2wasm_backend_wasm::emit_link_plan_snapshot_json(&lowered);
+    let (validated, _) = ts2wasm_ir::lowered::Validated::new(lowered).expect("should validate");
+    let actual_json = ts2wasm_backend_wasm::emit_link_plan_snapshot_json(&validated);
 
     let snap_path = snapshot_path(fixture_name);
 

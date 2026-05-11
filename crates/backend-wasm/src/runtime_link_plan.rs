@@ -2,7 +2,7 @@ use std::collections::BTreeSet;
 
 use ts2wasm_ir::lowered::{
     ClosureRepresentation, FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp,
-    LoweredProgram, LoweredStmt, LoweredUnaryOp,
+    LoweredProgram, LoweredStmt, LoweredUnaryOp, Validated,
 };
 use ts2wasm_runtime_abi::ValueTag;
 
@@ -55,8 +55,8 @@ pub fn build_runtime_link_plan(program: &LoweredProgram) -> RuntimeLinkPlan {
 
 /// Generate a JSON snapshot of the RuntimeLinkPlan for a given lowered program.
 /// Used by fixture-based linker structure tests.
-pub fn emit_link_plan_snapshot_json(program: &LoweredProgram) -> String {
-    let plan = build_runtime_link_plan(program);
+pub fn emit_link_plan_snapshot_json(program: &Validated<LoweredProgram>) -> String {
+    let plan = build_runtime_link_plan(program.as_ref());
     emit_link_plan_snapshot(&plan)
 }
 

@@ -12,7 +12,8 @@ fn main() {
         let name_resolved = ts2wasm_ir::name_resolver::resolve_names(&program).unwrap();
         let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&name_resolved).unwrap();
         let lowered = ts2wasm_ir::lowered::lower_program(&resolved).unwrap();
-        let json = ts2wasm_backend_wasm::emit_link_plan_snapshot_json(&lowered);
+        let (validated, _) = ts2wasm_ir::lowered::Validated::new(lowered).expect("should validate");
+        let json = ts2wasm_backend_wasm::emit_link_plan_snapshot_json(&validated);
         let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
         let formatted = serde_json::to_string_pretty(&parsed).unwrap();
         std::fs::write(
