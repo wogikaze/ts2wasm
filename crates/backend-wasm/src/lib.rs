@@ -19,7 +19,7 @@ mod runtime_dispatch_host;
 mod runtime_dispatch_object;
 mod runtime_dispatch_string;
 mod runtime_fn;
-mod runtime_link_plan;
+pub mod runtime_link_plan;
 mod runtime_objects;
 mod runtime_promise;
 mod runtime_regexp;
@@ -34,7 +34,7 @@ use ts2wasm_ir::lowered::{LoweredProgram, Validated};
 pub use ts2wasm_shared::{DiagCode, Diagnostic};
 
 pub use runtime_fn::{RuntimeFn, runtime_fn_from_name};
-pub use runtime_link_plan::{LinkPlanSnapshot, emit_link_plan_snapshot_json};
+pub use runtime_link_plan::{build_runtime_link_plan, LinkPlanSnapshot, emit_link_plan_snapshot_json};
 pub use ts2wasm_ir::lowered::RuntimeIntrinsic;
 
 pub fn emit_canonical_manifest_json(program: &LoweredProgram) -> String {
