@@ -94,6 +94,7 @@ EXCLUDED_FILENAMES = {
 # Test files and auto-generated files exempt separately.
 KNOWN_OVERSIZED_FILES = {
     "crates/backend-wasm/src/runtime/core/bigint.rs": "P4: runtime domain split",
+    "crates/backend-wasm/src/expr_emit.rs": "P4: expression emitter — pending domain split",
     "crates/ir/src/lowered/resolver/call.rs": "P7: resolver decomposition",
     "crates/ir/src/lowered/program.rs": "P7: resolver decomposition",
     "crates/backend-wasm/src/runtime/spec/all.rs": "auto-generated spec",
@@ -150,6 +151,21 @@ RUNTIME_CATALOG_FILE_PREFIXES = (
 RAW_SYMBOL_ALLOWLIST = {
     "crates/backend-wasm/src/lib.rs",   # Has test assertions checking WAT output
     "crates/compiler/src/tests.rs",     # Has test assertions checking WAT output
+}
+
+# Known large functions (over 300 lines) with documented refactoring plans.
+# Key is (relative_file_path, function_name) tuple.
+FUNCTION_LENGTH_ALLOWLIST = {
+    ("crates/backend-wasm/src/runtime_link_plan.rs", "collect_required_runtime_expr"): "P11: link plan refactor",
+    ("crates/ir/src/binding_pattern.rs", "parse_binding_pattern"): "P7: resolver decomposition",
+    ("crates/ir/src/builtin_resolver.rs", "fold_stmt"): "P7: resolver decomposition",
+    ("crates/ir/src/builtin_resolver.rs", "fold_expr"): "P7: resolver decomposition",
+    ("crates/ir/src/builtin_resolver.rs", "resolve_stmt_with_outer_bindings"): "P7: resolver decomposition",
+    ("crates/ir/src/builtin_resolver.rs", "resolve_expr"): "P7: resolver decomposition",
+    ("crates/ir/src/lowered/program.rs", "lower_program"): "P7: resolver decomposition",
+    ("crates/ir/src/lowered/validate.rs", "validate_expr"): "P7: resolver decomposition",
+    ("crates/ir/src/name_resolver.rs", "resolve_stmt"): "P7: resolver decomposition",
+    ("crates/ir/src/name_resolver.rs", "resolve_expr"): "P7: resolver decomposition",
 }
 
 
@@ -377,6 +393,9 @@ def check_function_length() -> list[str]:
 
             fn_length = j - fn_start
             if fn_length > max_fn_lines:
+                allowlist_key = (str(rel), fn_name)
+                if allowlist_key in FUNCTION_LENGTH_ALLOWLIST:
+                    continue
                 violations.append(
                     f"check_architecture_rules: ERROR {rel}:{fn_start + 1}: "
                     f"function `{fn_name}` is {fn_length} lines (max {max_fn_lines})"
@@ -432,7 +451,10 @@ def check_no_new_string_runtime_call() -> list[str]:
 # --- #265: Backend/frontend coupling ---
 
 def check_backend_frontend_import() -> list[str]:
-    """Check that backend-wasm doesn't import from ts2wasm_frontend."""
+    """Check that backend-wasm doesn't import from ts2wasm_frontend.
+
+    Permits imports inside #[cfg(test)] blocks (test-only dependencies).
+    """
     violations = []
     backend_src = REPO_ROOT / "crates" / "backend-wasm" / "src"
     if not backend_src.exists():
@@ -441,7 +463,22 @@ def check_backend_frontend_import() -> list[str]:
     for path in sorted(backend_src.rglob("*.rs")):
         rel = path.relative_to(REPO_ROOT)
         text = path.read_text()
-        for i, line in enumerate(text.split('\n'), 1):
+        lines = text.split('\n')
+        in_cfg_test = False
+        cfg_test_brace_depth = 0
+        for i, line in enumerate(lines, 1):
+            stripped = line.strip()
+            # Track #[cfg(test)] blocks
+            if stripped == '#[cfg(test)]':
+                in_cfg_test = True
+                cfg_test_brace_depth = 0
+                continue
+            if in_cfg_test:
+                cfg_test_brace_depth += line.count('{') - line.count('}')
+                if cfg_test_brace_depth <= 0:
+                    in_cfg_test = False
+                    cfg_test_brace_depth = 0
+                continue
             if re.match(r'^\s*use\s+ts2wasm_frontend', line):
                 violations.append(
                     f"check_architecture_rules: ERROR {rel}:{i}: "

@@ -761,12 +761,12 @@ pub fn emit_link_plan_snapshot_json(program: &LoweredProgram) -> String {
 
 #[cfg(test)]
 mod tests {
-    use ts2wasm_frontend::Span;
     use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{
         FuncId, FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt,
         ModuleInfo, RuntimeIntrinsic,
     };
+    use ts2wasm_shared::Span;
 
     use super::{HostImport, RuntimeFn, RuntimeGlobal, RuntimeLinkPlan};
 
