@@ -49,13 +49,14 @@ open:
       - "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output"
     non_goals:
       - "No new runtime implementation."
-active:
+active: []
+done:
   - id: 239
     title: "Support super.prop in static methods (W9a)"
     priority: P2
     type: feature
     area: ir
-    status: active
+    status: done
     created: 2026-05-11
     updated: 2026-05-11
     roadmap: W9a
@@ -70,7 +71,13 @@ active:
         - "crates/cli/tests/m8_oop_classes.rs: build smoke hook if missing"
         - "crates/ir/src/lowered/resolver_expr.rs: super.prop lowering in static method context"
       acceptance: "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_super_static"
-done:
+    evidence:
+      commit: 5261bb05e
+      commands:
+        - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_super_static => exit 0"
+        - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes -E 'test(class_super)' => exit 0"
+        - "cargo fmt --all --check => exit 0"
+        - "git diff --check => exit 0"
   - id: 238
     title: "Differentiate getter/setter from regular methods in class body (W9a)"
     priority: P2
