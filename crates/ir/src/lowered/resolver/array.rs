@@ -808,7 +808,7 @@ impl<'a> super::Resolver<'a> {
     /// Lower a callback method on a variable array (Ident receiver).
     /// receiver must be a LoweredExpr::Local.
     /// init_expr is the initial value for reduce (if applicable).
-    #[allow(clippy::too_many_arguments, clippy::needless_late_init)]
+    #[allow(clippy::too_many_arguments)]
     fn lower_variable_array_callback_method(
         &mut self,
         method: &str,
@@ -831,832 +831,71 @@ impl<'a> super::Resolver<'a> {
             Span::generated("Let"),
         ));
 
-        // Allocate loop body stmts and any accumulator locals
-        let mut while_body = Vec::new();
-        let result_expr;
-
-        let arr_ref =
-            || -> LoweredExpr { LoweredExpr::Local(receiver_local, Span::generated("local")) };
-
-        // Build the loop body based on method
-        match method {
-            "forEach" => {
-                let elem = self.alloc_temp();
-                while_body.push(LoweredStmt::Let(
-                    elem,
-                    LoweredExpr::ArrayGet {
-                        arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-
-                        span: Span::generated("array_get"),
-                    },
-                    Span::generated("Let"),
-                ));
-
-                let call_args = {
-                    let explicit_args = vec![
-                        LoweredExpr::Local(elem, Span::generated("local")),
-                        LoweredExpr::Local(i, Span::generated("local")),
-                        arr_ref(),
-                    ];
-                    let mut call_args: Vec<LoweredExpr> =
-                        explicit_args.into_iter().take(param_count).collect();
-                    call_args.extend(
-                        captures
-                            .iter()
-                            .copied()
-                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
-                    );
-                    LoweredExpr::Call {
-                        kind: FunctionCallKind::User(func_id),
-                        args: call_args,
-
-                        span: Span::generated("call"),
-                    }
-                };
-
-                while_body.push(LoweredStmt::Expr(call_args, Span::generated("expr_stmt")));
-                while_body.push(LoweredStmt::Assign(
-                    i,
-                    LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                        op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-
-                        span: Span::generated("binary"),
-                    },
-                    Span::generated("Assign"),
-                ));
-
-                result_expr = LoweredExpr::Undefined(Span::generated("undef"));
-            }
-            "filter" => {
-                let result = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(
-                    result,
-                    LoweredExpr::ArrayNew {
-                        elements: vec![],
-
-                        span: Span::generated("array_new"),
-                    },
-                    Span::generated("let_stmt"),
-                ));
-
-                let elem = self.alloc_temp();
-                while_body.push(LoweredStmt::Let(
-                    elem,
-                    LoweredExpr::ArrayGet {
-                        arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-
-                        span: Span::generated("array_get"),
-                    },
-                    Span::generated("Let"),
-                ));
-
-                let pred = self.alloc_temp();
-                let call_args = {
-                    let explicit_args = vec![
-                        LoweredExpr::Local(elem, Span::generated("local")),
-                        LoweredExpr::Local(i, Span::generated("local")),
-                        arr_ref(),
-                    ];
-                    let mut call_args: Vec<LoweredExpr> =
-                        explicit_args.into_iter().take(param_count).collect();
-                    call_args.extend(
-                        captures
-                            .iter()
-                            .copied()
-                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
-                    );
-                    LoweredExpr::Call {
-                        kind: FunctionCallKind::User(func_id),
-                        args: call_args,
-
-                        span: Span::generated("call"),
-                    }
-                };
-                while_body.push(LoweredStmt::Let(
-                    pred,
-                    call_args,
-                    Span::generated("let_stmt"),
-                ));
-                while_body.push(LoweredStmt::If {
-                    condition: LoweredExpr::Local(pred, Span::generated("local")),
-                    then_body: vec![LoweredStmt::Expr(
-                        LoweredExpr::RuntimeCall {
-                            intrinsic: RuntimeIntrinsic::ArrayPushGrow,
-                            args: vec![
-                                LoweredExpr::Local(result, Span::generated("local")),
-                                LoweredExpr::Local(elem, Span::generated("local")),
-                            ],
-
-                            span: Span::generated("runtime_call"),
-                        },
-                        Span::generated("Expr"),
-                    )],
-                    else_body: vec![],
-                    span: Span::generated("If"),
-                });
-                while_body.push(LoweredStmt::Assign(
-                    i,
-                    LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                        op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-
-                        span: Span::generated("binary"),
-                    },
-                    Span::generated("Assign"),
-                ));
-
-                result_expr = LoweredExpr::Local(result, Span::generated("local"));
-            }
-            "find" => {
-                let found = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(
-                    found,
-                    LoweredExpr::Undefined(Span::generated("undef")),
-                    Span::generated("Let"),
-                ));
-
-                let elem = self.alloc_temp();
-                while_body.push(LoweredStmt::Let(
-                    elem,
-                    LoweredExpr::ArrayGet {
-                        arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-
-                        span: Span::generated("array_get"),
-                    },
-                    Span::generated("Let"),
-                ));
-
-                let pred = self.alloc_temp();
-                let call_args = {
-                    let explicit_args = vec![
-                        LoweredExpr::Local(elem, Span::generated("local")),
-                        LoweredExpr::Local(i, Span::generated("local")),
-                        arr_ref(),
-                    ];
-                    let mut call_args: Vec<LoweredExpr> =
-                        explicit_args.into_iter().take(param_count).collect();
-                    call_args.extend(
-                        captures
-                            .iter()
-                            .copied()
-                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
-                    );
-                    LoweredExpr::Call {
-                        kind: FunctionCallKind::User(func_id),
-                        args: call_args,
-
-                        span: Span::generated("call"),
-                    }
-                };
-                while_body.push(LoweredStmt::Let(
-                    pred,
-                    call_args,
-                    Span::generated("let_stmt"),
-                ));
-                while_body.push(LoweredStmt::If {
-                    condition: LoweredExpr::Local(pred, Span::generated("local")),
-                    then_body: vec![LoweredStmt::Assign(
-                        found,
-                        LoweredExpr::Local(elem, Span::generated("local")),
-                        Span::generated("Assign"),
-                    )],
-                    else_body: vec![],
-
-                    span: Span::generated("if_stmt"),
-                });
-                while_body.push(LoweredStmt::Assign(
-                    i,
-                    LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                        op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-
-                        span: Span::generated("binary"),
-                    },
-                    Span::generated("Assign"),
-                ));
-
-                result_expr = LoweredExpr::Local(found, Span::generated("local"));
-            }
-            "findIndex" => {
-                let found = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(
-                    found,
-                    LoweredExpr::Number(-1, Span::generated("num")),
-                    Span::generated("Let"),
-                ));
-
-                let elem = self.alloc_temp();
-                while_body.push(LoweredStmt::Let(
-                    elem,
-                    LoweredExpr::ArrayGet {
-                        arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-
-                        span: Span::generated("array_get"),
-                    },
-                    Span::generated("Let"),
-                ));
-
-                let pred = self.alloc_temp();
-                let call_args = {
-                    let explicit_args = vec![
-                        LoweredExpr::Local(elem, Span::generated("local")),
-                        LoweredExpr::Local(i, Span::generated("local")),
-                        arr_ref(),
-                    ];
-                    let mut call_args: Vec<LoweredExpr> =
-                        explicit_args.into_iter().take(param_count).collect();
-                    call_args.extend(
-                        captures
-                            .iter()
-                            .copied()
-                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
-                    );
-                    LoweredExpr::Call {
-                        kind: FunctionCallKind::User(func_id),
-                        args: call_args,
-
-                        span: Span::generated("call"),
-                    }
-                };
-                while_body.push(LoweredStmt::Let(
-                    pred,
-                    call_args,
-                    Span::generated("let_stmt"),
-                ));
-                while_body.push(LoweredStmt::If {
-                    condition: LoweredExpr::Local(pred, Span::generated("local")),
-                    then_body: vec![
-                        LoweredStmt::Assign(
-                            found,
-                            LoweredExpr::Local(i, Span::generated("local")),
-                            Span::generated("Assign"),
-                        ),
-                        LoweredStmt::Break {
-                            label: None,
-                            span: Span::generated("brk"),
-                        },
-                    ],
-                    else_body: vec![],
-
-                    span: Span::generated("if_stmt"),
-                });
-                while_body.push(LoweredStmt::Assign(
-                    i,
-                    LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                        op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-
-                        span: Span::generated("binary"),
-                    },
-                    Span::generated("Assign"),
-                ));
-
-                result_expr = LoweredExpr::Local(found, Span::generated("local"));
-            }
-            "findLast" => {
-                let found = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(
-                    found,
-                    LoweredExpr::Undefined(Span::generated("undef")),
-                    Span::generated("Let"),
-                ));
-
-                let elem = self.alloc_temp();
-                while_body.push(LoweredStmt::Let(
-                    elem,
-                    LoweredExpr::ArrayGet {
-                        arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-
-                        span: Span::generated("array_get"),
-                    },
-                    Span::generated("Let"),
-                ));
-
-                let pred = self.alloc_temp();
-                let call_args = {
-                    let explicit_args = vec![
-                        LoweredExpr::Local(elem, Span::generated("local")),
-                        LoweredExpr::Local(i, Span::generated("local")),
-                        arr_ref(),
-                    ];
-                    let mut call_args: Vec<LoweredExpr> =
-                        explicit_args.into_iter().take(param_count).collect();
-                    call_args.extend(
-                        captures
-                            .iter()
-                            .copied()
-                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
-                    );
-                    LoweredExpr::Call {
-                        kind: FunctionCallKind::User(func_id),
-                        args: call_args,
-
-                        span: Span::generated("call"),
-                    }
-                };
-                while_body.push(LoweredStmt::Let(
-                    pred,
-                    call_args,
-                    Span::generated("let_stmt"),
-                ));
-                while_body.push(LoweredStmt::If {
-                    condition: LoweredExpr::Local(pred, Span::generated("local")),
-                    then_body: vec![
-                        LoweredStmt::Assign(
-                            found,
-                            LoweredExpr::Local(elem, Span::generated("local")),
-                            Span::generated("Assign"),
-                        ),
-                        LoweredStmt::Break {
-                            label: None,
-                            span: Span::generated("break"),
-                        },
-                    ],
-                    else_body: vec![],
-                    span: Span::generated("If"),
-                });
-                while_body.push(LoweredStmt::Assign(
-                    i,
-                    LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                        op: LoweredBinaryOp::Subtract,
-                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-
-                        span: Span::generated("binary"),
-                    },
-                    Span::generated("Assign"),
-                ));
-
-                result_expr = LoweredExpr::Local(found, Span::generated("local"));
-            }
-            "findLastIndex" => {
-                let found = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(
-                    found,
-                    LoweredExpr::Number(-1, Span::generated("num")),
-                    Span::generated("Let"),
-                ));
-
-                let elem = self.alloc_temp();
-                while_body.push(LoweredStmt::Let(
-                    elem,
-                    LoweredExpr::ArrayGet {
-                        arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-
-                        span: Span::generated("array_get"),
-                    },
-                    Span::generated("Let"),
-                ));
-
-                let pred = self.alloc_temp();
-                let call_args = {
-                    let explicit_args = vec![
-                        LoweredExpr::Local(elem, Span::generated("local")),
-                        LoweredExpr::Local(i, Span::generated("local")),
-                        arr_ref(),
-                    ];
-                    let mut call_args: Vec<LoweredExpr> =
-                        explicit_args.into_iter().take(param_count).collect();
-                    call_args.extend(
-                        captures
-                            .iter()
-                            .copied()
-                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
-                    );
-                    LoweredExpr::Call {
-                        kind: FunctionCallKind::User(func_id),
-                        args: call_args,
-
-                        span: Span::generated("call"),
-                    }
-                };
-                while_body.push(LoweredStmt::Let(
-                    pred,
-                    call_args,
-                    Span::generated("let_stmt"),
-                ));
-                while_body.push(LoweredStmt::If {
-                    condition: LoweredExpr::Local(pred, Span::generated("local")),
-                    then_body: vec![
-                        LoweredStmt::Assign(
-                            found,
-                            LoweredExpr::Local(i, Span::generated("local")),
-                            Span::generated("Assign"),
-                        ),
-                        LoweredStmt::Break {
-                            label: None,
-                            span: Span::generated("break"),
-                        },
-                    ],
-                    else_body: vec![],
-                    span: Span::generated("If"),
-                });
-                while_body.push(LoweredStmt::Assign(
-                    i,
-                    LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                        op: LoweredBinaryOp::Subtract,
-                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-
-                        span: Span::generated("binary"),
-                    },
-                    Span::generated("Assign"),
-                ));
-
-                result_expr = LoweredExpr::Local(found, Span::generated("local"));
-            }
-            "some" => {
-                let found = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(
-                    found,
-                    LoweredExpr::Bool(false, Span::generated("bool")),
-                    Span::generated("Let"),
-                ));
-
-                let elem = self.alloc_temp();
-                while_body.push(LoweredStmt::Let(
-                    elem,
-                    LoweredExpr::ArrayGet {
-                        arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-
-                        span: Span::generated("array_get"),
-                    },
-                    Span::generated("Let"),
-                ));
-
-                let pred = self.alloc_temp();
-                let call_args = {
-                    let explicit_args = vec![
-                        LoweredExpr::Local(elem, Span::generated("local")),
-                        LoweredExpr::Local(i, Span::generated("local")),
-                        arr_ref(),
-                    ];
-                    let mut call_args: Vec<LoweredExpr> =
-                        explicit_args.into_iter().take(param_count).collect();
-                    call_args.extend(
-                        captures
-                            .iter()
-                            .copied()
-                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
-                    );
-                    LoweredExpr::Call {
-                        kind: FunctionCallKind::User(func_id),
-                        args: call_args,
-
-                        span: Span::generated("call"),
-                    }
-                };
-                while_body.push(LoweredStmt::Let(
-                    pred,
-                    call_args,
-                    Span::generated("let_stmt"),
-                ));
-                while_body.push(LoweredStmt::If {
-                    condition: LoweredExpr::Local(pred, Span::generated("local")),
-                    then_body: vec![LoweredStmt::Assign(
-                        found,
-                        LoweredExpr::Bool(true, Span::generated("bool")),
-                        Span::generated("Assign"),
-                    )],
-                    else_body: vec![],
-
-                    span: Span::generated("if_stmt"),
-                });
-                while_body.push(LoweredStmt::Assign(
-                    i,
-                    LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                        op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-
-                        span: Span::generated("binary"),
-                    },
-                    Span::generated("Assign"),
-                ));
-
-                result_expr = LoweredExpr::Local(found, Span::generated("local"));
-            }
-            "every" => {
-                let all = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(
-                    all,
-                    LoweredExpr::Bool(true, Span::generated("bool")),
-                    Span::generated("Let"),
-                ));
-
-                let elem = self.alloc_temp();
-                while_body.push(LoweredStmt::Let(
-                    elem,
-                    LoweredExpr::ArrayGet {
-                        arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-
-                        span: Span::generated("array_get"),
-                    },
-                    Span::generated("Let"),
-                ));
-
-                let pred = self.alloc_temp();
-                let call_args = {
-                    let explicit_args = vec![
-                        LoweredExpr::Local(elem, Span::generated("local")),
-                        LoweredExpr::Local(i, Span::generated("local")),
-                        arr_ref(),
-                    ];
-                    let mut call_args: Vec<LoweredExpr> =
-                        explicit_args.into_iter().take(param_count).collect();
-                    call_args.extend(
-                        captures
-                            .iter()
-                            .copied()
-                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
-                    );
-                    LoweredExpr::Call {
-                        kind: FunctionCallKind::User(func_id),
-                        args: call_args,
-
-                        span: Span::generated("call"),
-                    }
-                };
-                while_body.push(LoweredStmt::Let(
-                    pred,
-                    call_args,
-                    Span::generated("let_stmt"),
-                ));
-                while_body.push(LoweredStmt::If {
-                    condition: LoweredExpr::Unary {
-                        op: LoweredUnaryOp::Not,
-                        expr: Box::new(LoweredExpr::Local(pred, Span::generated("local"))),
-
-                        span: Span::generated("unary"),
-                    },
-                    then_body: vec![LoweredStmt::Assign(
-                        all,
-                        LoweredExpr::Bool(false, Span::generated("bool")),
-                        Span::generated("Assign"),
-                    )],
-                    else_body: vec![],
-                    span: Span::generated("if_stmt"),
-                });
-                while_body.push(LoweredStmt::Assign(
-                    i,
-                    LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                        op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-
-                        span: Span::generated("binary"),
-                    },
-                    Span::generated("Assign"),
-                ));
-
-                result_expr = LoweredExpr::Local(all, Span::generated("local"));
-            }
-            "reduce" | "reduceRight" => {
-                // For reduce, the callback receives (acc, elem, i, arr)
-                let acc = self.alloc_temp();
-                // With initialValue: args[1] is the initial value
-                // Without: start at index 1, acc = arr[0]; error if len==0
-                // For now, require initialValue
-                let Some(init_expr) = init_expr else {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message:
-                            "issue-270: Array.prototype.reduce without initialValue is not yet supported"
-                                .to_owned(),
-                        span: None,
-
-                        phase: None,});
-                };
-                stmts.push(LoweredStmt::Let(
-                    acc,
-                    init_expr,
-                    Span::generated("let_stmt"),
-                ));
-
-                let elem = self.alloc_temp();
-                while_body.push(LoweredStmt::Let(
-                    elem,
-                    LoweredExpr::ArrayGet {
-                        arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-
-                        span: Span::generated("array_get"),
-                    },
-                    Span::generated("Let"),
-                ));
-
-                // Reduce callback args: (acc, elem, i, arr)
-                let reduce_explicit = vec![
-                    LoweredExpr::Local(acc, Span::generated("local")),
-                    LoweredExpr::Local(elem, Span::generated("local")),
-                    LoweredExpr::Local(i, Span::generated("local")),
-                    arr_ref(),
-                ];
-                let mut reduce_call_args: Vec<LoweredExpr> =
-                    reduce_explicit.into_iter().take(param_count).collect();
-                reduce_call_args.extend(
-                    captures
-                        .iter()
-                        .copied()
-                        .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
-                );
-                while_body.push(LoweredStmt::Assign(
-                    acc,
-                    LoweredExpr::Call {
-                        kind: FunctionCallKind::User(func_id),
-                        args: reduce_call_args,
-
-                        span: Span::generated("call"),
-                    },
-                    Span::generated("Assign"),
-                ));
-                if method == "reduceRight" {
-                    while_body.push(LoweredStmt::Assign(
-                        i,
-                        LoweredExpr::Binary {
-                            left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                            op: LoweredBinaryOp::Subtract,
-                            right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-
-                            span: Span::generated("binary"),
-                        },
-                        Span::generated("Assign"),
-                    ));
-                } else {
-                    while_body.push(LoweredStmt::Assign(
-                        i,
-                        LoweredExpr::Binary {
-                            left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                            op: LoweredBinaryOp::Add,
-                            right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-
-                            span: Span::generated("binary"),
-                        },
-                        Span::generated("Assign"),
-                    ));
-                }
-
-                result_expr = LoweredExpr::Local(acc, Span::generated("local"));
-            }
-            "flatMap" => {
-                let result = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(
-                    result,
-                    LoweredExpr::ArrayNew {
-                        elements: vec![],
-                        span: Span::generated("array_new"),
-                    },
-                    Span::generated("Let"),
-                ));
-                let elem = self.alloc_temp();
-                while_body.push(LoweredStmt::Let(
-                    elem,
-                    LoweredExpr::ArrayGet {
-                        arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-
-                        span: Span::generated("array_get"),
-                    },
-                    Span::generated("Let"),
-                ));
-                let mapped = self.alloc_temp();
-                let call_args = {
-                    let explicit_args = vec![
-                        LoweredExpr::Local(elem, Span::generated("local")),
-                        LoweredExpr::Local(i, Span::generated("local")),
-                        arr_ref(),
-                    ];
-                    let mut call_args: Vec<LoweredExpr> =
-                        explicit_args.into_iter().take(param_count).collect();
-                    call_args.extend(
-                        captures
-                            .iter()
-                            .copied()
-                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
-                    );
-                    LoweredExpr::Call {
-                        kind: FunctionCallKind::User(func_id),
-                        args: call_args,
-
-                        span: Span::generated("call"),
-                    }
-                };
-                while_body.push(LoweredStmt::Let(
-                    mapped,
-                    call_args,
-                    Span::generated("let_stmt"),
-                ));
-                // Push or spread the result (handles array vs non-array)
-                while_body.push(LoweredStmt::Expr(
-                    LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::ArrayPushOrSpread,
-                        args: vec![
-                            LoweredExpr::Local(result, Span::generated("local")),
-                            LoweredExpr::Local(mapped, Span::generated("local")),
-                        ],
-
-                        span: Span::generated("runtime_call"),
-                    },
-                    Span::generated("Expr"),
-                ));
-                while_body.push(LoweredStmt::Assign(
-                    i,
-                    LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                        op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-
-                        span: Span::generated("binary"),
-                    },
-                    Span::generated("Assign"),
-                ));
-                result_expr = LoweredExpr::Local(result, Span::generated("local"));
-            }
+        let (init_stmts, while_body, result_expr) = match method {
+            "forEach" => self.lower_array_foreach_callback(
+                receiver_local,
+                i,
+                func_id,
+                &captures,
+                param_count,
+            )?,
+            "filter" => self.lower_array_filter_callback(
+                receiver_local,
+                i,
+                func_id,
+                &captures,
+                param_count,
+            )?,
+            "find" | "findIndex" => self.lower_array_find_callback(
+                receiver_local,
+                i,
+                func_id,
+                &captures,
+                param_count,
+                method,
+            )?,
+            "findLast" | "findLastIndex" => self.lower_array_find_last_callback(
+                receiver_local,
+                i,
+                func_id,
+                &captures,
+                param_count,
+                method,
+            )?,
+            "some" => self.lower_array_some_every_callback(
+                receiver_local,
+                i,
+                func_id,
+                &captures,
+                param_count,
+                true,
+            )?,
+            "every" => self.lower_array_some_every_callback(
+                receiver_local,
+                i,
+                func_id,
+                &captures,
+                param_count,
+                false,
+            )?,
+            "reduce" | "reduceRight" => self.lower_array_reduce_callback(
+                receiver_local,
+                i,
+                func_id,
+                &captures,
+                param_count,
+                method,
+                init_expr,
+            )?,
+            "flatMap" => self.lower_array_flatmap_callback(
+                receiver_local,
+                i,
+                func_id,
+                &captures,
+                param_count,
+            )?,
             "map" => {
-                let result = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(
-                    result,
-                    LoweredExpr::ArrayNew {
-                        elements: vec![],
-                        span: Span::generated("array_new"),
-                    },
-                    Span::generated("Let"),
-                ));
-
-                let elem = self.alloc_temp();
-                while_body.push(LoweredStmt::Let(
-                    elem,
-                    LoweredExpr::ArrayGet {
-                        arr: Box::new(arr_ref()),
-                        index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                        span: Span::generated("array_get"),
-                    },
-                    Span::generated("Let"),
-                ));
-
-                let mapped = self.alloc_temp();
-                let call_args = {
-                    let explicit_args = vec![
-                        LoweredExpr::Local(elem, Span::generated("local")),
-                        LoweredExpr::Local(i, Span::generated("local")),
-                        arr_ref(),
-                    ];
-                    let mut call_args: Vec<LoweredExpr> =
-                        explicit_args.into_iter().take(param_count).collect();
-                    call_args.extend(
-                        captures
-                            .iter()
-                            .copied()
-                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
-                    );
-                    LoweredExpr::Call {
-                        kind: FunctionCallKind::User(func_id),
-                        args: call_args,
-                        span: Span::generated("call"),
-                    }
-                };
-                while_body.push(LoweredStmt::Let(
-                    mapped,
-                    call_args,
-                    Span::generated("let_stmt"),
-                ));
-                while_body.push(LoweredStmt::Expr(
-                    LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeIntrinsic::ArrayPushGrow,
-                        args: vec![
-                            LoweredExpr::Local(result, Span::generated("local")),
-                            LoweredExpr::Local(mapped, Span::generated("local")),
-                        ],
-                        span: Span::generated("runtime_call"),
-                    },
-                    Span::generated("Expr"),
-                ));
-                while_body.push(LoweredStmt::Assign(
-                    i,
-                    LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                        op: LoweredBinaryOp::Add,
-                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-
-                        span: Span::generated("binary"),
-                    },
-                    Span::generated("Assign"),
-                ));
-
-                result_expr = LoweredExpr::Local(result, Span::generated("local"));
+                self.lower_array_map_callback(receiver_local, i, func_id, &captures, param_count)?
             }
             _ => {
                 return Err(Diagnostic {
@@ -1670,7 +909,8 @@ impl<'a> super::Resolver<'a> {
                     phase: None,
                 });
             }
-        }
+        };
+        stmts.extend(init_stmts);
 
         // Add initial Let(i, ...) based on iteration direction
         if method == "findLast" || method == "findLastIndex" || method == "reduceRight" {
@@ -1872,6 +1112,780 @@ impl<'a> super::Resolver<'a> {
             _ => Ok(inner),
         }
     }
+
+    fn lower_array_foreach_callback(
+        &mut self,
+        receiver_local: LocalId,
+        i: LocalId,
+        func_id: FuncId,
+        captures: &[LocalId],
+        param_count: usize,
+    ) -> Result<(Vec<LoweredStmt>, Vec<LoweredStmt>, LoweredExpr), Diagnostic> {
+        let mut while_body = Vec::new();
+        let arr_ref =
+            || -> LoweredExpr { LoweredExpr::Local(receiver_local, Span::generated("local")) };
+
+        let elem = self.alloc_temp();
+        while_body.push(LoweredStmt::Let(
+            elem,
+            LoweredExpr::ArrayGet {
+                arr: Box::new(arr_ref()),
+                index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+
+                span: Span::generated("array_get"),
+            },
+            Span::generated("Let"),
+        ));
+
+        let call_args = {
+            let explicit_args = vec![
+                LoweredExpr::Local(elem, Span::generated("local")),
+                LoweredExpr::Local(i, Span::generated("local")),
+                arr_ref(),
+            ];
+            let mut call_args: Vec<LoweredExpr> =
+                explicit_args.into_iter().take(param_count).collect();
+            call_args.extend(
+                captures
+                    .iter()
+                    .copied()
+                    .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+            );
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(func_id),
+                args: call_args,
+
+                span: Span::generated("call"),
+            }
+        };
+
+        while_body.push(LoweredStmt::Expr(call_args, Span::generated("expr_stmt")));
+        while_body.push(LoweredStmt::Assign(
+            i,
+            LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                op: LoweredBinaryOp::Add,
+                right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+
+                span: Span::generated("binary"),
+            },
+            Span::generated("Assign"),
+        ));
+
+        let result_expr = LoweredExpr::Undefined(Span::generated("undef"));
+        Ok((Vec::new(), while_body, result_expr))
+    }
+
+    fn lower_array_filter_callback(
+        &mut self,
+        receiver_local: LocalId,
+        i: LocalId,
+        func_id: FuncId,
+        captures: &[LocalId],
+        param_count: usize,
+    ) -> Result<(Vec<LoweredStmt>, Vec<LoweredStmt>, LoweredExpr), Diagnostic> {
+        let mut init_stmts = Vec::new();
+        let mut while_body = Vec::new();
+        let arr_ref =
+            || -> LoweredExpr { LoweredExpr::Local(receiver_local, Span::generated("local")) };
+
+        let result = self.alloc_temp();
+        init_stmts.push(LoweredStmt::Let(
+            result,
+            LoweredExpr::ArrayNew {
+                elements: vec![],
+
+                span: Span::generated("array_new"),
+            },
+            Span::generated("let_stmt"),
+        ));
+
+        let elem = self.alloc_temp();
+        while_body.push(LoweredStmt::Let(
+            elem,
+            LoweredExpr::ArrayGet {
+                arr: Box::new(arr_ref()),
+                index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+
+                span: Span::generated("array_get"),
+            },
+            Span::generated("Let"),
+        ));
+
+        let pred = self.alloc_temp();
+        let call_args = {
+            let explicit_args = vec![
+                LoweredExpr::Local(elem, Span::generated("local")),
+                LoweredExpr::Local(i, Span::generated("local")),
+                arr_ref(),
+            ];
+            let mut call_args: Vec<LoweredExpr> =
+                explicit_args.into_iter().take(param_count).collect();
+            call_args.extend(
+                captures
+                    .iter()
+                    .copied()
+                    .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+            );
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(func_id),
+                args: call_args,
+
+                span: Span::generated("call"),
+            }
+        };
+        while_body.push(LoweredStmt::Let(
+            pred,
+            call_args,
+            Span::generated("let_stmt"),
+        ));
+        while_body.push(LoweredStmt::If {
+            condition: LoweredExpr::Local(pred, Span::generated("local")),
+            then_body: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeIntrinsic::ArrayPushGrow,
+                    args: vec![
+                        LoweredExpr::Local(result, Span::generated("local")),
+                        LoweredExpr::Local(elem, Span::generated("local")),
+                    ],
+
+                    span: Span::generated("runtime_call"),
+                },
+                Span::generated("Expr"),
+            )],
+            else_body: vec![],
+            span: Span::generated("If"),
+        });
+        while_body.push(LoweredStmt::Assign(
+            i,
+            LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                op: LoweredBinaryOp::Add,
+                right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+
+                span: Span::generated("binary"),
+            },
+            Span::generated("Assign"),
+        ));
+
+        let result_expr = LoweredExpr::Local(result, Span::generated("local"));
+        Ok((init_stmts, while_body, result_expr))
+    }
+
+    fn lower_array_find_callback(
+        &mut self,
+        receiver_local: LocalId,
+        i: LocalId,
+        func_id: FuncId,
+        captures: &[LocalId],
+        param_count: usize,
+        method: &str,
+    ) -> Result<(Vec<LoweredStmt>, Vec<LoweredStmt>, LoweredExpr), Diagnostic> {
+        let mut init_stmts = Vec::new();
+        let mut while_body = Vec::new();
+        let arr_ref =
+            || -> LoweredExpr { LoweredExpr::Local(receiver_local, Span::generated("local")) };
+
+        let found = self.alloc_temp();
+        if method == "findIndex" {
+            init_stmts.push(LoweredStmt::Let(
+                found,
+                LoweredExpr::Number(-1, Span::generated("num")),
+                Span::generated("Let"),
+            ));
+        } else {
+            init_stmts.push(LoweredStmt::Let(
+                found,
+                LoweredExpr::Undefined(Span::generated("undef")),
+                Span::generated("Let"),
+            ));
+        }
+
+        let elem = self.alloc_temp();
+        while_body.push(LoweredStmt::Let(
+            elem,
+            LoweredExpr::ArrayGet {
+                arr: Box::new(arr_ref()),
+                index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+
+                span: Span::generated("array_get"),
+            },
+            Span::generated("Let"),
+        ));
+
+        let pred = self.alloc_temp();
+        let call_args = {
+            let explicit_args = vec![
+                LoweredExpr::Local(elem, Span::generated("local")),
+                LoweredExpr::Local(i, Span::generated("local")),
+                arr_ref(),
+            ];
+            let mut call_args: Vec<LoweredExpr> =
+                explicit_args.into_iter().take(param_count).collect();
+            call_args.extend(
+                captures
+                    .iter()
+                    .copied()
+                    .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+            );
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(func_id),
+                args: call_args,
+
+                span: Span::generated("call"),
+            }
+        };
+        while_body.push(LoweredStmt::Let(
+            pred,
+            call_args,
+            Span::generated("let_stmt"),
+        ));
+        if method == "findIndex" {
+            while_body.push(LoweredStmt::If {
+                condition: LoweredExpr::Local(pred, Span::generated("local")),
+                then_body: vec![
+                    LoweredStmt::Assign(
+                        found,
+                        LoweredExpr::Local(i, Span::generated("local")),
+                        Span::generated("Assign"),
+                    ),
+                    LoweredStmt::Break {
+                        label: None,
+                        span: Span::generated("brk"),
+                    },
+                ],
+                else_body: vec![],
+
+                span: Span::generated("if_stmt"),
+            });
+        } else {
+            while_body.push(LoweredStmt::If {
+                condition: LoweredExpr::Local(pred, Span::generated("local")),
+                then_body: vec![LoweredStmt::Assign(
+                    found,
+                    LoweredExpr::Local(elem, Span::generated("local")),
+                    Span::generated("Assign"),
+                )],
+                else_body: vec![],
+
+                span: Span::generated("if_stmt"),
+            });
+        }
+        while_body.push(LoweredStmt::Assign(
+            i,
+            LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                op: LoweredBinaryOp::Add,
+                right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+
+                span: Span::generated("binary"),
+            },
+            Span::generated("Assign"),
+        ));
+
+        let result_expr = LoweredExpr::Local(found, Span::generated("local"));
+        Ok((init_stmts, while_body, result_expr))
+    }
+
+    fn lower_array_find_last_callback(
+        &mut self,
+        receiver_local: LocalId,
+        i: LocalId,
+        func_id: FuncId,
+        captures: &[LocalId],
+        param_count: usize,
+        method: &str,
+    ) -> Result<(Vec<LoweredStmt>, Vec<LoweredStmt>, LoweredExpr), Diagnostic> {
+        let mut init_stmts = Vec::new();
+        let mut while_body = Vec::new();
+        let arr_ref =
+            || -> LoweredExpr { LoweredExpr::Local(receiver_local, Span::generated("local")) };
+
+        let found = self.alloc_temp();
+        if method == "findLastIndex" {
+            init_stmts.push(LoweredStmt::Let(
+                found,
+                LoweredExpr::Number(-1, Span::generated("num")),
+                Span::generated("Let"),
+            ));
+        } else {
+            init_stmts.push(LoweredStmt::Let(
+                found,
+                LoweredExpr::Undefined(Span::generated("undef")),
+                Span::generated("Let"),
+            ));
+        }
+
+        let elem = self.alloc_temp();
+        while_body.push(LoweredStmt::Let(
+            elem,
+            LoweredExpr::ArrayGet {
+                arr: Box::new(arr_ref()),
+                index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+
+                span: Span::generated("array_get"),
+            },
+            Span::generated("Let"),
+        ));
+
+        let pred = self.alloc_temp();
+        let call_args = {
+            let explicit_args = vec![
+                LoweredExpr::Local(elem, Span::generated("local")),
+                LoweredExpr::Local(i, Span::generated("local")),
+                arr_ref(),
+            ];
+            let mut call_args: Vec<LoweredExpr> =
+                explicit_args.into_iter().take(param_count).collect();
+            call_args.extend(
+                captures
+                    .iter()
+                    .copied()
+                    .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+            );
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(func_id),
+                args: call_args,
+
+                span: Span::generated("call"),
+            }
+        };
+        while_body.push(LoweredStmt::Let(
+            pred,
+            call_args,
+            Span::generated("let_stmt"),
+        ));
+        if method == "findLastIndex" {
+            while_body.push(LoweredStmt::If {
+                condition: LoweredExpr::Local(pred, Span::generated("local")),
+                then_body: vec![
+                    LoweredStmt::Assign(
+                        found,
+                        LoweredExpr::Local(i, Span::generated("local")),
+                        Span::generated("Assign"),
+                    ),
+                    LoweredStmt::Break {
+                        label: None,
+                        span: Span::generated("break"),
+                    },
+                ],
+                else_body: vec![],
+                span: Span::generated("If"),
+            });
+        } else {
+            while_body.push(LoweredStmt::If {
+                condition: LoweredExpr::Local(pred, Span::generated("local")),
+                then_body: vec![
+                    LoweredStmt::Assign(
+                        found,
+                        LoweredExpr::Local(elem, Span::generated("local")),
+                        Span::generated("Assign"),
+                    ),
+                    LoweredStmt::Break {
+                        label: None,
+                        span: Span::generated("break"),
+                    },
+                ],
+                else_body: vec![],
+                span: Span::generated("If"),
+            });
+        }
+        while_body.push(LoweredStmt::Assign(
+            i,
+            LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                op: LoweredBinaryOp::Subtract,
+                right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+
+                span: Span::generated("binary"),
+            },
+            Span::generated("Assign"),
+        ));
+
+        let result_expr = LoweredExpr::Local(found, Span::generated("local"));
+        Ok((init_stmts, while_body, result_expr))
+    }
+
+    fn lower_array_some_every_callback(
+        &mut self,
+        receiver_local: LocalId,
+        i: LocalId,
+        func_id: FuncId,
+        captures: &[LocalId],
+        param_count: usize,
+        is_some: bool,
+    ) -> Result<(Vec<LoweredStmt>, Vec<LoweredStmt>, LoweredExpr), Diagnostic> {
+        let mut init_stmts = Vec::new();
+        let mut while_body = Vec::new();
+        let arr_ref =
+            || -> LoweredExpr { LoweredExpr::Local(receiver_local, Span::generated("local")) };
+
+        let acc = self.alloc_temp();
+        init_stmts.push(LoweredStmt::Let(
+            acc,
+            LoweredExpr::Bool(is_some, Span::generated("bool")),
+            Span::generated("Let"),
+        ));
+
+        let elem = self.alloc_temp();
+        while_body.push(LoweredStmt::Let(
+            elem,
+            LoweredExpr::ArrayGet {
+                arr: Box::new(arr_ref()),
+                index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+
+                span: Span::generated("array_get"),
+            },
+            Span::generated("Let"),
+        ));
+
+        let pred = self.alloc_temp();
+        let call_args = {
+            let explicit_args = vec![
+                LoweredExpr::Local(elem, Span::generated("local")),
+                LoweredExpr::Local(i, Span::generated("local")),
+                arr_ref(),
+            ];
+            let mut call_args: Vec<LoweredExpr> =
+                explicit_args.into_iter().take(param_count).collect();
+            call_args.extend(
+                captures
+                    .iter()
+                    .copied()
+                    .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+            );
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(func_id),
+                args: call_args,
+
+                span: Span::generated("call"),
+            }
+        };
+        while_body.push(LoweredStmt::Let(
+            pred,
+            call_args,
+            Span::generated("let_stmt"),
+        ));
+        if is_some {
+            while_body.push(LoweredStmt::If {
+                condition: LoweredExpr::Local(pred, Span::generated("local")),
+                then_body: vec![LoweredStmt::Assign(
+                    acc,
+                    LoweredExpr::Bool(true, Span::generated("bool")),
+                    Span::generated("Assign"),
+                )],
+                else_body: vec![],
+
+                span: Span::generated("if_stmt"),
+            });
+        } else {
+            while_body.push(LoweredStmt::If {
+                condition: LoweredExpr::Unary {
+                    op: LoweredUnaryOp::Not,
+                    expr: Box::new(LoweredExpr::Local(pred, Span::generated("local"))),
+
+                    span: Span::generated("unary"),
+                },
+                then_body: vec![LoweredStmt::Assign(
+                    acc,
+                    LoweredExpr::Bool(false, Span::generated("bool")),
+                    Span::generated("Assign"),
+                )],
+                else_body: vec![],
+                span: Span::generated("if_stmt"),
+            });
+        }
+        while_body.push(LoweredStmt::Assign(
+            i,
+            LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                op: LoweredBinaryOp::Add,
+                right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+
+                span: Span::generated("binary"),
+            },
+            Span::generated("Assign"),
+        ));
+
+        let result_expr = LoweredExpr::Local(acc, Span::generated("local"));
+        Ok((init_stmts, while_body, result_expr))
+    }
+
+    fn lower_array_reduce_callback(
+        &mut self,
+        receiver_local: LocalId,
+        i: LocalId,
+        func_id: FuncId,
+        captures: &[LocalId],
+        param_count: usize,
+        method: &str,
+        init_expr: Option<LoweredExpr>,
+    ) -> Result<(Vec<LoweredStmt>, Vec<LoweredStmt>, LoweredExpr), Diagnostic> {
+        let mut init_stmts = Vec::new();
+        let mut while_body = Vec::new();
+        let arr_ref =
+            || -> LoweredExpr { LoweredExpr::Local(receiver_local, Span::generated("local")) };
+
+        let Some(init_expr) = init_expr else {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message:
+                    "issue-270: Array.prototype.reduce without initialValue is not yet supported"
+                        .to_owned(),
+                span: None,
+
+                phase: None,
+            });
+        };
+        let acc = self.alloc_temp();
+        init_stmts.push(LoweredStmt::Let(
+            acc,
+            init_expr,
+            Span::generated("let_stmt"),
+        ));
+
+        let elem = self.alloc_temp();
+        while_body.push(LoweredStmt::Let(
+            elem,
+            LoweredExpr::ArrayGet {
+                arr: Box::new(arr_ref()),
+                index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+
+                span: Span::generated("array_get"),
+            },
+            Span::generated("Let"),
+        ));
+
+        // Reduce callback args: (acc, elem, i, arr)
+        let reduce_explicit = vec![
+            LoweredExpr::Local(acc, Span::generated("local")),
+            LoweredExpr::Local(elem, Span::generated("local")),
+            LoweredExpr::Local(i, Span::generated("local")),
+            arr_ref(),
+        ];
+        let mut reduce_call_args: Vec<LoweredExpr> =
+            reduce_explicit.into_iter().take(param_count).collect();
+        reduce_call_args.extend(
+            captures
+                .iter()
+                .copied()
+                .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+        );
+        while_body.push(LoweredStmt::Assign(
+            acc,
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(func_id),
+                args: reduce_call_args,
+
+                span: Span::generated("call"),
+            },
+            Span::generated("Assign"),
+        ));
+        if method == "reduceRight" {
+            while_body.push(LoweredStmt::Assign(
+                i,
+                LoweredExpr::Binary {
+                    left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                    op: LoweredBinaryOp::Subtract,
+                    right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+
+                    span: Span::generated("binary"),
+                },
+                Span::generated("Assign"),
+            ));
+        } else {
+            while_body.push(LoweredStmt::Assign(
+                i,
+                LoweredExpr::Binary {
+                    left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                    op: LoweredBinaryOp::Add,
+                    right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+
+                    span: Span::generated("binary"),
+                },
+                Span::generated("Assign"),
+            ));
+        }
+
+        let result_expr = LoweredExpr::Local(acc, Span::generated("local"));
+        Ok((init_stmts, while_body, result_expr))
+    }
+
+    fn lower_array_flatmap_callback(
+        &mut self,
+        receiver_local: LocalId,
+        i: LocalId,
+        func_id: FuncId,
+        captures: &[LocalId],
+        param_count: usize,
+    ) -> Result<(Vec<LoweredStmt>, Vec<LoweredStmt>, LoweredExpr), Diagnostic> {
+        let mut init_stmts = Vec::new();
+        let mut while_body = Vec::new();
+        let arr_ref =
+            || -> LoweredExpr { LoweredExpr::Local(receiver_local, Span::generated("local")) };
+
+        let result = self.alloc_temp();
+        init_stmts.push(LoweredStmt::Let(
+            result,
+            LoweredExpr::ArrayNew {
+                elements: vec![],
+                span: Span::generated("array_new"),
+            },
+            Span::generated("Let"),
+        ));
+        let elem = self.alloc_temp();
+        while_body.push(LoweredStmt::Let(
+            elem,
+            LoweredExpr::ArrayGet {
+                arr: Box::new(arr_ref()),
+                index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+
+                span: Span::generated("array_get"),
+            },
+            Span::generated("Let"),
+        ));
+        let mapped = self.alloc_temp();
+        let call_args = {
+            let explicit_args = vec![
+                LoweredExpr::Local(elem, Span::generated("local")),
+                LoweredExpr::Local(i, Span::generated("local")),
+                arr_ref(),
+            ];
+            let mut call_args: Vec<LoweredExpr> =
+                explicit_args.into_iter().take(param_count).collect();
+            call_args.extend(
+                captures
+                    .iter()
+                    .copied()
+                    .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+            );
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(func_id),
+                args: call_args,
+
+                span: Span::generated("call"),
+            }
+        };
+        while_body.push(LoweredStmt::Let(
+            mapped,
+            call_args,
+            Span::generated("let_stmt"),
+        ));
+        // Push or spread the result (handles array vs non-array)
+        while_body.push(LoweredStmt::Expr(
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeIntrinsic::ArrayPushOrSpread,
+                args: vec![
+                    LoweredExpr::Local(result, Span::generated("local")),
+                    LoweredExpr::Local(mapped, Span::generated("local")),
+                ],
+
+                span: Span::generated("runtime_call"),
+            },
+            Span::generated("Expr"),
+        ));
+        while_body.push(LoweredStmt::Assign(
+            i,
+            LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                op: LoweredBinaryOp::Add,
+                right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+
+                span: Span::generated("binary"),
+            },
+            Span::generated("Assign"),
+        ));
+        let result_expr = LoweredExpr::Local(result, Span::generated("local"));
+        Ok((init_stmts, while_body, result_expr))
+    }
+
+    fn lower_array_map_callback(
+        &mut self,
+        receiver_local: LocalId,
+        i: LocalId,
+        func_id: FuncId,
+        captures: &[LocalId],
+        param_count: usize,
+    ) -> Result<(Vec<LoweredStmt>, Vec<LoweredStmt>, LoweredExpr), Diagnostic> {
+        let mut init_stmts = Vec::new();
+        let mut while_body = Vec::new();
+        let arr_ref =
+            || -> LoweredExpr { LoweredExpr::Local(receiver_local, Span::generated("local")) };
+
+        let result = self.alloc_temp();
+        init_stmts.push(LoweredStmt::Let(
+            result,
+            LoweredExpr::ArrayNew {
+                elements: vec![],
+                span: Span::generated("array_new"),
+            },
+            Span::generated("Let"),
+        ));
+
+        let elem = self.alloc_temp();
+        while_body.push(LoweredStmt::Let(
+            elem,
+            LoweredExpr::ArrayGet {
+                arr: Box::new(arr_ref()),
+                index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                span: Span::generated("array_get"),
+            },
+            Span::generated("Let"),
+        ));
+
+        let mapped = self.alloc_temp();
+        let call_args = {
+            let explicit_args = vec![
+                LoweredExpr::Local(elem, Span::generated("local")),
+                LoweredExpr::Local(i, Span::generated("local")),
+                arr_ref(),
+            ];
+            let mut call_args: Vec<LoweredExpr> =
+                explicit_args.into_iter().take(param_count).collect();
+            call_args.extend(
+                captures
+                    .iter()
+                    .copied()
+                    .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+            );
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(func_id),
+                args: call_args,
+                span: Span::generated("call"),
+            }
+        };
+        while_body.push(LoweredStmt::Let(
+            mapped,
+            call_args,
+            Span::generated("let_stmt"),
+        ));
+        while_body.push(LoweredStmt::Expr(
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeIntrinsic::ArrayPushGrow,
+                args: vec![
+                    LoweredExpr::Local(result, Span::generated("local")),
+                    LoweredExpr::Local(mapped, Span::generated("local")),
+                ],
+                span: Span::generated("runtime_call"),
+            },
+            Span::generated("Expr"),
+        ));
+        while_body.push(LoweredStmt::Assign(
+            i,
+            LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                op: LoweredBinaryOp::Add,
+                right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+
+                span: Span::generated("binary"),
+            },
+            Span::generated("Assign"),
+        ));
+
+        let result_expr = LoweredExpr::Local(result, Span::generated("local"));
+        Ok((init_stmts, while_body, result_expr))
+    }
+
 }
 
 fn dense_array_like_object_elements(props: &[(String, ResolvedExpr)]) -> Option<Vec<ResolvedExpr>> {
