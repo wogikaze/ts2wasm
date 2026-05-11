@@ -225,7 +225,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
         }
     }
 
-    let mut resolver = Resolver::new(
+    let mut resolver = resolver::Resolver::new(
         &function_ids,
         &function_signatures,
         &function_captures,
@@ -2236,7 +2236,7 @@ fn lower_function(
         });
     }
 
-    let (mut resolver, param_ids) = Resolver::with_params(
+    let (mut resolver, param_ids) = resolver::Resolver::with_params(
         function_ids,
         function_signatures,
         function_captures,

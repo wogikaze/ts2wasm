@@ -1,8 +1,21 @@
-use crate::builtin_resolved::ResolvedArrayElement;
-use super::*;
+use std::collections::{HashMap, HashSet};
+
+use super::{
+    ArrowClosure, Resolver, StaticFunctionArrayLike, binding_param_names,
+    is_identity_arrow_callback, is_invalid_date_constructor_expr, is_number_double_arrow_callback,
+    is_set_prototype_property_expr, is_static_copy_safe_object_prop_value, lowered_binding_default,
+    string_constructor_arrow_callback, unary_plus_arrow_callback, unsupported_array_map_diagnostic,
+};
+use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::lowered::*;
+use ts2wasm_frontend::{BinaryOp, OBJECT_SPREAD_SENTINEL, SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp};
+use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
 impl<'a> Resolver<'a> {
-    pub(super) fn lower_call_args(&mut self, args: &[ResolvedExpr]) -> Result<Vec<LoweredExpr>, Diagnostic> {
+    pub(super) fn lower_call_args(
+        &mut self,
+        args: &[ResolvedExpr],
+    ) -> Result<Vec<LoweredExpr>, Diagnostic> {
         let mut lowered_args = Vec::new();
         for arg in args {
             match arg {
@@ -14,17 +27,23 @@ impl<'a> Resolver<'a> {
                                     lowered_args.push(self.lower_expr(expr)?);
                                 }
                                 ResolvedArrayElement::Hole => {
-                                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                                    lowered_args
+                                        .push(LoweredExpr::Undefined(Span::generated("undef")));
                                 }
                             }
                         }
-                    } else if let Some(value) = self.static_string_spread_value(spread_expr.as_ref()) {
+                    } else if let Some(value) =
+                        self.static_string_spread_value(spread_expr.as_ref())
+                    {
                         lowered_args.extend(Self::lower_ascii_string_spread_chars(&value)?);
                     } else if self.is_generator_call_spread_operand(spread_expr.as_ref()) {
                         return Err(Self::unsupported_generator_spread_diagnostic());
-                    } else if self.resolved_expr_has_symbol_iterator_property(spread_expr.as_ref()) {
+                    } else if self.resolved_expr_has_symbol_iterator_property(spread_expr.as_ref())
+                    {
                         return Err(Self::unsupported_symbol_iterator_spread_diagnostic());
-                    } else if let Some(map_array) = self.lower_map_spread_operand(spread_expr.as_ref())? {
+                    } else if let Some(map_array) =
+                        self.lower_map_spread_operand(spread_expr.as_ref())?
+                    {
                         lowered_args.push(map_array);
                     } else {
                         return Err(Diagnostic {
@@ -47,7 +66,9 @@ impl<'a> Resolver<'a> {
         self.resolved_expr_static_string_value(spread_expr)
     }
 
-    pub(super) fn lower_ascii_string_spread_chars(value: &str) -> Result<Vec<LoweredExpr>, Diagnostic> {
+    pub(super) fn lower_ascii_string_spread_chars(
+        value: &str,
+    ) -> Result<Vec<LoweredExpr>, Diagnostic> {
         if !value.is_ascii() {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -56,7 +77,8 @@ impl<'a> Resolver<'a> {
                         .to_owned(),
                 span: None,
 
-                phase: None,});
+                phase: None,
+            });
         }
         Ok(value
             .chars()
@@ -68,7 +90,10 @@ impl<'a> Resolver<'a> {
         &mut self,
         elements: &[ResolvedArrayElement],
     ) -> Result<LoweredExpr, Diagnostic> {
-        if elements.iter().any(|element| matches!(element, ResolvedArrayElement::Hole)) {
+        if elements
+            .iter()
+            .any(|element| matches!(element, ResolvedArrayElement::Hole))
+        {
             let mut slots = Vec::with_capacity(elements.len());
             for element in elements {
                 match element {
@@ -78,13 +103,22 @@ impl<'a> Resolver<'a> {
                     ResolvedArrayElement::Hole => slots.push(LoweredArraySlot::Hole),
                 }
             }
-            return Ok(LoweredExpr::ArrayNewSparse { slots , span: Span::generated("array_new_sparse")});
+            return Ok(LoweredExpr::ArrayNewSparse {
+                slots,
+                span: Span::generated("array_new_sparse"),
+            });
         }
         if !elements.iter().any(|element| {
-            matches!(element, ResolvedArrayElement::Present(ResolvedExpr::Spread(_)))
+            matches!(
+                element,
+                ResolvedArrayElement::Present(ResolvedExpr::Spread(_))
+            )
         }) {
             let lowered = self.lower_array_literal_elements(elements)?;
-            return Ok(LoweredExpr::ArrayNew { elements: lowered , span: Span::generated("array_new")});
+            return Ok(LoweredExpr::ArrayNew {
+                elements: lowered,
+                span: Span::generated("array_new"),
+            });
         }
 
         let mut segments = Vec::new();
@@ -143,7 +177,9 @@ impl<'a> Resolver<'a> {
                         phase: None,});
                 }
                 ResolvedArrayElement::Present(expr) => pending_dense.push(self.lower_expr(expr)?),
-                ResolvedArrayElement::Hole => pending_dense.push(LoweredExpr::Undefined(Span::generated("undef"))),
+                ResolvedArrayElement::Hole => {
+                    pending_dense.push(LoweredExpr::Undefined(Span::generated("undef")))
+                }
             }
         }
 
@@ -151,14 +187,18 @@ impl<'a> Resolver<'a> {
 
         let mut iter = segments.into_iter();
         let Some(mut combined) = iter.next() else {
-            return Ok(LoweredExpr::ArrayNew { elements: vec![] , span: Span::generated("array_new")});
+            return Ok(LoweredExpr::ArrayNew {
+                elements: vec![],
+                span: Span::generated("array_new"),
+            });
         };
         for segment in iter {
             combined = LoweredExpr::RuntimeCall {
                 runtime_fn: "ArrayConcat".to_owned(),
                 args: vec![combined, segment],
 
-                span: Span::generated("runtime_call"),};
+                span: Span::generated("runtime_call"),
+            };
         }
         Ok(combined)
     }
@@ -186,7 +226,8 @@ impl<'a> Resolver<'a> {
                 message: "Array.prototype.map.call expects a receiver argument".to_owned(),
                 span: Some(span),
 
-                phase: None,});
+                phase: None,
+            });
         };
         match receiver {
             ResolvedExpr::Array(elements) => {
@@ -209,14 +250,16 @@ impl<'a> Resolver<'a> {
                             runtime_fn: "ArrayMapArrayLikeIdentity".to_owned(),
                             args: vec![self.lower_expr(receiver)?],
 
-                            span: Span::generated("runtime_call"),});
+                            span: Span::generated("runtime_call"),
+                        });
                     }
                     if is_number_double_arrow_callback(map_args) {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "ArrayMapArrayLikeDouble".to_owned(),
                             args: vec![self.lower_expr(receiver)?],
 
-                            span: Span::generated("runtime_call"),});
+                            span: Span::generated("runtime_call"),
+                        });
                     }
                     return Err(unsupported_array_map_diagnostic(Some(span)));
                 };
@@ -230,12 +273,14 @@ impl<'a> Resolver<'a> {
                 runtime_fn: "ArrayMapArrayLikeIdentity".to_owned(),
                 args: vec![self.lower_expr(receiver)?],
 
-                span: Span::generated("runtime_call"),}),
+                span: Span::generated("runtime_call"),
+            }),
             _ if is_number_double_arrow_callback(map_args) => Ok(LoweredExpr::RuntimeCall {
                 runtime_fn: "ArrayMapArrayLikeDouble".to_owned(),
                 args: vec![self.lower_expr(receiver)?],
 
-                span: Span::generated("runtime_call"),}),
+                span: Span::generated("runtime_call"),
+            }),
             _ => Err(unsupported_array_map_diagnostic(Some(span))),
         }
     }
@@ -252,7 +297,8 @@ impl<'a> Resolver<'a> {
                     .to_owned(),
                 span: Some(span),
 
-                phase: None,});
+                phase: None,
+            });
         };
 
         if self.is_known_array_expr(source) {
@@ -260,13 +306,15 @@ impl<'a> Resolver<'a> {
                 runtime_fn: "ArrayValues".to_owned(),
                 args: vec![self.lower_expr(source)?],
 
-                span: Span::generated("runtime_call"),});
+                span: Span::generated("runtime_call"),
+            });
         }
 
         Ok(LoweredExpr::ArrayNew {
             elements: Vec::new(),
 
-            span: Span::generated("array_new"),})
+            span: Span::generated("array_new"),
+        })
     }
 
     pub(super) fn lower_array_map_elements(
@@ -279,27 +327,33 @@ impl<'a> Resolver<'a> {
         let ([callback] | [callback, _]) = args else {
             return Err(unsupported_array_map_diagnostic(Some(span)));
         };
-        let is_sparse = elements.iter().any(|element| matches!(element, ResolvedArrayElement::Hole));
+        let is_sparse = elements
+            .iter()
+            .any(|element| matches!(element, ResolvedArrayElement::Hole));
         let mut mapped = Vec::with_capacity(elements.len());
         for (index, element) in elements.iter().enumerate() {
             match element {
                 ResolvedArrayElement::Present(expr) => {
                     let element = self.lower_expr(expr)?;
-                    mapped.push(LoweredArraySlot::Present(self.lower_array_map_callback_call(
-                        callback,
-                        args.get(1),
-                        element,
-                        index,
-                        array_expr,
-                        span,
-                    )?));
+                    mapped.push(LoweredArraySlot::Present(
+                        self.lower_array_map_callback_call(
+                            callback,
+                            args.get(1),
+                            element,
+                            index,
+                            array_expr,
+                            span,
+                        )?,
+                    ));
                 }
                 ResolvedArrayElement::Hole => mapped.push(LoweredArraySlot::Hole),
             }
         }
         if is_sparse {
-            Ok(LoweredExpr::ArrayNewSparse { slots: mapped ,
-            span: Span::generated("array_new_sparse"),})
+            Ok(LoweredExpr::ArrayNewSparse {
+                slots: mapped,
+                span: Span::generated("array_new_sparse"),
+            })
         } else {
             Ok(LoweredExpr::ArrayNew {
                 elements: mapped
@@ -310,7 +364,8 @@ impl<'a> Resolver<'a> {
                     })
                     .collect(),
 
-                    span: Span::generated("array_new"),})
+                span: Span::generated("array_new"),
+            })
         }
     }
 
@@ -339,24 +394,32 @@ impl<'a> Resolver<'a> {
                 else {
                     return Err(unsupported_array_map_diagnostic(Some(span)));
                 };
-                let mut explicit_args = vec![element, LoweredExpr::Number(index as i32, Span::generated("num"))];
+                let mut explicit_args = vec![
+                    element,
+                    LoweredExpr::Number(index as i32, Span::generated("num")),
+                ];
                 explicit_args.push(self.lower_expr(array_expr)?);
                 let mut call_args = explicit_args
                     .into_iter()
                     .take(params.len())
                     .collect::<Vec<_>>();
-                call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
+                call_args.extend(
+                    captures
+                        .iter()
+                        .copied()
+                        .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+                );
                 Ok(LoweredExpr::Call {
                     kind: FunctionCallKind::User(func_id),
                     args: call_args,
 
-                    span: Span::generated("call"),})
+                    span: Span::generated("call"),
+                })
             }
-            ResolvedExpr::FunctionExpr { name, params, body } => {
-                self.lower_array_map_function_expr_callback_call(
+            ResolvedExpr::FunctionExpr { name, params, body } => self
+                .lower_array_map_function_expr_callback_call(
                     name, params, body, this_arg, element, index, array_expr, span,
-                )
-            }
+                ),
             ResolvedExpr::Ident(name) => {
                 let func_id = self.resolve_func(name)?;
                 let receiver = match this_arg {
@@ -368,7 +431,10 @@ impl<'a> Resolver<'a> {
                     .get(&func_id)
                     .copied()
                     .unwrap_or_default();
-                let mut explicit_args = vec![element, LoweredExpr::Number(index as i32, Span::generated("num"))];
+                let mut explicit_args = vec![
+                    element,
+                    LoweredExpr::Number(index as i32, Span::generated("num")),
+                ];
                 explicit_args.push(self.lower_expr(array_expr)?);
                 let argument_props = explicit_args
                     .iter()
@@ -398,14 +464,16 @@ impl<'a> Resolver<'a> {
                         props: argument_props,
                         non_enumerable: 0,
 
-                        span: Span::generated("object_new"),});
+                        span: Span::generated("object_new"),
+                    });
                 }
                 self.append_function_captures(func_id, &mut call_args)?;
                 Ok(LoweredExpr::Call {
                     kind: FunctionCallKind::User(func_id),
                     args: call_args,
 
-                    span: Span::generated("call"),})
+                    span: Span::generated("call"),
+                })
             }
             _ => Err(unsupported_array_map_diagnostic(Some(span))),
         }
@@ -461,23 +529,20 @@ impl<'a> Resolver<'a> {
                 ),
                 span: None,
 
-                phase: None,});
+                phase: None,
+            });
         }
         let captures = capture_names
             .iter()
             .map(|capture| self.resolve_local(capture))
             .collect::<Result<Vec<_>, _>>()?;
         let mut lowered_params = params.to_vec();
-        lowered_params.extend(
-            capture_names
-                .iter()
-                .map(|capture| ResolvedParam {
-                    name: capture.clone(),
-                    default: None,
-                    is_rest: false,
-                    span: None,
-                }),
-        );
+        lowered_params.extend(capture_names.iter().map(|capture| ResolvedParam {
+            name: capture.clone(),
+            default: None,
+            is_rest: false,
+            span: None,
+        }));
 
         let func_id = FuncId(self.next_func_id);
         self.next_func_id += 1;
@@ -535,12 +600,17 @@ impl<'a> Resolver<'a> {
         for _ in call_args.len()..=params.len() {
             call_args.push(LoweredExpr::Undefined(Span::generated("undef")));
         }
-        call_args.extend(captures.into_iter().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
+        call_args.extend(
+            captures
+                .into_iter()
+                .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+        );
         Ok(LoweredExpr::Call {
             kind: FunctionCallKind::User(func_id),
             args: call_args,
 
-            span: Span::generated("call"),})
+            span: Span::generated("call"),
+        })
     }
 
     pub(super) fn lower_array_literal_elements(
@@ -553,11 +623,14 @@ impl<'a> Resolver<'a> {
                 ResolvedArrayElement::Present(ResolvedExpr::Spread(spread_expr)) => {
                     if let ResolvedExpr::Array(spread_elements) = spread_expr.as_ref() {
                         lowered.extend(self.lower_array_literal_elements(spread_elements)?);
-                    } else if let Some(value) = self.static_string_spread_value(spread_expr.as_ref()) {
+                    } else if let Some(value) =
+                        self.static_string_spread_value(spread_expr.as_ref())
+                    {
                         lowered.extend(Self::lower_ascii_string_spread_chars(&value)?);
                     } else if self.is_generator_call_spread_operand(spread_expr.as_ref()) {
                         return Err(Self::unsupported_generator_spread_diagnostic());
-                    } else if self.resolved_expr_has_symbol_iterator_property(spread_expr.as_ref()) {
+                    } else if self.resolved_expr_has_symbol_iterator_property(spread_expr.as_ref())
+                    {
                         return Err(Self::unsupported_symbol_iterator_spread_diagnostic());
                     } else {
                         return Err(Diagnostic {
@@ -571,20 +644,26 @@ impl<'a> Resolver<'a> {
                     }
                 }
                 ResolvedArrayElement::Present(expr) => lowered.push(self.lower_expr(expr)?),
-                ResolvedArrayElement::Hole => lowered.push(LoweredExpr::Undefined(Span::generated("undef"))),
+                ResolvedArrayElement::Hole => {
+                    lowered.push(LoweredExpr::Undefined(Span::generated("undef")))
+                }
             }
         }
         Ok(lowered)
     }
 
-    pub(super) fn flush_array_segment(segments: &mut Vec<LoweredExpr>, pending_dense: &mut Vec<LoweredExpr>) {
+    pub(super) fn flush_array_segment(
+        segments: &mut Vec<LoweredExpr>,
+        pending_dense: &mut Vec<LoweredExpr>,
+    ) {
         if pending_dense.is_empty() {
             return;
         }
         segments.push(LoweredExpr::ArrayNew {
             elements: std::mem::take(pending_dense),
 
-            span: Span::generated("array_new"),});
+            span: Span::generated("array_new"),
+        });
     }
 
     pub(super) fn lower_dense_array_local_spread_operand(
@@ -601,7 +680,10 @@ impl<'a> Resolver<'a> {
             return Ok(Some(LoweredExpr::RuntimeCall {
                 runtime_fn: "ArrayConcat".to_owned(),
                 args: vec![
-                    LoweredExpr::ArrayNew { elements: vec![] , span: Span::generated("array_new")},
+                    LoweredExpr::ArrayNew {
+                        elements: vec![],
+                        span: Span::generated("array_new"),
+                    },
                     LoweredExpr::Local(local_id, Span::generated("local")),
                 ],
                 span: Span::generated("RuntimeCall"),
@@ -611,7 +693,10 @@ impl<'a> Resolver<'a> {
     }
 
     #[allow(dead_code)]
-    pub(super) fn is_known_dense_array_local_spread_operand(&self, spread_expr: &ResolvedExpr) -> bool {
+    pub(super) fn is_known_dense_array_local_spread_operand(
+        &self,
+        spread_expr: &ResolvedExpr,
+    ) -> bool {
         let ResolvedExpr::Ident(name) = spread_expr else {
             return false;
         };
@@ -640,7 +725,8 @@ impl<'a> Resolver<'a> {
                 runtime_fn: "SetValuesArray".to_owned(),
                 args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
 
-                span: Span::generated("runtime_call"),}));
+                span: Span::generated("runtime_call"),
+            }));
         }
         Ok(None)
     }
@@ -664,7 +750,8 @@ impl<'a> Resolver<'a> {
                 runtime_fn: "MapValuesArray".to_owned(),
                 args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
 
-                span: Span::generated("runtime_call"),}));
+                span: Span::generated("runtime_call"),
+            }));
         }
         Ok(None)
     }
@@ -737,9 +824,11 @@ impl<'a> Resolver<'a> {
                     continue;
                 }
 
-                let target = result
-                    .take()
-                    .unwrap_or_else(|| LoweredExpr::ObjectNew { props: Vec::new(), non_enumerable: 0 , span: Span::generated("object_new")});
+                let target = result.take().unwrap_or_else(|| LoweredExpr::ObjectNew {
+                    props: Vec::new(),
+                    non_enumerable: 0,
+                    span: Span::generated("object_new"),
+                });
                 let target = if pending.is_empty() {
                     target
                 } else {
@@ -751,7 +840,8 @@ impl<'a> Resolver<'a> {
                                 props: std::mem::take(&mut pending),
                                 non_enumerable: 0,
 
-                                span: Span::generated("object_new"),},
+                                span: Span::generated("object_new"),
+                            },
                         ],
                         span: Span::generated("RuntimeCall"),
                     }
@@ -760,7 +850,8 @@ impl<'a> Resolver<'a> {
                     runtime_fn: "ObjectSpread".to_owned(),
                     args: vec![target, self.lower_expr(value)?],
 
-                    span: Span::generated("runtime_call"),});
+                    span: Span::generated("runtime_call"),
+                });
                 continue;
             }
 
@@ -770,15 +861,30 @@ impl<'a> Resolver<'a> {
             pending.push((key.clone(), self.lower_expr(value)?));
         }
 
-        let target = result.unwrap_or_else(|| LoweredExpr::ObjectNew { props: Vec::new(), non_enumerable: 0 , span: Span::generated("object_new")});
+        let target = result.unwrap_or_else(|| LoweredExpr::ObjectNew {
+            props: Vec::new(),
+            non_enumerable: 0,
+            span: Span::generated("object_new"),
+        });
         if pending.is_empty() {
             Ok(target)
         } else if matches!(target, LoweredExpr::ObjectNew { ref props, .. } if props.is_empty()) {
-            Ok(LoweredExpr::ObjectNew { props: pending, non_enumerable: 0 , span: Span::generated("object_new")})
+            Ok(LoweredExpr::ObjectNew {
+                props: pending,
+                non_enumerable: 0,
+                span: Span::generated("object_new"),
+            })
         } else {
             Ok(LoweredExpr::RuntimeCall {
                 runtime_fn: "ObjectSpread".to_owned(),
-                args: vec![target, LoweredExpr::ObjectNew { props: pending, non_enumerable: 0 , span: Span::generated("object_new")}],
+                args: vec![
+                    target,
+                    LoweredExpr::ObjectNew {
+                        props: pending,
+                        non_enumerable: 0,
+                        span: Span::generated("object_new"),
+                    },
+                ],
                 span: Span::generated("RuntimeCall"),
             })
         }
@@ -808,7 +914,10 @@ impl<'a> Resolver<'a> {
         if let ResolvedExpr::Ident(name) = value
             && let Ok(func_id) = self.resolve_func(name)
         {
-            return Ok(LoweredExpr::Number(func_id.0 as i32, Span::generated("num")));
+            return Ok(LoweredExpr::Number(
+                func_id.0 as i32,
+                Span::generated("num"),
+            ));
         }
         self.lower_expr(value)
     }
@@ -827,16 +936,18 @@ impl<'a> Resolver<'a> {
                 ),
                 span: Some(span),
 
-                phase: None,});
+                phase: None,
+            });
         }
         Ok(LoweredExpr::RuntimeCall {
             runtime_fn: "SetAdd".to_owned(),
             args: vec![self.lower_expr(&args[0])?, self.lower_expr(&args[1])?],
 
-            span: Span::generated("runtime_call"),})
+            span: Span::generated("runtime_call"),
+        })
     }
 
-    pub(super) fn lower_binding_pattern_declarations(
+    pub(crate) fn lower_binding_pattern_declarations(
         &mut self,
         pattern: &BindingPattern,
         value: LoweredExpr,
@@ -853,9 +964,9 @@ impl<'a> Resolver<'a> {
             BindingPattern::Object(bindings) => {
                 let mut statements = Vec::new();
                 for binding in bindings {
-                    statements.extend(self.lower_object_binding_declaration(
-                        binding, bindings, &value, source,
-                    )?);
+                    statements.extend(
+                        self.lower_object_binding_declaration(binding, bindings, &value, source)?,
+                    );
                 }
                 Ok(statements)
             }
@@ -877,7 +988,8 @@ impl<'a> Resolver<'a> {
                 ),
                 span: Some(span),
 
-                phase: None,});
+                phase: None,
+            });
         }
 
         let Some(input) = self.resolved_expr_static_string_value(object) else {
@@ -892,11 +1004,13 @@ impl<'a> Resolver<'a> {
         if !input.is_ascii() {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "issue-5129: String.prototype.matchAll currently supports ASCII input only"
-                    .to_owned(),
+                message:
+                    "issue-5129: String.prototype.matchAll currently supports ASCII input only"
+                        .to_owned(),
                 span: Some(span),
 
-                phase: None,});
+                phase: None,
+            });
         }
 
         let ResolvedExpr::String(raw_pattern) = &args[0] else {
@@ -918,7 +1032,9 @@ impl<'a> Resolver<'a> {
                 phase: None,});
         }
         validate_regexp_plain_literal(raw_pattern, "String.prototype.matchAll literal")?;
-        let delimiter = raw_pattern.rfind('/').expect("regexp literal has delimiter");
+        let delimiter = raw_pattern
+            .rfind('/')
+            .expect("regexp literal has delimiter");
         let flags = &raw_pattern[delimiter + 1..];
         if !flags.contains('g') {
             return Err(Diagnostic {
@@ -951,17 +1067,30 @@ impl<'a> Resolver<'a> {
             if matches {
                 elements.push(LoweredExpr::ObjectNew {
                     props: vec![
-                        ("0".to_owned(), LoweredExpr::String(ch.to_string(), Span::generated("str"))),
-                        ("index".to_owned(), LoweredExpr::Number(index as i32, Span::generated("num"))),
-                        ("input".to_owned(), LoweredExpr::String(input.clone(), Span::generated("str"))),
+                        (
+                            "0".to_owned(),
+                            LoweredExpr::String(ch.to_string(), Span::generated("str")),
+                        ),
+                        (
+                            "index".to_owned(),
+                            LoweredExpr::Number(index as i32, Span::generated("num")),
+                        ),
+                        (
+                            "input".to_owned(),
+                            LoweredExpr::String(input.clone(), Span::generated("str")),
+                        ),
                     ],
                     non_enumerable: 0,
 
-                    span: Span::generated("object_new"),});
+                    span: Span::generated("object_new"),
+                });
             }
         }
 
-        Ok(LoweredExpr::ArrayNew { elements , span: Span::generated("array_new")})
+        Ok(LoweredExpr::ArrayNew {
+            elements,
+            span: Span::generated("array_new"),
+        })
     }
 
     pub(super) fn lower_array_binding_declaration(
@@ -978,12 +1107,17 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::GetLength(Box::new(value.clone()), Span::generated("get_length")),
                 ],
 
-                span: Span::generated("runtime_call"),}
+                span: Span::generated("runtime_call"),
+            }
         } else {
             LoweredExpr::Index {
                 object: Box::new(value.clone()),
-                index: Box::new(LoweredExpr::Number(binding.index as i32, Span::generated("num"))),
-                span: Span::generated("index"),}
+                index: Box::new(LoweredExpr::Number(
+                    binding.index as i32,
+                    Span::generated("num"),
+                )),
+                span: Span::generated("index"),
+            }
         };
         let Some(name) = binding.target.identifier() else {
             if let Some(pattern) = binding.target.pattern() {
@@ -993,7 +1127,11 @@ impl<'a> Resolver<'a> {
         };
         let local_id = self.declare_local(name)?;
         if binding.is_rest {
-            return Ok(vec![LoweredStmt::Let(local_id, element_value, Span::generated("let_stmt"))]);
+            return Ok(vec![LoweredStmt::Let(
+                local_id,
+                element_value,
+                Span::generated("let_stmt"),
+            )]);
         }
         self.lower_binding_declaration_with_default(
             local_id,
@@ -1089,14 +1227,20 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::PropertyGet {
                         obj: Box::new(value.clone()),
                         key: key.clone(),
-                        span: Span::generated("prop_get"),},
+                        span: Span::generated("prop_get"),
+                    },
                 )
             })
             .collect();
         Ok(vec![LoweredStmt::Let(
             local_id,
-            LoweredExpr::ObjectNew { props: rest_props, non_enumerable: 0 , span: Span::generated("object_new")},
-        Span::generated("let_stmt"))])
+            LoweredExpr::ObjectNew {
+                props: rest_props,
+                non_enumerable: 0,
+                span: Span::generated("object_new"),
+            },
+            Span::generated("let_stmt"),
+        )])
     }
 
     pub(super) fn lower_binding_declaration_with_default(
@@ -1106,23 +1250,33 @@ impl<'a> Resolver<'a> {
         default: Option<&BindingDefault>,
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
         let Some(default) = default else {
-            return Ok(vec![LoweredStmt::Let(local_id, value, Span::generated("let_stmt"))]);
+            return Ok(vec![LoweredStmt::Let(
+                local_id,
+                value,
+                Span::generated("let_stmt"),
+            )]);
         };
         let temp_id = self.alloc_temp();
         Ok(vec![
             LoweredStmt::Let(temp_id, value, Span::generated("let_stmt")),
-            LoweredStmt::Let(local_id, LoweredExpr::Local(temp_id, Span::generated("local")), Span::generated("let")),
+            LoweredStmt::Let(
+                local_id,
+                LoweredExpr::Local(temp_id, Span::generated("local")),
+                Span::generated("let"),
+            ),
             LoweredStmt::If {
                 condition: LoweredExpr::Binary {
                     left: Box::new(LoweredExpr::Local(temp_id, Span::generated("local"))),
                     op: LoweredBinaryOp::StrictEqual,
                     right: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
 
-                    span: Span::generated("binary"),},
+                    span: Span::generated("binary"),
+                },
                 then_body: vec![LoweredStmt::Assign(
                     local_id,
                     lowered_binding_default(default),
-                Span::generated("assign"))],
+                    Span::generated("assign"),
+                )],
                 else_body: vec![],
                 span: Span::generated("If"),
             },
@@ -1156,15 +1310,23 @@ impl<'a> Resolver<'a> {
 
             if let Some(closure) = self.arrow_locals.get(&local_id).cloned() {
                 let mut lowered_args = self.lower_call_args(args)?;
-                lowered_args.extend(closure.captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
+                lowered_args.extend(
+                    closure
+                        .captures
+                        .iter()
+                        .copied()
+                        .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+                );
                 return Ok(LoweredExpr::OptionalCall {
                     callee: Box::new(LoweredExpr::Local(local_id, Span::generated("local"))),
                     call: Box::new(LoweredExpr::Call {
                         kind: FunctionCallKind::User(closure.func_id),
                         args: lowered_args,
 
-                        span: Span::generated("call"),}),
-                    span: Span::generated("opt_call"),});
+                        span: Span::generated("call"),
+                    }),
+                    span: Span::generated("opt_call"),
+                });
             }
 
             // Not a closure or nullish (e.g. function declaration) —
@@ -1184,14 +1346,20 @@ impl<'a> Resolver<'a> {
                 ),
                 span: Some(span),
 
-                phase: None,});
+                phase: None,
+            });
         }
-        let lowered_args = self.lower_function_call_args(func_id, LoweredExpr::Undefined(Span::generated("undef")), args)?;
+        let lowered_args = self.lower_function_call_args(
+            func_id,
+            LoweredExpr::Undefined(Span::generated("undef")),
+            args,
+        )?;
         Ok(LoweredExpr::Call {
             kind: FunctionCallKind::User(func_id),
             args: lowered_args,
 
-            span: Span::generated("call"),})
+            span: Span::generated("call"),
+        })
     }
 
     pub(super) fn lower_function_call_args(
@@ -1212,7 +1380,8 @@ impl<'a> Resolver<'a> {
                         arr: Box::new(LoweredExpr::Local(local_id, Span::generated("local"))),
                         index: Box::new(LoweredExpr::Number(index as i32, Span::generated("num"))),
 
-                        span: Span::generated("array_get"),})
+                        span: Span::generated("array_get"),
+                    })
                     .collect()
             } else if let Some(local_id) = self.single_set_local_spread_arg(args) {
                 (0..signature.explicit_params)
@@ -1221,10 +1390,12 @@ impl<'a> Resolver<'a> {
                             runtime_fn: "SetValuesArray".to_owned(),
                             args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
 
-                            span: Span::generated("runtime_call"),}),
+                            span: Span::generated("runtime_call"),
+                        }),
                         index: Box::new(LoweredExpr::Number(index as i32, Span::generated("num"))),
 
-                        span: Span::generated("array_get"),})
+                        span: Span::generated("array_get"),
+                    })
                     .collect()
             } else {
                 self.lower_call_args(args)?
@@ -1241,7 +1412,12 @@ impl<'a> Resolver<'a> {
         if signature.has_rest {
             lowered_args.extend(explicit_args.iter().cloned());
         } else {
-            lowered_args.extend(explicit_args.iter().take(signature.explicit_params).cloned());
+            lowered_args.extend(
+                explicit_args
+                    .iter()
+                    .take(signature.explicit_params)
+                    .cloned(),
+            );
             for _ in explicit_args.len()..signature.explicit_params {
                 lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
             }
@@ -1262,7 +1438,8 @@ impl<'a> Resolver<'a> {
             lowered_args.push(LoweredExpr::ObjectNew {
                 props,
                 non_enumerable: 1 << length_index, // length is non-enumerable
-                span: Span::generated("object_new"),});
+                span: Span::generated("object_new"),
+            });
         }
 
         self.append_function_captures(func_id, &mut lowered_args)?;
@@ -1270,7 +1447,10 @@ impl<'a> Resolver<'a> {
         Ok(lowered_args)
     }
 
-    pub(super) fn single_dense_array_local_spread_arg(&self, args: &[ResolvedExpr]) -> Option<LocalId> {
+    pub(super) fn single_dense_array_local_spread_arg(
+        &self,
+        args: &[ResolvedExpr],
+    ) -> Option<LocalId> {
         let [ResolvedExpr::Spread(spread_expr)] = args else {
             return None;
         };
@@ -1333,7 +1513,8 @@ impl<'a> Resolver<'a> {
                     ),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             lowered_args.push(LoweredExpr::Local(local, Span::generated("local")));
         }
@@ -1372,7 +1553,8 @@ impl<'a> Resolver<'a> {
                     ),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             lowered_args.push(LoweredExpr::Local(local, Span::generated("local")));
         }
@@ -1395,11 +1577,11 @@ impl<'a> Resolver<'a> {
         else {
             return Err(Diagnostic {
                 code: DiagCode::InvariantViolation,
-                message: "arrow function lowering must produce an ArrowFn token"
-                    .to_owned(),
+                message: "arrow function lowering must produce an ArrowFn token".to_owned(),
                 span: Some(span),
 
-                phase: None,});
+                phase: None,
+            });
         };
         let explicit_args = self.lower_call_args(args)?;
         let mut lowered_args = explicit_args
@@ -1431,8 +1613,11 @@ impl<'a> Resolver<'a> {
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
         if Self::is_direct_return_this_iife(params, body, args) {
-            return Ok(LoweredExpr::ObjectNew { props: Vec::new(), non_enumerable: 0 ,
-            span: Span::generated("object_new"),});
+            return Ok(LoweredExpr::ObjectNew {
+                props: Vec::new(),
+                non_enumerable: 0,
+                span: Span::generated("object_new"),
+            });
         }
         if params.iter().any(|param| param.is_rest) {
             return Err(Diagnostic {
@@ -1464,7 +1649,8 @@ impl<'a> Resolver<'a> {
                     .to_owned(),
                 span: Some(span),
 
-                phase: None,});
+                phase: None,
+            });
         };
 
         let explicit_args = self.lower_call_args(args)?;
@@ -1475,12 +1661,17 @@ impl<'a> Resolver<'a> {
         for _ in lowered_args.len()..params.len() {
             lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
         }
-        lowered_args.extend(captures.into_iter().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
+        lowered_args.extend(
+            captures
+                .into_iter()
+                .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+        );
         Ok(LoweredExpr::Call {
             kind: FunctionCallKind::User(func_id),
             args: lowered_args,
 
-            span: Span::generated("call"),})
+            span: Span::generated("call"),
+        })
     }
 
     fn is_direct_return_this_iife(
@@ -1504,7 +1695,9 @@ impl<'a> Resolver<'a> {
             .iter()
             .filter_map(|(key, value)| {
                 if let ResolvedExpr::Ident(name) = value {
-                    self.resolve_func(name).ok().map(|func_id| (key.clone(), func_id))
+                    self.resolve_func(name)
+                        .ok()
+                        .map(|func_id| (key.clone(), func_id))
                 } else {
                     None
                 }
@@ -1546,7 +1739,8 @@ impl<'a> Resolver<'a> {
                         ),
                         span: Some(span),
 
-                        phase: None,})
+                        phase: None,
+                    })
                 }
             }
             "prototype" => Err(Diagnostic {
@@ -1556,7 +1750,8 @@ impl<'a> Resolver<'a> {
                 ),
                 span: Some(span),
 
-                phase: None,}),
+                phase: None,
+            }),
             _ => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!(
@@ -1564,7 +1759,8 @@ impl<'a> Resolver<'a> {
                 ),
                 span: Some(span),
 
-                phase: None,}),
+                phase: None,
+            }),
         }
     }
 
@@ -1610,8 +1806,7 @@ impl<'a> Resolver<'a> {
         // available in the arrow's scope so that super-method resolution works.
         if !capture_names.contains(&"this".to_owned())
             && !excluded_set.contains("this")
-            && (expr_contains_super_ref(body)
-                || block_contains_super_ref(body_stmts))
+            && (expr_contains_super_ref(body) || block_contains_super_ref(body_stmts))
             && self.resolve_local("this").is_ok()
         {
             capture_names.push("this".to_owned());
@@ -1711,7 +1906,8 @@ impl<'a> Resolver<'a> {
                 ),
                 span: None,
 
-                phase: None,});
+                phase: None,
+            });
         }
         if block_contains_this(body) || block_contains_arguments(body) {
             // If the function has an explicit `this` parameter (TypeScript syntax),
@@ -1728,7 +1924,8 @@ impl<'a> Resolver<'a> {
                     ),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             } else {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
@@ -1737,7 +1934,8 @@ impl<'a> Resolver<'a> {
                     ),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
         }
 
@@ -1758,31 +1956,30 @@ impl<'a> Resolver<'a> {
                 ),
                 span: None,
 
-                phase: None,});
+                phase: None,
+            });
         }
         let captures = capture_names
             .iter()
             .map(|capture| self.resolve_local(capture))
             .collect::<Result<Vec<_>, _>>()?;
         let mut lowered_params = params.to_vec();
-        lowered_params.extend(
-            capture_names
-                .iter()
-                .map(|capture| ResolvedParam {
-                    name: capture.clone(),
-                    default: None,
-                    is_rest: false,
-                    span: None,
-                }),
-        );
+        lowered_params.extend(capture_names.iter().map(|capture| ResolvedParam {
+            name: capture.clone(),
+            default: None,
+            is_rest: false,
+            span: None,
+        }));
 
         let func_id = FuncId(self.next_func_id);
         self.next_func_id += 1;
-        let self_closure = (!name.is_empty()).then_some(SelfClosureOptions {
-            name,
-            func_id,
-            capture_names: &capture_names,
-        }).filter(|_| !self.env_cell_names.contains(name));
+        let self_closure = (!name.is_empty())
+            .then_some(SelfClosureOptions {
+                name,
+                func_id,
+                capture_names: &capture_names,
+            })
+            .filter(|_| !self.env_cell_names.contains(name));
 
         let lowered = lower_function(
             func_id,
@@ -1853,13 +2050,10 @@ impl<'a> Resolver<'a> {
         params: &[ResolvedParam],
         body: &[ResolvedStmt],
     ) -> Result<Vec<String>, Diagnostic> {
-        let mut excluded = binding_param_names(
-            params
-                .iter()
-                .map(|param| (param.name.as_str(), param.span)),
-        )?
-        .into_iter()
-        .collect::<HashSet<_>>();
+        let mut excluded =
+            binding_param_names(params.iter().map(|param| (param.name.as_str(), param.span)))?
+                .into_iter()
+                .collect::<HashSet<_>>();
         if !self.env_cell_names.contains(name) {
             excluded.insert(name.to_owned());
         }
@@ -1873,7 +2067,7 @@ impl<'a> Resolver<'a> {
             .collect())
     }
 
-    pub(super) fn declare_local(&mut self, name: &str) -> Result<LocalId, Diagnostic> {
+    pub(crate) fn declare_local(&mut self, name: &str) -> Result<LocalId, Diagnostic> {
         let scope = self.scopes.last_mut().expect("scope must exist");
         if let Some(&existing) = scope.get(name) {
             return Ok(existing);
@@ -1885,7 +2079,7 @@ impl<'a> Resolver<'a> {
         Ok(local_id)
     }
 
-    pub(super) fn declare_self_closure(
+    pub(crate) fn declare_self_closure(
         &mut self,
         name: &str,
         func_id: FuncId,
@@ -1908,7 +2102,7 @@ impl<'a> Resolver<'a> {
         id
     }
 
-    pub(super) fn resolve_local(&self, name: &str) -> Result<LocalId, Diagnostic> {
+    pub(crate) fn resolve_local(&self, name: &str) -> Result<LocalId, Diagnostic> {
         self.scopes
             .iter()
             .rev()
@@ -1918,10 +2112,11 @@ impl<'a> Resolver<'a> {
                 message: format!("unresolved name: `{name}`"),
                 span: None,
 
-                phase: None,})
+                phase: None,
+            })
     }
 
-    pub(super) fn resolve_func(&self, name: &str) -> Result<FuncId, Diagnostic> {
+    pub(crate) fn resolve_func(&self, name: &str) -> Result<FuncId, Diagnostic> {
         self.function_ids
             .get(name)
             .copied()
@@ -1930,7 +2125,8 @@ impl<'a> Resolver<'a> {
                 message: format!("unresolved function: `{name}`"),
                 span: Some(Span::generated("resolve_func")),
 
-                phase: None,})
+                phase: None,
+            })
     }
 
     pub(super) fn module_id_for_specifier(&mut self, specifier: &str) -> usize {
@@ -2035,7 +2231,11 @@ impl<'a> Resolver<'a> {
         self.private_getter_id_for_class(class_name, key)
     }
 
-    pub(super) fn private_getter_id_for_class(&self, class_name: &str, key: &str) -> Option<FuncId> {
+    pub(super) fn private_getter_id_for_class(
+        &self,
+        class_name: &str,
+        key: &str,
+    ) -> Option<FuncId> {
         let getter_name = key.strip_prefix('#')?;
         self.class_method_ids
             .get(&(class_name.to_owned(), format!("#get::{getter_name}")))
@@ -2047,7 +2247,11 @@ impl<'a> Resolver<'a> {
         self.private_setter_id_for_class(class_name, key)
     }
 
-    pub(super) fn private_setter_id_for_class(&self, class_name: &str, key: &str) -> Option<FuncId> {
+    pub(super) fn private_setter_id_for_class(
+        &self,
+        class_name: &str,
+        key: &str,
+    ) -> Option<FuncId> {
         let setter_name = key.strip_prefix('#')?;
         self.class_method_ids
             .get(&(class_name.to_owned(), format!("#set::{setter_name}")))
@@ -2066,7 +2270,8 @@ impl<'a> Resolver<'a> {
                 message: format!("private field slot lookup requires private key, got `{key}`"),
                 span: Some(span),
 
-                phase: None,});
+                phase: None,
+            });
         };
         let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
             code: DiagCode::UnsupportedSyntax,
@@ -2075,14 +2280,14 @@ impl<'a> Resolver<'a> {
             ),
             span: Some(span),
 
-            phase: None,})?;
+            phase: None,
+        })?;
         let Some(mut slot) = self
             .class_private_fields
             .get(class_name)
             .and_then(|fields| fields.get(field_name))
             .copied()
-        else
-        {
+        else {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!(
@@ -2090,7 +2295,8 @@ impl<'a> Resolver<'a> {
                 ),
                 span: Some(span),
 
-                phase: None,});
+                phase: None,
+            });
         };
         slot += self.ancestor_private_slot_count(class_name);
         let brand = self.private_brand_for_class(class_name, Some(span))?;
@@ -2117,18 +2323,18 @@ impl<'a> Resolver<'a> {
             .copied()
             .ok_or_else(|| Diagnostic {
                 code: DiagCode::InvariantViolation,
-                message: format!(
-                    "private brand lookup requires constructor for class `{root}`"
-                ),
+                message: format!("private brand lookup requires constructor for class `{root}`"),
                 span,
 
-                phase: None,})?;
+                phase: None,
+            })?;
         u32::try_from(constructor.0.saturating_add(1)).map_err(|_| Diagnostic {
             code: DiagCode::InvariantViolation,
             message: format!("private brand for class `{class_name}` exceeds u32"),
             span,
 
-            phase: None,})
+            phase: None,
+        })
     }
 
     pub(super) fn ancestor_private_slot_count(&self, class_name: &str) -> usize {
@@ -2139,7 +2345,8 @@ impl<'a> Resolver<'a> {
     }
 
     pub(super) fn private_slot_count(&self, class_name: &str) -> usize {
-        let own = self.class_private_fields
+        let own = self
+            .class_private_fields
             .get(class_name)
             .map_or(0, HashMap::len);
         own + self.ancestor_private_slot_count(class_name)
@@ -2176,7 +2383,9 @@ impl<'a> Resolver<'a> {
                 .resolve_local(name)
                 .ok()
                 .is_some_and(|local| self.local_has_private_progress_storage(local)),
-            ResolvedExpr::New { class_name, .. } => self.class_has_private_progress_storage(class_name),
+            ResolvedExpr::New { class_name, .. } => {
+                self.class_has_private_progress_storage(class_name)
+            }
             _ => false,
         }
     }
@@ -2205,7 +2414,11 @@ impl<'a> Resolver<'a> {
         }
     }
 
-    pub(super) fn is_unsupported_regexp_compile_receiver(&self, expr: &ResolvedExpr, method: &str) -> bool {
+    pub(super) fn is_unsupported_regexp_compile_receiver(
+        &self,
+        expr: &ResolvedExpr,
+        method: &str,
+    ) -> bool {
         if method != "compile" {
             return false;
         }
@@ -2255,7 +2468,8 @@ impl<'a> Resolver<'a> {
                 lowered,
                 LoweredExpr::ArrowFn {
                     representation: ClosureRepresentation::HeapObject,
-                    ..}
+                    ..
+                }
             )
         {
             self.heap_closure_locals.insert(local_id);
@@ -2392,7 +2606,10 @@ impl<'a> Resolver<'a> {
         ));
         stmts.push(LoweredStmt::Let(
             result_arr,
-            LoweredExpr::ArrayNew { elements: vec![], span },
+            LoweredExpr::ArrayNew {
+                elements: vec![],
+                span,
+            },
             span,
         ));
         stmts.push(LoweredStmt::Let(
@@ -2408,7 +2625,10 @@ impl<'a> Resolver<'a> {
             next_fn,
             LoweredExpr::PropertyGetDynamic {
                 obj: Box::new(LoweredExpr::Local(iterator, Span::generated("local"))),
-                key: Box::new(LoweredExpr::String("next".to_owned(), Span::generated("str"))),
+                key: Box::new(LoweredExpr::String(
+                    "next".to_owned(),
+                    Span::generated("str"),
+                )),
                 span,
             },
             span,
@@ -2426,7 +2646,10 @@ impl<'a> Resolver<'a> {
             done_val,
             LoweredExpr::PropertyGetDynamic {
                 obj: Box::new(LoweredExpr::Local(r, Span::generated("local"))),
-                key: Box::new(LoweredExpr::String("done".to_owned(), Span::generated("str"))),
+                key: Box::new(LoweredExpr::String(
+                    "done".to_owned(),
+                    Span::generated("str"),
+                )),
                 span,
             },
             span,
@@ -2435,7 +2658,10 @@ impl<'a> Resolver<'a> {
             value,
             LoweredExpr::PropertyGetDynamic {
                 obj: Box::new(LoweredExpr::Local(r, Span::generated("local"))),
-                key: Box::new(LoweredExpr::String("value".to_owned(), Span::generated("str"))),
+                key: Box::new(LoweredExpr::String(
+                    "value".to_owned(),
+                    Span::generated("str"),
+                )),
                 span,
             },
             span,
@@ -2526,7 +2752,10 @@ impl<'a> Resolver<'a> {
             next_fn,
             LoweredExpr::PropertyGetDynamic {
                 obj: Box::new(LoweredExpr::Local(iterator, Span::generated("local"))),
-                key: Box::new(LoweredExpr::String("next".to_owned(), Span::generated("str"))),
+                key: Box::new(LoweredExpr::String(
+                    "next".to_owned(),
+                    Span::generated("str"),
+                )),
                 span,
             },
             span,
@@ -2544,7 +2773,10 @@ impl<'a> Resolver<'a> {
             done_val,
             LoweredExpr::PropertyGetDynamic {
                 obj: Box::new(LoweredExpr::Local(r, Span::generated("local"))),
-                key: Box::new(LoweredExpr::String("done".to_owned(), Span::generated("str"))),
+                key: Box::new(LoweredExpr::String(
+                    "done".to_owned(),
+                    Span::generated("str"),
+                )),
                 span,
             },
             span,
@@ -2554,7 +2786,10 @@ impl<'a> Resolver<'a> {
             var_id,
             LoweredExpr::PropertyGetDynamic {
                 obj: Box::new(LoweredExpr::Local(r, Span::generated("local"))),
-                key: Box::new(LoweredExpr::String("value".to_owned(), Span::generated("str"))),
+                key: Box::new(LoweredExpr::String(
+                    "value".to_owned(),
+                    Span::generated("str"),
+                )),
                 span,
             },
             span,
@@ -2704,7 +2939,11 @@ impl<'a> Resolver<'a> {
         }
     }
 
-    pub(super) fn update_static_object_literal_alias_sources(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
+    pub(super) fn update_static_object_literal_alias_sources(
+        &mut self,
+        local_id: LocalId,
+        expr: &ResolvedExpr,
+    ) {
         self.static_object_literal_alias_sources.remove(&local_id);
         if let ResolvedExpr::Ident(name) = expr
             && let Ok(source_id) = self.resolve_local(name)
@@ -2755,15 +2994,29 @@ impl<'a> Resolver<'a> {
             }),
             // Logical OR/AND where either side produces a dense array
             // (e.g., `x || []`, `x && []`)
-            ResolvedExpr::Binary { left, op: BinaryOp::Or | BinaryOp::And, right } => {
+            ResolvedExpr::Binary {
+                left,
+                op: BinaryOp::Or | BinaryOp::And,
+                right,
+            } => {
                 self.resolved_expr_produces_dense_array(left)
                     || self.resolved_expr_produces_dense_array(right)
             }
-            ResolvedExpr::MethodCall { object, method, args, .. } if method == "map" => {
+            ResolvedExpr::MethodCall {
+                object,
+                method,
+                args,
+                ..
+            } if method == "map" => {
                 self.is_known_array_expr(object)
                     && (string_constructor_arrow_callback(args) || unary_plus_arrow_callback(args))
             }
-            ResolvedExpr::MethodCall { object, method, args, .. } if method == "matchAll" => {
+            ResolvedExpr::MethodCall {
+                object,
+                method,
+                args,
+                ..
+            } if method == "matchAll" => {
                 self.resolved_expr_static_string_value(object).is_some()
                     && matches!(args.as_slice(), [ResolvedExpr::String(raw)] if looks_like_regexp_literal(raw))
             }
@@ -2823,7 +3076,9 @@ impl<'a> Resolver<'a> {
     ) -> Option<Vec<ResolvedArrayElement>> {
         match expr {
             ResolvedExpr::Array(elements) => Some(elements.clone()),
-            ResolvedExpr::New { class_name, args, .. } if class_name == "Array" => {
+            ResolvedExpr::New {
+                class_name, args, ..
+            } if class_name == "Array" => {
                 let [ResolvedExpr::Number(length)] = args.as_slice() else {
                     return None;
                 };
@@ -2904,8 +3159,7 @@ impl<'a> Resolver<'a> {
                         | BinaryOp::Power
                         | BinaryOp::Divide
                         | BinaryOp::Modulo
-                )
-                    && self.resolved_expr_is_bigint(left)
+                ) && self.resolved_expr_is_bigint(left)
                     && self.resolved_expr_is_bigint(right)
             }
             ResolvedExpr::Call { callee, .. } => {
@@ -2929,9 +3183,7 @@ impl<'a> Resolver<'a> {
         match expr {
             ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local_id| {
                 self.bigint_locals.contains(&local_id)
-                    || self
-                        .control_flow_bigint_div_rem_locals
-                        .contains(&local_id)
+                    || self.control_flow_bigint_div_rem_locals.contains(&local_id)
             }),
             ResolvedExpr::Unary { op, expr } => {
                 *op == UnaryOp::Negate && self.resolved_expr_is_bigint_div_rem_operand(expr)
@@ -2940,16 +3192,13 @@ impl<'a> Resolver<'a> {
         }
     }
 
-    pub(super) fn resolved_expr_is_control_flow_mixed_bigint(
-        &self,
-        expr: &ResolvedExpr,
-    ) -> bool {
+    pub(super) fn resolved_expr_is_control_flow_mixed_bigint(&self, expr: &ResolvedExpr) -> bool {
         let ResolvedExpr::Ident(name) = expr else {
             return false;
         };
-        self.resolve_local(name).ok().is_some_and(|local_id| {
-            self.control_flow_mixed_bigint_locals.contains(&local_id)
-        })
+        self.resolve_local(name)
+            .ok()
+            .is_some_and(|local_id| self.control_flow_mixed_bigint_locals.contains(&local_id))
     }
 
     pub(super) fn bigint_div_rem_candidate_locals(&self) -> HashSet<LocalId> {
@@ -3085,7 +3334,8 @@ impl<'a> Resolver<'a> {
         let mut while_body = Vec::new();
         let result_expr;
 
-        let arr_ref = || -> LoweredExpr { LoweredExpr::Local(receiver_local, Span::generated("local")) };
+        let arr_ref =
+            || -> LoweredExpr { LoweredExpr::Local(receiver_local, Span::generated("local")) };
 
         // Build the loop body based on method
         match method {
@@ -3097,7 +3347,8 @@ impl<'a> Resolver<'a> {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
 
-                        span: Span::generated("array_get"),},
+                        span: Span::generated("array_get"),
+                    },
                     Span::generated("Let"),
                 ));
 
@@ -3107,16 +3358,20 @@ impl<'a> Resolver<'a> {
                         LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
-                    let mut call_args: Vec<LoweredExpr> = explicit_args
-                        .into_iter()
-                        .take(param_count)
-                        .collect();
-                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
+                    let mut call_args: Vec<LoweredExpr> =
+                        explicit_args.into_iter().take(param_count).collect();
+                    call_args.extend(
+                        captures
+                            .iter()
+                            .copied()
+                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+                    );
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
 
-                        span: Span::generated("call"),}
+                        span: Span::generated("call"),
+                    }
                 };
 
                 while_body.push(LoweredStmt::Expr(call_args, Span::generated("expr_stmt")));
@@ -3127,7 +3382,8 @@ impl<'a> Resolver<'a> {
                         op: LoweredBinaryOp::Add,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
 
-                        span: Span::generated("binary"),},
+                        span: Span::generated("binary"),
+                    },
                     Span::generated("Assign"),
                 ));
 
@@ -3140,8 +3396,10 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::ArrayNew {
                         elements: vec![],
 
-                        span: Span::generated("array_new"),},
-                    Span::generated("let_stmt")));
+                        span: Span::generated("array_new"),
+                    },
+                    Span::generated("let_stmt"),
+                ));
 
                 let elem = self.alloc_temp();
                 while_body.push(LoweredStmt::Let(
@@ -3150,7 +3408,8 @@ impl<'a> Resolver<'a> {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
 
-                        span: Span::generated("array_get"),},
+                        span: Span::generated("array_get"),
+                    },
                     Span::generated("Let"),
                 ));
 
@@ -3161,28 +3420,40 @@ impl<'a> Resolver<'a> {
                         LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
-                    let mut call_args: Vec<LoweredExpr> = explicit_args
-                        .into_iter()
-                        .take(param_count)
-                        .collect();
-                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
+                    let mut call_args: Vec<LoweredExpr> =
+                        explicit_args.into_iter().take(param_count).collect();
+                    call_args.extend(
+                        captures
+                            .iter()
+                            .copied()
+                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+                    );
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
 
-                        span: Span::generated("call"),}
+                        span: Span::generated("call"),
+                    }
                 };
-                while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
+                while_body.push(LoweredStmt::Let(
+                    pred,
+                    call_args,
+                    Span::generated("let_stmt"),
+                ));
                 while_body.push(LoweredStmt::If {
                     condition: LoweredExpr::Local(pred, Span::generated("local")),
-                    then_body: vec![LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                        runtime_fn: "ArrayPushGrow".to_owned(),
-                        args: vec![
-                            LoweredExpr::Local(result, Span::generated("local")),
-                            LoweredExpr::Local(elem, Span::generated("local")),
-                        ],
+                    then_body: vec![LoweredStmt::Expr(
+                        LoweredExpr::RuntimeCall {
+                            runtime_fn: "ArrayPushGrow".to_owned(),
+                            args: vec![
+                                LoweredExpr::Local(result, Span::generated("local")),
+                                LoweredExpr::Local(elem, Span::generated("local")),
+                            ],
 
-                        span: Span::generated("runtime_call"),}, Span::generated("Expr"))],
+                            span: Span::generated("runtime_call"),
+                        },
+                        Span::generated("Expr"),
+                    )],
                     else_body: vec![],
                     span: Span::generated("If"),
                 });
@@ -3193,7 +3464,8 @@ impl<'a> Resolver<'a> {
                         op: LoweredBinaryOp::Add,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
 
-                        span: Span::generated("binary"),},
+                        span: Span::generated("binary"),
+                    },
                     Span::generated("Assign"),
                 ));
 
@@ -3201,7 +3473,11 @@ impl<'a> Resolver<'a> {
             }
             "find" => {
                 let found = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(found, LoweredExpr::Undefined(Span::generated("undef")), Span::generated("Let")));
+                stmts.push(LoweredStmt::Let(
+                    found,
+                    LoweredExpr::Undefined(Span::generated("undef")),
+                    Span::generated("Let"),
+                ));
 
                 let elem = self.alloc_temp();
                 while_body.push(LoweredStmt::Let(
@@ -3210,7 +3486,8 @@ impl<'a> Resolver<'a> {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
 
-                        span: Span::generated("array_get"),},
+                        span: Span::generated("array_get"),
+                    },
                     Span::generated("Let"),
                 ));
 
@@ -3221,18 +3498,26 @@ impl<'a> Resolver<'a> {
                         LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
-                    let mut call_args: Vec<LoweredExpr> = explicit_args
-                        .into_iter()
-                        .take(param_count)
-                        .collect();
-                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
+                    let mut call_args: Vec<LoweredExpr> =
+                        explicit_args.into_iter().take(param_count).collect();
+                    call_args.extend(
+                        captures
+                            .iter()
+                            .copied()
+                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+                    );
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
 
-                        span: Span::generated("call"),}
+                        span: Span::generated("call"),
+                    }
                 };
-                while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
+                while_body.push(LoweredStmt::Let(
+                    pred,
+                    call_args,
+                    Span::generated("let_stmt"),
+                ));
                 while_body.push(LoweredStmt::If {
                     condition: LoweredExpr::Local(pred, Span::generated("local")),
                     then_body: vec![LoweredStmt::Assign(
@@ -3242,7 +3527,8 @@ impl<'a> Resolver<'a> {
                     )],
                     else_body: vec![],
 
-                    span: Span::generated("if_stmt"),});
+                    span: Span::generated("if_stmt"),
+                });
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
@@ -3250,7 +3536,8 @@ impl<'a> Resolver<'a> {
                         op: LoweredBinaryOp::Add,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
 
-                        span: Span::generated("binary"),},
+                        span: Span::generated("binary"),
+                    },
                     Span::generated("Assign"),
                 ));
 
@@ -3258,7 +3545,11 @@ impl<'a> Resolver<'a> {
             }
             "findIndex" => {
                 let found = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(found, LoweredExpr::Number(-1, Span::generated("num")), Span::generated("Let")));
+                stmts.push(LoweredStmt::Let(
+                    found,
+                    LoweredExpr::Number(-1, Span::generated("num")),
+                    Span::generated("Let"),
+                ));
 
                 let elem = self.alloc_temp();
                 while_body.push(LoweredStmt::Let(
@@ -3267,7 +3558,8 @@ impl<'a> Resolver<'a> {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
 
-                        span: Span::generated("array_get"),},
+                        span: Span::generated("array_get"),
+                    },
                     Span::generated("Let"),
                 ));
 
@@ -3278,18 +3570,26 @@ impl<'a> Resolver<'a> {
                         LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
-                    let mut call_args: Vec<LoweredExpr> = explicit_args
-                        .into_iter()
-                        .take(param_count)
-                        .collect();
-                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
+                    let mut call_args: Vec<LoweredExpr> =
+                        explicit_args.into_iter().take(param_count).collect();
+                    call_args.extend(
+                        captures
+                            .iter()
+                            .copied()
+                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+                    );
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
 
-                        span: Span::generated("call"),}
+                        span: Span::generated("call"),
+                    }
                 };
-                while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
+                while_body.push(LoweredStmt::Let(
+                    pred,
+                    call_args,
+                    Span::generated("let_stmt"),
+                ));
                 while_body.push(LoweredStmt::If {
                     condition: LoweredExpr::Local(pred, Span::generated("local")),
                     then_body: vec![
@@ -3298,11 +3598,15 @@ impl<'a> Resolver<'a> {
                             LoweredExpr::Local(i, Span::generated("local")),
                             Span::generated("Assign"),
                         ),
-                        LoweredStmt::Break { label: None , span: Span::generated("brk")},
+                        LoweredStmt::Break {
+                            label: None,
+                            span: Span::generated("brk"),
+                        },
                     ],
                     else_body: vec![],
 
-                    span: Span::generated("if_stmt"),});
+                    span: Span::generated("if_stmt"),
+                });
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
@@ -3310,7 +3614,8 @@ impl<'a> Resolver<'a> {
                         op: LoweredBinaryOp::Add,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
 
-                        span: Span::generated("binary"),},
+                        span: Span::generated("binary"),
+                    },
                     Span::generated("Assign"),
                 ));
 
@@ -3331,7 +3636,8 @@ impl<'a> Resolver<'a> {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
 
-                        span: Span::generated("array_get"),},
+                        span: Span::generated("array_get"),
+                    },
                     Span::generated("Let"),
                 ));
 
@@ -3342,18 +3648,26 @@ impl<'a> Resolver<'a> {
                         LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
-                    let mut call_args: Vec<LoweredExpr> = explicit_args
-                        .into_iter()
-                        .take(param_count)
-                        .collect();
-                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
+                    let mut call_args: Vec<LoweredExpr> =
+                        explicit_args.into_iter().take(param_count).collect();
+                    call_args.extend(
+                        captures
+                            .iter()
+                            .copied()
+                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+                    );
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
 
-                        span: Span::generated("call"),}
+                        span: Span::generated("call"),
+                    }
                 };
-                while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
+                while_body.push(LoweredStmt::Let(
+                    pred,
+                    call_args,
+                    Span::generated("let_stmt"),
+                ));
                 while_body.push(LoweredStmt::If {
                     condition: LoweredExpr::Local(pred, Span::generated("local")),
                     then_body: vec![
@@ -3362,8 +3676,10 @@ impl<'a> Resolver<'a> {
                             LoweredExpr::Local(elem, Span::generated("local")),
                             Span::generated("Assign"),
                         ),
-                        LoweredStmt::Break { label: None ,
-                        span: Span::generated("break"),},
+                        LoweredStmt::Break {
+                            label: None,
+                            span: Span::generated("break"),
+                        },
                     ],
                     else_body: vec![],
                     span: Span::generated("If"),
@@ -3375,7 +3691,8 @@ impl<'a> Resolver<'a> {
                         op: LoweredBinaryOp::Subtract,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
 
-                        span: Span::generated("binary"),},
+                        span: Span::generated("binary"),
+                    },
                     Span::generated("Assign"),
                 ));
 
@@ -3383,7 +3700,11 @@ impl<'a> Resolver<'a> {
             }
             "findLastIndex" => {
                 let found = self.alloc_temp();
-                stmts.push(LoweredStmt::Let(found, LoweredExpr::Number(-1, Span::generated("num")), Span::generated("Let")));
+                stmts.push(LoweredStmt::Let(
+                    found,
+                    LoweredExpr::Number(-1, Span::generated("num")),
+                    Span::generated("Let"),
+                ));
 
                 let elem = self.alloc_temp();
                 while_body.push(LoweredStmt::Let(
@@ -3392,7 +3713,8 @@ impl<'a> Resolver<'a> {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
 
-                        span: Span::generated("array_get"),},
+                        span: Span::generated("array_get"),
+                    },
                     Span::generated("Let"),
                 ));
 
@@ -3403,18 +3725,26 @@ impl<'a> Resolver<'a> {
                         LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
-                    let mut call_args: Vec<LoweredExpr> = explicit_args
-                        .into_iter()
-                        .take(param_count)
-                        .collect();
-                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
+                    let mut call_args: Vec<LoweredExpr> =
+                        explicit_args.into_iter().take(param_count).collect();
+                    call_args.extend(
+                        captures
+                            .iter()
+                            .copied()
+                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+                    );
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
 
-                        span: Span::generated("call"),}
+                        span: Span::generated("call"),
+                    }
                 };
-                while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
+                while_body.push(LoweredStmt::Let(
+                    pred,
+                    call_args,
+                    Span::generated("let_stmt"),
+                ));
                 while_body.push(LoweredStmt::If {
                     condition: LoweredExpr::Local(pred, Span::generated("local")),
                     then_body: vec![
@@ -3423,8 +3753,10 @@ impl<'a> Resolver<'a> {
                             LoweredExpr::Local(i, Span::generated("local")),
                             Span::generated("Assign"),
                         ),
-                        LoweredStmt::Break { label: None ,
-                        span: Span::generated("break"),},
+                        LoweredStmt::Break {
+                            label: None,
+                            span: Span::generated("break"),
+                        },
                     ],
                     else_body: vec![],
                     span: Span::generated("If"),
@@ -3436,7 +3768,8 @@ impl<'a> Resolver<'a> {
                         op: LoweredBinaryOp::Subtract,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
 
-                        span: Span::generated("binary"),},
+                        span: Span::generated("binary"),
+                    },
                     Span::generated("Assign"),
                 ));
 
@@ -3457,7 +3790,8 @@ impl<'a> Resolver<'a> {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
 
-                        span: Span::generated("array_get"),},
+                        span: Span::generated("array_get"),
+                    },
                     Span::generated("Let"),
                 ));
 
@@ -3468,18 +3802,26 @@ impl<'a> Resolver<'a> {
                         LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
-                    let mut call_args: Vec<LoweredExpr> = explicit_args
-                        .into_iter()
-                        .take(param_count)
-                        .collect();
-                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
+                    let mut call_args: Vec<LoweredExpr> =
+                        explicit_args.into_iter().take(param_count).collect();
+                    call_args.extend(
+                        captures
+                            .iter()
+                            .copied()
+                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+                    );
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
 
-                        span: Span::generated("call"),}
+                        span: Span::generated("call"),
+                    }
                 };
-                while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
+                while_body.push(LoweredStmt::Let(
+                    pred,
+                    call_args,
+                    Span::generated("let_stmt"),
+                ));
                 while_body.push(LoweredStmt::If {
                     condition: LoweredExpr::Local(pred, Span::generated("local")),
                     then_body: vec![LoweredStmt::Assign(
@@ -3489,7 +3831,8 @@ impl<'a> Resolver<'a> {
                     )],
                     else_body: vec![],
 
-                    span: Span::generated("if_stmt"),});
+                    span: Span::generated("if_stmt"),
+                });
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
@@ -3497,7 +3840,8 @@ impl<'a> Resolver<'a> {
                         op: LoweredBinaryOp::Add,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
 
-                        span: Span::generated("binary"),},
+                        span: Span::generated("binary"),
+                    },
                     Span::generated("Assign"),
                 ));
 
@@ -3518,7 +3862,8 @@ impl<'a> Resolver<'a> {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
 
-                        span: Span::generated("array_get"),},
+                        span: Span::generated("array_get"),
+                    },
                     Span::generated("Let"),
                 ));
 
@@ -3529,31 +3874,41 @@ impl<'a> Resolver<'a> {
                         LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
-                    let mut call_args: Vec<LoweredExpr> = explicit_args
-                        .into_iter()
-                        .take(param_count)
-                        .collect();
-                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
+                    let mut call_args: Vec<LoweredExpr> =
+                        explicit_args.into_iter().take(param_count).collect();
+                    call_args.extend(
+                        captures
+                            .iter()
+                            .copied()
+                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+                    );
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
 
-                        span: Span::generated("call"),}
+                        span: Span::generated("call"),
+                    }
                 };
-                while_body.push(LoweredStmt::Let(pred, call_args, Span::generated("let_stmt")));
+                while_body.push(LoweredStmt::Let(
+                    pred,
+                    call_args,
+                    Span::generated("let_stmt"),
+                ));
                 while_body.push(LoweredStmt::If {
                     condition: LoweredExpr::Unary {
                         op: LoweredUnaryOp::Not,
                         expr: Box::new(LoweredExpr::Local(pred, Span::generated("local"))),
 
-                        span: Span::generated("unary"),},
+                        span: Span::generated("unary"),
+                    },
                     then_body: vec![LoweredStmt::Assign(
                         all,
                         LoweredExpr::Bool(false, Span::generated("bool")),
                         Span::generated("Assign"),
                     )],
                     else_body: vec![],
-                    span: Span::generated("if_stmt"),});
+                    span: Span::generated("if_stmt"),
+                });
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
@@ -3561,7 +3916,8 @@ impl<'a> Resolver<'a> {
                         op: LoweredBinaryOp::Add,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
 
-                        span: Span::generated("binary"),},
+                        span: Span::generated("binary"),
+                    },
                     Span::generated("Assign"),
                 ));
 
@@ -3583,7 +3939,11 @@ impl<'a> Resolver<'a> {
 
                         phase: None,});
                 };
-                stmts.push(LoweredStmt::Let(acc, init_expr, Span::generated("let_stmt")));
+                stmts.push(LoweredStmt::Let(
+                    acc,
+                    init_expr,
+                    Span::generated("let_stmt"),
+                ));
 
                 let elem = self.alloc_temp();
                 while_body.push(LoweredStmt::Let(
@@ -3592,7 +3952,8 @@ impl<'a> Resolver<'a> {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
 
-                        span: Span::generated("array_get"),},
+                        span: Span::generated("array_get"),
+                    },
                     Span::generated("Let"),
                 ));
 
@@ -3603,19 +3964,24 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::Local(i, Span::generated("local")),
                     arr_ref(),
                 ];
-                let mut reduce_call_args: Vec<LoweredExpr> = reduce_explicit
-                    .into_iter()
-                    .take(param_count)
-                    .collect();
-                reduce_call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
+                let mut reduce_call_args: Vec<LoweredExpr> =
+                    reduce_explicit.into_iter().take(param_count).collect();
+                reduce_call_args.extend(
+                    captures
+                        .iter()
+                        .copied()
+                        .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+                );
                 while_body.push(LoweredStmt::Assign(
                     acc,
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: reduce_call_args,
 
-                        span: Span::generated("call"),},
-                    Span::generated("Assign")));
+                        span: Span::generated("call"),
+                    },
+                    Span::generated("Assign"),
+                ));
                 if method == "reduceRight" {
                     while_body.push(LoweredStmt::Assign(
                         i,
@@ -3624,7 +3990,8 @@ impl<'a> Resolver<'a> {
                             op: LoweredBinaryOp::Subtract,
                             right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
 
-                            span: Span::generated("binary"),},
+                            span: Span::generated("binary"),
+                        },
                         Span::generated("Assign"),
                     ));
                 } else {
@@ -3635,7 +4002,8 @@ impl<'a> Resolver<'a> {
                             op: LoweredBinaryOp::Add,
                             right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
 
-                            span: Span::generated("binary"),},
+                            span: Span::generated("binary"),
+                        },
                         Span::generated("Assign"),
                     ));
                 }
@@ -3646,8 +4014,10 @@ impl<'a> Resolver<'a> {
                 let result = self.alloc_temp();
                 stmts.push(LoweredStmt::Let(
                     result,
-                    LoweredExpr::ArrayNew { elements: vec![] ,
-                    span: Span::generated("array_new"),},
+                    LoweredExpr::ArrayNew {
+                        elements: vec![],
+                        span: Span::generated("array_new"),
+                    },
                     Span::generated("Let"),
                 ));
                 let elem = self.alloc_temp();
@@ -3657,7 +4027,8 @@ impl<'a> Resolver<'a> {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
 
-                        span: Span::generated("array_get"),},
+                        span: Span::generated("array_get"),
+                    },
                     Span::generated("Let"),
                 ));
                 let mapped = self.alloc_temp();
@@ -3667,27 +4038,39 @@ impl<'a> Resolver<'a> {
                         LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
-                    let mut call_args: Vec<LoweredExpr> = explicit_args
-                        .into_iter()
-                        .take(param_count)
-                        .collect();
-                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
+                    let mut call_args: Vec<LoweredExpr> =
+                        explicit_args.into_iter().take(param_count).collect();
+                    call_args.extend(
+                        captures
+                            .iter()
+                            .copied()
+                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+                    );
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
 
-                        span: Span::generated("call"),}
+                        span: Span::generated("call"),
+                    }
                 };
-                while_body.push(LoweredStmt::Let(mapped, call_args, Span::generated("let_stmt")));
+                while_body.push(LoweredStmt::Let(
+                    mapped,
+                    call_args,
+                    Span::generated("let_stmt"),
+                ));
                 // Push or spread the result (handles array vs non-array)
-                while_body.push(LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                    runtime_fn: "ArrayPushOrSpread".to_owned(),
-                    args: vec![
-                        LoweredExpr::Local(result, Span::generated("local")),
-                        LoweredExpr::Local(mapped, Span::generated("local")),
-                    ],
+                while_body.push(LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "ArrayPushOrSpread".to_owned(),
+                        args: vec![
+                            LoweredExpr::Local(result, Span::generated("local")),
+                            LoweredExpr::Local(mapped, Span::generated("local")),
+                        ],
 
-                    span: Span::generated("runtime_call"),}, Span::generated("Expr")));
+                        span: Span::generated("runtime_call"),
+                    },
+                    Span::generated("Expr"),
+                ));
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
@@ -3695,7 +4078,8 @@ impl<'a> Resolver<'a> {
                         op: LoweredBinaryOp::Add,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
 
-                        span: Span::generated("binary"),},
+                        span: Span::generated("binary"),
+                    },
                     Span::generated("Assign"),
                 ));
                 result_expr = LoweredExpr::Local(result, Span::generated("local"));
@@ -3706,7 +4090,8 @@ impl<'a> Resolver<'a> {
                     result,
                     LoweredExpr::ArrayNew {
                         elements: vec![],
-                        span: Span::generated("array_new"),},
+                        span: Span::generated("array_new"),
+                    },
                     Span::generated("Let"),
                 ));
 
@@ -3716,7 +4101,8 @@ impl<'a> Resolver<'a> {
                     LoweredExpr::ArrayGet {
                         arr: Box::new(arr_ref()),
                         index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
-                        span: Span::generated("array_get"),},
+                        span: Span::generated("array_get"),
+                    },
                     Span::generated("Let"),
                 ));
 
@@ -3727,24 +4113,36 @@ impl<'a> Resolver<'a> {
                         LoweredExpr::Local(i, Span::generated("local")),
                         arr_ref(),
                     ];
-                    let mut call_args: Vec<LoweredExpr> = explicit_args
-                        .into_iter()
-                        .take(param_count)
-                        .collect();
-                    call_args.extend(captures.iter().copied().map(|id| LoweredExpr::Local(id, Span::generated("local"))));
+                    let mut call_args: Vec<LoweredExpr> =
+                        explicit_args.into_iter().take(param_count).collect();
+                    call_args.extend(
+                        captures
+                            .iter()
+                            .copied()
+                            .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+                    );
                     LoweredExpr::Call {
                         kind: FunctionCallKind::User(func_id),
                         args: call_args,
-                        span: Span::generated("call"),}
+                        span: Span::generated("call"),
+                    }
                 };
-                while_body.push(LoweredStmt::Let(mapped, call_args, Span::generated("let_stmt")));
-                while_body.push(LoweredStmt::Expr(LoweredExpr::RuntimeCall {
-                    runtime_fn: "ArrayPushGrow".to_owned(),
-                    args: vec![
-                        LoweredExpr::Local(result, Span::generated("local")),
-                        LoweredExpr::Local(mapped, Span::generated("local")),
-                    ],
-                    span: Span::generated("runtime_call"),}, Span::generated("Expr")));
+                while_body.push(LoweredStmt::Let(
+                    mapped,
+                    call_args,
+                    Span::generated("let_stmt"),
+                ));
+                while_body.push(LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "ArrayPushGrow".to_owned(),
+                        args: vec![
+                            LoweredExpr::Local(result, Span::generated("local")),
+                            LoweredExpr::Local(mapped, Span::generated("local")),
+                        ],
+                        span: Span::generated("runtime_call"),
+                    },
+                    Span::generated("Expr"),
+                ));
                 while_body.push(LoweredStmt::Assign(
                     i,
                     LoweredExpr::Binary {
@@ -3752,7 +4150,8 @@ impl<'a> Resolver<'a> {
                         op: LoweredBinaryOp::Add,
                         right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
 
-                        span: Span::generated("binary"),},
+                        span: Span::generated("binary"),
+                    },
                     Span::generated("Assign"),
                 ));
 
@@ -3767,7 +4166,8 @@ impl<'a> Resolver<'a> {
                     ),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
         }
 
@@ -3780,11 +4180,16 @@ impl<'a> Resolver<'a> {
                     op: LoweredBinaryOp::Subtract,
                     right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
 
-                    span: Span::generated("binary"),},
+                    span: Span::generated("binary"),
+                },
                 Span::generated("Let"),
             ));
         } else {
-            stmts.push(LoweredStmt::Let(i, LoweredExpr::Number(0, Span::generated("num")), Span::generated("Let")));
+            stmts.push(LoweredStmt::Let(
+                i,
+                LoweredExpr::Number(0, Span::generated("num")),
+                Span::generated("Let"),
+            ));
         }
 
         // Determine the While condition based on method
@@ -3804,7 +4209,8 @@ impl<'a> Resolver<'a> {
                     span: Span::generated("binary"),
                 }),
 
-                span: Span::generated("binary"),},
+                span: Span::generated("binary"),
+            },
             "findIndex" => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Binary {
                     left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
@@ -3820,7 +4226,8 @@ impl<'a> Resolver<'a> {
                     span: Span::generated("binary"),
                 }),
 
-                span: Span::generated("binary"),},
+                span: Span::generated("binary"),
+            },
             "findLast" => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Binary {
                     left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
@@ -3836,7 +4243,8 @@ impl<'a> Resolver<'a> {
                     span: Span::generated("binary"),
                 }),
 
-                span: Span::generated("binary"),},
+                span: Span::generated("binary"),
+            },
             "findLastIndex" => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Binary {
                     left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
@@ -3850,21 +4258,25 @@ impl<'a> Resolver<'a> {
                     op: LoweredBinaryOp::StrictEqual,
                     right: Box::new(LoweredExpr::Number(-1, Span::generated("num"))),
 
-                    span: Span::generated("binary"),}),
+                    span: Span::generated("binary"),
+                }),
 
-                span: Span::generated("binary"),},
+                span: Span::generated("binary"),
+            },
             "some" => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Binary {
                     left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                     op: LoweredBinaryOp::Less,
                     right: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
 
-                    span: Span::generated("binary"),}),
+                    span: Span::generated("binary"),
+                }),
                 op: LoweredBinaryOp::And,
                 right: Box::new(LoweredExpr::Unary {
                     op: LoweredUnaryOp::Not,
                     expr: Box::new(result_expr.clone()),
-                    span: Span::generated("unary"),}),
+                    span: Span::generated("unary"),
+                }),
                 span: Span::generated("binary"),
             },
             "every" => LoweredExpr::Binary {
@@ -3873,7 +4285,8 @@ impl<'a> Resolver<'a> {
                     op: LoweredBinaryOp::Less,
                     right: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
 
-                    span: Span::generated("binary"),}),
+                    span: Span::generated("binary"),
+                }),
                 op: LoweredBinaryOp::And,
                 right: Box::new(result_expr.clone()),
                 span: Span::generated("binary"),
@@ -3882,24 +4295,28 @@ impl<'a> Resolver<'a> {
                 left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                 op: LoweredBinaryOp::GreaterEqual,
                 right: Box::new(LoweredExpr::Number(0, Span::generated("num"))),
-                span: Span::generated("binary"),},
+                span: Span::generated("binary"),
+            },
             _ => LoweredExpr::Binary {
                 left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
                 op: LoweredBinaryOp::Less,
                 right: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
-                span: Span::generated("binary"),},
+                span: Span::generated("binary"),
+            },
         };
 
         stmts.push(LoweredStmt::While {
             condition,
             body: while_body,
-            span: Span::generated("while"),});
+            span: Span::generated("while"),
+        });
 
         Ok(LoweredExpr::Block {
             stmts,
             result: Box::new(result_expr),
 
-            span: Span::generated("block"),})
+            span: Span::generated("block"),
+        })
     }
 
     /// Lower Map.prototype.forEach with an ArrowFn callback.
@@ -3962,9 +4379,8 @@ impl<'a> Resolver<'a> {
             _ => {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "non-identifier receiver not yet supported for Map.prototype.forEach"
-                            .to_owned(),
+                    message: "non-identifier receiver not yet supported for Map.prototype.forEach"
+                        .to_owned(),
                     span: Some(span),
                     phase: None,
                 });
@@ -4037,10 +4453,8 @@ impl<'a> Resolver<'a> {
                 LoweredExpr::Local(key, Span::generated("local")),
                 LoweredExpr::Local(receiver_local, Span::generated("local")),
             ];
-            let mut call_args: Vec<LoweredExpr> = explicit_args
-                .into_iter()
-                .take(param_count)
-                .collect();
+            let mut call_args: Vec<LoweredExpr> =
+                explicit_args.into_iter().take(param_count).collect();
             call_args.extend(
                 captures
                     .iter()
@@ -4153,9 +4567,8 @@ impl<'a> Resolver<'a> {
             _ => {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "non-identifier receiver not yet supported for Set.prototype.forEach"
-                            .to_owned(),
+                    message: "non-identifier receiver not yet supported for Set.prototype.forEach"
+                        .to_owned(),
                     span: Some(span),
                     phase: None,
                 });
@@ -4211,10 +4624,8 @@ impl<'a> Resolver<'a> {
                 LoweredExpr::Local(val, Span::generated("local")),
                 LoweredExpr::Local(receiver_local, Span::generated("local")),
             ];
-            let mut call_args: Vec<LoweredExpr> = explicit_args
-                .into_iter()
-                .take(param_count)
-                .collect();
+            let mut call_args: Vec<LoweredExpr> =
+                explicit_args.into_iter().take(param_count).collect();
             call_args.extend(
                 captures
                     .iter()
@@ -4285,7 +4696,11 @@ impl<'a> Resolver<'a> {
     ) -> Result<LoweredExpr, Diagnostic> {
         // Store receiver in a temp, then delegate to variable array handling
         let arr_ref = LoweredExpr::Local(arr_temp, Span::generated("local"));
-        let mut stmts = vec![LoweredStmt::Let(arr_temp, receiver, Span::generated("let_stmt"))];
+        let mut stmts = vec![LoweredStmt::Let(
+            arr_temp,
+            receiver,
+            Span::generated("let_stmt"),
+        )];
         let inner = self.lower_variable_array_callback_method(
             method,
             arr_temp,
@@ -4310,13 +4725,17 @@ impl<'a> Resolver<'a> {
                     stmts,
                     result,
 
-                    span: Span::generated("block"),})
+                    span: Span::generated("block"),
+                })
             }
             _ => Ok(inner),
         }
     }
 
-    pub(super) fn class_prototype_ref(&self, class_name: &str) -> Result<ClassPrototypeRef, Diagnostic> {
+    pub(super) fn class_prototype_ref(
+        &self,
+        class_name: &str,
+    ) -> Result<ClassPrototypeRef, Diagnostic> {
         let constructor = self
             .class_constructor_ids
             .get(class_name)
@@ -4346,7 +4765,8 @@ impl<'a> Resolver<'a> {
                     ),
                     span: None,
 
-                    phase: None,})?;
+                    phase: None,
+                })?;
             parent_constructors.push(parent_constructor);
             current = self.class_parents.get(&parent).and_then(|p| p.clone());
         }
@@ -4428,11 +4848,15 @@ fn expr_contains_super_ref(expr: &ResolvedExpr) -> bool {
                 || expr_contains_super_ref(then_expr)
                 || expr_contains_super_ref(else_expr)
         }
-        ResolvedExpr::Assign { name: _, expr }
-        | ResolvedExpr::LogicalAssign { expr, .. } => expr_contains_super_ref(expr),
-        ResolvedExpr::LogicalPropertyAssign { object: _, key: _, expr, op: _ } => {
+        ResolvedExpr::Assign { name: _, expr } | ResolvedExpr::LogicalAssign { expr, .. } => {
             expr_contains_super_ref(expr)
         }
+        ResolvedExpr::LogicalPropertyAssign {
+            object: _,
+            key: _,
+            expr,
+            op: _,
+        } => expr_contains_super_ref(expr),
         ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
             expr_contains_super_ref(object) || expr_contains_super_ref(expr)
         }
@@ -4441,14 +4865,18 @@ fn expr_contains_super_ref(expr: &ResolvedExpr) -> bool {
         }
         ResolvedExpr::LogicalComputedMemberAssign {
             object, key, expr, ..
-        } => expr_contains_super_ref(object) || expr_contains_super_ref(key) || expr_contains_super_ref(expr),
+        } => {
+            expr_contains_super_ref(object)
+                || expr_contains_super_ref(key)
+                || expr_contains_super_ref(expr)
+        }
         ResolvedExpr::Array(elements) => elements.iter().any(|element| match element {
             ResolvedArrayElement::Present(expr) => expr_contains_super_ref(expr),
             ResolvedArrayElement::Hole => false,
         }),
-        ResolvedExpr::Object(props) => {
-            props.iter().any(|(_, value)| expr_contains_super_ref(value))
-        }
+        ResolvedExpr::Object(props) => props
+            .iter()
+            .any(|(_, value)| expr_contains_super_ref(value)),
         ResolvedExpr::ComputedIndex { object, index } => {
             expr_contains_super_ref(object) || expr_contains_super_ref(index)
         }
@@ -4456,9 +4884,7 @@ fn expr_contains_super_ref(expr: &ResolvedExpr) -> bool {
             args.iter().any(expr_contains_super_ref)
         }
         ResolvedExpr::BuiltinProperty { object, .. }
-        | ResolvedExpr::OptionalPropertyAccess { object, .. } => {
-            expr_contains_super_ref(object)
-        }
+        | ResolvedExpr::OptionalPropertyAccess { object, .. } => expr_contains_super_ref(object),
         ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
             expr_contains_super_ref(object) || expr_contains_super_ref(index)
         }
@@ -4511,9 +4937,9 @@ fn stmt_contains_super_ref(stmt: &ResolvedStmt) -> bool {
                 || block_contains_super_ref(then_body)
                 || block_contains_super_ref(else_body)
         }
-        ResolvedStmt::While { condition, body, .. } => {
-            expr_contains_super_ref(condition) || block_contains_super_ref(body)
-        }
+        ResolvedStmt::While {
+            condition, body, ..
+        } => expr_contains_super_ref(condition) || block_contains_super_ref(body),
         ResolvedStmt::For {
             init,
             condition,
@@ -4522,18 +4948,16 @@ fn stmt_contains_super_ref(stmt: &ResolvedStmt) -> bool {
             ..
         } => {
             init.as_ref().is_some_and(|s| stmt_contains_super_ref(s))
-                || condition
-                    .as_ref()
-                    .is_some_and(expr_contains_super_ref)
-                || update
-                    .as_ref()
-                    .is_some_and(expr_contains_super_ref)
+                || condition.as_ref().is_some_and(expr_contains_super_ref)
+                || update.as_ref().is_some_and(expr_contains_super_ref)
                 || block_contains_super_ref(body)
         }
-        ResolvedStmt::ForIn { var: _, iter, body, .. }
-        | ResolvedStmt::ForOf { var: _, iter, body, .. } => {
-            expr_contains_super_ref(iter) || block_contains_super_ref(body)
+        ResolvedStmt::ForIn {
+            var: _, iter, body, ..
         }
+        | ResolvedStmt::ForOf {
+            var: _, iter, body, ..
+        } => expr_contains_super_ref(iter) || block_contains_super_ref(body),
         ResolvedStmt::Block { statements } => block_contains_super_ref(statements),
         ResolvedStmt::TryCatch {
             try_block,
@@ -4552,9 +4976,7 @@ fn stmt_contains_super_ref(stmt: &ResolvedStmt) -> bool {
         ResolvedStmt::Throw(expr) => expr_contains_super_ref(expr),
         ResolvedStmt::Switch { expr, cases } => {
             expr_contains_super_ref(expr)
-                || cases
-                    .iter()
-                    .any(|(_, body)| block_contains_super_ref(body))
+                || cases.iter().any(|(_, body)| block_contains_super_ref(body))
         }
         ResolvedStmt::DoWhile { body, condition } => {
             block_contains_super_ref(body) || expr_contains_super_ref(condition)

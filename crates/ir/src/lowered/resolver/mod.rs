@@ -1,8 +1,15 @@
-#[path = "resolver_expr.rs"]
-mod resolver_expr;
-#[path = "resolver_extra.rs"]
-mod resolver_extra;
-struct Resolver<'a> {
+mod expr;
+mod extra;
+
+use std::collections::{HashMap, HashSet};
+
+use crate::binding_pattern::{BindingDefault, parse_binding_pattern};
+use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
+use crate::lowered::*;
+use ts2wasm_frontend::{BinaryOp, UnaryOp};
+use ts2wasm_shared::{DiagCode, Diagnostic, Span};
+
+pub(super) struct Resolver<'a> {
     function_ids: &'a HashMap<String, FuncId>,
     function_signatures: &'a HashMap<FuncId, FunctionSignature>,
     function_captures: &'a HashMap<FuncId, Vec<String>>,
@@ -14,14 +21,14 @@ struct Resolver<'a> {
     heap_closure_names: HashSet<String>,
     scopes: Vec<HashMap<String, LocalId>>,
     next_local_id: usize,
-    locals: Vec<LocalId>,
-    next_func_id: usize,
-    generated_functions: Vec<LoweredFunction>,
+    pub(crate) locals: Vec<LocalId>,
+    pub(crate) next_func_id: usize,
+    pub(crate) generated_functions: Vec<LoweredFunction>,
     arrow_locals: HashMap<LocalId, ArrowClosure>,
     heap_closure_locals: HashSet<LocalId>,
     nullish_locals: HashSet<LocalId>,
     module_ids: HashMap<String, usize>,
-    modules: Vec<ModuleInfo>,
+    pub(crate) modules: Vec<ModuleInfo>,
     class_constructor_ids: HashMap<String, FuncId>,
     class_method_ids: HashMap<(String, String), FuncId>,
     class_static_method_ids: HashMap<(String, String), FuncId>,
@@ -66,13 +73,14 @@ impl ArrowClosure {
             func_id: self.func_id,
             captures: self.captures.clone(),
             representation,
-            span: Span::generated("arrow_fn"),}
+            span: Span::generated("arrow_fn"),
+        }
     }
 }
 
 impl<'a> Resolver<'a> {
     #[allow(clippy::too_many_arguments)]
-    fn new(
+    pub(crate) fn new(
         function_ids: &'a HashMap<String, FuncId>,
         function_signatures: &'a HashMap<FuncId, FunctionSignature>,
         function_captures: &'a HashMap<FuncId, Vec<String>>,
@@ -138,7 +146,7 @@ impl<'a> Resolver<'a> {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn with_params(
+    pub(crate) fn with_params(
         function_ids: &'a HashMap<String, FuncId>,
         function_signatures: &'a HashMap<FuncId, FunctionSignature>,
         function_captures: &'a HashMap<FuncId, Vec<String>>,
@@ -214,7 +222,8 @@ impl<'a> Resolver<'a> {
                     message: format!("duplicate parameter name: `{clean_name}`"),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             seen_params.insert(clean_name.to_owned(), ());
             let local_id = LocalId(resolver.next_local_id);
@@ -244,7 +253,10 @@ impl<'a> Resolver<'a> {
         Ok((resolver, param_ids))
     }
 
-    fn lower_block(&mut self, statements: &[ResolvedStmt]) -> Result<Vec<LoweredStmt>, Diagnostic> {
+    pub(crate) fn lower_block(
+        &mut self,
+        statements: &[ResolvedStmt],
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
         let mut lowered = Vec::with_capacity(statements.len());
         for statement in statements {
             lowered.push(self.lower_stmt(statement)?);
@@ -281,12 +293,12 @@ impl<'a> Resolver<'a> {
         if direct_iife_body_has_unsupported_return(body) {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-302: direct eval IIFE lowering does not support function returns"
-                        .to_owned(),
+                message: "issue-302: direct eval IIFE lowering does not support function returns"
+                    .to_owned(),
                 span: Some(*span),
 
-                phase: None,});
+                phase: None,
+            });
         }
         if block_contains_this(body) || block_contains_arguments(body) {
             return Err(Diagnostic {
@@ -296,7 +308,8 @@ impl<'a> Resolver<'a> {
                         .to_owned(),
                 span: Some(*span),
 
-                phase: None,});
+                phase: None,
+            });
         }
 
         self.scopes.push(HashMap::new());
@@ -305,22 +318,27 @@ impl<'a> Resolver<'a> {
         lowered.map(|statements| Some(LoweredStmt::Block(statements, Span::generated("block"))))
     }
 
-    fn lower_stmt(&mut self, stmt: &ResolvedStmt) -> Result<LoweredStmt, Diagnostic> {
+    pub(crate) fn lower_stmt(&mut self, stmt: &ResolvedStmt) -> Result<LoweredStmt, Diagnostic> {
         match stmt {
             ResolvedStmt::AmbientValue(name) => {
                 self.declare_local(name)?;
-                Ok(LoweredStmt::Expr(LoweredExpr::Undefined(Span::generated("undef")), Span::generated("expr_stmt")))
+                Ok(LoweredStmt::Expr(
+                    LoweredExpr::Undefined(Span::generated("undef")),
+                    Span::generated("expr_stmt"),
+                ))
             }
             ResolvedStmt::DestructureLet { pattern, expr } => {
                 let value_local = self.alloc_temp();
-                let mut statements = vec![LoweredStmt::Let(value_local, self.lower_expr(expr)?, Span::generated("let_stmt"))];
-                statements.extend(
-                    self.lower_binding_pattern_declarations(
-                        pattern,
-                        LoweredExpr::Local(value_local, Span::generated("local")),
-                        Some(expr),
-                    )?,
-                );
+                let mut statements = vec![LoweredStmt::Let(
+                    value_local,
+                    self.lower_expr(expr)?,
+                    Span::generated("let_stmt"),
+                )];
+                statements.extend(self.lower_binding_pattern_declarations(
+                    pattern,
+                    LoweredExpr::Local(value_local, Span::generated("local")),
+                    Some(expr),
+                )?);
                 Ok(LoweredStmt::Block(statements, Span::generated("block")))
             }
             ResolvedStmt::Let(name, expr) => {
@@ -338,7 +356,8 @@ impl<'a> Resolver<'a> {
                     body,
                     body_stmts,
                     ..
-                } = expr {
+                } = expr
+                {
                     self.lower_arrow_fn_with_self(params, body, body_stmts, Some(name))?
                 } else {
                     self.lower_expr(expr)?
@@ -383,7 +402,11 @@ impl<'a> Resolver<'a> {
                     self.object_function_props.remove(&local_id);
                 }
                 self.update_regexp_literal_local(local_id, expr);
-                Ok(LoweredStmt::Let(local_id, lowered, Span::generated("let_stmt")))
+                Ok(LoweredStmt::Let(
+                    local_id,
+                    lowered,
+                    Span::generated("let_stmt"),
+                ))
             }
             ResolvedStmt::Assign(name, expr) => {
                 let local_id = self.resolve_local(name)?;
@@ -429,13 +452,21 @@ impl<'a> Resolver<'a> {
                 }
                 self.update_regexp_literal_local(local_id, expr);
                 if self.env_cell_locals.contains(&local_id) {
-                    Ok(LoweredStmt::Expr(LoweredExpr::EnvCellSet {
-                        cell: local_id,
-                        expr: Box::new(lowered),
+                    Ok(LoweredStmt::Expr(
+                        LoweredExpr::EnvCellSet {
+                            cell: local_id,
+                            expr: Box::new(lowered),
 
-                        span: Span::generated("env_cell_set"),}, Span::generated("expr_stmt")))
+                            span: Span::generated("env_cell_set"),
+                        },
+                        Span::generated("expr_stmt"),
+                    ))
                 } else {
-                    Ok(LoweredStmt::Assign(local_id, lowered, Span::generated("assign")))
+                    Ok(LoweredStmt::Assign(
+                        local_id,
+                        lowered,
+                        Span::generated("assign"),
+                    ))
                 }
             }
             ResolvedStmt::Expr(expr) => {
@@ -459,13 +490,20 @@ impl<'a> Resolver<'a> {
                         local_id,
                         LoweredExpr::RuntimeCall {
                             runtime_fn: "ArrayPushGrow".to_owned(),
-                            args: vec![LoweredExpr::Local(local_id, Span::generated("local")), self.lower_expr(&args[0])?],
+                            args: vec![
+                                LoweredExpr::Local(local_id, Span::generated("local")),
+                                self.lower_expr(&args[0])?,
+                            ],
 
-                            span: Span::generated("runtime_call"),},
+                            span: Span::generated("runtime_call"),
+                        },
                         Span::generated("assign_stmt"),
                     ));
                 }
-                Ok(LoweredStmt::Expr(self.lower_expr(expr)?, Span::generated("expr_stmt")))
+                Ok(LoweredStmt::Expr(
+                    self.lower_expr(expr)?,
+                    Span::generated("expr_stmt"),
+                ))
             }
             ResolvedStmt::If {
                 condition,
@@ -516,12 +554,14 @@ impl<'a> Resolver<'a> {
                     then_body,
                     else_body,
 
-                    span: Span::generated("if_stmt"),})
+                    span: Span::generated("if_stmt"),
+                })
             }
             ResolvedStmt::While { condition, body } => Ok(LoweredStmt::While {
                 condition: self.lower_expr(condition)?,
                 body: self.lower_nested_block(body)?,
-                span: Span::generated("while"),}),
+                span: Span::generated("while"),
+            }),
             ResolvedStmt::Return(expr) => {
                 if let ResolvedExpr::Ident(name) = expr
                     && let Some(closure) = self
@@ -531,7 +571,8 @@ impl<'a> Resolver<'a> {
                 {
                     return Ok(LoweredStmt::Return(
                         closure.to_expr(ClosureRepresentation::HeapObject),
-                    Span::generated("return_stmt")));
+                        Span::generated("return_stmt"),
+                    ));
                 }
                 if let ResolvedExpr::ArrowFn {
                     params,
@@ -542,9 +583,7 @@ impl<'a> Resolver<'a> {
                 {
                     let lowered = self.lower_arrow_fn(params, body, body_stmts)?;
                     if let LoweredExpr::ArrowFn {
-                        func_id,
-                        captures,
-                        ..
+                        func_id, captures, ..
                     } = &lowered
                         && !captures.is_empty()
                     {
@@ -555,11 +594,15 @@ impl<'a> Resolver<'a> {
                                 representation: ClosureRepresentation::HeapObject,
                                 span: Span::generated("arrow_fn"),
                             },
-                            Span::generated("return_stmt")));
+                            Span::generated("return_stmt"),
+                        ));
                     }
                     return Ok(LoweredStmt::Return(lowered, Span::generated("return_stmt")));
                 }
-                Ok(LoweredStmt::Return(self.lower_expr(expr)?, Span::generated("return_stmt")))
+                Ok(LoweredStmt::Return(
+                    self.lower_expr(expr)?,
+                    Span::generated("return_stmt"),
+                ))
             }
             ResolvedStmt::Function {
                 name, params, body, ..
@@ -574,7 +617,8 @@ impl<'a> Resolver<'a> {
                     captures,
                     representation,
 
-                    span: _,} = &closure
+                    span: _,
+                } = &closure
                 {
                     if matches!(representation, ClosureRepresentation::HeapObject) {
                         self.heap_closure_locals.insert(local_id);
@@ -594,18 +638,29 @@ impl<'a> Resolver<'a> {
                         vec![
                             LoweredStmt::Let(
                                 local_id,
-                                LoweredExpr::EnvCellNew(Box::new(LoweredExpr::Undefined(Span::generated("undef"))), Span::generated("env_cell_new")),
+                                LoweredExpr::EnvCellNew(
+                                    Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+                                    Span::generated("env_cell_new"),
+                                ),
                                 Span::generated("let_stmt"),
                             ),
-                            LoweredStmt::Expr(LoweredExpr::EnvCellSet {
-                                cell: local_id,
-                                expr: Box::new(closure),
-                                span: Span::generated("env_cell_set"),}, Span::generated("expr_stmt")),
+                            LoweredStmt::Expr(
+                                LoweredExpr::EnvCellSet {
+                                    cell: local_id,
+                                    expr: Box::new(closure),
+                                    span: Span::generated("env_cell_set"),
+                                },
+                                Span::generated("expr_stmt"),
+                            ),
                         ],
                         Span::generated("block"),
                     ))
                 } else {
-                    Ok(LoweredStmt::Let(local_id, closure, Span::generated("let_stmt")))
+                    Ok(LoweredStmt::Let(
+                        local_id,
+                        closure,
+                        Span::generated("let_stmt"),
+                    ))
                 }
             }
             ResolvedStmt::TryCatch {
@@ -630,9 +685,13 @@ impl<'a> Resolver<'a> {
                         .as_ref()
                         .map(|b| self.lower_nested_block(b))
                         .transpose()?,
-                        span: Span::generated("try_catch"),})
+                    span: Span::generated("try_catch"),
+                })
             }
-            ResolvedStmt::Throw(expr) => Ok(LoweredStmt::Throw(self.lower_expr(expr)?, Span::generated("throw_stmt"))),
+            ResolvedStmt::Throw(expr) => Ok(LoweredStmt::Throw(
+                self.lower_expr(expr)?,
+                Span::generated("throw_stmt"),
+            )),
             ResolvedStmt::Switch { expr, cases } => {
                 let resolved_cases = cases
                     .iter()
@@ -646,12 +705,14 @@ impl<'a> Resolver<'a> {
                 Ok(LoweredStmt::Switch {
                     expr: self.lower_expr(expr)?,
                     cases: resolved_cases,
-                    span: Span::generated("switch"),})
+                    span: Span::generated("switch"),
+                })
             }
             ResolvedStmt::DoWhile { body, condition } => Ok(LoweredStmt::DoWhile {
                 body: self.lower_nested_block(body)?,
                 condition: self.lower_expr(condition)?,
-                span: Span::generated("do_while"),}),
+                span: Span::generated("do_while"),
+            }),
             ResolvedStmt::For {
                 init,
                 condition,
@@ -659,7 +720,8 @@ impl<'a> Resolver<'a> {
                 body,
             } => {
                 self.scopes.push(HashMap::new());
-                let resolved_init = init.as_ref()
+                let resolved_init = init
+                    .as_ref()
                     .map(|s| self.lower_stmt(s))
                     .transpose()?
                     .map(Box::new);
@@ -682,7 +744,8 @@ impl<'a> Resolver<'a> {
                     index_local: self.alloc_temp(),
                     len_local: self.alloc_temp(),
                     body: self.lower_nested_block(body)?,
-                    span: Span::generated("for_in"),})
+                    span: Span::generated("for_in"),
+                })
             }
             ResolvedStmt::ForOf { var, iter, body } => {
                 let var_id = self.declare_local(var)?;
@@ -699,12 +762,14 @@ impl<'a> Resolver<'a> {
                             runtime_fn: "SetValuesArray".to_owned(),
                             args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
 
-                            span: Span::generated("runtime_call"),}
+                            span: Span::generated("runtime_call"),
+                        }
                     } else if class_name.is_some_and(|c| c == "Map") {
                         LoweredExpr::RuntimeCall {
                             runtime_fn: "MapValuesArray".to_owned(),
                             args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
-                            span: Span::generated("runtime_call"),}
+                            span: Span::generated("runtime_call"),
+                        }
                     } else {
                         self.lower_expr(iter)?
                     }
@@ -718,29 +783,39 @@ impl<'a> Resolver<'a> {
                     index_local: self.alloc_temp(),
                     len_local: self.alloc_temp(),
                     body: self.lower_nested_block(body)?,
-                    span: Span::generated("for_of"),})
+                    span: Span::generated("for_of"),
+                })
             }
             ResolvedStmt::Labeled { label, body } => Ok(LoweredStmt::Labeled {
                 label: label.clone(),
                 body: Box::new(self.lower_stmt(body)?),
-                span: Span::generated("labeled"),}),
+                span: Span::generated("labeled"),
+            }),
             ResolvedStmt::Break { label } => Ok(LoweredStmt::Break {
                 label: label.clone(),
-                span: Span::generated("break"),}),
+                span: Span::generated("break"),
+            }),
             ResolvedStmt::Continue { label } => Ok(LoweredStmt::Continue {
                 label: label.clone(),
-                span: Span::generated("continue"),}),
+                span: Span::generated("continue"),
+            }),
             ResolvedStmt::Export { name, expr } => Ok(LoweredStmt::Export {
                 name: name.clone(),
                 expr: self.lower_expr(expr)?,
-                span: Span::generated("export"),}),
+                span: Span::generated("export"),
+            }),
             ResolvedStmt::ModuleExportsAssign { expr } => Ok(LoweredStmt::ModuleExportsAssign {
                 expr: self.lower_expr(expr)?,
-                span: Span::generated("module_exports_assign"),}),
-            ResolvedStmt::ClassDecl { .. } => Ok(LoweredStmt::Expr(LoweredExpr::Undefined(Span::generated("undef")), Span::generated("expr_stmt"))),
-            ResolvedStmt::Block { statements, .. } => {
-                Ok(LoweredStmt::Block(self.lower_block(statements)?, Span::generated("block")))
-            }
+                span: Span::generated("module_exports_assign"),
+            }),
+            ResolvedStmt::ClassDecl { .. } => Ok(LoweredStmt::Expr(
+                LoweredExpr::Undefined(Span::generated("undef")),
+                Span::generated("expr_stmt"),
+            )),
+            ResolvedStmt::Block { statements, .. } => Ok(LoweredStmt::Block(
+                self.lower_block(statements)?,
+                Span::generated("block"),
+            )),
         }
     }
 
@@ -750,7 +825,8 @@ impl<'a> Resolver<'a> {
         field: &str,
         initializer: &ResolvedExpr,
     ) -> Result<LoweredStmt, Diagnostic> {
-        let local_name = crate::builtin_resolver::static_private_field_local_name(class_name, field);
+        let local_name =
+            crate::builtin_resolver::static_private_field_local_name(class_name, field);
         self.with_current_class(class_name, |resolver| {
             resolver.lower_stmt(&ResolvedStmt::Let(local_name, initializer.clone()))
         })
@@ -774,10 +850,9 @@ impl<'a> Resolver<'a> {
         self.current_class = previous;
         result
     }
-
 }
 
-fn class_maps(
+pub(crate) fn class_maps(
     function_ids: &HashMap<String, FuncId>,
 ) -> (ClassConstructorMap, ClassMethodMap, ClassMethodMap) {
     let mut ctor_ids = HashMap::new();
@@ -802,7 +877,7 @@ fn class_maps(
     (ctor_ids, method_ids, static_method_ids)
 }
 
-fn lowered_binding_default(default: &BindingDefault) -> LoweredExpr {
+pub(crate) fn lowered_binding_default(default: &BindingDefault) -> LoweredExpr {
     match default {
         BindingDefault::Number(value) => LoweredExpr::Number(*value, Span::generated("num")),
         BindingDefault::String(value) => LoweredExpr::String(value.clone(), Span::generated("str")),
@@ -840,11 +915,11 @@ fn binding_param_names<'a>(
 
 const PRIVATE_FIELD_STORAGE_PREFIX: &str = "__ts2wasm_private::";
 
-fn is_private_field_storage_key(key: &str) -> bool {
+pub(crate) fn is_private_field_storage_key(key: &str) -> bool {
     key.starts_with(PRIVATE_FIELD_STORAGE_PREFIX)
 }
 
-fn private_storage_observable_access_diagnostic(span: Option<Span>) -> Diagnostic {
+pub(crate) fn private_storage_observable_access_diagnostic(span: Option<Span>) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: "issue-255: private field backing storage is not accessible through ordinary property access in this private field runtime slice".to_owned(),
@@ -854,7 +929,7 @@ fn private_storage_observable_access_diagnostic(span: Option<Span>) -> Diagnosti
         phase: None,}
 }
 
-fn is_static_copy_safe_object_prop_value(expr: &ResolvedExpr) -> bool {
+pub(crate) fn is_static_copy_safe_object_prop_value(expr: &ResolvedExpr) -> bool {
     matches!(
         expr,
         ResolvedExpr::Number(_)
@@ -865,29 +940,33 @@ fn is_static_copy_safe_object_prop_value(expr: &ResolvedExpr) -> bool {
     )
 }
 
-fn is_set_prototype_property(object: &ResolvedExpr, key: &str, expected_key: &str) -> bool {
+pub(crate) fn is_set_prototype_property(
+    object: &ResolvedExpr,
+    key: &str,
+    expected_key: &str,
+) -> bool {
     key == expected_key && matches_set_prototype_object(object)
 }
 
-fn is_set_prototype_property_expr(expr: &ResolvedExpr, expected_key: &str) -> bool {
+pub(crate) fn is_set_prototype_property_expr(expr: &ResolvedExpr, expected_key: &str) -> bool {
     let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
         return false;
     };
     is_set_prototype_property(object, key, expected_key)
 }
 
-fn is_array_prototype_push_property(object: &ResolvedExpr, key: &str) -> bool {
+pub(crate) fn is_array_prototype_push_property(object: &ResolvedExpr, key: &str) -> bool {
     key == "push" && matches_array_prototype_object(object)
 }
 
-fn is_array_prototype_push_expr(expr: &ResolvedExpr) -> bool {
+pub(crate) fn is_array_prototype_push_expr(expr: &ResolvedExpr) -> bool {
     let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
         return false;
     };
     is_array_prototype_push_property(object, key)
 }
 
-fn matches_array_prototype_object(expr: &ResolvedExpr) -> bool {
+pub(crate) fn matches_array_prototype_object(expr: &ResolvedExpr) -> bool {
     let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
         return false;
     };
@@ -898,7 +977,7 @@ fn matches_array_prototype_object(expr: &ResolvedExpr) -> bool {
         )
 }
 
-fn matches_set_prototype_object(expr: &ResolvedExpr) -> bool {
+pub(crate) fn matches_set_prototype_object(expr: &ResolvedExpr) -> bool {
     let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
         return false;
     };
@@ -909,7 +988,7 @@ fn matches_set_prototype_object(expr: &ResolvedExpr) -> bool {
         )
 }
 
-fn unsupported_array_map_diagnostic(span: Option<Span>) -> Diagnostic {
+pub(crate) fn unsupported_array_map_diagnostic(span: Option<Span>) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: "issue-270: Array.prototype.map requires callback dispatch and new array allocation semantics that are not supported in this runtime slice".to_owned(),
@@ -919,7 +998,7 @@ fn unsupported_array_map_diagnostic(span: Option<Span>) -> Diagnostic {
         phase: None,}
 }
 
-fn unsupported_array_sort_diagnostic(span: Option<Span>) -> Diagnostic {
+pub(crate) fn unsupported_array_sort_diagnostic(span: Option<Span>) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: "issue-299: Array.prototype.sort is currently supported only for dense numeric arrays with comparator `(a, b) => a - b`".to_owned(),
@@ -929,11 +1008,11 @@ fn unsupported_array_sort_diagnostic(span: Option<Span>) -> Diagnostic {
         phase: None,}
 }
 
-fn is_static_date_constructor_expr(expr: &ResolvedExpr) -> bool {
+pub(crate) fn is_static_date_constructor_expr(expr: &ResolvedExpr) -> bool {
     matches!(expr, ResolvedExpr::New { class_name, .. } if class_name == "Date")
 }
 
-fn is_invalid_date_constructor_expr(expr: &ResolvedExpr) -> bool {
+pub(crate) fn is_invalid_date_constructor_expr(expr: &ResolvedExpr) -> bool {
     matches!(
         expr,
         ResolvedExpr::New {
@@ -946,22 +1025,22 @@ fn is_invalid_date_constructor_expr(expr: &ResolvedExpr) -> bool {
     )
 }
 
-fn is_array_prototype_map_call_receiver(object: &ResolvedExpr, method: &str) -> bool {
+pub(crate) fn is_array_prototype_map_call_receiver(object: &ResolvedExpr, method: &str) -> bool {
     method == "call" && matches_array_prototype_map_property(object)
 }
 
-fn is_array_from_call_receiver(object: &ResolvedExpr, method: &str) -> bool {
+pub(crate) fn is_array_from_call_receiver(object: &ResolvedExpr, method: &str) -> bool {
     method == "from" && matches!(object, ResolvedExpr::Ident(name) if name == "Array")
 }
 
-fn matches_array_prototype_map_property(expr: &ResolvedExpr) -> bool {
+pub(crate) fn matches_array_prototype_map_property(expr: &ResolvedExpr) -> bool {
     let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
         return false;
     };
     key == "map" && matches_array_prototype_property(object)
 }
 
-fn matches_array_prototype_property(expr: &ResolvedExpr) -> bool {
+pub(crate) fn matches_array_prototype_property(expr: &ResolvedExpr) -> bool {
     let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
         return false;
     };
@@ -972,14 +1051,14 @@ fn matches_array_prototype_property(expr: &ResolvedExpr) -> bool {
         )
 }
 
-fn is_string_split_result_expr(expr: &ResolvedExpr) -> bool {
+pub(crate) fn is_string_split_result_expr(expr: &ResolvedExpr) -> bool {
     matches!(
         expr,
         ResolvedExpr::MethodCall { method, .. } if method == "split"
     )
 }
 
-fn is_identity_arrow_callback(args: &[ResolvedExpr]) -> bool {
+pub(crate) fn is_identity_arrow_callback(args: &[ResolvedExpr]) -> bool {
     let [ResolvedExpr::ArrowFn { params, body, .. }] = args else {
         return false;
     };
@@ -989,7 +1068,7 @@ fn is_identity_arrow_callback(args: &[ResolvedExpr]) -> bool {
     matches!(body.as_ref(), ResolvedExpr::Ident(name) if name == param)
 }
 
-fn is_number_double_arrow_callback(args: &[ResolvedExpr]) -> bool {
+pub(crate) fn is_number_double_arrow_callback(args: &[ResolvedExpr]) -> bool {
     let [ResolvedExpr::ArrowFn { params, body, .. }] = args else {
         return false;
     };
@@ -1015,7 +1094,7 @@ fn is_number_double_arrow_callback(args: &[ResolvedExpr]) -> bool {
     )
 }
 
-fn string_split_arrow_separator(args: &[ResolvedExpr]) -> Option<&ResolvedExpr> {
+pub(crate) fn string_split_arrow_separator(args: &[ResolvedExpr]) -> Option<&ResolvedExpr> {
     let [ResolvedExpr::ArrowFn { params, body, .. }] = args else {
         return None;
     };
@@ -1046,7 +1125,7 @@ fn string_split_arrow_separator(args: &[ResolvedExpr]) -> Option<&ResolvedExpr> 
     Some(separator)
 }
 
-fn string_constructor_arrow_callback(args: &[ResolvedExpr]) -> bool {
+pub(crate) fn string_constructor_arrow_callback(args: &[ResolvedExpr]) -> bool {
     let [ResolvedExpr::ArrowFn { params, body, .. }] = args else {
         return false;
     };
@@ -1065,7 +1144,7 @@ fn string_constructor_arrow_callback(args: &[ResolvedExpr]) -> bool {
     arg_name == param
 }
 
-fn unary_plus_arrow_callback(args: &[ResolvedExpr]) -> bool {
+pub(crate) fn unary_plus_arrow_callback(args: &[ResolvedExpr]) -> bool {
     let [ResolvedExpr::ArrowFn { params, body, .. }] = args else {
         return false;
     };
@@ -1078,7 +1157,7 @@ fn unary_plus_arrow_callback(args: &[ResolvedExpr]) -> bool {
     *op == UnaryOp::Plus && matches!(expr.as_ref(), ResolvedExpr::Ident(name) if name == param)
 }
 
-fn numeric_ascending_sort_arrow_callback(args: &[ResolvedExpr]) -> bool {
+pub(crate) fn numeric_ascending_sort_arrow_callback(args: &[ResolvedExpr]) -> bool {
     let [ResolvedExpr::ArrowFn { params, body, .. }] = args else {
         return false;
     };

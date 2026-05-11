@@ -76,6 +76,15 @@ EXCLUDED_FILENAMES = {
     "Cargo.lock",
 }
 
+# Files known to exceed the 2000-line Rust file limit, with planned remediation.
+KNOWN_OVERSIZED_FILES = {
+    "crates/ir/src/lowered/resolver_expr.rs": "large match — pending domain split",
+    "crates/backend-wasm/src/runtime_fn_impl.rs": "large spec — pending domain split",
+    "crates/backend-wasm/src/runtime_builder.rs": "large dispatch — pending domain split",
+    "crates/backend-wasm/src/expr_emit.rs": "expression emitter — pending domain split",
+    "crates/compiler/src/lib.rs": "pipeline — pending stage split",
+}
+
 
 def usage():
     print("Usage:")
@@ -87,8 +96,12 @@ def usage():
     print("  - crates/cli/src must not declare local backend/parser/compiler modules.")
     print("  - Error when a repo-owned source/document file exceeds the line limit.")
     print("  - Error when backend-wasm or ir depends on frontend via Cargo.toml.")
+    print("  - Error when any Rust function exceeds 300 lines.")
+    print("  - Error when any Rust file exceeds 2000 lines (known exceptions allowlisted).")
+    print("  - Error when RuntimeCall { runtime_fn: String } found (migrate to typed enum).")
     print("  - Error when `use super::*` appears outside test modules.")
-    print("  - Error when new RuntimeCall { runtime_fn: } construction appears outside allowlist.")
+    print("  - Error when backend-wasm imports from ts2wasm_frontend.")
+    print("  - Warn when `wat.push_str` in runtime helper files (prefer structured builders).")
 
 
 def parse_max_file_lines(args: list[str]) -> int:
@@ -248,6 +261,170 @@ def check_backend_frontend_dependency() -> None:
         sys.exit(1)
 
 
+def check_function_length() -> list[str]:
+    violations = []
+    fn_re = re.compile(r'^\s*(pub\s+)?(unsafe\s+)?(async\s+)?fn\s+(\w+)')
+    max_fn_lines = 300
+
+    for path in sorted(REPO_ROOT.rglob("*.rs")):
+        rel = path.relative_to(REPO_ROOT)
+        if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
+            continue
+        text = path.read_text()
+        lines = text.split('\n')
+
+        i = 0
+        while i < len(lines):
+            m = fn_re.match(lines[i])
+            if not m:
+                i += 1
+                continue
+
+            fn_name = m.group(4)
+            fn_start = i
+
+            brace_depth = 0
+            j = i
+            while j < len(lines) and brace_depth == 0:
+                brace_depth += lines[j].count('{') - lines[j].count('}')
+                if brace_depth > 0:
+                    break
+                j += 1
+
+            if brace_depth == 0:
+                i += 1
+                continue
+
+            j += 1
+            while j < len(lines) and brace_depth > 0:
+                brace_depth += lines[j].count('{') - lines[j].count('}')
+                j += 1
+
+            fn_length = j - fn_start
+            if fn_length > max_fn_lines:
+                violations.append(
+                    f"check_architecture_rules: ERROR {rel}:{fn_start + 1}: "
+                    f"function `{fn_name}` is {fn_length} lines (max {max_fn_lines})"
+                )
+
+            i = j
+
+    return violations
+
+
+def check_rust_file_length(max_lines: int = 2000) -> list[str]:
+    violations = []
+    for path in sorted(REPO_ROOT.rglob("*.rs")):
+        rel = path.relative_to(REPO_ROOT)
+        if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
+            continue
+        if str(rel) in KNOWN_OVERSIZED_FILES:
+            continue
+        count = line_count(path)
+        if count > max_lines:
+            violations.append(
+                f"check_architecture_rules: ERROR {rel}: {count} lines "
+                f"(max {max_lines})"
+            )
+    return violations
+
+
+def check_runtime_call_string() -> list[str]:
+    violations = []
+    target = REPO_ROOT / "crates" / "ir" / "src" / "lowered" / "types.rs"
+    if not target.exists():
+        return violations
+    text = target.read_text()
+    lines = text.split('\n')
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped == 'RuntimeCall {':
+            nxt = lines[i + 1].strip() if i + 1 < len(lines) else ''
+            if 'runtime_fn' in nxt and 'String' in nxt:
+                violations.append(
+                    f"check_architecture_rules: ERROR crates/ir/src/lowered/types.rs:{i + 1}: "
+                    f"RuntimeCall {{ runtime_fn: String }} — migrate to typed enum"
+                )
+    return violations
+
+
+def check_use_super_star() -> list[str]:
+    violations = []
+    use_super_re = re.compile(r'^\s*use\s+super::\*;?\s*$')
+
+    for path in sorted(REPO_ROOT.rglob("*.rs")):
+        rel = path.relative_to(REPO_ROOT)
+        if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
+            continue
+        if rel.name == "tests.rs":
+            continue
+        if "tests" in rel.parts:
+            continue
+
+        text = path.read_text()
+        lines = text.split('\n')
+        in_cfg_test = False
+        cfg_test_brace_depth = 0
+
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped == '#[cfg(test)]':
+                in_cfg_test = True
+                cfg_test_brace_depth = 0
+                continue
+            if in_cfg_test:
+                cfg_test_brace_depth += line.count('{') - line.count('}')
+                if cfg_test_brace_depth <= 0:
+                    in_cfg_test = False
+                    cfg_test_brace_depth = 0
+                continue
+            if use_super_re.match(stripped):
+                violations.append(
+                    f"check_architecture_rules: ERROR {rel}:{i + 1}: "
+                    f"`use super::*` outside test module"
+                )
+
+    return violations
+
+
+def check_backend_frontend_import() -> list[str]:
+    violations = []
+    backend_src = REPO_ROOT / "crates" / "backend-wasm" / "src"
+    if not backend_src.exists():
+        return violations
+
+    for path in sorted(backend_src.rglob("*.rs")):
+        rel = path.relative_to(REPO_ROOT)
+        text = path.read_text()
+        for i, line in enumerate(text.split('\n'), 1):
+            if re.match(r'^\s*use\s+ts2wasm_frontend', line):
+                violations.append(
+                    f"check_architecture_rules: ERROR {rel}:{i}: "
+                    f"backend module imports from ts2wasm_frontend"
+                )
+
+    return violations
+
+
+def check_runtime_push_str() -> list[str]:
+    violations = []
+    backend_src = REPO_ROOT / "crates" / "backend-wasm" / "src"
+    if not backend_src.exists():
+        return violations
+
+    for path in sorted(backend_src.rglob("runtime*.rs")):
+        rel = path.relative_to(REPO_ROOT)
+        text = path.read_text()
+        for i, line in enumerate(text.split('\n'), 1):
+            if 'push_str' in line:
+                violations.append(
+                    f"check_architecture_rules: WARN {rel}:{i}: "
+                    f"`push_str` usage — prefer structured builders over raw WAT strings"
+                )
+
+    return violations
+
+
 def main():
     args = sys.argv[1:]
     max_file_lines = parse_max_file_lines(args)
@@ -266,6 +443,19 @@ def main():
     try:
         check_backend_frontend_dependency()
     except SystemExit:
+        errors += 1
+
+    violations = []
+    violations.extend(check_function_length())
+    violations.extend(check_rust_file_length())
+    violations.extend(check_runtime_call_string())
+    violations.extend(check_use_super_star())
+    violations.extend(check_backend_frontend_import())
+    violations.extend(check_runtime_push_str())
+
+    for v in violations:
+        print(v, file=sys.stderr)
+    if violations:
         errors += 1
 
     if not shutil.which("cargo"):

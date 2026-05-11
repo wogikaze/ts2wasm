@@ -1,7 +1,19 @@
-use super::*;
+use super::{
+    Resolver, is_array_from_call_receiver, is_array_prototype_map_call_receiver,
+    is_array_prototype_push_expr, is_array_prototype_push_property, is_identity_arrow_callback,
+    is_invalid_date_constructor_expr, is_private_field_storage_key, is_set_prototype_property,
+    is_set_prototype_property_expr, is_static_date_constructor_expr, is_string_split_result_expr,
+    numeric_ascending_sort_arrow_callback, private_storage_observable_access_diagnostic,
+    string_constructor_arrow_callback, string_split_arrow_separator, unary_plus_arrow_callback,
+    unsupported_array_map_diagnostic, unsupported_array_sort_diagnostic,
+};
+use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
+use crate::lowered::*;
+use ts2wasm_frontend::{BinaryOp, UnaryOp};
+use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
 impl<'a> Resolver<'a> {
-    pub(super) fn lower_expr(&mut self, expr: &ResolvedExpr) -> Result<LoweredExpr, Diagnostic> {
+    pub(crate) fn lower_expr(&mut self, expr: &ResolvedExpr) -> Result<LoweredExpr, Diagnostic> {
         match expr {
             ResolvedExpr::Number(value) => Ok(LoweredExpr::Number(*value, Span::generated("num"))),
             ResolvedExpr::BigIntLiteral {
@@ -2831,7 +2843,8 @@ fn lower_html_wrapper_string_method(
                 message: format!("String.prototype.{method} is not supported in this milestone"),
                 span: Some(span),
 
-                phase: None,});
+                phase: None,
+            });
         }
     };
 

@@ -1,13 +1,11 @@
 use std::collections::{HashMap, HashSet};
 
 use super::binding_pattern::{
-    ArrayBinding, BindingDefault, BindingPattern, ObjectBinding, parse_binding_pattern,
+    parse_binding_pattern, ArrayBinding, BindingDefault, BindingPattern, ObjectBinding,
 };
 use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 use super::builtin_resolved::{ClassMethodKind, ResolvedExpr, ResolvedParam, ResolvedStmt};
-use ts2wasm_frontend::{
-    BinaryOp, LogicalAssignOp, OBJECT_SPREAD_SENTINEL, SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp,
-};
+use ts2wasm_frontend::{BinaryOp, LogicalAssignOp, UnaryOp};
 use ts2wasm_shared::{DiagCode, Diagnostic, Span};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -18,8 +16,8 @@ pub struct FuncId(pub usize);
 
 type ClassConstructorMap = HashMap<String, FuncId>;
 type ClassMethodMap = HashMap<(String, String), FuncId>;
-type ClassPrivateFieldSlots = HashMap<String, HashMap<String, usize>>;
-type ClassStaticPrivateFields = HashMap<String, HashMap<String, String>>;
+pub type ClassPrivateFieldSlots = HashMap<String, HashMap<String, usize>>;
+pub type ClassStaticPrivateFields = HashMap<String, HashMap<String, String>>;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ClassPrototypeRef {
@@ -477,7 +475,9 @@ impl LoweredExpr {
                 LoweredUnaryOp::Not => InferredType::Boolean,
                 _ => InferredType::Unknown,
             },
-            Self::Binary { left, op, right, .. } => match op {
+            Self::Binary {
+                left, op, right, ..
+            } => match op {
                 LoweredBinaryOp::Add => match (left.inferred_type(), right.inferred_type()) {
                     (InferredType::Number, InferredType::Number) => InferredType::Number,
                     (InferredType::String, InferredType::String) => InferredType::String,
@@ -507,9 +507,9 @@ impl LoweredExpr {
                 | LoweredBinaryOp::EqualEqual
                 | LoweredBinaryOp::BangEqual
                 | LoweredBinaryOp::StrictNotEqual => InferredType::Boolean,
-                LoweredBinaryOp::And
-                | LoweredBinaryOp::Or
-                | LoweredBinaryOp::NullishCoalesce => InferredType::Unknown,
+                LoweredBinaryOp::And | LoweredBinaryOp::Or | LoweredBinaryOp::NullishCoalesce => {
+                    InferredType::Unknown
+                }
             },
             Self::Assign { expr, .. } => expr.inferred_type(),
             Self::LogicalAssign { .. }
@@ -555,7 +555,13 @@ impl Validated<LoweredProgram> {
                 non_fatal.push(e);
             }
         }
-        Ok((Self { inner: program, non_fatal: non_fatal.clone() }, non_fatal))
+        Ok((
+            Self {
+                inner: program,
+                non_fatal: non_fatal.clone(),
+            },
+            non_fatal,
+        ))
     }
 
     /// Borrow the inner program.
