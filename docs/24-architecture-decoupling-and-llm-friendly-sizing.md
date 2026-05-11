@@ -187,8 +187,9 @@ Phase 4: 1500 → 1200     ❌ 未実施
 現在危険域にある関数:
 
 - `lower_expr` — ~~2711 lines~~ ✅ P9: **1122 lines** (dispatcher のみ, Call/MethodCall/New → call.rs に抽出)
-- `RuntimeFn::spec` — ~~2318 lines~~ ⚠️ P10: **715 lines** (include! で domain spec に分割 — ただし section 8 の原則に反する一時的措置。real module 化は #274 runtime-catalog crate 抽出時に解決予定)
+- `lower_method_call_expr` — ~~1223 lines~~ ✅ **28 lines** (7 private helpers に抽出: lower_mcall_early, lower_mcall_json_date_regexp, lower_mcall_date_string, lower_mcall_array_runtime, lower_mcall_dispatch_early, lower_mcall_nonident_receiver, lower_mcall_class_dispatch。各 helper は < 300 lines)
 - `emit_json_parse` — 1357 lines ❌
+- `RuntimeFn::spec` — ~~2318 lines~~ ⚠️ P10: **715 lines** (include! で domain spec に分割 — ただし section 8 の原則に反する一時的措置。real module 化は #274 runtime-catalog crate 抽出時に解決予定)
 - `emit_expr` — ~~921 lines~~ ✅ P10: **195 lines** (12 の sub-function に分割)
 - `Lexer::tokenize` — ~~863 lines~~ ✅ P10: **268 lines** (4 の sub-method に分割)
 - `lower_variable_array_callback_method` — ~~842 lines~~ ✅ P10: **250 lines** (8 の sub-method に分割)
@@ -361,7 +362,7 @@ crates/ir/src/lowered/
 **現在の resolver/ のファイル構成 (P10 完了時点):**
 - `mod.rs` — Resolver struct, 全 field, lower_expr の match dispatch
 - `expr.rs` — 残りの branch
-- `call.rs` — Call/MethodCall/New + helper functions
+- `call.rs` — Call/MethodCall/New + helper functions (call.rs の lower_method_call_expr は 1223→28行に分割、7 private helpers)
 - `array.rs` — ArrayLiteral + callback lowering
 - `object.rs` — ObjectLiteral lowering (stub)
 - `class.rs` — ClassExpr lowering (stub)
@@ -370,7 +371,7 @@ crates/ir/src/lowered/
 - `string.rs` ✅ — string literal/regexp
 - `module.rs` ✅ — module_id_for_specifier
 
-**残課題**: `expr.rs` の残 branch をさらに分割, `extra.rs` の消化, `LoweringCtx` への分離
+**残課題**: `expr.rs` の残 branch をさらに分割, `extra.rs` の消化, `LoweringCtx` への分離, `call.rs` (#297) の call/ ディレクトリ化
 
 ## 8. include! を real module に置き換える ✅ P9: 完了
 
