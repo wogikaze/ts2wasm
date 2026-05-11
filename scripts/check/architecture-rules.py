@@ -34,7 +34,7 @@ import shutil
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
-DEFAULT_MAX_FILE_LINES = 2000
+DEFAULT_MAX_FILE_LINES = 1500
 
 # Known oversized files that are exempt from the general line limit.
 # Each entry must include a reason and the P-item that will eventually fix it.
@@ -58,6 +58,8 @@ OVERSIZED_ALLOWLIST = {
     "crates/ir/src/lowered/resolver_extra.rs": "P7: Resolver context decomposition",
     # Runtime domain runtime files (P4: domain split)
     "crates/backend-wasm/src/runtime/core/bigint.rs": "P4: runtime domain split",
+    # General files over 1500 lines (active hard gate since #337)
+    "scripts/run/reference-coverage.py": "coverage script — naturally large",
 }
 
 # Crates that must not directly depend on ts2wasm-frontend via Cargo.toml.
@@ -110,7 +112,7 @@ FILE_SIZE_ALLOWLIST_2000 = {
 
 # Files exceeding 1500 lines (Rust), with planned remediation.
 # Test files are exempt separately via EXCLUDED_PATH_PARTS logic.
-KNOWN_OVERSIZED_FILES_1500 = {
+FILE_SIZE_ALLOWLIST_1500 = {
     **FILE_SIZE_ALLOWLIST_2000,
     "crates/backend-wasm/src/expr_emit.rs": "expression emitter — pending domain split",
     "crates/ir/src/name_resolver.rs": "P7: resolver decomposition",
@@ -622,7 +624,7 @@ def check_rust_file_length_1500(max_lines: int = 1500) -> list[str]:
         rel = path.relative_to(REPO_ROOT)
         if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
             continue
-        if str(rel) in KNOWN_OVERSIZED_FILES_1500:
+        if str(rel) in FILE_SIZE_ALLOWLIST_1500:
             continue
         count = line_count(path)
         if count > max_lines:
