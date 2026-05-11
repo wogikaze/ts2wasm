@@ -151,7 +151,7 @@ impl<'a> Resolver<'a> {
                     }
                     if self.resolved_expr_is_bigint(expr) {
                         return Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "BigIntUnaryMinus".to_owned(),
+                            intrinsic: RuntimeIntrinsic::BigIntUnaryMinus,
                             args: vec![self.lower_expr(expr)?],
 
                             span: Span::generated("runtime_call"),});
@@ -159,7 +159,7 @@ impl<'a> Resolver<'a> {
                 }
                 if *op == UnaryOp::BitwiseNot && self.resolved_expr_is_bigint(expr) {
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntBitwiseNot".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntBitwiseNot,
                         args: vec![self.lower_expr(expr)?],
 
                         span: Span::generated("runtime_call"),});
@@ -240,7 +240,7 @@ impl<'a> Resolver<'a> {
                         }
                     };
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "$instanceof".to_string(),
+                        intrinsic: RuntimeIntrinsic::InstanceOf,
                         args: vec![self.lower_expr(left)?, prototype],
 
                         span: Span::generated("runtime_call"),})
@@ -249,7 +249,7 @@ impl<'a> Resolver<'a> {
                     // key in object -> check if key exists in object
                     match left.as_ref() {
                         ResolvedExpr::Number(index) => Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "ArrayIndexPresent".to_owned(),
+                            intrinsic: RuntimeIntrinsic::ArrayIndexPresent,
                             args: vec![self.lower_expr(right)?, LoweredExpr::Number(*index, Span::generated("num"))],
 
                             span: Span::generated("runtime_call"),}),
@@ -266,13 +266,13 @@ impl<'a> Resolver<'a> {
                     && self.resolved_expr_is_bigint_div_rem_operand(left)
                     && self.resolved_expr_is_bigint_div_rem_operand(right)
                 {
-                    let runtime_fn = match op {
-                        BinaryOp::Divide => "BigIntDiv",
-                        BinaryOp::Modulo => "BigIntRem",
+                    let intrinsic = match op {
+                        BinaryOp::Divide => RuntimeIntrinsic::BigIntDiv,
+                        BinaryOp::Modulo => RuntimeIntrinsic::BigIntRem,
                         _ => unreachable!("checked above"),
                     };
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: runtime_fn.to_owned(),
+                        intrinsic: intrinsic,
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
 
                         span: Span::generated("runtime_call"),})
@@ -301,16 +301,16 @@ impl<'a> Resolver<'a> {
                     && self.resolved_expr_is_bigint(left)
                     && self.resolved_expr_is_bigint(right)
                 {
-                    let runtime_fn = match op {
-                        BinaryOp::Add => "BigIntAdd",
-                        BinaryOp::Subtract => "BigIntSub",
-                        BinaryOp::Multiply => "BigIntMul",
-                        BinaryOp::Divide => "BigIntDiv",
-                        BinaryOp::Modulo => "BigIntRem",
+                    let intrinsic = match op {
+                        BinaryOp::Add => RuntimeIntrinsic::BigIntAdd,
+                        BinaryOp::Subtract => RuntimeIntrinsic::BigIntSub,
+                        BinaryOp::Multiply => RuntimeIntrinsic::BigIntMul,
+                        BinaryOp::Divide => RuntimeIntrinsic::BigIntDiv,
+                        BinaryOp::Modulo => RuntimeIntrinsic::BigIntRem,
                         _ => unreachable!("checked above"),
                     };
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: runtime_fn.to_owned(),
+                        intrinsic: intrinsic,
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
 
                         span: Span::generated("runtime_call"),})
@@ -319,7 +319,7 @@ impl<'a> Resolver<'a> {
                     && self.resolved_expr_is_bigint(right)
                 {
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntPow".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntPow,
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
 
                         span: Span::generated("runtime_call"),})
@@ -346,7 +346,7 @@ impl<'a> Resolver<'a> {
                             span: Span::generated("binary"),})
                     } else {
                         Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
+                            intrinsic: RuntimeIntrinsic::BigIntMixedArithmeticTypeError,
                             args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
 
                             span: Span::generated("runtime_call"),})
@@ -357,14 +357,14 @@ impl<'a> Resolver<'a> {
                 ) && self.resolved_expr_is_bigint(left)
                     && self.resolved_expr_is_bigint(right)
                 {
-                    let runtime_fn = match op {
-                        BinaryOp::BitwiseAnd => "BigIntBitwiseAnd",
-                        BinaryOp::BitwiseOr => "BigIntBitwiseOr",
-                        BinaryOp::BitwiseXor => "BigIntBitwiseXor",
+                    let intrinsic = match op {
+                        BinaryOp::BitwiseAnd => RuntimeIntrinsic::BigIntBitwiseAnd,
+                        BinaryOp::BitwiseOr => RuntimeIntrinsic::BigIntBitwiseOr,
+                        BinaryOp::BitwiseXor => RuntimeIntrinsic::BigIntBitwiseXor,
                         _ => unreachable!("checked above"),
                     };
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: runtime_fn.to_owned(),
+                        intrinsic: intrinsic,
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
 
                         span: Span::generated("runtime_call"),})
@@ -377,7 +377,7 @@ impl<'a> Resolver<'a> {
                 {
                     // Mixed BigInt/non-BigInt bitwise → TypeError
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntMixedArithmeticTypeError,
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
 
                         span: Span::generated("runtime_call"),})
@@ -390,25 +390,25 @@ impl<'a> Resolver<'a> {
                     // TypeError; use the mixed-arithmetic type error.
                     if *op == BinaryOp::UnsignedRightShift {
                         Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
+                            intrinsic: RuntimeIntrinsic::BigIntMixedArithmeticTypeError,
                             args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
 
                             span: Span::generated("runtime_call"),})
                     } else if self.resolved_expr_is_bigint(right) {
-                        let runtime_fn = match op {
-                            BinaryOp::LeftShift => "BigIntLeftShift",
-                            BinaryOp::RightShift => "BigIntRightShift",
+                        let intrinsic = match op {
+                            BinaryOp::LeftShift => RuntimeIntrinsic::BigIntLeftShift,
+                            BinaryOp::RightShift => RuntimeIntrinsic::BigIntRightShift,
                             _ => unreachable!("checked above"),
                         };
                         Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: runtime_fn.to_owned(),
+                            intrinsic: intrinsic,
                             args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
 
                             span: Span::generated("runtime_call"),})
                     } else {
                         // Mixed BigInt/non-BigInt shift → TypeError
                         Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
+                            intrinsic: RuntimeIntrinsic::BigIntMixedArithmeticTypeError,
                             args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
 
                             span: Span::generated("runtime_call"),})
@@ -573,10 +573,10 @@ impl<'a> Resolver<'a> {
                     }
                 };
 
-                if let Some(runtime_fn) = crate::builtin_resolver::bigint_runtime_fn_name(func_name)
+                if let Some(intrinsic) = super::bigint_runtime_fn_intrinsic(func_name)
                 {
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: runtime_fn.to_owned(),
+                        intrinsic: intrinsic,
                         args: self.lower_call_args(args)?,
 
                         span: Span::generated("runtime_call"),});
@@ -605,7 +605,7 @@ impl<'a> Resolver<'a> {
                     let mut lowered_args = vec![receiver];
                     lowered_args.extend(self.lower_call_args(args)?);
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "HeapClosureCall".to_owned(),
+                        intrinsic: RuntimeIntrinsic::HeapClosureCall,
                         args: lowered_args,
 
                         span: Span::generated("runtime_call"),});
@@ -669,7 +669,7 @@ impl<'a> Resolver<'a> {
                     && self.resolved_expr_is_bigint(arg)
                 {
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntToString".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntToString,
                         args: vec![self.lower_expr(arg)?],
 
                         span: Span::generated("runtime_call"),});
@@ -679,7 +679,7 @@ impl<'a> Resolver<'a> {
                     && let [ResolvedExpr::BigIntLiteral { .. }] = args.as_slice()
                 {
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntToBoolean".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntToBoolean,
                         args: vec![self.lower_expr(&args[0])?],
 
                         span: Span::generated("runtime_call"),});
@@ -692,7 +692,7 @@ impl<'a> Resolver<'a> {
                         None => LoweredExpr::Undefined(Span::generated("undef")),
                     };
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "SymbolNew".to_owned(),
+                        intrinsic: RuntimeIntrinsic::SymbolNew,
                         args: vec![arg],
                         span: Span::generated("runtime_call"),
                     });
@@ -752,7 +752,7 @@ impl<'a> Resolver<'a> {
                             vec![LoweredExpr::Local(closure_local, Span::generated("local"))];
                         lowered_args.extend(self.lower_call_args(args)?);
                         return Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "HeapClosureCall".to_owned(),
+                            intrinsic: RuntimeIntrinsic::HeapClosureCall,
                             args: lowered_args,
 
                             span: Span::generated("runtime_call"),});
@@ -930,7 +930,7 @@ impl<'a> Resolver<'a> {
                                 phase: None,})?;
                             let brand = self.private_brand_for_class(&class_name, Some(*span))?;
                             LoweredExpr::RuntimeCall {
-                                runtime_fn: "PrivateBrandCheck".to_owned(),
+                                intrinsic: RuntimeIntrinsic::PrivateBrandCheck,
                                 args: vec![
                                     self.lower_expr(object)?,
                                     LoweredExpr::Number(brand as i32, Span::generated("num")),
@@ -958,7 +958,7 @@ impl<'a> Resolver<'a> {
                     }
                     let (brand, slot) = self.private_field_brand_and_slot(object, key, *span)?;
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "PrivateFieldGet".to_owned(),
+                        intrinsic: RuntimeIntrinsic::PrivateFieldGet,
                         args: vec![
                             self.lower_expr(object)?,
                             LoweredExpr::Number(brand as i32, Span::generated("num")),
@@ -987,7 +987,7 @@ impl<'a> Resolver<'a> {
                         .is_some_and(|class_name| class_name == "Set")
                 {
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "SetSize".to_owned(),
+                        intrinsic: RuntimeIntrinsic::SetSize,
                         args: vec![LoweredExpr::Local(obj_local, Span::generated("local"))],
 
                         span: Span::generated("runtime_call"),});
@@ -1001,13 +1001,13 @@ impl<'a> Resolver<'a> {
                         .is_some_and(|class_name| class_name == "Map")
                 {
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "MapSize".to_owned(),
+                        intrinsic: RuntimeIntrinsic::MapSize,
                         args: vec![LoweredExpr::Local(obj_local, Span::generated("local"))],
                         span: Span::generated("runtime_call"),});
                 }
                 if is_set_prototype_property(object, key, "add") {
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "SetPrototypeAddGet".to_owned(),
+                        intrinsic: RuntimeIntrinsic::SetPrototypeAddGet,
                         args: Vec::new(),
 
                         span: Span::generated("runtime_call"),});
@@ -1131,7 +1131,7 @@ impl<'a> Resolver<'a> {
                             .collect::<Result<Vec<_>, _>>()?,
                     );
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "ArrayPushMany".to_owned(),
+                        intrinsic: RuntimeIntrinsic::ArrayPushMany,
                         args: lowered_args,
 
                         span: Span::generated("runtime_call"),});
@@ -1155,10 +1155,10 @@ impl<'a> Resolver<'a> {
                 if matches!(
                     object.as_ref(),
                     ResolvedExpr::Ident(name) if name == "__ts2wasm_bigint_runtime"
-                ) && let Some(runtime_fn) = crate::builtin_resolver::bigint_runtime_fn_name(method)
+                ) && let Some(intrinsic) = super::bigint_runtime_fn_intrinsic(method)
                 {
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: runtime_fn.to_owned(),
+                        intrinsic: intrinsic,
                         args: self.lower_call_args(args)?,
 
                         span: Span::generated("runtime_call"),});
@@ -1215,7 +1215,7 @@ impl<'a> Resolver<'a> {
                             phase: None,})?;
                         let brand = self.private_brand_for_class(&class_name, Some(*span))?;
                         LoweredExpr::RuntimeCall {
-                            runtime_fn: "PrivateBrandCheck".to_owned(),
+                            intrinsic: RuntimeIntrinsic::PrivateBrandCheck,
                             args: vec![self.lower_expr(object)?, LoweredExpr::Number(brand as i32, Span::generated("num"))],
 
                             span: Span::generated("runtime_call"),}
@@ -1297,13 +1297,13 @@ impl<'a> Resolver<'a> {
                         None => LoweredExpr::Undefined(Span::generated("undef")),
                     });
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "JsonStringify".to_owned(),
+                        intrinsic: RuntimeIntrinsic::JsonStringify,
                         args: lowered_args,
 
                         span: Span::generated("runtime_call"),})
                 } else if is_date_now_live_time_call(object, method) {
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "DateNow".to_owned(),
+                        intrinsic: RuntimeIntrinsic::DateNow,
                         args: vec![],
 
                         span: Span::generated("runtime_call"),})
@@ -1320,7 +1320,7 @@ impl<'a> Resolver<'a> {
                         .map(|e| self.lower_expr(e))
                         .collect::<Result<Vec<_>, _>>()?;
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "RegExpTest".to_owned(),
+                        intrinsic: RuntimeIntrinsic::RegExpTest,
                         args: lowered_args,
 
                         span: Span::generated("runtime_call"),})
@@ -1331,7 +1331,7 @@ impl<'a> Resolver<'a> {
                         .map(|e| self.lower_expr(e))
                         .collect::<Result<Vec<_>, _>>()?;
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "RegExpMatch".to_owned(),
+                        intrinsic: RuntimeIntrinsic::RegExpMatch,
                         args: lowered_args,
 
                         span: Span::generated("runtime_call"),})
@@ -1343,7 +1343,7 @@ impl<'a> Resolver<'a> {
                         .map(|e| self.lower_expr(e))
                         .collect::<Result<Vec<_>, _>>()?;
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: if method == "search" { "RegExpSearch".to_owned() } else { "RegExpMatch".to_owned() },
+                        intrinsic: if method == "search" { RuntimeIntrinsic::RegExpSearch } else { RuntimeIntrinsic::RegExpMatch },
                         args: lowered_args,
 
                         span: Span::generated("runtime_call"),})
@@ -1362,7 +1362,7 @@ impl<'a> Resolver<'a> {
                             phase: None,});
                     }
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "DateGetTime".to_owned(),
+                        intrinsic: RuntimeIntrinsic::DateGetTime,
                         args: vec![self.lower_expr(object)?],
 
                         span: Span::generated("runtime_call"),})
@@ -1379,7 +1379,7 @@ impl<'a> Resolver<'a> {
                             phase: None,});
                     }
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "DateGetTimezoneOffset".to_owned(),
+                        intrinsic: RuntimeIntrinsic::DateGetTimezoneOffset,
                         args: vec![self.lower_expr(object)?],
 
                         span: Span::generated("runtime_call"),})
@@ -1407,7 +1407,7 @@ impl<'a> Resolver<'a> {
                         _ => unreachable!(),
                     };
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "DateGetLocalTimeField".to_owned(),
+                        intrinsic: RuntimeIntrinsic::DateGetLocalTimeField,
                         args: vec![
                             self.lower_expr(object)?,
                             LoweredExpr::Number(field_index, Span::generated("num")),
@@ -1462,7 +1462,7 @@ impl<'a> Resolver<'a> {
                     }
                     Ok(LoweredExpr::Binary {
                         left: Box::new(LoweredExpr::RuntimeCall {
-                            runtime_fn: "DateGetLocalTimeField".to_owned(),
+                            intrinsic: RuntimeIntrinsic::DateGetLocalTimeField,
                             args: vec![self.lower_expr(object)?, LoweredExpr::Number(0, Span::generated("num"))],
 
                             span: Span::generated("runtime_call"),}),
@@ -1487,7 +1487,7 @@ impl<'a> Resolver<'a> {
                             phase: None,});
                     }
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "DateToString".to_owned(),
+                        intrinsic: RuntimeIntrinsic::DateToString,
                         args: vec![self.lower_expr(object)?],
 
                         span: Span::generated("runtime_call"),})
@@ -1514,19 +1514,19 @@ impl<'a> Resolver<'a> {
 
                             phase: None,});
                     }
-                    let runtime_fn = match method.as_str() {
-                        "getUTCMilliseconds" => "DateGetUtcMilliseconds",
-                        "getUTCSeconds" => "DateGetUtcSeconds",
-                        "getUTCMinutes" => "DateGetUtcMinutes",
-                        "getUTCHours" => "DateGetUtcHours",
-                        "getUTCDay" => "DateGetUtcDay",
-                        "getUTCDate" => "DateGetUtcDate",
-                        "getUTCMonth" => "DateGetUtcMonth",
-                        "getUTCFullYear" => "DateGetUtcFullYear",
+                    let intrinsic: RuntimeIntrinsic = match method.as_str() {
+                        "getUTCMilliseconds" => RuntimeIntrinsic::DateGetUtcMilliseconds,
+                        "getUTCSeconds" => RuntimeIntrinsic::DateGetUtcSeconds,
+                        "getUTCMinutes" => RuntimeIntrinsic::DateGetUtcMinutes,
+                        "getUTCHours" => RuntimeIntrinsic::DateGetUtcHours,
+                        "getUTCDay" => RuntimeIntrinsic::DateGetUtcDay,
+                        "getUTCDate" => RuntimeIntrinsic::DateGetUtcDate,
+                        "getUTCMonth" => RuntimeIntrinsic::DateGetUtcMonth,
+                        "getUTCFullYear" => RuntimeIntrinsic::DateGetUtcFullYear,
                         _ => unreachable!(),
                     };
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: runtime_fn.to_owned(),
+                        intrinsic: intrinsic,
                         args: vec![self.lower_expr(object)?],
 
                         span: Span::generated("runtime_call"),})
@@ -1545,7 +1545,7 @@ impl<'a> Resolver<'a> {
                             phase: None,});
                     }
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "DateToISOString".to_owned(),
+                        intrinsic: RuntimeIntrinsic::DateToISOString,
                         args: vec![self.lower_expr(object)?],
 
                         span: Span::generated("runtime_call"),})
@@ -1566,14 +1566,13 @@ impl<'a> Resolver<'a> {
                         unsupported_annex_b_string_method(method, *span)
                     {
                         Err(diagnostic)
-                    } else if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
+                    } else if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
                         let mut lowered_args = vec![self.lower_expr(object)?];
                         lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<
                             Result<Vec<_>, _>,
                         >(
                         )?);
-                        Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn,
+                        Ok(LoweredExpr::RuntimeCall { intrinsic,
                             args: lowered_args,
 
                             span: Span::generated("runtime_call"),})
@@ -1602,11 +1601,7 @@ impl<'a> Resolver<'a> {
                         lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
                     }
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: if method == "indexOf" {
-                            "ArrayIndexOf".to_owned()
-                        } else {
-                            "ArrayIncludes".to_owned()
-                        },
+                        intrinsic: if method == "indexOf" { RuntimeIntrinsic::ArrayIndexOf } else { RuntimeIntrinsic::ArrayIncludes },
                         args: lowered_args,
 
                         span: Span::generated("runtime_call"),})
@@ -1620,7 +1615,7 @@ impl<'a> Resolver<'a> {
                             .collect::<Result<Vec<_>, _>>()?,
                     );
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "ArrayConcat".to_owned(),
+                        intrinsic: RuntimeIntrinsic::ArrayConcat,
                         args: lowered_args,
 
                         span: Span::generated("runtime_call"),})
@@ -1629,16 +1624,21 @@ impl<'a> Resolver<'a> {
                     && self.is_known_array_expr(object)
                 {
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: format!(
-                            "Array{}{}",
-                            method[0..1].to_uppercase(),
-                            &method[1..]
-                        ),
+                        intrinsic: match method.as_str() {
+                            "find" => RuntimeIntrinsic::ArrayFind,
+                            "findIndex" => RuntimeIntrinsic::ArrayFindIndex,
+                            "findLast" => RuntimeIntrinsic::ArrayFindLast,
+                            "findLastIndex" => RuntimeIntrinsic::ArrayFindLastIndex,
+                            "filter" => RuntimeIntrinsic::ArrayFilter,
+                            "every" => RuntimeIntrinsic::ArrayEvery,
+                            "some" => RuntimeIntrinsic::ArraySome,
+                            _ => unreachable!(),
+                        },
                         args: vec![self.lower_expr(object)?],
 
                         span: Span::generated("runtime_call"),})
-                } else if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
-                    if (runtime_fn == "ArrayPush" || runtime_fn == "ArrayPushGrow") && args.len() != 1 {
+                } else if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
+                    if (intrinsic == RuntimeIntrinsic::ArrayPush || intrinsic == RuntimeIntrinsic::ArrayPushGrow) && args.len() != 1 {
                         if !matches!(object.as_ref(), ResolvedExpr::Ident(_)) {
                             return Err(Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
@@ -1653,12 +1653,12 @@ impl<'a> Resolver<'a> {
                         >(
                         )?);
                         return Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "ArrayPushMany".to_owned(),
+                            intrinsic: RuntimeIntrinsic::ArrayPushMany,
                             args: lowered_args,
 
                             span: Span::generated("runtime_call"),});
                     }
-                    if (runtime_fn == "MathMax" || runtime_fn == "MathMin") && args.len() > 2 {
+                    if (intrinsic == RuntimeIntrinsic::MathMax || intrinsic == RuntimeIntrinsic::MathMin) && args.len() > 2 {
                         let mut lowered_args = Vec::new();
                         if !matches!(
                             object.as_ref(),
@@ -1672,7 +1672,7 @@ impl<'a> Resolver<'a> {
                         let mut result = lowered_args[0].clone();
                         for arg in &lowered_args[1..] {
                             result = LoweredExpr::RuntimeCall {
-                                runtime_fn: runtime_fn.clone(),
+                                intrinsic: intrinsic.clone(),
                                 args: vec![result, arg.clone()],
 
                                 span: Span::generated("runtime_call"),};
@@ -1683,9 +1683,9 @@ impl<'a> Resolver<'a> {
                     // Math.max() with no arguments returns -Infinity (approximated as NUMBER_PAYLOAD_MIN)
                     // Math.min() with no arguments returns +Infinity (approximated as NUMBER_PAYLOAD_MAX)
                     // Note: Proper Infinity support requires broader number-model support (issue-281)
-                    if (runtime_fn == "MathMax" || runtime_fn == "MathMin") && args.is_empty() {
+                    if (intrinsic == RuntimeIntrinsic::MathMax || intrinsic == RuntimeIntrinsic::MathMin) && args.is_empty() {
                         use ts2wasm_runtime_abi::ValueTag;
-                        let infinity_value = if runtime_fn == "MathMax" {
+                        let infinity_value = if intrinsic == RuntimeIntrinsic::MathMax {
                             // -Infinity approximated as minimum representable number
                             ValueTag::NUMBER_PAYLOAD_MIN
                         } else {
@@ -1707,8 +1707,7 @@ impl<'a> Resolver<'a> {
                         _,
                     >>(
                     )?);
-                    Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn,
+                    Ok(LoweredExpr::RuntimeCall { intrinsic,
                         args: lowered_args,
 
                         span: Span::generated("runtime_call"),})
@@ -1750,7 +1749,7 @@ impl<'a> Resolver<'a> {
                         && self.is_known_array_expr(object)
                     {
                         return Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "ArrayMapValueToString".to_owned(),
+                            intrinsic: RuntimeIntrinsic::ArrayMapValueToString,
                             args: vec![self.lower_expr(object)?],
 
                             span: Span::generated("runtime_call"),});
@@ -1761,7 +1760,7 @@ impl<'a> Resolver<'a> {
                         && self.is_known_array_expr(object)
                     {
                         return Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "ArrayMapUnaryPlus".to_owned(),
+                            intrinsic: RuntimeIntrinsic::ArrayMapUnaryPlus,
                             args: vec![self.lower_expr(object)?],
 
                             span: Span::generated("runtime_call"),});
@@ -1785,7 +1784,7 @@ impl<'a> Resolver<'a> {
                         && let Some(separator) = string_split_arrow_separator(args)
                     {
                         return Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "ArrayMapStringSplit".to_owned(),
+                            intrinsic: RuntimeIntrinsic::ArrayMapStringSplit,
                             args: vec![self.lower_expr(object)?, self.lower_expr(separator)?],
 
                             span: Span::generated("runtime_call"),});
@@ -1794,7 +1793,7 @@ impl<'a> Resolver<'a> {
                     if method == "sort" && self.is_known_array_expr(object) {
                         if numeric_ascending_sort_arrow_callback(args) {
                             return Ok(LoweredExpr::RuntimeCall {
-                                runtime_fn: "ArraySortNumeric".to_owned(),
+                                intrinsic: RuntimeIntrinsic::ArraySortNumeric,
                                 args: vec![self.lower_expr(object)?],
 
                                 span: Span::generated("runtime_call"),});
@@ -1877,7 +1876,7 @@ impl<'a> Resolver<'a> {
                             ..
                         } if matches!(prop_obj.as_ref(), ResolvedExpr::This { .. }) => {
                             // this.field.method(...) — try to use a runtime function
-                            if let Some(runtime_fn) =
+                            if let Some(intrinsic) =
                                 collection_method_runtime_fn_arg(method)
                             {
                                 let receiver_expr = self.lower_expr(object)?;
@@ -1896,7 +1895,7 @@ impl<'a> Resolver<'a> {
                                     }
                                 }
                                 return Ok(LoweredExpr::RuntimeCall {
-                                    runtime_fn: runtime_fn.to_owned(),
+                                    intrinsic: intrinsic,
                                     args: lowered_args,
 
                                     span: Span::generated("runtime_call"),});
@@ -1969,7 +1968,7 @@ impl<'a> Resolver<'a> {
                                             );
                                         }
                                         // For non-callback runtime functions, unwrap call
-                                        if let Some(runtime_fn) =
+                                        if let Some(intrinsic) =
                                             collection_method_runtime_fn(
                                                 class_name,
                                                 proto_method,
@@ -1981,7 +1980,7 @@ impl<'a> Resolver<'a> {
                                                 lowered_args.push(self.lower_expr(arg)?);
                                             }
                                             return Ok(LoweredExpr::RuntimeCall {
-                                                runtime_fn: runtime_fn.to_owned(),
+                                                intrinsic: intrinsic,
                                                 args: lowered_args,
 
                                                 span: Span::generated("runtime_call"),});
@@ -1997,7 +1996,7 @@ impl<'a> Resolver<'a> {
                                         phase: None,});
                                 }
                                 // Fall through to issue-211 error below
-                            if let Some(runtime_fn) =
+                            if let Some(intrinsic) =
                                 collection_method_runtime_fn_arg(method)
                             {
                                 let receiver_expr = self.lower_expr(object)?;
@@ -2016,7 +2015,7 @@ impl<'a> Resolver<'a> {
                                     }
                                 }
                                 return Ok(LoweredExpr::RuntimeCall {
-                                    runtime_fn: runtime_fn.to_owned(),
+                                    intrinsic: intrinsic,
                                     args: lowered_args,
 
                                     span: Span::generated("runtime_call"),});
@@ -2074,7 +2073,7 @@ impl<'a> Resolver<'a> {
 
                     if let Ok(obj_local) = self.resolve_local(receiver_name)
                         && let Some(class_name) = self.local_classes.get(&obj_local)
-                        && let Some(runtime_fn) = collection_method_runtime_fn(class_name, method)
+                        && let Some(intrinsic) = collection_method_runtime_fn(class_name, method)
                     {
                         if class_name == "RegExp" && args.len() > 1 {
                             return Err(Diagnostic {
@@ -2112,7 +2111,7 @@ impl<'a> Resolver<'a> {
                             );
                         }
                         return Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: runtime_fn.to_owned(),
+                            intrinsic: intrinsic,
                             args: lowered_args,
 
                             span: Span::generated("runtime_call"),});
@@ -2253,7 +2252,7 @@ impl<'a> Resolver<'a> {
                 }
                 if is_set_prototype_property(object, key, "add") {
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "SetPrototypeAddSet".to_owned(),
+                        intrinsic: RuntimeIntrinsic::SetPrototypeAddSet,
                         args: vec![self.lower_set_prototype_add_assignment_value(value)?],
 
                         span: Span::generated("runtime_call"),});
@@ -2262,7 +2261,7 @@ impl<'a> Resolver<'a> {
                     && is_set_prototype_property_expr(value, "add")
                 {
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "SetPrototypeAddGet".to_owned(),
+                        intrinsic: RuntimeIntrinsic::SetPrototypeAddGet,
                         args: Vec::new(),
 
                         span: Span::generated("runtime_call"),});
@@ -2326,7 +2325,7 @@ impl<'a> Resolver<'a> {
                                 phase: None,})?;
                             let brand = self.private_brand_for_class(&class_name, Some(*span))?;
                             LoweredExpr::RuntimeCall {
-                                runtime_fn: "PrivateBrandCheck".to_owned(),
+                                intrinsic: RuntimeIntrinsic::PrivateBrandCheck,
                                 args: vec![
                                     self.lower_expr(object)?,
                                     LoweredExpr::Number(brand as i32, Span::generated("num")),
@@ -2353,7 +2352,7 @@ impl<'a> Resolver<'a> {
                     }
                     let (brand, slot) = self.private_field_brand_and_slot(object, key, *span)?;
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "PrivateFieldSet".to_owned(),
+                        intrinsic: RuntimeIntrinsic::PrivateFieldSet,
                         args: vec![
                             self.lower_expr(object)?,
                             LoweredExpr::Number(brand as i32, Span::generated("num")),
@@ -2470,14 +2469,14 @@ impl<'a> Resolver<'a> {
                 if class_name == "Date" {
                     if args.is_empty() {
                         return Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "DateNewLive".to_owned(),
+                            intrinsic: RuntimeIntrinsic::DateNewLive,
                             args: vec![],
 
                             span: Span::generated("runtime_call"),});
                     }
                     if is_invalid_date_constructor_expr(expr) {
                         return Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "DateNew".to_owned(),
+                            intrinsic: RuntimeIntrinsic::DateNew,
                             args: vec![LoweredExpr::Number(0, Span::generated("num"))],
 
                             span: Span::generated("runtime_call"),});
@@ -2497,7 +2496,7 @@ impl<'a> Resolver<'a> {
                     let epoch_ms = &args[0];
                     if is_date_now_expr(epoch_ms) {
                         return Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "DateNew".to_owned(),
+                            intrinsic: RuntimeIntrinsic::DateNew,
                             args: vec![self.lower_expr(epoch_ms)?],
 
                             span: Span::generated("runtime_call"),});
@@ -2516,7 +2515,7 @@ impl<'a> Resolver<'a> {
                             phase: None,});
                     }
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "DateNew".to_owned(),
+                        intrinsic: RuntimeIntrinsic::DateNew,
                         args: vec![self.lower_expr(epoch_ms)?],
 
                         span: Span::generated("runtime_call"),});
@@ -2563,7 +2562,7 @@ impl<'a> Resolver<'a> {
                 {
                     if args.is_empty() || class_name == "WeakMap" || class_name == "WeakSet" {
                         return Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: format!("{class_name}New"),
+                            intrinsic: match class_name.as_str() { "Map" => RuntimeIntrinsic::MapNew, "Set" => RuntimeIntrinsic::SetNew, "WeakMap" => RuntimeIntrinsic::WeakMapNew, "WeakSet" => RuntimeIntrinsic::WeakSetNew, _ => unreachable!() },
                             args: Vec::new(),
 
                             span: Span::generated("runtime_call"),});
@@ -2571,7 +2570,7 @@ impl<'a> Resolver<'a> {
                     if class_name == "Set" && args.len() == 1 && self.is_known_array_expr(&args[0])
                     {
                         return Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "SetFromArray".to_owned(),
+                            intrinsic: RuntimeIntrinsic::SetFromArray,
                             args: vec![self.lower_expr(&args[0])?],
 
                             span: Span::generated("runtime_call"),});
@@ -2605,7 +2604,7 @@ impl<'a> Resolver<'a> {
                         lowered_args.push(self.lower_expr(arg)?);
                     }
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "PromiseConstructor".to_owned(),
+                        intrinsic: RuntimeIntrinsic::PromiseConstructor,
                         args: lowered_args,
 
                         span: Span::generated("runtime_call"),});
@@ -2628,7 +2627,7 @@ impl<'a> Resolver<'a> {
                         lowered_args.push(self.lower_expr(arg)?);
                     }
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "TypedArrayFromArray".to_owned(),
+                        intrinsic: RuntimeIntrinsic::TypedArrayFromArray,
                         args: lowered_args,
                         span: Span::generated("runtime_call"),
                     });
@@ -2639,7 +2638,7 @@ impl<'a> Resolver<'a> {
                         lowered_args.push(self.lower_expr(arg)?);
                     }
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "ArrayBufferNew".to_owned(),
+                        intrinsic: RuntimeIntrinsic::ArrayBufferNew,
                         args: lowered_args,
                         span: Span::generated("runtime_call"),
                     });
@@ -2658,7 +2657,7 @@ impl<'a> Resolver<'a> {
                         lowered_args.push(self.lower_expr(arg)?);
                     }
                     return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "DataViewNew".to_owned(),
+                        intrinsic: RuntimeIntrinsic::DataViewNew,
                         args: lowered_args,
                         span: Span::generated("runtime_call"),
                     });
@@ -2666,7 +2665,7 @@ impl<'a> Resolver<'a> {
                 if let Some(constructor) = BuiltinErrorConstructor::from_name(class_name) {
                     let message = match args.first() {
                         Some(message) => LoweredExpr::RuntimeCall {
-                            runtime_fn: "ErrorMessage".to_owned(),
+                            intrinsic: RuntimeIntrinsic::ErrorMessage,
                             args: vec![self.lower_expr(message)?],
 
                             span: Span::generated("runtime_call"),},
@@ -2849,7 +2848,7 @@ fn lower_html_wrapper_string_method(
     };
 
     let mut result = LoweredExpr::RuntimeCall {
-        runtime_fn: "Concat".to_owned(),
+        intrinsic: RuntimeIntrinsic::Concat,
         args: vec![
             object,
             LoweredExpr::String(close_tag.to_owned(), Span::generated("str")),
@@ -2868,7 +2867,7 @@ fn lower_html_wrapper_string_method(
         // Spec requires escaping " as &quot; in attribute values (B.2.3.10, B.2.3.6, etc.)
         if needs_escaping {
             arg = LoweredExpr::RuntimeCall {
-                runtime_fn: "StringReplaceAll".to_owned(),
+                intrinsic: RuntimeIntrinsic::StringReplaceAll,
                 args: vec![
                     arg,
                     LoweredExpr::String("\"".to_owned(), Span::generated("str")),
@@ -2879,15 +2878,15 @@ fn lower_html_wrapper_string_method(
             };
         }
         result = LoweredExpr::RuntimeCall {
-            runtime_fn: "Concat".to_owned(),
+            intrinsic: RuntimeIntrinsic::Concat,
             args: vec![
                 arg,
                 LoweredExpr::RuntimeCall {
-                    runtime_fn: "Concat".to_owned(),
+                    intrinsic: RuntimeIntrinsic::Concat,
                     args: vec![
                         LoweredExpr::String(open_suffix.to_owned(), Span::generated("str")),
                         LoweredExpr::RuntimeCall {
-                            runtime_fn: "Concat".to_owned(),
+                            intrinsic: RuntimeIntrinsic::Concat,
                             args: vec![
                                 LoweredExpr::String(">".to_owned(), Span::generated("str")),
                                 result,
@@ -2904,7 +2903,7 @@ fn lower_html_wrapper_string_method(
     }
 
     Ok(LoweredExpr::RuntimeCall {
-        runtime_fn: "Concat".to_owned(),
+        intrinsic: RuntimeIntrinsic::Concat,
         args: vec![
             LoweredExpr::String(open_prefix.to_owned(), Span::generated("str")),
             result,

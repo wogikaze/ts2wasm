@@ -16,7 +16,7 @@ pub use builtin_resolved::{ClassMethod, ResolvedExpr, ResolvedStmt};
 pub use builtin_resolver::resolve_builtins;
 pub use lowered::{
     FuncId, LocalId, LoweredExpr, LoweredFunction, LoweredProgram, LoweredStmt, ModuleInfo,
-    Validated,
+    RuntimeIntrinsic, Validated,
 };
 pub use name_resolver::resolve_names;
 pub use optimizer::{OptimizationLevel, OptimizationPass, OptimizedHirProgram, optimize_hir};

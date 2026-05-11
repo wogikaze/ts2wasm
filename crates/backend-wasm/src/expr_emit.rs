@@ -3,6 +3,7 @@ mod expr_emit_helpers;
 include!("expr_emit_arrays.rs");
 use super::RuntimeFn;
 use super::emitter::LocalFrame;
+use ts2wasm_ir::RuntimeIntrinsic;
 use super::emitter::WatEmitter;
 use expr_emit_helpers::*;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -59,8 +60,8 @@ impl WatEmitter<'_> {
                 kind: FunctionCallKind::Builtin(builtin),
                 ..
             } => RuntimeFn::from_builtin(*builtin).is_value(),
-            LoweredExpr::RuntimeCall { runtime_fn, .. } => {
-                super::runtime_fn::runtime_fn_from_name(runtime_fn)
+            LoweredExpr::RuntimeCall { intrinsic, .. } => {
+                super::runtime_fn::runtime_fn_from_name(intrinsic.name())
                     .map(|f| f.is_value())
                     .unwrap_or(true)
             }
@@ -793,36 +794,35 @@ impl WatEmitter<'_> {
                 // Lowering/validation should reject residual MethodCall before backend.
                 writer.unreachable(indent);
             }
-            LoweredExpr::RuntimeCall {
-                runtime_fn, args, ..
+            LoweredExpr::RuntimeCall { intrinsic, args, ..
             } => {
-                if runtime_fn == "ArrayPushMany" {
+                if *intrinsic == RuntimeIntrinsic::ArrayPushMany {
                     self.emit_array_push_many_call(writer, args, indent, frame);
                     return;
                 }
-                if runtime_fn == "ArrayPushGrow" {
+                if *intrinsic == RuntimeIntrinsic::ArrayPushGrow {
                     self.emit_array_push_grow_call(writer, args, indent, frame);
                     return;
                 }
-                if runtime_fn == "HeapClosureCall" {
+                if *intrinsic == RuntimeIntrinsic::HeapClosureCall {
                     self.emit_heap_closure_dispatch(writer, args, indent, frame);
                     return;
                 }
-                if runtime_fn == "PrivateFieldGet" {
+                if *intrinsic == RuntimeIntrinsic::PrivateFieldGet {
                     self.emit_private_field_get(writer, args, indent, frame);
                     return;
                 }
-                if runtime_fn == "PrivateFieldSet" {
+                if *intrinsic == RuntimeIntrinsic::PrivateFieldSet {
                     self.emit_private_field_set(writer, args, indent, frame);
                     return;
                 }
-                if runtime_fn == "PrivateBrandCheck" {
+                if *intrinsic == RuntimeIntrinsic::PrivateBrandCheck {
                     self.emit_private_brand_check(writer, args, indent, frame);
                     return;
                 }
-                if (runtime_fn == "StringIncludes"
-                    || runtime_fn == "StringStartsWith"
-                    || runtime_fn == "StringEndsWith")
+                if (*intrinsic == RuntimeIntrinsic::StringIncludes
+                    || *intrinsic == RuntimeIntrinsic::StringStartsWith
+                    || *intrinsic == RuntimeIntrinsic::StringEndsWith)
                     && args.len() == 2
                 {
                     // No position specified, default to 0 (undefined → start from beginning)
@@ -830,7 +830,7 @@ impl WatEmitter<'_> {
                         self.emit_expr(writer, arg, indent, frame);
                     }
                     writer.i32_const(indent, 0);
-                } else if runtime_fn == "StringSubstr" && args.len() == 2 {
+                } else if *intrinsic == RuntimeIntrinsic::StringSubstr && args.len() == 2 {
                     // No length specified: pad with undefined (0) → means "go to end"
                     for arg in args {
                         self.emit_expr(writer, arg, indent, frame);
@@ -841,9 +841,9 @@ impl WatEmitter<'_> {
                         self.emit_expr(writer, arg, indent, frame);
                     }
                 }
-                let fn_name = super::runtime_fn::runtime_fn_from_name(runtime_fn)
+                let fn_name = super::runtime_fn::runtime_fn_from_name(intrinsic.name())
                     .map(|f| f.symbol())
-                    .unwrap_or_else(|| runtime_fn.as_str());
+                    .unwrap_or_else(|| intrinsic.name());
                 writer.line_fmt(indent, format_args!("(call {})", fn_name));
             }
             LoweredExpr::PropertySet {

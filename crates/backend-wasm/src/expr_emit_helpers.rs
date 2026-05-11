@@ -1,5 +1,6 @@
 use super::*;
 use ts2wasm_ir::LoweredStmt;
+use ts2wasm_ir::RuntimeIntrinsic;
 
 pub(super) fn local_index(id: LocalId) -> usize {
     id.0
@@ -18,8 +19,8 @@ pub(super) fn private_field_metadata(brand: u32, slot_count: u32) -> u32 {
 pub(super) fn is_private_brand_check_expr(expr: &LoweredExpr) -> bool {
     matches!(
         expr,
-        LoweredExpr::RuntimeCall { runtime_fn, args, .. }
-            if runtime_fn == "PrivateBrandCheck" && args.len() == 2
+        LoweredExpr::RuntimeCall { intrinsic, args, .. }
+            if *intrinsic == RuntimeIntrinsic::PrivateBrandCheck && args.len() == 2
     )
 }
 
@@ -218,11 +219,11 @@ pub(super) fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
             expr_uses_caller_backend_tmp(object) || expr_uses_caller_backend_tmp(value)
         }
         LoweredExpr::Call { args, .. } => args.iter().any(expr_uses_caller_backend_tmp),
-        LoweredExpr::RuntimeCall { runtime_fn, .. } if runtime_fn == "HeapClosureCall" => true,
-        LoweredExpr::RuntimeCall { runtime_fn, .. }
-            if runtime_fn == "PrivateFieldGet"
-                || runtime_fn == "PrivateFieldSet"
-                || runtime_fn == "PrivateBrandCheck" =>
+        LoweredExpr::RuntimeCall { intrinsic, .. } if *intrinsic == RuntimeIntrinsic::HeapClosureCall => true,
+        LoweredExpr::RuntimeCall { intrinsic, .. }
+            if *intrinsic == RuntimeIntrinsic::PrivateFieldGet
+                || *intrinsic == RuntimeIntrinsic::PrivateFieldSet
+                || *intrinsic == RuntimeIntrinsic::PrivateBrandCheck =>
         {
             true
         }

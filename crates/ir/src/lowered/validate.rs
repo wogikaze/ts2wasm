@@ -428,11 +428,11 @@ fn validate_expr(
                 }
             }
         }
-        LoweredExpr::RuntimeCall { runtime_fn, args, .. } => {
+        LoweredExpr::RuntimeCall { intrinsic, args, .. } => {
             for arg in args {
                 validate_expr(arg, local_count, num_funcs, program, errors, true);
             }
-            if runtime_fn == "ArrayPushMany" && args.is_empty() {
+            if *intrinsic == RuntimeIntrinsic::ArrayPushMany && args.is_empty() {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
                     message: "ArrayPushMany must include an array receiver argument".to_owned(),
@@ -440,7 +440,7 @@ fn validate_expr(
 
                     phase: None,});
             }
-            if runtime_fn == "ArrayPushGrow" && args.len() != 2 {
+            if *intrinsic == RuntimeIntrinsic::ArrayPushGrow && args.len() != 2 {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
                     message: "ArrayPushGrow must include an array receiver and value".to_owned(),
@@ -448,7 +448,7 @@ fn validate_expr(
 
                     phase: None,});
             }
-            if runtime_fn == "HeapClosureCall" && args.is_empty() {
+            if *intrinsic == RuntimeIntrinsic::HeapClosureCall && args.is_empty() {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
                     message: "HeapClosureCall must include a closure receiver argument"
@@ -457,7 +457,7 @@ fn validate_expr(
 
                     phase: None,});
             }
-            if runtime_fn == "PrivateFieldGet"
+            if *intrinsic == RuntimeIntrinsic::PrivateFieldGet
                 && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand, _), LoweredExpr::Number(slot, _)] if *brand > 0 && *slot >= 0)
             {
                 errors.push(Diagnostic {
@@ -468,7 +468,7 @@ fn validate_expr(
 
                     phase: None,});
             }
-            if runtime_fn == "PrivateFieldSet"
+            if *intrinsic == RuntimeIntrinsic::PrivateFieldSet
                 && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand, _), LoweredExpr::Number(slot, _), _] if *brand > 0 && *slot >= 0)
             {
                 errors.push(Diagnostic {
@@ -480,7 +480,7 @@ fn validate_expr(
 
                     phase: None,});
             }
-            if runtime_fn == "PrivateBrandCheck"
+            if *intrinsic == RuntimeIntrinsic::PrivateBrandCheck
                 && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand, _)] if *brand > 0)
             {
                 errors.push(Diagnostic {

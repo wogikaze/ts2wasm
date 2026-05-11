@@ -5,6 +5,7 @@ use ts2wasm_ir::lowered::{
     ClosureRepresentation, FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp,
     LoweredProgram, LoweredStmt, LoweredUnaryOp,
 };
+use ts2wasm_ir::RuntimeIntrinsic;
 use ts2wasm_runtime_abi::ValueTag;
 
 use super::runtime_fn::{
@@ -660,24 +661,23 @@ impl RuntimeLinkPlan {
             LoweredExpr::ModuleLoad { .. } => {
                 self.add_required_runtime(RuntimeFn::ModuleRequire);
             }
-            LoweredExpr::RuntimeCall {
-                runtime_fn, args, ..
+            LoweredExpr::RuntimeCall { intrinsic, args, ..
             } => {
-                if runtime_fn == "ArrayPushMany" {
+                if *intrinsic == RuntimeIntrinsic::ArrayPushMany {
                     self.add_required_runtime(RuntimeFn::ArrayPush);
                     self.add_required_runtime(RuntimeFn::ArrayPushGrow);
                     self.add_required_runtime(RuntimeFn::GetLength);
                 }
-                if runtime_fn == "ArrayPushGrow" {
+                if *intrinsic == RuntimeIntrinsic::ArrayPushGrow {
                     self.add_required_runtime(RuntimeFn::ArrayPushGrow);
                 }
-                if runtime_fn == "PrivateFieldGet"
-                    || runtime_fn == "PrivateFieldSet"
-                    || runtime_fn == "PrivateBrandCheck"
+                if *intrinsic == RuntimeIntrinsic::PrivateFieldGet
+                    || *intrinsic == RuntimeIntrinsic::PrivateFieldSet
+                    || *intrinsic == RuntimeIntrinsic::PrivateBrandCheck
                 {
                     self.add_required_runtime(RuntimeFn::PrivateBrandTypeError);
                 }
-                if let Some(runtime_fn_enum) = super::runtime_fn::runtime_fn_from_name(runtime_fn) {
+                if let Some(runtime_fn_enum) = super::runtime_fn::runtime_fn_from_name(intrinsic.name()) {
                     self.add_required_runtime(runtime_fn_enum);
                 }
                 for arg in args {
@@ -837,7 +837,7 @@ mod tests {
             top_level_statements: vec![
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntAdd".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntAdd,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -854,7 +854,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntUnaryMinus".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntUnaryMinus,
                         args: vec![LoweredExpr::Local(
                             ts2wasm_ir::lowered::LocalId(0),
                             Span::generated("test"),
@@ -865,7 +865,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntMul".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntMul,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -882,7 +882,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntPow".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntPow,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -899,7 +899,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntDiv".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntDiv,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -916,7 +916,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntRem".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntRem,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -933,7 +933,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntMixedArithmeticTypeError,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -947,7 +947,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntBitwiseNot".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntBitwiseNot,
                         args: vec![LoweredExpr::Local(
                             ts2wasm_ir::lowered::LocalId(0),
                             Span::generated("test"),
@@ -958,7 +958,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntBitwiseAnd".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntBitwiseAnd,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -975,7 +975,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntBitwiseOr".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntBitwiseOr,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -992,7 +992,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntBitwiseXor".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntBitwiseXor,
                         args: vec![
                             LoweredExpr::Local(
                                 ts2wasm_ir::lowered::LocalId(0),
@@ -1009,7 +1009,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntFromValue".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntFromValue,
                         args: vec![LoweredExpr::Local(
                             ts2wasm_ir::lowered::LocalId(0),
                             Span::generated("test"),
@@ -1020,7 +1020,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntAsIntN".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntAsIntN,
                         args: vec![
                             LoweredExpr::Number(8, Span::generated("test")),
                             LoweredExpr::Local(
@@ -1034,7 +1034,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntAsUintN".to_owned(),
+                        intrinsic: RuntimeIntrinsic::BigIntAsUintN,
                         args: vec![
                             LoweredExpr::Number(8, Span::generated("test")),
                             LoweredExpr::Local(
@@ -1185,7 +1185,7 @@ mod tests {
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(
                 LoweredExpr::RuntimeCall {
-                    runtime_fn: "BigIntToString".to_owned(),
+                    intrinsic: RuntimeIntrinsic::BigIntToString,
                     args: vec![LoweredExpr::BigIntLiteral {
                         decimal: "10".to_owned(),
                         sign: 1,

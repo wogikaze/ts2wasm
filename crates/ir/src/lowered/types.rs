@@ -354,7 +354,7 @@ pub enum LoweredExpr {
         span: Span,
     },
     RuntimeCall {
-        runtime_fn: String,
+        intrinsic: RuntimeIntrinsic,
         args: Vec<LoweredExpr>,
         span: Span,
     },

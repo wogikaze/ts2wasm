@@ -1045,7 +1045,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "PrivateFieldSet".to_owned(),
+                        intrinsic: RuntimeIntrinsic::PrivateFieldSet,
                         args: vec![
                             LoweredExpr::Local(LocalId(0), Span::generated("test")),
                             LoweredExpr::Number(1, Span::generated("test")),
@@ -1060,7 +1060,7 @@ mod tests {
                     LoweredExpr::Call {
                         kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
                         args: vec![LoweredExpr::RuntimeCall {
-                            runtime_fn: "PrivateFieldGet".to_owned(),
+                            intrinsic: RuntimeIntrinsic::PrivateFieldGet,
                             args: vec![
                                 LoweredExpr::Local(LocalId(0), Span::generated("test")),
                                 LoweredExpr::Number(1, Span::generated("test")),
@@ -1144,7 +1144,7 @@ mod tests {
                     LoweredExpr::Call {
                         kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
                         args: vec![LoweredExpr::RuntimeCall {
-                            runtime_fn: "PrivateFieldGet".to_owned(),
+                            intrinsic: RuntimeIntrinsic::PrivateFieldGet,
                             args: vec![
                                 LoweredExpr::Local(LocalId(0), Span::generated("test")),
                                 LoweredExpr::Number(1, Span::generated("test")),
@@ -1167,7 +1167,7 @@ mod tests {
                 locals: vec![],
                 body: vec![LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "PrivateFieldSet".to_owned(),
+                        intrinsic: RuntimeIntrinsic::PrivateFieldSet,
                         args: vec![
                             LoweredExpr::Local(LocalId(0), Span::generated("test")),
                             LoweredExpr::Number(1, Span::generated("test")),
@@ -1233,7 +1233,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "PrivateFieldGet".to_owned(),
+                        intrinsic: RuntimeIntrinsic::PrivateFieldGet,
                         args: vec![
                             LoweredExpr::Local(LocalId(0), Span::generated("test")),
                             LoweredExpr::Number(2, Span::generated("test")),
@@ -1315,7 +1315,7 @@ mod tests {
                 LoweredStmt::TryCatch {
                     try_body: vec![LoweredStmt::Expr(
                         LoweredExpr::RuntimeCall {
-                            runtime_fn: "PrivateFieldGet".to_owned(),
+                            intrinsic: RuntimeIntrinsic::PrivateFieldGet,
                             args: vec![
                                 LoweredExpr::Local(LocalId(0), Span::generated("test")),
                                 LoweredExpr::Number(1, Span::generated("test")),
@@ -1406,7 +1406,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "PrivateBrandCheck".to_owned(),
+                        intrinsic: RuntimeIntrinsic::PrivateBrandCheck,
                         args: vec![
                             LoweredExpr::Local(LocalId(0), Span::generated("test")),
                             LoweredExpr::Number(1, Span::generated("test")),
@@ -1418,7 +1418,7 @@ mod tests {
                 LoweredStmt::TryCatch {
                     try_body: vec![LoweredStmt::Expr(
                         LoweredExpr::RuntimeCall {
-                            runtime_fn: "PrivateBrandCheck".to_owned(),
+                            intrinsic: RuntimeIntrinsic::PrivateBrandCheck,
                             args: vec![
                                 LoweredExpr::Local(LocalId(0), Span::generated("test")),
                                 LoweredExpr::Number(2, Span::generated("test")),
@@ -1534,7 +1534,7 @@ mod tests {
         LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(
                 LoweredExpr::RuntimeCall {
-                    runtime_fn: "MathRandom".to_owned(),
+                    intrinsic: RuntimeIntrinsic::MathRandom,
                     args: vec![],
                     span: Span::generated("test"),
                 },

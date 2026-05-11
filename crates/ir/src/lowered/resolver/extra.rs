@@ -194,7 +194,7 @@ impl<'a> Resolver<'a> {
         };
         for segment in iter {
             combined = LoweredExpr::RuntimeCall {
-                runtime_fn: "ArrayConcat".to_owned(),
+                intrinsic: RuntimeIntrinsic::ArrayConcat,
                 args: vec![combined, segment],
 
                 span: Span::generated("runtime_call"),
@@ -247,7 +247,7 @@ impl<'a> Resolver<'a> {
                 let Some(elements) = self.static_function_array_like_elements(name) else {
                     if is_identity_arrow_callback(map_args) {
                         return Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "ArrayMapArrayLikeIdentity".to_owned(),
+                            intrinsic: RuntimeIntrinsic::ArrayMapArrayLikeIdentity,
                             args: vec![self.lower_expr(receiver)?],
 
                             span: Span::generated("runtime_call"),
@@ -255,7 +255,7 @@ impl<'a> Resolver<'a> {
                     }
                     if is_number_double_arrow_callback(map_args) {
                         return Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "ArrayMapArrayLikeDouble".to_owned(),
+                            intrinsic: RuntimeIntrinsic::ArrayMapArrayLikeDouble,
                             args: vec![self.lower_expr(receiver)?],
 
                             span: Span::generated("runtime_call"),
@@ -270,13 +270,13 @@ impl<'a> Resolver<'a> {
                 self.lower_array_map_elements(receiver, &elements, map_args, span)
             }
             _ if is_identity_arrow_callback(map_args) => Ok(LoweredExpr::RuntimeCall {
-                runtime_fn: "ArrayMapArrayLikeIdentity".to_owned(),
+                intrinsic: RuntimeIntrinsic::ArrayMapArrayLikeIdentity,
                 args: vec![self.lower_expr(receiver)?],
 
                 span: Span::generated("runtime_call"),
             }),
             _ if is_number_double_arrow_callback(map_args) => Ok(LoweredExpr::RuntimeCall {
-                runtime_fn: "ArrayMapArrayLikeDouble".to_owned(),
+                intrinsic: RuntimeIntrinsic::ArrayMapArrayLikeDouble,
                 args: vec![self.lower_expr(receiver)?],
 
                 span: Span::generated("runtime_call"),
@@ -303,7 +303,7 @@ impl<'a> Resolver<'a> {
 
         if self.is_known_array_expr(source) {
             return Ok(LoweredExpr::RuntimeCall {
-                runtime_fn: "ArrayValues".to_owned(),
+                intrinsic: RuntimeIntrinsic::ArrayValues,
                 args: vec![self.lower_expr(source)?],
 
                 span: Span::generated("runtime_call"),
@@ -678,7 +678,7 @@ impl<'a> Resolver<'a> {
         };
         if self.array_locals.contains(&local_id) {
             return Ok(Some(LoweredExpr::RuntimeCall {
-                runtime_fn: "ArrayConcat".to_owned(),
+                intrinsic: RuntimeIntrinsic::ArrayConcat,
                 args: vec![
                     LoweredExpr::ArrayNew {
                         elements: vec![],
@@ -722,7 +722,7 @@ impl<'a> Resolver<'a> {
             .is_some_and(|class_name| class_name == "Set")
         {
             return Ok(Some(LoweredExpr::RuntimeCall {
-                runtime_fn: "SetValuesArray".to_owned(),
+                intrinsic: RuntimeIntrinsic::SetValuesArray,
                 args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
 
                 span: Span::generated("runtime_call"),
@@ -747,7 +747,7 @@ impl<'a> Resolver<'a> {
             .is_some_and(|class_name| class_name == "Map")
         {
             return Ok(Some(LoweredExpr::RuntimeCall {
-                runtime_fn: "MapValuesArray".to_owned(),
+                intrinsic: RuntimeIntrinsic::MapValuesArray,
                 args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
 
                 span: Span::generated("runtime_call"),
@@ -833,7 +833,7 @@ impl<'a> Resolver<'a> {
                     target
                 } else {
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "ObjectSpread".to_owned(),
+                        intrinsic: RuntimeIntrinsic::ObjectSpread,
                         args: vec![
                             target,
                             LoweredExpr::ObjectNew {
@@ -847,7 +847,7 @@ impl<'a> Resolver<'a> {
                     }
                 };
                 result = Some(LoweredExpr::RuntimeCall {
-                    runtime_fn: "ObjectSpread".to_owned(),
+                    intrinsic: RuntimeIntrinsic::ObjectSpread,
                     args: vec![target, self.lower_expr(value)?],
 
                     span: Span::generated("runtime_call"),
@@ -876,7 +876,7 @@ impl<'a> Resolver<'a> {
             })
         } else {
             Ok(LoweredExpr::RuntimeCall {
-                runtime_fn: "ObjectSpread".to_owned(),
+                intrinsic: RuntimeIntrinsic::ObjectSpread,
                 args: vec![
                     target,
                     LoweredExpr::ObjectNew {
@@ -940,7 +940,7 @@ impl<'a> Resolver<'a> {
             });
         }
         Ok(LoweredExpr::RuntimeCall {
-            runtime_fn: "SetAdd".to_owned(),
+            intrinsic: RuntimeIntrinsic::SetAdd,
             args: vec![self.lower_expr(&args[0])?, self.lower_expr(&args[1])?],
 
             span: Span::generated("runtime_call"),
@@ -1100,7 +1100,7 @@ impl<'a> Resolver<'a> {
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
         let element_value = if binding.is_rest {
             LoweredExpr::RuntimeCall {
-                runtime_fn: "ArraySlice".to_owned(),
+                intrinsic: RuntimeIntrinsic::ArraySlice,
                 args: vec![
                     value.clone(),
                     LoweredExpr::Number(binding.index as i32, Span::generated("num")),
@@ -1387,7 +1387,7 @@ impl<'a> Resolver<'a> {
                 (0..signature.explicit_params)
                     .map(|index| LoweredExpr::ArrayGet {
                         arr: Box::new(LoweredExpr::RuntimeCall {
-                            runtime_fn: "SetValuesArray".to_owned(),
+                            intrinsic: RuntimeIntrinsic::SetValuesArray,
                             args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
 
                             span: Span::generated("runtime_call"),
@@ -2598,7 +2598,7 @@ impl<'a> Resolver<'a> {
         stmts.push(LoweredStmt::Let(
             iterator,
             LoweredExpr::RuntimeCall {
-                runtime_fn: "HeapClosureCall".to_owned(),
+                intrinsic: RuntimeIntrinsic::HeapClosureCall,
                 args: vec![LoweredExpr::Local(iter_fn, Span::generated("local"))],
                 span,
             },
@@ -2636,7 +2636,7 @@ impl<'a> Resolver<'a> {
         body.push(LoweredStmt::Let(
             r,
             LoweredExpr::RuntimeCall {
-                runtime_fn: "HeapClosureCall".to_owned(),
+                intrinsic: RuntimeIntrinsic::HeapClosureCall,
                 args: vec![LoweredExpr::Local(next_fn, Span::generated("local"))],
                 span,
             },
@@ -2668,7 +2668,7 @@ impl<'a> Resolver<'a> {
         )];
         push_body.push(LoweredStmt::Expr(
             LoweredExpr::RuntimeCall {
-                runtime_fn: "ArrayPush".to_owned(),
+                intrinsic: RuntimeIntrinsic::ArrayPush,
                 args: vec![
                     LoweredExpr::Local(result_arr, Span::generated("local")),
                     LoweredExpr::Local(value, Span::generated("local")),
@@ -2732,7 +2732,7 @@ impl<'a> Resolver<'a> {
             LoweredStmt::Let(
                 iterator,
                 LoweredExpr::RuntimeCall {
-                    runtime_fn: "HeapClosureCall".to_owned(),
+                    intrinsic: RuntimeIntrinsic::HeapClosureCall,
                     args: vec![LoweredExpr::Local(iter_fn, Span::generated("local"))],
                     span,
                 },
@@ -2763,7 +2763,7 @@ impl<'a> Resolver<'a> {
         body.push(LoweredStmt::Let(
             r,
             LoweredExpr::RuntimeCall {
-                runtime_fn: "HeapClosureCall".to_owned(),
+                intrinsic: RuntimeIntrinsic::HeapClosureCall,
                 args: vec![LoweredExpr::Local(next_fn, Span::generated("local"))],
                 span,
             },
@@ -3166,14 +3166,14 @@ impl<'a> Resolver<'a> {
                 matches!(
                     callee.as_ref(),
                     ResolvedExpr::Ident(name)
-                        if crate::builtin_resolver::bigint_runtime_fn_name(name).is_some()
+                        if super::bigint_runtime_fn_intrinsic(name).is_some()
                 )
             }
             ResolvedExpr::MethodCall { object, method, .. } => {
                 matches!(
                     object.as_ref(),
                     ResolvedExpr::Ident(name) if name == "__ts2wasm_bigint_runtime"
-                ) && crate::builtin_resolver::bigint_runtime_fn_name(method).is_some()
+                ) && super::bigint_runtime_fn_intrinsic(method).is_some()
             }
             _ => false,
         }
@@ -3444,7 +3444,7 @@ impl<'a> Resolver<'a> {
                     condition: LoweredExpr::Local(pred, Span::generated("local")),
                     then_body: vec![LoweredStmt::Expr(
                         LoweredExpr::RuntimeCall {
-                            runtime_fn: "ArrayPushGrow".to_owned(),
+                            intrinsic: RuntimeIntrinsic::ArrayPushGrow,
                             args: vec![
                                 LoweredExpr::Local(result, Span::generated("local")),
                                 LoweredExpr::Local(elem, Span::generated("local")),
@@ -4061,7 +4061,7 @@ impl<'a> Resolver<'a> {
                 // Push or spread the result (handles array vs non-array)
                 while_body.push(LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "ArrayPushOrSpread".to_owned(),
+                        intrinsic: RuntimeIntrinsic::ArrayPushOrSpread,
                         args: vec![
                             LoweredExpr::Local(result, Span::generated("local")),
                             LoweredExpr::Local(mapped, Span::generated("local")),
@@ -4134,7 +4134,7 @@ impl<'a> Resolver<'a> {
                 ));
                 while_body.push(LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
-                        runtime_fn: "ArrayPushGrow".to_owned(),
+                        intrinsic: RuntimeIntrinsic::ArrayPushGrow,
                         args: vec![
                             LoweredExpr::Local(result, Span::generated("local")),
                             LoweredExpr::Local(mapped, Span::generated("local")),
@@ -4397,7 +4397,7 @@ impl<'a> Resolver<'a> {
         stmts.push(LoweredStmt::Let(
             entries,
             LoweredExpr::RuntimeCall {
-                runtime_fn: "MapEntriesArray".to_owned(),
+                intrinsic: RuntimeIntrinsic::MapEntriesArray,
                 args: vec![LoweredExpr::Local(receiver_local, Span::generated("local"))],
                 span: Span::generated("runtime_call"),
             },
@@ -4585,7 +4585,7 @@ impl<'a> Resolver<'a> {
         stmts.push(LoweredStmt::Let(
             values,
             LoweredExpr::RuntimeCall {
-                runtime_fn: "SetValuesArray".to_owned(),
+                intrinsic: RuntimeIntrinsic::SetValuesArray,
                 args: vec![LoweredExpr::Local(receiver_local, Span::generated("local"))],
                 span: Span::generated("runtime_call"),
             },

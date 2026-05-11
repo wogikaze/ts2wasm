@@ -489,7 +489,7 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredStmt::Assign(
                         local_id,
                         LoweredExpr::RuntimeCall {
-                            runtime_fn: "ArrayPushGrow".to_owned(),
+                            intrinsic: RuntimeIntrinsic::ArrayPushGrow,
                             args: vec![
                                 LoweredExpr::Local(local_id, Span::generated("local")),
                                 self.lower_expr(&args[0])?,
@@ -759,14 +759,14 @@ impl<'a> Resolver<'a> {
                     let class_name = self.local_classes.get(&local_id);
                     if class_name.is_some_and(|c| c == "Set") {
                         LoweredExpr::RuntimeCall {
-                            runtime_fn: "SetValuesArray".to_owned(),
+                            intrinsic: RuntimeIntrinsic::SetValuesArray,
                             args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
 
                             span: Span::generated("runtime_call"),
                         }
                     } else if class_name.is_some_and(|c| c == "Map") {
                         LoweredExpr::RuntimeCall {
-                            runtime_fn: "MapValuesArray".to_owned(),
+                            intrinsic: RuntimeIntrinsic::MapValuesArray,
                             args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
                             span: Span::generated("runtime_call"),
                         }
@@ -1174,4 +1174,14 @@ pub(crate) fn numeric_ascending_sort_arrow_callback(args: &[ResolvedExpr]) -> bo
     };
     matches!(left.as_ref(), ResolvedExpr::Ident(name) if name == left_param)
         && matches!(right.as_ref(), ResolvedExpr::Ident(name) if name == right_param)
+}
+
+/// Wrapper that converts bigint_runtime_fn_name string output to RuntimeIntrinsic.
+fn bigint_runtime_fn_intrinsic(name: &str) -> Option<RuntimeIntrinsic> {
+    match crate::builtin_resolver::bigint_runtime_fn_name(name) {
+        Some("BigIntFromValue") => Some(RuntimeIntrinsic::BigIntFromValue),
+        Some("BigIntAsIntN") => Some(RuntimeIntrinsic::BigIntAsIntN),
+        Some("BigIntAsUintN") => Some(RuntimeIntrinsic::BigIntAsUintN),
+        _ => None,
+    }
 }
