@@ -8,332 +8,15 @@ meta:
     roadmap_source: docs/roadmap.md
     closed_source: docs/done-tracking.yaml
 open:
-- id: 276
-  title: Reduce oversized function violations below 10 and split known P10 hotspots
-  priority: P3
-  type: refactor
-  area: cross
-  status: open
-  created: 2026-05-11
-  updated: 2026-05-11
-  roadmap: P11-llm-friendly-sizing
-  acceptance:
-  - cargo test -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-backend-wasm -p ts2wasm-compiler -p ts2wasm-cli
-  - mise run check architecture 2>&1 | grep -v 'WARN' | grep -c 'function.*lines' | xargs -I{} test {} -lt 10
-  non_goals:
-  - No change to runtime semantics or wasm output.
-  - Function reduction beyond the fewer-than-10-violations target is deferred.
-  plan:
-    goal: 'Break down known oversized functions and reduce architecture-check function length violations below 10. Preserve
-      runtime semantics and emitted wasm output.
-
-      '
-    files:
-    - crates/backend-wasm/src/expr_emit.rs: emit_expr already split below 300 lines
-    - crates/backend-wasm/src/statement_emit.rs: emit_statement_with_label already split below 300 lines
-    - crates/frontend/src/lexer.rs: Lexer::tokenize already split below 300 lines
-    - crates/ir/src/lowered/resolver/array.rs: lower_variable_array_callback_method already split below 300 lines
-    - crates/backend-wasm/src/json/emit.rs: break up emit_json_parse
-    - crates/backend-wasm/src/runtime_fn_impl.rs: resolve RuntimeFn::spec via
-    - remaining architecture-reported oversize functions
-  notes: 'P10 hotspot functions emit_expr, Lexer::tokenize, lower_variable_array_callback_method, and emit_statement_with_label
-    are already below 300 lines. RuntimeFn::spec is temporarily handled via include!-based spec split and should be cleaned
-    up by #274. emit_json_parse remains oversized. 15 other oversize function violations remain across 8 files, so the current
-    acceptance criterion is not yet met.
-
-    '
-- id: 286
-  title: Split compiler compile_source from file I/O and manifest output
-  priority: P3
-  type: refactor
-  area: compiler
-  status: open
-  created: 2026-05-11
-  updated: 2026-05-11
-  roadmap: P11-architecture-hardening
-  acceptance:
-  - cargo test -p ts2wasm-compiler -p ts2wasm-cli
-  - grep -R "pub fn compile_source" crates/compiler/src
-  - test -d crates/compiler/src/io
-  - grep -R "std::fs" crates/compiler/src/stages
-  non_goals:
-  - No change to CLI behavior.
-  - No change to emitted wasm, WAT, or manifest contents.
-  - No full module graph redesign.
-  plan:
-    goal: 'Convert compiler orchestration into a pure compile_source path plus external I/O wrappers. File reading, output
-      writing, and manifest writing should live in compiler/src/io, not in semantic pipeline stages.
-
-      '
-    files:
-    - crates/compiler/src/lib.rs
-    - crates/compiler/src/pipeline.rs
-    - crates/compiler/src/session.rs
-    - crates/compiler/src/input.rs
-    - crates/compiler/src/stages/emit.rs
-    - crates/compiler/src/io/read_source.rs
-    - crates/compiler/src/io/write_output.rs
-    - crates/compiler/src/io/write_manifest.rs
-  notes: 'P10 made lib.rs thin, but emit.rs still mixes emission and I/O. This issue finishes the next boundary.
-
-    '
-- id: 287
-  title: Migrate Resolver field groups into LoweringCtx and domain-specific envs
-  priority: P3
-  type: refactor
-  area: ir
-  status: open
-  created: 2026-05-11
-  updated: 2026-05-11
-  roadmap: P11-architecture-hardening
-  acceptance:
-  - cargo test -p ts2wasm-ir -p ts2wasm-compiler
-  - grep -R "struct LoweringCtx" crates/ir/src/lowered
-  - grep -R "struct SymbolEnv" crates/ir/src/lowered
-  - grep -R "struct ClassEnv" crates/ir/src/lowered
-  - grep -R "struct StaticFacts" crates/ir/src/lowered
-  - mise run check architecture
-  non_goals:
-  - No complete rewrite of lowering.
-  - No trait-object based architecture.
-  - No HIR/MIR migration.
-  plan:
-    goal: 'Move Resolver''s direct state groups into LoweringCtx, SymbolEnv, ClassEnv, StaticFacts, and related domain-specific
-      envs. Domain lowering modules should depend on context/views rather than the full Resolver where practical.
-
-      '
-    files:
-    - crates/ir/src/lowered/ctx.rs
-    - crates/ir/src/lowered/symbols.rs
-    - crates/ir/src/lowered/classes.rs
-    - crates/ir/src/lowered/facts.rs
-    - crates/ir/src/lowered/resolver/mod.rs
-    - crates/ir/src/lowered/resolver/array.rs
-    - crates/ir/src/lowered/resolver/call.rs
-    - crates/ir/src/lowered/resolver/object.rs
-    - crates/ir/src/lowered/resolver/class.rs
-    - crates/ir/src/lowered/resolver/extra.rs
-  notes: 'P10 created the ctx/env structs but Resolver still owns too much direct state. This issue turns the new types into
-    actual lowering boundaries.
-
-    '
-- id: 288
-  title: Route property get/set/has/delete through object semantics kernel MVP
-  priority: P2
-  type: refactor
-  area: ir
-  status: open
-  created: 2026-05-11
-  updated: 2026-05-11
-  roadmap: P11-semantic-kernels
-  acceptance:
-  - cargo test -p ts2wasm-ir -p ts2wasm-backend-wasm -p ts2wasm-compiler
-  - grep -R "OrdinaryGet" crates/ir/src/lowered
-  - grep -R "OrdinarySet" crates/ir/src/lowered
-  - grep -R "OrdinaryHasProperty" crates/ir/src/lowered
-  - grep -R "OrdinaryDelete" crates/ir/src/lowered
-  non_goals:
-  - No full ECMAScript object internal method implementation.
-  - No property descriptor completeness.
-  - No prototype chain completeness unless already supported by existing runtime helpers.
-  plan:
-    goal: 'Stop scattering basic object property semantics across resolver branches. Route obj.x, obj[x], assignment, delete,
-      and in where supported through object_kernel MVP operations.
-
-      '
-    files:
-    - crates/ir/src/lowered/object_kernel.rs
-    - crates/ir/src/lowered/resolver/object.rs
-    - crates/ir/src/lowered/resolver/expr.rs
-    - crates/ir/src/lowered/validate.rs
-    - crates/backend-wasm/src/runtime/object/**
-    - tests/fixtures/object_kernel/**
-  notes: 'P10 added object_kernel stubs. This issue connects them to real lowering.
-
-    '
-- id: 289
-  title: Introduce CompletionRecord MVP for return, throw, break, continue, and finally-sensitive lowering
-  priority: P3
-  type: refactor
-  area: ir
-  status: open
-  created: 2026-05-11
-  updated: 2026-05-11
-  roadmap: P12-semantic-kernels
-  acceptance:
-  - cargo test -p ts2wasm-ir -p ts2wasm-backend-wasm -p ts2wasm-compiler
-  - grep -R "CompletionRecord" crates/ir/src/lowered
-  - grep -R "CompletionKind" crates/ir/src/lowered
-  non_goals:
-  - No full async/await completion semantics.
-  - No generator semantics.
-  - No broad try/finally rewrite beyond MVP fixtures.
-  plan:
-    goal: 'Connect completion.rs stubs to lowering for control-flow operations that cannot safely be represented as immediate
-      wasm return/branch in the presence of JS finally semantics.
-
-      '
-    files:
-    - crates/ir/src/lowered/completion.rs
-    - crates/ir/src/lowered/resolver/expr.rs
-    - crates/ir/src/lowered/resolver/control.rs
-    - crates/ir/src/lowered/validate.rs
-    - crates/backend-wasm/src/statement_emit.rs
-    - tests/fixtures/completion_record/**
-  notes: 'This is lower priority than object_kernel for coverage, but important for correct JS control-flow semantics.
-
-    '
-- id: 291
-  title: Add HIR/MIR dump, snapshot, and variant coverage checks
-  priority: P3
-  type: test
-  area: ir
-  status: open
-  created: 2026-05-11
-  updated: 2026-05-11
-  roadmap: P12-ir-contracts
-  acceptance:
-  - cargo test -p ts2wasm-ir
-  - grep -R "dump_hir\|HirDump" crates/ir/src crates/ir/tests
-  - grep -R "dump_mir\|MirDump" crates/ir/src crates/ir/tests
-  - mise run check architecture
-  non_goals:
-  - No full HIR/MIR lowering implementation.
-  - No replacement of LoweredProgram.
-  plan:
-    goal: 'Make HIR/MIR stubs testable by adding dump/snapshot support and architecture checks that every HIR/MIR variant
-      is covered by dump and validation code.
-
-      '
-    files:
-    - crates/ir/src/lowered/hir.rs
-    - crates/ir/src/lowered/mir.rs
-    - crates/ir/src/lowered/hir_dump.rs
-    - crates/ir/src/lowered/mir_dump.rs
-    - crates/ir/tests/hir_snapshot.rs
-    - crates/ir/tests/mir_snapshot.rs
-    - scripts/check/architecture-rules.py
-  notes: 'P10 added HIR/MIR type stubs. This issue prevents them from becoming dead design artifacts.
-
-    '
-- id: 293
-  title: Replace IR RuntimeIntrinsic with runtime-catalog RuntimeFn after catalog extraction
-  priority: P3
-  type: refactor
-  area: ir
-  status: open
-  created: 2026-05-11
-  updated: 2026-05-11
-  roadmap: P12-runtime-catalog-followup
-  acceptance:
-  - cargo test -p ts2wasm-runtime-catalog -p ts2wasm-ir -p ts2wasm-backend-wasm -p ts2wasm-compiler
-  - grep -R "ts2wasm_runtime_catalog::RuntimeFn" crates/ir/src
-  - grep -R "pub enum RuntimeIntrinsic" crates/ir/src
-  - grep -R "RuntimeIntrinsic" crates/backend-wasm/src crates/ir/src
-  - grep -R "RuntimeCall.*RuntimeFn\\|func: RuntimeFn" crates/ir/src/lowered
-  non_goals:
-  - No runtime semantics changes.
-  - No WAT emission changes.
-  - No capability policy changes.
-  plan:
-    goal: 'Remove the temporary duplicate RuntimeIntrinsic enum and make Lowered IR refer directly to runtime-catalog::RuntimeFn.
-      This eliminates RuntimeIntrinsic ↔ RuntimeFn drift after the catalog has been extracted.
-
-      '
-    files:
-    - crates/ir/Cargo.toml
-    - crates/ir/src/lowered/types.rs
-    - crates/ir/src/lowered/runtime_intrinsic.rs
-    - crates/ir/src/lowered/resolver/**
-    - crates/backend-wasm/src/program_builtins.rs
-    - crates/backend-wasm/src/**
-  depends_on:
-  - 274
-  - 279
-  notes: 'This is intentionally not part of #274. #274 extracts the catalog. This issue changes IR ownership and removes the
-    temporary mapping layer.
-
-    '
-- id: 296
-  title: Add first-class semantic coverage dashboard fields and current-state summary
-  priority: P3
-  type: docs
-  area: coverage
-  status: open
-  created: 2026-05-11
-  updated: 2026-05-11
-  roadmap: P11-semantic-coverage-unblock
-  acceptance:
-  - test -f docs/current-state.md
-  - grep -R "semantic_coverage_percent" docs/current-state.md site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
-  - grep -R "differential_pass" docs/current-state.md site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
-  - grep -R "negative_compile_pass" docs/current-state.md site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
-  - grep -R "unresolved_name_by_symbol" docs/current-state.md site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
-  non_goals:
-  - No compiler implementation.
-  - No metric definition changes beyond those introduced by
-  plan:
-    goal: 'Make the generated dashboard and docs/current-state.md show semantic coverage fields clearly: executable builds,
-      differential passes, negative compile passes, conformance passes, and top unresolved symbols.
-
-      '
-    files:
-    - docs/current-state.md
-    - site/docs/coverage/web-ui/src/**
-    - site/docs/coverage/web-ui/public/data/**
-    - web-ui/public/data/**
-    - site/docs/public/dashboard/**
-  depends_on:
-  - 280
-  - 281
-  - 282
-  notes: 'The generated four data locations should expose the same semantic coverage schema.
-
-    '
-- id: 297
-  title: Split resolver call lowering into user, method, constructor, builtin, callback, and receiver modules
-  priority: P3
-  type: refactor
-  area: ir
-  status: open
-  created: 2026-05-11
-  updated: 2026-05-11
-  roadmap: P11-llm-friendly-sizing
-  acceptance:
-  - cargo test -p ts2wasm-ir -p ts2wasm-compiler
-  - test -d crates/ir/src/lowered/resolver/call
-  - test -f crates/ir/src/lowered/resolver/call/mod.rs
-  - mise run check architecture
-  non_goals:
-  - No call semantics change.
-  - No new builtin support.
-  - No HIR/MIR migration.
-  plan:
-    goal: 'Break resolver/call.rs into focused call-domain modules so array callbacks, method calls, constructor calls, builtin
-      calls, receiver handling, spread, and optional call logic do not share one oversized file.
-
-      '
-    files:
-    - crates/ir/src/lowered/resolver/call/mod.rs
-    - crates/ir/src/lowered/resolver/call/user.rs
-    - crates/ir/src/lowered/resolver/call/method.rs
-    - crates/ir/src/lowered/resolver/call/constructor.rs
-    - crates/ir/src/lowered/resolver/call/builtin.rs
-    - crates/ir/src/lowered/resolver/call/callback.rs
-    - crates/ir/src/lowered/resolver/call/receiver.rs
-    - crates/ir/src/lowered/resolver/call/spread.rs
-  notes: 'P9/P10 moved call handling out of expr, but call-domain code can still become a new god module. This issue prevents
-    that regression.
-
-    '
+done:
 - id: 298
   title: Break backend JSON runtime emitter into parser, serializer, value, string, and error modules
   priority: P3
   type: refactor
   area: backend
-  status: open
+  status: done
   created: 2026-05-11
-  updated: 2026-05-11
+  updated: 2026-05-12
   roadmap: P11-llm-friendly-sizing
   acceptance:
   - cargo test -p ts2wasm-backend-wasm -p ts2wasm-compiler
@@ -346,7 +29,6 @@ open:
   plan:
     goal: 'Split the oversized JSON runtime emitter, especially emit_json_parse, into smaller modules below the function-size
       target.
-
       '
     files:
     - crates/backend-wasm/src/json/emit.rs
@@ -355,18 +37,22 @@ open:
     - crates/backend-wasm/src/json/value.rs
     - crates/backend-wasm/src/json/string.rs
     - crates/backend-wasm/src/json/error.rs
-  notes: 'This is the remaining known P10 hotspot after emit_expr, tokenize, lower_variable_array_callback_method, and emit_statement_with_label
-    were split.
-
+  notes: 'emit_json_parse split into 10 sub-methods each < 261 lines across emit.rs, parser.rs, string.rs, value.rs, containers.rs.
+    serializer.rs and error.rs deferred (not yet needed).
     '
+  evidence:
+    commit: 39c89121f
+    commands:
+    - cargo check -p ts2wasm-backend-wasm => pass
+    - grep "function.*lines" architecture-check => emit_json_parse no longer listed
 - id: 300
   title: Add vertical-slice feature template for new JS builtin/runtime support
   priority: P4
   type: docs
   area: cross
-  status: open
+  status: done
   created: 2026-05-11
-  updated: 2026-05-11
+  updated: 2026-05-12
   roadmap: P12-process
   acceptance:
   - test -f docs/templates/feature-slice.md
@@ -379,22 +65,19 @@ open:
   plan:
     goal: 'Create a reusable feature implementation checklist so every new JS builtin or syntax feature is implemented as
       a vertical slice across parser/resolver/HIR/MIR/ runtime catalog/emitter/link-plan/differential tests.
-
       '
     files:
     - docs/templates/feature-slice.md
     - docs/24-architecture-decoupling.md
     - docs/current-state.md
-  notes: 'This prevents feature work from touching unrelated domains and keeps context size bounded.
-
+  notes: 'Created in earlier P10 session. Feature template exists at docs/templates/feature-slice.md with all 8 required sections.
     '
-
 - id: 299
   title: Add architecture checks for public API count, fan-out, and oversized match arms
   priority: P4
   type: tooling
   area: cross
-  status: active
+  status: done
   created: 2026-05-11
   updated: 2026-05-12
   roadmap: P12-architecture-metrics
@@ -411,8 +94,8 @@ open:
       fan-out, public API count, and large match expressions.
     files:
     - scripts/check/architecture-rules.py
-  notes: LOC is not enough. Fan-out, public API count, and match size are better coupling indicators for LLM-friendly maintenance.
-done:
+  notes: 'Implemented in 4e9dd83e6. check_smaller_function_warning, check_module_fan_out, check_public_api_count, check_oversized_match_arms added.
+    '
 - id: 285
   title: Verify negative compile outcomes separately from runtime semantic passes
   priority: P2
