@@ -177,6 +177,26 @@ FUNCTION_LENGTH_ALLOWLIST = {
     ("crates/ir/src/lowered/mir_dump.rs", "runtime_intrinsic_name"): "P4: dump intrinsic name match — pending split",
 }
 
+# Known large functions (over 200 lines) — staged warning for 200-line reduction.
+# These are distinct from the 300-line hard gate allowlist; entries here are
+# between 200-300 lines and should be split as part of the staged reduction.
+FUNCTION_WARN_ALLOWLIST_200 = {
+    ("crates/backend-wasm/src/expr_emit.rs", "emit_binary_expr"): "P4: expression emitter",
+    ("crates/backend-wasm/src/runtime_link_plan.rs", "bigint_runtime_arithmetic_selects_helper_deps"): "P11: link plan refactor",
+    ("crates/backend-wasm/src/stmt_emit.rs", "emit_statement_with_label"): "P4: statement emitter",
+    ("crates/compiler/src/stages/lower.rs", "rewrite_static_module_body_for_build"): "compiler pipeline",
+    ("crates/frontend/src/lexer.rs", "tokenize_arithmetic_or_comparison_operator"): "P4: lexer decomposition",
+    ("crates/frontend/src/lexer.rs", "tokenize_assignment_or_bitwise_operator"): "P4: lexer decomposition",
+    ("crates/frontend/src/parser/expressions_main.rs", "assignment"): "P4: parser decomposition",
+    ("crates/frontend/src/parser/expressions_main.rs", "unary"): "P4: parser decomposition",
+    ("crates/frontend/src/parser/helpers.rs", "parse_template_parts"): "P4: parser decomposition",
+    ("crates/frontend/src/parser/tokens.rs", "skip_type_annotation_until"): "P4: parser decomposition",
+    ("crates/ir/src/lowered/resolver/array.rs", "lower_variable_array_callback_method"): "P7: resolver decomposition",
+    ("crates/ir/src/lowered/resolver/call/method.rs", "lower_mcall_date_string"): "P7: resolver decomposition",
+    ("crates/ir/src/lowered/resolver/call/method.rs", "lower_mcall_class_dispatch"): "P7: resolver decomposition",
+    ("crates/runtime-catalog/src/runtime_fn.rs", "runtime_fn_from_name"): "runtime function registry",
+}
+
 
 def usage():
     print("Usage:")
@@ -952,7 +972,7 @@ def check_smaller_function_warning() -> list[str]:
             fn_length = j - fn_start
             if fn_length > max_fn_lines:
                 allowlist_key = (str(rel), fn_name)
-                if allowlist_key in FUNCTION_LENGTH_ALLOWLIST:
+                if allowlist_key in FUNCTION_WARN_ALLOWLIST_200:
                     continue
                 violations.append(
                     f"check_architecture_rules: WARN {rel}:{fn_start + 1}: "

@@ -42,6 +42,8 @@ Each row is a required layer unless marked optional.
 ## Link plan and manifest
 
 - [ ] RuntimeLinkPlan includes the function when the feature is used
+- [ ] RuntimeLinkPlan manifests correctly: `build_runtime_link_plan(program)` picks it up
+- [ ] Summary snapshot test: `emit_link_plan_snapshot_json` produces expected JSON
 - [ ] CapabilityManifest reflects the correct capabilities
 - [ ] No unnecessary imports leaked to the manifest
 - [ ] Emission order constraint if any
@@ -52,6 +54,15 @@ Each row is a required layer unless marked optional.
 - [ ] Node output captured (or expected output defined)
 - [ ] `m2_node_diff` test entry added to fixture list
 - [ ] Differential pass confirmed: `cargo nextest run -p ts2wasm-cli --test m2_node_diff <filter>`
+
+## Negative tests
+
+- [ ] Compiler gracefully rejects invalid syntax related to this feature
+- [ ] Unsupported variants produce `[UnsupportedSyntax]` or `[UnsupportedBuiltin]` diagnostic (not a panic)
+- [ ] Test added for edge case: missing arguments, wrong types, or null/undefined inputs
+- [ ] Regression test: existing features continue to work after new feature is added
+- [ ] If applicable: malformed input produces a diagnostic, not a crash
+- [ ] Test added under `fixtures/test-infrastructure/unsupported-fixture.ts` or equivalent
 
 ## Architecture checks
 
