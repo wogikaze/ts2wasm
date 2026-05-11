@@ -124,7 +124,7 @@ pub enum WasmInstr {
 }
 
 /// Wasm value type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum WasmValType {
     I32,
     I64,
