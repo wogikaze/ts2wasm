@@ -9,7 +9,7 @@ use super::super::{
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
 use crate::lowered::*;
 use std::collections::HashMap;
-use ts2wasm_shared::{DiagCode, Diagnostic, Span};
+use ts2wasm_shared::{DiagCode, Diagnostic, Span, SYMBOL_ITERATOR_OBJECT_KEY};
 
 impl<'a> super::super::Resolver {
     pub(crate) fn lower_function_call_args(
@@ -181,87 +181,6 @@ impl<'a> super::super::Resolver {
 
         Ok(())
     }
-    pub(crate) fn lower_optional_call(
-        &mut self,
-        callee: &ResolvedExpr,
-        args: &[ResolvedExpr],
-        span: Span,
-    ) -> Result<LoweredExpr, Diagnostic> {
-        let func_name = match callee {
-            ResolvedExpr::Ident(name) => name,
-            _ => {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "issue-253: optional calls are currently supported only for identifier callees"
-                            .to_owned(),
-                    span: Some(span),
-
-                    phase: None,});
-            }
-        };
-
-        if let Ok(local_id) = self.resolve_local(func_name) {
-            if self.ctx.facts.nullish_locals.contains(&local_id) {
-                return Ok(LoweredExpr::Undefined(Span::generated("undef")));
-            }
-
-            if let Some(closure) = self.ctx.facts.arrow_locals.get(&local_id).cloned() {
-                let mut lowered_args = self.lower_call_args(args)?;
-                lowered_args.extend(
-                    closure
-                        .captures
-                        .iter()
-                        .copied()
-                        .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
-                );
-                return Ok(LoweredExpr::OptionalCall {
-                    callee: Box::new(LoweredExpr::Local(local_id, Span::generated("local"))),
-                    call: Box::new(LoweredExpr::Call {
-                        kind: FunctionCallKind::User(closure.func_id),
-                        args: lowered_args,
-
-                        span: Span::generated("call"),
-                    }),
-                    span: Span::generated("opt_call"),
-                });
-            }
-
-            // Not a closure or nullish (e.g. function declaration) —
-            // fall through to resolve_func below.
-        }
-
-        let func_id = self.resolve_func(func_name)?;
-        if self
-            .ctx
-            .symbols
-            .function_signatures
-            .get(&func_id)
-            .is_some_and(|signature| signature.needs_receiver)
-        {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-062d: optional direct call `{func_name}?.(...)` cannot bind a supported receiver for `this`; call through a supported receiver object"
-                ),
-                span: Some(span),
-
-                phase: None,
-            });
-        }
-        let lowered_args = self.lower_function_call_args(
-            func_id,
-            LoweredExpr::Undefined(Span::generated("undef")),
-            args,
-        )?;
-        Ok(LoweredExpr::Call {
-            kind: FunctionCallKind::User(func_id),
-            args: lowered_args,
-
-            span: Span::generated("call"),
-        })
-    }
-
     pub(crate) fn lower_string_match_all_literal(
         &mut self,
         object: &ResolvedExpr,
@@ -455,5 +374,241 @@ impl<'a> super::super::Resolver {
             }
         }
         Ok(lowered_args)
+    }
+
+    pub(crate) fn lower_spread_via_iterator(
+        &mut self,
+        spread_expr: &ResolvedExpr,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let sentinel_key = SYMBOL_ITERATOR_OBJECT_KEY.to_owned();
+        let span = Span::generated("spread_via_iterator");
+        let iterable = self.lower_expr(spread_expr)?;
+        let iter_fn = self.alloc_temp();
+        let iterator = self.alloc_temp();
+        let result_arr = self.alloc_temp();
+        let done_val = self.alloc_temp();
+        let mut stmts = vec![LoweredStmt::Let(
+            iter_fn,
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(iterable),
+                key: Box::new(LoweredExpr::String(sentinel_key, Span::generated("str"))),
+                span,
+            },
+            span,
+        )];
+        stmts.push(LoweredStmt::Let(
+            iterator,
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeIntrinsic::HeapClosureCall,
+                args: vec![LoweredExpr::Local(iter_fn, Span::generated("local"))],
+                span,
+            },
+            span,
+        ));
+        stmts.push(LoweredStmt::Let(
+            result_arr,
+            LoweredExpr::ArrayNew {
+                elements: vec![],
+                span,
+            },
+            span,
+        ));
+        stmts.push(LoweredStmt::Let(
+            done_val,
+            LoweredExpr::Bool(false, Span::generated("bool")),
+            span,
+        ));
+        let next_fn = self.alloc_temp();
+        let r = self.alloc_temp();
+        let value = self.alloc_temp();
+        let mut body = Vec::new();
+        body.push(LoweredStmt::Let(
+            next_fn,
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(LoweredExpr::Local(iterator, Span::generated("local"))),
+                key: Box::new(LoweredExpr::String(
+                    "next".to_owned(),
+                    Span::generated("str"),
+                )),
+                span,
+            },
+            span,
+        ));
+        body.push(LoweredStmt::Let(
+            r,
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeIntrinsic::HeapClosureCall,
+                args: vec![LoweredExpr::Local(next_fn, Span::generated("local"))],
+                span,
+            },
+            span,
+        ));
+        body.push(LoweredStmt::Let(
+            done_val,
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(LoweredExpr::Local(r, Span::generated("local"))),
+                key: Box::new(LoweredExpr::String(
+                    "done".to_owned(),
+                    Span::generated("str"),
+                )),
+                span,
+            },
+            span,
+        ));
+        let mut push_body = vec![LoweredStmt::Let(
+            value,
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(LoweredExpr::Local(r, Span::generated("local"))),
+                key: Box::new(LoweredExpr::String(
+                    "value".to_owned(),
+                    Span::generated("str"),
+                )),
+                span,
+            },
+            span,
+        )];
+        push_body.push(LoweredStmt::Expr(
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeIntrinsic::ArrayPush,
+                args: vec![
+                    LoweredExpr::Local(result_arr, Span::generated("local")),
+                    LoweredExpr::Local(value, Span::generated("local")),
+                ],
+                span,
+            },
+            span,
+        ));
+        body.push(LoweredStmt::If {
+            condition: LoweredExpr::Unary {
+                op: LoweredUnaryOp::Not,
+                expr: Box::new(LoweredExpr::Local(done_val, Span::generated("local"))),
+                span,
+            },
+            then_body: push_body,
+            else_body: vec![],
+            span,
+        });
+        stmts.push(LoweredStmt::DoWhile {
+            body,
+            condition: LoweredExpr::Unary {
+                op: LoweredUnaryOp::Not,
+                expr: Box::new(LoweredExpr::Local(done_val, Span::generated("local"))),
+                span,
+            },
+            span,
+        });
+        Ok(LoweredExpr::Block {
+            stmts,
+            result: Box::new(LoweredExpr::Local(result_arr, Span::generated("local"))),
+            span,
+        })
+    }
+
+    pub(crate) fn lower_for_of_via_iterator(
+        &mut self,
+        var_id: LocalId,
+        iter_expr: &ResolvedExpr,
+        body_stmts: &[ResolvedStmt],
+    ) -> Result<LoweredStmt, Diagnostic> {
+        let sentinel_key = SYMBOL_ITERATOR_OBJECT_KEY.to_owned();
+        let span = Span::generated("for_of_via_iterator");
+        let iterable = self.lower_expr(iter_expr)?;
+        let iter_fn = self.alloc_temp();
+        let iterator = self.alloc_temp();
+        let done_val = self.alloc_temp();
+        let mut stmts = vec![
+            LoweredStmt::Let(
+                iter_fn,
+                LoweredExpr::PropertyGetDynamic {
+                    obj: Box::new(iterable),
+                    key: Box::new(LoweredExpr::String(sentinel_key, Span::generated("str"))),
+                    span,
+                },
+                span,
+            ),
+            LoweredStmt::Let(
+                iterator,
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeIntrinsic::HeapClosureCall,
+                    args: vec![LoweredExpr::Local(iter_fn, Span::generated("local"))],
+                    span,
+                },
+                span,
+            ),
+            LoweredStmt::Let(
+                done_val,
+                LoweredExpr::Bool(false, Span::generated("bool")),
+                span,
+            ),
+        ];
+        let next_fn = self.alloc_temp();
+        let r = self.alloc_temp();
+        let mut body = Vec::new();
+        body.push(LoweredStmt::Let(
+            next_fn,
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(LoweredExpr::Local(iterator, Span::generated("local"))),
+                key: Box::new(LoweredExpr::String(
+                    "next".to_owned(),
+                    Span::generated("str"),
+                )),
+                span,
+            },
+            span,
+        ));
+        body.push(LoweredStmt::Let(
+            r,
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeIntrinsic::HeapClosureCall,
+                args: vec![LoweredExpr::Local(next_fn, Span::generated("local"))],
+                span,
+            },
+            span,
+        ));
+        body.push(LoweredStmt::Let(
+            done_val,
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(LoweredExpr::Local(r, Span::generated("local"))),
+                key: Box::new(LoweredExpr::String(
+                    "done".to_owned(),
+                    Span::generated("str"),
+                )),
+                span,
+            },
+            span,
+        ));
+        let mut if_body = vec![LoweredStmt::Assign(
+            var_id,
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(LoweredExpr::Local(r, Span::generated("local"))),
+                key: Box::new(LoweredExpr::String(
+                    "value".to_owned(),
+                    Span::generated("str"),
+                )),
+                span,
+            },
+            span,
+        )];
+        if_body.extend(self.lower_nested_block(body_stmts)?);
+        body.push(LoweredStmt::If {
+            condition: LoweredExpr::Unary {
+                op: LoweredUnaryOp::Not,
+                expr: Box::new(LoweredExpr::Local(done_val, Span::generated("local"))),
+                span,
+            },
+            then_body: if_body,
+            else_body: vec![],
+            span,
+        });
+        stmts.push(LoweredStmt::DoWhile {
+            body,
+            condition: LoweredExpr::Unary {
+                op: LoweredUnaryOp::Not,
+                expr: Box::new(LoweredExpr::Local(done_val, Span::generated("local"))),
+                span,
+            },
+            span,
+        });
+        Ok(LoweredStmt::Block(stmts, span))
     }
 }
