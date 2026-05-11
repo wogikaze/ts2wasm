@@ -24,6 +24,7 @@
 | `docs/17-jsonl-test-record-schema.md` | JSONL test record 出力スキーマ、status/tracking 定義 | なし | 新規追加 |
 | `docs/18-web-ui-reporting.md` | Web UI の data contract、利用方法、static deployment、export/theme 操作 | coverage dashboard の利用運用 | 新規追加 |
 | `docs/23-coverage-runner-completeness.md` | coverage runner の分類パス完全性、build_pass/semantic_pass ギャップの分析方法と修正 | `reference-coverage.py` の 3 つのコードパス、_classify_build_response / _complete_semantic_for_build_item | 新規追加 |
+| `docs/24-architecture-decoupling-and-llm-friendly-sizing.md` | アーキテクチャ結合度分析と phase/semantic/capability 三重分離、LLM コンテキストに収まる粒度基準、リファクタリング手順 | 現状の結合ポイント一覧、目標アーキテクチャ、Validated\<T\>、Runtime catalog domain 分割、HIR/MIR/Wasm IR 責務明確化、fitness functions | 新規追加 |
 | `docs/language-reference/javascript-features.md` | JavaScript 構文・機能の対応方針と実装状況 | ECMA-262 仕様に基づく機能一覧 | 新規追加 |
 | `docs/language-reference/typescript-features.md` | TypeScript 構文・機能の対応方針と実装状況 | TypeScript Handbook に基づく機能一覧 | 新規追加 |
 | `docs/language-reference/frontend-parser-wave.md` | frontend/parser 仕様 slice の issue 分割・検証運用 | ECMA-262 / TypeScript parser / reference tests に基づく parser wave | 新規追加 |
