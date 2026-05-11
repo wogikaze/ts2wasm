@@ -92,9 +92,9 @@ EXCLUDED_FILENAMES = {
     "Cargo.lock",
 }
 
-# Files exceeding 2000 lines (Rust), with planned remediation.
-# Test files and auto-generated files exempt separately.
-KNOWN_OVERSIZED_FILES = {
+# Files exceeding 2000 lines (Rust) — explicit hard gate allowlist.
+# Every entry must have a documented refactoring plan or be a test file.
+FILE_SIZE_ALLOWLIST_2000 = {
     "crates/backend-wasm/src/runtime/core/bigint.rs": "P4: runtime domain split",
     "crates/backend-wasm/src/expr_emit.rs": "P4: expression emitter — pending domain split",
     "crates/ir/src/lowered/resolver/call.rs": "P7: resolver decomposition",
@@ -111,7 +111,7 @@ KNOWN_OVERSIZED_FILES = {
 # Files exceeding 1500 lines (Rust), with planned remediation.
 # Test files are exempt separately via EXCLUDED_PATH_PARTS logic.
 KNOWN_OVERSIZED_FILES_1500 = {
-    **KNOWN_OVERSIZED_FILES,
+    **FILE_SIZE_ALLOWLIST_2000,
     "crates/backend-wasm/src/expr_emit.rs": "expression emitter — pending domain split",
     "crates/ir/src/name_resolver.rs": "P7: resolver decomposition",
     "crates/backend-wasm/src/runtime/core/comparison.rs": "P4: runtime domain split",
@@ -584,7 +584,7 @@ def check_rust_file_length(max_lines: int = 2000) -> list[str]:
         rel = path.relative_to(REPO_ROOT)
         if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
             continue
-        if str(rel) in KNOWN_OVERSIZED_FILES:
+        if str(rel) in FILE_SIZE_ALLOWLIST_2000:
             continue
         count = line_count(path)
         if count > max_lines:
