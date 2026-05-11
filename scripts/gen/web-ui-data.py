@@ -399,6 +399,9 @@ def normalized_suite_metrics(item):
     unresolved_name_by_symbol = item.get("unresolved_name_by_symbol", {})
     if not isinstance(unresolved_name_by_symbol, dict):
         unresolved_name_by_symbol = {}
+    harness_includes = item.get("harness_includes", [])
+    if not isinstance(harness_includes, list):
+        harness_includes = []
 
     return {
         "suite": suite,
@@ -416,6 +419,7 @@ def normalized_suite_metrics(item):
         "skip_with_reason": skip_with_reason,
         "build_pass_by_detail": build_pass_by_detail,
         "unresolved_name_by_symbol": unresolved_name_by_symbol,
+        "harness_includes": harness_includes,
         "source": item["_source_path"],
     }
 

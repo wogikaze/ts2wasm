@@ -1014,6 +1014,7 @@ def main():
             "unsupported_features": {},
             "build_pass_by_detail": {},
             "unresolved_name_by_symbol": {},
+            "harness_includes": [],
             "status": "in-progress",
             "selection": {
                 "paths_file": paths_file,
@@ -2005,6 +2006,7 @@ def main():
             "conformance_pass": conformance_pass,
             "build_pass_by_detail": {},
             "unresolved_name_by_symbol": unresolved_name_by_symbol,
+            "harness_includes": [],
             "duration_ms": wall_duration_ms,
             "wall_duration_ms": wall_duration_ms,
             "case_duration_sum_ms": total_duration_ms,
@@ -2289,8 +2291,14 @@ def main():
         nonlocal unsupported_by_phase
         nonlocal build_pass_by_detail
         nonlocal unresolved_name_by_symbol
+        nonlocal harness_includes_used
 
         executed += 1
+        # Track unique harness include files used
+        file_includes = result.get("harness_includes", [])
+        if isinstance(file_includes, list):
+            for inc in file_includes:
+                harness_includes_used.add(inc)
         if detail_output:
             result.setdefault("file_path", str(item["file_path"]))
             result.setdefault("detail_path", item["detail_path"])
@@ -2487,6 +2495,7 @@ def main():
                     result_metrics["detail_line"] = f"{detail_path}: UnsupportedTest262Metadata: test262-metadata"
                 return result_metrics
             t262.HARNESS_DIR = test262_harness_dir_for(file_path)
+            result_metrics["harness_includes"] = list(metadata.includes) if metadata.includes else []
             build_source = t262.build_test262_source(
                 file_path, source_code, metadata, target="wasm"
             )
@@ -2587,6 +2596,7 @@ def main():
     verified_negative_count = 0
     build_pass_by_detail = {}
     unresolved_name_by_symbol = {}
+    harness_includes_used = set()
 
     file_details = []
     
@@ -2752,9 +2762,13 @@ def main():
                     if result is None:
                         continue
                     executed += 1
+                    file_includes = result.get("harness_includes", [])
+                    if isinstance(file_includes, list):
+                        for inc in file_includes:
+                            harness_includes_used.add(inc)
                     if detail_output:
                         _append_suite_detail(result)
-                    
+
                     if result["unsupported"] and result["diag_code"] == "ExpectedNegativeSyntax":
                         unsupported_count += 1
                         unsupported_diag_counts["ExpectedNegativeSyntax"] = unsupported_diag_counts.get("ExpectedNegativeSyntax", 0) + 1
@@ -2887,6 +2901,7 @@ def main():
         "unsupported_by_phase": unsupported_by_phase,
         "build_pass_by_detail": build_pass_by_detail,
         "unresolved_name_by_symbol": unresolved_name_by_symbol,
+        "harness_includes": sorted(harness_includes_used),
         "status": "in-progress",
         "selection": {
             "paths_file": paths_file,
