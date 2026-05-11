@@ -63,13 +63,14 @@ open:
       - "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output"
     non_goals:
       - "No new runtime implementation."
-active:
+active: []
+done:
   - id: 238
     title: "Differentiate getter/setter from regular methods in class body (W9a)"
     priority: P2
     type: feature
     area: ir
-    status: active
+    status: done
     created: 2026-05-11
     updated: 2026-05-11
     roadmap: W9a
@@ -86,7 +87,13 @@ active:
         - "crates/cli/tests/ir_lowering.rs: cover accessors not emitted as regular methods"
         - "fixtures/classes/class-getter-setter.ts: acceptance fixture"
       acceptance: "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_getter_setter)'"
-done:
+    evidence:
+      commit: 74b621ffc
+      commands:
+        - "cargo test -p ts2wasm-cli --test ir_lowering -- class_public_accessors_are_not_regular_methods_in_class_decl => exit 0"
+        - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_getter_setter)' => exit 0"
+        - "cargo fmt --all --check => exit 0"
+        - "git diff --check => exit 0"
   - id: 237
     title: "Implement public field initializers in class constructor (W9a)"
     priority: P1
