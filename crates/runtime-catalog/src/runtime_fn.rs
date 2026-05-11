@@ -443,6 +443,21 @@ pub enum RuntimeFn {
     SymbolNew,
     SymbolFor,
     SymbolKeyFor,
+    /// Pseudo-intrinsic: expanded into ArrayPushGrow + ArrayPush during IR lowering.
+    /// Not a real runtime function.
+    ArrayPushMany,
+    /// Pseudo-intrinsic: direct heap closure calling convention.
+    /// Not a real runtime function.
+    HeapClosureCall,
+    /// Pseudo-intrinsic: class private field get.
+    /// Not a real runtime function.
+    PrivateFieldGet,
+    /// Pseudo-intrinsic: class private field set.
+    /// Not a real runtime function.
+    PrivateFieldSet,
+    /// Pseudo-intrinsic: class private brand check.
+    /// Not a real runtime function.
+    PrivateBrandCheck,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -1183,6 +1198,81 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "SymbolNew" => Some(RuntimeFn::SymbolNew),
         "SymbolFor" => Some(RuntimeFn::SymbolFor),
         "SymbolKeyFor" => Some(RuntimeFn::SymbolKeyFor),
+        "Add" => Some(RuntimeFn::Add),
+        "AddFast" => Some(RuntimeFn::AddFast),
+        "AllocHeap" => Some(RuntimeFn::AllocHeap),
+        "And" => Some(RuntimeFn::And),
+        "ArrayGet" => Some(RuntimeFn::ArrayGet),
+        "BangEqual" => Some(RuntimeFn::BangEqual),
+        "BigIntCompare" => Some(RuntimeFn::BigIntCompare),
+        "BitwiseAnd" => Some(RuntimeFn::BitwiseAnd),
+        "BitwiseOr" => Some(RuntimeFn::BitwiseOr),
+        "BitwiseToI32" => Some(RuntimeFn::BitwiseToI32),
+        "BitwiseXor" => Some(RuntimeFn::BitwiseXor),
+        "Copy" => Some(RuntimeFn::Copy),
+        "CryptoRandomBytes" => Some(RuntimeFn::CryptoRandomBytes),
+        "DateEpochMsNowNumber" => Some(RuntimeFn::DateEpochMsNowNumber),
+        "Div" => Some(RuntimeFn::Div),
+        "DivFast" => Some(RuntimeFn::DivFast),
+        "EqualEqual" => Some(RuntimeFn::EqualEqual),
+        "FsAppendFileSync" => Some(RuntimeFn::FsAppendFileSync),
+        "FsReadFileSync" => Some(RuntimeFn::FsReadFileSync),
+        "FsWriteFileSync" => Some(RuntimeFn::FsWriteFileSync),
+        "GetLength" => Some(RuntimeFn::GetLength),
+        "Greater" => Some(RuntimeFn::Greater),
+        "GreaterEqual" => Some(RuntimeFn::GreaterEqual),
+        "GreaterEqualFast" => Some(RuntimeFn::GreaterEqualFast),
+        "GreaterFast" => Some(RuntimeFn::GreaterFast),
+        "Index" => Some(RuntimeFn::Index),
+        "InstanceOf" => Some(RuntimeFn::InstanceOf),
+        "IsString" => Some(RuntimeFn::IsString),
+        "Less" => Some(RuntimeFn::Less),
+        "LessEqual" => Some(RuntimeFn::LessEqual),
+        "LessEqualFast" => Some(RuntimeFn::LessEqualFast),
+        "LessFast" => Some(RuntimeFn::LessFast),
+        "Log" => Some(RuntimeFn::Log),
+        "MathPow" => Some(RuntimeFn::MathPow),
+        "MemEqual" => Some(RuntimeFn::MemEqual),
+        "Mod" => Some(RuntimeFn::Mod),
+        "ModFast" => Some(RuntimeFn::ModFast),
+        "ModuleExportsAssign" => Some(RuntimeFn::ModuleExportsAssign),
+        "ModuleExportsSet" => Some(RuntimeFn::ModuleExportsSet),
+        "ModuleRequire" => Some(RuntimeFn::ModuleRequire),
+        "Mul" => Some(RuntimeFn::Mul),
+        "MulFast" => Some(RuntimeFn::MulFast),
+        "Negate" => Some(RuntimeFn::Negate),
+        "Not" => Some(RuntimeFn::Not),
+        "NumberFromI32" => Some(RuntimeFn::NumberFromI32),
+        "NumberToExponential" => Some(RuntimeFn::NumberToExponential),
+        "NumberToFixed" => Some(RuntimeFn::NumberToFixed),
+        "NumberToI32" => Some(RuntimeFn::NumberToI32),
+        "NumberToPrecision" => Some(RuntimeFn::NumberToPrecision),
+        "Or" => Some(RuntimeFn::Or),
+        "PathBasename" => Some(RuntimeFn::PathBasename),
+        "PathDirname" => Some(RuntimeFn::PathDirname),
+        "PathJoin" => Some(RuntimeFn::PathJoin),
+        "PathResolve" => Some(RuntimeFn::PathResolve),
+        "ProcessArgv" => Some(RuntimeFn::ProcessArgv),
+        "ProcessEnv" => Some(RuntimeFn::ProcessEnv),
+        "ProcessExit" => Some(RuntimeFn::ProcessExit),
+        "PropertyDelete" => Some(RuntimeFn::PropertyDelete),
+        "PropertyGet" => Some(RuntimeFn::PropertyGet),
+        "PropertyHas" => Some(RuntimeFn::PropertyHas),
+        "PropertySet" => Some(RuntimeFn::PropertySet),
+        "ReadStdinBytes" => Some(RuntimeFn::ReadStdinBytes),
+        "RegexpMatchInner" => Some(RuntimeFn::RegexpMatchInner),
+        "StrictEqual" => Some(RuntimeFn::StrictEqual),
+        "StrictNotEqual" => Some(RuntimeFn::StrictNotEqual),
+        "StringEqual" => Some(RuntimeFn::StringEqual),
+        "Sub" => Some(RuntimeFn::Sub),
+        "SubFast" => Some(RuntimeFn::SubFast),
+        "TaskDrop" => Some(RuntimeFn::TaskDrop),
+        "TaskPoll" => Some(RuntimeFn::TaskPoll),
+        "TaskResult" => Some(RuntimeFn::TaskResult),
+        "TruthyBool" => Some(RuntimeFn::TruthyBool),
+        "TypeOf" => Some(RuntimeFn::TypeOf),
+        "ValueToStringInto" => Some(RuntimeFn::ValueToStringInto),
+        "Write" => Some(RuntimeFn::Write),
         _ => None,
     }
 }
@@ -1273,7 +1363,12 @@ impl RuntimeFn {
             | Self::AllocHeap
             | Self::MemEqual
             | Self::Index
-            | Self::GetLength => RuntimeDomain::Core,
+            | Self::GetLength
+            | Self::ArrayPushMany
+            | Self::HeapClosureCall
+            | Self::PrivateFieldGet
+            | Self::PrivateFieldSet
+            | Self::PrivateBrandCheck => RuntimeDomain::Core,
             Self::DateNew
             | Self::DateNewLive
             | Self::DateNow
@@ -1809,6 +1904,11 @@ impl RuntimeFn {
             Self::SymbolKeyFor,
             Self::Escape,
             Self::Unescape,
+            Self::ArrayPushMany,
+            Self::HeapClosureCall,
+            Self::PrivateFieldGet,
+            Self::PrivateFieldSet,
+            Self::PrivateBrandCheck,
         ]
     }
 
@@ -2111,6 +2211,11 @@ impl RuntimeFn {
             Self::DecodeURI,
             Self::Escape,
             Self::Unescape,
+            Self::ArrayPushMany,
+            Self::HeapClosureCall,
+            Self::PrivateFieldGet,
+            Self::PrivateFieldSet,
+            Self::PrivateBrandCheck,
         ]
     }
 }

@@ -289,4 +289,9 @@ match self {
             Self::DataViewSetInt32 => "dataview_set_int32",
             Self::DataViewGetFloat64 => "dataview_get_float64",
             Self::DataViewSetFloat64 => "dataview_set_float64",
+            Self::ArrayPushMany => "pseudo_array_push_many",
+            Self::HeapClosureCall => "pseudo_heap_closure_call",
+            Self::PrivateFieldGet => "pseudo_private_field_get",
+            Self::PrivateFieldSet => "pseudo_private_field_set",
+            Self::PrivateBrandCheck => "pseudo_private_brand_check",
         }
