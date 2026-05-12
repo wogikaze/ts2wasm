@@ -7,6 +7,25 @@ categories:
   build-smoke: Fixtures tested only for successful compilation, not runtime semantics
   parser: Fixtures testing parser acceptance or rejection
   test-infrastructure: Fixtures that test the test framework itself
+canary:
+  description: Semantic canary suite — fixtures that exercise all active semantic paths
+  source: scripts/data/semantic-canary.txt
+  fixtures:
+  - fixtures/basics-hello/hello.ts
+  - fixtures/core-expressions/number.ts
+  - fixtures/core-expressions/string.ts
+  - fixtures/core-expressions/bool.ts
+  - fixtures/core-expressions/ternary.ts
+  - fixtures/core-expressions/member.ts
+  - fixtures/core-expressions/object.ts
+  - fixtures/core-expressions/array.ts
+  - fixtures/core-statements/if.ts
+  - fixtures/core-statements/for.ts
+  - fixtures/core-statements/function.ts
+  - fixtures/core-statements/try-catch.ts
+  - fixtures/classes-and-inheritance/class-basic.ts
+  - fixtures/arrow-functions/arrow-basic.ts
+  - fixtures/basics-equality/equality-operators.ts
 directories:
   arrays-objects:
     category: semantic

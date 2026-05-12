@@ -1,0 +1,20 @@
+# Semantic canary suite
+# One fixture path per line. Lines starting with '#' are ignored.
+# Covers: I/O, number/string/boolean literals, objects, arrays,
+# property access, if/for control flow, functions, try-catch,
+# classes, arrow functions, equality operators.
+fixtures/basics-hello/hello.ts
+fixtures/core-expressions/number.ts
+fixtures/core-expressions/string.ts
+fixtures/core-expressions/bool.ts
+fixtures/core-expressions/ternary.ts
+fixtures/core-expressions/member.ts
+fixtures/core-expressions/object.ts
+fixtures/core-expressions/array.ts
+fixtures/core-statements/if.ts
+fixtures/core-statements/for.ts
+fixtures/core-statements/function.ts
+fixtures/core-statements/try-catch.ts
+fixtures/classes-and-inheritance/class-basic.ts
+fixtures/arrow-functions/arrow-basic.ts
+fixtures/basics-equality/equality-operators.ts
