@@ -875,7 +875,7 @@ fn dump_mir_runtime_call() {
     let mir = LoweredProgram {
         top_level_statements: vec![LoweredStmt::Expr(
             LoweredExpr::RuntimeCall {
-                runtime_fn: "ArrayPushGrow".to_string(),
+                intrinsic: ts2wasm_runtime_catalog::RuntimeFn::ArrayPushGrow,
                 args: vec![
                     LoweredExpr::Local(LocalId(0), make_span()),
                     LoweredExpr::Number(42, make_span()),

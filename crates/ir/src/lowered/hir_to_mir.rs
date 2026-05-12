@@ -5,6 +5,9 @@
 // Complex runtime-level lowering (e.g., full method call dispatch) is
 // represented as RuntimeCall nodes that downstream passes expand further.
 
+use crate::{HirExpr, HirFunction, HirProgram, HirRelationalOp, HirStmt};
+use super::*;
+
 /// Lower a HirProgram to a LoweredProgram (MIR).
 pub fn lower_hir_to_mir(program: &HirProgram) -> LoweredProgram {
     let lowerer = HirToMirLowerer::new(program);
@@ -64,7 +67,7 @@ impl HirToMirLowerer {
     }
 
     fn lower_stmt(&self, stmt: &HirStmt) -> LoweredStmt {
-        let span = Span::default();
+        let span = ts2wasm_source::Span::default();
         match stmt {
             HirStmt::Let { local, init } => {
                 LoweredStmt::Let(LocalId(local.0), self.lower_expr(init), span)
@@ -93,7 +96,7 @@ impl HirToMirLowerer {
     }
 
     fn lower_expr(&self, expr: &HirExpr) -> LoweredExpr {
-        let span = Span::default();
+        let span = ts2wasm_source::Span::default();
         match expr {
             HirExpr::ConstUndefined => LoweredExpr::Undefined(span),
             HirExpr::ConstNull => LoweredExpr::Null(span),
@@ -112,12 +115,15 @@ impl HirToMirLowerer {
             HirExpr::ConstString(s) => LoweredExpr::String(s.clone(), span),
             HirExpr::LoadLocal(id) => LoweredExpr::Local(LocalId(id.0), span),
             HirExpr::LoadBuiltin(name) => LoweredExpr::RuntimeCall {
-                runtime_fn: format!("load_builtin_{name}"),
-                args: vec![],
+                intrinsic: RuntimeFn::PropertyGet,
+                args: vec![
+                    LoweredExpr::This(span),
+                    LoweredExpr::String(name.clone(), span),
+                ],
                 span,
             },
             HirExpr::ToBoolean(inner) => LoweredExpr::RuntimeCall {
-                runtime_fn: "to_boolean".to_string(),
+                intrinsic: RuntimeFn::TruthyBool,
                 args: vec![self.lower_expr(inner)],
                 span,
             },
@@ -190,10 +196,13 @@ impl HirToMirLowerer {
                 method,
                 args,
             } => {
-                let mut lowered_args = vec![self.lower_expr(receiver)];
+                let mut lowered_args = vec![
+                    self.lower_expr(receiver),
+                    LoweredExpr::String(method.clone(), span),
+                ];
                 lowered_args.extend(self.lower_exprs(args));
                 LoweredExpr::RuntimeCall {
-                    runtime_fn: format!("method_call_{method}"),
+                    intrinsic: RuntimeFn::PropertyGet,
                     args: lowered_args,
                     span,
                 }

@@ -3,6 +3,9 @@
 // Every `HirStmt` and `HirExpr` variant is explicitly handled so that
 // adding a new variant without updating the dump is a compile error.
 
+use crate::{HirExpr, HirFunction, HirProgram, HirStmt};
+use super::*;
+
 /// Produce a dump string for the entire HIR program.
 pub fn dump_hir(program: &HirProgram) -> String {
     let mut out = String::new();

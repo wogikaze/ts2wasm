@@ -13,6 +13,7 @@ use crate::lowered::*;
 use std::collections::HashMap;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
+use super::super::*;
 
 impl<'a> super::super::Resolver {
     pub(crate) fn lower_method_call_expr(

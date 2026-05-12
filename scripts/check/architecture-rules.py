@@ -413,6 +413,28 @@ def line_count(path: Path) -> int:
 
 def find_oversized_files(max_file_lines: int) -> list[tuple[int, Path]]:
     """Return list of (count, relative_path) for files exceeding the line limit."""
+    oversized: list[tuple[int, Path]] = []
+    for root, dirnames, filenames in os.walk(REPO_ROOT):
+        rel_root = Path(root).relative_to(REPO_ROOT)
+        dirnames[:] = [
+            dirname
+            for dirname in dirnames
+            if dirname not in EXCLUDED_PATH_PARTS
+            and dirname not in EXCLUDED_FILENAMES
+            and (rel_root / dirname) != Path("TRACKING.yaml")
+        ]
+        for filename in filenames:
+            path = Path(root) / filename
+            if not path.is_file() or not should_count_lines(path):
+                continue
+            rel = path.relative_to(REPO_ROOT)
+            if str(rel) in OVERSIZED_ALLOWLIST:
+                continue
+            count = line_count(path)
+            if count > max_file_lines:
+                oversized.append((count, rel))
+    return oversized
+
 
 def iter_repo_files(suffix: str | None = None):
     for root, dirnames, filenames in os.walk(REPO_ROOT):
@@ -1533,7 +1555,7 @@ def main():
         errors += 1
 
     try:
-        check_cli_thin_wrapper_boundary()
+        find_cli_boundary_violations()
     except SystemExit:
         errors += 1
 

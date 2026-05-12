@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use ts2wasm_syntax::UnaryOp;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
+use super::*;
 
 pub(crate) fn resolve_method_to_runtime_fn(
     object: &ResolvedExpr,

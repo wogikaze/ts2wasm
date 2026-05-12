@@ -4,6 +4,9 @@
 // Future passes (e.g., optimization, closure conversion) can be added
 // as additional pipeline stages here.
 
+use crate::{HirProgram, LoweredProgram};
+use super::*;
+
 /// Lower a HirProgram to a LoweredProgram (MIR).
 ///
 /// This is the entry point for IR lowering. Currently performs a

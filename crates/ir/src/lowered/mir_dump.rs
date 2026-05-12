@@ -3,6 +3,9 @@
 // Every `LoweredStmt` and `LoweredExpr` variant is explicitly handled so
 // that adding a new variant without updating the dump is a compile error.
 
+use crate::{LoweredExpr, LoweredProgram, LoweredStmt};
+use super::*;
+
 /// Produce a dump string for the entire MIR (lowered) program.
 pub fn dump_mir(program: &LoweredProgram) -> String {
     let mut out = String::new();
@@ -259,6 +262,17 @@ fn dump_mir_stmt(stmt: &LoweredStmt, out: &mut String, indent: usize) {
                 out.push_str(&format!("{}  private_field: {:?}\n", prefix, pf));
             }
         }
+        LoweredStmt::TryFinally { try_body, finally_body, .. } => {
+            out.push_str(&format!("{}TryFinally\n", prefix));
+            out.push_str(&format!("{}  try_body:\n", prefix));
+            for s in try_body {
+                dump_mir_stmt(s, out, indent + 4);
+            }
+            out.push_str(&format!("{}  finally_body:\n", prefix));
+            for s in finally_body {
+                dump_mir_stmt(s, out, indent + 4);
+            }
+        }
     }
 }
 
@@ -461,9 +475,9 @@ fn dump_mir_expr(expr: &LoweredExpr, out: &mut String, indent: usize) {
             dump_mir_expr(promise, out, indent + 2);
         }
         LoweredExpr::RuntimeCall {
-            runtime_fn, args, ..
+            intrinsic, args, ..
         } => {
-            out.push_str(&format!("{}RuntimeCall({:?})\n", prefix, runtime_fn));
+            out.push_str(&format!("{}RuntimeCall({:?})\n", prefix, intrinsic));
             for arg in args {
                 dump_mir_expr(arg, out, indent + 2);
             }

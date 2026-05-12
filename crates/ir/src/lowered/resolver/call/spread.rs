@@ -12,6 +12,7 @@ use std::collections::HashMap;
 use ts2wasm_syntax::SYMBOL_ITERATOR_OBJECT_KEY;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
+use super::super::*;
 
 impl<'a> super::super::Resolver {
     pub(crate) fn lower_function_call_args(

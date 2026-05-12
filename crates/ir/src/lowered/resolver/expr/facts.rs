@@ -12,6 +12,7 @@ use std::collections::HashSet;
 use ts2wasm_syntax::{BinaryOp, OBJECT_SPREAD_SENTINEL, SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
+use super::super::*;
 
 pub(crate) fn update_bigint_local(ctx: &mut LoweringCtx, local_id: LocalId, expr: &ResolvedExpr) {
     if resolved_expr_is_bigint(ctx, expr) {

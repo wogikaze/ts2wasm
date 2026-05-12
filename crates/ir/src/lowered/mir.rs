@@ -1,5 +1,11 @@
 // MIR type aliases — names in the `lowered` namespace.
 
+use super::{
+    BuiltinErrorConstructor, ClassPrototypeRef, ClosureRepresentation, FunctionCallKind,
+    LoweredArraySlot, LoweredBinaryOp, LoweredExpr, LoweredFunction, LoweredLogicalAssignOp,
+    LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo,
+};
+
 /// Alias for the lowered program type, which serves as the MIR.
 pub type MirProgram = LoweredProgram;
 /// Alias for the lowered expression type.

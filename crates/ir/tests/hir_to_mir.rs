@@ -218,7 +218,7 @@ fn lowers_load_builtin() {
     let mir = lower_hir_to_mir(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("RuntimeCall"), "dump: {}", dump);
-    assert!(dump.contains("load_builtin_Math"), "dump: {}", dump);
+    assert!(dump.contains("PropertyGet"), "dump: {}", dump);
 }
 
 #[test]
@@ -233,7 +233,7 @@ fn lowers_to_boolean() {
     let mir = lower_hir_to_mir(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("RuntimeCall"), "dump: {}", dump);
-    assert!(dump.contains("to_boolean"), "dump: {}", dump);
+    assert!(dump.contains("TruthyBool"), "dump: {}", dump);
 }
 
 #[test]
@@ -416,7 +416,7 @@ fn lowers_call_method() {
     let mir = lower_hir_to_mir(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("RuntimeCall"), "dump: {}", dump);
-    assert!(dump.contains("method_call_toString"), "dump: {}", dump);
+    assert!(dump.contains("PropertyGet"), "dump: {}", dump);
 }
 
 // ---------------------------------------------------------------------------
@@ -475,7 +475,7 @@ fn lowers_integration() {
     assert!(dump.contains("Let("), "dump: {}", dump);
     assert!(dump.contains("If"), "dump: {}", dump);
     assert!(dump.contains("RuntimeCall"), "dump: {}", dump);
-    assert!(dump.contains("to_boolean"), "dump: {}", dump);
+    assert!(dump.contains("TruthyBool"), "dump: {}", dump);
     assert!(dump.contains("Binary(Add)"), "dump: {}", dump);
     assert!(dump.contains("Number("), "dump: {}", dump);
 }

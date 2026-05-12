@@ -305,13 +305,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ts2wasm-diagnostic"
-version = "0.1.0"
-dependencies = [
- "ts2wasm-source",
-]
-
-[[package]]
 name = "ts2wasm-frontend"
 version = "0.1.0"
 dependencies = [
@@ -332,16 +325,8 @@ dependencies = [
  "ts2wasm-resolve",
  "ts2wasm-runtime-abi",
  "ts2wasm-runtime-catalog",
+ "ts2wasm-semantics",
  "ts2wasm-shared",
- "ts2wasm-source",
- "ts2wasm-syntax",
-]
-
-[[package]]
-name = "ts2wasm-resolve"
-version = "0.1.0"
-dependencies = [
- "ts2wasm-diagnostic",
  "ts2wasm-source",
  "ts2wasm-syntax",
 ]
@@ -389,17 +374,6 @@ dependencies = [
  "ts2wasm-diagnostic",
  "ts2wasm-source",
  "ts2wasm-syntax",
-]
-
-[[package]]
-name = "ts2wasm-source"
-version = "0.1.0"
-
-[[package]]
-name = "ts2wasm-syntax"
-version = "0.1.0"
-dependencies = [
- "ts2wasm-source",
 ]
 
 [[package]]

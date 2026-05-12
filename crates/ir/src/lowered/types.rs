@@ -656,13 +656,8 @@ impl Validated<MirProgram> {
         ))
     }
 
-    pub fn program(&self) -> &MirProgram {
-        &self.inner
-    }
-
-    pub fn into_inner(self) -> MirProgram {
-        self.inner
-    }
+    // program() and into_inner() inherited from Validated<LoweredProgram>
+    // since MirProgram = LoweredProgram.
 }
 
 impl<T> AsRef<T> for Validated<T> {

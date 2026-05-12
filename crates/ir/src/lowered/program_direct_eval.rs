@@ -3,6 +3,7 @@ use super::{
     direct_iife_body_has_static_eval_block_function_binding,
 };
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
+use super::*;
 
 pub(crate) fn collect_direct_eval_block_function_env(
     program: &[ResolvedStmt],
