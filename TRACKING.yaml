@@ -1422,7 +1422,7 @@ open:
   area: frontend
   type: test
   roadmap: P15-test-hardening
-  status: open
+  status: done
   created: '2026-05-12'
   non_goals:
   - No parser grammar change.
@@ -1432,6 +1432,11 @@ open:
     goal: Property-based tests that exercise parser invariants on random or generated inputs.
   acceptance:
   - cargo test -p ts2wasm-frontend --test parser_property
+  evidence:
+    commit: 527bb2451
+    commands:
+    - command: cargo test -p ts2wasm-frontend --test parser_property
+      exit: 0
 - id: 376
   title: Add variant coverage tracking for parser and IR
   priority: P2
