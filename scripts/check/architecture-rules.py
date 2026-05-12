@@ -8,6 +8,7 @@ Current checks:
   - crates/cli/src/backend must not be reintroduced after backend-wasm extraction.
   - crates/cli/src must not declare local backend/parser/compiler implementation modules.
   - Error when a repo-owned source/document file exceeds the documented line limit.
+  - RuntimeFn import/capability parity: every RuntimeFn with imports must have a capability marker and vice versa.
 """
 
 import os
@@ -53,6 +54,7 @@ def usage():
     print("  - crates/cli/src/backend must not be reintroduced.")
     print("  - crates/cli/src must not declare local backend/parser/compiler modules.")
     print("  - Error when a repo-owned source/document file exceeds the line limit.")
+    print("  - RuntimeFn import/capability parity: every RuntimeFn with imports must have a capability marker and vice versa.")
 
 
 def parse_max_file_lines(args: list[str]) -> int:
@@ -106,7 +108,8 @@ def line_count(path: Path) -> int:
     return data.count(b"\n") + (0 if data.endswith(b"\n") else 1)
 
 
-def check_oversized_files(max_file_lines: int) -> None:
+def find_oversized_files(max_file_lines: int) -> list[tuple[int, Path]]:
+    """Return list of (count, relative_path) for files exceeding the line limit."""
     oversized: list[tuple[int, Path]] = []
     for path in REPO_ROOT.rglob("*"):
         if not path.is_file() or not should_count_lines(path):
@@ -114,98 +117,112 @@ def check_oversized_files(max_file_lines: int) -> None:
         count = line_count(path)
         if count > max_file_lines:
             oversized.append((count, path.relative_to(REPO_ROOT)))
-
-    if not oversized:
-        return
-
-    print(
-        "check_architecture_rules: ERROR files exceed "
-        f"{max_file_lines} lines; split ownership/modules or raise the documented limit",
-        file=sys.stderr,
-    )
-    for count, path in sorted(oversized, key=lambda item: (-item[0], item[1])):
-        print(f"check_architecture_rules: ERROR {path}: {count} lines", file=sys.stderr)
-    sys.exit(1)
+    return oversized
 
 
-def check_cli_thin_wrapper_boundary() -> None:
+def find_cli_boundary_violations() -> list[str]:
+    """Return list of violation messages for CLI thin-wrapper boundary checks."""
+    violations: list[str] = []
     cli_src = REPO_ROOT / "crates" / "cli" / "src"
     backend_dir = cli_src / "backend"
     if backend_dir.exists():
-        print(
-            "check_architecture_rules: crates/cli/src/backend must not be reintroduced; "
-            "put WASM backend implementation under crates/backend-wasm/src",
-            file=sys.stderr,
+        violations.append(
+            "crates/cli/src/backend must not be reintroduced; "
+            "put WASM backend implementation under crates/backend-wasm/src"
         )
-        sys.exit(1)
 
     forbidden_module_names = ("backend", "parser", "compiler", "driver")
     for path in cli_src.glob("*.rs"):
         text = path.read_text()
         for module_name in forbidden_module_names:
             if f"mod {module_name};" in text:
-                print(
-                    f"check_architecture_rules: {path.relative_to(REPO_ROOT)} must not declare "
-                    f"mod {module_name}; keep compiler implementation outside crates/cli",
-                    file=sys.stderr,
+                violations.append(
+                    f"{path.relative_to(REPO_ROOT)} must not declare "
+                    f"mod {module_name}; keep compiler implementation outside crates/cli"
                 )
-                sys.exit(1)
         if "struct Lexer" in text or "struct Parser" in text:
-            print(
-                f"check_architecture_rules: {path.relative_to(REPO_ROOT)} must not define "
-                "parser implementation types; keep parser/compiler implementation outside crates/cli",
-                file=sys.stderr,
+            violations.append(
+                f"{path.relative_to(REPO_ROOT)} must not define "
+                "parser implementation types; keep parser/compiler implementation outside crates/cli"
             )
-            sys.exit(1)
 
     for module_name in forbidden_module_names:
         module_file = cli_src / f"{module_name}.rs"
         if module_file.exists():
-            print(
-                f"check_architecture_rules: {module_file.relative_to(REPO_ROOT)} must not exist; "
-                "crates/cli is a thin wrapper",
-                file=sys.stderr,
+            violations.append(
+                f"{module_file.relative_to(REPO_ROOT)} must not exist; "
+                "crates/cli is a thin wrapper"
             )
-            sys.exit(1)
 
     cli_lib = cli_src / "lib.rs"
     if cli_lib.exists() and "ts2wasm_backend_wasm" in cli_lib.read_text():
-        print(
-            "check_architecture_rules: crates/cli/src/lib.rs must not call backend directly; "
-            "use ts2wasm-compiler instead",
-            file=sys.stderr,
+        violations.append(
+            "crates/cli/src/lib.rs must not call backend directly; "
+            "use ts2wasm-compiler instead"
         )
-        sys.exit(1)
+
+    return violations
 
 
 def main():
     args = sys.argv[1:]
     max_file_lines = parse_max_file_lines(args)
-    check_oversized_files(max_file_lines)
-    check_cli_thin_wrapper_boundary()
-    
-    if not shutil.which("cargo"):
-        print("check_architecture_rules: cargo is required", file=sys.stderr)
+    errors: list[str] = []
+
+    # --- check 1: oversized files ---
+    oversized = find_oversized_files(max_file_lines)
+    for count, path in sorted(oversized, key=lambda item: (-item[0], item[1])):
+        errors.append(
+            f"{path}: {count} lines exceeds {max_file_lines}; "
+            "split ownership/modules or raise the documented limit"
+        )
+
+    # --- check 2: CLI thin wrapper boundary ---
+    errors.extend(find_cli_boundary_violations())
+
+    # --- check 3: shared depends on cli ---
+    if shutil.which("cargo"):
+        result = subprocess.run(
+            ["cargo", "tree", "-p", "ts2wasm-shared", "--edges", "normal,build"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+        if result.returncode == 0 and "ts2wasm-cli" in result.stdout:
+            errors.append("ts2wasm-shared must not depend on ts2wasm-cli")
+    else:
+        errors.append("cargo is required")
+
+    # --- check 4: import-capability parity ---
+    if shutil.which("cargo"):
+        result = subprocess.run(
+            [
+                "cargo",
+                "test",
+                "-p",
+                "ts2wasm-backend-wasm",
+                "--lib",
+                "--",
+                "import_capability_parity",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+        if result.returncode != 0:
+            errors.append("RuntimeFn import/capability parity check FAILED")
+            if result.stderr:
+                errors.append(result.stderr[:500])
+            if result.stdout:
+                errors.append(result.stdout[:500])
+    else:
+        errors.append("cargo is required for import-capability parity check")
+
+    if errors:
+        for msg in errors:
+            print(f"check_architecture_rules: ERROR: {msg}", file=sys.stderr)
         sys.exit(1)
-    
-    # Check if ts2wasm-shared depends on ts2wasm-cli
-    result = subprocess.run(
-        ["cargo", "tree", "-p", "ts2wasm-shared", "--edges", "normal,build"],
-        capture_output=True,
-        text=True,
-        cwd=REPO_ROOT
-    )
-    
-    if result.returncode != 0:
-        # cargo tree might fail if package doesn't exist, that's OK for this check
-        print("check_architecture_rules: OK", file=sys.stderr)
-        sys.exit(0)
-    
-    if "ts2wasm-cli" in result.stdout:
-        print("check_architecture_rules: ts2wasm-shared must not depend on ts2wasm-cli", file=sys.stderr)
-        print(result.stdout, file=sys.stderr)
-        sys.exit(1)
-    
+
     print("check_architecture_rules: OK", file=sys.stderr)
 
 

@@ -779,6 +779,41 @@ impl HostImport {
             Self::DateGetTimezoneOffset => "host.dateGetTimezoneOffset",
         }
     }
+
+    #[cfg(test)]
+    pub(crate) const fn all() -> &'static [HostImport] {
+        &[
+            Self::FdRead,
+            Self::FdWrite,
+            Self::PathOpen,
+            Self::FdClose,
+            Self::WasiProcExit,
+            Self::ClockTimeGet,
+            Self::ClockResGet,
+            Self::RandomGet,
+            Self::ArgsSizesGet,
+            Self::ArgsGet,
+            Self::EnvironSizesGet,
+            Self::EnvironGet,
+            Self::FsReadFileSync,
+            Self::FsWriteFileSync,
+            Self::FsAppendFileSync,
+            Self::ProcessExit,
+            Self::PathJoin,
+            Self::PathResolve,
+            Self::PathBasename,
+            Self::PathDirname,
+            Self::CryptoRandomBytes,
+            Self::EncodeURI,
+            Self::DecodeURI,
+            Self::Escape,
+            Self::Unescape,
+            Self::DateToString,
+            Self::DateGetLocalTimeField,
+            Self::DateToISOString,
+            Self::DateGetTimezoneOffset,
+        ]
+    }
 }
 
 pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
@@ -1069,6 +1104,38 @@ impl Capability {
             Self::HostDateToISOString => "host.dateToISOString",
             Self::HostDateGetTimezoneOffset => "host.dateGetTimezoneOffset",
         }
+    }
+
+    #[cfg(test)]
+    pub(crate) const fn all() -> &'static [Capability] {
+        &[
+            Self::StdinRead,
+            Self::StdoutWrite,
+            Self::WasiClockRealtime,
+            Self::WasiRandom,
+            Self::WasiArgs,
+            Self::WasiEnv,
+            Self::WasiFilesystemRead,
+            Self::WasiFilesystemWrite,
+            Self::WasiFilesystemAppend,
+            Self::HostFsReadFileSync,
+            Self::HostFsWriteFileSync,
+            Self::HostFsAppendFileSync,
+            Self::HostProcessExit,
+            Self::HostPathJoin,
+            Self::HostPathResolve,
+            Self::HostPathBasename,
+            Self::HostPathDirname,
+            Self::HostCryptoRandomBytes,
+            Self::HostEncodeURI,
+            Self::HostDecodeURI,
+            Self::HostEscape,
+            Self::HostUnescape,
+            Self::HostDateToString,
+            Self::HostDateGetLocalTimeField,
+            Self::HostDateToISOString,
+            Self::HostDateGetTimezoneOffset,
+        ]
     }
 }
 
@@ -1594,7 +1661,7 @@ const SYMBOL_FOR_RUNTIME_STRINGS: &[&str] = &["Symbol(", ")"];
 
 #[cfg(test)]
 mod tests {
-    use super::RuntimeFn;
+    use super::{Capability, HostImport, RuntimeFn};
 
     #[test]
     fn emission_order_is_unique_and_complete() {
@@ -1622,5 +1689,99 @@ mod tests {
                 );
             }
         }
+    }
+
+    /// Every RuntimeFn that declares host imports must also declare an explicit
+    /// capability marker, and every RuntimeFn that declares capabilities must also
+    /// declare host imports. This prevents import-side-effect blind spots in the
+    /// capability manifest.
+    #[test]
+    fn import_capability_parity() {
+        let mut failures: Vec<(&'static str, &'static str)> = Vec::new();
+        for rf in RuntimeFn::all() {
+            let spec = rf.spec();
+            let has_imports = !spec.imports.is_empty();
+            let has_caps = !spec.capability.is_empty();
+            if has_imports != has_caps {
+                failures.push((rf.manifest_name(), spec.symbol));
+            }
+        }
+        assert!(
+            failures.is_empty(),
+            "RuntimeFn variants with import/capability parity violation (imports XOR capability must be empty):\n{}",
+            failures
+                .iter()
+                .map(|(name, sym)| format!("  {name} ({sym})"))
+                .collect::<Vec<_>>()
+                .join("\n")
+        );
+    }
+
+    /// Every Capability variant should be referenced by at least one RuntimeFn spec.
+    /// Orphaned capability values would never appear in a manifest.
+    ///
+    /// Known orphaned capabilities (out of scope for this harden pass):
+    ///   - WasiFilesystemAppend: filesystem append not wired to any RuntimeFn yet
+    ///   - HostFsReadFileSync:   filesystem read host shim not wired to any RuntimeFn yet
+    ///   - HostFsWriteFileSync:  filesystem write host shim not wired to any RuntimeFn yet
+    #[test]
+    fn all_capabilities_are_referenced() {
+        let all_caps: std::collections::BTreeSet<Capability> = RuntimeFn::all()
+            .iter()
+            .flat_map(|rf| rf.spec().capability.iter().copied())
+            .collect();
+        let known_orphans: std::collections::BTreeSet<Capability> = [
+            Capability::WasiFilesystemAppend,
+            Capability::HostFsReadFileSync,
+            Capability::HostFsWriteFileSync,
+        ]
+        .into_iter()
+        .collect();
+        let mut missing: Vec<Capability> = Vec::new();
+        for cap in Capability::all() {
+            if !all_caps.contains(cap) && !known_orphans.contains(cap) {
+                missing.push(*cap);
+            }
+        }
+        assert!(
+            missing.is_empty(),
+            "Capability variants not referenced by any RuntimeFn (unexpected orphans, known ones are documented inline):\n{missing:?}"
+        );
+    }
+
+    /// Every HostImport variant (except WasiProcExit which is always inserted
+    /// by RuntimeLinkPlan) should be referenced by at least one RuntimeFn spec.
+    ///
+    /// Known orphaned imports (out of scope for this harden pass):
+    ///   - ClockResGet:     clock resolution not wired to any RuntimeFn yet
+    ///   - FsReadFileSync:  filesystem read host shim not wired to any RuntimeFn yet
+    ///   - FsWriteFileSync: filesystem write host shim not wired to any RuntimeFn yet
+    #[test]
+    fn host_imports_are_referenced() {
+        let all_imports: std::collections::BTreeSet<HostImport> = RuntimeFn::all()
+            .iter()
+            .flat_map(|rf| rf.spec().imports.iter().copied())
+            .collect();
+        let known_orphans: std::collections::BTreeSet<HostImport> = [
+            HostImport::ClockResGet,
+            HostImport::FsReadFileSync,
+            HostImport::FsWriteFileSync,
+        ]
+        .into_iter()
+        .collect();
+        let mut missing: Vec<HostImport> = Vec::new();
+        for import in HostImport::all() {
+            // WasiProcExit is inserted unconditionally by RuntimeLinkPlan, not on any spec
+            if *import == HostImport::WasiProcExit {
+                continue;
+            }
+            if !all_imports.contains(import) && !known_orphans.contains(import) {
+                missing.push(*import);
+            }
+        }
+        assert!(
+            missing.is_empty(),
+            "HostImport variants not referenced by any RuntimeFn spec (unexpected orphans, known ones are documented inline):\n{missing:?}"
+        );
     }
 }

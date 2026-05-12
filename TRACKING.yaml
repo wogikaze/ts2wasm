@@ -8,8 +8,43 @@ meta:
     roadmap_source: docs/roadmap.md
     closed_source: docs/done-tracking.yaml
 open: []
-active: []
 done:
+  - id: 357
+    title: "Harden HostImport, Capability, RuntimeLinkPlan, and manifest consistency"
+    priority: P1
+    type: tooling
+    area: runtime
+    status: done
+    created: 2026-05-12
+    updated: 2026-05-12
+    roadmap: W10
+    acceptance:
+      - "cargo test -p ts2wasm-backend-wasm --lib -- runtime_fn::tests"
+      - "cargo test -p ts2wasm-backend-wasm --test runtime_link_plan"
+      - "cargo test -p ts2wasm-compiler --test manifest_snapshot"
+      - "grep -q 'import_capability_parity' crates/backend-wasm/src/runtime_fn.rs"
+      - "cat crates/backend-wasm/tests/runtime_link_plan.rs | head -5"
+      - "cat crates/compiler/tests/manifest_snapshot.rs | head -5"
+    non_goals:
+      - "No capability policy redesign."
+      - "No new host imports."
+    plan:
+      goal: "Add compile-time tests enforcing import-capability parity for every RuntimeFn, add integration tests verifying host imports appear in link-plan and manifest snapshots, and add architecture rule check."
+      files:
+        - "crates/backend-wasm/src/runtime_fn.rs: add import_capability_parity, all_capabilities_are_referenced, host_imports_are_referenced tests; add Capability::all() and HostImport::all() methods"
+        - "crates/backend-wasm/tests/runtime_link_plan.rs: new integration test for link plan coverage"
+        - "crates/compiler/tests/manifest_snapshot.rs: new integration test for manifest coverage"
+        - "scripts/check/architecture-rules.py: add import-capability parity check; restructure to run all checks instead of exiting on first error"
+      acceptance: "cargo test passes for focused tests; mise run check architecture includes parity check"
+    evidence:
+      commit: PLACEHOLDER
+      commands:
+        - "cargo test -p ts2wasm-backend-wasm --lib -- runtime_fn::tests => exit 0"
+        - "cargo test -p ts2wasm-backend-wasm --test runtime_link_plan => exit 0"
+        - "cargo test -p ts2wasm-compiler --test manifest_snapshot => exit 0"
+        - "python scripts/check/architecture-rules.py => exit 0 (pre-existing oversized files excluded)"
+        - "git diff --check => exit 0"
+        - "grep -q 'import_capability_parity' crates/backend-wasm/src/runtime_fn.rs => exit 0"
   - id: 242
     title: "Upgrade class fixtures from build_smoke to semantic_diff (W9a)"
     priority: P2
