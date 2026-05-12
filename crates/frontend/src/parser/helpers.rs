@@ -19,6 +19,19 @@ fn class_field_initializer(name: &str, value: Expr, span: Span) -> Stmt {
     Stmt::Expr { expr, span }
 }
 
+fn class_static_field_initializer(class_name: &str, field_name: &str, value: Expr, span: Span) -> Stmt {
+    let expr = Expr::PropertyAssign {
+        object: Box::new(Expr::Ident {
+            name: class_name.to_owned(),
+            span,
+        }),
+        property: field_name.to_owned(),
+        value: Box::new(value),
+        span,
+    };
+    Stmt::Expr { expr, span }
+}
+
 fn merge_constructor_parameter_property_assignments(
     assignments: Vec<Stmt>,
     body: Vec<Stmt>,

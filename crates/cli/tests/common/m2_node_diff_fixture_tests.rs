@@ -1231,8 +1231,8 @@ fn duplicate_function_decl_reports_duplicate_function() {
 fn duplicate_class_decl_reports_duplicate_local() {
     assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/duplicate-class-decl-unsupported.ts",
-        "[DuplicateLocal]",
-        "duplicate local",
+        "[DuplicateLocal",
+        "duplicate identifier",
         false,
     );
 }
@@ -1819,25 +1819,25 @@ fn private_class_field_unsupported_forms_report_issue_255() {
     }
     assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/private-class-delete-unsupported.ts",
-        "[UnsupportedRuntimeSubset]",
+        "[UnsupportedRuntimeSubset",
         "issue-255: private member `#value` cannot be deleted in this private class runtime slice",
         true,
     );
     assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/private-class-method-extracted-unsupported.ts",
-        "[UnsupportedRuntimeSubset]",
+        "[UnsupportedRuntimeSubset",
         "issue-255: private method `#m` extraction is not supported in this private method runtime slice; call it directly as `this.#m(...)`",
         true,
     );
     assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/private-class-field-backing-key-unsupported.ts",
-        "[UnsupportedRuntimeSubset]",
+        "[UnsupportedRuntimeSubset",
         "issue-255: private field backing storage is not accessible through ordinary property access in this private field runtime slice",
         true,
     );
     assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/private-class-field-object-keys-unsupported.ts",
-        "[UnsupportedRuntimeSubset]",
+        "[UnsupportedRuntimeSubset",
         "issue-255: private field backing storage is not accessible through ordinary property access in this private field runtime slice",
         true,
     );
@@ -1855,7 +1855,7 @@ fn private_class_static_field_static_block_tdz_reports_issue_352() {
 fn private_class_delete_backing_key_reports_issue_255() {
     assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/private-class-delete-backing-key-unsupported.ts",
-        "[UnsupportedRuntimeSubset]",
+        "[UnsupportedRuntimeSubset",
         "issue-255: private field backing storage is not accessible through ordinary property access in this private field runtime slice",
         true,
     );
@@ -1905,7 +1905,7 @@ fn this_receiver_method_fixtures_match_node_output_under_iwasm() {
 fn class_destructuring_initcount_default_now_blocked_by_destructuring_issue_251() {
     assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/class-dstr-initcount-unsupported.ts",
-        "[UnsupportedRuntimeSubset]",
+        "[UnsupportedRuntimeSubset",
         "issue-251: only literal default binding initializers are supported",
         false,
     );

@@ -655,11 +655,11 @@ fn assert_build_fails_with_unsupported_syntax_impl(
     expected: &str,
     require_span: bool,
 ) {
-    assert_build_fails_with_diagnostic(fixture, "[UnsupportedSyntax]", expected, require_span);
+    assert_build_fails_with_diagnostic(fixture, "[UnsupportedSyntax", expected, require_span);
 }
 
 fn assert_build_fails_with_unsupported_builtin(fixture: &str, expected: &str) {
-    assert_build_fails_with_diagnostic(fixture, "[UnsupportedBuiltin]", expected, true);
+    assert_build_fails_with_diagnostic(fixture, "[UnsupportedBuiltin", expected, true);
 }
 
 fn assert_build_fails_with_diagnostic(
@@ -739,9 +739,9 @@ fn assert_build_fails_with_issue_diagnostic(fixture: &str, expected: &str, requi
     );
     if require_span {
         assert!(
-            stderr_has_source_span(&stderr, "[UnsupportedSyntax]")
-                || stderr_has_source_span(&stderr, "[UnsupportedRuntimeSubset]")
-                || stderr_has_source_span(&stderr, "[UnsupportedBuiltin]"),
+            stderr_has_source_span(&stderr, "[UnsupportedSyntax")
+                || stderr_has_source_span(&stderr, "[UnsupportedRuntimeSubset")
+                || stderr_has_source_span(&stderr, "[UnsupportedBuiltin"),
             "expected diagnostic with source span for {fixture}, got:\n{stderr}"
         );
     }

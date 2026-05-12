@@ -196,6 +196,7 @@ impl Parser {
         let mut private_elements = Vec::new();
         let mut ts_private_field_names = Vec::<String>::new();
         let mut public_field_initializers = Vec::<Stmt>::new();
+        let mut static_field_initializers = Vec::<Stmt>::new();
         while !matches!(self.peek(), Some(Token::RightBrace)) {
             if self.is_at_end() {
                 return Err(Diagnostic {
@@ -340,7 +341,14 @@ impl Parser {
                 } else {
                     Expr::Undefined { span: method_span }
                 };
-                if !is_static {
+                if is_static {
+                    static_field_initializers.push(class_static_field_initializer(
+                        &name,
+                        &method_name,
+                        value,
+                        method_span,
+                    ));
+                } else {
                     public_field_initializers.push(class_field_initializer(
                         &method_name,
                         value,
@@ -357,7 +365,14 @@ impl Parser {
                 }
                 self.expect(TokenKind::Equal)?;
                 let value = self.expression()?;
-                if !is_static {
+                if is_static {
+                    static_field_initializers.push(class_static_field_initializer(
+                        &name,
+                        &method_name,
+                        value,
+                        method_span,
+                    ));
+                } else {
                     public_field_initializers.push(class_field_initializer(
                         &method_name,
                         value,
@@ -372,7 +387,14 @@ impl Parser {
                     ts_private_field_names.push(method_name.clone());
                 }
                 self.expect(TokenKind::Semicolon)?;
-                if !is_static {
+                if is_static {
+                    static_field_initializers.push(class_static_field_initializer(
+                        &name,
+                        &method_name,
+                        Expr::Undefined { span: method_span },
+                        method_span,
+                    ));
+                } else {
                     public_field_initializers.push(class_field_initializer(
                         &method_name,
                         Expr::Undefined { span: method_span },
@@ -594,6 +616,21 @@ impl Parser {
                     },
                 );
             }
+        }
+
+        // Emit static field initializers as a synthetic static { ... } block
+        if !static_field_initializers.is_empty() {
+            let block_span = static_field_initializers
+                .first()
+                .map(|s| s.span())
+                .unwrap_or(Span {
+                    start: span_start,
+                    end: span_start,
+                });
+            static_blocks.push(ClassStaticBlock {
+                body: static_field_initializers,
+                span: block_span,
+            });
         }
 
         let end = self.expect(TokenKind::RightBrace)?.end;
