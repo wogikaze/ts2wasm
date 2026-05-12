@@ -1098,6 +1098,7 @@ fn differential_test_runner_classifies_fixtures() {
         "fixtures/primitives-control-flow/number.ts",
         "fixtures/primitives-control-flow/string.ts",
         "fixtures/core-semantics/null-undefined.ts",
+        "fixtures/arrays-objects/array.ts",
     ];
 
     for fixture in fixtures {
@@ -1614,6 +1615,11 @@ fn assert_stdin_fixture_node_succeeds_and_iwasm_traps(fixture: &str, stdin_input
 #[test]
 fn promise_basic_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/promise-basic.ts");
+}
+
+#[test]
+fn array_index_access_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/arrays-objects/array.ts");
 }
 
 #[test]

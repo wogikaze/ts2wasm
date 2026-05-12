@@ -1897,13 +1897,13 @@ impl WatEmitter<'_> {
                     frame,
                 );
                 self.emit_expr(writer, key, indent, frame);
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
+                // Use $index which handles array + numeric index correctly
+                // (unlike $property_get which only supports object_tag).
+                // Swap key and obj on stack for $index(obj, key) signature.
                 writer.local_set(indent, frame.heap_value_tmp());
                 writer.local_get(indent, frame.heap_base_tmp());
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
                 writer.local_get(indent, frame.heap_value_tmp());
-                writer.call(indent, RuntimeFn::PropertyGet.symbol());
+                writer.line_fmt(indent, format_args!("(call {})", RuntimeFn::Index.symbol()));
             }
             LoweredExpr::OptionalIndex { object, index, .. } => {
                 self.emit_optional_index(writer, object, index, indent, frame);

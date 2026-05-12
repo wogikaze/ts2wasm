@@ -468,8 +468,7 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
             collect_required_runtime_expr(plan, obj);
         }
         LoweredExpr::PropertyGetDynamic { obj, key, .. } => {
-            plan.add_required_runtime(RuntimeFn::PropertyGet);
-            plan.add_required_runtime(RuntimeFn::ValueToStringInto);
+            plan.add_required_runtime(RuntimeFn::Index);
             collect_required_runtime_expr(plan, obj);
             collect_required_runtime_expr(plan, key);
         }
