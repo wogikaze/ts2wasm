@@ -1,10 +1,16 @@
 # Fixture Catalog
 # Maps each fixture directory to feature labels from docs/26-semantic-feature-matrix.md
+# and assertion expectations (see issue #392).
+#
 # Schema:
 #   <dir-name>:
 #     feature: <list of feature labels>
 #     status: pass | partial | unsupported
-#     assert: {}  (see #392)
+#     assert:                     (optional per-fixture assertions)
+#       stdout: <expected stdout>  (optional, default: any)
+#       exit_code: <N>             (optional, default: any)
+#       host_imports: [...]        (optional, list of required host imports)
+#       diagnostics: [...]         (optional, list of expected diagnostic codes)
 
 fixtures:
   basics-hello:
@@ -14,23 +20,47 @@ fixtures:
       - io:stdin
       - stmt:let
     status: pass
+    assert:
+      hello.ts:
+        stdout: "ok\nhi\n"
+        exit_code: 0
+      exit-code.ts:
+        stdout: ""
+        exit_code: 0
+      stdin-empty.ts:
+        stdin: ""
+        stdout: "\n"
+        exit_code: 0
+      stdin-read.ts:
+        stdin: "test"
+        stdout: "test\n"
+        exit_code: 0
 
   basics-equality:
     feature:
       - expr:strict-equality
       - expr:abstract-equality
     status: pass
+    assert:
+      equality-operators.ts:
+        stdout: "true\nfalse\n"
+        exit_code: 0
 
   basics-syntax:
     feature:
       - misc:comma-expression
       - misc:with-statement
     status: partial
+    assert: {}
 
   basics-typeof:
     feature:
       - expr:typeof
     status: pass
+    assert:
+      typeof-test.ts:
+        stdout: "number\nstring\nboolean\n"
+        exit_code: 0
 
   basics-types:
     feature:
@@ -45,17 +75,20 @@ fixtures:
       - ts:satisfies
       - ts:const-assertion
     status: pass
+    assert: {}
 
   basics-utf8:
     feature:
       - value-types:string
       - io:stdout
     status: pass
+    assert: {}
 
   basics-oom:
     feature:
       - misc:gc
     status: pass
+    assert: {}
 
   primitives-control-flow:
     feature:
@@ -68,6 +101,7 @@ fixtures:
       - control:while
       - control:if-else
     status: pass
+    assert: {}
 
   arrays-objects:
     feature:
@@ -84,6 +118,13 @@ fixtures:
       - expr:object-literal
       - expr:array-literal
     status: pass
+    assert:
+      array.ts:
+        stdout: "1\n3\n3\n"
+        exit_code: 0
+      object.ts:
+        stdout: "1\n2\n"
+        exit_code: 0
 
   core-expressions:
     feature:
@@ -126,6 +167,7 @@ fixtures:
       - value-types:array
       - value-types:function
     status: pass
+    assert: {}
 
   core-statements:
     feature:
@@ -157,6 +199,7 @@ fixtures:
       - control:try-catch
       - control:labeled
     status: pass
+    assert: {}
 
   control-flow-and-exceptions:
     feature:
@@ -182,6 +225,7 @@ fixtures:
       - stmt:try-catch
       - stmt:label
     status: pass
+    assert: {}
 
   core-semantics:
     feature:
@@ -228,18 +272,21 @@ fixtures:
       - misc:gc
       - control:for-of
     status: pass
+    assert: {}
 
   arrow-functions:
     feature:
       - fn:arrow
       - expr:arrow-fn
     status: pass
+    assert: {}
 
   async-await:
     feature:
       - async:async-function
       - async:promise
     status: partial
+    assert: {}
 
   classes:
     feature:
@@ -257,6 +304,7 @@ fixtures:
       - class:field-initializer
       - class:new-target
     status: pass
+    assert: {}
 
   classes-and-inheritance:
     feature:
@@ -269,6 +317,7 @@ fixtures:
       - class:static-block
       - expr:new
     status: pass
+    assert: {}
 
   builtins-and-io:
     feature:
@@ -309,6 +358,7 @@ fixtures:
       - string:well-formed
       - string:html-wrappers
     status: pass
+    assert: {}
 
   object-semantics-kernel:
     feature:
@@ -332,6 +382,7 @@ fixtures:
       - obj-semantics:seal-freeze
       - builtin:object-methods
     status: pass
+    assert: {}
 
   module-system:
     feature:
@@ -345,6 +396,7 @@ fixtures:
       - module:side-effect-import
       - module:live-binding
     status: partial
+    assert: {}
 
   modules-and-typed-optimizations:
     feature:
@@ -352,6 +404,7 @@ fixtures:
       - module:static-export
       - misc:gc
     status: pass
+    assert: {}
 
   node-apis:
     feature:
@@ -362,11 +415,13 @@ fixtures:
       - io:fs-write
       - io:crypto
     status: pass
+    assert: {}
 
   html-comments:
     feature:
       - misc:html-comment
     status: pass
+    assert: {}
 
   linker:
     feature:
@@ -376,16 +431,19 @@ fixtures:
       - linker:number-add
       - linker:object-literal
     status: pass
+    assert: {}
 
   parser-errors:
     feature:
       - ts:type-annotation
     status: pass
+    assert: {}
 
   rest-parameters:
     feature:
       - fn:rest-params
     status: pass
+    assert: {}
 
   spread-args:
     feature:
@@ -393,6 +451,7 @@ fixtures:
       - expr:spread
       - array:spread
     status: pass
+    assert: {}
 
   stmt:
     feature:
@@ -416,6 +475,7 @@ fixtures:
       - stmt:for-of
       - stmt:do-while
     status: pass
+    assert: {}
 
   test-infrastructure:
     feature:
@@ -423,17 +483,27 @@ fixtures:
       - test-infra:fail
       - test-infra:unsupported
     status: pass
+    assert:
+      pass-fixture.ts:
+        exit_code: 0
+      fail-fixture.ts:
+        exit_code: 1
+      unsupported-fixture.ts:
+        diagnostics:
+          - unsupported
 
   this-binding:
     feature:
       - fn:this
     status: pass
+    assert: {}
 
   typescript-directives:
     feature:
       - ts:type-only-import
       - ts:namespace
     status: partial
+    assert: {}
 
   atcoder:
     feature:
@@ -442,3 +512,4 @@ fixtures:
       - control:for
       - io:stdout
     status: pass
+    assert: {}
