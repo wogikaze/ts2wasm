@@ -2003,6 +2003,71 @@ fn ordinary_function_direct_call_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn fncsem_user_call_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/fncsem-user-call.ts");
+}
+
+#[test]
+fn fncsem_method_receiver_preserve_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/fncsem-method-receiver.ts");
+}
+
+#[test]
+fn fncsem_builtin_call_hir_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/fncsem-builtin-call.ts");
+}
+
+#[test]
+fn fncsem_call_extra_args_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/fncsem-call-extra-args.ts");
+}
+
+#[test]
+fn fncsem_call_fewer_args_reports_arity_mismatch() {
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-semantics/fncsem-call-fewer-args.ts",
+        "[ArityMismatch/",
+        "Expected at least 2 arguments, but got 1",
+        true,
+    );
+}
+
+#[test]
+fn fncsem_argument_count_edges_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/fncsem-arguments-object.ts");
+}
+
+#[test]
+fn fncsem_spread_literal_call_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/fncsem-spread-literal-call.ts");
+}
+
+#[test]
+fn fncsem_class_method_call_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/fncsem-class-method-call.ts");
+}
+
+#[test]
+fn fncsem_dynamic_call_assign_reports_unsupported_syntax() {
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-semantics/fncsem-dynamic-call-reassigned-unsupported.ts",
+        "[UnsupportedSyntax/",
+        "issue-211:",
+        true,
+    );
+}
+
+#[test]
+fn fncsem_spread_dynamic_call_reports_unsupported_syntax() {
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-semantics/fncsem-spread-dynamic-unsupported.ts",
+        "[UnsupportedSyntax/",
+        "issue-274:",
+        false,
+    );
+}
+
+#[test]
 fn direct_eval_block_function_fixture_matches_node_output_under_iwasm() {
     for fixture in [
         "fixtures/core-semantics/direct-eval-caller-local.ts",
