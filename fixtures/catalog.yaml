@@ -896,6 +896,29 @@ directories:
     - require-cache.ts
     - require-relative.ts
     - typed-add.ts
+  negative:
+    category: negative
+    status: pass
+    expected: compiler diagnostic tests for invalid inputs
+    fixtures:
+    - arity-mismatch.ts
+    - duplicate-function.ts
+    - duplicate-local.ts
+    - duplicate-parameter.ts
+    - invalid-top-level-return.ts
+    - number-out-of-range.ts
+    - syntax-error.ts
+    - typescript-type-check.ts
+    - unresolved-function.ts
+    - unresolved-name.ts
+    - unsupported-builtin.ts
+    - unsupported-date.ts
+    - unsupported-eval.ts
+    - unsupported-module.ts
+    - unsupported-regexp.ts
+    - unsupported-runtime-subset.ts
+    - unsupported-syntax.ts
+    - unsupported-typescript-syntax.ts
   node-apis:
     category: semantic
     status: unknown
