@@ -1604,21 +1604,6 @@ fn date_live_time_fixtures_return_epoch_ms_within_host_window() {
 }
 
 #[test]
-fn date_to_string_fixture_builds_successfully() {
-    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../..")
-        .join("fixtures/builtins-and-io/date-to-string-timezone-unsupported.ts");
-    let output_wasm = std::env::temp_dir().join(format!(
-        "ts2wasm-date-to-string-{}.wasm",
-        std::process::id()
-    ));
-    match ts2wasm_cli::build_file(&fixture, &output_wasm) {
-        Ok(_) => {}
-        Err(e) => panic!("date-to-string fixture should build but got error: {}", e),
-    }
-}
-
-#[test]
 fn date_annex_b_fixtures_report_issue_241() {
     for (fixture, method) in [
         (
@@ -1642,6 +1627,61 @@ fn date_annex_b_fixtures_report_issue_241() {
 #[test]
 fn date_utc_getters_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/date-utc-getters.ts");
+}
+
+#[test]
+fn date_epoch_constructor_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-epoch-constructor.ts");
+}
+
+#[test]
+fn date_get_timezone_offset_fixture_builds() {
+    // getTimezoneOffset uses a host shim that may not be linked in iwasm;
+    // only verify compilation.
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join("fixtures/builtins-and-io/date-get-timezone-offset.ts");
+    let output_wasm = std::env::temp_dir().join(format!(
+        "ts2wasm-get-tz-offset-{}.wasm",
+        std::process::id()
+    ));
+    match ts2wasm_cli::build_file(&fixture, &output_wasm) {
+        Ok(_) => {}
+        Err(e) => panic!("date-get-timezone-offset fixture should build but got error: {}", e),
+    }
+}
+
+#[test]
+fn date_to_iso_string_fixture_builds() {
+    // toISOString uses a host shim that may not be linked in iwasm;
+    // only verify compilation.
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join("fixtures/builtins-and-io/date-to-iso-string.ts");
+    let output_wasm = std::env::temp_dir().join(format!(
+        "ts2wasm-to-iso-{}.wasm",
+        std::process::id()
+    ));
+    match ts2wasm_cli::build_file(&fixture, &output_wasm) {
+        Ok(_) => {}
+        Err(e) => panic!("date-to-iso-string fixture should build but got error: {}", e),
+    }
+}
+
+#[test]
+fn date_to_string_no_timezone_fixture_builds_successfully() {
+    // toString uses host shim with timezone; only verify compilation
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join("fixtures/builtins-and-io/date-to-string-timezone-unsupported.ts");
+    let output_wasm = std::env::temp_dir().join(format!(
+        "ts2wasm-date-to-string-{}.wasm",
+        std::process::id()
+    ));
+    match ts2wasm_cli::build_file(&fixture, &output_wasm) {
+        Ok(_) => {}
+        Err(e) => panic!("date-to-string fixture should build but got error: {}", e),
+    }
 }
 
 #[test]
