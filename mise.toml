@@ -194,20 +194,24 @@ description = "Print script manager help (list all commands)"
 run = "python scripts/manager.py help"
 
 [tasks."issue-create"]
-description = "Create a new issue file. Usage: mise run issue-create 'Title' -- -p P1 -l 'refactor ir' -s 'Summary' -n 'Next action'"
+description = "Create new issue. Usage: mise run issue-create 'Title' -- -p P1 -l 'area:ir' -s 'Summary' -n 'Next'"
 run = "python scripts/issue-create.py"
 
+[tasks."issue-show"]
+description = "Show issue by ID, legacy#, or partial match"
+run = "python scripts/issue-show.py"
+
+[tasks."issue-status"]
+description = "Change issue status. Usage: mise run issue-status <id> <status> -- -o agent-x -r 'reason' -e 'evidence'"
+run = "python scripts/issue-status.py"
+
 [tasks."issue-lint"]
-description = "Validate all issue files in issues/"
+description = "Validate all issue files"
 run = "python scripts/issue-lint.py"
 
 [tasks."issue-index"]
-description = "Regenerate issue-views/ from issues/"
+description = "Generate issue-views/index.json (active issues only)"
 run = "python scripts/issue-index.py"
-
-[tasks."issue-all"]
-description = "Lint + regenerate issue views"
-run = "python scripts/issue-lint.py && python scripts/issue-index.py"
 
 [tasks."gen-site"]
 description = "Generate documentation site content from docs/TRACKING.yaml/fixtures"
