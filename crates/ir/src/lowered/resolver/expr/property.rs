@@ -7,6 +7,7 @@ use super::{
 };
 use crate::builtin::BuiltinPropertyId;
 use crate::builtin_resolved::ResolvedExpr;
+use crate::lowered::object_kernel;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
@@ -75,11 +76,11 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             });
         }
-        Ok(LoweredExpr::PropertyGet {
-            obj: Box::new(self.lower_expr(object)?),
-            key: key.to_owned(),
-            span: Span::generated("prop_get"),
-        })
+        Ok(object_kernel::ordinary_get(
+            self.lower_expr(object)?,
+            key,
+            span,
+        ))
     }
 
     pub(super) fn lower_optional_property_access_expr(
@@ -90,11 +91,11 @@ impl super::super::Resolver {
         if is_private_field_storage_key(key) {
             return Err(private_storage_observable_access_diagnostic(None));
         }
-        Ok(LoweredExpr::OptionalPropertyGet {
-            obj: Box::new(self.lower_expr(object)?),
-            key: key.to_owned(),
-            span: Span::generated("opt_prop_get"),
-        })
+        Ok(object_kernel::ordinary_get_optional(
+            self.lower_expr(object)?,
+            key,
+            Span::generated("opt_prop_get"),
+        ))
     }
 
     pub(super) fn lower_optional_computed_index_expr(
@@ -127,11 +128,11 @@ impl super::super::Resolver {
         let lowered_index = self.lower_expr(index)?;
 
         if matches!(object, ResolvedExpr::String(_)) {
-            Ok(LoweredExpr::Index {
-                object: Box::new(lowered_object),
-                index: Box::new(lowered_index),
-                span: Span::generated("index"),
-            })
+            Ok(object_kernel::ordinary_get_dynamic(
+                lowered_object,
+                lowered_index,
+                Span::generated("index"),
+            ))
         } else if matches!(object, ResolvedExpr::Array(_))
             || matches!(
                 lowered_object,
@@ -144,11 +145,11 @@ impl super::super::Resolver {
                 span: Span::generated("array_get"),
             })
         } else {
-            Ok(LoweredExpr::Index {
-                object: Box::new(lowered_object),
-                index: Box::new(lowered_index),
-                span: Span::generated("index"),
-            })
+            Ok(object_kernel::ordinary_get_dynamic(
+                lowered_object,
+                lowered_index,
+                Span::generated("index"),
+            ))
         }
     }
 
@@ -179,14 +180,11 @@ impl super::super::Resolver {
                 phase: None,
             })?;
         let parent_ref = self.class_prototype_ref(&parent_name)?;
-        Ok(LoweredExpr::PropertyGet {
-            obj: Box::new(LoweredExpr::ClassPrototype(
-                parent_ref,
-                Span::generated("class_proto"),
-            )),
-            key: key.to_owned(),
-            span: Span::generated("super_prop_get"),
-        })
+        Ok(object_kernel::ordinary_get(
+            LoweredExpr::ClassPrototype(parent_ref, Span::generated("class_proto")),
+            key,
+            span,
+        ))
     }
 
     fn lower_super_computed_index(
@@ -215,14 +213,11 @@ impl super::super::Resolver {
                 phase: None,
             })?;
         let parent_ref = self.class_prototype_ref(&parent_name)?;
-        Ok(LoweredExpr::PropertyGetDynamic {
-            obj: Box::new(LoweredExpr::ClassPrototype(
-                parent_ref,
-                Span::generated("class_proto"),
-            )),
-            key: Box::new(self.lower_expr(index)?),
-            span: Span::generated("super_index_get"),
-        })
+        Ok(object_kernel::ordinary_get_dynamic(
+            LoweredExpr::ClassPrototype(parent_ref, Span::generated("class_proto")),
+            self.lower_expr(index)?,
+            Span::generated("super_index_get"),
+        ))
     }
 
     fn lower_collection_size(

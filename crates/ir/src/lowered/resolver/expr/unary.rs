@@ -2,6 +2,7 @@ use super::super::{
     is_private_field_storage_key, private_storage_observable_access_diagnostic,
 };
 use crate::builtin_resolved::ResolvedExpr;
+use crate::lowered::object_kernel;
 use crate::lowered::*;
 use ts2wasm_syntax::UnaryOp;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -71,11 +72,11 @@ impl super::super::Resolver {
                         phase: None,
                     });
                 }
-                Ok(LoweredExpr::PropertyDelete {
-                    object: Box::new(self.lower_expr(object)?),
-                    key: key.clone(),
-                    span: Span::generated("prop_delete"),
-                })
+                Ok(object_kernel::ordinary_delete(
+                    self.lower_expr(object)?,
+                    key,
+                    *span,
+                ))
             }
             ResolvedExpr::ComputedIndex { object, index } => {
                 if self.expr_has_private_progress_storage(object) {
@@ -86,11 +87,11 @@ impl super::super::Resolver {
                 {
                     return Err(private_storage_observable_access_diagnostic(None));
                 }
-                Ok(LoweredExpr::PropertyDeleteDynamic {
-                    object: Box::new(self.lower_expr(object)?),
-                    key: Box::new(self.lower_expr(index)?),
-                    span: Span::generated("prop_delete_dyn"),
-                })
+                Ok(object_kernel::ordinary_delete_dynamic(
+                    self.lower_expr(object)?,
+                    self.lower_expr(index)?,
+                    Span::generated("prop_delete_dyn"),
+                ))
             }
             _ => Ok(LoweredExpr::Unary {
                 op: lower_unary_op(UnaryOp::Delete)?,

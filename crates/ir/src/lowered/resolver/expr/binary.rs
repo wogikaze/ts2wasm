@@ -1,4 +1,5 @@
 use crate::builtin_resolved::ResolvedExpr;
+use crate::lowered::object_kernel;
 use crate::lowered::*;
 use crate::lowered::BuiltinErrorConstructor;
 use ts2wasm_syntax::BinaryOp;
@@ -75,16 +76,16 @@ impl super::super::Resolver {
                 ],
                 span: Span::generated("runtime_call"),
             }),
-            ResolvedExpr::String(key) => Ok(LoweredExpr::PropertyIn {
-                obj: Box::new(self.lower_expr(right)?),
-                key: key.clone(),
-                span: Span::generated("prop_in"),
-            }),
-            _ => Ok(LoweredExpr::PropertyInDynamic {
-                obj: Box::new(self.lower_expr(right)?),
-                key: Box::new(self.lower_expr(left)?),
-                span: Span::generated("prop_in_dyn"),
-            }),
+            ResolvedExpr::String(key) => Ok(object_kernel::ordinary_has_property(
+                self.lower_expr(right)?,
+                key,
+                Span::generated("prop_in"),
+            )),
+            _ => Ok(object_kernel::ordinary_has_property_dynamic(
+                self.lower_expr(right)?,
+                self.lower_expr(left)?,
+                Span::generated("prop_in_dyn"),
+            )),
         }
     }
 

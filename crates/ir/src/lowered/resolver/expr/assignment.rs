@@ -3,6 +3,7 @@ use super::super::{
     private_storage_observable_access_diagnostic,
 };
 use crate::builtin_resolved::ResolvedExpr;
+use crate::lowered::object_kernel;
 use crate::lowered::*;
 use ts2wasm_syntax::LogicalAssignOp;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -166,12 +167,12 @@ impl super::super::Resolver {
         if matches!(object, ResolvedExpr::Ident(name) if name == "super") {
             return self.lower_super_property_assign(object, key, value, span);
         }
-        Ok(LoweredExpr::PropertySet {
-            object: Box::new(self.lower_expr(object)?),
-            key: key.to_owned(),
-            value: Box::new(self.lower_expr(value)?),
-            span: Span::generated("prop_set"),
-        })
+        Ok(object_kernel::ordinary_set(
+            self.lower_expr(object)?,
+            key,
+            self.lower_expr(value)?,
+            span,
+        ))
     }
 
     pub(super) fn lower_property_assign_dynamic_expr(
@@ -192,12 +193,12 @@ impl super::super::Resolver {
         if matches!(object, ResolvedExpr::Ident(name) if name == "super") {
             return self.lower_super_property_assign_dynamic(object, key, value);
         }
-        Ok(LoweredExpr::PropertySetDynamic {
-            object: Box::new(self.lower_expr(object)?),
-            index: Box::new(self.lower_expr(key)?),
-            value: Box::new(self.lower_expr(value)?),
-            span: Span::generated("prop_set_dyn"),
-        })
+        Ok(object_kernel::ordinary_set_dynamic(
+            self.lower_expr(object)?,
+            self.lower_expr(key)?,
+            self.lower_expr(value)?,
+            Span::generated("prop_set_dyn"),
+        ))
     }
 
     fn lower_private_field_assign(
@@ -340,15 +341,12 @@ impl super::super::Resolver {
                 span: None,
                 phase: None,
             })?;
-        Ok(LoweredExpr::PropertySet {
-            object: Box::new(LoweredExpr::Local(
-                self.resolve_local("this")?,
-                Span::generated("local"),
-            )),
-            key: key.to_owned(),
-            value: Box::new(self.lower_expr(value)?),
-            span: Span::generated("super_prop_set"),
-        })
+        Ok(object_kernel::ordinary_set(
+            LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local")),
+            key,
+            self.lower_expr(value)?,
+            Span::generated("super_prop_set"),
+        ))
     }
 
     fn lower_super_property_assign_dynamic(
@@ -377,14 +375,11 @@ impl super::super::Resolver {
                 span: None,
                 phase: None,
             })?;
-        Ok(LoweredExpr::PropertySetDynamic {
-            object: Box::new(LoweredExpr::Local(
-                self.resolve_local("this")?,
-                Span::generated("local"),
-            )),
-            index: Box::new(self.lower_expr(key)?),
-            value: Box::new(self.lower_expr(value)?),
-            span: Span::generated("super_prop_set_dyn"),
-        })
+        Ok(object_kernel::ordinary_set_dynamic(
+            LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local")),
+            self.lower_expr(key)?,
+            self.lower_expr(value)?,
+            Span::generated("super_prop_set_dyn"),
+        ))
     }
 }

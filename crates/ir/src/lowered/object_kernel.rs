@@ -179,6 +179,20 @@ pub fn ordinary_get_optional(obj: LoweredExpr, key: &str, span: Span) -> Lowered
     }
 }
 
+/// OrdinaryOwnPropertyKeys ([[OwnPropertyKeys]]): returns all own property keys
+/// of an object (including non-enumerable).
+///
+/// Currently delegates to `object_keys` (which returns enumerable keys) because
+/// the runtime does not yet distinguish non-enumerable own property keys.
+/// Produces a `RuntimeCall` to the `ObjectKeys` runtime intrinsic.
+pub fn ordinary_own_property_keys(obj: LoweredExpr, span: Span) -> LoweredExpr {
+    LoweredExpr::RuntimeCall {
+        intrinsic: RuntimeFn::ObjectKeys,
+        args: vec![obj],
+        span,
+    }
+}
+
 /// `Object.keys(obj)`: returns the enumerable own property names of an object.
 ///
 /// Produces a `RuntimeCall` to the `ObjectKeys` runtime intrinsic.
