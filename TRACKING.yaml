@@ -1093,9 +1093,15 @@ open:
       Keep the existing Validated<LoweredProgram> path until parity is proven.
 
       '
+  evidence:
+    commit: c9b737c4
+    commands:
+    - cargo test -p ts2wasm-ir -p ts2wasm-backend-wasm -p ts2wasm-compiler
+    - 'grep -r "Validated<MirProgram>" crates/backend-wasm/src crates/compiler/src'
+    - 'grep -r "emit_mir" crates/backend-wasm/src crates/compiler/src'
   priority: P2
   roadmap: P14-ir-contracts
-  status: open
+  status: done
   title: Add optional Validated<MirProgram> backend emission path
   type: refactor
   updated: '2026-05-12'
