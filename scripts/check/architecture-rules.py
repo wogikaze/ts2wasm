@@ -974,7 +974,11 @@ def check_smaller_function_warning() -> list[str]:
             fn_length = j - fn_start
             if fn_length > max_fn_lines:
                 allowlist_key = (str(rel), fn_name)
-                if allowlist_key not in FUNCTION_WARN_ALLOWLIST_200:
+                is_documented_exception = (
+                    allowlist_key in FUNCTION_WARN_ALLOWLIST_200
+                    or allowlist_key in FUNCTION_LENGTH_ALLOWLIST
+                )
+                if not is_documented_exception:
                     violations.append(
                         f"check_architecture_rules: WARN {rel}:{fn_start + 1}: "
                         f"function `{fn_name}` is {fn_length} lines (max {max_fn_lines})"
