@@ -40,6 +40,9 @@ pub const HOST_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::SymbolNew,
     RuntimeFn::SymbolFor,
     RuntimeFn::SymbolKeyFor,
+    RuntimeFn::SymbolToPrimitive,
+    RuntimeFn::SymbolToStringTag,
+    RuntimeFn::SymbolHasInstance,
     // Iterator
     RuntimeFn::GetIterator,
     RuntimeFn::IteratorNext,

@@ -377,4 +377,33 @@ impl WatEmitter<'_> {
             str_empty = str_empty,
         ));
     }
+
+    pub(crate) fn emit_symbol_to_primitive(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $symbol_to_primitive (param $value i32) (param $hint i32) (result i32)
+    (local.get $value))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_symbol_to_string_tag(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $symbol_to_string_tag (param $value i32) (result i32)
+    (i32.const {undefined}))
+"#,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(crate) fn emit_symbol_has_instance(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $symbol_has_instance (param $constructor i32) (param $value i32) (result i32)
+    (i32.const {false}))
+"#,
+            false = ValueTag::FALSE,
+        ));
+    }
 }

@@ -459,6 +459,9 @@ pub enum RuntimeFn {
     SymbolNew,
     SymbolFor,
     SymbolKeyFor,
+    SymbolToPrimitive,
+    SymbolToStringTag,
+    SymbolHasInstance,
     /// Pseudo-intrinsic: expanded into ArrayPushGrow + ArrayPush during IR lowering.
     /// Not a real runtime function.
     ArrayPushMany,
@@ -1225,6 +1228,9 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "SymbolNew" => Some(RuntimeFn::SymbolNew),
         "SymbolFor" => Some(RuntimeFn::SymbolFor),
         "SymbolKeyFor" => Some(RuntimeFn::SymbolKeyFor),
+        "SymbolToPrimitive" => Some(RuntimeFn::SymbolToPrimitive),
+        "SymbolToStringTag" => Some(RuntimeFn::SymbolToStringTag),
+        "SymbolHasInstance" => Some(RuntimeFn::SymbolHasInstance),
         "Add" => Some(RuntimeFn::Add),
         "AddFast" => Some(RuntimeFn::AddFast),
         "AllocHeap" => Some(RuntimeFn::AllocHeap),
@@ -1583,7 +1589,12 @@ impl RuntimeFn {
             | Self::StringFromCodePoint
             | Self::StringReplace
             | Self::StringReplaceAll => RuntimeDomain::String,
-            Self::SymbolNew | Self::SymbolFor | Self::SymbolKeyFor => RuntimeDomain::Symbol,
+            Self::SymbolNew
+            | Self::SymbolFor
+            | Self::SymbolKeyFor
+            | Self::SymbolToPrimitive
+            | Self::SymbolToStringTag
+            | Self::SymbolHasInstance => RuntimeDomain::Symbol,
             Self::TaskPoll | Self::TaskResult | Self::TaskDrop => RuntimeDomain::Task,
             Self::TruthyBool
             | Self::Not
@@ -1690,7 +1701,9 @@ impl RuntimeFn {
             | Self::StrictEqual
             | Self::ValueToStringInto
             | Self::ArrayPush
-            | Self::ArrayPushGrow => RuntimeSignature {
+            | Self::ArrayPushGrow
+            | Self::SymbolToPrimitive
+            | Self::SymbolHasInstance => RuntimeSignature {
                 params: 2,
                 results: 1,
             },
@@ -2043,6 +2056,9 @@ impl RuntimeFn {
             Self::SymbolNew,
             Self::SymbolFor,
             Self::SymbolKeyFor,
+            Self::SymbolToPrimitive,
+            Self::SymbolToStringTag,
+            Self::SymbolHasInstance,
             Self::Escape,
             Self::Unescape,
             Self::ArrayPushMany,
@@ -2360,6 +2376,9 @@ impl RuntimeFn {
             Self::SymbolNew,
             Self::SymbolFor,
             Self::SymbolKeyFor,
+            Self::SymbolToPrimitive,
+            Self::SymbolToStringTag,
+            Self::SymbolHasInstance,
             Self::DecodeURI,
             Self::Escape,
             Self::Unescape,
