@@ -297,6 +297,10 @@ impl Parser {
                         TokenKind::RightBrace,
                     ]).ok();
                 }
+                // Computed field with initializer: `[key] = value`
+                if self.consume(TokenKind::Equal) {
+                    self.expression()?;
+                }
                 self.consume(TokenKind::Semicolon);
                 continue;
             }

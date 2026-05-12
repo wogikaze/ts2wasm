@@ -1429,6 +1429,9 @@ impl Parser {
         if matches!(self.peek(), Some(Token::Break | Token::Continue)) {
             return Ok(vec![self.statement()?]);
         }
+        if self.consume_erasable_typescript_declaration()? {
+            return Ok(Vec::new());
+        }
         self.block()
     }
 
@@ -2170,6 +2173,8 @@ impl Parser {
     fn statement_body(&mut self) -> Result<Vec<Stmt>, Diagnostic> {
         if matches!(self.peek(), Some(Token::LeftBrace)) {
             self.block()
+        } else if self.consume_erasable_typescript_declaration()? {
+            Ok(Vec::new())
         } else {
             Ok(vec![self.statement()?])
         }
