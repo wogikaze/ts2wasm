@@ -369,6 +369,30 @@ impl WatWriter {
         self.line(indent, "(memory.grow)");
     }
 
+    // ---- globals ------------------------------------------------------------
+
+    /// Emit `(global.get $name)`.
+    pub fn global_get(&mut self, indent: usize, name: &str) {
+        self.line(indent, &format!("(global.get {name})"));
+    }
+
+    /// Emit `(global.set $name)`.
+    pub fn global_set(&mut self, indent: usize, name: &str) {
+        self.line(indent, &format!("(global.set {name})"));
+    }
+
+    // ---- raw escape hatch ----------------------------------------------------
+
+    /// Emit a raw WAT line at the given indentation.
+    ///
+    /// This is an explicit alternative to using `push_str` on the internal
+    /// buffer.  Use this when a pattern cannot be expressed via the existing
+    /// typed methods (e.g. multi-line inline expressions, complex inline
+    /// sequences).  New code should prefer typed methods.
+    pub fn raw_line(&mut self, indent: usize, content: &str) {
+        self.line(indent, content);
+    }
+
     // ---- load / store -------------------------------------------------------
 
     /// Emit `(i32.store align=N offset=N)`.
