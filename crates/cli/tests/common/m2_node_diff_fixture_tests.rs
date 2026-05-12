@@ -2871,3 +2871,75 @@ fn class_private_members_fixture_matches_node_output() {
 fn class_extends_builtin_fixture_matches_node_output() {
     assert_fixture_matches_node("fixtures/classes/class-extends-builtin.ts");
 }
+
+// FNCSEM: function and method call semantic suite (issue I-20260512-FNCSEM)
+
+#[test]
+fn fncsem_call_extra_args_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/call-extra-args.ts");
+}
+
+#[test]
+fn fncsem_call_fewer_args_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/call-fewer-args.ts");
+}
+
+#[test]
+fn fncsem_call_arity_mismatch_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/call-arity-mismatch.ts");
+}
+
+#[test]
+fn fncsem_call_extra_args_reports_arity_mismatch() {
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-semantics/call-extra-args-reject.ts",
+        "[ArityMismatch]",
+        "Expected 2 arguments, but got 3",
+        true,
+    );
+}
+
+#[test]
+fn fncsem_call_fewer_args_reports_arity_mismatch() {
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-semantics/call-fewer-args-reject.ts",
+        "[ArityMismatch]",
+        "Expected 2 arguments, but got 1",
+        true,
+    );
+}
+
+#[test]
+fn fncsem_method_receiver_preserve_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/method-call-receiver-preserve.ts");
+}
+
+#[test]
+fn fncsem_builtin_call_hir_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/builtin-call-hir.ts");
+}
+
+#[test]
+fn fncsem_dynamic_call_assign_reports_unresolved_function() {
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-semantics/dynamic-call-assign-unsupported.ts",
+        "[UnresolvedFunction]",
+        "unresolved function",
+        false,
+    );
+}
+
+// FNCSEM: semantic call test fixture suite (fixtures/semantic/functions/)
+
+#[test]
+fn fncsem_argument_count_edges_matches_node_output() {
+    assert_fixture_matches_node("fixtures/semantic/functions/argument-count-edges.ts");
+}
+
+#[test]
+fn fncsem_computed_call_unsupported_reports_unsupported_syntax() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/semantic/functions/dynamic-call-unsupported.ts",
+        "only identifier calls are supported",
+    );
+}
