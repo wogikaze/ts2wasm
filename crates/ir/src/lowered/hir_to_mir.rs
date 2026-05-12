@@ -1,311 +1,216 @@
-use crate::lowered::hir::{HirBinaryOp, HirExpr, HirFunction, HirProgram, HirStmt};
-use crate::lowered::mir::{
-    MirExpr, MirFunction, MirProgram, MirStmt,
-};
-use crate::lowered::{FuncId, LocalId, ModuleInfo};
-use ts2wasm_runtime_catalog::RuntimeFn;
+// HIR to MIR lowering — translates HirProgram into LoweredProgram.
+//
+// This is a straightforward structural translation that maps each HirStmt
+// and HirExpr variant to its closest LoweredStmt / LoweredExpr equivalent.
+// Complex runtime-level lowering (e.g., full method call dispatch) is
+// represented as RuntimeCall nodes that downstream passes expand further.
 
-/// Lower a HIR program to MIR.
-///
-/// This is the key transformation that bridges JavaScript-semantic operations
-/// (HIR) to runtime ABI operations (MIR). Each HirExpr variant is mapped to
-/// a MirExpr that uses RuntimeFn calls or WASM primitives.
-pub fn lower_hir_to_mir(program: &HirProgram) -> MirProgram {
-    let functions: Vec<MirFunction> = program
-        .functions
-        .iter()
-        .map(|f| lower_hir_function(f, &program.functions))
-        .collect();
+/// Lower a HirProgram to a LoweredProgram (MIR).
+pub fn lower_hir_to_mir(program: &HirProgram) -> LoweredProgram {
+    let lowerer = HirToMirLowerer::new(program);
+    lowerer.lower_program()
+}
 
-    MirProgram {
-        top_level_statements: lower_hir_stmts(&program.body, &program.functions, &[]),
-        top_level_locals: program.locals.clone(),
-        functions,
-        modules: vec![],
+struct HirToMirLowerer {
+    body: Vec<HirStmt>,
+    locals_map: Vec<LocalId>,
+    functions: Vec<HirFunction>,
+}
+
+impl HirToMirLowerer {
+    fn new(program: &HirProgram) -> Self {
+        let locals_map: Vec<LocalId> = program.locals.iter().map(|id| LocalId(id.0)).collect();
+        Self {
+            body: program.body.clone(),
+            locals_map,
+            functions: program.functions.clone(),
+        }
+    }
+
+    fn lower_program(&self) -> LoweredProgram {
+        LoweredProgram {
+            top_level_statements: self.lower_stmts(&self.body),
+            top_level_locals: self.locals_map.clone(),
+            functions: self.lower_functions(),
+            modules: vec![],
+        }
+    }
+
+    fn lower_functions(&self) -> Vec<LoweredFunction> {
+        self.functions
+            .iter()
+            .map(|hir_fn| {
+                let lowered_locals: Vec<LocalId> =
+                    hir_fn.locals.iter().map(|id| LocalId(id.0)).collect();
+                LoweredFunction {
+                    id: FuncId(hir_fn.id.0),
+                    params: hir_fn.params.iter().map(|id| LocalId(id.0)).collect(),
+                    uses_receiver: false,
+                    min_required_params: hir_fn.params.len(),
+                    rest_param_index: None,
+                    locals: lowered_locals,
+                    body: self.lower_stmts(&hir_fn.body),
+                    recursion_depth: 0,
+                    is_async: false,
+                }
+            })
+            .collect()
     }
 }
 
-fn lower_hir_function(func: &HirFunction, all_functions: &[HirFunction]) -> MirFunction {
-    MirFunction {
-        id: func.id,
-        params: func.params.clone(),
-        uses_receiver: false,
-        min_required_params: func.params.len(),
-        rest_param_index: None,
-        locals: func.locals.clone(),
-        body: lower_hir_stmts(&func.body, all_functions, &func.params),
-        recursion_depth: 0,
-        is_async: false,
+impl HirToMirLowerer {
+    fn lower_stmts(&self, stmts: &[HirStmt]) -> Vec<LoweredStmt> {
+        stmts.iter().map(|s| self.lower_stmt(s)).collect()
     }
-}
 
-fn lower_hir_stmts(
-    stmts: &[HirStmt],
-    all_functions: &[HirFunction],
-    params: &[LocalId],
-) -> Vec<MirStmt> {
-    let local_count = params.len() + stmts.iter().filter_map(|s| match s {
-        HirStmt::Let { local, .. } => Some(*local),
-        _ => None,
-    }).count();
-    let mut lowered = Vec::new();
-
-    for stmt in stmts {
+    fn lower_stmt(&self, stmt: &HirStmt) -> LoweredStmt {
+        let span = Span::default();
         match stmt {
             HirStmt::Let { local, init } => {
-                lowered.push(MirStmt::Let {
-                    local: *local,
-                    init: lower_hir_expr(init, local_count, all_functions.len()),
-                });
+                LoweredStmt::Let(LocalId(local.0), self.lower_expr(init), span)
             }
-            HirStmt::Assign { local, expr } => {
-                lowered.push(MirStmt::Assign {
-                    local: *local,
-                    init: lower_hir_expr(expr, local_count, all_functions.len()),
-                });
+            HirStmt::StoreLocal { local, value } => {
+                LoweredStmt::Assign(LocalId(local.0), self.lower_expr(value), span)
             }
-            HirStmt::Expr(expr) => {
-                lowered.push(MirStmt::Expr(lower_hir_expr(
-                    expr,
-                    local_count,
-                    all_functions.len(),
-                )));
-            }
-            HirStmt::If {
+            HirStmt::Expr(expr) => LoweredStmt::Expr(self.lower_expr(expr), span),
+            HirStmt::BranchIfTruthy {
                 condition,
                 then_body,
                 else_body,
+            } => LoweredStmt::If {
+                condition: self.lower_expr(condition),
+                then_body: self.lower_stmts(then_body),
+                else_body: self.lower_stmts(else_body),
+                span,
+            },
+            HirStmt::LoopWhile { condition, body } => LoweredStmt::While {
+                condition: self.lower_expr(condition),
+                body: self.lower_stmts(body),
+                span,
+            },
+            HirStmt::Return(expr) => LoweredStmt::Return(self.lower_expr(expr), span),
+        }
+    }
+
+    fn lower_expr(&self, expr: &HirExpr) -> LoweredExpr {
+        let span = Span::default();
+        match expr {
+            HirExpr::ConstUndefined => LoweredExpr::Undefined(span),
+            HirExpr::ConstNull => LoweredExpr::Null(span),
+            HirExpr::ConstBool(b) => LoweredExpr::Bool(*b, span),
+            HirExpr::ConstNumber(n) => LoweredExpr::Number(*n, span),
+            HirExpr::ConstBigInt(decimal) => {
+                let (sign, limb_low, limb_high) = parse_bigint(decimal);
+                LoweredExpr::BigIntLiteral {
+                    decimal: decimal.clone(),
+                    sign,
+                    limb_low,
+                    limb_high,
+                    span,
+                }
+            }
+            HirExpr::ConstString(s) => LoweredExpr::String(s.clone(), span),
+            HirExpr::LoadLocal(id) => LoweredExpr::Local(LocalId(id.0), span),
+            HirExpr::LoadBuiltin(name) => LoweredExpr::RuntimeCall {
+                runtime_fn: format!("load_builtin_{name}"),
+                args: vec![],
+                span,
+            },
+            HirExpr::ToBoolean(inner) => LoweredExpr::RuntimeCall {
+                runtime_fn: "to_boolean".to_string(),
+                args: vec![self.lower_expr(inner)],
+                span,
+            },
+            HirExpr::JsUnaryNot(inner) => LoweredExpr::Unary {
+                op: LoweredUnaryOp::Not,
+                expr: Box::new(self.lower_expr(inner)),
+                span,
+            },
+            HirExpr::JsAdd { left, right } => LoweredExpr::Binary {
+                left: Box::new(self.lower_expr(left)),
+                op: LoweredBinaryOp::Add,
+                right: Box::new(self.lower_expr(right)),
+                span,
+            },
+            HirExpr::JsStrictEqual { left, right } => LoweredExpr::Binary {
+                left: Box::new(self.lower_expr(left)),
+                op: LoweredBinaryOp::StrictEqual,
+                right: Box::new(self.lower_expr(right)),
+                span,
+            },
+            HirExpr::JsAbstractEqual { left, right } => LoweredExpr::Binary {
+                left: Box::new(self.lower_expr(left)),
+                op: LoweredBinaryOp::EqualEqual,
+                right: Box::new(self.lower_expr(right)),
+                span,
+            },
+            HirExpr::JsRelational {
+                op: hir_op,
+                left,
+                right,
             } => {
-                lowered.push(MirStmt::If {
-                    condition: lower_hir_expr(condition, local_count, all_functions.len()),
-                    then_body: lower_hir_stmts(then_body, all_functions, params),
-                    else_body: lower_hir_stmts(else_body, all_functions, params),
-                });
+                let mir_op = match hir_op {
+                    HirRelationalOp::Less => LoweredBinaryOp::Less,
+                    HirRelationalOp::LessEqual => LoweredBinaryOp::LessEqual,
+                    HirRelationalOp::Greater => LoweredBinaryOp::Greater,
+                    HirRelationalOp::GreaterEqual => LoweredBinaryOp::GreaterEqual,
+                };
+                LoweredExpr::Binary {
+                    left: Box::new(self.lower_expr(left)),
+                    op: mir_op,
+                    right: Box::new(self.lower_expr(right)),
+                    span,
+                }
             }
-            HirStmt::While { condition, body } => {
-                lowered.push(MirStmt::While {
-                    condition: lower_hir_expr(condition, local_count, all_functions.len()),
-                    body: lower_hir_stmts(body, all_functions, params),
-                });
+            HirExpr::GetProp { object, key } => LoweredExpr::PropertyGet {
+                obj: Box::new(self.lower_expr(object)),
+                key: key.clone(),
+                span,
+            },
+            HirExpr::GetIndex { object, index } => LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(self.lower_expr(object)),
+                key: Box::new(self.lower_expr(index)),
+                span,
+            },
+            HirExpr::ArrayLength(inner) => {
+                LoweredExpr::GetLength(Box::new(self.lower_expr(inner)), span)
             }
-            HirStmt::Return(expr) => {
-                lowered.push(MirStmt::Return(lower_hir_expr(
-                    expr,
-                    local_count,
-                    all_functions.len(),
-                )));
-            }
-            HirStmt::Throw(expr) => {
-                lowered.push(MirStmt::Throw(lower_hir_expr(
-                    expr,
-                    local_count,
-                    all_functions.len(),
-                )));
+            HirExpr::CallBuiltin { builtin, args } => LoweredExpr::Call {
+                kind: FunctionCallKind::Builtin(*builtin),
+                args: self.lower_exprs(args),
+                span,
+            },
+            HirExpr::CallFunction { function, args } => LoweredExpr::Call {
+                kind: FunctionCallKind::User(FuncId(function.0)),
+                args: self.lower_exprs(args),
+                span,
+            },
+            HirExpr::CallMethod {
+                receiver,
+                method,
+                args,
+            } => {
+                let mut lowered_args = vec![self.lower_expr(receiver)];
+                lowered_args.extend(self.lower_exprs(args));
+                LoweredExpr::RuntimeCall {
+                    runtime_fn: format!("method_call_{method}"),
+                    args: lowered_args,
+                    span,
+                }
             }
         }
     }
 
-    lowered
+    fn lower_exprs(&self, exprs: &[HirExpr]) -> Vec<LoweredExpr> {
+        exprs.iter().map(|e| self.lower_expr(e)).collect()
+    }
 }
 
-fn lower_hir_expr(expr: &HirExpr, local_count: usize, _func_count: usize) -> MirExpr {
-    match expr {
-        HirExpr::Number(n) => MirExpr::I32Const(*n),
-        HirExpr::String(s) => MirExpr::StringConst(s.clone()),
-        HirExpr::Bool(b) => MirExpr::I32Const(if *b { 1 } else { 0 }),
-        HirExpr::Null => MirExpr::I32Const(0),
-        HirExpr::Undefined => MirExpr::I32Const(1),
-        HirExpr::Local(id) => MirExpr::Local(*id),
-
-        HirExpr::Unary { op, expr: inner } => {
-            let runtime_fn = match op {
-                crate::lowered::LoweredUnaryOp::Not => RuntimeFn::Not,
-                crate::lowered::LoweredUnaryOp::Negate => RuntimeFn::Negate,
-                crate::lowered::LoweredUnaryOp::TypeOf => RuntimeFn::TypeOf,
-                crate::lowered::LoweredUnaryOp::Plus => RuntimeFn::EqualEqual,
-                crate::lowered::LoweredUnaryOp::Delete | crate::lowered::LoweredUnaryOp::Void => {
-                    return lower_hir_expr(inner, local_count, _func_count);
-                }
-            };
-            MirExpr::CallRuntime {
-                intrinsic: runtime_fn,
-                args: vec![lower_hir_expr(inner, local_count, _func_count)],
-            }
-        }
-
-        HirExpr::Binary { left, right, op } => {
-            let runtime_fn = match op {
-                HirBinaryOp::Add => RuntimeFn::Add,
-                HirBinaryOp::Subtract => RuntimeFn::Sub,
-                HirBinaryOp::Multiply => RuntimeFn::Mul,
-                HirBinaryOp::Divide => RuntimeFn::Div,
-                HirBinaryOp::Modulo => RuntimeFn::Mod,
-                HirBinaryOp::Power => RuntimeFn::MathPow,
-                HirBinaryOp::StrictEqual => RuntimeFn::StrictEqual,
-                HirBinaryOp::EqualEqual => RuntimeFn::EqualEqual,
-                HirBinaryOp::StrictNotEqual => RuntimeFn::StrictNotEqual,
-                HirBinaryOp::BangEqual => RuntimeFn::BangEqual,
-                HirBinaryOp::Less => RuntimeFn::Less,
-                HirBinaryOp::LessEqual => RuntimeFn::LessEqual,
-                HirBinaryOp::Greater => RuntimeFn::Greater,
-                HirBinaryOp::GreaterEqual => RuntimeFn::GreaterEqual,
-                HirBinaryOp::And | HirBinaryOp::Or => RuntimeFn::TruthyBool,
-                HirBinaryOp::NullishCoalesce => RuntimeFn::EqualEqual,
-                HirBinaryOp::BitwiseAnd => RuntimeFn::BitwiseAnd,
-                HirBinaryOp::BitwiseXor => RuntimeFn::BitwiseXor,
-                HirBinaryOp::BitwiseOr => RuntimeFn::BitwiseOr,
-                HirBinaryOp::LeftShift | HirBinaryOp::RightShift | HirBinaryOp::UnsignedRightShift => {
-                    RuntimeFn::BitwiseToI32
-                }
-                HirBinaryOp::In => RuntimeFn::PropertyHas,
-                HirBinaryOp::InstanceOf => RuntimeFn::InstanceOf,
-                HirBinaryOp::Exponentiate => RuntimeFn::MathPow,
-            };
-            MirExpr::CallRuntime {
-                intrinsic: runtime_fn,
-                args: vec![
-                    lower_hir_expr(left, local_count, _func_count),
-                    lower_hir_expr(right, local_count, _func_count),
-                ],
-            }
-        }
-
-        HirExpr::GetProp { object, key } => MirExpr::CallRuntime {
-            intrinsic: RuntimeFn::PropertyGet,
-            args: vec![
-                lower_hir_expr(object, local_count, _func_count),
-                MirExpr::StringConst(key.clone()),
-            ],
-        },
-
-        HirExpr::GetIndex { object, index } => MirExpr::CallRuntime {
-            intrinsic: RuntimeFn::Index,
-            args: vec![
-                lower_hir_expr(object, local_count, _func_count),
-                lower_hir_expr(index, local_count, _func_count),
-            ],
-        },
-
-        HirExpr::SetProp { object, key, value } => MirExpr::CallRuntime {
-            intrinsic: RuntimeFn::PropertySet,
-            args: vec![
-                lower_hir_expr(object, local_count, _func_count),
-                MirExpr::StringConst(key.clone()),
-                lower_hir_expr(value, local_count, _func_count),
-            ],
-        },
-
-        HirExpr::SetIndex {
-            object,
-            index,
-            value,
-        } => MirExpr::CallRuntime {
-            intrinsic: RuntimeFn::PropertySet,
-            args: vec![
-                lower_hir_expr(object, local_count, _func_count),
-                lower_hir_expr(index, local_count, _func_count),
-                lower_hir_expr(value, local_count, _func_count),
-            ],
-        },
-
-        HirExpr::HasProperty { object, key } => MirExpr::CallRuntime {
-            intrinsic: RuntimeFn::PropertyHas,
-            args: vec![
-                lower_hir_expr(object, local_count, _func_count),
-                lower_hir_expr(key, local_count, _func_count),
-            ],
-        },
-
-        HirExpr::DeleteProperty { object, key } => MirExpr::CallRuntime {
-            intrinsic: RuntimeFn::PropertyDelete,
-            args: vec![
-                lower_hir_expr(object, local_count, _func_count),
-                lower_hir_expr(key, local_count, _func_count),
-            ],
-        },
-
-        HirExpr::ObjectLiteral { props } => MirExpr::NewObject {
-            props: props
-                .iter()
-                .map(|(k, v)| {
-                    (k.clone(), lower_hir_expr(v, local_count, _func_count))
-                })
-                .collect(),
-        },
-
-        HirExpr::ArrayLiteral { elements } => MirExpr::NewArray {
-            elements: elements
-                .iter()
-                .map(|e| lower_hir_expr(e, local_count, _func_count))
-                .collect(),
-        },
-
-        HirExpr::Call { callee, args } => {
-            let lowered_args: Vec<MirExpr> = args
-                .iter()
-                .map(|a| lower_hir_expr(a, local_count, _func_count))
-                .collect();
-
-            match callee.as_ref() {
-                HirExpr::Local(lid) if lid.0 < _func_count => MirExpr::CallFunction {
-                    func: FuncId(lid.0),
-                    args: lowered_args,
-                },
-                _ => MirExpr::CallRuntime {
-                    intrinsic: RuntimeFn::HeapClosureCall,
-                    args: std::iter::once(lower_hir_expr(callee, local_count, _func_count))
-                        .chain(lowered_args)
-                        .collect(),
-                },
-            }
-        }
-
-        HirExpr::MethodCall {
-            receiver,
-            method,
-            args,
-        } => {
-            let lowered_args: Vec<MirExpr> = vec![lower_hir_expr(receiver, local_count, _func_count)]
-                .into_iter()
-                .chain(args.iter().map(|a| lower_hir_expr(a, local_count, _func_count)))
-                .collect();
-
-            MirExpr::CallRuntime {
-                intrinsic: RuntimeFn::PropertyGet,
-                args: vec![
-                    lower_hir_expr(receiver, local_count, _func_count),
-                    MirExpr::StringConst(method.clone()),
-                ],
-            }
-        }
-
-        HirExpr::New { constructor: _id, args } => MirExpr::CallRuntime {
-            intrinsic: RuntimeFn::AllocHeap,
-            args: args
-                .iter()
-                .map(|a| lower_hir_expr(a, local_count, _func_count))
-                .collect(),
-        },
-
-        HirExpr::If {
-            condition,
-            then_expr,
-            else_expr,
-        } => MirExpr::Block {
-            stmts: vec![MirStmt::If {
-                condition: lower_hir_expr(condition, local_count, _func_count),
-                then_body: vec![MirStmt::Expr(lower_hir_expr(
-                    then_expr,
-                    local_count,
-                    _func_count,
-                ))],
-                else_body: vec![MirStmt::Expr(lower_hir_expr(
-                    else_expr,
-                    local_count,
-                    _func_count,
-                ))],
-            }],
-            result: Box::new(MirExpr::I32Const(0)),
-        },
-    }
+/// Parse a BigInt decimal string into (sign, limb_low, limb_high).
+fn parse_bigint(decimal: &str) -> (i32, u32, u32) {
+    let trimmed = decimal.trim_start_matches('-');
+    let is_negative = decimal != trimmed;
+    let u64_val: u64 = trimmed.parse().unwrap_or(0);
+    let sign = if is_negative { -1 } else { 1 };
+    (sign, u64_val as u32, (u64_val >> 32) as u32)
 }

@@ -1,630 +1,546 @@
-//! MIR dump utility — pretty-prints MIR programs for debugging and snapshots.
-//!
-//! This module provides `mir_dump` functions that render `MirExpr`, `MirStmt`,
-//! `MirFunction`, and `MirProgram` as human-readable strings. This is used for:
-//!
-//! - Debugging during development
-//! - Snapshot testing (serializing MIR to compare against golden files)
-//! - Architecture coverage checks (verifying MIR structure)
+// MIR dump: produce a string representation for every lowered IR variant.
+//
+// Every `LoweredStmt` and `LoweredExpr` variant is explicitly handled so
+// that adding a new variant without updating the dump is a compile error.
 
-use crate::lowered::RuntimeFn;
-use crate::lowered::mir::{MirExpr, MirFunction, MirProgram, MirStmt};
-
-/// Dump a `MirProgram` to a string.
-pub fn dump_mir_program(program: &MirProgram, label: &str) -> String {
+/// Produce a dump string for the entire MIR (lowered) program.
+pub fn dump_mir(program: &LoweredProgram) -> String {
     let mut out = String::new();
-    out.push_str(&format!("; MIR Program: {}\n", label));
-    out.push_str(&format!(
-        "; Top-level locals: {:?}\n",
-        program.top_level_locals
-    ));
-    out.push_str(&format!("; Modules: {:?}\n", program.modules));
-    out.push_str("; Functions:\n");
-    for func in &program.functions {
-        out.push_str(&dump_mir_function(func));
-    }
-    out.push_str("; Top-level statements:\n");
+    out.push_str("MirProgram {\n");
     for stmt in &program.top_level_statements {
-        dump_mir_stmt(stmt, &mut out, 1);
+        dump_mir_stmt(stmt, &mut out, 2);
     }
+    for func in &program.functions {
+        dump_mir_function(func, &mut out);
+    }
+    for module in &program.modules {
+        out.push_str(&format!("  module[{}] ({:?}) {{\n", module.id, module.specifier));
+        for stmt in &module.statements {
+            dump_mir_stmt(stmt, &mut out, 4);
+        }
+        out.push_str("  }\n");
+    }
+    out.push_str("}\n");
     out
 }
 
-/// Dump a `MirFunction` to a string.
-pub fn dump_mir_function(func: &MirFunction) -> String {
-    let mut out = String::new();
+fn dump_mir_function(func: &LoweredFunction, out: &mut String) {
     out.push_str(&format!(
-        "  (func ${} (params {:?}) (locals {:?}) (receiver {}) (min_params {}) (rest {:?}) (recursion {}) (async {})\n",
+        "  function[{}] (params={}, locals={}, receiver={}, rest={:?}, depth={}, async={}) {{\n",
         func.id.0,
-        func.params,
-        func.locals,
+        func.params.len(),
+        func.locals.len(),
         func.uses_receiver,
-        func.min_required_params,
         func.rest_param_index,
         func.recursion_depth,
         func.is_async,
     ));
     for stmt in &func.body {
-        dump_mir_stmt(stmt, &mut out, 2);
+        dump_mir_stmt(stmt, out, 4);
     }
-    out.push_str("  )\n");
-    out
+    out.push_str("  }\n");
 }
 
-/// Dump a `MirStmt` to a string with indentation.
-pub fn dump_mir_stmt(stmt: &MirStmt, out: &mut String, indent: usize) {
-    let pad = "  ".repeat(indent);
+fn dump_mir_stmt(stmt: &LoweredStmt, out: &mut String, indent: usize) {
+    let prefix = " ".repeat(indent);
     match stmt {
-        MirStmt::Let { local, init } => {
-            out.push_str(&format!("{}; let ${}\n", pad, local.0));
-            dump_mir_expr(init, out, indent + 1);
+        LoweredStmt::Block(stmts, _) => {
+            out.push_str(&format!("{}Block\n", prefix));
+            for s in stmts {
+                dump_mir_stmt(s, out, indent + 2);
+            }
         }
-        MirStmt::Assign { local, init } => {
-            out.push_str(&format!("{}; ${} =\n", pad, local.0));
-            dump_mir_expr(init, out, indent + 1);
+        LoweredStmt::Let(id, expr, _) => {
+            out.push_str(&format!("{}Let({:?})\n", prefix, id));
+            dump_mir_expr(expr, out, indent + 2);
         }
-        MirStmt::Expr(expr) => {
-            dump_mir_expr(expr, out, indent);
+        LoweredStmt::Assign(id, expr, _) => {
+            out.push_str(&format!("{}Assign({:?})\n", prefix, id));
+            dump_mir_expr(expr, out, indent + 2);
         }
-        MirStmt::If {
+        LoweredStmt::Expr(expr, _) => {
+            out.push_str(&format!("{}Expr\n", prefix));
+            dump_mir_expr(expr, out, indent + 2);
+        }
+        LoweredStmt::If {
             condition,
             then_body,
             else_body,
+            ..
         } => {
-            out.push_str(&format!("{}; if\n", pad));
-            dump_mir_expr(condition, out, indent + 1);
-            out.push_str(&format!("{}; then\n", pad));
+            out.push_str(&format!("{}If\n", prefix));
+            out.push_str(&format!("{}  condition:\n", prefix));
+            dump_mir_expr(condition, out, indent + 4);
+            out.push_str(&format!("{}  then_body:\n", prefix));
             for s in then_body {
-                dump_mir_stmt(s, out, indent + 1);
+                dump_mir_stmt(s, out, indent + 4);
             }
-            if !else_body.is_empty() {
-                out.push_str(&format!("{}; else\n", pad));
-                for s in else_body {
-                    dump_mir_stmt(s, out, indent + 1);
-                }
+            out.push_str(&format!("{}  else_body:\n", prefix));
+            for s in else_body {
+                dump_mir_stmt(s, out, indent + 4);
             }
         }
-        MirStmt::While { condition, body } => {
-            out.push_str(&format!("{}; while\n", pad));
-            dump_mir_expr(condition, out, indent + 1);
-            out.push_str(&format!("{}; do\n", pad));
+        LoweredStmt::While { condition, body, .. } => {
+            out.push_str(&format!("{}While\n", prefix));
+            out.push_str(&format!("{}  condition:\n", prefix));
+            dump_mir_expr(condition, out, indent + 4);
+            out.push_str(&format!("{}  body:\n", prefix));
             for s in body {
-                dump_mir_stmt(s, out, indent + 1);
+                dump_mir_stmt(s, out, indent + 4);
             }
         }
-        MirStmt::Return(expr) => {
-            out.push_str(&format!("{}; return\n", pad));
-            dump_mir_expr(expr, out, indent + 1);
+        LoweredStmt::Return(expr, _) => {
+            out.push_str(&format!("{}Return\n", prefix));
+            dump_mir_expr(expr, out, indent + 2);
         }
-        MirStmt::Throw(expr) => {
-            out.push_str(&format!("{}; throw\n", pad));
-            dump_mir_expr(expr, out, indent + 1);
+        LoweredStmt::Throw(expr, _) => {
+            out.push_str(&format!("{}Throw\n", prefix));
+            dump_mir_expr(expr, out, indent + 2);
         }
-        MirStmt::TryCatch {
+        LoweredStmt::TryCatch {
             try_body,
             catch_var,
             catch_body,
             finally_body,
+            ..
         } => {
-            out.push_str(&format!("{}; try\n", pad));
+            out.push_str(&format!("{}TryCatch\n", prefix));
+            out.push_str(&format!("{}  try_body:\n", prefix));
             for s in try_body {
-                dump_mir_stmt(s, out, indent + 1);
+                dump_mir_stmt(s, out, indent + 4);
             }
-            if let Some(cv) = catch_var {
-                out.push_str(&format!("{}; catch ${}\n", pad, cv.0));
+            if let Some(var) = catch_var {
+                out.push_str(&format!("{}  catch_var: {:?}\n", prefix, var));
             }
             if let Some(body) = catch_body {
+                out.push_str(&format!("{}  catch_body:\n", prefix));
                 for s in body {
-                    dump_mir_stmt(s, out, indent + 1);
+                    dump_mir_stmt(s, out, indent + 4);
                 }
             }
             if let Some(body) = finally_body {
-                out.push_str(&format!("{}; finally\n", pad));
+                out.push_str(&format!("{}  finally_body:\n", prefix));
                 for s in body {
-                    dump_mir_stmt(s, out, indent + 1);
+                    dump_mir_stmt(s, out, indent + 4);
                 }
             }
         }
-        MirStmt::Switch { expr, cases } => {
-            out.push_str(&format!("{}; switch\n", pad));
-            dump_mir_expr(expr, out, indent + 1);
-            for (opt_key, body) in cases {
-                match opt_key {
-                    Some(key) => {
-                        out.push_str(&format!("{}; case:\n", pad));
-                        dump_mir_expr(key, out, indent + 1);
-                    }
-                    None => {
-                        out.push_str(&format!("{}; default:\n", pad));
-                    }
+        LoweredStmt::Switch { expr, cases, .. } => {
+            out.push_str(&format!("{}Switch\n", prefix));
+            out.push_str(&format!("{}  expr:\n", prefix));
+            dump_mir_expr(expr, out, indent + 4);
+            for (i, (cond, body)) in cases.iter().enumerate() {
+                out.push_str(&format!("{}  case[{}]:\n", prefix, i));
+                if let Some(c) = cond {
+                    dump_mir_expr(c, out, indent + 6);
+                } else {
+                    out.push_str(&format!("{}  default\n", " ".repeat(indent + 6)));
                 }
                 for s in body {
-                    dump_mir_stmt(s, out, indent + 1);
+                    dump_mir_stmt(s, out, indent + 6);
                 }
             }
         }
-        MirStmt::Labeled { label, body } => {
-            out.push_str(&format!("{}; labeled \"{}\"\n", pad, label));
-            dump_mir_stmt(body, out, indent + 1);
+        LoweredStmt::DoWhile { body, condition, .. } => {
+            out.push_str(&format!("{}DoWhile\n", prefix));
+            out.push_str(&format!("{}  body:\n", prefix));
+            for s in body {
+                dump_mir_stmt(s, out, indent + 4);
+            }
+            out.push_str(&format!("{}  condition:\n", prefix));
+            dump_mir_expr(condition, out, indent + 4);
         }
-        MirStmt::Break { label } => {
-            out.push_str(&format!("{}; break {:?}\n", pad, label));
+        LoweredStmt::For {
+            init,
+            condition,
+            update,
+            body,
+            ..
+        } => {
+            out.push_str(&format!("{}For\n", prefix));
+            if let Some(i) = init {
+                out.push_str(&format!("{}  init:\n", prefix));
+                dump_mir_stmt(i, out, indent + 4);
+            }
+            if let Some(c) = condition {
+                out.push_str(&format!("{}  condition:\n", prefix));
+                dump_mir_expr(c, out, indent + 4);
+            }
+            if let Some(u) = update {
+                out.push_str(&format!("{}  update:\n", prefix));
+                dump_mir_expr(u, out, indent + 4);
+            }
+            out.push_str(&format!("{}  body:\n", prefix));
+            for s in body {
+                dump_mir_stmt(s, out, indent + 4);
+            }
         }
-        MirStmt::Continue { label } => {
-            out.push_str(&format!("{}; continue {:?}\n", pad, label));
+        LoweredStmt::ForIn {
+            var,
+            iter,
+            iter_local,
+            index_local,
+            len_local,
+            body,
+            ..
+        } => {
+            out.push_str(&format!(
+                "{}ForIn(var={:?}, iter_local={:?}, index_local={:?}, len_local={:?})\n",
+                prefix, var, iter_local, index_local, len_local
+            ));
+            out.push_str(&format!("{}  iter:\n", prefix));
+            dump_mir_expr(iter, out, indent + 4);
+            out.push_str(&format!("{}  body:\n", prefix));
+            for s in body {
+                dump_mir_stmt(s, out, indent + 4);
+            }
         }
-        MirStmt::ClassDecl {
+        LoweredStmt::ForOf {
+            var,
+            iter,
+            iter_local,
+            index_local,
+            len_local,
+            body,
+            ..
+        } => {
+            out.push_str(&format!(
+                "{}ForOf(var={:?}, iter_local={:?}, index_local={:?}, len_local={:?})\n",
+                prefix, var, iter_local, index_local, len_local
+            ));
+            out.push_str(&format!("{}  iter:\n", prefix));
+            dump_mir_expr(iter, out, indent + 4);
+            out.push_str(&format!("{}  body:\n", prefix));
+            for s in body {
+                dump_mir_stmt(s, out, indent + 4);
+            }
+        }
+        LoweredStmt::Labeled { label, body, .. } => {
+            out.push_str(&format!("{}Labeled({:?})\n", prefix, label));
+            dump_mir_stmt(body, out, indent + 2);
+        }
+        LoweredStmt::Break { label, .. } => {
+            out.push_str(&format!("{}Break({:?})\n", prefix, label));
+        }
+        LoweredStmt::Continue { label, .. } => {
+            out.push_str(&format!("{}Continue({:?})\n", prefix, label));
+        }
+        LoweredStmt::Export { name, expr, .. } => {
+            out.push_str(&format!("{}Export({:?})\n", prefix, name));
+            dump_mir_expr(expr, out, indent + 2);
+        }
+        LoweredStmt::ModuleExportsAssign { expr, .. } => {
+            out.push_str(&format!("{}ModuleExportsAssign\n", prefix));
+            dump_mir_expr(expr, out, indent + 2);
+        }
+        LoweredStmt::ClassDecl {
             name,
             extends,
             constructor,
             methods,
             static_methods,
             private_fields,
+            ..
         } => {
-            out.push_str(&format!("{}; class {}\n", pad, name));
-            if let Some(parent) = extends {
-                out.push_str(&format!("{};   extends {}\n", pad, parent));
+            out.push_str(&format!("{}ClassDecl({:?})\n", prefix, name));
+            if let Some(ext) = extends {
+                out.push_str(&format!("{}  extends: {:?}\n", prefix, ext));
             }
-            if let Some(cid) = constructor {
-                out.push_str(&format!("{};   constructor func${}\n", pad, cid.0));
+            if let Some(ctor) = constructor {
+                out.push_str(&format!("{}  constructor: {:?}\n", prefix, ctor));
             }
             for (mname, mid) in methods {
-                out.push_str(&format!("{};   method {} func${}\n", pad, mname, mid.0));
+                out.push_str(&format!("{}  method {}: {:?}\n", prefix, mname, mid));
             }
             for (mname, mid) in static_methods {
-                out.push_str(&format!(
-                    "{};   static_method {} func${}\n",
-                    pad, mname, mid.0
-                ));
+                out.push_str(&format!("{}  static_method {}: {:?}\n", prefix, mname, mid));
             }
-            if !private_fields.is_empty() {
-                out.push_str(&format!("{};   private_fields {:?}\n", pad, private_fields));
+            for pf in private_fields {
+                out.push_str(&format!("{}  private_field: {:?}\n", prefix, pf));
             }
-        }
-        MirStmt::Export { name, expr } => {
-            out.push_str(&format!("{}; export {}\n", pad, name));
-            dump_mir_expr(expr, out, indent + 1);
-        }
-        MirStmt::ModuleExportsAssign { expr } => {
-            out.push_str(&format!("{}; module.exports =\n", pad));
-            dump_mir_expr(expr, out, indent + 1);
         }
     }
 }
 
-/// Dump a `MirExpr` to a string with indentation.
-pub fn dump_mir_expr(expr: &MirExpr, out: &mut String, indent: usize) {
-    let pad = "  ".repeat(indent);
+fn dump_mir_expr(expr: &LoweredExpr, out: &mut String, indent: usize) {
+    let prefix = " ".repeat(indent);
     match expr {
-        MirExpr::I32Const(n) => {
-            out.push_str(&format!("{}i32.const {}\n", pad, n));
+        LoweredExpr::Number(v, _) => {
+            out.push_str(&format!("{}Number({})\n", prefix, v));
         }
-        MirExpr::StringConst(s) => {
-            out.push_str(&format!("{}\"{}\"\n", pad, s.escape_default()));
+        LoweredExpr::BigIntLiteral {
+            decimal, sign, ..
+        } => {
+            out.push_str(&format!("{}BigIntLiteral({} sign={})\n", prefix, decimal, sign));
         }
-        MirExpr::Local(local) => {
-            out.push_str(&format!("{}local.get ${}\n", pad, local.0));
+        LoweredExpr::String(v, _) => {
+            out.push_str(&format!("{}String({:?})\n", prefix, v));
         }
-        MirExpr::CallRuntime { intrinsic, args } => {
+        LoweredExpr::Bool(v, _) => {
+            out.push_str(&format!("{}Bool({})\n", prefix, v));
+        }
+        LoweredExpr::Null(_) => {
+            out.push_str(&format!("{}Null\n", prefix));
+        }
+        LoweredExpr::Undefined(_) => {
+            out.push_str(&format!("{}Undefined\n", prefix));
+        }
+        LoweredExpr::Local(id, _) => {
+            out.push_str(&format!("{}Local({:?})\n", prefix, id));
+        }
+        LoweredExpr::EnvCellNew(expr, _) => {
+            out.push_str(&format!("{}EnvCellNew\n", prefix));
+            dump_mir_expr(expr, out, indent + 2);
+        }
+        LoweredExpr::EnvCellGet(cell, _) => {
+            out.push_str(&format!("{}EnvCellGet({:?})\n", prefix, cell));
+        }
+        LoweredExpr::EnvCellSet { cell, expr, .. } => {
+            out.push_str(&format!("{}EnvCellSet({:?})\n", prefix, cell));
+            dump_mir_expr(expr, out, indent + 2);
+        }
+        LoweredExpr::Unary { op, expr, .. } => {
+            out.push_str(&format!("{}Unary({:?})\n", prefix, op));
+            dump_mir_expr(expr, out, indent + 2);
+        }
+        LoweredExpr::Binary {
+            left, op, right, ..
+        } => {
+            out.push_str(&format!("{}Binary({:?})\n", prefix, op));
+            dump_mir_expr(left, out, indent + 2);
+            dump_mir_expr(right, out, indent + 2);
+        }
+        LoweredExpr::PropertyIn { obj, key, .. } => {
+            out.push_str(&format!("{}PropertyIn({:?})\n", prefix, key));
+            dump_mir_expr(obj, out, indent + 2);
+        }
+        LoweredExpr::PropertyInDynamic { obj, key, .. } => {
+            out.push_str(&format!("{}PropertyInDynamic\n", prefix));
+            dump_mir_expr(obj, out, indent + 2);
+            dump_mir_expr(key, out, indent + 2);
+        }
+        LoweredExpr::Call { kind, args, .. } => {
+            out.push_str(&format!("{}Call({:?})\n", prefix, kind));
+            for arg in args {
+                dump_mir_expr(arg, out, indent + 2);
+            }
+        }
+        LoweredExpr::Assign { local, expr, .. } => {
+            out.push_str(&format!("{}Assign({:?})\n", prefix, local));
+            dump_mir_expr(expr, out, indent + 2);
+        }
+        LoweredExpr::LogicalAssign { local, op, expr, .. } => {
+            out.push_str(&format!("{}LogicalAssign({:?}, {:?})\n", prefix, local, op));
+            dump_mir_expr(expr, out, indent + 2);
+        }
+        LoweredExpr::LogicalPropertyAssign {
+            object, key, op, expr, ..
+        } => {
             out.push_str(&format!(
-                "{}(call_runtime {:?}\n",
-                pad,
-                runtime_intrinsic_name(*intrinsic)
+                "{}LogicalPropertyAssign({:?}, {:?})\n",
+                prefix, object, op
+            ));
+            out.push_str(&format!("{}  key: {:?}\n", prefix, key));
+            dump_mir_expr(expr, out, indent + 2);
+        }
+        LoweredExpr::LogicalComputedPropertyAssign {
+            object,
+            key,
+            op,
+            expr,
+            ..
+        } => {
+            out.push_str(&format!(
+                "{}LogicalComputedPropertyAssign({:?}, {:?})\n",
+                prefix, object, op
+            ));
+            dump_mir_expr(key, out, indent + 2);
+            dump_mir_expr(expr, out, indent + 2);
+        }
+        LoweredExpr::LogicalComputedMemberAssign {
+            object,
+            key,
+            op,
+            expr,
+            ..
+        } => {
+            out.push_str(&format!(
+                "{}LogicalComputedMemberAssign({:?})\n",
+                prefix, op
+            ));
+            dump_mir_expr(object, out, indent + 2);
+            dump_mir_expr(key, out, indent + 2);
+            dump_mir_expr(expr, out, indent + 2);
+        }
+        LoweredExpr::LogicalMemberAssign {
+            object, key, op, expr, ..
+        } => {
+            out.push_str(&format!("{}LogicalMemberAssign({:?})\n", prefix, op));
+            out.push_str(&format!("{}  key: {:?}\n", prefix, key));
+            dump_mir_expr(object, out, indent + 2);
+            dump_mir_expr(expr, out, indent + 2);
+        }
+        LoweredExpr::ArrayNew { elements, .. } => {
+            out.push_str(&format!("{}ArrayNew({} elem)\n", prefix, elements.len()));
+            for elem in elements {
+                dump_mir_expr(elem, out, indent + 2);
+            }
+        }
+        LoweredExpr::ArrayNewSparse { slots, .. } => {
+            out.push_str(&format!("{}ArrayNewSparse({} slots)\n", prefix, slots.len()));
+            for slot in slots {
+                match slot {
+                    LoweredArraySlot::Present(elem) => {
+                        out.push_str(&format!("{}  Present\n", prefix));
+                        dump_mir_expr(elem, out, indent + 4);
+                    }
+                    LoweredArraySlot::Hole => {
+                        out.push_str(&format!("{}  Hole\n", prefix));
+                    }
+                }
+            }
+        }
+        LoweredExpr::ArrayGet { arr, index, .. } => {
+            out.push_str(&format!("{}ArrayGet\n", prefix));
+            dump_mir_expr(arr, out, indent + 2);
+            dump_mir_expr(index, out, indent + 2);
+        }
+        LoweredExpr::Index { object, index, .. } => {
+            out.push_str(&format!("{}Index\n", prefix));
+            dump_mir_expr(object, out, indent + 2);
+            dump_mir_expr(index, out, indent + 2);
+        }
+        LoweredExpr::GetLength(expr, _) => {
+            out.push_str(&format!("{}GetLength\n", prefix));
+            dump_mir_expr(expr, out, indent + 2);
+        }
+        LoweredExpr::ObjectNew { props, .. } => {
+            out.push_str(&format!("{}ObjectNew({} props)\n", prefix, props.len()));
+            for (k, v) in props {
+                out.push_str(&format!("{}  {:?}\n", prefix, k));
+                dump_mir_expr(v, out, indent + 4);
+            }
+        }
+        LoweredExpr::ErrorNew {
+            constructor,
+            message,
+            ..
+        } => {
+            out.push_str(&format!("{}ErrorNew({:?})\n", prefix, constructor));
+            dump_mir_expr(message, out, indent + 2);
+        }
+        LoweredExpr::PropertyGet { obj, key, .. } => {
+            out.push_str(&format!("{}PropertyGet({:?})\n", prefix, key));
+            dump_mir_expr(obj, out, indent + 2);
+        }
+        LoweredExpr::OptionalPropertyGet { obj, key, .. } => {
+            out.push_str(&format!("{}OptionalPropertyGet({:?})\n", prefix, key));
+            dump_mir_expr(obj, out, indent + 2);
+        }
+        LoweredExpr::PropertyGetDynamic { obj, key, .. } => {
+            out.push_str(&format!("{}PropertyGetDynamic\n", prefix));
+            dump_mir_expr(obj, out, indent + 2);
+            dump_mir_expr(key, out, indent + 2);
+        }
+        LoweredExpr::OptionalIndex { object, index, .. } => {
+            out.push_str(&format!("{}OptionalIndex\n", prefix));
+            dump_mir_expr(object, out, indent + 2);
+            dump_mir_expr(index, out, indent + 2);
+        }
+        LoweredExpr::OptionalCall { callee, call, .. } => {
+            out.push_str(&format!("{}OptionalCall\n", prefix));
+            dump_mir_expr(callee, out, indent + 2);
+            dump_mir_expr(call, out, indent + 2);
+        }
+        LoweredExpr::MethodCall { object, method, .. } => {
+            out.push_str(&format!("{}MethodCall({:?})\n", prefix, method));
+            dump_mir_expr(object, out, indent + 2);
+        }
+        LoweredExpr::PromiseGetValue { promise, .. } => {
+            out.push_str(&format!("{}PromiseGetValue\n", prefix));
+            dump_mir_expr(promise, out, indent + 2);
+        }
+        LoweredExpr::RuntimeCall {
+            runtime_fn, args, ..
+        } => {
+            out.push_str(&format!("{}RuntimeCall({:?})\n", prefix, runtime_fn));
+            for arg in args {
+                dump_mir_expr(arg, out, indent + 2);
+            }
+        }
+        LoweredExpr::PropertySet {
+            object, key, value, ..
+        } => {
+            out.push_str(&format!("{}PropertySet({:?})\n", prefix, key));
+            dump_mir_expr(object, out, indent + 2);
+            dump_mir_expr(value, out, indent + 2);
+        }
+        LoweredExpr::PropertyDelete { object, key, .. } => {
+            out.push_str(&format!("{}PropertyDelete({:?})\n", prefix, key));
+            dump_mir_expr(object, out, indent + 2);
+        }
+        LoweredExpr::PropertyDeleteDynamic { object, key, .. } => {
+            out.push_str(&format!("{}PropertyDeleteDynamic\n", prefix));
+            dump_mir_expr(object, out, indent + 2);
+            dump_mir_expr(key, out, indent + 2);
+        }
+        LoweredExpr::PropertySetDynamic {
+            object, index, value, ..
+        } => {
+            out.push_str(&format!("{}PropertySetDynamic\n", prefix));
+            dump_mir_expr(object, out, indent + 2);
+            dump_mir_expr(index, out, indent + 2);
+            dump_mir_expr(value, out, indent + 2);
+        }
+        LoweredExpr::New {
+            constructor,
+            args,
+            base_local,
+            private_brand,
+            private_slot_count,
+            ..
+        } => {
+            out.push_str(&format!(
+                "{}New(constructor={:?}, base={:?}, brand={:?}, slots={})\n",
+                prefix, constructor, base_local, private_brand, private_slot_count
             ));
             for arg in args {
-                dump_mir_expr(arg, out, indent + 1);
+                dump_mir_expr(arg, out, indent + 2);
             }
-            out.push_str(&format!("{})\n", pad));
         }
-        MirExpr::CallFunction { func, args } => {
-            out.push_str(&format!("{}(call_func ${}\n", pad, func.0));
-            for arg in args {
-                dump_mir_expr(arg, out, indent + 1);
-            }
-            out.push_str(&format!("{})\n", pad));
+        LoweredExpr::ClassPrototype(proto, _) => {
+            out.push_str(&format!(
+                "{}ClassPrototype(constructor={:?})\n",
+                prefix, proto.constructor
+            ));
         }
-        MirExpr::CallClosure { closure, args } => {
-            out.push_str(&format!("{}(call_closure\n", pad));
-            dump_mir_expr(closure, out, indent + 1);
-            for arg in args {
-                dump_mir_expr(arg, out, indent + 1);
-            }
-            out.push_str(&format!("{})\n", pad));
+        LoweredExpr::BuiltinErrorPrototype(ctor, _) => {
+            out.push_str(&format!("{}BuiltinErrorPrototype({:?})\n", prefix, ctor));
         }
-        MirExpr::NewObject { props } => {
-            out.push_str(&format!("{}(new_object\n", pad));
-            for (k, v) in props {
-                out.push_str(&format!("{}  \"{}\" ->\n", pad, k));
-                dump_mir_expr(v, out, indent + 1);
-            }
-            out.push_str(&format!("{})\n", pad));
+        LoweredExpr::ModuleLoad { module_id, .. } => {
+            out.push_str(&format!("{}ModuleLoad({})\n", prefix, module_id));
         }
-        MirExpr::NewArray { elements } => {
-            out.push_str(&format!("{}(new_array\n", pad));
-            for elem in elements {
-                dump_mir_expr(elem, out, indent + 1);
-            }
-            out.push_str(&format!("{})\n", pad));
-        }
-        MirExpr::LoadModule { module_id } => {
-            out.push_str(&format!("{}(load_module {})\n", pad, module_id));
-        }
-        MirExpr::Block { stmts, result } => {
-            out.push_str(&format!("{}(block\n", pad));
+        LoweredExpr::Block { stmts, result, .. } => {
+            out.push_str(&format!("{}Block\n", prefix));
+            out.push_str(&format!("{}  stmts:\n", prefix));
             for s in stmts {
-                dump_mir_stmt(s, out, indent + 1);
+                dump_mir_stmt(s, out, indent + 2);
             }
-            out.push_str(&format!("{}  result:\n", pad));
-            dump_mir_expr(result, out, indent + 1);
-            out.push_str(&format!("{})\n", pad));
+            out.push_str(&format!("{}  result:\n", prefix));
+            dump_mir_expr(result, out, indent + 4);
         }
-    }
-}
-
-/// Get a debug name for a RuntimeFn variant.
-fn runtime_intrinsic_name(intrinsic: RuntimeFn) -> &'static str {
-    // For the dump, we use intrinsic's Debug representation
-    // This avoids needing a `name()` method on RuntimeFn when
-    // it's re-exported from runtime-catalog.
-    match intrinsic {
-        // Core
-        _ if intrinsic == RuntimeFn::ReadStdinBytes => "ReadStdinBytes",
-        _ if intrinsic == RuntimeFn::Write => "Write",
-        _ if intrinsic == RuntimeFn::Copy => "Copy",
-        _ if intrinsic == RuntimeFn::ValueToStringInto => "ValueToStringInto",
-        _ if intrinsic == RuntimeFn::ErrorMessage => "ErrorMessage",
-        _ if intrinsic == RuntimeFn::Log => "Log",
-        _ if intrinsic == RuntimeFn::TruthyBool => "TruthyBool",
-        _ if intrinsic == RuntimeFn::Not => "Not",
-        _ if intrinsic == RuntimeFn::TypeOf => "TypeOf",
-        _ if intrinsic == RuntimeFn::AllocHeap => "AllocHeap",
-        _ if intrinsic == RuntimeFn::MemEqual => "MemEqual",
-        _ if intrinsic == RuntimeFn::Index => "Index",
-        _ if intrinsic == RuntimeFn::GetLength => "GetLength",
-        _ if intrinsic == RuntimeFn::PropertyGet => "PropertyGet",
-        _ if intrinsic == RuntimeFn::PropertySet => "PropertySet",
-        _ if intrinsic == RuntimeFn::PropertyDelete => "PropertyDelete",
-        _ if intrinsic == RuntimeFn::PropertyHas => "PropertyHas",
-        _ if intrinsic == RuntimeFn::PrivateBrandTypeError => "PrivateBrandTypeError",
-        // Number
-        _ if intrinsic == RuntimeFn::NumberFromI32 => "NumberFromI32",
-        _ if intrinsic == RuntimeFn::NumberToI32 => "NumberToI32",
-        _ if intrinsic == RuntimeFn::NumberToExponential => "NumberToExponential",
-        _ if intrinsic == RuntimeFn::NumberToFixed => "NumberToFixed",
-        _ if intrinsic == RuntimeFn::NumberToPrecision => "NumberToPrecision",
-        _ if intrinsic == RuntimeFn::NumberIsNaN => "NumberIsNaN",
-        _ if intrinsic == RuntimeFn::NumberIsFinite => "NumberIsFinite",
-        _ if intrinsic == RuntimeFn::NumberIsInteger => "NumberIsInteger",
-        _ if intrinsic == RuntimeFn::NumberIsSafeInteger => "NumberIsSafeInteger",
-        // BigInt
-        _ if intrinsic == RuntimeFn::MakeBigIntLiteral => "MakeBigIntLiteral",
-        _ if intrinsic == RuntimeFn::BigIntToString => "BigIntToString",
-        _ if intrinsic == RuntimeFn::BigIntToBoolean => "BigIntToBoolean",
-        _ if intrinsic == RuntimeFn::BigIntFromValue => "BigIntFromValue",
-        _ if intrinsic == RuntimeFn::BigIntAsIntN => "BigIntAsIntN",
-        _ if intrinsic == RuntimeFn::BigIntAsUintN => "BigIntAsUintN",
-        _ if intrinsic == RuntimeFn::BigIntUnaryMinus => "BigIntUnaryMinus",
-        _ if intrinsic == RuntimeFn::BigIntAdd => "BigIntAdd",
-        _ if intrinsic == RuntimeFn::BigIntSub => "BigIntSub",
-        _ if intrinsic == RuntimeFn::BigIntMul => "BigIntMul",
-        _ if intrinsic == RuntimeFn::BigIntPow => "BigIntPow",
-        _ if intrinsic == RuntimeFn::BigIntDiv => "BigIntDiv",
-        _ if intrinsic == RuntimeFn::BigIntRem => "BigIntRem",
-        _ if intrinsic == RuntimeFn::BigIntDivisionByZeroRangeError => {
-            "BigIntDivisionByZeroRangeError"
+        LoweredExpr::This(_) => {
+            out.push_str(&format!("{}This\n", prefix));
         }
-        _ if intrinsic == RuntimeFn::BigIntMixedArithmeticTypeError => {
-            "BigIntMixedArithmeticTypeError"
+        LoweredExpr::ArrowFn {
+            func_id,
+            captures,
+            ..
+        } => {
+            out.push_str(&format!(
+                "{}ArrowFn(id={:?}, captures={:?})\n",
+                prefix, func_id, captures
+            ));
         }
-        _ if intrinsic == RuntimeFn::BigIntStringComparisonBoundaryError => {
-            "BigIntStringComparisonBoundaryError"
-        }
-        _ if intrinsic == RuntimeFn::BigIntBitwiseNot => "BigIntBitwiseNot",
-        _ if intrinsic == RuntimeFn::BigIntBitwiseAnd => "BigIntBitwiseAnd",
-        _ if intrinsic == RuntimeFn::BigIntBitwiseOr => "BigIntBitwiseOr",
-        _ if intrinsic == RuntimeFn::BigIntBitwiseXor => "BigIntBitwiseXor",
-        _ if intrinsic == RuntimeFn::BigIntLeftShift => "BigIntLeftShift",
-        _ if intrinsic == RuntimeFn::BigIntRightShift => "BigIntRightShift",
-        _ if intrinsic == RuntimeFn::BigIntCompare => "BigIntCompare",
-        // String
-        _ if intrinsic == RuntimeFn::StringEqual => "StringEqual",
-        _ if intrinsic == RuntimeFn::Concat => "Concat",
-        _ if intrinsic == RuntimeFn::IsString => "IsString",
-        // Arithmetic operators
-        _ if intrinsic == RuntimeFn::Add => "Add",
-        _ if intrinsic == RuntimeFn::AddFast => "AddFast",
-        _ if intrinsic == RuntimeFn::Sub => "Sub",
-        _ if intrinsic == RuntimeFn::SubFast => "SubFast",
-        _ if intrinsic == RuntimeFn::Mul => "Mul",
-        _ if intrinsic == RuntimeFn::MulFast => "MulFast",
-        _ if intrinsic == RuntimeFn::Div => "Div",
-        _ if intrinsic == RuntimeFn::DivFast => "DivFast",
-        _ if intrinsic == RuntimeFn::Mod => "Mod",
-        _ if intrinsic == RuntimeFn::ModFast => "ModFast",
-        _ if intrinsic == RuntimeFn::BitwiseToI32 => "BitwiseToI32",
-        _ if intrinsic == RuntimeFn::BitwiseAnd => "BitwiseAnd",
-        _ if intrinsic == RuntimeFn::BitwiseXor => "BitwiseXor",
-        _ if intrinsic == RuntimeFn::BitwiseOr => "BitwiseOr",
-        _ if intrinsic == RuntimeFn::Negate => "Negate",
-        _ if intrinsic == RuntimeFn::Less => "Less",
-        _ if intrinsic == RuntimeFn::LessFast => "LessFast",
-        _ if intrinsic == RuntimeFn::LessEqual => "LessEqual",
-        _ if intrinsic == RuntimeFn::LessEqualFast => "LessEqualFast",
-        _ if intrinsic == RuntimeFn::Greater => "Greater",
-        _ if intrinsic == RuntimeFn::GreaterFast => "GreaterFast",
-        _ if intrinsic == RuntimeFn::GreaterEqual => "GreaterEqual",
-        _ if intrinsic == RuntimeFn::GreaterEqualFast => "GreaterEqualFast",
-        _ if intrinsic == RuntimeFn::StrictEqual => "StrictEqual",
-        _ if intrinsic == RuntimeFn::EqualEqual => "EqualEqual",
-        _ if intrinsic == RuntimeFn::BangEqual => "BangEqual",
-        _ if intrinsic == RuntimeFn::StrictNotEqual => "StrictNotEqual",
-        _ if intrinsic == RuntimeFn::And => "And",
-        _ if intrinsic == RuntimeFn::Or => "Or",
-        // Array
-        _ if intrinsic == RuntimeFn::ArrayGet => "ArrayGet",
-        _ if intrinsic == RuntimeFn::ArrayIndexPresent => "ArrayIndexPresent",
-        _ if intrinsic == RuntimeFn::ArrayBufferNew => "ArrayBufferNew",
-        _ if intrinsic == RuntimeFn::ArrayPush => "ArrayPush",
-        _ if intrinsic == RuntimeFn::ArrayPushGrow => "ArrayPushGrow",
-        _ if intrinsic == RuntimeFn::ArrayPop => "ArrayPop",
-        _ if intrinsic == RuntimeFn::ArraySlice => "ArraySlice",
-        _ if intrinsic == RuntimeFn::ArrayConcat => "ArrayConcat",
-        _ if intrinsic == RuntimeFn::ArrayMapValueToString => "ArrayMapValueToString",
-        _ if intrinsic == RuntimeFn::ArrayMapUnaryPlus => "ArrayMapUnaryPlus",
-        _ if intrinsic == RuntimeFn::ArrayMapStringSplit => "ArrayMapStringSplit",
-        _ if intrinsic == RuntimeFn::ArrayMapArrayLikeIdentity => "ArrayMapArrayLikeIdentity",
-        _ if intrinsic == RuntimeFn::ArrayMapArrayLikeDouble => "ArrayMapArrayLikeDouble",
-        _ if intrinsic == RuntimeFn::ArraySortNumeric => "ArraySortNumeric",
-        _ if intrinsic == RuntimeFn::ArrayJoin => "ArrayJoin",
-        _ if intrinsic == RuntimeFn::ArrayReverse => "ArrayReverse",
-        _ if intrinsic == RuntimeFn::ArrayIndexOf => "ArrayIndexOf",
-        _ if intrinsic == RuntimeFn::ArrayIncludes => "ArrayIncludes",
-        _ if intrinsic == RuntimeFn::ArrayFind => "ArrayFind",
-        _ if intrinsic == RuntimeFn::ArrayFindIndex => "ArrayFindIndex",
-        _ if intrinsic == RuntimeFn::ArrayFindLast => "ArrayFindLast",
-        _ if intrinsic == RuntimeFn::ArrayFindLastIndex => "ArrayFindLastIndex",
-        _ if intrinsic == RuntimeFn::ArrayFilter => "ArrayFilter",
-        _ if intrinsic == RuntimeFn::ArrayEvery => "ArrayEvery",
-        _ if intrinsic == RuntimeFn::ArraySome => "ArraySome",
-        _ if intrinsic == RuntimeFn::ArrayReduce => "ArrayReduce",
-        _ if intrinsic == RuntimeFn::ArrayReduceRight => "ArrayReduceRight",
-        _ if intrinsic == RuntimeFn::ArrayLastIndexOf => "ArrayLastIndexOf",
-        _ if intrinsic == RuntimeFn::ArrayForEach => "ArrayForEach",
-        _ if intrinsic == RuntimeFn::ArrayMap => "ArrayMap",
-        _ if intrinsic == RuntimeFn::ArrayAt => "ArrayAt",
-        _ if intrinsic == RuntimeFn::ArrayFill => "ArrayFill",
-        _ if intrinsic == RuntimeFn::ArrayFlat => "ArrayFlat",
-        _ if intrinsic == RuntimeFn::ArrayPushOrSpread => "ArrayPushOrSpread",
-        _ if intrinsic == RuntimeFn::ArrayCopyWithin => "ArrayCopyWithin",
-        _ if intrinsic == RuntimeFn::ArrayWith => "ArrayWith",
-        _ if intrinsic == RuntimeFn::ArrayToReversed => "ArrayToReversed",
-        _ if intrinsic == RuntimeFn::ArrayToSorted => "ArrayToSorted",
-        _ if intrinsic == RuntimeFn::ArrayToSpliced => "ArrayToSpliced",
-        _ if intrinsic == RuntimeFn::ArrayValues => "ArrayValues",
-        _ if intrinsic == RuntimeFn::ArrayKeys => "ArrayKeys",
-        _ if intrinsic == RuntimeFn::ArrayEntries => "ArrayEntries",
-        _ if intrinsic == RuntimeFn::ArrayShift => "ArrayShift",
-        _ if intrinsic == RuntimeFn::ArrayUnshift => "ArrayUnshift",
-        _ if intrinsic == RuntimeFn::ArraySplice => "ArraySplice",
-        _ if intrinsic == RuntimeFn::ArrayIsArray => "ArrayIsArray",
-        // Math
-        _ if intrinsic == RuntimeFn::MathFloor => "MathFloor",
-        _ if intrinsic == RuntimeFn::MathCeil => "MathCeil",
-        _ if intrinsic == RuntimeFn::MathRound => "MathRound",
-        _ if intrinsic == RuntimeFn::MathAbs => "MathAbs",
-        _ if intrinsic == RuntimeFn::MathMax => "MathMax",
-        _ if intrinsic == RuntimeFn::MathMin => "MathMin",
-        _ if intrinsic == RuntimeFn::MathPow => "MathPow",
-        _ if intrinsic == RuntimeFn::MathRandom => "MathRandom",
-        _ if intrinsic == RuntimeFn::MathTrunc => "MathTrunc",
-        _ if intrinsic == RuntimeFn::MathSign => "MathSign",
-        // Date
-        _ if intrinsic == RuntimeFn::DateNew => "DateNew",
-        _ if intrinsic == RuntimeFn::DateNewLive => "DateNewLive",
-        _ if intrinsic == RuntimeFn::DateNow => "DateNow",
-        _ if intrinsic == RuntimeFn::DateEpochMsNowNumber => "DateEpochMsNowNumber",
-        _ if intrinsic == RuntimeFn::DateGetTime => "DateGetTime",
-        _ if intrinsic == RuntimeFn::DateToString => "DateToString",
-        _ if intrinsic == RuntimeFn::DateGetLocalTimeField => "DateGetLocalTimeField",
-        _ if intrinsic == RuntimeFn::DateToISOString => "DateToISOString",
-        _ if intrinsic == RuntimeFn::DateGetTimezoneOffset => "DateGetTimezoneOffset",
-        _ if intrinsic == RuntimeFn::DateGetUtcMilliseconds => "DateGetUtcMilliseconds",
-        _ if intrinsic == RuntimeFn::DateGetUtcSeconds => "DateGetUtcSeconds",
-        _ if intrinsic == RuntimeFn::DateGetUtcMinutes => "DateGetUtcMinutes",
-        _ if intrinsic == RuntimeFn::DateGetUtcHours => "DateGetUtcHours",
-        _ if intrinsic == RuntimeFn::DateGetUtcDay => "DateGetUtcDay",
-        _ if intrinsic == RuntimeFn::DateGetUtcDate => "DateGetUtcDate",
-        _ if intrinsic == RuntimeFn::DateGetUtcMonth => "DateGetUtcMonth",
-        _ if intrinsic == RuntimeFn::DateGetUtcFullYear => "DateGetUtcFullYear",
-        // String methods
-        _ if intrinsic == RuntimeFn::StringCharAt => "StringCharAt",
-        _ if intrinsic == RuntimeFn::StringAt => "StringAt",
-        _ if intrinsic == RuntimeFn::StringSubstring => "StringSubstring",
-        _ if intrinsic == RuntimeFn::StringSubstr => "StringSubstr",
-        _ if intrinsic == RuntimeFn::StringSlice => "StringSlice",
-        _ if intrinsic == RuntimeFn::StringIndexOf => "StringIndexOf",
-        _ if intrinsic == RuntimeFn::StringLastIndexOf => "StringLastIndexOf",
-        _ if intrinsic == RuntimeFn::StringLocaleCompare => "StringLocaleCompare",
-        _ if intrinsic == RuntimeFn::StringIncludes => "StringIncludes",
-        _ if intrinsic == RuntimeFn::StringPadStart => "StringPadStart",
-        _ if intrinsic == RuntimeFn::StringPadEnd => "StringPadEnd",
-        _ if intrinsic == RuntimeFn::StringRepeat => "StringRepeat",
-        _ if intrinsic == RuntimeFn::StringSplit => "StringSplit",
-        _ if intrinsic == RuntimeFn::StringTrim => "StringTrim",
-        _ if intrinsic == RuntimeFn::StringTrimStart => "StringTrimStart",
-        _ if intrinsic == RuntimeFn::StringTrimEnd => "StringTrimEnd",
-        _ if intrinsic == RuntimeFn::StringStartsWith => "StringStartsWith",
-        _ if intrinsic == RuntimeFn::StringEndsWith => "StringEndsWith",
-        _ if intrinsic == RuntimeFn::StringMatch => "StringMatch",
-        _ if intrinsic == RuntimeFn::StringSearch => "StringSearch",
-        _ if intrinsic == RuntimeFn::StringToUpperCase => "StringToUpperCase",
-        _ if intrinsic == RuntimeFn::StringToLowerCase => "StringToLowerCase",
-        _ if intrinsic == RuntimeFn::StringCharCodeAt => "StringCharCodeAt",
-        _ if intrinsic == RuntimeFn::StringCodePointAt => "StringCodePointAt",
-        _ if intrinsic == RuntimeFn::StringIsWellFormed => "StringIsWellFormed",
-        _ if intrinsic == RuntimeFn::StringToWellFormed => "StringToWellFormed",
-        _ if intrinsic == RuntimeFn::StringFromCharCode => "StringFromCharCode",
-        _ if intrinsic == RuntimeFn::StringFromCodePoint => "StringFromCodePoint",
-        _ if intrinsic == RuntimeFn::StringReplace => "StringReplace",
-        _ if intrinsic == RuntimeFn::StringReplaceAll => "StringReplaceAll",
-        // RegExp
-        _ if intrinsic == RuntimeFn::RegExpTest => "RegExpTest",
-        _ if intrinsic == RuntimeFn::RegExpMatch => "RegExpMatch",
-        _ if intrinsic == RuntimeFn::RegExpSearch => "RegExpSearch",
-        _ if intrinsic == RuntimeFn::RegexpMatchInner => "RegexpMatchInner",
-        // Object
-        _ if intrinsic == RuntimeFn::ObjectKeys => "ObjectKeys",
-        _ if intrinsic == RuntimeFn::ObjectSpread => "ObjectSpread",
-        _ if intrinsic == RuntimeFn::SpreadViaIterator => "SpreadViaIterator",
-        _ if intrinsic == RuntimeFn::ObjectValues => "ObjectValues",
-        _ if intrinsic == RuntimeFn::ObjectEntries => "ObjectEntries",
-        _ if intrinsic == RuntimeFn::ObjectHasOwnProperty => "ObjectHasOwnProperty",
-        _ if intrinsic == RuntimeFn::ObjectHasOwn => "ObjectHasOwn",
-        _ if intrinsic == RuntimeFn::ObjectGetOwnPropertyDescriptor => {
-            "ObjectGetOwnPropertyDescriptor"
-        }
-        _ if intrinsic == RuntimeFn::ObjectGetPrototypeOf => "ObjectGetPrototypeOf",
-        _ if intrinsic == RuntimeFn::ObjectSetPrototypeOf => "ObjectSetPrototypeOf",
-        _ if intrinsic == RuntimeFn::ObjectFreeze => "ObjectFreeze",
-        _ if intrinsic == RuntimeFn::ObjectSeal => "ObjectSeal",
-        _ if intrinsic == RuntimeFn::ObjectPreventExtensions => "ObjectPreventExtensions",
-        _ if intrinsic == RuntimeFn::ObjectIsExtensible => "ObjectIsExtensible",
-        _ if intrinsic == RuntimeFn::ObjectIsSealed => "ObjectIsSealed",
-        _ if intrinsic == RuntimeFn::ObjectIsFrozen => "ObjectIsFrozen",
-        _ if intrinsic == RuntimeFn::ObjectDefineProperty => "ObjectDefineProperty",
-        _ if intrinsic == RuntimeFn::ObjectAssign => "ObjectAssign",
-        _ if intrinsic == RuntimeFn::ObjectCreate => "ObjectCreate",
-        _ if intrinsic == RuntimeFn::ObjectIs => "ObjectIs",
-        _ if intrinsic == RuntimeFn::ValueOf => "ValueOf",
-        _ if intrinsic == RuntimeFn::InstanceOf => "InstanceOf",
-        // Map/Set
-        _ if intrinsic == RuntimeFn::MapNew => "MapNew",
-        _ if intrinsic == RuntimeFn::MapGet => "MapGet",
-        _ if intrinsic == RuntimeFn::MapSet => "MapSet",
-        _ if intrinsic == RuntimeFn::MapHas => "MapHas",
-        _ if intrinsic == RuntimeFn::MapDelete => "MapDelete",
-        _ if intrinsic == RuntimeFn::MapValuesArray => "MapValuesArray",
-        _ if intrinsic == RuntimeFn::SetNew => "SetNew",
-        _ if intrinsic == RuntimeFn::SetAdd => "SetAdd",
-        _ if intrinsic == RuntimeFn::SetHas => "SetHas",
-        _ if intrinsic == RuntimeFn::SetDelete => "SetDelete",
-        _ if intrinsic == RuntimeFn::SetSize => "SetSize",
-        _ if intrinsic == RuntimeFn::SetClear => "SetClear",
-        _ if intrinsic == RuntimeFn::SetForEach => "SetForEach",
-        _ if intrinsic == RuntimeFn::MapClear => "MapClear",
-        _ if intrinsic == RuntimeFn::MapSize => "MapSize",
-        _ if intrinsic == RuntimeFn::MapForEach => "MapForEach",
-        _ if intrinsic == RuntimeFn::MapEntriesArray => "MapEntriesArray",
-        _ if intrinsic == RuntimeFn::SetFromArray => "SetFromArray",
-        _ if intrinsic == RuntimeFn::SetValuesArray => "SetValuesArray",
-        _ if intrinsic == RuntimeFn::SetPrototypeAddGet => "SetPrototypeAddGet",
-        _ if intrinsic == RuntimeFn::SetPrototypeAddSet => "SetPrototypeAddSet",
-        // WeakMap/WeakSet
-        _ if intrinsic == RuntimeFn::WeakMapNew => "WeakMapNew",
-        _ if intrinsic == RuntimeFn::WeakMapSet => "WeakMapSet",
-        _ if intrinsic == RuntimeFn::WeakMapGet => "WeakMapGet",
-        _ if intrinsic == RuntimeFn::WeakMapHas => "WeakMapHas",
-        _ if intrinsic == RuntimeFn::WeakMapDelete => "WeakMapDelete",
-        _ if intrinsic == RuntimeFn::WeakSetNew => "WeakSetNew",
-        _ if intrinsic == RuntimeFn::WeakSetAdd => "WeakSetAdd",
-        _ if intrinsic == RuntimeFn::WeakSetHas => "WeakSetHas",
-        _ if intrinsic == RuntimeFn::WeakSetDelete => "WeakSetDelete",
-        // Module
-        _ if intrinsic == RuntimeFn::ModuleRequire => "ModuleRequire",
-        _ if intrinsic == RuntimeFn::ModuleExportsSet => "ModuleExportsSet",
-        _ if intrinsic == RuntimeFn::ModuleExportsAssign => "ModuleExportsAssign",
-        // Node
-        _ if intrinsic == RuntimeFn::FsReadFileSync => "FsReadFileSync",
-        _ if intrinsic == RuntimeFn::FsWriteFileSync => "FsWriteFileSync",
-        _ if intrinsic == RuntimeFn::FsAppendFileSync => "FsAppendFileSync",
-        _ if intrinsic == RuntimeFn::ProcessArgv => "ProcessArgv",
-        _ if intrinsic == RuntimeFn::ProcessEnv => "ProcessEnv",
-        _ if intrinsic == RuntimeFn::ProcessExit => "ProcessExit",
-        _ if intrinsic == RuntimeFn::PathJoin => "PathJoin",
-        _ if intrinsic == RuntimeFn::PathResolve => "PathResolve",
-        _ if intrinsic == RuntimeFn::PathBasename => "PathBasename",
-        _ if intrinsic == RuntimeFn::PathDirname => "PathDirname",
-        _ if intrinsic == RuntimeFn::CryptoRandomBytes => "CryptoRandomBytes",
-        // Promise
-        _ if intrinsic == RuntimeFn::PromiseConstructor => "PromiseConstructor",
-        _ if intrinsic == RuntimeFn::PromiseResolve => "PromiseResolve",
-        _ if intrinsic == RuntimeFn::PromiseReject => "PromiseReject",
-        _ if intrinsic == RuntimeFn::PromiseThen => "PromiseThen",
-        _ if intrinsic == RuntimeFn::PromiseCatch => "PromiseCatch",
-        _ if intrinsic == RuntimeFn::PromiseAll => "PromiseAll",
-        _ if intrinsic == RuntimeFn::PromiseRace => "PromiseRace",
-        // Symbol
-        _ if intrinsic == RuntimeFn::SymbolNew => "SymbolNew",
-        _ if intrinsic == RuntimeFn::SymbolFor => "SymbolFor",
-        _ if intrinsic == RuntimeFn::SymbolKeyFor => "SymbolKeyFor",
-        // Encoding
-        _ if intrinsic == RuntimeFn::EncodeURI => "EncodeURI",
-        _ if intrinsic == RuntimeFn::DecodeURI => "DecodeURI",
-        _ if intrinsic == RuntimeFn::Escape => "Escape",
-        _ if intrinsic == RuntimeFn::Unescape => "Unescape",
-        // Other
-        _ if intrinsic == RuntimeFn::GetIterator => "GetIterator",
-        _ if intrinsic == RuntimeFn::IteratorNext => "IteratorNext",
-        _ if intrinsic == RuntimeFn::JsonStringify => "JsonStringify",
-        _ if intrinsic == RuntimeFn::JsonParse => "JsonParse",
-        _ if intrinsic == RuntimeFn::TypedArrayFromArray => "TypedArrayFromArray",
-        _ if intrinsic == RuntimeFn::DataViewNew => "DataViewNew",
-        _ if intrinsic == RuntimeFn::DataViewGetInt32 => "DataViewGetInt32",
-        _ if intrinsic == RuntimeFn::DataViewSetInt32 => "DataViewSetInt32",
-        _ if intrinsic == RuntimeFn::DataViewGetFloat64 => "DataViewGetFloat64",
-        _ if intrinsic == RuntimeFn::DataViewSetFloat64 => "DataViewSetFloat64",
-        // Global coerce
-        _ if intrinsic == RuntimeFn::BooleanCoerce => "BooleanCoerce",
-        _ if intrinsic == RuntimeFn::NumberCoerce => "NumberCoerce",
-        // Task
-        _ if intrinsic == RuntimeFn::TaskPoll => "TaskPoll",
-        _ if intrinsic == RuntimeFn::TaskResult => "TaskResult",
-        _ if intrinsic == RuntimeFn::TaskDrop => "TaskDrop",
-        // Global
-        _ if intrinsic == RuntimeFn::IsNaN => "IsNaN",
-        _ if intrinsic == RuntimeFn::ParseInt => "ParseInt",
-        _ if intrinsic == RuntimeFn::ParseFloat => "ParseFloat",
-        _ if intrinsic == RuntimeFn::IsFinite => "IsFinite",
-        // Pseudo-intrinsics
-        _ if intrinsic == RuntimeFn::ArrayPushMany => "ArrayPushMany",
-        _ if intrinsic == RuntimeFn::HeapClosureCall => "HeapClosureCall",
-        _ if intrinsic == RuntimeFn::PrivateFieldGet => "PrivateFieldGet",
-        _ if intrinsic == RuntimeFn::PrivateFieldSet => "PrivateFieldSet",
-        _ if intrinsic == RuntimeFn::PrivateBrandCheck => "PrivateBrandCheck",
-        _ => "Unknown",
-    }
-}
-
-/// Trait for types that can dump their MIR representation.
-pub trait MirDump {
-    /// Dump this value as a MIR-formatted string.
-    fn dump_mir(&self) -> String;
-}
-
-impl MirDump for MirProgram {
-    fn dump_mir(&self) -> String {
-        dump_mir_program(self, "program")
-    }
-}
-
-impl MirDump for MirFunction {
-    fn dump_mir(&self) -> String {
-        dump_mir_function(self)
-    }
-}
-
-impl MirDump for MirStmt {
-    fn dump_mir(&self) -> String {
-        let mut out = String::new();
-        dump_mir_stmt(self, &mut out, 0);
-        out
-    }
-}
-
-impl MirDump for MirExpr {
-    fn dump_mir(&self) -> String {
-        let mut out = String::new();
-        dump_mir_expr(self, &mut out, 0);
-        out
     }
 }

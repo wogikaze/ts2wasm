@@ -1,258 +1,177 @@
-//! HIR dump utility — pretty-prints HIR programs for debugging and snapshots.
-//!
-//! This module provides `hir_dump` functions that render `HirExpr`, `HirStmt`,
-//! `HirFunction`, and `HirProgram` as human-readable strings. This is used for:
-//!
-//! - Debugging during development
-//! - Snapshot testing (serializing HIR to compare against golden files)
-//! - Architecture coverage checks (verifying HIR structure)
+// HIR dump: produce a string representation for every HIR variant.
+//
+// Every `HirStmt` and `HirExpr` variant is explicitly handled so that
+// adding a new variant without updating the dump is a compile error.
 
-use crate::lowered::hir::{HirExpr, HirFunction, HirProgram, HirStmt};
-
-/// Dump a `HirProgram` to a string.
-pub fn dump_hir_program(program: &HirProgram, label: &str) -> String {
+/// Produce a dump string for the entire HIR program.
+pub fn dump_hir(program: &HirProgram) -> String {
     let mut out = String::new();
-    out.push_str(&format!("; HIR Program: {}\n", label));
-    out.push_str(&format!("; Locals: {:?}\n", program.locals));
-    out.push_str("; Functions:\n");
-    for func in &program.functions {
-        out.push_str(&dump_hir_function(func));
+    out.push_str("HirProgram {\n");
+    for (i, local) in program.locals.iter().enumerate() {
+        out.push_str(&format!("  local[{}]: {:?}\n", i, local));
     }
-    out.push_str("; Top-level body:\n");
     for stmt in &program.body {
-        dump_hir_stmt(stmt, &mut out, 1);
-    }
-    out
-}
-
-/// Dump a `HirFunction` to a string.
-pub fn dump_hir_function(func: &HirFunction) -> String {
-    let mut out = String::new();
-    out.push_str(&format!(
-        "  (func ${} (params {:?}) (locals {:?})\n",
-        func.id.0, func.params, func.locals,
-    ));
-    for stmt in &func.body {
         dump_hir_stmt(stmt, &mut out, 2);
     }
-    out.push_str("  )\n");
+    for func in &program.functions {
+        dump_hir_function(func, &mut out);
+    }
+    out.push_str("}\n");
     out
 }
 
-/// Dump a `HirStmt` to a string with indentation.
-pub fn dump_hir_stmt(stmt: &HirStmt, out: &mut String, indent: usize) {
-    let pad = "  ".repeat(indent);
+fn dump_hir_function(func: &HirFunction, out: &mut String) {
+    out.push_str(&format!("  function[{:?}] {{\n", func.id));
+    for param in &func.params {
+        out.push_str(&format!("    param: {:?}\n", param));
+    }
+    for local in &func.locals {
+        out.push_str(&format!("    local: {:?}\n", local));
+    }
+    for stmt in &func.body {
+        dump_hir_stmt(stmt, out, 4);
+    }
+    out.push_str("  }\n");
+}
+
+fn dump_hir_stmt(stmt: &HirStmt, out: &mut String, indent: usize) {
+    let prefix = " ".repeat(indent);
     match stmt {
         HirStmt::Let { local, init } => {
-            out.push_str(&format!("{}; let ${} =\n", pad, local.0));
-            dump_hir_expr(init, out, indent + 1);
+            out.push_str(&format!("{}Let({:?}) =\n", prefix, local));
+            dump_hir_expr(init, out, indent + 2);
         }
-        HirStmt::Assign { local, expr } => {
-            out.push_str(&format!("{}; ${} =\n", pad, local.0));
-            dump_hir_expr(expr, out, indent + 1);
+        HirStmt::StoreLocal { local, value } => {
+            out.push_str(&format!("{}StoreLocal({:?}) =\n", prefix, local));
+            dump_hir_expr(value, out, indent + 2);
         }
         HirStmt::Expr(expr) => {
-            dump_hir_expr(expr, out, indent);
+            out.push_str(&format!("{}Expr\n", prefix));
+            dump_hir_expr(expr, out, indent + 2);
         }
-        HirStmt::If {
+        HirStmt::BranchIfTruthy {
             condition,
             then_body,
             else_body,
         } => {
-            out.push_str(&format!("{}; if\n", pad));
-            dump_hir_expr(condition, out, indent + 1);
-            out.push_str(&format!("{}; then\n", pad));
+            out.push_str(&format!("{}BranchIfTruthy\n", prefix));
+            out.push_str(&format!("{}  condition:\n", prefix));
+            dump_hir_expr(condition, out, indent + 4);
+            out.push_str(&format!("{}  then_body:\n", prefix));
             for s in then_body {
-                dump_hir_stmt(s, out, indent + 1);
+                dump_hir_stmt(s, out, indent + 4);
             }
-            if !else_body.is_empty() {
-                out.push_str(&format!("{}; else\n", pad));
-                for s in else_body {
-                    dump_hir_stmt(s, out, indent + 1);
-                }
+            out.push_str(&format!("{}  else_body:\n", prefix));
+            for s in else_body {
+                dump_hir_stmt(s, out, indent + 4);
             }
         }
-        HirStmt::While { condition, body } => {
-            out.push_str(&format!("{}; while\n", pad));
-            dump_hir_expr(condition, out, indent + 1);
-            out.push_str(&format!("{}; do\n", pad));
+        HirStmt::LoopWhile { condition, body } => {
+            out.push_str(&format!("{}LoopWhile\n", prefix));
+            out.push_str(&format!("{}  condition:\n", prefix));
+            dump_hir_expr(condition, out, indent + 4);
+            out.push_str(&format!("{}  body:\n", prefix));
             for s in body {
-                dump_hir_stmt(s, out, indent + 1);
+                dump_hir_stmt(s, out, indent + 4);
             }
         }
         HirStmt::Return(expr) => {
-            out.push_str(&format!("{}; return\n", pad));
-            dump_hir_expr(expr, out, indent + 1);
-        }
-        HirStmt::Throw(expr) => {
-            out.push_str(&format!("{}; throw\n", pad));
-            dump_hir_expr(expr, out, indent + 1);
+            out.push_str(&format!("{}Return\n", prefix));
+            dump_hir_expr(expr, out, indent + 2);
         }
     }
 }
 
-/// Dump a `HirExpr` to a string with indentation, in s-expression-like format.
-pub fn dump_hir_expr(expr: &HirExpr, out: &mut String, indent: usize) {
-    let pad = "  ".repeat(indent);
+fn dump_hir_expr(expr: &HirExpr, out: &mut String, indent: usize) {
+    let prefix = " ".repeat(indent);
     match expr {
-        HirExpr::Number(n) => {
-            out.push_str(&format!("{}i32.const {}\n", pad, n));
+        HirExpr::ConstUndefined => {
+            out.push_str(&format!("{}ConstUndefined\n", prefix));
         }
-        HirExpr::String(s) => {
-            out.push_str(&format!("{}\"{}\"\n", pad, s.escape_default()));
+        HirExpr::ConstNull => {
+            out.push_str(&format!("{}ConstNull\n", prefix));
         }
-        HirExpr::Bool(b) => {
-            out.push_str(&format!("{}i32.const {}\n", pad, *b as i32));
+        HirExpr::ConstBool(v) => {
+            out.push_str(&format!("{}ConstBool({})\n", prefix, v));
         }
-        HirExpr::Null => {
-            out.push_str(&format!("{}null\n", pad));
+        HirExpr::ConstNumber(v) => {
+            out.push_str(&format!("{}ConstNumber({})\n", prefix, v));
         }
-        HirExpr::Undefined => {
-            out.push_str(&format!("{}undefined\n", pad));
+        HirExpr::ConstBigInt(v) => {
+            out.push_str(&format!("{}ConstBigInt({})\n", prefix, v));
         }
-        HirExpr::Local(local) => {
-            out.push_str(&format!("{}local.get ${}\n", pad, local.0));
+        HirExpr::ConstString(v) => {
+            out.push_str(&format!("{}ConstString({:?})\n", prefix, v));
         }
-        HirExpr::Unary { op, expr: inner } => {
-            out.push_str(&format!("{}(unary {:?}\n", pad, op));
-            dump_hir_expr(inner, out, indent + 1);
-            out.push_str(&format!("{})\n", pad));
+        HirExpr::LoadLocal(local) => {
+            out.push_str(&format!("{}LoadLocal({:?})\n", prefix, local));
         }
-        HirExpr::Binary { left, op, right } => {
-            out.push_str(&format!("{}(binary {:?}\n", pad, op));
-            dump_hir_expr(left, out, indent + 1);
-            dump_hir_expr(right, out, indent + 1);
-            out.push_str(&format!("{})\n", pad));
+        HirExpr::LoadBuiltin(name) => {
+            out.push_str(&format!("{}LoadBuiltin({:?})\n", prefix, name));
+        }
+        HirExpr::ToBoolean(inner) => {
+            out.push_str(&format!("{}ToBoolean\n", prefix));
+            dump_hir_expr(inner, out, indent + 2);
+        }
+        HirExpr::JsUnaryNot(inner) => {
+            out.push_str(&format!("{}JsUnaryNot\n", prefix));
+            dump_hir_expr(inner, out, indent + 2);
+        }
+        HirExpr::JsAdd { left, right } => {
+            out.push_str(&format!("{}JsAdd\n", prefix));
+            dump_hir_expr(left, out, indent + 2);
+            dump_hir_expr(right, out, indent + 2);
+        }
+        HirExpr::JsStrictEqual { left, right } => {
+            out.push_str(&format!("{}JsStrictEqual\n", prefix));
+            dump_hir_expr(left, out, indent + 2);
+            dump_hir_expr(right, out, indent + 2);
+        }
+        HirExpr::JsAbstractEqual { left, right } => {
+            out.push_str(&format!("{}JsAbstractEqual\n", prefix));
+            dump_hir_expr(left, out, indent + 2);
+            dump_hir_expr(right, out, indent + 2);
+        }
+        HirExpr::JsRelational { op, left, right } => {
+            out.push_str(&format!("{}JsRelational({:?})\n", prefix, op));
+            dump_hir_expr(left, out, indent + 2);
+            dump_hir_expr(right, out, indent + 2);
         }
         HirExpr::GetProp { object, key } => {
-            out.push_str(&format!("{}(get_prop \"{}\"\n", pad, key));
-            dump_hir_expr(object, out, indent + 1);
-            out.push_str(&format!("{})\n", pad));
+            out.push_str(&format!("{}GetProp({:?})\n", prefix, key));
+            dump_hir_expr(object, out, indent + 2);
         }
         HirExpr::GetIndex { object, index } => {
-            out.push_str(&format!("{}(get_index\n", pad));
-            dump_hir_expr(object, out, indent + 1);
-            dump_hir_expr(index, out, indent + 1);
-            out.push_str(&format!("{})\n", pad));
+            out.push_str(&format!("{}GetIndex\n", prefix));
+            dump_hir_expr(object, out, indent + 2);
+            dump_hir_expr(index, out, indent + 2);
         }
-        HirExpr::SetProp { object, key, value } => {
-            out.push_str(&format!("{}(set_prop \"{}\"\n", pad, key));
-            dump_hir_expr(object, out, indent + 1);
-            dump_hir_expr(value, out, indent + 1);
-            out.push_str(&format!("{})\n", pad));
+        HirExpr::ArrayLength(inner) => {
+            out.push_str(&format!("{}ArrayLength\n", prefix));
+            dump_hir_expr(inner, out, indent + 2);
         }
-        HirExpr::SetIndex {
-            object,
-            index,
-            value,
-        } => {
-            out.push_str(&format!("{}(set_index\n", pad));
-            dump_hir_expr(object, out, indent + 1);
-            dump_hir_expr(index, out, indent + 1);
-            dump_hir_expr(value, out, indent + 1);
-            out.push_str(&format!("{})\n", pad));
-        }
-        HirExpr::HasProperty { object, key } => {
-            out.push_str(&format!("{}(has_property\n", pad));
-            dump_hir_expr(object, out, indent + 1);
-            dump_hir_expr(key, out, indent + 1);
-            out.push_str(&format!("{})\n", pad));
-        }
-        HirExpr::DeleteProperty { object, key } => {
-            out.push_str(&format!("{}(delete_property\n", pad));
-            dump_hir_expr(object, out, indent + 1);
-            dump_hir_expr(key, out, indent + 1);
-            out.push_str(&format!("{})\n", pad));
-        }
-        HirExpr::ObjectLiteral { props } => {
-            out.push_str(&format!("{}(object\n", pad));
-            for (k, v) in props {
-                out.push_str(&format!("{}  \"{}\" ->\n", pad, k));
-                dump_hir_expr(v, out, indent + 1);
-            }
-            out.push_str(&format!("{})\n", pad));
-        }
-        HirExpr::ArrayLiteral { elements } => {
-            out.push_str(&format!("{}(array\n", pad));
-            for elem in elements {
-                dump_hir_expr(elem, out, indent + 1);
-            }
-            out.push_str(&format!("{})\n", pad));
-        }
-        HirExpr::Call { callee, args } => {
-            out.push_str(&format!("{}(call\n", pad));
-            dump_hir_expr(callee, out, indent + 1);
-            out.push_str(&format!("{}  args:\n", pad));
+        HirExpr::CallBuiltin { builtin, args } => {
+            out.push_str(&format!("{}CallBuiltin({:?})\n", prefix, builtin));
             for arg in args {
-                dump_hir_expr(arg, out, indent + 1);
+                dump_hir_expr(arg, out, indent + 2);
             }
-            out.push_str(&format!("{})\n", pad));
         }
-        HirExpr::MethodCall {
+        HirExpr::CallFunction { function, args } => {
+            out.push_str(&format!("{}CallFunction({:?})\n", prefix, function));
+            for arg in args {
+                dump_hir_expr(arg, out, indent + 2);
+            }
+        }
+        HirExpr::CallMethod {
             receiver,
             method,
             args,
         } => {
-            out.push_str(&format!("{}(method_call \"{}\"\n", pad, method));
-            out.push_str(&format!("{}  receiver:\n", pad));
-            dump_hir_expr(receiver, out, indent + 1);
-            out.push_str(&format!("{}  args:\n", pad));
+            out.push_str(&format!("{}CallMethod({:?})\n", prefix, method));
+            dump_hir_expr(receiver, out, indent + 2);
             for arg in args {
-                dump_hir_expr(arg, out, indent + 1);
+                dump_hir_expr(arg, out, indent + 2);
             }
-            out.push_str(&format!("{})\n", pad));
         }
-        HirExpr::New { constructor, args } => {
-            out.push_str(&format!("{}(new func${}\n", pad, constructor.0));
-            for arg in args {
-                dump_hir_expr(arg, out, indent + 1);
-            }
-            out.push_str(&format!("{})\n", pad));
-        }
-        HirExpr::If {
-            condition,
-            then_expr,
-            else_expr,
-        } => {
-            out.push_str(&format!("{}(if\n", pad));
-            dump_hir_expr(condition, out, indent + 1);
-            dump_hir_expr(then_expr, out, indent + 1);
-            dump_hir_expr(else_expr, out, indent + 1);
-            out.push_str(&format!("{})\n", pad));
-        }
-    }
-}
-
-/// Trait for types that can dump their HIR representation.
-pub trait HirDump {
-    /// Dump this value as a HIR-formatted string.
-    fn dump_hir(&self) -> String;
-}
-
-impl HirDump for HirProgram {
-    fn dump_hir(&self) -> String {
-        dump_hir_program(self, "program")
-    }
-}
-
-impl HirDump for HirFunction {
-    fn dump_hir(&self) -> String {
-        dump_hir_function(self)
-    }
-}
-
-impl HirDump for HirStmt {
-    fn dump_hir(&self) -> String {
-        let mut out = String::new();
-        dump_hir_stmt(self, &mut out, 0);
-        out
-    }
-}
-
-impl HirDump for HirExpr {
-    fn dump_hir(&self) -> String {
-        let mut out = String::new();
-        dump_hir_expr(self, &mut out, 0);
-        out
     }
 }

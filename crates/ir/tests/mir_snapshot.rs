@@ -1,414 +1,572 @@
-//! mir_snapshot tests — verify mir dump output matches expected format.
+//! Snapshot tests for MIR dump.
 //!
-//! These tests construct sample mir programs and verify that their dumped
-//! representation is well-formed and stable.
+//! These tests verify that every MIR (LoweredProgram) variant is dumpable
+//! by constructing programs that exercise each variant and checking the
+//! dump output for expected pattern strings.
 
-use ts2wasm_diagnostic::DiagCode;
-use ts2wasm_ir::lowered::mir::{MirExpr, MirFunction, MirProgram, MirStmt};
-use ts2wasm_ir::lowered::mir_dump::{MirDump, dump_mir_function, dump_mir_program};
-use ts2wasm_ir::lowered::{FuncId, LocalId, ModuleInfo, RuntimeFn, validate_mir};
+use ts2wasm_frontend::Span;
+use ts2wasm_ir::dump_mir;
+use ts2wasm_ir::lowered::{
+    LoweredArraySlot, LoweredBinaryOp, LoweredExpr, LoweredFunction, LoweredLogicalAssignOp,
+    LoweredProgram, LoweredStmt, LoweredUnaryOp,
+};
+use ts2wasm_ir::{FuncId, LocalId};
 
-#[test]
-fn mir_dump_empty_program() {
-    let program = MirProgram {
-        top_level_statements: vec![],
-        top_level_locals: vec![],
-        functions: vec![],
-        modules: vec![],
-    };
-    let dump = dump_mir_program(&program, "empty");
-    assert!(dump.contains("MIR Program: empty"));
-    assert!(dump.contains("Modules: []"));
-    assert!(dump.contains("Functions:"));
-    assert!(dump.contains("Top-level statements:"));
-}
-
-#[test]
-fn mir_dump_i32_const() {
-    let expr = MirExpr::I32Const(42);
-    let dump = expr.dump_mir();
-    assert!(dump.contains("i32.const 42"), "dump: {}", dump);
-}
-
-#[test]
-fn mir_dump_string_const() {
-    let expr = MirExpr::StringConst("hello".to_string());
-    let dump = expr.dump_mir();
-    assert!(dump.contains("hello"));
-}
-
-#[test]
-fn mir_dump_local() {
-    let expr = MirExpr::Local(LocalId(3));
-    let dump = expr.dump_mir();
-    assert!(dump.contains("local.get $3"), "dump: {}", dump);
-}
-
-#[test]
-fn mir_dump_call_runtime() {
-    let expr = MirExpr::CallRuntime {
-        intrinsic: RuntimeFn::Log,
-        args: vec![MirExpr::I32Const(42)],
-    };
-    let dump = expr.dump_mir();
-    assert!(dump.contains("call_runtime"));
-    assert!(
-        dump.contains("Log"),
-        "dump should contain Log, got: {}",
-        dump
-    );
-    assert!(dump.contains("42"));
-}
-
-#[test]
-fn mir_dump_call_function() {
-    let expr = MirExpr::CallFunction {
-        func: FuncId(7),
-        args: vec![MirExpr::I32Const(0)],
-    };
-    let dump = expr.dump_mir();
-    assert!(dump.contains("call_func $7"));
-}
-
-#[test]
-fn mir_dump_call_closure() {
-    let expr = MirExpr::CallClosure {
-        closure: Box::new(MirExpr::Local(LocalId(0))),
-        args: vec![MirExpr::I32Const(1)],
-    };
-    let dump = expr.dump_mir();
-    assert!(dump.contains("call_closure"));
-}
-
-#[test]
-fn mir_dump_new_object() {
-    let expr = MirExpr::NewObject {
-        props: vec![
-            ("a".to_string(), MirExpr::I32Const(1)),
-            ("b".to_string(), MirExpr::I32Const(2)),
-        ],
-    };
-    let dump = expr.dump_mir();
-    assert!(dump.contains("new_object"));
-    assert!(dump.contains("\"a\""));
-    assert!(dump.contains("\"b\""));
-}
-
-#[test]
-fn mir_dump_new_array() {
-    let expr = MirExpr::NewArray {
-        elements: vec![MirExpr::I32Const(1), MirExpr::I32Const(2)],
-    };
-    let dump = expr.dump_mir();
-    assert!(dump.contains("new_array"));
-}
-
-#[test]
-fn mir_dump_function_with_body() {
-    let func = MirFunction {
-        id: FuncId(0),
-        params: vec![LocalId(0)],
-        uses_receiver: false,
-        min_required_params: 1,
-        rest_param_index: None,
-        locals: vec![LocalId(0), LocalId(1)],
-        body: vec![MirStmt::Return(MirExpr::I32Const(42))],
-        recursion_depth: 0,
-        is_async: false,
-    };
-    let dump = dump_mir_function(&func);
-    assert!(dump.contains("func $0"));
-    assert!(dump.contains("params [LocalId(0)]"));
-    assert!(dump.contains("receiver false"));
-    assert!(dump.contains("min_params 1"));
-    assert!(dump.contains("rest None"));
-    assert!(dump.contains("recursion 0"));
-    assert!(dump.contains("async false"));
-    assert!(dump.contains("return"));
-}
-
-#[test]
-fn mir_dump_if_stmt() {
-    let stmt = MirStmt::If {
-        condition: MirExpr::Local(LocalId(0)),
-        then_body: vec![MirStmt::Return(MirExpr::I32Const(1))],
-        else_body: vec![MirStmt::Return(MirExpr::I32Const(0))],
-    };
-    let dump = stmt.dump_mir();
-    assert!(dump.contains("if"));
-    assert!(dump.contains("then"));
-    assert!(dump.contains("else"));
-}
-
-#[test]
-fn mir_dump_while_stmt() {
-    let stmt = MirStmt::While {
-        condition: MirExpr::Local(LocalId(0)),
-        body: vec![MirStmt::Expr(MirExpr::I32Const(1))],
-    };
-    let dump = stmt.dump_mir();
-    assert!(dump.contains("while"));
-    assert!(dump.contains("do"));
-}
-
-#[test]
-fn mir_dump_try_catch() {
-    let stmt = MirStmt::TryCatch {
-        try_body: vec![MirStmt::Expr(MirExpr::I32Const(1))],
-        catch_var: Some(LocalId(0)),
-        catch_body: Some(vec![MirStmt::Return(MirExpr::I32Const(-1))]),
-        finally_body: Some(vec![MirStmt::Expr(MirExpr::I32Const(0))]),
-    };
-    let dump = stmt.dump_mir();
-    assert!(dump.contains("try"));
-    assert!(dump.contains("catch"));
-    assert!(dump.contains("finally"));
-}
-
-#[test]
-fn mir_dump_labeled_break_continue() {
-    let stmts = vec![
-        MirStmt::Labeled {
-            label: "loop".to_string(),
-            body: Box::new(MirStmt::Break {
-                label: Some("loop".to_string()),
-            }),
-        },
-        MirStmt::Continue {
-            label: Some("outer".to_string()),
-        },
-    ];
-    for stmt in &stmts {
-        let dump = stmt.dump_mir();
-        assert!(!dump.is_empty());
-    }
-}
-
-#[test]
-fn mir_dump_switch() {
-    let stmt = MirStmt::Switch {
-        expr: MirExpr::Local(LocalId(0)),
-        cases: vec![
-            (
-                Some(MirExpr::I32Const(1)),
-                vec![MirStmt::Return(MirExpr::I32Const(10))],
-            ),
-            (None, vec![MirStmt::Return(MirExpr::I32Const(0))]),
-        ],
-    };
-    let dump = stmt.dump_mir();
-    assert!(dump.contains("switch"));
-    assert!(dump.contains("case:"));
-    assert!(dump.contains("default:"));
-}
-
-#[test]
-fn mir_dump_class_decl() {
-    let stmt = MirStmt::ClassDecl {
-        name: "MyClass".to_string(),
-        extends: Some("Base".to_string()),
-        constructor: Some(FuncId(0)),
-        methods: vec![("method1".to_string(), FuncId(1))],
-        static_methods: vec![("static1".to_string(), FuncId(2))],
-        private_fields: vec!["#x".to_string()],
-    };
-    let dump = stmt.dump_mir();
-    assert!(dump.contains("MyClass"));
-    assert!(dump.contains("Base"));
-    assert!(dump.contains("constructor func$0"));
-    assert!(dump.contains("method1"));
-}
-
-#[test]
-fn mir_dump_export() {
-    let stmt = MirStmt::Export {
-        name: "myExport".to_string(),
-        expr: MirExpr::I32Const(42),
-    };
-    let dump = stmt.dump_mir();
-    assert!(dump.contains("myExport"));
-    assert!(dump.contains("42"));
-}
-
-#[test]
-fn mir_dump_load_module() {
-    let expr = MirExpr::LoadModule { module_id: 5 };
-    let dump = expr.dump_mir();
-    assert!(dump.contains("load_module 5"));
-}
-
-#[test]
-fn mir_dump_block_expr() {
-    let expr = MirExpr::Block {
-        stmts: vec![MirStmt::Expr(MirExpr::I32Const(1))],
-        result: Box::new(MirExpr::I32Const(42)),
-    };
-    let dump = expr.dump_mir();
-    assert!(dump.contains("(block"));
-    assert!(dump.contains("result:"));
-}
-
-#[test]
-fn mir_dump_runtime_intrinsic_names() {
-    // Verify a sampling of RuntimeFn variants display their names
-    let cases = vec![
-        (RuntimeFn::Log, "Log"),
-        (RuntimeFn::ArrayPush, "ArrayPush"),
-        (RuntimeFn::MathFloor, "MathFloor"),
-        (RuntimeFn::DateNew, "DateNew"),
-        (RuntimeFn::ObjectKeys, "ObjectKeys"),
-        // Pseudo-intrinsics
-        (RuntimeFn::ArrayPushMany, "ArrayPushMany"),
-        (RuntimeFn::HeapClosureCall, "HeapClosureCall"),
-        (RuntimeFn::PrivateFieldGet, "PrivateFieldGet"),
-        (RuntimeFn::PrivateFieldSet, "PrivateFieldSet"),
-        (RuntimeFn::PrivateBrandCheck, "PrivateBrandCheck"),
-    ];
-    for (intrinsic, expected_name) in cases {
-        let expr = MirExpr::CallRuntime {
-            intrinsic,
-            args: vec![],
-        };
-        let dump = expr.dump_mir();
+/// Helper: dump an MIR program and check it contains expected strings.
+fn assert_mir_dump_contains(mir: &LoweredProgram, expected: &[&str]) {
+    let dump = dump_mir(mir);
+    for pattern in expected {
         assert!(
-            dump.contains(expected_name),
-            "Expected {} to contain {}, got: {}",
-            expected_name,
-            expected_name,
+            dump.contains(pattern),
+            "expected dump to contain {:?}, but it did not\n\n=== dump ===\n{}",
+            pattern,
             dump
         );
     }
 }
 
-#[test]
-fn mir_dump_covers_remaining_statement_variants() {
-    let cases = vec![
-        (
-            MirStmt::Let {
-                local: LocalId(0),
-                init: MirExpr::I32Const(1),
-            },
-            "let $0",
-        ),
-        (
-            MirStmt::Assign {
-                local: LocalId(0),
-                init: MirExpr::I32Const(2),
-            },
-            "$0 =",
-        ),
-        (
-            MirStmt::Throw(MirExpr::StringConst("boom".to_owned())),
-            "throw",
-        ),
-        (
-            MirStmt::ModuleExportsAssign {
-                expr: MirExpr::I32Const(3),
-            },
-            "module.exports",
-        ),
-    ];
-
-    for (stmt, marker) in cases {
-        let dump = stmt.dump_mir();
-        assert!(dump.contains(marker), "expected {marker}, got: {dump}");
-    }
+fn make_span() -> Span {
+    Span { start: 0, end: 0 }
 }
 
-#[test]
-fn mir_dump_prints_modules() {
-    let program = MirProgram {
+/// A minimal MIR program for tests.
+fn empty_mir() -> LoweredProgram {
+    LoweredProgram {
         top_level_statements: vec![],
         top_level_locals: vec![],
         functions: vec![],
-        modules: vec![ModuleInfo {
-            id: 0,
-            specifier: "./dep".to_owned(),
-            statements: vec![],
-            locals_count: 0,
-        }],
-    };
-
-    let dump = dump_mir_program(&program, "modules");
-    assert!(dump.contains("Modules:"));
-    assert!(dump.contains("./dep"));
-}
-
-#[test]
-fn mir_validate_accepts_well_formed_program() {
-    let program = MirProgram {
-        top_level_statements: vec![
-            MirStmt::Let {
-                local: LocalId(0),
-                init: MirExpr::I32Const(1),
-            },
-            MirStmt::Expr(MirExpr::LoadModule { module_id: 0 }),
-            MirStmt::Expr(MirExpr::CallFunction {
-                func: FuncId(0),
-                args: vec![MirExpr::Local(LocalId(0))],
-            }),
-        ],
-        top_level_locals: vec![LocalId(0)],
-        functions: vec![MirFunction {
-            id: FuncId(0),
-            params: vec![LocalId(0)],
-            uses_receiver: false,
-            min_required_params: 1,
-            rest_param_index: None,
-            locals: vec![LocalId(1)],
-            body: vec![MirStmt::Return(MirExpr::Local(LocalId(1)))],
-            recursion_depth: 0,
-            is_async: false,
-        }],
-        modules: vec![ModuleInfo {
-            id: 0,
-            specifier: "./dep".to_owned(),
-            statements: vec![],
-            locals_count: 0,
-        }],
-    };
-
-    validate_mir(&program).expect("valid MIR should pass validation");
-}
-
-#[test]
-fn mir_validate_rejects_invalid_statement_local_target() {
-    let program = MirProgram {
-        top_level_statements: vec![MirStmt::Assign {
-            local: LocalId(1),
-            init: MirExpr::I32Const(1),
-        }],
-        top_level_locals: vec![LocalId(0)],
-        functions: vec![],
         modules: vec![],
-    };
+    }
+}
 
-    let errors = validate_mir(&program).expect_err("invalid assign local should fail");
-    assert!(errors.iter().any(|error| {
-        error.code == DiagCode::InvariantViolation
-            && error.message.contains("mir assign local 1 out of bounds")
-    }));
+// ---------------------------------------------------------------------------
+// MIR Stmt variants
+// ---------------------------------------------------------------------------
+
+#[test]
+fn dump_mir_block() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Block(
+            vec![LoweredStmt::Expr(
+                LoweredExpr::Null(make_span()),
+                make_span(),
+            )],
+            make_span(),
+        )],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["Block", "Null"]);
 }
 
 #[test]
-fn mir_validate_rejects_invalid_function_references() {
-    let program = MirProgram {
-        top_level_statements: vec![
-            MirStmt::Expr(MirExpr::CallFunction {
-                func: FuncId(1),
-                args: vec![],
+fn dump_mir_let_stmt() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Let(
+            LocalId(0),
+            LoweredExpr::Number(42, make_span()),
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["Let(", "Number(42)"]);
+}
+
+#[test]
+fn dump_mir_assign_stmt() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Assign(
+            LocalId(0),
+            LoweredExpr::Number(1, make_span()),
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["Assign(", "Number(1)"]);
+}
+
+#[test]
+fn dump_mir_expr_stmt() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::Undefined(make_span()),
+            make_span(),
+        )],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["Expr", "Undefined"]);
+}
+
+#[test]
+fn dump_mir_if_stmt() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::If {
+            condition: LoweredExpr::Bool(true, make_span()),
+            then_body: vec![LoweredStmt::Expr(
+                LoweredExpr::Number(1, make_span()),
+                make_span(),
+            )],
+            else_body: vec![LoweredStmt::Expr(
+                LoweredExpr::Number(2, make_span()),
+                make_span(),
+            )],
+            span: make_span(),
+        }],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(
+        &mir,
+        &["If", "then_body", "else_body", "Number(1)", "Number(2)"],
+    );
+}
+
+#[test]
+fn dump_mir_while_stmt() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::While {
+            condition: LoweredExpr::Bool(true, make_span()),
+            body: vec![],
+            span: make_span(),
+        }],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["While", "Bool(true)"]);
+}
+
+#[test]
+fn dump_mir_return_stmt() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Return(
+            LoweredExpr::Number(42, make_span()),
+            make_span(),
+        )],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["Return", "Number(42)"]);
+}
+
+#[test]
+fn dump_mir_throw_stmt() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Throw(
+            LoweredExpr::String("error".to_string(), make_span()),
+            make_span(),
+        )],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["Throw", "String"]);
+}
+
+#[test]
+fn dump_mir_try_catch() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::TryCatch {
+            try_body: vec![],
+            catch_var: Some(LocalId(0)),
+            catch_body: Some(vec![]),
+            finally_body: None,
+            span: make_span(),
+        }],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["TryCatch", "try_body", "catch_var", "catch_body"]);
+}
+
+#[test]
+fn dump_mir_switch_stmt() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Switch {
+            expr: LoweredExpr::Number(1, make_span()),
+            cases: vec![
+                (Some(LoweredExpr::Number(1, make_span())), vec![]),
+                (None, vec![]),
+            ],
+            span: make_span(),
+        }],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["Switch", "case", "default"]);
+}
+
+#[test]
+fn dump_mir_do_while() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::DoWhile {
+            body: vec![],
+            condition: LoweredExpr::Bool(true, make_span()),
+            span: make_span(),
+        }],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["DoWhile", "Bool(true)"]);
+}
+
+#[test]
+fn dump_mir_for_stmt() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::For {
+            init: Some(Box::new(LoweredStmt::Let(
+                LocalId(0),
+                LoweredExpr::Number(0, make_span()),
+                make_span(),
+            ))),
+            condition: Some(LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                op: LoweredBinaryOp::Less,
+                right: Box::new(LoweredExpr::Number(10, make_span())),
+                span: make_span(),
             }),
-            MirStmt::ClassDecl {
-                name: "C".to_owned(),
-                extends: None,
-                constructor: Some(FuncId(2)),
-                methods: vec![("m".to_owned(), FuncId(3))],
-                static_methods: vec![("s".to_owned(), FuncId(4))],
-                private_fields: vec![],
+            update: Some(LoweredExpr::Assign {
+                local: LocalId(0),
+                expr: Box::new(LoweredExpr::Number(1, make_span())),
+                span: make_span(),
+            }),
+            body: vec![],
+            span: make_span(),
+        }],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["For", "init", "condition", "update", "Binary"]);
+}
+
+#[test]
+fn dump_mir_for_in() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::ForIn {
+            var: LocalId(0),
+            iter: LoweredExpr::Local(LocalId(1), make_span()),
+            iter_local: LocalId(2),
+            index_local: LocalId(3),
+            len_local: LocalId(4),
+            body: vec![],
+            span: make_span(),
+        }],
+        top_level_locals: vec![LocalId(0), LocalId(1), LocalId(2), LocalId(3), LocalId(4)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["ForIn"]);
+}
+
+#[test]
+fn dump_mir_for_of() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::ForOf {
+            var: LocalId(0),
+            iter: LoweredExpr::Local(LocalId(1), make_span()),
+            iter_local: LocalId(2),
+            index_local: LocalId(3),
+            len_local: LocalId(4),
+            body: vec![],
+            span: make_span(),
+        }],
+        top_level_locals: vec![LocalId(0), LocalId(1), LocalId(2), LocalId(3), LocalId(4)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["ForOf"]);
+}
+
+#[test]
+fn dump_mir_labeled() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Labeled {
+            label: "loop1".to_string(),
+            body: Box::new(LoweredStmt::Break {
+                label: Some("loop1".to_string()),
+                span: make_span(),
+            }),
+            span: make_span(),
+        }],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["Labeled", "Break"]);
+}
+
+#[test]
+fn dump_mir_break_continue() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![
+            LoweredStmt::Break {
+                label: None,
+                span: make_span(),
+            },
+            LoweredStmt::Continue {
+                label: Some("l".to_string()),
+                span: make_span(),
             },
         ],
-        top_level_locals: vec![],
-        functions: vec![MirFunction {
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["Break", "Continue"]);
+}
+
+#[test]
+fn dump_mir_export() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Export {
+            name: "foo".to_string(),
+            expr: LoweredExpr::Number(42, make_span()),
+            span: make_span(),
+        }],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["Export", "Number(42)"]);
+}
+
+#[test]
+fn dump_mir_module_exports_assign() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::ModuleExportsAssign {
+            expr: LoweredExpr::Number(1, make_span()),
+            span: make_span(),
+        }],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["ModuleExportsAssign"]);
+}
+
+#[test]
+fn dump_mir_class_decl() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::ClassDecl {
+            name: "MyClass".to_string(),
+            extends: Some("Base".to_string()),
+            constructor: Some(FuncId(0)),
+            methods: vec![("foo".to_string(), FuncId(1))],
+            static_methods: vec![("bar".to_string(), FuncId(2))],
+            private_fields: vec!["#x".to_string()],
+            span: make_span(),
+        }],
+        functions: vec![
+            LoweredFunction {
+                id: FuncId(0),
+                params: vec![],
+                uses_receiver: true,
+                min_required_params: 0,
+                rest_param_index: None,
+                locals: vec![],
+                body: vec![],
+                recursion_depth: 0,
+                is_async: false,
+            },
+            LoweredFunction {
+                id: FuncId(1),
+                params: vec![],
+                uses_receiver: false,
+                min_required_params: 0,
+                rest_param_index: None,
+                locals: vec![],
+                body: vec![],
+                recursion_depth: 0,
+                is_async: false,
+            },
+            LoweredFunction {
+                id: FuncId(2),
+                params: vec![],
+                uses_receiver: false,
+                min_required_params: 0,
+                rest_param_index: None,
+                locals: vec![],
+                body: vec![],
+                recursion_depth: 0,
+                is_async: false,
+            },
+        ],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(
+        &mir,
+        &[
+            "ClassDecl",
+            "extends",
+            "constructor",
+            "method",
+            "static_method",
+            "private_field",
+        ],
+    );
+}
+
+// ---------------------------------------------------------------------------
+// MIR Expr variants
+// ---------------------------------------------------------------------------
+
+#[test]
+fn dump_mir_number_expr() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::Number(42, make_span()),
+            make_span(),
+        )],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["Number(42)"]);
+}
+
+#[test]
+fn dump_mir_bigint_expr() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::BigIntLiteral {
+                decimal: "123".to_string(),
+                sign: 1,
+                limb_low: 123,
+                limb_high: 0,
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["BigIntLiteral"]);
+}
+
+#[test]
+fn dump_mir_string_expr() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::String("hello".to_string(), make_span()),
+            make_span(),
+        )],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["String"]);
+}
+
+#[test]
+fn dump_mir_bool_expr() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::Bool(true, make_span()),
+            make_span(),
+        )],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["Bool(true)"]);
+}
+
+#[test]
+fn dump_mir_local_expr() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::Local(LocalId(0), make_span()),
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["Local("]);
+}
+
+#[test]
+fn dump_mir_env_cell() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![
+            LoweredStmt::Expr(
+                LoweredExpr::EnvCellNew(Box::new(LoweredExpr::Number(1, make_span())), make_span()),
+                make_span(),
+            ),
+            LoweredStmt::Expr(
+                LoweredExpr::EnvCellGet(LocalId(0), make_span()),
+                make_span(),
+            ),
+            LoweredStmt::Expr(
+                LoweredExpr::EnvCellSet {
+                    cell: LocalId(0),
+                    expr: Box::new(LoweredExpr::Number(2, make_span())),
+                    span: make_span(),
+                },
+                make_span(),
+            ),
+        ],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["EnvCellNew", "EnvCellGet", "EnvCellSet"]);
+}
+
+#[test]
+fn dump_mir_unary_expr() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::Unary {
+                op: LoweredUnaryOp::Not,
+                expr: Box::new(LoweredExpr::Bool(true, make_span())),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["Unary(Not)"]);
+}
+
+#[test]
+fn dump_mir_binary_expr() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Number(1, make_span())),
+                op: LoweredBinaryOp::Add,
+                right: Box::new(LoweredExpr::Number(2, make_span())),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["Binary(Add)", "Number(1)", "Number(2)"]);
+}
+
+#[test]
+fn dump_mir_property_in() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::PropertyIn {
+                obj: Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                key: "x".to_string(),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["PropertyIn"]);
+}
+
+#[test]
+fn dump_mir_property_in_dynamic() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::PropertyInDynamic {
+                obj: Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                key: Box::new(LoweredExpr::String("x".to_string(), make_span())),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["PropertyInDynamic"]);
+}
+
+#[test]
+fn dump_mir_call_user() {
+    use ts2wasm_ir::lowered::FunctionCallKind;
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(FuncId(0)),
+                args: vec![LoweredExpr::Number(1, make_span())],
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        functions: vec![LoweredFunction {
             id: FuncId(0),
             params: vec![],
             uses_receiver: false,
@@ -419,75 +577,590 @@ fn mir_validate_rejects_invalid_function_references() {
             recursion_depth: 0,
             is_async: false,
         }],
-        modules: vec![],
+        ..empty_mir()
     };
-
-    let errors = validate_mir(&program).expect_err("invalid function refs should fail");
-    assert!(errors.iter().any(|error| {
-        error.code == DiagCode::InvariantViolation
-            && error
-                .message
-                .contains("mir function reference 1 out of bounds")
-    }));
-    assert!(errors.iter().any(|error| {
-        error.code == DiagCode::InvariantViolation
-            && error
-                .message
-                .contains("mir class constructor 2 out of bounds")
-    }));
-    assert!(errors.iter().any(|error| {
-        error.code == DiagCode::InvariantViolation
-            && error.message.contains("mir class method 3 out of bounds")
-    }));
-    assert!(errors.iter().any(|error| {
-        error.code == DiagCode::InvariantViolation
-            && error
-                .message
-                .contains("mir static class method 4 out of bounds")
-    }));
+    assert_mir_dump_contains(&mir, &["Call(", "Number(1)"]);
 }
 
 #[test]
-fn mir_validate_rejects_invalid_module_and_catch_locals() {
-    let program = MirProgram {
-        top_level_statements: vec![
-            MirStmt::Expr(MirExpr::LoadModule { module_id: 0 }),
-            MirStmt::TryCatch {
-                try_body: vec![],
-                catch_var: Some(LocalId(1)),
-                catch_body: Some(vec![]),
-                finally_body: None,
+fn dump_mir_assign_expr() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::Assign {
+                local: LocalId(0),
+                expr: Box::new(LoweredExpr::Number(1, make_span())),
+                span: make_span(),
             },
-        ],
+            make_span(),
+        )],
         top_level_locals: vec![LocalId(0)],
-        functions: vec![],
-        modules: vec![],
+        ..empty_mir()
     };
-
-    let errors = validate_mir(&program).expect_err("invalid module and catch local should fail");
-    assert!(errors.iter().any(|error| {
-        error.code == DiagCode::InvariantViolation
-            && error.message.contains("mir module id 0 out of bounds")
-    }));
-    assert!(errors.iter().any(|error| {
-        error.code == DiagCode::InvariantViolation
-            && error.message.contains("mir catch local 1 out of bounds")
-    }));
+    assert_mir_dump_contains(&mir, &["Assign(", "Number(1)"]);
 }
 
 #[test]
-fn mir_validate_rejects_top_level_return() {
-    let program = MirProgram {
-        top_level_statements: vec![MirStmt::Return(MirExpr::I32Const(1))],
+fn dump_mir_logical_assign() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::LogicalAssign {
+                local: LocalId(0),
+                op: LoweredLogicalAssignOp::And,
+                expr: Box::new(LoweredExpr::Number(1, make_span())),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["LogicalAssign"]);
+}
+
+#[test]
+fn dump_mir_logical_property_assign() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::LogicalPropertyAssign {
+                object: LocalId(0),
+                key: "x".to_string(),
+                op: LoweredLogicalAssignOp::Or,
+                expr: Box::new(LoweredExpr::Number(2, make_span())),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["LogicalPropertyAssign"]);
+}
+
+#[test]
+fn dump_mir_array_new() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::ArrayNew {
+                elements: vec![LoweredExpr::Number(1, make_span())],
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["ArrayNew", "Number(1)"]);
+}
+
+#[test]
+fn dump_mir_array_new_sparse() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::ArrayNewSparse {
+                slots: vec![
+                    LoweredArraySlot::Present(LoweredExpr::Number(1, make_span())),
+                    LoweredArraySlot::Hole,
+                ],
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["ArrayNewSparse", "Present", "Hole"]);
+}
+
+#[test]
+fn dump_mir_array_get() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::ArrayGet {
+                arr: Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                index: Box::new(LoweredExpr::Number(0, make_span())),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["ArrayGet"]);
+}
+
+#[test]
+fn dump_mir_index() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::Index {
+                object: Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                index: Box::new(LoweredExpr::Number(0, make_span())),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["Index"]);
+}
+
+#[test]
+fn dump_mir_get_length() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::GetLength(
+                Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                make_span(),
+            ),
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["GetLength"]);
+}
+
+#[test]
+fn dump_mir_object_new() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::ObjectNew {
+                props: vec![("x".to_string(), LoweredExpr::Number(1, make_span()))],
+                non_enumerable: 0,
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["ObjectNew", "x", "Number(1)"]);
+}
+
+#[test]
+fn dump_mir_error_new() {
+    use ts2wasm_ir::lowered::BuiltinErrorConstructor;
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::ErrorNew {
+                constructor: BuiltinErrorConstructor::TypeError,
+                message: Box::new(LoweredExpr::String("msg".to_string(), make_span())),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["ErrorNew", "TypeError"]);
+}
+
+#[test]
+fn dump_mir_property_get() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::PropertyGet {
+                obj: Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                key: "x".to_string(),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["PropertyGet"]);
+}
+
+#[test]
+fn dump_mir_optional_property_get() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::OptionalPropertyGet {
+                obj: Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                key: "x".to_string(),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["OptionalPropertyGet"]);
+}
+
+#[test]
+fn dump_mir_property_get_dynamic() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                key: Box::new(LoweredExpr::String("x".to_string(), make_span())),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["PropertyGetDynamic"]);
+}
+
+#[test]
+fn dump_mir_optional_index() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::OptionalIndex {
+                object: Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                index: Box::new(LoweredExpr::Number(0, make_span())),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["OptionalIndex"]);
+}
+
+#[test]
+fn dump_mir_optional_call() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::OptionalCall {
+                callee: Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                call: Box::new(LoweredExpr::Local(LocalId(1), make_span())),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0), LocalId(1)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["OptionalCall"]);
+}
+
+#[test]
+fn dump_mir_method_call() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::MethodCall {
+                object: Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                method: "toString".to_string(),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["MethodCall"]);
+}
+
+#[test]
+fn dump_mir_promise_get_value() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::PromiseGetValue {
+                promise: Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["PromiseGetValue"]);
+}
+
+#[test]
+fn dump_mir_runtime_call() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::RuntimeCall {
+                runtime_fn: "ArrayPushGrow".to_string(),
+                args: vec![
+                    LoweredExpr::Local(LocalId(0), make_span()),
+                    LoweredExpr::Number(42, make_span()),
+                ],
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["RuntimeCall", "ArrayPushGrow", "Number(42)"]);
+}
+
+#[test]
+fn dump_mir_property_set() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::PropertySet {
+                object: Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                key: "x".to_string(),
+                value: Box::new(LoweredExpr::Number(1, make_span())),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["PropertySet"]);
+}
+
+#[test]
+fn dump_mir_property_delete() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::PropertyDelete {
+                object: Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                key: "x".to_string(),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["PropertyDelete"]);
+}
+
+#[test]
+fn dump_mir_property_delete_dynamic() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::PropertyDeleteDynamic {
+                object: Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                key: Box::new(LoweredExpr::String("x".to_string(), make_span())),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["PropertyDeleteDynamic"]);
+}
+
+#[test]
+fn dump_mir_property_set_dynamic() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::PropertySetDynamic {
+                object: Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                index: Box::new(LoweredExpr::Number(0, make_span())),
+                value: Box::new(LoweredExpr::Number(42, make_span())),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["PropertySetDynamic"]);
+}
+
+#[test]
+fn dump_mir_new_expr() {
+    use ts2wasm_ir::lowered::ClassPrototypeRef;
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::New {
+                constructor: FuncId(0),
+                prototype: ClassPrototypeRef {
+                    constructor: FuncId(0),
+                    parent_constructors: vec![],
+                },
+                args: vec![LoweredExpr::Number(1, make_span())],
+                base_local: LocalId(0),
+                private_brand: None,
+                private_slot_count: 0,
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        functions: vec![LoweredFunction {
+            id: FuncId(0),
+            params: vec![],
+            uses_receiver: true,
+            min_required_params: 0,
+            rest_param_index: None,
+            locals: vec![],
+            body: vec![],
+            recursion_depth: 0,
+            is_async: false,
+        }],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["New(", "Number(1)"]);
+}
+
+#[test]
+fn dump_mir_class_prototype() {
+    use ts2wasm_ir::lowered::ClassPrototypeRef;
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::ClassPrototype(
+                ClassPrototypeRef {
+                    constructor: FuncId(0),
+                    parent_constructors: vec![],
+                },
+                make_span(),
+            ),
+            make_span(),
+        )],
+        functions: vec![LoweredFunction {
+            id: FuncId(0),
+            params: vec![],
+            uses_receiver: true,
+            min_required_params: 0,
+            rest_param_index: None,
+            locals: vec![],
+            body: vec![],
+            recursion_depth: 0,
+            is_async: false,
+        }],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["ClassPrototype"]);
+}
+
+#[test]
+fn dump_mir_builtin_error_prototype() {
+    use ts2wasm_ir::lowered::BuiltinErrorConstructor;
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::BuiltinErrorPrototype(BuiltinErrorConstructor::Error, make_span()),
+            make_span(),
+        )],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["BuiltinErrorPrototype"]);
+}
+
+#[test]
+fn dump_mir_module_load() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::ModuleLoad {
+                module_id: 1,
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        modules: vec![ts2wasm_ir::lowered::ModuleInfo {
+            id: 1,
+            specifier: "./mod".to_string(),
+            statements: vec![],
+            locals_count: 0,
+        }],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["ModuleLoad"]);
+}
+
+#[test]
+fn dump_mir_block_expr() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::Block {
+                stmts: vec![LoweredStmt::Let(
+                    LocalId(0),
+                    LoweredExpr::Number(1, make_span()),
+                    make_span(),
+                )],
+                result: Box::new(LoweredExpr::Local(LocalId(0), make_span())),
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["Block", "result"]);
+}
+
+#[test]
+fn dump_mir_this() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::This(make_span()),
+            make_span(),
+        )],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["This"]);
+}
+
+#[test]
+fn dump_mir_arrow_fn() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::Expr(
+            LoweredExpr::ArrowFn {
+                func_id: FuncId(0),
+                captures: vec![LocalId(0)],
+                representation: ts2wasm_ir::lowered::ClosureRepresentation::DirectLocalToken,
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        functions: vec![LoweredFunction {
+            id: FuncId(0),
+            params: vec![LocalId(0)],
+            uses_receiver: false,
+            min_required_params: 1,
+            rest_param_index: None,
+            locals: vec![],
+            body: vec![],
+            recursion_depth: 0,
+            is_async: false,
+        }],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["ArrowFn"]);
+}
+
+#[test]
+fn dump_mir_function_body() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![],
+        top_level_locals: vec![],
+        functions: vec![LoweredFunction {
+            id: FuncId(0),
+            params: vec![LocalId(0)],
+            uses_receiver: false,
+            min_required_params: 1,
+            rest_param_index: None,
+            locals: vec![LocalId(1)],
+            body: vec![LoweredStmt::Return(
+                LoweredExpr::Number(42, make_span()),
+                make_span(),
+            )],
+            recursion_depth: 0,
+            is_async: false,
+        }],
+        modules: vec![],
+    };
+    assert_mir_dump_contains(&mir, &["function[", "Return", "Number(42)"]);
+}
+
+#[test]
+fn dump_mir_module_section() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![],
         top_level_locals: vec![],
         functions: vec![],
-        modules: vec![],
+        modules: vec![ts2wasm_ir::lowered::ModuleInfo {
+            id: 0,
+            specifier: "./helper".to_string(),
+            statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Number(99, make_span()),
+                make_span(),
+            )],
+            locals_count: 0,
+        }],
     };
-
-    let errors = validate_mir(&program).expect_err("top-level return should fail");
-    assert!(
-        errors
-            .iter()
-            .any(|error| error.code == DiagCode::InvalidTopLevelReturn)
-    );
+    assert_mir_dump_contains(&mir, &["module[", "helper", "Number(99)"]);
 }
