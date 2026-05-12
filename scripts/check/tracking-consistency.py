@@ -73,7 +73,8 @@ REQUIRED = {
     "done": ["id", "title", "priority", "type", "area", "status", "created", "updated", "closed", "acceptance", "evidence"],
 }
 
-VALID_PRIORITIES = {"P0", "P1", "P2", "P3"}
+VALID_PRIORITIES = {"P1", "P2", "P3", "P4"}
+VALID_STATUSES = {"open", "active", "done"}
 VALID_TYPES = {
     "feature",
     "runtime-builtin",
@@ -247,6 +248,7 @@ def main() -> None:
 
     ids: set[int] = set()
     has_warnings = False
+    depends_on_refs: list[tuple[int, int]] = []  # (referrer_id, referenced_id)
 
     for section in SECTIONS:
         items = data.get(section, [])
@@ -275,13 +277,28 @@ def main() -> None:
                 fail(f"id {item_id}: appears in both TRACKING.yaml and {closed_path.relative_to(ROOT)}")
             ids.add(item_id)
 
+            # Collect depends_on references for cross-reference validation
+            deps = item.get("depends_on")
+            if deps is not None:
+                if not isinstance(deps, list):
+                    fail(f"id {item_id}: depends_on must be a list")
+                for dep_id in deps:
+                    if not isinstance(dep_id, int):
+                        fail(f"id {item_id}: depends_on entry '{dep_id}' must be an integer issue ID")
+                    depends_on_refs.append((item_id, dep_id))
+
             if item.get("status") != section:
                 fail(f"id {item_id}: status must be '{section}'")
 
             # Priority validation
             priority = item.get("priority")
             if priority not in VALID_PRIORITIES:
-                fail(f"id {item_id}: invalid priority '{priority}'; must be P0/P1/P2/P3")
+                fail(f"id {item_id}: invalid priority '{priority}'; must be P1/P2/P3/P4")
+
+            # Status validation (explicit enum check)
+            item_status = item.get("status")
+            if item_status not in VALID_STATUSES:
+                fail(f"id {item_id}: invalid status '{item_status}'; must be open/active/done")
 
             # Type validation
             item_type = item.get("type")
@@ -337,6 +354,17 @@ def main() -> None:
                         fail(f"id {item_id}: evidence command missing 'command'")
                     if cmd.get("exit") != 0:
                         fail(f"id {item_id}: evidence command did not exit 0")
+
+    # depends_on cross-reference validation: every referenced ID must exist
+    if depends_on_refs:
+        all_known_ids = ids | closed_ids
+        missing_deps = [(referrer, dep) for referrer, dep in depends_on_refs if dep not in all_known_ids]
+        if missing_deps:
+            msg = "; ".join(
+                f"id {referrer} depends_on {dep} (not found)"
+                for referrer, dep in missing_deps
+            )
+            fail(f"depends_on references non-existent IDs: {msg}")
 
     # ID sequence integrity check: no gaps, no deletions
     all_ids = ids | closed_ids
