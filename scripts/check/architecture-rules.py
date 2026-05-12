@@ -950,6 +950,7 @@ RUNTIME_PUSH_STR_ALLOWLIST = {
     # Top-level emit files -- expression and statement emitters use writer.push_str
     # for inline WAT composition. Migrate to WatWriter typed methods.
     "crates/backend-wasm/src/expr_emit.rs": "P4: expression emitter refactor",
+    "crates/backend-wasm/src/expr_emit_arrays.rs": "P4: expression emitter refactor",
     "crates/backend-wasm/src/stmt_emit.rs": "P4: statement emitter refactor",
 }
 
