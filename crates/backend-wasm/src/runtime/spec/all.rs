@@ -1288,7 +1288,7 @@ match self {
             },
             Self::MathClz32 => RuntimeSpec {
                 symbol: "$math_clz32",
-                deps: MATH_NO_DEPS,
+                deps: MATH_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -1296,7 +1296,7 @@ match self {
             },
             Self::MathImul => RuntimeSpec {
                 symbol: "$math_imul",
-                deps: MATH_NO_DEPS,
+                deps: MATH_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
