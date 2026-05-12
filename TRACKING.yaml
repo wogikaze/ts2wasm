@@ -56,7 +56,7 @@ done:
         - "docs/24-architecture-decoupling-and-llm-friendly-sizing.md"
       acceptance: "mise run check architecture && grep MAX_FILE_LINES scripts/check/architecture-rules.py"
     evidence:
-      commit: ""
+      commit: 1dd5730fc
       commands:
         - "python3 scripts/check/architecture-rules.py => exit 0"
         - "cargo fmt --all --check => exit 0"
