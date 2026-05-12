@@ -30,14 +30,18 @@ open:
       violations remain: RuntimeFn::spec (2318), tokenize (863), lower_expr (921),
       emit_statement_with_label (756), etc. Next step: resolve merge conflicts in
       crates/ir/src/lowered/resolver_expr.rs. '
+active: []
+done:
   - id: 347
     title: Add final architecture completion gate
     priority: P1
     type: tooling
     area: cross
-    status: open
+    status: done
+    ready: true
     created: '2026-05-11'
-    updated: '2026-05-11'
+    updated: '2026-05-12'
+    closed: '2026-05-12'
     roadmap: P13-final-gate
     depends_on:
       - 303
@@ -124,11 +128,39 @@ open:
         - crates/**
         - scripts/**
         - tests/**
-    notes: 'This is the completion issue. When this passes, the architecture-decoupling
-      tracker is no longer a list of known open design gaps.
+    notes: 'Closed after final gate validation; architecture warnings remain advisory
+      and issue 276 tracks reducing oversized functions.
 
       '
-done:
+    evidence:
+      commit: 6db961e26
+      commands:
+        - command: cargo test --workspace
+          exit: 0
+        - command: mise run check architecture
+          exit: 0
+        - command: python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements
+          exit: 0
+        - command: grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+          exit: 0
+        - command: '! grep -R "ts2wasm_frontend" crates/backend-wasm/src crates/backend-wasm/Cargo.toml'
+          exit: 0
+        - command: '! grep -R "RuntimeIntrinsic" crates/ir/src crates/backend-wasm/src'
+          exit: 0
+        - command: '! grep -R "pub fn emit.*&LoweredProgram" crates/backend-wasm/src'
+          exit: 0
+        - command: '! grep -R "RuntimeCall.*String\|runtime_fn: String" crates/ir/src'
+          exit: 0
+        - command: '! grep -R "include!" crates/ir/src/lowered.rs'
+          exit: 0
+        - command: grep -R "Validated<LoweredProgram>" crates/backend-wasm/src crates/compiler/src
+          exit: 0
+        - command: grep -R "Validated<RuntimeLinkPlan>" crates/runtime-catalog crates/backend-wasm crates/compiler
+          exit: 0
+        - command: test -f crates/runtime-catalog/Cargo.toml && test -f crates/source/Cargo.toml && test -f crates/diagnostic/Cargo.toml && test -f crates/syntax/Cargo.toml && test -f crates/resolve/Cargo.toml && test -f crates/semantics/Cargo.toml && test -f crates/runtime-abi/Cargo.toml && test -f crates/backend-core/Cargo.toml
+          exit: 0
+        - command: git diff --check
+          exit: 0
   - id: 330
     title: Implement assert.sameValue MVP and produce first positive test262 differential
       pass
