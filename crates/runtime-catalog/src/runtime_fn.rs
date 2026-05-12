@@ -739,7 +739,7 @@ const BIGINT_UNARY_MINUS_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
 const BIGINT_SUB_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_MUL_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
-const BIGINT_POW_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
+const BIGINT_POW_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::BigIntMul];
 const BIGINT_DIV_DEPS: &[RuntimeFn] = &[
     RuntimeFn::MakeBigIntLiteral,
     RuntimeFn::BigIntDivisionByZeroRangeError,

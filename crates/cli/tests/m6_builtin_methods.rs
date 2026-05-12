@@ -90,6 +90,19 @@ fn build_smoke_math_pow_method() {
 }
 
 #[test]
+fn build_smoke_bigint_arithmetic() {
+    for fixture in [
+        "core-semantics/bigint-runtime-mul-div-rem.ts",
+        "core-semantics/bigint-runtime-large-div-rem.ts",
+        "core-semantics/bigint-runtime-pow.ts",
+        "core-semantics/bigint-exponentiation-unsupported.ts",
+    ] {
+        let result = run_fixture(fixture);
+        assert!(result.is_ok(), "{fixture} should build: {:?}", result.err());
+    }
+}
+
+#[test]
 fn build_smoke_math_trunc_sign_method() {
     let result = run_fixture("builtins-and-io/math-trunc-sign.ts");
     assert!(

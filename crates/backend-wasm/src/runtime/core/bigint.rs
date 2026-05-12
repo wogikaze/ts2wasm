@@ -2931,13 +2931,9 @@ impl WatEmitter<'_> {
 
   (func $bigint_pow (param $a i32) (param $b i32) (result i32)
 
-    (local $base i64)
-
     (local $exponent i64)
 
-    (local $result i64)
-
-    (local.set $base (call $bigint_signed_i64 (local.get $a)))
+    (local $result i32)
 
     (local.set $exponent (call $bigint_signed_i64 (local.get $b)))
 
@@ -2945,7 +2941,7 @@ impl WatEmitter<'_> {
 
       (then (unreachable)))
 
-    (local.set $result (i64.const 1))
+    (local.set $result (call $bigint_from_signed_i64 (i64.const 1)))
 
     (block $done
 
@@ -2953,13 +2949,13 @@ impl WatEmitter<'_> {
 
         (br_if $done (i64.eqz (local.get $exponent)))
 
-        (local.set $result (i64.mul (local.get $result) (local.get $base)))
+        (local.set $result (call $bigint_mul (local.get $result) (local.get $a)))
 
         (local.set $exponent (i64.sub (local.get $exponent) (i64.const 1)))
 
         (br $pow)))
 
-    (call $bigint_from_signed_i64 (local.get $result)))
+    (local.get $result))
 
 "#,
         );

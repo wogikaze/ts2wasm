@@ -539,6 +539,18 @@ fn bigint_runtime_mul_div_rem_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn bigint_arithmetic_matches_node_output() {
+    for fixture in [
+        "fixtures/core-semantics/bigint-runtime-mul-div-rem.ts",
+        "fixtures/core-semantics/bigint-runtime-large-div-rem.ts",
+        "fixtures/core-semantics/bigint-runtime-pow.ts",
+        "fixtures/core-semantics/bigint-exponentiation-unsupported.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
 fn bigint_large_div_rem_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/bigint-runtime-large-div-rem.ts");
 }
@@ -882,20 +894,7 @@ fn bigint_new_constructor_reports_issue_262() {
 
 #[test]
 fn bigint_dynamic_exponentiation_reports_issue_376() {
-    // Build now succeeds; runtime output is wrong (0n vs Node 36893488147419103232n)
-    let fixture = "fixtures/core-semantics/bigint-exponentiation-unsupported.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../")
-        .join(fixture);
-    let output = temp_wasm_path(fixture);
-    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&fixture_path)
-        .arg("-o")
-        .arg(&output)
-        .output()
-        .unwrap();
-    assert!(build.status.success(), "build failed for {fixture}");
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-exponentiation-unsupported.ts");
 }
 
 #[test]

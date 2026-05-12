@@ -197,9 +197,9 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn gc_root_slot_count(&self) -> usize {
-        self.program.top_level_locals.len()
-            + if self.module_runtime_enabled() { 1 } else { 0 }
-            + LocalFrame::new(0, None).backend_local_count()
+        let extra_locals = if self.module_runtime_enabled() { 1 } else { 0 };
+        LocalFrame::new(self.program.top_level_locals.len() + extra_locals, Some(0))
+            .total_local_count()
     }
 
     pub(super) fn module_runtime_enabled(&self) -> bool {

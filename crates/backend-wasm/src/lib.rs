@@ -565,8 +565,8 @@ mod tests {
 
         let (v, _) = Validated::new(program.clone()).expect("should validate");
         let wat = emit_wat(&v).expect("top-level local root should emit WAT");
-        let backend_root_count = LocalFrame::new(0, None).backend_local_count();
-        let root_count = program.top_level_locals.len() + backend_root_count;
+        let root_count =
+            LocalFrame::new(program.top_level_locals.len(), Some(0)).total_local_count();
         let root_bytes = root_count * std::mem::size_of::<u32>();
 
         assert!(wat.contains("(global $gc_root_base (mut i32) (i32.const 0))"));
@@ -630,8 +630,8 @@ mod tests {
         let (v, _) = Validated::new(program.clone()).expect("should validate");
         let wat = emit_wat(&v).expect("function local root should emit WAT");
         let func_wat = wat_function(&wat, "func_0");
-        let backend_root_count = LocalFrame::new(0, None).backend_local_count();
-        let static_root_bytes = backend_root_count * std::mem::size_of::<u32>();
+        let static_root_count = LocalFrame::new(0, Some(0)).total_local_count();
+        let static_root_bytes = static_root_count * std::mem::size_of::<u32>();
         let root_bytes = static_root_bytes + Layout::GC_CALL_FRAME_ROOT_STACK_BYTES as usize;
         let activation_frame = LocalFrame::activation(program.functions[0].locals.len(), true);
         let activation_frame_bytes = Layout::GC_CALL_FRAME_HEADER_SIZE as usize
@@ -642,7 +642,7 @@ mod tests {
 
         assert!(wat.contains("(global $gc_call_frame_current (mut i32) (i32.const 0))"));
         assert!(wat.contains(&format!(
-            "(global.set $gc_root_count (i32.const {backend_root_count}))"
+            "(global.set $gc_root_count (i32.const {static_root_count}))"
         )));
         assert!(wat.contains(&format!(
             "(global.set $gc_root_base (call $alloc_heap (i32.const {root_bytes})))"
