@@ -2,7 +2,7 @@
 
 <!-- Status: Implementation tracker for all sections -->
 <!--
-  ✅ = Done (P9/P10 batch, 2026-05-11)
+  ✅ = Done (P9/P10/P11/P13 batch, last audited 2026-05-12)
   🚧 = In progress
   ❌ = Not started
 -->
@@ -17,31 +17,31 @@
 
 | 症状 | 根拠 | リスク | 状態 |
 |---|---|---|---|
-| `backend-wasm` が `frontend` に依存 | `backend-wasm/Cargo.toml`, `src/lib.rs` | backend が構文層の型・診断型に引きずられる | 🚧 P10: arch check 追加 (`check_backend_frontend_import`), なお 2 violations 残存 |
+| `backend-wasm` が `frontend` に依存 | `backend-wasm/Cargo.toml`, `src/lib.rs` | backend が構文層の型・診断型に引きずられる | ✅ P13: dependency 削除済み。`check_backend_frontend_import` で監視 |
 | `ir` が `frontend` に依存 | `ir/Cargo.toml`, `ir/src/lowered/types.rs` | IR が parser/syntax 表現から独立しきれない | ✅ P9: [dev-dependencies] のみ, 全 import 移行済み |
-| `compiler/src/lib.rs` が driver/I/O/module rewrite/validation/emit を抱える | `compiler/src/lib.rs:84-167` → **180 lines** | 1 変更で広範囲を読む必要がある | ✅ P10: stages/ に分割, lib.rs は 180 行の薄い orchestration |
+| `compiler/src/lib.rs` が driver/I/O/module rewrite/validation/emit を抱える | `compiler/src/lib.rs` → **82 lines**, `pipeline.rs` → **107 lines** | 1 変更で広範囲を読む必要がある | ✅ P13: `pipeline.rs`, `io/`, `stages/` に分割済み |
 | `Resolver` の状態が巨大 | `ir/src/lowered/resolver.rs:5-50` → **分割済み** | array/class/module/capture/private field 等が密結合 | 🚧 P10: `LoweringCtx`, `SymbolEnv`, `ClassEnv`, `StaticFacts` 作成。`extra.rs` から `function.rs`/`string.rs`/`module.rs` 抽出済み |
-| `lower_expr` が 2700 行級 | `ir/src/lowered/resolver_expr.rs` → `resolver/expr.rs` | 1 機能追加が全式 lowering の文脈を要求 | ✅ P9: 1122行, domain module に抽出済み |
-| `RuntimeFn` が 288 variant | `backend-wasm/src/runtime_fn.rs` | runtime catalog 追加が巨大 match/spec に波及 | 🚧 P10: spec 表を `runtime/spec/` に domain 分割。`runtime_fn_impl.rs` は 715 行 (include! 経由) |
+| `lower_expr` が 2700 行級 | `ir/src/lowered/resolver/expr/mod.rs` → **200 lines** | 1 機能追加が全式 lowering の文脈を要求 | ✅ P13: `resolver/expr/*` と domain modules に分割済み |
+| `RuntimeFn` が 288+ variant | `runtime-catalog/src/runtime_fn.rs` | runtime catalog 追加が巨大 match/spec に波及 | ✅ P13: `ts2wasm-runtime-catalog` crate に抽出済み。巨大 registry は catalog 境界に限定 |
 | `runtime_builder.rs` に 300 行超の巨大 dispatch | `backend-wasm/src/runtime_builder.rs:5-319` → **55 lines** | runtime domain ごとの独立性が低い | ✅ P10: `RuntimeDomain` enum で domain dispatch 化 |
-| `LoweredExpr::RuntimeCall` が `String` | `ir/src/lowered/types.rs:360-364` → `intrinsic: RuntimeIntrinsic` | docs/13 の「runtime 関数名を文字列リテラルで持つな」に反する | ✅ P10: `RuntimeIntrinsic` enum に置換済み |
+| `LoweredExpr::RuntimeCall` が `String` | `ir/src/lowered/types.rs:365-369` → `intrinsic: RuntimeFn` | docs/13 の「runtime 関数名を文字列リテラルで持つな」に反する | ✅ P13: runtime-catalog の `RuntimeFn` を直接参照 |
 | `include!` による物理分割 | `ir/src/lowered.rs:1-4` | ファイルが分かれても module 境界になっていない | ✅ P9: 全 include! 削除, real module 化完了 |
-| line limit が 4100 と緩い | `scripts/check/architecture-rules.py` → **DEFAULT_MAX_FILE_LINES = 3000** | LLM コンテキスト基準では巨大ファイルを許容しすぎる | ✅ P10: 3000 に改定。Phase 2 (2000) 以降は未実施 |
+| line limit が 4100 と緩い | `scripts/check/architecture-rules.py` | LLM コンテキスト基準では巨大ファイルを許容しすぎる | ✅ P11: staged 2000/1500 line checks と 200-line function warning を追加 |
 
 特に重要な Anti-pattern:
 
 ```rust
 RuntimeCall {
-    intrinsic: RuntimeIntrinsic,  // 元は runtime_fn: String → P10 で置換
+    intrinsic: RuntimeFn,  // 元は runtime_fn: String → RuntimeIntrinsic → RuntimeFn
     args: Vec<LoweredExpr>,
     span: Span,
 }
 ```
 
-`RuntimeIntrinsic` は `crates/ir/src/lowered/runtime_intrinsic.rs` で定義され、
-全 288 variant の `RuntimeFn` を IR から直接参照しない中間層になっている。
+`RuntimeFn` は `crates/runtime-catalog/src/runtime_fn.rs` で定義される。
+IR は runtime 関数名を文字列として保持せず、runtime-catalog の typed catalog を直接参照する。
 
-→ ✅ **P10 で完了。**
+→ ✅ **P13 で `RuntimeIntrinsic` 中間層も削除済み。**
 
 ## 2. 三重分離の設計
 
@@ -116,34 +116,34 @@ domain ごとに module を切り、独立したファイルで管理する。
 最終的な依存方向:
 
 ```
-ts2wasm-source          Span / SourceId / FileId / SourceMap
+ts2wasm-source          Span / SourceId / SourceMap
 ts2wasm-diagnostic      Diagnostic / DiagCode / DiagnosticOrigin
 ts2wasm-syntax          Token / AST / parser-owned syntax model
 ts2wasm-frontend        Lexer / Parser
 ts2wasm-resolve         NameResolved AST / symbol table
-ts2wasm-semantics       BuiltinResolved / TypeScript erasure / JS semantic HIR
-ts2wasm-ir              HIR / MIR / validators / typed ids
+ts2wasm-semantics       BuiltinResolved / TypeScript erasure / JS semantic HIR policy
+ts2wasm-ir              HIR / MIR / Lowered IR / validators / typed ids
 ts2wasm-runtime-abi     RawValue / Layout / logical ABI
-ts2wasm-runtime-catalog RuntimeFn / RuntimeSpec / HostImport / Capability
+ts2wasm-runtime-catalog RuntimeFn / RuntimeSpec / HostImport / Capability / RuntimeLinkPlan
 ts2wasm-backend-core    Wasm module model / writer traits / validated input contracts
 ts2wasm-backend-wasm    WAT / binary emission
 ts2wasm-compiler        pipeline orchestration only
 ts2wasm-cli             args / path / stdout / stderr / exit code only
 ```
 
-ただし、いきなり crate を増やす必要はない。最初は module と API で分け、
-安定したら crate に昇格する。
+既に crate 化された境界は crate 境界を正本にする。まだ crate 化していない境界は
+module と API で分け、安定したら crate に昇格する。
 
 現実的な移行順:
 
 ```
 1. shared/source/diagnostic を先に分離       ✅ P9: shared に移動済み
 2. IR から frontend 依存を剥がす             ✅ P9: [dev-dependencies] のみ, 全 import 移行
-3. backend から frontend 依存を剥がす         🚧 P10: arch check 追加, なお 2 violations 残存
-4. Runtime catalog を backend-wasm 内で domain 分割  ✅ P10: spec 分割, catalog.rs 8 domain, runtime/core/emit.rs 分割
-5. Runtime catalog を独立 crate 化           ❌ 未着手 (#274, deferred)
-6. HIR/MIR/Validated wrapper を導入          🚧 P10: HIR/MIR stubs, Validated<T> struct 実装済み, arch check 追加
-7. backend は ValidatedMIR or ValidatedLoweredProgram だけ受ける ❌ 未着手
+3. backend から frontend 依存を剥がす         ✅ P13: dependency 削除済み
+4. Runtime catalog を backend-wasm 内で domain 分割  ✅ P10: spec/catalog/emit 分割済み
+5. Runtime catalog を独立 crate 化           ✅ P11/P13: `crates/runtime-catalog`
+6. HIR/MIR/Validated wrapper を導入          ✅ P13: HIR/MIR validators + wrappers 追加済み
+7. backend は ValidatedMIR or ValidatedLoweredProgram だけ受ける ✅ P13: public backend API は `Validated<LoweredProgram>`
 ```
 
 ## 4. LLM コンテキストに収まる粒度の基準
@@ -160,18 +160,18 @@ ts2wasm-cli             args / path / stdout / stderr / exit code only
 | 危険 | 2000 LOC 超 |
 | 禁止 | 3000 LOC 超 |
 
-現在の `DEFAULT_MAX_FILE_LINES = 3000`（architecture-rules.py）は P10 で段階 1 まで到達。
+`architecture-rules.py` は P10/P11 で段階的な line limit を持つ。
 段階的に引き下げる:
 
 ```
 Phase 1: 4100 → 3000     ✅ P10: 改定済み, arch check 追加
-Phase 2: 3000 → 2000     ❌ 未実施 (allowlist は 2000 版も存在)
-Phase 3: 2000 → 1500     ❌ 未実施 (allowlist は 1500 版も存在)
+Phase 2: 3000 → 2000     🚧 P11: allowlist 付き check 追加
+Phase 3: 2000 → 1500     🚧 P11: allowlist 付き check 追加
 Phase 4: 1500 → 1200     ❌ 未実施
 ```
 
-`check_rust_file_length(2000)` と `check_rust_file_length_1500(1500)` の check 関数は
-既に追加済み。allowlist を満たすまで ERROR にならない WARN 相当。
+`check_rust_file_length(2000)` と `check_rust_file_length_1500(1500)` は
+allowlist を使って既存巨大ファイルと新規巨大化を分ける。
 
 既存巨大ファイルは allowlist に入れ、**新規巨大化を禁止**する。
 
@@ -186,11 +186,11 @@ Phase 4: 1500 → 1200     ❌ 未実施
 
 現在危険域にある関数:
 
-- `lower_expr` — ~~2711 lines~~ ✅ P9: **1122 lines** (dispatcher のみ, Call/MethodCall/New → call.rs に抽出)
-- `lower_method_call_expr` — ~~1223 lines~~ ✅ **28 lines** (7 private helpers に抽出: lower_mcall_early, lower_mcall_json_date_regexp, lower_mcall_date_string, lower_mcall_array_runtime, lower_mcall_dispatch_early, lower_mcall_nonident_receiver, lower_mcall_class_dispatch。各 helper は < 300 lines)
-- `emit_json_parse` — 1357 lines ❌
-- `RuntimeFn::spec` — ~~2318 lines~~ ⚠️ P10: **715 lines** (include! で domain spec に分割 — ただし section 8 の原則に反する一時的措置。real module 化は #274 runtime-catalog crate 抽出時に解決予定)
-- `emit_expr` — ~~921 lines~~ ✅ P10: **195 lines** (12 の sub-function に分割)
+- `lower_expr` — ~~2711 lines~~ ✅ P13: dispatcher は `resolver/expr/mod.rs` 配下で **200 lines**。branch は `resolver/expr/*` に分割
+- `lower_method_call_expr` — ~~1223 lines~~ ✅ P13: `resolver/call/method.rs` に分離済み
+- `emit_json_parse` — ~~1357 lines~~ ✅ P13: `runtime/json/{parser,value,string,serializer,error}.rs` に分割
+- `RuntimeFn::spec` — 巨大 registry は `runtime-catalog/src/runtime_fn.rs` と generated-style `runtime/spec/all.rs` に隔離
+- `emit_expr` — 🚧 `backend-wasm/src/expr_emit.rs` は legacy allowlist。新規 semantic branch は domain helper へ切る
 - `Lexer::tokenize` — ~~863 lines~~ ✅ P10: **268 lines** (4 の sub-method に分割)
 - `lower_variable_array_callback_method` — ~~842 lines~~ ✅ P10: **250 lines** (8 の sub-method に分割)
 - `emit_statement_with_label` — ~~756 lines~~ ✅ P10: **258 lines** (10 の sub-function に分割)
@@ -219,9 +219,9 @@ Phase 4: 1500 → 1200     ❌ 未実施
 
 これができていないなら、境界が足りない。
 
-## 5. compiler/src/lib.rs の分離 ⚠️ P10: 暫定分割
+## 5. compiler/src/lib.rs の分離 ✅ P13: pipeline/io/stages 分割
 
-現在の `build_file_with_host_deny` は以下をすべて抱えている:
+以前の `build_file_with_host_deny` は以下をすべて抱えていた:
 
 - ファイル読み込み
 - test262 preprocessing
@@ -236,57 +236,68 @@ Phase 4: 1500 → 1200     ❌ 未実施
 - WAT emit
 - wasm 書き出し
 
-P10 で達成した分割:
+現在の分割:
 
 ```
 compiler/src/
-  lib.rs                          ← 180 lines (orchestration のみ)
+  lib.rs                          ← 82 lines (API surface/re-export)
+  pipeline.rs                     ← build flow orchestration
+  io/
+    read_source.rs
+    write_manifest.rs
+    write_output.rs
   stages/
     parse.rs                      ← parse + collect_diagnostics
+    module_graph.rs               ← module graph stage facade
+    static_imports.rs             ← static import lowering facade
     name_resolve.rs               ← name resolution
     builtin_resolve.rs            ← builtin resolution
+    semantic_validate.rs          ← semantic validation
     lower.rs                      ← lowering
     validate.rs                   ← validation + Validated wrapper
+    lowered_validate.rs           ← lowered validation
+    runtime_gate.rs               ← runtime/capability gate
     emit.rs                       ← wasm emission + I/O
 ```
 
-`lib.rs` の行数: ~~906~~ → **180 lines**。各 pipeline function が薄くなった。
+`lib.rs` の行数: ~~906~~ → **82 lines**。pipeline と I/O は分離済み。
 
-**本来の目標構成との乖離:**
+**まだ残る設計上の注意:**
 
 ```
-欠落中: pipeline.rs, session.rs, input.rs, io/read_source.rs, io/write_output.rs,
-        ast_validate.rs, module_graph.rs, static_imports.rs, semantic_validate.rs,
-        lowered_validate.rs, runtime_gate.rs
+compiler crate は orchestration と diagnostic aggregation の責務を持つ。
+semantic decision は ir/semantics、encoding decision は backend-wasm/backend-core に置く。
 ```
 
-P10 では `build_file_with_host_deny` の巨大関数を薄くしたが、本来の目標 (compile_source
-純粋関数化 + I/O 分離 + pipeline stage 細分化) には達していない。
-`emit.rs` が WASM 書き出し + manifest 生成 + I/O を抱えたまま。
-I/O 分離 (`io/`) と module graph/static import の個別 stage 化は次フェーズ以降。
+`pipeline.rs` は flow を読ませるための薄い orchestration に留める。各 stage の
+input/output contract を広げる場合は、その stage の focused test を先に増やす。
 
-## 6. Validated\<T\> の導入 🚧 P10: struct + arch check 追加済み
+## 6. Validated\<T\> の導入 ✅ P13: Lowered/HIR/MIR/RuntimeLinkPlan
 
 `crates/ir/src/lowered/types.rs` で定義:
 
 ```rust
 pub struct Validated<T> {
     inner: T,
+    non_fatal: Vec<Diagnostic>,
 }
 ```
 
 backend API は `emit_wat(program: &Validated<LoweredProgram>)` で強制されている。
 P10 で `Validated<T>` struct 本体を実装し、arch check (`check_validated_backend_contract`) で
 新規 `pub fn emit*` が `Validated<LoweredProgram>` を強制する。
-既存 emit 関数の一部 (`runtime/core/*`) はなお `&LoweredProgram` を受け付けている (要追跡)。
 
-将来の拡張 (未着手):
+現在の validated boundary:
 
 ```rust
-Validated<HirProgram>        // HIR → MIR lowering 前に validate
-Validated<MirProgram>        // MIR → wasm emission 前に validate
-Validated<RuntimeLinkPlan>   // runtime fn / import / capability の整合性 validate
+Validated<LoweredProgram>       // backend public emit API
+Validated<HirProgram>           // HIR invariant validation
+Validated<MirProgram>           // MIR invariant validation
+Validated<RuntimeLinkPlan>      // runtime fn / import / capability consistency
 ```
+
+`Validated<RuntimeLinkPlan>` は `crates/runtime-catalog/src/link_plan.rs` にあり、
+`ValidatedRuntimeLinkPlan` として manifest emission に渡す。
 
 削除した候補:
 - ~~`Validated<Ast>`~~ — AST は parser 直後で validation 不要 (parse error は別 system)。parser が構文エラーを返す。
@@ -339,39 +350,37 @@ crates/ir/src/lowered/
   completion.rs        ✅ P10: 新規作成 (CompletionRecord stubs)
   resolver/
     mod.rs              — Resolver struct, domain module 宣言
-    expr.rs             — 残 branch (Unary/Binary/Ternary/制御構文 — 未分離)
-    call.rs             — Call/MethodCall/New
+    expr/               — Unary/Binary/Ternary/制御構文/property/facts など
+    call/               — Call/MethodCall/New/optional/spread/receiver/user/builtin
     array.rs            — ArrayLiteral + callback lowering
     object.rs           — ObjectLiteral lowering (stub)
     class.rs            — ClassExpr lowering (stub)
-    extra.rs            — 残 helper (function/string/module 抽出後)
     function.rs         ✅ P10: arrow/closure/capture 抽出済み
     string.rs           ✅ P10: string/regexp 抽出済み
     module.rs           ✅ P10: module 抽出済み
 
-**なぜ目標より緩いか**: `expr.rs` は依然として Unary/Binary/Ternary/制御構文の
-複数 semantic domain を横断して抱えている。P10 では `extra.rs` からの
-抜き出し (function/string/module) を優先し、`expr.rs` の細分化は deferred。
+**なぜ目標より緩いか**: `expr/` は分割済みだが、いくつかの branch は依然として
+`&mut Resolver` に密結合しており、pure domain function にはなっていない。
 理由:
-- `expr.rs` の branch 間には共通 helper (resolve_local, alloc_temp 等) への依存があり、
+- `expr/` の branch 間には共通 helper (resolve_local, alloc_temp 等) への依存があり、
   関数 signature がまだ `&mut Resolver` に密結合している。
 - `LoweringCtx` struct の field 移行 (現在の Resolver struct の field を ctx に移動) が
   完了しないと、domain module の関数が context なしで呼べない。
 ```
 
-**現在の resolver/ のファイル構成 (P10 完了時点):**
+**現在の resolver/ のファイル構成:**
 - `mod.rs` — Resolver struct, 全 field, lower_expr の match dispatch
-- `expr.rs` — 残りの branch
-- `call.rs` — Call/MethodCall/New + helper functions (call.rs の lower_method_call_expr は 1223→28行に分割、7 private helpers)
+- `expr/` — assignment/binary/binding/control/facts/literal/property/ternary/unary
+- `call/` — builtin/callback/constructor/method/optional/receiver/spread/user
 - `array.rs` — ArrayLiteral + callback lowering
 - `object.rs` — ObjectLiteral lowering (stub)
 - `class.rs` — ClassExpr lowering (stub)
-- `extra.rs` — 残 helper (986 lines, function/string/module を抽出後)
 - `function.rs` ✅ — arrow/closure/capture (581 lines)
 - `string.rs` ✅ — string literal/regexp
 - `module.rs` ✅ — module_id_for_specifier
 
-**残課題**: `expr.rs` の残 branch をさらに分割, `extra.rs` の消化, `LoweringCtx` への分離, `call.rs` (#297) の call/ ディレクトリ化
+**残課題**: `Resolver` field 群の `LoweringCtx` への完全移行、`expr/` の branch を
+より狭い context function に寄せること、backend-facing LoweredExpr と HIR/MIR の責務整理。
 
 ## 8. include! を real module に置き換える ✅ P9: 完了
 
@@ -389,7 +398,6 @@ After (現在の実装):
 ```rust
 pub mod program;
 pub mod resolver;
-pub mod runtime_intrinsic;
 pub mod types;
 pub mod validate;
 ```
@@ -398,9 +406,9 @@ pub mod validate;
 (現在の `lowered.rs` は `// Replaced include! with real module boundaries` と
 コメントあり。include! は 0 個。)
 
-## 9. Runtime catalog の domain 分割 🚧 P10: spec/catalog/emit 分割完了
+## 9. Runtime catalog の domain 分割 ✅ P13: runtime-catalog crate 抽出済み
 
-`RuntimeFn` が 288 variant あるのはプロジェクトの性質上ある程度仕方ない。
+`RuntimeFn` が 288+ variant あるのはプロジェクトの性質上ある程度仕方ない。
 問題は spec / emission_order / all / manifest_name / runtime builder dispatch
 が全部巨大 match になっていること。
 
@@ -462,18 +470,26 @@ pub(super) fn emit(emitter: &mut WatEmitter, f: RuntimeFn, wat: &mut String) {
 
 ### 9.4. ファイル構成
 
-P10 時点の実ファイル構成:
+現在の実ファイル構成:
 
 ```
+crates/runtime-catalog/src/
+  lib.rs
+  runtime_fn.rs                    ✅ RuntimeFn / RuntimeSpec / signature / registry
+  domain.rs                        ✅ RuntimeDomain
+  capability.rs                    ✅ Capability
+  host_import.rs                   ✅ HostImport / HostImportSpec
+  link_plan.rs                     ✅ RuntimeLinkPlan / ValidatedRuntimeLinkPlan
+  runtime/
+    spec/all.rs                    ✅ generated-style RuntimeSpec registry
+    manifest/all.rs                ✅ generated-style manifest registry
+
 crates/backend-wasm/src/runtime/
   mod.rs                          ✅ 存在 (core/array/collections/host/json/object/regexp/string + spec を宣言)
   spec/
-    mod.rs                        ✅ P10: domain spec 集約
-    core.rs                       ✅ P10: I/O, arithmetic, BigInt, Map/Set, Date, Math, JSON, URI, ...
-    array.rs                      ✅ P10: Array methods spec
-    object.rs                     ✅ P10: ObjectKeys/ObjectSpread/ValueOf/InstanceOf
-    string.rs                     ✅ P10: String + RegExp methods
-  catalog.rs                      🚧 P10: domain catalog.rs 作成済み (計 8 domain), runtime_fn.rs は catalog crate 未抽出
+    all.rs                        ✅ compatibility shim to runtime-catalog
+  manifest/
+    all.rs                        ✅ compatibility shim to runtime-catalog
   core/
     mod.rs
     catalog.rs                    ✅ P10
@@ -518,7 +534,10 @@ crates/backend-wasm/src/runtime/
     emit.rs
 ```
 
-## 10. RuntimeCall の String を typed intrinsic に置き換える ✅ P10
+`backend-wasm/src/runtime_fn.rs` と `runtime_fn_impl.rs` は互換 shim であり、
+正本は `ts2wasm-runtime-catalog` にある。
+
+## 10. RuntimeCall の String を typed catalog に置き換える ✅ P13
 
 ```rust
 // Before (P9)
@@ -528,17 +547,24 @@ RuntimeCall {
     span: Span,
 }
 
-// After (P10)
+// Intermediate (P10)
 RuntimeCall {
     intrinsic: RuntimeIntrinsic,
     args: Vec<LoweredExpr>,
     span: Span,
 }
+
+// Current
+RuntimeCall {
+    intrinsic: RuntimeFn,
+    args: Vec<LoweredExpr>,
+    span: Span,
+}
 ```
 
-`RuntimeIntrinsic` は `crates/ir/src/lowered/runtime_intrinsic.rs` で定義。
-`RuntimeFn` 全 variant に対応する enum で、IR が `String` を経由せずに
-runtime function を参照できる。
+`RuntimeFn` は `crates/runtime-catalog/src/runtime_fn.rs` で定義。
+IR は `String` も `RuntimeIntrinsic` 中間層も経由せず、runtime-catalog の
+typed catalog を参照する。
 
 arch check `check_no_new_string_runtime_call` で新規 `RuntimeCall { runtime_fn: String }` を禁止。
 
@@ -546,22 +572,21 @@ arch check `check_no_new_string_runtime_call` で新規 `RuntimeCall { runtime_f
 
 | 案 | 内容 | 評価 | 選ばなかった理由 |
 |---|---|---|---|
-| A: `RuntimeFn` を `runtime-catalog` crate に移す | IR から直接 `RuntimeFn` 参照 | 長期で最もきれい | #274 未着手。P10 では spec 分割 (#258) まで。catalog crate 抽出の工数が取れなかった。 |
-| B: IR 用に `RuntimeIntrinsic` を作る | mapping layer が必要 | 短期向け | ✅ **P10 で採用。** 即効性があり、String を即座に排除できる。mapping layer は `program_builtins.rs` の `resolve_runtime_fn` に集約。 |
+| A: `RuntimeFn` を `runtime-catalog` crate に移す | IR から直接 `RuntimeFn` 参照 | 長期で最もきれい | ✅ **P13 で採用。** `RuntimeIntrinsic` を廃止し、catalog を正本化。 |
+| B: IR 用に `RuntimeIntrinsic` を作る | mapping layer が必要 | 短期向け | ✅ P10 で採用済み、P13 で撤去済み。 |
 
 採用判断理由:
 - P10 の 1 sprint で String 排除まで持っていくには、`RuntimeIntrinsic` の追加が最小手順。
-- `runtime-catalog` crate 抽出 (#274) は backend-wasm の依存関係整理まで必要で、
-  P10 では工数不足。(P10 deferred)
-- `RuntimeIntrinsic` → `RuntimeFn` の mapping は `program_builtins.rs` の既存 dispatch に
-  包含できるため、後で案 A に移行する際の rewrite 範囲は小さい。
+- P13 では runtime-catalog crate 抽出が完了したため、`RuntimeIntrinsic` を残す理由がなくなった。
+- `program_builtins.rs` は `RuntimeFn` を直接返し、IR/backend/runtime catalog の variant drift を避ける。
 
-→ ✅ **P10 で完了。案 B (RuntimeIntrinsic) を採用。次フェーズで案 A への移行を再評価。**
+→ ✅ **P13 で案 A へ移行済み。**
 
-## 11. HIR / MIR / Wasm IR の責務明確化 🚧 P10: type stubs 追加
+## 11. HIR / MIR / Wasm IR の責務明確化 🚧 P13: type + validator + lowering skeleton
 
 docs/13 の HIR/MIR/Wasm IR 構想を具体化する。
-P10 では `crates/ir/src/lowered/hir.rs` と `mir.rs` に type stub を作成。
+`crates/ir/src/lowered/hir.rs`, `mir.rs`, `hir_validate.rs`, `mir_validate.rs`,
+`hir_dump.rs`, `mir_dump.rs`, `hir_to_mir.rs` が境界を固定する。
 
 ### 11.1. HIR — JS の意味論を表す
 
@@ -598,7 +623,8 @@ pub enum MirExpr {
 ```
 
 ここでは `RuntimeFn` が出てよい。
-HIR→MIR の lowering pass は `crates/ir/src/lowered/lower.rs` に stub として作成済み。
+HIR→MIR の lowering pass は `crates/ir/src/lowered/hir_to_mir.rs` にあり、
+現時点では LoweredExpr を完全置換する migration path の足場として扱う。
 
 ### 11.3. Wasm IR — wasm 命令列
 
@@ -613,12 +639,12 @@ enum WasmInstr {
 
 WAT 文字列は最後だけ。
 
-## 12. Backend を符号化器にする ❌ 未着手
+## 12. Backend を符号化器にする 🚧 P13: backend-core crate 抽出済み
 
 docs にも raw WAT 直書き禁止方針はあるが、WAT 文字列生成は壊れやすい。
 括弧・stack discipline・indent・型・call signature を文字列で管理するから。
 
-短期: `WatWriter` を強化する。
+短期: `WatWriter` と `backend-core` の typed Wasm IR を強化する。
 
 ```rust
 writer.call_runtime(RuntimeFn::Add);
@@ -642,20 +668,24 @@ RuntimeFn::Add.signature()
 HIR → MIR → Wasm IR → wasm-encoder → .wasm
 ```
 
-WAT は debug dump に下げる。
+WAT は debug dump に下げる。`crates/backend-core/src/wasm_ir.rs` はこの方向の
+typed module model であり、`backend-wasm` は concrete WAT/binary backend として扱う。
 
-## 13. Diagnostic を frontend から分離する ✅ P9: shared に移動完了
+## 13. Diagnostic を frontend から分離する ✅ P13: source/diagnostic crate 分離済み
 
 現在は `Diagnostic`, `DiagCode`, `Span` が frontend にあり、
-backend と IR が frontend に依存していた。 → **P9 で解決。**
+backend と IR が frontend に依存していた。 → **P13 で crate 境界まで整理済み。**
 
-移動先: `crates/shared/src/diagnostic.rs` (+ `Span`)
+移動先:
 
-- ✅ `Diagnostic` struct — shared に移動, frontend は `pub use ts2wasm_shared::diagnostic::...` で再エクスポート
-- ✅ `DiagCode` enum — shared に移動, frontend は再エクスポート
-- ✅ `Span` struct — shared に移動, frontend は再エクスポート
+- `crates/source/src/lib.rs` — `Span`, source identity
+- `crates/diagnostic/src/lib.rs` — `Diagnostic`, `DiagCode`
+
+- ✅ `Diagnostic` struct — diagnostic crate に移動, frontend は互換 re-export
+- ✅ `DiagCode` enum — diagnostic crate に移動, frontend は互換 re-export
+- ✅ `Span` struct — source crate に移動, frontend は互換 re-export
 - ✅ `crates/shared/src/lib.rs` — `pub mod diagnostic;`, `pub use diagnostic::{...}`
-- ✅ ir crate — 全 import が `use ts2wasm_shared::...` に移行
+- ✅ ir/backend/compiler crate — shared/source/diagnostic-oriented import に移行中
 - ✅ frontend — 後方互換のため再エクスポート維持
 
 将来の拡張 (オプション):
@@ -748,31 +778,31 @@ Feature: <name>
 10. Docs/current state
 ```
 
-## 15. Architecture fitness functions 🚧 P10: 全 16 checks 追加済み
+## 15. Architecture fitness functions 🚧 P13: checks 拡張済み
 
 docs に原則を書くより CI で破らせない方が強い。
 
 ### 追加すべき check (状態)
 
 ```text
-1. backend-wasm must not depend on frontend                      🚧 P10: check_backend_frontend_import 追加 (2 violations 残存)
+1. backend-wasm must not depend on frontend                      ✅ P13: dependency 削除 + check 監視
 2. ir must not depend on frontend except temporary allowlist     ✅ P9: [dev-dependencies] のみ
 3. no include! in crates/ir/src/lowered.rs                       ✅ P9: 0 include!
-4. no RuntimeCall { runtime_fn: String }                         ✅ P10: check_no_new_string_runtime_call
+4. no RuntimeCall { runtime_fn: String }                         ✅ P10/P13: `RuntimeFn` typed path
 5. no use super::* outside tests                                 ✅ P9: 既存 (preexisting)
-6. no function > 200 lines                                       ❌ 未実装 (check_function_length は 300 行)
-7. no file > staged threshold                                    🚧 P10: check_rust_file_length(2000), check_rust_file_length_1500(1500)
+6. no function > 200 lines                                       🚧 P11: warning + allowlist 運用
+7. no file > staged threshold                                    🚧 P11: 2000/1500 staged checks
 8. no new Diagnostic { span: None } for source diagnostics       ✅ P10: check_diagnostic_span_none (WARN)
 9. no backend module imports Stmt/Expr from frontend             ✅ P10: check_backend_frontend_import でカバー
-10. no raw "$runtime_symbol" string outside runtime catalog      ✅ P10: check_raw_runtime_symbol_outside_catalog
+10. no raw "$runtime_symbol" string outside runtime catalog      ✅ P10/P13: runtime-catalog 正本化
 11. no wat.push_str in new runtime helper files                  ✅ 既存 check (WARN only)
-12. RuntimeFn::all contains every RuntimeFn variant              🚧 P10: check_runtimefn_spec_gap でカバー
-13. RuntimeFn::emission_order contains every emitted function    🚧 P10: check_runtimefn_spec_gap でカバー
-14. every RuntimeFn has RuntimeSpec                              🚧 P10: check_runtimefn_spec_gap でカバー
-15. every RuntimeFn with imports has capability marker           ❌ 未実装
-16. every host import appears in manifest tests                  ❌ 未実装
+12. RuntimeFn::all contains every RuntimeFn variant              🚧 runtime-catalog registry check
+13. RuntimeFn::emission_order contains every emitted function    🚧 runtime-catalog registry check
+14. every RuntimeFn has RuntimeSpec                              🚧 runtime-catalog registry check
+15. every RuntimeFn with imports has capability marker           🚧 HostImport/Capability catalog contract
+16. every host import appears in manifest tests                  🚧 manifest snapshot tests
 17. every LoweredExpr variant is covered by validate_lowered     ✅ P10: check_lowered_expr_validate_coverage
-18. every HIR/MIR variant is covered by dump/snapshot printer    ❌ 未実装
+18. every HIR/MIR variant is covered by dump/snapshot printer    🚧 HIR/MIR dump + validate modules
 ```
 
 ## 16. Coupling の指標
@@ -876,12 +906,14 @@ Node vs iwasm differential は重要だが、それだけでは内部構造の�
 
 ```
 old direct RuntimeCall string
-→ RuntimeIntrinsic enum を追加
+→ RuntimeIntrinsic enum を追加 (P10)
 → 一部だけ RuntimeIntrinsic に移す
 → String path を deprecated にする
 → architecture check で新規 String path 禁止
 → 残りを移す
 → String path 削除
+→ RuntimeFn を runtime-catalog crate に移す
+→ RuntimeIntrinsic を削除して IR から RuntimeFn を直接参照する (P13)
 ```
 
 ### 20.2. Strangler fig
@@ -917,59 +949,55 @@ refactor:
 Goal: backend-wasm no longer depends on frontend
 
 Requires:
-  Diagnostic moved to shared/diagnostic     ✅ P9
-  Span moved to shared/source               ✅ P9
-  DiagCode moved to shared/diagnostic       ✅ P9
-  frontend re-exports for compatibility     ✅ P9
-  ir imports shared diagnostic              ✅ P9
-  backend imports shared diagnostic         ⚪ 一部 (builtin 系の import は解決, 全面は未確認)
-  cargo dependency removed                  ✅ P9 (ir → frontend)
-  architecture check added                  ✅ P9
+  Diagnostic moved to diagnostic crate      ✅ P13
+  Span moved to source crate                ✅ P13
+  DiagCode moved to diagnostic crate        ✅ P13
+  frontend re-exports for compatibility     ✅ P13
+  ir imports source/diagnostic contracts    ✅ P13
+  backend imports source/diagnostic contracts ✅ P13
+  cargo dependency removed                  ✅ P13 (backend-wasm → frontend)
+  architecture check added                  ✅ P13
 ```
 
-## 21. 直近でやるべき 10 項目（優先度順）— P10 実績反映
+## 21. 直近でやるべき 10 項目（優先度順）— P13 実績反映
 
-1. **`Span`, `DiagCode`, `Diagnostic` を frontend から外す** ✅ **P9 → done**
-   短期は `shared` に移す。backend-wasm → frontend 依存消去、ir → frontend 依存削減
-   → `crates/shared/src/diagnostic.rs` に移動完了。ir crate は全 import 移行済み。
+1. **`Span`, `DiagCode`, `Diagnostic` を frontend から外す** ✅ **P13 → done**
+   `crates/source` と `crates/diagnostic` に分離。frontend は互換 re-export を維持。
 
-2. **`Validated<LoweredProgram>` を導入する** 🚧 **P10 → struct + arch check 追加**
+2. **`Validated<LoweredProgram>` を導入する** ✅ **P13 → done**
    backend API を `Validated` だけ受ける形にする
-   → `Validated<T>` struct (`types.rs`) 実装済み。arch check `check_validated_backend_contract` 追加。
-   既存 emit 関数の一部 (`runtime/core/*`) はなお `&LoweredProgram` を受け付け中。
+   → `Validated<T>` struct (`types.rs`) 実装済み。public backend emit API は `Validated<LoweredProgram>`。
 
-3. **`RuntimeCall { runtime_fn: String }` を型に置き換える** ✅ **P10 → done**
-   `RuntimeIntrinsic` enum (`runtime_intrinsic.rs`) で置換。arch check で新規 String path 禁止。
+3. **`RuntimeCall { runtime_fn: String }` を型に置き換える** ✅ **P13 → done**
+   `RuntimeIntrinsic` 中間層を経て、現在は `runtime-catalog::RuntimeFn` を直接参照。
 
-4. **`runtime_fn_impl.rs` を domain 分割する** ✅ **P10 → done**
-   spec 表を `runtime/spec/core.rs`, `runtime/spec/array.rs`, `runtime/spec/object.rs`, `runtime/spec/string.rs` に分割。
-   `runtime_fn_impl.rs` は include! 経由の 715 行。
+4. **`runtime_fn_impl.rs` を domain 分割し runtime-catalog に抽出する** ✅ **P13 → done**
+   `crates/runtime-catalog` が RuntimeFn / RuntimeSpec / HostImport / Capability / RuntimeLinkPlan の正本。
 
 5. **`runtime_builder.rs` を domain dispatch にする** ✅ **P10 → done**
    `RuntimeDomain` enum による domain dispatch に置換。55 行。
 
-6. **`compiler/src/lib.rs` から pipeline stage を切り出す** ✅ **P10 → done**
-   `stages/parse.rs`, `name_resolve.rs`, `builtin_resolve.rs`, `lower.rs`, `validate.rs`, `emit.rs` に分割。
-   `lib.rs` は 180 行の thin orchestration。
+6. **`compiler/src/lib.rs` から pipeline stage を切り出す** ✅ **P13 → done**
+   `pipeline.rs`, `io/`, `stages/parse.rs`, `module_graph.rs`, `static_imports.rs`,
+   `semantic_validate.rs`, `lowered_validate.rs`, `runtime_gate.rs` まで分割。
 
 7. **`Resolver` の context を分解する** 🚧 **P10 → partial**
    `LoweringCtx`, `SymbolEnv`, `ClassEnv`, `StaticFacts` struct (`ctx.rs`, `symbols.rs`, `classes.rs`, `facts.rs`) 作成済み。
-   `extra.rs` から `function.rs`, `string.rs`, `module.rs` 抽出済み。
-   Resolver struct の field 群の完全移行は未着手。
+   `resolver/expr/` と `resolver/call/` の directory 分割済み。Resolver struct の field 群の完全移行は継続。
 
-8. **`lower_expr` の branch を domain module に移す** ✅ **P9 → done (P10 で more)**
+8. **`lower_expr` の branch を domain module に移す** ✅ **P13 → done (継続縮小対象あり)**
    `resolver/array.rs`, `resolver/call.rs`, `resolver/class.rs`, `resolver/object.rs` 作成済み。
-   P10 追加: `resolver/function.rs` (arrow/closure), `resolver/string.rs` (string/regexp), `resolver/module.rs` (module)。
+   P13 では `resolver/call/` と `resolver/expr/` にさらに分割。
 
 9. **`include!` を real module に置き換える** ✅ **P9 → done**
    `crates/ir/src/lowered.rs` の include! 全削除。real module 宣言に置換。
 
-10. **architecture checks を強化する** 🚧 **P10 → 16 checks 追加**
+10. **architecture checks を強化する** 🚧 **P13 → warnings/checks 拡張**
     新規: `check_no_new_string_runtime_call`, `check_backend_frontend_import`,
     `check_runtimefn_spec_gap`, `check_rust_file_length(2000)` / `check_rust_file_length_1500(1500)`,
     `check_diagnostic_span_none`, `check_raw_runtime_symbol_outside_catalog`,
     `check_lowered_expr_validate_coverage`。
-    未実装: 200 行 function limit, host import / manifest checks, HIR/MIR coverage。
+    継続: warning allowlist の縮小、host import / manifest checks、HIR/MIR coverage。
 
 ## 22. 設計スローガン
 
@@ -1006,4 +1034,7 @@ capability は RuntimeSpec → RuntimeLinkPlan → Manifest のみで決まる�
 - `docs/21-object-semantics-kernel.md`: Object semantics kernel
 - `docs/22-completion-records.md`: Completion record design
 - `scripts/check/architecture-rules.py`: 現行 architecture check
-- `crates/shared/`: 現行共有定義（schema/manifest）
+- `crates/source/`: source/span 定義
+- `crates/diagnostic/`: diagnostic 定義
+- `crates/runtime-catalog/`: RuntimeFn / RuntimeSpec / HostImport / Capability / RuntimeLinkPlan
+- `crates/backend-core/`: typed Wasm IR / writer traits
