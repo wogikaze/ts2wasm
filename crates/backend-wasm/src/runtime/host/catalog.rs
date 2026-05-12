@@ -24,6 +24,9 @@ pub const HOST_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::PathDirname,
     // Crypto
     RuntimeFn::CryptoRandomBytes,
+    // test262 host hooks
+    RuntimeFn::Dollar262Global,
+    RuntimeFn::Dollar262Eval,
     // Module
     RuntimeFn::ModuleRequire,
     RuntimeFn::ModuleExportsSet,

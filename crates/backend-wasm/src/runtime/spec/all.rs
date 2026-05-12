@@ -902,6 +902,22 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::Dollar262Global => RuntimeSpec {
+                symbol: "$dollar_262_global",
+                deps: &[Self::ObjectCreate],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::Dollar262Eval => RuntimeSpec {
+                symbol: "$dollar_262_eval",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::GetIterator => RuntimeSpec {
                 symbol: "$get_iterator",
                 deps: NO_DEPS,

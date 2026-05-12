@@ -16,6 +16,8 @@ impl WatEmitter<'_> {
             RuntimeFn::PathBasename => self.emit_path_basename(wat),
             RuntimeFn::PathDirname => self.emit_path_dirname(wat),
             RuntimeFn::CryptoRandomBytes => self.emit_crypto_random_bytes(wat),
+            RuntimeFn::Dollar262Global => self.emit_dollar_262_global(wat),
+            RuntimeFn::Dollar262Eval => self.emit_dollar_262_eval(wat),
             RuntimeFn::ModuleRequire => self.emit_module_require(wat),
             RuntimeFn::ModuleExportsSet => self.emit_module_exports_set(wat),
             RuntimeFn::ModuleExportsAssign => self.emit_module_exports_assign(wat),

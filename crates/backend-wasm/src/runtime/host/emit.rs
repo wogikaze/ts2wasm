@@ -1235,6 +1235,27 @@ impl WatEmitter<'_> {
         );
     }
 
+    pub(crate) fn emit_dollar_262_global(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  ;; Dollar262Global: minimal test262 $262.global object for harness-only cases.
+  (func $dollar_262_global (result i32)
+    (call $object_create (i32.const {null})))
+"#,
+            null = ValueTag::NULL,
+        ));
+    }
+
+    pub(crate) fn emit_dollar_262_eval(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  ;; Dollar262Eval: dynamic source evaluation is intentionally unsupported.
+  (func $dollar_262_eval (param $source i32) (result i32)
+    unreachable)
+"#,
+        );
+    }
+
     pub(crate) fn emit_path_join(&self, wat: &mut String) {
         wat.push_str(
             r#"

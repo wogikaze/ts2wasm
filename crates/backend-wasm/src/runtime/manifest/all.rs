@@ -113,6 +113,8 @@ match self {
             Self::PathBasename => "path_basename",
             Self::PathDirname => "path_dirname",
             Self::CryptoRandomBytes => "crypto_random_bytes",
+            Self::Dollar262Global => "dollar_262_global",
+            Self::Dollar262Eval => "dollar_262_eval",
             Self::GetIterator => "get_iterator",
             Self::IteratorNext => "iterator_next",
             Self::JsonStringify => "json_stringify",

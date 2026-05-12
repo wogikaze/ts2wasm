@@ -395,6 +395,10 @@ pub enum RuntimeFn {
     PathDirname,
     /// Node crypto.randomBytes(size)
     CryptoRandomBytes,
+    /// test262 host hook: $262.global
+    Dollar262Global,
+    /// test262 host hook: $262.evalScript(source)
+    Dollar262Eval,
     /// Global isNaN function
     IsNaN,
     /// Global parseInt function
@@ -1200,6 +1204,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DecodeURI" => Some(RuntimeFn::DecodeURI),
         "Escape" => Some(RuntimeFn::Escape),
         "Unescape" => Some(RuntimeFn::Unescape),
+        "Dollar262Global" => Some(RuntimeFn::Dollar262Global),
+        "Dollar262Eval" => Some(RuntimeFn::Dollar262Eval),
         "GetIterator" => Some(RuntimeFn::GetIterator),
         "IteratorNext" => Some(RuntimeFn::IteratorNext),
         "PromiseConstructor" => Some(RuntimeFn::PromiseConstructor),
@@ -1413,7 +1419,9 @@ impl RuntimeFn {
             | Self::PathResolve
             | Self::PathBasename
             | Self::PathDirname
-            | Self::CryptoRandomBytes => RuntimeDomain::Host,
+            | Self::CryptoRandomBytes
+            | Self::Dollar262Global
+            | Self::Dollar262Eval => RuntimeDomain::Host,
             Self::GetIterator | Self::IteratorNext => RuntimeDomain::Iterator,
             Self::JsonStringify | Self::JsonParse => RuntimeDomain::Json,
             Self::MapNew
@@ -1625,7 +1633,7 @@ impl RuntimeFn {
     pub const fn stack_effect(self) -> RuntimeSignature {
         match self {
             // 0 params, 1 result
-            Self::PrivateBrandTypeError => RuntimeSignature {
+            Self::PrivateBrandTypeError | Self::Dollar262Global => RuntimeSignature {
                 params: 0,
                 results: 1,
             },
@@ -1989,6 +1997,8 @@ impl RuntimeFn {
             Self::PathBasename,
             Self::PathDirname,
             Self::CryptoRandomBytes,
+            Self::Dollar262Global,
+            Self::Dollar262Eval,
             // Global number functions (341a)
             Self::IsNaN,
             Self::ParseInt,
@@ -2303,6 +2313,8 @@ impl RuntimeFn {
             Self::PathBasename,
             Self::PathDirname,
             Self::CryptoRandomBytes,
+            Self::Dollar262Global,
+            Self::Dollar262Eval,
             // Global number functions (341a)
             Self::IsNaN,
             Self::ParseInt,
