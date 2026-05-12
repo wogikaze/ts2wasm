@@ -987,6 +987,12 @@ fn number_static_nan_and_finite_match_node() {
 }
 
 #[test]
+fn number_static_integer_and_safe_integer_match_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-is-integer-i32.ts");
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-is-safe-integer-i32.ts");
+}
+
+#[test]
 fn extended_math_builtins_match_node() {
     for fixture in [
         "fixtures/builtins-and-io/math-cbrt.ts",

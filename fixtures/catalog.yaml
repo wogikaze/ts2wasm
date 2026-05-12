@@ -299,7 +299,9 @@ directories:
     - math-round.ts
     - math-trunc-sign.ts
     - number-is-finite.ts
+    - number-is-integer-i32.ts
     - number-is-nan.ts
+    - number-is-safe-integer-i32.ts
     - object-assign-descriptors.ts
     - object-assign.ts
     - object-create.ts
