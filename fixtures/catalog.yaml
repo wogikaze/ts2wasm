@@ -1,39 +1,1102 @@
-# Fixture Catalog
-# Maps each fixture directory to feature labels from docs/26-semantic-feature-matrix.md
-# Schema:
-#   <dir-name>:
-#     feature: <list of feature labels>
-#     status: pass | partial | unsupported
-#     assert: {}  (see #392)
-
-fixtures:
+version: 1
+categories:
+  semantic: Fixtures that exercise standard JS/TS semantics and produce correct output
+  differential: Fixtures verified by comparing Node.js vs ts2wasm/iwasm output
+  negative: Fixtures expected to produce compiler diagnostics for invalid input
+  type-erasure: Fixtures verifying TypeScript type annotations are erased correctly
+  build-smoke: Fixtures tested only for successful compilation, not runtime semantics
+  parser: Fixtures testing parser acceptance or rejection
+  test-infrastructure: Fixtures that test the test framework itself
+canary:
+  description: Semantic canary suite — fixtures that exercise all active semantic
+    paths
+  source: scripts/data/semantic-canary.txt
+  fixtures:
+  - fixtures/basics-hello/hello.ts
+  - fixtures/core-expressions/number.ts
+  - fixtures/core-expressions/string.ts
+  - fixtures/core-expressions/bool.ts
+  - fixtures/core-expressions/ternary.ts
+  - fixtures/core-expressions/member.ts
+  - fixtures/core-expressions/object.ts
+  - fixtures/core-expressions/array.ts
+  - fixtures/core-statements/if.ts
+  - fixtures/core-statements/for.ts
+  - fixtures/core-statements/function.ts
+  - fixtures/core-statements/try-catch.ts
+  - fixtures/classes-and-inheritance/class-basic.ts
+  - fixtures/arrow-functions/arrow-basic.ts
+  - fixtures/basics-equality/equality-operators.ts
+directories:
+  arrays-objects:
+    category: semantic
+    status: pass
+    expected: array and object property operations
+    fixtures:
+    - array-lowering.ts
+    - array-nonnumber-index.ts
+    - array-oob.ts
+    - array.ts
+    - builtin-resolution.ts
+    - computed-property.ts
+    - dynamic-property-assignment.ts
+    - dynamic-property.ts
+    - length-tag.ts
+    - object-dup-key.ts
+    - object.ts
+    - string-key-literal.ts
+    - string-length.ts
+  arrow-functions:
+    category: semantic
+    status: pass
+    expected: arrow function syntax and semantics
+    fixtures:
+    - arrow-basic.ts
+  async-await:
+    category: semantic
+    status: unknown
+    expected: async/await compilation
+    fixtures:
+    - async-exception.ts
+    - await-sequence.ts
+    - basic-async-return.ts
+  atcoder:
+    category: semantic
+    status: unknown
+    expected: algorithmic stress tests from AtCoder problems
+    fixtures:
+    - abc451-d-concat-power2.ts
+  basics-equality:
+    category: semantic
+    status: pass
+    expected: equality operator semantics
+    fixtures:
+    - equality-operators.ts
   basics-hello:
-    feature:
+    category: semantic
+    status: pass
+    expected: basic stdout/exit/stdin smoke tests
+    fixtures:
+    - exit-code.ts
+    - hello.ts
+    - stdin-empty.ts
+    - stdin-read.ts
+  basics-oom:
+    category: semantic
+    status: unknown
+    expected: out-of-memory stress test
+    fixtures:
+    - oom-test.ts
+  basics-syntax:
+    category: semantic
+    status: pass
+    expected: basic syntax acceptance tests
+    fixtures:
+    - comma-expression.ts
+    - with-statement.ts
+  basics-typeof:
+    category: semantic
+    status: pass
+    expected: typeof operator semantics
+    fixtures:
+    - typeof-test.ts
+  basics-types:
+    category: type-erasure
+    status: pass
+    expected: TypeScript type annotation erasure verification
+    fixtures:
+    - ambient-declaration-erasure.ts
+    - ambient-erasure-comprehensive.ts
+    - ambient-namespace-erasure.ts
+    - as-assertion-erasure.ts
+    - generic-erasure.ts
+    - interface-erasure.ts
+    - optimization-hints.ts
+    - satisfies-const-erasure.ts
+    - satisfies-erasure.ts
+    - type-alias-erasure.ts
+    - type-annotation-erasure.ts
+    - type-error.ts
+    - types.ts
+  basics-utf8:
+    category: semantic
+    status: pass
+    expected: UTF-8 string handling
+    fixtures:
+    - utf8-string.ts
+  builtins-and-io:
+    category: semantic
+    status: pass
+    expected: built-in objects, methods, and I/O operations
+    fixtures:
+    - array-at.ts
+    - array-concat.ts
+    - array-copy-within.ts
+    - array-entries.ts
+    - array-every.ts
+    - array-fill.ts
+    - array-filter-thisarg.ts
+    - array-filter.ts
+    - array-find-index.ts
+    - array-find-last-index.ts
+    - array-find-last.ts
+    - array-find-thisarg.ts
+    - array-find.ts
+    - array-flat-map.ts
+    - array-flat.ts
+    - array-foreach-thisarg.ts
+    - array-from.ts
+    - array-includes.ts
+    - array-index-of.ts
+    - array-is-array.ts
+    - array-join.ts
+    - array-keys.ts
+    - array-last-index-of.ts
+    - array-map-call-unsupported.ts
+    - array-map-unsupported.ts
+    - array-map.ts
+    - array-pop.ts
+    - array-prototype-push-array-like.ts
+    - array-push-multi-arg.ts
+    - array-push.ts
+    - array-reduce-right.ts
+    - array-reduce-unsupported-diagnostic.ts
+    - array-reduce.ts
+    - array-reverse.ts
+    - array-shift-unshift-splice.ts
+    - array-slice.ts
+    - array-some.ts
+    - array-sort-comparator.ts
+    - array-sort.ts
+    - array-sparse-iteration.ts
+    - array-to-reversed.ts
+    - array-to-sorted.ts
+    - array-to-spliced.ts
+    - array-to-string.ts
+    - array-values.ts
+    - array-with.ts
+    - arraybuffer-dataview-basic.ts
+    - async-generator-basic.ts
+    - atomics-unsupported.ts
+    - bun-stdin-text.ts
+    - console-log.ts
+    - date-annexb-get-year-unsupported.ts
+    - date-annexb-get-year.ts
+    - date-annexb-set-year-unsupported.ts
+    - date-annexb-to-gmt-string-unsupported.ts
+    - date-epoch-get-time.ts
+    - date-epoch-value-of.ts
+    - date-get-timezone-offset.ts
+    - date-local-getters-unsupported.ts
+    - date-local-getters.ts
+    - date-noarg-live-time-unsupported.ts
+    - date-noarg-live-time.ts
+    - date-now-live-time-unsupported.ts
+    - date-now-live-time.ts
+    - date-to-iso-string.ts
+    - date-to-string-timezone-unsupported.ts
+    - date-utc-getters.ts
+    - dynamic-eval-unsupported-diagnostic.ts
+    - dynamic-import-helper.ts
+    - dynamic-import.ts
+    - error-instanceof.ts
+    - error-message.ts
+    - error-stack.ts
+    - es-module-live-binding-helper.ts
+    - es-module-live-binding.ts
+    - eval-unsupported.ts
+    - function-declaration-value.ts
+    - generator-basic.ts
+    - global-0-args.ts
+    - global-decode-uri.ts
+    - global-encode-uri.ts
+    - global-escape-value.ts
+    - global-escape.ts
+    - global-isfinite.ts
+    - global-isnan.ts
+    - global-names-arraybuffer-typedarray-dataview.ts
+    - global-names-promise-symbol-reflect-proxy.ts
+    - global-names-remaining.ts
+    - global-names-well-known-symbols.ts
+    - global-parsefloat.ts
+    - global-parseint.ts
+    - global-unescape-value.ts
+    - global-unescape.ts
+    - intl-unsupported.ts
+    - iterator-protocol.ts
+    - json-parse-array-object-nested.ts
+    - json-parse-array-object-properties.ts
+    - json-parse-array-object.ts
+    - json-parse-array.ts
+    - json-parse-escaped-nested.ts
+    - json-parse-escaped-string.ts
+    - json-parse-incomplete-object.ts
+    - json-parse-invalid-control-string-array.ts
+    - json-parse-invalid-control-string-object.ts
+    - json-parse-invalid-control-string.ts
+    - json-parse-invalid-literal.ts
+    - json-parse-invalid-number-incomplete-exponent.ts
+    - json-parse-invalid-number-incomplete-fraction.ts
+    - json-parse-invalid-number-incomplete-minus.ts
+    - json-parse-invalid-number-leading-zero-array.ts
+    - json-parse-invalid-number-leading-zero-object.ts
+    - json-parse-invalid-number-leading-zero.ts
+    - json-parse-invalid-unicode-escape.ts
+    - json-parse-latin1-unicode-escape.ts
+    - json-parse-nested-array.ts
+    - json-parse-number-decimal-exponent.ts
+    - json-parse-object-nested.ts
+    - json-parse-surrogate-pair-object-array.ts
+    - json-parse-trailing-invalid.ts
+    - json-parse-unicode-escape.ts
+    - json-parse-unicode-nonascii.ts
+    - json-parse-unsupported-noninteger-number-array.ts
+    - json-parse-unsupported-noninteger-number-object.ts
+    - json-parse-unsupported-noninteger-number.ts
+    - json-parse-unsupported-surrogate-low.ts
+    - json-parse-unsupported-surrogate-pair.ts
+    - json-parse-unsupported-unicode-array.ts
+    - json-parse-unsupported-unicode-object.ts
+    - json-parse.ts
+    - json-stringify-escaped-string.ts
+    - json-stringify-nested-array-object.ts
+    - json-stringify-nested-object.ts
+    - json-stringify-replacer-array-boxed-unsupported.ts
+    - json-stringify-replacer-array-boxed.ts
+    - json-stringify-replacer-array-ignored.ts
+    - json-stringify-replacer-array-multikey.ts
+    - json-stringify-replacer-array-number.ts
+    - json-stringify-replacer-array-unsupported.ts
+    - json-stringify-replacer-array.ts
+    - json-stringify-replacer-function-drop.ts
+    - json-stringify-replacer-function-keep.ts
+    - json-stringify-replacer-function-root-holder.ts
+    - json-stringify-replacer-function-transform.ts
+    - json-stringify-space-boolean.ts
+    - json-stringify-space-boxed-symbol.ts
+    - json-stringify-space-boxed-unsupported.ts
+    - json-stringify-space-object-function.ts
+    - json-stringify-space-string.ts
+    - json-stringify-space.ts
+    - json-stringify.ts
+    - map-forEach.ts
+    - map-set.ts
+    - math-abs.ts
+    - math-ceil.ts
+    - math-floor.ts
+    - math-max.ts
+    - math-min.ts
+    - math-pow.ts
+    - math-random.ts
+    - math-round.ts
+    - math-trunc-sign.ts
+    - object-assign-descriptors.ts
+    - object-assign.ts
+    - object-create.ts
+    - object-define-property-data.ts
+    - object-define-property-getter.ts
+    - object-define-property.ts
+    - object-entries.ts
+    - object-freeze.ts
+    - object-get-own-property-descriptor-unsupported.ts
+    - object-get-own-property-descriptor.ts
+    - object-get-prototype-of.ts
+    - object-has-own-property.ts
+    - object-is-extensible.ts
+    - object-is-frozen.ts
+    - object-is-sealed.ts
+    - object-is.ts
+    - object-keys-arguments.ts
+    - object-keys.ts
+    - object-prevent-extensions.ts
+    - object-seal.ts
+    - object-string-keys.ts
+    - object-values.ts
+    - promise-basic.ts
+    - promise-static-methods-unsupported-diagnostic.ts
+    - promise-static-methods.ts
+    - promise-then-unsupported-diagnostic.ts
+    - proxy-handler-traps-unsupported.ts
+    - proxy-reflect-unsupported-diagnostic.ts
+    - regexp-0-args.ts
+    - regexp-digit.ts
+    - regexp-dot.ts
+    - regexp-flag-d.ts
+    - regexp-flag-multi.ts
+    - regexp-flags-gim.ts
+    - regexp-flags-suy-d.ts
+    - regexp-plus.ts
+    - regexp-question.ts
+    - regexp-star.ts
+    - regexp-word.ts
+    - set-constructor-array.ts
+    - set-forEach.ts
+    - set-identity-number-string.ts
+    - set-iterable-calls-add.ts
+    - set-iteration.ts
+    - set-size-clear.ts
+    - stdin.ts
+    - string-anchor-annexb-unsupported.ts
+    - string-at.ts
+    - string-char-at.ts
+    - string-char-code-at.ts
+    - string-concat.ts
+    - string-ends-with.ts
+    - string-from-char-code.ts
+    - string-html-wrappers.ts
+    - string-includes.ts
+    - string-index-of.ts
+    - string-indexing.ts
+    - string-is-well-formed.ts
+    - string-last-index-of.ts
+    - string-locale-compare.ts
+    - string-match-all.ts
+    - string-match.ts
+    - string-pad-end.ts
+    - string-pad-start.ts
+    - string-repeat.ts
+    - string-replace-all.ts
+    - string-replace.ts
+    - string-search.ts
+    - string-slice.ts
+    - string-split.ts
+    - string-starts-with.ts
+    - string-substr.ts
+    - string-substring.ts
+    - string-to-lower-case.ts
+    - string-to-upper-case.ts
+    - string-to-well-formed.ts
+    - string-trim-end.ts
+    - string-trim-start.ts
+    - string-trim.ts
+    - symbol-constructor-basic.ts
+    - test-math-pow.ts
+    - test-set-samevaluezero.ts
+    - typedarray-basic.ts
+    - value-of.ts
+    - weakmap-weakset-basic.ts
+  classes:
+    category: semantic
+    status: pass
+    expected: class declaration and expression semantics
+    fixtures:
+    - class-basic-build.ts
+    - class-expression-named.ts
+    - class-extends-builtin.ts
+    - class-extends-null.ts
+    - class-field-initializers.ts
+    - class-getter-setter.ts
+    - class-new-target.ts
+    - class-private-members.ts
+    - class-prototype-getter-setter.ts
+    - class-static-block.ts
+    - class-static-fields.ts
+    - class-static-method-this.ts
+    - class-super-arrow.ts
+    - class-super-constructor.ts
+    - class-super-static.ts
+  classes-and-inheritance:
+    category: semantic
+    status: pass
+    expected: class inheritance, super, and extends
+    fixtures:
+    - class-basic.ts
+    - class-expression.ts
+    - class-extends.ts
+    - class-generic.ts
+    - class-only.ts
+    - class-static.ts
+    - class-super-index-get.ts
+    - class-super-method.ts
+    - class-super-prop-set.ts
+    - class-super-property-access-unsupported.ts
+    - class-super-property-get.ts
+    - class-super.ts
+    - new-expression.ts
+  control-flow-and-exceptions:
+    category: semantic
+    status: pass
+    expected: control flow and exception handling
+    fixtures:
+    - break-continue-in-try-finally.ts
+    - do-while.ts
+    - for-in.ts
+    - for-loop.ts
+    - for-of.ts
+    - labeled-break-statement.ts
+    - labeled-break.ts
+    - labeled-continue-non-loop-invalid.ts
+    - labeled-continue.ts
+    - labeled-duplicate-invalid.ts
+    - labeled-undefined-invalid.ts
+    - return-in-try-finally.ts
+    - switch-case.ts
+    - switch-fallthrough.ts
+    - throw-catch-finally.ts
+    - throw-rethrow-nested.ts
+    - throw-test262.ts
+    - try-catch-finally.ts
+    - try-catch.ts
+    - try-finally-throw.ts
+    - try-finally.ts
+    - utf8-string.ts
+    - while-break.ts
+    - while-continue.ts
+  core-expressions:
+    category: semantic
+    status: pass
+    expected: core expression forms (literals, operators, calls)
+    fixtures:
+    - array.ts
+    - arrow-fn.ts
+    - assign.ts
+    - await.ts
+    - bigint.ts
+    - binary.ts
+    - bool.ts
+    - call.ts
+    - class-expr.ts
+    - function-expr.ts
+    - ident.ts
+    - index-assign.ts
+    - index.ts
+    - instanceof.ts
+    - logical-assign.ts
+    - logical-property-assign.ts
+    - member.ts
+    - new.ts
+    - null.ts
+    - number.ts
+    - object.ts
+    - optional-call.ts
+    - optional-index.ts
+    - optional-member.ts
+    - property-assign.ts
+    - spread.ts
+    - string.ts
+    - ternary.ts
+    - this.ts
+    - type-assertion.ts
+    - typeof.ts
+    - unary.ts
+    - undefined.ts
+  core-semantics:
+    category: semantic
+    status: pass
+    expected: core language semantics (equality, coercion, prototypes)
+    fixtures:
+    - abc451-depth8-live-set.ts
+    - abstract-equality.ts
+    - annex-b-hoisted-function-in-block-unsupported.ts
+    - annexb-ishtmldda-equality-unsupported.ts
+    - annexb-ishtmldda-if-unsupported.ts
+    - annexb-ishtmldda-logical-assignment-and-unsupported.ts
+    - annexb-ishtmldda-logical-assignment-coalesce-unsupported.ts
+    - annexb-ishtmldda-logical-assignment-or-unsupported.ts
+    - annexb-ishtmldda-typeof-unsupported.ts
+    - annexb-ishtmldda-unsupported.ts
+    - arguments-object-property-call.ts
+    - arguments-out-of-range-index-assignment.ts
+    - arguments-top-level-unsupported.ts
+    - array-map-arrow-chained-trim-split.ts
+    - array-map-arrow-expression-receiver.ts
+    - array-map-arrow-expression-split.ts
+    - array-map-arrow-pushed-local-string-constructor.ts
+    - array-map-arrow-split.ts
+    - array-map-arrow-string-constructor.ts
+    - array-map-arrow-unary-plus.ts
+    - array-map-callback-mutates-outer-counter.ts
+    - array-map-generic-call-function-receiver.ts
+    - array-map-generic-call-object-literal.ts
+    - array-map-generic-call-runtime-array-like-double.ts
+    - array-map-generic-call-runtime-array-like.ts
+    - array-map-new-array-holes.ts
+    - array-map-sparse-holes.ts
+    - array-map-test262-same-value-shim.ts
+    - array-map-thisarg-inline-function.ts
+    - array-map-thisarg-named-callback.ts
+    - array-push-recursive-growth.ts
+    - array-sort-default-unsupported.ts
+    - array-sort-numeric-comparator.ts
+    - arrow-assigned-recursive-reassigned-unsupported.ts
+    - arrow-assigned-recursive-unsupported.ts
+    - arrow-block-body.ts
+    - arrow-captured-local.ts
+    - arrow-expression-body.ts
+    - arrow-lexical-this.ts
+    - async-await-unsupported.ts
+    - async-function-for-await-of-unsupported.ts
+    - bigint-arithmetic-literal-fold.ts
+    - bigint-arithmetic-unsupported.ts
+    - bigint-bitwise-binary-out-of-signed-i64.ts
+    - bigint-bitwise-binary-unsupported.ts
+    - bigint-bitwise-dynamic-out-of-signed-i64-unsupported.ts
+    - bigint-bitwise-literal-runtime.ts
+    - bigint-bitwise-runtime.ts
+    - bigint-bitwise-unary-out-of-signed-i64.ts
+    - bigint-builtin-as-int-n-unsupported.ts
+    - bigint-builtin-as-int-n.ts
+    - bigint-builtin-as-uint-n-unsupported.ts
+    - bigint-builtin-dynamic-as-int-n.ts
+    - bigint-builtin-dynamic-as-uint-n.ts
+    - bigint-builtin-dynamic-invalid-string-unsupported.ts
+    - bigint-builtin-dynamic-nullish-unsupported.ts
+    - bigint-builtin-dynamic-object-invalid-string-unsupported.ts
+    - bigint-builtin-dynamic-object-out-of-range-string-unsupported.ts
+    - bigint-builtin-dynamic-out-of-range-string-unsupported.ts
+    - bigint-builtin-dynamic-string.ts
+    - bigint-builtin-invalid-decimal-string-unsupported.ts
+    - bigint-builtin-invalid-string-unsupported.ts
+    - bigint-builtin-unknown-invalid-string-runtime-trap.ts
+    - bigint-builtin-unknown-out-of-range-string-runtime-trap.ts
+    - bigint-builtins-string-conversion.ts
+    - bigint-equality-comparison.ts
+    - bigint-exponentiation-negative-unsupported.ts
+    - bigint-exponentiation-unsupported.ts
+    - bigint-literal-runtime.ts
+    - bigint-mixed-abstract-equality-unsupported.ts
+    - bigint-mixed-arithmetic-typeerror-trap.ts
+    - bigint-mixed-boolean-abstract-equality.ts
+    - bigint-mixed-nullish-abstract-equality.ts
+    - bigint-mixed-number-abstract-equality.ts
+    - bigint-mixed-number-fractional-left-unsupported.ts
+    - bigint-mixed-number-fractional-unsupported.ts
+    - bigint-mixed-number-infinity-unsupported.ts
+    - bigint-mixed-number-nan-unsupported.ts
+    - bigint-mixed-number-relational.ts
+    - bigint-mixed-number-static-constant-unsupported.ts
+    - bigint-mixed-number-static-number-member-unsupported.ts
+    - bigint-mixed-number-unary-special-unsupported.ts
+    - bigint-mixed-relational-unsupported.ts
+    - bigint-mixed-string-abstract-equality.ts
+    - bigint-new-unsupported.ts
+    - bigint-runtime-add-sub.ts
+    - bigint-runtime-branch-large-div-rem.ts
+    - bigint-runtime-branch-large-unsupported.ts
+    - bigint-runtime-branch-mixed-div-rem-unsupported.ts
+    - bigint-runtime-div-zero-rangeerror-catch.ts
+    - bigint-runtime-div-zero-trap.ts
+    - bigint-runtime-large-add-sub.ts
+    - bigint-runtime-large-div-rem-local-flow.ts
+    - bigint-runtime-large-div-rem.ts
+    - bigint-runtime-large-mul-local-flow.ts
+    - bigint-runtime-large-mul-unsupported.ts
+    - bigint-runtime-large-mul.ts
+    - bigint-runtime-large-sub-unsupported.ts
+    - bigint-runtime-large-unsupported.ts
+    - bigint-runtime-mixed-abstract-equality-trap.ts
+    - bigint-runtime-mixed-boolean-nullish-abstract-equality.ts
+    - bigint-runtime-mixed-boolean-relational.ts
+    - bigint-runtime-mixed-object-string-out-of-range-unsupported.ts
+    - bigint-runtime-mixed-object-toprimitive-invalid-string-unsupported.ts
+    - bigint-runtime-mixed-object-toprimitive-method-unsupported.ts
+    - bigint-runtime-mixed-object-toprimitive-method.ts
+    - bigint-runtime-mixed-object-toprimitive-out-of-range-string-unsupported.ts
+    - bigint-runtime-mixed-object-toprimitive-primitive.ts
+    - bigint-runtime-mixed-object-toprimitive-string-unsupported.ts
+    - bigint-runtime-mixed-object-toprimitive-unsupported.ts
+    - bigint-runtime-mixed-object-tostring-relational.ts
+    - bigint-runtime-mixed-object-tostring-string.ts
+    - bigint-runtime-mixed-object-valueof-bigint.ts
+    - bigint-runtime-mixed-relational-trap.ts
+    - bigint-runtime-mixed-stdin-string-equality-out-of-range-trap.ts
+    - bigint-runtime-mixed-stdin-string-in-range.ts
+    - bigint-runtime-mixed-stdin-string-relational-out-of-range-trap.ts
+    - bigint-runtime-mixed-string-abstract-equality.ts
+    - bigint-runtime-mixed-string-out-of-range-unsupported.ts
+    - bigint-runtime-mixed-string-prefix-equality.ts
+    - bigint-runtime-mixed-string-relational.ts
+    - bigint-runtime-mixed-typeerror-catch.ts
+    - bigint-runtime-mixed-typeerror-trap.ts
+    - bigint-runtime-mixed-unsupported.ts
+    - bigint-runtime-mul-div-rem.ts
+    - bigint-runtime-pow.ts
+    - bigint-runtime-rem-zero-rangeerror-catch.ts
+    - bigint-runtime-rem-zero-trap.ts
+    - bigint-shift-literal-runtime.ts
+    - bigint-shift-unsupported.ts
+    - bigint-unary-minus-unsupported.ts
+    - class-default-derived-ctor-arity.ts
+    - class-dstr-initcount-unsupported.ts
+    - class-method-immutable-outer-capture.ts
+    - class-method-mutable-outer-capture.ts
+    - class-new-expression-method-call.ts
+    - class-static-block-super-unsupported.ts
+    - class-static-block-this-unsupported.ts
+    - class-static-block.ts
+    - class-value-unsupported.ts
+    - closure-gc-call-frame-root.ts
+    - comma-operator.ts
+    - cover-initializer-for-var-in.ts
+    - cover-initializer-unsupported.ts
+    - custom-iterator-symbol.ts
+    - debugger-statement-unsupported.ts
+    - decorator-unsupported.ts
+    - default-params.ts
+    - delete.ts
+    - destructuring-binding-defaults-runtime.ts
+    - destructuring-binding-elision-runtime.ts
+    - destructuring-binding-nested-object-runtime.ts
+    - destructuring-binding-nested-runtime.ts
+    - destructuring-binding-object-rest-runtime.ts
+    - destructuring-binding-object-rest-unsupported.ts
+    - destructuring-binding-param-default-unsupported.ts
+    - destructuring-binding-param-rest-unsupported.ts
+    - destructuring-binding-rest-runtime.ts
+    - destructuring-binding-runtime.ts
+    - destructuring-binding-unsupported.ts
+    - direct-eval-block-function-block-scoping.ts
+    - direct-eval-block-function-function-scope.ts
+    - direct-eval-block-function-iife-init.ts
+    - direct-eval-block-function-init.ts
+    - direct-eval-block-function-mutable-env.ts
+    - direct-eval-block-function-shadowed-unsupported.ts
+    - direct-eval-block-function.ts
+    - direct-eval-caller-local.ts
+    - direct-eval-indirect-unsupported.ts
+    - direct-eval-unsupported.ts
+    - duplicate-class-decl-unsupported.ts
+    - duplicate-function-decl-unsupported.ts
+    - duplicate-local-same-scope-unsupported.ts
+    - for-await-of-unsupported.ts
+    - for-loop-nonidentifier-update-unsupported.ts
+    - for-loop-post-decrement.ts
+    - for-loop-post-increment.ts
+    - for-loop-prefix-inc-dec.ts
+    - for-loop-prefix-increment.ts
+    - for-of-array.ts
+    - function-arguments.ts
+    - function-constructor-call-unsupported.ts
+    - function-expression-iife-return-this.ts
+    - function-let-conflict-unsupported.ts
+    - function-object-metadata.ts
+    - function-prototype-metadata-unsupported.ts
+    - function-this-direct-call-unsupported.ts
+    - function-this-receiver.ts
+    - gc-call-frame-root.ts
+    - gc-high-pressure-root.ts
+    - gc-object-root.ts
+    - gc-transient-allocation.ts
+    - generator-function-unsupported.ts
+    - in-operator-prototype.ts
+    - in-operator.ts
+    - increment-expression-statement.ts
+    - instanceof-unsupported-rhs.ts
+    - instanceof.ts
+    - int32-typed-stress.ts
+    - ir-test.ts
+    - iterator-protocol.ts
+    - jsx-element-unsupported.ts
+    - labelled-function-unsupported.ts
+    - large-integer-number-boundary.ts
+    - logical-assignment-computed-member.ts
+    - logical-assignment-index.ts
+    - logical-assignment-member.ts
+    - logical-assignment.ts
+    - module-augmentation-unsupported.ts
+    - mutable-capture-closure.ts
+    - named-function-expression-recursive.ts
+    - nested-function-declaration-unsupported.ts
+    - nested-namespace-abc.ts
+    - nested-namespace-unsupported.ts
+    - new-eval-unsupported.ts
+    - new-function-constructor-unsupported.ts
+    - null-undefined.ts
+    - nullish-coalescing.ts
+    - number-stringify.ts
+    - optional-chaining-call.ts
+    - optional-chaining-member-index.ts
+    - ordinary-bitwise-and-xor.ts
+    - ordinary-function-closure-capture.ts
+    - ordinary-function-closure-escape-unsupported.ts
+    - ordinary-function-closure-gc-pressure.ts
+    - ordinary-function-closure-make-adder.ts
+    - ordinary-function-closure-mutation-unsupported.ts
+    - ordinary-function-direct-call.ts
+    - parameter-properties-defaults.ts
+    - plus.ts
+    - private-class-delete-backing-key-unsupported.ts
+    - private-class-delete-unsupported.ts
+    - private-class-derived-accessor-direct.ts
+    - private-class-derived-both-fields.ts
+    - private-class-derived-field-implicit.ts
+    - private-class-derived-field-order.ts
+    - private-class-derived-method-call.ts
+    - private-class-derived-no-inherited-brand.ts
+    - private-class-field-backing-key-unsupported.ts
+    - private-class-field-external-receiver-catch.ts
+    - private-class-field-external-unsupported.ts
+    - private-class-field-internal-slot-gc.ts
+    - private-class-field-method-unsupported.ts
+    - private-class-field-object-keys-unsupported.ts
+    - private-class-field-read-write.ts
+    - private-class-field-same-class-receiver.ts
+    - private-class-getter-direct.ts
+    - private-class-getter-external-unsupported.ts
+    - private-class-getter-same-class-receiver-brand.ts
+    - private-class-method-call.ts
+    - private-class-method-external-unsupported.ts
+    - private-class-method-extracted-unsupported.ts
+    - private-class-method-same-class-receiver-brand.ts
+    - private-class-setter-direct.ts
+    - private-class-setter-external-unsupported.ts
+    - private-class-setter-same-class-receiver-brand.ts
+    - private-class-setter-same-class-receiver.ts
+    - private-class-setter-unsupported.ts
+    - private-class-static-accessor-direct.ts
+    - private-class-static-accessor-unsupported.ts
+    - private-class-static-field-direct.ts
+    - private-class-static-field-static-block-order.ts
+    - private-class-static-field-static-block-tdz-unsupported.ts
+    - private-class-static-method-call.ts
+    - private-class-static-method-external-unsupported.ts
+    - promise-basic.ts
+    - property-getter-setter.ts
+    - prototype.ts
+    - recursive-nested-function.ts
+    - regexp-compile-unsupported.ts
+    - regexp-literal.ts
+    - regexp-test.ts
+    - regexp-unsupported-flag.ts
+    - rest-params-multiple.ts
+    - rest-params-one.ts
+    - rest-params-zero.ts
+    - rest-params.ts
+    - reused-for-loop-local.ts
+    - small-int-exponentiation.ts
+    - spread-array-alias.ts
+    - spread-array-custom-iterable-empty.ts
+    - spread-array-custom-iterable-mixed.ts
+    - spread-array-custom-iterable-multi-value.ts
+    - spread-array-custom-iterable-unsupported.ts
+    - spread-array-literal.ts
+    - spread-array-local.ts
+    - spread-array-map-unsupported.ts
+    - spread-array-set-mixed.ts
+    - spread-array-set.ts
+    - spread-array-string.ts
+    - spread-array-unsupported.ts
+    - spread-call-array-local.ts
+    - spread-call-dynamic-unsupported.ts
+    - spread-call-iife-literal-array.ts
+    - spread-call-literal-array.ts
+    - spread-call-set-local.ts
+    - spread-call-string-literal.ts
+    - spread-call-string-local.ts
+    - spread-generator-unsupported.ts
+    - spread-object-alias-mutated-unsupported.ts
+    - spread-object-alias.ts
+    - spread-object-dynamic-local.ts
+    - spread-object-function-return.ts
+    - spread-object-literal.ts
+    - spread-object-local.ts
+    - spread-object-mutated.ts
+    - spread-object-unsupported.ts
+    - spread-sparse-array-materializes-undefined.ts
+    - spread-sparse-call-undefined.ts
+    - spread-string-static-concat.ts
+    - strict-equal.ts
+    - template-literal-legacy-octal-strict-unsupported.ts
+    - template-literal-legacy-octal.ts
+    - template-literal.ts
+    - ternary.ts
+    - this-extracted-method-unsupported.ts
+    - this-non-identifier-receiver-unsupported.ts
+    - this-receiver-method.ts
+    - this-receiver-nested-method-boundary.ts
+    - this-top-level-unsupported.ts
+    - this-unknown-receiver-class-unsupported.ts
+    - triple-slash-directive-unsupported.ts
+    - truthiness.ts
+    - ts-parameter-property-unsupported.ts
+    - type-only-import-unsupported.ts
+    - typeof.ts
+    - unary-void-operator.ts
+    - with-statement-unsupported.ts
+  core-statements:
+    category: semantic
+    status: pass
+    expected: core statement forms (loops, conditionals)
+    fixtures:
+    - do-while.ts
+    - for-in.ts
+    - for-of.ts
+    - for.ts
+    - function.ts
+    - if.ts
+    - labeled.ts
+    - let.ts
+    - switch.ts
+    - throw.ts
+    - try-catch.ts
+    - while.ts
+  html-comments:
+    category: parser
+    status: pass
+    expected: HTML comment parsing acceptance
+    fixtures:
+    - html-close.ts
+    - html-open.ts
+    - html-operators.ts
+  linker:
+    category: build-smoke
+    status: unknown
+    expected: linker/static analysis tests
+    fixtures:
+    - console-log.ts
+    - empty.ts
+    - for-loop.ts
+    - number-add.ts
+    - object-literal.ts
+  module-system:
+    category: semantic
+    status: pass
+    expected: ES module import/export semantics
+    fixtures:
+    - dynamic-import-unsupported.ts
+    - empty-export.ts
+    - live-binding-unsupported.ts
+    - static-bare-import-unsupported.ts
+    - static-class-export-unsupported.ts
+    - static-combined-named-import-entry.ts
+    - static-combined-named-import-source.ts
+    - static-combined-named-import-unsupported.ts
+    - static-combined-namespace-import-unsupported.ts
+    - static-cycle-b.ts
+    - static-cycle-entry.ts
+    - static-declaration-export-unsupported.ts
+    - static-default-export-unsupported.ts
+    - static-default-import-entry.ts
+    - static-default-import-source.ts
+    - static-default-import-unsupported.ts
+    - static-default-namespace-import-entry.ts
+    - static-default-namespace-import-source.ts
+    - static-entry-alias.ts
+    - static-entry-repeated.ts
+    - static-entry-shadow.ts
+    - static-entry-source.ts
+    - static-entry.ts
+    - static-export-function-entry.ts
+    - static-export-named-list-entry.ts
+    - static-local-named-export-duplicate-unsupported.ts
+    - static-local-named-export-missing-unsupported.ts
+    - static-missing-named-export.ts
+    - static-named-export-unsupported.ts
+    - static-named-import-unsupported.ts
+    - static-named-list-import-entry.ts
+    - static-named-list-import-source.ts
+    - static-named-re-export-from-entry.ts
+    - static-named-re-export-from-source.ts
+    - static-named-re-export-import-entry.ts
+    - static-named-re-export-unsupported.ts
+    - static-namespace-import-entry.ts
+    - static-namespace-import-source.ts
+    - static-namespace-import-unsupported.ts
+    - static-namespace-re-export-from-entry.ts
+    - static-namespace-re-export-from-source.ts
+    - static-namespace-re-export-import-entry.ts
+    - static-namespace-re-export-unsupported.ts
+    - static-re-export-unsupported.ts
+    - static-side-effect-import-entry.ts
+    - static-side-effect-import-unsupported.ts
+    - static-side-effect-self-import.ts
+    - static-side-effect-source.ts
+    - static-star-re-export-entry.ts
+    - static-star-re-export-import-entry.ts
+    - static-star-re-export-source.ts
+  modules-and-typed-optimizations:
+    category: semantic
+    status: unknown
+    expected: module and typed optimization passes
+    fixtures:
+    - cache-demo.ts
+    - exports-assign.ts
+    - module-exports-assign.ts
+    - property-ic.ts
+    - require-cache.ts
+    - require-relative.ts
+    - typed-add.ts
+  negative:
+    category: negative
+    status: pass
+    expected: compiler diagnostic tests for invalid inputs
+    fixtures:
+    - arity-mismatch.ts
+    - duplicate-function.ts
+    - duplicate-local.ts
+    - duplicate-parameter.ts
+    - invalid-top-level-return.ts
+    - number-out-of-range.ts
+    - syntax-error.ts
+    - typescript-type-check.ts
+    - unresolved-function.ts
+    - unresolved-name.ts
+    - unsupported-builtin.ts
+    - unsupported-date.ts
+    - unsupported-eval.ts
+    - unsupported-module.ts
+    - unsupported-regexp.ts
+    - unsupported-runtime-subset.ts
+    - unsupported-syntax.ts
+    - unsupported-typescript-syntax.ts
+  node-apis:
+    category: semantic
+    status: unknown
+    expected: Node.js core API exercises
+    fixtures:
+    - crypto-random-bytes.ts
+    - fs-append.ts
+    - fs-read.ts
+    - fs-write.ts
+    - path-basename.ts
+    - path-dirname.ts
+    - path-join.ts
+    - path-resolve.ts
+    - process-argv.ts
+    - process-env.ts
+    - process-exit.ts
+  object-semantics-kernel:
+    category: semantic
+    status: pass
+    expected: Object property descriptor and attribute semantics
+    fixtures:
+    - centralized-property-access.ts
+    - computed-read-prototype.ts
+    - configurable-false-enforcement.ts
+    - define-property-edge-cases.ts
+    - descriptor-combinations.ts
+    - enumerable-filtering.ts
+    - getter-setter-build.ts
+    - getter-setter-runtime.ts
+    - prototype-descriptor-inheritance.ts
+    - prototype-method-build.ts
+    - seal-freeze-descriptor.ts
+    - writable-false-enforcement.ts
+  parser-errors:
+    category: negative
+    status: pass
+    expected: parser error diagnostics
+    fixtures:
+    - arrow-param-modifier.ts
+  primitives-control-flow:
+    category: semantic
+    status: pass
+    expected: primitives and control flow basics
+    fixtures:
+    - boolean-if.ts
+    - function.ts
+    - number.ts
+    - string.ts
+    - test-recursive-fibonacci.ts
+    - test-recursive-function.ts
+    - test-recursive-named-function.ts
+    - while.ts
+  rest-parameters:
+    category: semantic
+    status: pass
+    expected: rest parameter syntax and semantics
+    fixtures:
+    - rest-basic.ts
+  spread-args:
+    category: semantic
+    status: pass
+    expected: spread argument syntax
+    fixtures:
+    - spread-arguments.ts
+    - test-spread-array-literal.ts
+    - test-spread-object-literal.ts
+    - test-spread-operator.ts
+  stmt:
+    category: semantic
+    status: pass
+    expected: statement forms with Node comparison
+    fixtures:
+    - assign.ts
+    - break.ts
+    - class-decl.ts
+    - continue.ts
+    - default-named-source.ts
+    - default-namespace-source.ts
+    - default-source.ts
+    - do-while.ts
+    - export-all-from.ts
+    - export-decl.ts
+    - export-default.ts
+    - export-named-from.ts
+    - export-named.ts
+    - export-namespace-from.ts
+    - expr-stmt.ts
+    - for-in.ts
+    - for-of.ts
+    - for.ts
+    - function-decl.ts
+    - if.ts
+    - import-default-named.ts
+    - import-default-namespace.ts
+    - import-default.ts
+    - import-named.ts
+    - import-namespace.ts
+    - import-side-effect.ts
+    - labeled.ts
+    - let-decl.ts
+    - named-source.ts
+    - namespace-source.ts
+    - return.ts
+    - side-effect-source.ts
+    - switch.ts
+    - throw.ts
+    - try-catch.ts
+    - while.ts
+  test-infrastructure:
+    category: test-infrastructure
+    status: pass
+    expected: test framework self-verification
+    fixtures:
+    - fail-fixture.ts
+    - pass-fixture.ts
+    - unsupported-fixture.ts
+  this-binding:
+    category: semantic
+    status: pass
+    expected: this binding semantics
+    fixtures:
+    - this-basic.ts
+  typescript-directives:
+    category: parser
+    status: unknown
+    expected: TypeScript directive parsing
+    fixtures:
+    - module-augmentation-unsupported.ts
+    - reference-types-missing.ts
+    - reference-types-skip-lib-check.ts
+    - reference-types-ts-ignore.ts
+    - triple-slash-reference-unsupported.ts
+    - type-only-import-unsupported.ts
+feature_matrix:
+  fixtures:
+    basics-hello:
+      feature:
       - value-types:string
       - io:stdout
       - io:stdin
       - stmt:let
-    status: pass
-
-  basics-equality:
-    feature:
+      status: pass
+    basics-equality:
+      feature:
       - expr:strict-equality
       - expr:abstract-equality
-    status: pass
-
-  basics-syntax:
-    feature:
+      status: pass
+    basics-syntax:
+      feature:
       - misc:comma-expression
       - misc:with-statement
-    status: partial
-
-  basics-typeof:
-    feature:
+      status: partial
+    basics-typeof:
+      feature:
       - expr:typeof
-    status: pass
-
-  basics-types:
-    feature:
+      status: pass
+    basics-types:
+      feature:
       - ts:type-annotation
       - ts:interface
       - ts:type-alias
@@ -44,21 +1107,18 @@ fixtures:
       - ts:as-assertion
       - ts:satisfies
       - ts:const-assertion
-    status: pass
-
-  basics-utf8:
-    feature:
+      status: pass
+    basics-utf8:
+      feature:
       - value-types:string
       - io:stdout
-    status: pass
-
-  basics-oom:
-    feature:
+      status: pass
+    basics-oom:
+      feature:
       - misc:gc
-    status: pass
-
-  primitives-control-flow:
-    feature:
+      status: pass
+    primitives-control-flow:
+      feature:
       - value-types:boolean
       - value-types:number
       - value-types:string
@@ -67,10 +1127,9 @@ fixtures:
       - fn:recursive
       - control:while
       - control:if-else
-    status: pass
-
-  arrays-objects:
-    feature:
+      status: pass
+    arrays-objects:
+      feature:
       - value-types:array
       - value-types:object
       - array:literal
@@ -83,10 +1142,9 @@ fixtures:
       - obj:property-assign
       - expr:object-literal
       - expr:array-literal
-    status: pass
-
-  core-expressions:
-    feature:
+      status: pass
+    core-expressions:
+      feature:
       - expr:strict-equality
       - expr:abstract-equality
       - expr:relational
@@ -125,10 +1183,9 @@ fixtures:
       - value-types:object
       - value-types:array
       - value-types:function
-    status: pass
-
-  core-statements:
-    feature:
+      status: pass
+    core-statements:
+      feature:
       - stmt:if
       - stmt:switch
       - stmt:for
@@ -156,10 +1213,9 @@ fixtures:
       - control:throw
       - control:try-catch
       - control:labeled
-    status: pass
-
-  control-flow-and-exceptions:
-    feature:
+      status: pass
+    control-flow-and-exceptions:
+      feature:
       - control:if-else
       - control:switch
       - control:for
@@ -181,10 +1237,9 @@ fixtures:
       - stmt:throw
       - stmt:try-catch
       - stmt:label
-    status: pass
-
-  core-semantics:
-    feature:
+      status: pass
+    core-semantics:
+      feature:
       - expr:strict-equality
       - expr:abstract-equality
       - expr:relational
@@ -227,22 +1282,19 @@ fixtures:
       - misc:direct-eval
       - misc:gc
       - control:for-of
-    status: pass
-
-  arrow-functions:
-    feature:
+      status: pass
+    arrow-functions:
+      feature:
       - fn:arrow
       - expr:arrow-fn
-    status: pass
-
-  async-await:
-    feature:
+      status: pass
+    async-await:
+      feature:
       - async:async-function
       - async:promise
-    status: partial
-
-  classes:
-    feature:
+      status: partial
+    classes:
+      feature:
       - class:declaration
       - class:expression
       - class:extends
@@ -256,10 +1308,9 @@ fixtures:
       - class:getter-setter
       - class:field-initializer
       - class:new-target
-    status: pass
-
-  classes-and-inheritance:
-    feature:
+      status: pass
+    classes-and-inheritance:
+      feature:
       - class:declaration
       - class:expression
       - class:extends
@@ -268,10 +1319,9 @@ fixtures:
       - class:static-method
       - class:static-block
       - expr:new
-    status: pass
-
-  builtins-and-io:
-    feature:
+      status: pass
+    builtins-and-io:
+      feature:
       - builtin:console
       - builtin:math
       - builtin:date
@@ -308,10 +1358,9 @@ fixtures:
       - string:from-char-code
       - string:well-formed
       - string:html-wrappers
-    status: pass
-
-  object-semantics-kernel:
-    feature:
+      status: pass
+    object-semantics-kernel:
+      feature:
       - obj-kernel:ordinary-get
       - obj-kernel:ordinary-set
       - obj-kernel:ordinary-has-property
@@ -331,10 +1380,9 @@ fixtures:
       - obj-semantics:writable-false
       - obj-semantics:seal-freeze
       - builtin:object-methods
-    status: pass
-
-  module-system:
-    feature:
+      status: pass
+    module-system:
+      feature:
       - module:static-import
       - module:static-export
       - module:dynamic-import
@@ -344,58 +1392,50 @@ fixtures:
       - module:re-export
       - module:side-effect-import
       - module:live-binding
-    status: partial
-
-  modules-and-typed-optimizations:
-    feature:
+      status: partial
+    modules-and-typed-optimizations:
+      feature:
       - module:static-import
       - module:static-export
       - misc:gc
-    status: pass
-
-  node-apis:
-    feature:
+      status: pass
+    node-apis:
+      feature:
       - io:process-env
       - io:process-argv
       - io:process-exit
       - io:fs-read
       - io:fs-write
       - io:crypto
-    status: pass
-
-  html-comments:
-    feature:
+      status: pass
+    html-comments:
+      feature:
       - misc:html-comment
-    status: pass
-
-  linker:
-    feature:
+      status: pass
+    linker:
+      feature:
       - linker:basic
       - linker:console-log
       - linker:for-loop
       - linker:number-add
       - linker:object-literal
-    status: pass
-
-  parser-errors:
-    feature:
+      status: pass
+    parser-errors:
+      feature:
       - ts:type-annotation
-    status: pass
-
-  rest-parameters:
-    feature:
+      status: pass
+    rest-parameters:
+      feature:
       - fn:rest-params
-    status: pass
-
-  spread-args:
-    feature:
+      status: pass
+    spread-args:
+      feature:
       - fn:spread-args
       - expr:spread
       - array:spread
-    status: pass
-
-  stmt:
-    feature:
+      status: pass
+    stmt:
+      feature:
       - stmt:let
       - stmt:const
       - stmt:function-decl
@@ -415,30 +1455,26 @@ fixtures:
       - stmt:for-in
       - stmt:for-of
       - stmt:do-while
-    status: pass
-
-  test-infrastructure:
-    feature:
+      status: pass
+    test-infrastructure:
+      feature:
       - test-infra:pass
       - test-infra:fail
       - test-infra:unsupported
-    status: pass
-
-  this-binding:
-    feature:
+      status: pass
+    this-binding:
+      feature:
       - fn:this
-    status: pass
-
-  typescript-directives:
-    feature:
+      status: pass
+    typescript-directives:
+      feature:
       - ts:type-only-import
       - ts:namespace
-    status: partial
-
-  atcoder:
-    feature:
+      status: partial
+    atcoder:
+      feature:
       - value-types:number
       - fn:declaration
       - control:for
       - io:stdout
-    status: pass
+      status: pass
