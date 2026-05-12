@@ -1,32 +1,35 @@
-active:
-- id: 390
-  title: Restore arrays-objects array semantic regression fixture
-  priority: P1
+active: []
+done:
+- acceptance:
+  - cargo nextest run -p ts2wasm-cli -E 'test(node_diff)'
+  - iwasm /tmp/array_test.wasm outputs "1\n3\n3"
   area: ir
-  type: bug
-  roadmap: P16-semantic-correctness
-  status: active
-  ready: true
+  closed: '2026-05-12'
   created: '2026-05-12'
-  updated: '2026-05-12'
+  evidence:
+    commands:
+    - command: cargo nextest run -p ts2wasm-cli -E 'test(node_diff)'
+      exit: 0
+    - command: cargo run --bin ts2wasm -- build fixtures/arrays-objects/array.ts -o /tmp/array_test.wasm
+      exit: 0
+    - command: iwasm /tmp/array_test.wasm
+      exit: 0
+    commit: 7c54c09b8
+  id: 390
   plan:
+    files:
+    - crates/backend-wasm/src/expr_emit.rs
+    - crates/backend-wasm/src/runtime_link_plan.rs
+    - crates/cli/tests/m2_node_diff.rs
     goal: Restore fixtures/arrays-objects/array.ts to differential should-pass by
       fixing the P14 IR restructuring regression that broke array element access (iwasm
       returns undefined for arr[0] instead of 1).
-    files:
-    - crates/ir/src/lowered/resolver/expr/property.rs
-    - crates/ir/src/lowered/resolver/array.rs
-    - crates/cli/tests/m2_node_diff.rs
-    - fixtures/arrays-objects/array.ts
-  acceptance:
-  - cargo test -p ts2wasm-cli --test m2_node_diff
-  - fixture arrays-objects/array.ts returns "1\n3\n3" under iwasm
-  non_goals:
-  - No new array feature support beyond index-read and length-read already present
-    in fixture
-  notes: Pre-existing P14 regression from IR restructuring. The fixture builds but
-    iwasm returns undefined for array element access.
-done:
+  priority: P1
+  roadmap: P16-semantic-correctness
+  status: done
+  title: Restore arrays-objects array semantic regression fixture
+  type: bug
+  updated: '2026-05-12'
 - acceptance:
   - cargo test -p ts2wasm-backend-core -p ts2wasm-backend-wasm -p ts2wasm-compiler
   - mise run check architecture

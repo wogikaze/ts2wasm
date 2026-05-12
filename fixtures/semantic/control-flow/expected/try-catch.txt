@@ -1,4 +1,0 @@
-1
-error message
-caught 42
-caught object

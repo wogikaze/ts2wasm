@@ -2,6 +2,9 @@ use std::fmt::Write as _;
 use std::fs;
 use std::path::Path;
 
+use super::{
+    backend, build_multi_section_file, lowered, split_file_name_sections, test262_preprocessor,
+};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_frontend::{Lexer, Parser, validate_type_reference_directives};
 use ts2wasm_ir::builtin::BuiltinId;
@@ -12,9 +15,6 @@ use ts2wasm_ir::semantic::{HirExpr, HirProgram, HirRelationalOp, HirStmt};
 use ts2wasm_syntax::{
     ArrayLiteralElement, BinaryOp, ClassPrivateElement, Expr, LogicalAssignOp,
     OBJECT_SPREAD_SENTINEL, SpannedToken, Stmt, UnaryOp,
-};
-use super::{
-    backend, build_multi_section_file, lowered, split_file_name_sections, test262_preprocessor,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -1,4 +1,0 @@
-outerCount 3
-visited 3
-a 3
-sum 3

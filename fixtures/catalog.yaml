@@ -1081,20 +1081,62 @@ feature_matrix:
       - io:stdin
       - stmt:let
       status: pass
+      assert:
+        hello.ts:
+          stdout: 'ok
+
+            hi
+
+            '
+          exit_code: 0
+        exit-code.ts:
+          stdout: ''
+          exit_code: 0
+        stdin-empty.ts:
+          stdin: ''
+          stdout: '
+
+            '
+          exit_code: 0
+        stdin-read.ts:
+          stdin: test
+          stdout: 'test
+
+            '
+          exit_code: 0
     basics-equality:
       feature:
       - expr:strict-equality
       - expr:abstract-equality
       status: pass
+      assert:
+        equality-operators.ts:
+          stdout: 'true
+
+            false
+
+            '
+          exit_code: 0
     basics-syntax:
       feature:
       - misc:comma-expression
       - misc:with-statement
       status: partial
+      assert: {}
     basics-typeof:
       feature:
       - expr:typeof
       status: pass
+      assert:
+        typeof-test.ts:
+          stdout: 'number
+
+            string
+
+            boolean
+
+            '
+          exit_code: 0
     basics-types:
       feature:
       - ts:type-annotation
@@ -1108,15 +1150,18 @@ feature_matrix:
       - ts:satisfies
       - ts:const-assertion
       status: pass
+      assert: {}
     basics-utf8:
       feature:
       - value-types:string
       - io:stdout
       status: pass
+      assert: {}
     basics-oom:
       feature:
       - misc:gc
       status: pass
+      assert: {}
     primitives-control-flow:
       feature:
       - value-types:boolean
@@ -1128,6 +1173,7 @@ feature_matrix:
       - control:while
       - control:if-else
       status: pass
+      assert: {}
     arrays-objects:
       feature:
       - value-types:array
@@ -1143,6 +1189,23 @@ feature_matrix:
       - expr:object-literal
       - expr:array-literal
       status: pass
+      assert:
+        array.ts:
+          stdout: '1
+
+            3
+
+            3
+
+            '
+          exit_code: 0
+        object.ts:
+          stdout: '1
+
+            2
+
+            '
+          exit_code: 0
     core-expressions:
       feature:
       - expr:strict-equality
@@ -1184,6 +1247,7 @@ feature_matrix:
       - value-types:array
       - value-types:function
       status: pass
+      assert: {}
     core-statements:
       feature:
       - stmt:if
@@ -1214,6 +1278,7 @@ feature_matrix:
       - control:try-catch
       - control:labeled
       status: pass
+      assert: {}
     control-flow-and-exceptions:
       feature:
       - control:if-else
@@ -1238,6 +1303,7 @@ feature_matrix:
       - stmt:try-catch
       - stmt:label
       status: pass
+      assert: {}
     core-semantics:
       feature:
       - expr:strict-equality
@@ -1283,16 +1349,19 @@ feature_matrix:
       - misc:gc
       - control:for-of
       status: pass
+      assert: {}
     arrow-functions:
       feature:
       - fn:arrow
       - expr:arrow-fn
       status: pass
+      assert: {}
     async-await:
       feature:
       - async:async-function
       - async:promise
       status: partial
+      assert: {}
     classes:
       feature:
       - class:declaration
@@ -1309,6 +1378,7 @@ feature_matrix:
       - class:field-initializer
       - class:new-target
       status: pass
+      assert: {}
     classes-and-inheritance:
       feature:
       - class:declaration
@@ -1320,6 +1390,7 @@ feature_matrix:
       - class:static-block
       - expr:new
       status: pass
+      assert: {}
     builtins-and-io:
       feature:
       - builtin:console
@@ -1359,6 +1430,7 @@ feature_matrix:
       - string:well-formed
       - string:html-wrappers
       status: pass
+      assert: {}
     object-semantics-kernel:
       feature:
       - obj-kernel:ordinary-get
@@ -1381,6 +1453,7 @@ feature_matrix:
       - obj-semantics:seal-freeze
       - builtin:object-methods
       status: pass
+      assert: {}
     module-system:
       feature:
       - module:static-import
@@ -1393,12 +1466,14 @@ feature_matrix:
       - module:side-effect-import
       - module:live-binding
       status: partial
+      assert: {}
     modules-and-typed-optimizations:
       feature:
       - module:static-import
       - module:static-export
       - misc:gc
       status: pass
+      assert: {}
     node-apis:
       feature:
       - io:process-env
@@ -1408,10 +1483,12 @@ feature_matrix:
       - io:fs-write
       - io:crypto
       status: pass
+      assert: {}
     html-comments:
       feature:
       - misc:html-comment
       status: pass
+      assert: {}
     linker:
       feature:
       - linker:basic
@@ -1420,20 +1497,24 @@ feature_matrix:
       - linker:number-add
       - linker:object-literal
       status: pass
+      assert: {}
     parser-errors:
       feature:
       - ts:type-annotation
       status: pass
+      assert: {}
     rest-parameters:
       feature:
       - fn:rest-params
       status: pass
+      assert: {}
     spread-args:
       feature:
       - fn:spread-args
       - expr:spread
       - array:spread
       status: pass
+      assert: {}
     stmt:
       feature:
       - stmt:let
@@ -1456,21 +1537,32 @@ feature_matrix:
       - stmt:for-of
       - stmt:do-while
       status: pass
+      assert: {}
     test-infrastructure:
       feature:
       - test-infra:pass
       - test-infra:fail
       - test-infra:unsupported
       status: pass
+      assert:
+        pass-fixture.ts:
+          exit_code: 0
+        fail-fixture.ts:
+          exit_code: 1
+        unsupported-fixture.ts:
+          diagnostics:
+          - unsupported
     this-binding:
       feature:
       - fn:this
       status: pass
+      assert: {}
     typescript-directives:
       feature:
       - ts:type-only-import
       - ts:namespace
       status: partial
+      assert: {}
     atcoder:
       feature:
       - value-types:number
@@ -1478,3 +1570,4 @@ feature_matrix:
       - control:for
       - io:stdout
       status: pass
+      assert: {}

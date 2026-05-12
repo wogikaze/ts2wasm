@@ -1,9 +1,0 @@
-add 5
-find 1
-find missing -1
-isPositive true
-isPositive false
-nested 10
-nested 100
-nested 0
-msg: test

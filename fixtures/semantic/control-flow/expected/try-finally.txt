@@ -1,5 +1,0 @@
-try body
-finally body
-finally after throw
-caught after finally: err
-x after try/finally 12
