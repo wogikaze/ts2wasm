@@ -8,9 +8,11 @@ Current checks:
   - crates/cli/src/backend must not be reintroduced after backend-wasm extraction.
   - crates/cli/src must not declare local backend/parser/compiler implementation modules.
   - Error when a repo-owned source/document file exceeds the documented line limit.
+  - Every HIR/MIR variant must have dump and validate coverage in crates/ir.
 """
 
 import os
+import re
 import sys
 import subprocess
 import shutil
@@ -128,7 +130,49 @@ def check_oversized_files(max_file_lines: int) -> None:
     sys.exit(1)
 
 
-def check_cli_thin_wrapper_boundary() -> None:
+def check_ir_variant_coverage() -> None:
+    """Check that every HIR/MIR variant has dump and validate coverage."""
+    ir_src = REPO_ROOT / "crates" / "ir" / "src"
+    ir_tests = REPO_ROOT / "crates" / "ir" / "tests"
+
+    # Check that required function definitions exist in crates/ir/src
+    required_functions = {
+        "dump_hir": r"fn dump_hir\b",
+        "dump_mir": r"fn dump_mir\b",
+        "validate_hir": r"fn validate_hir\b",
+        "validate_mir": r"fn validate_mir\b",
+    }
+
+    errors: list[str] = []
+
+    for func_name, pattern in required_functions.items():
+        found = False
+        for path in ir_src.rglob("*.rs"):
+            if re.search(pattern, path.read_text()):
+                found = True
+                break
+        if not found:
+            errors.append(f"check_architecture_rules: required function `{func_name}` not found in crates/ir/src")
+
+    # Check that test files exist covering dump and validate
+    required_test_patterns = {
+        "dump_hir": ("hir_snapshot", r"dump_hir"),
+        "dump_mir": ("mir_snapshot", r"dump_mir"),
+        "validate_hir": ("hir_snapshot", r"validate_hir"),
+        "validate_mir": ("mir_snapshot", r"validate_mir"),
+    }
+
+    for func_name, (test_file, pattern) in required_test_patterns.items():
+        test_path = ir_tests / f"{test_file}.rs"
+        if not test_path.exists():
+            errors.append(f"check_architecture_rules: test file `{test_file}.rs` does not exist in crates/ir/tests")
+        elif not re.search(pattern, test_path.read_text()):
+            errors.append(f"check_architecture_rules: test file `{test_file}.rs` must reference `{func_name}`")
+
+    if errors:
+        for err in errors:
+            print(err, file=sys.stderr)
+        sys.exit(1)
     cli_src = REPO_ROOT / "crates" / "cli" / "src"
     backend_dir = cli_src / "backend"
     if backend_dir.exists():
@@ -183,6 +227,7 @@ def main():
     max_file_lines = parse_max_file_lines(args)
     check_oversized_files(max_file_lines)
     check_cli_thin_wrapper_boundary()
+    check_ir_variant_coverage()
     
     if not shutil.which("cargo"):
         print("check_architecture_rules: cargo is required", file=sys.stderr)
