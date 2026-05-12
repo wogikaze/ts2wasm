@@ -793,8 +793,8 @@ open:
   - id: 370
     title: Reconcile issue-number namespace and test plan bootstrap
     priority: P1
-    type: docs/tooling
-    area: process
+    type: tooling
+    area: cross
     status: open
     created: '2026-05-12'
     updated: '2026-05-12'
@@ -822,8 +822,8 @@ open:
   - id: 371
     title: Canonicalize TestRecord JSONL schema across Rust, docs, and scripts
     priority: P1
-    type: test/tooling
-    area: shared/scripts
+    type: tooling
+    area: shared
     status: open
     created: '2026-05-12'
     updated: '2026-05-12'
