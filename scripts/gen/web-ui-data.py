@@ -618,7 +618,7 @@ def build_metadata(artifacts, jsonl_paths, generated_at, out_dir):
 def write_json(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
-        json.dump(data, handle, indent=2, sort_keys=True)
+        json.dump(data, handle, separators=(",", ":"), sort_keys=True)
         handle.write("\n")
 
 
