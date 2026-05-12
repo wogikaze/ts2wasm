@@ -187,30 +187,39 @@ pub struct LinkPlanSnapshot {
     pub manifest_target: String,
 }
 
-/// A validated runtime link plan — guarantees the plan is internally consistent.
+/// A validated value that has passed its domain-specific checks.
 #[derive(Debug, Clone)]
-pub struct ValidatedRuntimeLinkPlan {
-    inner: RuntimeLinkPlan,
+pub struct Validated<T> {
+    inner: T,
 }
 
-impl ValidatedRuntimeLinkPlan {
-    /// Wrap a `RuntimeLinkPlan` as validated.
-    pub fn new(plan: RuntimeLinkPlan) -> Self {
-        Self { inner: plan }
+impl<T> Validated<T> {
+    /// Wrap a value as validated after the caller has checked domain invariants.
+    pub fn new(inner: T) -> Self {
+        Self { inner }
     }
 
-    pub fn plan(&self) -> &RuntimeLinkPlan {
+    pub fn get(&self) -> &T {
         &self.inner
     }
 
-    pub fn into_inner(self) -> RuntimeLinkPlan {
+    pub fn into_inner(self) -> T {
         self.inner
     }
 }
 
-impl AsRef<RuntimeLinkPlan> for ValidatedRuntimeLinkPlan {
+/// A validated runtime link plan — guarantees the plan is internally consistent.
+pub type ValidatedRuntimeLinkPlan = Validated<RuntimeLinkPlan>;
+
+impl Validated<RuntimeLinkPlan> {
+    pub fn plan(&self) -> &RuntimeLinkPlan {
+        self.get()
+    }
+}
+
+impl AsRef<RuntimeLinkPlan> for Validated<RuntimeLinkPlan> {
     fn as_ref(&self) -> &RuntimeLinkPlan {
-        &self.inner
+        self.get()
     }
 }
 
@@ -219,7 +228,9 @@ impl AsRef<RuntimeLinkPlan> for ValidatedRuntimeLinkPlan {
 /// Currently a placeholder that always succeeds. Future validations may check
 /// for consistency between required runtime functions, globals, imports, and
 /// capabilities.
-pub fn validate_runtime_link_plan(plan: RuntimeLinkPlan) -> Result<ValidatedRuntimeLinkPlan, String> {
+pub fn validate_runtime_link_plan(
+    plan: RuntimeLinkPlan,
+) -> Result<ValidatedRuntimeLinkPlan, String> {
     Ok(ValidatedRuntimeLinkPlan::new(plan))
 }
 

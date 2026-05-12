@@ -31,8 +31,8 @@ mod wasm_binary;
 mod wasm_ir;
 mod wat_writer;
 
-use ts2wasm_ir::lowered::{LoweredProgram, Validated};
 pub use ts2wasm_diagnostic::{DiagCode, Diagnostic};
+use ts2wasm_ir::lowered::{LoweredProgram, Validated};
 
 pub use runtime_fn::{RuntimeFn, runtime_fn_from_name};
 pub use runtime_link_plan::{
@@ -102,13 +102,14 @@ pub(crate) fn wat_bytes(bytes: &[u8]) -> String {
 
 #[cfg(test)]
 mod tests {
+    use super::runtime_link_plan::build_validated_runtime_link_plan;
     use super::{
         emit_canonical_manifest_json, emit_wasm_binary_mvp, emit_wat, emitter::LocalFrame,
     };
-    use super::runtime_link_plan::build_validated_runtime_link_plan;
     use std::fs;
     use std::path::Path;
     use std::process::Command;
+    use ts2wasm_diagnostic::DiagCode;
     use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{
         ClassPrototypeRef, FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr,
@@ -116,8 +117,11 @@ mod tests {
     };
     use ts2wasm_runtime_abi::{Layout, ValueTag};
     use ts2wasm_shared::test_helpers::unique_temp_dir;
-use ts2wasm_diagnostic::DiagCode;
-use ts2wasm_source::Span;
+    use ts2wasm_source::Span;
+
+    fn wat_words(wat: &str) -> String {
+        wat.split_whitespace().collect::<Vec<_>>().join(" ")
+    }
 
     #[test]
     fn emit_wat_rejects_residual_method_call_before_emission() {
@@ -450,7 +454,8 @@ use ts2wasm_source::Span;
         assert!(wat.contains("(i32.const -1)"));
         assert!(wat.contains("(global.get $alloc_bytes_since_last_gc)"));
         assert!(wat.contains("(call $gc_collect)"));
-        assert!(wat.contains("(call $gc_collect)))\n    ;; A collection can tail-trim $heap."));
+        let compact_wat = wat_words(&wat);
+        assert!(compact_wat.contains("(call $gc_collect))) ;; A collection can tail-trim $heap."));
         assert!(wat.contains("(global.set $alloc_bytes_since_last_gc"));
         assert!(wat.contains("(local.get $payload_base))"));
     }
@@ -482,14 +487,15 @@ use ts2wasm_source::Span;
         assert!(wat.contains("(global.get $gc_free_list_max_body_size)"));
         assert!(wat.contains("(global.get $gc_free_list_second_max_body_size)"));
         assert!(wat.contains("(global.set $gc_free_list_max_body_size (local.get $body_size))"));
-        assert!(wat.contains(
-            "(global.set $gc_free_list_second_max_body_size\n                  (global.get $gc_free_list_max_body_size))"
+        let compact_wat = wat_words(&wat);
+        assert!(compact_wat.contains(
+            "(global.set $gc_free_list_second_max_body_size (global.get $gc_free_list_max_body_size))"
         ));
         assert!(
             wat.contains("(global.set $gc_free_list_second_max_body_size (local.get $body_size))")
         );
-        assert!(wat.contains(
-            "(global.set $gc_free_list_max_body_size\n                          (global.get $gc_free_list_second_max_body_size))"
+        assert!(compact_wat.contains(
+            "(global.set $gc_free_list_max_body_size (global.get $gc_free_list_second_max_body_size))"
         ));
         assert!(wat.contains("(local $next_body_size i32)"));
         assert!(wat.contains("(loop $coalesce"));
@@ -1353,8 +1359,7 @@ use ts2wasm_source::Span;
     #[test]
     fn math_random_manifest_declares_wasi_random() {
         let program = math_random_program();
-        let validated_plan =
-            build_validated_runtime_link_plan(&program).expect("valid link plan");
+        let validated_plan = build_validated_runtime_link_plan(&program).expect("valid link plan");
 
         let manifest: serde_json::Value =
             serde_json::from_str(&emit_canonical_manifest_json(&validated_plan))

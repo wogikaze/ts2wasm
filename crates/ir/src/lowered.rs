@@ -1,4 +1,4 @@
-// Replaced include! with real module boundaries
+// Real module boundaries replace the former generated module splice.
 pub mod captures;
 pub mod classes;
 pub mod completion;

@@ -20,7 +20,6 @@ impl WatEmitter<'_> {
         self.emit_json_skip_number(wat);
         self.emit_json_parse_object(wat);
         self.emit_json_parse_array(wat);
-        self.emit_json_skip_string(wat);
     }
 
     /// Emit the main `$json_parse` WAT function.

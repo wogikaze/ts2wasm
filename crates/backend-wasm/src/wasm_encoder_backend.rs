@@ -167,7 +167,13 @@ fn build_type_and_mappings(
         global_indices.insert(g.symbol.clone(), gi as u32);
     }
 
-    (types, func_types, import_func_type_indices, global_indices, func_name_indices)
+    (
+        types,
+        func_types,
+        import_func_type_indices,
+        global_indices,
+        func_name_indices,
+    )
 }
 
 fn type_index(
@@ -204,20 +210,40 @@ fn build_single_function(
 
     for instr in &f.body {
         match instr {
-            WasmInstr::LocalGet(i) => { func.instruction(&I::LocalGet(*i as u32)); }
-            WasmInstr::LocalSet(i) => { func.instruction(&I::LocalSet(*i as u32)); }
-            WasmInstr::LocalTee(i) => { func.instruction(&I::LocalTee(*i as u32)); }
-            WasmInstr::I32Const(v) => { func.instruction(&I::I32Const(*v)); }
-            WasmInstr::I64Const(v) => { func.instruction(&I::I64Const(*v)); }
+            WasmInstr::LocalGet(i) => {
+                func.instruction(&I::LocalGet(*i as u32));
+            }
+            WasmInstr::LocalSet(i) => {
+                func.instruction(&I::LocalSet(*i as u32));
+            }
+            WasmInstr::LocalTee(i) => {
+                func.instruction(&I::LocalTee(*i as u32));
+            }
+            WasmInstr::I32Const(v) => {
+                func.instruction(&I::I32Const(*v));
+            }
+            WasmInstr::I64Const(v) => {
+                func.instruction(&I::I64Const(*v));
+            }
             WasmInstr::Call(name) => {
                 let idx = func_name_indices.get(name).copied().unwrap_or(0);
                 func.instruction(&I::Call(idx));
             }
-            WasmInstr::CallDirect(idx) => { func.instruction(&I::Call(*idx)); }
-            WasmInstr::Drop => { func.instruction(&I::Drop); }
-            WasmInstr::Unreachable => { func.instruction(&I::Unreachable); }
-            WasmInstr::Nop => { func.instruction(&I::Nop); }
-            WasmInstr::Return => { func.instruction(&I::Return); }
+            WasmInstr::CallDirect(idx) => {
+                func.instruction(&I::Call(*idx));
+            }
+            WasmInstr::Drop => {
+                func.instruction(&I::Drop);
+            }
+            WasmInstr::Unreachable => {
+                func.instruction(&I::Unreachable);
+            }
+            WasmInstr::Nop => {
+                func.instruction(&I::Nop);
+            }
+            WasmInstr::Return => {
+                func.instruction(&I::Return);
+            }
             WasmInstr::Br(name) => {
                 let depth = func_name_indices.get(name).copied().unwrap_or(0);
                 func.instruction(&I::Br(depth));
@@ -226,17 +252,24 @@ fn build_single_function(
                 let depth = func_name_indices.get(name).copied().unwrap_or(0);
                 func.instruction(&I::BrIf(depth));
             }
-            WasmInstr::Select => { func.instruction(&I::Select); }
+            WasmInstr::Select => {
+                func.instruction(&I::Select);
+            }
             WasmInstr::If { result_ty } => {
-                let bt = result_ty.as_deref()
+                let bt = result_ty
+                    .as_deref()
                     .filter(|s| !s.is_empty())
                     .map(parse_block_type)
                     .unwrap_or(BlockType::Empty);
                 func.instruction(&I::If(bt));
             }
             WasmInstr::Then => {}
-            WasmInstr::Else => { func.instruction(&I::Else); }
-            WasmInstr::End => { func.instruction(&I::End); }
+            WasmInstr::Else => {
+                func.instruction(&I::Else);
+            }
+            WasmInstr::End => {
+                func.instruction(&I::End);
+            }
             WasmInstr::Block(name) => {
                 let _ = name;
                 func.instruction(&I::Block(BlockType::Empty));
@@ -245,32 +278,84 @@ fn build_single_function(
                 let _ = name;
                 func.instruction(&I::Loop(BlockType::Empty));
             }
-            WasmInstr::I32Eqz => { func.instruction(&I::I32Eqz); }
-            WasmInstr::I32Eq => { func.instruction(&I::I32Eq); }
-            WasmInstr::I32Ne => { func.instruction(&I::I32Ne); }
-            WasmInstr::I32LtS => { func.instruction(&I::I32LtS); }
-            WasmInstr::I32LeS => { func.instruction(&I::I32LeS); }
-            WasmInstr::I32GtS => { func.instruction(&I::I32GtS); }
-            WasmInstr::I32GeS => { func.instruction(&I::I32GeS); }
-            WasmInstr::I32LtU => { func.instruction(&I::I32LtU); }
-            WasmInstr::I32LeU => { func.instruction(&I::I32LeU); }
-            WasmInstr::I32GtU => { func.instruction(&I::I32GtU); }
-            WasmInstr::I32GeU => { func.instruction(&I::I32GeU); }
-            WasmInstr::I32Add => { func.instruction(&I::I32Add); }
-            WasmInstr::I32Sub => { func.instruction(&I::I32Sub); }
-            WasmInstr::I32Mul => { func.instruction(&I::I32Mul); }
-            WasmInstr::I32DivS => { func.instruction(&I::I32DivS); }
-            WasmInstr::I32RemS => { func.instruction(&I::I32RemS); }
-            WasmInstr::I32And => { func.instruction(&I::I32And); }
-            WasmInstr::I32Or => { func.instruction(&I::I32Or); }
-            WasmInstr::I32Xor => { func.instruction(&I::I32Xor); }
-            WasmInstr::I32Shl => { func.instruction(&I::I32Shl); }
-            WasmInstr::I32ShrS => { func.instruction(&I::I32ShrS); }
-            WasmInstr::I32ShrU => { func.instruction(&I::I32ShrU); }
-            WasmInstr::I32Clz => { func.instruction(&I::I32Clz); }
-            WasmInstr::I32Ctz => { func.instruction(&I::I32Ctz); }
-            WasmInstr::I32Popcnt => { func.instruction(&I::I32Popcnt); }
-            WasmInstr::I32WrapI64 => { func.instruction(&I::I32WrapI64); }
+            WasmInstr::I32Eqz => {
+                func.instruction(&I::I32Eqz);
+            }
+            WasmInstr::I32Eq => {
+                func.instruction(&I::I32Eq);
+            }
+            WasmInstr::I32Ne => {
+                func.instruction(&I::I32Ne);
+            }
+            WasmInstr::I32LtS => {
+                func.instruction(&I::I32LtS);
+            }
+            WasmInstr::I32LeS => {
+                func.instruction(&I::I32LeS);
+            }
+            WasmInstr::I32GtS => {
+                func.instruction(&I::I32GtS);
+            }
+            WasmInstr::I32GeS => {
+                func.instruction(&I::I32GeS);
+            }
+            WasmInstr::I32LtU => {
+                func.instruction(&I::I32LtU);
+            }
+            WasmInstr::I32LeU => {
+                func.instruction(&I::I32LeU);
+            }
+            WasmInstr::I32GtU => {
+                func.instruction(&I::I32GtU);
+            }
+            WasmInstr::I32GeU => {
+                func.instruction(&I::I32GeU);
+            }
+            WasmInstr::I32Add => {
+                func.instruction(&I::I32Add);
+            }
+            WasmInstr::I32Sub => {
+                func.instruction(&I::I32Sub);
+            }
+            WasmInstr::I32Mul => {
+                func.instruction(&I::I32Mul);
+            }
+            WasmInstr::I32DivS => {
+                func.instruction(&I::I32DivS);
+            }
+            WasmInstr::I32RemS => {
+                func.instruction(&I::I32RemS);
+            }
+            WasmInstr::I32And => {
+                func.instruction(&I::I32And);
+            }
+            WasmInstr::I32Or => {
+                func.instruction(&I::I32Or);
+            }
+            WasmInstr::I32Xor => {
+                func.instruction(&I::I32Xor);
+            }
+            WasmInstr::I32Shl => {
+                func.instruction(&I::I32Shl);
+            }
+            WasmInstr::I32ShrS => {
+                func.instruction(&I::I32ShrS);
+            }
+            WasmInstr::I32ShrU => {
+                func.instruction(&I::I32ShrU);
+            }
+            WasmInstr::I32Clz => {
+                func.instruction(&I::I32Clz);
+            }
+            WasmInstr::I32Ctz => {
+                func.instruction(&I::I32Ctz);
+            }
+            WasmInstr::I32Popcnt => {
+                func.instruction(&I::I32Popcnt);
+            }
+            WasmInstr::I32WrapI64 => {
+                func.instruction(&I::I32WrapI64);
+            }
             WasmInstr::MemorySize => {
                 func.instruction(&I::MemorySize(0));
             }
@@ -278,10 +363,18 @@ fn build_single_function(
                 func.instruction(&I::MemoryGrow(0));
             }
             WasmInstr::I32Load { align, offset } => {
-                func.instruction(&I::I32Load(MemArg { offset: *offset as u64, align: *align, memory_index: 0 }));
+                func.instruction(&I::I32Load(MemArg {
+                    offset: *offset as u64,
+                    align: *align,
+                    memory_index: 0,
+                }));
             }
             WasmInstr::I32Store { align, offset } => {
-                func.instruction(&I::I32Store(MemArg { offset: *offset as u64, align: *align, memory_index: 0 }));
+                func.instruction(&I::I32Store(MemArg {
+                    offset: *offset as u64,
+                    align: *align,
+                    memory_index: 0,
+                }));
             }
             WasmInstr::GlobalGet(name) => {
                 let idx = global_indices.get(name).copied().unwrap_or(0);

@@ -23,7 +23,7 @@ struct NameResolver {
     classes: std::collections::HashMap<String, Option<Span>>,
     /// Global identifiers that are allowed (builtins like console, require, etc.)
     allowed_globals: std::collections::HashSet<String>,
-    predeclared_names: std::collections::HashSet<String>,
+    predeclared_names: Vec<std::collections::HashSet<String>>,
     /// Active ECMAScript labels and whether their target is an iteration statement.
     labels: Vec<LabelBinding>,
     loop_depth: usize,
@@ -156,7 +156,7 @@ impl NameResolver {
             loop_depth: 0,
             breakable_depth: 0,
             function_depth: 0,
-            predeclared_names: std::collections::HashSet::new(),
+            predeclared_names: vec![std::collections::HashSet::new()],
         }
     }
 
@@ -280,10 +280,11 @@ impl NameResolver {
             if let Stmt::Let {
                 name,
                 is_var: false,
+                span,
                 ..
             } = stmt
             {
-                self.predeclare_name(name);
+                self.predeclare_name(name, Some(*span))?;
             }
         }
 
@@ -1426,11 +1427,14 @@ impl NameResolver {
             if let Stmt::ClassDecl { name, span, .. } = stmt {
                 self.declare_variable(name, Some(*span), false)?;
             }
-            if let Stmt::Let { name, is_var, .. } = stmt {
+            if let Stmt::Let {
+                name, is_var, span, ..
+            } = stmt
+            {
                 if *is_var {
                     self.declare_binding(name, None, true)?;
                 } else {
-                    self.predeclare_name(name);
+                    self.predeclare_name(name, Some(*span))?;
                 }
             }
         }
@@ -1441,10 +1445,13 @@ impl NameResolver {
 
     fn enter_scope(&mut self) {
         self.scopes.push(std::collections::HashMap::new());
+        self.predeclared_names
+            .push(std::collections::HashSet::new());
     }
 
     fn exit_scope(&mut self) {
         self.scopes.pop();
+        self.predeclared_names.pop();
     }
 
     fn declare_binding(
@@ -1515,7 +1522,12 @@ impl NameResolver {
             return true;
         }
         // Check forward-declared names (const/let TDZ references)
-        if self.predeclared_names.contains(name) {
+        if self
+            .predeclared_names
+            .iter()
+            .rev()
+            .any(|scope| scope.contains(name))
+        {
             return true;
         }
         // Check allowed global identifiers
@@ -1698,6 +1710,11 @@ impl NameResolver {
         self.functions.contains_key(name)
             || self.classes.contains_key(name)
             || self
+                .predeclared_names
+                .iter()
+                .rev()
+                .any(|scope| scope.contains(name))
+            || self
                 .scopes
                 .iter()
                 .rev()
@@ -1746,8 +1763,33 @@ impl NameResolver {
 
     /// Predeclare a name for forward reference resolution without adding it
     /// to the current scope. Used for const/let TDZ cases (issue 5348).
-    fn predeclare_name(&mut self, name: &str) {
-        self.predeclared_names.insert(name.to_string());
+    fn predeclare_name(&mut self, name: &str, span: Option<Span>) -> Result<(), Diagnostic> {
+        let top_level = self.scopes.len() == 1;
+        if self
+            .scopes
+            .last()
+            .is_some_and(|scope| scope.contains_key(name))
+            || self
+                .predeclared_names
+                .last()
+                .is_some_and(|scope| scope.contains(name))
+            || (top_level && self.functions.contains_key(name))
+            || (top_level && self.classes.contains_key(name))
+        {
+            return Err(Diagnostic {
+                code: DiagCode::DuplicateLocal,
+                message: format!(
+                    "duplicate identifier: `{name}` conflicts with existing declaration"
+                ),
+                span,
+                phase: None,
+            });
+        }
+        self.predeclared_names
+            .last_mut()
+            .expect("predeclared scope should exist")
+            .insert(name.to_string());
+        Ok(())
     }
 }
 

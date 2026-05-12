@@ -62,7 +62,7 @@ mod tests {
     use crate::runtime_fn::{HostAbi, RuntimeFn};
 
     #[test]
-    fn wasm_import_from_host_spec() {
+    fn maps_host_import_spec_to_wasm_import() {
         let spec = HostImportSpec {
             module: "wasi_snapshot_preview1",
             name: "fd_write",
@@ -83,23 +83,38 @@ mod tests {
     fn runtime_signature_stack_effect_basics() {
         assert_eq!(
             RuntimeFn::TruthyBool.stack_effect(),
-            RuntimeSignature { params: 1, results: 1 },
+            RuntimeSignature {
+                params: 1,
+                results: 1
+            },
         );
         assert_eq!(
             RuntimeFn::PrivateBrandTypeError.stack_effect(),
-            RuntimeSignature { params: 0, results: 1 },
+            RuntimeSignature {
+                params: 0,
+                results: 1
+            },
         );
         assert_eq!(
             RuntimeFn::ArrayGet.stack_effect(),
-            RuntimeSignature { params: 2, results: 1 },
+            RuntimeSignature {
+                params: 2,
+                results: 1
+            },
         );
         assert_eq!(
             RuntimeFn::PropertyGet.stack_effect(),
-            RuntimeSignature { params: 3, results: 1 },
+            RuntimeSignature {
+                params: 3,
+                results: 1
+            },
         );
         assert_eq!(
             RuntimeFn::PropertySet.stack_effect(),
-            RuntimeSignature { params: 4, results: 1 },
+            RuntimeSignature {
+                params: 4,
+                results: 1
+            },
         );
     }
 }

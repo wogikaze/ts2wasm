@@ -488,7 +488,7 @@ impl WatEmitter<'_> {
                             )
                           )
                           (then (i32.const {true}))
-                          (else (i32.const {false})))))
+                          (else (i32.const {false}))))))
                   (else
                     ;; Data descriptor: return value/writable/enumerable/configurable
                     ;; Write "value"

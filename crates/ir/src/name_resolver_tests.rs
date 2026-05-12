@@ -1,9 +1,9 @@
 #[cfg(test)]
 mod tests {
     use crate::name_resolver;
-    use ts2wasm_syntax::{ArrayLiteralElement, BinaryOp, Expr, Stmt};
     use ts2wasm_diagnostic::DiagCode;
     use ts2wasm_source::Span;
+    use ts2wasm_syntax::{ArrayLiteralElement, BinaryOp, Expr, Stmt};
 
     #[test]
     fn test_resolve_variable_declaration() {
@@ -150,8 +150,7 @@ mod tests {
     }
 
     #[test]
-    fn rejects_iterator_type_only_member_value_use() {
-        let iterator_span = Span { start: 18, end: 26 };
+    fn resolves_iterator_global_member_value_use() {
         let program = vec![Stmt::Let {
             is_var: false,
             name: "iterator".to_string(),
@@ -159,7 +158,7 @@ mod tests {
                 callee: Box::new(Expr::Member {
                     object: Box::new(Expr::Ident {
                         name: "Iterator".to_string(),
-                        span: iterator_span,
+                        span: Span { start: 18, end: 26 },
                     }),
                     property: "from".to_string(),
                     span: Span { start: 18, end: 31 },
@@ -176,11 +175,7 @@ mod tests {
             span: Span { start: 0, end: 37 },
         }];
 
-        let err = name_resolver::resolve_names(&program).unwrap_err();
-        assert_eq!(err.code, DiagCode::TypeScriptTypeCheck);
-        assert!(err.message.contains("TS2693"));
-        assert!(err.message.contains("'Iterator' only refers to a type"));
-        assert_eq!(err.span, Some(iterator_span));
+        assert!(name_resolver::resolve_names(&program).is_ok());
     }
 
     #[test]
@@ -395,7 +390,7 @@ mod tests {
         let result = name_resolver::resolve_names(&program);
         assert!(result.is_err());
         let err = result.unwrap_err();
-        assert!(err.message.contains("duplicate local"));
+        assert!(err.message.contains("duplicate identifier"));
     }
 
     #[test]

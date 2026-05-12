@@ -2378,7 +2378,7 @@ fn instanceof_unsupported_rhs_fixture_reports_issue_207() {
     );
     let stderr = String::from_utf8_lossy(&build.stderr);
     assert!(
-        stderr.contains("[UnsupportedSyntax]"),
+        super::stderr_contains_diag_code(&stderr, "UnsupportedSyntax"),
         "expected UnsupportedSyntax diagnostic, got:\n{stderr}"
     );
     assert!(

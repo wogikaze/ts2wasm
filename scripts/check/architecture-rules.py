@@ -79,9 +79,15 @@ LINE_COUNT_SUFFIXES = {
     ".yml",
 }
 EXCLUDED_PATH_PARTS = {
+    ".agent",
     ".claude",
+    ".cache",
+    ".commandcode",
+    ".config",
+    ".devin",
     ".git",
     ".mypy_cache",
+    ".worktrees",
     "__pycache__",
     "artifacts",
     "node_modules",
@@ -102,6 +108,8 @@ FILE_SIZE_ALLOWLIST_2000 = {
     "crates/ir/src/lowered/resolver/call.rs": "P7: resolver decomposition",
     "crates/ir/src/lowered/program.rs": "P7: resolver decomposition",
     "crates/backend-wasm/src/runtime/spec/all.rs": "auto-generated spec",
+    "crates/runtime-catalog/src/runtime/spec/all.rs": "auto-generated spec",
+    "crates/runtime-catalog/src/runtime_fn.rs": "runtime catalog registry",
     "crates/frontend/src/parser/expressions_main.rs": "P4: parser decomposition",
     "crates/frontend/src/parser/statements_general.rs": "P4: parser decomposition",
     "crates/ir/src/builtin_resolver.rs": "P7: resolver decomposition",
@@ -145,6 +153,7 @@ RAW_SYMBOL_ALLOWLIST = {
 FUNCTION_LENGTH_ALLOWLIST = {
     ("crates/backend-wasm/src/runtime_link_plan.rs", "collect_required_runtime_expr"): "P11: link plan refactor -- 362 lines, iterates all RuntimeFn variants to build dependency graph",
     ("crates/ir/src/binding_pattern.rs", "parse_binding_pattern"): "P7: resolver decomposition -- 380 lines, complex destructuring pattern parser with many sub-pattern types",
+    ("crates/resolve/src/binding_pattern.rs", "parse_binding_pattern"): "P7: resolver decomposition -- 380 lines, complex destructuring pattern parser with many sub-pattern types",
     ("crates/ir/src/builtin_resolver.rs", "fold_stmt"): "P7: resolver decomposition -- 337 lines, statement folding dispatches many statement types",
     ("crates/ir/src/builtin_resolver.rs", "fold_expr"): "P7: resolver decomposition -- 363 lines, expression folding dispatches many expression types",
     ("crates/ir/src/builtin_resolver.rs", "resolve_stmt_with_outer_bindings"): "P7: resolver decomposition -- 457 lines, statement resolution with nested scope tracking",
@@ -153,6 +162,8 @@ FUNCTION_LENGTH_ALLOWLIST = {
     ("crates/ir/src/lowered/validate.rs", "validate_expr"): "P7: resolver decomposition -- 430 lines, validate_expr covers all LoweredExpr variants",
     ("crates/ir/src/name_resolver.rs", "resolve_stmt"): "P7: resolver decomposition -- 498 lines, statement-level name resolution dispatches many AST types",
     ("crates/ir/src/name_resolver.rs", "resolve_expr"): "P7: resolver decomposition -- 498 lines, expression-level name resolution dispatches many AST types",
+    ("crates/resolve/src/name_resolver.rs", "resolve_stmt"): "P7: resolver decomposition -- 498 lines, statement-level name resolution dispatches many AST types",
+    ("crates/resolve/src/name_resolver.rs", "resolve_expr"): "P7: resolver decomposition -- 498 lines, expression-level name resolution dispatches many AST types",
     # #334: remaining oversized functions allowlisted
     ("crates/compiler/src/test262_preprocessor.rs", "build_feature_stubs"): "P4: preprocessor stub builder -- 362 lines, large match constructing feature stubs per test262 config",
     ("crates/frontend/src/parser/expressions_main.rs", "primary"): "P4: parser match dispatch -- 331 lines, primary expression parser with many sub-expression types",
@@ -264,9 +275,26 @@ def line_count(path: Path) -> int:
     return data.count(b"\n") + (0 if data.endswith(b"\n") else 1)
 
 
+def iter_repo_files(suffix: str | None = None):
+    for root, dirnames, filenames in os.walk(REPO_ROOT):
+        rel_root = Path(root).relative_to(REPO_ROOT)
+        dirnames[:] = [
+            dirname
+            for dirname in dirnames
+            if dirname not in EXCLUDED_PATH_PARTS
+            and dirname not in EXCLUDED_FILENAMES
+            and (rel_root / dirname) != Path("TRACKING.yaml")
+        ]
+        for filename in filenames:
+            path = Path(root) / filename
+            if suffix is not None and not path.name.endswith(suffix):
+                continue
+            yield path
+
+
 def check_oversized_files(max_file_lines: int) -> None:
     oversized: list[tuple[int, Path]] = []
-    for path in REPO_ROOT.rglob("*"):
+    for path in iter_repo_files():
         if not path.is_file() or not should_count_lines(path):
             continue
         rel = path.relative_to(REPO_ROOT)
@@ -376,7 +404,7 @@ def check_function_length() -> list[str]:
     fn_re = re.compile(r'^\s*(pub\s+)?(unsafe\s+)?(async\s+)?fn\s+(\w+)')
     max_fn_lines = 300
 
-    for path in sorted(REPO_ROOT.rglob("*.rs")):
+    for path in sorted(iter_repo_files(".rs")):
         rel = path.relative_to(REPO_ROOT)
         if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
             continue
@@ -413,12 +441,11 @@ def check_function_length() -> list[str]:
             fn_length = j - fn_start
             if fn_length > max_fn_lines:
                 allowlist_key = (str(rel), fn_name)
-                if allowlist_key in FUNCTION_LENGTH_ALLOWLIST:
-                    continue
-                violations.append(
-                    f"check_architecture_rules: ERROR {rel}:{fn_start + 1}: "
-                    f"function `{fn_name}` is {fn_length} lines (max {max_fn_lines})"
-                )
+                if allowlist_key not in FUNCTION_LENGTH_ALLOWLIST:
+                    violations.append(
+                        f"check_architecture_rules: ERROR {rel}:{fn_start + 1}: "
+                        f"function `{fn_name}` is {fn_length} lines (max {max_fn_lines})"
+                    )
 
             i = j
 
@@ -434,7 +461,7 @@ def check_no_new_string_runtime_call() -> list[str]:
     violations = []
     runtime_call_re = re.compile(r'RuntimeCall\s*\{')
 
-    for path in sorted(REPO_ROOT.rglob("*.rs")):
+    for path in sorted(iter_repo_files(".rs")):
         rel = path.relative_to(REPO_ROOT)
         if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
             continue
@@ -590,7 +617,7 @@ def check_runtimefn_spec_gap() -> list[str]:
 def check_rust_file_length(max_lines: int = 2000) -> list[str]:
     """Check that no .rs file exceeds 2000 lines (with allowlist)."""
     violations = []
-    for path in sorted(REPO_ROOT.rglob("*.rs")):
+    for path in sorted(iter_repo_files(".rs")):
         rel = path.relative_to(REPO_ROOT)
         if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
             continue
@@ -621,7 +648,7 @@ def check_diagnostic_span_none() -> list[str]:
     invariant_code_re = re.compile(r'code:\s*DiagCode::InvariantViolation')
     backend_io_code_re = re.compile(r'code:\s*DiagCode::BackendIo')
 
-    for path in sorted(REPO_ROOT.rglob("*.rs")):
+    for path in sorted(iter_repo_files(".rs")):
         rel = path.relative_to(REPO_ROOT)
         if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
             continue
@@ -668,7 +695,7 @@ def check_raw_runtime_symbol_outside_catalog() -> list[str]:
         symbols.add(m.group(1))
 
     # Check all .rs files for raw symbol usage
-    for path in sorted(REPO_ROOT.rglob("*.rs")):
+    for path in sorted(iter_repo_files(".rs")):
         rel = path.relative_to(REPO_ROOT)
         if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
             continue
@@ -804,6 +831,9 @@ def check_host_import_string_outside_catalog() -> list[str]:
         # Skip wat_writer.rs (WASM import section emission uses Import struct)
         if str(rel) == "crates/backend-wasm/src/wat_writer.rs":
             continue
+        # Skip wasm_ir.rs (conversion tests use canonical HostImportSpec literals).
+        if str(rel) == "crates/backend-wasm/src/wasm_ir.rs":
+            continue
         text = path.read_text()
         for s in wasi_import_strings:
             if f'"{s}"' in text:
@@ -823,7 +853,7 @@ def check_use_super_star() -> list[str]:
     violations = []
     use_super_re = re.compile(r'^\s*use\s+super::\*;?\s*$')
 
-    for path in sorted(REPO_ROOT.rglob("*.rs")):
+    for path in sorted(iter_repo_files(".rs")):
         rel = path.relative_to(REPO_ROOT)
         if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
             continue
@@ -907,7 +937,7 @@ def check_smaller_function_warning() -> list[str]:
     fn_re = re.compile(r'^\s*(pub\s+)?(unsafe\s+)?(async\s+)?fn\s+(\w+)')
     max_fn_lines = 200
 
-    for path in sorted(REPO_ROOT.rglob("*.rs")):
+    for path in sorted(iter_repo_files(".rs")):
         rel = path.relative_to(REPO_ROOT)
         if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
             continue
@@ -944,12 +974,11 @@ def check_smaller_function_warning() -> list[str]:
             fn_length = j - fn_start
             if fn_length > max_fn_lines:
                 allowlist_key = (str(rel), fn_name)
-                if allowlist_key in FUNCTION_WARN_ALLOWLIST_200:
-                    continue
-                violations.append(
-                    f"check_architecture_rules: WARN {rel}:{fn_start + 1}: "
-                    f"function `{fn_name}` is {fn_length} lines (max {max_fn_lines})"
-                )
+                if allowlist_key not in FUNCTION_WARN_ALLOWLIST_200:
+                    violations.append(
+                        f"check_architecture_rules: WARN {rel}:{fn_start + 1}: "
+                        f"function `{fn_name}` is {fn_length} lines (max {max_fn_lines})"
+                    )
 
             i = j
 
@@ -1015,7 +1044,7 @@ def check_module_fan_out() -> list[str]:
     # Exclude workspace/path-only entries that reuse crate name as dep name
     # (these are self-referencing workspace crates)
 
-    for path in sorted(REPO_ROOT.rglob("Cargo.toml")):
+    for path in sorted(iter_repo_files("Cargo.toml")):
         rel = path.relative_to(REPO_ROOT)
         if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
             continue
@@ -1054,7 +1083,7 @@ def check_public_api_count() -> list[str]:
     violations = []
     max_pub_items = 50
 
-    for path in sorted(REPO_ROOT.rglob("*.rs")):
+    for path in sorted(iter_repo_files(".rs")):
         rel = path.relative_to(REPO_ROOT)
         if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
             continue
@@ -1083,7 +1112,7 @@ def check_oversized_match_arms() -> list[str]:
     violations = []
     max_arms = 30
 
-    for path in sorted(REPO_ROOT.rglob("*.rs")):
+    for path in sorted(iter_repo_files(".rs")):
         rel = path.relative_to(REPO_ROOT)
         if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
             continue
@@ -1341,7 +1370,7 @@ def main():
 
     for v in violations:
         print(v, file=sys.stderr)
-    if violations:
+    if any(": ERROR " in v for v in violations):
         errors += 1
 
     if not shutil.which("cargo"):

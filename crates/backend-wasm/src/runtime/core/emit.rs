@@ -293,7 +293,8 @@ impl WatEmitter<'_> {
     (i32.store
       (i32.add (local.get $error_obj) (i32.const {object_entry_value_offset}))
       (i32.const {message_value}))
-    (global.set $exception_pending (i32.or (local.get $error_obj) (i32.const {object_tag}))))
+    (global.set $exception_pending (i32.or (local.get $error_obj) (i32.const {object_tag})))
+    (i32.const {undefined_tag}))
 "#,
             signature = signature,
             message_offset = message_offset,
@@ -307,6 +308,7 @@ impl WatEmitter<'_> {
             message_key = message_key,
             message_value = message_value,
             object_tag = ValueTag::OBJECT,
+            undefined_tag = ValueTag::UNDEFINED,
         ));
     }
 

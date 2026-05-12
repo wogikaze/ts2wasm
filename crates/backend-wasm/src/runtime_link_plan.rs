@@ -58,7 +58,9 @@ pub fn build_runtime_link_plan(program: &LoweredProgram) -> RuntimeLinkPlan {
 
 /// Build a validated RuntimeLinkPlan from a lowered program.
 /// Returns `Ok(ValidatedRuntimeLinkPlan)` on success.
-pub fn build_validated_runtime_link_plan(program: &LoweredProgram) -> Result<ValidatedRuntimeLinkPlan, String> {
+pub fn build_validated_runtime_link_plan(
+    program: &LoweredProgram,
+) -> Result<ValidatedRuntimeLinkPlan, String> {
     let plan = build_runtime_link_plan(program);
     validate_runtime_link_plan(plan)
 }

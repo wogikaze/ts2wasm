@@ -2,13 +2,11 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::{Path, PathBuf};
 
 use ts2wasm_backend_wasm as backend;
-use ts2wasm_frontend::{
-    , , Expr, Stmt, validate_type_reference_directives,
-};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
-use ts2wasm_source::Span;
+use ts2wasm_frontend::{validate_type_reference_directives, Expr, Stmt};
 use ts2wasm_ir::lowered::lower_hir_to_mir;
-use ts2wasm_ir::{OptimizationLevel, builtin_resolver, lowered, name_resolver};
+use ts2wasm_ir::{builtin_resolver, lowered, name_resolver, OptimizationLevel};
+use ts2wasm_source::Span;
 
 use crate::module_graph::ModuleGraph;
 use crate::stages::parse::{self, parse_program, validate_ast};
@@ -857,7 +855,8 @@ pub(crate) fn build_multi_section_file(
         crate::io::write_manifest::write_manifest_json(path, &manifest)?;
     }
     let wat = backend::emit_wat(&validated).map_err(|d| d.with_phase("backend"))?;
-    crate::io::write_output::write_wasm_from_wat(&wat, output).map_err(|d| d.with_phase("backend"))?;
+    crate::io::write_output::write_wasm_from_wat(&wat, output)
+        .map_err(|d| d.with_phase("backend"))?;
     Ok(crate::CompileReport {
         value: (),
         diagnostics: lower_diagnostics,

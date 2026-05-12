@@ -135,7 +135,7 @@ fn parses_program_with_dollar_identifier() {
 #[test]
 fn rejects_unterminated_block_comment() {
     let err = parse_program("/* unterminated").unwrap_err();
-    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    assert_eq!(err.code, DiagCode::SyntaxError);
     assert!(err.message.contains("unterminated block comment"));
     assert!(err.span.is_some());
 }
@@ -870,8 +870,21 @@ fn gc_mark_object_payload_marks_heap_closure_capture_slots() {
     assert!(wat.contains("(i32.const 16)"));
     assert!(wat.contains("(i32.const 4)"));
     assert!(wat.contains("(call $gc_mark_value (i32.load (local.get $entry_ptr)))"));
+    let payload_start = wat
+        .find("(func $gc_mark_object_payload")
+        .expect("gc payload marker should exist");
+    let payload_wat = &wat[payload_start..];
+    let closure_done_start = payload_wat
+        .find("(block $closure_done")
+        .expect("closure scan block should exist");
+    let object_scan_start = payload_wat
+        .find("(if (i32.eq (local.get $count) (i32.const -1))")
+        .expect("ordinary object payload scan should exist");
+    let closure_scan_return = payload_wat[closure_done_start..object_scan_start]
+        .find("(return)")
+        .expect("closure payload scan should return before object scan");
     assert!(
-        wat.contains("(return)))\n    (if (i32.eq (local.get $count) (i32.const -1))"),
+        closure_done_start + closure_scan_return < object_scan_start,
         "closure marking must return before ordinary object payload scanning"
     );
 }

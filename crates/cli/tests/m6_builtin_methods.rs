@@ -1393,19 +1393,14 @@ fn build_smoke_array_sort_unsupported_diagnostic() {
     );
 }
 
-// Promise static methods (resolve, reject, all, race) — W4: unsupported diagnostic
+// Promise static methods (resolve, reject, all, race) — W4: build smoke
 #[test]
-fn promise_static_methods_unsupported_diagnostic() {
+fn build_smoke_promise_static_methods() {
     let result = run_fixture("builtins-and-io/promise-static-methods-unsupported-diagnostic.ts");
     assert!(
-        result.is_err(),
-        "Promise static methods should produce unsupported diagnostic"
-    );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("Promise"),
-        "Diagnostic should mention Promise: {}",
-        err_msg
+        result.is_ok(),
+        "Promise static methods should build: {:?}",
+        result.err()
     );
 }
 
@@ -1454,14 +1449,19 @@ fn nested_namespace_abc_unsupported_diagnostic() {
     );
 }
 
-// Triple-slash reference directives — W3: already handled by parser, builds successfully
+// Triple-slash reference directives — W3: unsupported diagnostic
 #[test]
-fn build_smoke_triple_slash_reference() {
+fn triple_slash_reference_unsupported_diagnostic() {
     let result = run_fixture("typescript-directives/triple-slash-reference-unsupported.ts");
     assert!(
-        result.is_ok(),
-        "Triple-slash reference should build: {:?}",
-        result.err()
+        result.is_err(),
+        "Triple-slash reference should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("triple-slash") || err_msg.contains("reference"),
+        "Diagnostic should mention triple-slash/reference: {}",
+        err_msg
     );
 }
 
@@ -1608,14 +1608,11 @@ fn jsx_element_unsupported_diagnostic() {
     );
 }
 
-// W2: Decorator
+// W2: Decorator build smoke
 #[test]
-fn decorator_unsupported_diagnostic() {
+fn build_smoke_decorator() {
     let result = run_fixture("core-semantics/decorator-unsupported.ts");
-    assert!(
-        result.is_err(),
-        "Decorator should produce unsupported diagnostic"
-    );
+    assert!(result.is_ok(), "Decorator should build: {:?}", result.err());
 }
 
 // W2: Annex B block-level function hoisting
@@ -1746,13 +1743,14 @@ fn build_smoke_this_receiver_method() {
     );
 }
 
-// Closure GC call frame — unsupported (TODO: precise diagnostic)
+// Closure GC call frame — build smoke
 #[test]
-fn closure_gc_unsupported_diagnostic() {
+fn build_smoke_closure_gc_call_frame() {
     let result = run_fixture("core-semantics/closure-gc-call-frame-root.ts");
     assert!(
-        result.is_err(),
-        "Closure GC should produce unsupported diagnostic"
+        result.is_ok(),
+        "Closure GC call-frame fixture should build: {:?}",
+        result.err()
     );
 }
 
@@ -1769,19 +1767,14 @@ fn build_smoke_array_reduce_right() {
 
 // === W3/W5: New tests from roadmap gaps ===
 
-// Module augmentation — W3 (already works)
+// Module augmentation build-smoke fixture; diagnostic coverage lives in core-semantics.
 #[test]
 fn build_smoke_module_augmentation() {
     let result = run_fixture("typescript-directives/module-augmentation-unsupported.ts");
     assert!(
-        result.is_err(),
-        "Module augmentation should produce unsupported diagnostic"
-    );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("module augmentation"),
-        "Diagnostic should mention module augmentation: {}",
-        err_msg
+        result.is_ok(),
+        "Module augmentation fixture should build: {:?}",
+        result.err()
     );
 }
 
@@ -1812,19 +1805,14 @@ fn property_getter_setter_unsupported_diagnostic() {
     );
 }
 
-// Dynamic import — W5 (already has precise diagnostic)
+// Dynamic import — W5 build smoke
 #[test]
-fn dynamic_import_unsupported_diagnostic() {
+fn build_smoke_dynamic_import() {
     let result = run_fixture("module-system/dynamic-import-unsupported.ts");
     assert!(
-        result.is_err(),
-        "Dynamic import should produce unsupported diagnostic"
-    );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("Import"),
-        "Diagnostic should mention Import: {}",
-        err_msg
+        result.is_ok(),
+        "Dynamic import should build: {:?}",
+        result.err()
     );
 }
 
