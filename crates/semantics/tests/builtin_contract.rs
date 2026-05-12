@@ -4,9 +4,6 @@
 //! its public module structure is accessible. As the semantics crate grows
 //! to include builtin resolution, TypeScript erasure policy, and host API
 //! classification, this test file should expand to test each boundary.
-//!
-//! Currently the semantics crate is a placeholder, so these tests are
-//! minimal structural checks.
 
 /// Verify the semantics crate links correctly by checking it exists as a
 /// workspace member and has the expected lib.rs structure.
@@ -22,8 +19,8 @@ fn builtin_contract_semantics_lib_exists() {
     );
     let content = std::fs::read_to_string(&path).unwrap_or_default();
     assert!(
-        content.contains("Placeholder"),
-        "semantics lib.rs should contain placeholder text"
+        content.contains("pub mod builtin"),
+        "semantics lib.rs should declare builtin module"
     );
 }
 
