@@ -243,6 +243,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "ts2wasm-diagnostic"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-source",
+]
+
+[[package]]
 name = "ts2wasm-frontend"
 version = "0.1.0"
 dependencies = [
@@ -261,8 +268,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "ts2wasm-resolve"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-diagnostic",
+ "ts2wasm-frontend",
+ "ts2wasm-source",
+ "ts2wasm-syntax",
+]
+
+[[package]]
 name = "ts2wasm-runtime-abi"
 version = "0.1.0"
+
+[[package]]
+name = "ts2wasm-runtime-catalog"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "ts2wasm-runtime-abi",
+]
+
+[[package]]
+name = "ts2wasm-semantics"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-diagnostic",
+ "ts2wasm-resolve",
+ "ts2wasm-runtime-abi",
+ "ts2wasm-source",
+ "ts2wasm-syntax",
+]
 
 [[package]]
 name = "ts2wasm-shared"
@@ -270,6 +307,17 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "ts2wasm-source"
+version = "0.1.0"
+
+[[package]]
+name = "ts2wasm-syntax"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-source",
 ]
 
 [[package]]
