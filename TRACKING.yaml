@@ -37,7 +37,7 @@ done:
         - "scripts/check/architecture-rules.py: add import-capability parity check; restructure to run all checks instead of exiting on first error"
       acceptance: "cargo test passes for focused tests; mise run check architecture includes parity check"
     evidence:
-      commit: PLACEHOLDER
+      commit: 16379c628
       commands:
         - "cargo test -p ts2wasm-backend-wasm --lib -- runtime_fn::tests => exit 0"
         - "cargo test -p ts2wasm-backend-wasm --test runtime_link_plan => exit 0"
