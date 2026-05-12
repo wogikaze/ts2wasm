@@ -193,6 +193,22 @@ run = "python scripts/manager.py check-fixture-differential"
 description = "Print script manager help (list all commands)"
 run = "python scripts/manager.py help"
 
+[tasks."issue-create"]
+description = "Create a new issue file. Usage: mise run issue-create 'Title' -- -p P1 -l 'refactor ir' -s 'Summary' -n 'Next action'"
+run = "python scripts/issue-create.py"
+
+[tasks."issue-lint"]
+description = "Validate all issue files in issues/"
+run = "python scripts/issue-lint.py"
+
+[tasks."issue-index"]
+description = "Regenerate issue-views/ from issues/"
+run = "python scripts/issue-index.py"
+
+[tasks."issue-all"]
+description = "Lint + regenerate issue views"
+run = "python scripts/issue-lint.py && python scripts/issue-index.py"
+
 [tasks."gen-site"]
 description = "Generate documentation site content from docs/TRACKING.yaml/fixtures"
 run = "python scripts/gen-site.py"
