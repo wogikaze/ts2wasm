@@ -8,6 +8,16 @@ use ts2wasm_runtime_abi::{
     HeapPtr, Layout, LocalRawValue, RuntimeConst, RuntimeString, StackEffect, TaggedValue, ValueTag,
 };
 
+fn assert_lt<T>(left: T, right: T, context: &str)
+where
+    T: Copy + PartialOrd + std::fmt::Debug,
+{
+    assert!(
+        left < right,
+        "{context}: expected {left:?} to be less than {right:?}"
+    );
+}
+
 // ---------------------------------------------------------------------------
 // ValueTag invariants
 // ---------------------------------------------------------------------------
@@ -116,11 +126,10 @@ fn sentinel_payloads_are_distinct_and_ordered() {
     );
 
     // NAN_PAYLOAD must be outside the encodeable range: > NUMBER_PAYLOAD_MAX.
-    assert!(
-        ValueTag::NAN_PAYLOAD > ValueTag::NUMBER_PAYLOAD_MAX,
-        "NAN_PAYLOAD ({}) must exceed NUMBER_PAYLOAD_MAX ({})",
+    assert_lt(
+        ValueTag::NUMBER_PAYLOAD_MAX,
         ValueTag::NAN_PAYLOAD,
-        ValueTag::NUMBER_PAYLOAD_MAX
+        "NAN_PAYLOAD must exceed NUMBER_PAYLOAD_MAX",
     );
 
     // Sentinels should be consecutive (NAN, INF, NEG_INF, NEG_ZERO).
@@ -294,10 +303,26 @@ fn runtime_string_newline() {
 #[test]
 fn array_header_offsets_are_within_header_size() {
     // All offsets must be strictly less than ARRAY_HEADER_SIZE (20).
-    assert!(Layout::ARRAY_CAPACITY_OFFSET < Layout::ARRAY_HEADER_SIZE);
-    assert!(Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET < Layout::ARRAY_HEADER_SIZE);
-    assert!(Layout::ARRAY_ELEMENTS_OFFSET_OFFSET < Layout::ARRAY_HEADER_SIZE);
-    assert!(Layout::ARRAY_PRESENCE_WORDS_OFFSET < Layout::ARRAY_HEADER_SIZE);
+    assert_lt(
+        Layout::ARRAY_CAPACITY_OFFSET,
+        Layout::ARRAY_HEADER_SIZE,
+        "ARRAY_CAPACITY_OFFSET within header",
+    );
+    assert_lt(
+        Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+        Layout::ARRAY_HEADER_SIZE,
+        "ARRAY_PRESENCE_WORD_COUNT_OFFSET within header",
+    );
+    assert_lt(
+        Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
+        Layout::ARRAY_HEADER_SIZE,
+        "ARRAY_ELEMENTS_OFFSET_OFFSET within header",
+    );
+    assert_lt(
+        Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+        Layout::ARRAY_HEADER_SIZE,
+        "ARRAY_PRESENCE_WORDS_OFFSET within header",
+    );
 }
 
 #[test]
@@ -311,10 +336,22 @@ fn array_header_offsets_are_4_byte_aligned() {
 #[test]
 fn array_header_offset_order() {
     // Offsets must be strictly increasing.
-    assert!(Layout::ARRAY_CAPACITY_OFFSET > 0);
-    assert!(Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET > Layout::ARRAY_CAPACITY_OFFSET);
-    assert!(Layout::ARRAY_ELEMENTS_OFFSET_OFFSET > Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET);
-    assert!(Layout::ARRAY_PRESENCE_WORDS_OFFSET > Layout::ARRAY_ELEMENTS_OFFSET_OFFSET);
+    assert_lt(0, Layout::ARRAY_CAPACITY_OFFSET, "ARRAY_CAPACITY_OFFSET");
+    assert_lt(
+        Layout::ARRAY_CAPACITY_OFFSET,
+        Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+        "array header capacity before presence word count",
+    );
+    assert_lt(
+        Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+        Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
+        "array header presence word count before elements offset",
+    );
+    assert_lt(
+        Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
+        Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+        "array header elements offset before presence words",
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -323,8 +360,16 @@ fn array_header_offset_order() {
 
 #[test]
 fn object_header_offsets_are_within_header_size() {
-    assert!(Layout::OBJECT_FLAGS_OFFSET < Layout::OBJECT_HEADER_SIZE);
-    assert!(Layout::OBJECT_PROTOTYPE_OFFSET < Layout::OBJECT_HEADER_SIZE);
+    assert_lt(
+        Layout::OBJECT_FLAGS_OFFSET,
+        Layout::OBJECT_HEADER_SIZE,
+        "OBJECT_FLAGS_OFFSET within header",
+    );
+    assert_lt(
+        Layout::OBJECT_PROTOTYPE_OFFSET,
+        Layout::OBJECT_HEADER_SIZE,
+        "OBJECT_PROTOTYPE_OFFSET within header",
+    );
 }
 
 #[test]
@@ -395,11 +440,31 @@ fn bigint_offsets_are_4_byte_aligned() {
 
 #[test]
 fn bigint_offsets_are_strictly_increasing() {
-    assert!(Layout::BIGINT_SIGN_OFFSET < Layout::BIGINT_LIMB_COUNT_OFFSET);
-    assert!(Layout::BIGINT_LIMB_COUNT_OFFSET < Layout::BIGINT_LIMB0_LOW_OFFSET);
-    assert!(Layout::BIGINT_LIMB0_LOW_OFFSET < Layout::BIGINT_LIMB0_HIGH_OFFSET);
-    assert!(Layout::BIGINT_LIMB0_HIGH_OFFSET < Layout::BIGINT_DECIMAL_LEN_OFFSET);
-    assert!(Layout::BIGINT_DECIMAL_LEN_OFFSET < Layout::BIGINT_DECIMAL_DATA_OFFSET);
+    assert_lt(
+        Layout::BIGINT_SIGN_OFFSET,
+        Layout::BIGINT_LIMB_COUNT_OFFSET,
+        "BIGINT_SIGN_OFFSET before limb count",
+    );
+    assert_lt(
+        Layout::BIGINT_LIMB_COUNT_OFFSET,
+        Layout::BIGINT_LIMB0_LOW_OFFSET,
+        "BIGINT_LIMB_COUNT_OFFSET before limb low",
+    );
+    assert_lt(
+        Layout::BIGINT_LIMB0_LOW_OFFSET,
+        Layout::BIGINT_LIMB0_HIGH_OFFSET,
+        "BIGINT_LIMB0_LOW_OFFSET before limb high",
+    );
+    assert_lt(
+        Layout::BIGINT_LIMB0_HIGH_OFFSET,
+        Layout::BIGINT_DECIMAL_LEN_OFFSET,
+        "BIGINT_LIMB0_HIGH_OFFSET before decimal length",
+    );
+    assert_lt(
+        Layout::BIGINT_DECIMAL_LEN_OFFSET,
+        Layout::BIGINT_DECIMAL_DATA_OFFSET,
+        "BIGINT_DECIMAL_LEN_OFFSET before decimal data",
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -409,7 +474,7 @@ fn bigint_offsets_are_strictly_increasing() {
 #[test]
 fn module_cache_entry_size_is_reasonable() {
     assert_eq!(Layout::MODULE_CACHE_ENTRY_SIZE, 8);
-    assert!(Layout::MODULE_CACHE_MAX > 0);
+    assert_lt(0, Layout::MODULE_CACHE_MAX, "MODULE_CACHE_MAX");
 }
 
 // ---------------------------------------------------------------------------
