@@ -1557,6 +1557,11 @@ fn typed_array_basic_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn typedarray_basic_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/typedarray-basic.ts");
+}
+
+#[test]
 fn weakmap_weakset_basic_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/weakmap-weakset-basic.ts");
 }

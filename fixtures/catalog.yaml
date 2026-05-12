@@ -380,6 +380,7 @@ directories:
     - test-math-pow.ts
     - test-set-samevaluezero.ts
     - typedarray-basic.ts
+    - typedarray-constructors.ts
     - value-of.ts
     - weakmap-weakset-basic.ts
   classes:

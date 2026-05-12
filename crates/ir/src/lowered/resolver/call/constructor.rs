@@ -214,26 +214,46 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             });
         }
-        if matches!(
-            class_name,
-            "Int8Array"
-                | "Uint8Array"
-                | "Uint8ClampedArray"
-                | "Int16Array"
-                | "Uint16Array"
-                | "Int32Array"
-                | "Uint32Array"
-                | "Float32Array"
-                | "Float64Array"
-                | "BigInt64Array"
-        ) {
-            let mut lowered_args = Vec::new();
-            for arg in args {
-                lowered_args.push(self.lower_expr(arg)?);
+        if is_typed_array_constructor(class_name) {
+            if args.is_empty() {
+                return Ok(LoweredExpr::ArrayNew {
+                    elements: Vec::new(),
+                    span: Span::generated("array_new"),
+                });
+            }
+            let [arg] = args else {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-419: new {class_name} currently supports zero arguments, one small length literal, or one array/TypedArray source"
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            };
+            if let ResolvedExpr::Number(length) = arg {
+                if *length < 0 || *length > 32 {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-419: new {class_name}(length) currently supports lengths from 0 through 32"
+                        ),
+                        span: Some(span),
+
+                        phase: None,
+                    });
+                }
+                return Ok(LoweredExpr::ArrayNew {
+                    elements: (0..*length)
+                        .map(|_| LoweredExpr::Number(0, Span::generated("num")))
+                        .collect(),
+                    span: Span::generated("array_new"),
+                });
             }
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::TypedArrayFromArray,
-                args: lowered_args,
+                args: vec![self.lower_expr(arg)?],
                 span: Span::generated("runtime_call"),
             });
         }
@@ -324,4 +344,21 @@ impl super::super::Resolver {
             span: Span::generated("new"),
         })
     }
+}
+
+fn is_typed_array_constructor(class_name: &str) -> bool {
+    matches!(
+        class_name,
+        "Int8Array"
+            | "Uint8Array"
+            | "Uint8ClampedArray"
+            | "Int16Array"
+            | "Uint16Array"
+            | "Int32Array"
+            | "Uint32Array"
+            | "Float32Array"
+            | "Float64Array"
+            | "BigInt64Array"
+            | "BigUint64Array"
+    )
 }

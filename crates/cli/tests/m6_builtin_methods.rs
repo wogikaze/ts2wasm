@@ -1703,6 +1703,16 @@ fn build_smoke_typedarray_basic() {
     );
 }
 
+#[test]
+fn build_smoke_typedarray_constructors() {
+    let result = run_fixture("builtins-and-io/typedarray-constructors.ts");
+    assert!(
+        result.is_ok(),
+        "TypedArray constructors should build: {:?}",
+        result.err()
+    );
+}
+
 // WeakMap/WeakSet basic — now supported
 #[test]
 fn build_smoke_weakmap_weakset_basic() {

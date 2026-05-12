@@ -227,6 +227,7 @@ fn is_typed_array_class(class_name: &str) -> bool {
             | "Float32Array"
             | "Float64Array"
             | "BigInt64Array"
+            | "BigUint64Array"
     )
 }
 
