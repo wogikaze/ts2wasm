@@ -400,9 +400,15 @@ impl Parser {
             loop {
                 // Parameter property modifiers (public/private/protected/readonly)
                 // are only valid in constructor parameters, not arrow functions.
-                // Return false early to let the expression parser handle it.
+                // Skip them as erased TypeScript syntax and continue probing
+                // for a valid arrow function parameter list.
                 if self.peek_parameter_property_modifier() {
-                    return Ok(false);
+                    let is_modifier = matches!(self.peek_n(1), Some(Token::Ident(_) | Token::Question | Token::Colon
+                        | Token::LeftBrace | Token::LeftBracket | Token::DotDotDot));
+                    if is_modifier {
+                        self.advance();
+                        continue;
+                    }
                 }
                 self.parse_param(false, false)?;
                 if self.consume(TokenKind::RightParen) {

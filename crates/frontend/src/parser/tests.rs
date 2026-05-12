@@ -2855,14 +2855,16 @@ b /* parameter b */,
 
     #[test]
     fn parses_arrow_function_with_access_modifier_param() {
-        let err = parse_program("var v = (public x: string) => { };").unwrap_err();
-        assert!(err.message.contains("expected RightParen"));
+        // Access modifiers (public/private/protected/readonly) in arrow function
+        // parameters are erased TypeScript syntax — the modifier is skipped.
+        let stmts = parse_program("var v = (public x: string) => { };").unwrap();
+        assert_eq!(stmts.len(), 1);
     }
 
     #[test]
     fn parses_arrow_function_with_private_param() {
-        let err = parse_program("var v = (private x: number) => x + 1;").unwrap_err();
-        assert!(err.message.contains("expected RightParen"));
+        let stmts = parse_program("var v = (private x: number) => x + 1;").unwrap();
+        assert_eq!(stmts.len(), 1);
     }
 
     #[test]
