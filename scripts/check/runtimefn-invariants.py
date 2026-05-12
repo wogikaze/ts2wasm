@@ -18,17 +18,25 @@ def main():
         print("check_runtimefn_invariants: cargo is required", file=sys.stderr)
         sys.exit(1)
     
-    print("check_runtimefn_invariants: runtime_link_plan::tests", file=sys.stderr)
+    print("check_runtimefn_invariants: runtime-catalog tests", file=sys.stderr)
     result = subprocess.run(
-        ["cargo", "test", "-p", "ts2wasm-cli", "--lib", "runtime_link_plan::tests", "--", "--quiet"],
+        ["cargo", "test", "-p", "ts2wasm-runtime-catalog", "--", "--quiet"],
         cwd=REPO_ROOT
     )
     if result.returncode != 0:
         sys.exit(result.returncode)
     
-    print("check_runtimefn_invariants: runtime_fn::tests", file=sys.stderr)
+    print("check_runtimefn_invariants: backend-wasm runtime_link_plan", file=sys.stderr)
     result = subprocess.run(
-        ["cargo", "test", "-p", "ts2wasm-cli", "--lib", "runtime_fn::tests", "--", "--quiet"],
+        ["cargo", "test", "-p", "ts2wasm-backend-wasm", "--test", "runtime_link_plan", "--", "--quiet"],
+        cwd=REPO_ROOT
+    )
+    if result.returncode != 0:
+        sys.exit(result.returncode)
+    
+    print("check_runtimefn_invariants: backend-wasm host_import_capability", file=sys.stderr)
+    result = subprocess.run(
+        ["cargo", "test", "-p", "ts2wasm-backend-wasm", "--test", "host_import_capability", "--", "--quiet"],
         cwd=REPO_ROOT
     )
     if result.returncode != 0:
