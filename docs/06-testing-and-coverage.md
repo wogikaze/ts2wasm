@@ -71,6 +71,22 @@ Reference coverage must not count a TypeScript-only parse success as `build_pass
 - `semantic_diff`: Node.js と `iwasm` 実行結果を比較。  
   ここで一致した場合のみ `semantic_pass` に計上する。
 
+## Gate tiers
+
+Tests are organized into three tiers based on speed and scope:
+
+| Tier | Command | Scope | Frequency |
+|---|---|---|---|
+| **local** | `cargo fmt --all --check && cargo nextest run` | Formatting + unit/integration tests for all crates | Every commit before push |
+| **PR** | `cargo test -p ts2wasm-cli && python3 scripts/check/fixture-differential.py --smoke` | CLI tests + differential smoke (7 selected fixtures) | Every PR |
+| **nightly** | `python3 scripts/check/fixture-differential.py` | Full differential suite from `fixtures/catalog.yaml` | Daily CI |
+
+- **local tier** runs in seconds and catches formatting and logic errors.
+- **PR tier** runs in minutes and confirms the build and basic differential pass.
+- **nightly tier** runs all catalogued fixtures and produces a JSONL report for regression detection.
+
+The smoke gate (`--smoke`) selects a fixed set of known-passing and known-unsupported fixtures. Full differential may take longer as the fixture catalog grows.
+
 ### 今回の再分類の運用ルール
 
 - `m6_builtin_methods.rs`, `m7_control_flow.rs`, `m8_oop_classes.rs`, `m9_modules.rs`, `m10_node_apis.rs` の fixture は build smoke として扱う。
