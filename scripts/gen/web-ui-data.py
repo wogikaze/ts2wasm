@@ -414,7 +414,6 @@ def normalized_suite_metrics(item):
     harness_includes = item.get("harness_includes", [])
     if not isinstance(harness_includes, list):
         harness_includes = []
-
     return {
         "suite": suite,
         "denominator": denominator,
