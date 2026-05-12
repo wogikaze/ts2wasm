@@ -70,46 +70,6 @@ open:
     notes: 'This is the issue that makes semantic_pass leave zero.
 
       '
-  - id: 332
-    title: Add semantic coverage dashboard fields and current-state summary
-    priority: P2
-    type: docs
-    area: coverage
-    status: open
-    created: '2026-05-11'
-    updated: '2026-05-11'
-    roadmap: P11-semantic-coverage-unblock
-    depends_on:
-      - 326
-      - 327
-      - 328
-      - 331
-    acceptance:
-      - test -f docs/current-state.md
-      - grep -R "semantic_coverage_percent" docs/current-state.md site/docs/coverage/web-ui/public/data
-        web-ui/public/data site/docs/public/dashboard/data
-      - grep -R "differential_pass" docs/current-state.md site/docs/coverage/web-ui/public/data
-        web-ui/public/data site/docs/public/dashboard/data
-      - grep -R "negative_compile_pass" docs/current-state.md site/docs/coverage/web-ui/public/data
-        web-ui/public/data site/docs/public/dashboard/data
-      - grep -R "unresolved_name_by_symbol" docs/current-state.md site/docs/coverage/web-ui/public/data
-        web-ui/public/data site/docs/public/dashboard/data
-    non_goals:
-      - No compiler implementation.
-    plan:
-      goal: 'Make generated dashboards and docs/current-state.md show the complete
-        semantic coverage schema clearly and consistently.
-
-        '
-      files:
-        - docs/current-state.md
-        - site/docs/coverage/web-ui/src/**
-        - site/docs/coverage/web-ui/public/data/**
-        - web-ui/public/data/**
-        - site/docs/public/dashboard/**
-    notes: 'The four generated data locations must expose the same schema.
-
-      '
   - id: 347
     title: Add final architecture completion gate
     priority: P1
@@ -206,5 +166,49 @@ open:
         - tests/**
     notes: 'This is the completion issue. When this passes, the architecture-decoupling
       tracker is no longer a list of known open design gaps.
+
+      '
+active:
+  - id: 332
+    title: Add semantic coverage dashboard fields and current-state summary
+    priority: P2
+    type: docs
+    area: coverage
+    status: active
+    ready: true
+    created: '2026-05-11'
+    updated: '2026-05-12'
+    roadmap: P11-semantic-coverage-unblock
+    depends_on:
+      - 326
+      - 327
+      - 328
+      - 331
+    acceptance:
+      - test -f docs/current-state.md
+      - grep -R "semantic_coverage_percent" docs/current-state.md site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
+      - grep -R "differential_pass" docs/current-state.md site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
+      - grep -R "negative_compile_pass" docs/current-state.md site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
+      - grep -R "unresolved_name_by_symbol" docs/current-state.md site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
+    non_goals:
+      - No compiler implementation.
+    plan:
+      goal: 'Make generated dashboards and docs/current-state.md show the complete
+        semantic coverage schema clearly and consistently.
+
+        '
+      files:
+        - docs/current-state.md
+        - site/docs/coverage/web-ui/src/**
+        - site/docs/coverage/web-ui/public/data/**
+        - web-ui/public/data/**
+        - site/docs/public/dashboard/**
+    notes: 'Activated for implementation. The four generated data locations must
+      expose the same semantic coverage schema, including coverage percentages and
+      unresolved-name breakdown fields.
 
       '

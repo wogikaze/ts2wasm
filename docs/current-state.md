@@ -6,38 +6,29 @@
 
 | Metric | Value |
 |--------|-------|
-| total | 50373 |
-| executable_build_pass | 913 |
-| differential_pass | 0 |
-| negative_compile_pass | 395 |
+| total | 53469 |
+| executable_build_pass | 0 |
+| differential_pass | 4 |
+| negative_compile_pass | 4 |
 | negative_compile_mismatch | 0 |
-| negative_compile_unverified | 489 |
-| conformance_pass (executable + negative) | 0 |
-| semantic_coverage_percent | 0.0% |
+| negative_compile_unverified | 0 |
+| conformance_pass (executable + negative) | 8 |
+| semantic_coverage_percent | 0.01% |
+| unresolved_name_by_symbol | tracked in dashboard data and summarized below |
 
 ### Top unresolved symbols (test262)
 
-| Symbol | Count |
-|--------|-------|
-| assert | 3201 |
-| $262 | 2241 |
-| Test262Error | 512 |
-| verifyProperty | 408 |
-| Symbol | 302 |
-| Object | 198 |
-| Array | 156 |
-| TypeError | 142 |
-| RangeError | 98 |
-| print | 72 |
+Latest dashboard artifact: no unresolved names in the selected `language/statements`
+test262 run.
 
 ### Build pass detail
 
 | Detail | Count |
 |--------|-------|
-| verified-negative-compile | 395 |
-| wasm-built | 913 |
-| semantic-pending | 913 |
-| differential-match | 0 |
+| verified-negative-compile | 4 |
+| wasm-built | 0 |
+| semantic-pending | 0 |
+| differential-match | 4 |
 
 ### Coverage dashboard data locations
 

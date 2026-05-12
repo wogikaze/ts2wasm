@@ -36,7 +36,14 @@ export interface TestResultsMetadata {
 
 export interface CoverageData {
   total: number;
+  implemented?: number;
   build_implemented: number;
+  build_coverage_percent?: string;
+  semantic_pass?: number;
+  semantic_coverage_percent?: string;
+  differential_pass?: number;
+  negative_compile_pass?: number;
+  conformance_pass?: number;
   unimplemented: number;
   future: number;
   byPriority: {
@@ -77,9 +84,21 @@ export interface CoverageSuite {
   source: string;
   denominator: number;
   executed: number;
+  build_coverage_percent?: string;
+  semantic_coverage_percent?: string;
   build_pass: number;
   semantic_pass: number;
+  executable_build_pass?: number;
+  differential_pass?: number;
+  negative_compile_pass?: number;
+  negative_compile_unverified?: number;
+  negative_compile_mismatch?: number;
+  conformance_pass?: number;
+  build_pass_by_detail?: Record<string, number>;
+  unresolved_name_by_symbol?: Record<string, number>;
+  harness_includes?: string[];
   fail: number;
   unsupported: number;
   blocked: number;
+  skip_with_reason?: number;
 }

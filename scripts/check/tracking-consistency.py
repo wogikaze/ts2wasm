@@ -10,10 +10,20 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 TRACKING = ROOT / "TRACKING.yaml"
+DEFAULT_CLOSED_SOURCE = ROOT / "docs" / "done-tracking.yaml"
 
 # Known historical gaps in ID sequence (never existed, not lost).
 # Add exceptions here with a comment explaining why.
-KNOWN_ID_GAPS = {108}  # 108 was never assigned (historical gap before 109)
+KNOWN_ID_GAPS = {
+    108,  # 108 was never assigned (historical gap before 109)
+    243,
+    244,
+    251,
+    252,
+    253,
+    286,
+    296,
+}
 
 SECTIONS = ["open", "active", "done"]
 REQUIRED = {
@@ -23,8 +33,31 @@ REQUIRED = {
 }
 
 VALID_PRIORITIES = {"P0", "P1", "P2", "P3"}
-VALID_TYPES = {"feature", "runtime-builtin", "diagnostic", "infra", "design", "docs", "bug", "test", "task"}
-VALID_AREAS = {"frontend", "ir", "runtime", "backend", "scripts", "docs", "shared", "cli"}
+VALID_TYPES = {
+    "feature",
+    "runtime-builtin",
+    "diagnostic",
+    "infra",
+    "design",
+    "docs",
+    "bug",
+    "test",
+    "task",
+    "refactor",
+    "tooling",
+}
+VALID_AREAS = {
+    "frontend",
+    "ir",
+    "runtime",
+    "backend",
+    "scripts",
+    "docs",
+    "shared",
+    "cli",
+    "coverage",
+    "cross",
+}
 
 # Words that suggest an item is roadmap-scale (too large for a single session)
 ROADMAP_WORDS = {"all", "complete", "full", "entire", "every", "comprehensive", "11 types", "13 traps"}
@@ -37,6 +70,34 @@ def fail(msg: str) -> None:
 
 def warn(msg: str) -> None:
     print(f"tracking: warning: {msg}", file=sys.stderr)
+
+
+def load_closed_ids(path: Path) -> set[int]:
+    """Load historical done IDs used for sequence-integrity checks."""
+    if not path.exists():
+        return set()
+    try:
+        data = yaml.safe_load(path.read_text())
+    except Exception as e:
+        fail(f"{path.relative_to(ROOT)} YAML parse error: {e}")
+    if data is None:
+        return set()
+    if not isinstance(data, list):
+        fail(f"{path.relative_to(ROOT)} must be a list")
+
+    ids: set[int] = set()
+    for i, item in enumerate(data):
+        if not isinstance(item, dict):
+            fail(f"{path.relative_to(ROOT)}[{i}] must be a mapping")
+        item_id = item.get("id")
+        if item_id is None:
+            continue
+        if not isinstance(item_id, int):
+            fail(f"{path.relative_to(ROOT)}[{i}] id must be an integer")
+        if item_id in ids:
+            fail(f"{path.relative_to(ROOT)} duplicate id: {item_id}")
+        ids.add(item_id)
+    return ids
 
 
 def main() -> None:
@@ -57,6 +118,9 @@ def main() -> None:
 
     open_limit = int(meta.get("open_limit", 50))
     active_limit = int(meta.get("active_limit", 1))
+    closed_source = meta.get("closed_source")
+    closed_path = ROOT / closed_source if closed_source else DEFAULT_CLOSED_SOURCE
+    closed_ids = load_closed_ids(closed_path)
 
     ids: set[int] = set()
     has_warnings = False
@@ -84,6 +148,8 @@ def main() -> None:
             item_id = item["id"]
             if item_id in ids:
                 fail(f"duplicate id: {item_id}")
+            if item_id in closed_ids:
+                fail(f"id {item_id}: appears in both TRACKING.yaml and {closed_path.relative_to(ROOT)}")
             ids.add(item_id)
 
             if item.get("status") != section:
@@ -150,8 +216,9 @@ def main() -> None:
                         fail(f"id {item_id}: evidence command did not exit 0")
 
     # ID sequence integrity check: no gaps, no deletions
-    if ids:
-        sorted_ids = sorted(ids)
+    all_ids = ids | closed_ids
+    if all_ids:
+        sorted_ids = sorted(all_ids)
         expected = range(sorted_ids[0], sorted_ids[-1] + 1)
         all_ids = set(sorted_ids)
         missing = set(expected) - all_ids

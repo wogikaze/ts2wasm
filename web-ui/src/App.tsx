@@ -316,6 +316,10 @@ function coverageCsvRows(coverage: CoverageData) {
     failed: suite.fail,
     blocked: suite.blocked,
     semantic_pass: suite.semantic_pass,
+    semantic_coverage_percent: suite.semantic_coverage_percent,
+    differential_pass: suite.differential_pass ?? 0,
+    negative_compile_pass: suite.negative_compile_pass ?? 0,
+    unresolved_name_by_symbol: JSON.stringify(suite.unresolved_name_by_symbol ?? {}),
   })) ?? []
 
   return [
@@ -328,7 +332,11 @@ function coverageCsvRows(coverage: CoverageData) {
       future: coverage.future,
       failed: 0,
       blocked: 0,
-      semantic_pass: 0,
+      semantic_pass: coverage.semantic_pass ?? 0,
+      semantic_coverage_percent: coverage.semantic_coverage_percent ?? '0.00',
+      differential_pass: coverage.differential_pass ?? 0,
+      negative_compile_pass: coverage.negative_compile_pass ?? 0,
+      unresolved_name_by_symbol: '{}',
     },
     ...suites,
   ]

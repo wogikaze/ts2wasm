@@ -80,7 +80,14 @@ export function useTestData() {
 export function useCoverageData() {
   const [coverage, setCoverage] = useState<CoverageData>({
     total: 0,
-build_implemented: 0,
+    implemented: 0,
+    build_implemented: 0,
+    build_coverage_percent: '0.00',
+    semantic_pass: 0,
+    semantic_coverage_percent: '0.00',
+    differential_pass: 0,
+    negative_compile_pass: 0,
+    conformance_pass: 0,
     unimplemented: 0,
     future: 0,
     byPriority: { p0: 0, p1: 0, p2: 0, p3: 0, future: 0 }
