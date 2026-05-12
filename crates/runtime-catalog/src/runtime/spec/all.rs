@@ -2331,6 +2331,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::TypedArraySet => RuntimeSpec {
+                symbol: "$typed_array_set",
+                deps: TYPED_ARRAY_SET_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::DataViewNew => RuntimeSpec {
                 symbol: "$dataview_new",
                 deps: DATAVIEW_NEW_DEPS,

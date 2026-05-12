@@ -1281,6 +1281,13 @@ impl super::super::Resolver {
                 while lowered_args.len() < 4 {
                     lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
                 }
+            } else if is_typed_array_class(class_name) && method == "set" {
+                for arg in args.iter().take(2) {
+                    lowered_args.push(self.lower_expr(arg)?);
+                }
+                if lowered_args.len() == 2 {
+                    lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
+                }
             } else if is_array_like_class && (method == "toString" || method == "toLocaleString") {
                 // toString/toLocaleString calls join(",") internally
                 lowered_args.push(LoweredExpr::String(",".to_owned(), Span::generated("str")));

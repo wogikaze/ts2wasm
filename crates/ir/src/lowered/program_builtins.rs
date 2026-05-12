@@ -244,6 +244,7 @@ fn typed_array_method_runtime_fn(method: &str) -> Option<RuntimeFn> {
         "map" => Some(RuntimeFn::ArrayMap),
         "reduce" => Some(RuntimeFn::ArrayReduce),
         "reduceRight" => Some(RuntimeFn::ArrayReduceRight),
+        "set" => Some(RuntimeFn::TypedArraySet),
         "slice" | "subarray" => Some(RuntimeFn::ArraySlice),
         "some" => Some(RuntimeFn::ArraySome),
         "sort" => Some(RuntimeFn::ArraySortNumeric),

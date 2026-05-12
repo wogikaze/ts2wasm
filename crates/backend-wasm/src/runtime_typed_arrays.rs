@@ -205,4 +205,83 @@ impl WatEmitter<'_> {
             undefined = ValueTag::UNDEFINED,
         ));
     }
+
+    pub(super) fn emit_typed_array_set(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $typed_array_set (param $target i32) (param $source i32) (param $offset i32) (result i32)
+    (local $target_base i32)
+    (local $target_len i32)
+    (local $source_len_value i32)
+    (local $source_len i32)
+    (local $offset_raw i32)
+    (local $i i32)
+    (local $target_index i32)
+    (local $elem i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $target) (i32.const {tag_mask}))
+        (i32.const {array_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $target_base (i32.and (local.get $target) (i32.const {heap_mask})))
+    (local.set $target_len (i32.load (local.get $target_base)))
+    (local.set $offset_raw (i32.const {zero}))
+    (if
+      (i32.ne
+        (i32.and (local.get $offset) (i32.const {tag_mask}))
+        (i32.const {undefined}))
+      (then
+        (local.set $offset_raw
+          (i32.shr_s (local.get $offset) (i32.const {number_shift})))))
+    (if (i32.lt_s (local.get $offset_raw) (i32.const {zero}))
+      (then (return (i32.const {undefined}))))
+    (local.set $source_len_value (call $get_length (local.get $source)))
+    (local.set $source_len (i32.const {zero}))
+    (if
+      (i32.eq
+        (i32.and (local.get $source_len_value) (i32.const {tag_mask}))
+        (i32.const {number_tag}))
+      (then
+        (local.set $source_len
+          (i32.shr_s (local.get $source_len_value) (i32.const {number_shift})))))
+    (block $done
+      (loop $copy
+        (br_if $done (i32.ge_u (local.get $i) (local.get $source_len)))
+        (local.set $target_index (i32.add (local.get $offset_raw) (local.get $i)))
+        (br_if $done (i32.ge_u (local.get $target_index) (local.get $target_len)))
+        (local.set $elem
+          (call $index
+            (local.get $source)
+            (i32.or
+              (i32.shl (local.get $i) (i32.const {number_shift}))
+              (i32.const {number_tag}))))
+        (i32.store
+          (i32.add
+            (local.get $target_base)
+            (i32.add
+              (i32.const {array_header})
+              (i32.shl (local.get $target_index) (i32.const {elem_shift}))))
+          (local.get $elem))
+        (i32.store
+          (i32.add (local.get $target_base) (i32.const {presence_words_offset}))
+          (i32.or
+            (i32.load (i32.add (local.get $target_base) (i32.const {presence_words_offset})))
+            (i32.shl (i32.const 1) (local.get $target_index))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $copy)))
+    (i32.const {undefined}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
 }

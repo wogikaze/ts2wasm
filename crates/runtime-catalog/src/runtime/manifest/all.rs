@@ -291,6 +291,7 @@ match self {
             Self::BooleanCoerce => "boolean_coerce",
             Self::NumberCoerce => "number_coerce",
             Self::TypedArrayFromArray => "typed_array_from_array",
+            Self::TypedArraySet => "typed_array_set",
             Self::DataViewNew => "dataview_new",
             Self::DataViewGetInt32 => "dataview_get_int32",
             Self::DataViewSetInt32 => "dataview_set_int32",

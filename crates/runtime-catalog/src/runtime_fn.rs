@@ -135,6 +135,8 @@ pub enum RuntimeFn {
     MapEntryPairsArray,
     /// TypedArray constructor from array: new Uint8Array([1,2,3]), etc.
     TypedArrayFromArray,
+    /// TypedArray.prototype.set(source, offset?) for the array-backed TypedArray subset.
+    TypedArraySet,
     SetFromArray,
     SetValuesArray,
     SetPrototypeAddGet,
@@ -962,6 +964,7 @@ const MAP_FOR_EACH_DEPS: &[RuntimeFn] = &[];
 const MAP_ENTRIES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const MAP_ENTRY_PAIRS_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const TYPED_ARRAY_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Index];
+const TYPED_ARRAY_SET_DEPS: &[RuntimeFn] = &[RuntimeFn::GetLength, RuntimeFn::Index];
 const ARRAYBUFFER_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATAVIEW_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATE_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
@@ -1158,6 +1161,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MapEntriesArray" => Some(RuntimeFn::MapEntriesArray),
         "MapEntryPairsArray" => Some(RuntimeFn::MapEntryPairsArray),
         "TypedArrayFromArray" => Some(RuntimeFn::TypedArrayFromArray),
+        "TypedArraySet" => Some(RuntimeFn::TypedArraySet),
         "ArrayBufferNew" => Some(RuntimeFn::ArrayBufferNew),
         "DataViewNew" => Some(RuntimeFn::DataViewNew),
         "DataViewGetInt32" => Some(RuntimeFn::DataViewGetInt32),
@@ -1594,6 +1598,7 @@ impl RuntimeFn {
             | Self::BooleanCoerce
             | Self::NumberCoerce => RuntimeDomain::TypeCoercion,
             Self::TypedArrayFromArray
+            | Self::TypedArraySet
             | Self::DataViewNew
             | Self::DataViewGetInt32
             | Self::DataViewSetInt32
@@ -1691,10 +1696,12 @@ impl RuntimeFn {
             },
 
             // 3 params, 1 result
-            Self::PropertyGet | Self::PropertyDelete | Self::PropertyHas => RuntimeSignature {
-                params: 3,
-                results: 1,
-            },
+            Self::PropertyGet | Self::PropertyDelete | Self::PropertyHas | Self::TypedArraySet => {
+                RuntimeSignature {
+                    params: 3,
+                    results: 1,
+                }
+            }
 
             // 3 params, 0 results
             Self::ModuleExportsSet => RuntimeSignature {
@@ -1829,6 +1836,7 @@ impl RuntimeFn {
             Self::MapEntriesArray,
             Self::MapEntryPairsArray,
             Self::TypedArrayFromArray,
+            Self::TypedArraySet,
             Self::SetFromArray,
             Self::SetValuesArray,
             Self::SetPrototypeAddGet,
@@ -2146,6 +2154,7 @@ impl RuntimeFn {
             Self::MapEntriesArray,
             Self::MapEntryPairsArray,
             Self::TypedArrayFromArray,
+            Self::TypedArraySet,
             Self::SetFromArray,
             Self::SetValuesArray,
             Self::SetPrototypeAddGet,

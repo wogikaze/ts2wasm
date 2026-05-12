@@ -38,9 +38,26 @@ console.log(sliced.length);
 console.log(sliced[0]);
 console.log(sliced[1]);
 
+const subarray = values.subarray(1);
+console.log(subarray.length);
+console.log(subarray[0]);
+console.log(subarray[1]);
+
 const copied = new Uint8Array([1, 2, 3, 4]);
 copied.copyWithin(0, 2);
 console.log(copied[0]);
 console.log(copied[1]);
 console.log(copied[2]);
 console.log(copied[3]);
+
+const target = new Uint8Array([0, 0, 0, 0]);
+target.set(new Uint8Array([7, 8]), 1);
+console.log(target[0]);
+console.log(target[1]);
+console.log(target[2]);
+console.log(target[3]);
+
+const defaultOffset = new Uint8Array([0, 0]);
+defaultOffset.set([9]);
+console.log(defaultOffset[0]);
+console.log(defaultOffset[1]);
