@@ -158,8 +158,10 @@ impl WatEmitter<'_> {
             | LoweredExpr::Null(..)
             | LoweredExpr::Undefined(..)
             | LoweredExpr::This(..)
-            | LoweredExpr::Local(_, _)
-            | LoweredExpr::PromiseGetValue { .. } => {}
+            | LoweredExpr::Local(_, _) => {}
+            LoweredExpr::PromiseGetValue { promise, .. } => {
+                self.collect_expr_strings(promise);
+            }
             LoweredExpr::ArrowFn { .. } => {}
             LoweredExpr::Unary { expr, .. } => self.collect_expr_strings(expr),
             LoweredExpr::Assign { expr, .. } => self.collect_expr_strings(expr),

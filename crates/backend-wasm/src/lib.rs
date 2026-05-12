@@ -684,6 +684,30 @@ mod tests {
     }
 
     #[test]
+    fn promise_get_value_collects_nested_string_data() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::PromiseGetValue {
+                    promise: Box::new(LoweredExpr::String(
+                        "await".to_owned(),
+                        Span::generated("test"),
+                    )),
+                    span: Span::generated("test"),
+                },
+                Span::generated("test"),
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wat = emit_wat(&v).expect("promise value expression should emit WAT");
+
+        assert!(wat.contains("\\05\\00\\00\\00await"));
+    }
+
+    #[test]
     fn gc_mark_helpers_visit_heap_graph_payloads() {
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(

@@ -26,11 +26,18 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn string_value(&self, value: &str) -> u32 {
-        self.strings[value] | ValueTag::STRING_TAG
+        *self
+            .strings
+            .get(value)
+            .unwrap_or_else(|| panic!("string value `{value}` was not interned"))
+            | ValueTag::STRING_TAG
     }
 
     pub(super) fn string_offset(&self, value: &str) -> u32 {
-        self.strings[value]
+        *self
+            .strings
+            .get(value)
+            .unwrap_or_else(|| panic!("string offset `{value}` was not interned"))
     }
 
     pub(super) fn emit_data_segments(&self, wat: &mut String) {
