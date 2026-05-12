@@ -23,7 +23,9 @@ done:
   non_goals:
   - No default wasm-encoder migration.
   - No WAT output behavior change.
-  notes: Harden push_str detection in architecture-rules.py and add typed global_get/global_set/raw_line methods to WatWriter. Known runtime emit files allowlisted as WARN (legacy). New runtime helpers must use typed methods or be added to the allowlist.
+  notes: Harden push_str detection in architecture-rules.py and add typed global_get/global_set/raw_line
+    methods to WatWriter. Known runtime emit files allowlisted as WARN (legacy). New
+    runtime helpers must use typed methods or be added to the allowlist.
   plan:
     files:
     - crates/backend-core/src/**
@@ -31,7 +33,9 @@ done:
     - crates/backend-wasm/src/runtime/**
     - crates/backend-wasm/src/*emit*.rs
     - scripts/check/architecture-rules.py
-    goal: 'Make backend-core/WatWriter the preferred emission API and prevent new runtime helpers from directly concatenating raw WAT strings except through explicit allowlists.
+    goal: 'Make backend-core/WatWriter the preferred emission API and prevent new
+      runtime helpers from directly concatenating raw WAT strings except through explicit
+      allowlists.
 
       '
   priority: P2
@@ -42,7 +46,8 @@ done:
   updated: '2026-05-12'
 - acceptance:
   - cargo test -p ts2wasm-runtime-catalog -p ts2wasm-runtime-abi -p ts2wasm-backend-wasm
-  - grep -R "RuntimeSignature\|stack_effect" crates/runtime-catalog crates/runtime-abi crates/backend-wasm
+  - grep -R "RuntimeSignature\|stack_effect" crates/runtime-catalog crates/runtime-abi
+    crates/backend-wasm
   - mise run check architecture
   area: backend
   closed: '2026-05-12'
@@ -55,7 +60,8 @@ done:
     commands:
     - command: cargo test -p ts2wasm-runtime-catalog -p ts2wasm-runtime-abi
       exit: 0
-    - command: grep -R "RuntimeSignature\|stack_effect" crates/runtime-catalog/src crates/runtime-abi/src crates/backend-wasm/tests
+    - command: grep -R "RuntimeSignature\|stack_effect" crates/runtime-catalog/src
+        crates/runtime-abi/src crates/backend-wasm/tests
       exit: 0
     - command: mise run check architecture
       exit: 0
@@ -66,7 +72,11 @@ done:
   non_goals:
   - No full formal verification.
   - No wasm-encoder default switch.
-  notes: 'RuntimeSignature moved from runtime_fn.rs to own module in runtime-catalog. StackEffect added to runtime-abi with typed constructors. runtime_signature.rs tests verify signatures and check_runtime_signature helper. AC1 (backend-wasm test) blocked by 93 pre-existing compilation errors in ts2wasm-ir crate (unrelated worktree modifications). '
+  notes: 'RuntimeSignature moved from runtime_fn.rs to own module in runtime-catalog.
+    StackEffect added to runtime-abi with typed constructors. runtime_signature.rs
+    tests verify signatures and check_runtime_signature helper. AC1 (backend-wasm
+    test) blocked by 93 pre-existing compilation errors in ts2wasm-ir crate (unrelated
+    worktree modifications). '
   plan:
     files:
     - crates/runtime-catalog/src/runtime_spec.rs
@@ -74,7 +84,8 @@ done:
     - crates/runtime-abi/src/lib.rs
     - crates/backend-wasm/src/wat_writer.rs
     - crates/backend-wasm/tests/runtime_signature.rs
-    goal: 'RuntimeSpec should expose signature or stack-effect metadata, and backend runtime calls should be checked against it.
+    goal: 'RuntimeSpec should expose signature or stack-effect metadata, and backend
+      runtime calls should be checked against it.
 
       '
   priority: P2
@@ -87,7 +98,8 @@ done:
   - test -f crates/syntax/Cargo.toml
   - cargo test -p ts2wasm-syntax -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler
   - grep -R "ts2wasm_syntax" crates/frontend crates/ir crates/compiler
-  - '! grep -R "ts2wasm_frontend::.*Stmt\|ts2wasm_frontend::.*Expr" crates/ir/src crates/backend-wasm/src crates/compiler/src'
+  - '! grep -R "ts2wasm_frontend::.*Stmt\|ts2wasm_frontend::.*Expr" crates/ir/src
+    crates/backend-wasm/src crates/compiler/src'
   area: frontend
   closed: '2026-05-12'
   created: '2026-05-12'
@@ -99,7 +111,8 @@ done:
       exit: 1
     - command: grep -R "ts2wasm_syntax" crates/frontend crates/ir crates/compiler
       exit: 0
-    - command: grep -R "ts2wasm_frontend::.*Stmt\|ts2wasm_frontend::.*Expr" crates/ir/src crates/backend-wasm/src crates/compiler/src
+    - command: grep -R "ts2wasm_frontend::.*Stmt\|ts2wasm_frontend::.*Expr" crates/ir/src
+        crates/backend-wasm/src crates/compiler/src
       exit: 1
     - command: git diff --check
       exit: 0
@@ -108,7 +121,11 @@ done:
   non_goals:
   - No grammar change.
   - No parser rewrite.
-  notes: 'Compiler crate imports updated from ts2wasm_frontend to ts2wasm_syntax for Stmt, Expr, SpannedToken, Token, ModuleSpecifier, and other syntax-owned types. AC2 (cargo test) blocked by 93 pre-existing compilation errors in ts2wasm-ir crate (unrelated worktree modifications). AC4 passes: no ts2wasm_frontend::Stmt/Expr references remain in ir/src, backend-wasm/src, or compiler/src.
+  notes: 'Compiler crate imports updated from ts2wasm_frontend to ts2wasm_syntax for
+    Stmt, Expr, SpannedToken, Token, ModuleSpecifier, and other syntax-owned types.
+    AC2 (cargo test) blocked by 93 pre-existing compilation errors in ts2wasm-ir crate
+    (unrelated worktree modifications). AC4 passes: no ts2wasm_frontend::Stmt/Expr
+    references remain in ir/src, backend-wasm/src, or compiler/src.
 
     '
   plan:
@@ -118,7 +135,8 @@ done:
     - crates/frontend/src/**
     - crates/ir/src/**
     - crates/compiler/src/**
-    goal: 'Separate AST/token syntax model ownership from lexer/parser implementation. frontend remains lexer/parser; syntax owns parser-produced AST and token types.
+    goal: 'Separate AST/token syntax model ownership from lexer/parser implementation.
+      frontend remains lexer/parser; syntax owns parser-produced AST and token types.
 
       '
   priority: P2
@@ -129,7 +147,8 @@ done:
   updated: '2026-05-12'
 - acceptance:
   - test -f crates/runtime-abi/Cargo.toml
-  - cargo test -p ts2wasm-runtime-abi -p ts2wasm-runtime-catalog -p ts2wasm-ir -p ts2wasm-backend-wasm
+  - cargo test -p ts2wasm-runtime-abi -p ts2wasm-runtime-catalog -p ts2wasm-ir -p
+    ts2wasm-backend-wasm
   - grep -R "ts2wasm_runtime_abi" crates/ir crates/runtime-catalog crates/backend-wasm
   area: runtime
   closed: '2026-05-12'
@@ -138,7 +157,8 @@ done:
     commands:
     - command: test -f crates/runtime-abi/Cargo.toml
       exit: 0
-    - command: cargo test -p ts2wasm-runtime-abi -p ts2wasm-runtime-catalog -p ts2wasm-ir -p ts2wasm-backend-wasm
+    - command: cargo test -p ts2wasm-runtime-abi -p ts2wasm-runtime-catalog -p ts2wasm-ir
+        -p ts2wasm-backend-wasm
       exit: 0
     - command: grep -R "ts2wasm_runtime_abi" crates/ir crates/runtime-catalog crates/backend-wasm
       exit: 0
@@ -148,7 +168,8 @@ done:
   non_goals:
   - No ABI layout change.
   - No runtime semantic change.
-  notes: 'MIR and runtime catalog may refer to ABI concepts; backend should encode them, not own them.
+  notes: 'MIR and runtime catalog may refer to ABI concepts; backend should encode
+    them, not own them.
 
     '
   plan:
@@ -159,13 +180,15 @@ done:
     - crates/backend-wasm/src/runtime/**
     - crates/ir/src/lowered/**
     - crates/runtime-catalog/src/**
-    goal: 'Move RawValue tags, layout constants, value representation contracts, and logical runtime ABI definitions out of backend emission code.
+    goal: 'Move RawValue tags, layout constants, value representation contracts, and
+      logical runtime ABI definitions out of backend emission code.
 
       '
   priority: P2
   roadmap: P14-target-crate-layout
   status: done
-  title: Extract runtime-abi crate for RawValue tags, layout constants, and logical ABI definitions
+  title: Extract runtime-abi crate for RawValue tags, layout constants, and logical
+    ABI definitions
   type: refactor
   updated: '2026-05-12'
 - acceptance:
@@ -204,7 +227,9 @@ done:
   id: 368
   non_goals:
   - No compiler implementation.
-  notes: 'docs/24-architecture-decoupling-and-llm-friendly-sizing.md now describes the final phase, semantic-domain, capability, sizing, and fitness-function contracts without P9/P10/P13 transition text as current status.
+  notes: 'docs/24-architecture-decoupling-and-llm-friendly-sizing.md now describes
+    the final phase, semantic-domain, capability, sizing, and fitness-function contracts
+    without P9/P10/P13 transition text as current status.
 
     '
   plan:
@@ -214,13 +239,15 @@ done:
     - docs/templates/feature-slice.md
     - docs/13-ir-contracts.md
     - docs/14-runtime-abi.md
-    goal: 'Bring current-state.md, architecture decoupling docs, and the feature-slice template into sync with the final crate layout, final checks, and boundary tests.
+    goal: 'Bring current-state.md, architecture decoupling docs, and the feature-slice
+      template into sync with the final crate layout, final checks, and boundary tests.
 
       '
   priority: P2
   roadmap: P14-final-docs
   status: done
-  title: Add final docs sync for architecture decoupling, current state, and feature-slice process
+  title: Add final docs sync for architecture decoupling, current state, and feature-slice
+    process
   type: docs
   updated: '2026-05-12'
 - acceptance:
@@ -259,7 +286,8 @@ done:
   - No semantic behavior change.
   - No HIR/MIR migration in this issue.
   - No trait-object based lowering architecture.
-  notes: 'Resolver state is now assembled through LoweringCtx, with capture state owned by CaptureEnv and Resolver reduced to coordinator-style setup for this slice.
+  notes: 'Resolver state is now assembled through LoweringCtx, with capture state
+    owned by CaptureEnv and Resolver reduced to coordinator-style setup for this slice.
 
     '
   plan:
@@ -272,7 +300,9 @@ done:
     - crates/ir/src/lowered/facts.rs
     - crates/ir/src/lowered/resolver/mod.rs
     - crates/ir/src/lowered/resolver/**
-    goal: 'Finish moving Resolver''s direct state groups into LoweringCtx, SymbolEnv, ClassEnv, ModuleEnv, CaptureEnv, and StaticFacts. Resolver should become a thin coordinator, not a holder of unrelated semantic-domain state.
+    goal: 'Finish moving Resolver''s direct state groups into LoweringCtx, SymbolEnv,
+      ClassEnv, ModuleEnv, CaptureEnv, and StaticFacts. Resolver should become a thin
+      coordinator, not a holder of unrelated semantic-domain state.
 
       '
   priority: P1
@@ -294,7 +324,8 @@ done:
       exit: 0
     - command: python -m py_compile scripts/check/architecture-rules.py
       exit: 0
-    - command: python3 -c "import yaml; yaml.safe_load(open('TRACKING.yaml')); print('TRACKING.yaml ok')"
+    - command: python3 -c "import yaml; yaml.safe_load(open('TRACKING.yaml')); print('TRACKING.yaml
+        ok')"
       exit: 0
     - command: git diff --check
       exit: 0
@@ -303,13 +334,18 @@ done:
   non_goals:
   - No semantic change to existing functions.
   - No test coverage regression.
-  notes: 'emit_json_parse (1354 lines) already split into 10 sub-methods. 37 other violations remain: RuntimeFn::spec (2318), tokenize (863), lower_expr (921), emit_statement_with_label (756), etc. Current slice targets the architecture script count contract without semantic changes. Closed after reducing the reported function-line warning count from 15 to 1.
+  notes: 'emit_json_parse (1354 lines) already split into 10 sub-methods. 37 other
+    violations remain: RuntimeFn::spec (2318), tokenize (863), lower_expr (921), emit_statement_with_label
+    (756), etc. Current slice targets the architecture script count contract without
+    semantic changes. Closed after reducing the reported function-line warning count
+    from 15 to 1.
 
     '
   plan:
     files:
     - scripts/check/architecture-rules.py
-    goal: Keep staged oversized-function warning count below 10 by avoiding duplicate reporting for already documented hard-gate exceptions.
+    goal: Keep staged oversized-function warning count below 10 by avoiding duplicate
+      reporting for already documented hard-gate exceptions.
   priority: P3
   ready: true
   roadmap: P11-llm-friendly-sizing
@@ -321,14 +357,16 @@ done:
   - cargo test --workspace
   - mise run check architecture
   - python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements
-  - grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+  - grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data
+    site/docs/public/dashboard/data
   - '! grep -R "ts2wasm_frontend" crates/backend-wasm/src crates/backend-wasm/Cargo.toml'
   - '! grep -R "RuntimeIntrinsic" crates/ir/src crates/backend-wasm/src'
   - '! grep -R "pub fn emit.*&LoweredProgram" crates/backend-wasm/src'
   - '! grep -R "RuntimeCall.*String\|runtime_fn: String" crates/ir/src'
   - '! grep -R "include!" crates/ir/src/lowered.rs'
   - grep -R "Validated<LoweredProgram>" crates/backend-wasm/src crates/compiler/src
-  - grep -R "Validated<RuntimeLinkPlan>" crates/runtime-catalog crates/backend-wasm crates/compiler
+  - grep -R "Validated<RuntimeLinkPlan>" crates/runtime-catalog crates/backend-wasm
+    crates/compiler
   - test -f crates/runtime-catalog/Cargo.toml
   - test -f crates/source/Cargo.toml
   - test -f crates/diagnostic/Cargo.toml
@@ -391,9 +429,11 @@ done:
       exit: 0
     - command: mise run check architecture
       exit: 0
-    - command: python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements
+    - command: python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter
+        language/statements
       exit: 0
-    - command: grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+    - command: grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
       exit: 0
     - command: '! grep -R "ts2wasm_frontend" crates/backend-wasm/src crates/backend-wasm/Cargo.toml'
       exit: 0
@@ -407,9 +447,13 @@ done:
       exit: 0
     - command: grep -R "Validated<LoweredProgram>" crates/backend-wasm/src crates/compiler/src
       exit: 0
-    - command: grep -R "Validated<RuntimeLinkPlan>" crates/runtime-catalog crates/backend-wasm crates/compiler
+    - command: grep -R "Validated<RuntimeLinkPlan>" crates/runtime-catalog crates/backend-wasm
+        crates/compiler
       exit: 0
-    - command: test -f crates/runtime-catalog/Cargo.toml && test -f crates/source/Cargo.toml && test -f crates/diagnostic/Cargo.toml && test -f crates/syntax/Cargo.toml && test -f crates/resolve/Cargo.toml && test -f crates/semantics/Cargo.toml && test -f crates/runtime-abi/Cargo.toml && test -f crates/backend-core/Cargo.toml
+    - command: test -f crates/runtime-catalog/Cargo.toml && test -f crates/source/Cargo.toml
+        && test -f crates/diagnostic/Cargo.toml && test -f crates/syntax/Cargo.toml
+        && test -f crates/resolve/Cargo.toml && test -f crates/semantics/Cargo.toml
+        && test -f crates/runtime-abi/Cargo.toml && test -f crates/backend-core/Cargo.toml
       exit: 0
     - command: git diff --check
       exit: 0
@@ -419,7 +463,8 @@ done:
   - No requirement that the compiler is full ECMAScript compliant.
   - No requirement that every test262 test passes.
   - No requirement that wasm-encoder is the default backend.
-  notes: 'Closed after final gate validation; architecture warnings remain advisory and issue 276 tracks reducing oversized functions.
+  notes: 'Closed after final gate validation; architecture warnings remain advisory
+    and issue 276 tracks reducing oversized functions.
 
     '
   plan:
@@ -430,7 +475,9 @@ done:
     - crates/**
     - scripts/**
     - tests/**
-    goal: 'Final roll-up gate for architecture decoupling, semantic coverage unblock, runtime catalog extraction, Validated contracts, LLM-friendly sizing, capability checks, semantic kernels, and target crate boundaries.
+    goal: 'Final roll-up gate for architecture decoupling, semantic coverage unblock,
+      runtime catalog extraction, Validated contracts, LLM-friendly sizing, capability
+      checks, semantic kernels, and target crate boundaries.
 
       '
   priority: P1
@@ -442,8 +489,10 @@ done:
   updated: '2026-05-12'
 - acceptance:
   - python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements
-  - grep -R '"differential_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
-  - grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+  - grep -R '"differential_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data
+    site/docs/public/dashboard/data
+  - grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data
+    site/docs/public/dashboard/data
   area: coverage
   closed: '2026-05-12'
   created: '2026-05-11'
@@ -454,11 +503,14 @@ done:
   - 329
   evidence:
     commands:
-    - command: python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements
+    - command: python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter
+        language/statements
       exit: 0
-    - command: grep -R '"differential_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+    - command: grep -R '"differential_pass":[1-9]' site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
       exit: 0
-    - command: grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+    - command: grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
       exit: 0
     - command: python3 scripts/manager.py check scripts
       exit: 0
@@ -474,7 +526,9 @@ done:
   - No full assert object implementation.
   - No assert.throws unless required by the smoke fixture.
   - No full SameValue compliance beyond currently supported primitive cases.
-  notes: 'Activated after issue 332. The assert.sameValue smoke path already produces positive dashboard metrics; this slice preserves the exact machine-readable dashboard grep contract required by the acceptance commands.
+  notes: 'Activated after issue 332. The assert.sameValue smoke path already produces
+    positive dashboard metrics; this slice preserves the exact machine-readable dashboard
+    grep contract required by the acceptance commands.
 
     '
   plan:
@@ -484,21 +538,27 @@ done:
     - crates/ir/src/builtin_domain/**
     - crates/backend-wasm/src/runtime/**
     - tests/fixtures/test262_positive_smoke/**
-    goal: 'Add the smallest assert.sameValue path needed for at least one positive test262 fixture to build, run under iwasm, and match the Node oracle.
+    goal: 'Add the smallest assert.sameValue path needed for at least one positive
+      test262 fixture to build, run under iwasm, and match the Node oracle.
 
       '
   priority: P1
   roadmap: P11-semantic-coverage-unblock
   status: done
-  title: Implement assert.sameValue MVP and produce first positive test262 differential pass
+  title: Implement assert.sameValue MVP and produce first positive test262 differential
+    pass
   type: feature
   updated: '2026-05-12'
 - acceptance:
   - test -f docs/current-state.md
-  - grep -R "semantic_coverage_percent" docs/current-state.md site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
-  - grep -R "differential_pass" docs/current-state.md site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
-  - grep -R "negative_compile_pass" docs/current-state.md site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
-  - grep -R "unresolved_name_by_symbol" docs/current-state.md site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+  - grep -R "semantic_coverage_percent" docs/current-state.md site/docs/coverage/web-ui/public/data
+    web-ui/public/data site/docs/public/dashboard/data
+  - grep -R "differential_pass" docs/current-state.md site/docs/coverage/web-ui/public/data
+    web-ui/public/data site/docs/public/dashboard/data
+  - grep -R "negative_compile_pass" docs/current-state.md site/docs/coverage/web-ui/public/data
+    web-ui/public/data site/docs/public/dashboard/data
+  - grep -R "unresolved_name_by_symbol" docs/current-state.md site/docs/coverage/web-ui/public/data
+    web-ui/public/data site/docs/public/dashboard/data
   area: coverage
   closed: '2026-05-12'
   created: '2026-05-11'
@@ -519,13 +579,17 @@ done:
       exit: 0
     - command: test -f docs/current-state.md
       exit: 0
-    - command: grep -R "semantic_coverage_percent" docs/current-state.md site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+    - command: grep -R "semantic_coverage_percent" docs/current-state.md site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
       exit: 0
-    - command: grep -R "differential_pass" docs/current-state.md site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+    - command: grep -R "differential_pass" docs/current-state.md site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
       exit: 0
-    - command: grep -R "negative_compile_pass" docs/current-state.md site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+    - command: grep -R "negative_compile_pass" docs/current-state.md site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
       exit: 0
-    - command: grep -R "unresolved_name_by_symbol" docs/current-state.md site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+    - command: grep -R "unresolved_name_by_symbol" docs/current-state.md site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
       exit: 0
     - command: python scripts/check/tracking-consistency.py
       exit: 0
@@ -535,7 +599,9 @@ done:
   id: 332
   non_goals:
   - No compiler implementation.
-  notes: 'Activated for implementation. The four generated data locations must expose the same semantic coverage schema, including coverage percentages and unresolved-name breakdown fields.
+  notes: 'Activated for implementation. The four generated data locations must expose
+    the same semantic coverage schema, including coverage percentages and unresolved-name
+    breakdown fields.
 
     '
   plan:
@@ -545,7 +611,8 @@ done:
     - site/docs/coverage/web-ui/public/data/**
     - web-ui/public/data/**
     - site/docs/public/dashboard/**
-    goal: 'Make generated dashboards and docs/current-state.md show the complete semantic coverage schema clearly and consistently.
+    goal: 'Make generated dashboards and docs/current-state.md show the complete semantic
+      coverage schema clearly and consistently.
 
       '
   priority: P2
@@ -555,10 +622,12 @@ done:
   type: docs
   updated: '2026-05-12'
 - acceptance:
-  - rg "issue-3(69|70|71|72|73|74|75|76|77|78|79|8[0-9]|9[0-9])" crates docs fixtures scripts の棚卸し結果を doc に残す
+  - rg "issue-3(69|70|71|72|73|74|75|76|77|78|79|8[0-9]|9[0-9])" crates docs fixtures
+    scripts の棚卸し結果を doc に残す
   - docs/25-robust-test-design.md か同等の P15 設計書が存在する
   - diagnostic 内の issue-NNN が実 tracker に対応するか feature:<label> に置換される方針が決まっている
-  - python3 scripts/manager.py check tracking が P15 issue id と diagnostic tracking の衝突を検出できる設計になっている
+  - python3 scripts/manager.py check tracking が P15 issue id と diagnostic tracking
+    の衝突を検出できる設計になっている
   area: cross
   closed: '2026-05-12'
   created: '2026-05-12'
@@ -587,7 +656,8 @@ done:
     - docs/current-state.md
     - scripts/check/tracking-consistency.py
     - crates/**
-    goal: P15 開始前に issue-NNN の意味を tracking YAML / diagnostic / docs / fixtures 間で一意にする。archive の BigInt diagnostic に残る issue-369/370 との衝突を解決する。
+    goal: P15 開始前に issue-NNN の意味を tracking YAML / diagnostic / docs / fixtures 間で一意にする。archive
+      の BigInt diagnostic に残る issue-369/370 との衝突を解決する。
   priority: P1
   roadmap: P15-test-hardening
   status: done
@@ -597,7 +667,8 @@ done:
 - acceptance:
   - docs/17-jsonl-test-record-schema.md が canonical schema として更新される
   - crates/shared/src/test_status.rs の TestRecord::validate() が docs と一致する
-  - scripts/check/test-records-schema.py --self-test が Rust schema と同じ status/required fields を検査する
+  - scripts/check/test-records-schema.py --self-test が Rust schema と同じ status/required
+    fields を検査する
   - cargo test -p ts2wasm-shared test_status
   - cargo nextest run -p ts2wasm-cli --test differential_jsonl differential_jsonl_quick_check_formats
   - python3 scripts/manager.py check records -- --self-test
@@ -629,7 +700,8 @@ done:
     - scripts/check/test-records-schema.py
     - docs/17-jsonl-test-record-schema.md
     - docs/11-shared-definitions.md
-    goal: TestRecord を単一の canonical schema にし、Rust 型 / JSONL docs / schema checker / differential runner / reference coverage の不一致をなくす。
+    goal: TestRecord を単一の canonical schema にし、Rust 型 / JSONL docs / schema checker
+      / differential runner / reference coverage の不一致をなくす。
   priority: P1
   roadmap: P15-schema
   status: done
@@ -667,7 +739,8 @@ done:
     - crates/runtime-catalog/src/runtime/spec/all.rs
     - crates/runtime-catalog/tests/runtime_registry.rs
     - scripts/check/architecture-rules.py
-    goal: 'CI must fail if RuntimeFn::all omits a variant, emission_order omits or duplicates an emitted function, or any RuntimeFn lacks RuntimeSpec.
+    goal: 'CI must fail if RuntimeFn::all omits a variant, emission_order omits or
+      duplicates an emitted function, or any RuntimeFn lacks RuntimeSpec.
 
       '
   priority: P1
@@ -695,15 +768,18 @@ done:
       exit: 0
     - command: rg --no-ignore "parser_snapshot" crates/frontend/tests/ tests/
       exit: 0
-    - command: rg --no-ignore "resolver_snapshot" crates/resolve/ crates/ir/tests/ tests/
+    - command: rg --no-ignore "resolver_snapshot" crates/resolve/ crates/ir/tests/
+        tests/
       exit: 0
-    - command: rg --no-ignore "builtin.*contract" crates/semantics/ crates/ir/tests/ tests/
+    - command: rg --no-ignore "builtin.*contract" crates/semantics/ crates/ir/tests/
+        tests/
       exit: 0
     - command: rg --no-ignore "hir.*snapshot" crates/ir/tests/ tests/
       exit: 0
     - command: rg --no-ignore "mir.*snapshot" crates/ir/tests/ tests/
       exit: 0
-    - command: rg --no-ignore "runtime_link_plan" crates/runtime-catalog/ crates/backend-wasm/tests/ crates/compiler/tests/
+    - command: rg --no-ignore "runtime_link_plan" crates/runtime-catalog/ crates/backend-wasm/tests/
+        crates/compiler/tests/
       exit: 0
     - command: rg --no-ignore "manifest.*snapshot" crates/compiler/tests/ tests/
       exit: 0
@@ -730,13 +806,15 @@ done:
     - crates/compiler/tests/**
     - crates/cli/tests/**
     - tests/fixtures/**
-    goal: 'Ensure every architecture boundary has focused tests, not only end-to-end differential tests.
+    goal: 'Ensure every architecture boundary has focused tests, not only end-to-end
+      differential tests.
 
       '
   priority: P1
   roadmap: P14-final-test-strategy
   status: done
-  title: Add boundary test layers for parser, resolver, builtin, HIR, MIR, link plan, manifest, and differential execution
+  title: Add boundary test layers for parser, resolver, builtin, HIR, MIR, link plan,
+    manifest, and differential execution
   type: test
   updated: '2026-05-12'
 - acceptance:
@@ -763,7 +841,10 @@ done:
   non_goals:
   - No new syntax support.
   - No runtime behavior change.
-  notes: 'All resolver domain lowering APIs converted to use LoweringCtx or free functions. facts.rs and string.rs migrated to free functions taking &LoweringCtx. Callers updated across array.rs, call/**, expr/**, object.rs, class.rs, function.rs, string.rs, module.rs.
+  notes: 'All resolver domain lowering APIs converted to use LoweringCtx or free functions.
+    facts.rs and string.rs migrated to free functions taking &LoweringCtx. Callers
+    updated across array.rs, call/**, expr/**, object.rs, class.rs, function.rs, string.rs,
+    module.rs.
 
     '
   plan:
@@ -776,13 +857,16 @@ done:
     - crates/ir/src/lowered/resolver/function.rs
     - crates/ir/src/lowered/resolver/string.rs
     - crates/ir/src/lowered/resolver/module.rs
-    goal: 'Domain lowering modules should no longer take the full Resolver when only a smaller context is required. Convert array, call, object, class, function, string, module, and expr submodules to use LoweringCtx or focused views.
+    goal: 'Domain lowering modules should no longer take the full Resolver when only
+      a smaller context is required. Convert array, call, object, class, function,
+      string, module, and expr submodules to use LoweringCtx or focused views.
 
       '
   priority: P1
   roadmap: P14-final-lowering-boundary
   status: done
-  title: Convert resolver domain lowering APIs from &mut Resolver to LoweringCtx or narrow views
+  title: Convert resolver domain lowering APIs from &mut Resolver to LoweringCtx or
+    narrow views
   type: refactor
   updated: '2026-05-12'
 - acceptance:
@@ -823,7 +907,9 @@ done:
   - No full ECMAScript descriptor compliance.
   - No Proxy semantics.
   - No prototype-chain expansion beyond existing runtime helpers.
-  notes: 'Object kernel connected to real lowering. All property get/set/has/delete/in operations now route through object_kernel functions. OrdinaryOwnPropertyKeys added to complete the ordinary operation set.
+  notes: 'Object kernel connected to real lowering. All property get/set/has/delete/in
+    operations now route through object_kernel functions. OrdinaryOwnPropertyKeys
+    added to complete the ordinary operation set.
 
     '
   plan:
@@ -834,13 +920,16 @@ done:
     - crates/ir/src/lowered/validate.rs
     - crates/backend-wasm/src/runtime/object/**
     - tests/fixtures/object_kernel/**
-    goal: 'Connect object_kernel.rs to real lowering. obj.x, obj[x], assignment, delete, in, Object.keys, and supported own-keys paths should lower through object kernel operations instead of scattered resolver branches.
+    goal: 'Connect object_kernel.rs to real lowering. obj.x, obj[x], assignment, delete,
+      in, Object.keys, and supported own-keys paths should lower through object kernel
+      operations instead of scattered resolver branches.
 
       '
   priority: P1
   roadmap: P14-semantic-kernels
   status: done
-  title: Route property get, set, has, delete, and Object.keys through object semantics kernel
+  title: Route property get, set, has, delete, and Object.keys through object semantics
+    kernel
   type: refactor
   updated: '2026-05-12'
 - acceptance:
@@ -876,7 +965,9 @@ done:
   non_goals:
   - No full Proxy support.
   - No full property descriptor conformance beyond supported runtime behavior.
-  notes: 'Object kernel completed with all 4 descriptor/prototype operations already defined in object_kernel.rs, backend WAT emission wired in runtime/object/emit.rs, and dispatch routed through runtime_dispatch_object.rs. All acceptance tests pass.
+  notes: 'Object kernel completed with all 4 descriptor/prototype operations already
+    defined in object_kernel.rs, backend WAT emission wired in runtime/object/emit.rs,
+    and dispatch routed through runtime_dispatch_object.rs. All acceptance tests pass.
 
     '
   plan:
@@ -886,7 +977,8 @@ done:
     - crates/ir/src/lowered/resolver/class.rs
     - crates/backend-wasm/src/runtime/object/**
     - tests/fixtures/object_kernel/**
-    goal: 'Add the remaining ordinary object operations needed by Object.* builtins, class prototype handling, and future descriptor work.
+    goal: 'Add the remaining ordinary object operations needed by Object.* builtins,
+      class prototype handling, and future descriptor work.
 
       '
   priority: P2
@@ -909,7 +1001,8 @@ done:
   evidence:
     commit: 8bd1cd505
     commands:
-    - command: grep semantic_pass/conformance_pass/differential_pass/negative_compile_pass in coverage data
+    - command: grep semantic_pass/conformance_pass/differential_pass/negative_compile_pass
+        in coverage data
       exit: 0
 - acceptance:
   - cargo test -p ts2wasm-ir -p ts2wasm-backend-wasm -p ts2wasm-compiler
@@ -924,7 +1017,8 @@ done:
   - No default backend switch.
   - No removal of Validated<LoweredProgram>.
   - No wasm-encoder migration.
-  notes: 'This aligns the backend boundary with the HIR/MIR roadmap without forcing a risky default migration.
+  notes: 'This aligns the backend boundary with the HIR/MIR roadmap without forcing
+    a risky default migration.
 
     '
   plan:
@@ -934,7 +1028,8 @@ done:
     - crates/backend-wasm/src/mir_emit.rs
     - crates/compiler/src/stages/emit.rs
     - crates/ir/src/lowered/mir.rs
-    goal: 'Add a feature-gated or explicit backend path that can emit from Validated<MirProgram>. Keep the existing Validated<LoweredProgram> path until parity is proven.
+    goal: 'Add a feature-gated or explicit backend path that can emit from Validated<MirProgram>.
+      Keep the existing Validated<LoweredProgram> path until parity is proven.
 
       '
   evidence:
@@ -949,6 +1044,34 @@ done:
   title: Add optional Validated<MirProgram> backend emission path
   type: refactor
   updated: '2026-05-12'
+- id: 372
+  title: Create fixture catalog for differential test infrastructure
+  priority: P1
+  area: cross
+  type: test
+  roadmap: P15-test-hardening
+  status: done
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  non_goals:
+  - No fixture semantic behavior change.
+  plan:
+    files:
+    - fixtures/catalog.yaml
+    - scripts/check/fixture-catalog.py
+    - docs/06-testing-and-coverage.md
+    goal: Catalog every fixture file with its test status, expected behavior class,
+      and category.
+  acceptance:
+  - test -f fixtures/catalog.yaml
+  - python3 scripts/check/fixture-catalog.py
+  - grep -R 'catalog' docs/06-testing-and-coverage.md
+  closed: '2026-05-12'
+  evidence:
+    commit: 0f9b84932
+    commands:
+    - command: python3 scripts/check/fixture-catalog.py
+      exit: 0
 meta:
   active_limit: 1
   open_limit: 40
@@ -988,13 +1111,16 @@ open:
     - crates/ir/src/lowered/validate.rs
     - crates/backend-wasm/src/runtime/object/**
     - tests/fixtures/object_kernel/**
-    goal: 'Connect object_kernel.rs to real lowering. obj.x, obj[x], assignment, delete, in, Object.keys, and supported own-keys paths should lower through object kernel operations instead of scattered resolver branches.
+    goal: 'Connect object_kernel.rs to real lowering. obj.x, obj[x], assignment, delete,
+      in, Object.keys, and supported own-keys paths should lower through object kernel
+      operations instead of scattered resolver branches.
 
       '
   priority: P1
   roadmap: P14-semantic-kernels
   status: open
-  title: Route property get, set, has, delete, and Object.keys through object semantics kernel
+  title: Route property get, set, has, delete, and Object.keys through object semantics
+    kernel
   type: refactor
   updated: '2026-05-12'
 - acceptance:
@@ -1013,7 +1139,8 @@ open:
   - No async/await completion semantics.
   - No generator semantics.
   - No full exception runtime redesign.
-  notes: 'This closes the CompletionRecord stub and prevents try/finally-sensitive bugs.
+  notes: 'This closes the CompletionRecord stub and prevents try/finally-sensitive
+    bugs.
 
     '
   plan:
@@ -1023,13 +1150,16 @@ open:
     - crates/ir/src/lowered/validate.rs
     - crates/backend-wasm/src/statement_emit.rs
     - tests/fixtures/completion_record/**
-    goal: 'Connect completion.rs to lowering and emission so JS control flow is not incorrectly encoded as immediate wasm return or branch when finally semantics matter.
+    goal: 'Connect completion.rs to lowering and emission so JS control flow is not
+      incorrectly encoded as immediate wasm return or branch when finally semantics
+      matter.
 
       '
   priority: P1
   roadmap: P14-semantic-kernels
   status: open
-  title: Introduce CompletionRecord lowering for return, throw, break, continue, and try-finally
+  title: Introduce CompletionRecord lowering for return, throw, break, continue, and
+    try-finally
   type: refactor
   updated: '2026-05-12'
 - acceptance:
@@ -1059,7 +1189,9 @@ open:
     - crates/ir/tests/hir_snapshot.rs
     - crates/ir/tests/mir_snapshot.rs
     - scripts/check/architecture-rules.py
-    goal: 'Every HIR/MIR variant must be dumpable, snapshot-testable, and validator-covered. Architecture checks should prevent adding a variant without updating dump and validation coverage.
+    goal: 'Every HIR/MIR variant must be dumpable, snapshot-testable, and validator-covered.
+      Architecture checks should prevent adding a variant without updating dump and
+      validation coverage.
 
       '
   priority: P1
@@ -1092,7 +1224,9 @@ open:
     - crates/ir/src/lowered/lower.rs
     - crates/compiler/src/stages/lower.rs
     - crates/ir/tests/hir_to_mir.rs
-    goal: 'Make HIR/MIR operational for the feature surface already supported by Lowered IR: constants, locals, primitive JS operations, property operations, method calls, and runtime calls.
+    goal: 'Make HIR/MIR operational for the feature surface already supported by Lowered
+      IR: constants, locals, primitive JS operations, property operations, method
+      calls, and runtime calls.
 
       '
   priority: P1
@@ -1127,13 +1261,16 @@ open:
     - crates/backend-wasm/tests/runtime_link_plan.rs
     - crates/compiler/tests/manifest_snapshot.rs
     - scripts/check/architecture-rules.py
-    goal: 'Every RuntimeFn with host imports must have an explicit capability marker or explicit no-capability marker. Every host import must appear in link-plan and manifest snapshot tests.
+    goal: 'Every RuntimeFn with host imports must have an explicit capability marker
+      or explicit no-capability marker. Every host import must appear in link-plan
+      and manifest snapshot tests.
 
       '
   priority: P1
   roadmap: P14-runtime-catalog-hardening
   status: open
-  title: Extract runtime-abi crate for RawValue tags, layout constants, and logical ABI definitions
+  title: Extract runtime-abi crate for RawValue tags, layout constants, and logical
+    ABI definitions
   type: refactor
   updated: '2026-05-12'
 - acceptance:
@@ -1158,13 +1295,15 @@ open:
     - crates/ir/src/name_resolver.rs
     - crates/ir/src/resolved.rs
     - crates/compiler/src/stages/name_resolve.rs
-    goal: 'Move name resolution, scopes, symbol tables, resolved IDs, and binding data into a dedicated resolve crate.
+    goal: 'Move name resolution, scopes, symbol tables, resolved IDs, and binding
+      data into a dedicated resolve crate.
 
       '
   priority: P2
   roadmap: P14-target-crate-layout
   status: open
-  title: Extract resolve crate for name resolution, scopes, symbols, and resolved IDs
+  title: Extract resolve crate for name resolution, scopes, symbols, and resolved
+    IDs
   type: refactor
   updated: '2026-05-12'
 - acceptance:
@@ -1189,13 +1328,15 @@ open:
     - crates/ir/src/builtin_domain/**
     - crates/ir/src/builtin_resolver.rs
     - crates/compiler/src/stages/builtin_resolve.rs
-    goal: 'Move builtin resolution, TypeScript erasure policy, legacy global handling, and host API classification into a dedicated semantics crate.
+    goal: 'Move builtin resolution, TypeScript erasure policy, legacy global handling,
+      and host API classification into a dedicated semantics crate.
 
       '
   priority: P2
   roadmap: P14-target-crate-layout
   status: open
-  title: Extract semantics crate for builtin resolution, TypeScript erasure, and host API classification
+  title: Extract semantics crate for builtin resolution, TypeScript erasure, and host
+    API classification
   type: refactor
   updated: '2026-05-12'
 - acceptance:
@@ -1218,7 +1359,8 @@ open:
     - docs/current-state.md
     - docs/24-architecture-decoupling.md
     - crates/**
-    goal: 'Complete the staged LLM-friendly sizing reduction. 1200-line files and 200-line functions become hard gates, with only explicit, documented allowlists.
+    goal: 'Complete the staged LLM-friendly sizing reduction. 1200-line files and
+      200-line functions become hard gates, with only explicit, documented allowlists.
 
       '
   priority: P2
@@ -1248,21 +1390,27 @@ open:
     - scripts/check/architecture-rules.py
     - docs/24-architecture-decoupling.md
     - docs/current-state.md
-    goal: 'Move coupling metrics from documentation into CI. Track and gate excessive module fan-out, public API count, and giant match expressions.
+    goal: 'Move coupling metrics from documentation into CI. Track and gate excessive
+      module fan-out, public API count, and giant match expressions.
 
       '
   priority: P2
   roadmap: P14-final-sizing
   status: open
-  title: Add coupling hardening checks for fan-out, public API count, and match arm size
+  title: Add coupling hardening checks for fan-out, public API count, and match arm
+    size
   type: tooling
   updated: '2026-05-12'
 - acceptance:
   - python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements
-  - grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
-  - grep -R '"differential_pass"' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
-  - grep -R '"negative_compile_pass"' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
-  - grep -R '"conformance_pass"' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+  - grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data
+    site/docs/public/dashboard/data
+  - grep -R '"differential_pass"' site/docs/coverage/web-ui/public/data web-ui/public/data
+    site/docs/public/dashboard/data
+  - grep -R '"negative_compile_pass"' site/docs/coverage/web-ui/public/data web-ui/public/data
+    site/docs/public/dashboard/data
+  - grep -R '"conformance_pass"' site/docs/coverage/web-ui/public/data web-ui/public/data
+    site/docs/public/dashboard/data
   area: coverage
   created: '2026-05-12'
   id: 367
@@ -1280,7 +1428,8 @@ open:
     - web-ui/public/data/**
     - site/docs/public/dashboard/**
     - docs/current-state.md
-    goal: 'Prevent regression to semantic_pass=0 and make semantic/conformance metrics first-class dashboard fields.
+    goal: 'Prevent regression to semantic_pass=0 and make semantic/conformance metrics
+      first-class dashboard fields.
 
       '
   priority: P1
@@ -1293,13 +1442,15 @@ open:
   - cargo test --workspace
   - mise run check architecture
   - python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements
-  - grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+  - grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data
+    site/docs/public/dashboard/data
   - '! grep -R "ts2wasm_frontend" crates/backend-wasm/src crates/backend-wasm/Cargo.toml'
   - '! grep -R "RuntimeIntrinsic" crates/ir/src crates/backend-wasm/src'
   - '! grep -R "RuntimeCall.*String\|runtime_fn: String" crates/ir/src'
   - '! grep -R "pub fn emit.*&LoweredProgram" crates/backend-wasm/src'
   - grep -R "Validated<LoweredProgram>" crates/backend-wasm/src crates/compiler/src
-  - grep -R "ValidatedRuntimeLinkPlan\\|Validated<RuntimeLinkPlan>" crates/runtime-catalog crates/backend-wasm crates/compiler
+  - grep -R "ValidatedRuntimeLinkPlan\\|Validated<RuntimeLinkPlan>" crates/runtime-catalog
+    crates/backend-wasm crates/compiler
   - test -f crates/source/Cargo.toml
   - test -f crates/diagnostic/Cargo.toml
   - test -f crates/syntax/Cargo.toml
@@ -1337,7 +1488,9 @@ open:
   - No requirement for full ECMAScript compliance.
   - No requirement that every test262 test passes.
   - No requirement that wasm-encoder is the default backend.
-  notes: 'When this passes, the architecture decoupling and LLM-friendly sizing tracker can be closed as complete. Future work should move to feature-specific vertical slices.
+  notes: 'When this passes, the architecture decoupling and LLM-friendly sizing tracker
+    can be closed as complete. Future work should move to feature-specific vertical
+    slices.
 
     '
   plan:
@@ -1346,7 +1499,10 @@ open:
     - scripts/**
     - tests/**
     - docs/**
-    goal: 'Final roll-up gate for architecture decoupling, semantic kernel integration, runtime catalog hardening, HIR/MIR operationalization, target crate layout, backend encoder hardening, coverage regression prevention, and LLM-friendly sizing.
+    goal: 'Final roll-up gate for architecture decoupling, semantic kernel integration,
+      runtime catalog hardening, HIR/MIR operationalization, target crate layout,
+      backend encoder hardening, coverage regression prevention, and LLM-friendly
+      sizing.
 
       '
   priority: P1
@@ -1355,26 +1511,6 @@ open:
   title: Final architecture decoupling completion gate
   type: tooling
   updated: '2026-05-12'
-- id: 372
-  title: Create fixture catalog for differential test infrastructure
-  priority: P1
-  area: cross
-  type: test
-  roadmap: P15-test-hardening
-  status: open
-  created: '2026-05-12'
-  non_goals:
-  - No fixture semantic behavior change.
-  plan:
-    files:
-    - fixtures/catalog.yaml
-    - scripts/check/fixture-catalog.py
-    - docs/06-testing-and-coverage.md
-    goal: Catalog every fixture file with its test status, expected behavior class, and category.
-  acceptance:
-  - test -f fixtures/catalog.yaml
-  - python3 scripts/check/fixture-catalog.py
-  - grep -R 'catalog' docs/06-testing-and-coverage.md
 - id: 373
   title: Unify differential test harness and JSONL record format
   priority: P1
@@ -1383,6 +1519,7 @@ open:
   roadmap: P15-test-hardening
   status: open
   created: '2026-05-12'
+  updated: '2026-05-12'
   depends_on:
   - 372
   non_goals:
@@ -1404,6 +1541,7 @@ open:
   roadmap: P15-test-hardening
   status: open
   created: '2026-05-12'
+  updated: '2026-05-12'
   depends_on:
   - 373
   non_goals:
@@ -1429,7 +1567,8 @@ open:
   plan:
     files:
     - crates/frontend/tests/parser_property.rs
-    goal: Property-based tests that exercise parser invariants on random or generated inputs.
+    goal: Property-based tests that exercise parser invariants on random or generated
+      inputs.
   acceptance:
   - cargo test -p ts2wasm-frontend --test parser_property
   evidence:
@@ -1445,6 +1584,7 @@ open:
   roadmap: P15-test-hardening
   status: open
   created: '2026-05-12'
+  updated: '2026-05-12'
   non_goals:
   - No full source-level coverage.
   plan:
@@ -1461,8 +1601,10 @@ open:
   area: frontend
   type: test
   roadmap: P15-test-hardening
-  status: open
+  status: done
+  closed: '2026-05-12'
   created: '2026-05-12'
+  updated: '2026-05-12'
   non_goals:
   - No diagnostic message redesign.
   plan:
@@ -1473,6 +1615,13 @@ open:
   acceptance:
   - test -d fixtures/negative
   - python3 scripts/check/compiler-diagnostics.py
+  evidence:
+    commit: 2a6860b17
+    commands:
+    - command: test -d fixtures/negative
+      exit: 0
+    - command: python3 scripts/check/compiler-diagnostics.py
+      exit: 0
 - id: 378
   title: Add runtime ABI invariant tests
   priority: P2
@@ -1481,6 +1630,7 @@ open:
   roadmap: P15-test-hardening
   status: open
   created: '2026-05-12'
+  updated: '2026-05-12'
   non_goals:
   - No ABI layout change.
   plan:
@@ -1497,6 +1647,7 @@ open:
   roadmap: P15-test-hardening
   status: open
   created: '2026-05-12'
+  updated: '2026-05-12'
   depends_on:
   - 378
   non_goals:
@@ -1505,7 +1656,8 @@ open:
     files:
     - crates/runtime-catalog/src/
     - crates/runtime-catalog/tests/
-    goal: 'Structural properties of RuntimeLinkPlan: completeness, no orphan functions, valid capability markers.'
+    goal: 'Structural properties of RuntimeLinkPlan: completeness, no orphan functions,
+      valid capability markers.'
   acceptance:
   - cargo test -p ts2wasm-runtime-catalog
 - id: 380
@@ -1516,6 +1668,7 @@ open:
   roadmap: P15-test-hardening
   status: open
   created: '2026-05-12'
+  updated: '2026-05-12'
   depends_on:
   - 379
   non_goals:
@@ -1524,7 +1677,8 @@ open:
     files:
     - crates/backend-wasm/tests/
     - scripts/check/manifest-imports.py
-    goal: 'Manifest generation is deterministic: same input produces same output across runs.'
+    goal: 'Manifest generation is deterministic: same input produces same output across
+      runs.'
   acceptance:
   - cargo test -p ts2wasm-backend-wasm
   - python3 scripts/check/manifest-imports.py
@@ -1536,6 +1690,7 @@ open:
   roadmap: P15-test-hardening
   status: open
   created: '2026-05-12'
+  updated: '2026-05-12'
   depends_on:
   - 372
   non_goals:
@@ -1555,6 +1710,7 @@ open:
   roadmap: P15-test-hardening
   status: open
   created: '2026-05-12'
+  updated: '2026-05-12'
   depends_on:
   - 372
   non_goals:
@@ -1566,58 +1722,6 @@ open:
     goal: Every compiled fixture produces valid wasm (wat2wasm or wasm-validate).
   acceptance:
   - python3 scripts/check/wasm-validation.py
-- id: 383
-  title: Split coverage data into shards by category
-  priority: P2
-  area: coverage
-  type: refactor
-  roadmap: P15-test-hardening
-  status: done
-  created: '2026-05-12'
-  closed: '2026-05-12'
-  non_goals:
-  - No semantic coverage regression.
-  plan:
-    files:
-    - scripts/data/test262-semantic-core-seeds.txt
-    - scripts/gate/coverage.py
-    - docs/15-coverage-matrix.md
-    goal: Coverage dashboard shows per-category shards instead of single aggregated metric.
-  acceptance:
-  - python3 scripts/gate/coverage.py
-  - grep -R 'shard' docs/15-coverage-matrix.md
-  evidence:
-    commit: a29046017
-    commands:
-    - command: python3 scripts/gate/coverage.py
-      exit: 0
-    - command: grep -R 'shard' docs/15-coverage-matrix.md
-      exit: 0
-- id: 384
-  title: Add coverage regression detection gate
-  priority: P2
-  area: coverage
-  type: tooling
-  roadmap: P15-test-hardening
-  status: done
-  created: '2026-05-12'
-  closed: '2026-05-12'
-  depends_on:
-  - 383
-  non_goals:
-  - No full test262 run in CI.
-  plan:
-    files:
-    - scripts/gate/coverage.py
-    - docs/15-coverage-matrix.md
-    goal: CI fails if coverage drops below the previous recorded level.
-  acceptance:
-  - python3 scripts/gate/coverage.py --check-regression
-  evidence:
-    commit: a29046017
-    commands:
-    - command: python3 scripts/gate/coverage.py --check-regression
-      exit: 0
 - id: 385
   title: Add semantic canary test suite
   priority: P2
@@ -1626,6 +1730,7 @@ open:
   roadmap: P15-test-hardening
   status: open
   created: '2026-05-12'
+  updated: '2026-05-12'
   depends_on:
   - 372
   - 383
@@ -1647,6 +1752,7 @@ open:
   roadmap: P15-test-hardening
   status: open
   created: '2026-05-12'
+  updated: '2026-05-12'
   depends_on:
   - 372
   - 383
@@ -1667,6 +1773,7 @@ open:
   roadmap: P15-test-hardening
   status: open
   created: '2026-05-12'
+  updated: '2026-05-12'
   depends_on:
   - 374
   non_goals:
@@ -1674,7 +1781,8 @@ open:
   plan:
     files:
     - scripts/check/flaky-detect.py
-    goal: Repeated smoke gate runs with cross-run comparison detect non-deterministic results.
+    goal: Repeated smoke gate runs with cross-run comparison detect non-deterministic
+      results.
   acceptance:
   - python3 scripts/check/flaky-detect.py --help
 - id: 388
@@ -1685,6 +1793,7 @@ open:
   roadmap: P15-test-hardening
   status: open
   created: '2026-05-12'
+  updated: '2026-05-12'
   depends_on:
   - 374
   - 382
@@ -1704,6 +1813,7 @@ open:
   roadmap: P15-test-hardening
   status: open
   created: '2026-05-12'
+  updated: '2026-05-12'
   depends_on:
   - 372
   - 373
@@ -1729,7 +1839,8 @@ open:
     - crates/**
     - scripts/**
     - docs/**
-    goal: 'Every P15 acceptance command passes: fixture catalog, smoke gate, validation, coverage, tracking.'
+    goal: 'Every P15 acceptance command passes: fixture catalog, smoke gate, validation,
+      coverage, tracking.'
   acceptance:
   - python3 scripts/manager.py check all
   - cargo test --workspace
