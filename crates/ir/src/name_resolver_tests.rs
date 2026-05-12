@@ -867,4 +867,136 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn resolves_test262_harness_typed_array_global() {
+        let program = vec![
+            Stmt::Expr {
+                expr: Expr::Member {
+                    object: Box::new(Expr::Ident {
+                        name: "TypedArray".to_string(),
+                        span: Span { start: 0, end: 10 },
+                    }),
+                    property: "prototype".to_string(),
+                    span: Span { start: 0, end: 20 },
+                },
+                span: Span { start: 0, end: 21 },
+            },
+            Stmt::Expr {
+                expr: Expr::Member {
+                    object: Box::new(Expr::Ident {
+                        name: "TypedArray".to_string(),
+                        span: Span { start: 30, end: 40 },
+                    }),
+                    property: "prototype".to_string(),
+                    span: Span { start: 30, end: 50 },
+                },
+                span: Span { start: 30, end: 51 },
+            },
+        ];
+        let result = name_resolver::resolve_names(&program);
+        assert!(
+            result.is_ok(),
+            "TypedArray.prototype should resolve: {:?}",
+            result.err()
+        );
+    }
+
+    #[test]
+    fn resolves_test262_harness_typed_array_in_member_and_var() {
+        let program = vec![Stmt::Let {
+            is_var: true,
+            name: "ta".to_string(),
+            expr: Expr::Member {
+                object: Box::new(Expr::Ident {
+                    name: "TypedArray".to_string(),
+                    span: Span { start: 6, end: 16 },
+                }),
+                property: "prototype".to_string(),
+                span: Span { start: 6, end: 26 },
+            },
+            span: Span { start: 0, end: 27 },
+        }];
+        let result = name_resolver::resolve_names(&program);
+        assert!(
+            result.is_ok(),
+            "var ta = TypedArray.prototype should resolve: {:?}",
+            result.err()
+        );
+    }
+
+    #[test]
+    fn resolves_test262_harness_compare_array_global() {
+        let program = vec![Stmt::Expr {
+            expr: Expr::Call {
+                callee: Box::new(Expr::Ident {
+                    name: "compareArray".to_string(),
+                    span: Span { start: 0, end: 12 },
+                }),
+                args: vec![
+                    Expr::Array {
+                        elements: vec![],
+                        span: Span { start: 13, end: 15 },
+                    },
+                    Expr::Array {
+                        elements: vec![],
+                        span: Span { start: 16, end: 18 },
+                    },
+                ],
+                span: Span { start: 0, end: 19 },
+            },
+            span: Span { start: 0, end: 20 },
+        }];
+        let result = name_resolver::resolve_names(&program);
+        assert!(
+            result.is_ok(),
+            "compareArray() should resolve: {:?}",
+            result.err()
+        );
+    }
+
+    #[test]
+    fn resolves_test262_harness_fn_global_object() {
+        let program = vec![Stmt::Expr {
+            expr: Expr::Call {
+                callee: Box::new(Expr::Ident {
+                    name: "fnGlobalObject".to_string(),
+                    span: Span { start: 0, end: 14 },
+                }),
+                args: vec![],
+                span: Span { start: 0, end: 16 },
+            },
+            span: Span { start: 0, end: 17 },
+        }];
+        let result = name_resolver::resolve_names(&program);
+        assert!(
+            result.is_ok(),
+            "fnGlobalObject() should resolve: {:?}",
+            result.err()
+        );
+    }
+
+    #[test]
+    fn resolves_test262_harness_is_primitive_global() {
+        let program = vec![Stmt::Expr {
+            expr: Expr::Call {
+                callee: Box::new(Expr::Ident {
+                    name: "isPrimitive".to_string(),
+                    span: Span { start: 0, end: 11 },
+                }),
+                args: vec![Expr::Ident {
+                    name: "value".to_string(),
+                    span: Span { start: 12, end: 17 },
+                }],
+                span: Span { start: 0, end: 18 },
+            },
+            span: Span { start: 0, end: 19 },
+        }];
+        let result = name_resolver::resolve_names(&program);
+        assert!(
+            result.is_ok(),
+            "isPrimitive() should resolve: {:?}",
+            result.err()
+        );
+    }
 }

@@ -21,7 +21,7 @@ pub mod validate;
 
 // Re-exports for backward compatibility
 pub use hir_dump::dump_hir;
-pub use hir_to_mir::lower_hir_to_mir;
+pub use hir_to_mir::{lower_hir_to_mir, lower_hir_to_mir_native};
 pub use hir_validate::validate_hir;
 pub use mir::MirProgram;
 pub use mir_dump::dump_mir;

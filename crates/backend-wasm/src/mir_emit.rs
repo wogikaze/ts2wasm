@@ -10,14 +10,15 @@
 //! and is not the default. The existing `Validated<LoweredProgram>` path remains
 //! unchanged until MIR parity is proven.
 
-use ts2wasm_ir::lowered::{MirProgram, Validated};
+use ts2wasm_ir::lowered::{LoweredProgram, MirProgram, Validated};
 
 use crate::{Diagnostic, emitter};
 
 /// Emit WAT from a `MirProgram` by converting it to `LoweredProgram` and
 /// delegating to the standard emitter.
 pub fn emit_mir_wat(program: &MirProgram) -> Result<String, Diagnostic> {
-    emitter::emit_wat(program)
+    let lowered: LoweredProgram = program.clone().into();
+    emitter::emit_wat(&lowered)
 }
 
 /// Emit WAT from a `Validated<MirProgram>`.

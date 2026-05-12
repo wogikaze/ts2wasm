@@ -1,9 +1,10 @@
-// MIR validation wrapper — delegates to crate::lowered::validate_lowered.
+// MIR validation wrapper — converts to LoweredProgram and delegates.
 
-use crate::LoweredProgram;
+use crate::lowered::MirProgram;
 use ts2wasm_diagnostic::Diagnostic;
 
-/// Validate a MIR (lowered) program.
-pub fn validate_mir(program: &LoweredProgram) -> Result<(), Vec<Diagnostic>> {
-    crate::lowered::validate_lowered(program)
+/// Validate a MirProgram by converting to LoweredProgram and delegating.
+pub fn validate_mir(program: &MirProgram) -> Result<(), Vec<Diagnostic>> {
+    let lowered: crate::LoweredProgram = program.clone().into();
+    crate::lowered::validate_lowered(&lowered)
 }

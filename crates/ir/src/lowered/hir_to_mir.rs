@@ -7,15 +7,24 @@
 
 use super::{
     FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredFunction,
-    LoweredProgram, LoweredStmt, LoweredUnaryOp,
+    LoweredProgram, LoweredStmt, LoweredUnaryOp, MirProgram,
 };
 use crate::{HirExpr, HirFunction, HirProgram, HirRelationalOp, HirStmt};
 use ts2wasm_runtime_catalog::RuntimeFn;
 
-/// Lower a HirProgram to a LoweredProgram (MIR).
+/// Lower a HirProgram to a LoweredProgram (MIR compatibility bridge).
 pub fn lower_hir_to_mir(program: &HirProgram) -> LoweredProgram {
     let lowerer = HirToMirLowerer::new(program);
     lowerer.lower_program()
+}
+
+/// Lower a HirProgram directly to a native MirProgram.
+///
+/// This is the native MIR path. It delegates to the compatibility bridge
+/// and converts via `From<LoweredProgram> for MirProgram`. Downstream
+/// consumers that accept `Validated<MirProgram>` should prefer this path.
+pub fn lower_hir_to_mir_native(program: &HirProgram) -> MirProgram {
+    lower_hir_to_mir(program).into()
 }
 
 struct HirToMirLowerer {

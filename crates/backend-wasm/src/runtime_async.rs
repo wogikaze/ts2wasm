@@ -16,7 +16,7 @@ use super::emitter::WatEmitter;
 /// Reads `frame[0]` (state), returns 1 if DONE, 0 if PENDING.
 /// Frame layout: [state: i32, return_value: i32, locals...]
 fn build_task_poll_fn() -> WasmFunction {
-    WasmFunction::new("$task_poll")
+    WasmFunction::new("task_poll")
         .param(WasmValType::I32)
         .result(WasmValType::I32)
         .body(vec![
@@ -35,7 +35,7 @@ fn build_task_poll_fn() -> WasmFunction {
 /// If Throw(2): sets `$exception_pending` to `frame[8]` (cr_value),
 /// returns UNDEFINED. Otherwise: returns `frame[8]` (cr_value).
 fn build_task_result_fn() -> WasmFunction {
-    WasmFunction::new("$task_result")
+    WasmFunction::new("task_result")
         .param(WasmValType::I32)
         .result(WasmValType::I32)
         .local(WasmValType::I32) // cr_status at local index 1
@@ -65,7 +65,8 @@ fn build_task_result_fn() -> WasmFunction {
             WasmInstr::GlobalSet("$exception_pending".to_owned()),
             WasmInstr::I32Const(ValueTag::UNDEFINED),
             WasmInstr::Return,
-            WasmInstr::End,
+            WasmInstr::End, // close (then
+            WasmInstr::End, // close (if
             // After the if: return cr_value
             WasmInstr::LocalGet(2),
             WasmInstr::Return,
@@ -76,7 +77,7 @@ fn build_task_result_fn() -> WasmFunction {
 ///
 /// Frees the frame allocation by calling `$free` (from alloc_heap).
 fn build_task_drop_fn() -> WasmFunction {
-    WasmFunction::new("$task_drop")
+    WasmFunction::new("task_drop")
         .param(WasmValType::I32)
         .body(vec![
             WasmInstr::LocalGet(0),
@@ -125,19 +126,26 @@ impl WatEmitter<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::wasm_ir::{WasmExport, WasmMemory, WasmModule};
+    use crate::wasm_ir::{WasmExport, WasmGlobal, WasmMemory, WasmModule, WasmValType};
     use std::fs;
-    use std::path::Path;
     use std::process::Command;
     use ts2wasm_shared::test_helpers::unique_temp_dir;
 
-    /// Helper: emit a single WasmFunction as a complete module, write to disk,
-    /// run wat2wasm, return success/failure and stderr if any.
-    fn validate_function_wat2wasm(f: &WasmFunction, test_name: &str) {
-        let module = WasmModule::new()
-            .memory(WasmMemory::exported(1, 2, "memory"))
+    /// Helper: emit a WasmFunction as a complete module with required globals,
+    /// write to disk, run wat2wasm, assert success.
+    fn validate_function_wat2wasm(
+        f: &WasmFunction,
+        globals: Vec<WasmGlobal>,
+        test_name: &str,
+    ) {
+        let mut module = WasmModule::new()
+            .memory(WasmMemory::exported(1, 2, "memory"));
+        for g in globals {
+            module = module.global(g);
+        }
+        let module = module
             .function(f.clone())
-            .export(WasmExport::func(f.symbol.trim_start_matches('$'), &f.symbol));
+            .export(WasmExport::func(&f.symbol, &f.symbol));
 
         let mut w = WatWriter::new();
         w.emit_module(&module);
@@ -170,42 +178,42 @@ mod tests {
     #[test]
     fn task_poll_wasm_function_is_valid() {
         let f = build_task_poll_fn();
-        assert_eq!(f.symbol, "$task_poll");
+        assert_eq!(f.symbol, "task_poll");
         assert_eq!(f.params, vec![WasmValType::I32]);
         assert_eq!(f.results, vec![WasmValType::I32]);
         assert!(f.locals.is_empty());
         assert_eq!(f.body.len(), 2);
-        validate_function_wat2wasm(&f, "task-poll");
+        validate_function_wat2wasm(&f, vec![], "task-poll");
     }
 
     #[test]
     fn task_result_wasm_function_is_valid() {
         let f = build_task_result_fn();
-        assert_eq!(f.symbol, "$task_result");
+        assert_eq!(f.symbol, "task_result");
         assert_eq!(f.params, vec![WasmValType::I32]);
         assert_eq!(f.results, vec![WasmValType::I32]);
         assert_eq!(f.locals.len(), 2);
-        // Local 0: cr_status, Local 1: cr_value
         assert_eq!(f.locals[0], WasmValType::I32);
         assert_eq!(f.locals[1], WasmValType::I32);
-        validate_function_wat2wasm(&f, "task-result");
+        // task_result references $exception_pending — provide it in the module
+        let exception_global = WasmGlobal::i32_mut("$exception_pending", 0);
+        validate_function_wat2wasm(&f, vec![exception_global], "task-result");
     }
 
     #[test]
     fn task_drop_wasm_function_is_valid() {
         let f = build_task_drop_fn();
-        assert_eq!(f.symbol, "$task_drop");
+        assert_eq!(f.symbol, "task_drop");
         assert_eq!(f.params, vec![WasmValType::I32]);
         assert!(f.results.is_empty());
         assert!(f.locals.is_empty());
         assert_eq!(f.body.len(), 2);
-        validate_function_wat2wasm(&f, "task-drop");
+        validate_function_wat2wasm(&f, vec![], "task-drop");
     }
 
     #[test]
     fn task_poll_wasm_function_body_structure() {
         let f = build_task_poll_fn();
-        // Body: LocalGet(0), I32Load{align:2, offset:0}
         assert!(matches!(f.body[0], WasmInstr::LocalGet(0)));
         assert!(matches!(
             f.body[1],
@@ -219,7 +227,6 @@ mod tests {
     #[test]
     fn task_result_wasm_function_has_if_then_return() {
         let f = build_task_result_fn();
-        // Body should contain: I32Eq, If, Then, GlobalSet, Return, End
         let instrs = &f.body;
         // Find the If after the eq-check
         let if_idx = instrs
@@ -242,20 +249,20 @@ mod tests {
                 .any(|i| matches!(i, WasmInstr::Return)),
             "Then body should contain Return"
         );
-        let end_idx = instrs
+        // After Then, expect End (close then) then End (close if) or two consecutive Ends
+        let ends_after_if: usize = instrs[if_idx + 1..]
             .iter()
-            .position(|i| matches!(i, WasmInstr::End))
-            .expect("task_result body should contain End to close if");
+            .filter(|i| matches!(i, WasmInstr::End))
+            .count();
         assert!(
-            end_idx > if_idx,
-            "End should appear after If in task_result body"
+            ends_after_if >= 2,
+            "task_result body should have at least 2 End instructions after If (close then + close if), found {ends_after_if}"
         );
     }
 
     #[test]
     fn task_drop_wasm_function_body_structure() {
         let f = build_task_drop_fn();
-        // Body: LocalGet(0), Call("$free")
         assert!(matches!(f.body[0], WasmInstr::LocalGet(0)));
         assert!(matches!(&f.body[1], WasmInstr::Call(name) if name == "$free"));
     }

@@ -395,17 +395,36 @@ impl WatWriter {
 
     // ---- load / store -------------------------------------------------------
 
-    /// Emit `(i32.store align=N offset=N)`.
+    /// Emit `(i32.store)` / `(i32.store offset=N)` / `(i32.store align=N)`.
+    ///
+    /// wat2wasm 1.0.27 does not accept both `align=N` and `offset=N` together
+    /// in the flat instruction form, so we emit whichever memarg is non-default.
+    /// When both are at the i32 default (align=2, offset=0) no keyword is emitted.
     pub fn i32_store(&mut self, indent: usize, align: u32, offset: u32) {
-        self.line(
-            indent,
-            &format!("(i32.store align={align} offset={offset})"),
-        );
+        let keyword = if offset != 0 {
+            format!(" offset={offset}")
+        } else if align != 2 {
+            format!(" align={align}")
+        } else {
+            String::new()
+        };
+        self.line(indent, &format!("(i32.store{keyword})"));
     }
 
-    /// Emit `(i32.load align=N offset=N)`.
+    /// Emit `(i32.load)` / `(i32.load offset=N)` / `(i32.load align=N)`.
+    ///
+    /// wat2wasm 1.0.27 does not accept both `align=N` and `offset=N` together
+    /// in the flat instruction form, so we emit whichever memarg is non-default.
+    /// When both are at the i32 default (align=2, offset=0) no keyword is emitted.
     pub fn i32_load(&mut self, indent: usize, align: u32, offset: u32) {
-        self.line(indent, &format!("(i32.load align={align} offset={offset})"));
+        let keyword = if offset != 0 {
+            format!(" offset={offset}")
+        } else if align != 2 {
+            format!(" align={align}")
+        } else {
+            String::new()
+        };
+        self.line(indent, &format!("(i32.load{keyword})"));
     }
 
     // ---- module-level helpers ------------------------------------------------
@@ -624,14 +643,18 @@ impl WatWriter {
             let mut_str = if g.is_mut { " (mut " } else { " " };
             let mut_end = if g.is_mut { ")" } else { "" };
             self.push_str(&format!(
-                "  (global {}{}{}{}) ",
+                "  (global {}{}{}{} ",
                 g.symbol,
                 mut_str,
                 g.val_type.as_str(),
                 mut_end
             ));
-            self.emit_instr(2, &g.init);
-            self.line(0, ")");
+            match &g.init {
+                WasmInstr::I32Const(v) => self.push_str(&format!("(i32.const {v})")),
+                WasmInstr::I64Const(v) => self.push_str(&format!("(i64.const {v})")),
+                _ => self.push_str("(unreachable)"),
+            }
+            self.push_str(")\n");
         }
 
         for seg in &module.data_segments {
@@ -861,13 +884,17 @@ mod tests {
         w.memory_grow(4);
         w.i32_store(4, 2, 8);
         w.i32_load(4, 2, 8);
+        w.i32_store(4, 4, 0);
+        w.i32_load(4, 2, 0);
         assert_eq!(
             w.into_string(),
             concat!(
                 "    (memory.size)\n",
                 "    (memory.grow)\n",
-                "    (i32.store align=2 offset=8)\n",
-                "    (i32.load align=2 offset=8)\n",
+                "    (i32.store offset=8)\n",
+                "    (i32.load offset=8)\n",
+                "    (i32.store align=4)\n",
+                "    (i32.load)\n",
             )
         );
     }

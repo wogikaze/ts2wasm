@@ -151,6 +151,13 @@ pub fn default_allowed_globals() -> std::collections::HashSet<String> {
         // test262 host functions
         "performance",
         "setImmediate",
+        // Test262 TypedArray harness (testTypedArray.js)
+        "TypedArray",
+        // Test262 assert.js harness globals
+        "compareArray",
+        "isPrimitive",
+        // Test262 fnGlobalObject.js harness
+        "fnGlobalObject",
     ]
     .iter()
     .map(|s| s.to_string())
