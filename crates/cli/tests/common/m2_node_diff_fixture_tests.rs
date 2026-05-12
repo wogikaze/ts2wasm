@@ -1666,13 +1666,14 @@ fn date_get_timezone_offset_fixture_builds() {
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join("fixtures/builtins-and-io/date-get-timezone-offset.ts");
-    let output_wasm = std::env::temp_dir().join(format!(
-        "ts2wasm-get-tz-offset-{}.wasm",
-        std::process::id()
-    ));
+    let output_wasm =
+        std::env::temp_dir().join(format!("ts2wasm-get-tz-offset-{}.wasm", std::process::id()));
     match ts2wasm_cli::build_file(&fixture, &output_wasm) {
         Ok(_) => {}
-        Err(e) => panic!("date-get-timezone-offset fixture should build but got error: {}", e),
+        Err(e) => panic!(
+            "date-get-timezone-offset fixture should build but got error: {}",
+            e
+        ),
     }
 }
 
@@ -1683,13 +1684,14 @@ fn date_to_iso_string_fixture_builds() {
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join("fixtures/builtins-and-io/date-to-iso-string.ts");
-    let output_wasm = std::env::temp_dir().join(format!(
-        "ts2wasm-to-iso-{}.wasm",
-        std::process::id()
-    ));
+    let output_wasm =
+        std::env::temp_dir().join(format!("ts2wasm-to-iso-{}.wasm", std::process::id()));
     match ts2wasm_cli::build_file(&fixture, &output_wasm) {
         Ok(_) => {}
-        Err(e) => panic!("date-to-iso-string fixture should build but got error: {}", e),
+        Err(e) => panic!(
+            "date-to-iso-string fixture should build but got error: {}",
+            e
+        ),
     }
 }
 
@@ -2971,7 +2973,7 @@ fn class_extends_builtin_fixture_matches_node_output() {
 // FNCSEM: function and method call semantic suite (issue I-20260512-FNCSEM)
 
 #[test]
-fn fncsem_call_extra_args_matches_node_output() {
+fn fncsem_v2_call_extra_args_matches_node_output() {
     assert_fixture_matches_node("fixtures/core-semantics/call-extra-args.ts");
 }
 
@@ -2996,7 +2998,7 @@ fn fncsem_call_extra_args_reports_arity_mismatch() {
 }
 
 #[test]
-fn fncsem_call_fewer_args_reports_arity_mismatch() {
+fn fncsem_v2_call_fewer_args_reports_arity_mismatch() {
     assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/call-fewer-args-reject.ts",
         "[ArityMismatch]",
@@ -3006,12 +3008,12 @@ fn fncsem_call_fewer_args_reports_arity_mismatch() {
 }
 
 #[test]
-fn fncsem_method_receiver_preserve_matches_node_output() {
+fn fncsem_v2_method_receiver_preserve_matches_node_output() {
     assert_fixture_matches_node("fixtures/core-semantics/method-call-receiver-preserve.ts");
 }
 
 #[test]
-fn fncsem_builtin_call_hir_matches_node_output() {
+fn fncsem_v2_builtin_call_hir_matches_node_output() {
     assert_fixture_matches_node("fixtures/core-semantics/builtin-call-hir.ts");
 }
 
@@ -3028,7 +3030,7 @@ fn fncsem_dynamic_call_assign_reports_unresolved_function() {
 // FNCSEM: semantic call test fixture suite (fixtures/semantic/functions/)
 
 #[test]
-fn fncsem_argument_count_edges_matches_node_output() {
+fn fncsem_v2_argument_count_edges_matches_node_output() {
     assert_fixture_matches_node("fixtures/semantic/functions/argument-count-edges.ts");
 }
 
