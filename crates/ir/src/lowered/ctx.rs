@@ -9,21 +9,23 @@
 //! - `symbols` + `locals` → `SymbolEnv` (name resolution)
 //! - `classes` → `ClassEnv` (class hierarchy)
 //! - `facts` + `captures` → `StaticFacts` (static analysis)
+//! - capture maps → `CaptureEnv`
 //! - `functions` → inline `FunctionsContext`
 //! - `modules` → inline `ModuleEnv`
 //!
-//! Design note: The Resolver is NOT yet migrated to use LoweringCtx.
-//! These types define the target structure. When migration begins:
-//! 1. Replace `Resolver` fields with `ctx: LoweringCtx`
-//! 2. Update field access: `self.symbols` → `self.ctx.symbols`
-//! 3. Update constructors accordingly
+//! The Resolver owns a single `LoweringCtx` and coordinates the lowering flow;
+//! durable state groups live in the environment structs here.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
+use crate::lowered::captures::CaptureEnv;
 use crate::lowered::classes::ClassEnv;
 use crate::lowered::facts::StaticFacts;
-use crate::lowered::symbols::SymbolEnv;
-use crate::lowered::{FuncId, LoweredFunction, ModuleInfo};
+use crate::lowered::symbols::{FunctionSignature, SymbolEnv};
+use crate::lowered::types::{
+    ClassConstructorMap, ClassMethodMap, ClassPrivateFieldSlots, ClassStaticPrivateFields,
+};
+use crate::lowered::{FuncId, LocalId, LoweredFunction, ModuleInfo};
 
 /// Combined lowering context wrapping all sub-contexts.
 ///
@@ -33,6 +35,7 @@ use crate::lowered::{FuncId, LoweredFunction, ModuleInfo};
 /// - `symbols`: function IDs/signatures + local variable scopes (name resolution)
 /// - `classes`: class hierarchy, constructor/method IDs, private fields
 /// - `facts`: static analysis facts (arrays, bigints, string literals, captures)
+/// - `captures`: function and class method capture metadata
 /// - `functions`: lowering-generated function table
 /// - `modules`: module import/export tracking
 pub struct LoweringCtx {
@@ -42,6 +45,8 @@ pub struct LoweringCtx {
     pub classes: ClassEnv,
     /// Static analysis facts.
     pub facts: StaticFacts,
+    /// Function and method capture metadata.
+    pub captures: CaptureEnv,
     /// Function table: closures generated during lowering.
     pub functions: FunctionsContext,
     /// Module resolution state.
@@ -83,9 +88,91 @@ impl LoweringCtx {
             symbols: SymbolEnv::new(),
             classes: ClassEnv::new(),
             facts: StaticFacts::new(),
+            captures: CaptureEnv::new(),
             functions: FunctionsContext::new(),
             modules: ModuleEnv::new(),
         }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn with_resolver_state(
+        function_ids: &HashMap<String, FuncId>,
+        function_signatures: &HashMap<FuncId, FunctionSignature>,
+        function_captures: &HashMap<FuncId, Vec<String>>,
+        function_mutable_captures: &HashMap<FuncId, Vec<String>>,
+        class_method_captures: &HashMap<FuncId, Vec<String>>,
+        class_method_mutable_captures: &HashMap<FuncId, Vec<String>>,
+        env_cell_names: &HashSet<String>,
+        heap_closure_names: &HashSet<String>,
+        generator_function_names: HashSet<String>,
+        class_constructor_ids: ClassConstructorMap,
+        class_method_ids: ClassMethodMap,
+        class_static_method_ids: ClassMethodMap,
+        class_parents: HashMap<String, Option<String>>,
+        class_private_fields: ClassPrivateFieldSlots,
+        class_static_private_fields: ClassStaticPrivateFields,
+        next_func_id: usize,
+    ) -> Self {
+        Self {
+            symbols: SymbolEnv::with_functions(function_ids.clone(), function_signatures.clone()),
+            classes: ClassEnv::with_class_maps(
+                class_constructor_ids,
+                class_method_ids,
+                class_static_method_ids,
+                class_parents,
+                class_private_fields,
+                class_static_private_fields,
+            ),
+            facts: StaticFacts::with_captures(
+                env_cell_names.clone(),
+                heap_closure_names.clone(),
+                generator_function_names,
+            ),
+            captures: CaptureEnv::with_capture_maps(
+                function_captures.clone(),
+                function_mutable_captures.clone(),
+                class_method_captures.clone(),
+                class_method_mutable_captures.clone(),
+            ),
+            functions: FunctionsContext::with_capture_maps(
+                function_captures.clone(),
+                function_mutable_captures.clone(),
+                class_method_captures.clone(),
+                class_method_mutable_captures.clone(),
+                next_func_id,
+            ),
+            modules: ModuleEnv::new(),
+        }
+    }
+
+    pub(crate) fn set_class_context(&mut self, current_class: Option<&str>, in_constructor: bool) {
+        self.classes.current_class = current_class.map(ToOwned::to_owned);
+        self.classes.in_constructor = in_constructor;
+    }
+
+    pub(crate) fn declare_parameter(&mut self, name: &str) -> LocalId {
+        let local_id = LocalId(self.symbols.next_local_id);
+        self.symbols.next_local_id += 1;
+        self.symbols
+            .scopes
+            .last_mut()
+            .expect("function scope must exist")
+            .insert(name.to_owned(), local_id);
+        if self.facts.env_cell_names.contains(name) {
+            self.facts.env_cell_locals.insert(local_id);
+        }
+        if self.facts.heap_closure_names.contains(name) {
+            self.facts.heap_closure_locals.insert(local_id);
+        }
+        self.symbols.param_locals.insert(local_id);
+        if name == "this"
+            && let Some(current_class) = &self.classes.current_class
+        {
+            self.classes
+                .local_classes
+                .insert(local_id, current_class.clone());
+        }
+        local_id
     }
 }
 
@@ -104,6 +191,23 @@ impl FunctionsContext {
             class_method_captures: HashMap::new(),
             class_method_mutable_captures: HashMap::new(),
             next_func_id: 0,
+            generated_functions: Vec::new(),
+        }
+    }
+
+    pub fn with_capture_maps(
+        function_captures: HashMap<FuncId, Vec<String>>,
+        function_mutable_captures: HashMap<FuncId, Vec<String>>,
+        class_method_captures: HashMap<FuncId, Vec<String>>,
+        class_method_mutable_captures: HashMap<FuncId, Vec<String>>,
+        next_func_id: usize,
+    ) -> Self {
+        Self {
+            function_captures,
+            function_mutable_captures,
+            class_method_captures,
+            class_method_mutable_captures,
+            next_func_id,
             generated_functions: Vec::new(),
         }
     }

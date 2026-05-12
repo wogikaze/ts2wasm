@@ -11,14 +11,12 @@ use std::collections::{HashMap, HashSet};
 
 use crate::binding_pattern::{BindingDefault, parse_binding_pattern};
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
-use crate::lowered::classes::ClassEnv;
-use crate::lowered::ctx::{FunctionsContext, LoweringCtx, ModuleEnv};
-use crate::lowered::facts::{ArrowClosure, StaticFacts};
-use crate::lowered::symbols::SymbolEnv;
+use crate::lowered::ctx::LoweringCtx;
+use crate::lowered::facts::ArrowClosure;
 use crate::lowered::*;
-use ts2wasm_syntax::{BinaryOp, UnaryOp};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
+use ts2wasm_syntax::{BinaryOp, UnaryOp};
 
 /// New Resolver with ctx: LoweringCtx.
 /// All mutable state is owned by ctx. Borrowed function maps are cloned into ctx on construction.
@@ -46,38 +44,24 @@ impl Resolver {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
             class_maps(function_ids);
         Self {
-            ctx: LoweringCtx {
-                symbols: SymbolEnv {
-                    function_ids: function_ids.clone(),
-                    function_signatures: function_signatures.clone(),
-                    scopes: vec![HashMap::new()],
-                    next_local_id: 0,
-                    locals: Vec::new(),
-                    param_locals: HashSet::new(),
-                },
-                classes: ClassEnv::with_class_maps(
-                    class_constructor_ids,
-                    class_method_ids,
-                    class_static_method_ids,
-                    class_parents,
-                    class_private_fields,
-                    class_static_private_fields,
-                ),
-                facts: StaticFacts::with_captures(
-                    env_cell_names.clone(),
-                    heap_closure_names.clone(),
-                    generator_function_names,
-                ),
-                functions: FunctionsContext {
-                    function_captures: function_captures.clone(),
-                    function_mutable_captures: function_mutable_captures.clone(),
-                    class_method_captures: class_method_captures.clone(),
-                    class_method_mutable_captures: class_method_mutable_captures.clone(),
-                    next_func_id,
-                    generated_functions: Vec::new(),
-                },
-                modules: ModuleEnv::new(),
-            },
+            ctx: LoweringCtx::with_resolver_state(
+                function_ids,
+                function_signatures,
+                function_captures,
+                function_mutable_captures,
+                class_method_captures,
+                class_method_mutable_captures,
+                env_cell_names,
+                heap_closure_names,
+                generator_function_names,
+                class_constructor_ids,
+                class_method_ids,
+                class_static_method_ids,
+                class_parents,
+                class_private_fields,
+                class_static_private_fields,
+                next_func_id,
+            ),
         }
     }
 
@@ -102,41 +86,28 @@ impl Resolver {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
             class_maps(function_ids);
         let mut resolver = Self {
-            ctx: LoweringCtx {
-                symbols: SymbolEnv {
-                    function_ids: function_ids.clone(),
-                    function_signatures: function_signatures.clone(),
-                    scopes: vec![HashMap::new()],
-                    next_local_id: 0,
-                    locals: Vec::new(),
-                    param_locals: HashSet::new(),
-                },
-                classes: ClassEnv::with_class_maps(
-                    class_constructor_ids,
-                    class_method_ids,
-                    class_static_method_ids,
-                    class_parents,
-                    class_private_fields,
-                    class_static_private_fields,
-                ),
-                facts: StaticFacts::with_captures(
-                    env_cell_names.clone(),
-                    heap_closure_names.clone(),
-                    HashSet::new(),
-                ),
-                functions: FunctionsContext {
-                    function_captures: function_captures.clone(),
-                    function_mutable_captures: function_mutable_captures.clone(),
-                    class_method_captures: class_method_captures.clone(),
-                    class_method_mutable_captures: class_method_mutable_captures.clone(),
-                    next_func_id,
-                    generated_functions: Vec::new(),
-                },
-                modules: ModuleEnv::new(),
-            },
+            ctx: LoweringCtx::with_resolver_state(
+                function_ids,
+                function_signatures,
+                function_captures,
+                function_mutable_captures,
+                class_method_captures,
+                class_method_mutable_captures,
+                env_cell_names,
+                heap_closure_names,
+                HashSet::new(),
+                class_constructor_ids,
+                class_method_ids,
+                class_static_method_ids,
+                class_parents,
+                class_private_fields,
+                class_static_private_fields,
+                next_func_id,
+            ),
         };
-        resolver.ctx.classes.current_class = current_class.map(ToOwned::to_owned);
-        resolver.ctx.classes.in_constructor = in_constructor;
+        resolver
+            .ctx
+            .set_class_context(current_class, in_constructor);
 
         let mut param_ids = Vec::new();
         let mut seen_params = HashMap::new();
@@ -152,31 +123,7 @@ impl Resolver {
                 });
             }
             seen_params.insert(clean_name.to_owned(), ());
-            let local_id = LocalId(resolver.ctx.symbols.next_local_id);
-            resolver.ctx.symbols.next_local_id += 1;
-            resolver
-                .ctx
-                .symbols
-                .scopes
-                .last_mut()
-                .expect("function scope must exist")
-                .insert(clean_name.to_owned(), local_id);
-            if resolver.ctx.facts.env_cell_names.contains(clean_name) {
-                resolver.ctx.facts.env_cell_locals.insert(local_id);
-            }
-            if resolver.ctx.facts.heap_closure_names.contains(clean_name) {
-                resolver.ctx.facts.heap_closure_locals.insert(local_id);
-            }
-            resolver.ctx.symbols.param_locals.insert(local_id);
-            if let Some(current_class) = current_class
-                && param == "this"
-            {
-                resolver
-                    .ctx
-                    .classes
-                    .local_classes
-                    .insert(local_id, current_class.to_owned());
-            }
+            let local_id = resolver.ctx.declare_parameter(clean_name);
             param_ids.push(local_id);
         }
 
