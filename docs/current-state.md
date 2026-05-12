@@ -99,3 +99,48 @@ inputs do not receive test262 globals.
 3. `test262_harness.get_harness_sources(includes)` resolves harness files to inline JS
 4. `build_test262_source()` (lib) assembles: host prelude + sta.js + assert.js + case source
 5. The combined source is compiled by ts2wasm and executed via iwasm/Node
+
+## Semantic Coverage Baseline
+
+<!-- semantic-coverage-baseline:start -->
+{
+  "timestamp": "2026-05-12T14:24:47Z",
+  "feature_count": 30,
+  "pass_count": 23,
+  "unknown_count": 7,
+  "total_fixtures": 857,
+  "pass_fixtures": 823,
+  "features": {
+    "arrays-objects": "pass",
+    "arrow-functions": "pass",
+    "async-await": "unknown",
+    "atcoder": "unknown",
+    "basics-equality": "pass",
+    "basics-hello": "pass",
+    "basics-oom": "unknown",
+    "basics-syntax": "pass",
+    "basics-typeof": "pass",
+    "basics-types": "pass",
+    "basics-utf8": "pass",
+    "builtins-and-io": "pass",
+    "classes": "pass",
+    "classes-and-inheritance": "pass",
+    "control-flow-and-exceptions": "pass",
+    "core-expressions": "pass",
+    "core-semantics": "pass",
+    "core-statements": "pass",
+    "html-comments": "pass",
+    "linker": "unknown",
+    "module-system": "pass",
+    "modules-and-typed-optimizations": "unknown",
+    "node-apis": "unknown",
+    "object-semantics-kernel": "pass",
+    "primitives-control-flow": "pass",
+    "rest-parameters": "pass",
+    "spread-args": "pass",
+    "stmt": "pass",
+    "this-binding": "pass",
+    "typescript-directives": "unknown"
+  }
+}
+<!-- semantic-coverage-baseline:end -->
