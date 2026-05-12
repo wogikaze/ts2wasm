@@ -25,6 +25,9 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "random" => Some(RuntimeFn::MathRandom),
                 "trunc" => Some(RuntimeFn::MathTrunc),
                 "sign" => Some(RuntimeFn::MathSign),
+                "cbrt" => Some(RuntimeFn::MathCbrt),
+                "clz32" => Some(RuntimeFn::MathClz32),
+                "imul" => Some(RuntimeFn::MathImul),
                 _ => None,
             };
         }

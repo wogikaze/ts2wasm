@@ -354,6 +354,12 @@ pub enum RuntimeFn {
     MathTrunc,
     /// Math.sign - returns 1, 0, or -1 for integer-backed numbers.
     MathSign,
+    /// Math.cbrt - integer cube root (floor).
+    MathCbrt,
+    /// Math.clz32 - count leading zero bits in 32-bit binary representation.
+    MathClz32,
+    /// Math.imul - C-style 32-bit integer multiplication.
+    MathImul,
     /// M10: JSON functions
     JsonStringify,
     JsonParse,
@@ -958,6 +964,7 @@ const DATE_EPOCH_MS_NOW_NUMBER_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 // Math function dependencies (no deps)
 const MATH_DEPS: &[RuntimeFn] = &[RuntimeFn::NumberToI32, RuntimeFn::NumberFromI32];
 const MATH_RANDOM_DEPS: &[RuntimeFn] = &[];
+const MATH_NO_DEPS: &[RuntimeFn] = &[];
 
 // JSON function dependencies
 const JSON_STRINGIFY_DEPS: &[RuntimeFn] = &[
@@ -992,6 +999,9 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MathRandom" => Some(RuntimeFn::MathRandom),
         "MathTrunc" => Some(RuntimeFn::MathTrunc),
         "MathSign" => Some(RuntimeFn::MathSign),
+        "MathCbrt" => Some(RuntimeFn::MathCbrt),
+        "MathClz32" => Some(RuntimeFn::MathClz32),
+        "MathImul" => Some(RuntimeFn::MathImul),
         "ErrorMessage" => Some(RuntimeFn::ErrorMessage),
         "JsonStringify" => Some(RuntimeFn::JsonStringify),
         "JsonParse" => Some(RuntimeFn::JsonParse),
@@ -1442,7 +1452,10 @@ impl RuntimeFn {
             | Self::MathPow
             | Self::MathRandom
             | Self::MathTrunc
-            | Self::MathSign => RuntimeDomain::Math,
+            | Self::MathSign
+            | Self::MathCbrt
+            | Self::MathClz32
+            | Self::MathImul => RuntimeDomain::Math,
             Self::ModuleRequire | Self::ModuleExportsSet | Self::ModuleExportsAssign => {
                 RuntimeDomain::Module
             }
@@ -1652,6 +1665,7 @@ impl RuntimeFn {
             | Self::GreaterEqual
             | Self::GreaterEqualFast
             | Self::MathPow
+            | Self::MathImul
             | Self::StrictEqual
             | Self::ValueToStringInto
             | Self::ArrayPush
@@ -1948,6 +1962,9 @@ impl RuntimeFn {
             Self::MathRandom,
             Self::MathTrunc,
             Self::MathSign,
+            Self::MathCbrt,
+            Self::MathClz32,
+            Self::MathImul,
             // JSON functions
             Self::JsonStringify,
             Self::JsonParse,
@@ -2258,6 +2275,9 @@ impl RuntimeFn {
             Self::MathRandom,
             Self::MathTrunc,
             Self::MathSign,
+            Self::MathCbrt,
+            Self::MathClz32,
+            Self::MathImul,
             // JSON functions
             Self::JsonStringify,
             Self::JsonParse,

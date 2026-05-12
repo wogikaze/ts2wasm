@@ -1866,3 +1866,28 @@ fn build_smoke_well_known_symbol_runtime() {
         result.err()
     );
 }
+
+// Math.cbrt
+#[test]
+fn build_smoke_math_cbrt() {
+    let result = run_fixture("builtins-and-io/math-cbrt.ts");
+    assert!(result.is_ok(), "Math.cbrt should build: {:?}", result.err());
+}
+
+// Math.clz32
+#[test]
+fn build_smoke_math_clz32() {
+    let result = run_fixture("builtins-and-io/math-clz32.ts");
+    assert!(
+        result.is_ok(),
+        "Math.clz32 should build: {:?}",
+        result.err()
+    );
+}
+
+// Math.imul
+#[test]
+fn build_smoke_math_imul() {
+    let result = run_fixture("builtins-and-io/math-imul.ts");
+    assert!(result.is_ok(), "Math.imul should build: {:?}", result.err());
+}
