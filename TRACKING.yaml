@@ -1,6 +1,52 @@
 active: []
 done:
 - acceptance:
+  - test -f crates/runtime-abi/Cargo.toml
+  - cargo test -p ts2wasm-runtime-abi -p ts2wasm-runtime-catalog -p ts2wasm-ir -p
+    ts2wasm-backend-wasm
+  - grep -R "ts2wasm_runtime_abi" crates/ir crates/runtime-catalog crates/backend-wasm
+  area: runtime
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  evidence:
+    commands:
+    - command: test -f crates/runtime-abi/Cargo.toml
+      exit: 0
+    - command: cargo test -p ts2wasm-runtime-abi -p ts2wasm-runtime-catalog -p ts2wasm-ir
+        -p ts2wasm-backend-wasm
+      exit: 0
+    - command: grep -R "ts2wasm_runtime_abi" crates/ir crates/runtime-catalog crates/backend-wasm
+      exit: 0
+    - command: git diff --check
+      exit: 0
+  id: 358
+  non_goals:
+  - No ABI layout change.
+  - No runtime semantic change.
+  notes: 'MIR and runtime catalog may refer to ABI concepts; backend should encode
+    them, not own them.
+
+    '
+  plan:
+    files:
+    - crates/runtime-abi/Cargo.toml
+    - crates/runtime-abi/src/lib.rs
+    - crates/backend-wasm/src/value.rs
+    - crates/backend-wasm/src/runtime/**
+    - crates/ir/src/lowered/**
+    - crates/runtime-catalog/src/**
+    goal: 'Move RawValue tags, layout constants, value representation contracts, and
+      logical runtime ABI definitions out of backend emission code.
+
+      '
+  priority: P2
+  roadmap: P14-target-crate-layout
+  status: done
+  title: Extract runtime-abi crate for RawValue tags, layout constants, and logical
+    ABI definitions
+  type: refactor
+  updated: '2026-05-12'
+- acceptance:
   - test -f current-state.md
   - test -f docs/24-architecture-decoupling-and-llm-friendly-sizing.md
   - test -f docs/templates/feature-slice.md
@@ -854,36 +900,6 @@ open:
   title: Harden HostImport, Capability, RuntimeLinkPlan, and manifest consistency
   type: tooling
   updated: '2026-05-12'
-- acceptance:
-  - test -f crates/runtime-abi/Cargo.toml
-  - cargo test -p ts2wasm-runtime-abi -p ts2wasm-runtime-catalog -p ts2wasm-ir -p
-    ts2wasm-backend-wasm
-  - grep -R "ts2wasm_runtime_abi" crates/ir crates/runtime-catalog crates/backend-wasm
-  area: runtime
-  created: '2026-05-12'
-  id: 358
-  non_goals:
-  - No ABI layout change.
-  - No runtime semantic change.
-  notes: 'MIR and runtime catalog may refer to ABI concepts; backend should encode
-    them, not own them.
-
-    '
-  plan:
-    files:
-    - crates/runtime-abi/Cargo.toml
-    - crates/runtime-abi/src/lib.rs
-    - crates/backend-wasm/src/value.rs
-    - crates/backend-wasm/src/runtime/**
-    - crates/ir/src/lowered/**
-    - crates/runtime-catalog/src/**
-    goal: 'Move RawValue tags, layout constants, value representation contracts, and
-      logical runtime ABI definitions out of backend emission code.
-
-      '
-  priority: P2
-  roadmap: P14-target-crate-layout
-  status: open
   title: Extract runtime-abi crate for RawValue tags, layout constants, and logical
     ABI definitions
   type: refactor
