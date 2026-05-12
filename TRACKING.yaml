@@ -18,7 +18,7 @@ done:
       exit: 0
     - command: git diff --check
       exit: 0
-    commit: PLACEHOLDER
+    commit: 81d0c839f
   id: 362
   non_goals:
   - No default wasm-encoder migration.
@@ -43,6 +43,57 @@ done:
   status: done
   title: Harden backend-core WatWriter and raw WAT string usage
   type: refactor
+  updated: '2026-05-12'
+- acceptance:
+  - cargo test -p ts2wasm-runtime-catalog -p ts2wasm-runtime-abi -p ts2wasm-backend-wasm
+  - grep -R "RuntimeSignature\|stack_effect" crates/runtime-catalog crates/runtime-abi
+    crates/backend-wasm
+  - mise run check architecture
+  area: backend
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  depends_on:
+  - 356
+  - 358
+  - 362
+  evidence:
+    commands:
+    - command: cargo test -p ts2wasm-runtime-catalog -p ts2wasm-runtime-abi
+      exit: 0
+    - command: grep -R "RuntimeSignature\|stack_effect" crates/runtime-catalog/src
+        crates/runtime-abi/src crates/backend-wasm/tests
+      exit: 0
+    - command: mise run check architecture
+      exit: 0
+    - command: git diff --check
+      exit: 0
+    commit: 9fd924580
+  id: 363
+  non_goals:
+  - No full formal verification.
+  - No wasm-encoder default switch.
+  notes: 'RuntimeSignature moved from runtime_fn.rs to own module in runtime-catalog.
+    StackEffect added to runtime-abi with typed constructors. runtime_signature.rs
+    tests verify signatures and check_runtime_signature helper. AC1 (backend-wasm test)
+    blocked by 93 pre-existing compilation errors in ts2wasm-ir crate (unrelated worktree
+    modifications).
+    '
+  plan:
+    files:
+    - crates/runtime-catalog/src/runtime_spec.rs
+    - crates/runtime-catalog/src/signature.rs
+    - crates/runtime-abi/src/lib.rs
+    - crates/backend-wasm/src/wat_writer.rs
+    - crates/backend-wasm/tests/runtime_signature.rs
+    goal: 'RuntimeSpec should expose signature or stack-effect metadata, and backend
+      runtime calls should be checked against it.
+
+      '
+  priority: P2
+  roadmap: P14-backend-encoder-hardening
+  status: done
+  title: Add runtime signature and stack-effect checks for emitted RuntimeFn calls
+  type: test
   updated: '2026-05-12'
 - acceptance:
   - test -f crates/syntax/Cargo.toml
@@ -1151,41 +1202,6 @@ open:
   title: Extract semantics crate for builtin resolution, TypeScript erasure, and host
     API classification
   type: refactor
-  updated: '2026-05-12'
-- acceptance:
-  - cargo test -p ts2wasm-runtime-catalog -p ts2wasm-runtime-abi -p ts2wasm-backend-wasm
-  - grep -R "RuntimeSignature\|stack_effect" crates/runtime-catalog crates/runtime-abi
-    crates/backend-wasm
-  - mise run check architecture
-  area: backend
-  created: '2026-05-12'
-  depends_on:
-  - 356
-  - 358
-  - 362
-  id: 363
-  non_goals:
-  - No full formal verification.
-  - No wasm-encoder default switch.
-  notes: 'This prevents stack-shape drift between runtime catalog and backend emission.
-
-    '
-  plan:
-    files:
-    - crates/runtime-catalog/src/runtime_spec.rs
-    - crates/runtime-catalog/src/signature.rs
-    - crates/runtime-abi/src/lib.rs
-    - crates/backend-wasm/src/wat_writer.rs
-    - crates/backend-wasm/tests/runtime_signature.rs
-    goal: 'RuntimeSpec should expose signature or stack-effect metadata, and backend
-      runtime calls should be checked against it.
-
-      '
-  priority: P2
-  roadmap: P14-backend-encoder-hardening
-  status: open
-  title: Add runtime signature and stack-effect checks for emitted RuntimeFn calls
-  type: test
   updated: '2026-05-12'
 - acceptance:
   - cargo test --workspace
