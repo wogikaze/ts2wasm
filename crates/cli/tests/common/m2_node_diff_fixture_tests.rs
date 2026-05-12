@@ -2786,3 +2786,23 @@ fn new_target_fixture_matches_node_output() {
 fn class_field_initialization_fixture_matches_node_output() {
     assert_fixture_matches_node("fixtures/classes/class-field-initializers.ts");
 }
+
+#[test]
+fn class_super_static_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes/class-super-static.ts");
+}
+
+#[test]
+fn class_static_fields_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes/class-static-fields.ts");
+}
+
+#[test]
+fn class_private_members_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes/class-private-members.ts");
+}
+
+#[test]
+fn class_extends_builtin_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes/class-extends-builtin.ts");
+}
