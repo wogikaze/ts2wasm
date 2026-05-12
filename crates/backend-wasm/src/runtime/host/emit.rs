@@ -11,13 +11,26 @@ impl WatEmitter<'_> {
             r#"
   (func $math_floor (param $v i32) (result i32)
     (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
-    (if (i32.ne (local.get $tag) (i32.const {number_tag})) (then (return (i32.const {undefined}))))
-    ;; floor is no-op for encoded integers
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {undefined}))))
+    ;; floor is no-op for integer-backed numbers
     (local.get $v))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             undefined = ValueTag::UNDEFINED,
         ));
     }
@@ -27,13 +40,26 @@ impl WatEmitter<'_> {
             r#"
   (func $math_ceil (param $v i32) (result i32)
     (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
-    (if (i32.ne (local.get $tag) (i32.const {number_tag})) (then (return (i32.const {undefined}))))
-    ;; ceil is no-op for encoded integers
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {undefined}))))
+    ;; ceil is no-op for integer-backed numbers
     (local.get $v))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             undefined = ValueTag::UNDEFINED,
         ));
     }
@@ -43,13 +69,26 @@ impl WatEmitter<'_> {
             r#"
   (func $math_round (param $v i32) (result i32)
     (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
-    (if (i32.ne (local.get $tag) (i32.const {number_tag})) (then (return (i32.const {undefined}))))
-    ;; round is no-op for encoded integers
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {undefined}))))
+    ;; round is no-op for integer-backed numbers
     (local.get $v))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             undefined = ValueTag::UNDEFINED,
         ));
     }
@@ -59,17 +98,29 @@ impl WatEmitter<'_> {
             r#"
   (func $math_abs (param $v i32) (result i32)
     (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
     (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
-    (if (i32.ne (local.get $tag) (i32.const {number_tag})) (then (return (i32.const {undefined}))))
-    (local.set $n (i32.shr_s (local.get $v) (i32.const {number_shift})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {undefined}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
     (if (i32.lt_s (local.get $n) (i32.const {zero}))
       (then (local.set $n (i32.sub (i32.const {zero}) (local.get $n)))))
-    (i32.or (i32.shl (local.get $n) (i32.const {number_shift})) (i32.const {number_tag})))
+    (call $number_from_i32 (local.get $n)))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
-            number_shift = ValueTag::NUMBER_SHIFT,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             zero = RuntimeConst::ZERO,
             undefined = ValueTag::UNDEFINED,
         ));
@@ -198,13 +249,26 @@ impl WatEmitter<'_> {
             r#"
   (func $math_trunc (param $v i32) (result i32)
     (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
-    (if (i32.ne (local.get $tag) (i32.const {number_tag})) (then (return (i32.const {zero}))))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {zero}))))
     ;; trunc is no-op for integer-backed numbers
     (local.get $v))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             zero = RuntimeConst::ZERO,
         ));
     }
@@ -214,10 +278,20 @@ impl WatEmitter<'_> {
             r#"
   (func $math_sign (param $v i32) (result i32)
     (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
     (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
-    (if (i32.ne (local.get $tag) (i32.const {number_tag})) (then (return (i32.const {zero}))))
-    (local.set $n (i32.shr_s (local.get $v) (i32.const {number_shift})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {zero}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
     (if (i32.gt_s (local.get $n) (i32.const {zero}))
       (then (return (i32.or (i32.shl (i32.const 1) (i32.const {number_shift})) (i32.const {number_tag})))))
     (if (i32.lt_s (local.get $n) (i32.const {zero}))
@@ -226,6 +300,9 @@ impl WatEmitter<'_> {
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             number_shift = ValueTag::NUMBER_SHIFT,
             zero = RuntimeConst::ZERO,
         ));
