@@ -1,0 +1,5 @@
+try no error
+finally no error
+caught: caught
+finally after catch
+nested: inner-caught,inner-finally,outer-caught,outer-finally,

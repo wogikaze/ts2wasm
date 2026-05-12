@@ -1,0 +1,6 @@
+10
+20
+30
+sum 15
+found 3
+oddSum 9
