@@ -140,8 +140,9 @@ mise run discord-report -- reports/runs/<run_id>/cycle_report.md --run-id <run_i
 webhook 送信ルール:
 
 - push 前に必ず `mise run discord-report` で webhook に送信する。
-- 定期開発レポートは `.github/workflows/discord-development-report.yml` が毎日 09:00 JST に生成し、`DISCORD_WEBHOOK_URL` secret に送信する。
-- 手動で同じ形式のレポートを作る場合は `mise run development-report -- --output reports/runs/<run_id>/cycle_report.md --run-id <run_id>` を使う。
+- 定期開発レポートは agent が手動で生成・送信する。GitHub Actions から Discord webhook へは送信しない。
+- 手動レポートは `mise run development-report -- --output reports/runs/<run_id>/cycle_report.md --run-id <run_id>` で作る。
+- 作成したレポートは `mise run discord-report -- reports/runs/<run_id>/cycle_report.md --run-id <run_id>` で送信する。
 - Discord 送信用レポートは非常に簡潔にする（状態、issue ID、検証、blocker、次アクションのみ）。
 - Discord 送信用レポート本文は日本語で書く（コマンド、パス、issue ID の英字は可）。
 - `未記入` だらけのレポートは `discord-report` が reject する。
