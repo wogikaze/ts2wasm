@@ -126,15 +126,23 @@ impl WatEmitter<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::wasm_ir::{WasmExport, WasmGlobal, WasmMemory, WasmModule, WasmValType};
+    use crate::wasm_ir::{WasmExport, WasmGlobal, WasmImport, WasmMemory, WasmModule, WasmValType};
     use std::fs;
     use std::process::Command;
     use ts2wasm_shared::test_helpers::unique_temp_dir;
 
     /// Helper: emit a WasmFunction as a complete module with required globals,
     /// write to disk, run wat2wasm, assert success.
-    fn validate_function_wat2wasm(f: &WasmFunction, globals: Vec<WasmGlobal>, test_name: &str) {
+    fn validate_function_wat2wasm(
+        f: &WasmFunction,
+        globals: Vec<WasmGlobal>,
+        imports: Vec<WasmImport>,
+        test_name: &str,
+    ) {
         let mut module = WasmModule::new().memory(WasmMemory::exported(1, 2, "memory"));
+        for imp in imports {
+            module = module.import(imp);
+        }
         for g in globals {
             module = module.global(g);
         }
@@ -178,7 +186,7 @@ mod tests {
         assert_eq!(f.results, vec![WasmValType::I32]);
         assert!(f.locals.is_empty());
         assert_eq!(f.body.len(), 2);
-        validate_function_wat2wasm(&f, vec![], "task-poll");
+        validate_function_wat2wasm(&f, vec![], vec![], "task-poll");
     }
 
     #[test]
@@ -192,7 +200,7 @@ mod tests {
         assert_eq!(f.locals[1], WasmValType::I32);
         // task_result references $exception_pending — provide it in the module
         let exception_global = WasmGlobal::i32_mut("$exception_pending", 0);
-        validate_function_wat2wasm(&f, vec![exception_global], "task-result");
+        validate_function_wat2wasm(&f, vec![exception_global], vec![], "task-result");
     }
 
     #[test]
@@ -203,7 +211,9 @@ mod tests {
         assert!(f.results.is_empty());
         assert!(f.locals.is_empty());
         assert_eq!(f.body.len(), 2);
-        validate_function_wat2wasm(&f, vec![], "task-drop");
+        // task_drop calls $free -- provide it as an import
+        let free_import = WasmImport::func("env", "free", "$free", [WasmValType::I32], []);
+        validate_function_wat2wasm(&f, vec![], vec![free_import], "task-drop");
     }
 
     #[test]
