@@ -469,8 +469,8 @@ impl BigIntStaticBuiltinFolder {
                     stack.push((*op, right, *span));
                     cur = l;
                 }
-                stack.push((*first_op, first_right, *first_span));
                 stack.reverse();
+                stack.push((*first_op, first_right, *first_span));
                 let mut accumulated = self.fold_expr(cur);
                 for (op, right, span) in stack {
                     let right = self.fold_expr(right);
@@ -1541,8 +1541,8 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 stack.push((*op, right, *span));
                 cur = l;
             }
-            stack.push((*first_op, first_right, *first_span));
             stack.reverse();
+            stack.push((*first_op, first_right, *first_span));
 
             // Resolve the leaf
             let mut accumulated = resolve_expr(cur)?;
