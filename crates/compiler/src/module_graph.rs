@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use ts2wasm_frontend::{
-    DiagCode, Diagnostic, Lexer, ModuleSpecifier, Parser, Stmt, validate_type_reference_directives,
-};
+use ts2wasm_diagnostic::{DiagCode, Diagnostic};
+use ts2wasm_frontend::{Lexer, Parser, validate_type_reference_directives};
+use ts2wasm_syntax::{ModuleSpecifier, Stmt};
 
 #[derive(Debug, Clone)]
 pub struct ModuleGraph {
@@ -598,7 +598,7 @@ mod tests {
     use std::fs;
     use std::path::PathBuf;
 
-    use ts2wasm_frontend::Span;
+    use ts2wasm_source::Span;
 
     use super::*;
 

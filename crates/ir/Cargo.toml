@@ -7,5 +7,12 @@ repository.workspace = true
 
 [dependencies]
 ts2wasm-shared = { path = "../shared" }
+ts2wasm-source = { path = "../source" }
+ts2wasm-diagnostic = { path = "../diagnostic" }
+ts2wasm-syntax = { path = "../syntax" }
+ts2wasm-resolve = { path = "../resolve" }
 ts2wasm-runtime-abi = { path = "../runtime-abi" }
+ts2wasm-runtime-catalog = { path = "../runtime-catalog" }
+
+[dev-dependencies]
 ts2wasm-frontend = { path = "../frontend" }

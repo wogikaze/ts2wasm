@@ -1,0 +1,336 @@
+/// ABI contract type for host imports.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum HostAbi {
+    WasiPreview1,
+    NodeShim,
+    /// Internal host functions for runtime support
+    /// Kept for future internal host function support
+    #[allow(dead_code)]
+    InternalHost,
+}
+
+/// Complete metadata for a host import binding (single source of truth).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct HostImportSpec {
+    pub module: &'static str,
+    pub name: &'static str,
+    pub wat_symbol: &'static str,
+    pub abi: HostAbi,
+    /// WAT parameter list (e.g., "param i32 i32 i32 i32") or empty
+    pub params: &'static str,
+    /// WAT result type (e.g., "result i32") or empty
+    pub result: &'static str,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
+pub enum HostImport {
+    FdRead,
+    FdWrite,
+    PathOpen,
+    FdClose,
+    WasiProcExit,
+    ClockTimeGet,
+    #[allow(dead_code)]
+    ClockResGet,
+    RandomGet,
+    ArgsSizesGet,
+    ArgsGet,
+    EnvironSizesGet,
+    EnvironGet,
+    #[allow(dead_code)]
+    FsReadFileSync,
+    #[allow(dead_code)]
+    FsWriteFileSync,
+    FsAppendFileSync,
+    ProcessExit,
+    PathJoin,
+    PathResolve,
+    PathBasename,
+    PathDirname,
+    CryptoRandomBytes,
+    EncodeURI,
+    DecodeURI,
+    Escape,
+    Unescape,
+    DateToString,
+    DateGetLocalTimeField,
+    DateToISOString,
+    DateGetTimezoneOffset,
+}
+
+impl HostImport {
+    /// Get the complete metadata for this host import (single source of truth).
+    pub const fn spec(self) -> HostImportSpec {
+        match self {
+            Self::FdRead => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "fd_read",
+                wat_symbol: "$fd_read",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i32 i32 i32",
+                result: "result i32",
+            },
+            Self::FdWrite => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "fd_write",
+                wat_symbol: "$fd_write",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i32 i32 i32",
+                result: "result i32",
+            },
+            Self::PathOpen => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "path_open",
+                wat_symbol: "$path_open",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i32 i32 i32 i32 i64 i64 i32 i32",
+                result: "result i32",
+            },
+            Self::FdClose => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "fd_close",
+                wat_symbol: "$fd_close",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32",
+                result: "result i32",
+            },
+            Self::WasiProcExit => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "proc_exit",
+                wat_symbol: "$wasi_proc_exit",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32",
+                result: "",
+            },
+            Self::ClockTimeGet => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "clock_time_get",
+                wat_symbol: "$clock_time_get",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i64 i32",
+                result: "result i32",
+            },
+            Self::ClockResGet => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "clock_res_get",
+                wat_symbol: "$clock_res_get",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i32",
+                result: "result i32",
+            },
+            Self::RandomGet => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "random_get",
+                wat_symbol: "$random_get",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i32",
+                result: "result i32",
+            },
+            Self::ArgsSizesGet => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "args_sizes_get",
+                wat_symbol: "$args_sizes_get",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i32",
+                result: "result i32",
+            },
+            Self::ArgsGet => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "args_get",
+                wat_symbol: "$args_get",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i32",
+                result: "result i32",
+            },
+            Self::EnvironSizesGet => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "environ_sizes_get",
+                wat_symbol: "$environ_sizes_get",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i32",
+                result: "result i32",
+            },
+            Self::EnvironGet => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "environ_get",
+                wat_symbol: "$environ_get",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i32",
+                result: "result i32",
+            },
+            Self::FsReadFileSync => HostImportSpec {
+                module: "host",
+                name: "fs.readFileSync",
+                wat_symbol: "$host_fs_read_file_sync",
+                abi: HostAbi::NodeShim,
+                params: "param i32 i32",
+                result: "result i32",
+            },
+            Self::FsWriteFileSync => HostImportSpec {
+                module: "host",
+                name: "fs.writeFileSync",
+                wat_symbol: "$host_fs_write_file_sync",
+                abi: HostAbi::NodeShim,
+                params: "param i32 i32",
+                result: "",
+            },
+            Self::FsAppendFileSync => HostImportSpec {
+                module: "host",
+                name: "fs.appendFileSync",
+                wat_symbol: "$host_fs_append_file_sync",
+                abi: HostAbi::NodeShim,
+                params: "param i32 i32",
+                result: "",
+            },
+            Self::ProcessExit => HostImportSpec {
+                module: "host",
+                name: "process.exit",
+                wat_symbol: "$host_process_exit",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "",
+            },
+            Self::PathJoin => HostImportSpec {
+                module: "host",
+                name: "path.join",
+                wat_symbol: "$host_path_join",
+                abi: HostAbi::NodeShim,
+                params: "param i32 i32",
+                result: "result i32",
+            },
+            Self::PathResolve => HostImportSpec {
+                module: "host",
+                name: "path.resolve",
+                wat_symbol: "$host_path_resolve",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
+            Self::PathBasename => HostImportSpec {
+                module: "host",
+                name: "path.basename",
+                wat_symbol: "$host_path_basename",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
+            Self::PathDirname => HostImportSpec {
+                module: "host",
+                name: "path.dirname",
+                wat_symbol: "$host_path_dirname",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
+            Self::CryptoRandomBytes => HostImportSpec {
+                module: "host",
+                name: "crypto.randomBytes",
+                wat_symbol: "$host_crypto_random_bytes",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
+            Self::EncodeURI => HostImportSpec {
+                module: "host",
+                name: "encodeURI",
+                wat_symbol: "$host_encode_uri",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
+            Self::DecodeURI => HostImportSpec {
+                module: "host",
+                name: "decodeURI",
+                wat_symbol: "$host_decode_uri",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
+            Self::Escape => HostImportSpec {
+                module: "host",
+                name: "escape",
+                wat_symbol: "$host_escape",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
+            Self::Unescape => HostImportSpec {
+                module: "host",
+                name: "unescape",
+                wat_symbol: "$host_unescape",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
+            Self::DateToString => HostImportSpec {
+                module: "host",
+                name: "dateToString",
+                wat_symbol: "$host_date_to_string",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
+            Self::DateGetLocalTimeField => HostImportSpec {
+                module: "host",
+                name: "dateGetLocalTimeField",
+                wat_symbol: "$host_date_get_local_time_field",
+                abi: HostAbi::NodeShim,
+                params: "param i32 i32",
+                result: "result i32",
+            },
+            Self::DateToISOString => HostImportSpec {
+                module: "host",
+                name: "dateToISOString",
+                wat_symbol: "$host_date_to_iso_string",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
+            Self::DateGetTimezoneOffset => HostImportSpec {
+                module: "host",
+                name: "dateGetTimezoneOffset",
+                wat_symbol: "$host_date_get_timezone_offset",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
+        }
+    }
+
+    /// Get the flat import name for manifest (derived from spec).
+    /// Kept for future manifest emission capabilities.
+    #[allow(dead_code)]
+    pub const fn manifest_name(self) -> &'static str {
+        match self {
+            Self::FdRead => "wasi_snapshot_preview1.fd_read",
+            Self::FdWrite => "wasi_snapshot_preview1.fd_write",
+            Self::PathOpen => "wasi_snapshot_preview1.path_open",
+            Self::FdClose => "wasi_snapshot_preview1.fd_close",
+            Self::WasiProcExit => "wasi_snapshot_preview1.proc_exit",
+            Self::ClockTimeGet => "wasi_snapshot_preview1.clock_time_get",
+            Self::ClockResGet => "wasi_snapshot_preview1.clock_res_get",
+            Self::RandomGet => "wasi_snapshot_preview1.random_get",
+            Self::ArgsSizesGet => "wasi_snapshot_preview1.args_sizes_get",
+            Self::ArgsGet => "wasi_snapshot_preview1.args_get",
+            Self::EnvironSizesGet => "wasi_snapshot_preview1.environ_sizes_get",
+            Self::EnvironGet => "wasi_snapshot_preview1.environ_get",
+            Self::FsReadFileSync => "host.fs.readFileSync",
+            Self::FsWriteFileSync => "host.fs.writeFileSync",
+            Self::FsAppendFileSync => "host.fs.appendFileSync",
+            Self::ProcessExit => "host.process.exit",
+            Self::PathJoin => "host.path.join",
+            Self::PathResolve => "host.path.resolve",
+            Self::PathBasename => "host.path.basename",
+            Self::PathDirname => "host.path.dirname",
+            Self::CryptoRandomBytes => "host.crypto.randomBytes",
+            Self::EncodeURI => "host.encodeURI",
+            Self::DecodeURI => "host.decodeURI",
+            Self::Escape => "host.escape",
+            Self::Unescape => "host.unescape",
+            Self::DateToString => "host.dateToString",
+            Self::DateGetLocalTimeField => "host.dateGetLocalTimeField",
+            Self::DateToISOString => "host.dateToISOString",
+            Self::DateGetTimezoneOffset => "host.dateGetTimezoneOffset",
+        }
+    }
+}

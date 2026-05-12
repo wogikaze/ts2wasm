@@ -22,7 +22,7 @@ use super::{
 /// (console.log-based programs without functions or modules).
 pub(crate) fn emit_wasm_binary_mvp(program: &LoweredProgram) -> Result<Vec<u8>, Diagnostic> {
     let stdout = hello_stdout(program)?;
-    let link_plan = RuntimeLinkPlan::from_program(program);
+    let link_plan = crate::runtime_link_plan::build_runtime_link_plan(program);
 
     // Check that the runtime link plan includes console.log support
     if link_plan

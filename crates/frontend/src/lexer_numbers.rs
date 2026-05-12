@@ -26,7 +26,8 @@ impl<'a> Lexer<'a> {
                         .to_owned(),
                     span: Some(Span { start, end }),
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             self.advance_char();
             if digits.len() > 1 && self.source[start..].starts_with('0') {
@@ -39,7 +40,8 @@ impl<'a> Lexer<'a> {
                         end: self.cursor,
                     }),
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             if self.source[start..self.cursor - 1].contains('_') {
                 return Err(Diagnostic {
@@ -51,7 +53,8 @@ impl<'a> Lexer<'a> {
                         end: self.cursor,
                     }),
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             return Ok(SpannedToken {
                 kind: Token::BigIntLiteral(self.source[start..self.cursor].to_owned()),
@@ -67,13 +70,14 @@ impl<'a> Lexer<'a> {
         let value = match self.number_value(&digits, radix, start) {
             Ok(v) => v,
             Err(_) => {
-                // Number too large for i32 — emit as BigInt literal
-                return Ok(SpannedToken {
-                    kind: Token::BigIntLiteral(self.source[start..self.cursor].to_owned()),
-                    span: Span {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "number too large".to_owned(),
+                    span: Some(Span {
                         start,
                         end: self.cursor,
-                    },
+                    }),
+                    phase: None,
                 });
             }
         };
@@ -169,7 +173,8 @@ impl<'a> Lexer<'a> {
                         end: exponent_start,
                     }),
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             if negative_exponent {
                 return Err(Diagnostic {
@@ -191,7 +196,8 @@ impl<'a> Lexer<'a> {
                     end: self.cursor,
                 }),
 
-                phase: None,})?;
+                phase: None,
+            })?;
             digits.extend(std::iter::repeat_n('0', zeros));
         }
 
@@ -247,7 +253,8 @@ impl<'a> Lexer<'a> {
                     end: self.cursor,
                 }),
 
-                phase: None,});
+                phase: None,
+            });
         }
 
         if previous_was_separator {
@@ -279,7 +286,8 @@ impl<'a> Lexer<'a> {
                     end: self.cursor,
                 }),
 
-                phase: None,})?;
+                phase: None,
+            })?;
             return Ok(value as i32);
         }
 
@@ -291,7 +299,8 @@ impl<'a> Lexer<'a> {
                 end: self.cursor,
             }),
 
-            phase: None,})
+            phase: None,
+        })
     }
 
     fn invalid_numeric_separator(&self, start: usize, message: &str) -> Diagnostic {
@@ -303,8 +312,8 @@ impl<'a> Lexer<'a> {
                 end: self.cursor,
             }),
 
-
-                phase: None,}
+            phase: None,
+        }
     }
 
     fn prefixed_bigint_literal(
@@ -333,7 +342,8 @@ impl<'a> Lexer<'a> {
                         end: cursor + 1,
                     }),
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             if let Some(end) = self.invalid_prefixed_bigint_end(cursor) {
                 return Err(Diagnostic {
@@ -341,7 +351,8 @@ impl<'a> Lexer<'a> {
                     message: format!("issue-244: invalid {radix_name} BigInt literal"),
                     span: Some(Span { start, end }),
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             return Ok(None);
         }
@@ -353,7 +364,8 @@ impl<'a> Lexer<'a> {
                     message: format!("issue-244: invalid {radix_name} BigInt literal"),
                     span: Some(Span { start, end }),
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             return Ok(None);
         }
@@ -442,7 +454,8 @@ impl<'a> Lexer<'a> {
                     end: cursor + 1,
                 }),
 
-                phase: None,});
+                phase: None,
+            });
         }
 
         Ok(())

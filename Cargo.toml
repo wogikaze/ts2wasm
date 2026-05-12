@@ -2,10 +2,17 @@
 members = [
     "crates/cli",
     "crates/shared",
+    "crates/source",
+    "crates/diagnostic",
+    "crates/syntax",
+    "crates/resolve",
+    "crates/semantics",
     "crates/frontend",
     "crates/ir",
     "crates/runtime-abi",
+    "crates/runtime-catalog",
     "crates/backend-wasm",
+    "crates/backend-core",
     "crates/compiler",
 ]
 resolver = "3"

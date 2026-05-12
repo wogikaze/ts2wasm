@@ -645,7 +645,7 @@ impl Parser {
                 return Ok(false);
             }
         }
-        // if '{' follows, skip balanced brace block
+        // if left brace follows, skip balanced brace block
         if matches!(self.peek(), Some(Token::LeftBrace)) {
             let span = self.peek_span().unwrap_or(Span {
                 start: self.cursor,

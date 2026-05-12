@@ -305,13 +305,13 @@ fn dump_ast_unparse_erases_ambient_declarations() {
 
 #[test]
 fn dump_ast_reports_ambient_module_as_module_unsupported() {
-    let output = run_dump(
+    let stderr = run_dump_error(
         &["--ast", "--unparse"],
         "declare module \"fs\" { export var value: string; }",
     );
 
-    // Ambient module declarations are erased (no runtime impact)
-    assert_eq!(output, "");
+    assert!(stderr.contains("[UnsupportedTypeScriptSyntax]"), "{stderr}");
+    assert!(stderr.contains("module augmentation"), "{stderr}");
 }
 
 #[test]

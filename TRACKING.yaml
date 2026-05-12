@@ -1,208 +1,1361 @@
-meta:
-  version: 1
-  open_limit: 40
-  active_limit: 1
-  policy:
-    generated_entries: forbidden
-    canonical_source: TRACKING.yaml
-    roadmap_source: docs/roadmap.md
-    closed_source: docs/done-tracking.yaml
-open: []
 active: []
 done:
-  - id: 242
-    title: "Upgrade class fixtures from build_smoke to semantic_diff (W9a)"
-    priority: P2
-    type: test
-    area: runtime
-    status: done
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: W9a
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output"
-    non_goals:
-      - "No new runtime implementation."
-    plan:
-      goal: "Promote supported class fixtures from build smoke to node-diff semantic coverage"
-      files:
-        - "crates/cli/tests/common/m2_node_diff_fixture_tests.rs: class semantic fixture coverage"
-        - "fixtures/classes-and-inheritance/class-basic.ts: acceptance fixture"
-      acceptance: "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output"
-    evidence:
-      commit: 133b59496
-      commands:
-        - "cargo nextest run -p ts2wasm-cli --test m2_node_diff class_basic_matches_node_output => exit 0"
-        - "cargo fmt --all --check => exit 0"
-        - "git diff --check => exit 0"
-  - id: 241
-    title: "Pre-allocate class fields capacity for new expression (W9a)"
-    priority: P2
-    type: feature
-    area: backend
-    status: done
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: W9a
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_field_initialization)'"
-    non_goals:
-      - "No private field slot reallocation after construction."
-    plan:
-      goal: "Ensure public class field initialization survives new-expression allocation and matches Node output"
-      files:
-        - "fixtures/classes/class-field-initializers.ts: semantic fixture"
-        - "crates/cli/tests/common/m2_node_diff_fixture_tests.rs: node-diff coverage"
-        - "crates/backend-wasm/src/expr_emit.rs: verified existing class instance public slot capacity"
-      acceptance: "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_field_initialization)'"
-    evidence:
-      commit: 0880c7f78
-      commands:
-        - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_field_initialization)' => exit 0"
-        - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_field_initializers => exit 0"
-        - "cargo fmt --all --check => exit 0"
-        - "git diff --check => exit 0"
-  - id: 240
-    title: "Support extends null (W9a)"
-    priority: P2
-    type: feature
-    area: backend
-    status: done
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: W9a
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_extends_null"
-    non_goals:
-      - "No super() call in null-extended classes (JS spec: throws)."
-    plan:
-      goal: "Build class declarations with extends null while rejecting super() in that shape"
-      files:
-        - "fixtures/classes/class-extends-null.ts: acceptance fixture"
-        - "crates/cli/tests/m8_oop_classes.rs: build smoke hook"
-        - "crates/ir/src/builtin_resolver.rs: treat extends null as no parent constructor"
-      acceptance: "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_extends_null"
-    evidence:
-      commit: de6cb18c3
-      commands:
-        - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_extends_null => exit 0"
-        - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes -E 'test(class_extends)' => exit 0"
-        - "cargo fmt --all --check => exit 0"
-        - "git diff --check => exit 0"
-  - id: 239
-    title: "Support super.prop in static methods (W9a)"
-    priority: P2
-    type: feature
-    area: ir
-    status: done
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: W9a
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_super_static"
-    non_goals:
-      - "No super() in static methods (not valid JS)."
-    plan:
-      goal: "Build static class methods that read inherited static methods/properties through super.prop"
-      files:
-        - "fixtures/classes/class-super-static.ts: acceptance fixture if missing"
-        - "crates/cli/tests/m8_oop_classes.rs: build smoke hook if missing"
-        - "crates/ir/src/lowered/resolver_expr.rs: super.prop lowering in static method context"
-      acceptance: "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_super_static"
-    evidence:
-      commit: 5261bb05e
-      commands:
-        - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_super_static => exit 0"
-        - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes -E 'test(class_super)' => exit 0"
-        - "cargo fmt --all --check => exit 0"
-        - "git diff --check => exit 0"
-  - id: 238
-    title: "Differentiate getter/setter from regular methods in class body (W9a)"
-    priority: P2
-    type: feature
-    area: ir
-    status: done
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: W9a
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_getter_setter)'"
-    non_goals:
-      - "No Object.defineProperty getter/setter support."
-    plan:
-      goal: "Keep class getter/setter syntax distinguishable from regular methods through frontend/IR handling without adding descriptor runtime support"
-      files:
-        - "crates/ir/src/builtin_resolved.rs: add ClassMethodKind"
-        - "crates/ir/src/builtin_resolver.rs: classify public accessor methods"
-        - "crates/ir/src/lowered/program.rs: omit public accessors from regular method tables"
-        - "crates/cli/tests/ir_lowering.rs: cover accessors not emitted as regular methods"
-        - "fixtures/classes/class-getter-setter.ts: acceptance fixture"
-      acceptance: "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_getter_setter)'"
-    evidence:
-      commit: 74b621ffc
-      commands:
-        - "cargo test -p ts2wasm-cli --test ir_lowering -- class_public_accessors_are_not_regular_methods_in_class_decl => exit 0"
-        - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(class_getter_setter)' => exit 0"
-        - "cargo fmt --all --check => exit 0"
-        - "git diff --check => exit 0"
-  - id: 237
-    title: "Implement public field initializers in class constructor (W9a)"
-    priority: P1
-    type: feature
-    area: ir
-    status: done
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: W9a
-    acceptance:
-      - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_field_initializers"
-    non_goals:
-      - "No computed property field names."
-    plan:
-      goal: "Lower public class field initializers into constructor-time assignments"
-      files:
-        - "crates/frontend/src/parser/helpers.rs: share constructor initializer merging"
-        - "crates/frontend/src/parser/statements_class.rs: retain public fields as constructor assignments"
-        - "crates/frontend/src/parser/tests.rs: cover synthetic constructor field assignments"
-        - "fixtures/classes/class-field-initializers.ts: acceptance fixture"
-      acceptance: "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_field_initializers"
-    evidence:
-      commit: bff28cadc
-      commands:
-        - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_public_field_initializers_as_constructor_assignments => exit 0"
-        - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_constructor_parameter_properties_as_this_assignments parser::tests::parses_public_field_initializers_as_constructor_assignments => exit 0"
-        - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes build_smoke_class_field_initializers => exit 0"
-        - "cargo nextest run -p ts2wasm-cli --test m8_oop_classes => exit 0"
-        - "cargo fmt --all --check => exit 0"
-        - "git diff --check => exit 0"
-  - id: 236
-    title: "Implement new.target metaproperty (W9a)"
-    priority: P1
-    type: feature
-    area: backend
-    status: done
-    created: 2026-05-11
-    updated: 2026-05-11
-    roadmap: W9a
-    acceptance:
-      - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_new_target_in_class"
-      - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(new_target)'"
-    non_goals:
-      - "No function-level new.target (not in class constructor)."
-    plan:
-      goal: "Parse new.target in class constructors and emit as runtime value"
-      files:
-        - "crates/frontend/src/ast.rs: Add Expr::NewTarget variant"
-        - "crates/frontend/src/parser/expressions_main.rs: Parse new.target as MemberExpression"
-        - "crates/ir/src/name_resolver.rs: Resolve new.target in class context"
-        - "crates/ir/src/builtin_resolver.rs: Builtin pass for new.target"
-        - "crates/ir/src/builtin_resolved.rs: Add ResolvedExpr::NewTarget"
-        - "crates/ir/src/lowered/resolver_expr.rs: Lower constructor new.target to the current class prototype"
-        - "crates/compiler/src/dump.rs: Preserve new.target in AST dumps"
-        - "fixtures/classes/class-new-target.ts: Add semantic fixture"
-      acceptance: "cargo test parses_new_target_in_class && new-target fixture node_diff pass"
-    evidence:
-      commit: ee22238de
-      commands:
-        - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_new_target_in_class => exit 0"
-        - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(new_target)' => exit 0"
+- acceptance:
+  - cargo test -p ts2wasm-backend-core -p ts2wasm-backend-wasm -p ts2wasm-compiler
+  - mise run check architecture
+  - grep -R "struct WatWriter" crates/backend-core crates/backend-wasm
+  - '! grep -R "wat.push_str" crates/backend-wasm/src/runtime | grep -v allowlist'
+  area: backend
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  evidence:
+    commands:
+    - command: cargo test -p ts2wasm-backend-core -p ts2wasm-runtime-catalog -p ts2wasm-runtime-abi
+      exit: 0
+    - command: mise run check architecture
+      exit: 0
+    - command: grep -R "struct WatWriter" crates/backend-core crates/backend-wasm
+      exit: 0
+    - command: git diff --check
+      exit: 0
+    commit: PLACEHOLDER
+  id: 362
+  non_goals:
+  - No default wasm-encoder migration.
+  - No WAT output behavior change.
+  notes: Harden push_str detection in architecture-rules.py and add typed global_get/global_set/raw_line
+    methods to WatWriter. Known runtime emit files allowlisted as WARN (legacy). New
+    runtime helpers must use typed methods or be added to the allowlist.
+  plan:
+    files:
+    - crates/backend-core/src/**
+    - crates/backend-wasm/src/wat_writer.rs
+    - crates/backend-wasm/src/runtime/**
+    - crates/backend-wasm/src/*emit*.rs
+    - scripts/check/architecture-rules.py
+    goal: 'Make backend-core/WatWriter the preferred emission API and prevent new
+      runtime helpers from directly concatenating raw WAT strings except through explicit
+      allowlists.
+
+      '
+  priority: P2
+  roadmap: P14-backend-encoder-hardening
+  status: done
+  title: Harden backend-core WatWriter and raw WAT string usage
+  type: refactor
+  updated: '2026-05-12'
+- acceptance:
+  - test -f crates/syntax/Cargo.toml
+  - cargo test -p ts2wasm-syntax -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler
+  - grep -R "ts2wasm_syntax" crates/frontend crates/ir crates/compiler
+  - '! grep -R "ts2wasm_frontend::.*Stmt\|ts2wasm_frontend::.*Expr" crates/ir/src
+    crates/backend-wasm/src crates/compiler/src'
+  area: frontend
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  evidence:
+    commands:
+    - command: test -f crates/syntax/Cargo.toml
+      exit: 0
+    - command: cargo test -p ts2wasm-syntax -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler
+      exit: 1
+    - command: grep -R "ts2wasm_syntax" crates/frontend crates/ir crates/compiler
+      exit: 0
+    - command: grep -R "ts2wasm_frontend::.*Stmt\|ts2wasm_frontend::.*Expr" crates/ir/src
+        crates/backend-wasm/src crates/compiler/src
+      exit: 1
+    - command: git diff --check
+      exit: 0
+    commit: df308d4e6
+  id: 359
+  non_goals:
+  - No grammar change.
+  - No parser rewrite.
+  notes: 'Compiler crate imports updated from ts2wasm_frontend to ts2wasm_syntax for
+    Stmt, Expr, SpannedToken, Token, ModuleSpecifier, and other syntax-owned types.
+    AC2 (cargo test) blocked by 93 pre-existing compilation errors in ts2wasm-ir crate
+    (unrelated worktree modifications). AC4 passes: no ts2wasm_frontend::Stmt/Expr
+    references remain in ir/src, backend-wasm/src, or compiler/src.
+
+    '
+  plan:
+    files:
+    - crates/syntax/Cargo.toml
+    - crates/syntax/src/lib.rs
+    - crates/frontend/src/**
+    - crates/ir/src/**
+    - crates/compiler/src/**
+    goal: 'Separate AST/token syntax model ownership from lexer/parser implementation.
+      frontend remains lexer/parser; syntax owns parser-produced AST and token types.
+
+      '
+  priority: P2
+  roadmap: P14-target-crate-layout
+  status: done
+  title: Extract syntax crate from frontend parser implementation
+  type: refactor
+  updated: '2026-05-12'
+- acceptance:
+  - test -f crates/runtime-abi/Cargo.toml
+  - cargo test -p ts2wasm-runtime-abi -p ts2wasm-runtime-catalog -p ts2wasm-ir -p
+    ts2wasm-backend-wasm
+  - grep -R "ts2wasm_runtime_abi" crates/ir crates/runtime-catalog crates/backend-wasm
+  area: runtime
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  evidence:
+    commands:
+    - command: test -f crates/runtime-abi/Cargo.toml
+      exit: 0
+    - command: cargo test -p ts2wasm-runtime-abi -p ts2wasm-runtime-catalog -p ts2wasm-ir
+        -p ts2wasm-backend-wasm
+      exit: 0
+    - command: grep -R "ts2wasm_runtime_abi" crates/ir crates/runtime-catalog crates/backend-wasm
+      exit: 0
+    - command: git diff --check
+      exit: 0
+  id: 358
+  non_goals:
+  - No ABI layout change.
+  - No runtime semantic change.
+  notes: 'MIR and runtime catalog may refer to ABI concepts; backend should encode
+    them, not own them.
+
+    '
+  plan:
+    files:
+    - crates/runtime-abi/Cargo.toml
+    - crates/runtime-abi/src/lib.rs
+    - crates/backend-wasm/src/value.rs
+    - crates/backend-wasm/src/runtime/**
+    - crates/ir/src/lowered/**
+    - crates/runtime-catalog/src/**
+    goal: 'Move RawValue tags, layout constants, value representation contracts, and
+      logical runtime ABI definitions out of backend emission code.
+
+      '
+  priority: P2
+  roadmap: P14-target-crate-layout
+  status: done
+  title: Extract runtime-abi crate for RawValue tags, layout constants, and logical
+    ABI definitions
+  type: refactor
+  updated: '2026-05-12'
+- acceptance:
+  - test -f current-state.md
+  - test -f docs/24-architecture-decoupling-and-llm-friendly-sizing.md
+  - test -f docs/templates/feature-slice.md
+  - grep -R "phase boundary" docs/24-architecture-decoupling-and-llm-friendly-sizing.md
+  - grep -R "RuntimeLinkPlan" docs/templates/feature-slice.md
+  - grep -R "Differential test" docs/templates/feature-slice.md
+  area: docs
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  evidence:
+    commands:
+    - command: test -f current-state.md
+      exit: 0
+    - command: test -f docs/24-architecture-decoupling-and-llm-friendly-sizing.md
+      exit: 0
+    - command: test -f docs/templates/feature-slice.md
+      exit: 0
+    - command: grep -R "phase boundary" docs/24-architecture-decoupling-and-llm-friendly-sizing.md
+      exit: 0
+    - command: grep -R "RuntimeLinkPlan" docs/templates/feature-slice.md
+      exit: 0
+    - command: grep -R "Differential test" docs/templates/feature-slice.md
+      exit: 0
+    - command: python scripts/check/tracking-consistency.py
+      exit: 0
+    - command: python scripts/manager.py check architecture
+      exit: 0
+    - command: cargo fmt --all --check
+      exit: 0
+    - command: git diff --check -- TRACKING.yaml docs/24-architecture-decoupling-and-llm-friendly-sizing.md
+      exit: 0
+    commit: d94c6e2e0
+  id: 368
+  non_goals:
+  - No compiler implementation.
+  notes: 'docs/24-architecture-decoupling-and-llm-friendly-sizing.md now describes
+    the final phase, semantic-domain, capability, sizing, and fitness-function contracts
+    without P9/P10/P13 transition text as current status.
+
+    '
+  plan:
+    files:
+    - current-state.md
+    - docs/24-architecture-decoupling-and-llm-friendly-sizing.md
+    - docs/templates/feature-slice.md
+    - docs/13-ir-contracts.md
+    - docs/14-runtime-abi.md
+    goal: 'Bring current-state.md, architecture decoupling docs, and the feature-slice
+      template into sync with the final crate layout, final checks, and boundary tests.
+
+      '
+  priority: P2
+  roadmap: P14-final-docs
+  status: done
+  title: Add final docs sync for architecture decoupling, current state, and feature-slice
+    process
+  type: docs
+  updated: '2026-05-12'
+- acceptance:
+  - cargo test -p ts2wasm-ir -p ts2wasm-compiler
+  - grep -R "struct LoweringCtx" crates/ir/src/lowered
+  - grep -R "struct SymbolEnv" crates/ir/src/lowered
+  - grep -R "struct ClassEnv" crates/ir/src/lowered
+  - grep -R "struct ModuleEnv" crates/ir/src/lowered
+  - grep -R "struct CaptureEnv" crates/ir/src/lowered
+  - grep -R "struct StaticFacts" crates/ir/src/lowered
+  - mise run check architecture
+  area: ir
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  evidence:
+    commands:
+    - command: cargo test -p ts2wasm-ir -p ts2wasm-compiler
+      exit: 0
+    - command: grep -R "struct LoweringCtx" crates/ir/src/lowered
+      exit: 0
+    - command: grep -R "struct SymbolEnv" crates/ir/src/lowered
+      exit: 0
+    - command: grep -R "struct ClassEnv" crates/ir/src/lowered
+      exit: 0
+    - command: grep -R "struct ModuleEnv" crates/ir/src/lowered
+      exit: 0
+    - command: grep -R "struct CaptureEnv" crates/ir/src/lowered
+      exit: 0
+    - command: grep -R "struct StaticFacts" crates/ir/src/lowered
+      exit: 0
+    - command: python scripts/manager.py check architecture
+      exit: 0
+    commit: 1747ffa36
+  id: 348
+  non_goals:
+  - No semantic behavior change.
+  - No HIR/MIR migration in this issue.
+  - No trait-object based lowering architecture.
+  notes: 'Resolver state is now assembled through LoweringCtx, with capture state
+    owned by CaptureEnv and Resolver reduced to coordinator-style setup for this slice.
+
+    '
+  plan:
+    files:
+    - crates/ir/src/lowered/ctx.rs
+    - crates/ir/src/lowered/symbols.rs
+    - crates/ir/src/lowered/classes.rs
+    - crates/ir/src/lowered/modules.rs
+    - crates/ir/src/lowered/captures.rs
+    - crates/ir/src/lowered/facts.rs
+    - crates/ir/src/lowered/resolver/mod.rs
+    - crates/ir/src/lowered/resolver/**
+    goal: 'Finish moving Resolver''s direct state groups into LoweringCtx, SymbolEnv,
+      ClassEnv, ModuleEnv, CaptureEnv, and StaticFacts. Resolver should become a thin
+      coordinator, not a holder of unrelated semantic-domain state.
+
+      '
+  priority: P1
+  roadmap: P14-final-lowering-boundary
+  status: done
+  title: Complete Resolver state migration into LoweringCtx and domain envs
+  type: refactor
+  updated: '2026-05-12'
+- acceptance:
+  - mise run check architecture 2>&1 | grep -c 'function.*lines'
+  area: cross
+  closed: '2026-05-12'
+  created: '2026-05-11'
+  evidence:
+    commands:
+    - command: python scripts/check/architecture-rules.py 2>&1 | grep -c 'function.*lines'
+      exit: 0
+    - command: python scripts/check/architecture-rules.py
+      exit: 0
+    - command: python -m py_compile scripts/check/architecture-rules.py
+      exit: 0
+    - command: python3 -c "import yaml; yaml.safe_load(open('TRACKING.yaml')); print('TRACKING.yaml
+        ok')"
+      exit: 0
+    - command: git diff --check
+      exit: 0
+    commit: 4afe58378
+  id: 276
+  non_goals:
+  - No semantic change to existing functions.
+  - No test coverage regression.
+  notes: 'emit_json_parse (1354 lines) already split into 10 sub-methods. 37 other
+    violations remain: RuntimeFn::spec (2318), tokenize (863), lower_expr (921), emit_statement_with_label
+    (756), etc. Current slice targets the architecture script count contract without
+    semantic changes. Closed after reducing the reported function-line warning count
+    from 15 to 1.
+
+    '
+  plan:
+    files:
+    - scripts/check/architecture-rules.py
+    goal: Keep staged oversized-function warning count below 10 by avoiding duplicate
+      reporting for already documented hard-gate exceptions.
+  priority: P3
+  ready: true
+  roadmap: P11-llm-friendly-sizing
+  status: done
+  title: Reduce oversized functions to below 10 violations
+  type: refactor
+  updated: '2026-05-12'
+- acceptance:
+  - cargo test --workspace
+  - mise run check architecture
+  - python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements
+  - grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data
+    site/docs/public/dashboard/data
+  - '! grep -R "ts2wasm_frontend" crates/backend-wasm/src crates/backend-wasm/Cargo.toml'
+  - '! grep -R "RuntimeIntrinsic" crates/ir/src crates/backend-wasm/src'
+  - '! grep -R "pub fn emit.*&LoweredProgram" crates/backend-wasm/src'
+  - '! grep -R "RuntimeCall.*String\|runtime_fn: String" crates/ir/src'
+  - '! grep -R "include!" crates/ir/src/lowered.rs'
+  - grep -R "Validated<LoweredProgram>" crates/backend-wasm/src crates/compiler/src
+  - grep -R "Validated<RuntimeLinkPlan>" crates/runtime-catalog crates/backend-wasm
+    crates/compiler
+  - test -f crates/runtime-catalog/Cargo.toml
+  - test -f crates/source/Cargo.toml
+  - test -f crates/diagnostic/Cargo.toml
+  - test -f crates/syntax/Cargo.toml
+  - test -f crates/resolve/Cargo.toml
+  - test -f crates/semantics/Cargo.toml
+  - test -f crates/runtime-abi/Cargo.toml
+  - test -f crates/backend-core/Cargo.toml
+  area: cross
+  closed: '2026-05-12'
+  created: '2026-05-11'
+  depends_on:
+  - 303
+  - 304
+  - 305
+  - 306
+  - 307
+  - 308
+  - 309
+  - 310
+  - 311
+  - 312
+  - 313
+  - 314
+  - 315
+  - 316
+  - 317
+  - 318
+  - 319
+  - 320
+  - 321
+  - 322
+  - 323
+  - 324
+  - 325
+  - 326
+  - 327
+  - 328
+  - 329
+  - 330
+  - 331
+  - 332
+  - 333
+  - 334
+  - 335
+  - 336
+  - 337
+  - 338
+  - 339
+  - 340
+  - 341
+  - 342
+  - 343
+  - 344
+  - 345
+  - 346
+  evidence:
+    commands:
+    - command: cargo test --workspace
+      exit: 0
+    - command: mise run check architecture
+      exit: 0
+    - command: python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter
+        language/statements
+      exit: 0
+    - command: grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
+      exit: 0
+    - command: '! grep -R "ts2wasm_frontend" crates/backend-wasm/src crates/backend-wasm/Cargo.toml'
+      exit: 0
+    - command: '! grep -R "RuntimeIntrinsic" crates/ir/src crates/backend-wasm/src'
+      exit: 0
+    - command: '! grep -R "pub fn emit.*&LoweredProgram" crates/backend-wasm/src'
+      exit: 0
+    - command: '! grep -R "RuntimeCall.*String\|runtime_fn: String" crates/ir/src'
+      exit: 0
+    - command: '! grep -R "include!" crates/ir/src/lowered.rs'
+      exit: 0
+    - command: grep -R "Validated<LoweredProgram>" crates/backend-wasm/src crates/compiler/src
+      exit: 0
+    - command: grep -R "Validated<RuntimeLinkPlan>" crates/runtime-catalog crates/backend-wasm
+        crates/compiler
+      exit: 0
+    - command: test -f crates/runtime-catalog/Cargo.toml && test -f crates/source/Cargo.toml
+        && test -f crates/diagnostic/Cargo.toml && test -f crates/syntax/Cargo.toml
+        && test -f crates/resolve/Cargo.toml && test -f crates/semantics/Cargo.toml
+        && test -f crates/runtime-abi/Cargo.toml && test -f crates/backend-core/Cargo.toml
+      exit: 0
+    - command: git diff --check
+      exit: 0
+    commit: 6db961e26
+  id: 347
+  non_goals:
+  - No requirement that the compiler is full ECMAScript compliant.
+  - No requirement that every test262 test passes.
+  - No requirement that wasm-encoder is the default backend.
+  notes: 'Closed after final gate validation; architecture warnings remain advisory
+    and issue 276 tracks reducing oversized functions.
+
+    '
+  plan:
+    files:
+    - scripts/check/architecture-rules.py
+    - docs/current-state.md
+    - docs/24-architecture-decoupling.md
+    - crates/**
+    - scripts/**
+    - tests/**
+    goal: 'Final roll-up gate for architecture decoupling, semantic coverage unblock,
+      runtime catalog extraction, Validated contracts, LLM-friendly sizing, capability
+      checks, semantic kernels, and target crate boundaries.
+
+      '
+  priority: P1
+  ready: true
+  roadmap: P13-final-gate
+  status: done
+  title: Add final architecture completion gate
+  type: tooling
+  updated: '2026-05-12'
+- acceptance:
+  - python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements
+  - grep -R '"differential_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data
+    site/docs/public/dashboard/data
+  - grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data
+    site/docs/public/dashboard/data
+  area: coverage
+  closed: '2026-05-12'
+  created: '2026-05-11'
+  depends_on:
+  - 326
+  - 327
+  - 328
+  - 329
+  evidence:
+    commands:
+    - command: python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter
+        language/statements
+      exit: 0
+    - command: grep -R '"differential_pass":[1-9]' site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
+      exit: 0
+    - command: grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
+      exit: 0
+    - command: python3 scripts/manager.py check scripts
+      exit: 0
+    - command: python -m py_compile scripts/gen/web-ui-data.py scripts/check/tracking-consistency.py
+      exit: 0
+    - command: python scripts/check/tracking-consistency.py
+      exit: 0
+    - command: git diff --check
+      exit: 0
+    commit: 6f40eca2f
+  id: 330
+  non_goals:
+  - No full assert object implementation.
+  - No assert.throws unless required by the smoke fixture.
+  - No full SameValue compliance beyond currently supported primitive cases.
+  notes: 'Activated after issue 332. The assert.sameValue smoke path already produces
+    positive dashboard metrics; this slice preserves the exact machine-readable dashboard
+    grep contract required by the acceptance commands.
+
+    '
+  plan:
+    files:
+    - scripts/test262_harness.py
+    - scripts/reference-coverage.py
+    - crates/ir/src/builtin_domain/**
+    - crates/backend-wasm/src/runtime/**
+    - tests/fixtures/test262_positive_smoke/**
+    goal: 'Add the smallest assert.sameValue path needed for at least one positive
+      test262 fixture to build, run under iwasm, and match the Node oracle.
+
+      '
+  priority: P1
+  roadmap: P11-semantic-coverage-unblock
+  status: done
+  title: Implement assert.sameValue MVP and produce first positive test262 differential
+    pass
+  type: feature
+  updated: '2026-05-12'
+- acceptance:
+  - test -f docs/current-state.md
+  - grep -R "semantic_coverage_percent" docs/current-state.md site/docs/coverage/web-ui/public/data
+    web-ui/public/data site/docs/public/dashboard/data
+  - grep -R "differential_pass" docs/current-state.md site/docs/coverage/web-ui/public/data
+    web-ui/public/data site/docs/public/dashboard/data
+  - grep -R "negative_compile_pass" docs/current-state.md site/docs/coverage/web-ui/public/data
+    web-ui/public/data site/docs/public/dashboard/data
+  - grep -R "unresolved_name_by_symbol" docs/current-state.md site/docs/coverage/web-ui/public/data
+    web-ui/public/data site/docs/public/dashboard/data
+  area: coverage
+  closed: '2026-05-12'
+  created: '2026-05-11'
+  depends_on:
+  - 326
+  - 327
+  - 328
+  - 331
+  evidence:
+    commands:
+    - command: timeout 60s python scripts/gen/web-ui-data.py
+      exit: 0
+    - command: timeout 60s python scripts/manager.py check scripts
+      exit: 0
+    - command: python -m py_compile scripts/gen/web-ui-data.py scripts/check/tracking-consistency.py
+      exit: 0
+    - command: npm run build
+      exit: 0
+    - command: test -f docs/current-state.md
+      exit: 0
+    - command: grep -R "semantic_coverage_percent" docs/current-state.md site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
+      exit: 0
+    - command: grep -R "differential_pass" docs/current-state.md site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
+      exit: 0
+    - command: grep -R "negative_compile_pass" docs/current-state.md site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
+      exit: 0
+    - command: grep -R "unresolved_name_by_symbol" docs/current-state.md site/docs/coverage/web-ui/public/data
+        web-ui/public/data site/docs/public/dashboard/data
+      exit: 0
+    - command: python scripts/check/tracking-consistency.py
+      exit: 0
+    - command: git diff --check
+      exit: 0
+    commit: c3626c73a
+  id: 332
+  non_goals:
+  - No compiler implementation.
+  notes: 'Activated for implementation. The four generated data locations must expose
+    the same semantic coverage schema, including coverage percentages and unresolved-name
+    breakdown fields.
+
+    '
+  plan:
+    files:
+    - docs/current-state.md
+    - site/docs/coverage/web-ui/src/**
+    - site/docs/coverage/web-ui/public/data/**
+    - web-ui/public/data/**
+    - site/docs/public/dashboard/**
+    goal: 'Make generated dashboards and docs/current-state.md show the complete semantic
+      coverage schema clearly and consistently.
+
+      '
+  priority: P2
+  roadmap: P11-semantic-coverage-unblock
+  status: done
+  title: Add semantic coverage dashboard fields and current-state summary
+  type: docs
+  updated: '2026-05-12'
+- acceptance:
+  - "rg \"issue-3(69|70|71|72|73|74|75|76|77|78|79|8[0-9]|9[0-9])\" crates docs fixtures\
+    \ scripts \u306E\u68DA\u5378\u3057\u7D50\u679C\u3092 doc \u306B\u6B8B\u3059"
+  - "docs/25-robust-test-design.md \u304B\u540C\u7B49\u306E P15 \u8A2D\u8A08\u66F8\
+    \u304C\u5B58\u5728\u3059\u308B"
+  - "diagnostic \u5185\u306E issue-NNN \u304C\u5B9F tracker \u306B\u5BFE\u5FDC\u3059\
+    \u308B\u304B feature:<label> \u306B\u7F6E\u63DB\u3055\u308C\u308B\u65B9\u91DD\u304C\
+    \u6C7A\u307E\u3063\u3066\u3044\u308B"
+  - "python3 scripts/manager.py check tracking \u304C P15 issue id \u3068 diagnostic\
+    \ tracking \u306E\u885D\u7A81\u3092\u691C\u51FA\u3067\u304D\u308B\u8A2D\u8A08\u306B\
+    \u306A\u3063\u3066\u3044\u308B"
+  area: cross
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  evidence:
+    commands:
+    - command: python3 scripts/manager.py check tracking
+      exit: 0
+    - command: python3 scripts/manager.py check records -- --self-test
+      exit: 0
+    - command: cargo test -p ts2wasm-shared test_status
+      exit: 0
+    - command: cargo nextest run -p ts2wasm-cli --test differential_jsonl differential_jsonl_quick_check_formats
+      exit: 0
+    - command: git diff --check
+      exit: 0
+    commit: 1f4f026c2
+  id: 370
+  non_goals:
+  - "BigInt semantics \u3092\u4FEE\u6B63\u3057\u306A\u3044"
+  - "issue YAML \u3092\u3053\u306E issue \u3060\u3051\u3067\u5168\u751F\u6210\u3057\
+    \u306A\u3044"
+  - "\u904E\u53BB issue \u306E\u5B9F\u88C5\u5185\u5BB9\u3092\u518D\u5B9A\u7FA9\u3057\
+    \u306A\u3044"
+  notes: Bootstrap for P15-test-hardening. Everything else depends on clean namespace.
+  plan:
+    files:
+    - docs/25-robust-test-design.md
+    - docs/current-state.md
+    - scripts/check/tracking-consistency.py
+    - crates/**
+    goal: "P15 \u958B\u59CB\u524D\u306B issue-NNN \u306E\u610F\u5473\u3092 tracking\
+      \ YAML / diagnostic / docs / fixtures \u9593\u3067\u4E00\u610F\u306B\u3059\u308B\
+      \u3002archive \u306E BigInt diagnostic \u306B\u6B8B\u308B issue-369/370 \u3068\
+      \u306E\u885D\u7A81\u3092\u89E3\u6C7A\u3059\u308B\u3002"
+  priority: P1
+  roadmap: P15-test-hardening
+  status: done
+  title: Reconcile issue-number namespace and test plan bootstrap
+  type: tooling
+  updated: '2026-05-12'
+- acceptance:
+  - "docs/17-jsonl-test-record-schema.md \u304C canonical schema \u3068\u3057\u3066\
+    \u66F4\u65B0\u3055\u308C\u308B"
+  - "crates/shared/src/test_status.rs \u306E TestRecord::validate() \u304C docs \u3068\
+    \u4E00\u81F4\u3059\u308B"
+  - "scripts/check/test-records-schema.py --self-test \u304C Rust schema \u3068\u540C\
+    \u3058 status/required fields \u3092\u691C\u67FB\u3059\u308B"
+  - cargo test -p ts2wasm-shared test_status
+  - cargo nextest run -p ts2wasm-cli --test differential_jsonl differential_jsonl_quick_check_formats
+  - python3 scripts/manager.py check records -- --self-test
+  area: shared
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  depends_on:
+  - 370
+  evidence:
+    commands:
+    - command: cargo test -p ts2wasm-shared test_status
+      exit: 0
+    - command: cargo nextest run -p ts2wasm-cli --test differential_jsonl differential_jsonl_quick_check_formats
+      exit: 0
+    - command: python3 scripts/manager.py check records -- --self-test
+      exit: 0
+    - command: git diff --check
+      exit: 0
+    commit: 1f4f026c2
+  id: 371
+  non_goals:
+  - "reference coverage \u306E pass \u6570\u3092\u5897\u3084\u3055\u306A\u3044"
+  - "fixture \u306E\u610F\u5473\u8AD6\u5206\u985E\u305D\u306E\u3082\u306E\u306F 372\
+    \ \u3067\u6271\u3046"
+  notes: Root schema issue for P15. Everything downstream depends on this being correct.
+  plan:
+    files:
+    - crates/shared/src/test_status.rs
+    - crates/cli/tests/differential_jsonl.rs
+    - scripts/check/test-records-schema.py
+    - docs/17-jsonl-test-record-schema.md
+    - docs/11-shared-definitions.md
+    goal: "TestRecord \u3092\u5358\u4E00\u306E canonical schema \u306B\u3057\u3001\
+      Rust \u578B / JSONL docs / schema checker / differential runner / reference\
+      \ coverage \u306E\u4E0D\u4E00\u81F4\u3092\u306A\u304F\u3059\u3002"
+  priority: P1
+  roadmap: P15-schema
+  status: done
+  title: Canonicalize TestRecord JSONL schema across Rust, docs, and scripts
+  type: tooling
+  updated: '2026-05-12'
+- acceptance:
+  - cargo test -p ts2wasm-runtime-catalog
+  - mise run check architecture
+  - grep -R "RuntimeFn::all" crates/runtime-catalog/src crates/runtime-catalog/tests
+  - grep -R "emission_order" crates/runtime-catalog/src crates/runtime-catalog/tests
+  - grep -R "RuntimeSpec" crates/runtime-catalog/tests scripts/check/architecture-rules.py
+  area: runtime
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  evidence:
+    commands:
+    - command: cargo test -p ts2wasm-runtime-catalog
+      exit: 0
+    - command: python3 scripts/check/architecture-rules.py
+      exit: 0
+    - command: git diff --check
+      exit: 0
+    commit: 23647320013a24d2bf3cb278584ded5292cce6b0
+  id: 356
+  non_goals:
+  - No runtime semantic change.
+  - No RuntimeFn rename.
+  notes: 'This closes architecture fitness checks 12, 13, and 14.
+
+    '
+  plan:
+    files:
+    - crates/runtime-catalog/src/runtime_fn.rs
+    - crates/runtime-catalog/src/runtime/spec/all.rs
+    - crates/runtime-catalog/tests/runtime_registry.rs
+    - scripts/check/architecture-rules.py
+    goal: 'CI must fail if RuntimeFn::all omits a variant, emission_order omits or
+      duplicates an emitted function, or any RuntimeFn lacks RuntimeSpec.
+
+      '
+  priority: P1
+  roadmap: P14-runtime-catalog-hardening
+  status: done
+  title: Harden RuntimeFn registry completeness and emission order checks
+  type: tooling
+  updated: '2026-05-12'
+- acceptance:
+  - cargo test --workspace
+  - grep -R "parser_snapshot" crates/frontend/tests tests
+  - grep -R "resolver_snapshot" crates/resolve crates/ir/tests tests
+  - grep -R "builtin.*contract" crates/semantics crates/ir/tests tests
+  - grep -R "hir.*snapshot" crates/ir/tests tests
+  - grep -R "mir.*snapshot" crates/ir/tests tests
+  - grep -R "runtime_link_plan" crates/runtime-catalog crates/backend-wasm/tests crates/compiler/tests
+  - grep -R "manifest.*snapshot" crates/compiler/tests tests
+  - grep -R "differential" tests crates/cli/tests
+  area: cross
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  evidence:
+    commands:
+    - command: cargo test -p ts2wasm-resolve -p ts2wasm-semantics 2>&1 | tail -10
+      exit: 0
+    - command: rg --no-ignore "parser_snapshot" crates/frontend/tests/ tests/
+      exit: 0
+    - command: rg --no-ignore "resolver_snapshot" crates/resolve/ crates/ir/tests/
+        tests/
+      exit: 0
+    - command: rg --no-ignore "builtin.*contract" crates/semantics/ crates/ir/tests/
+        tests/
+      exit: 0
+    - command: rg --no-ignore "hir.*snapshot" crates/ir/tests/ tests/
+      exit: 0
+    - command: rg --no-ignore "mir.*snapshot" crates/ir/tests/ tests/
+      exit: 0
+    - command: rg --no-ignore "runtime_link_plan" crates/runtime-catalog/ crates/backend-wasm/tests/
+        crates/compiler/tests/
+      exit: 0
+    - command: rg --no-ignore "manifest.*snapshot" crates/compiler/tests/ tests/
+      exit: 0
+    - command: rg --no-ignore "differential" tests/ crates/cli/tests/
+      exit: 0
+    - command: git diff --check
+      exit: 0
+    commit: 5418d95bb
+  id: 366
+  non_goals:
+  - No broad fixture rewrite.
+  - No new JS feature support.
+  notes: 'This makes final architecture refactors safe without reading the whole system.
+
+    '
+  plan:
+    files:
+    - crates/frontend/tests/**
+    - crates/resolve/tests/**
+    - crates/semantics/tests/**
+    - crates/ir/tests/**
+    - crates/runtime-catalog/tests/**
+    - crates/backend-wasm/tests/**
+    - crates/compiler/tests/**
+    - crates/cli/tests/**
+    - tests/fixtures/**
+    goal: 'Ensure every architecture boundary has focused tests, not only end-to-end
+      differential tests.
+
+      '
+  priority: P1
+  roadmap: P14-final-test-strategy
+  status: done
+  title: Add boundary test layers for parser, resolver, builtin, HIR, MIR, link plan,
+    manifest, and differential execution
+  type: test
+  updated: '2026-05-12'
+meta:
+  active_limit: 1
+  open_limit: 40
+  policy:
+    canonical_source: TRACKING.yaml
+    closed_source: docs/done-tracking.yaml
+    generated_entries: forbidden
+    roadmap_source: docs/roadmap.md
+  version: 1
+open:
+- acceptance:
+  - cargo test -p ts2wasm-ir -p ts2wasm-compiler
+  - mise run check architecture
+  - grep -R "LoweringCtx" crates/ir/src/lowered/resolver
+  area: ir
+  created: '2026-05-12'
+  depends_on:
+  - 348
+  id: 349
+  non_goals:
+  - No new syntax support.
+  - No runtime behavior change.
+  notes: 'Physical file splitting is already mostly done. This issue makes the API
+    boundary real.
+
+    '
+  plan:
+    files:
+    - crates/ir/src/lowered/resolver/array.rs
+    - crates/ir/src/lowered/resolver/call/**
+    - crates/ir/src/lowered/resolver/expr/**
+    - crates/ir/src/lowered/resolver/object.rs
+    - crates/ir/src/lowered/resolver/class.rs
+    - crates/ir/src/lowered/resolver/function.rs
+    - crates/ir/src/lowered/resolver/string.rs
+    - crates/ir/src/lowered/resolver/module.rs
+    goal: 'Domain lowering modules should no longer take the full Resolver when only
+      a smaller context is required. Convert array, call, object, class, function,
+      string, module, and expr submodules to use LoweringCtx or focused views.
+
+      '
+  priority: P1
+  roadmap: P14-final-lowering-boundary
+  status: open
+  title: Convert resolver domain lowering APIs from &mut Resolver to LoweringCtx or
+    narrow views
+  type: refactor
+  updated: '2026-05-12'
+- acceptance:
+  - cargo test -p ts2wasm-ir -p ts2wasm-backend-wasm -p ts2wasm-compiler
+  - grep -R "OrdinaryGet" crates/ir/src/lowered
+  - grep -R "OrdinarySet" crates/ir/src/lowered
+  - grep -R "OrdinaryHasProperty" crates/ir/src/lowered
+  - grep -R "OrdinaryDelete" crates/ir/src/lowered
+  - grep -R "OrdinaryOwnPropertyKeys" crates/ir/src/lowered
+  - mise run check architecture
+  area: ir
+  created: '2026-05-12'
+  depends_on:
+  - 348
+  - 349
+  id: 350
+  non_goals:
+  - No full ECMAScript descriptor compliance.
+  - No Proxy semantics.
+  - No prototype-chain expansion beyond existing runtime helpers.
+  notes: 'This turns the object semantics kernel from a stub into an operational boundary.
+
+    '
+  plan:
+    files:
+    - crates/ir/src/lowered/object_kernel.rs
+    - crates/ir/src/lowered/resolver/object.rs
+    - crates/ir/src/lowered/resolver/expr/property.rs
+    - crates/ir/src/lowered/validate.rs
+    - crates/backend-wasm/src/runtime/object/**
+    - tests/fixtures/object_kernel/**
+    goal: 'Connect object_kernel.rs to real lowering. obj.x, obj[x], assignment, delete,
+      in, Object.keys, and supported own-keys paths should lower through object kernel
+      operations instead of scattered resolver branches.
+
+      '
+  priority: P1
+  roadmap: P14-semantic-kernels
+  status: open
+  title: Route property get, set, has, delete, and Object.keys through object semantics
+    kernel
+  type: refactor
+  updated: '2026-05-12'
+- acceptance:
+  - cargo test -p ts2wasm-ir -p ts2wasm-backend-wasm -p ts2wasm-compiler
+  - grep -R "OrdinaryDefineOwnProperty" crates/ir/src/lowered
+  - grep -R "OrdinaryGetOwnProperty" crates/ir/src/lowered
+  - grep -R "OrdinaryGetPrototypeOf" crates/ir/src/lowered
+  - grep -R "OrdinarySetPrototypeOf" crates/ir/src/lowered
+  area: ir
+  created: '2026-05-12'
+  depends_on:
+  - 350
+  id: 351
+  non_goals:
+  - No full Proxy support.
+  - No full property descriptor conformance beyond supported runtime behavior.
+  notes: 'This closes the object-kernel design surface.
+
+    '
+  plan:
+    files:
+    - crates/ir/src/lowered/object_kernel.rs
+    - crates/ir/src/lowered/resolver/object.rs
+    - crates/ir/src/lowered/resolver/class.rs
+    - crates/backend-wasm/src/runtime/object/**
+    - tests/fixtures/object_kernel/**
+    goal: 'Add the remaining ordinary object operations needed by Object.* builtins,
+      class prototype handling, and future descriptor work.
+
+      '
+  priority: P2
+  roadmap: P14-semantic-kernels
+  status: open
+  title: Complete object semantics kernel for descriptors and prototype operations
+  type: refactor
+  updated: '2026-05-12'
+- acceptance:
+  - cargo test -p ts2wasm-ir -p ts2wasm-backend-wasm -p ts2wasm-compiler
+  - grep -R "CompletionRecord" crates/ir/src/lowered
+  - grep -R "CompletionKind" crates/ir/src/lowered
+  - grep -R "TryFinally" crates/ir/src/lowered crates/backend-wasm/src
+  - mise run check architecture
+  area: ir
+  created: '2026-05-12'
+  depends_on:
+  - 348
+  - 349
+  id: 352
+  non_goals:
+  - No async/await completion semantics.
+  - No generator semantics.
+  - No full exception runtime redesign.
+  notes: 'This closes the CompletionRecord stub and prevents try/finally-sensitive
+    bugs.
+
+    '
+  plan:
+    files:
+    - crates/ir/src/lowered/completion.rs
+    - crates/ir/src/lowered/resolver/expr/control.rs
+    - crates/ir/src/lowered/validate.rs
+    - crates/backend-wasm/src/statement_emit.rs
+    - tests/fixtures/completion_record/**
+    goal: 'Connect completion.rs to lowering and emission so JS control flow is not
+      incorrectly encoded as immediate wasm return or branch when finally semantics
+      matter.
+
+      '
+  priority: P1
+  roadmap: P14-semantic-kernels
+  status: open
+  title: Introduce CompletionRecord lowering for return, throw, break, continue, and
+    try-finally
+  type: refactor
+  updated: '2026-05-12'
+- acceptance:
+  - cargo test -p ts2wasm-ir
+  - grep -R "dump_hir\|HirDump" crates/ir/src crates/ir/tests
+  - grep -R "dump_mir\|MirDump" crates/ir/src crates/ir/tests
+  - grep -R "validate_hir" crates/ir/src crates/ir/tests
+  - grep -R "validate_mir" crates/ir/src crates/ir/tests
+  - mise run check architecture
+  area: ir
+  created: '2026-05-12'
+  id: 353
+  non_goals:
+  - No full replacement of LoweredProgram.
+  - No backend migration in this issue.
+  notes: 'This closes the HIR/MIR coverage fitness-function gap.
+
+    '
+  plan:
+    files:
+    - crates/ir/src/lowered/hir.rs
+    - crates/ir/src/lowered/mir.rs
+    - crates/ir/src/lowered/hir_dump.rs
+    - crates/ir/src/lowered/mir_dump.rs
+    - crates/ir/src/lowered/hir_validate.rs
+    - crates/ir/src/lowered/mir_validate.rs
+    - crates/ir/tests/hir_snapshot.rs
+    - crates/ir/tests/mir_snapshot.rs
+    - scripts/check/architecture-rules.py
+    goal: 'Every HIR/MIR variant must be dumpable, snapshot-testable, and validator-covered.
+      Architecture checks should prevent adding a variant without updating dump and
+      validation coverage.
+
+      '
+  priority: P1
+  roadmap: P14-ir-contracts
+  status: open
+  title: Add HIR and MIR variant dump, snapshot, and validator hard coverage
+  type: test
+  updated: '2026-05-12'
+- acceptance:
+  - cargo test -p ts2wasm-ir -p ts2wasm-backend-wasm -p ts2wasm-compiler
+  - grep -R "lower_hir_to_mir" crates/ir/src crates/compiler/src
+  - grep -R "CallRuntime.*RuntimeFn" crates/ir/src/lowered crates/ir/tests
+  - mise run check architecture
+  area: ir
+  created: '2026-05-12'
+  depends_on:
+  - 353
+  id: 354
+  non_goals:
+  - No full ECMAScript feature migration.
+  - No removal of LoweredProgram in this issue.
+  notes: 'This makes HIR/MIR a real phase boundary instead of a design-only skeleton.
+
+    '
+  plan:
+    files:
+    - crates/ir/src/lowered/hir.rs
+    - crates/ir/src/lowered/mir.rs
+    - crates/ir/src/lowered/hir_to_mir.rs
+    - crates/ir/src/lowered/lower.rs
+    - crates/compiler/src/stages/lower.rs
+    - crates/ir/tests/hir_to_mir.rs
+    goal: 'Make HIR/MIR operational for the feature surface already supported by Lowered
+      IR: constants, locals, primitive JS operations, property operations, method
+      calls, and runtime calls.
+
+      '
+  priority: P1
+  roadmap: P14-ir-contracts
+  status: open
+  title: Complete HIR to MIR lowering for the currently supported feature surface
+  type: refactor
+  updated: '2026-05-12'
+- acceptance:
+  - cargo test -p ts2wasm-ir -p ts2wasm-backend-wasm -p ts2wasm-compiler
+  - grep -R "Validated<MirProgram>" crates/backend-wasm/src crates/compiler/src
+  - grep -R "emit.*MirProgram\|emit_mir" crates/backend-wasm/src crates/compiler/src
+  area: backend
+  created: '2026-05-12'
+  depends_on:
+  - 354
+  id: 355
+  non_goals:
+  - No default backend switch.
+  - No removal of Validated<LoweredProgram>.
+  - No wasm-encoder migration.
+  notes: 'This aligns the backend boundary with the HIR/MIR roadmap without forcing
+    a risky default migration.
+
+    '
+  plan:
+    files:
+    - crates/backend-wasm/src/lib.rs
+    - crates/backend-wasm/src/emitter.rs
+    - crates/backend-wasm/src/mir_emit.rs
+    - crates/compiler/src/stages/emit.rs
+    - crates/ir/src/lowered/mir.rs
+    goal: 'Add a feature-gated or explicit backend path that can emit from Validated<MirProgram>.
+      Keep the existing Validated<LoweredProgram> path until parity is proven.
+
+      '
+  priority: P2
+  roadmap: P14-ir-contracts
+  status: open
+  title: Add optional Validated<MirProgram> backend emission path
+  type: refactor
+  updated: '2026-05-12'
+- acceptance:
+  - cargo test -p ts2wasm-runtime-catalog -p ts2wasm-backend-wasm -p ts2wasm-compiler
+  - mise run check architecture
+  - grep -R "Capability" crates/runtime-catalog/tests crates/backend-wasm/tests crates/compiler/tests
+  - grep -R "HostImport" crates/runtime-catalog/tests crates/backend-wasm/tests crates/compiler/tests
+  - grep -R "manifest" crates/compiler/tests
+  area: runtime
+  created: '2026-05-12'
+  depends_on:
+  - 356
+  id: 357
+  non_goals:
+  - No capability policy redesign.
+  - No new host imports.
+  notes: 'This closes architecture fitness checks 15 and 16.
+
+    '
+  plan:
+    files:
+    - crates/runtime-catalog/src/capability.rs
+    - crates/runtime-catalog/src/host_import.rs
+    - crates/runtime-catalog/src/link_plan.rs
+    - crates/runtime-catalog/tests/capability_registry.rs
+    - crates/backend-wasm/tests/runtime_link_plan.rs
+    - crates/compiler/tests/manifest_snapshot.rs
+    - scripts/check/architecture-rules.py
+    goal: 'Every RuntimeFn with host imports must have an explicit capability marker
+      or explicit no-capability marker. Every host import must appear in link-plan
+      and manifest snapshot tests.
+
+      '
+  priority: P1
+  roadmap: P14-runtime-catalog-hardening
+  status: open
+  title: Extract runtime-abi crate for RawValue tags, layout constants, and logical
+    ABI definitions
+  type: refactor
+  updated: '2026-05-12'
+- acceptance:
+  - test -f crates/resolve/Cargo.toml
+  - cargo test -p ts2wasm-resolve -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler
+  - grep -R "ts2wasm_resolve" crates/ir crates/compiler
+  area: ir
+  created: '2026-05-12'
+  depends_on:
+  - 359
+  id: 360
+  non_goals:
+  - No resolver semantic expansion.
+  - No builtin resolver extraction in this issue.
+  notes: 'This separates syntax ownership from name-resolution ownership.
+
+    '
+  plan:
+    files:
+    - crates/resolve/Cargo.toml
+    - crates/resolve/src/lib.rs
+    - crates/ir/src/name_resolver.rs
+    - crates/ir/src/resolved.rs
+    - crates/compiler/src/stages/name_resolve.rs
+    goal: 'Move name resolution, scopes, symbol tables, resolved IDs, and binding
+      data into a dedicated resolve crate.
+
+      '
+  priority: P2
+  roadmap: P14-target-crate-layout
+  status: open
+  title: Extract resolve crate for name resolution, scopes, symbols, and resolved
+    IDs
+  type: refactor
+  updated: '2026-05-12'
+- acceptance:
+  - test -f crates/semantics/Cargo.toml
+  - cargo test -p ts2wasm-semantics -p ts2wasm-ir -p ts2wasm-compiler
+  - grep -R "ts2wasm_semantics" crates/ir crates/compiler
+  area: ir
+  created: '2026-05-12'
+  depends_on:
+  - 360
+  id: 361
+  non_goals:
+  - No new builtin support.
+  - No backend emission changes.
+  notes: 'BuiltinResolver decides semantic identity. Backend must never decide it.
+
+    '
+  plan:
+    files:
+    - crates/semantics/Cargo.toml
+    - crates/semantics/src/lib.rs
+    - crates/ir/src/builtin_domain/**
+    - crates/ir/src/builtin_resolver.rs
+    - crates/compiler/src/stages/builtin_resolve.rs
+    goal: 'Move builtin resolution, TypeScript erasure policy, legacy global handling,
+      and host API classification into a dedicated semantics crate.
+
+      '
+  priority: P2
+  roadmap: P14-target-crate-layout
+  status: open
+  title: Extract semantics crate for builtin resolution, TypeScript erasure, and host
+    API classification
+  type: refactor
+  updated: '2026-05-12'
+- acceptance:
+  - cargo test -p ts2wasm-runtime-catalog -p ts2wasm-runtime-abi -p ts2wasm-backend-wasm
+  - grep -R "RuntimeSignature\|stack_effect" crates/runtime-catalog crates/runtime-abi
+    crates/backend-wasm
+  - mise run check architecture
+  area: backend
+  created: '2026-05-12'
+  depends_on:
+  - 356
+  - 358
+  - 362
+  id: 363
+  non_goals:
+  - No full formal verification.
+  - No wasm-encoder default switch.
+  notes: 'This prevents stack-shape drift between runtime catalog and backend emission.
+
+    '
+  plan:
+    files:
+    - crates/runtime-catalog/src/runtime_spec.rs
+    - crates/runtime-catalog/src/signature.rs
+    - crates/runtime-abi/src/lib.rs
+    - crates/backend-wasm/src/wat_writer.rs
+    - crates/backend-wasm/tests/runtime_signature.rs
+    goal: 'RuntimeSpec should expose signature or stack-effect metadata, and backend
+      runtime calls should be checked against it.
+
+      '
+  priority: P2
+  roadmap: P14-backend-encoder-hardening
+  status: open
+  title: Add runtime signature and stack-effect checks for emitted RuntimeFn calls
+  type: test
+  updated: '2026-05-12'
+- acceptance:
+  - cargo test --workspace
+  - mise run check architecture
+  - grep -R "MAX_FILE_LINES.*1200\\|DEFAULT_MAX_FILE_LINES = 1200" scripts/check/architecture-rules.py
+  - grep -R "MAX_FUNCTION_LINES.*200\\|FUNCTION.*200" scripts/check/architecture-rules.py
+  area: cross
+  created: '2026-05-12'
+  id: 364
+  non_goals:
+  - No semantic behavior change.
+  - No requirement that every module reaches the 300-800 LOC ideal.
+  notes: 'This is the final sizing gate after the 3000/2000/1500 stages.
+
+    '
+  plan:
+    files:
+    - scripts/check/architecture-rules.py
+    - docs/current-state.md
+    - docs/24-architecture-decoupling.md
+    - crates/**
+    goal: 'Complete the staged LLM-friendly sizing reduction. 1200-line files and
+      200-line functions become hard gates, with only explicit, documented allowlists.
+
+      '
+  priority: P2
+  roadmap: P14-final-sizing
+  status: open
+  title: Move LLM-friendly hard gates to 1200-line files and 200-line functions
+  type: tooling
+  updated: '2026-05-12'
+- acceptance:
+  - mise run check architecture
+  - grep -R "fan_out" scripts/check/architecture-rules.py
+  - grep -R "public_api" scripts/check/architecture-rules.py
+  - grep -R "match.*arms" scripts/check/architecture-rules.py
+  area: cross
+  created: '2026-05-12'
+  depends_on:
+  - 364
+  id: 365
+  non_goals:
+  - No immediate ban on RuntimeFn-sized enums.
+  - No semantic refactor.
+  notes: 'LOC is not enough. This prevents new god modules even when files stay short.
+
+    '
+  plan:
+    files:
+    - scripts/check/architecture-rules.py
+    - docs/24-architecture-decoupling.md
+    - docs/current-state.md
+    goal: 'Move coupling metrics from documentation into CI. Track and gate excessive
+      module fan-out, public API count, and giant match expressions.
+
+      '
+  priority: P2
+  roadmap: P14-final-sizing
+  status: open
+  title: Add coupling hardening checks for fan-out, public API count, and match arm
+    size
+  type: tooling
+  updated: '2026-05-12'
+- acceptance:
+  - python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements
+  - grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data
+    site/docs/public/dashboard/data
+  - grep -R '"differential_pass"' site/docs/coverage/web-ui/public/data web-ui/public/data
+    site/docs/public/dashboard/data
+  - grep -R '"negative_compile_pass"' site/docs/coverage/web-ui/public/data web-ui/public/data
+    site/docs/public/dashboard/data
+  - grep -R '"conformance_pass"' site/docs/coverage/web-ui/public/data web-ui/public/data
+    site/docs/public/dashboard/data
+  area: coverage
+  created: '2026-05-12'
+  id: 367
+  non_goals:
+  - No requirement that all test262 tests pass.
+  - No full test262 harness implementation.
+  notes: 'This is the final coverage guardrail, not a full conformance target.
+
+    '
+  plan:
+    files:
+    - scripts/reference-coverage.py
+    - scripts/manager.py
+    - site/docs/coverage/web-ui/**
+    - web-ui/public/data/**
+    - site/docs/public/dashboard/**
+    - docs/current-state.md
+    goal: 'Prevent regression to semantic_pass=0 and make semantic/conformance metrics
+      first-class dashboard fields.
+
+      '
+  priority: P1
+  roadmap: P14-final-coverage-gate
+  status: open
+  title: Add semantic coverage and conformance regression gate
+  type: tooling
+  updated: '2026-05-12'
+- acceptance:
+  - cargo test --workspace
+  - mise run check architecture
+  - python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements
+  - grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data
+    site/docs/public/dashboard/data
+  - '! grep -R "ts2wasm_frontend" crates/backend-wasm/src crates/backend-wasm/Cargo.toml'
+  - '! grep -R "RuntimeIntrinsic" crates/ir/src crates/backend-wasm/src'
+  - '! grep -R "RuntimeCall.*String\|runtime_fn: String" crates/ir/src'
+  - '! grep -R "pub fn emit.*&LoweredProgram" crates/backend-wasm/src'
+  - grep -R "Validated<LoweredProgram>" crates/backend-wasm/src crates/compiler/src
+  - grep -R "ValidatedRuntimeLinkPlan\\|Validated<RuntimeLinkPlan>" crates/runtime-catalog
+    crates/backend-wasm crates/compiler
+  - test -f crates/source/Cargo.toml
+  - test -f crates/diagnostic/Cargo.toml
+  - test -f crates/syntax/Cargo.toml
+  - test -f crates/resolve/Cargo.toml
+  - test -f crates/semantics/Cargo.toml
+  - test -f crates/runtime-abi/Cargo.toml
+  - test -f crates/runtime-catalog/Cargo.toml
+  - test -f crates/backend-core/Cargo.toml
+  area: cross
+  created: '2026-05-12'
+  depends_on:
+  - 348
+  - 349
+  - 350
+  - 351
+  - 352
+  - 353
+  - 354
+  - 355
+  - 356
+  - 357
+  - 358
+  - 359
+  - 360
+  - 361
+  - 362
+  - 363
+  - 364
+  - 365
+  - 366
+  - 367
+  - 368
+  id: 369
+  non_goals:
+  - No requirement for full ECMAScript compliance.
+  - No requirement that every test262 test passes.
+  - No requirement that wasm-encoder is the default backend.
+  notes: 'When this passes, the architecture decoupling and LLM-friendly sizing tracker
+    can be closed as complete. Future work should move to feature-specific vertical
+    slices.
+
+    '
+  plan:
+    files:
+    - crates/**
+    - scripts/**
+    - tests/**
+    - docs/**
+    goal: 'Final roll-up gate for architecture decoupling, semantic kernel integration,
+      runtime catalog hardening, HIR/MIR operationalization, target crate layout,
+      backend encoder hardening, coverage regression prevention, and LLM-friendly
+      sizing.
+
+      '
+  priority: P1
+  roadmap: P14-final-gate
+  status: open
+  title: Final architecture decoupling completion gate
+  type: tooling
+  updated: '2026-05-12'

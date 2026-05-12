@@ -1,4 +1,8 @@
 use crate::runtime_fn::HostImportSpec;
+use crate::wasm_ir::{
+    WasmDataSegment, WasmExport, WasmExportKind, WasmFunction, WasmGlobal, WasmImport, WasmInstr,
+    WasmMemory, WasmModule, WasmValType,
+};
 
 // ---------------------------------------------------------------------------
 // Existing types — preserved exactly.
@@ -365,6 +369,30 @@ impl WatWriter {
         self.line(indent, "(memory.grow)");
     }
 
+    // ---- globals ------------------------------------------------------------
+
+    /// Emit `(global.get $name)`.
+    pub fn global_get(&mut self, indent: usize, name: &str) {
+        self.line(indent, &format!("(global.get {name})"));
+    }
+
+    /// Emit `(global.set $name)`.
+    pub fn global_set(&mut self, indent: usize, name: &str) {
+        self.line(indent, &format!("(global.set {name})"));
+    }
+
+    // ---- raw escape hatch ----------------------------------------------------
+
+    /// Emit a raw WAT line at the given indentation.
+    ///
+    /// This is an explicit alternative to using `push_str` on the internal
+    /// buffer.  Use this when a pattern cannot be expressed via the existing
+    /// typed methods (e.g. multi-line inline expressions, complex inline
+    /// sequences).  New code should prefer typed methods.
+    pub fn raw_line(&mut self, indent: usize, content: &str) {
+        self.line(indent, content);
+    }
+
     // ---- load / store -------------------------------------------------------
 
     /// Emit `(i32.store align=N offset=N)`.
@@ -444,6 +472,197 @@ impl WatWriter {
     /// typed methods.
     pub fn output_mut(&mut self) -> &mut String {
         &mut self.output
+    }
+
+    // ---- typed IR emission (WasmInstr, WasmModule) --------------------------
+
+    /// Emit a single `WasmInstr` at the given indentation level.
+    ///
+    /// Dispatches to the existing typed convenience methods so there is no
+    /// behaviour change — this is just a typed dispatch layer on top of the
+    /// same WAT output.
+    pub fn emit_instr(&mut self, indent: usize, instr: &WasmInstr) {
+        match instr {
+            WasmInstr::LocalGet(id) => self.local_get(indent, *id),
+            WasmInstr::LocalSet(id) => self.local_set(indent, *id),
+            WasmInstr::LocalTee(id) => self.local_tee(indent, *id),
+            WasmInstr::I32Const(v) => self.i32_const(indent, *v),
+            WasmInstr::I64Const(v) => self.i64_const(indent, *v),
+            WasmInstr::Call(name) => self.call(indent, name),
+            WasmInstr::CallDirect(idx) => self.call_direct(indent, *idx),
+            WasmInstr::GlobalGet(name) => {
+                self.line(indent, &format!("(global.get {name})"));
+            }
+            WasmInstr::GlobalSet(name) => {
+                self.line(indent, &format!("(global.set {name})"));
+            }
+            WasmInstr::Drop => self.drop(indent),
+            WasmInstr::Unreachable => self.unreachable(indent),
+            WasmInstr::Nop => self.nop(indent),
+            WasmInstr::Return => self.return_(indent),
+            WasmInstr::Br(target) => self.r#br(indent, target),
+            WasmInstr::BrIf(target) => self.br_if(indent, target),
+            WasmInstr::Select => self.select(indent),
+            WasmInstr::If { result_ty } => match result_ty {
+                Some(ty) => self.if_result(indent, ty),
+                None => self.r#if(indent),
+            },
+            WasmInstr::Then => self.then(indent),
+            WasmInstr::Else => self.r#else(indent),
+            WasmInstr::End => self.end(indent),
+            WasmInstr::Block(label) => self.block(indent, label),
+            WasmInstr::Loop(label) => self.r#loop(indent, label),
+            WasmInstr::I32Eqz => self.i32_eqz(indent),
+            WasmInstr::I32Eq => self.i32_eq(indent),
+            WasmInstr::I32Ne => self.i32_ne(indent),
+            WasmInstr::I32LtS => self.i32_lt_s(indent),
+            WasmInstr::I32LeS => self.i32_le_s(indent),
+            WasmInstr::I32GtS => self.i32_gt_s(indent),
+            WasmInstr::I32GeS => self.i32_ge_s(indent),
+            WasmInstr::I32LtU => self.i32_lt_u(indent),
+            WasmInstr::I32LeU => self.i32_le_u(indent),
+            WasmInstr::I32GtU => self.i32_gt_u(indent),
+            WasmInstr::I32GeU => self.i32_ge_u(indent),
+            WasmInstr::I32Add => self.i32_add(indent),
+            WasmInstr::I32Sub => self.i32_sub(indent),
+            WasmInstr::I32Mul => self.i32_mul(indent),
+            WasmInstr::I32DivS => self.i32_div_s(indent),
+            WasmInstr::I32RemS => self.i32_rem_s(indent),
+            WasmInstr::I32And => self.i32_and(indent),
+            WasmInstr::I32Or => self.i32_or(indent),
+            WasmInstr::I32Xor => self.i32_xor(indent),
+            WasmInstr::I32Shl => self.i32_shl(indent),
+            WasmInstr::I32ShrS => self.i32_shr_s(indent),
+            WasmInstr::I32ShrU => self.i32_shr_u(indent),
+            WasmInstr::I32Clz => self.i32_clz(indent),
+            WasmInstr::I32Ctz => self.i32_ctz(indent),
+            WasmInstr::I32Popcnt => self.i32_popcnt(indent),
+            WasmInstr::I32WrapI64 => self.i32_wrap_i64(indent),
+            WasmInstr::MemorySize => self.memory_size(indent),
+            WasmInstr::MemoryGrow => self.memory_grow(indent),
+            WasmInstr::I32Load { align, offset } => self.i32_load(indent, *align, *offset),
+            WasmInstr::I32Store { align, offset } => self.i32_store(indent, *align, *offset),
+            WasmInstr::Raw(content) => self.line(indent, content),
+        }
+    }
+
+    /// Emit a sequence of `WasmInstr` values at the given indentation level.
+    pub fn emit_instrs(&mut self, indent: usize, instrs: &[WasmInstr]) {
+        for instr in instrs {
+            self.emit_instr(indent, instr);
+        }
+    }
+
+    /// Emit a full `WasmFunction` at module level.
+    ///
+    /// This produces:
+    /// ```wat
+    ///   (func $name (param ...) (result ...)
+    ///     (local ...)
+    ///     <body>
+    ///   )
+    /// ```
+    pub fn emit_function(&mut self, f: &WasmFunction) {
+        self.func_start(&f.symbol);
+        for p in &f.params {
+            self.push_str(&format!("(param {}) ", p.as_str()));
+        }
+        for r in &f.results {
+            self.push_str(&format!("(result {})\n", r.as_str()));
+        }
+        for l in &f.locals {
+            self.line(4, &format!("(local {})", l.as_str()));
+        }
+        self.emit_instrs(4, &f.body);
+        self.func_end();
+    }
+
+    /// Emit a full `WasmModule` (all top-level constructs).
+    ///
+    /// This is a convenience that produces a complete valid WAT module.
+    /// For incremental emission (e.g. mixing typed and untyped output),
+    /// call the individual methods instead.
+    pub fn emit_module(&mut self, module: &WasmModule) {
+        self.open_module();
+
+        for imp in &module.imports {
+            self.line(
+                2,
+                &format!(
+                    "(import \"{}\" \"{}\" (func {} (param {}) (result {})))",
+                    imp.module,
+                    imp.name,
+                    imp.func_symbol,
+                    imp.params
+                        .iter()
+                        .map(|t| t.as_str())
+                        .collect::<Vec<_>>()
+                        .join(" "),
+                    imp.results
+                        .iter()
+                        .map(|t| t.as_str())
+                        .collect::<Vec<_>>()
+                        .join(" "),
+                ),
+            );
+        }
+
+        if let Some(mem) = &module.memory {
+            match &mem.export_name {
+                Some(export) => self.line(
+                    2,
+                    &format!(
+                        "(memory (export \"{export}\") {} {})",
+                        mem.min_pages, mem.max_pages
+                    ),
+                ),
+                None => self.line(2, &format!("(memory {} {})", mem.min_pages, mem.max_pages)),
+            }
+        }
+
+        for g in &module.globals {
+            let mut_str = if g.is_mut { " (mut " } else { " " };
+            let mut_end = if g.is_mut { ")" } else { "" };
+            self.push_str(&format!(
+                "  (global {}{}{}{}) ",
+                g.symbol,
+                mut_str,
+                g.val_type.as_str(),
+                mut_end
+            ));
+            self.emit_instr(2, &g.init);
+            self.line(0, ")");
+        }
+
+        for seg in &module.data_segments {
+            let escaped: String = seg
+                .data
+                .iter()
+                .flat_map(|b| std::ascii::escape_default(*b))
+                .map(|c| c as char)
+                .collect();
+            self.line(
+                2,
+                &format!("(data (i32.const {}) \"{}\")", seg.offset, escaped),
+            );
+        }
+
+        for f in &module.functions {
+            self.emit_function(f);
+        }
+
+        for e in &module.exports {
+            match &e.kind {
+                WasmExportKind::Func(sym) => {
+                    self.export_func(&e.name);
+                }
+                WasmExportKind::Memory => {
+                    self.line(2, &format!("(export \"{}\" (memory 0))", e.name));
+                }
+            }
+        }
+
+        self.close_module();
     }
 }
 
@@ -748,6 +967,48 @@ mod tests {
             ")\n",
         );
         assert_eq!(w.into_string(), expected);
+    }
+
+    #[test]
+    fn wat_writer_emits_backend_core_constructed_module() {
+        let module = WasmModule::new()
+            .memory(WasmMemory::exported(1, 2, "memory"))
+            .data_segment(WasmDataSegment::new(16, b"hi\n".to_vec()))
+            .function(
+                WasmFunction::new("main")
+                    .result(WasmValType::I32)
+                    .local(WasmValType::I32)
+                    .body(vec![
+                        WasmInstr::I32Const(7),
+                        WasmInstr::LocalSet(0),
+                        WasmInstr::LocalGet(0),
+                        WasmInstr::Return,
+                    ]),
+            )
+            .export(WasmExport::func("main", "main"))
+            .export(WasmExport::memory("memory"));
+
+        let mut w = WatWriter::new();
+        w.emit_module(&module);
+
+        assert_eq!(
+            w.into_string(),
+            concat!(
+                "(module\n",
+                "  (memory (export \"memory\") 1 2)\n",
+                "  (data (i32.const 16) \"hi\\n\")\n",
+                "  (func $main (result i32)\n",
+                "    (local i32)\n",
+                "    (i32.const 7)\n",
+                "    (local.set 0)\n",
+                "    (local.get 0)\n",
+                "    (return)\n",
+                "  )\n",
+                "  (export \"main\" (func $main))\n",
+                "  (export \"memory\" (memory 0))\n",
+                ")\n",
+            )
+        );
     }
 
     #[test]

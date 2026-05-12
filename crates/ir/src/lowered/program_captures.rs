@@ -1,7 +1,11 @@
-use crate::builtin_resolved::ResolvedArrayElement;
-use super::*;
+use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
+use std::collections::HashSet;
 
-pub(super) fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], captures: &mut Vec<String>) {
+pub(crate) fn collect_arrow_captures(
+    expr: &ResolvedExpr,
+    params: &[String],
+    captures: &mut Vec<String>,
+) {
     match expr {
         ResolvedExpr::This { .. } => push_capture("this", params, captures),
         ResolvedExpr::NewTarget { .. } => {}
@@ -131,7 +135,7 @@ pub(super) fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], cap
     }
 }
 
-pub(super) fn collect_declared_names_in_stmts(stmts: &[ResolvedStmt], names: &mut HashSet<String>) {
+pub(crate) fn collect_declared_names_in_stmts(stmts: &[ResolvedStmt], names: &mut HashSet<String>) {
     for stmt in stmts {
         match stmt {
             ResolvedStmt::Let(name, _) => {
@@ -206,11 +210,11 @@ pub(super) fn collect_declared_names_in_stmts(stmts: &[ResolvedStmt], names: &mu
     }
 }
 
-pub(super) fn collect_declared_names_in_stmt(stmt: &ResolvedStmt, names: &mut HashSet<String>) {
+pub(crate) fn collect_declared_names_in_stmt(stmt: &ResolvedStmt, names: &mut HashSet<String>) {
     collect_declared_names_in_stmts(std::slice::from_ref(stmt), names);
 }
 
-pub(super) fn collect_stmt_captures(
+pub(crate) fn collect_stmt_captures(
     stmts: &[ResolvedStmt],
     excluded: &HashSet<String>,
     captures: &mut Vec<String>,
@@ -223,7 +227,11 @@ pub(super) fn collect_stmt_captures(
             | ResolvedStmt::Return(expr)
             | ResolvedStmt::Throw(expr) => collect_expr_captures(expr, excluded, captures),
             ResolvedStmt::Assign(name, expr) => {
-                push_capture(name, &excluded.iter().cloned().collect::<Vec<_>>(), captures);
+                push_capture(
+                    name,
+                    &excluded.iter().cloned().collect::<Vec<_>>(),
+                    captures,
+                );
                 collect_expr_captures(expr, excluded, captures);
             }
             ResolvedStmt::If {
@@ -301,7 +309,7 @@ pub(super) fn collect_stmt_captures(
     }
 }
 
-pub(super) fn collect_expr_captures(
+pub(crate) fn collect_expr_captures(
     expr: &ResolvedExpr,
     excluded: &HashSet<String>,
     captures: &mut Vec<String>,
@@ -311,11 +319,11 @@ pub(super) fn collect_expr_captures(
     collect_arrow_captures(expr, &params, captures);
 }
 
-pub(super) fn block_assigns_any_name(stmts: &[ResolvedStmt], names: &[String]) -> bool {
+pub(crate) fn block_assigns_any_name(stmts: &[ResolvedStmt], names: &[String]) -> bool {
     stmts.iter().any(|stmt| stmt_assigns_any_name(stmt, names))
 }
 
-pub(super) fn stmt_assigns_any_name(stmt: &ResolvedStmt, names: &[String]) -> bool {
+pub(crate) fn stmt_assigns_any_name(stmt: &ResolvedStmt, names: &[String]) -> bool {
     match stmt {
         ResolvedStmt::Assign(name, expr) => {
             names.iter().any(|capture| capture == name) || expr_assigns_any_name(expr, names)
@@ -392,7 +400,7 @@ pub(super) fn stmt_assigns_any_name(stmt: &ResolvedStmt, names: &[String]) -> bo
     }
 }
 
-pub(super) fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bool {
+pub(crate) fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bool {
     match expr {
         ResolvedExpr::Assign { name, expr } | ResolvedExpr::LogicalAssign { name, expr, .. } => {
             names.iter().any(|capture| capture == name) || expr_assigns_any_name(expr, names)
@@ -485,7 +493,7 @@ pub(super) fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bo
     }
 }
 
-pub(super) fn push_capture(name: &str, params: &[String], captures: &mut Vec<String>) {
+pub(crate) fn push_capture(name: &str, params: &[String], captures: &mut Vec<String>) {
     if params.iter().any(|param| param == name) || captures.iter().any(|capture| capture == name) {
         return;
     }

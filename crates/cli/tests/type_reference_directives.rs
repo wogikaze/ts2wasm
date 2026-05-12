@@ -4,6 +4,10 @@ use std::process::Command;
 use ts2wasm_frontend::validate_type_reference_directives;
 use ts2wasm_shared::test_helpers::fixture_path;
 
+fn stderr_contains_diag_code(stderr: &str, expected_code: &str) -> bool {
+    stderr.contains(&format!("[{expected_code}]")) || stderr.contains(&format!("[{expected_code}/"))
+}
+
 #[test]
 fn missing_reference_types_directive_reports_issue_227() {
     let fixture = "fixtures/typescript-directives/reference-types-missing.ts";
@@ -26,13 +30,16 @@ fn missing_reference_types_directive_reports_issue_227() {
         "missing type directive fixture should not build successfully"
     );
     let stderr = String::from_utf8_lossy(&build.stderr);
-    assert!(stderr.contains("[UnsupportedTypeScriptSyntax]"), "{stderr}");
+    assert!(
+        stderr_contains_diag_code(&stderr, "UnsupportedTypeScriptSyntax"),
+        "{stderr}"
+    );
     assert!(stderr.contains("issue-227"), "{stderr}");
     assert!(stderr.contains("cookie-session"), "{stderr}");
 }
 
 #[test]
-fn ts_ignore_suppresses_reference_types_directive_for_build() {
+fn ts_ignore_reference_types_directive_reports_triple_slash_diagnostic() {
     let fixture = "fixtures/typescript-directives/reference-types-ts-ignore.ts";
     let fixture_path = fixture_path(fixture);
     let output = std::env::temp_dir().join(format!(
@@ -49,10 +56,17 @@ fn ts_ignore_suppresses_reference_types_directive_for_build() {
         .unwrap();
 
     assert!(
-        build.status.success(),
-        "ts-ignore type directive fixture should build\nstdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&build.stdout),
-        String::from_utf8_lossy(&build.stderr)
+        !build.status.success(),
+        "ts-ignore type directive fixture should not build successfully"
+    );
+    let stderr = String::from_utf8_lossy(&build.stderr);
+    assert!(
+        stderr_contains_diag_code(&stderr, "UnsupportedTypeScriptSyntax"),
+        "{stderr}"
+    );
+    assert!(
+        stderr.contains("issue-5253") && stderr.contains("triple-slash"),
+        "{stderr}"
     );
 }
 

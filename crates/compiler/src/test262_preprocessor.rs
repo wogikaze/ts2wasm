@@ -212,7 +212,7 @@ fn rewrite_assert_method_calls(source: &str) -> String {
     for &stub_name in &inlined_methods {
         match stub_name {
             "__assert_sameValue" => {
-                stubs.push_str("function __assert_sameValue(actual, expected, message) {\n");
+                stubs.push_str("function __assert_sameValue(actual, expected) {\n");
                 stubs.push_str("  if (actual !== expected) {\n");
                 stubs.push_str("    console.log(\"__TS2WASM_TEST262_ASSERT_FAIL__\");\n");
                 stubs.push_str("  }\n");
@@ -224,7 +224,7 @@ fn rewrite_assert_method_calls(source: &str) -> String {
                 stubs.push_str("function __assert_throws() {}\n");
             }
             "__assert_notSameValue" => {
-                stubs.push_str("function __assert_notSameValue(actual, expected, message) {\n");
+                stubs.push_str("function __assert_notSameValue(actual, expected) {\n");
                 stubs.push_str("  if (actual === expected) {\n");
                 stubs.push_str("    console.log(\"__TS2WASM_TEST262_ASSERT_FAIL__\");\n");
                 stubs.push_str("  }\n");

@@ -2,7 +2,7 @@
 ///
 /// Category: build_smoke.
 /// These tests confirm the compiler can parse and emit Wasm for RegExp
-/// literals with various flag combinations (g, i, m, s, u, y, d).
+/// literals with supported flag combinations and reject unsupported ones.
 /// Runtime semantics are validated elsewhere.
 use std::path::Path;
 
@@ -41,12 +41,17 @@ fn run_fixture(path: &str) -> Result<String, String> {
 }
 
 #[test]
-fn build_smoke_regexp_flag_d() {
+fn regexp_flag_d_reports_issue_202() {
     let result = run_fixture("builtins-and-io/regexp-flag-d.ts");
     assert!(
-        result.is_ok(),
-        "RegExp d flag should build: {:?}",
-        result.err()
+        result.is_err(),
+        "RegExp d flag should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("issue-202") && err_msg.contains("unsupported RegExp flag `d`"),
+        "Diagnostic should mention issue-202 unsupported d flag: {}",
+        err_msg
     );
 }
 

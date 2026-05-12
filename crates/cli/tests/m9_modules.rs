@@ -38,6 +38,10 @@ fn assert_fixture_build_smoke(fixture: &str) {
     compile_fixture(fixture);
 }
 
+fn stderr_contains_diag_code(stderr: &str, expected_code: &str) -> bool {
+    stderr.contains(&format!("[{expected_code}]")) || stderr.contains(&format!("[{expected_code}/"))
+}
+
 fn assert_build_fails_with_diagnostic(fixture: &str, expected_code: &str, expected: &str) {
     let input = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")
@@ -64,7 +68,7 @@ fn assert_build_fails_with_diagnostic(fixture: &str, expected_code: &str, expect
     );
     let stderr = String::from_utf8_lossy(&build.stderr);
     assert!(
-        stderr.contains(expected_code),
+        stderr_contains_diag_code(&stderr, expected_code),
         "expected {expected_code} diagnostic for {fixture}, got:\n{stderr}"
     );
     assert!(
@@ -108,7 +112,7 @@ fn assert_build_fails_with_diagnostic_span_at(
     );
     let stderr = String::from_utf8_lossy(&build.stderr);
     assert!(
-        stderr.contains(expected_code),
+        stderr_contains_diag_code(&stderr, expected_code),
         "expected {expected_code} diagnostic for {fixture}, got:\n{stderr}"
     );
     assert!(
@@ -121,12 +125,8 @@ fn assert_build_fails_with_diagnostic_span_at(
     );
 }
 
-fn assert_build_fails_with_unsupported_syntax(fixture: &str, expected: &str) {
-    assert_build_fails_with_diagnostic(fixture, "[UnsupportedModule]", expected);
-}
-
 fn assert_build_fails_with_module_graph_diagnostic(fixture: &str, expected: &str) {
-    assert_build_fails_with_diagnostic(fixture, "[UnsupportedModule]", expected);
+    assert_build_fails_with_diagnostic(fixture, "UnsupportedModule", expected);
 }
 
 #[test]
@@ -173,7 +173,7 @@ fn static_module_named_import_repeated_source_build_smoke() {
 fn static_module_named_import_missing_export_reports_issue_233_at_imported_name() {
     assert_build_fails_with_diagnostic_span_at(
         "module-system/static-missing-named-export.ts",
-        "[UnsupportedModule]",
+        "UnsupportedModule",
         "issue-233: module `./static-entry-source` does not export named binding `missing`",
         "missing",
     );
@@ -266,7 +266,7 @@ fn static_export_named_list_entry_build_smoke() {
 fn static_local_named_export_missing_reports_issue_5005() {
     assert_build_fails_with_diagnostic_span_at(
         "module-system/static-local-named-export-missing-unsupported.ts",
-        "[UnsupportedSyntax]",
+        "UnsupportedSyntax",
         "issue-5005: entry module `export { missing }` references unknown local binding `missing`",
         "missing",
     );
@@ -276,7 +276,7 @@ fn static_local_named_export_missing_reports_issue_5005() {
 fn static_local_named_export_duplicate_reports_issue_5005() {
     assert_build_fails_with_diagnostic_span_at(
         "module-system/static-local-named-export-duplicate-unsupported.ts",
-        "[UnsupportedModule]",
+        "UnsupportedModule",
         "issue-5005: duplicate export name `value`",
         "b as value",
     );
@@ -340,11 +340,8 @@ fn static_function_export_entry_build_smoke() {
 }
 
 #[test]
-fn static_class_export_reports_issue_5005() {
-    assert_build_fails_with_unsupported_syntax(
-        "module-system/static-class-export-unsupported.ts",
-        "issue-5005: entry module `export C` uses a declaration form outside the current static export slice",
-    );
+fn static_class_export_build_smoke() {
+    assert_fixture_build_smoke("module-system/static-class-export-unsupported.ts");
 }
 
 #[test]

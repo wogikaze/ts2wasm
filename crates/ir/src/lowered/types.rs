@@ -1,14 +1,21 @@
 use std::collections::{HashMap, HashSet};
 
-use super::binding_pattern::{
+use crate::binding_pattern::{
     ArrayBinding, BindingDefault, BindingPattern, ObjectBinding, parse_binding_pattern,
 };
-use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
-use super::builtin_resolved::{ClassMethodKind, ResolvedExpr, ResolvedParam, ResolvedStmt};
-use ts2wasm_frontend::{
-    BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, OBJECT_SPREAD_SENTINEL, Span,
+use crate::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
+use crate::builtin_resolved::{ClassMethodKind, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::lowered::RuntimeFn;
+use crate::lowered::hir::HirProgram;
+use crate::lowered::hir_validate::validate_hir;
+use crate::lowered::mir::MirProgram;
+use crate::lowered::mir_validate::validate_mir;
+use crate::lowered::validate::validate_lowered;
+use ts2wasm_shared::{
+    BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, OBJECT_SPREAD_SENTINEL,
     SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp,
 };
+use ts2wasm_source::Span;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct LocalId(pub usize);
@@ -16,10 +23,10 @@ pub struct LocalId(pub usize);
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FuncId(pub usize);
 
-type ClassConstructorMap = HashMap<String, FuncId>;
-type ClassMethodMap = HashMap<(String, String), FuncId>;
-type ClassPrivateFieldSlots = HashMap<String, HashMap<String, usize>>;
-type ClassStaticPrivateFields = HashMap<String, HashMap<String, String>>;
+pub(crate) type ClassConstructorMap = HashMap<String, FuncId>;
+pub(crate) type ClassMethodMap = HashMap<(String, String), FuncId>;
+pub(crate) type ClassPrivateFieldSlots = HashMap<String, HashMap<String, usize>>;
+pub(crate) type ClassStaticPrivateFields = HashMap<String, HashMap<String, String>>;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ClassPrototypeRef {
@@ -109,6 +116,11 @@ pub enum LoweredStmt {
     },
     Return(LoweredExpr, Span),
     Throw(LoweredExpr, Span),
+    TryFinally {
+        try_body: Vec<LoweredStmt>,
+        finally_body: Vec<LoweredStmt>,
+        span: Span,
+    },
     TryCatch {
         try_body: Vec<LoweredStmt>,
         catch_var: Option<LocalId>,
@@ -356,7 +368,7 @@ pub enum LoweredExpr {
         span: Span,
     },
     RuntimeCall {
-        runtime_fn: String,
+        intrinsic: RuntimeFn,
         args: Vec<LoweredExpr>,
         span: Span,
     },
@@ -477,7 +489,9 @@ impl LoweredExpr {
                 LoweredUnaryOp::Not => InferredType::Boolean,
                 _ => InferredType::Unknown,
             },
-            Self::Binary { left, op, right, .. } => match op {
+            Self::Binary {
+                left, op, right, ..
+            } => match op {
                 LoweredBinaryOp::Add => match (left.inferred_type(), right.inferred_type()) {
                     (InferredType::Number, InferredType::Number) => InferredType::Number,
                     (InferredType::String, InferredType::String) => InferredType::String,
@@ -507,9 +521,9 @@ impl LoweredExpr {
                 | LoweredBinaryOp::EqualEqual
                 | LoweredBinaryOp::BangEqual
                 | LoweredBinaryOp::StrictNotEqual => InferredType::Boolean,
-                LoweredBinaryOp::And
-                | LoweredBinaryOp::Or
-                | LoweredBinaryOp::NullishCoalesce => InferredType::Unknown,
+                LoweredBinaryOp::And | LoweredBinaryOp::Or | LoweredBinaryOp::NullishCoalesce => {
+                    InferredType::Unknown
+                }
             },
             Self::Assign { expr, .. } => expr.inferred_type(),
             Self::LogicalAssign { .. }
@@ -519,5 +533,140 @@ impl LoweredExpr {
             | Self::LogicalComputedPropertyAssign { .. } => InferredType::Unknown,
             _ => InferredType::Unknown,
         }
+    }
+}
+
+/// Newtype wrapper around a successfully-validated `LoweredProgram`.
+///
+/// The validation step checks for invariant violations (fatal errors that
+/// would crash the backend) and separates non-fatal diagnostics into the
+/// wrapper so callers can report them without blocking emission.
+///
+/// Backend APIs should accept `&Validated<LoweredProgram>` instead of
+/// `&LoweredProgram` to enforce the contract at the type level.
+#[derive(Debug)]
+pub struct Validated<T> {
+    inner: T,
+    non_fatal: Vec<Diagnostic>,
+}
+
+impl Validated<LoweredProgram> {
+    /// Validate `program` and return a `Validated` wrapper.
+    ///
+    /// Returns `Err` only for fatal errors (InvariantViolation).
+    /// Non-fatal diagnostics are returned in the tuple alongside the wrapper.
+    pub fn new(program: LoweredProgram) -> Result<(Self, Vec<Diagnostic>), Diagnostic> {
+        let mut non_fatal = Vec::new();
+        if let Err(errors) = validate_lowered(&program) {
+            for e in errors {
+                if e.code == DiagCode::InvariantViolation {
+                    return Err(Diagnostic {
+                        code: e.code,
+                        message: e.message,
+                        span: e.span,
+                        phase: None,
+                    });
+                }
+                non_fatal.push(e);
+            }
+        }
+        Ok((
+            Self {
+                inner: program,
+                non_fatal: non_fatal.clone(),
+            },
+            non_fatal,
+        ))
+    }
+
+    pub fn program(&self) -> &LoweredProgram {
+        &self.inner
+    }
+
+    pub fn into_inner(self) -> LoweredProgram {
+        self.inner
+    }
+
+    pub fn warnings(&self) -> &[Diagnostic] {
+        &self.non_fatal
+    }
+    pub fn take_warnings(&mut self) -> Vec<Diagnostic> {
+        std::mem::take(&mut self.non_fatal)
+    }
+}
+
+impl Validated<HirProgram> {
+    /// Validate `program` and return a `Validated` wrapper.
+    pub fn new_hir(program: HirProgram) -> Result<(Self, Vec<Diagnostic>), Diagnostic> {
+        let mut non_fatal = Vec::new();
+        if let Err(errors) = validate_hir(&program) {
+            for e in errors {
+                if e.code == DiagCode::InvariantViolation {
+                    return Err(Diagnostic {
+                        code: e.code,
+                        message: e.message,
+                        span: e.span,
+                        phase: None,
+                    });
+                }
+                non_fatal.push(e);
+            }
+        }
+        Ok((
+            Self {
+                inner: program,
+                non_fatal: non_fatal.clone(),
+            },
+            non_fatal,
+        ))
+    }
+
+    pub fn program(&self) -> &HirProgram {
+        &self.inner
+    }
+
+    pub fn into_inner(self) -> HirProgram {
+        self.inner
+    }
+}
+
+impl Validated<MirProgram> {
+    /// Validate `program` and return a `Validated` wrapper.
+    pub fn new_mir(program: MirProgram) -> Result<(Self, Vec<Diagnostic>), Diagnostic> {
+        let mut non_fatal = Vec::new();
+        if let Err(errors) = validate_mir(&program) {
+            for e in errors {
+                if e.code == DiagCode::InvariantViolation {
+                    return Err(Diagnostic {
+                        code: e.code,
+                        message: e.message,
+                        span: e.span,
+                        phase: None,
+                    });
+                }
+                non_fatal.push(e);
+            }
+        }
+        Ok((
+            Self {
+                inner: program,
+                non_fatal: non_fatal.clone(),
+            },
+            non_fatal,
+        ))
+    }
+
+    pub fn program(&self) -> &MirProgram {
+        &self.inner
+    }
+
+    pub fn into_inner(self) -> MirProgram {
+        self.inner
+    }
+}
+
+impl<T> AsRef<T> for Validated<T> {
+    fn as_ref(&self) -> &T {
+        &self.inner
     }
 }

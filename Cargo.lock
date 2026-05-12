@@ -53,6 +53,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "bitflags"
+version = "2.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c4512299f36f043ab09a583e57bceb5a5aab7a73db1805848e8fef3c9e8c78b3"
+
+[[package]]
 name = "clap"
 version = "4.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -99,10 +105,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1d07550c9036bf2ae0c684c4297d503f838287c83c53686d05370d0e139ae570"
 
 [[package]]
+name = "equivalent"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
+
+[[package]]
+name = "hashbrown"
+version = "0.17.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a"
+
+[[package]]
 name = "heck"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
+
+[[package]]
+name = "indexmap"
+version = "2.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d466e9454f08e4a911e14806c24e16fba1b4c121d1ea474396f396069cf949d9"
+dependencies = [
+ "equivalent",
+ "hashbrown",
+]
 
 [[package]]
 name = "is_terminal_polyfill"
@@ -115,6 +143,12 @@ name = "itoa"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
+
+[[package]]
+name = "leb128fmt"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "09edd9e8b54e49e587e4f6295a7d29c3ea94d469cb40ab8ca70b288248a81db2"
 
 [[package]]
 name = "memchr"
@@ -145,6 +179,12 @@ checksum = "41f2619966050689382d2b44f664f4bc593e129785a36d6ee376ddf37259b924"
 dependencies = [
  "proc-macro2",
 ]
+
+[[package]]
+name = "semver"
+version = "1.0.28"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a7852d02fc848982e0c167ef163aaff9cd91dc640ba85e263cb1ce46fae51cd"
 
 [[package]]
 name = "serde"
@@ -207,15 +247,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "ts2wasm-backend-core"
+version = "0.1.0"
+
+[[package]]
 name = "ts2wasm-backend-wasm"
 version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
- "ts2wasm-frontend",
+ "ts2wasm-backend-core",
+ "ts2wasm-diagnostic",
  "ts2wasm-ir",
+ "ts2wasm-resolve",
  "ts2wasm-runtime-abi",
+ "ts2wasm-runtime-catalog",
+ "ts2wasm-semantics",
  "ts2wasm-shared",
+ "ts2wasm-source",
+ "ts2wasm-syntax",
+ "wasm-encoder",
 ]
 
 [[package]]
@@ -238,8 +289,19 @@ dependencies = [
  "serde",
  "serde_json",
  "ts2wasm-backend-wasm",
+ "ts2wasm-diagnostic",
  "ts2wasm-frontend",
  "ts2wasm-ir",
+ "ts2wasm-runtime-abi",
+ "ts2wasm-source",
+ "ts2wasm-syntax",
+]
+
+[[package]]
+name = "ts2wasm-diagnostic"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-source",
 ]
 
 [[package]]
@@ -248,16 +310,34 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+ "ts2wasm-diagnostic",
  "ts2wasm-shared",
+ "ts2wasm-source",
+ "ts2wasm-syntax",
 ]
 
 [[package]]
 name = "ts2wasm-ir"
 version = "0.1.0"
 dependencies = [
+ "ts2wasm-diagnostic",
  "ts2wasm-frontend",
+ "ts2wasm-resolve",
  "ts2wasm-runtime-abi",
+ "ts2wasm-runtime-catalog",
  "ts2wasm-shared",
+ "ts2wasm-source",
+ "ts2wasm-syntax",
+]
+
+[[package]]
+name = "ts2wasm-resolve"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-diagnostic",
+ "ts2wasm-frontend",
+ "ts2wasm-source",
+ "ts2wasm-syntax",
 ]
 
 [[package]]
@@ -265,11 +345,45 @@ name = "ts2wasm-runtime-abi"
 version = "0.1.0"
 
 [[package]]
+name = "ts2wasm-runtime-catalog"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "ts2wasm-runtime-abi",
+]
+
+[[package]]
+name = "ts2wasm-semantics"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-diagnostic",
+ "ts2wasm-resolve",
+ "ts2wasm-runtime-abi",
+ "ts2wasm-source",
+ "ts2wasm-syntax",
+]
+
+[[package]]
 name = "ts2wasm-shared"
 version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+ "ts2wasm-diagnostic",
+ "ts2wasm-source",
+ "ts2wasm-syntax",
+]
+
+[[package]]
+name = "ts2wasm-source"
+version = "0.1.0"
+
+[[package]]
+name = "ts2wasm-syntax"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-source",
 ]
 
 [[package]]
@@ -283,6 +397,27 @@ name = "utf8parse"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
+
+[[package]]
+name = "wasm-encoder"
+version = "0.248.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ac92cf547bc18d27ecc521015c08c353b4f18b84ab388bb6d1b6b682c620d9b6"
+dependencies = [
+ "leb128fmt",
+ "wasmparser",
+]
+
+[[package]]
+name = "wasmparser"
+version = "0.248.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aa4439c5eee9df71ee0c6efb37f63b1fcb1fec38f85f5142c54e7ed05d33091a"
+dependencies = [
+ "bitflags",
+ "indexmap",
+ "semver",
+]
 
 [[package]]
 name = "windows-link"

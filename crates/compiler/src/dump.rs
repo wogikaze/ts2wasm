@@ -2,20 +2,20 @@ use std::fmt::Write as _;
 use std::fs;
 use std::path::Path;
 
-use ts2wasm_frontend::{
-    ArrayLiteralElement, BinaryOp, ClassPrivateElement, DiagCode, Diagnostic, Expr, Lexer,
-    LogicalAssignOp, OBJECT_SPREAD_SENTINEL, Parser, SpannedToken, Stmt, UnaryOp,
-    validate_type_reference_directives,
+use ts2wasm_diagnostic::{DiagCode, Diagnostic};
+use ts2wasm_frontend::{Lexer, Parser, validate_type_reference_directives};
+use ts2wasm_syntax::{
+    ArrayLiteralElement, BinaryOp, ClassPrivateElement, Expr, LogicalAssignOp,
+    OBJECT_SPREAD_SENTINEL, SpannedToken, Stmt, UnaryOp,
 };
 use ts2wasm_ir::builtin::BuiltinId;
 use ts2wasm_ir::builtin_resolved::ResolvedStmt;
-use ts2wasm_ir::lowered::LoweredProgram;
+use ts2wasm_ir::lowered::{LoweredProgram, Validated};
 use ts2wasm_ir::optimizer::{OptimizationLevel, OptimizedHirProgram};
 use ts2wasm_ir::semantic::{HirExpr, HirProgram, HirRelationalOp, HirStmt};
 
 use super::{
-    backend, build_multi_section_file, builtin_resolver, lowered, name_resolver,
-    split_file_name_sections, test262_preprocessor,
+    backend, build_multi_section_file, lowered, split_file_name_sections, test262_preprocessor,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -146,7 +146,14 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
             push_optional_typed_ir_section(&mut out, &pipeline.typed_ir)?;
             push_optional_optimized_ir_section(&mut out, &pipeline.optimized_ir)?;
             push_section(&mut out, "lowered", &format!("{:#?}", pipeline.lowered));
-            let wat = backend::emit_wat(&pipeline.lowered)?;
+            let (validated, _) =
+                Validated::new(pipeline.lowered.clone()).map_err(|d| Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: d.message,
+                    span: d.span,
+                    phase: None,
+                })?;
+            let wat = backend::emit_wat(&validated)?;
             push_section(&mut out, "wat", &wat);
         }
         DumpPhase::Resolved => {
@@ -162,7 +169,14 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
             push_section(&mut out, "lowered", &format!("{:#?}", pipeline.lowered));
         }
         DumpPhase::Wat => {
-            let wat = backend::emit_wat(&pipeline.lowered)?;
+            let (validated, _) =
+                Validated::new(pipeline.lowered.clone()).map_err(|d| Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: d.message,
+                    span: d.span,
+                    phase: None,
+                })?;
+            let wat = backend::emit_wat(&validated)?;
             push_section(&mut out, "wat", &wat);
         }
         DumpPhase::Tokens | DumpPhase::Ast => unreachable!("handled before full pipeline"),
@@ -188,9 +202,9 @@ fn build_dump_pipeline(
     eprintln!("[pipeline] module_graph");
     super::module_graph::validate_entry_module_graph(input, &ast)?;
     eprintln!("[pipeline] resolve_names");
-    let name_resolved = name_resolver::resolve_names(&ast)?;
+    let name_resolved = ts2wasm_ir::name_resolver::resolve_names(&ast)?;
     eprintln!("[pipeline] resolve_builtins");
-    let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
+    let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&name_resolved)?;
     super::validate_typescript_semantics_for_path(input, &resolved)?;
     eprintln!("[pipeline] build_typed_ir");
     let typed_ir = build_typed_ir(&resolved);
@@ -875,45 +889,10 @@ fn unparse_expr(expr: &Expr) -> String {
             body,
             body_stmts,
             ..
-        } => {
-            if body_stmts.is_empty() {
-                format!("({}) => {}", params.join(", "), unparse_expr(body))
-            } else {
-                let stmts: Vec<String> = body_stmts
-                    .iter()
-                    .map(|s| {
-                        let mut buf = String::new();
-                        unparse_stmt(&mut buf, s, 0);
-                        buf
-                    })
-                    .collect();
-                format!(
-                    "({}) => {{ {} return {}; }}",
-                    params.join(", "),
-                    stmts.join("; "),
-                    unparse_expr(body)
-                )
-            }
-        }
+        } => unparse_arrow_fn_expr(params, body, body_stmts),
         Expr::FunctionExpr {
             name, params, body, ..
-        } => {
-            let params = params
-                .iter()
-                .map(|(name, _, is_rest)| {
-                    if *is_rest {
-                        format!("...{name}")
-                    } else {
-                        name.clone()
-                    }
-                })
-                .collect::<Vec<_>>()
-                .join(", ");
-            let mut out = format!("function {name}({params}) {{\n");
-            unparse_block(&mut out, body, 1);
-            out.push('}');
-            out
-        }
+        } => unparse_function_expr(name, params, body),
         Expr::Spread { expr, .. } => format!("...{}", unparse_expr(expr)),
         Expr::PropertyAssign {
             object,
@@ -955,6 +934,49 @@ fn unparse_expr_list(exprs: &[Expr]) -> String {
         .map(unparse_expr)
         .collect::<Vec<_>>()
         .join(", ")
+}
+
+fn unparse_arrow_fn_expr(params: &[String], body: &Expr, body_stmts: &[Stmt]) -> String {
+    if body_stmts.is_empty() {
+        format!("({}) => {}", params.join(", "), unparse_expr(body))
+    } else {
+        let stmts: Vec<String> = body_stmts
+            .iter()
+            .map(|s| {
+                let mut buf = String::new();
+                unparse_stmt(&mut buf, s, 0);
+                buf
+            })
+            .collect();
+        format!(
+            "({}) => {{ {} return {}; }}",
+            params.join(", "),
+            stmts.join("; "),
+            unparse_expr(body)
+        )
+    }
+}
+
+fn unparse_function_expr(
+    name: &str,
+    params: &[(String, Option<Expr>, bool)],
+    body: &[Stmt],
+) -> String {
+    let params = params
+        .iter()
+        .map(|(name, _, is_rest)| {
+            if *is_rest {
+                format!("...{name}")
+            } else {
+                name.clone()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(", ");
+    let mut out = format!("function {name}({params}) {{\n");
+    unparse_block(&mut out, body, 1);
+    out.push('}');
+    out
 }
 
 fn binary_op_text(op: BinaryOp) -> &'static str {

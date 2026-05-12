@@ -1,3 +1,5 @@
+#[path = "builtin_domain/mod.rs"]
+mod builtin_domain;
 #[path = "builtin_resolver_bigint.rs"]
 mod builtin_resolver_bigint;
 #[path = "builtin_resolver_bigint_ops.rs"]
@@ -8,6 +10,7 @@ mod builtin_resolver_class_features;
 mod builtin_resolver_host;
 #[path = "builtin_resolver_outer.rs"]
 mod builtin_resolver_outer;
+use builtin_domain::*;
 pub(crate) use builtin_resolver_bigint::bigint_runtime_fn_name;
 use builtin_resolver_bigint::*;
 use builtin_resolver_bigint_ops::*;
@@ -17,11 +20,11 @@ use builtin_resolver_host::*;
 use builtin_resolver_outer::*;
 use std::collections::{HashMap, HashSet};
 
-use ts2wasm_frontend::{
+use ts2wasm_runtime_abi::ValueTag;
+use ts2wasm_shared::{
     ArrayLiteralElement, BinaryOp, ClassPrivateElement, ClassStaticBlock, DiagCode, Diagnostic,
     Expr, Span, Stmt, UnaryOp,
 };
-use ts2wasm_runtime_abi::ValueTag;
 
 use super::binding_pattern::parse_binding_pattern;
 use super::builtin::BuiltinId;
@@ -1431,17 +1434,6 @@ fn resolve_stmt_with_outer_bindings(
     }
 }
 
-fn class_method_kind(method_name: &str) -> ClassMethodKind {
-    let name = method_name.strip_prefix("static::").unwrap_or(method_name);
-    if name.starts_with("get ") {
-        ClassMethodKind::Getter
-    } else if name.starts_with("set ") {
-        ClassMethodKind::Setter
-    } else {
-        ClassMethodKind::Method
-    }
-}
-
 fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
     match expr {
         Expr::Number { value, .. } => Ok(ResolvedExpr::Number(*value)),
@@ -1702,15 +1694,8 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             {
                 return resolve_bigint_function_call(&resolved_args, *span);
             }
-            if let Expr::Ident { name, .. } = callee.as_ref()
-                && name == "Array"
-            {
-                // Array() called as function (without new) behaves like new Array()
-                return Ok(ResolvedExpr::New {
-                    class_name: "Array".to_owned(),
-                    args: resolved_args,
-                    span: *span,
-                });
+            if let Some(resolved) = try_resolve_array_call(callee.as_ref(), &resolved_args, *span) {
+                return Ok(resolved);
             }
             if let Some(builtin) = resolve_global_identifier_call(callee.as_ref()) {
                 return Ok(ResolvedExpr::BuiltinCall {
@@ -1886,26 +1871,8 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 .collect::<Result<Vec<_>, _>>()?,
             span: *span,
         }),
-        Expr::Array { elements, .. } => Ok(ResolvedExpr::Array(
-            elements
-                .iter()
-                .map(|element| match element {
-                    ArrayLiteralElement::Present(expr) => {
-                        Ok(ResolvedArrayElement::Present(resolve_expr(expr)?))
-                    }
-                    ArrayLiteralElement::Spread(expr) => {
-                        Ok(ResolvedArrayElement::Present(resolve_expr(expr)?))
-                    }
-                    ArrayLiteralElement::Hole(_) => Ok(ResolvedArrayElement::Hole),
-                })
-                .collect::<Result<Vec<_>, _>>()?,
-        )),
-        Expr::Object { props, .. } => Ok(ResolvedExpr::Object(
-            props
-                .iter()
-                .map(|(k, v)| Ok((k.clone(), resolve_expr(v)?)))
-                .collect::<Result<Vec<_>, _>>()?,
-        )),
+        Expr::Array { elements, .. } => resolve_array_literal(elements),
+        Expr::Object { props, .. } => resolve_object_literal(props),
         Expr::Index { object, index, .. } => {
             // For string literal keys, use PropertyAccess (object property semantics)
             // For other expressions, use ComputedIndex (array indexing semantics)
@@ -2030,13 +1997,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 .map(resolve_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
         }),
-        Expr::ClassExpr { name, body, .. } => Ok(ResolvedExpr::ClassExpr {
-            name: name.clone(),
-            body: body
-                .iter()
-                .map(resolve_stmt)
-                .collect::<Result<Vec<_>, _>>()?,
-        }),
+        Expr::ClassExpr { name, body, .. } => resolve_class_expr(name, body),
         Expr::Spread { expr, .. } => Ok(ResolvedExpr::Spread(Box::new(resolve_expr(expr)?))),
         Expr::TypeOf { expr, .. } => {
             // typeof class {} always evaluates to "function"
@@ -2096,26 +2057,5 @@ fn increment_update_diagnostic(span: Span) -> Diagnostic {
         span: Some(span),
 
         phase: None,
-    }
-}
-
-/// Resolve a global identifier function call (e.g., `isNaN(x)`, `parseInt(s)`)
-/// to a BuiltinId. Returns None if the identifier is not a recognized global function.
-fn resolve_global_identifier_call(callee: &Expr) -> Option<BuiltinId> {
-    let Expr::Ident { name, .. } = callee else {
-        return None;
-    };
-    match name.as_str() {
-        "isNaN" => Some(BuiltinId::IsNaN),
-        "parseInt" => Some(BuiltinId::ParseInt),
-        "parseFloat" => Some(BuiltinId::ParseFloat),
-        "isFinite" => Some(BuiltinId::IsFinite),
-        "Boolean" => Some(BuiltinId::BooleanCoerce),
-        "Number" => Some(BuiltinId::NumberCoerce),
-        "encodeURI" => Some(BuiltinId::EncodeURI),
-        "decodeURI" => Some(BuiltinId::DecodeURI),
-        "escape" => Some(BuiltinId::Escape),
-        "unescape" => Some(BuiltinId::Unescape),
-        _ => None,
     }
 }

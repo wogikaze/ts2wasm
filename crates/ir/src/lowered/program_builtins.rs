@@ -1,200 +1,214 @@
-use super::*;
-use crate::builtin_resolved::ResolvedArrayElement;
+use super::FunctionSignature;
+use crate::RuntimeFn;
+use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
+use crate::lowered::types::FuncId;
+use std::collections::HashMap;
+use ts2wasm_syntax::UnaryOp;
+use ts2wasm_diagnostic::{DiagCode, Diagnostic};
+use ts2wasm_source::Span;
 
-pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<String> {
+pub(crate) fn resolve_method_to_runtime_fn(
+    object: &ResolvedExpr,
+    method: &str,
+) -> Option<RuntimeFn> {
     if let ResolvedExpr::Ident(name) = object {
         if name == "Math" {
             return match method {
-                "floor" => Some("MathFloor".to_owned()),
-                "ceil" => Some("MathCeil".to_owned()),
-                "round" => Some("MathRound".to_owned()),
-                "abs" => Some("MathAbs".to_owned()),
-                "max" => Some("MathMax".to_owned()),
-                "min" => Some("MathMin".to_owned()),
-                "pow" => Some("MathPow".to_owned()),
-                "random" => Some("MathRandom".to_owned()),
-                "trunc" => Some("MathTrunc".to_owned()),
-                "sign" => Some("MathSign".to_owned()),
+                "floor" => Some(RuntimeFn::MathFloor),
+                "ceil" => Some(RuntimeFn::MathCeil),
+                "round" => Some(RuntimeFn::MathRound),
+                "abs" => Some(RuntimeFn::MathAbs),
+                "max" => Some(RuntimeFn::MathMax),
+                "min" => Some(RuntimeFn::MathMin),
+                "pow" => Some(RuntimeFn::MathPow),
+                "random" => Some(RuntimeFn::MathRandom),
+                "trunc" => Some(RuntimeFn::MathTrunc),
+                "sign" => Some(RuntimeFn::MathSign),
                 _ => None,
             };
         }
         if name == "JSON" {
             return match method {
-                "stringify" => Some("JsonStringify".to_owned()),
-                "parse" => Some("JsonParse".to_owned()),
+                "stringify" => Some(RuntimeFn::JsonStringify),
+                "parse" => Some(RuntimeFn::JsonParse),
                 _ => None,
             };
         }
         if name == "Object" {
             return match method {
-                "keys" => Some("ObjectKeys".to_owned()),
-                "values" => Some("ObjectValues".to_owned()),
-                "entries" => Some("ObjectEntries".to_owned()),
-                "hasOwnProperty" => Some("ObjectHasOwnProperty".to_owned()),
-                "hasOwn" => Some("ObjectHasOwn".to_owned()),
-                "getOwnPropertyDescriptor" => Some("ObjectGetOwnPropertyDescriptor".to_owned()),
-                "getPrototypeOf" => Some("ObjectGetPrototypeOf".to_owned()),
-                "setPrototypeOf" => Some("ObjectSetPrototypeOf".to_owned()),
-                "seal" => Some("ObjectSeal".to_owned()),
-                "freeze" => Some("ObjectFreeze".to_owned()),
-                "preventExtensions" => Some("ObjectPreventExtensions".to_owned()),
-                "isExtensible" => Some("ObjectIsExtensible".to_owned()),
-                "isSealed" => Some("ObjectIsSealed".to_owned()),
-                "isFrozen" => Some("ObjectIsFrozen".to_owned()),
-                "defineProperty" => Some("ObjectDefineProperty".to_owned()),
-                "assign" => Some("ObjectAssign".to_owned()),
-                "create" => Some("ObjectCreate".to_owned()),
-                "is" => Some("ObjectIs".to_owned()),
+                "keys" => Some(RuntimeFn::ObjectKeys),
+                "values" => Some(RuntimeFn::ObjectValues),
+                "entries" => Some(RuntimeFn::ObjectEntries),
+                "hasOwnProperty" => Some(RuntimeFn::ObjectHasOwnProperty),
+                "hasOwn" => Some(RuntimeFn::ObjectHasOwn),
+                "getOwnPropertyDescriptor" => {
+                    Some(RuntimeFn::ObjectGetOwnPropertyDescriptor)
+                }
+                "getPrototypeOf" => Some(RuntimeFn::ObjectGetPrototypeOf),
+                "setPrototypeOf" => Some(RuntimeFn::ObjectSetPrototypeOf),
+                "seal" => Some(RuntimeFn::ObjectSeal),
+                "freeze" => Some(RuntimeFn::ObjectFreeze),
+                "preventExtensions" => Some(RuntimeFn::ObjectPreventExtensions),
+                "isExtensible" => Some(RuntimeFn::ObjectIsExtensible),
+                "isSealed" => Some(RuntimeFn::ObjectIsSealed),
+                "isFrozen" => Some(RuntimeFn::ObjectIsFrozen),
+                "defineProperty" => Some(RuntimeFn::ObjectDefineProperty),
+                "assign" => Some(RuntimeFn::ObjectAssign),
+                "create" => Some(RuntimeFn::ObjectCreate),
+                "is" => Some(RuntimeFn::ObjectIs),
                 _ => None,
             };
         }
         if name == "String" {
             return match method {
-                "fromCharCode" => Some("StringFromCharCode".to_owned()),
-                "fromCodePoint" => Some("StringFromCodePoint".to_owned()),
+                "fromCharCode" => Some(RuntimeFn::StringFromCharCode),
+                "fromCodePoint" => Some(RuntimeFn::StringFromCodePoint),
                 _ => None,
             };
         }
         if name == "Number" {
             return match method {
-                "isNaN" => Some("NumberIsNaN".to_owned()),
-                "isFinite" => Some("NumberIsFinite".to_owned()),
-                "isInteger" => Some("NumberIsInteger".to_owned()),
-                "isSafeInteger" => Some("NumberIsSafeInteger".to_owned()),
+                "isNaN" => Some(RuntimeFn::NumberIsNaN),
+                "isFinite" => Some(RuntimeFn::NumberIsFinite),
+                "isInteger" => Some(RuntimeFn::NumberIsInteger),
+                "isSafeInteger" => Some(RuntimeFn::NumberIsSafeInteger),
                 _ => None,
             };
         }
         if name == "Array" {
             return match method {
-                "isArray" => Some("ArrayIsArray".to_owned()),
+                "isArray" => Some(RuntimeFn::ArrayIsArray),
                 _ => None,
             };
         }
         if name == "Promise" {
             return match method {
-                "resolve" => Some("PromiseResolve".to_owned()),
-                "reject" => Some("PromiseReject".to_owned()),
-                "all" => Some("PromiseAll".to_owned()),
-                "race" => Some("PromiseRace".to_owned()),
+                "resolve" => Some(RuntimeFn::PromiseResolve),
+                "reject" => Some(RuntimeFn::PromiseReject),
+                "all" => Some(RuntimeFn::PromiseAll),
+                "race" => Some(RuntimeFn::PromiseRace),
                 _ => None,
             };
         }
     }
     match method {
-        "concat" => Some("Concat".to_owned()),
-        "charAt" => Some("StringCharAt".to_owned()),
-        "at" => Some("StringAt".to_owned()),
-        "substring" => Some("StringSubstring".to_owned()),
-        "slice" => Some("StringSlice".to_owned()),
-        "indexOf" => Some("StringIndexOf".to_owned()),
-        "lastIndexOf" => Some("StringLastIndexOf".to_owned()),
-        "includes" => Some("StringIncludes".to_owned()),
-        "padStart" => Some("StringPadStart".to_owned()),
-        "padEnd" => Some("StringPadEnd".to_owned()),
-        "repeat" => Some("StringRepeat".to_owned()),
-        "split" => Some("StringSplit".to_owned()),
-        "replace" => Some("StringReplace".to_owned()),
-        "replaceAll" => Some("StringReplaceAll".to_owned()),
-        "match" => Some("StringMatch".to_owned()),
-        "search" => Some("StringSearch".to_owned()),
-        "substr" => Some("StringSubstr".to_owned()),
-        "trim" => Some("StringTrim".to_owned()),
-        "trimStart" => Some("StringTrimStart".to_owned()),
-        "trimEnd" => Some("StringTrimEnd".to_owned()),
-        "trimLeft" => Some("StringTrimStart".to_owned()),
-        "trimRight" => Some("StringTrimEnd".to_owned()),
-        "startsWith" => Some("StringStartsWith".to_owned()),
-        "endsWith" => Some("StringEndsWith".to_owned()),
-        "toUpperCase" => Some("StringToUpperCase".to_owned()),
-        "toLowerCase" => Some("StringToLowerCase".to_owned()),
-        "toLocaleUpperCase" => Some("StringToUpperCase".to_owned()),
-        "toLocaleLowerCase" => Some("StringToLowerCase".to_owned()),
-        "localeCompare" => Some("StringLocaleCompare".to_owned()),
-        "charCodeAt" => Some("StringCharCodeAt".to_owned()),
-        "codePointAt" => Some("StringCodePointAt".to_owned()),
-        "isWellFormed" => Some("StringIsWellFormed".to_owned()),
-        "toWellFormed" => Some("StringToWellFormed".to_owned()),
-        "hasOwnProperty" => Some("ObjectHasOwnProperty".to_owned()),
-        "valueOf" => Some("ValueOf".to_owned()),
-        "push" => Some("ArrayPush".to_owned()),
-        "pop" => Some("ArrayPop".to_owned()),
-        "reverse" => Some("ArrayReverse".to_owned()),
-        "toFixed" => Some("NumberToFixed".to_owned()),
-        "toExponential" => Some("NumberToExponential".to_owned()),
-        "toPrecision" => Some("NumberToPrecision".to_owned()),
+        "concat" => Some(RuntimeFn::Concat),
+        "charAt" => Some(RuntimeFn::StringCharAt),
+        "at" => Some(RuntimeFn::StringAt),
+        "substring" => Some(RuntimeFn::StringSubstring),
+        "slice" => Some(RuntimeFn::StringSlice),
+        "indexOf" => Some(RuntimeFn::StringIndexOf),
+        "lastIndexOf" => Some(RuntimeFn::StringLastIndexOf),
+        "includes" => Some(RuntimeFn::StringIncludes),
+        "padStart" => Some(RuntimeFn::StringPadStart),
+        "padEnd" => Some(RuntimeFn::StringPadEnd),
+        "repeat" => Some(RuntimeFn::StringRepeat),
+        "split" => Some(RuntimeFn::StringSplit),
+        "replace" => Some(RuntimeFn::StringReplace),
+        "replaceAll" => Some(RuntimeFn::StringReplaceAll),
+        "match" => Some(RuntimeFn::StringMatch),
+        "search" => Some(RuntimeFn::StringSearch),
+        "substr" => Some(RuntimeFn::StringSubstr),
+        "trim" => Some(RuntimeFn::StringTrim),
+        "trimStart" => Some(RuntimeFn::StringTrimStart),
+        "trimEnd" => Some(RuntimeFn::StringTrimEnd),
+        "trimLeft" => Some(RuntimeFn::StringTrimStart),
+        "trimRight" => Some(RuntimeFn::StringTrimEnd),
+        "startsWith" => Some(RuntimeFn::StringStartsWith),
+        "endsWith" => Some(RuntimeFn::StringEndsWith),
+        "toUpperCase" => Some(RuntimeFn::StringToUpperCase),
+        "toLowerCase" => Some(RuntimeFn::StringToLowerCase),
+        "toLocaleUpperCase" => Some(RuntimeFn::StringToUpperCase),
+        "toLocaleLowerCase" => Some(RuntimeFn::StringToLowerCase),
+        "localeCompare" => Some(RuntimeFn::StringLocaleCompare),
+        "charCodeAt" => Some(RuntimeFn::StringCharCodeAt),
+        "codePointAt" => Some(RuntimeFn::StringCodePointAt),
+        "isWellFormed" => Some(RuntimeFn::StringIsWellFormed),
+        "toWellFormed" => Some(RuntimeFn::StringToWellFormed),
+        "hasOwnProperty" => Some(RuntimeFn::ObjectHasOwnProperty),
+        "valueOf" => Some(RuntimeFn::ValueOf),
+        "push" => Some(RuntimeFn::ArrayPush),
+        "pop" => Some(RuntimeFn::ArrayPop),
+        "reverse" => Some(RuntimeFn::ArrayReverse),
+        "toFixed" => Some(RuntimeFn::NumberToFixed),
+        "toExponential" => Some(RuntimeFn::NumberToExponential),
+        "toPrecision" => Some(RuntimeFn::NumberToPrecision),
         _ => None,
     }
 }
 
-pub(super) fn unsupported_annex_b_string_method(_method: &str, _span: Span) -> Option<Diagnostic> {
+pub(crate) fn unsupported_annex_b_string_method(_method: &str, _span: Span) -> Option<Diagnostic> {
     None
 }
 
-pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Option<&'static str> {
+pub(crate) fn collection_method_runtime_fn(
+    class_name: &str,
+    method: &str,
+) -> Option<RuntimeFn> {
     match (class_name, method) {
-        ("DataView", "getInt32") => Some("DataViewGetInt32"),
-        ("DataView", "setInt32") => Some("DataViewSetInt32"),
-        ("DataView", "getFloat64") => Some("DataViewGetFloat64"),
-        ("DataView", "setFloat64") => Some("DataViewSetFloat64"),
-        ("Map", "get") => Some("MapGet"),
-        ("Map", "set") => Some("MapSet"),
-        ("Map", "has") => Some("MapHas"),
-        ("Map", "delete") => Some("MapDelete"),
-        ("Map", "clear") => Some("MapClear"),
-        ("Map", "forEach") => Some("MapForEach"),
-        ("WeakMap", "set") => Some("WeakMapSet"),
-        ("WeakMap", "get") => Some("WeakMapGet"),
-        ("WeakMap", "has") => Some("WeakMapHas"),
-        ("WeakMap", "delete") => Some("WeakMapDelete"),
-        ("Set", "add") => Some("SetAdd"),
-        ("Set", "has") => Some("SetHas"),
-        ("Set", "delete") => Some("SetDelete"),
-        ("Set", "clear") => Some("SetClear"),
-        ("Set", "forEach") => Some("SetForEach"),
-        ("WeakSet", "add") => Some("WeakSetAdd"),
-        ("WeakSet", "has") => Some("WeakSetHas"),
-        ("WeakSet", "delete") => Some("WeakSetDelete"),
-        ("RegExp", "test") => Some("RegExpTest"),
-        ("RegExp", "exec") => Some("RegExpMatch"),
-        ("Array", "reduce") => Some("ArrayReduce"),
-        ("Array", "reduceRight") => Some("ArrayReduceRight"),
-        ("Array", "lastIndexOf") => Some("ArrayLastIndexOf"),
-        ("Array", "forEach") => Some("ArrayForEach"),
-        ("Array", "map") => Some("ArrayMap"),
-        ("Array", "indexOf") => Some("ArrayIndexOf"),
-        ("Array", "includes") => Some("ArrayIncludes"),
-        ("Array", "sort") => Some("ArraySortNumeric"),
-        ("Array", "slice") => Some("ArraySlice"),
-        ("Array", "join") => Some("ArrayJoin"),
-        ("Array", "every") => Some("ArrayEvery"),
-        ("Array", "some") => Some("ArraySome"),
-        ("Array", "find") => Some("ArrayFind"),
-        ("Array", "findIndex") => Some("ArrayFindIndex"),
-        ("Array", "findLast") => Some("ArrayFindLast"),
-        ("Array", "findLastIndex") => Some("ArrayFindLastIndex"),
-        ("Array", "filter") => Some("ArrayFilter"),
-        ("Array", "concat") => Some("ArrayConcat"),
-        ("Array", "at") => Some("ArrayAt"),
-        ("Array", "fill") => Some("ArrayFill"),
-        ("Array", "flat") => Some("ArrayFlat"),
-        ("Array", "reverse") => Some("ArrayReverse"),
-        ("Array", "copyWithin") => Some("ArrayCopyWithin"),
-        ("Array", "with") => Some("ArrayWith"),
-        ("Array", "toReversed") => Some("ArrayToReversed"),
-        ("Array", "toSorted") => Some("ArrayToSorted"),
-        ("Array", "toSpliced") => Some("ArrayToSpliced"),
-        ("Array", "toString") => Some("ArrayJoin"),
-        ("Array", "toLocaleString") => Some("ArrayJoin"),
-        ("Array", "entries") => Some("ArrayEntries"),
-        ("Array", "keys") => Some("ArrayKeys"),
-        ("Array", "values") => Some("ArrayValues"),
-        ("Array", "shift") => Some("ArrayShift"),
-        ("Array", "unshift") => Some("ArrayUnshift"),
-        ("Array", "splice") => Some("ArraySplice"),
-        ("Object", "valueOf") => Some("ValueOf"),
+        ("DataView", "getInt32") => Some(RuntimeFn::DataViewGetInt32),
+        ("DataView", "setInt32") => Some(RuntimeFn::DataViewSetInt32),
+        ("DataView", "getFloat64") => Some(RuntimeFn::DataViewGetFloat64),
+        ("DataView", "setFloat64") => Some(RuntimeFn::DataViewSetFloat64),
+        ("Map", "get") => Some(RuntimeFn::MapGet),
+        ("Map", "set") => Some(RuntimeFn::MapSet),
+        ("Map", "has") => Some(RuntimeFn::MapHas),
+        ("Map", "delete") => Some(RuntimeFn::MapDelete),
+        ("Map", "clear") => Some(RuntimeFn::MapClear),
+        ("Map", "forEach") => Some(RuntimeFn::MapForEach),
+        ("WeakMap", "set") => Some(RuntimeFn::WeakMapSet),
+        ("WeakMap", "get") => Some(RuntimeFn::WeakMapGet),
+        ("WeakMap", "has") => Some(RuntimeFn::WeakMapHas),
+        ("WeakMap", "delete") => Some(RuntimeFn::WeakMapDelete),
+        ("Set", "add") => Some(RuntimeFn::SetAdd),
+        ("Set", "has") => Some(RuntimeFn::SetHas),
+        ("Set", "delete") => Some(RuntimeFn::SetDelete),
+        ("Set", "clear") => Some(RuntimeFn::SetClear),
+        ("Set", "forEach") => Some(RuntimeFn::SetForEach),
+        ("WeakSet", "add") => Some(RuntimeFn::WeakSetAdd),
+        ("WeakSet", "has") => Some(RuntimeFn::WeakSetHas),
+        ("WeakSet", "delete") => Some(RuntimeFn::WeakSetDelete),
+        ("RegExp", "test") => Some(RuntimeFn::RegExpTest),
+        ("RegExp", "exec") => Some(RuntimeFn::RegExpMatch),
+        ("Array", "reduce") => Some(RuntimeFn::ArrayReduce),
+        ("Array", "reduceRight") => Some(RuntimeFn::ArrayReduceRight),
+        ("Array", "lastIndexOf") => Some(RuntimeFn::ArrayLastIndexOf),
+        ("Array", "forEach") => Some(RuntimeFn::ArrayForEach),
+        ("Array", "map") => Some(RuntimeFn::ArrayMap),
+        ("Array", "indexOf") => Some(RuntimeFn::ArrayIndexOf),
+        ("Array", "includes") => Some(RuntimeFn::ArrayIncludes),
+        ("Array", "sort") => Some(RuntimeFn::ArraySortNumeric),
+        ("Array", "slice") => Some(RuntimeFn::ArraySlice),
+        ("Array", "join") => Some(RuntimeFn::ArrayJoin),
+        ("Array", "every") => Some(RuntimeFn::ArrayEvery),
+        ("Array", "some") => Some(RuntimeFn::ArraySome),
+        ("Array", "find") => Some(RuntimeFn::ArrayFind),
+        ("Array", "findIndex") => Some(RuntimeFn::ArrayFindIndex),
+        ("Array", "findLast") => Some(RuntimeFn::ArrayFindLast),
+        ("Array", "findLastIndex") => Some(RuntimeFn::ArrayFindLastIndex),
+        ("Array", "filter") => Some(RuntimeFn::ArrayFilter),
+        ("Array", "concat") => Some(RuntimeFn::ArrayConcat),
+        ("Array", "at") => Some(RuntimeFn::ArrayAt),
+        ("Array", "fill") => Some(RuntimeFn::ArrayFill),
+        ("Array", "flat") => Some(RuntimeFn::ArrayFlat),
+        ("Array", "reverse") => Some(RuntimeFn::ArrayReverse),
+        ("Array", "copyWithin") => Some(RuntimeFn::ArrayCopyWithin),
+        ("Array", "with") => Some(RuntimeFn::ArrayWith),
+        ("Array", "toReversed") => Some(RuntimeFn::ArrayToReversed),
+        ("Array", "toSorted") => Some(RuntimeFn::ArrayToSorted),
+        ("Array", "toSpliced") => Some(RuntimeFn::ArrayToSpliced),
+        ("Array", "toString") => Some(RuntimeFn::ArrayJoin),
+        ("Array", "toLocaleString") => Some(RuntimeFn::ArrayJoin),
+        ("Array", "entries") => Some(RuntimeFn::ArrayEntries),
+        ("Array", "keys") => Some(RuntimeFn::ArrayKeys),
+        ("Array", "values") => Some(RuntimeFn::ArrayValues),
+        ("Array", "shift") => Some(RuntimeFn::ArrayShift),
+        ("Array", "unshift") => Some(RuntimeFn::ArrayUnshift),
+        ("Array", "splice") => Some(RuntimeFn::ArraySplice),
+        ("Object", "valueOf") => Some(RuntimeFn::ValueOf),
         // Promise prototype methods
-        ("Promise", "then") => Some("PromiseThen"),
-        ("Promise", "catch") => Some("PromiseCatch"),
+        ("Promise", "then") => Some(RuntimeFn::PromiseThen),
+        ("Promise", "catch") => Some(RuntimeFn::PromiseCatch),
         // Typed array methods are routed through constructor lowering, not here
         _ if is_typed_array_class(class_name) => None,
         _ => None,
@@ -217,55 +231,55 @@ fn is_typed_array_class(class_name: &str) -> bool {
     )
 }
 
-pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<&'static str> {
+pub(crate) fn collection_method_runtime_fn_arg(method: &str) -> Option<RuntimeFn> {
     // Methods whose WASM runtime function takes only the receiver (no callback)
     match method {
-        "every" => Some("ArrayEvery"),
-        "some" => Some("ArraySome"),
-        "find" => Some("ArrayFind"),
-        "findIndex" => Some("ArrayFindIndex"),
-        "findLast" => Some("ArrayFindLast"),
-        "findLastIndex" => Some("ArrayFindLastIndex"),
-        "filter" => Some("ArrayFilter"),
-        "push" => Some("ArrayPushGrow"),
-        "pop" => Some("ArrayPop"),
-        "shift" => Some("ArrayShift"),
-        "unshift" => Some("ArrayUnshift"),
-        "splice" => Some("ArraySplice"),
-        "slice" => Some("ArraySlice"),
-        "join" => Some("ArrayJoin"),
-        "reverse" => Some("ArrayReverse"),
-        "indexOf" => Some("ArrayIndexOf"),
-        "includes" => Some("ArrayIncludes"),
-        "sort" => Some("ArraySortNumeric"),
-        "at" => Some("ArrayAt"),
-        "fill" => Some("ArrayFill"),
-        "flat" => Some("ArrayFlat"),
-        "concat" => Some("ArrayConcat"),
-        "copyWithin" => Some("ArrayCopyWithin"),
-        "lastIndexOf" => Some("ArrayLastIndexOf"),
-        "with" => Some("ArrayWith"),
-        "toReversed" => Some("ArrayToReversed"),
-        "toSorted" => Some("ArrayToSorted"),
-        "toSpliced" => Some("ArrayToSpliced"),
-        "toString" => Some("ArrayJoin"),
-        "toLocaleString" => Some("ArrayJoin"),
-        "values" => Some("ArrayValues"),
-        "keys" => Some("ArrayKeys"),
-        "entries" => Some("ArrayEntries"),
+        "every" => Some(RuntimeFn::ArrayEvery),
+        "some" => Some(RuntimeFn::ArraySome),
+        "find" => Some(RuntimeFn::ArrayFind),
+        "findIndex" => Some(RuntimeFn::ArrayFindIndex),
+        "findLast" => Some(RuntimeFn::ArrayFindLast),
+        "findLastIndex" => Some(RuntimeFn::ArrayFindLastIndex),
+        "filter" => Some(RuntimeFn::ArrayFilter),
+        "push" => Some(RuntimeFn::ArrayPushGrow),
+        "pop" => Some(RuntimeFn::ArrayPop),
+        "shift" => Some(RuntimeFn::ArrayShift),
+        "unshift" => Some(RuntimeFn::ArrayUnshift),
+        "splice" => Some(RuntimeFn::ArraySplice),
+        "slice" => Some(RuntimeFn::ArraySlice),
+        "join" => Some(RuntimeFn::ArrayJoin),
+        "reverse" => Some(RuntimeFn::ArrayReverse),
+        "indexOf" => Some(RuntimeFn::ArrayIndexOf),
+        "includes" => Some(RuntimeFn::ArrayIncludes),
+        "sort" => Some(RuntimeFn::ArraySortNumeric),
+        "at" => Some(RuntimeFn::ArrayAt),
+        "fill" => Some(RuntimeFn::ArrayFill),
+        "flat" => Some(RuntimeFn::ArrayFlat),
+        "concat" => Some(RuntimeFn::ArrayConcat),
+        "copyWithin" => Some(RuntimeFn::ArrayCopyWithin),
+        "lastIndexOf" => Some(RuntimeFn::ArrayLastIndexOf),
+        "with" => Some(RuntimeFn::ArrayWith),
+        "toReversed" => Some(RuntimeFn::ArrayToReversed),
+        "toSorted" => Some(RuntimeFn::ArrayToSorted),
+        "toSpliced" => Some(RuntimeFn::ArrayToSpliced),
+        "toString" => Some(RuntimeFn::ArrayJoin),
+        "toLocaleString" => Some(RuntimeFn::ArrayJoin),
+        "values" => Some(RuntimeFn::ArrayValues),
+        "keys" => Some(RuntimeFn::ArrayKeys),
+        "entries" => Some(RuntimeFn::ArrayEntries),
         _ => None,
     }
 }
 
 /// Returns true for array methods whose WASM runtime function doesn't accept user callbacks
-pub(super) fn is_identity_array_method(method: &str) -> bool {
+pub(crate) fn is_identity_array_method(method: &str) -> bool {
     matches!(
         method,
         "every" | "some" | "find" | "findIndex" | "findLast" | "findLastIndex" | "filter"
     )
 }
 
-pub(super) fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {
+pub(crate) fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {
     match arg {
         ResolvedExpr::Number(_) => true,
         ResolvedExpr::Unary { op, expr } if *op == UnaryOp::Negate => {
@@ -275,11 +289,11 @@ pub(super) fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {
     }
 }
 
-pub(super) fn is_json_static_call(object: &ResolvedExpr, method: &str) -> bool {
+pub(crate) fn is_json_static_call(object: &ResolvedExpr, method: &str) -> bool {
     matches!(object, ResolvedExpr::Ident(name) if name == "JSON") && method == "stringify"
 }
 
-pub(super) fn validate_json_stringify_args(
+pub(crate) fn validate_json_stringify_args(
     args: &[ResolvedExpr],
     span: Span,
     function_ids: &HashMap<String, FuncId>,
@@ -294,7 +308,8 @@ pub(super) fn validate_json_stringify_args(
             ),
             span: Some(span),
 
-            phase: None,});
+            phase: None,
+        });
     }
 
     if let Some(replacer) = args.get(1) {
@@ -341,7 +356,7 @@ pub(super) fn validate_json_stringify_args(
     Ok(())
 }
 
-pub(super) fn is_supported_json_stringify_space(
+pub(crate) fn is_supported_json_stringify_space(
     space: &ResolvedExpr,
     function_ids: &HashMap<String, FuncId>,
 ) -> bool {
@@ -367,7 +382,7 @@ pub(super) fn is_supported_json_stringify_space(
     }
 }
 
-pub(super) fn is_supported_json_stringify_boxed_space(
+pub(crate) fn is_supported_json_stringify_boxed_space(
     class_name: &str,
     args: &[ResolvedExpr],
 ) -> bool {
@@ -382,7 +397,7 @@ pub(super) fn is_supported_json_stringify_boxed_space(
     }
 }
 
-pub(super) fn is_json_stringify_number_space_arg(arg: &ResolvedExpr) -> bool {
+pub(crate) fn is_json_stringify_number_space_arg(arg: &ResolvedExpr) -> bool {
     matches!(arg, ResolvedExpr::Number(_))
         || matches!(
             arg,
@@ -391,7 +406,7 @@ pub(super) fn is_json_stringify_number_space_arg(arg: &ResolvedExpr) -> bool {
         )
 }
 
-pub(super) fn is_json_stringify_primitive_space_arg(arg: &ResolvedExpr) -> bool {
+pub(crate) fn is_json_stringify_primitive_space_arg(arg: &ResolvedExpr) -> bool {
     matches!(
         arg,
         ResolvedExpr::Number(_)
@@ -402,7 +417,7 @@ pub(super) fn is_json_stringify_primitive_space_arg(arg: &ResolvedExpr) -> bool 
     )
 }
 
-pub(super) fn is_supported_json_stringify_replacer_array(
+pub(crate) fn is_supported_json_stringify_replacer_array(
     elements: &[ResolvedArrayElement],
     function_ids: &HashMap<String, FuncId>,
 ) -> bool {
@@ -414,12 +429,12 @@ pub(super) fn is_supported_json_stringify_replacer_array(
     })
 }
 
-pub(super) enum JsonStringifyReplacerEntry {
+pub(crate) enum JsonStringifyReplacerEntry {
     Key(String),
     Ignored,
 }
 
-pub(super) fn json_stringify_replacer_entry(
+pub(crate) fn json_stringify_replacer_entry(
     element: &ResolvedExpr,
     function_ids: &HashMap<String, FuncId>,
 ) -> Option<JsonStringifyReplacerEntry> {
@@ -457,7 +472,7 @@ pub(super) fn json_stringify_replacer_entry(
     }
 }
 
-pub(super) fn json_stringify_boxed_replacer_entry(
+pub(crate) fn json_stringify_boxed_replacer_entry(
     class_name: &str,
     args: &[ResolvedExpr],
 ) -> Option<JsonStringifyReplacerEntry> {
@@ -477,7 +492,7 @@ pub(super) fn json_stringify_boxed_replacer_entry(
     }
 }
 
-pub(super) fn json_stringify_number_key(element: &ResolvedExpr) -> Option<String> {
+pub(crate) fn json_stringify_number_key(element: &ResolvedExpr) -> Option<String> {
     match element {
         ResolvedExpr::Number(value) => Some(value.to_string()),
         ResolvedExpr::Unary { op, expr }
@@ -493,7 +508,7 @@ pub(super) fn json_stringify_number_key(element: &ResolvedExpr) -> Option<String
     }
 }
 
-pub(super) fn json_stringify_replacer_keys(
+pub(crate) fn json_stringify_replacer_keys(
     args: &[ResolvedExpr],
     function_ids: &HashMap<String, FuncId>,
 ) -> Option<Vec<String>> {
@@ -515,7 +530,7 @@ pub(super) fn json_stringify_replacer_keys(
     }
 }
 
-pub(super) fn json_stringify_function_replacer_id(
+pub(crate) fn json_stringify_function_replacer_id(
     replacer: &ResolvedExpr,
     function_ids: &HashMap<String, FuncId>,
 ) -> Option<FuncId> {
@@ -525,7 +540,7 @@ pub(super) fn json_stringify_function_replacer_id(
     }
 }
 
-pub(super) fn is_json_stringify_side_effect_free_static_value(value: &ResolvedExpr) -> bool {
+pub(crate) fn is_json_stringify_side_effect_free_static_value(value: &ResolvedExpr) -> bool {
     match value {
         ResolvedExpr::Number(_)
         | ResolvedExpr::BigIntLiteral { .. }
@@ -549,11 +564,11 @@ pub(super) fn is_json_stringify_side_effect_free_static_value(value: &ResolvedEx
     }
 }
 
-pub(super) fn is_ignored_json_stringify_replacer_ident(name: &str) -> bool {
+pub(crate) fn is_ignored_json_stringify_replacer_ident(name: &str) -> bool {
     matches!(name, "Symbol" | "Number" | "String" | "Boolean" | "Object")
 }
 
-pub(super) fn is_ignored_json_stringify_replacer_call(
+pub(crate) fn is_ignored_json_stringify_replacer_call(
     callee: &ResolvedExpr,
     args: &[ResolvedExpr],
 ) -> bool {
@@ -561,7 +576,7 @@ pub(super) fn is_ignored_json_stringify_replacer_call(
         && args.iter().all(is_json_stringify_primitive_space_arg)
 }
 
-pub(super) fn should_ignore_json_stringify_space(
+pub(crate) fn should_ignore_json_stringify_space(
     space: &ResolvedExpr,
     function_ids: &HashMap<String, FuncId>,
 ) -> bool {
@@ -579,11 +594,11 @@ pub(super) fn should_ignore_json_stringify_space(
     ) || is_ignored_json_stringify_boxed_space(space)
 }
 
-pub(super) fn is_ignored_json_stringify_space_ident(name: &str) -> bool {
+pub(crate) fn is_ignored_json_stringify_space_ident(name: &str) -> bool {
     matches!(name, "Symbol" | "Number" | "String" | "Boolean" | "Object")
 }
 
-pub(super) fn is_ignored_json_stringify_space_call(
+pub(crate) fn is_ignored_json_stringify_space_call(
     callee: &ResolvedExpr,
     args: &[ResolvedExpr],
 ) -> bool {
@@ -591,7 +606,7 @@ pub(super) fn is_ignored_json_stringify_space_call(
         && args.iter().all(is_json_stringify_primitive_space_arg)
 }
 
-pub(super) fn is_ignored_json_stringify_boxed_space(space: &ResolvedExpr) -> bool {
+pub(crate) fn is_ignored_json_stringify_boxed_space(space: &ResolvedExpr) -> bool {
     matches!(
         space,
         ResolvedExpr::New {
@@ -603,7 +618,7 @@ pub(super) fn is_ignored_json_stringify_boxed_space(space: &ResolvedExpr) -> boo
     )
 }
 
-pub(super) fn json_stringify_boxed_space_value(space: &ResolvedExpr) -> Option<&ResolvedExpr> {
+pub(crate) fn json_stringify_boxed_space_value(space: &ResolvedExpr) -> Option<&ResolvedExpr> {
     match space {
         ResolvedExpr::New {
             class_name, args, ..
@@ -615,7 +630,7 @@ pub(super) fn json_stringify_boxed_space_value(space: &ResolvedExpr) -> Option<&
     }
 }
 
-pub(super) fn json_stringify_replacer_diagnostic(kind: &str, span: Span) -> Diagnostic {
+pub(crate) fn json_stringify_replacer_diagnostic(kind: &str, span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: format!(
@@ -623,15 +638,15 @@ pub(super) fn json_stringify_replacer_diagnostic(kind: &str, span: Span) -> Diag
         ),
         span: Some(span),
 
-
-            phase: None,}
+        phase: None,
+    }
 }
 
-pub(super) fn is_date_now_live_time_call(object: &ResolvedExpr, method: &str) -> bool {
+pub(crate) fn is_date_now_live_time_call(object: &ResolvedExpr, method: &str) -> bool {
     matches!(object, ResolvedExpr::Ident(name) if name == "Date") && method == "now"
 }
 
-pub(super) fn is_date_now_expr(expr: &ResolvedExpr) -> bool {
+pub(crate) fn is_date_now_expr(expr: &ResolvedExpr) -> bool {
     matches!(
         expr,
         ResolvedExpr::MethodCall {
@@ -643,11 +658,11 @@ pub(super) fn is_date_now_expr(expr: &ResolvedExpr) -> bool {
     )
 }
 
-pub(super) fn is_annex_b_date_method(method: &str) -> bool {
+pub(crate) fn is_annex_b_date_method(method: &str) -> bool {
     matches!(method, "getYear" | "setYear" | "toGMTString")
 }
 
-pub(super) fn unsupported_annex_b_date_method_diagnostic(
+pub(crate) fn unsupported_annex_b_date_method_diagnostic(
     method: &str,
     span: Option<Span>,
 ) -> Diagnostic {
@@ -658,11 +673,11 @@ pub(super) fn unsupported_annex_b_date_method_diagnostic(
         ),
         span,
 
-
-            phase: None,}
+        phase: None,
+    }
 }
 
-pub(super) fn is_local_tz_date_method(method: &str) -> bool {
+pub(crate) fn is_local_tz_date_method(method: &str) -> bool {
     matches!(
         method,
         "getFullYear"
@@ -676,7 +691,7 @@ pub(super) fn is_local_tz_date_method(method: &str) -> bool {
     )
 }
 
-pub(super) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String, Diagnostic> {
+pub(crate) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String, Diagnostic> {
     if !(1..=2).contains(&args.len()) {
         return Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
@@ -686,7 +701,8 @@ pub(super) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String
             ),
             span: None,
 
-            phase: None,});
+            phase: None,
+        });
     }
     let ResolvedExpr::String(pattern) = &args[0] else {
         return Err(Diagnostic {
@@ -696,7 +712,8 @@ pub(super) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String
                     .to_owned(),
             span: None,
 
-            phase: None,});
+            phase: None,
+        });
     };
     let flags = match args.get(1) {
         Some(ResolvedExpr::String(flags)) => flags.as_str(),
@@ -708,7 +725,8 @@ pub(super) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String
                         .to_owned(),
                 span: None,
 
-                phase: None,});
+                phase: None,
+            });
         }
         None => "",
     };
@@ -717,11 +735,11 @@ pub(super) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String
     Ok(raw)
 }
 
-pub(super) fn regexp_test_runtime(
+pub(crate) fn regexp_test_runtime(
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
-    span: ts2wasm_frontend::Span,
+    span: Span,
 ) -> Result<Option<Vec<ResolvedExpr>>, Diagnostic> {
     if method != "test" {
         return Ok(None);
@@ -735,7 +753,8 @@ pub(super) fn regexp_test_runtime(
             ),
             span: Some(span),
 
-            phase: None,});
+            phase: None,
+        });
     }
     match object {
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
@@ -754,11 +773,11 @@ pub(super) fn regexp_test_runtime(
     }
 }
 
-pub(super) fn regexp_string_match_runtime(
+pub(crate) fn regexp_string_match_runtime(
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
-    span: ts2wasm_frontend::Span,
+    span: Span,
 ) -> Result<Option<Vec<ResolvedExpr>>, Diagnostic> {
     if method != "match" && method != "search" {
         return Ok(None);
@@ -773,7 +792,8 @@ pub(super) fn regexp_string_match_runtime(
             ),
             span: Some(span),
 
-            phase: None,});
+            phase: None,
+        });
     }
     if !matches!(object, ResolvedExpr::String(_) | ResolvedExpr::Ident(_)) {
         return Ok(None);
@@ -796,17 +816,18 @@ pub(super) fn regexp_string_match_runtime(
                 ),
                 span: Some(span),
 
-                phase: None,});
+                phase: None,
+            });
         }
     }
     Ok(Some(vec![args[0].clone(), object.clone()]))
 }
 
-pub(super) fn regexp_exec_runtime(
+pub(crate) fn regexp_exec_runtime(
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
-    span: ts2wasm_frontend::Span,
+    span: Span,
 ) -> Result<Option<Vec<ResolvedExpr>>, Diagnostic> {
     if method != "exec" {
         return Ok(None);
@@ -820,7 +841,8 @@ pub(super) fn regexp_exec_runtime(
             ),
             span: Some(span),
 
-            phase: None,});
+            phase: None,
+        });
     }
     match object {
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
@@ -839,11 +861,11 @@ pub(super) fn regexp_exec_runtime(
     }
 }
 
-pub(super) fn looks_like_regexp_literal(raw: &str) -> bool {
+pub(crate) fn looks_like_regexp_literal(raw: &str) -> bool {
     raw.starts_with('/') && raw[1..].contains('/')
 }
 
-pub(super) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<(), Diagnostic> {
+pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<(), Diagnostic> {
     let Some(delimiter) = raw.rfind('/') else {
         return Err(unsupported_regexp_literal(
             context,
@@ -966,17 +988,17 @@ pub(super) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
     Ok(())
 }
 
-pub(super) fn unsupported_regexp_literal(context: &str, raw: &str, reason: &str) -> Diagnostic {
+pub(crate) fn unsupported_regexp_literal(context: &str, raw: &str, reason: &str) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: format!("issue-051: {context} `{raw}` is not supported yet: {reason}"),
         span: None,
 
-
-        phase: None,}
+        phase: None,
+    }
 }
 
-pub(super) fn unsupported_regexp_compile_diagnostic(span: Option<Span>) -> Diagnostic {
+pub(crate) fn unsupported_regexp_compile_diagnostic(span: Option<Span>) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: "issue-051: RegExp.prototype.compile is not supported in this subset; create a new RegExp(\"plain\") value instead"

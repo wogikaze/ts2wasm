@@ -5,10 +5,20 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[features]
+wasm-encoder-backend = ["dep:wasm-encoder"]
+
 [dependencies]
 ts2wasm-shared = { path = "../shared" }
-ts2wasm-frontend = { path = "../frontend" }
+ts2wasm-source = { path = "../source" }
+ts2wasm-diagnostic = { path = "../diagnostic" }
+ts2wasm-syntax = { path = "../syntax" }
+ts2wasm-resolve = { path = "../resolve" }
+ts2wasm-semantics = { path = "../semantics" }
+ts2wasm-backend-core = { path = "../backend-core" }
 ts2wasm-ir = { path = "../ir" }
 ts2wasm-runtime-abi = { path = "../runtime-abi" }
+ts2wasm-runtime-catalog = { path = "../runtime-catalog" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+wasm-encoder = { version = "0.248", optional = true }

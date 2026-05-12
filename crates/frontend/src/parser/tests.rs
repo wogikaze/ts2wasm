@@ -194,13 +194,11 @@ mod tests {
         );
 
         // With extends
-        let program =
-            parse_program("export abstract class B extends C { }").unwrap();
+        let program = parse_program("export abstract class B extends C { }").unwrap();
         assert_eq!(program.len(), 0);
 
         // Runtime statements after erased syntax still parse
-        let program =
-            parse_program("export abstract class A {} let x = 1;").unwrap();
+        let program = parse_program("export abstract class A {} let x = 1;").unwrap();
         assert_eq!(program.len(), 1);
         assert!(matches!(program[0], Stmt::Let { .. }));
 
@@ -260,9 +258,10 @@ mod tests {
         let err =
             parse_program("function read(value: number, this: any) { return value; }").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err
-            .message
-            .contains("this parameters must be the leading parameter"));
+        assert!(
+            err.message
+                .contains("this parameters must be the leading parameter")
+        );
     }
 
     #[test]
@@ -421,15 +420,19 @@ mod tests {
         "#;
         let program = parse_program(source).unwrap();
         assert_eq!(program.len(), 4);
-        assert!(program
-            .iter()
-            .any(|stmt| matches!(stmt, Stmt::Function { name, .. } if name == "readAmbient")));
+        assert!(
+            program
+                .iter()
+                .any(|stmt| matches!(stmt, Stmt::Function { name, .. } if name == "readAmbient"))
+        );
         assert!(program.iter().any(
             |stmt| matches!(stmt, Stmt::AmbientValueDecl { name, .. } if name == "ambientValue")
         ));
-        assert!(program
-            .iter()
-            .any(|stmt| matches!(stmt, Stmt::ClassDecl { .. })));
+        assert!(
+            program
+                .iter()
+                .any(|stmt| matches!(stmt, Stmt::ClassDecl { .. }))
+        );
         assert!(program.iter().any(|stmt| matches!(stmt, Stmt::Let { .. })));
 
         let Some(Stmt::ClassDecl { body, .. }) = program
@@ -459,13 +462,19 @@ mod tests {
     fn reports_module_augmentation_unsupported() {
         let err = parse_program(r#"declare module "fs" { export var value: string; }"#)
             .expect_err("module augmentation should produce unsupported diagnostic");
-        assert!(err.message.contains("module augmentation"),
-            "Diagnostic should mention module augmentation: {}", err.message);
+        assert!(
+            err.message.contains("module augmentation"),
+            "Diagnostic should mention module augmentation: {}",
+            err.message
+        );
 
         let err = parse_program("declare module 'path' { import * as fs from 'fs'; };")
             .expect_err("module augmentation with single-quoted name should produce error");
-        assert!(err.message.contains("module augmentation"),
-            "Diagnostic should mention module augmentation: {}", err.message);
+        assert!(
+            err.message.contains("module augmentation"),
+            "Diagnostic should mention module augmentation: {}",
+            err.message
+        );
     }
 
     #[test]
@@ -516,9 +525,10 @@ mod tests {
         .expect_err("typed local declaration with null in erased namespace should report TS2322");
         assert_eq!(err.code, DiagCode::TypeScriptTypeCheck);
         assert!(err.message.contains("TS2322"));
-        assert!(err
-            .message
-            .contains("Type 'null' is not assignable to type 'string'"));
+        assert!(
+            err.message
+                .contains("Type 'null' is not assignable to type 'string'")
+        );
         assert_eq!(err.span, Some(Span { start: 48, end: 52 }));
     }
 
@@ -538,9 +548,10 @@ mod tests {
         .expect_err("typed null local with let in erased namespace should report TS2322");
         assert_eq!(err.code, DiagCode::TypeScriptTypeCheck);
         assert!(err.message.contains("TS2322"));
-        assert!(err
-            .message
-            .contains("Type 'null' is not assignable to type 'number'"));
+        assert!(
+            err.message
+                .contains("Type 'null' is not assignable to type 'number'")
+        );
     }
 
     #[test]
@@ -578,10 +589,7 @@ mod tests {
         assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
         assert!(err.message.contains("decorator"), "{err:?}");
         let span = err.span.expect("diagnostic must have a source span");
-        assert_eq!(
-            &"var v = @ class C {};"[span.start..span.end],
-            "@"
-        );
+        assert_eq!(&"var v = @ class C {};"[span.start..span.end], "@");
     }
 
     #[test]
@@ -812,10 +820,12 @@ mod tests {
     fn parses_anonymous_function_expression_call_with_spread() {
         let program =
             parse_program("(function(a, b, c) { return a + b + c; }(...[1, 2, 3]));").unwrap();
-        let [Stmt::Expr {
-            expr: Expr::Call { callee, args, .. },
-            ..
-        }] = program.as_slice()
+        let [
+            Stmt::Expr {
+                expr: Expr::Call { callee, args, .. },
+                ..
+            },
+        ] = program.as_slice()
         else {
             panic!("expected function expression call statement");
         };
@@ -1720,8 +1730,9 @@ b /* parameter b */,
 
     #[test]
     fn parses_new_target_in_class() {
-        let program = parse_program("class C { constructor() { this.is_self = new.target === C; } }")
-            .unwrap();
+        let program =
+            parse_program("class C { constructor() { this.is_self = new.target === C; } }")
+                .unwrap();
 
         let Stmt::ClassDecl { body, .. } = &program[0] else {
             panic!("expected class declaration");
@@ -1770,9 +1781,10 @@ b /* parameter b */,
 
     #[test]
     fn parses_public_field_initializers_as_constructor_assignments() {
-        let program =
-            parse_program("class C { a = 1; b: number = this.a + 2; c; getValue() { return this.b; } }")
-                .unwrap();
+        let program = parse_program(
+            "class C { a = 1; b: number = this.a + 2; c; getValue() { return this.b; } }",
+        )
+        .unwrap();
 
         let Stmt::ClassDecl { body, .. } = &program[0] else {
             panic!("expected class declaration");
@@ -1891,9 +1903,10 @@ b /* parameter b */,
     fn rejects_uninitialized_const_after_type_annotation() {
         let err = parse_program("const value: number;").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err
-            .message
-            .contains("const declarations require an initializer"));
+        assert!(
+            err.message
+                .contains("const declarations require an initializer")
+        );
     }
 
     #[test]
@@ -1954,9 +1967,10 @@ b /* parameter b */,
         let err = parse_program("let [...a, b] = arr;").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(err.message.contains("issue-247"));
-        assert!(err
-            .message
-            .contains("rest binding must be the final element"));
+        assert!(
+            err.message
+                .contains("rest binding must be the final element")
+        );
         assert_eq!(err.span, Some(Span { start: 5, end: 8 }));
     }
 
@@ -2017,9 +2031,10 @@ b /* parameter b */,
         let err = parse_program("[...a, b] = arr;").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(err.message.contains("issue-252"));
-        assert!(err
-            .message
-            .contains("rest assignment target must be the final element"));
+        assert!(
+            err.message
+                .contains("rest assignment target must be the final element")
+        );
         assert_eq!(err.span, Some(Span { start: 1, end: 4 }));
     }
 
@@ -2028,9 +2043,10 @@ b /* parameter b */,
         let err = parse_program("({ x: call() } = obj);").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(err.message.contains("issue-252"));
-        assert!(err
-            .message
-            .contains("invalid destructuring assignment target"));
+        assert!(
+            err.message
+                .contains("invalid destructuring assignment target")
+        );
     }
 
     #[test]
@@ -2225,7 +2241,7 @@ b /* parameter b */,
     #[test]
     fn rejects_unsupported_regexp_flag_with_issue_linked_diagnostic() {
         let err = parse_program("let r = /abc/d;").unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert_eq!(err.code, DiagCode::SyntaxError);
         assert!(err.message.contains("issue-202"));
         assert!(err.message.contains("unsupported RegExp flag `d`"));
         assert!(err.span.is_some());
@@ -2234,7 +2250,7 @@ b /* parameter b */,
     #[test]
     fn rejects_duplicate_regexp_flag_with_issue_linked_diagnostic() {
         let err = parse_program("let r = /abc/gg;").unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert_eq!(err.code, DiagCode::SyntaxError);
         assert!(err.message.contains("issue-202"));
         assert!(err.message.contains("duplicate RegExp flag `g`"));
         assert!(err.span.is_some());
@@ -2606,9 +2622,11 @@ b /* parameter b */,
         let function_err = parse_program("export default function value() {};").unwrap_err();
         assert_eq!(function_err.code, DiagCode::UnsupportedSyntax);
         assert!(function_err.message.contains("issue-055"));
-        assert!(function_err
-            .message
-            .contains("unsupported default function export"));
+        assert!(
+            function_err
+                .message
+                .contains("unsupported default function export")
+        );
         assert_eq!(function_err.span, Some(Span { start: 0, end: 6 }));
     }
 
@@ -2779,12 +2797,20 @@ b /* parameter b */,
             panic!("expected class declaration");
         };
         assert_eq!(name, "Foo");
-        // Accessor field declarations are consumed (erased syntax) — the class should parse
-        // successfully without errors
-        assert!(
-            body.is_empty(),
-            "accessor fields should be erased from body"
-        );
+        let [
+            Stmt::Function {
+                name,
+                params,
+                body: constructor_body,
+                ..
+            },
+        ] = body.as_slice()
+        else {
+            panic!("accessor fields should lower to one constructor assignment block");
+        };
+        assert_eq!(name, "constructor");
+        assert!(params.is_empty());
+        assert_eq!(constructor_body.len(), 4);
     }
 
     #[test]
@@ -2820,9 +2846,10 @@ b /* parameter b */,
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(err.message.contains("issue-055"));
         assert!(err.message.contains("unsupported dynamic import"));
-        assert!(err
-            .message
-            .contains("module resolution and loading are not implemented"));
+        assert!(
+            err.message
+                .contains("module resolution and loading are not implemented")
+        );
         assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
     }
 
@@ -3712,7 +3739,9 @@ b /* parameter b */,
                         right,
                         ..
                     } => {
-                        assert!(matches!(left.as_ref(), Expr::Member { object: _, property: p, .. } if p == "x"));
+                        assert!(
+                            matches!(left.as_ref(), Expr::Member { object: _, property: p, .. } if p == "x")
+                        );
                         assert!(matches!(right.as_ref(), Expr::Number { value: 2, .. }));
                     }
                     other => panic!("expected Binary with Add op, got {other:?}"),
@@ -4100,7 +4129,7 @@ b /* parameter b */,
     fn jsx_accepts_basic_element() {
         // Expect parsing failure: JSX syntax not yet supported
         let err = parse_program("<div>hello</div>").unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert_eq!(err.code, DiagCode::SyntaxError);
     }
 
     #[test]
@@ -4108,7 +4137,7 @@ b /* parameter b */,
         // Malformed JSX should also produce an error (any error code is acceptable)
         let err = parse_program("<div>").unwrap_err();
         // Should produce some diagnostic (unsupported syntax or parse error)
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert_eq!(err.code, DiagCode::SyntaxError);
     }
 
     // === Decorator parsing (ID 195, W4 P3) — RED phase ===
