@@ -2610,6 +2610,7 @@ fn number_static_nan_and_finite_fixtures_match_node_output_under_iwasm() {
 fn math_builtin_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/math-abs.ts",
+        "fixtures/builtins-and-io/math-cbrt.ts",
         "fixtures/builtins-and-io/math-ceil.ts",
         "fixtures/builtins-and-io/math-floor.ts",
         "fixtures/builtins-and-io/math-max.ts",
@@ -2618,6 +2619,7 @@ fn math_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/test-math-pow.ts",
         // math-random.ts: skip — WASM i32 vs Node float mismatch
         "fixtures/builtins-and-io/math-round.ts",
+        "fixtures/builtins-and-io/math-sqrt.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }

@@ -986,6 +986,16 @@ fn number_static_nan_and_finite_match_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/number-is-finite.ts");
 }
 
+#[test]
+fn extended_math_builtins_match_node() {
+    for fixture in [
+        "fixtures/builtins-and-io/math-cbrt.ts",
+        "fixtures/builtins-and-io/math-sqrt.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
 // Object semantics kernel fixtures (items 175-181)
 #[test]
 fn writable_false_enforcement_matches_node_output() {
