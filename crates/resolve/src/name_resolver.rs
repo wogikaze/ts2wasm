@@ -139,6 +139,18 @@ pub fn default_allowed_globals() -> std::collections::HashSet<String> {
         "GeneratorFunction",
         "AsyncFunction",
         "AsyncGeneratorFunction",
+        // Additional ES2024/ES2025 and test262 globals (epic I-20260513)
+        "SuppressedError",
+        "DisposableStack",
+        "AsyncDisposableStack",
+        "ShadowRealm",
+        "createRealm",
+        "detachArrayBuffer",
+        "queueMicrotask",
+        "structuredClone",
+        // test262 host functions
+        "performance",
+        "setImmediate",
     ]
     .iter()
     .map(|s| s.to_string())

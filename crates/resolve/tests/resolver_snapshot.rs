@@ -374,3 +374,68 @@ fn resolver_snapshot_chained_binary() {
         other => panic!("expected Stmt::Let(_, Binary(Add)), got: {other:?}"),
     }
 }
+
+// ---------------------------------------------------------------------------
+// New global name resolution (epic I-20260513)
+// ---------------------------------------------------------------------------
+
+#[test]
+fn resolver_resolves_new_es_globals() {
+    let globals = [
+        "SuppressedError",
+        "DisposableStack",
+        "AsyncDisposableStack",
+        "ShadowRealm",
+        "createRealm",
+        "detachArrayBuffer",
+        "queueMicrotask",
+        "structuredClone",
+        "performance",
+        "setImmediate",
+    ];
+    for name in globals {
+        let source = format!("{name};");
+        let result = resolve_names(&parse(&source));
+        assert!(
+            result.is_ok(),
+            "expected global `{name}` to resolve, got: {}",
+            result.unwrap_err().message
+        );
+    }
+}
+
+#[test]
+fn resolver_resolves_builtin_prototype_method_names() {
+    // Array.prototype.flat as member access on Array global
+    let stmts = resolve_names(&parse("Array.prototype.flat;")).unwrap();
+    assert_eq!(stmts.len(), 1);
+
+    // String.prototype.matchAll as member access on String global
+    let stmts = resolve_names(&parse("String.prototype.matchAll;")).unwrap();
+    assert_eq!(stmts.len(), 1);
+
+    // Object.prototype.hasOwnProperty (existing)
+    let stmts = resolve_names(&parse("Object.prototype.hasOwnProperty;")).unwrap();
+    assert_eq!(stmts.len(), 1);
+}
+
+#[test]
+fn resolver_resolves_prototype_call_usage() {
+    // Prototype method calls should not trigger UnresolvedName
+    // Array.prototype.flat.call(...) and similar patterns
+    let source = "let a = Array.prototype.flat.call([1, [2]], 1);";
+    let result = resolve_names(&parse(source));
+    assert!(
+        result.is_ok(),
+        "Array.prototype.flat.call should resolve: {:?}",
+        result.err()
+    );
+
+    let source = "let m = String.prototype.matchAll.call('abc', /./g);";
+    let result = resolve_names(&parse(source));
+    assert!(
+        result.is_ok(),
+        "String.prototype.matchAll.call should resolve: {:?}",
+        result.err()
+    );
+}

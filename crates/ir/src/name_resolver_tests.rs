@@ -781,6 +781,43 @@ mod tests {
     }
 
     #[test]
+    fn resolves_new_es_globals_epic_I() {
+        let new_globals = [
+            "SuppressedError",
+            "DisposableStack",
+            "AsyncDisposableStack",
+            "ShadowRealm",
+            "createRealm",
+            "detachArrayBuffer",
+            "queueMicrotask",
+            "structuredClone",
+            "performance",
+            "setImmediate",
+        ];
+        for name in new_globals {
+            let program = vec![Stmt::Expr {
+                expr: Expr::Ident {
+                    name: name.to_string(),
+                    span: Span {
+                        start: 0,
+                        end: name.len(),
+                    },
+                },
+                span: Span {
+                    start: 0,
+                    end: name.len(),
+                },
+            }];
+            let result = name_resolver::resolve_names(&program);
+            assert!(
+                result.is_ok(),
+                "expected global `{name}` to resolve, got: {:?}",
+                result.unwrap_err().message
+            );
+        }
+    }
+
+    #[test]
     fn resolves_global_builtins_issue_5412() {
         let builtin_names = [
             "Proxy",

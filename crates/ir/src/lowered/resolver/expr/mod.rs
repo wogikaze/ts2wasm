@@ -170,6 +170,10 @@ pub(super) fn is_global_builtin_function_name(name: &str) -> bool {
             | "isFinite"
             | "encodeURI"
             | "decodeURI"
+            | "encodeURIComponent"
+            | "decodeURIComponent"
+            | "structuredClone"
+            | "queueMicrotask"
     )
 }
 
@@ -190,9 +194,10 @@ pub(super) fn lower_global_builtin_function_metadata_property(
 fn global_builtin_function_length(name: &str) -> i32 {
     match name {
         "parseInt" => 2,
-        "escape" | "unescape" | "isNaN" | "parseFloat" | "isFinite" | "encodeURI" | "decodeURI" => {
-            1
-        }
+        "escape" | "unescape" | "isNaN" | "parseFloat" | "isFinite" | "encodeURI" | "decodeURI"
+        | "encodeURIComponent" | "decodeURIComponent" => 1,
+        "structuredClone" => 1,
+        "queueMicrotask" => 1,
         _ => 0,
     }
 }
