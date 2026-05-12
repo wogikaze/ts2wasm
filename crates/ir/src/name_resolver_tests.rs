@@ -818,6 +818,47 @@ mod tests {
     }
 
     #[test]
+    fn resolves_typedarray_abstract_constructor_global() {
+        // TypedArray is the abstract typed array constructor (%TypedArray%)
+        // used in many test262 tests as a value expression.
+        let program = vec![Stmt::Expr {
+            expr: Expr::Ident {
+                name: "TypedArray".to_string(),
+                span: Span { start: 0, end: 10 },
+            },
+            span: Span { start: 0, end: 10 },
+        }];
+        let result = name_resolver::resolve_names(&program);
+        assert!(
+            result.is_ok(),
+            "expected `TypedArray` to resolve as a global, got: {:?}",
+            result.err()
+        );
+    }
+
+    #[test]
+    fn resolves_typedarray_member_access() {
+        // Test262 tests access TypedArray.prototype methods
+        let program = vec![Stmt::Expr {
+            expr: Expr::Member {
+                object: Box::new(Expr::Ident {
+                    name: "TypedArray".to_string(),
+                    span: Span { start: 0, end: 10 },
+                }),
+                property: "prototype".to_string(),
+                span: Span { start: 0, end: 20 },
+            },
+            span: Span { start: 0, end: 20 },
+        }];
+        let result = name_resolver::resolve_names(&program);
+        assert!(
+            result.is_ok(),
+            "expected `TypedArray.prototype` to resolve, got: {:?}",
+            result.err()
+        );
+    }
+
+    #[test]
     fn resolves_global_builtins_issue_5412() {
         let builtin_names = [
             "Proxy",
