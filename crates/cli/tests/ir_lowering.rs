@@ -447,6 +447,19 @@ fn lowering_routes_string_match_new_regexp_to_runtime_call() {
 }
 
 #[test]
+fn lowering_rejects_string_match_without_argument_without_panic() {
+    let program = parse_and_resolve("let hit = \"zabcx\".match();");
+    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
+
+    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    assert!(
+        err.message
+            .contains("String.prototype.match supports only RegExp literal"),
+        "unexpected diagnostic: {err:?}"
+    );
+}
+
+#[test]
 fn lowering_keeps_array_push_expression_length_returning() {
     let program = parse_and_resolve("let arr = [1, 2, 3]; let n = arr.push(4); console.log(n);");
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();

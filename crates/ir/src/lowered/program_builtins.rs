@@ -802,8 +802,18 @@ pub(crate) fn regexp_string_match_runtime(
     if !matches!(object, ResolvedExpr::String(_) | ResolvedExpr::Ident(_)) {
         return Ok(None);
     }
+    let Some(arg) = args.first() else {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!(
+                "issue-051: String.prototype.{method} supports only RegExp literal or new RegExp(\"plain\") arguments in this subset"
+            ),
+            span: Some(span),
+            phase: None,
+        });
+    };
     let context = format!("String.prototype.{method} literal");
-    match &args[0] {
+    match arg {
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
             validate_regexp_plain_literal(raw, &context)?;
         }
@@ -824,7 +834,7 @@ pub(crate) fn regexp_string_match_runtime(
             });
         }
     }
-    Ok(Some(vec![args[0].clone(), object.clone()]))
+    Ok(Some(vec![arg.clone(), object.clone()]))
 }
 
 pub(crate) fn regexp_exec_runtime(
