@@ -1,4 +1,4 @@
-use super::hir::{HirExpr, HirFunction, HirProgram, HirStmt};
+use super::hir::{HirExpr, HirProgram, HirStmt};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 
 /// Validate a `HirProgram` for internal consistency.
@@ -11,25 +11,45 @@ pub fn validate_hir(program: &HirProgram) -> Result<(), Vec<Diagnostic>> {
     let mut errors = Vec::new();
     let body_local_count = program.locals.len();
 
+    for local in &program.locals {
+        validate_local_id(*local, body_local_count, "hir top-level local", &mut errors);
+    }
+
     for (idx, func) in program.functions.iter().enumerate() {
         if func.id.0 != idx {
-            errors.push(Diagnostic {
-                code: DiagCode::InvariantViolation,
-                message: format!(
+            push_invariant(
+                &mut errors,
+                format!(
                     "hir function id {} does not match its index {}",
                     func.id.0, idx
                 ),
-                span: None,
-                phase: None,
-            });
+            );
         }
     }
 
-    validate_hir_stmts(&program.body, body_local_count, &program.functions, &mut errors);
+    validate_hir_stmts(
+        &program.body,
+        body_local_count,
+        program.functions.len(),
+        true,
+        &mut errors,
+    );
 
     for func in &program.functions {
         let local_count = func.params.len() + func.locals.len();
-        validate_hir_stmts(&func.body, local_count, &program.functions, &mut errors);
+        for param in &func.params {
+            validate_local_id(*param, local_count, "hir function param", &mut errors);
+        }
+        for local in &func.locals {
+            validate_local_id(*local, local_count, "hir function local", &mut errors);
+        }
+        validate_hir_stmts(
+            &func.body,
+            local_count,
+            program.functions.len(),
+            false,
+            &mut errors,
+        );
     }
 
     if errors.is_empty() {
@@ -42,33 +62,49 @@ pub fn validate_hir(program: &HirProgram) -> Result<(), Vec<Diagnostic>> {
 fn validate_hir_stmts(
     stmts: &[HirStmt],
     local_count: usize,
-    functions: &[HirFunction],
+    func_count: usize,
+    top_level: bool,
     errors: &mut Vec<Diagnostic>,
 ) {
     for stmt in stmts {
         match stmt {
-            HirStmt::Let { init, .. }
-            | HirStmt::Assign { expr: init, .. } => {
-                validate_hir_expr(init, local_count, functions.len(), errors);
+            HirStmt::Let { local, init } => {
+                validate_local_id(*local, local_count, "hir let local", errors);
+                validate_hir_expr(init, local_count, func_count, errors);
+            }
+            HirStmt::Assign { local, expr } => {
+                validate_local_id(*local, local_count, "hir assign local", errors);
+                validate_hir_expr(expr, local_count, func_count, errors);
             }
             HirStmt::Expr(expr) => {
-                validate_hir_expr(expr, local_count, functions.len(), errors);
+                validate_hir_expr(expr, local_count, func_count, errors);
             }
             HirStmt::If {
                 condition,
                 then_body,
                 else_body,
             } => {
-                validate_hir_expr(condition, local_count, functions.len(), errors);
-                validate_hir_stmts(then_body, local_count, functions, errors);
-                validate_hir_stmts(else_body, local_count, functions, errors);
+                validate_hir_expr(condition, local_count, func_count, errors);
+                validate_hir_stmts(then_body, local_count, func_count, top_level, errors);
+                validate_hir_stmts(else_body, local_count, func_count, top_level, errors);
             }
             HirStmt::While { condition, body } => {
-                validate_hir_expr(condition, local_count, functions.len(), errors);
-                validate_hir_stmts(body, local_count, functions, errors);
+                validate_hir_expr(condition, local_count, func_count, errors);
+                validate_hir_stmts(body, local_count, func_count, top_level, errors);
             }
-            HirStmt::Return(expr) | HirStmt::Throw(expr) => {
-                validate_hir_expr(expr, local_count, functions.len(), errors);
+            HirStmt::Return(expr) => {
+                if top_level {
+                    errors.push(Diagnostic {
+                        code: DiagCode::InvalidTopLevelReturn,
+                        message: "hir top-level return is invalid".to_owned(),
+                        span: None,
+                        phase: None,
+                    });
+                }
+                validate_hir_expr(expr, local_count, func_count, errors);
+            }
+            HirStmt::Throw(expr) => {
+                validate_hir_expr(expr, local_count, func_count, errors);
             }
         }
     }
@@ -82,18 +118,7 @@ fn validate_hir_expr(
 ) {
     match expr {
         HirExpr::Local(id) => {
-            if id.0 >= local_count {
-                errors.push(Diagnostic {
-                    code: DiagCode::InvariantViolation,
-                    message: format!(
-                        "hir local id {} out of bounds (max {})",
-                        id.0,
-                        local_count.saturating_sub(1)
-                    ),
-                    span: None,
-                    phase: None,
-                });
-            }
+            validate_local_id(*id, local_count, "hir local reference", errors);
         }
         HirExpr::Unary { expr: inner, .. } => {
             validate_hir_expr(inner, local_count, _func_count, errors);
@@ -114,14 +139,16 @@ fn validate_hir_expr(
             validate_hir_expr(value, local_count, _func_count, errors);
         }
         HirExpr::SetIndex {
-            object, index, value, ..
+            object,
+            index,
+            value,
+            ..
         } => {
             validate_hir_expr(object, local_count, _func_count, errors);
             validate_hir_expr(index, local_count, _func_count, errors);
             validate_hir_expr(value, local_count, _func_count, errors);
         }
-        HirExpr::HasProperty { object, key, .. }
-        | HirExpr::DeleteProperty { object, key, .. } => {
+        HirExpr::HasProperty { object, key, .. } | HirExpr::DeleteProperty { object, key, .. } => {
             validate_hir_expr(object, local_count, _func_count, errors);
             validate_hir_expr(key, local_count, _func_count, errors);
         }
@@ -135,13 +162,24 @@ fn validate_hir_expr(
                 validate_hir_expr(elem, local_count, _func_count, errors);
             }
         }
-        HirExpr::Call { callee, args, .. } | HirExpr::MethodCall { receiver: callee, args, .. } => {
+        HirExpr::Call { callee, args, .. }
+        | HirExpr::MethodCall {
+            receiver: callee,
+            args,
+            ..
+        } => {
             validate_hir_expr(callee, local_count, _func_count, errors);
             for arg in args {
                 validate_hir_expr(arg, local_count, _func_count, errors);
             }
         }
-        HirExpr::New { args, .. } => {
+        HirExpr::New { constructor, args } => {
+            validate_func_id(
+                *constructor,
+                _func_count,
+                "hir constructor reference",
+                errors,
+            );
             for arg in args {
                 validate_hir_expr(arg, local_count, _func_count, errors);
             }
@@ -161,4 +199,51 @@ fn validate_hir_expr(
         | HirExpr::Null
         | HirExpr::Undefined => {}
     }
+}
+
+fn validate_local_id(
+    id: crate::lowered::LocalId,
+    local_count: usize,
+    context: &str,
+    errors: &mut Vec<Diagnostic>,
+) {
+    if id.0 >= local_count {
+        push_invariant(
+            errors,
+            format!(
+                "{} {} out of bounds (max {})",
+                context,
+                id.0,
+                local_count.saturating_sub(1)
+            ),
+        );
+    }
+}
+
+fn validate_func_id(
+    id: crate::lowered::FuncId,
+    func_count: usize,
+    context: &str,
+    errors: &mut Vec<Diagnostic>,
+) {
+    if id.0 >= func_count {
+        push_invariant(
+            errors,
+            format!(
+                "{} {} out of bounds (max {})",
+                context,
+                id.0,
+                func_count.saturating_sub(1)
+            ),
+        );
+    }
+}
+
+fn push_invariant(errors: &mut Vec<Diagnostic>, message: String) {
+    errors.push(Diagnostic {
+        code: DiagCode::InvariantViolation,
+        message,
+        span: None,
+        phase: None,
+    });
 }

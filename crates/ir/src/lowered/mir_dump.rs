@@ -18,6 +18,7 @@ pub fn dump_mir_program(program: &MirProgram, label: &str) -> String {
         "; Top-level locals: {:?}\n",
         program.top_level_locals
     ));
+    out.push_str(&format!("; Modules: {:?}\n", program.modules));
     out.push_str("; Functions:\n");
     for func in &program.functions {
         out.push_str(&dump_mir_function(func));
@@ -33,8 +34,15 @@ pub fn dump_mir_program(program: &MirProgram, label: &str) -> String {
 pub fn dump_mir_function(func: &MirFunction) -> String {
     let mut out = String::new();
     out.push_str(&format!(
-        "  (func ${} (params {:?}) (locals {:?}) (recursion {})\n",
-        func.id.0, func.params, func.locals, func.recursion_depth,
+        "  (func ${} (params {:?}) (locals {:?}) (receiver {}) (min_params {}) (rest {:?}) (recursion {}) (async {})\n",
+        func.id.0,
+        func.params,
+        func.locals,
+        func.uses_receiver,
+        func.min_required_params,
+        func.rest_param_index,
+        func.recursion_depth,
+        func.is_async,
     ));
     for stmt in &func.body {
         dump_mir_stmt(stmt, &mut out, 2);
@@ -170,10 +178,7 @@ pub fn dump_mir_stmt(stmt: &MirStmt, out: &mut String, indent: usize) {
                 ));
             }
             if !private_fields.is_empty() {
-                out.push_str(&format!(
-                    "{};   private_fields {:?}\n",
-                    pad, private_fields
-                ));
+                out.push_str(&format!("{};   private_fields {:?}\n", pad, private_fields));
             }
         }
         MirStmt::Export { name, expr } => {
@@ -367,9 +372,7 @@ fn runtime_intrinsic_name(intrinsic: RuntimeFn) -> &'static str {
         _ if intrinsic == RuntimeFn::ArrayMapValueToString => "ArrayMapValueToString",
         _ if intrinsic == RuntimeFn::ArrayMapUnaryPlus => "ArrayMapUnaryPlus",
         _ if intrinsic == RuntimeFn::ArrayMapStringSplit => "ArrayMapStringSplit",
-        _ if intrinsic == RuntimeFn::ArrayMapArrayLikeIdentity => {
-            "ArrayMapArrayLikeIdentity"
-        }
+        _ if intrinsic == RuntimeFn::ArrayMapArrayLikeIdentity => "ArrayMapArrayLikeIdentity",
         _ if intrinsic == RuntimeFn::ArrayMapArrayLikeDouble => "ArrayMapArrayLikeDouble",
         _ if intrinsic == RuntimeFn::ArraySortNumeric => "ArraySortNumeric",
         _ if intrinsic == RuntimeFn::ArrayJoin => "ArrayJoin",

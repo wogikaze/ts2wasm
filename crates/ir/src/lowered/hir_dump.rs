@@ -7,10 +7,7 @@
 //! - Snapshot testing (serializing HIR to compare against golden files)
 //! - Architecture coverage checks (verifying HIR structure)
 
-use std::fmt;
-
-use crate::lowered::LocalId;
-use crate::lowered::hir::{HirBinaryOp, HirExpr, HirFunction, HirProgram, HirStmt};
+use crate::lowered::hir::{HirExpr, HirFunction, HirProgram, HirStmt};
 
 /// Dump a `HirProgram` to a string.
 pub fn dump_hir_program(program: &HirProgram, label: &str) -> String {

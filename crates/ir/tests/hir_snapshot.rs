@@ -4,9 +4,11 @@
 //! representation is well-formed and stable. This provides early detection
 //! of regressions in the dump format and HIR structure.
 
+use ts2wasm_diagnostic::DiagCode;
 use ts2wasm_ir::lowered::hir::{HirBinaryOp, HirExpr, HirFunction, HirProgram, HirStmt};
 use ts2wasm_ir::lowered::hir_dump::{HirDump, dump_hir_program};
-use ts2wasm_ir::lowered::{FuncId, LocalId};
+use ts2wasm_ir::lowered::validate_hir;
+use ts2wasm_ir::lowered::{FuncId, LocalId, LoweredUnaryOp};
 
 #[test]
 fn hir_dump_empty_program() {
@@ -198,4 +200,127 @@ fn hir_dump_has_and_delete() {
     let dump_del = delete.dump_hir();
     assert!(dump_has.contains("has_property"));
     assert!(dump_del.contains("delete_property"));
+}
+
+#[test]
+fn hir_dump_covers_remaining_expr_variants() {
+    let cases = vec![
+        (
+            HirExpr::Unary {
+                op: LoweredUnaryOp::TypeOf,
+                expr: Box::new(HirExpr::Local(LocalId(0))),
+            },
+            "unary",
+        ),
+        (
+            HirExpr::GetIndex {
+                object: Box::new(HirExpr::Local(LocalId(0))),
+                index: Box::new(HirExpr::String("k".to_owned())),
+            },
+            "get_index",
+        ),
+        (
+            HirExpr::SetIndex {
+                object: Box::new(HirExpr::Local(LocalId(0))),
+                index: Box::new(HirExpr::String("k".to_owned())),
+                value: Box::new(HirExpr::Number(3)),
+            },
+            "set_index",
+        ),
+        (
+            HirExpr::ArrayLiteral {
+                elements: vec![HirExpr::Null, HirExpr::Undefined],
+            },
+            "array",
+        ),
+    ];
+
+    for (expr, marker) in cases {
+        let dump = expr.dump_hir();
+        assert!(dump.contains(marker), "expected {marker}, got: {dump}");
+    }
+}
+
+#[test]
+fn hir_validate_accepts_well_formed_program() {
+    let program = HirProgram {
+        body: vec![
+            HirStmt::Let {
+                local: LocalId(0),
+                init: HirExpr::Number(1),
+            },
+            HirStmt::Expr(HirExpr::New {
+                constructor: FuncId(0),
+                args: vec![HirExpr::Local(LocalId(0))],
+            }),
+        ],
+        locals: vec![LocalId(0)],
+        functions: vec![HirFunction {
+            id: FuncId(0),
+            params: vec![LocalId(0)],
+            locals: vec![LocalId(1)],
+            body: vec![HirStmt::Return(HirExpr::Local(LocalId(1)))],
+        }],
+    };
+
+    validate_hir(&program).expect("valid HIR should pass validation");
+}
+
+#[test]
+fn hir_validate_rejects_invalid_statement_local_target() {
+    let program = HirProgram {
+        body: vec![HirStmt::Let {
+            local: LocalId(1),
+            init: HirExpr::Number(1),
+        }],
+        locals: vec![LocalId(0)],
+        functions: vec![],
+    };
+
+    let errors = validate_hir(&program).expect_err("invalid let local should fail");
+    assert!(errors.iter().any(|error| {
+        error.code == DiagCode::InvariantViolation
+            && error.message.contains("hir let local 1 out of bounds")
+    }));
+}
+
+#[test]
+fn hir_validate_rejects_invalid_constructor_reference() {
+    let program = HirProgram {
+        body: vec![HirStmt::Expr(HirExpr::New {
+            constructor: FuncId(1),
+            args: vec![],
+        })],
+        locals: vec![],
+        functions: vec![HirFunction {
+            id: FuncId(0),
+            params: vec![],
+            locals: vec![],
+            body: vec![],
+        }],
+    };
+
+    let errors = validate_hir(&program).expect_err("invalid constructor should fail");
+    assert!(errors.iter().any(|error| {
+        error.code == DiagCode::InvariantViolation
+            && error
+                .message
+                .contains("hir constructor reference 1 out of bounds")
+    }));
+}
+
+#[test]
+fn hir_validate_rejects_top_level_return() {
+    let program = HirProgram {
+        body: vec![HirStmt::Return(HirExpr::Number(1))],
+        locals: vec![],
+        functions: vec![],
+    };
+
+    let errors = validate_hir(&program).expect_err("top-level return should fail");
+    assert!(
+        errors
+            .iter()
+            .any(|error| error.code == DiagCode::InvalidTopLevelReturn)
+    );
 }
