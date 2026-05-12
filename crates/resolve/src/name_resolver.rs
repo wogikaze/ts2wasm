@@ -261,7 +261,18 @@ impl NameResolver {
         }
         // First pass: collect declaration-only ambient value names without emitting runtime bindings.
         for stmt in program {
-            if let Stmt::AmbientValueDecl { name, span, is_var } = stmt {
+            if let Stmt::Function {
+                name,
+                span,
+                is_ambient,
+                overload_signature,
+                ..
+            } = stmt
+                && *is_ambient
+                && *overload_signature
+            {
+                self.declare_binding(name, Some(*span), false)?;
+            } else if let Stmt::AmbientValueDecl { name, span, is_var } = stmt {
                 // TS2403: ambient declarations must not conflict with known builtin globals.
                 // TypeScript's lib declarations reserve names like `console`, `Array`, etc.
                 if self.allowed_globals.contains(name.as_str()) {
