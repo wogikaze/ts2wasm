@@ -1,6 +1,65 @@
 active: []
 done:
 - acceptance:
+  - test -f current-state.md
+  - test -f docs/24-architecture-decoupling-and-llm-friendly-sizing.md
+  - test -f docs/templates/feature-slice.md
+  - grep -R "phase boundary" docs/24-architecture-decoupling-and-llm-friendly-sizing.md
+  - grep -R "RuntimeLinkPlan" docs/templates/feature-slice.md
+  - grep -R "Differential test" docs/templates/feature-slice.md
+  area: docs
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  evidence:
+    commands:
+    - command: test -f current-state.md
+      exit: 0
+    - command: test -f docs/24-architecture-decoupling-and-llm-friendly-sizing.md
+      exit: 0
+    - command: test -f docs/templates/feature-slice.md
+      exit: 0
+    - command: grep -R "phase boundary" docs/24-architecture-decoupling-and-llm-friendly-sizing.md
+      exit: 0
+    - command: grep -R "RuntimeLinkPlan" docs/templates/feature-slice.md
+      exit: 0
+    - command: grep -R "Differential test" docs/templates/feature-slice.md
+      exit: 0
+    - command: python scripts/check/tracking-consistency.py
+      exit: 0
+    - command: python scripts/manager.py check architecture
+      exit: 0
+    - command: cargo fmt --all --check
+      exit: 0
+    - command: git diff --check -- TRACKING.yaml docs/24-architecture-decoupling-and-llm-friendly-sizing.md
+      exit: 0
+    commit: d94c6e2e0
+  id: 368
+  non_goals:
+  - No compiler implementation.
+  notes: 'docs/24-architecture-decoupling-and-llm-friendly-sizing.md now describes
+    the final phase, semantic-domain, capability, sizing, and fitness-function
+    contracts without P9/P10/P13 transition text as current status.
+
+    '
+  plan:
+    files:
+    - current-state.md
+    - docs/24-architecture-decoupling-and-llm-friendly-sizing.md
+    - docs/templates/feature-slice.md
+    - docs/13-ir-contracts.md
+    - docs/14-runtime-abi.md
+    goal: 'Bring current-state.md, architecture decoupling docs, and the feature-slice
+      template into sync with the final crate layout, final checks, and boundary tests.
+
+      '
+  priority: P2
+  roadmap: P14-final-docs
+  status: done
+  title: Add final docs sync for architecture decoupling, current state, and feature-slice
+    process
+  type: docs
+  updated: '2026-05-12'
+- acceptance:
   - cargo test -p ts2wasm-ir -p ts2wasm-compiler
   - grep -R "struct LoweringCtx" crates/ir/src/lowered
   - grep -R "struct SymbolEnv" crates/ir/src/lowered
@@ -1134,39 +1193,6 @@ open:
   status: open
   title: Add semantic coverage and conformance regression gate
   type: tooling
-  updated: '2026-05-12'
-- acceptance:
-  - test -f docs/current-state.md
-  - test -f docs/24-architecture-decoupling.md
-  - test -f docs/templates/feature-slice.md
-  - grep -R "phase boundary" docs/24-architecture-decoupling.md
-  - grep -R "RuntimeLinkPlan" docs/templates/feature-slice.md
-  - grep -R "Differential test" docs/templates/feature-slice.md
-  area: docs
-  created: '2026-05-12'
-  id: 368
-  non_goals:
-  - No compiler implementation.
-  notes: 'The docs should no longer describe P9/P10/P13 transitional states as current.
-
-    '
-  plan:
-    files:
-    - docs/current-state.md
-    - docs/24-architecture-decoupling.md
-    - docs/templates/feature-slice.md
-    - docs/13-ir-contracts.md
-    - docs/14-runtime-abi.md
-    goal: 'Bring docs/current-state.md, architecture decoupling docs, and the feature-slice
-      template into sync with the final crate layout, final checks, and boundary tests.
-
-      '
-  priority: P2
-  roadmap: P14-final-docs
-  status: open
-  title: Add final docs sync for architecture decoupling, current state, and feature-slice
-    process
-  type: docs
   updated: '2026-05-12'
 - acceptance:
   - cargo test --workspace
