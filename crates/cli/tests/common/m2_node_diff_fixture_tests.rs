@@ -494,6 +494,31 @@ fn regexp_question_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn regexp_0_args_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/regexp-0-args.ts");
+}
+
+#[test]
+fn regexp_flag_d_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/regexp-flag-d.ts");
+}
+
+#[test]
+fn regexp_flag_multi_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/regexp-flag-multi.ts");
+}
+
+#[test]
+fn regexp_flags_gim_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/regexp-flags-gim.ts");
+}
+
+#[test]
+fn regexp_flags_suy_d_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/regexp-flags-suy-d.ts");
+}
+
+#[test]
 fn bigint_literal_runtime_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/bigint-literal-runtime.ts");
 }

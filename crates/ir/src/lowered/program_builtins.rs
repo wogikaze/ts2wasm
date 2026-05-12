@@ -756,10 +756,14 @@ pub(crate) fn regexp_test_runtime(
             phase: None,
         });
     }
+    let test_arg = args
+        .first()
+        .cloned()
+        .unwrap_or(ResolvedExpr::String("undefined".to_owned()));
     match object {
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
             validate_regexp_plain_literal(raw, "RegExp.prototype.test literal")?;
-            Ok(Some(vec![object.clone(), args[0].clone()]))
+            Ok(Some(vec![object.clone(), test_arg]))
         }
         ResolvedExpr::New {
             class_name,
@@ -767,7 +771,7 @@ pub(crate) fn regexp_test_runtime(
             ..
         } if class_name == "RegExp" => {
             regexp_constructor_literal(ctor_args)?;
-            Ok(Some(vec![object.clone(), args[0].clone()]))
+            Ok(Some(vec![object.clone(), test_arg]))
         }
         _ => Ok(None),
     }
@@ -844,10 +848,14 @@ pub(crate) fn regexp_exec_runtime(
             phase: None,
         });
     }
+    let exec_arg = args
+        .first()
+        .cloned()
+        .unwrap_or(ResolvedExpr::String("undefined".to_owned()));
     match object {
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
             validate_regexp_plain_literal(raw, "RegExp.prototype.exec literal")?;
-            Ok(Some(vec![object.clone(), args[0].clone()]))
+            Ok(Some(vec![object.clone(), exec_arg]))
         }
         ResolvedExpr::New {
             class_name,
@@ -855,7 +863,7 @@ pub(crate) fn regexp_exec_runtime(
             ..
         } if class_name == "RegExp" => {
             regexp_constructor_literal(ctor_args)?;
-            Ok(Some(vec![object.clone(), args[0].clone()]))
+            Ok(Some(vec![object.clone(), exec_arg]))
         }
         _ => Ok(None),
     }

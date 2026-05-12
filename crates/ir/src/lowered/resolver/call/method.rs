@@ -332,6 +332,20 @@ impl<'a> super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
+        // RegExp.prototype.toString for literal-backed RegExp
+        if method == "toString" {
+            match object {
+                ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
+                    // String.prototype.toString returns the string itself
+                    return Ok(Some(self.lower_expr(object)?));
+                }
+                ResolvedExpr::New { class_name, .. } if class_name == "RegExp" => {
+                    // Lower the new RegExp to string representation, toString returns it
+                    return Ok(Some(self.lower_expr(object)?));
+                }
+                _ => {}
+            }
+        }
         if matches!(method, "getTime" | "valueOf") && self.is_date_receiver(object) {
             if !args.is_empty() {
                 return Err(Diagnostic {
