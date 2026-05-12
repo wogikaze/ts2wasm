@@ -186,6 +186,7 @@ fn build_smoke_async_arrow() {
 fn semantic_diff_async_arrow() {
     assert_fixture_matches_node_semantic("fixtures/async-await/async-arrow.ts");
 }
+
 // Async generator basic — ID 215 (W5, P3)
 #[test]
 fn build_smoke_async_generator() {

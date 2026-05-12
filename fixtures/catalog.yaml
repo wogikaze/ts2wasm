@@ -53,11 +53,13 @@ directories:
     - arrow-basic.ts
   async-await:
     category: semantic
-    status: unknown
+    status: pass
     expected: async/await compilation
     fixtures:
     - async-arrow.ts
     - async-exception.ts
+    - async-nested.ts
+    - async-void.ts
     - await-sequence.ts
     - basic-async-return.ts
   atcoder:
