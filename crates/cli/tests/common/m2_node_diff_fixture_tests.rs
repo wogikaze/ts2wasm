@@ -2023,6 +2023,8 @@ fn function_arguments_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node(
         "fixtures/core-semantics/arguments-out-of-range-index-assignment.ts",
     );
+    assert_fixture_matches_node("fixtures/core-semantics/arguments-dynamic-index.ts");
+    assert_fixture_matches_node("fixtures/core-semantics/arguments-returned.ts");
 }
 
 #[test]

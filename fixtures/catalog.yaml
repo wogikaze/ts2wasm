@@ -497,8 +497,10 @@ directories:
     - annexb-ishtmldda-logical-assignment-or-unsupported.ts
     - annexb-ishtmldda-typeof-unsupported.ts
     - annexb-ishtmldda-unsupported.ts
+    - arguments-dynamic-index.ts
     - arguments-object-property-call.ts
     - arguments-out-of-range-index-assignment.ts
+    - arguments-returned.ts
     - arguments-top-level-unsupported.ts
     - array-map-arrow-chained-trim-split.ts
     - array-map-arrow-expression-receiver.ts

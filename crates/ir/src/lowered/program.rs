@@ -2276,14 +2276,6 @@ pub(super) fn lower_function(
     options: LowerFunctionOptions<'_>,
 ) -> Result<FunctionLowering, Diagnostic> {
     let signature = function_signatures.get(&id).copied().unwrap_or_default();
-    if signature.needs_arguments && signature.has_rest {
-        return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "issue-062d: `arguments` together with rest parameters is not supported in this milestone".to_owned(),
-            span: None,
-
-            phase: None,});
-    }
     let mut lowered_params = Vec::new();
     if signature.needs_receiver {
         lowered_params.push(ResolvedParam {
