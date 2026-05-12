@@ -57,6 +57,14 @@ impl WatEmitter<'_> {
                 self.collect_expr_strings(condition);
                 self.collect_program_strings(body);
             }
+            LoweredStmt::TryFinally {
+                try_body,
+                finally_body,
+                ..
+            } => {
+                self.collect_program_strings(try_body);
+                self.collect_program_strings(finally_body);
+            }
             LoweredStmt::TryCatch {
                 try_body,
                 catch_body,

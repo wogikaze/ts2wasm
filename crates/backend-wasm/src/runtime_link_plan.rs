@@ -104,6 +104,15 @@ fn collect_required_runtime_stmts(plan: &mut RuntimeLinkPlan, statements: &[Lowe
                 plan.add_required_runtime(RuntimeFn::TruthyBool);
                 collect_required_runtime_stmts(plan, body);
             }
+            LoweredStmt::TryFinally {
+                try_body,
+                finally_body,
+                ..
+            } => {
+                plan.add_required_globals(GLOBALS_EXCEPTION_RUNTIME);
+                collect_required_runtime_stmts(plan, try_body);
+                collect_required_runtime_stmts(plan, finally_body);
+            }
             LoweredStmt::TryCatch {
                 try_body,
                 catch_var: _,

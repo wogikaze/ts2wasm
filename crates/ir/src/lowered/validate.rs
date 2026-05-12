@@ -186,6 +186,14 @@ fn validate_stmt(
             validate_expr(condition, local_count, num_funcs, program, errors, true);
             validate_stmts(body, local_count, num_funcs, program, errors);
         }
+        LoweredStmt::TryFinally {
+            try_body,
+            finally_body,
+            ..
+        } => {
+            validate_stmts(try_body, local_count, num_funcs, program, errors);
+            validate_stmts(finally_body, local_count, num_funcs, program, errors);
+        }
         LoweredStmt::TryCatch {
             try_body,
             catch_var,
@@ -522,9 +530,8 @@ fn validate_expr(
             if *intrinsic == RuntimeFn::ObjectDefineProperty && args.len() != 3 {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
-                    message:
-                        "ObjectDefineProperty must include an object, key, and descriptor"
-                            .to_owned(),
+                    message: "ObjectDefineProperty must include an object, key, and descriptor"
+                        .to_owned(),
                     span: None,
 
                     phase: None,
@@ -533,9 +540,8 @@ fn validate_expr(
             if *intrinsic == RuntimeFn::ObjectGetOwnPropertyDescriptor && args.len() != 2 {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
-                    message:
-                        "ObjectGetOwnPropertyDescriptor must include an object and key"
-                            .to_owned(),
+                    message: "ObjectGetOwnPropertyDescriptor must include an object and key"
+                        .to_owned(),
                     span: None,
 
                     phase: None,
@@ -544,8 +550,7 @@ fn validate_expr(
             if *intrinsic == RuntimeFn::ObjectGetPrototypeOf && args.len() != 1 {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
-                    message: "ObjectGetPrototypeOf must include an object argument"
-                        .to_owned(),
+                    message: "ObjectGetPrototypeOf must include an object argument".to_owned(),
                     span: None,
 
                     phase: None,
@@ -554,8 +559,7 @@ fn validate_expr(
             if *intrinsic == RuntimeFn::ObjectSetPrototypeOf && args.len() != 2 {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
-                    message: "ObjectSetPrototypeOf must include an object and prototype"
-                        .to_owned(),
+                    message: "ObjectSetPrototypeOf must include an object and prototype".to_owned(),
                     span: None,
 
                     phase: None,

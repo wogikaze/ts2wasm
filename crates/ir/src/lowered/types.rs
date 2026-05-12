@@ -7,8 +7,8 @@ use crate::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 use crate::builtin_resolved::{ClassMethodKind, ResolvedExpr, ResolvedParam, ResolvedStmt};
 use crate::lowered::RuntimeFn;
 use crate::lowered::hir::HirProgram;
-use crate::lowered::mir::MirProgram;
 use crate::lowered::hir_validate::validate_hir;
+use crate::lowered::mir::MirProgram;
 use crate::lowered::mir_validate::validate_mir;
 use crate::lowered::validate::validate_lowered;
 use ts2wasm_shared::{
@@ -116,6 +116,11 @@ pub enum LoweredStmt {
     },
     Return(LoweredExpr, Span),
     Throw(LoweredExpr, Span),
+    TryFinally {
+        try_body: Vec<LoweredStmt>,
+        finally_body: Vec<LoweredStmt>,
+        span: Span,
+    },
     TryCatch {
         try_body: Vec<LoweredStmt>,
         catch_var: Option<LocalId>,

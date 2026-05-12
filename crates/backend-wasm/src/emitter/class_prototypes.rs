@@ -216,6 +216,14 @@ impl WatEmitter<'_> {
                     Self::collect_class_prototypes_from_expr(condition, prototypes);
                     Self::collect_class_prototypes_from_stmts(body, prototypes);
                 }
+                LoweredStmt::TryFinally {
+                    try_body,
+                    finally_body,
+                    ..
+                } => {
+                    Self::collect_class_prototypes_from_stmts(try_body, prototypes);
+                    Self::collect_class_prototypes_from_stmts(finally_body, prototypes);
+                }
                 LoweredStmt::TryCatch {
                     try_body,
                     catch_body,
@@ -311,6 +319,14 @@ impl WatEmitter<'_> {
                 } => {
                     Self::collect_builtin_error_prototypes_from_expr(condition, prototypes);
                     Self::collect_builtin_error_prototypes_from_stmts(body, prototypes);
+                }
+                LoweredStmt::TryFinally {
+                    try_body,
+                    finally_body,
+                    ..
+                } => {
+                    Self::collect_builtin_error_prototypes_from_stmts(try_body, prototypes);
+                    Self::collect_builtin_error_prototypes_from_stmts(finally_body, prototypes);
                 }
                 LoweredStmt::TryCatch {
                     try_body,

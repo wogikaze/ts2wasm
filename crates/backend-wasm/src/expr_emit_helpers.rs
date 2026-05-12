@@ -148,6 +148,11 @@ pub(super) fn stmt_may_collect(stmt: &LoweredStmt) -> bool {
             body.iter().any(stmt_may_collect)
         }
         LoweredStmt::Return(expr, _) | LoweredStmt::Throw(expr, _) => expr_may_collect(expr),
+        LoweredStmt::TryFinally {
+            try_body,
+            finally_body,
+            ..
+        } => try_body.iter().any(stmt_may_collect) || finally_body.iter().any(stmt_may_collect),
         LoweredStmt::TryCatch {
             try_body,
             catch_body,

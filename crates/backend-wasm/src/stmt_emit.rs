@@ -11,6 +11,7 @@ use ts2wasm_ir::lowered::FuncId;
 use ts2wasm_ir::lowered::LocalId;
 use ts2wasm_ir::lowered::LoweredExpr;
 use ts2wasm_ir::lowered::LoweredStmt;
+use ts2wasm_ir::lowered::completion::CompletionRecord;
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
 
@@ -351,6 +352,24 @@ impl WatEmitter<'_> {
                 } else {
                     writer.line(indent, ";; ERROR: continue outside loop");
                 }
+            }
+            LoweredStmt::TryFinally {
+                try_body,
+                finally_body,
+                ..
+            } => {
+                // Pure try-finally: delegate to emit_try_catch_statement with
+                // catch_body=None so the existing finally handling is reused.
+                self.emit_try_catch_statement(
+                    writer,
+                    try_body,
+                    &None,
+                    &None,
+                    &Some(finally_body.clone()),
+                    indent,
+                    loop_ctx,
+                    frame,
+                );
             }
             LoweredStmt::TryCatch {
                 try_body,

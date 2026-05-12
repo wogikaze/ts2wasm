@@ -3,6 +3,7 @@ mod call;
 mod class;
 mod expr;
 mod function;
+use self::expr::facts;
 mod module;
 mod object;
 mod string;
@@ -11,6 +12,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::binding_pattern::{BindingDefault, parse_binding_pattern};
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
+use crate::lowered::completion::CompletionRecord;
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::ArrowClosure;
 use crate::lowered::*;
@@ -559,24 +561,34 @@ impl Resolver {
                 catch_block,
                 finally_block,
             } => {
-                let catch_var = if let Some(param) = catch_param {
-                    Some(self.declare_local(param)?)
+                if catch_block.is_none() && finally_block.is_some() {
+                    // Pure try-finally (no catch): emit as TryFinally for
+                    // proper completion record semantics via CompletionRecord types.
+                    Ok(LoweredStmt::TryFinally {
+                        try_body: self.lower_nested_block(try_block)?,
+                        finally_body: self.lower_nested_block(finally_block.as_ref().unwrap())?,
+                        span: Span::generated("try_finally"),
+                    })
                 } else {
-                    None
-                };
-                Ok(LoweredStmt::TryCatch {
-                    try_body: self.lower_nested_block(try_block)?,
-                    catch_var,
-                    catch_body: catch_block
-                        .as_ref()
-                        .map(|b| self.lower_nested_block(b))
-                        .transpose()?,
-                    finally_body: finally_block
-                        .as_ref()
-                        .map(|b| self.lower_nested_block(b))
-                        .transpose()?,
-                    span: Span::generated("try_catch"),
-                })
+                    let catch_var = if let Some(param) = catch_param {
+                        Some(self.declare_local(param)?)
+                    } else {
+                        None
+                    };
+                    Ok(LoweredStmt::TryCatch {
+                        try_body: self.lower_nested_block(try_block)?,
+                        catch_var,
+                        catch_body: catch_block
+                            .as_ref()
+                            .map(|b| self.lower_nested_block(b))
+                            .transpose()?,
+                        finally_body: finally_block
+                            .as_ref()
+                            .map(|b| self.lower_nested_block(b))
+                            .transpose()?,
+                        span: Span::generated("try_catch"),
+                    })
+                }
             }
             ResolvedStmt::Throw(expr) => Ok(LoweredStmt::Throw(
                 self.lower_expr(expr)?,
