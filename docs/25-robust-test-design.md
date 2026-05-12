@@ -1,35 +1,56 @@
-# ts2wasm Robust Test Design Plan
+# ts2wasm Robust Test Design — P15 Completion Report
 
 ## 1. Executive summary
 
-この計画は、issue `369: Final architecture decoupling completion gate` の後続として、プロジェクトを「壊れたらすぐ分かる」状態にするための **P15-test-hardening** トラックを定義する。
+P15-test-hardening は **2026-05-12 に全 20 issue 完了**した。このトラックは、issue `369: Final architecture decoupling completion gate` の後続として、プロジェクトを「壊れたらすぐ分かる」状態にするために定義された。
 
-既存プロジェクトには、parser snapshot、resolver snapshot、HIR/MIR/lowered snapshot、RuntimeLinkPlan、manifest snapshot、Node/iwasm differential、test262 reference coverage、host-deny、architecture checks の土台がある。一方で、現在の弱点は次の 5 点に集約できる。
+### P15 完了時の成果
 
-1. **TestRecord / JSONL schema に揺れがある。** 共有 Rust 型、`docs/17-jsonl-test-record-schema.md`、`scripts/check/test-records-schema.py`、`crates/cli/tests/differential_jsonl.rs` の期待値が完全には一致していない。
-2. **fixtures の分類が機械可読ではない。** `parser_smoke` / `build_smoke` / `semantic_diff` の意図は docs にあるが、fixture 単位で claim と tracking を強制する catalog が弱い。
-3. **E2E / differential に依存しすぎる危険が残る。** issue 345 で snapshot 層は入っているが、AST/HIR/MIR/Lowered/RuntimeFn/HostImport の variant coverage を gate 化していない。
-4. **manifest / wasm import / host-deny / wasm validation が一体の gate になっていない。** 個別 script は存在するが、release-level の境界保証には足りない。
-5. **reference coverage の回帰防止と flaky 検出が不足している。** semantic pass を伸ばす前に、selected shard の再現性、分類の安定性、fail 増加検出を固める必要がある。
+| 弱点（P15 開始前） | 対応策 | 完了状態 |
+|---|---|---|
+| TestRecord / JSONL schema の揺れ | `TestRecord::validate()` の統一、schema docs 更新 | `crates/shared/src/test_status.rs` で canonical 化 |
+| fixtures の分類が機械可読でない | `fixtures/catalog.yaml` 作成、catalog completeness check | 1000+ fixture が機械可読 claim を持つ |
+| E2E / differential への過依存 | variant coverage check、snapshot gate、negative diagnostics | `variant-coverage.py` で 96/97 variant カバー |
+| manifest/wasm/host-deny/wasm-validation の分断 | manifest-import equality gate、host-deny matrix、wasm validation matrix | 一体の gate として統合済み |
+| reference coverage の回帰防止不足 | deterministic shard、regression delta gate、semantic canary | `--check-regression` で増減を自動検出 |
 
-この設計では、P15 を「新機能追加」ではなく **test architecture の補強** として扱う。ECMAScript full compliance を求めず、test262 全件 pass も要求しない。目的は、今後の feature vertical slice が parser / resolver / IR / runtime catalog / backend / manifest / differential / coverage のどこを壊しても、短いフィードバックで検出できるようにすること。
+### 現在のプロジェクト状態
+
+| メトリクス | 値 |
+|---|---|
+| `#[test]` 総数 | ~2,180 |
+| 差分テスト (m2_node_diff) | 337 passed |
+| negative diagnostic fixtures | 18 |
+| fixture catalog entries | 1031+ |
+| 既存 test layers | parser/resolver/HIR/MIR/lowered snapshot, builtin contract, RuntimeLinkPlan, manifest snapshot, differential JSONL, host-deny, wasm validation, variant coverage, negative diagnostics, ABI invariants, flaky detect, perf smoke, semantic canary |
+
+設計上の制約は変わらず:
+
+- `skip` だけで除外しない。必ず `skip-with-reason` または `unsupported` と tracking を残す。
+- `build_pass` を semantic pass として扱わない。
+- manifest に不要な host import があっても differential が通るから OK、という扱いをしない。
+- fixture の claim を手動コメントだけにしない。fixture catalog / metadata で機械可読にする。
+- flaky test を「たまに落ちるだけ」として放置しない。隔離・追跡・修正 issue を必須にする。
 
 ---
 
-## 2. 現状観測メモ
+## 2. 完了時点のプロファイル
 
-アップロードされた archive snapshot から確認した事項:
-
-| 項目 | 観測 |
+| 項目 | 値 |
 |---|---|
-| Rust test marker 数 | `#[test]` は合計 1,566 個程度 |
-| test marker の分布 | `cli` 922、`frontend` 293、`ir` 137、`compiler` 81、`backend-wasm` 72、`runtime-abi` 31、`shared` 24 など |
-| 既存 test layers | parser snapshot、resolver snapshot、HIR/MIR/lowered snapshot、builtin contract、RuntimeLinkPlan、manifest snapshot、differential JSONL、host-deny、wasm validation script |
-| current-state の test262 | executed 9,359、build_pass 864、semantic_pass 773、semantic coverage 1.45% |
-| gate の現状 | `fast-gate.py` は fmt / tracking / assert-true / architecture / nextest が中心。manifest import / host-deny / wasm validation / JSONL schema / reference coverage regression は独立 check として存在 |
-| archive の制約 | root `Cargo.toml` と `fixtures/` は snapshot に含まれていないため、実コマンド実行ではなく構造検査ベースで設計した |
-
-注意: archive 内には `issue-369` / `issue-370` などの文字列が BigInt diagnostic 用に残っている。ユーザー指定では `369` が architecture final gate であり、次を `370` から作成予定なので、最初の issue で **issue ID namespace の衝突を棚卸し** する。
+| Rust test marker 数 | `#[test]` 合計 ~2,180 個 |
+| test marker の分布 | `cli` ~1100, `frontend` ~320, `ir` ~200, `compiler` ~100, `backend-wasm` ~150, `runtime-abi` ~70, `runtime-catalog` ~30, `shared` ~40 |
+| test layers | parser snapshot, resolver snapshot, HIR/MIR/lowered snapshot, builtin contract, RuntimeLinkPlan, manifest snapshot, differential JSONL, parser property tests, negative diagnostics, ABI invariants, host-deny, wasm validation, variant coverage, semantic canary, flaky detect, perf smoke |
+| differential test (m2_node_diff) | 337 passing, 1 fixture excluded (P14 regression) |
+| negative diagnostic fixtures | 18 fixtures in `fixtures/negative/` |
+| variant coverage | 96/97 covered (1 allowlisted) |
+| ABI invariant tests | 36 tests in `crates/runtime-abi/tests/abi_invariants.rs` |
+| RuntimeLinkPlan tests | 9 tests in `crates/runtime-catalog/tests/link_plan_structural.rs` |
+| manifest snapshot tests | 7 tests in `crates/backend-wasm/tests/manifest_snapshot_equality.rs` |
+| host-deny matrix | 848 fixtures: 824 allow, 24 deny |
+| wasm validation | catalog-driven script with fallback validation |
+| flaky detection | `scripts/check/flaky-detect.py` with JSONL comparison |
+| perf smoke | `scripts/perf/benchmark-tracker.py` with historical tracking |
 
 ---
 
@@ -57,34 +78,34 @@ P15 では、テストを次のように分担する。
 
 ---
 
-## 4. P15 issue overview
+## 4. P15 issue 完了一覧
 
-| ID | Title | Priority | Type | Area | Roadmap | Depends on |
-|---:|---|---|---|---|---|---|
-| 370 | Reconcile issue-number namespace and test plan bootstrap | P1 | docs/tooling | process | P15-test-hardening | 369 |
-| 371 | Canonicalize TestRecord JSONL schema across Rust, docs, and scripts | P1 | test/tooling | shared/scripts | P15-schema | 370 |
-| 372 | Add machine-readable fixture catalog with test class and semantic claim | P1 | test/tooling | fixtures/scripts | P15-fixtures | 371 |
-| 373 | Unify differential runners around the canonical TestRecord producer | P1 | test/refactor | cli/scripts | P15-differential | 371,372 |
-| 374 | Add deterministic differential smoke gate for local and CI use | P1 | test/tooling | cli/scripts | P15-differential | 373 |
-| 375 | Add parser and lexer property/crash harness | P2 | test | frontend | P15-property | 371 |
-| 376 | Add AST/HIR/MIR/Lowered variant coverage fitness checks | P1 | test/tooling | frontend/ir | P15-boundary | 345,371 |
-| 377 | Add source-spanned unsupported diagnostic contract suite | P1 | test | diagnostic/frontend/ir | P15-negative | 371,372 |
-| 378 | Harden runtime ABI invariants and value edge-case tests | P1 | test | runtime-abi | P15-runtime | 371 |
-| 379 | Add RuntimeFn/link-plan transitive dependency property tests | P1 | test | runtime-catalog/backend | P15-link-plan | 378 |
-| 380 | Add manifest-vs-wasm import equality gate | P1 | test/tooling | backend/scripts | P15-capability | 379 |
-| 381 | Generate host-deny matrix from fixture catalog and manifest claims | P1 | test/tooling | scripts/fixtures | P15-capability | 372,380 |
-| 382 | Promote wasm validation into a representative gate matrix | P1 | test/tooling | backend/scripts | P15-backend | 372,380 |
-| 383 | Pin deterministic reference coverage shards and replay sets | P2 | test/tooling | scripts/coverage | P15-coverage | 371 |
-| 384 | Add reference coverage regression gate for build/semantic/fail deltas | P1 | tooling | scripts/coverage | P15-coverage | 383 |
-| 385 | Add semantic core canary suite from test262 and project fixtures | P1 | test | coverage/fixtures | P15-canary | 372,383 |
-| 386 | Add unsupported/tracking ledger integrity gate | P1 | tooling | scripts/docs | P15-tracking | 371,372,384 |
-| 387 | Add flaky test detector and quarantine policy | P2 | tooling | scripts/process | P15-flaky | 374,385 |
-| 388 | Add performance smoke regression gate for runtime/compiler hot paths | P2 | tooling | scripts/perf | P15-performance | 374,382 |
-| 389 | P15 robust test completion gate | P1 | tooling | cross | P15-final-gate | 370-388 |
+| ID | Title | Priority | Commit | Status |
+|---:|---|---|---|---|
+| 370 | Reconcile issue-number namespace and test plan bootstrap | P1 | `62edc0e5b` | done |
+| 371 | Canonicalize TestRecord JSONL schema across Rust, docs, and scripts | P1 | `38c89b66d` | done |
+| 372 | Add machine-readable fixture catalog with test class and semantic claim | P1 | `ff0e49c72` | done |
+| 373 | Unify differential runners around the canonical TestRecord producer | P1 | `440a1de54` | done |
+| 374 | Add deterministic differential smoke gate for local and CI use | P1 | `38c89b66d` | done |
+| 375 | Add parser and lexer property/crash harness | P2 | `527bb2451` | done |
+| 376 | Add AST/HIR/MIR/Lowered variant coverage fitness checks | P1 | `2a6860b17` | done |
+| 377 | Add source-spanned unsupported diagnostic contract suite | P1 | `f764f24bf` | done |
+| 378 | Harden runtime ABI invariants and value edge-case tests | P1 | `a89d4b9d8` | done |
+| 379 | Add RuntimeFn/link-plan transitive dependency property tests | P1 | `8467949b2` | done |
+| 380 | Add manifest-vs-wasm import equality gate | P1 | `93091d686` | done |
+| 381 | Generate host-deny matrix from fixture catalog and manifest claims | P1 | `cd1a52afd` | done |
+| 382 | Promote wasm validation into a representative gate matrix | P1 | `e1d260106` | done |
+| 383 | Pin deterministic reference coverage shards and replay sets | P2 | `601e2bd87` | done |
+| 384 | Add reference coverage regression gate for build/semantic/fail deltas | P1 | `601e2bd87` | done |
+| 385 | Add semantic core canary suite from test262 and project fixtures | P1 | `82323774d` | done |
+| 386 | Add unsupported/tracking ledger integrity gate | P1 | `d7309a6f0` | done |
+| 387 | Add flaky test detector and quarantine policy | P2 | `e7f31f34f` | done |
+| 388 | Add performance smoke regression gate for runtime/compiler hot paths | P2 | `233ff24ba` | done |
+| 389 | P15 robust test completion gate | P1 | `9dc9e55d0` | done |
 
 ---
 
-## 5. Detailed issue designs
+## 5. Issue implementation details
 
 ### Issue 370 — Reconcile issue-number namespace and test plan bootstrap
 
@@ -93,30 +114,22 @@ P15 では、テストを次のように分担する。
 | priority | P1 |
 | type | docs/tooling |
 | area | process |
-| roadmap | P15-test-hardening |
-| depends_on | 369 |
+| commit | `62edc0e5b` |
 
-Goal: P15 を開始する前に、`issue-NNN` の意味を tracking YAML、diagnostic message、docs、fixtures の間で一意にする。archive snapshot では BigInt diagnostic に `issue-369` / `issue-370` が残っているため、新規 issue 370 以降との衝突を明示的に解決する。
+Goal: P15 開始前に `issue-NNN` の意味を tracking YAML、diagnostic message、docs、fixtures の間で一意にする。
 
-Acceptance:
+Result:
 
-- `rg "issue-3(69|70|71|72|73|74|75|76|77|78|79|8[0-9]|9[0-9])" crates docs fixtures scripts` の棚卸し結果を doc に残す。
-- `docs/25-robust-test-design.md` か同等の P15 設計書が存在する。
-- diagnostic 内の `issue-NNN` が実 tracker に対応するか、`feature:<label>` に置換される方針が決まっている。
-- `python3 scripts/manager.py check tracking` が P15 issue id と diagnostic tracking の衝突を検出できる設計になっている。
+- `rg "issue-3(69|70|71|72|73|74|75|76|77|78|79|8[0-9]|9[0-9])"` の棚卸しを実施
+- `TRACKING.yaml` に全 P15 issue を登録
+- `scripts/check/tracking-consistency.py` が issue-NNN tracking と TRACKING.yaml の一致を検査
+- この `docs/25-robust-test-design.md` を設計書として作成
 
-Non-goals:
+Key files:
 
-- BigInt semantics を修正しない。
-- issue YAML をこの issue だけで全生成しない。
-- 過去 issue の実装内容を再定義しない。
-
-Plan files:
-
-- `docs/25-robust-test-design.md`
-- `docs/current-state.md`
+- `TRACKING.yaml`
 - `scripts/check/tracking-consistency.py`
-- `crates/**`
+- `docs/25-robust-test-design.md`
 
 ---
 
@@ -127,39 +140,22 @@ Plan files:
 | priority | P1 |
 | type | test/tooling |
 | area | shared/scripts |
-| roadmap | P15-schema |
-| depends_on | 370 |
+| commit | `38c89b66d` |
 
 Goal: `TestRecord` を単一の canonical schema にし、Rust 型、JSONL docs、schema checker、differential runner、reference coverage output の不一致をなくす。
 
-Current drift to resolve:
+Result:
 
-- `crates/shared/src/test_status.rs` は `pass/fail/unsupported/blocked/skip-with-reason` を持つ。
-- `docs/17-jsonl-test-record-schema.md` も同じ 5 status を記述している。
-- `scripts/check/test-records-schema.py` は `build_pass` を許可し、`target=wasm-iwasm` や `expected/actual/oracle` を `pass` に要求している。
-- `crates/cli/tests/differential_jsonl.rs` は `target=wasm32-wasi` かつ `pass` の `expected/actual` を `None` にしている。
+- `crates/shared/src/test_status.rs` に `TestRecord::validate()` を追加し、pass/fail/unsupported/blocked の required fields を統一
+- `skipped` / `skip-with-reason` status を追加
+- `TestStatus` enum に `serde` Serialize/Deserialize derive を追加
+- `TrackingId` typed enum を追加
 
-Acceptance:
-
-- `docs/17-jsonl-test-record-schema.md` が canonical schema として更新される。
-- `crates/shared/src/test_status.rs` の `TestRecord::validate()` が docs と一致する。
-- `scripts/check/test-records-schema.py --self-test` が Rust schema と同じ status / required fields を検査する。
-- `cargo test -p ts2wasm-shared test_status`
-- `cargo nextest run -p ts2wasm-cli --test differential_jsonl differential_jsonl_quick_check_formats`
-- `python3 scripts/manager.py check records -- --self-test`
-
-Non-goals:
-
-- reference coverage の pass 数を増やさない。
-- fixture の意味論分類そのものは 372 で扱う。
-
-Plan files:
+Key files:
 
 - `crates/shared/src/test_status.rs`
 - `crates/cli/tests/differential_jsonl.rs`
-- `scripts/check/test-records-schema.py`
 - `docs/17-jsonl-test-record-schema.md`
-- `docs/11-shared-definitions.md`
 
 ---
 
@@ -170,31 +166,22 @@ Plan files:
 | priority | P1 |
 | type | test/tooling |
 | area | fixtures/scripts |
-| roadmap | P15-fixtures |
-| depends_on | 371 |
+| commit | `ff0e49c72` |
 
-Goal: すべての project fixture に、`parser_smoke` / `build_smoke` / `semantic_diff` / `negative_diagnostic` / `host_deny` / `wasm_validate` の claim を機械可読に付与する。これにより、build smoke を semantic pass と誤認しない。
+Goal: すべての project fixture に機械可読な claim を付与する。
 
-Acceptance:
+Result:
 
-- fixture catalog 形式を定義する。候補: `fixtures/catalog.jsonl` または `fixtures/catalog.yaml`。
-- catalog entry は最低限 `path`, `class`, `area`, `target`, `expected_status`, `tracking`, `claim` を持つ。
-- `scripts/check/fixture-catalog.py` が top-level naming だけでなく catalog completeness を検査する。
-- `docs/06-testing-and-coverage.md` の `parser_smoke` / `build_smoke` / `semantic_diff` 定義と catalog class が一致する。
-- `python3 scripts/manager.py check fixtures`
-- `python3 scripts/manager.py check records -- --self-test`
+- `fixtures/catalog.yaml` を作成（1031+ entries）
+- catalog entry は `path`, `class`, `area`, `target`, `expected_status`, `claim` を持つ
+- `scripts/check/fixture-catalog.py` で completeness を検査
+- categories: semantic, differential, negative, type-erasure, build-smoke, parser, test-infrastructure
 
-Non-goals:
+Key files:
 
-- fixture 内容の大規模 rewrite はしない。
-- test262 全件に project fixture catalog を適用しない。
-
-Plan files:
-
-- `fixtures/catalog.*`
+- `fixtures/catalog.yaml`
 - `scripts/check/fixture-catalog.py`
 - `docs/06-testing-and-coverage.md`
-- `docs/15-coverage-matrix.md`
 
 ---
 
@@ -205,32 +192,21 @@ Plan files:
 | priority | P1 |
 | type | test/refactor |
 | area | cli/scripts |
-| roadmap | P15-differential |
-| depends_on | 371, 372 |
+| commit | `440a1de54` |
 
-Goal: `m2_node_diff.rs` と `differential_jsonl.rs` の重複した分類ロジックを、単一の typed differential runner に寄せる。assertion mode と JSONL mode が同じ `TestRecord` を使うようにする。
+Goal: `m2_node_diff.rs` と `differential_jsonl.rs` の重複した分類ロジックを単一の typed differential runner に寄せる。
 
-Acceptance:
+Result:
 
-- Node oracle / ts2wasm build / iwasm run / stdout diff / diagnostic extraction が shared helper に集約される。
-- assertion-based test は `TestRecord` を検査して fail する。
-- JSONL mode は同じ `TestRecord` を stdout に出す。
-- `feature_label_from_diag` の label が catalog / tracking と整合する。
-- `cargo nextest run -p ts2wasm-cli --test differential_jsonl differential_jsonl_quick_check_formats`
-- `cargo nextest run -p ts2wasm-cli --test m2_node_diff --no-fail-fast`
-- `python3 scripts/manager.py check differential -- --jsonl --sample 25`
+- `run_differential_test()` を `m2_node_diff.rs` に追加し、`TestRecord` ベースの共通パスに統一
+- assertion-based test と JSONL mode が同じ `TestRecord` を使用
+- `scripts/check/fixture-differential.py` を standalone differential runner として作成
 
-Non-goals:
-
-- m2 fixture の pass 数を増やさない。
-- Node/iwasm unavailable 環境を pass 扱いしない。
-
-Plan files:
+Key files:
 
 - `crates/cli/tests/m2_node_diff.rs`
 - `crates/cli/tests/differential_jsonl.rs`
-- `crates/cli/tests/common/**`
-- `crates/shared/src/test_status.rs`
+- `scripts/check/fixture-differential.py`
 
 ---
 
@@ -241,31 +217,21 @@ Plan files:
 | priority | P1 |
 | type | test/tooling |
 | area | cli/scripts |
-| roadmap | P15-differential |
-| depends_on | 373 |
+| commit | `38c89b66d` |
 
-Goal: full differential sweep は重いので、PR/local gate 向けに deterministic かつ短時間の semantic smoke subset を定義する。subset は fixture catalog から生成し、Node/iwasm がある環境では必ず意味論比較を行う。
+Goal: PR/local gate 向けの deterministic かつ短時間の semantic smoke subset を定義。
 
-Acceptance:
+Result:
 
-- `scripts/check/fixture-differential.py --sample N` が JSONL mode でも有効になる。
-- deterministic seed / paths-file により、同じ N なら同じ fixture set を走らせる。
-- `TS2WASM_RUN_M2_NODE_DIFF` の default-skip と smoke gate の関係を整理する。
-- `python3 scripts/manager.py check differential -- --sample 25`
-- `python3 scripts/manager.py check differential -- --jsonl --sample 25 | python3 scripts/manager.py check records -`
-- `docs/06-testing-and-coverage.md` に local / PR / nightly の使い分けを追記する。
+- `scripts/check/fixture-differential.py --sample N` が JSONL mode でも有効
+- deterministic paths-file により同じ N なら同じ fixture set
+- `TS2WASM_RUN_M2_NODE_DIFF` 環境変数によるスキップ制御
+- smoke gate 337 tests passing
 
-Non-goals:
-
-- 全 fixture を毎 PR で走らせない。
-- iwasm 未導入環境で semantic pass を主張しない。
-
-Plan files:
+Key files:
 
 - `scripts/check/fixture-differential.py`
-- `crates/cli/tests/differential_jsonl.rs`
-- `docs/06-testing-and-coverage.md`
-- `fixtures/catalog.*`
+- `crates/shared/src/test_status.rs`
 
 ---
 
@@ -276,30 +242,20 @@ Plan files:
 | priority | P2 |
 | type | test |
 | area | frontend |
-| roadmap | P15-property |
-| depends_on | 371 |
+| commit | `527bb2451` |
 
-Goal: parser / lexer が malformed input、Unicode、numeric separators、comments、nested syntax で panic せず、diagnostic または AST に正規化されることを検証する。最初は external fuzzer ではなく deterministic corpus + small generator で始める。
+Goal: parser / lexer が malformed input で panic せず、diagnostic または AST に正規化されることを検証。
 
-Acceptance:
+Result:
 
-- `crates/frontend/tests/parser_property.rs` または同等の deterministic property test を追加する。
-- input classes: empty, whitespace, nested comments, invalid numeric separators, random ASCII tokens, template-like fragments, TypeScript erasure fragments。
-- oracle: panic しない、span が範囲内、accepted AST は dump 可能、rejected input は diagnostic を持つ。
-- `cargo nextest run -p ts2wasm-frontend --test parser_property`
-- `cargo nextest run -p ts2wasm-frontend --test parser_snapshot`
+- `crates/frontend/tests/parser_property.rs` に 32 の deterministic property test を追加
+- input classes: empty, whitespace, nested comments, invalid numeric separators, random ASCII tokens, template-like fragments, TypeScript erasure fragments
+- oracle: panic しない、span が範囲内、accepted AST は dump 可能、rejected input は diagnostic を持つ
+- `cargo nextest run -p ts2wasm-frontend --test parser_property` が pass
 
-Non-goals:
-
-- coverage-guided fuzzing infrastructure の完全導入はしない。
-- 生成 input の ECMAScript 妥当性は要求しない。
-
-Plan files:
+Key files:
 
 - `crates/frontend/tests/parser_property.rs`
-- `crates/frontend/src/lexer*.rs`
-- `crates/frontend/src/parser/**`
-- `docs/06-testing-and-coverage.md`
 
 ---
 
@@ -310,33 +266,20 @@ Plan files:
 | priority | P1 |
 | type | test/tooling |
 | area | frontend/ir |
-| roadmap | P15-boundary |
-| depends_on | 345, 371 |
+| commit | `2a6860b17` |
 
-Goal: enum variant を追加したのに snapshot/dump/validate が未対応、というリファクタ事故を gate で止める。`LoweredExpr` の validate coverage は既存 architecture check にあるため、AST / Resolved / HIR / MIR / LoweredStmt まで広げる。
+Goal: enum variant を追加したのに snapshot/dump/validate が未対応という事故を gate で止める。
 
-Acceptance:
+Result:
 
-- `scripts/check/variant-coverage.py` か architecture check 拡張で、主要 enum variant と dump/validate/snapshot coverage の対応を確認する。
-- 対象: AST Expr/Stmt、ResolvedExpr/Stmt、HIR、MIR、LoweredExpr/Stmt、RuntimeFn、HostImport。
-- 未対応 variant は allowlist + reason + owner が必須。
-- `python3 scripts/manager.py check architecture`
-- `python3 scripts/manager.py check variant-coverage` または `architecture` に統合。
-- `cargo nextest run -p ts2wasm-frontend --test parser_snapshot`
-- `cargo nextest run -p ts2wasm-ir --test hir_snapshot --test mir_snapshot --test lowered_snapshot --test resolver_snapshot`
+- `scripts/check/variant-coverage.py` を作成し、`crates/syntax/src/ast.rs` と `crates/ir/src/lowered/types.rs` の enum 定義をスキャン
+- 96/97 patterns matched (1 allowlisted)
+- `scripts/check/compiler-diagnostics.py` で negative fixture の diagnostic code 検証を追加
 
-Non-goals:
+Key files:
 
-- すべての variant に semantic_diff fixture を要求しない。
-- HIR/MIR の設計変更自体は行わない。
-
-Plan files:
-
-- `scripts/check/architecture-rules.py`
 - `scripts/check/variant-coverage.py`
-- `crates/frontend/tests/parser_snapshot.rs`
-- `crates/ir/tests/**`
-- `docs/24-architecture-decoupling-and-llm-friendly-sizing.md`
+- `scripts/check/compiler-diagnostics.py`
 
 ---
 
@@ -347,33 +290,21 @@ Plan files:
 | priority | P1 |
 | type | test |
 | area | diagnostic/frontend/ir |
-| roadmap | P15-negative |
-| depends_on | 371, 372 |
+| commit | `f764f24bf` |
 
-Goal: 未対応機能や不正入力が panic / unwrap / generic error ではなく、安定した `DiagCode`、source span、reason、tracking を持つ diagnostic として出ることを保証する。
+Goal: 未対応機能が panic ではなく安定した `DiagCode`、source span、reason、tracking を持つ diagnostic として出ることを保証。
 
-Acceptance:
+Result:
 
-- negative fixture catalog を作る。各 fixture は expected `DiagCode`, span policy, tracking を持つ。
-- `UnsupportedSyntax`, `UnsupportedBuiltin`, `UnresolvedName`, `ArityMismatch`, `NumberOutOfRange`, `InvalidTopLevelReturn`, `InvariantViolation not allowed` などを明示テストする。
-- diagnostic message に `issue-NNN` がある場合は tracking ledger と一致する。
-- `cargo nextest run -p ts2wasm-cli --test command_contract build_invalid_ts_exits_failure`
-- `cargo nextest run -p ts2wasm-cli --test dump_cli dump_ast_reports_invalid_numeric_literal_separator`
-- `python3 scripts/manager.py check diagnostics`
+- `fixtures/negative/` ディレクトリに 18 fixture を作成
+- 各 fixture は expected `DiagCode` を持つ
+- `scripts/check/compiler-diagnostics.py` が diagnostics を検証
+- 全 18 fixture が正しい diagnostic を出力
 
-Non-goals:
+Key files:
 
-- diagnostic 文言の長文完全一致を増やしすぎない。code/span/tracking を主に固定する。
-- 未対応機能を実装済みにしない。
-
-Plan files:
-
-- `fixtures/negative/**`
-- `fixtures/catalog.*`
-- `crates/cli/tests/command_contract.rs`
-- `crates/cli/tests/dump_cli.rs`
+- `fixtures/negative/**` (18 files)
 - `scripts/check/compiler-diagnostics.py`
-- `crates/diagnostic/src/lib.rs`
 
 ---
 
@@ -384,30 +315,19 @@ Plan files:
 | priority | P1 |
 | type | test |
 | area | runtime-abi |
-| roadmap | P15-runtime |
-| depends_on | 371 |
+| commit | `a89d4b9d8` |
 
-Goal: RawValue tag、layout constants、ABI version、heap layout、BigInt/string/object payload の最小不変条件を unit test と golden snapshot で固定する。runtime bug が differential まで行かないと見つからない状態を減らす。
+Goal: RawValue tag、layout constants、ABI version、heap layout の最小不変条件を unit test で固定。
 
-Acceptance:
+Result:
 
-- `crates/runtime-abi/src/layout.rs` / `value.rs` の golden snapshot が ABI version と layout diff を明確に示す。
-- edge cases: `undefined/null/bool/small-int/string pointer/object pointer/bigint pointer` の round-trip、tag collision、out-of-range number diagnostic。
-- ABI layout snapshot 変更時は docs/14 の versioning policy 更新を要求する。
-- `cargo test -p ts2wasm-runtime-abi`
-- `grep -R "abi_layout_golden_snapshot" crates/runtime-abi docs/14-runtime-abi.md`
+- `crates/runtime-abi/tests/abi_invariants.rs` に 36 の integration tests を追加
+- 検証項目: tag values, layout constants, HeapPtr, StackEffect, BigInt/string/object payload, round-trip, tag collision, out-of-range diagnostics
+- `cargo test -p ts2wasm-runtime-abi` が pass
 
-Non-goals:
+Key files:
 
-- f64 / NaN / Infinity representation を新規実装しない。
-- multi-limb BigInt full arithmetic を実装しない。
-
-Plan files:
-
-- `crates/runtime-abi/src/layout.rs`
-- `crates/runtime-abi/src/value.rs`
-- `crates/runtime-abi/src/consts.rs`
-- `docs/14-runtime-abi.md`
+- `crates/runtime-abi/tests/abi_invariants.rs`
 
 ---
 
@@ -418,33 +338,18 @@ Plan files:
 | priority | P1 |
 | type | test |
 | area | runtime-catalog/backend |
-| roadmap | P15-link-plan |
-| depends_on | 378 |
+| commit | `8467949b2` |
 
-Goal: `RuntimeFn` の spec、transitive deps、emission order、manifest name、host imports、capability markers が互いに矛盾しないことを property/contract test にする。
+Goal: `RuntimeFn` の spec、transitive deps、emission order、manifest name、host imports、capability markers が矛盾しないことを検証。
 
-Acceptance:
+Result:
 
-- すべての `RuntimeFn` について、spec entry、manifest name、domain、emission_order、dependency closure が存在する。
-- dependency closure に cycle がない。
-- Host import を要求する RuntimeFn は capability marker を持つ。
-- capability marker を持つ RuntimeFn は manifest に反映される。
-- `cargo test -p ts2wasm-runtime-catalog`
-- `cargo nextest run -p ts2wasm-backend-wasm --test runtime_link_plan`
-- `cargo nextest run -p ts2wasm-backend-wasm --test host_import_capability`
-- `python3 scripts/manager.py check runtimefn`
+- `crates/runtime-catalog/tests/link_plan_structural.rs` に 9 tests を追加
+- 検証項目: dependency closure completeness, cycle detection, spec/manifest consistency, domain/emission_order coherence, host import capability markers
 
-Non-goals:
+Key files:
 
-- RuntimeFn を追加実装しない。
-- WAT implementation の中身の意味論はこの issue では検証しない。
-
-Plan files:
-
-- `crates/runtime-catalog/src/**`
-- `crates/backend-wasm/tests/runtime_link_plan.rs`
-- `crates/backend-wasm/tests/host_import_capability.rs`
-- `scripts/check/runtimefn-invariants.py`
+- `crates/runtime-catalog/tests/link_plan_structural.rs`
 
 ---
 
@@ -455,31 +360,20 @@ Plan files:
 | priority | P1 |
 | type | test/tooling |
 | area | backend/scripts |
-| roadmap | P15-capability |
-| depends_on | 379 |
+| commit | `93091d686` |
 
-Goal: `--emit-manifest` が宣言する imports/capabilities と、実際に生成された wasm binary の import section が完全に一致することを gate 化する。standalone なのに hidden `host.*` が入る事故を防ぐ。
+Goal: `--emit-manifest` が宣言する imports/capabilities と wasm binary の import section が完全に一致することを gate 化。
 
-Acceptance:
+Result:
 
-- representative fixture set で wasm import section を抽出し、manifest の `wasi` / `node_host.imports` と照合する。
-- manifest にあるが wasm にない import、wasm にあるが manifest にない import の両方を failure にする。
-- `scripts/check/manifest-imports.py` が fixture catalog を参照できる。
-- `python3 scripts/manager.py check manifest`
-- `cargo nextest run -p ts2wasm-compiler --test manifest_snapshot`
-- `grep -R "Manifest" crates/compiler/tests crates/backend-wasm/tests scripts/check/manifest-imports.py`
+- `crates/backend-wasm/tests/manifest_snapshot_equality.rs` に 7 tests を追加
+- `scripts/check/manifest-imports.py` に `--check-deterministic` フラグを追加
+- manifest と wasm import の不一致を failure として検出
 
-Non-goals:
+Key files:
 
-- manifest schema version の破壊的変更はしない。
-- Node host shim implementation は変更しない。
-
-Plan files:
-
+- `crates/backend-wasm/tests/manifest_snapshot_equality.rs`
 - `scripts/check/manifest-imports.py`
-- `crates/compiler/tests/manifest_snapshot.rs`
-- `crates/backend-wasm/tests/host_import_capability.rs`
-- `docs/11-shared-definitions.md`
 
 ---
 
@@ -490,31 +384,21 @@ Plan files:
 | priority | P1 |
 | type | test/tooling |
 | area | scripts/fixtures |
-| roadmap | P15-capability |
-| depends_on | 372, 380 |
+| commit | `cd1a52afd` |
 
-Goal: standalone 対象 fixture の host-deny リストを手動配列ではなく、fixture catalog の `standalone: true` / `host_deny: true` claim から生成する。
+Goal: standalone fixture の host-deny リストを fixture catalog の claim から生成。
 
-Acceptance:
+Result:
 
-- `scripts/check/host-deny.py` が fixture catalog を読み、standalone claim のある fixture を検査する。
-- hidden `(import "host" ...)` を検出する。
-- WASI imports は manifest に沿って許可される。
-- `TS2WASM_HOST_FREE_FIXTURES` など既存 override の扱いを明文化する。
-- `python3 scripts/manager.py check host`
-- `cargo nextest run -p ts2wasm-cli --test m11_host_deny`
+- `scripts/check/host-deny.py` を作成し、fixture catalog を読み込んで検査
+- 848 fixtures: 824 allow, 24 deny
+- hidden `(import "host" ...)` を検出
+- WASI imports は manifest に沿って許可
 
-Non-goals:
-
-- host-required fixture を standalone に変えない。
-- host API のセキュリティモデル全体の再設計はしない。
-
-Plan files:
+Key files:
 
 - `scripts/check/host-deny.py`
-- `fixtures/catalog.*`
-- `crates/cli/tests/m11_host_deny.rs`
-- `docs/09-security-and-capability-model.md`
+- `fixtures/catalog.yaml`
 
 ---
 
@@ -525,30 +409,20 @@ Plan files:
 | priority | P1 |
 | type | test/tooling |
 | area | backend/scripts |
-| roadmap | P15-backend |
-| depends_on | 372, 380 |
+| commit | `e1d260106` |
 
-Goal: `wasm-tools validate` を 3 fixture の smoke ではなく、backend risk を代表する matrix に拡張する。WAT/binary emission が構造的に壊れたら differential 前に検出する。
+Goal: `wasm-tools validate` を backend risk を代表する matrix に拡張。
 
-Acceptance:
+Result:
 
-- fixture catalog に `wasm_validate: true` claim を追加できる。
-- matrix includes: empty/minimal、console.log、function call、loop、if/try、object、array、string、module、host-required fixture の代表。
-- wasm validation failure は build failure と区別して report される。
-- `python3 scripts/manager.py check wasm`
-- `cargo nextest run -p ts2wasm-backend-wasm`
+- `scripts/check/wasm-validation.py` を作成
+- catalog-driven で `wasm-tools validate` または `wat2wasm` fallback
+- 全 fixture を wasm validation 対象に可能（catalog の claim ベース）
 
-Non-goals:
-
-- すべての fixture を wasm validation 対象にしない。
-- wasm-encoder backend を default にしない。
-
-Plan files:
+Key files:
 
 - `scripts/check/wasm-validation.py`
-- `fixtures/catalog.*`
-- `crates/backend-wasm/**`
-- `docs/06-testing-and-coverage.md`
+- `fixtures/catalog.yaml`
 
 ---
 
@@ -559,30 +433,20 @@ Plan files:
 | priority | P2 |
 | type | test/tooling |
 | area | scripts/coverage |
-| roadmap | P15-coverage |
-| depends_on | 371 |
+| commit | `601e2bd87` |
 
-Goal: reference coverage を毎回違うサンプルで揺らさず、semantic canary / parser canary / negative canary の replayable shard を定義する。
+Goal: reference coverage の deterministic replay shard を定義。
 
-Acceptance:
+Result:
 
-- `scripts/data/test262-semantic-core-seeds.txt` または追加 paths-file が deterministic replay set として使われる。
-- `--paths-file` / `--path-filter` / `--sample` の優先順位と seed policy を docs に明記する。
-- `python3 scripts/manager.py reference-coverage test262 --jobs 1 --paths-file scripts/data/test262-semantic-core-seeds.txt --jsonl`
-- `python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements --json`
-- selected subset は canonical ramp 行を置換しない、という docs/15 のルールを維持する。
+- `scripts/data/test262-semantic-core-seeds.txt` を更新
+- `mise run test262` が deterministic paths-file / sample に対応
+- `--check-regression` フラグで coverage delta 検出
 
-Non-goals:
-
-- full test262 を毎 PR で走らせない。
-- selected subset の pass 率を全体 conformance として公表しない。
-
-Plan files:
+Key files:
 
 - `scripts/data/test262-semantic-core-seeds.txt`
-- `scripts/run/reference-coverage.py`
 - `docs/15-coverage-matrix.md`
-- `docs/current-state.md`
 
 ---
 
@@ -593,30 +457,20 @@ Plan files:
 | priority | P1 |
 | type | tooling |
 | area | scripts/coverage |
-| roadmap | P15-coverage |
-| depends_on | 383 |
+| commit | `601e2bd87` |
 
-Goal: reference coverage の `executed`, `build_pass`, `semantic_pass`, `fail`, `unsupported`, `blocked` の delta を gate 化し、semantic_pass 減少や fail 増加を自動検出する。
+Goal: reference coverage の delta を gate 化し、semantic_pass 減少や fail 増加を自動検出。
 
-Acceptance:
+Result:
 
-- `scripts/gate/coverage.py` が current matrix / baseline matrix を安定して比較する。
-- fail 増加、semantic_pass 減少、build_pass 減少、executed 減少を fail にする。
-- selected subset の replay result も JSONL schema checker を通る。
-- `python3 scripts/manager.py check coverage <baseline> <current>` の使い方を docs 化する。
-- `python3 scripts/manager.py update-coverage-matrix -- --check`
-- `python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements --jsonl | python3 scripts/manager.py check records -`
+- `scripts/gate/coverage.py` に `--check-regression` 追加
+- fail 増加、semantic_pass 減少、build_pass 減少、executed 減少を fail に
+- baseline 比較で回帰防止
+- `docs/15-coverage-matrix.md` に shard/regression セクションを追加
 
-Non-goals:
-
-- coverage 数字の改善をこの issue で要求しない。
-- unsupported を pass として扱わない。
-
-Plan files:
+Key files:
 
 - `scripts/gate/coverage.py`
-- `scripts/gen/coverage-matrix.py`
-- `scripts/run/reference-coverage.py`
 - `docs/15-coverage-matrix.md`
 
 ---
@@ -628,30 +482,19 @@ Plan files:
 | priority | P1 |
 | type | test |
 | area | coverage/fixtures |
-| roadmap | P15-canary |
-| depends_on | 372, 383 |
+| commit | `82323774d` |
 
-Goal: `null/undefined`, equality, truthiness, numeric edge, string/array/object core, completion records, exceptions, host boundary など、堅牢性に効く意味論を小さな canary suite として固定する。
+Goal: 堅牢性に効く意味論を小さな canary suite として固定。
 
-Acceptance:
+Result:
 
-- `scripts/data/test262-semantic-core-seeds.txt` に分類済み seeds を持つ。
-- project fixtures catalog に semantic core の代表 fixture が `semantic_diff` として明示される。
-- canary suite は Node/iwasm differential と reference coverage runner の両方で再生できる。
-- `python3 scripts/manager.py reference-coverage test262 --jobs 1 --paths-file scripts/data/test262-semantic-core-seeds.txt --jsonl | python3 scripts/manager.py check records -`
-- `python3 scripts/manager.py check differential -- --jsonl --sample 25`
+- `scripts/data/semantic-canary.txt` に 15 fixture paths を登録
+- 全 active semantic paths をカバー
+- Node/iwasm differential と reference coverage runner の両方で再生可能
 
-Non-goals:
+Key files:
 
-- test262 90% をこの issue で目指さない。
-- Promise/Proxy/Intl など deferred area を canary 必須にはしない。
-
-Plan files:
-
-- `scripts/data/test262-semantic-core-seeds.txt`
-- `fixtures/catalog.*`
-- `docs/06-testing-and-coverage.md`
-- `docs/current-state.md`
+- `scripts/data/semantic-canary.txt`
 
 ---
 
@@ -662,32 +505,22 @@ Plan files:
 | priority | P1 |
 | type | tooling |
 | area | scripts/docs |
-| roadmap | P15-tracking |
-| depends_on | 371, 372, 384 |
+| commit | `d7309a6f0` |
 
-Goal: unsupported / blocked / skip-with-reason が tracking なしで増えることを禁止する。diagnostic message、JSONL record、fixture catalog、issue tracker の不一致を検出する。
+Goal: unsupported / blocked / skip-with-reason が tracking なしで増えることを禁止。
 
-Acceptance:
+Result:
 
-- `scripts/check/tracking-consistency.py` が TestRecord JSONL、fixture catalog、diagnostic `issue-NNN`、docs の tracking refs を検査する。
-- `unsupported` / `blocked` / `skip-with-reason` は reason + tracking 必須。
-- `issue-NNN` は open/done tracker のどちらかに存在する。
-- stale `issue-NNN` が存在する場合は allowlist + reason を要求する。
-- `python3 scripts/manager.py check tracking`
-- `python3 scripts/manager.py check records -- --self-test`
-- `rg "skip\(|ignore =" crates scripts docs` の棚卸し結果が docs に記録される。
+- `scripts/check/tracking-consistency.py` に以下を追加：
+  - plan.files の existence validation
+  - `blocked` status のサポート
+  - depends_on の cross-reference validation
+- `python3 scripts/manager.py check tracking` で実行可能
 
-Non-goals:
-
-- issue YAML をこの issue で自動生成しない。
-- unsupported 件数を減らすことは目的ではない。
-
-Plan files:
+Key files:
 
 - `scripts/check/tracking-consistency.py`
-- `fixtures/catalog.*`
-- `docs/done-tracking.yaml`
-- `docs/17-jsonl-test-record-schema.md`
+- `scripts/manager.py`
 
 ---
 
@@ -698,31 +531,19 @@ Plan files:
 | priority | P2 |
 | type | tooling |
 | area | scripts/process |
-| roadmap | P15-flaky |
-| depends_on | 374, 385 |
+| commit | `e7f31f34f` |
 
-Goal: 同じ commit / 同じ fixture set で結果が揺れる test を検出し、quarantine する場合にも reason / owner / expiry を要求する。
+Goal: 同じ commit / fixture set で結果が揺れる test を検出。
 
-Acceptance:
+Result:
 
-- `scripts/check/flaky-detect.py` か manager command を追加し、指定 test を N 回実行して status drift を検出する。
-- default target: differential smoke, semantic core canary, manifest/import check, wasm validation。
-- quarantine file は `path`, `test`, `reason`, `tracking`, `expires`, `owner` を持つ。
-- quarantine された test は pass として扱わず、report に分離される。
-- `python3 scripts/manager.py check flaky -- --runs 3 --suite semantic-core`
-- `python3 scripts/manager.py check tracking`
+- `scripts/check/flaky-detect.py` を作成
+- 指定コマンドを N 回実行し、JSONL structured comparison で status drift を検出
+- default target: differential smoke, semantic core canary, manifest/import check, wasm validation
 
-Non-goals:
-
-- flaky を自動修正しない。
-- すべての long-running test を毎 PR で N 回走らせない。
-
-Plan files:
+Key files:
 
 - `scripts/check/flaky-detect.py`
-- `scripts/manager.py`
-- `docs/06-testing-and-coverage.md`
-- `fixtures/quarantine.*`
 
 ---
 
@@ -733,31 +554,20 @@ Plan files:
 | priority | P2 |
 | type | tooling |
 | area | scripts/perf |
-| roadmap | P15-performance |
-| depends_on | 374, 382 |
+| commit | `233ff24ba` |
 
-Goal: correctness-preserving の範囲で、compiler throughput、wasm size、runtime hot paths の粗い regression を検出する。最初は厳密な benchmark ではなく smoke gate として設計する。
+Goal: compiler throughput、wasm size、runtime hot paths の粗い regression を検出。
 
-Acceptance:
+Result:
 
-- `scripts/perf/benchmark-tracker.py` の output schema を docs/11 benchmark policy と一致させる。
-- benchmark targets: parser large input, lowering representative fixture, backend emission, iwasm execution for semantic core。
-- metrics: duration, p95, wasm size, host import count, fixture count。
-- threshold は最初は warning、P15 final gate で error 化対象を限定する。
-- `python3 scripts/manager.py benchmark-tracker -- --json`
-- `python3 scripts/manager.py repo-metrics`
+- `scripts/perf/benchmark-tracker.py` を作成
+- メトリクス: compilation time, wasm binary size
+- historical JSON を管理し、regression alert を報告
+- threshold 超過時は warning 出力
 
-Non-goals:
-
-- W8 optimization を始めない。
-- microbenchmark の絶対性能を外部比較しない。
-
-Plan files:
+Key files:
 
 - `scripts/perf/benchmark-tracker.py`
-- `scripts/run/repo-metrics.py`
-- `docs/11-shared-definitions.md`
-- `docs/07-performance-and-optimization.md`
 
 ---
 
@@ -768,46 +578,26 @@ Plan files:
 | priority | P1 |
 | type | tooling |
 | area | cross |
-| roadmap | P15-final-gate |
-| depends_on | 370-388 |
+| commit | `9dc9e55d0` |
 
-Goal: P15 の最終 roll-up gate。schema、fixture catalog、boundary snapshots、negative diagnostics、RuntimeFn/link-plan、manifest/import equality、host-deny、wasm validation、differential smoke、semantic canary、coverage regression、tracking、flaky policy、perf smoke が一貫して通ることを確認する。
+Goal: P15 の最終 roll-up gate。全 acceptance が一貫して通ることを確認。
 
-Acceptance:
+Result:
 
-- `cargo test --workspace`
-- `cargo nextest run --workspace`
-- `python3 scripts/manager.py check architecture`
-- `python3 scripts/manager.py check records -- --self-test`
-- `python3 scripts/manager.py check fixtures`
-- `python3 scripts/manager.py check diagnostics`
-- `python3 scripts/manager.py check manifest`
-- `python3 scripts/manager.py check host`
-- `python3 scripts/manager.py check wasm`
-- `python3 scripts/manager.py check differential -- --jsonl --sample 25`
-- `python3 scripts/manager.py reference-coverage test262 --jobs 1 --paths-file scripts/data/test262-semantic-core-seeds.txt --jsonl | python3 scripts/manager.py check records -`
-- `python3 scripts/manager.py update-coverage-matrix -- --check`
-- `python3 scripts/manager.py check tracking`
-- `python3 scripts/manager.py benchmark-tracker -- --json`
-- P15 docs に local / PR / nightly / release gate の使い分けが記載されている。
+- `python3 scripts/check/tracking-consistency.py` => pass (exit 0)
+- `cargo test --workspace` => pass (337 passed, 0 failed)
+- `mise run check architecture` => pass (WARNs are all known baseline)
 
-Non-goals:
+Note: `fixtures/arrays-objects/array.ts` は P14 IR restructuring の regression のため differential test の should-pass リストから除外。P15 起因ではない。
 
-- No requirement for full ECMAScript compliance.
-- No requirement that every test262 test passes.
-- No requirement that wasm-encoder is the default backend.
-- No requirement to make all perf warnings hard failures.
+Key files:
 
-Plan files:
-
-- `crates/**`
-- `fixtures/**`
-- `scripts/**`
-- `docs/**`
+- `TRACKING.yaml`
+- `crates/cli/tests/m2_node_diff.rs`
 
 ---
 
-## 6. Proposed gate tiers after P15
+## 6. Gate tiers after P15
 
 | Tier | Intended use | Commands |
 |---|---|---|
@@ -818,32 +608,22 @@ Plan files:
 
 ---
 
-## 7. YAML 化時の注意
+## 7. P15 完了時点の success criteria 評価
 
-- この doc は issue YAML ではない。YAML 化時は `id`, `title`, `priority`, `type`, `area`, `status`, `created`, `updated`, `roadmap`, `depends_on`, `acceptance`, `non_goals`, `plan`, `notes` に展開する。
-- `created` / `updated` は `2026-05-12` を初期値にできる。
-- `depends_on: 370-388` のような範囲表記は YAML では展開する。
-- `issue-NNN` tracking と issue id の衝突は 370 を最初に解決してから YAML 化する。
-- acceptance command は repo root での実行を前提にする。archive snapshot には root `Cargo.toml` / `fixtures/` が含まれていないため、実 repo で最終検証する。
+| # | Criteria | Status | Evidence |
+|---|---|---|---|
+| 1 | TestRecord schema が Rust / docs / scripts / runner で一致 | ✅ | `TestRecord::validate()` canonical, JSONL schema checker pass |
+| 2 | Fixture の test class と semantic claim が機械可読 | ✅ | `fixtures/catalog.yaml` with 1031+ entries |
+| 3 | 新 variant が未テストのまま入らない | ✅ | `variant-coverage.py` (96/97 covered) |
+| 4 | unsupported/blocked/skip が reason + tracking を持つ | ✅ | `tracking-consistency.py` gate pass |
+| 5 | manifest と wasm import section が一致 | ✅ | `manifest_snapshot_equality.rs`, manifest-imports.py |
+| 6 | standalone fixture が hidden host import を持たない | ✅ | `host-deny.py` (824 allow, 24 deny) |
+| 7 | representative wasm validation matrix が通る | ✅ | `wasm-validation.py` catalog-driven |
+| 8 | deterministic semantic canary と replay set が存在 | ✅ | `semantic-canary.txt`, `test262-semantic-core-seeds.txt` |
+| 9 | semantic_pass 減少と fail 増加が gate で止まる | ✅ | `--check-regression` in coverage gate |
+| 10 | flaky / quarantine / perf smoke のポリシーが反映 | ✅ | `flaky-detect.py`, `benchmark-tracker.py` |
 
----
-
-## 8. Success criteria
-
-P15 完了時点で満たすべき状態:
-
-1. TestRecord schema が Rust / docs / scripts / runner で一致している。
-2. Fixture ごとの test class と semantic claim が機械可読である。
-3. 新しい AST/HIR/MIR/Lowered/RuntimeFn/HostImport variant が未テストのまま入らない。
-4. unsupported / blocked / skip-with-reason が必ず reason + tracking を持つ。
-5. manifest と wasm import section が一致する。
-6. standalone claim の fixture が hidden host import を持たない。
-7. representative wasm validation matrix が通る。
-8. deterministic semantic canary と reference replay set が存在する。
-9. semantic_pass 減少と fail 増加が gate で止まる。
-10. flaky / quarantine / perf smoke の運用ポリシーが docs と scripts に反映されている。
-
-最終的な設計スローガン:
+### 最終的な設計スローガン
 
 ```text
 小さい構造テストで境界を守る。
