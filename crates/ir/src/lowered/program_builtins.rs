@@ -28,6 +28,7 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "cbrt" => Some(RuntimeFn::MathCbrt),
                 "clz32" => Some(RuntimeFn::MathClz32),
                 "imul" => Some(RuntimeFn::MathImul),
+                "sqrt" => Some(RuntimeFn::MathSqrt),
                 _ => None,
             };
         }

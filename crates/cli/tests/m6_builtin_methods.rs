@@ -495,6 +495,36 @@ fn string_from_char_code_method_emits() {
     );
 }
 
+#[test]
+fn number_is_integer_method_emits() {
+    let result = run_fixture("builtins-and-io/number-is-integer.ts");
+    assert!(
+        result.is_ok(),
+        "Number.isInteger should compile: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn number_is_safe_integer_method_emits() {
+    let result = run_fixture("builtins-and-io/number-is-safe-integer.ts");
+    assert!(
+        result.is_ok(),
+        "Number.isSafeInteger should compile: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn string_from_code_point_method_emits() {
+    let result = run_fixture("builtins-and-io/string-from-code-point.ts");
+    assert!(
+        result.is_ok(),
+        "String.fromCodePoint should compile: {:?}",
+        result.err()
+    );
+}
+
 // Array method tests
 #[test]
 fn build_smoke_array_push_method() {
@@ -1890,4 +1920,11 @@ fn build_smoke_math_clz32() {
 fn build_smoke_math_imul() {
     let result = run_fixture("builtins-and-io/math-imul.ts");
     assert!(result.is_ok(), "Math.imul should build: {:?}", result.err());
+}
+
+// Math.sqrt
+#[test]
+fn build_smoke_math_sqrt() {
+    let result = run_fixture("builtins-and-io/math-sqrt.ts");
+    assert!(result.is_ok(), "Math.sqrt should build: {:?}", result.err());
 }

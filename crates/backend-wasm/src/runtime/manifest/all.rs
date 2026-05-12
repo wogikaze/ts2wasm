@@ -157,6 +157,7 @@ match self {
             Self::MathRandom => "math_random",
             Self::MathTrunc => "math_trunc",
             Self::MathSign => "math_sign",
+            Self::MathSqrt => "math_sqrt",
             Self::ModuleRequire => "module_require",
             Self::ModuleExportsSet => "module_exports_set",
             Self::ModuleExportsAssign => "module_exports_assign",

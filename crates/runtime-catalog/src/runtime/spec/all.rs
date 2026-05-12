@@ -1278,6 +1278,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::MathSqrt => RuntimeSpec {
+                symbol: "$math_sqrt",
+                deps: MATH_NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ModuleRequire => RuntimeSpec {
                 symbol: "$module_require",
                 deps: &[Self::AllocHeap],

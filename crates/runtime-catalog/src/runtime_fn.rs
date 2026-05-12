@@ -360,6 +360,8 @@ pub enum RuntimeFn {
     MathClz32,
     /// Math.imul - C-style 32-bit integer multiplication.
     MathImul,
+    /// Math.sqrt - integer square root (floor).
+    MathSqrt,
     /// M10: JSON functions
     JsonStringify,
     JsonParse,
@@ -1002,6 +1004,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MathCbrt" => Some(RuntimeFn::MathCbrt),
         "MathClz32" => Some(RuntimeFn::MathClz32),
         "MathImul" => Some(RuntimeFn::MathImul),
+        "MathSqrt" => Some(RuntimeFn::MathSqrt),
         "ErrorMessage" => Some(RuntimeFn::ErrorMessage),
         "JsonStringify" => Some(RuntimeFn::JsonStringify),
         "JsonParse" => Some(RuntimeFn::JsonParse),
@@ -1455,7 +1458,8 @@ impl RuntimeFn {
             | Self::MathSign
             | Self::MathCbrt
             | Self::MathClz32
-            | Self::MathImul => RuntimeDomain::Math,
+            | Self::MathImul
+            | Self::MathSqrt => RuntimeDomain::Math,
             Self::ModuleRequire | Self::ModuleExportsSet | Self::ModuleExportsAssign => {
                 RuntimeDomain::Module
             }
@@ -1965,6 +1969,7 @@ impl RuntimeFn {
             Self::MathCbrt,
             Self::MathClz32,
             Self::MathImul,
+            Self::MathSqrt,
             // JSON functions
             Self::JsonStringify,
             Self::JsonParse,
@@ -2278,6 +2283,7 @@ impl RuntimeFn {
             Self::MathCbrt,
             Self::MathClz32,
             Self::MathImul,
+            Self::MathSqrt,
             // JSON functions
             Self::JsonStringify,
             Self::JsonParse,

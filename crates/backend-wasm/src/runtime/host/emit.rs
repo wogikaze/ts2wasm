@@ -340,6 +340,48 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(crate) fn emit_math_sqrt(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $math_sqrt (param $v i32) (result i32)
+    (local $tag i32)
+    (local $n i32)
+    (local $lo i32)
+    (local $hi i32)
+    (local $mid i32)
+    (local $sq i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {number_tag})) (then (return (i32.const {undefined}))))
+    (local.set $n (i32.shr_s (local.get $v) (i32.const {number_shift})))
+    (if (i32.le_s (local.get $n) (i32.const {zero}))
+      (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    (local.set $lo (i32.const {zero}))
+    (local.set $hi (local.get $n))
+    (block $sqrt_done
+      (loop $sqrt_loop
+        (br_if $sqrt_done (i32.gt_s (local.get $lo) (local.get $hi)))
+        (local.set $mid (i32.shr_s (i32.add (local.get $lo) (local.get $hi)) (i32.const 1)))
+        (local.set $sq (i32.mul (local.get $mid) (local.get $mid)))
+        (if (i32.eq (local.get $sq) (local.get $n))
+          (then
+            (local.set $lo (local.get $mid))
+            (br $sqrt_done)))
+        (if (i32.lt_s (local.get $sq) (local.get $n))
+          (then (local.set $lo (i32.add (local.get $mid) (i32.const 1))))
+          (else (local.set $hi (i32.sub (local.get $mid) (i32.const 1)))))
+        (br $sqrt_loop)))
+    (if (i32.gt_s (i32.mul (local.get $lo) (local.get $lo)) (local.get $n))
+      (then (local.set $lo (i32.sub (local.get $lo) (i32.const 1)))))
+    (i32.or (i32.shl (local.get $lo) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            undefined = ValueTag::UNDEFINED,
+            zero = RuntimeConst::ZERO,
+        ));
+    }
+
     // JSON functions (M10)
 
     pub(crate) fn emit_json_stringify(&self, wat: &mut String) {

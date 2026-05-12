@@ -160,6 +160,7 @@ match self {
             Self::MathCbrt => "math_cbrt",
             Self::MathClz32 => "math_clz32",
             Self::MathImul => "math_imul",
+            Self::MathSqrt => "math_sqrt",
             Self::ModuleRequire => "module_require",
             Self::ModuleExportsSet => "module_exports_set",
             Self::ModuleExportsAssign => "module_exports_assign",

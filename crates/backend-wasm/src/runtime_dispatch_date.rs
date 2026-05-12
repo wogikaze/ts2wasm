@@ -35,6 +35,7 @@ impl WatEmitter<'_> {
             RuntimeFn::MathCbrt => self.emit_math_cbrt(wat),
             RuntimeFn::MathClz32 => self.emit_math_clz32(wat),
             RuntimeFn::MathImul => self.emit_math_imul(wat),
+            RuntimeFn::MathSqrt => self.emit_math_sqrt(wat),
             RuntimeFn::PromiseConstructor => self.emit_promise_constructor(wat),
             RuntimeFn::PromiseResolve => self.emit_promise_resolve(wat),
             RuntimeFn::PromiseReject => self.emit_promise_reject(wat),
