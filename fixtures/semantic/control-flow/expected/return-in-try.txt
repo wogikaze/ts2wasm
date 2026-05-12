@@ -1,0 +1,7 @@
+finally runs before return
+result: from-try
+override: 2
+overridden: overridden
+inner finally
+outer finally
+nested return: inner

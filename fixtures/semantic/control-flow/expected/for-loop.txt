@@ -1,0 +1,7 @@
+0
+1
+2
+found 5
+oddSum 25
+counter 5
+x after empty-for 3

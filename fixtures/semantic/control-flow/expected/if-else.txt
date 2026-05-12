@@ -1,0 +1,6 @@
+greater
+moderate
+zero is falsy
+empty string is falsy
+null is falsy
+undefined is falsy

@@ -1,0 +1,3 @@
+abc
+count 3
+array indices 012
