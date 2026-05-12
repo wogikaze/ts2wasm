@@ -1068,6 +1068,11 @@ fn regexp_basic_matches_node_output() {
 }
 
 #[test]
+fn regexp_match_replace_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/regexp-match-replace.ts");
+}
+
+#[test]
 fn abstract_equality_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/abstract-equality.ts");
 }

@@ -335,6 +335,7 @@ directories:
     - regexp-flags-suy-d.ts
     - regexp-plus.ts
     - regexp-question.ts
+    - regexp-match-replace.ts
     - regexp-star.ts
     - regexp-word.ts
     - set-constructor-array.ts
