@@ -10,6 +10,6 @@ function square(x: number): number {
 }
 
 // Nesting calls
-console.log(double(addOne(4)).toString());
-console.log(square(double(3)).toString());
-console.log(addOne(square(double(1))).toString());
+console.log(double(addOne(4)));
+console.log(square(double(3)));
+console.log(addOne(square(double(1))));

@@ -2,7 +2,7 @@
 function sum3(a: number, b: number, c: number): number {
   return a + b + c;
 }
-console.log(sum3(1, 2, 3).toString());
+console.log(sum3(1, 2, 3));
 
 function concat(a: string, b: string): string {
   return a + b;

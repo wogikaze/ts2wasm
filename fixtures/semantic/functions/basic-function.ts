@@ -7,9 +7,9 @@ greet();
 function add(a: number, b: number): number {
   return a + b;
 }
-console.log(add(1, 2).toString());
+console.log(add(1, 2));
 
 function echo(x: number): number {
   return x;
 }
-console.log(echo(42).toString());
+console.log(echo(42));

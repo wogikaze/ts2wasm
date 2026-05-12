@@ -8,8 +8,7 @@ categories:
   parser: Fixtures testing parser acceptance or rejection
   test-infrastructure: Fixtures that test the test framework itself
 canary:
-  description: Semantic canary suite — fixtures that exercise all active semantic
-    paths
+  description: Semantic canary suite — fixtures that exercise all active semantic paths
   source: scripts/data/semantic-canary.txt
   fixtures:
   - fixtures/basics-hello/hello.ts
@@ -1571,3 +1570,86 @@ feature_matrix:
       - io:stdout
       status: pass
       assert: {}
+    functions:
+      feature:
+      - stmt:function-declaration
+      - expr:call
+      - stmt:return
+      - expr:parameter
+      - control:recursion
+      - expr:function-expression
+      - expr:closure-readonly-capture
+      status: pass
+      assert:
+        basic-function.ts:
+          stdout: 'hello
+
+            3
+
+            42
+
+            '
+          exit_code: 0
+        return-values.ts:
+          stdout: 'true
+
+            99
+
+            world
+
+            after void
+
+            '
+          exit_code: 0
+        parameters.ts:
+          stdout: '6
+
+            foobar
+
+            xxxx
+
+            '
+          exit_code: 0
+        recursion.ts:
+          stdout: '120
+
+            1
+
+            1
+
+            13
+
+            '
+          exit_code: 0
+        nested-calls.ts:
+          stdout: '10
+
+            36
+
+            5
+
+            '
+          exit_code: 0
+        early-return.ts:
+          stdout: '3
+
+            5
+
+            positive
+
+            negative
+
+            zero
+
+            '
+          exit_code: 0
+        function-expressions.ts:
+          stdout: '12
+
+            hello world
+
+            '
+          exit_code: 0
+        closures.ts:
+          stdout: ''
+          exit_code: 1

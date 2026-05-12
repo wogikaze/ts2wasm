@@ -5,8 +5,8 @@ function firstPositive(a: number, b: number): number {
   }
   return b;
 }
-console.log(firstPositive(3, 5).toString());
-console.log(firstPositive(-1, 5).toString());
+console.log(firstPositive(3, 5));
+console.log(firstPositive(-1, 5));
 
 function classify(n: number): string {
   if (n > 0) {

@@ -9,7 +9,7 @@ if (getTrue()) {
 function getNumber(): number {
   return 99;
 }
-console.log(getNumber().toString());
+console.log(getNumber());
 
 function getString(): string {
   return "world";
