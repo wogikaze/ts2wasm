@@ -1151,7 +1151,7 @@ open:
       exit: 0
     - command: git diff --check
       exit: 0
-    commit: PLACEHOLDER
+    commit: e6859e2ff
   id: 361
   non_goals:
   - No new builtin support.
