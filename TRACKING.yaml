@@ -74,10 +74,9 @@ done:
   - No wasm-encoder default switch.
   notes: 'RuntimeSignature moved from runtime_fn.rs to own module in runtime-catalog.
     StackEffect added to runtime-abi with typed constructors. runtime_signature.rs
-    tests verify signatures and check_runtime_signature helper. AC1 (backend-wasm test)
-    blocked by 93 pre-existing compilation errors in ts2wasm-ir crate (unrelated worktree
-    modifications).
-    '
+    tests verify signatures and check_runtime_signature helper. AC1 (backend-wasm
+    test) blocked by 93 pre-existing compilation errors in ts2wasm-ir crate (unrelated
+    worktree modifications). '
   plan:
     files:
     - crates/runtime-catalog/src/runtime_spec.rs
@@ -623,16 +622,12 @@ done:
   type: docs
   updated: '2026-05-12'
 - acceptance:
-  - "rg \"issue-3(69|70|71|72|73|74|75|76|77|78|79|8[0-9]|9[0-9])\" crates docs fixtures\
-    \ scripts \u306E\u68DA\u5378\u3057\u7D50\u679C\u3092 doc \u306B\u6B8B\u3059"
-  - "docs/25-robust-test-design.md \u304B\u540C\u7B49\u306E P15 \u8A2D\u8A08\u66F8\
-    \u304C\u5B58\u5728\u3059\u308B"
-  - "diagnostic \u5185\u306E issue-NNN \u304C\u5B9F tracker \u306B\u5BFE\u5FDC\u3059\
-    \u308B\u304B feature:<label> \u306B\u7F6E\u63DB\u3055\u308C\u308B\u65B9\u91DD\u304C\
-    \u6C7A\u307E\u3063\u3066\u3044\u308B"
-  - "python3 scripts/manager.py check tracking \u304C P15 issue id \u3068 diagnostic\
-    \ tracking \u306E\u885D\u7A81\u3092\u691C\u51FA\u3067\u304D\u308B\u8A2D\u8A08\u306B\
-    \u306A\u3063\u3066\u3044\u308B"
+  - rg "issue-3(69|70|71|72|73|74|75|76|77|78|79|8[0-9]|9[0-9])" crates docs fixtures
+    scripts の棚卸し結果を doc に残す
+  - docs/25-robust-test-design.md か同等の P15 設計書が存在する
+  - diagnostic 内の issue-NNN が実 tracker に対応するか feature:<label> に置換される方針が決まっている
+  - python3 scripts/manager.py check tracking が P15 issue id と diagnostic tracking
+    の衝突を検出できる設計になっている
   area: cross
   closed: '2026-05-12'
   created: '2026-05-12'
@@ -651,11 +646,9 @@ done:
     commit: 1f4f026c2
   id: 370
   non_goals:
-  - "BigInt semantics \u3092\u4FEE\u6B63\u3057\u306A\u3044"
-  - "issue YAML \u3092\u3053\u306E issue \u3060\u3051\u3067\u5168\u751F\u6210\u3057\
-    \u306A\u3044"
-  - "\u904E\u53BB issue \u306E\u5B9F\u88C5\u5185\u5BB9\u3092\u518D\u5B9A\u7FA9\u3057\
-    \u306A\u3044"
+  - BigInt semantics を修正しない
+  - issue YAML をこの issue だけで全生成しない
+  - 過去 issue の実装内容を再定義しない
   notes: Bootstrap for P15-test-hardening. Everything else depends on clean namespace.
   plan:
     files:
@@ -663,10 +656,8 @@ done:
     - docs/current-state.md
     - scripts/check/tracking-consistency.py
     - crates/**
-    goal: "P15 \u958B\u59CB\u524D\u306B issue-NNN \u306E\u610F\u5473\u3092 tracking\
-      \ YAML / diagnostic / docs / fixtures \u9593\u3067\u4E00\u610F\u306B\u3059\u308B\
-      \u3002archive \u306E BigInt diagnostic \u306B\u6B8B\u308B issue-369/370 \u3068\
-      \u306E\u885D\u7A81\u3092\u89E3\u6C7A\u3059\u308B\u3002"
+    goal: P15 開始前に issue-NNN の意味を tracking YAML / diagnostic / docs / fixtures 間で一意にする。archive
+      の BigInt diagnostic に残る issue-369/370 との衝突を解決する。
   priority: P1
   roadmap: P15-test-hardening
   status: done
@@ -674,12 +665,10 @@ done:
   type: tooling
   updated: '2026-05-12'
 - acceptance:
-  - "docs/17-jsonl-test-record-schema.md \u304C canonical schema \u3068\u3057\u3066\
-    \u66F4\u65B0\u3055\u308C\u308B"
-  - "crates/shared/src/test_status.rs \u306E TestRecord::validate() \u304C docs \u3068\
-    \u4E00\u81F4\u3059\u308B"
-  - "scripts/check/test-records-schema.py --self-test \u304C Rust schema \u3068\u540C\
-    \u3058 status/required fields \u3092\u691C\u67FB\u3059\u308B"
+  - docs/17-jsonl-test-record-schema.md が canonical schema として更新される
+  - crates/shared/src/test_status.rs の TestRecord::validate() が docs と一致する
+  - scripts/check/test-records-schema.py --self-test が Rust schema と同じ status/required
+    fields を検査する
   - cargo test -p ts2wasm-shared test_status
   - cargo nextest run -p ts2wasm-cli --test differential_jsonl differential_jsonl_quick_check_formats
   - python3 scripts/manager.py check records -- --self-test
@@ -701,9 +690,8 @@ done:
     commit: 1f4f026c2
   id: 371
   non_goals:
-  - "reference coverage \u306E pass \u6570\u3092\u5897\u3084\u3055\u306A\u3044"
-  - "fixture \u306E\u610F\u5473\u8AD6\u5206\u985E\u305D\u306E\u3082\u306E\u306F 372\
-    \ \u3067\u6271\u3046"
+  - reference coverage の pass 数を増やさない
+  - fixture の意味論分類そのものは 372 で扱う
   notes: Root schema issue for P15. Everything downstream depends on this being correct.
   plan:
     files:
@@ -712,9 +700,8 @@ done:
     - scripts/check/test-records-schema.py
     - docs/17-jsonl-test-record-schema.md
     - docs/11-shared-definitions.md
-    goal: "TestRecord \u3092\u5358\u4E00\u306E canonical schema \u306B\u3057\u3001\
-      Rust \u578B / JSONL docs / schema checker / differential runner / reference\
-      \ coverage \u306E\u4E0D\u4E00\u81F4\u3092\u306A\u304F\u3059\u3002"
+    goal: TestRecord を単一の canonical schema にし、Rust 型 / JSONL docs / schema checker
+      / differential runner / reference coverage の不一致をなくす。
   priority: P1
   roadmap: P15-schema
   status: done
@@ -856,8 +843,8 @@ done:
   - No runtime behavior change.
   notes: 'All resolver domain lowering APIs converted to use LoweringCtx or free functions.
     facts.rs and string.rs migrated to free functions taking &LoweringCtx. Callers
-    updated across array.rs, call/**, expr/**, object.rs, class.rs, function.rs,
-    string.rs, module.rs.
+    updated across array.rs, call/**, expr/**, object.rs, class.rs, function.rs, string.rs,
+    module.rs.
 
     '
   plan:
@@ -1000,6 +987,23 @@ done:
   title: Complete object semantics kernel for descriptors and prototype operations
   type: refactor
   updated: '2026-05-12'
+- id: 367
+  title: Add semantic coverage and conformance regression gate
+  priority: P1
+  area: coverage
+  type: tooling
+  status: done
+  roadmap: P14-final-coverage-gate
+  created: '2026-05-12'
+  closed: '2026-05-12'
+  non_goals:
+  - No full test262 harness
+  evidence:
+    commit: 8bd1cd505
+    commands:
+    - command: grep semantic_pass/conformance_pass/differential_pass/negative_compile_pass
+        in coverage data
+      exit: 0
 meta:
   active_limit: 1
   open_limit: 40
