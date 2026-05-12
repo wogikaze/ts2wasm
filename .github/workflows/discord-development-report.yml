@@ -1,0 +1,33 @@
+name: discord-development-report
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 50
+
+      - name: Generate report
+        id: report
+        run: |
+          run_id="$(date -u +'%Y%m%d-%H%M%S')-${GITHUB_RUN_ID}"
+          report_path="reports/runs/${run_id}/cycle_report.md"
+          ./scripts/manager development-report --output "${report_path}" --run-id "${run_id}"
+          echo "run_id=${run_id}" >> "${GITHUB_OUTPUT}"
+          echo "report_path=${report_path}" >> "${GITHUB_OUTPUT}"
+
+      - name: Send Discord report
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          ./scripts/manager discord-report "${{ steps.report.outputs.report_path }}" --run-id "${{ steps.report.outputs.run_id }}"

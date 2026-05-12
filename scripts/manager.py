@@ -56,6 +56,8 @@ COMMANDS = {
     "repo-metrics": ("python", "scripts/run/repo-metrics.py"),
     "benchmark-tracker": ("python", "scripts/perf/benchmark-tracker.py"),
     "test-differential-reporter": ("python", "scripts/report/differential.py"),
+    "development-report": ("python", "scripts/report/development-report.py"),
+    "discord-report": ("python", "scripts/report/discord-report.py"),
     "gen-site": ("python", "scripts/gen-site.py"),
     "create-run-dir": ("python", "scripts/gen/create-run-dir.py"),
     "fmt": ("cargo", "fmt --all --check"),
@@ -149,6 +151,8 @@ def usage():
         ("benchmark-tracker", "Performance metrics JSON"),
         ("test262", "[use 'mise run test262' instead — alias for reference-coverage test262 --jsonl]"),
         ("test-differential-reporter", "Report from test262 JSONL (stdin)"),
+        ("development-report", "Generate a concise Japanese development report"),
+        ("discord-report", "Send a report markdown/json file to Discord webhook"),
         ("create-run-dir", "Create reports/runs/<run_id>/ directory"),
         ("fmt", "cargo fmt --all --check"),
         ("clippy", "cargo clippy --all-targets -- -D warnings"),
@@ -228,6 +232,8 @@ def main():
     
     target = sys.argv[1]
     args = sys.argv[2:]
+    if args and args[0] == "--":
+        args = args[1:]
 
     if target == "gate":
         run_command("python", "scripts/gate/fast-gate.py", args)

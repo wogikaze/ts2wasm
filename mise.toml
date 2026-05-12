@@ -108,6 +108,14 @@ run = "python scripts/manager.py reference-coverage test262 --jsonl"
 description = "HTML/Md report from test262 JSONL (stdin; optional file args)"
 run = "python scripts/manager.py test-differential-reporter"
 
+[tasks."development-report"]
+description = "Generate a concise Japanese development report for Discord"
+run = "python scripts/manager.py development-report"
+
+[tasks."discord-report"]
+description = "Send a report markdown/json file to Discord webhook"
+run = "python scripts/manager.py discord-report"
+
 [tasks.fmt]
 description = "cargo fmt --all --check"
 run = "python scripts/manager.py fmt"
