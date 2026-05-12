@@ -71,7 +71,7 @@ fast, deterministic regression detection without running the full test262 suite.
 
 | Property | Value |
 |----------|-------|
-| Fixture count | 15 |
+| Fixture count | 20 |
 | Source | `scripts/data/semantic-canary.txt` |
 | Catalog marker | `canary` section in `fixtures/catalog.yaml` |
 
@@ -91,6 +91,11 @@ fast, deterministic regression detection without running the full test262 suite.
 - Classes: `classes-and-inheritance/class-basic.ts`
 - Arrow functions: `arrow-functions/arrow-basic.ts`
 - Equality operators: `basics-equality/equality-operators.ts`
+- TypedArray basics: `builtins-and-io/typedarray-basic.ts`
+- Map/Set collections: `builtins-and-io/map-set.ts`
+- Promise substrate: `core-semantics/promise-basic.ts`
+- BigInt literal runtime: `core-semantics/bigint-literal-runtime.ts`
+- Proxy global-name resolution: `builtins-and-io/global-names-promise-symbol-reflect-proxy.ts`
 
 ## test262 Harness Infrastructure
 

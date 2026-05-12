@@ -26,6 +26,11 @@ canary:
   - fixtures/classes-and-inheritance/class-basic.ts
   - fixtures/arrow-functions/arrow-basic.ts
   - fixtures/basics-equality/equality-operators.ts
+  - fixtures/builtins-and-io/typedarray-basic.ts
+  - fixtures/builtins-and-io/map-set.ts
+  - fixtures/core-semantics/promise-basic.ts
+  - fixtures/core-semantics/bigint-literal-runtime.ts
+  - fixtures/builtins-and-io/global-names-promise-symbol-reflect-proxy.ts
 directories:
   arrays-objects:
     category: semantic
