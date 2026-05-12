@@ -28,6 +28,14 @@ CORE_FIXTURES = [
     "fixtures/core-semantics/number-stringify.ts",
 ]
 
+# Fixtures for deterministic snapshot equality test (a representative subset).
+# Same fixture built twice must produce identical manifest JSON.
+DETERMINISTIC_CHECK_FIXTURES = [
+    "fixtures/basics-hello/hello.ts",
+    "fixtures/builtins-and-io/math-random.ts",
+    "fixtures/builtins-and-io/console-log.ts",
+]
+
 # Standalone builtins-and-io fixtures that compile successfully.
 # Each is checked for manifest import vs wasm import match.
 BUILTINS_FIXTURES = [
@@ -87,7 +95,8 @@ def usage():
     print()
     print("A single path ending in .ts may be given without --fixture.")
     print("--all: check all CORE_FIXTURES.")
-    print("Default (no args): check all CORE_FIXTURES.")
+    print("--check-deterministic: run only deterministic snapshot checks.")
+    print("Default (no args): run all checks including deterministic.")
     print()
     print("Fails if manifest import (module,name) pairs differ from wasm import section.")
 
@@ -123,6 +132,63 @@ def _check_build_fail(fixture: str) -> int:
 
         print(f"check_manifest_imports: OK (expected failure) ({fixture})", file=sys.stderr)
         return 0
+
+def _check_deterministic(fixture: str) -> int:
+    """Build the same fixture twice and verify manifest JSON is identical.
+    Returns 0 on success (deterministic), 1 on failure."""
+    fixture_path = REPO_ROOT / fixture
+    if not fixture_path.exists():
+        print(f"check_manifest_imports: fixture not found: {fixture}", file=sys.stderr)
+        return 1
+
+    print(f"check_manifest_imports: deterministic check {fixture}", file=sys.stderr)
+    with tempfile.TemporaryDirectory() as tmpd:
+        tmpd = Path(tmpd)
+        wasm_path1 = tmpd / "check1.wasm"
+        manifest_path1 = tmpd / "manifest1.json"
+        wasm_path2 = tmpd / "check2.wasm"
+        manifest_path2 = tmpd / "manifest2.json"
+
+        # First build
+        result1 = subprocess.run(
+            ["cargo", "run", "-q", "-p", "ts2wasm-cli", "--", "build", str(fixture_path),
+             "-o", str(wasm_path1), "--emit-manifest", str(manifest_path1)],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        if result1.returncode != 0:
+            print(f"check_manifest_imports: first build failed ({fixture})", file=sys.stderr)
+            return 1
+
+        # Second build
+        result2 = subprocess.run(
+            ["cargo", "run", "-q", "-p", "ts2wasm-cli", "--", "build", str(fixture_path),
+             "-o", str(wasm_path2), "--emit-manifest", str(manifest_path2)],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        if result2.returncode != 0:
+            print(f"check_manifest_imports: second build failed ({fixture})", file=sys.stderr)
+            return 1
+
+        with open(manifest_path1) as f:
+            manifest1 = json.load(f)
+        with open(manifest_path2) as f:
+            manifest2 = json.load(f)
+
+        if manifest1 != manifest2:
+            print(f"check_manifest_imports: manifest mismatch ({fixture})", file=sys.stderr)
+            print(f"--- manifest 1 ---", file=sys.stderr)
+            print(json.dumps(manifest1, indent=2), file=sys.stderr)
+            print(f"--- manifest 2 ---", file=sys.stderr)
+            print(json.dumps(manifest2, indent=2), file=sys.stderr)
+            return 1
+
+        print(f"check_manifest_imports: OK (deterministic) ({fixture})", file=sys.stderr)
+        return 0
+
 
 def _check_single(fixture: str) -> int:
     fixture_path = REPO_ROOT / fixture
@@ -200,6 +266,7 @@ def main():
     args = sys.argv[1:]
 
     fixtures = []  # empty means check all
+    run_deterministic_only = False
 
     i = 0
     while i < len(args):
@@ -208,6 +275,10 @@ def main():
             sys.exit(0)
         elif args[i] == "--all":
             fixtures = list(CORE_FIXTURES)
+            i += 1
+        elif args[i] == "--check-deterministic":
+            fixtures = list(CORE_FIXTURES)
+            run_deterministic_only = True
             i += 1
         elif args[i] == "--fixture":
             if i + 1 >= len(args):
@@ -233,30 +304,40 @@ def main():
     failures = 0
     total = 0
 
-    # Run normal manifest checks
-    if not fixtures:
-        # Default run: check core + builtins + build-fail
-        fixtures = list(CORE_FIXTURES) + list(BUILTINS_FIXTURES)
-    elif fixtures == CORE_FIXTURES:
-        # --all: also check builtins and build-fail
-        fixtures = list(CORE_FIXTURES) + list(BUILTINS_FIXTURES)
-    for fixture in fixtures:
-        total += 1
-        result = _check_single(fixture)
-        if result != 0:
-            exit_code = result
-            failures += 1
+    if not run_deterministic_only:
+        # Run normal manifest checks
+        if not fixtures:
+            # Default run: check core + builtins + build-fail
+            fixtures = list(CORE_FIXTURES) + list(BUILTINS_FIXTURES)
+        elif fixtures == CORE_FIXTURES:
+            # --all: also check builtins and build-fail
+            fixtures = list(CORE_FIXTURES) + list(BUILTINS_FIXTURES)
+        for fixture in fixtures:
+            total += 1
+            result = _check_single(fixture)
+            if result != 0:
+                exit_code = result
+                failures += 1
 
-    # Run build-fail checks (when running default set or --all)
-    build_fail_fixtures = []
-    if not fixtures or fixtures == (CORE_FIXTURES + BUILTINS_FIXTURES):
-        build_fail_fixtures = list(BUILD_FAIL_FIXTURES)
-    for fixture in build_fail_fixtures:
-        total += 1
-        result = _check_build_fail(fixture)
-        if result != 0:
-            exit_code = result
-            failures += 1
+        # Run build-fail checks (when running default set or --all)
+        build_fail_fixtures = []
+        if not fixtures or fixtures == (CORE_FIXTURES + BUILTINS_FIXTURES):
+            build_fail_fixtures = list(BUILD_FAIL_FIXTURES)
+        for fixture in build_fail_fixtures:
+            total += 1
+            result = _check_build_fail(fixture)
+            if result != 0:
+                exit_code = result
+                failures += 1
+
+    # Run deterministic snapshot checks (when running default set, --all, or --check-deterministic)
+    if run_deterministic_only or not fixtures or fixtures == (CORE_FIXTURES + BUILTINS_FIXTURES):
+        for fixture in DETERMINISTIC_CHECK_FIXTURES:
+            total += 1
+            result = _check_deterministic(fixture)
+            if result != 0:
+                exit_code = result
+                failures += 1
 
     if exit_code != 0:
         print(f"check_manifest_imports: FAILED ({failures}/{total} failures)", file=sys.stderr)
