@@ -56,11 +56,9 @@
 use ts2wasm_diagnostic::DiagCode;
 use ts2wasm_frontend::{Lexer, Parser};
 use ts2wasm_ir::{
-    BuiltinId,
-    HirExpr, HirFunction, HirFunctionId, HirLocalId, HirProgram, HirRelationalOp, HirStmt,
-    dump_hir, dump_mir, lower_hir_to_mir, lower_to_hir, validate_hir,
-    builtin_resolver::resolve_builtins,
-    name_resolver::resolve_names,
+    BuiltinId, HirExpr, HirFunction, HirFunctionId, HirLocalId, HirProgram, HirRelationalOp,
+    HirStmt, builtin_resolver::resolve_builtins, dump_hir, dump_mir, lower_hir_to_mir,
+    lower_to_hir, name_resolver::resolve_names, validate_hir,
 };
 
 // ---------------------------------------------------------------------------
@@ -125,7 +123,10 @@ fn hir_stmt_let() {
         dump_hir(&hir)
     };
     assert!(dump.contains("Let("), "Let in dump: {dump}");
-    assert!(dump.contains("ConstNumber(42)"), "ConstNumber in dump: {dump}");
+    assert!(
+        dump.contains("ConstNumber(42)"),
+        "ConstNumber in dump: {dump}"
+    );
 }
 
 #[test]
@@ -147,15 +148,15 @@ fn hir_stmt_store_local() {
         dump_hir(&hir)
     };
     assert!(dump.contains("StoreLocal("), "StoreLocal in dump: {dump}");
-    assert!(dump.contains("ConstNumber(99)"), "ConstNumber in dump: {dump}");
+    assert!(
+        dump.contains("ConstNumber(99)"),
+        "ConstNumber in dump: {dump}"
+    );
 }
 
 #[test]
 fn hir_stmt_store_local_from_source() {
-    assert_hir_dump_contains(
-        "let x = 1; x = 2;",
-        &["StoreLocal(", "ConstNumber(2)"],
-    );
+    assert_hir_dump_contains("let x = 1; x = 2;", &["StoreLocal(", "ConstNumber(2)"]);
 }
 
 #[test]
@@ -191,7 +192,10 @@ fn hir_stmt_branch_if_truthy() {
         };
         dump_hir(&hir)
     };
-    assert!(dump.contains("BranchIfTruthy"), "BranchIfTruthy in dump: {dump}");
+    assert!(
+        dump.contains("BranchIfTruthy"),
+        "BranchIfTruthy in dump: {dump}"
+    );
     assert!(dump.contains("ToBoolean"), "ToBoolean in dump: {dump}");
     assert!(dump.contains("ConstString"), "ConstString in dump: {dump}");
 }
@@ -219,7 +223,10 @@ fn hir_stmt_loop_while() {
     };
     assert!(dump.contains("LoopWhile"), "LoopWhile in dump: {dump}");
     assert!(dump.contains("ToBoolean"), "ToBoolean in dump: {dump}");
-    assert!(dump.contains("ConstNumber(2)"), "ConstNumber in dump: {dump}");
+    assert!(
+        dump.contains("ConstNumber(2)"),
+        "ConstNumber in dump: {dump}"
+    );
 }
 
 #[test]
@@ -241,7 +248,10 @@ fn hir_stmt_return() {
         dump_hir(&hir)
     };
     assert!(dump.contains("Return"), "Return in dump: {dump}");
-    assert!(dump.contains("ConstNumber(42)"), "ConstNumber in dump: {dump}");
+    assert!(
+        dump.contains("ConstNumber(42)"),
+        "ConstNumber in dump: {dump}"
+    );
 }
 
 #[test]
@@ -438,10 +448,7 @@ fn hir_expr_to_boolean() {
 #[test]
 fn hir_expr_to_boolean_from_source() {
     // if-condition wrapping automatically produces ToBoolean.
-    assert_hir_dump_contains(
-        "let a = 1; if (a) {}",
-        &["ToBoolean"],
-    );
+    assert_hir_dump_contains("let a = 1; if (a) {}", &["ToBoolean"]);
 }
 
 #[test]
@@ -654,10 +661,7 @@ fn hir_expr_call_builtin() {
 
 #[test]
 fn hir_expr_call_builtin_from_source() {
-    assert_hir_dump_contains(
-        "console.log(42);",
-        &["CallBuiltin", "ConstNumber(42)"],
-    );
+    assert_hir_dump_contains("console.log(42);", &["CallBuiltin", "ConstNumber(42)"]);
 }
 
 #[test]
@@ -679,10 +683,7 @@ fn hir_expr_call_function() {
 
 #[test]
 fn hir_expr_call_function_from_source() {
-    assert_hir_dump_contains(
-        "function f() { return 1; } f();",
-        &["CallFunction"],
-    );
+    assert_hir_dump_contains("function f() { return 1; } f();", &["CallFunction"]);
 }
 
 #[test]
@@ -737,7 +738,13 @@ fn hir_function_body() {
 fn hir_function_body_from_source() {
     assert_hir_dump_contains(
         "function f() { let x = 10; return x; } f();",
-        &["function[", "HirFunctionId", "Let(", "Return", "ConstNumber(10)"],
+        &[
+            "function[",
+            "HirFunctionId",
+            "Let(",
+            "Return",
+            "ConstNumber(10)",
+        ],
     );
 }
 
@@ -758,7 +765,10 @@ while (w) { w = 0; }
     let dump = dump_hir(&hir);
     assert!(dump.contains("Let("), "Let in dump: {dump}");
     assert!(dump.contains("StoreLocal("), "StoreLocal in dump: {dump}");
-    assert!(dump.contains("BranchIfTruthy"), "BranchIfTruthy in dump: {dump}");
+    assert!(
+        dump.contains("BranchIfTruthy"),
+        "BranchIfTruthy in dump: {dump}"
+    );
     assert!(dump.contains("LoopWhile"), "LoopWhile in dump: {dump}");
     assert!(dump.contains("JsAdd"), "JsAdd in dump: {dump}");
 }
@@ -850,7 +860,10 @@ fn hir_integration_all_expr_variants_synthetic() {
         "BranchIfTruthy",
         "LoopWhile",
     ] {
-        assert!(dump.contains(expected), "expected '{expected}' in dump:\n{dump}");
+        assert!(
+            dump.contains(expected),
+            "expected '{expected}' in dump:\n{dump}"
+        );
     }
 }
 
@@ -911,9 +924,9 @@ fn validate_rejects_invalid_local_id() {
     };
     let errors = validate_hir(&hir).unwrap_err();
     assert!(
-        errors.iter().any(|e| {
-            e.code == DiagCode::InvariantViolation && e.message.contains("local id")
-        }),
+        errors
+            .iter()
+            .any(|e| { e.code == DiagCode::InvariantViolation && e.message.contains("local id") }),
         "expected InvariantViolation for invalid local id, got: {errors:?}"
     );
 }
@@ -950,9 +963,9 @@ fn validate_rejects_branch_without_to_boolean() {
     };
     let errors = validate_hir(&hir).unwrap_err();
     assert!(
-        errors.iter().any(|e| {
-            e.code == DiagCode::InvariantViolation && e.message.contains("ToBoolean")
-        }),
+        errors
+            .iter()
+            .any(|e| { e.code == DiagCode::InvariantViolation && e.message.contains("ToBoolean") }),
         "expected InvariantViolation for missing ToBoolean, got: {errors:?}"
     );
 }
@@ -969,9 +982,9 @@ fn validate_rejects_loop_without_to_boolean() {
     };
     let errors = validate_hir(&hir).unwrap_err();
     assert!(
-        errors.iter().any(|e| {
-            e.code == DiagCode::InvariantViolation && e.message.contains("ToBoolean")
-        }),
+        errors
+            .iter()
+            .any(|e| { e.code == DiagCode::InvariantViolation && e.message.contains("ToBoolean") }),
         "expected InvariantViolation for missing ToBoolean in loop, got: {errors:?}"
     );
 }
@@ -985,9 +998,9 @@ fn validate_rejects_top_level_return() {
     };
     let errors = validate_hir(&hir).unwrap_err();
     assert!(
-        errors.iter().any(|e| {
-            e.code == DiagCode::InvariantViolation && e.message.contains("Return")
-        }),
+        errors
+            .iter()
+            .any(|e| { e.code == DiagCode::InvariantViolation && e.message.contains("Return") }),
         "expected InvariantViolation for top-level return, got: {errors:?}"
     );
 }
@@ -1005,9 +1018,9 @@ fn validate_rejects_unregistered_local() {
     };
     let errors = validate_hir(&hir).unwrap_err();
     assert!(
-        errors.iter().any(|e| {
-            e.code == DiagCode::InvariantViolation && e.message.contains("local id")
-        }),
+        errors
+            .iter()
+            .any(|e| { e.code == DiagCode::InvariantViolation && e.message.contains("local id") }),
         "expected InvariantViolation for unregistered local, got: {errors:?}"
     );
 }
