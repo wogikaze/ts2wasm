@@ -975,6 +975,11 @@ fn object_has_own_property_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-has-own-property.ts");
 }
 
+#[test]
+fn object_has_own_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-has-own.ts");
+}
+
 // Object semantics kernel fixtures (items 175-181)
 #[test]
 fn writable_false_enforcement_matches_node_output() {

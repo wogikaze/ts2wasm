@@ -2775,6 +2775,7 @@ fn object_builtin_method_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/object-define-property.ts",
         "fixtures/builtins-and-io/object-entries.ts",
         "fixtures/builtins-and-io/object-get-own-property-descriptor.ts",
+        "fixtures/builtins-and-io/object-has-own.ts",
         "fixtures/builtins-and-io/object-has-own-property.ts",
         "fixtures/builtins-and-io/object-keys-arguments.ts",
         "fixtures/builtins-and-io/object-keys.ts",

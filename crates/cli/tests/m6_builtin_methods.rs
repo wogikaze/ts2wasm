@@ -163,6 +163,16 @@ fn build_smoke_object_has_own_property() {
 }
 
 #[test]
+fn build_smoke_object_has_own() {
+    let result = run_fixture("builtins-and-io/object-has-own.ts");
+    assert!(
+        result.is_ok(),
+        "Object.hasOwn should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_get_own_property_descriptor() {
     let result = run_fixture("builtins-and-io/object-get-own-property-descriptor.ts");
     assert!(

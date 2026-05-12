@@ -309,6 +309,7 @@ directories:
     - object-get-own-property-descriptor-unsupported.ts
     - object-get-own-property-descriptor.ts
     - object-get-prototype-of.ts
+    - object-has-own.ts
     - object-has-own-property.ts
     - object-is-extensible.ts
     - object-is-frozen.ts
