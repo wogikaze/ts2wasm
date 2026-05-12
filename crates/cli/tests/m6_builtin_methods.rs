@@ -1928,3 +1928,36 @@ fn build_smoke_math_sqrt() {
     let result = run_fixture("builtins-and-io/math-sqrt.ts");
     assert!(result.is_ok(), "Math.sqrt should build: {:?}", result.err());
 }
+
+// String.trimLeft (alias for trimStart)
+#[test]
+fn build_smoke_string_trim_left() {
+    let result = run_fixture("builtins-and-io/string-trim-left.ts");
+    assert!(
+        result.is_ok(),
+        "String.trimLeft should build: {:?}",
+        result.err()
+    );
+}
+
+// String.trimRight (alias for trimEnd)
+#[test]
+fn build_smoke_string_trim_right() {
+    let result = run_fixture("builtins-and-io/string-trim-right.ts");
+    assert!(
+        result.is_ok(),
+        "String.trimRight should build: {:?}",
+        result.err()
+    );
+}
+
+// String.toLocaleUpperCase / toLocaleLowerCase (locale-respecting aliases)
+#[test]
+fn build_smoke_string_to_locale_case() {
+    let result = run_fixture("builtins-and-io/string-to-locale-case.ts");
+    assert!(
+        result.is_ok(),
+        "String.toLocaleUpper/LowerCase should build: {:?}",
+        result.err()
+    );
+}
