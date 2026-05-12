@@ -1181,6 +1181,55 @@ done:
       exit: 0
     - command: python3 -m py_compile scripts/perf/benchmark-tracker.py
       exit: 0
+- id: 389
+  title: Final P15 test architecture completion gate
+  priority: P1
+  area: cross
+  type: tooling
+  roadmap: P15-test-hardening
+  status: done
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  evidence:
+    commit: 9dc9e55d0
+    commands:
+    - command: python3 scripts/check/tracking-consistency.py
+      exit: 0
+    - command: cargo test --workspace
+      exit: 0
+    - command: mise run check architecture
+      exit: 0
+  depends_on:
+  - 372
+  - 373
+  - 374
+  - 375
+  - 376
+  - 377
+  - 378
+  - 379
+  - 380
+  - 381
+  - 382
+  - 383
+  - 384
+  - 385
+  - 386
+  - 387
+  - 388
+  non_goals:
+  - No new feature implementation.
+  plan:
+    files:
+    - crates/**
+    - scripts/**
+    - docs/**
+    goal: 'Every P15 acceptance command passes: fixture catalog, smoke gate, validation, coverage, tracking.'
+  acceptance:
+  - python3 scripts/manager.py check all
+  - cargo test --workspace
+  - mise run check architecture
 meta:
   active_limit: 1
   open_limit: 40
@@ -1698,52 +1747,3 @@ open:
     goal: Automated checks prevent TRACKING.yaml from falling out of sync with reality.
   acceptance:
   - python3 scripts/check/tracking-consistency.py
-- id: 389
-  title: Final P15 test architecture completion gate
-  priority: P1
-  area: cross
-  type: tooling
-  roadmap: P15-test-hardening
-  status: done
-  closed: '2026-05-12'
-  created: '2026-05-12'
-  updated: '2026-05-12'
-  evidence:
-    commit: 9dc9e55d0
-    commands:
-    - command: python3 scripts/check/tracking-consistency.py
-      exit: 0
-    - command: cargo test --workspace
-      exit: 0
-    - command: mise run check architecture
-      exit: 0
-  depends_on:
-  - 372
-  - 373
-  - 374
-  - 375
-  - 376
-  - 377
-  - 378
-  - 379
-  - 380
-  - 381
-  - 382
-  - 383
-  - 384
-  - 385
-  - 386
-  - 387
-  - 388
-  non_goals:
-  - No new feature implementation.
-  plan:
-    files:
-    - crates/**
-    - scripts/**
-    - docs/**
-    goal: 'Every P15 acceptance command passes: fixture catalog, smoke gate, validation, coverage, tracking.'
-  acceptance:
-  - python3 scripts/manager.py check all
-  - cargo test --workspace
-  - mise run check architecture
