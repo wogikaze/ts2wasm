@@ -1468,7 +1468,8 @@ open:
   area: cross
   type: refactor
   roadmap: P15-test-hardening
-  status: open
+  status: done
+  closed: '2026-05-12'
   created: '2026-05-12'
   updated: '2026-05-12'
   depends_on:
@@ -1490,7 +1491,8 @@ open:
   area: cross
   type: tooling
   roadmap: P15-test-hardening
-  status: open
+  status: done
+  closed: '2026-05-12'
   created: '2026-05-12'
   updated: '2026-05-12'
   depends_on:
@@ -1588,7 +1590,8 @@ open:
   area: cross
   type: tooling
   roadmap: P15-test-hardening
-  status: open
+  status: done
+  closed: '2026-05-12'
   created: '2026-05-12'
   updated: '2026-05-12'
   depends_on:
@@ -1608,7 +1611,8 @@ open:
   area: cross
   type: tooling
   roadmap: P15-test-hardening
-  status: open
+  status: done
+  closed: '2026-05-12'
   created: '2026-05-12'
   updated: '2026-05-12'
   depends_on:
