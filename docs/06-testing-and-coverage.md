@@ -8,6 +8,27 @@
 
 すべてのテストは `docs/11-shared-definitions.md` の test status schema に従って分類する。単なる skip は禁止する。未対応機能による除外には issue ID または tracking label を必ず付ける。これにより、coverage が増えているのか、ただ skip が増えているのかを区別できる。
 
+## Fixture catalog
+
+`fixtures/catalog.yaml` is a machine-validatable manifest that lists every `.ts` fixture file in the repository. Each directory entry records:
+
+- `category`: classification of the fixture area (semantic, differential, negative, type-erasure, build-smoke, parser, test-infrastructure)
+- `status`: current test status (pass, fail, unsupported, blocked, skip, unknown)
+- `expected`: one-line summary of the expected behavior for fixtures in that directory
+- `fixtures`: list of individual fixture files; per-file overrides for status or expected description
+
+The catalog is validated by `scripts/check/fixture-catalog.py`, which verifies the following invariants:
+
+1. Every `.ts` file under `fixtures/` appears in exactly one directory entry.
+2. Every entry in the catalog corresponds to a real file on disk.
+3. All status values are from the defined set (pass, fail, unsupported, blocked, skip, unknown).
+4. All category values reference a key in the top-level `categories` map.
+5. Every entry has a non-empty expected-behavior description.
+
+This catalog serves as the single source of truth for which fixtures exist and what
+class of testing they belong to. It is updated when new fixtures are added or when
+fixture statuses change due to new implementations.
+
 ## Coverage State
 
 Coverage は、単なる数字ではなく、どの意味論領域をどれだけ通過しているかを示す。test262、TypeScript compiler tests、tsc parser/checker、TypeScript-Go は、それぞれ役割が違う。
