@@ -830,30 +830,34 @@ done:
     manifest, and differential execution
   type: test
   updated: '2026-05-12'
-meta:
-  active_limit: 1
-  open_limit: 40
-  policy:
-    canonical_source: TRACKING.yaml
-    closed_source: docs/done-tracking.yaml
-    generated_entries: forbidden
-    roadmap_source: docs/roadmap.md
-  version: 1
-open:
 - acceptance:
   - cargo test -p ts2wasm-ir -p ts2wasm-compiler
   - mise run check architecture
-  - grep -R "LoweringCtx" crates/ir/src/lowered/resolver
+  - rg "LoweringCtx" crates/ir/src/lowered/resolver --files-with-matches
   area: ir
+  closed: '2026-05-12'
   created: '2026-05-12'
   depends_on:
   - 348
+  evidence:
+    commands:
+    - command: cargo test -p ts2wasm-ir -p ts2wasm-compiler
+      exit: 0
+    - command: mise run check architecture
+      exit: 0
+    - command: rg "LoweringCtx" crates/ir/src/lowered/resolver --files-with-matches
+      exit: 0
+    - command: git diff --check
+      exit: 0
+    commit: 40a205d06
   id: 349
   non_goals:
   - No new syntax support.
   - No runtime behavior change.
-  notes: 'Physical file splitting is already mostly done. This issue makes the API
-    boundary real.
+  notes: 'All resolver domain lowering APIs converted to use LoweringCtx or free functions.
+    facts.rs and string.rs migrated to free functions taking &LoweringCtx. Callers
+    updated across array.rs, call/**, expr/**, object.rs, class.rs, function.rs,
+    string.rs, module.rs.
 
     '
   plan:
@@ -873,11 +877,139 @@ open:
       '
   priority: P1
   roadmap: P14-final-lowering-boundary
-  status: open
+  status: done
   title: Convert resolver domain lowering APIs from &mut Resolver to LoweringCtx or
     narrow views
   type: refactor
   updated: '2026-05-12'
+- acceptance:
+  - cargo test -p ts2wasm-ir -p ts2wasm-compiler
+  - grep -R "OrdinaryGet" crates/ir/src/lowered
+  - grep -R "OrdinarySet" crates/ir/src/lowered
+  - grep -R "OrdinaryHasProperty" crates/ir/src/lowered
+  - grep -R "OrdinaryDelete" crates/ir/src/lowered
+  - grep -R "OrdinaryOwnPropertyKeys" crates/ir/src/lowered
+  - mise run check architecture
+  area: ir
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  depends_on:
+  - 348
+  - 349
+  evidence:
+    commands:
+    - command: cargo test -p ts2wasm-ir -p ts2wasm-compiler
+      exit: 0
+    - command: rg "OrdinaryGet" crates/ir/src/lowered --files-with-matches
+      exit: 0
+    - command: rg "OrdinarySet" crates/ir/src/lowered --files-with-matches
+      exit: 0
+    - command: rg "OrdinaryHasProperty" crates/ir/src/lowered --files-with-matches
+      exit: 0
+    - command: rg "OrdinaryDelete" crates/ir/src/lowered --files-with-matches
+      exit: 0
+    - command: rg "OrdinaryOwnPropertyKeys" crates/ir/src/lowered --files-with-matches
+      exit: 0
+    - command: mise run check architecture
+      exit: 0
+    - command: git diff --check
+      exit: 0
+    commit: ab2f4262e
+  id: 350
+  non_goals:
+  - No full ECMAScript descriptor compliance.
+  - No Proxy semantics.
+  - No prototype-chain expansion beyond existing runtime helpers.
+  notes: 'Object kernel connected to real lowering. All property get/set/has/delete/in
+    operations now route through object_kernel functions. OrdinaryOwnPropertyKeys
+    added to complete the ordinary operation set.
+
+    '
+  plan:
+    files:
+    - crates/ir/src/lowered/object_kernel.rs
+    - crates/ir/src/lowered/resolver/object.rs
+    - crates/ir/src/lowered/resolver/expr/property.rs
+    - crates/ir/src/lowered/validate.rs
+    - crates/backend-wasm/src/runtime/object/**
+    - tests/fixtures/object_kernel/**
+    goal: 'Connect object_kernel.rs to real lowering. obj.x, obj[x], assignment, delete,
+      in, Object.keys, and supported own-keys paths should lower through object kernel
+      operations instead of scattered resolver branches.
+
+      '
+  priority: P1
+  roadmap: P14-semantic-kernels
+  status: done
+  title: Route property get, set, has, delete, and Object.keys through object semantics
+    kernel
+  type: refactor
+  updated: '2026-05-12'
+- acceptance:
+  - cargo test -p ts2wasm-ir
+  - rg "OrdinaryDefineOwnProperty" crates/ir/src/lowered --files-with-matches
+  - rg "OrdinaryGetOwnProperty" crates/ir/src/lowered --files-with-matches
+  - rg "OrdinaryGetPrototypeOf" crates/ir/src/lowered --files-with-matches
+  - rg "OrdinarySetPrototypeOf" crates/ir/src/lowered --files-with-matches
+  - mise run check architecture
+  area: ir
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  depends_on:
+  - 350
+  evidence:
+    commands:
+    - command: cargo test -p ts2wasm-ir
+      exit: 0
+    - command: rg "OrdinaryDefineOwnProperty" crates/ir/src/lowered --files-with-matches
+      exit: 0
+    - command: rg "OrdinaryGetOwnProperty" crates/ir/src/lowered --files-with-matches
+      exit: 0
+    - command: rg "OrdinaryGetPrototypeOf" crates/ir/src/lowered --files-with-matches
+      exit: 0
+    - command: rg "OrdinarySetPrototypeOf" crates/ir/src/lowered --files-with-matches
+      exit: 0
+    - command: mise run check architecture
+      exit: 0
+    - command: git diff --check
+      exit: 0
+    commit: TBD
+  id: 351
+  non_goals:
+  - No full Proxy support.
+  - No full property descriptor conformance beyond supported runtime behavior.
+  notes: 'Object kernel completed with all 4 descriptor/prototype operations already
+    defined in object_kernel.rs, backend WAT emission wired in runtime/object/emit.rs,
+    and dispatch routed through runtime_dispatch_object.rs. All acceptance tests pass.
+
+    '
+  plan:
+    files:
+    - crates/ir/src/lowered/object_kernel.rs
+    - crates/ir/src/lowered/resolver/object.rs
+    - crates/ir/src/lowered/resolver/class.rs
+    - crates/backend-wasm/src/runtime/object/**
+    - tests/fixtures/object_kernel/**
+    goal: 'Add the remaining ordinary object operations needed by Object.* builtins,
+      class prototype handling, and future descriptor work.
+
+      '
+  priority: P2
+  roadmap: P14-semantic-kernels
+  status: done
+  title: Complete object semantics kernel for descriptors and prototype operations
+  type: refactor
+  updated: '2026-05-12'
+meta:
+  active_limit: 1
+  open_limit: 40
+  policy:
+    canonical_source: TRACKING.yaml
+    closed_source: docs/done-tracking.yaml
+    generated_entries: forbidden
+    roadmap_source: docs/roadmap.md
+  version: 1
+open:
 - acceptance:
   - cargo test -p ts2wasm-ir -p ts2wasm-backend-wasm -p ts2wasm-compiler
   - grep -R "OrdinaryGet" crates/ir/src/lowered
@@ -917,40 +1049,6 @@ open:
   status: open
   title: Route property get, set, has, delete, and Object.keys through object semantics
     kernel
-  type: refactor
-  updated: '2026-05-12'
-- acceptance:
-  - cargo test -p ts2wasm-ir -p ts2wasm-backend-wasm -p ts2wasm-compiler
-  - grep -R "OrdinaryDefineOwnProperty" crates/ir/src/lowered
-  - grep -R "OrdinaryGetOwnProperty" crates/ir/src/lowered
-  - grep -R "OrdinaryGetPrototypeOf" crates/ir/src/lowered
-  - grep -R "OrdinarySetPrototypeOf" crates/ir/src/lowered
-  area: ir
-  created: '2026-05-12'
-  depends_on:
-  - 350
-  id: 351
-  non_goals:
-  - No full Proxy support.
-  - No full property descriptor conformance beyond supported runtime behavior.
-  notes: 'This closes the object-kernel design surface.
-
-    '
-  plan:
-    files:
-    - crates/ir/src/lowered/object_kernel.rs
-    - crates/ir/src/lowered/resolver/object.rs
-    - crates/ir/src/lowered/resolver/class.rs
-    - crates/backend-wasm/src/runtime/object/**
-    - tests/fixtures/object_kernel/**
-    goal: 'Add the remaining ordinary object operations needed by Object.* builtins,
-      class prototype handling, and future descriptor work.
-
-      '
-  priority: P2
-  roadmap: P14-semantic-kernels
-  status: open
-  title: Complete object semantics kernel for descriptors and prototype operations
   type: refactor
   updated: '2026-05-12'
 - acceptance:
