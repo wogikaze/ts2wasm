@@ -24,6 +24,8 @@ Current checks:
   - Error when hardcoded WASI/Node host import string used outside runtime catalog.
   - Error when RuntimeFn variant with host imports lacks explicit capability marker.
   - Error when HostImport variant is not covered by manifest/link-plan tests.
+  - Warn when a module has more than 30 public API items.
+  - Error when a match has more than 50 arms unless allowlisted.
 """
 
 import os
@@ -35,6 +37,14 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 DEFAULT_MAX_FILE_LINES = 2000
+TARGET_MAX_FILE_LINES = 1200
+MAX_RUST_FILE_LINES_HARD = 2000
+MAX_FUNCTION_LINES_WARN = 200
+MAX_FUNCTION_LINES_HARD = 300
+MAX_CRATE_NORMAL_DEPS_WARN = 10
+MAX_PUBLIC_API_ITEMS_WARN = 30
+MAX_MATCH_ARMS_WARN = 30
+MAX_MATCH_ARMS_HARD = 50
 
 # Known oversized files that are exempt from the general line limit.
 # Each entry must include a reason and the P-item that will eventually fix it.
@@ -216,6 +226,8 @@ def usage():
     print("  - Error when LoweredExpr variant lacks validate_lowered coverage.")
     print("  - Error when RuntimeFn variant with host imports lacks explicit capability marker.")
     print("  - Error when HostImport variant not covered by manifest/link-plan tests.")
+    print("  - Warn when a module has more than 30 public API items.")
+    print("  - Error when a match has more than 50 arms unless allowlisted.")
 
 
 def parse_max_file_lines(args: list[str]) -> int:
@@ -309,7 +321,8 @@ def check_oversized_files(max_file_lines: int) -> None:
 
     print(
         "check_architecture_rules: ERROR files exceed "
-        f"{max_file_lines} lines; split ownership/modules or raise the documented limit",
+        f"{max_file_lines} lines (target {TARGET_MAX_FILE_LINES}); "
+        "split ownership/modules or raise the documented limit",
         file=sys.stderr,
     )
     for count, path in sorted(oversized, key=lambda item: (-item[0], item[1])):
@@ -402,7 +415,7 @@ def check_function_length() -> list[str]:
     """Check that no function exceeds 300 lines in .rs files."""
     violations = []
     fn_re = re.compile(r'^\s*(pub\s+)?(unsafe\s+)?(async\s+)?fn\s+(\w+)')
-    max_fn_lines = 300
+    max_fn_lines = MAX_FUNCTION_LINES_HARD
 
     for path in sorted(iter_repo_files(".rs")):
         rel = path.relative_to(REPO_ROOT)
@@ -614,7 +627,7 @@ def check_runtimefn_spec_gap() -> list[str]:
 
 # --- #269 P2/P3: File size limits ---
 
-def check_rust_file_length(max_lines: int = 2000) -> list[str]:
+def check_rust_file_length(max_lines: int = MAX_RUST_FILE_LINES_HARD) -> list[str]:
     """Check that no .rs file exceeds 2000 lines (with allowlist)."""
     violations = []
     for path in sorted(iter_repo_files(".rs")):
@@ -627,7 +640,7 @@ def check_rust_file_length(max_lines: int = 2000) -> list[str]:
         if count > max_lines:
             violations.append(
                 f"check_architecture_rules: ERROR {rel}: {count} lines "
-                f"(max {max_lines})"
+                f"(max {max_lines}, target {TARGET_MAX_FILE_LINES})"
             )
     return violations
 
@@ -935,7 +948,7 @@ def check_smaller_function_warning() -> list[str]:
     """Warn when functions exceed 200 lines (staged reduction toward 200-line ideal)."""
     violations = []
     fn_re = re.compile(r'^\s*(pub\s+)?(unsafe\s+)?(async\s+)?fn\s+(\w+)')
-    max_fn_lines = 200
+    max_fn_lines = MAX_FUNCTION_LINES_WARN
 
     for path in sorted(iter_repo_files(".rs")):
         rel = path.relative_to(REPO_ROOT)
@@ -1014,11 +1027,14 @@ LARGE_MATCH_ALLOWLIST = {
     "crates/backend-wasm/src/runtime_dispatch_date.rs": "date domain dispatch",
     "crates/backend-wasm/src/runtime_dispatch_string.rs": "string domain dispatch",
     "crates/backend-wasm/src/runtime_link_plan.rs": "link plan covers many runtime fn deps",
+    "crates/backend-wasm/src/wasm_encoder_backend.rs": "WASM instruction encoding dispatch",
+    "crates/backend-wasm/src/wat_writer.rs": "WAT instruction rendering dispatch",
     "crates/compiler/src/dump.rs": "AST/IR dump dispatches many node types",
     "crates/frontend/src/parser/tokens.rs": "token keyword/keyword context matching",
     "crates/ir/src/builtin_resolver.rs": "builtin resolution dispatches many expression/statement types",
     "crates/ir/src/builtin_resolver_bigint.rs": "bigint builtin resolution dispatches many types",
     "crates/ir/src/lowered/program_builtins.rs": "program builtins maps many RuntimeIntrinsic variants",
+    "crates/ir/src/lowered/mir_dump.rs": "MIR dump maps many intrinsic names",
     "crates/ir/src/lowered/resolver/expr.rs": "lower_expr dispatches many expression types",
     "crates/ir/src/lowered/runtime_intrinsic.rs": "RuntimeIntrinsic::all covers all variants",
     "crates/ir/src/lowered/resolver/array.rs": "array method dispatch",
@@ -1042,7 +1058,7 @@ def check_module_fan_out() -> list[str]:
     and build-dependencies. High fan-out increases coupling.
     """
     violations = []
-    max_deps = 10
+    max_deps = MAX_CRATE_NORMAL_DEPS_WARN
     deps_section_re = re.compile(r'^\[dependencies\]\s*$', re.MULTILINE)
     dep_entry_re = re.compile(r'^\s+([a-zA-Z][a-zA-Z0-9_-]*)\s*=\s*{?\s*$', re.MULTILINE)
     # Exclude workspace/path-only entries that reuse crate name as dep name
@@ -1083,9 +1099,13 @@ def check_module_fan_out() -> list[str]:
 
 
 def check_public_api_count() -> list[str]:
-    """Check that no module exports more than 50 public items."""
+    """Warn when a module exports more than the documented danger threshold."""
     violations = []
-    max_pub_items = 50
+    max_pub_items = MAX_PUBLIC_API_ITEMS_WARN
+    public_item_re = re.compile(
+        r'pub(?:\([^)]*\))?\s+(?:(?:async|unsafe|const)\s+)*'
+        r'(fn|struct|enum|trait|type|const|mod|use)\s'
+    )
 
     for path in sorted(iter_repo_files(".rs")):
         rel = path.relative_to(REPO_ROOT)
@@ -1100,21 +1120,22 @@ def check_public_api_count() -> list[str]:
         pub_count = 0
         for line in lines:
             stripped = line.strip()
-            if re.match(r'pub\s+(fn|struct|enum|trait|type|const|mod|use)\s', stripped):
+            if public_item_re.match(stripped):
                 pub_count += 1
         if pub_count > max_pub_items:
             violations.append(
                 f"check_architecture_rules: WARN {rel}: "
-                f"{pub_count} public items (max {max_pub_items})"
+                f"{pub_count} public API items (danger > {max_pub_items})"
             )
 
     return violations
 
 
 def check_oversized_match_arms() -> list[str]:
-    """Check for match expressions with more than 30 arms."""
+    """Check for match expressions above the warning or hard danger thresholds."""
     violations = []
-    max_arms = 30
+    warn_arms = MAX_MATCH_ARMS_WARN
+    hard_arms = MAX_MATCH_ARMS_HARD
 
     for path in sorted(iter_repo_files(".rs")):
         rel = path.relative_to(REPO_ROOT)
@@ -1136,16 +1157,22 @@ def check_oversized_match_arms() -> list[str]:
                 if '=>' in lines[j] and not lines[j].strip().startswith('//'):
                     arm_count += 1
                 j += 1
-            if arm_count > max_arms:
+            if arm_count > warn_arms:
                 if str(rel) in LARGE_MATCH_ALLOWLIST:
                     violations.append(
                         f"check_architecture_rules: WARN {rel}:{i + 1}: "
                         f"~{arm_count} match arms (allowlisted)"
                     )
+                elif arm_count > hard_arms:
+                    violations.append(
+                        f"check_architecture_rules: ERROR {rel}:{i + 1}: "
+                        f"match expression has {arm_count} arms (danger > {hard_arms}); "
+                        "split domain dispatch or add a documented allowlist reason"
+                    )
                 else:
                     violations.append(
                         f"check_architecture_rules: WARN {rel}:{i + 1}: "
-                        f"match expression has {arm_count} arms (max {max_arms})"
+                        f"match expression has {arm_count} arms (warn > {warn_arms})"
                     )
 
     return violations
