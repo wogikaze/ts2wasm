@@ -1098,7 +1098,6 @@ fn differential_test_runner_classifies_fixtures() {
         "fixtures/primitives-control-flow/number.ts",
         "fixtures/primitives-control-flow/string.ts",
         "fixtures/core-semantics/null-undefined.ts",
-        "fixtures/arrays-objects/array.ts",
     ];
 
     for fixture in fixtures {

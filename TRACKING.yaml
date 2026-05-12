@@ -1704,9 +1704,19 @@ open:
   area: cross
   type: tooling
   roadmap: P15-test-hardening
-  status: open
+  status: done
+  closed: '2026-05-12'
   created: '2026-05-12'
   updated: '2026-05-12'
+  evidence:
+    commit: 9dc9e55d0
+    commands:
+    - command: python3 scripts/check/tracking-consistency.py
+      exit: 0
+    - command: cargo test --workspace
+      exit: 0
+    - command: mise run check architecture
+      exit: 0
   depends_on:
   - 372
   - 373
