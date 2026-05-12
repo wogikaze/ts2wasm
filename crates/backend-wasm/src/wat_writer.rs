@@ -946,6 +946,48 @@ mod tests {
     }
 
     #[test]
+    fn wat_writer_emits_backend_core_constructed_module() {
+        let module = WasmModule::new()
+            .memory(WasmMemory::exported(1, 2, "memory"))
+            .data_segment(WasmDataSegment::new(16, b"hi\n".to_vec()))
+            .function(
+                WasmFunction::new("main")
+                    .result(WasmValType::I32)
+                    .local(WasmValType::I32)
+                    .body(vec![
+                        WasmInstr::I32Const(7),
+                        WasmInstr::LocalSet(0),
+                        WasmInstr::LocalGet(0),
+                        WasmInstr::Return,
+                    ]),
+            )
+            .export(WasmExport::func("main", "main"))
+            .export(WasmExport::memory("memory"));
+
+        let mut w = WatWriter::new();
+        w.emit_module(&module);
+
+        assert_eq!(
+            w.into_string(),
+            concat!(
+                "(module\n",
+                "  (memory (export \"memory\") 1 2)\n",
+                "  (data (i32.const 16) \"hi\\n\")\n",
+                "  (func $main (result i32)\n",
+                "    (local i32)\n",
+                "    (i32.const 7)\n",
+                "    (local.set 0)\n",
+                "    (local.get 0)\n",
+                "    (return)\n",
+                "  )\n",
+                "  (export \"main\" (func $main))\n",
+                "  (export \"memory\" (memory 0))\n",
+                ")\n",
+            )
+        );
+    }
+
+    #[test]
     fn wat_writer_line_and_line_fmt() {
         let mut w = WatWriter::new();
         w.line(4, "custom);");

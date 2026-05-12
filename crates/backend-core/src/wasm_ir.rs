@@ -16,8 +16,6 @@
 //     WAT is the emitter's responsibility.
 // ---------------------------------------------------------------------------
 
-
-
 /// A single wasm instruction, without indentation.
 ///
 /// Structured control-flow instructions (`If`, `Block`, `Loop`, `Then`,
@@ -208,6 +206,15 @@ pub struct WasmDataSegment {
     pub data: Vec<u8>,
 }
 
+impl WasmDataSegment {
+    pub fn new(offset: u32, data: impl Into<Vec<u8>>) -> Self {
+        Self {
+            offset,
+            data: data.into(),
+        }
+    }
+}
+
 /// An import declaration.
 #[derive(Debug, Clone)]
 pub struct WasmImport {
@@ -216,6 +223,40 @@ pub struct WasmImport {
     pub func_symbol: String,
     pub params: Vec<WasmValType>,
     pub results: Vec<WasmValType>,
+}
+
+impl WasmImport {
+    pub fn func(
+        module: impl Into<String>,
+        name: impl Into<String>,
+        func_symbol: impl Into<String>,
+        params: impl IntoIterator<Item = WasmValType>,
+        results: impl IntoIterator<Item = WasmValType>,
+    ) -> Self {
+        Self {
+            module: module.into(),
+            name: name.into(),
+            func_symbol: func_symbol.into(),
+            params: params.into_iter().collect(),
+            results: results.into_iter().collect(),
+        }
+    }
+
+    pub fn from_catalog_type_specs(
+        module: impl Into<String>,
+        name: impl Into<String>,
+        func_symbol: impl Into<String>,
+        params: &str,
+        results: &str,
+    ) -> Self {
+        Self::func(
+            module,
+            name,
+            func_symbol,
+            parse_catalog_type_list(params),
+            parse_catalog_type_list(results),
+        )
+    }
 }
 
 /// Parse a runtime-catalog-style type spec ("param i32 i32", "result i32").
@@ -238,11 +279,45 @@ pub struct WasmMemory {
     pub export_name: Option<String>,
 }
 
+impl WasmMemory {
+    pub fn new(min_pages: u32, max_pages: u32) -> Self {
+        Self {
+            min_pages,
+            max_pages,
+            export_name: None,
+        }
+    }
+
+    pub fn exported(min_pages: u32, max_pages: u32, export_name: impl Into<String>) -> Self {
+        Self {
+            min_pages,
+            max_pages,
+            export_name: Some(export_name.into()),
+        }
+    }
+}
+
 /// An export declaration.
 #[derive(Debug, Clone)]
 pub struct WasmExport {
     pub name: String,
     pub kind: WasmExportKind,
+}
+
+impl WasmExport {
+    pub fn func(name: impl Into<String>, symbol: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            kind: WasmExportKind::Func(symbol.into()),
+        }
+    }
+
+    pub fn memory(name: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            kind: WasmExportKind::Memory,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -323,7 +398,11 @@ mod tests {
             .param(WasmValType::I32)
             .result(WasmValType::I32)
             .local(WasmValType::I32)
-            .body(vec![WasmInstr::I32Const(42), WasmInstr::LocalSet(0), WasmInstr::LocalGet(0)]);
+            .body(vec![
+                WasmInstr::I32Const(42),
+                WasmInstr::LocalSet(0),
+                WasmInstr::LocalGet(0),
+            ]);
 
         assert_eq!(f.symbol, "main");
         assert_eq!(f.params, vec![WasmValType::I32]);
@@ -333,29 +412,16 @@ mod tests {
 
     #[test]
     fn wasm_module_builder() {
-        let imp = WasmImport {
-            module: "host".to_owned(),
-            name: "log".to_owned(),
-            func_symbol: "$host_log".to_owned(),
-            params: vec![WasmValType::I32],
-            results: vec![],
-        };
+        let imp = WasmImport::func("host", "log", "$host_log", [WasmValType::I32], []);
         let g = WasmGlobal::i32_mut("$counter", 0);
-        let mem = WasmMemory {
-            min_pages: 1,
-            max_pages: 256,
-            export_name: Some("memory".to_owned()),
-        };
+        let mem = WasmMemory::exported(1, 256, "memory");
         let f = WasmFunction::new("start").body(vec![
             WasmInstr::GlobalGet("$counter".to_owned()),
             WasmInstr::I32Const(1),
             WasmInstr::I32Add,
             WasmInstr::GlobalSet("$counter".to_owned()),
         ]);
-        let e = WasmExport {
-            name: "start".to_owned(),
-            kind: WasmExportKind::Func("start".to_owned()),
-        };
+        let e = WasmExport::func("start", "start");
 
         let module = WasmModule::new()
             .import(imp)
@@ -369,5 +435,33 @@ mod tests {
         assert!(module.memory.is_some());
         assert_eq!(module.functions.len(), 1);
         assert_eq!(module.exports.len(), 1);
+    }
+
+    #[test]
+    fn wasm_module_constructors_keep_wat_inputs_typed() {
+        let imp = WasmImport::from_catalog_type_specs(
+            "wasi_snapshot_preview1",
+            "fd_write",
+            "$fd_write",
+            "param i32 i32 i32 i32",
+            "result i32",
+        );
+        let mem = WasmMemory::new(1, 2);
+        let exported_mem = WasmMemory::exported(1, 4, "memory");
+        let data = WasmDataSegment::new(32, b"stdout".to_vec());
+        let func_export = WasmExport::func("main", "main");
+        let memory_export = WasmExport::memory("memory");
+
+        assert_eq!(imp.module, "wasi_snapshot_preview1");
+        assert_eq!(imp.name, "fd_write");
+        assert_eq!(imp.func_symbol, "$fd_write");
+        assert_eq!(imp.params, vec![WasmValType::I32; 4]);
+        assert_eq!(imp.results, vec![WasmValType::I32]);
+        assert_eq!(mem.export_name, None);
+        assert_eq!(exported_mem.export_name, Some("memory".to_owned()));
+        assert_eq!(data.offset, 32);
+        assert_eq!(data.data, b"stdout");
+        assert!(matches!(func_export.kind, WasmExportKind::Func(ref symbol) if symbol == "main"));
+        assert!(matches!(memory_export.kind, WasmExportKind::Memory));
     }
 }
