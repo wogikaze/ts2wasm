@@ -127,7 +127,10 @@ def send_payload(webhook_url: str, payload: dict[str, Any]) -> None:
     request = urllib.request.Request(
         webhook_url,
         data=encoded,
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "User-Agent": "ts2wasm-discord-report/1.0",
+        },
         method="POST",
     )
     try:
