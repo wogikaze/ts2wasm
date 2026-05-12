@@ -37,7 +37,8 @@ pub use ts2wasm_runtime_catalog::RuntimeFn;
 pub(crate) use types::*;
 pub use types::{
     BuiltinErrorConstructor, ClassPrototypeRef, ClosureRepresentation, FuncId, FunctionCallKind,
-    InferredType, LocalId, LoweredArraySlot, LoweredBinaryOp, LoweredExpr, LoweredFunction,
-    LoweredLogicalAssignOp, LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo, Validated,
+    GeneratorState, InferredType, LocalId, LoweredArraySlot, LoweredBinaryOp, LoweredExpr,
+    LoweredFunction, LoweredLogicalAssignOp, LoweredProgram, LoweredStmt, LoweredUnaryOp,
+    ModuleInfo, SuspendPoint, Validated,
 };
 pub use validate::validate_lowered;

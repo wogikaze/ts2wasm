@@ -10,7 +10,7 @@
 
 use super::{
     BuiltinErrorConstructor, ClassPrototypeRef, ClosureRepresentation, FuncId, FunctionCallKind,
-    LocalId, LoweredArraySlot, LoweredBinaryOp, LoweredExpr, LoweredFunction,
+    GeneratorState, LocalId, LoweredArraySlot, LoweredBinaryOp, LoweredExpr, LoweredFunction,
     LoweredLogicalAssignOp, LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo, RuntimeFn,
 };
 use ts2wasm_source::Span;
@@ -358,6 +358,8 @@ pub struct MirFunction {
     /// Static recursion depth: 0 = not recursive, 1+ = part of a recursive cycle.
     pub recursion_depth: usize,
     pub is_async: bool,
+    pub is_generator: bool,
+    pub generator_state: Option<GeneratorState>,
 }
 
 // ---------------------------------------------------------------------------
@@ -880,6 +882,8 @@ fn lower_function_to_mir(func: &LoweredFunction) -> MirFunction {
         body: func.body.iter().map(lower_stmt_to_mir).collect(),
         recursion_depth: func.recursion_depth,
         is_async: func.is_async,
+        is_generator: func.is_generator,
+        generator_state: func.generator_state.clone(),
     }
 }
 
@@ -1401,6 +1405,8 @@ fn mir_function_to_lower(func: &MirFunction) -> LoweredFunction {
         body: func.body.iter().map(mir_stmt_to_lower).collect(),
         recursion_depth: func.recursion_depth,
         is_async: func.is_async,
+        is_generator: func.is_generator,
+        generator_state: func.generator_state.clone(),
     }
 }
 
@@ -1552,6 +1558,8 @@ mod tests {
                 )],
                 recursion_depth: 0,
                 is_async: false,
+                is_generator: false,
+                generator_state: None,
             }],
             modules: vec![],
         }

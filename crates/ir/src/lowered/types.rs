@@ -75,6 +75,27 @@ pub struct LoweredProgram {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SuspendPoint {
+    pub index: usize,
+    pub resume_state: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GeneratorState {
+    pub suspend_points: Vec<SuspendPoint>,
+    pub completed_state: usize,
+}
+
+impl GeneratorState {
+    pub fn empty() -> Self {
+        Self {
+            suspend_points: Vec::new(),
+            completed_state: 0,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LoweredFunction {
     pub id: FuncId,
     pub params: Vec<LocalId>,
@@ -88,6 +109,8 @@ pub struct LoweredFunction {
     /// (depth 0) from nested/recursive array growth (depth 1+).
     pub recursion_depth: usize,
     pub is_async: bool,
+    pub is_generator: bool,
+    pub generator_state: Option<GeneratorState>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

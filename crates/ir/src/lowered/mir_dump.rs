@@ -37,7 +37,7 @@ where
 
 fn dump_mir_function(func: &LoweredFunction, out: &mut String) {
     out.push_str(&format!(
-        "  function[{}] (params={}, locals={}, receiver={}, rest={:?}, depth={}, async={}) {{\n",
+        "  function[{}] (params={}, locals={}, receiver={}, rest={:?}, depth={}, async={}, generator={}, suspend_points={}) {{\n",
         func.id.0,
         func.params.len(),
         func.locals.len(),
@@ -45,6 +45,11 @@ fn dump_mir_function(func: &LoweredFunction, out: &mut String) {
         func.rest_param_index,
         func.recursion_depth,
         func.is_async,
+        func.is_generator,
+        func.generator_state
+            .as_ref()
+            .map(|state| state.suspend_points.len())
+            .unwrap_or(0),
     ));
     for stmt in &func.body {
         dump_mir_stmt(stmt, out, 4);

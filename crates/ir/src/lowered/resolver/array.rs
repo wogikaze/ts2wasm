@@ -506,6 +506,7 @@ impl super::Resolver {
             &lowered_params,
             body,
             false,
+            false,
             &self.ctx.symbols.function_ids,
             &function_signatures,
             &self.ctx.functions.function_captures,

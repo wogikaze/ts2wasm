@@ -189,6 +189,8 @@ fn program_with_function_produces_deterministic_snapshot() {
             )],
             recursion_depth: 0,
             is_async: false,
+            is_generator: false,
+            generator_state: None,
         }],
         modules: vec![],
     };

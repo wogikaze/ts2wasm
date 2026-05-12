@@ -127,6 +127,21 @@ fn lowered_snapshot_function_decl() {
 }
 
 #[test]
+fn lowered_snapshot_generator_function_metadata() {
+    let program = parse_resolve_lower("function* gen() {}");
+    assert_eq!(program.functions.len(), 1);
+    let function = &program.functions[0];
+    assert!(function.is_generator);
+    assert!(!function.is_async);
+    let generator_state = function
+        .generator_state
+        .as_ref()
+        .expect("generator functions should carry generator state metadata");
+    assert!(generator_state.suspend_points.is_empty());
+    assert_eq!(generator_state.completed_state, 0);
+}
+
+#[test]
 fn lowered_snapshot_if_statement() {
     let program = parse_resolve_lower("if (true) { let x = 1; } else { let x = 0; }");
     assert_eq!(program.top_level_statements.len(), 1);

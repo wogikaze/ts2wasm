@@ -415,6 +415,8 @@ mod tests {
                 body: vec![],
                 recursion_depth: 0,
                 is_async: false,
+                is_generator: false,
+                generator_state: None,
             }],
             modules: vec![],
         };
@@ -623,6 +625,8 @@ mod tests {
                 ],
                 recursion_depth: 0,
                 is_async: false,
+                is_generator: false,
+                generator_state: None,
             }],
             modules: vec![],
         };
@@ -895,6 +899,8 @@ mod tests {
                 body: vec![],
                 recursion_depth: 0,
                 is_async: false,
+                is_generator: false,
+                generator_state: None,
             }],
             modules: vec![],
         };
@@ -1057,6 +1063,8 @@ mod tests {
                 )],
                 recursion_depth: 0,
                 is_async: false,
+                is_generator: false,
+                generator_state: None,
             }],
             modules: vec![],
         };
@@ -1132,6 +1140,8 @@ mod tests {
                 body: vec![],
                 recursion_depth: 0,
                 is_async: false,
+                is_generator: false,
+                generator_state: None,
             }],
             modules: vec![],
         };
@@ -1344,6 +1354,8 @@ mod tests {
                 body: vec![],
                 recursion_depth: 0,
                 is_async: false,
+                is_generator: false,
+                generator_state: None,
             }],
             modules: vec![],
         };

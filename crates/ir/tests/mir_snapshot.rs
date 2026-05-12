@@ -351,6 +351,8 @@ fn dump_mir_class_decl() {
                 body: vec![],
                 recursion_depth: 0,
                 is_async: false,
+                is_generator: false,
+                generator_state: None,
             },
             LoweredFunction {
                 id: FuncId(1),
@@ -362,6 +364,8 @@ fn dump_mir_class_decl() {
                 body: vec![],
                 recursion_depth: 0,
                 is_async: false,
+                is_generator: false,
+                generator_state: None,
             },
             LoweredFunction {
                 id: FuncId(2),
@@ -373,6 +377,8 @@ fn dump_mir_class_decl() {
                 body: vec![],
                 recursion_depth: 0,
                 is_async: false,
+                is_generator: false,
+                generator_state: None,
             },
         ],
         ..empty_mir()
@@ -577,6 +583,8 @@ fn dump_mir_call_user() {
             body: vec![],
             recursion_depth: 0,
             is_async: false,
+            is_generator: false,
+            generator_state: None,
         }],
         ..empty_mir()
     };
@@ -991,6 +999,8 @@ fn dump_mir_new_expr() {
             body: vec![],
             recursion_depth: 0,
             is_async: false,
+            is_generator: false,
+            generator_state: None,
         }],
         ..empty_mir()
     };
@@ -1021,6 +1031,8 @@ fn dump_mir_class_prototype() {
             body: vec![],
             recursion_depth: 0,
             is_async: false,
+            is_generator: false,
+            generator_state: None,
         }],
         ..empty_mir()
     };
@@ -1117,6 +1129,8 @@ fn dump_mir_arrow_fn() {
             body: vec![],
             recursion_depth: 0,
             is_async: false,
+            is_generator: false,
+            generator_state: None,
         }],
         ..empty_mir()
     };
@@ -1141,6 +1155,8 @@ fn dump_mir_function_body() {
             )],
             recursion_depth: 0,
             is_async: false,
+            is_generator: false,
+            generator_state: None,
         }],
         modules: vec![],
     };

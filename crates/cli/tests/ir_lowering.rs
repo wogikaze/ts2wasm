@@ -747,6 +747,8 @@ fn validate_rejects_arity_mismatch() {
         rest_param_index: None,
         recursion_depth: 0,
         is_async: false,
+        is_generator: false,
+        generator_state: None,
         locals: vec![],
         body: vec![],
     };

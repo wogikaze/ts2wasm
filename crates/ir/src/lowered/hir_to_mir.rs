@@ -68,6 +68,8 @@ impl HirToMirLowerer {
                     body: self.lower_stmts(&hir_fn.body),
                     recursion_depth: 0,
                     is_async: false,
+                    is_generator: false,
+                    generator_state: None,
                 }
             })
             .collect()
