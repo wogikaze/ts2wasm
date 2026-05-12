@@ -1230,6 +1230,241 @@ done:
   - python3 scripts/manager.py check all
   - cargo test --workspace
   - mise run check architecture
+- id: 373
+  title: Unify differential test harness and JSONL record format
+  priority: P1
+  area: cross
+  type: refactor
+  roadmap: P15-test-hardening
+  status: done
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  depends_on:
+  - 372
+  non_goals:
+  - No new runtime support.
+  plan:
+    files:
+    - crates/cli/tests/m2_node_diff.rs
+    - crates/cli/tests/differential_jsonl.rs
+    - scripts/check/fixture-differential.py
+    goal: All differential tests share a single JSONL record format and runner script.
+  evidence:
+    commit: 440a1de54
+    commands:
+    - command: cargo test -p ts2wasm-cli --test m2_node_diff
+      exit: 0
+  acceptance:
+  - cargo test -p ts2wasm-cli
+  - python3 scripts/check/fixture-differential.py
+- id: 374
+  title: Add end-to-end smoke gate for differential test runner
+  priority: P1
+  area: cross
+  type: tooling
+  roadmap: P15-test-hardening
+  status: done
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  depends_on:
+  - 373
+  non_goals:
+  - No full test262 harness.
+  plan:
+    files:
+    - crates/shared/src/test_status.rs
+    - scripts/check/fixture-differential.py
+    goal: Smoke gate runs all fixtures through differential runner and reports pass/fail.
+  evidence:
+    commit: 38c89b66d
+    commands:
+    - command: python3 scripts/check/fixture-differential.py --help
+      exit: 0
+  acceptance:
+  - cargo test -p ts2wasm-cli --test differential_jsonl
+  - python3 scripts/check/fixture-differential.py --smoke
+- id: 376
+  title: Add variant coverage tracking for parser and IR
+  priority: P2
+  area: cross
+  type: tooling
+  roadmap: P15-test-hardening
+  status: done
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  non_goals:
+  - No full source-level coverage.
+  plan:
+    files:
+    - scripts/check/variant-coverage.py
+    - scripts/check/compiler-diagnostics.py
+    goal: Track which parser and IR variants are exercised by existing fixtures.
+  evidence:
+    commit: 2a6860b17
+    commands:
+    - command: python3 scripts/check/variant-coverage.py
+      exit: 0
+  acceptance:
+  - python3 scripts/check/variant-coverage.py
+  - python3 scripts/check/compiler-diagnostics.py
+- id: 378
+  title: Add runtime ABI invariant tests
+  priority: P2
+  area: runtime
+  type: test
+  roadmap: P15-test-hardening
+  status: done
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  non_goals:
+  - No ABI layout change.
+  plan:
+    files:
+    - crates/runtime-abi/tests/
+    goal: Verify RawValue layout, tag values, and ABI constants match expected values.
+  evidence:
+    commit: a89d4b9d8
+    commands:
+    - command: cargo test -p ts2wasm-runtime-abi
+      exit: 0
+  acceptance:
+  - cargo test -p ts2wasm-runtime-abi
+- id: 379
+  title: Add RuntimeLinkPlan structural property tests
+  priority: P2
+  area: runtime
+  type: test
+  roadmap: P15-test-hardening
+  status: done
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  depends_on:
+  - 378
+  non_goals:
+  - No runtime semantic change.
+  plan:
+    files:
+    - crates/runtime-catalog/src/
+    - crates/runtime-catalog/tests/
+    goal: 'Structural properties of RuntimeLinkPlan: completeness, no orphan functions, valid capability markers.'
+  evidence:
+    commit: 8467949b2
+    commands:
+    - command: cargo test -p ts2wasm-runtime-catalog --test link_plan_structural
+      exit: 0
+  acceptance:
+  - cargo test -p ts2wasm-runtime-catalog
+- id: 380
+  title: Add manifest snapshot equality tests
+  priority: P2
+  area: runtime
+  type: test
+  roadmap: P15-test-hardening
+  status: done
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  depends_on:
+  - 379
+  non_goals:
+  - No manifest format change.
+  plan:
+    files:
+    - crates/backend-wasm/tests/
+    - scripts/check/manifest-imports.py
+    goal: 'Manifest generation is deterministic: same input produces same output across runs.'
+  evidence:
+    commit: 93091d686
+    commands:
+    - command: cargo test -p ts2wasm-backend-wasm --test manifest_snapshot_equality
+      exit: 0
+  acceptance:
+  - cargo test -p ts2wasm-backend-wasm
+  - python3 scripts/check/manifest-imports.py
+- id: 381
+  title: Add host-import deny matrix and policy checker
+  priority: P2
+  area: cross
+  type: tooling
+  roadmap: P15-test-hardening
+  status: done
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  depends_on:
+  - 372
+  non_goals:
+  - No runtime host import change.
+  plan:
+    files:
+    - scripts/check/host-deny.py
+    - fixtures/catalog.yaml
+    goal: Every fixture has explicit host-import allow/deny status in the catalog.
+  evidence:
+    commit: cd1a52afd
+    commands:
+    - command: python3 scripts/check/host-deny.py
+      exit: 0
+  acceptance:
+  - python3 scripts/check/host-deny.py
+- id: 382
+  title: Add wasm validation to the test pipeline
+  priority: P2
+  area: cross
+  type: tooling
+  roadmap: P15-test-hardening
+  status: done
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  depends_on:
+  - 372
+  non_goals:
+  - No wasm-encoder switch.
+  plan:
+    files:
+    - scripts/check/wasm-validation.py
+    - fixtures/catalog.yaml
+    goal: Every compiled fixture produces valid wasm (wat2wasm or wasm-validate).
+  evidence:
+    commit: e1d260106
+    commands:
+    - command: python3 scripts/check/wasm-validation.py
+      exit: 0
+  acceptance:
+  - python3 scripts/check/wasm-validation.py
+- id: 386
+  title: Add tracking integrity automation
+  priority: P2
+  area: cross
+  type: tooling
+  roadmap: P15-test-hardening
+  status: done
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  depends_on:
+  - 372
+  - 383
+  non_goals:
+  - No issue format change.
+  plan:
+    files:
+    - scripts/check/tracking-consistency.py
+    - scripts/manager.py
+    goal: Automated checks prevent TRACKING.yaml from falling out of sync with reality.
+  evidence:
+    commit: d7309a6f0
+    commands:
+    - command: python3 scripts/check/tracking-consistency.py
+      exit: 0
+  acceptance:
+  - python3 scripts/check/tracking-consistency.py
 meta:
   active_limit: 1
   open_limit: 40
@@ -1566,184 +1801,3 @@ open:
   title: Final architecture decoupling completion gate
   type: tooling
   updated: '2026-05-12'
-- id: 373
-  title: Unify differential test harness and JSONL record format
-  priority: P1
-  area: cross
-  type: refactor
-  roadmap: P15-test-hardening
-  status: open
-  created: '2026-05-12'
-  updated: '2026-05-12'
-  depends_on:
-  - 372
-  non_goals:
-  - No new runtime support.
-  plan:
-    files:
-    - crates/cli/tests/m2_node_diff.rs
-    - crates/cli/tests/differential_jsonl.rs
-    - scripts/check/fixture-differential.py
-    goal: All differential tests share a single JSONL record format and runner script.
-  acceptance:
-  - cargo test -p ts2wasm-cli
-  - python3 scripts/check/fixture-differential.py
-- id: 374
-  title: Add end-to-end smoke gate for differential test runner
-  priority: P1
-  area: cross
-  type: tooling
-  roadmap: P15-test-hardening
-  status: open
-  created: '2026-05-12'
-  updated: '2026-05-12'
-  depends_on:
-  - 373
-  non_goals:
-  - No full test262 harness.
-  plan:
-    files:
-    - crates/shared/src/test_status.rs
-    - scripts/check/fixture-differential.py
-    goal: Smoke gate runs all fixtures through differential runner and reports pass/fail.
-  acceptance:
-  - cargo test -p ts2wasm-cli --test differential_jsonl
-  - python3 scripts/check/fixture-differential.py --smoke
-- id: 376
-  title: Add variant coverage tracking for parser and IR
-  priority: P2
-  area: cross
-  type: tooling
-  roadmap: P15-test-hardening
-  status: open
-  created: '2026-05-12'
-  updated: '2026-05-12'
-  non_goals:
-  - No full source-level coverage.
-  plan:
-    files:
-    - scripts/check/variant-coverage.py
-    - scripts/check/compiler-diagnostics.py
-    goal: Track which parser and IR variants are exercised by existing fixtures.
-  acceptance:
-  - python3 scripts/check/variant-coverage.py
-  - python3 scripts/check/compiler-diagnostics.py
-- id: 378
-  title: Add runtime ABI invariant tests
-  priority: P2
-  area: runtime
-  type: test
-  roadmap: P15-test-hardening
-  status: open
-  created: '2026-05-12'
-  updated: '2026-05-12'
-  non_goals:
-  - No ABI layout change.
-  plan:
-    files:
-    - crates/runtime-abi/tests/
-    goal: Verify RawValue layout, tag values, and ABI constants match expected values.
-  acceptance:
-  - cargo test -p ts2wasm-runtime-abi
-- id: 379
-  title: Add RuntimeLinkPlan structural property tests
-  priority: P2
-  area: runtime
-  type: test
-  roadmap: P15-test-hardening
-  status: open
-  created: '2026-05-12'
-  updated: '2026-05-12'
-  depends_on:
-  - 378
-  non_goals:
-  - No runtime semantic change.
-  plan:
-    files:
-    - crates/runtime-catalog/src/
-    - crates/runtime-catalog/tests/
-    goal: 'Structural properties of RuntimeLinkPlan: completeness, no orphan functions, valid capability markers.'
-  acceptance:
-  - cargo test -p ts2wasm-runtime-catalog
-- id: 380
-  title: Add manifest snapshot equality tests
-  priority: P2
-  area: runtime
-  type: test
-  roadmap: P15-test-hardening
-  status: open
-  created: '2026-05-12'
-  updated: '2026-05-12'
-  depends_on:
-  - 379
-  non_goals:
-  - No manifest format change.
-  plan:
-    files:
-    - crates/backend-wasm/tests/
-    - scripts/check/manifest-imports.py
-    goal: 'Manifest generation is deterministic: same input produces same output across runs.'
-  acceptance:
-  - cargo test -p ts2wasm-backend-wasm
-  - python3 scripts/check/manifest-imports.py
-- id: 381
-  title: Add host-import deny matrix and policy checker
-  priority: P2
-  area: cross
-  type: tooling
-  roadmap: P15-test-hardening
-  status: open
-  created: '2026-05-12'
-  updated: '2026-05-12'
-  depends_on:
-  - 372
-  non_goals:
-  - No runtime host import change.
-  plan:
-    files:
-    - scripts/check/host-deny.py
-    - fixtures/catalog.yaml
-    goal: Every fixture has explicit host-import allow/deny status in the catalog.
-  acceptance:
-  - python3 scripts/check/host-deny.py
-- id: 382
-  title: Add wasm validation to the test pipeline
-  priority: P2
-  area: cross
-  type: tooling
-  roadmap: P15-test-hardening
-  status: open
-  created: '2026-05-12'
-  updated: '2026-05-12'
-  depends_on:
-  - 372
-  non_goals:
-  - No wasm-encoder switch.
-  plan:
-    files:
-    - scripts/check/wasm-validation.py
-    - fixtures/catalog.yaml
-    goal: Every compiled fixture produces valid wasm (wat2wasm or wasm-validate).
-  acceptance:
-  - python3 scripts/check/wasm-validation.py
-- id: 386
-  title: Add tracking integrity automation
-  priority: P2
-  area: cross
-  type: tooling
-  roadmap: P15-test-hardening
-  status: open
-  created: '2026-05-12'
-  updated: '2026-05-12'
-  depends_on:
-  - 372
-  - 383
-  non_goals:
-  - No issue format change.
-  plan:
-    files:
-    - scripts/check/tracking-consistency.py
-    - scripts/manager.py
-    goal: Automated checks prevent TRACKING.yaml from falling out of sync with reality.
-  acceptance:
-  - python3 scripts/check/tracking-consistency.py
