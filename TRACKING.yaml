@@ -168,16 +168,16 @@ open:
       tracker is no longer a list of known open design gaps.
 
       '
-active:
+done:
   - id: 332
     title: Add semantic coverage dashboard fields and current-state summary
     priority: P2
     type: docs
     area: coverage
-    status: active
-    ready: true
+    status: done
     created: '2026-05-11'
     updated: '2026-05-12'
+    closed: '2026-05-12'
     roadmap: P11-semantic-coverage-unblock
     depends_on:
       - 326
@@ -212,3 +212,28 @@ active:
       unresolved-name breakdown fields.
 
       '
+    evidence:
+      commit: c3626c73a
+      commands:
+        - command: timeout 60s python scripts/gen/web-ui-data.py
+          exit: 0
+        - command: timeout 60s python scripts/manager.py check scripts
+          exit: 0
+        - command: python -m py_compile scripts/gen/web-ui-data.py scripts/check/tracking-consistency.py
+          exit: 0
+        - command: npm run build
+          exit: 0
+        - command: test -f docs/current-state.md
+          exit: 0
+        - command: grep -R "semantic_coverage_percent" docs/current-state.md site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+          exit: 0
+        - command: grep -R "differential_pass" docs/current-state.md site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+          exit: 0
+        - command: grep -R "negative_compile_pass" docs/current-state.md site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+          exit: 0
+        - command: grep -R "unresolved_name_by_symbol" docs/current-state.md site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+          exit: 0
+        - command: python scripts/check/tracking-consistency.py
+          exit: 0
+        - command: git diff --check
+          exit: 0
