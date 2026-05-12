@@ -1828,17 +1828,6 @@ done:
   title: Add coupling hardening checks for fan-out, public API count, and match arm size
   type: tooling
   updated: '2026-05-12'
-
-meta:
-  active_limit: 1
-  open_limit: 40
-  policy:
-    canonical_source: TRACKING.yaml
-    closed_source: docs/done-tracking.yaml
-    generated_entries: forbidden
-    roadmap_source: docs/roadmap.md
-  version: 1
-open:
 - acceptance:
   - cargo test --workspace
   - mise run check architecture
@@ -1859,6 +1848,7 @@ open:
   - test -f crates/runtime-catalog/Cargo.toml
   - test -f crates/backend-core/Cargo.toml
   area: cross
+  closed: '2026-05-12'
   created: '2026-05-12'
   depends_on:
   - 348
@@ -1882,6 +1872,35 @@ open:
   - 366
   - 367
   - 368
+  evidence:
+    commands:
+    - command: cargo test --workspace
+      exit: 0
+    - command: mise run check architecture
+      exit: 0
+    - command: python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements
+      exit: 0
+    - command: 'grep -R ''"semantic_pass":[1-9]'' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data'
+      exit: 0
+    - command: '! grep -R "ts2wasm_frontend" crates/backend-wasm/src crates/backend-wasm/Cargo.toml'
+      exit: 0
+    - command: '! grep -R "RuntimeIntrinsic" crates/ir/src crates/backend-wasm/src'
+      exit: 0
+    - command: '! grep -R "RuntimeCall.*String\|runtime_fn: String" crates/ir/src'
+      exit: 0
+    - command: '! grep -R "pub fn emit.*&LoweredProgram" crates/backend-wasm/src'
+      exit: 0
+    - command: grep -R "Validated<LoweredProgram>" crates/backend-wasm/src crates/compiler/src
+      exit: 0
+    - command: grep -R "ValidatedRuntimeLinkPlan\|Validated<RuntimeLinkPlan>" crates/runtime-catalog crates/backend-wasm crates/compiler
+      exit: 0
+    - command: test -f crates/source/Cargo.toml && test -f crates/diagnostic/Cargo.toml && test -f crates/syntax/Cargo.toml && test -f crates/resolve/Cargo.toml && test -f crates/semantics/Cargo.toml && test -f crates/runtime-abi/Cargo.toml && test -f crates/runtime-catalog/Cargo.toml && test -f crates/backend-core/Cargo.toml
+      exit: 0
+    - command: python scripts/check/tracking-consistency.py
+      exit: 0
+    - command: git diff --check -- TRACKING.yaml
+      exit: 0
+    commit: 0c962e114
   id: 369
   non_goals:
   - No requirement for full ECMAScript compliance.
@@ -1901,7 +1920,18 @@ open:
       '
   priority: P1
   roadmap: P14-final-gate
-  status: open
+  status: done
   title: Final architecture decoupling completion gate
   type: tooling
   updated: '2026-05-12'
+
+meta:
+  active_limit: 1
+  open_limit: 40
+  policy:
+    canonical_source: TRACKING.yaml
+    closed_source: docs/done-tracking.yaml
+    generated_entries: forbidden
+    roadmap_source: docs/roadmap.md
+  version: 1
+open:
