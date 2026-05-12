@@ -13,3 +13,6 @@ path = "src/lib.rs"
 ts2wasm-source = { path = "../source" }
 ts2wasm-syntax = { path = "../syntax" }
 ts2wasm-diagnostic = { path = "../diagnostic" }
+
+[dev-dependencies]
+ts2wasm-frontend = { path = "../frontend" }

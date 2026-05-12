@@ -1,6 +1,6 @@
-//! MIR snapshot tests — verify MIR dump output matches expected format.
+//! mir_snapshot tests — verify mir dump output matches expected format.
 //!
-//! These tests construct sample MIR programs and verify that their dumped
+//! These tests construct sample mir programs and verify that their dumped
 //! representation is well-formed and stable.
 
 use ts2wasm_diagnostic::DiagCode;

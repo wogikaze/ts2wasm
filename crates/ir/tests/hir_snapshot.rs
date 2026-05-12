@@ -1,8 +1,8 @@
-//! HIR snapshot tests — verify HIR dump output matches expected format.
+//! hir_snapshot tests — verify hir dump output matches expected format.
 //!
-//! These tests construct sample HIR programs and verify that their dumped
+//! These tests construct sample hir programs and verify that their dumped
 //! representation is well-formed and stable. This provides early detection
-//! of regressions in the dump format and HIR structure.
+//! of regressions in the dump format and hir structure.
 
 use ts2wasm_diagnostic::DiagCode;
 use ts2wasm_ir::lowered::hir::{HirBinaryOp, HirExpr, HirFunction, HirProgram, HirStmt};
