@@ -83,8 +83,8 @@ done:
   non_goals:
   - No compiler implementation.
   notes: 'docs/24-architecture-decoupling-and-llm-friendly-sizing.md now describes
-    the final phase, semantic-domain, capability, sizing, and fitness-function
-    contracts without P9/P10/P13 transition text as current status.
+    the final phase, semantic-domain, capability, sizing, and fitness-function contracts
+    without P9/P10/P13 transition text as current status.
 
     '
   plan:
@@ -563,6 +563,47 @@ done:
   title: Canonicalize TestRecord JSONL schema across Rust, docs, and scripts
   type: tooling
   updated: '2026-05-12'
+- acceptance:
+  - cargo test -p ts2wasm-runtime-catalog
+  - mise run check architecture
+  - grep -R "RuntimeFn::all" crates/runtime-catalog/src crates/runtime-catalog/tests
+  - grep -R "emission_order" crates/runtime-catalog/src crates/runtime-catalog/tests
+  - grep -R "RuntimeSpec" crates/runtime-catalog/tests scripts/check/architecture-rules.py
+  area: runtime
+  created: '2026-05-12'
+  id: 356
+  non_goals:
+  - No runtime semantic change.
+  - No RuntimeFn rename.
+  notes: 'This closes architecture fitness checks 12, 13, and 14.
+
+    '
+  plan:
+    files:
+    - crates/runtime-catalog/src/runtime_fn.rs
+    - crates/runtime-catalog/src/runtime/spec/all.rs
+    - crates/runtime-catalog/tests/runtime_registry.rs
+    - scripts/check/architecture-rules.py
+    goal: 'CI must fail if RuntimeFn::all omits a variant, emission_order omits or
+      duplicates an emitted function, or any RuntimeFn lacks RuntimeSpec.
+
+      '
+  priority: P1
+  roadmap: P14-runtime-catalog-hardening
+  status: done
+  title: Harden RuntimeFn registry completeness and emission order checks
+  type: tooling
+  updated: '2026-05-12'
+  closed: '2026-05-12'
+  evidence:
+    commit: 23647320013a24d2bf3cb278584ded5292cce6b0
+    commands:
+    - command: cargo test -p ts2wasm-runtime-catalog
+      exit: 0
+    - command: python3 scripts/check/architecture-rules.py
+      exit: 0
+    - command: git diff --check
+      exit: 0
 meta:
   active_limit: 1
   open_limit: 40
@@ -833,37 +874,6 @@ open:
   type: refactor
   updated: '2026-05-12'
 - acceptance:
-  - cargo test -p ts2wasm-runtime-catalog
-  - mise run check architecture
-  - grep -R "RuntimeFn::all" crates/runtime-catalog/src crates/runtime-catalog/tests
-  - grep -R "emission_order" crates/runtime-catalog/src crates/runtime-catalog/tests
-  - grep -R "RuntimeSpec" crates/runtime-catalog/tests scripts/check/architecture-rules.py
-  area: runtime
-  created: '2026-05-12'
-  id: 356
-  non_goals:
-  - No runtime semantic change.
-  - No RuntimeFn rename.
-  notes: 'This closes architecture fitness checks 12, 13, and 14.
-
-    '
-  plan:
-    files:
-    - crates/runtime-catalog/src/runtime_fn.rs
-    - crates/runtime-catalog/src/runtime/spec/all.rs
-    - crates/runtime-catalog/tests/runtime_registry.rs
-    - scripts/check/architecture-rules.py
-    goal: 'CI must fail if RuntimeFn::all omits a variant, emission_order omits or
-      duplicates an emitted function, or any RuntimeFn lacks RuntimeSpec.
-
-      '
-  priority: P1
-  roadmap: P14-runtime-catalog-hardening
-  status: open
-  title: Harden RuntimeFn registry completeness and emission order checks
-  type: tooling
-  updated: '2026-05-12'
-- acceptance:
   - cargo test -p ts2wasm-runtime-catalog -p ts2wasm-backend-wasm -p ts2wasm-compiler
   - mise run check architecture
   - grep -R "Capability" crates/runtime-catalog/tests crates/backend-wasm/tests crates/compiler/tests
@@ -897,9 +907,6 @@ open:
   priority: P1
   roadmap: P14-runtime-catalog-hardening
   status: open
-  title: Harden HostImport, Capability, RuntimeLinkPlan, and manifest consistency
-  type: tooling
-  updated: '2026-05-12'
   title: Extract runtime-abi crate for RawValue tags, layout constants, and logical
     ABI definitions
   type: refactor
