@@ -53,8 +53,8 @@ impl super::Resolver {
                         continue;
                     }
 
-                    if let Some(value) = self.static_string_spread_value(spread_expr.as_ref()) {
-                        pending_dense.extend(Self::lower_ascii_string_spread_chars(&value)?);
+                    if let Some(value) = crate::lowered::resolver::string::static_string_spread_value(&self.ctx, spread_expr.as_ref()) {
+                        pending_dense.extend(crate::lowered::resolver::string::lower_ascii_string_spread_chars(&value)?);
                         continue;
                     }
 
@@ -78,11 +78,11 @@ impl super::Resolver {
                         continue;
                     }
 
-                    if self.is_generator_call_spread_operand(spread_expr.as_ref()) {
-                        return Err(Self::unsupported_generator_spread_diagnostic());
+                    if crate::lowered::resolver::expr::facts::is_generator_call_spread_operand(&self.ctx, spread_expr.as_ref()) {
+                        return Err(crate::lowered::resolver::expr::facts::unsupported_generator_spread_diagnostic());
                     }
 
-                    if self.resolved_expr_has_symbol_iterator_property(spread_expr.as_ref()) {
+                    if crate::lowered::resolver::expr::facts::resolved_expr_has_symbol_iterator_property(&self.ctx, spread_expr.as_ref()) {
                         Self::flush_array_segment(&mut segments, &mut pending_dense);
                         segments.push(self.lower_spread_via_iterator(spread_expr.as_ref())?);
                         continue;
@@ -165,7 +165,7 @@ impl super::Resolver {
                 self.lower_array_map_elements(receiver, &elements, map_args, span)
             }
             ResolvedExpr::Ident(name) => {
-                let Some(elements) = self.static_function_array_like_elements(name) else {
+                let Some(elements) = crate::lowered::resolver::expr::facts::static_function_array_like_elements(&self.ctx, name) else {
                     if is_identity_arrow_callback(map_args) {
                         return Ok(LoweredExpr::RuntimeCall {
                             intrinsic: RuntimeFn::ArrayMapArrayLikeIdentity,
@@ -222,7 +222,7 @@ impl super::Resolver {
             });
         };
 
-        if self.is_known_array_expr(source) {
+        if crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, source) {
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::ArrayValues,
                 args: vec![self.lower_expr(source)?],
@@ -553,14 +553,14 @@ impl super::Resolver {
                     if let ResolvedExpr::Array(spread_elements) = spread_expr.as_ref() {
                         lowered.extend(self.lower_array_literal_elements(spread_elements)?);
                     } else if let Some(value) =
-                        self.static_string_spread_value(spread_expr.as_ref())
+                        crate::lowered::resolver::string::static_string_spread_value(&self.ctx, spread_expr.as_ref())
                     {
-                        lowered.extend(Self::lower_ascii_string_spread_chars(&value)?);
-                    } else if self.is_generator_call_spread_operand(spread_expr.as_ref()) {
-                        return Err(Self::unsupported_generator_spread_diagnostic());
-                    } else if self.resolved_expr_has_symbol_iterator_property(spread_expr.as_ref())
+                        lowered.extend(crate::lowered::resolver::string::lower_ascii_string_spread_chars(&value)?);
+                    } else if crate::lowered::resolver::expr::facts::is_generator_call_spread_operand(&self.ctx, spread_expr.as_ref()) {
+                        return Err(crate::lowered::resolver::expr::facts::unsupported_generator_spread_diagnostic());
+                    } else if crate::lowered::resolver::expr::facts::resolved_expr_has_symbol_iterator_property(&self.ctx, spread_expr.as_ref())
                     {
-                        return Err(Self::unsupported_symbol_iterator_spread_diagnostic());
+                        return Err(crate::lowered::resolver::expr::facts::unsupported_symbol_iterator_spread_diagnostic());
                     } else {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,

@@ -6,7 +6,7 @@ mod function;
 use self::expr::facts;
 mod module;
 mod object;
-mod string;
+pub(crate) mod string;
 
 use std::collections::{HashMap, HashSet};
 
@@ -268,16 +268,16 @@ impl Resolver {
                 if self.ctx.facts.heap_closure_names.contains(name) {
                     self.ctx.facts.heap_closure_locals.insert(local_id);
                 }
-                self.update_nullish_local(local_id, expr);
-                self.update_bigint_local(local_id, expr);
-                self.update_control_flow_bigint_assignment(local_id);
-                self.update_array_local(local_id, expr);
-                self.update_symbol_iterator_object_local(local_id, expr);
-                self.update_static_object_literal_local_on_let(local_id, expr);
-                self.update_static_function_array_like_local_on_let(local_id, expr);
-                self.update_string_literal_local(local_id, expr);
-                self.update_native_set_add_local(local_id, expr);
-                self.update_invalid_date_local(local_id, expr);
+                crate::lowered::resolver::expr::facts::update_nullish_local(&mut self.ctx, local_id, expr);
+                crate::lowered::resolver::expr::facts::update_bigint_local(&mut self.ctx, local_id, expr);
+                crate::lowered::resolver::expr::facts::update_control_flow_bigint_assignment(&mut self.ctx, local_id);
+                crate::lowered::resolver::expr::facts::update_array_local(&mut self.ctx, local_id, expr);
+                crate::lowered::resolver::expr::facts::update_symbol_iterator_object_local(&mut self.ctx, local_id, expr);
+                crate::lowered::resolver::expr::facts::update_static_object_literal_local_on_let(&mut self.ctx, local_id, expr);
+                crate::lowered::resolver::expr::facts::update_static_function_array_like_local_on_let(&mut self.ctx, local_id, expr);
+                crate::lowered::resolver::string::update_string_literal_local(&mut self.ctx, local_id, expr);
+                crate::lowered::resolver::expr::facts::update_native_set_add_local(&mut self.ctx, local_id, expr);
+                crate::lowered::resolver::expr::facts::update_invalid_date_local(&mut self.ctx, local_id, expr);
                 if let Some(props) = function_props {
                     self.ctx
                         .classes
@@ -286,7 +286,7 @@ impl Resolver {
                 } else {
                     self.ctx.classes.object_function_props.remove(&local_id);
                 }
-                self.update_regexp_literal_local(local_id, expr);
+                crate::lowered::resolver::string::update_regexp_literal_local(&mut self.ctx, local_id, expr);
                 Ok(LoweredStmt::Let(
                     local_id,
                     lowered,
@@ -295,7 +295,7 @@ impl Resolver {
             }
             ResolvedStmt::Assign(name, expr) => {
                 let local_id = self.resolve_local(name)?;
-                self.invalidate_static_object_literal_local(local_id);
+                crate::lowered::resolver::expr::facts::invalidate_static_object_literal_local(&mut self.ctx, local_id);
                 // Infer class before lowering so closures inside the RHS
                 // can resolve the class of this local.
                 let expr_class = self.infer_class_for_expr(expr);
@@ -324,15 +324,15 @@ impl Resolver {
                     self.ctx.facts.arrow_locals.remove(&local_id);
                 }
                 self.update_heap_closure_local(local_id, expr, &lowered);
-                self.update_nullish_local(local_id, expr);
-                self.update_bigint_local(local_id, expr);
-                self.update_control_flow_bigint_assignment(local_id);
-                self.update_array_local(local_id, expr);
-                self.update_symbol_iterator_object_local(local_id, expr);
-                self.invalidate_static_function_array_like_local(local_id);
-                self.update_string_literal_local(local_id, expr);
-                self.update_native_set_add_local(local_id, expr);
-                self.update_invalid_date_local(local_id, expr);
+                crate::lowered::resolver::expr::facts::update_nullish_local(&mut self.ctx, local_id, expr);
+                crate::lowered::resolver::expr::facts::update_bigint_local(&mut self.ctx, local_id, expr);
+                crate::lowered::resolver::expr::facts::update_control_flow_bigint_assignment(&mut self.ctx, local_id);
+                crate::lowered::resolver::expr::facts::update_array_local(&mut self.ctx, local_id, expr);
+                crate::lowered::resolver::expr::facts::update_symbol_iterator_object_local(&mut self.ctx, local_id, expr);
+                crate::lowered::resolver::expr::facts::invalidate_static_function_array_like_local(&mut self.ctx, local_id);
+                crate::lowered::resolver::string::update_string_literal_local(&mut self.ctx, local_id, expr);
+                crate::lowered::resolver::expr::facts::update_native_set_add_local(&mut self.ctx, local_id, expr);
+                crate::lowered::resolver::expr::facts::update_invalid_date_local(&mut self.ctx, local_id, expr);
                 if let Some(props) = function_props {
                     self.ctx
                         .classes
@@ -341,7 +341,7 @@ impl Resolver {
                 } else {
                     self.ctx.classes.object_function_props.remove(&local_id);
                 }
-                self.update_regexp_literal_local(local_id, expr);
+                crate::lowered::resolver::string::update_regexp_literal_local(&mut self.ctx, local_id, expr);
                 if self.ctx.facts.env_cell_locals.contains(&local_id) {
                     Ok(LoweredStmt::Expr(
                         LoweredExpr::EnvCellSet {
@@ -364,7 +364,7 @@ impl Resolver {
                 if let Some(lowered) = self.lower_direct_iife_stmt(expr)? {
                     return Ok(lowered);
                 }
-                self.update_static_array_slot_assignment(expr);
+                crate::lowered::resolver::expr::facts::update_static_array_slot_assignment(&mut self.ctx, expr);
                 if let ResolvedExpr::MethodCall {
                     object,
                     method,
@@ -409,7 +409,7 @@ impl Resolver {
 
                 let then_body = self.lower_nested_block(then_body)?;
                 let then_add_sub_bigint_locals = self.ctx.facts.bigint_locals.clone();
-                let then_div_rem_bigint_locals = self.bigint_div_rem_candidate_locals();
+                let then_div_rem_bigint_locals = crate::lowered::resolver::expr::facts::bigint_div_rem_candidate_locals(&self.ctx);
                 let then_mixed_locals = self.ctx.facts.control_flow_mixed_bigint_locals.clone();
 
                 self.ctx.facts.bigint_locals = incoming_bigint_locals.clone();
@@ -418,7 +418,7 @@ impl Resolver {
 
                 let else_body = self.lower_nested_block(else_body)?;
                 let else_add_sub_bigint_locals = self.ctx.facts.bigint_locals.clone();
-                let else_div_rem_bigint_locals = self.bigint_div_rem_candidate_locals();
+                let else_div_rem_bigint_locals = crate::lowered::resolver::expr::facts::bigint_div_rem_candidate_locals(&self.ctx);
                 let else_mixed_locals = self.ctx.facts.control_flow_mixed_bigint_locals.clone();
 
                 self.ctx.facts.bigint_locals = then_add_sub_bigint_locals
@@ -652,7 +652,7 @@ impl Resolver {
             ResolvedStmt::ForOf { var, iter, body } => {
                 let var_id = self.declare_local(var)?;
                 // Route custom iterables through iterator protocol (Symbol.iterator)
-                if self.resolved_expr_has_symbol_iterator_property(iter) {
+                if crate::lowered::resolver::expr::facts::resolved_expr_has_symbol_iterator_property(&self.ctx, iter) {
                     return self.lower_for_of_via_iterator(var_id, iter, body);
                 }
                 let lowered_iter = if let ResolvedExpr::Ident(name) = iter

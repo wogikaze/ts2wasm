@@ -402,7 +402,7 @@ impl super::Resolver {
         expr: &ResolvedExpr,
         lowered: &LoweredExpr,
     ) {
-        if self.expr_is_known_heap_closure(expr)
+        if crate::lowered::resolver::expr::facts::expr_is_known_heap_closure(&self.ctx, expr)
             || matches!(
                 lowered,
                 LoweredExpr::ArrowFn {

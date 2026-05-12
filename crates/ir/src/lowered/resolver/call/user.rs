@@ -176,7 +176,7 @@ impl<'a> super::super::Resolver {
 
         if func_name == "String"
             && let [arg] = args
-            && self.resolved_expr_is_bigint(arg)
+            && crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, arg)
         {
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::BigIntToString,

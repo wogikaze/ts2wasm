@@ -2,7 +2,7 @@ mod assignment;
 mod binary;
 mod binding;
 mod control;
-mod facts;
+pub(crate) mod facts;
 mod literal;
 mod property;
 mod ternary;
