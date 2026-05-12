@@ -8,15 +8,18 @@ meta:
     roadmap_source: docs/roadmap.md
     closed_source: docs/done-tracking.yaml
 open: []
-active:
+active: []
+done:
   - id: 276
     title: Reduce oversized functions to below 10 violations
     priority: P3
     type: refactor
     area: cross
-    status: active
+    status: done
+    ready: true
     created: '2026-05-11'
     updated: '2026-05-12'
+    closed: '2026-05-12'
     roadmap: P11-llm-friendly-sizing
     acceptance:
       - mise run check architecture 2>&1 | grep -c 'function.*lines'
@@ -31,10 +34,23 @@ active:
     notes: 'emit_json_parse (1354 lines) already split into 10 sub-methods. 37 other
       violations remain: RuntimeFn::spec (2318), tokenize (863), lower_expr (921),
       emit_statement_with_label (756), etc. Current slice targets the architecture
-      script count contract without semantic changes.
+      script count contract without semantic changes. Closed after reducing the
+      reported function-line warning count from 15 to 1.
 
       '
-done:
+    evidence:
+      commit: 4afe58378
+      commands:
+        - command: python scripts/check/architecture-rules.py 2>&1 | grep -c 'function.*lines'
+          exit: 0
+        - command: python scripts/check/architecture-rules.py
+          exit: 0
+        - command: python -m py_compile scripts/check/architecture-rules.py
+          exit: 0
+        - command: python3 -c "import yaml; yaml.safe_load(open('TRACKING.yaml')); print('TRACKING.yaml ok')"
+          exit: 0
+        - command: git diff --check
+          exit: 0
   - id: 347
     title: Add final architecture completion gate
     priority: P1
