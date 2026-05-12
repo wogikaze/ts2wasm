@@ -1614,6 +1614,11 @@ fn set_iteration_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn set_iteration_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/set-iteration.ts");
+}
+
+#[test]
 fn test_set_samevaluezero_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/test-set-samevaluezero.ts");
 }

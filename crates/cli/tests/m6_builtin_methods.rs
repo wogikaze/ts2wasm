@@ -1095,6 +1095,16 @@ fn build_smoke_set_samevaluezero() {
 }
 
 #[test]
+fn build_smoke_set_iteration() {
+    let result = run_fixture("builtins-and-io/set-iteration.ts");
+    assert!(
+        result.is_ok(),
+        "Set iteration should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_test_math_pow() {
     let result = run_fixture("builtins-and-io/test-math-pow.ts");
     assert!(
