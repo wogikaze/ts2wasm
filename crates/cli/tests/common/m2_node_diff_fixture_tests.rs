@@ -1547,6 +1547,11 @@ fn map_for_each_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn map_iteration_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/map-iteration.ts");
+}
+
+#[test]
 fn set_size_clear_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/set-size-clear.ts");
 }

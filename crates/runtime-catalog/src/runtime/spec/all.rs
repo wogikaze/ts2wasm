@@ -1086,6 +1086,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::MapEntryPairsArray => RuntimeSpec {
+                symbol: "$map_entry_pairs_array",
+                deps: MAP_ENTRY_PAIRS_ARRAY_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::SetFromArray => RuntimeSpec {
                 symbol: "$set_from_array",
                 deps: SET_FROM_ARRAY_DEPS,

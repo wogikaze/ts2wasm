@@ -757,7 +757,7 @@ impl Resolver {
                         }
                     } else if class_name.is_some_and(|c| c == "Map") {
                         LoweredExpr::RuntimeCall {
-                            intrinsic: RuntimeFn::MapValuesArray,
+                            intrinsic: RuntimeFn::MapEntryPairsArray,
                             args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
                             span: Span::generated("runtime_call"),
                         }

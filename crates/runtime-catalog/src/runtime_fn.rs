@@ -132,6 +132,7 @@ pub enum RuntimeFn {
     MapSize,
     MapForEach,
     MapEntriesArray,
+    MapEntryPairsArray,
     /// TypedArray constructor from array: new Uint8Array([1,2,3]), etc.
     TypedArrayFromArray,
     SetFromArray,
@@ -959,6 +960,7 @@ const MAP_CLEAR_DEPS: &[RuntimeFn] = &[];
 const MAP_SIZE_DEPS: &[RuntimeFn] = &[];
 const MAP_FOR_EACH_DEPS: &[RuntimeFn] = &[];
 const MAP_ENTRIES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const MAP_ENTRY_PAIRS_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const TYPED_ARRAY_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Index];
 const ARRAYBUFFER_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATAVIEW_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
@@ -1154,6 +1156,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MapSize" => Some(RuntimeFn::MapSize),
         "MapForEach" => Some(RuntimeFn::MapForEach),
         "MapEntriesArray" => Some(RuntimeFn::MapEntriesArray),
+        "MapEntryPairsArray" => Some(RuntimeFn::MapEntryPairsArray),
         "TypedArrayFromArray" => Some(RuntimeFn::TypedArrayFromArray),
         "ArrayBufferNew" => Some(RuntimeFn::ArrayBufferNew),
         "DataViewNew" => Some(RuntimeFn::DataViewNew),
@@ -1441,6 +1444,7 @@ impl RuntimeFn {
             | Self::MapSize
             | Self::MapForEach
             | Self::MapEntriesArray
+            | Self::MapEntryPairsArray
             | Self::SetFromArray
             | Self::SetValuesArray
             | Self::SetPrototypeAddGet
@@ -1823,6 +1827,7 @@ impl RuntimeFn {
             Self::MapSize,
             Self::MapForEach,
             Self::MapEntriesArray,
+            Self::MapEntryPairsArray,
             Self::TypedArrayFromArray,
             Self::SetFromArray,
             Self::SetValuesArray,
@@ -2139,6 +2144,7 @@ impl RuntimeFn {
             Self::MapSize,
             Self::MapForEach,
             Self::MapEntriesArray,
+            Self::MapEntryPairsArray,
             Self::TypedArrayFromArray,
             Self::SetFromArray,
             Self::SetValuesArray,

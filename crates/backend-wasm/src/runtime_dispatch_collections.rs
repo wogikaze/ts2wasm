@@ -15,6 +15,7 @@ impl WatEmitter<'_> {
             RuntimeFn::MapSize => self.emit_map_size(wat),
             RuntimeFn::MapForEach => self.emit_map_for_each(wat),
             RuntimeFn::MapEntriesArray => self.emit_map_entries_array(wat),
+            RuntimeFn::MapEntryPairsArray => self.emit_map_entry_pairs_array(wat),
             RuntimeFn::SetNew => self.emit_set_new(wat),
             RuntimeFn::SetAdd => self.emit_set_add(wat),
             RuntimeFn::SetHas => self.emit_set_has(wat),

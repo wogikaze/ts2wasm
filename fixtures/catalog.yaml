@@ -287,6 +287,7 @@ directories:
     - json-stringify-space.ts
     - json-stringify.ts
     - map-forEach.ts
+    - map-iteration.ts
     - map-set.ts
     - math-abs.ts
     - math-ceil.ts

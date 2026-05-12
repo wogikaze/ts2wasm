@@ -136,6 +136,7 @@ match self {
             Self::MapSize => "map_size",
             Self::MapForEach => "map_for_each",
             Self::MapEntriesArray => "map_entries_array",
+            Self::MapEntryPairsArray => "map_entry_pairs_array",
             Self::SetFromArray => "set_from_array",
             Self::SetValuesArray => "set_values_array",
             Self::SetPrototypeAddGet => "set_prototype_add_get",

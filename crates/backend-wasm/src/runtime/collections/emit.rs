@@ -1174,6 +1174,113 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(crate) fn emit_map_entry_pairs_array(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $map_entry_pairs_array (param $map i32) (result i32)
+    (local $tag i32)
+    (local $map_base i32)
+    (local $len i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $array_base i32)
+    (local $pair_base i32)
+    (local $store_pos i32)
+    (local.set $tag (i32.and (local.get $map) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $map_base (i32.and (local.get $map) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $map_base)))
+    (local.set $array_base
+      (call $alloc_heap
+        (i32.add
+          (i32.const {array_header})
+          (i32.shl (local.get $len) (i32.const 2)))))
+    (i32.store (local.get $array_base) (local.get $len))
+    (i32.store
+      (i32.add (local.get $array_base) (i32.const {array_capacity_offset}))
+      (local.get $len))
+    (i32.store
+      (i32.add (local.get $array_base) (i32.const {array_presence_word_count_offset}))
+      (i32.const 1))
+    (i32.store
+      (i32.add (local.get $array_base) (i32.const {array_elements_offset_offset}))
+      (i32.const {array_header}))
+    (if (i32.ge_u (local.get $len) (i32.const 32))
+      (then
+        (i32.store
+          (i32.add (local.get $array_base) (i32.const {array_presence_words_offset}))
+          (i32.const -1)))
+      (else
+        (i32.store
+          (i32.add (local.get $array_base) (i32.const {array_presence_words_offset}))
+          (i32.sub
+            (i32.shl (i32.const 1) (local.get $len))
+            (i32.const 1)))))
+    (local.set $i (i32.const {zero}))
+    (block $done
+      (loop $copy
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $entry_base
+          (i32.add
+            (local.get $map_base)
+            (i32.add
+              (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (local.set $pair_base
+          (call $alloc_heap
+            (i32.add (i32.const {array_header}) (i32.const 8))))
+        (i32.store (local.get $pair_base) (i32.const 2))
+        (i32.store
+          (i32.add (local.get $pair_base) (i32.const {array_capacity_offset}))
+          (i32.const 2))
+        (i32.store
+          (i32.add (local.get $pair_base) (i32.const {array_presence_word_count_offset}))
+          (i32.const 1))
+        (i32.store
+          (i32.add (local.get $pair_base) (i32.const {array_elements_offset_offset}))
+          (i32.const {array_header}))
+        (i32.store
+          (i32.add (local.get $pair_base) (i32.const {array_presence_words_offset}))
+          (i32.const 3))
+        (i32.store
+          (i32.add (local.get $pair_base) (i32.const {array_header}))
+          (i32.load (local.get $entry_base)))
+        (i32.store
+          (i32.add
+            (local.get $pair_base)
+            (i32.add (i32.const {array_header}) (i32.const 4)))
+          (i32.load (i32.add (local.get $entry_base) (i32.const {obj_value_offset}))))
+        (local.set $store_pos
+          (i32.add
+            (local.get $array_base)
+            (i32.add
+              (i32.const {array_header})
+              (i32.shl (local.get $i) (i32.const 2)))))
+        (i32.store
+          (local.get $store_pos)
+          (i32.or (local.get $pair_base) (i32.const {array_tag})))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $copy)))
+    (i32.or (local.get $array_base) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            array_capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
+            array_presence_word_count_offset = Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+            array_elements_offset_offset = Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
+            array_presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            obj_value_offset = Layout::OBJECT_VALUE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
     // --- WeakMap ---
 
     pub(crate) fn emit_weak_map_new(&self, wat: &mut String) {
