@@ -325,6 +325,7 @@ dependencies = [
  "ts2wasm-resolve",
  "ts2wasm-runtime-abi",
  "ts2wasm-runtime-catalog",
+ "ts2wasm-semantics",
  "ts2wasm-shared",
  "ts2wasm-source",
  "ts2wasm-syntax",

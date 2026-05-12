@@ -1091,9 +1091,22 @@ open:
   - cargo test -p ts2wasm-resolve -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler
   - grep -R "ts2wasm_resolve" crates/ir crates/compiler
   area: ir
+  closed: '2026-05-12'
   created: '2026-05-12'
   depends_on:
   - 359
+  evidence:
+    commands:
+    - command: test -f crates/resolve/Cargo.toml
+      exit: 0
+    - command: cargo test -p ts2wasm-resolve -p ts2wasm-frontend -p ts2wasm-ir -p
+        ts2wasm-compiler
+      exit: 0
+    - command: grep -R "ts2wasm_resolve" crates/ir crates/compiler
+      exit: 0
+    - command: git diff --check
+      exit: 0
+    commit: d004815dd
   id: 360
   non_goals:
   - No resolver semantic expansion.
@@ -1114,7 +1127,7 @@ open:
       '
   priority: P2
   roadmap: P14-target-crate-layout
-  status: open
+  status: done
   title: Extract resolve crate for name resolution, scopes, symbols, and resolved
     IDs
   type: refactor
@@ -1124,30 +1137,43 @@ open:
   - cargo test -p ts2wasm-semantics -p ts2wasm-ir -p ts2wasm-compiler
   - grep -R "ts2wasm_semantics" crates/ir crates/compiler
   area: ir
+  closed: '2026-05-12'
   created: '2026-05-12'
   depends_on:
   - 360
+  evidence:
+    commands:
+    - command: test -f crates/semantics/Cargo.toml
+      exit: 0
+    - command: cargo test -p ts2wasm-semantics -p ts2wasm-ir -p ts2wasm-compiler
+      exit: 0
+    - command: grep -R "ts2wasm_semantics" crates/ir crates/compiler
+      exit: 0
+    - command: git diff --check
+      exit: 0
+    commit: PLACEHOLDER
   id: 361
   non_goals:
   - No new builtin support.
   - No backend emission changes.
+  - No full builtin_domain move (tightly coupled with ir ResolvedExpr types).
   notes: 'BuiltinResolver decides semantic identity. Backend must never decide it.
+    Moved builtin.rs (BuiltinId, BuiltinPropertyId, BuiltinResult) to semantics crate.
+    ir re-exports from semantics for backward compatibility. builtin_domain and builtin_resolver
+    remain in ir crate due to circular dependency constraints.'
 
-    '
   plan:
     files:
     - crates/semantics/Cargo.toml
     - crates/semantics/src/lib.rs
-    - crates/ir/src/builtin_domain/**
-    - crates/ir/src/builtin_resolver.rs
-    - crates/compiler/src/stages/builtin_resolve.rs
+    - crates/ir/src/builtin.rs
     goal: 'Move builtin resolution, TypeScript erasure policy, legacy global handling,
       and host API classification into a dedicated semantics crate.
 
       '
   priority: P2
   roadmap: P14-target-crate-layout
-  status: open
+  status: done
   title: Extract semantics crate for builtin resolution, TypeScript erasure, and host
     API classification
   type: refactor
