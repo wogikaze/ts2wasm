@@ -445,21 +445,6 @@ def check_oversized_files(max_file_lines: int) -> None:
             oversized.append((count, path.relative_to(REPO_ROOT)))
     return oversized
 
-            oversized.append((count, rel))
-
-    if not oversized:
-        return
-
-    print(
-        "check_architecture_rules: ERROR files exceed "
-        f"{max_file_lines} lines (target {TARGET_MAX_FILE_LINES}); "
-        "split ownership/modules or raise the documented limit",
-        file=sys.stderr,
-    )
-    for count, path in sorted(oversized, key=lambda item: (-item[0], item[1])):
-        print(f"check_architecture_rules: ERROR {path}: {count} lines", file=sys.stderr)
-    sys.exit(1)
-
 
 
 def find_cli_boundary_violations() -> list[str]:

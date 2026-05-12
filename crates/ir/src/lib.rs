@@ -1,5 +1,7 @@
-pub mod builtin;
 pub mod builtin_resolved;
+
+// Re-export from semantics crate for backward compatibility
+pub use ts2wasm_semantics::builtin;
 pub mod builtin_resolver;
 pub mod lowered;
 pub mod optimizer;
