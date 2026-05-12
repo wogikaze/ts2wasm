@@ -128,17 +128,17 @@ open:
       tracker is no longer a list of known open design gaps.
 
       '
-active:
+done:
   - id: 330
     title: Implement assert.sameValue MVP and produce first positive test262 differential
       pass
     priority: P1
     type: feature
     area: coverage
-    status: active
-    ready: true
+    status: done
     created: '2026-05-11'
     updated: '2026-05-12'
+    closed: '2026-05-12'
     roadmap: P11-semantic-coverage-unblock
     depends_on:
       - 326
@@ -172,7 +172,23 @@ active:
       dashboard grep contract required by the acceptance commands.
 
       '
-done:
+    evidence:
+      commit: 6f40eca2f
+      commands:
+        - command: python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements
+          exit: 0
+        - command: grep -R '"differential_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+          exit: 0
+        - command: grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+          exit: 0
+        - command: python3 scripts/manager.py check scripts
+          exit: 0
+        - command: python -m py_compile scripts/gen/web-ui-data.py scripts/check/tracking-consistency.py
+          exit: 0
+        - command: python scripts/check/tracking-consistency.py
+          exit: 0
+        - command: git diff --check
+          exit: 0
   - id: 332
     title: Add semantic coverage dashboard fields and current-state summary
     priority: P2
