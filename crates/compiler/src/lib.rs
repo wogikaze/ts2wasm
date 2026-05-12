@@ -1,6 +1,7 @@
 mod dump;
 mod module_graph;
 pub mod server;
+pub mod stages;
 mod test262_preprocessor;
 
 use std::collections::{BTreeMap, HashMap, HashSet};

@@ -131,7 +131,7 @@ def check_oversized_files(max_file_lines: int) -> None:
 
 
 def check_ir_variant_coverage() -> None:
-    """Check that every HIR/MIR variant has dump and validate coverage."""
+    """Check that every HIR/MIR variant has dump, validate, and lowering coverage."""
     ir_src = REPO_ROOT / "crates" / "ir" / "src"
     ir_tests = REPO_ROOT / "crates" / "ir" / "tests"
 
@@ -141,6 +141,7 @@ def check_ir_variant_coverage() -> None:
         "dump_mir": r"fn dump_mir\b",
         "validate_hir": r"fn validate_hir\b",
         "validate_mir": r"fn validate_mir\b",
+        "lower_hir_to_mir": r"fn lower_hir_to_mir\b",
     }
 
     errors: list[str] = []
@@ -154,12 +155,13 @@ def check_ir_variant_coverage() -> None:
         if not found:
             errors.append(f"check_architecture_rules: required function `{func_name}` not found in crates/ir/src")
 
-    # Check that test files exist covering dump and validate
+    # Check that test files exist covering dump, validate, and lowering
     required_test_patterns = {
         "dump_hir": ("hir_snapshot", r"dump_hir"),
         "dump_mir": ("mir_snapshot", r"dump_mir"),
         "validate_hir": ("hir_snapshot", r"validate_hir"),
         "validate_mir": ("mir_snapshot", r"validate_mir"),
+        "lower_hir_to_mir": ("hir_to_mir", r"lower_hir_to_mir"),
     }
 
     for func_name, (test_file, pattern) in required_test_patterns.items():

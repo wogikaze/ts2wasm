@@ -8,3 +8,5 @@ include!("lowered/hir_dump.rs");
 include!("lowered/mir_dump.rs");
 include!("lowered/hir_validate.rs");
 include!("lowered/mir_validate.rs");
+include!("lowered/hir_to_mir.rs");
+include!("lowered/lower.rs");

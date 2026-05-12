@@ -17,7 +17,7 @@ pub use builtin_resolver::resolve_builtins;
 pub use lowered::{
     FuncId, LocalId, LoweredExpr, LoweredFunction, LoweredProgram, LoweredStmt, ModuleInfo,
 };
-pub use lowered::{dump_hir, dump_mir};
+pub use lowered::{dump_hir, dump_mir, lower, lower_hir_to_mir};
 pub use name_resolver::resolve_names;
 pub use optimizer::{OptimizationLevel, OptimizationPass, OptimizedHirProgram, optimize_hir};
 pub use semantic::{
