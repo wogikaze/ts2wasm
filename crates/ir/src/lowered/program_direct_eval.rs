@@ -1,4 +1,3 @@
-use super::*;
 use super::{
     DirectEvalBlockFunctionEnv, block_contains_arguments, block_contains_this,
     direct_iife_body_has_static_eval_block_function_binding,

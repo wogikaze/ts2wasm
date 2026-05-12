@@ -2,6 +2,8 @@
 //!
 //! Array domain includes: Array, TypedArray, ArrayBuffer, and DataView operations.
 
+#![allow(dead_code)]
+
 use crate::runtime_fn::RuntimeFn;
 
 /// All RuntimeFn variants routed through [`emit_dispatch_array`].

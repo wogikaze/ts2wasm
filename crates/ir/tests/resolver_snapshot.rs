@@ -4,7 +4,7 @@
 //! that `ResolvedStmt` / `ResolvedExpr` trees have the expected shape.
 //! Tests cover standalone parsed input without the full lowering pass.
 
-use ts2wasm_frontend::{Expr, Lexer, Parser, Stmt};
+use ts2wasm_frontend::{Lexer, Parser};
 use ts2wasm_ir::builtin_resolved::{ResolvedExpr, ResolvedStmt};
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
 

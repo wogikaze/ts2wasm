@@ -744,6 +744,7 @@ fn lower_fixture(relative_path: &str) -> ts2wasm_ir::lowered::LoweredProgram {
     lowered
 }
 
+#[allow(dead_code)]
 fn wat_function<'a>(wat: &'a str, symbol: &str) -> &'a str {
     let marker = format!("  (func ${symbol}");
     let start = wat

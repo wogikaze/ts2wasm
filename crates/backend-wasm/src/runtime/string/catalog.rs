@@ -2,6 +2,8 @@
 //!
 //! String domain includes: String and RegExp operations.
 
+#![allow(dead_code)]
+
 use crate::runtime_fn::RuntimeFn;
 
 /// All RuntimeFn variants routed through [`emit_dispatch_string`].

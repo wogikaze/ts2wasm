@@ -1,3 +1,5 @@
+#![allow(clippy::duplicate_mod)]
+
 use std::fs;
 use std::path::Path;
 use std::process::Command;

@@ -1,5 +1,3 @@
-use std::collections::BTreeSet;
-
 use ts2wasm_ir::lowered::{
     ClosureRepresentation, FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp,
     LoweredProgram, LoweredStmt, LoweredUnaryOp, Validated,
@@ -9,8 +7,7 @@ use ts2wasm_runtime_abi::ValueTag;
 // Re-export catalog types so existing `super::runtime_link_plan::RuntimeLinkPlan`
 // import paths continue to work.
 use ts2wasm_runtime_catalog::{
-    Capability, GLOBALS_EXCEPTION_RUNTIME, HostAbi, HostImport, RuntimeFn, RuntimeGlobal,
-    runtime_fn_from_name,
+    GLOBALS_EXCEPTION_RUNTIME, HostImport, RuntimeFn, runtime_fn_from_name,
 };
 pub use ts2wasm_runtime_catalog::{
     LinkPlanSnapshot, RuntimeLinkPlan, ValidatedRuntimeLinkPlan, emit_link_plan_snapshot,

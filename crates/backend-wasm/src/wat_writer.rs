@@ -1,8 +1,5 @@
 use crate::runtime_fn::HostImportSpec;
-use crate::wasm_ir::{
-    WasmDataSegment, WasmExport, WasmExportKind, WasmFunction, WasmGlobal, WasmImport, WasmInstr,
-    WasmMemory, WasmModule, WasmValType,
-};
+use crate::wasm_ir::{WasmExportKind, WasmFunction, WasmInstr, WasmModule};
 
 // ---------------------------------------------------------------------------
 // Existing types — preserved exactly.
@@ -676,7 +673,7 @@ impl WatWriter {
 
         for e in &module.exports {
             match &e.kind {
-                WasmExportKind::Func(sym) => {
+                WasmExportKind::Func(_sym) => {
                     self.export_func(&e.name);
                 }
                 WasmExportKind::Memory => {
@@ -696,6 +693,7 @@ impl WatWriter {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::wasm_ir::{WasmDataSegment, WasmExport, WasmMemory, WasmValType};
 
     #[test]
     fn render_import_and_data_and_global_via_builder() {

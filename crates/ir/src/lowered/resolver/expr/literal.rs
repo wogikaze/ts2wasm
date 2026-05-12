@@ -1,11 +1,7 @@
-use super::super::{
-    is_private_field_storage_key, is_set_prototype_property, is_set_prototype_property_expr,
-    private_storage_observable_access_diagnostic,
-};
 use crate::builtin::BuiltinId;
 use crate::builtin_resolved::ResolvedExpr;
 use crate::lowered::*;
-use ts2wasm_diagnostic::{DiagCode, Diagnostic};
+use ts2wasm_diagnostic::Diagnostic;
 use ts2wasm_source::Span;
 
 impl super::super::Resolver {

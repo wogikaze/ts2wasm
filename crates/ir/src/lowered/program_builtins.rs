@@ -1,5 +1,4 @@
 use super::FunctionSignature;
-use super::*;
 use crate::RuntimeFn;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 use crate::lowered::types::FuncId;

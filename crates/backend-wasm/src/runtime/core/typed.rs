@@ -14,6 +14,8 @@
 //   3. Checks the output is non-empty and contains the function name
 // ---------------------------------------------------------------------------
 
+#![allow(dead_code)]
+
 use ts2wasm_backend_core::wasm_ir::{WasmFunction, WasmInstr, WasmValType};
 use ts2wasm_runtime_abi::{consts::RuntimeConst, layout::Layout, value::ValueTag};
 
@@ -96,8 +98,8 @@ pub fn build_bitwise_xor() -> WasmFunction {
 /// and-eq expression (no single-instruction WasmInstr for and+eq with
 /// hardcoded constants).
 pub fn build_is_string() -> WasmFunction {
-    let tag_mask = ValueTag::TAG_MASK as i32;
-    let string_tag = ValueTag::STRING as i32;
+    let tag_mask = ValueTag::TAG_MASK;
+    let string_tag = ValueTag::STRING;
     WasmFunction::new("$is_string")
         .param(WasmValType::I32)
         .result(WasmValType::I32)
@@ -195,9 +197,9 @@ pub fn build_symbol_new(
 pub fn build_error_message() -> WasmFunction {
     let string_header = Layout::STRING_HEADER_SIZE as i32;
     let scratch = Layout::SCRATCH_OFFSET as i32;
-    let undefined_tag = ValueTag::UNDEFINED as i32;
-    let string_tag = ValueTag::STRING as i32;
-    let zero = RuntimeConst::ZERO as i32;
+    let undefined_tag = ValueTag::UNDEFINED;
+    let string_tag = ValueTag::STRING;
+    let zero = RuntimeConst::ZERO;
 
     WasmFunction::new("$error_message")
         .param(WasmValType::I32)
@@ -262,15 +264,15 @@ pub fn build_error_message() -> WasmFunction {
 /// Remaining raw escape hatches: `WasmInstr::Raw` for GC kind/flag checks.
 pub fn build_log(newline_offset: i32) -> WasmFunction {
     let scratch = Layout::SCRATCH_OFFSET as i32;
-    let tag_mask = ValueTag::TAG_MASK as i32;
-    let object_tag = ValueTag::OBJECT as i32;
-    let heap_mask = ValueTag::HEAP_MASK as i32;
+    let tag_mask = ValueTag::TAG_MASK;
+    let object_tag = ValueTag::OBJECT;
+    let heap_mask = ValueTag::HEAP_MASK;
     let gc_header_size = Layout::GC_HEADER_SIZE as i32;
     let gc_flags_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET as i32;
     let gc_kind_mask = Layout::GC_KIND_MASK as i32;
     let gc_kind_bigint = Layout::GC_KIND_BIGINT as i32;
     let ascii_n = b'n' as i32;
-    let one = RuntimeConst::ONE as i32;
+    let one = RuntimeConst::ONE;
 
     WasmFunction::new("$log")
         .param(WasmValType::I32)
@@ -491,7 +493,7 @@ mod tests {
         let open: i32 = 1000;
         let close: i32 = 1004;
         let empty: i32 = 1008;
-        let f = build_symbol_new(open, close, empty, ValueTag::UNDEFINED as i32);
+        let f = build_symbol_new(open, close, empty, ValueTag::UNDEFINED);
         let stubs = &[("$concat", "i32 i32", "i32")];
         let wat = emit_and_validate_with_stubs(&f, stubs);
         assert!(wat.contains("$symbol_new"));
@@ -568,12 +570,7 @@ mod tests {
         w.open_module();
         w.emit_function(&build_symbol_key_for());
         w.emit_function(&build_symbol_for(open, close));
-        w.emit_function(&build_symbol_new(
-            open,
-            close,
-            empty,
-            ValueTag::UNDEFINED as i32,
-        ));
+        w.emit_function(&build_symbol_new(open, close, empty, ValueTag::UNDEFINED));
         w.push_str("  (func $concat (param i32) (param i32) (result i32)\n");
         w.line(4, "(i32.const 0)");
         w.func_end();
@@ -616,7 +613,7 @@ mod tests {
         let open: i32 = 1000;
         let close: i32 = 1004;
         let empty: i32 = 1008;
-        let f = build_symbol_new(open, close, empty, ValueTag::UNDEFINED as i32);
+        let f = build_symbol_new(open, close, empty, ValueTag::UNDEFINED);
         // Should contain if/then/end structure
         let mut w = WatWriter::new();
         w.open_module();

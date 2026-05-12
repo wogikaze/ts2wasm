@@ -1,7 +1,7 @@
+#[allow(unused_imports)]
 pub use ts2wasm_runtime_catalog::{
-    Capability, GLOBALS_EXCEPTION_RUNTIME, HostAbi, HostImport, HostImportSpec,
-    NATIVE_SET_ADD_SENTINEL, RuntimeDomain, RuntimeFn, RuntimeGlobal, RuntimeResult,
-    RuntimeSignature, RuntimeSpec, StringOrigin, runtime_fn_from_name,
+    Capability, HostAbi, HostImport, HostImportSpec, NATIVE_SET_ADD_SENTINEL, RuntimeDomain,
+    RuntimeFn, RuntimeGlobal, RuntimeSignature, StringOrigin, runtime_fn_from_name,
 };
 
 use ts2wasm_ir::builtin::BuiltinId;

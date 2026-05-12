@@ -760,7 +760,7 @@ fn lower_stmt_to_mir(stmt: &LoweredStmt) -> MirStmt {
                 .iter()
                 .map(|(cond, body)| {
                     (
-                        cond.as_ref().map(|c| lower_expr_to_mir(c)),
+                        cond.as_ref().map(lower_expr_to_mir),
                         body.iter().map(lower_stmt_to_mir).collect(),
                     )
                 })
@@ -788,8 +788,8 @@ fn lower_stmt_to_mir(stmt: &LoweredStmt) -> MirStmt {
             span,
         } => MirStmt::For {
             init: init.as_ref().map(|i| Box::new(lower_stmt_to_mir(i))),
-            condition: condition.as_ref().map(|c| lower_expr_to_mir(c)),
-            update: update.as_ref().map(|u| lower_expr_to_mir(u)),
+            condition: condition.as_ref().map(lower_expr_to_mir),
+            update: update.as_ref().map(lower_expr_to_mir),
             body: body.iter().map(lower_stmt_to_mir).collect(),
             span: *span,
         },
@@ -889,13 +889,13 @@ impl From<LoweredProgram> for MirProgram {
             top_level_statements: program
                 .top_level_statements
                 .iter()
-                .map(|s| lower_stmt_to_mir(s))
+                .map(lower_stmt_to_mir)
                 .collect(),
             top_level_locals: program.top_level_locals,
             functions: program
                 .functions
                 .iter()
-                .map(|f| lower_function_to_mir(f))
+                .map(lower_function_to_mir)
                 .collect(),
             modules: program.modules,
         }
@@ -1281,7 +1281,7 @@ fn mir_stmt_to_lower(stmt: &MirStmt) -> LoweredStmt {
                 .iter()
                 .map(|(cond, body)| {
                     (
-                        cond.as_ref().map(|c| mir_expr_to_lower(c)),
+                        cond.as_ref().map(mir_expr_to_lower),
                         body.iter().map(mir_stmt_to_lower).collect(),
                     )
                 })
@@ -1309,8 +1309,8 @@ fn mir_stmt_to_lower(stmt: &MirStmt) -> LoweredStmt {
             span,
         } => LoweredStmt::For {
             init: init.as_ref().map(|i| Box::new(mir_stmt_to_lower(i))),
-            condition: condition.as_ref().map(|c| mir_expr_to_lower(c)),
-            update: update.as_ref().map(|u| mir_expr_to_lower(u)),
+            condition: condition.as_ref().map(mir_expr_to_lower),
+            update: update.as_ref().map(mir_expr_to_lower),
             body: body.iter().map(mir_stmt_to_lower).collect(),
             span: *span,
         },
@@ -1410,13 +1410,13 @@ impl From<MirProgram> for LoweredProgram {
             top_level_statements: program
                 .top_level_statements
                 .iter()
-                .map(|s| mir_stmt_to_lower(s))
+                .map(mir_stmt_to_lower)
                 .collect(),
             top_level_locals: program.top_level_locals,
             functions: program
                 .functions
                 .iter()
-                .map(|f| mir_function_to_lower(f))
+                .map(mir_function_to_lower)
                 .collect(),
             modules: program.modules,
         }

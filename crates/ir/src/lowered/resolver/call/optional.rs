@@ -3,7 +3,7 @@ use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 
-impl<'a> super::super::Resolver {
+impl super::super::Resolver {
     pub(crate) fn lower_optional_call(
         &mut self,
         callee: &ResolvedExpr,

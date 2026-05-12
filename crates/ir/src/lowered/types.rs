@@ -1,20 +1,13 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
-use crate::binding_pattern::{
-    ArrayBinding, BindingDefault, BindingPattern, ObjectBinding, parse_binding_pattern,
-};
-use crate::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
-use crate::builtin_resolved::{ClassMethodKind, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::builtin::BuiltinId;
 use crate::lowered::RuntimeFn;
 use crate::lowered::hir::HirProgram;
 use crate::lowered::hir_validate::validate_hir;
 use crate::lowered::mir::MirProgram;
 use crate::lowered::mir_validate::validate_mir;
 use crate::lowered::validate::validate_lowered;
-use ts2wasm_shared::{
-    BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, OBJECT_SPREAD_SENTINEL,
-    SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp,
-};
+use ts2wasm_shared::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

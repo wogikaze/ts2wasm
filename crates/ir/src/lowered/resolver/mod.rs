@@ -1,10 +1,8 @@
-use super::super::*;
 mod array;
 mod call;
 mod class;
 mod expr;
 mod function;
-use self::expr::facts;
 mod module;
 mod object;
 pub(crate) mod string;
@@ -12,8 +10,7 @@ pub(crate) mod string;
 use std::collections::{HashMap, HashSet};
 
 use crate::binding_pattern::{BindingDefault, parse_binding_pattern};
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
-use crate::lowered::completion::CompletionRecord;
+use crate::builtin_resolved::{ResolvedExpr, ResolvedStmt};
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::ArrowClosure;
 use crate::lowered::*;

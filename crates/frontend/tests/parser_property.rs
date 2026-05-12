@@ -597,11 +597,8 @@ fn property_declaration_name_is_nonempty() {
 #[test]
 fn property_parse_always_returns_vec() {
     for source in WELL_FORMED_SOURCES.iter().chain(MALFORMED_SOURCES.iter()) {
-        match parse(source) {
-            Ok(stmts) => {
-                let _: Vec<Stmt> = stmts; // type-check that it's Vec<Stmt>
-            }
-            Err(_) => {}
+        if let Ok(stmts) = parse(source) {
+            let _: Vec<Stmt> = stmts; // type-check that it's Vec<Stmt>
         }
     }
 }

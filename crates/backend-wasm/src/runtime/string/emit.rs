@@ -662,8 +662,6 @@ impl WatEmitter<'_> {
     }
 
     /// Helper: return the byte length of a string value (raw i32, not tagged)
-
-    /// Helper: return the byte length of a string value (raw i32, not tagged)
     pub(crate) fn emit_string_length(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"  (func $string_length (param $s i32) (result i32)

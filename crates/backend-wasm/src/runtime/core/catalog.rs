@@ -3,6 +3,8 @@
 //! Core includes: core operators, type coercion, number operations, comparison,
 //! arithmetic, control flow, memory, conversion, JSON, and miscellaneous helpers.
 
+#![allow(dead_code)]
+
 use crate::runtime_fn::RuntimeFn;
 
 /// All RuntimeFn variants routed through [`emit_dispatch_core`].

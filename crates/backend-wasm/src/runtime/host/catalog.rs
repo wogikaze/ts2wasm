@@ -3,6 +3,8 @@
 //! Host domain includes: file system, process, path, crypto, module loading,
 //! encoding, URI, Symbol, and iterator operations.
 
+#![allow(dead_code)]
+
 use crate::runtime_fn::RuntimeFn;
 
 /// All RuntimeFn variants routed through [`emit_dispatch_host`].

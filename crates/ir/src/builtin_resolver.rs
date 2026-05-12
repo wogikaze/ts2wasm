@@ -30,7 +30,7 @@ use super::binding_pattern::parse_binding_pattern;
 use super::builtin::BuiltinId;
 use super::builtin::BuiltinPropertyId;
 use super::builtin_resolved::{
-    ClassMethod, ClassMethodKind, ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt,
+    ClassMethod, ClassMethodKind, ResolvedExpr, ResolvedParam, ResolvedStmt,
 };
 
 const BIGINT_FROM_VALUE_RUNTIME_CALL: &str = "__ts2wasm_bigint_from_value";

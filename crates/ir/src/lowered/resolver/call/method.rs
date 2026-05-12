@@ -1,4 +1,3 @@
-use super::super::*;
 use super::super::{
     bigint_runtime_fn_intrinsic, is_array_from_call_receiver, is_array_prototype_map_call_receiver,
     is_array_prototype_push_expr, is_identity_arrow_callback, is_set_prototype_property_expr,
@@ -9,13 +8,12 @@ use super::super::{
 };
 use super::builtin::{is_html_wrapper_string_method, lower_html_wrapper_string_method};
 use super::receiver::extract_prototype_method_name;
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 use crate::lowered::*;
-use std::collections::HashMap;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 
-impl<'a> super::super::Resolver {
+impl super::super::Resolver {
     pub(crate) fn lower_method_call_expr(
         &mut self,
         object: &ResolvedExpr,

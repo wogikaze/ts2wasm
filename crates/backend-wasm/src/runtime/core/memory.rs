@@ -1,11 +1,7 @@
 use crate::emitter::WatEmitter;
 use crate::emitter::{builtin_error_prototype_global, class_prototype_global};
 use crate::runtime_fn::RuntimeGlobal;
-use ts2wasm_runtime_abi::{
-    consts::{RuntimeConst, RuntimeString},
-    layout::Layout,
-    value::ValueTag,
-};
+use ts2wasm_runtime_abi::{consts::RuntimeConst, layout::Layout, value::ValueTag};
 
 // Runtime-internal layout constants carried over from the old runtime_core_helpers.rs.
 const CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY: u32 = 16;

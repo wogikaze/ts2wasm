@@ -820,7 +820,7 @@ mod tests {
     }
 
     #[test]
-    fn resolves_new_es_globals_epic_I() {
+    fn resolves_new_es_globals_epic_i() {
         let new_globals = [
             "SuppressedError",
             "DisposableStack",

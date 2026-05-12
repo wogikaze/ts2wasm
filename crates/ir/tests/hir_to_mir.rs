@@ -5,7 +5,7 @@
 
 use ts2wasm_ir::{
     FuncId, HirExpr, HirFunction, HirFunctionId, HirLocalId, HirProgram, HirRelationalOp, HirStmt,
-    LocalId, lower_hir_to_mir, lower_hir_to_mir_native,
+    LocalId, lower_hir_to_mir_native,
 };
 
 // ---------------------------------------------------------------------------

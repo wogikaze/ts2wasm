@@ -11,7 +11,6 @@ use ts2wasm_runtime_abi::{Layout, RuntimeConst};
 
 use super::{
     runtime_fn::{HostImport, RuntimeFn},
-    runtime_link_plan::RuntimeLinkPlan,
     wasm_binary::{self, I32, WasmBinaryWriter},
 };
 

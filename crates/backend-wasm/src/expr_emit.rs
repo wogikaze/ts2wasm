@@ -1241,9 +1241,8 @@ impl WatEmitter<'_> {
         writer: &mut WatWriter,
         expr: &LoweredExpr,
         indent: usize,
-        frame: &LocalFrame,
+        _frame: &LocalFrame,
     ) {
-        let pad = " ".repeat(indent);
         match expr {
             LoweredExpr::Number(value, _) => {
                 if ValueTag::can_encode_number(*value) {

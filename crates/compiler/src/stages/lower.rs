@@ -4,7 +4,6 @@ use std::path::{Path, PathBuf};
 use ts2wasm_backend_wasm as backend;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_frontend::validate_type_reference_directives;
-use ts2wasm_ir::lowered::lower_hir_to_mir;
 use ts2wasm_ir::{OptimizationLevel, builtin_resolver, lowered, name_resolver};
 use ts2wasm_source::Span;
 use ts2wasm_syntax::{Expr, Stmt};

@@ -2,6 +2,8 @@
 //!
 //! BigInt domain includes: BigInt construction, arithmetic, bitwise, and comparison operations.
 
+#![allow(dead_code)]
+
 use crate::runtime_fn::RuntimeFn;
 
 /// All RuntimeFn variants routed through [`emit_dispatch_bigint`].

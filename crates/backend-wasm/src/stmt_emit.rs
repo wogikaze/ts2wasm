@@ -11,7 +11,6 @@ use ts2wasm_ir::lowered::FuncId;
 use ts2wasm_ir::lowered::LocalId;
 use ts2wasm_ir::lowered::LoweredExpr;
 use ts2wasm_ir::lowered::LoweredStmt;
-use ts2wasm_ir::lowered::completion::CompletionRecord;
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
 
@@ -531,6 +530,7 @@ impl WatEmitter<'_> {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn emit_while_statement(
         &self,
         writer: &mut WatWriter,
@@ -566,6 +566,7 @@ impl WatEmitter<'_> {
         writer.end(indent);
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn emit_do_while_statement(
         &self,
         writer: &mut WatWriter,
@@ -599,6 +600,7 @@ impl WatEmitter<'_> {
         writer.end(indent);
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn emit_for_statement(
         &self,
         writer: &mut WatWriter,
@@ -656,6 +658,7 @@ impl WatEmitter<'_> {
         writer.end(indent); // end block
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn emit_for_in_statement(
         &self,
         writer: &mut WatWriter,
@@ -717,6 +720,7 @@ impl WatEmitter<'_> {
         writer.end(indent);
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn emit_for_of_statement(
         &self,
         writer: &mut WatWriter,
@@ -777,6 +781,7 @@ impl WatEmitter<'_> {
         writer.end(indent);
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn emit_try_catch_statement(
         &self,
         writer: &mut WatWriter,
@@ -957,6 +962,7 @@ impl WatEmitter<'_> {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn emit_switch_statement(
         &self,
         writer: &mut WatWriter,

@@ -1,3 +1,5 @@
+#![allow(hidden_glob_reexports)]
+
 mod dump;
 mod module_graph;
 pub mod server;
@@ -26,7 +28,7 @@ use crate::stages::validate::{
     validate_typescript_semantics_for_path,
 };
 
-#[allow(unused_imports)]
+#[allow(hidden_glob_reexports, unused_imports)]
 pub use stages::*;
 
 pub use dump::{DumpOptions, DumpPhase, dump_file_with_options};

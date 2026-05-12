@@ -1,19 +1,9 @@
-use super::super::*;
-use super::super::{
-    is_array_from_call_receiver, is_array_prototype_map_call_receiver,
-    is_array_prototype_push_expr, is_identity_arrow_callback, is_set_prototype_property_expr,
-    is_static_date_constructor_expr, is_string_split_result_expr,
-    numeric_ascending_sort_arrow_callback, private_storage_observable_access_diagnostic,
-    string_constructor_arrow_callback, string_split_arrow_separator, unary_plus_arrow_callback,
-    unsupported_array_map_diagnostic, unsupported_array_sort_diagnostic,
-};
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::builtin_resolved::ResolvedExpr;
 use crate::lowered::*;
-use std::collections::HashMap;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 
-impl<'a> super::super::Resolver {
+impl super::super::Resolver {
     pub(crate) fn lower_set_for_each_method(
         &mut self,
         receiver: LoweredExpr,

@@ -6,7 +6,7 @@ pub use ts2wasm_backend_core::wasm_ir::{
     WasmMemory, WasmModule, WasmValType,
 };
 
-use super::runtime_fn::{HostImportSpec, RuntimeFn, RuntimeSignature};
+use super::runtime_fn::{HostImportSpec, RuntimeFn};
 
 /// Create a WasmImport from a HostImportSpec.
 pub fn wasm_import_from_host_spec(spec: &HostImportSpec) -> WasmImport {
@@ -59,7 +59,7 @@ pub fn check_runtime_signature(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::runtime_fn::{HostAbi, RuntimeFn};
+    use crate::runtime_fn::{HostAbi, RuntimeFn, RuntimeSignature};
 
     #[test]
     fn maps_host_import_spec_to_wasm_import() {

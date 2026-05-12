@@ -1,4 +1,4 @@
-use ts2wasm_diagnostic::{DiagCode, Diagnostic};
+use ts2wasm_diagnostic::Diagnostic;
 use ts2wasm_source::Span;
 use ts2wasm_syntax::{ArrayLiteralElement, Expr};
 

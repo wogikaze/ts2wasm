@@ -1637,6 +1637,7 @@ impl super::Resolver {
         Ok((init_stmts, while_body, result_expr))
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn lower_array_reduce_callback(
         &mut self,
         receiver_local: LocalId,

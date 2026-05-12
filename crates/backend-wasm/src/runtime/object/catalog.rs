@@ -2,6 +2,8 @@
 //!
 //! Object domain includes: property access, object metadata, and reflection operations.
 
+#![allow(dead_code)]
+
 use crate::runtime_fn::RuntimeFn;
 
 /// All RuntimeFn variants routed through [`emit_dispatch_object`].

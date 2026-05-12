@@ -1,5 +1,5 @@
 use crate::emitter::WatEmitter;
-use ts2wasm_runtime_abi::{consts::RuntimeString, layout::Layout};
+use ts2wasm_runtime_abi::consts::RuntimeString;
 
 impl WatEmitter<'_> {
     /// Emit the `$json_parse_syntax_error` WAT function.

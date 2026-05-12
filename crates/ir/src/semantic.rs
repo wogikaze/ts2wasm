@@ -1533,7 +1533,7 @@ mod tests {
             HirStmt::Let {
                 init: HirExpr::ConstString(s),
                 ..
-            } if s == ""
+            } if s.is_empty()
         ));
     }
 

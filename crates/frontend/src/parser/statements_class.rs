@@ -259,7 +259,7 @@ impl Parser {
                 continue;
             }
 
-            let has_abstract = self.tokens[modifier_start..self.cursor]
+            let _has_abstract = self.tokens[modifier_start..self.cursor]
                 .iter()
                 .any(|t| matches!(t.kind, Token::Abstract));
 

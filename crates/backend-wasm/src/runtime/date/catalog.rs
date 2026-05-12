@@ -2,6 +2,8 @@
 //!
 //! Date domain includes: Date, Math, Promise, and Task operations.
 
+#![allow(dead_code)]
+
 use crate::runtime_fn::RuntimeFn;
 
 /// All RuntimeFn variants routed through [`emit_dispatch_date`].

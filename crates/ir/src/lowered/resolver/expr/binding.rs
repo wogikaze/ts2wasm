@@ -1,6 +1,6 @@
-use super::super::{is_static_copy_safe_object_prop_value, lowered_binding_default};
+use super::super::lowered_binding_default;
 use crate::binding_pattern::{ArrayBinding, BindingDefault, BindingPattern, ObjectBinding};
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
+use crate::builtin_resolved::ResolvedExpr;
 use crate::lowered::*;
 use std::collections::HashSet;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};

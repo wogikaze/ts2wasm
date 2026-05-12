@@ -62,10 +62,10 @@ impl super::super::Resolver {
         {
             return lower_global_builtin_function_metadata_property(name, key);
         }
-        if key == "size" {
-            if let Some(result) = self.lower_collection_size(object)? {
-                return Ok(result);
-            }
+        if key == "size"
+            && let Some(result) = self.lower_collection_size(object)?
+        {
+            return Ok(result);
         }
         if is_set_prototype_property(object, key, "add") {
             return Ok(LoweredExpr::RuntimeCall {

@@ -9,16 +9,9 @@ mod property;
 mod ternary;
 mod unary;
 
-use super::{
-    is_array_prototype_push_property, is_private_field_storage_key, is_set_prototype_property,
-    is_set_prototype_property_expr, private_storage_observable_access_diagnostic,
-};
-use crate::builtin::{BuiltinId, BuiltinPropertyId};
 use crate::builtin_resolved::ResolvedExpr;
-use crate::lowered::*;
-use ts2wasm_diagnostic::{DiagCode, Diagnostic};
+use ts2wasm_diagnostic::Diagnostic;
 use ts2wasm_source::Span;
-use ts2wasm_syntax::{BinaryOp, UnaryOp};
 
 impl super::Resolver {
     pub(crate) fn lower_expr(&mut self, expr: &ResolvedExpr) -> Result<LoweredExpr, Diagnostic> {

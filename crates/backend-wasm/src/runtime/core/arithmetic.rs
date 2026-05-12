@@ -1,9 +1,5 @@
 use crate::emitter::WatEmitter;
-use ts2wasm_runtime_abi::{
-    consts::{RuntimeConst, RuntimeString},
-    layout::Layout,
-    value::ValueTag,
-};
+use ts2wasm_runtime_abi::{layout::Layout, value::ValueTag};
 
 impl WatEmitter<'_> {
     pub(crate) fn emit_add(&self, wat: &mut String) {
