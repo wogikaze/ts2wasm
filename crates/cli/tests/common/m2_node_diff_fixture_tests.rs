@@ -1063,6 +1063,11 @@ fn regexp_test_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn regexp_basic_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/regexp-test.ts");
+}
+
+#[test]
 fn abstract_equality_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/abstract-equality.ts");
 }

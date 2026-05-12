@@ -889,6 +889,16 @@ fn build_smoke_regexp_question() {
     );
 }
 
+#[test]
+fn build_smoke_regexp_exec_test() {
+    let result = run_fixture("core-semantics/regexp-test.ts");
+    assert!(
+        result.is_ok(),
+        "RegExp exec/test should build: {:?}",
+        result.err()
+    );
+}
+
 // Global 0-arg builtin calls (issue 5135)
 #[test]
 fn build_smoke_global_0_args() {
