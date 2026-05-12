@@ -14,6 +14,7 @@ use super::emitter::WatEmitter;
 /// Build the typed WasmFunction for `$task_poll`.
 ///
 /// Reads `frame[0]` (state), returns 1 if DONE, 0 if PENDING.
+/// Await lowering calls task_poll on the promise task frame before task_result.
 /// Frame layout: [state: i32, return_value: i32, locals...]
 fn build_task_poll_fn() -> WasmFunction {
     WasmFunction::new("task_poll")

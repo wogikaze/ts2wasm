@@ -504,6 +504,7 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
         #[allow(unreachable_patterns)]
         LoweredExpr::PromiseGetValue { promise, .. } => {
             collect_required_runtime_expr(plan, promise);
+            plan.add_required_runtime(RuntimeFn::TaskPoll);
             plan.add_required_runtime(RuntimeFn::TaskResult);
         }
         LoweredExpr::ClassPrototype(_, _) => {

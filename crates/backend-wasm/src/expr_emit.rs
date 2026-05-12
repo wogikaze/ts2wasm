@@ -94,6 +94,11 @@ impl WatEmitter<'_> {
                 // Evaluate the promise expression (calls the async function),
                 // which leaves a frame pointer (task handle) on the wasm stack.
                 self.emit_expr(writer, promise, indent, frame);
+                writer.local_tee(indent, frame.heap_base_tmp());
+                // Poll the promise/task frame before extracting the completed result.
+                writer.line(indent, "(call $task_poll)");
+                writer.line(indent, "(drop)");
+                writer.local_get(indent, frame.heap_base_tmp());
                 // Extract the return value from the completed frame.
                 writer.line(indent, "(call $task_result)");
             }
