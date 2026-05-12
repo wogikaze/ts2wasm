@@ -1021,8 +1021,7 @@ done:
   area: frontend
   type: test
   roadmap: P15-test-hardening
-  status: done
-  closed: '2026-05-12'
+  status: open
   created: '2026-05-12'
   updated: '2026-05-12'
   non_goals:
@@ -1468,8 +1467,7 @@ open:
   area: cross
   type: refactor
   roadmap: P15-test-hardening
-  status: done
-  closed: '2026-05-12'
+  status: open
   created: '2026-05-12'
   updated: '2026-05-12'
   depends_on:
@@ -1549,8 +1547,8 @@ open:
   area: runtime
   type: test
   roadmap: P15-test-hardening
-  status: done
-  closed: '2026-05-12'  created: '2026-05-12'
+  status: open
+  created: '2026-05-12'
   updated: '2026-05-12'
   depends_on:
   - 378
@@ -1569,8 +1567,8 @@ open:
   area: runtime
   type: test
   roadmap: P15-test-hardening
-  status: done
-  closed: '2026-05-12'  created: '2026-05-12'
+  status: open
+  created: '2026-05-12'
   updated: '2026-05-12'
   depends_on:
   - 379
@@ -1590,8 +1588,7 @@ open:
   area: cross
   type: tooling
   roadmap: P15-test-hardening
-  status: done
-  closed: '2026-05-12'
+  status: open
   created: '2026-05-12'
   updated: '2026-05-12'
   depends_on:
@@ -1611,8 +1608,7 @@ open:
   area: cross
   type: tooling
   roadmap: P15-test-hardening
-  status: done
-  closed: '2026-05-12'
+  status: open
   created: '2026-05-12'
   updated: '2026-05-12'
   depends_on:
@@ -1653,8 +1649,9 @@ open:
   area: cross
   type: tooling
   roadmap: P15-test-hardening
-  status: open
+  status: done
   created: '2026-05-12'
+  closed: '2026-05-12'
   updated: '2026-05-12'
   depends_on:
   - 374
@@ -1666,6 +1663,13 @@ open:
     goal: Repeated smoke gate runs with cross-run comparison detect non-deterministic results.
   acceptance:
   - python3 scripts/check/flaky-detect.py --help
+  evidence:
+    commit: PLACEHOLDER
+    commands:
+    - command: python3 scripts/check/flaky-detect.py --help
+      exit: 0
+    - command: python3 -m py_compile scripts/check/flaky-detect.py
+      exit: 0
 - id: 388
   title: Add performance smoke test
   priority: P3
