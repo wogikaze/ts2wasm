@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
-use ts2wasm_backend_wasm::emit_canonical_manifest_json;
-use ts2wasm_frontend::Span;
-use ts2wasm_ir::lowered::{LoweredExpr, LoweredProgram, LoweredStmt};
+use ts2wasm_backend_wasm::{build_validated_runtime_link_plan, emit_canonical_manifest_json};
+use ts2wasm_ir::lowered::{LoweredExpr, LoweredProgram, LoweredStmt, RuntimeFn};
+use ts2wasm_source::Span;
 
 /// Build a ts2wasm program from source and return the capability manifest JSON.
 fn build_and_get_manifest(source: &str, fixture_label: &str) -> String {
@@ -85,7 +85,7 @@ fn manifest_snapshot_roundtrip_from_lowered_program() {
     let program = LoweredProgram {
         top_level_statements: vec![LoweredStmt::Expr(
             LoweredExpr::RuntimeCall {
-                runtime_fn: "MathRandom".to_owned(),
+                intrinsic: RuntimeFn::MathRandom,
                 args: vec![],
                 span: Span::generated("test"),
             },
@@ -96,7 +96,8 @@ fn manifest_snapshot_roundtrip_from_lowered_program() {
         modules: vec![],
     };
 
-    let manifest = emit_canonical_manifest_json(&program);
+    let plan = build_validated_runtime_link_plan(&program).expect("link plan should validate");
+    let manifest = emit_canonical_manifest_json(&plan);
     let parsed: serde_json::Value =
         serde_json::from_str(&manifest).expect("manifest should be valid JSON");
 

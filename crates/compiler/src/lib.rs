@@ -4,7 +4,6 @@ pub mod server;
 pub mod stages;
 mod test262_preprocessor;
 
-mod stages;
 pub use stages::parse::parse_program;
 
 mod pipeline;

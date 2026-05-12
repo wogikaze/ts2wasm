@@ -29,7 +29,7 @@ mod runtime_typed_arrays;
 mod stmt_emit;
 mod string_intern;
 mod wasm_binary;
-mod wasm_ir;
+pub mod wasm_ir;
 mod wat_writer;
 
 pub use ts2wasm_diagnostic::{DiagCode, Diagnostic};
