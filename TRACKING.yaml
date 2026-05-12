@@ -1572,8 +1572,9 @@ open:
   area: coverage
   type: refactor
   roadmap: P15-test-hardening
-  status: open
+  status: done
   created: '2026-05-12'
+  closed: '2026-05-12'
   non_goals:
   - No semantic coverage regression.
   plan:
@@ -1585,14 +1586,22 @@ open:
   acceptance:
   - python3 scripts/gate/coverage.py
   - grep -R 'shard' docs/15-coverage-matrix.md
+  evidence:
+    commit: a29046017
+    commands:
+    - command: python3 scripts/gate/coverage.py
+      exit: 0
+    - command: grep -R 'shard' docs/15-coverage-matrix.md
+      exit: 0
 - id: 384
   title: Add coverage regression detection gate
   priority: P2
   area: coverage
   type: tooling
   roadmap: P15-test-hardening
-  status: open
+  status: done
   created: '2026-05-12'
+  closed: '2026-05-12'
   depends_on:
   - 383
   non_goals:
@@ -1604,6 +1613,11 @@ open:
     goal: CI fails if coverage drops below the previous recorded level.
   acceptance:
   - python3 scripts/gate/coverage.py --check-regression
+  evidence:
+    commit: a29046017
+    commands:
+    - command: python3 scripts/gate/coverage.py --check-regression
+      exit: 0
 - id: 385
   title: Add semantic canary test suite
   priority: P2
