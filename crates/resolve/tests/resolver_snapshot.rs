@@ -4,13 +4,17 @@
 //! that name resolution works correctly for various input patterns.
 //! This provides focused tests at the name resolution boundary, independent
 //! of the IR lowering pipeline.
+//!
+//! AST nodes are constructed directly using ts2wasm_syntax types rather than
+//! going through the frontend parser, so these tests depend only on the
+//! resolve and syntax crate boundaries.
 
-use ts2wasm_frontend::{BinaryOp, Expr, Lexer, Parser, Stmt, Token};
 use ts2wasm_resolve::name_resolver::resolve_names;
+use ts2wasm_source::Span;
+use ts2wasm_syntax::{BinaryOp, Expr, Stmt};
 
-fn parse(source: &str) -> Vec<Stmt> {
-    let tokens = Lexer::new(source).tokenize().unwrap();
-    Parser::new(tokens, source).parse_program().unwrap()
+fn generated_span() -> Span {
+    Span::generated("test")
 }
 
 // ---------------------------------------------------------------------------
@@ -19,7 +23,7 @@ fn parse(source: &str) -> Vec<Stmt> {
 
 #[test]
 fn resolver_snapshot_empty_program() {
-    let resolved = resolve_names(&parse("")).unwrap();
+    let resolved = resolve_names(&[]).unwrap();
     assert!(
         resolved.is_empty(),
         "empty source should produce no statements"
@@ -28,9 +32,18 @@ fn resolver_snapshot_empty_program() {
 
 #[test]
 fn resolver_snapshot_let_number() {
-    let stmts = resolve_names(&parse("let x = 42;")).unwrap();
-    assert_eq!(stmts.len(), 1);
-    match &stmts[0] {
+    let stmts = vec![Stmt::Let {
+        name: "x".to_string(),
+        expr: Expr::Number {
+            value: 42,
+            span: generated_span(),
+        },
+        span: generated_span(),
+        is_var: false,
+    }];
+    let resolved = resolve_names(&stmts).unwrap();
+    assert_eq!(resolved.len(), 1);
+    match &resolved[0] {
         Stmt::Let {
             name, expr, is_var, ..
         } => {
@@ -44,9 +57,18 @@ fn resolver_snapshot_let_number() {
 
 #[test]
 fn resolver_snapshot_let_string() {
-    let stmts = resolve_names(&parse(r#"let s = "hello";"#)).unwrap();
-    assert_eq!(stmts.len(), 1);
-    match &stmts[0] {
+    let stmts = vec![Stmt::Let {
+        name: "s".to_string(),
+        expr: Expr::String {
+            value: "hello".to_string(),
+            span: generated_span(),
+        },
+        span: generated_span(),
+        is_var: false,
+    }];
+    let resolved = resolve_names(&stmts).unwrap();
+    assert_eq!(resolved.len(), 1);
+    match &resolved[0] {
         Stmt::Let { name, expr, .. } => {
             assert_eq!(name, "s");
             assert!(matches!(expr, Expr::String { value, .. } if value == "hello"));
@@ -57,13 +79,33 @@ fn resolver_snapshot_let_string() {
 
 #[test]
 fn resolver_snapshot_let_bool() {
-    let stmts = resolve_names(&parse("let a = true; let b = false;")).unwrap();
-    assert_eq!(stmts.len(), 2);
-    match &stmts[0] {
+    let stmts = vec![
+        Stmt::Let {
+            name: "a".to_string(),
+            expr: Expr::Bool {
+                value: true,
+                span: generated_span(),
+            },
+            span: generated_span(),
+            is_var: false,
+        },
+        Stmt::Let {
+            name: "b".to_string(),
+            expr: Expr::Bool {
+                value: false,
+                span: generated_span(),
+            },
+            span: generated_span(),
+            is_var: false,
+        },
+    ];
+    let resolved = resolve_names(&stmts).unwrap();
+    assert_eq!(resolved.len(), 2);
+    match &resolved[0] {
         Stmt::Let { expr, .. } => assert!(matches!(expr, Expr::Bool { value: true, .. })),
         other => panic!("expected Bool(true), got: {other:?}"),
     }
-    match &stmts[1] {
+    match &resolved[1] {
         Stmt::Let { expr, .. } => assert!(matches!(expr, Expr::Bool { value: false, .. })),
         other => panic!("expected Bool(false), got: {other:?}"),
     }
@@ -71,13 +113,31 @@ fn resolver_snapshot_let_bool() {
 
 #[test]
 fn resolver_snapshot_null_undefined() {
-    let stmts = resolve_names(&parse("let n = null; let u = undefined;")).unwrap();
-    assert_eq!(stmts.len(), 2);
-    match &stmts[0] {
+    let stmts = vec![
+        Stmt::Let {
+            name: "n".to_string(),
+            expr: Expr::Null {
+                span: generated_span(),
+            },
+            span: generated_span(),
+            is_var: false,
+        },
+        Stmt::Let {
+            name: "u".to_string(),
+            expr: Expr::Undefined {
+                span: generated_span(),
+            },
+            span: generated_span(),
+            is_var: false,
+        },
+    ];
+    let resolved = resolve_names(&stmts).unwrap();
+    assert_eq!(resolved.len(), 2);
+    match &resolved[0] {
         Stmt::Let { expr, .. } => assert!(matches!(expr, Expr::Null { .. })),
         other => panic!("expected Null, got: {other:?}"),
     }
-    match &stmts[1] {
+    match &resolved[1] {
         Stmt::Let { expr, .. } => assert!(matches!(expr, Expr::Undefined { .. })),
         other => panic!("expected Undefined, got: {other:?}"),
     }
@@ -85,9 +145,18 @@ fn resolver_snapshot_null_undefined() {
 
 #[test]
 fn resolver_snapshot_var_declaration() {
-    let stmts = resolve_names(&parse("var y = 42;")).unwrap();
-    assert_eq!(stmts.len(), 1);
-    match &stmts[0] {
+    let stmts = vec![Stmt::Let {
+        name: "y".to_string(),
+        expr: Expr::Number {
+            value: 42,
+            span: generated_span(),
+        },
+        span: generated_span(),
+        is_var: true,
+    }];
+    let resolved = resolve_names(&stmts).unwrap();
+    assert_eq!(resolved.len(), 1);
+    match &resolved[0] {
         Stmt::Let { name, is_var, .. } => {
             assert_eq!(name, "y");
             assert!(is_var);
@@ -102,9 +171,36 @@ fn resolver_snapshot_var_declaration() {
 
 #[test]
 fn resolver_snapshot_function_decl() {
-    let stmts = resolve_names(&parse("function add(a, b) { return a + b; }")).unwrap();
-    assert_eq!(stmts.len(), 1);
-    match &stmts[0] {
+    let stmts = vec![Stmt::Function {
+        name: "add".to_string(),
+        params: vec![
+            ("a".to_string(), None, false),
+            ("b".to_string(), None, false),
+        ],
+        body: vec![Stmt::Return {
+            expr: Expr::Binary {
+                left: Box::new(Expr::Ident {
+                    name: "a".to_string(),
+                    span: generated_span(),
+                }),
+                op: BinaryOp::Add,
+                right: Box::new(Expr::Ident {
+                    name: "b".to_string(),
+                    span: generated_span(),
+                }),
+                span: generated_span(),
+            },
+            span: generated_span(),
+        }],
+        is_generator: false,
+        is_async: false,
+        is_ambient: false,
+        overload_signature: false,
+        span: generated_span(),
+    }];
+    let resolved = resolve_names(&stmts).unwrap();
+    assert_eq!(resolved.len(), 1);
+    match &resolved[0] {
         Stmt::Function {
             name, params, body, ..
         } => {
@@ -119,10 +215,38 @@ fn resolver_snapshot_function_decl() {
 
 #[test]
 fn resolver_snapshot_function_call_resolved() {
-    // Verify that calling a declared function resolves correctly
-    let stmts = resolve_names(&parse("function f() { return 42; } f();")).unwrap();
-    assert_eq!(stmts.len(), 2);
-    match &stmts[1] {
+    let stmts = vec![
+        Stmt::Function {
+            name: "f".to_string(),
+            params: vec![],
+            body: vec![Stmt::Return {
+                expr: Expr::Number {
+                    value: 42,
+                    span: generated_span(),
+                },
+                span: generated_span(),
+            }],
+            is_generator: false,
+            is_async: false,
+            is_ambient: false,
+            overload_signature: false,
+            span: generated_span(),
+        },
+        Stmt::Expr {
+            expr: Expr::Call {
+                callee: Box::new(Expr::Ident {
+                    name: "f".to_string(),
+                    span: generated_span(),
+                }),
+                args: vec![],
+                span: generated_span(),
+            },
+            span: generated_span(),
+        },
+    ];
+    let resolved = resolve_names(&stmts).unwrap();
+    assert_eq!(resolved.len(), 2);
+    match &resolved[1] {
         Stmt::Expr {
             expr: Expr::Call { callee, .. },
             ..
@@ -140,9 +264,27 @@ fn resolver_snapshot_function_call_resolved() {
 #[test]
 fn resolver_snapshot_resolves_global_identifiers() {
     // Known globals should resolve without error
-    let stmts = resolve_names(&parse("console.log(42);")).unwrap();
-    assert_eq!(stmts.len(), 1);
-    match &stmts[0] {
+    let stmts = vec![Stmt::Expr {
+        expr: Expr::Call {
+            callee: Box::new(Expr::Member {
+                object: Box::new(Expr::Ident {
+                    name: "console".to_string(),
+                    span: generated_span(),
+                }),
+                property: "log".to_string(),
+                span: generated_span(),
+            }),
+            args: vec![Expr::Number {
+                value: 42,
+                span: generated_span(),
+            }],
+            span: generated_span(),
+        },
+        span: generated_span(),
+    }];
+    let resolved = resolve_names(&stmts).unwrap();
+    assert_eq!(resolved.len(), 1);
+    match &resolved[0] {
         Stmt::Expr {
             expr: Expr::Call { callee, args, .. },
             ..
@@ -159,7 +301,14 @@ fn resolver_snapshot_resolves_global_identifiers() {
 
 #[test]
 fn resolver_snapshot_rejects_unresolved_name() {
-    let result = resolve_names(&parse("unknownVar;"));
+    let stmts = vec![Stmt::Expr {
+        expr: Expr::Ident {
+            name: "unknownVar".to_string(),
+            span: generated_span(),
+        },
+        span: generated_span(),
+    }];
+    let result = resolve_names(&stmts);
     assert!(result.is_err(), "should reject unresolved name");
     let err = result.unwrap_err();
     assert!(err.message.contains("unresolved name"));
@@ -167,7 +316,27 @@ fn resolver_snapshot_rejects_unresolved_name() {
 
 #[test]
 fn resolver_snapshot_duplicate_let_declaration() {
-    let result = resolve_names(&parse("let x = 1; let x = 2;"));
+    let stmts = vec![
+        Stmt::Let {
+            name: "x".to_string(),
+            expr: Expr::Number {
+                value: 1,
+                span: generated_span(),
+            },
+            span: generated_span(),
+            is_var: false,
+        },
+        Stmt::Let {
+            name: "x".to_string(),
+            expr: Expr::Number {
+                value: 2,
+                span: generated_span(),
+            },
+            span: generated_span(),
+            is_var: false,
+        },
+    ];
+    let result = resolve_names(&stmts);
     assert!(
         result.is_err(),
         "duplicate let should be rejected: {:?}",
@@ -187,9 +356,19 @@ fn resolver_snapshot_duplicate_let_declaration() {
 
 #[test]
 fn resolver_snapshot_class_declaration() {
-    let stmts = resolve_names(&parse("class A {}")).unwrap();
-    assert_eq!(stmts.len(), 1);
-    match &stmts[0] {
+    let stmts = vec![Stmt::ClassDecl {
+        name: "A".to_string(),
+        extends: None,
+        body: vec![],
+        static_blocks: vec![],
+        private_elements: vec![],
+        ts_private_field_names: vec![],
+        interface_heritage: vec![],
+        span: generated_span(),
+    }];
+    let resolved = resolve_names(&stmts).unwrap();
+    assert_eq!(resolved.len(), 1);
+    match &resolved[0] {
         Stmt::ClassDecl { name, .. } => {
             assert_eq!(name, "A");
         }
@@ -203,9 +382,34 @@ fn resolver_snapshot_class_declaration() {
 
 #[test]
 fn resolver_snapshot_if_statement() {
-    let stmts = resolve_names(&parse("if (true) { let x = 1; } else { let x = 0; }")).unwrap();
-    assert_eq!(stmts.len(), 1);
-    match &stmts[0] {
+    let stmts = vec![Stmt::If {
+        condition: Expr::Bool {
+            value: true,
+            span: generated_span(),
+        },
+        then_body: vec![Stmt::Let {
+            name: "x".to_string(),
+            expr: Expr::Number {
+                value: 1,
+                span: generated_span(),
+            },
+            span: generated_span(),
+            is_var: false,
+        }],
+        else_body: vec![Stmt::Let {
+            name: "x".to_string(),
+            expr: Expr::Number {
+                value: 0,
+                span: generated_span(),
+            },
+            span: generated_span(),
+            is_var: false,
+        }],
+        span: generated_span(),
+    }];
+    let resolved = resolve_names(&stmts).unwrap();
+    assert_eq!(resolved.len(), 1);
+    match &resolved[0] {
         Stmt::If {
             condition,
             then_body,
@@ -222,9 +426,20 @@ fn resolver_snapshot_if_statement() {
 
 #[test]
 fn resolver_snapshot_while_loop() {
-    let stmts = resolve_names(&parse("while (true) { break; }")).unwrap();
-    assert_eq!(stmts.len(), 1);
-    match &stmts[0] {
+    let stmts = vec![Stmt::While {
+        condition: Expr::Bool {
+            value: true,
+            span: generated_span(),
+        },
+        body: vec![Stmt::Break {
+            label: None,
+            span: generated_span(),
+        }],
+        span: generated_span(),
+    }];
+    let resolved = resolve_names(&stmts).unwrap();
+    assert_eq!(resolved.len(), 1);
+    match &resolved[0] {
         Stmt::While {
             condition, body, ..
         } => {
@@ -241,9 +456,28 @@ fn resolver_snapshot_while_loop() {
 
 #[test]
 fn resolver_snapshot_try_catch() {
-    let stmts = resolve_names(&parse("try { 1; } catch(e) { 2; }")).unwrap();
-    assert_eq!(stmts.len(), 1);
-    match &stmts[0] {
+    let stmts = vec![Stmt::TryCatch {
+        try_block: vec![Stmt::Expr {
+            expr: Expr::Number {
+                value: 1,
+                span: generated_span(),
+            },
+            span: generated_span(),
+        }],
+        catch_param: Some("e".to_string()),
+        catch_block: Some(vec![Stmt::Expr {
+            expr: Expr::Number {
+                value: 2,
+                span: generated_span(),
+            },
+            span: generated_span(),
+        }]),
+        finally_block: None,
+        span: generated_span(),
+    }];
+    let resolved = resolve_names(&stmts).unwrap();
+    assert_eq!(resolved.len(), 1);
+    match &resolved[0] {
         Stmt::TryCatch {
             try_block,
             catch_param,
@@ -260,9 +494,16 @@ fn resolver_snapshot_try_catch() {
 
 #[test]
 fn resolver_snapshot_throw() {
-    let stmts = resolve_names(&parse("throw 42;")).unwrap();
-    assert_eq!(stmts.len(), 1);
-    match &stmts[0] {
+    let stmts = vec![Stmt::Throw {
+        expr: Expr::Number {
+            value: 42,
+            span: generated_span(),
+        },
+        span: generated_span(),
+    }];
+    let resolved = resolve_names(&stmts).unwrap();
+    assert_eq!(resolved.len(), 1);
+    match &resolved[0] {
         Stmt::Throw { expr, .. } => {
             assert!(matches!(expr, Expr::Number { value: 42, .. }));
         }
@@ -276,9 +517,26 @@ fn resolver_snapshot_throw() {
 
 #[test]
 fn resolver_snapshot_binary_expression() {
-    let stmts = resolve_names(&parse("let sum = 1 + 2;")).unwrap();
-    assert_eq!(stmts.len(), 1);
-    match &stmts[0] {
+    let stmts = vec![Stmt::Let {
+        name: "sum".to_string(),
+        expr: Expr::Binary {
+            left: Box::new(Expr::Number {
+                value: 1,
+                span: generated_span(),
+            }),
+            op: BinaryOp::Add,
+            right: Box::new(Expr::Number {
+                value: 2,
+                span: generated_span(),
+            }),
+            span: generated_span(),
+        },
+        span: generated_span(),
+        is_var: false,
+    }];
+    let resolved = resolve_names(&stmts).unwrap();
+    assert_eq!(resolved.len(), 1);
+    match &resolved[0] {
         Stmt::Let { expr, .. } => {
             assert!(matches!(expr, Expr::Binary { left, right, .. }
                 if matches!(left.as_ref(), Expr::Number { value: 1, .. })
@@ -291,9 +549,28 @@ fn resolver_snapshot_binary_expression() {
 
 #[test]
 fn resolver_snapshot_assignment() {
-    let stmts = resolve_names(&parse("let x = 42; x = 99;")).unwrap();
-    assert_eq!(stmts.len(), 2);
-    match &stmts[1] {
+    let stmts = vec![
+        Stmt::Let {
+            name: "x".to_string(),
+            expr: Expr::Number {
+                value: 42,
+                span: generated_span(),
+            },
+            span: generated_span(),
+            is_var: false,
+        },
+        Stmt::Assign {
+            name: "x".to_string(),
+            expr: Expr::Number {
+                value: 99,
+                span: generated_span(),
+            },
+            span: generated_span(),
+        },
+    ];
+    let resolved = resolve_names(&stmts).unwrap();
+    assert_eq!(resolved.len(), 2);
+    match &resolved[1] {
         Stmt::Assign { name, expr, .. } => {
             assert_eq!(name, "x");
             assert!(matches!(expr, Expr::Number { value: 99, .. }));
@@ -303,49 +580,70 @@ fn resolver_snapshot_assignment() {
 }
 
 // ---------------------------------------------------------------------------
-// Tokens and lexer boundary check
-// ---------------------------------------------------------------------------
-
-#[test]
-fn resolver_snapshot_tokens_simple() {
-    let tokens = Lexer::new("42;").tokenize().unwrap();
-    let kinds: Vec<_> = tokens.iter().map(|t| t.kind.clone()).collect();
-    assert_eq!(kinds.len(), 2);
-    assert!(matches!(kinds[0], Token::Number(42)));
-}
-
-#[test]
-fn resolver_snapshot_tokens_let() {
-    let tokens = Lexer::new("let x = 1;").tokenize().unwrap();
-    let kinds: Vec<_> = tokens.iter().map(|t| t.kind.clone()).collect();
-    assert_eq!(kinds.len(), 5);
-    assert!(matches!(kinds[0], Token::Let));
-}
-
-// ---------------------------------------------------------------------------
 // Scoping: blocks shadow outer identifiers
 // ---------------------------------------------------------------------------
 
 #[test]
 fn resolver_snapshot_block_scope() {
-    let stmts = resolve_names(&parse("{ let x = 1; } let y = x;")).unwrap();
-    assert_eq!(stmts.len(), 2);
-    // x is not visible outside block scope
-    match &stmts[1] {
-        Stmt::Let { expr, .. } => {
-            assert!(matches!(expr, Expr::Ident { name, .. } if name == "x"));
-            // x is unresolved at the toplevel — but the name resolver
-            // produces an Ident without rejecting; the error comes later.
-        }
-        other => panic!("expected Stmt::Let, got: {other:?}"),
-    }
+    // x is declared inside a block and referenced outside — the name resolver
+    // rejects this as an unresolved name since x is not visible outside the block.
+    let stmts = vec![
+        Stmt::Block {
+            statements: vec![Stmt::Let {
+                name: "x".to_string(),
+                expr: Expr::Number {
+                    value: 1,
+                    span: generated_span(),
+                },
+                span: generated_span(),
+                is_var: false,
+            }],
+            span: generated_span(),
+        },
+        Stmt::Let {
+            name: "y".to_string(),
+            expr: Expr::Ident {
+                name: "x".to_string(),
+                span: generated_span(),
+            },
+            span: generated_span(),
+            is_var: false,
+        },
+    ];
+    let result = resolve_names(&stmts);
+    assert!(
+        result.is_err(),
+        "x should be unresolved outside block scope"
+    );
+    let err = result.unwrap_err();
+    assert!(err.message.contains("unresolved name"));
 }
 
 #[test]
 fn resolver_snapshot_uses_known_globals_in_expressions() {
-    let stmts = resolve_names(&parse("let arr = Array; let obj = Object;")).unwrap();
-    assert_eq!(stmts.len(), 2);
-    match &stmts[0] {
+    let stmts = vec![
+        Stmt::Let {
+            name: "arr".to_string(),
+            expr: Expr::Ident {
+                name: "Array".to_string(),
+                span: generated_span(),
+            },
+            span: generated_span(),
+            is_var: false,
+        },
+        Stmt::Let {
+            name: "obj".to_string(),
+            expr: Expr::Ident {
+                name: "Object".to_string(),
+                span: generated_span(),
+            },
+            span: generated_span(),
+            is_var: false,
+        },
+    ];
+    let resolved = resolve_names(&stmts).unwrap();
+    assert_eq!(resolved.len(), 2);
+    match &resolved[0] {
         Stmt::Let { expr, .. } => {
             assert!(matches!(expr, Expr::Ident { name, .. } if name == "Array"));
         }
@@ -359,9 +657,35 @@ fn resolver_snapshot_uses_known_globals_in_expressions() {
 
 #[test]
 fn resolver_snapshot_chained_binary() {
-    let stmts = resolve_names(&parse("let r = 1 + 2 + 3;")).unwrap();
-    assert_eq!(stmts.len(), 1);
-    match &stmts[0] {
+    // 1 + 2 + 3 is parsed/constructed as: (1 + 2) + 3
+    let stmts = vec![Stmt::Let {
+        name: "r".to_string(),
+        expr: Expr::Binary {
+            left: Box::new(Expr::Binary {
+                left: Box::new(Expr::Number {
+                    value: 1,
+                    span: generated_span(),
+                }),
+                op: BinaryOp::Add,
+                right: Box::new(Expr::Number {
+                    value: 2,
+                    span: generated_span(),
+                }),
+                span: generated_span(),
+            }),
+            op: BinaryOp::Add,
+            right: Box::new(Expr::Number {
+                value: 3,
+                span: generated_span(),
+            }),
+            span: generated_span(),
+        },
+        span: generated_span(),
+        is_var: false,
+    }];
+    let resolved = resolve_names(&stmts).unwrap();
+    assert_eq!(resolved.len(), 1);
+    match &resolved[0] {
         Stmt::Let { expr, .. } => {
             assert!(matches!(
                 expr,
