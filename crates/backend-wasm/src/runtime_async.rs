@@ -133,13 +133,8 @@ mod tests {
 
     /// Helper: emit a WasmFunction as a complete module with required globals,
     /// write to disk, run wat2wasm, assert success.
-    fn validate_function_wat2wasm(
-        f: &WasmFunction,
-        globals: Vec<WasmGlobal>,
-        test_name: &str,
-    ) {
-        let mut module = WasmModule::new()
-            .memory(WasmMemory::exported(1, 2, "memory"));
+    fn validate_function_wat2wasm(f: &WasmFunction, globals: Vec<WasmGlobal>, test_name: &str) {
+        let mut module = WasmModule::new().memory(WasmMemory::exported(1, 2, "memory"));
         for g in globals {
             module = module.global(g);
         }

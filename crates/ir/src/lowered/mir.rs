@@ -10,10 +10,20 @@
 
 use super::{
     BuiltinErrorConstructor, ClassPrototypeRef, ClosureRepresentation, FuncId, FunctionCallKind,
-    LocalId, LoweredArraySlot, LoweredBinaryOp, LoweredExpr, LoweredFunction, LoweredLogicalAssignOp,
-    LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo, RuntimeFn,
+    LocalId, LoweredArraySlot, LoweredBinaryOp, LoweredExpr, LoweredFunction,
+    LoweredLogicalAssignOp, LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo, RuntimeFn,
 };
 use ts2wasm_source::Span;
+
+pub type MirArraySlot = LoweredArraySlot;
+pub type MirBinaryOp = LoweredBinaryOp;
+pub type MirBuiltinErrorConstructor = BuiltinErrorConstructor;
+pub type MirClassPrototypeRef = ClassPrototypeRef;
+pub type MirClosureRepresentation = ClosureRepresentation;
+pub type MirFunctionCallKind = FunctionCallKind;
+pub type MirLogicalAssignOp = LoweredLogicalAssignOp;
+pub type MirModuleInfo = ModuleInfo;
+pub type MirUnaryOp = LoweredUnaryOp;
 
 // ---------------------------------------------------------------------------
 // MirExpr — native expression type
@@ -410,7 +420,12 @@ fn lower_expr_to_mir(expr: &LoweredExpr) -> MirExpr {
             expr: Box::new(lower_expr_to_mir(expr)),
             span: *span,
         },
-        LoweredExpr::Binary { left, op, right, span } => MirExpr::Binary {
+        LoweredExpr::Binary {
+            left,
+            op,
+            right,
+            span,
+        } => MirExpr::Binary {
             left: Box::new(lower_expr_to_mir(left)),
             op: *op,
             right: Box::new(lower_expr_to_mir(right)),
@@ -512,7 +527,11 @@ fn lower_expr_to_mir(expr: &LoweredExpr) -> MirExpr {
             index: Box::new(lower_expr_to_mir(index)),
             span: *span,
         },
-        LoweredExpr::Index { object, index, span } => MirExpr::Index {
+        LoweredExpr::Index {
+            object,
+            index,
+            span,
+        } => MirExpr::Index {
             object: Box::new(lower_expr_to_mir(object)),
             index: Box::new(lower_expr_to_mir(index)),
             span: *span,
@@ -559,7 +578,11 @@ fn lower_expr_to_mir(expr: &LoweredExpr) -> MirExpr {
             key: Box::new(lower_expr_to_mir(key)),
             span: *span,
         },
-        LoweredExpr::OptionalIndex { object, index, span } => MirExpr::OptionalIndex {
+        LoweredExpr::OptionalIndex {
+            object,
+            index,
+            span,
+        } => MirExpr::OptionalIndex {
             object: Box::new(lower_expr_to_mir(object)),
             index: Box::new(lower_expr_to_mir(index)),
             span: *span,
@@ -569,7 +592,11 @@ fn lower_expr_to_mir(expr: &LoweredExpr) -> MirExpr {
             call: Box::new(lower_expr_to_mir(call)),
             span: *span,
         },
-        LoweredExpr::MethodCall { object, method, span } => MirExpr::MethodCall {
+        LoweredExpr::MethodCall {
+            object,
+            method,
+            span,
+        } => MirExpr::MethodCall {
             object: Box::new(lower_expr_to_mir(object)),
             method: method.clone(),
             span: *span,
@@ -603,11 +630,13 @@ fn lower_expr_to_mir(expr: &LoweredExpr) -> MirExpr {
             key: key.clone(),
             span: *span,
         },
-        LoweredExpr::PropertyDeleteDynamic { object, key, span } => MirExpr::PropertyDeleteDynamic {
-            object: Box::new(lower_expr_to_mir(object)),
-            key: Box::new(lower_expr_to_mir(key)),
-            span: *span,
-        },
+        LoweredExpr::PropertyDeleteDynamic { object, key, span } => {
+            MirExpr::PropertyDeleteDynamic {
+                object: Box::new(lower_expr_to_mir(object)),
+                key: Box::new(lower_expr_to_mir(key)),
+                span: *span,
+            }
+        }
         LoweredExpr::PropertySetDynamic {
             object,
             index,
@@ -673,9 +702,7 @@ fn lower_stmt_to_mir(stmt: &LoweredStmt) -> MirStmt {
         LoweredStmt::Block(stmts, span) => {
             MirStmt::Block(stmts.iter().map(lower_stmt_to_mir).collect(), *span)
         }
-        LoweredStmt::Let(local, expr, span) => {
-            MirStmt::Let(*local, lower_expr_to_mir(expr), *span)
-        }
+        LoweredStmt::Let(local, expr, span) => MirStmt::Let(*local, lower_expr_to_mir(expr), *span),
         LoweredStmt::Assign(local, expr, span) => {
             MirStmt::Assign(*local, lower_expr_to_mir(expr), *span)
         }
@@ -865,7 +892,11 @@ impl From<LoweredProgram> for MirProgram {
                 .map(|s| lower_stmt_to_mir(s))
                 .collect(),
             top_level_locals: program.top_level_locals,
-            functions: program.functions.iter().map(|f| lower_function_to_mir(f)).collect(),
+            functions: program
+                .functions
+                .iter()
+                .map(|f| lower_function_to_mir(f))
+                .collect(),
             modules: program.modules,
         }
     }
@@ -910,7 +941,12 @@ fn mir_expr_to_lower(expr: &MirExpr) -> LoweredExpr {
             expr: Box::new(mir_expr_to_lower(expr)),
             span: *span,
         },
-        MirExpr::Binary { left, op, right, span } => LoweredExpr::Binary {
+        MirExpr::Binary {
+            left,
+            op,
+            right,
+            span,
+        } => LoweredExpr::Binary {
             left: Box::new(mir_expr_to_lower(left)),
             op: *op,
             right: Box::new(mir_expr_to_lower(right)),
@@ -1012,7 +1048,11 @@ fn mir_expr_to_lower(expr: &MirExpr) -> LoweredExpr {
             index: Box::new(mir_expr_to_lower(index)),
             span: *span,
         },
-        MirExpr::Index { object, index, span } => LoweredExpr::Index {
+        MirExpr::Index {
+            object,
+            index,
+            span,
+        } => LoweredExpr::Index {
             object: Box::new(mir_expr_to_lower(object)),
             index: Box::new(mir_expr_to_lower(index)),
             span: *span,
@@ -1059,7 +1099,11 @@ fn mir_expr_to_lower(expr: &MirExpr) -> LoweredExpr {
             key: Box::new(mir_expr_to_lower(key)),
             span: *span,
         },
-        MirExpr::OptionalIndex { object, index, span } => LoweredExpr::OptionalIndex {
+        MirExpr::OptionalIndex {
+            object,
+            index,
+            span,
+        } => LoweredExpr::OptionalIndex {
             object: Box::new(mir_expr_to_lower(object)),
             index: Box::new(mir_expr_to_lower(index)),
             span: *span,
@@ -1069,7 +1113,11 @@ fn mir_expr_to_lower(expr: &MirExpr) -> LoweredExpr {
             call: Box::new(mir_expr_to_lower(call)),
             span: *span,
         },
-        MirExpr::MethodCall { object, method, span } => LoweredExpr::MethodCall {
+        MirExpr::MethodCall {
+            object,
+            method,
+            span,
+        } => LoweredExpr::MethodCall {
             object: Box::new(mir_expr_to_lower(object)),
             method: method.clone(),
             span: *span,
@@ -1103,11 +1151,13 @@ fn mir_expr_to_lower(expr: &MirExpr) -> LoweredExpr {
             key: key.clone(),
             span: *span,
         },
-        MirExpr::PropertyDeleteDynamic { object, key, span } => LoweredExpr::PropertyDeleteDynamic {
-            object: Box::new(mir_expr_to_lower(object)),
-            key: Box::new(mir_expr_to_lower(key)),
-            span: *span,
-        },
+        MirExpr::PropertyDeleteDynamic { object, key, span } => {
+            LoweredExpr::PropertyDeleteDynamic {
+                object: Box::new(mir_expr_to_lower(object)),
+                key: Box::new(mir_expr_to_lower(key)),
+                span: *span,
+            }
+        }
         MirExpr::PropertySetDynamic {
             object,
             index,
@@ -1173,9 +1223,7 @@ fn mir_stmt_to_lower(stmt: &MirStmt) -> LoweredStmt {
         MirStmt::Block(stmts, span) => {
             LoweredStmt::Block(stmts.iter().map(mir_stmt_to_lower).collect(), *span)
         }
-        MirStmt::Let(local, expr, span) => {
-            LoweredStmt::Let(*local, mir_expr_to_lower(expr), *span)
-        }
+        MirStmt::Let(local, expr, span) => LoweredStmt::Let(*local, mir_expr_to_lower(expr), *span),
         MirStmt::Assign(local, expr, span) => {
             LoweredStmt::Assign(*local, mir_expr_to_lower(expr), *span)
         }
@@ -1434,9 +1482,9 @@ impl MirExpr {
                 | LoweredBinaryOp::EqualEqual
                 | LoweredBinaryOp::BangEqual
                 | LoweredBinaryOp::StrictNotEqual => super::InferredType::Boolean,
-                LoweredBinaryOp::And
-                | LoweredBinaryOp::Or
-                | LoweredBinaryOp::NullishCoalesce => super::InferredType::Unknown,
+                LoweredBinaryOp::And | LoweredBinaryOp::Or | LoweredBinaryOp::NullishCoalesce => {
+                    super::InferredType::Unknown
+                }
             },
             Self::Assign { expr, .. } => expr.inferred_type(),
             Self::LogicalAssign { .. }
@@ -1471,9 +1519,7 @@ mod tests {
                 ),
                 LoweredStmt::Expr(
                     LoweredExpr::Call {
-                        kind: FunctionCallKind::Builtin(
-                            crate::builtin::BuiltinId::ConsoleLog,
-                        ),
+                        kind: FunctionCallKind::Builtin(crate::builtin::BuiltinId::ConsoleLog),
                         args: vec![LoweredExpr::Bool(true, make_span())],
                         span: make_span(),
                     },
@@ -1514,7 +1560,10 @@ mod tests {
         let lowered = sample_lowered_program();
         let mir: MirProgram = lowered.clone().into();
         let lowered_back: LoweredProgram = mir.into();
-        assert_eq!(lowered, lowered_back, "Full program bridge roundtrip should preserve all data");
+        assert_eq!(
+            lowered, lowered_back,
+            "Full program bridge roundtrip should preserve all data"
+        );
     }
 
     #[test]
@@ -1547,18 +1596,21 @@ mod tests {
     fn bridge_lowered_to_mir_preserves_stmts() {
         let lowered = sample_lowered_program();
         let mir: MirProgram = lowered.clone().into();
-        assert_eq!(mir.top_level_statements.len(), lowered.top_level_statements.len());
+        assert_eq!(
+            mir.top_level_statements.len(),
+            lowered.top_level_statements.len()
+        );
 
         // Let stmt
         let mir_stmt = &mir.top_level_statements[0];
         let lowered_stmt = &lowered.top_level_statements[0];
         match (mir_stmt, lowered_stmt) {
-            (MirStmt::Let(mir_local, mir_expr, _), LoweredStmt::Let(lowered_local, lowered_expr, _)) => {
+            (
+                MirStmt::Let(mir_local, mir_expr, _),
+                LoweredStmt::Let(lowered_local, lowered_expr, _),
+            ) => {
                 assert_eq!(mir_local, lowered_local);
-                assert_eq!(
-                    mir_expr_to_lower(mir_expr),
-                    lowered_expr.clone()
-                );
+                assert_eq!(mir_expr_to_lower(mir_expr), lowered_expr.clone());
             }
             _ => panic!("Expected Let stmt at index 0"),
         }
@@ -1608,7 +1660,10 @@ mod tests {
         });
 
         assert_mir_expr_roundtrip(LoweredExpr::ArrayNew {
-            elements: vec![LoweredExpr::Number(1, make_span()), LoweredExpr::Number(2, make_span())],
+            elements: vec![
+                LoweredExpr::Number(1, make_span()),
+                LoweredExpr::Number(2, make_span()),
+            ],
             span: make_span(),
         });
     }

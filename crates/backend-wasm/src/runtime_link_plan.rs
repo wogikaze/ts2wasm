@@ -21,10 +21,6 @@ pub use ts2wasm_runtime_catalog::{
 pub fn build_runtime_link_plan(program: &LoweredProgram) -> RuntimeLinkPlan {
     let mut plan = RuntimeLinkPlan::default();
     collect_required_runtime_stmts(&mut plan, &program.top_level_statements);
-    dbg!(
-        plan.required_runtime
-            .contains(&super::runtime_fn::RuntimeFn::ReadStdinBytes)
-    );
     // emit_top_level_statements unconditionally emits a $exception_pending
     // guard after each top-level statement. Declare the exception globals
     // whenever there are top-level statements so that WAT never references
