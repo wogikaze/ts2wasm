@@ -1,0 +1,444 @@
+# Fixture Catalog
+# Maps each fixture directory to feature labels from docs/26-semantic-feature-matrix.md
+# Schema:
+#   <dir-name>:
+#     feature: <list of feature labels>
+#     status: pass | partial | unsupported
+#     assert: {}  (see #392)
+
+fixtures:
+  basics-hello:
+    feature:
+      - value-types:string
+      - io:stdout
+      - io:stdin
+      - stmt:let
+    status: pass
+
+  basics-equality:
+    feature:
+      - expr:strict-equality
+      - expr:abstract-equality
+    status: pass
+
+  basics-syntax:
+    feature:
+      - misc:comma-expression
+      - misc:with-statement
+    status: partial
+
+  basics-typeof:
+    feature:
+      - expr:typeof
+    status: pass
+
+  basics-types:
+    feature:
+      - ts:type-annotation
+      - ts:interface
+      - ts:type-alias
+      - ts:generic
+      - ts:enum
+      - ts:namespace
+      - ts:ambient-declaration
+      - ts:as-assertion
+      - ts:satisfies
+      - ts:const-assertion
+    status: pass
+
+  basics-utf8:
+    feature:
+      - value-types:string
+      - io:stdout
+    status: pass
+
+  basics-oom:
+    feature:
+      - misc:gc
+    status: pass
+
+  primitives-control-flow:
+    feature:
+      - value-types:boolean
+      - value-types:number
+      - value-types:string
+      - stmt:if
+      - stmt:while
+      - fn:recursive
+      - control:while
+      - control:if-else
+    status: pass
+
+  arrays-objects:
+    feature:
+      - value-types:array
+      - value-types:object
+      - array:literal
+      - array:index
+      - array:length
+      - array:nonnumber-index
+      - obj:literal
+      - obj:property-access
+      - obj:computed-property
+      - obj:property-assign
+      - expr:object-literal
+      - expr:array-literal
+    status: pass
+
+  core-expressions:
+    feature:
+      - expr:strict-equality
+      - expr:abstract-equality
+      - expr:relational
+      - expr:arithmetic
+      - expr:increment-decrement
+      - expr:logical
+      - expr:nullish-coalescing
+      - expr:optional-chaining
+      - expr:typeof
+      - expr:void
+      - expr:ternary
+      - expr:spread
+      - expr:template-literal
+      - expr:logical-assignment
+      - expr:null
+      - expr:undefined
+      - expr:boolean-literal
+      - expr:numeric-literal
+      - expr:string-literal
+      - expr:array-literal
+      - expr:object-literal
+      - expr:function-expr
+      - expr:arrow-fn
+      - expr:class-expr
+      - expr:call
+      - expr:new
+      - expr:member-access
+      - expr:computed-access
+      - expr:index-assign
+      - expr:property-assign
+      - value-types:undefined
+      - value-types:null
+      - value-types:boolean
+      - value-types:number
+      - value-types:string
+      - value-types:object
+      - value-types:array
+      - value-types:function
+    status: pass
+
+  core-statements:
+    feature:
+      - stmt:if
+      - stmt:switch
+      - stmt:for
+      - stmt:while
+      - stmt:do-while
+      - stmt:for-in
+      - stmt:for-of
+      - stmt:break
+      - stmt:continue
+      - stmt:return
+      - stmt:throw
+      - stmt:try-catch
+      - stmt:label
+      - stmt:let
+      - stmt:const
+      - stmt:function-decl
+      - fn:declaration
+      - control:for
+      - control:while
+      - control:do-while
+      - control:for-in
+      - control:for-of
+      - control:break
+      - control:continue
+      - control:throw
+      - control:try-catch
+      - control:labeled
+    status: pass
+
+  control-flow-and-exceptions:
+    feature:
+      - control:if-else
+      - control:switch
+      - control:for
+      - control:while
+      - control:do-while
+      - control:for-in
+      - control:for-of
+      - control:break
+      - control:continue
+      - control:throw
+      - control:try-catch
+      - control:try-finally
+      - control:labeled
+      - control:completion-record
+      - stmt:switch
+      - stmt:break
+      - stmt:continue
+      - stmt:return
+      - stmt:throw
+      - stmt:try-catch
+      - stmt:label
+    status: pass
+
+  core-semantics:
+    feature:
+      - expr:strict-equality
+      - expr:abstract-equality
+      - expr:relational
+      - expr:arithmetic
+      - expr:logical
+      - expr:nullish-coalescing
+      - expr:typeof
+      - expr:instanceof
+      - expr:in-operator
+      - expr:delete
+      - expr:void
+      - expr:ternary
+      - expr:comma
+      - expr:spread
+      - expr:template-literal
+      - expr:logical-assignment
+      - value-types:bigint
+      - fn:declaration
+      - fn:expression
+      - fn:arrow
+      - fn:this
+      - fn:arguments
+      - fn:rest-params
+      - fn:spread-args
+      - fn:default-params
+      - fn:destructuring-params
+      - fn:closure
+      - fn:recursive
+      - obj:spread
+      - obj:prototype
+      - obj:delete
+      - obj:in-operator
+      - array:spread
+      - array:destructuring
+      - string:template
+      - class:private-field
+      - class:private-method
+      - builtin:promise
+      - builtin:iterator
+      - misc:direct-eval
+      - misc:gc
+      - control:for-of
+    status: pass
+
+  arrow-functions:
+    feature:
+      - fn:arrow
+      - expr:arrow-fn
+    status: pass
+
+  async-await:
+    feature:
+      - async:async-function
+      - async:promise
+    status: partial
+
+  classes:
+    feature:
+      - class:declaration
+      - class:expression
+      - class:extends
+      - class:constructor
+      - class:super
+      - class:static-method
+      - class:static-field
+      - class:static-block
+      - class:private-field
+      - class:private-method
+      - class:getter-setter
+      - class:field-initializer
+      - class:new-target
+    status: pass
+
+  classes-and-inheritance:
+    feature:
+      - class:declaration
+      - class:expression
+      - class:extends
+      - class:constructor
+      - class:super
+      - class:static-method
+      - class:static-block
+      - expr:new
+    status: pass
+
+  builtins-and-io:
+    feature:
+      - builtin:console
+      - builtin:math
+      - builtin:date
+      - builtin:json
+      - builtin:regexp
+      - builtin:array-methods
+      - builtin:string-methods
+      - builtin:object-methods
+      - builtin:map
+      - builtin:set
+      - builtin:error
+      - builtin:global-functions
+      - builtin:typed-array
+      - builtin:weakmap-weakset
+      - builtin:symbol
+      - builtin:iterator
+      - builtin:proxy-reflect
+      - builtin:intl
+      - builtin:eval
+      - builtin:atomics
+      - string:indexing
+      - string:concat
+      - string:trim
+      - string:split
+      - string:replace
+      - string:slice
+      - string:search
+      - string:case-conversion
+      - string:padding
+      - string:repeat
+      - string:includes
+      - string:index-of
+      - string:char-at
+      - string:from-char-code
+      - string:well-formed
+      - string:html-wrappers
+    status: pass
+
+  object-semantics-kernel:
+    feature:
+      - obj-kernel:ordinary-get
+      - obj-kernel:ordinary-set
+      - obj-kernel:ordinary-has-property
+      - obj-kernel:ordinary-delete
+      - obj-kernel:ordinary-own-property-keys
+      - obj-kernel:ordinary-define-own-property
+      - obj-kernel:ordinary-get-own-property
+      - obj-kernel:ordinary-get-prototype-of
+      - obj-kernel:ordinary-set-prototype-of
+      - obj-semantics:centralized-property-access
+      - obj-semantics:computed-read-prototype
+      - obj-semantics:configurable-false
+      - obj-semantics:define-property
+      - obj-semantics:descriptor-combinations
+      - obj-semantics:enumerable-filtering
+      - obj-semantics:prototype-descriptor-inheritance
+      - obj-semantics:writable-false
+      - obj-semantics:seal-freeze
+      - builtin:object-methods
+    status: pass
+
+  module-system:
+    feature:
+      - module:static-import
+      - module:static-export
+      - module:dynamic-import
+      - module:named-export
+      - module:default-export
+      - module:namespace-import
+      - module:re-export
+      - module:side-effect-import
+      - module:live-binding
+    status: partial
+
+  modules-and-typed-optimizations:
+    feature:
+      - module:static-import
+      - module:static-export
+      - misc:gc
+    status: pass
+
+  node-apis:
+    feature:
+      - io:process-env
+      - io:process-argv
+      - io:process-exit
+      - io:fs-read
+      - io:fs-write
+      - io:crypto
+    status: pass
+
+  html-comments:
+    feature:
+      - misc:html-comment
+    status: pass
+
+  linker:
+    feature:
+      - linker:basic
+      - linker:console-log
+      - linker:for-loop
+      - linker:number-add
+      - linker:object-literal
+    status: pass
+
+  parser-errors:
+    feature:
+      - ts:type-annotation
+    status: pass
+
+  rest-parameters:
+    feature:
+      - fn:rest-params
+    status: pass
+
+  spread-args:
+    feature:
+      - fn:spread-args
+      - expr:spread
+      - array:spread
+    status: pass
+
+  stmt:
+    feature:
+      - stmt:let
+      - stmt:const
+      - stmt:function-decl
+      - stmt:class-decl
+      - stmt:export
+      - stmt:import
+      - stmt:for
+      - stmt:while
+      - stmt:break
+      - stmt:continue
+      - stmt:return
+      - stmt:throw
+      - stmt:try-catch
+      - stmt:label
+      - stmt:if
+      - stmt:switch
+      - stmt:for-in
+      - stmt:for-of
+      - stmt:do-while
+    status: pass
+
+  test-infrastructure:
+    feature:
+      - test-infra:pass
+      - test-infra:fail
+      - test-infra:unsupported
+    status: pass
+
+  this-binding:
+    feature:
+      - fn:this
+    status: pass
+
+  typescript-directives:
+    feature:
+      - ts:type-only-import
+      - ts:namespace
+    status: partial
+
+  atcoder:
+    feature:
+      - value-types:number
+      - fn:declaration
+      - control:for
+      - io:stdout
+    status: pass
