@@ -206,3 +206,50 @@ done:
       commands:
         - "cargo test -p ts2wasm-frontend --lib -- parser::tests::parses_new_target_in_class => exit 0"
         - "cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(new_target)' => exit 0"
+  - id: 367
+    title: Add semantic coverage and conformance regression gate
+    priority: P1
+    type: tooling
+    area: coverage
+    status: done
+    created: 2026-05-12
+    updated: 2026-05-12
+    roadmap: P14-final-coverage-gate
+    acceptance:
+      - python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements
+      - grep -R '"semantic_pass":[1-9]' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+      - grep -R '"differential_pass"' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+      - grep -R '"negative_compile_pass"' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+      - grep -R '"conformance_pass"' site/docs/coverage/web-ui/public/data web-ui/public/data site/docs/public/dashboard/data
+    non_goals:
+      - No requirement that all test262 tests pass.
+      - No full test262 harness implementation.
+    notes: This is the final coverage guardrail, not a full conformance target.
+    plan:
+      goal: Prevent regression to semantic_pass=0 and make semantic/conformance metrics first-class dashboard fields.
+      files:
+        - scripts/reference-coverage.py
+        - scripts/manager.py
+        - site/docs/coverage/web-ui/**
+        - web-ui/public/data/**
+        - site/docs/public/dashboard/**
+        - docs/current-state.md
+    evidence:
+      commit: 23fb93cb6
+      commands:
+        - command: python3 -m py_compile scripts/run/reference-coverage.py
+          exit: 0
+        - command: python3 -m py_compile scripts/gen/web-ui-data.py
+          exit: 0
+        - command: python3 scripts/gen/web-ui-data.py --coverage-dir artifacts/coverage/results
+          exit: 0
+        - command: python3 -c "import json; d=json.load(open('site/docs/coverage/web-ui/public/data/coverage.json')); print(any(s.get('semantic_pass',0)>0 for s in d['suites']))"
+          exit: 0
+        - command: python3 -c "import json; d=json.load(open('site/docs/coverage/web-ui/public/data/coverage.json')); print(any(s.get('differential_pass',0)>0 for s in d['suites']))"
+          exit: 0
+        - command: python3 -c "import json; d=json.load(open('site/docs/coverage/web-ui/public/data/coverage.json')); print(any(s.get('negative_compile_pass',0)>0 for s in d['suites']))"
+          exit: 0
+        - command: python3 -c "import json; d=json.load(open('site/docs/coverage/web-ui/public/data/coverage.json')); print(any(s.get('conformance_pass',0)>0 for s in d['suites']))"
+          exit: 0
+        - command: git diff --check
+          exit: 0

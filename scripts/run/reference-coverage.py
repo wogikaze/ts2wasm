@@ -518,6 +518,7 @@ def _test262_semantic_requires_strict_oracle(suite, semantic_check):
 def _mark_verified_negative_compile_pass(metrics, semantic_enabled):
     """Count only parse/SyntaxError-verified negative compile outcomes as semantic."""
     metrics["build_pass"] = True
+    metrics["negative_compile_pass"] = True
     if semantic_enabled:
         metrics["semantic_pass"] = True
 
@@ -985,6 +986,9 @@ def main():
             "semantic_coverage_percent": "0.00",
             "build_pass": 0,
             "semantic_pass": 0,
+            "differential_pass": 0,
+            "negative_compile_pass": 0,
+            "conformance_pass": 0,
             "mismatch": 0,
             "runtime_error": 0,
             "fail": 0,
@@ -1010,6 +1014,9 @@ def main():
             print("semantic_coverage_percent=0.00")
             print("build_pass=0")
             print("semantic_pass=0")
+            print("differential_pass=0")
+            print("negative_compile_pass=0")
+            print("conformance_pass=0")
             print("mismatch=0")
             print("runtime_error=0")
             print("fail=0")
@@ -2216,7 +2223,7 @@ def main():
         nonlocal executed, build_pass_count, semantic_pass_count, mismatch_count
         nonlocal runtime_error_count, blocked_count, fail_count
         nonlocal unsupported_count, unsupported_diag_counts, unsupported_feature_counts
-        nonlocal unsupported_by_phase
+        nonlocal unsupported_by_phase, negative_compile_pass_count
 
         executed += 1
         if detail_output:
@@ -2234,6 +2241,8 @@ def main():
             return
         if result["build_pass"]:
             build_pass_count += 1
+            if result.get("negative_compile_pass"):
+                negative_compile_pass_count += 1
             if result["semantic_pass"]:
                 semantic_pass_count += 1
             elif result["mismatch"]:
@@ -2344,6 +2353,7 @@ def main():
             "blocked": False,
             "fail": False,
             "unsupported": False,
+            "negative_compile_pass": False,
             "diag_code": None,
             "diag_phase": None,
             "feature_label": None,
@@ -2466,6 +2476,7 @@ def main():
     semantic_pass_count = 0
     mismatch_count = 0
     runtime_error_count = 0
+    negative_compile_pass_count = 0
     
     file_details = []
     
@@ -2639,6 +2650,8 @@ def main():
                     
                     if result["build_pass"]:
                         build_pass_count += 1
+                        if result.get("negative_compile_pass"):
+                            negative_compile_pass_count += 1
                         if result["semantic_pass"]:
                             semantic_pass_count += 1
                         elif result["mismatch"]:
@@ -2709,6 +2722,11 @@ def main():
     if denominator > 0:
         semantic_coverage_percent = f"{(semantic_pass_count / denominator) * 100:.2f}"
 
+    differential_pass_count = semantic_pass_count - negative_compile_pass_count
+    if differential_pass_count < 0:
+        differential_pass_count = 0
+    conformance_pass_count = differential_pass_count + negative_compile_pass_count
+
     summary = {
         "suite": suite,
         "suite_name": suite,
@@ -2718,6 +2736,9 @@ def main():
         "semantic_coverage_percent": semantic_coverage_percent,
         "build_pass": build_pass_count,
         "semantic_pass": semantic_pass_count,
+        "differential_pass": differential_pass_count,
+        "negative_compile_pass": negative_compile_pass_count,
+        "conformance_pass": conformance_pass_count,
         "mismatch": mismatch_count,
         "runtime_error": runtime_error_count,
         "fail": fail_count,
@@ -2840,6 +2861,9 @@ def main():
         print(f"semantic_coverage_percent={semantic_coverage_percent}")
         print(f"build_pass={build_pass_count}")
         print(f"semantic_pass={semantic_pass_count}")
+        print(f"differential_pass={differential_pass_count}")
+        print(f"negative_compile_pass={negative_compile_pass_count}")
+        print(f"conformance_pass={conformance_pass_count}")
         print(f"mismatch={mismatch_count}")
         print(f"runtime_error={runtime_error_count}")
         print(f"fail={fail_count}")

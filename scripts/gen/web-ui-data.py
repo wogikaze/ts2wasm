@@ -389,12 +389,18 @@ def normalized_suite_metrics(item):
     unsupported = int(item.get("unsupported", 0) or 0)
     blocked = int(item.get("blocked", 0) or 0)
     skip_with_reason = int(item.get("skip_with_reason", item.get("skipped", 0)) or 0)
+    differential_pass = int(item.get("differential_pass", semantic_pass) or 0)
+    negative_compile_pass = int(item.get("negative_compile_pass", 0) or 0)
+    conformance_pass = int(item.get("conformance_pass", differential_pass + negative_compile_pass) or 0)
     return {
         "suite": suite,
         "denominator": denominator,
         "executed": executed,
         "build_pass": build_pass,
         "semantic_pass": semantic_pass,
+        "differential_pass": differential_pass,
+        "negative_compile_pass": negative_compile_pass,
+        "conformance_pass": conformance_pass,
         "unsupported": unsupported,
         "blocked": blocked,
         "fail": fail,
