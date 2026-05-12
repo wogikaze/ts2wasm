@@ -1598,7 +1598,7 @@ open:
   area: coverage
   type: test
   roadmap: P15-test-hardening
-  status: open
+  status: done
   created: '2026-05-12'
   updated: '2026-05-12'
   depends_on:
@@ -1614,6 +1614,13 @@ open:
     goal: Small curated set of fixtures that exercise all active semantic paths.
   acceptance:
   - grep -R 'canary' fixtures/catalog.yaml docs/current-state.md
+  evidence:
+    commit: a65d66f25
+    commands:
+    - command: grep 'canary' fixtures/catalog.yaml docs/current-state.md
+      exit: 0
+    - command: git diff --check
+      exit: 0
 - id: 386
   title: Add tracking integrity automation
   priority: P2
