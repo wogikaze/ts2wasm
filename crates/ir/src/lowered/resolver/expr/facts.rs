@@ -1,4 +1,4 @@
-use super::super::program_builtins::looks_like_regexp_literal;
+use super::super::program_builtins::{is_typed_array_class, looks_like_regexp_literal};
 use super::super::{
     is_invalid_date_constructor_expr, is_set_prototype_property_expr,
     is_static_copy_safe_object_prop_value, string_constructor_arrow_callback,
@@ -380,10 +380,14 @@ pub(crate) fn is_invalid_date_expr(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bo
 pub(crate) fn is_known_array_expr(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
     match expr {
         ResolvedExpr::Array(_) => true,
-        ResolvedExpr::Ident(name) => ctx
-            .resolve_local(name)
-            .ok()
-            .is_some_and(|local_id| ctx.facts.array_locals.contains(&local_id)),
+        ResolvedExpr::Ident(name) => ctx.resolve_local(name).ok().is_some_and(|local_id| {
+            ctx.facts.array_locals.contains(&local_id)
+                || ctx
+                    .classes
+                    .local_classes
+                    .get(&local_id)
+                    .is_some_and(|class_name| is_typed_array_class(class_name))
+        }),
         _ => false,
     }
 }

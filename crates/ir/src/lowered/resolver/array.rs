@@ -1549,7 +1549,7 @@ impl super::Resolver {
         let acc = self.alloc_temp();
         init_stmts.push(LoweredStmt::Let(
             acc,
-            LoweredExpr::Bool(is_some, Span::generated("bool")),
+            LoweredExpr::Bool(!is_some, Span::generated("bool")),
             Span::generated("Let"),
         ));
 

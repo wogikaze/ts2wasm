@@ -383,6 +383,7 @@ directories:
     - test-set-samevaluezero.ts
     - typedarray-basic.ts
     - typedarray-constructors.ts
+    - typedarray-methods.ts
     - value-of.ts
     - weakmap-weakset-basic.ts
   classes:

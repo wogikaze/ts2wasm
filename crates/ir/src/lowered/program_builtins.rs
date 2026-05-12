@@ -208,13 +208,12 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         // Promise prototype methods
         ("Promise", "then") => Some(RuntimeFn::PromiseThen),
         ("Promise", "catch") => Some(RuntimeFn::PromiseCatch),
-        // Typed array methods are routed through constructor lowering, not here
-        _ if is_typed_array_class(class_name) => None,
+        _ if is_typed_array_class(class_name) => typed_array_method_runtime_fn(method),
         _ => None,
     }
 }
 
-fn is_typed_array_class(class_name: &str) -> bool {
+pub(crate) fn is_typed_array_class(class_name: &str) -> bool {
     matches!(
         class_name,
         "Int8Array"
@@ -229,6 +228,27 @@ fn is_typed_array_class(class_name: &str) -> bool {
             | "BigInt64Array"
             | "BigUint64Array"
     )
+}
+
+fn typed_array_method_runtime_fn(method: &str) -> Option<RuntimeFn> {
+    match method {
+        "copyWithin" => Some(RuntimeFn::ArrayCopyWithin),
+        "every" => Some(RuntimeFn::ArrayEvery),
+        "fill" => Some(RuntimeFn::ArrayFill),
+        "filter" => Some(RuntimeFn::ArrayFilter),
+        "find" => Some(RuntimeFn::ArrayFind),
+        "findIndex" => Some(RuntimeFn::ArrayFindIndex),
+        "findLast" => Some(RuntimeFn::ArrayFindLast),
+        "findLastIndex" => Some(RuntimeFn::ArrayFindLastIndex),
+        "forEach" => Some(RuntimeFn::ArrayForEach),
+        "map" => Some(RuntimeFn::ArrayMap),
+        "reduce" => Some(RuntimeFn::ArrayReduce),
+        "reduceRight" => Some(RuntimeFn::ArrayReduceRight),
+        "slice" | "subarray" => Some(RuntimeFn::ArraySlice),
+        "some" => Some(RuntimeFn::ArraySome),
+        "sort" => Some(RuntimeFn::ArraySortNumeric),
+        _ => None,
+    }
 }
 
 pub(crate) fn collection_method_runtime_fn_arg(method: &str) -> Option<RuntimeFn> {

@@ -1,7 +1,7 @@
 use super::super::{
     bigint_runtime_fn_intrinsic, is_array_from_call_receiver, is_array_prototype_map_call_receiver,
     is_array_prototype_push_expr, is_identity_arrow_callback, is_set_prototype_property_expr,
-    is_static_date_constructor_expr, is_string_split_result_expr,
+    is_static_date_constructor_expr, is_string_split_result_expr, is_typed_array_class,
     numeric_ascending_sort_arrow_callback, private_storage_observable_access_diagnostic,
     string_constructor_arrow_callback, string_split_arrow_separator, unary_plus_arrow_callback,
     unsupported_array_map_diagnostic, unsupported_array_sort_diagnostic,
@@ -681,6 +681,50 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
+        if crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
+            && matches!(method, "copyWithin" | "fill" | "slice" | "subarray")
+        {
+            let receiver = self.lower_expr(object)?;
+            let intrinsic = if method == "subarray" {
+                RuntimeFn::ArraySlice
+            } else {
+                collection_method_runtime_fn_arg(method).expect("array method runtime")
+            };
+            let mut lowered_args = vec![receiver.clone()];
+            match method {
+                "copyWithin" => {
+                    for arg in args.iter().take(3) {
+                        lowered_args.push(self.lower_expr(arg)?);
+                    }
+                    while lowered_args.len() < 4 {
+                        lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                    }
+                }
+                "slice" | "subarray" => {
+                    for arg in args.iter().take(2) {
+                        lowered_args.push(self.lower_expr(arg)?);
+                    }
+                    if lowered_args.len() == 2 {
+                        lowered_args.push(LoweredExpr::GetLength(
+                            Box::new(receiver),
+                            Span::generated("get_length"),
+                        ));
+                    }
+                }
+                _ => {
+                    lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<Result<
+                        Vec<_>,
+                        _,
+                    >>(
+                    )?);
+                }
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic,
+                args: lowered_args,
+                span: Span::generated("runtime_call"),
+            }));
+        }
         if (method == "find"
             || method == "findIndex"
             || method == "findLast"
@@ -1210,6 +1254,7 @@ impl super::super::Resolver {
             && let Some(class_name) = self.ctx.classes.local_classes.get(&obj_local)
             && let Some(intrinsic) = collection_method_runtime_fn(class_name, method)
         {
+            let is_array_like_class = class_name == "Array" || is_typed_array_class(class_name);
             if class_name == "RegExp" && args.len() > 1 {
                 return Err(Diagnostic {
                     code: DiagCode::ArityMismatch,
@@ -1224,11 +1269,11 @@ impl super::super::Resolver {
             }
             let mut lowered_args = vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
             // Array.prototype.flat defaults depth to 1 when omitted
-            if class_name == "Array" && method == "flat" && args.is_empty() {
+            if is_array_like_class && method == "flat" && args.is_empty() {
                 lowered_args.push(LoweredExpr::Number(1, Span::generated("num")));
-            } else if class_name == "Array" && method == "join" && args.is_empty() {
+            } else if is_array_like_class && method == "join" && args.is_empty() {
                 lowered_args.push(LoweredExpr::String(",".to_owned(), Span::generated("str")));
-            } else if class_name == "Array" && method == "copyWithin" {
+            } else if is_array_like_class && method == "copyWithin" {
                 // copyWithin(target, start, end) — pad missing args with undefined
                 for arg in args.iter().take(3) {
                     lowered_args.push(self.lower_expr(arg)?);
@@ -1236,8 +1281,7 @@ impl super::super::Resolver {
                 while lowered_args.len() < 4 {
                     lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
                 }
-            } else if class_name == "Array" && (method == "toString" || method == "toLocaleString")
-            {
+            } else if is_array_like_class && (method == "toString" || method == "toLocaleString") {
                 // toString/toLocaleString calls join(",") internally
                 lowered_args.push(LoweredExpr::String(",".to_owned(), Span::generated("str")));
             } else {
