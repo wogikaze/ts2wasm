@@ -132,21 +132,42 @@ impl WatEmitter<'_> {
   (func $math_max (param $a i32) (param $b i32) (result i32)
     (local $a_tag i32)
     (local $b_tag i32)
+    (local $obj i32)
+    (local $a_is_number i32)
+    (local $b_is_number i32)
     (local $a_n i32)
     (local $b_n i32)
     (local.set $a_tag (i32.and (local.get $a) (i32.const {tag_mask})))
     (local.set $b_tag (i32.and (local.get $b) (i32.const {tag_mask})))
-    (if (i32.or (i32.ne (local.get $a_tag) (i32.const {number_tag})) (i32.ne (local.get $b_tag) (i32.const {number_tag})))
+    (local.set $a_is_number (i32.eq (local.get $a_tag) (i32.const {number_tag})))
+    (local.set $b_is_number (i32.eq (local.get $b_tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $a_tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $a) (i32.const {heap_mask})))
+        (local.set $a_is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eq (local.get $b_tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $b) (i32.const {heap_mask})))
+        (local.set $b_is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.or (i32.eqz (local.get $a_is_number)) (i32.eqz (local.get $b_is_number)))
       (then (return (i32.const {undefined}))))
-    (local.set $a_n (i32.shr_s (local.get $a) (i32.const {number_shift})))
-    (local.set $b_n (i32.shr_s (local.get $b) (i32.const {number_shift})))
+    (local.set $a_n (call $number_to_i32 (local.get $a)))
+    (local.set $b_n (call $number_to_i32 (local.get $b)))
     (if (i32.gt_s (local.get $a_n) (local.get $b_n))
       (then (return (local.get $a))))
     (local.get $b))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
-            number_shift = ValueTag::NUMBER_SHIFT,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             undefined = ValueTag::UNDEFINED,
         ));
     }
@@ -202,21 +223,42 @@ impl WatEmitter<'_> {
   (func $math_min (param $a i32) (param $b i32) (result i32)
     (local $a_tag i32)
     (local $b_tag i32)
+    (local $obj i32)
+    (local $a_is_number i32)
+    (local $b_is_number i32)
     (local $a_n i32)
     (local $b_n i32)
     (local.set $a_tag (i32.and (local.get $a) (i32.const {tag_mask})))
     (local.set $b_tag (i32.and (local.get $b) (i32.const {tag_mask})))
-    (if (i32.or (i32.ne (local.get $a_tag) (i32.const {number_tag})) (i32.ne (local.get $b_tag) (i32.const {number_tag})))
+    (local.set $a_is_number (i32.eq (local.get $a_tag) (i32.const {number_tag})))
+    (local.set $b_is_number (i32.eq (local.get $b_tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $a_tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $a) (i32.const {heap_mask})))
+        (local.set $a_is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eq (local.get $b_tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $b) (i32.const {heap_mask})))
+        (local.set $b_is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.or (i32.eqz (local.get $a_is_number)) (i32.eqz (local.get $b_is_number)))
       (then (return (i32.const {undefined}))))
-    (local.set $a_n (i32.shr_s (local.get $a) (i32.const {number_shift})))
-    (local.set $b_n (i32.shr_s (local.get $b) (i32.const {number_shift})))
+    (local.set $a_n (call $number_to_i32 (local.get $a)))
+    (local.set $b_n (call $number_to_i32 (local.get $b)))
     (if (i32.lt_s (local.get $a_n) (local.get $b_n))
       (then (return (local.get $a))))
     (local.get $b))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
-            number_shift = ValueTag::NUMBER_SHIFT,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             undefined = ValueTag::UNDEFINED,
         ));
     }
