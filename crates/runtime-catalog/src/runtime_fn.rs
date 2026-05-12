@@ -1722,6 +1722,9 @@ impl RuntimeFn {
             Self::TypeOf,
             Self::NumberFromI32,
             Self::NumberToI32,
+            Self::NumberToExponential,
+            Self::NumberToFixed,
+            Self::NumberToPrecision,
             Self::StringEqual,
             Self::Concat,
             Self::IsString,
@@ -1800,6 +1803,7 @@ impl RuntimeFn {
             Self::SetDelete,
             Self::SetSize,
             Self::SetClear,
+            Self::SetForEach,
             Self::MapClear,
             Self::MapSize,
             Self::MapForEach,
@@ -2015,7 +2019,6 @@ impl RuntimeFn {
         ]
     }
 
-    #[cfg(test)]
     pub const fn all() -> &'static [RuntimeFn] {
         &[
             Self::ReadStdinBytes,
@@ -2029,6 +2032,9 @@ impl RuntimeFn {
             Self::TypeOf,
             Self::NumberFromI32,
             Self::NumberToI32,
+            Self::NumberToExponential,
+            Self::NumberToFixed,
+            Self::NumberToPrecision,
             Self::StringEqual,
             Self::Concat,
             Self::IsString,
@@ -2107,6 +2113,7 @@ impl RuntimeFn {
             Self::SetDelete,
             Self::SetSize,
             Self::SetClear,
+            Self::SetForEach,
             Self::MapClear,
             Self::MapSize,
             Self::MapForEach,
