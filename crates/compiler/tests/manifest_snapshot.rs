@@ -47,6 +47,61 @@ fn math_random_manifest_declares_wasi_random() {
     );
 }
 
+/// Deterministic equality: same fixture built twice must produce identical manifest JSON.
+#[test]
+fn manifest_deterministic_same_fixture_twice() {
+    let source = "const x = Math.random();";
+    let manifest1 = build_and_get_manifest(source, "deterministic-1");
+    let manifest2 = build_and_get_manifest(source, "deterministic-2");
+
+    let parsed1: serde_json::Value =
+        serde_json::from_str(&manifest1).expect("manifest1 should be valid JSON");
+    let parsed2: serde_json::Value =
+        serde_json::from_str(&manifest2).expect("manifest2 should be valid JSON");
+
+    assert_eq!(
+        parsed1, parsed2,
+        "manifest must be deterministic across build runs"
+    );
+}
+
+/// Deterministic equality for a different fixture (console.log).
+#[test]
+fn manifest_deterministic_console_log() {
+    let source = r#"console.log("hello");"#;
+    let manifest1 = build_and_get_manifest(source, "det-console-1");
+    let manifest2 = build_and_get_manifest(source, "det-console-2");
+
+    let parsed1: serde_json::Value =
+        serde_json::from_str(&manifest1).expect("manifest1 should be valid JSON");
+    let parsed2: serde_json::Value =
+        serde_json::from_str(&manifest2).expect("manifest2 should be valid JSON");
+
+    assert_eq!(
+        parsed1, parsed2,
+        "console.log manifest must be deterministic across build runs"
+    );
+}
+
+/// Deterministic equality across three builds (triple-redundancy check).
+#[test]
+fn manifest_deterministic_three_runs() {
+    let source = "const x = Math.floor(1.5);";
+    let manifest1 = build_and_get_manifest(source, "det-triple-1");
+    let manifest2 = build_and_get_manifest(source, "det-triple-2");
+    let manifest3 = build_and_get_manifest(source, "det-triple-3");
+
+    let parsed1: serde_json::Value =
+        serde_json::from_str(&manifest1).expect("manifest1 should be valid JSON");
+    let parsed2: serde_json::Value =
+        serde_json::from_str(&manifest2).expect("manifest2 should be valid JSON");
+    let parsed3: serde_json::Value =
+        serde_json::from_str(&manifest3).expect("manifest3 should be valid JSON");
+
+    assert_eq!(parsed1, parsed2, "run 1 and 2 must match");
+    assert_eq!(parsed2, parsed3, "run 2 and 3 must match");
+}
+
 #[test]
 fn manifest_has_valid_schema_version() {
     let manifest = build_and_get_manifest("const x = Math.random();", "schema-version");
