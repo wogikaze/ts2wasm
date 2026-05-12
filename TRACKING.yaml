@@ -23,7 +23,7 @@ done:
       exit: 1
     - command: git diff --check
       exit: 0
-    commit: PLACEHOLDER
+    commit: df308d4e6
   id: 359
   non_goals:
   - No grammar change.
