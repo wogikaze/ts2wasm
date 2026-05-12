@@ -277,6 +277,24 @@ The final architecture gate combines these checks with the workspace tests,
 reference coverage smoke command, crate-layout existence checks, and manifest /
 coverage data checks listed in `TRACKING.yaml`.
 
+### Final Gate Recipe
+
+The reusable final architecture gate is:
+
+- run workspace tests;
+- run `mise run check architecture`;
+- run a test262 `language/statements` reference coverage smoke command;
+- verify dashboard data contains non-zero `semantic_pass`;
+- reject backend-to-frontend dependency regressions;
+- reject stringly typed runtime calls in IR;
+- reject backend public emit APIs that accept raw unvalidated lowered programs;
+- verify `Validated<LoweredProgram>` is used at backend/compiler boundaries;
+- verify runtime link-plan validation is represented across runtime catalog,
+  backend, and compiler code;
+- verify the target source, diagnostic, syntax, resolve, semantics,
+  runtime-abi, runtime-catalog, and backend-core crates exist;
+- run tracking consistency and diff whitespace checks.
+
 ## Design Rules
 
 ```text

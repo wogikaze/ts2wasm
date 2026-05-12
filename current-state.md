@@ -1,8 +1,8 @@
 # Current State
 
-Last updated: 2026-05-08
+Last updated: 2026-05-12
 
-**Primary goal: test262 semantic_pass 90%（Gate H）**
+**Primary goal: feature-specific vertical compatibility slices after P14 architecture closure**
 
 この文書は、現在の実装状態と検証の事実だけを記録する。設計は `docs/` 側に置き、ここでは「今何が動くか」「何が未実装か」「何を確認すればよいか」を扱う。
 
@@ -13,6 +13,21 @@ Last updated: 2026-05-08
 - **Gate A（テスト）**: `cargo fmt --all --check` と `cargo nextest run`（フル suite。重いテストを分離する場合は `docs/11` の filterset 方針に従う）。
 - **Gate D（coverage artifact）**: `mise run update-coverage-matrix -- --check` が `artifacts/coverage/reference-coverage-matrix.md` を検証。
 - **その他（B–C, E–H）**: ポリシーと checklist は `docs/11` / `docs/12-coding-standard.md`（§19）に記載。証拠コマンドは下記「Last verified commands」。
+
+## Architecture decoupling status
+
+P14 architecture decoupling is closed through issue 369. `TRACKING.yaml` has no
+open or active items for the architecture decoupling tracker; issues 348-369 are
+recorded as `done` with evidence. The final roll-up gate covered workspace
+tests, `mise run check architecture`, a test262 `language/statements` reference
+coverage smoke run, dashboard `semantic_pass` evidence, dependency/string
+boundary checks, `Validated<LoweredProgram>` and validated runtime link-plan
+checks, target crate existence checks, tracking consistency, and `git diff
+--check -- TRACKING.yaml`.
+
+Future work should be cut as feature-specific vertical slices. New slices should
+use `docs/templates/feature-slice.md`, keep final-state contracts in `docs/`,
+and record live implementation status in this file plus `TRACKING.yaml`.
 
 ## Last verified commands（代表）
 
@@ -27,7 +42,10 @@ mise run check-fast-gate -- --skip-nextest
 mise run check-manifest-imports
 mise run check-fixture-catalog
 mise run check-architecture-rules
+mise run check architecture
 mise run check-compiler-diagnostics
+python scripts/check/tracking-consistency.py
+python3 scripts/manager.py reference-coverage test262 --jobs 1 --path-filter language/statements
 ```
 
 reference coverage を更新する場合（実測値を変えるとき）:
@@ -160,7 +178,10 @@ Semantic gap tracking:
 
 ## Next Priority Steps
 
-See `TRACKING.yaml` for open work items. Run `git diff --check` before commit; the pre-push gate runs `python3 scripts/check/tracking-consistency.py` for structural validation.
+See `TRACKING.yaml` for open work items. As of 2026-05-12 there are no open or
+active architecture decoupling tracker items. Run `git diff --check` before
+commit; the pre-push gate runs `python3 scripts/check/tracking-consistency.py`
+for structural validation.
 
 ## Current Policy
 
@@ -169,7 +190,7 @@ See `TRACKING.yaml` for open work items. Run `git diff --check` before commit; t
 - coverage 実測値は `artifacts/coverage/reference-coverage-matrix.md` を正とする。
 - project goal、gates、schema は `docs/11-shared-definitions.md` を正とし、他 doc で再定義しない。
 
-## Architecture Sizing (#364 / #365)
+## Architecture Sizing (#364 / #365 / #369)
 
 The architecture checker enforces LLM-friendly sizing and coupling limits:
 
