@@ -547,21 +547,36 @@ def check_backend_frontend_import() -> list[str]:
     return violations
 
 
+def _emission_order_variants(text: str) -> set[str]:
+    """Extract RuntimeFn variants listed in emission_order() body."""
+    fn_match = re.search(
+        r"pub const fn emission_order\(\)\s*->\s*&'static \[RuntimeFn\]\s*\{(.*?)^\}",
+        text,
+        re.MULTILINE | re.DOTALL,
+    )
+    if not fn_match:
+        return set()
+    body = fn_match.group(1)
+    return {m.group(1) for m in re.finditer(r'Self::(\w+)', body)}
+
+
 def check_runtimefn_spec_gap() -> list[str]:
     """Check that every RuntimeFn variant has entries in spec/manifest/emission_order.
 
     Parses the RuntimeFn enum and checks against the spec table, manifest table,
-    and emission_order list.
+    and emission_order list.  All sources live in crates/runtime-catalog/src/.
     """
     violations = []
 
+    catalog_src = REPO_ROOT / "crates" / "runtime-catalog" / "src"
+
     # 1. Parse RuntimeFn enum variants
-    runtime_fn_path = REPO_ROOT / "crates" / "backend-wasm" / "src" / "runtime_fn.rs"
+    runtime_fn_path = catalog_src / "runtime_fn.rs"
     if not runtime_fn_path.exists():
         return violations
 
     enum_text = runtime_fn_path.read_text()
-    enum_match = re.search(r'enum RuntimeFn \{(.*?)^\}', enum_text, re.MULTILINE | re.DOTALL)
+    enum_match = re.search(r'pub enum RuntimeFn \{(.*?)^\}', enum_text, re.MULTILINE | re.DOTALL)
     if not enum_match:
         return violations
 
@@ -574,7 +589,7 @@ def check_runtimefn_spec_gap() -> list[str]:
         variants.add(m.group(1))
 
     # 2. Parse spec entries from runtime/spec/all.rs
-    spec_path = REPO_ROOT / "crates" / "backend-wasm" / "src" / "runtime" / "spec" / "all.rs"
+    spec_path = catalog_src / "runtime" / "spec" / "all.rs"
     spec_variants = set()
     if spec_path.exists():
         spec_text = spec_path.read_text()
@@ -582,20 +597,15 @@ def check_runtimefn_spec_gap() -> list[str]:
             spec_variants.add(m.group(1))
 
     # 3. Parse manifest entries from runtime/manifest/all.rs
-    manifest_path = REPO_ROOT / "crates" / "backend-wasm" / "src" / "runtime" / "manifest" / "all.rs"
+    manifest_path = catalog_src / "runtime" / "manifest" / "all.rs"
     manifest_variants = set()
     if manifest_path.exists():
         manifest_text = manifest_path.read_text()
         for m in re.finditer(r'Self::(\w+)\s*=>', manifest_text):
             manifest_variants.add(m.group(1))
 
-    # 4. Parse emission_order entries from runtime_fn_impl.rs
-    emission_order_path = REPO_ROOT / "crates" / "backend-wasm" / "src" / "runtime_fn_impl.rs"
-    emission_variants = set()
-    if emission_order_path.exists():
-        emission_text = emission_order_path.read_text()
-        for m in re.finditer(r'Self::(\w+)', emission_text):
-            emission_variants.add(m.group(1))
+    # 4. Parse emission_order entries from runtime_fn.rs (emission_order function body)
+    emission_variants = _emission_order_variants(runtime_fn_path.read_text())
 
     # Check for gaps
     if not spec_variants:
@@ -907,21 +917,77 @@ def check_use_super_star() -> list[str]:
     return violations
 
 
+# Push-str allowlist: runtime emit files that use raw WAT string concatenation.
+# These are known legacy patterns. New runtime helpers must use WatWriter typed
+# methods (line(), line_fmt(), i32_const(), call(), etc.) or be added here with
+# a documented reason.
+RUNTIME_PUSH_STR_ALLOWLIST = {
+    # Runtime domain emit files -- these emit large inline WAT function bodies
+    # and are being migrated domain-by-domain (P4: domain split).
+    "crates/backend-wasm/src/runtime/array/accessor.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/array/emit.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/array/iteration.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/array/iterator.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/array/mutator.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/collections/emit.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/core/arithmetic.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/core/bigint.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/core/comparison.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/core/control.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/core/conversion.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/core/emit.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/core/memory.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/host/emit.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/json/emit.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/json/error.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/json/parser.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/json/serializer.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/json/string.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/json/value.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/object/emit.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/regexp/emit.rs": "P4: domain emit refactor",
+    "crates/backend-wasm/src/runtime/string/emit.rs": "P4: domain emit refactor",
+    # Top-level emit files -- expression and statement emitters use writer.push_str
+    # for inline WAT composition. Migrate to WatWriter typed methods.
+    "crates/backend-wasm/src/expr_emit.rs": "P4: expression emitter refactor",
+    "crates/backend-wasm/src/stmt_emit.rs": "P4: statement emitter refactor",
+}
+
+
 def check_runtime_push_str() -> list[str]:
     violations = []
     backend_src = REPO_ROOT / "crates" / "backend-wasm" / "src"
     if not backend_src.exists():
         return violations
 
-    for path in sorted(backend_src.rglob("runtime*.rs")):
+    # Check all runtime/ subdirectory files and top-level *emit*.rs files
+    check_paths = []
+    if (backend_src / "runtime").exists():
+        check_paths.extend(sorted((backend_src / "runtime").rglob("*.rs")))
+    for path in sorted(backend_src.glob("*emit*.rs")):
+        if path not in check_paths:
+            check_paths.append(path)
+
+    for path in check_paths:
         rel = path.relative_to(REPO_ROOT)
         text = path.read_text()
+        rel_str = str(rel)
+        is_allowlisted = rel_str in RUNTIME_PUSH_STR_ALLOWLIST
         for i, line in enumerate(text.split('\n'), 1):
-            if 'push_str' in line:
-                violations.append(
-                    f"check_architecture_rules: WARN {rel}:{i}: "
-                    f"`push_str` usage — prefer structured builders over raw WAT strings"
-                )
+            stripped = line.strip()
+            if 'push_str' in stripped and not stripped.startswith('//'):
+                if is_allowlisted:
+                    violations.append(
+                        f"check_architecture_rules: WARN {rel}:{i}: "
+                        f"`push_str` usage (known legacy) -- "
+                        f"prefer WatWriter typed methods"
+                    )
+                else:
+                    violations.append(
+                        f"check_architecture_rules: ERROR {rel}:{i}: "
+                        f"`push_str` usage outside allowlist -- "
+                        f"use WatWriter typed methods instead"
+                    )
 
     return violations
 
