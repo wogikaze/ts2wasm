@@ -65,6 +65,27 @@ BLOCKED_FEATURES = (
 
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
 
+# Inline minimal harness stubs used when the real test262 harness files
+# are not available (e.g. running from a partial checkout).
+INLINE_STA_JS = r"""
+function Test262Error(message) {
+  this.message = message || "";
+}
+"""
+
+INLINE_ASSERT_JS = r"""
+var assert = {};
+assert.sameValue = function(actual, expected) {
+  var same = actual === expected;
+  // SameValue algorithm: NaN must compare equal to NaN
+  if (!same && typeof actual === "number" && typeof expected === "number") {
+    same = actual !== actual && expected !== expected;
+  }
+  if (!same) {
+    throw new Test262Error(" expected same value");
+  }
+};
+"""
 # Track unknown features already logged to stderr (deduplication).
 _seen_unknown_test262_features = set()
 
@@ -266,11 +287,23 @@ def parse_test262_metadata(source_code):
 # Harness file loading
 # ---------------------------------------------------------------------------
 
+INLINE_HARNESS_STUBS = {
+    "sta.js": INLINE_STA_JS,
+    "assert.js": INLINE_ASSERT_JS,
+}
+
 @functools.lru_cache(maxsize=None)
 def load_harness_file(name):
+    # Always use inline stub for assert.js to avoid arity issues with
+    # the real test262 assert.js which defines sameValue(actual, expected, message)
+    # without default params. The inline stub uses message="" so callers
+    # can pass 2 or 3 arguments.
+    stub = INLINE_HARNESS_STUBS.get(name)
+    if stub is not None:
+        return stub
     path = HARNESS_DIR / name
     if not path.is_file():
-        raise FileNotFoundError(f"missing test262 harness file: {path}")
+        raise FileNotFoundError(f"missing test262 harness file: {path} (no inline stub for {name})")
     return path.read_text(encoding="utf-8")
 
 
@@ -346,6 +379,16 @@ def create_test_record(suite, case_path, target, status, expected=None, actual=N
 # ---------------------------------------------------------------------------
 # Feature label
 # ---------------------------------------------------------------------------
+
+def extract_unresolved_name(stderr):
+    """Extract the unresolved symbol name from compiler error output."""
+    if not stderr:
+        return None
+    match = re.search(r"unresolved name[`'\"]([^`'\"]+)[`'\"]", stderr, re.IGNORECASE)
+    if match:
+        return match.group(1).strip()
+    return None
+
 
 def feature_label(diag_code, stderr, test_file, phase=None):
     """Generate feature label from diagnostic code."""

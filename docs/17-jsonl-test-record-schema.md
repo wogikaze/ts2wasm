@@ -79,6 +79,24 @@ The canonical schema is implemented in:
 - `crates/shared/src/test_status.rs` — `TestRecord`, `TestStatus`, `TrackingId` types with `validate()` and `to_json_line()`
 - `crates/cli/tests/differential_jsonl.rs` — JSONL enumeration and differential runner
 
+## Coverage Runner Extensions
+
+The reference coverage runner (`scripts/run/reference-coverage.py`) extends the canonical
+TestRecord for coverage-specific results. These extensions are **not** part of the canonical
+TestRecord schema — they are coverage-runner-only fields.
+
+| Field | Type | Present for | Description |
+|-------|------|-------------|-------------|
+| `build_pass` | string | (as `status`) | `status=build_pass` indicates the fixture compiled but was not run |
+| `node_exit_status` | integer | status=`pass` or `fail` | Node.js exit code |
+| `iwasm_exit_status` | integer | status=`pass` or `fail` | iwasm exit code |
+| `semantic_checked` | boolean | status=`pass` | Whether semantic comparison was performed |
+| `oracle` | string | status=`pass` | Expected output from oracle (Node.js) |
+
+Canonical validators (`TestRecord::validate()` and `scripts/check/test-records-schema.py --self-test`)
+only check the 5-status canonical schema. Coverage-runner-specific fields are validated
+by `scripts/gate/coverage.py`.
+
 ## Related
 
 - `docs/06-testing-and-coverage.md` — overall testing strategy

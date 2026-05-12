@@ -171,7 +171,7 @@ impl<'a> super::super::Resolver {
                     span: Span::generated("runtime_call"),
                 });
             }
-            if class_name == "Set" && args.len() == 1 && self.is_known_array_expr(&args[0]) {
+            if class_name == "Set" && args.len() == 1 && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, &args[0]) {
                 return Ok(LoweredExpr::RuntimeCall {
                     intrinsic: RuntimeFn::SetFromArray,
                     args: vec![self.lower_expr(&args[0])?],

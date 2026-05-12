@@ -17,3 +17,9 @@
   - Changed `decorator_before_class_declaration` to call `self.statement()` after consuming `@expr` prefix
   - Only statement-level decorators (`@X class Y {}`); class-expression decorators still rejected
   - No runtime semantics; pure parser erasure
+- `arch-design-review-2026-05-11`: Comprehensive architectural analysis of ts2wasm
+  - Analysis covers 25 sections: coupling points, target architecture, LLM-friendly sizing, refactoring methodology
+  - 8 priority-ordered refactoring items identified (P1-P8)
+  - Decision: Use recursive-mode for each P-item individually; start with P1 (Span/Diagnostic extraction)
+  - Decision: Each P-item gets its own worktree and commit
+  - Full analysis captured in `.recursive/run/arch-design-review-2026-05-11/reference/`

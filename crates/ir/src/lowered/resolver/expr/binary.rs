@@ -95,8 +95,8 @@ impl super::super::Resolver {
         right: &ResolvedExpr,
     ) -> Result<Option<LoweredExpr>, Diagnostic> {
         if matches!(op, BinaryOp::Divide | BinaryOp::Modulo)
-            && self.resolved_expr_is_bigint_div_rem_operand(left)
-            && self.resolved_expr_is_bigint_div_rem_operand(right)
+            && crate::lowered::resolver::expr::facts::resolved_expr_is_bigint_div_rem_operand(&self.ctx, left)
+            && crate::lowered::resolver::expr::facts::resolved_expr_is_bigint_div_rem_operand(&self.ctx, right)
         {
             let intrinsic = match op {
                 BinaryOp::Divide => RuntimeFn::BigIntDiv,
@@ -110,10 +110,10 @@ impl super::super::Resolver {
             }));
         }
         if matches!(op, BinaryOp::Divide | BinaryOp::Modulo)
-            && ((self.resolved_expr_is_control_flow_mixed_bigint(left)
-                && self.resolved_expr_is_bigint_div_rem_operand(right))
-                || (self.resolved_expr_is_bigint_div_rem_operand(left)
-                    && self.resolved_expr_is_control_flow_mixed_bigint(right)))
+            && ((crate::lowered::resolver::expr::facts::resolved_expr_is_control_flow_mixed_bigint(&self.ctx, left)
+                && crate::lowered::resolver::expr::facts::resolved_expr_is_bigint_div_rem_operand(&self.ctx, right))
+                || (crate::lowered::resolver::expr::facts::resolved_expr_is_bigint_div_rem_operand(&self.ctx, left)
+                    && crate::lowered::resolver::expr::facts::resolved_expr_is_control_flow_mixed_bigint(&self.ctx, right)))
         {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -131,8 +131,8 @@ impl super::super::Resolver {
                 | BinaryOp::Multiply
                 | BinaryOp::Divide
                 | BinaryOp::Modulo
-        ) && self.resolved_expr_is_bigint(left)
-            && self.resolved_expr_is_bigint(right)
+        ) && crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, left)
+            && crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, right)
         {
             let intrinsic = match op {
                 BinaryOp::Add => RuntimeFn::BigIntAdd,
@@ -149,8 +149,8 @@ impl super::super::Resolver {
             }));
         }
         if *op == BinaryOp::Power
-            && self.resolved_expr_is_bigint(left)
-            && self.resolved_expr_is_bigint(right)
+            && crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, left)
+            && crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, right)
         {
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::BigIntPow,
@@ -166,7 +166,7 @@ impl super::super::Resolver {
                 | BinaryOp::Divide
                 | BinaryOp::Modulo
                 | BinaryOp::Power
-        ) && (self.resolved_expr_is_bigint(left) || self.resolved_expr_is_bigint(right))
+        ) && (crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, left) || crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, right))
         {
             if *op == BinaryOp::Add {
                 return Ok(Some(LoweredExpr::Binary {
@@ -186,8 +186,8 @@ impl super::super::Resolver {
         if matches!(
             op,
             BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
-        ) && self.resolved_expr_is_bigint(left)
-            && self.resolved_expr_is_bigint(right)
+        ) && crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, left)
+            && crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, right)
         {
             let intrinsic = match op {
                 BinaryOp::BitwiseAnd => RuntimeFn::BigIntBitwiseAnd,
@@ -204,8 +204,8 @@ impl super::super::Resolver {
         if matches!(
             op,
             BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
-        ) && (self.resolved_expr_is_bigint(left) || self.resolved_expr_is_bigint(right))
-            && !(self.resolved_expr_is_bigint(left) && self.resolved_expr_is_bigint(right))
+        ) && (crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, left) || crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, right))
+            && !(crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, left) && crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, right))
         {
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::BigIntMixedArithmeticTypeError,
@@ -216,7 +216,7 @@ impl super::super::Resolver {
         if matches!(
             op,
             BinaryOp::LeftShift | BinaryOp::RightShift | BinaryOp::UnsignedRightShift
-        ) && self.resolved_expr_is_bigint(left)
+        ) && crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, left)
         {
             if *op == BinaryOp::UnsignedRightShift {
                 return Ok(Some(LoweredExpr::RuntimeCall {
@@ -224,7 +224,7 @@ impl super::super::Resolver {
                     args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
                     span: Span::generated("runtime_call"),
                 }));
-            } else if self.resolved_expr_is_bigint(right) {
+            } else if crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, right) {
                 let intrinsic = match op {
                     BinaryOp::LeftShift => RuntimeFn::BigIntLeftShift,
                     BinaryOp::RightShift => RuntimeFn::BigIntRightShift,

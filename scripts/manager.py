@@ -34,6 +34,7 @@ COMMANDS = {
     "check-assert-true-detect": ("python", "scripts/check/assert-true-detect.py"),
     "check-runtimefn-invariants": ("python", "scripts/check/runtimefn-invariants.py"),
     "check-wasm-validation": ("python", "scripts/check/wasm-validation.py"),
+    "check-tracking-consistency": ("python", "scripts/check/tracking-consistency.py"),
     "install-hooks": ("bash", "scripts/dev/install-git-hooks.sh"),
     "link-reference": ("python", "scripts/dev/link-reference.py"),
     "spawn-worktrees": ("bash", "scripts/dev/spawn-worktrees.sh"),
@@ -85,6 +86,8 @@ CHECK_PARTS = {
     "wasm-validation": "check-wasm-validation",
     "assert-true": "check-assert-true-detect",
     "assert-true-detect": "check-assert-true-detect",
+    "tracking": "check-tracking-consistency",
+    "tracking-consistency": "check-tracking-consistency",
 }
 
 def usage():

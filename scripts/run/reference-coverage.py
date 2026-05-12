@@ -63,6 +63,23 @@ def _ensure_test262_runner():
         test262_runner = _t262
     return test262_runner
 
+# Public test262 modules (loaded via file path to avoid sys.path conflicts)
+import importlib.util
+_scripts_dir = Path(__file__).parent.parent
+_t262_meta_spec = importlib.util.spec_from_file_location(
+    "test262_metadata_public",
+    str(_scripts_dir / "test262_metadata.py")
+)
+_t262_meta = importlib.util.module_from_spec(_t262_meta_spec)
+_t262_meta_spec.loader.exec_module(_t262_meta)
+
+_t262_harness_spec = importlib.util.spec_from_file_location(
+    "test262_harness_public",
+    str(_scripts_dir / "test262_harness.py")
+)
+_t262_harness = importlib.util.module_from_spec(_t262_harness_spec)
+_t262_harness_spec.loader.exec_module(_t262_harness)
+
 try:
     sys.path.insert(0, str(Path(__file__).parent.parent / "report"))
     from new_passes_notify import notify_new_passes
@@ -518,6 +535,7 @@ def _test262_semantic_requires_strict_oracle(suite, semantic_check):
 def _mark_verified_negative_compile_pass(metrics, semantic_enabled):
     """Count only parse/SyntaxError-verified negative compile outcomes as semantic."""
     metrics["build_pass"] = True
+    metrics["verified_negative"] = True
     if semantic_enabled:
         metrics["semantic_pass"] = True
 
@@ -566,6 +584,15 @@ def prepare_build_inputs(suite, file_path, tmp_dir):
     if suite != "test262":
         return file_path, file_path
 
+    # Validate harness includes using public modules
+    metadata_dict = _t262_meta.parse_test262_metadata(str(file_path))
+    if metadata_dict.get("includes"):
+        harness_sources = _t262_harness.get_harness_sources(metadata_dict["includes"])
+        if len(harness_sources) < len(metadata_dict["includes"]):
+            missing = [inc for inc in metadata_dict["includes"] if inc not in ("assert.js", "sta.js")]
+            if missing:
+                print(f"  warn: no inline stub for harness: {missing}", file=sys.stderr)
+
     t262 = _ensure_test262_runner()
     source_code = file_path.read_text(encoding="utf-8")
     metadata = t262.parse_test262_metadata(source_code)
@@ -581,6 +608,16 @@ def prepare_build_inputs(suite, file_path, tmp_dir):
         encoding="utf-8",
     )
     return wasm_source, node_source
+
+def _extract_unresolved_name(err_file):
+    """Extract the unresolved symbol name from compiler error output."""
+    if not err_file:
+        return None
+    match = re.search(r"unresolved name[`'\"]([^`'\"]+)[`'\"]", err_file, re.IGNORECASE)
+    if match:
+        return match.group(1).strip()
+    return None
+
 
 def feature_label(diag_code, err_file, file_path, phase=None):
     """Generate feature label from diagnostic code and error output."""
@@ -809,6 +846,9 @@ def main():
     if len(sys.argv) < 2:
         usage()
         sys.exit(1)
+    if sys.argv[1] in ("--help", "-h"):
+        usage()
+        sys.exit(0)
     
     suite = sys.argv[1]
     args = sys.argv[2:]
@@ -990,9 +1030,17 @@ def main():
             "fail": 0,
             "unsupported": 0,
             "blocked": 0,
+            "build_only": 0,
             "skip_with_reason": 0,
+            "executable_build_pass": 0,
+            "differential_pass": 0,
+            "negative_compile_pass": 0,
+            "conformance_pass": 0,
             "unsupported_diagcodes": {},
             "unsupported_features": {},
+            "build_pass_by_detail": {},
+            "unresolved_name_by_symbol": {},
+            "harness_includes": [],
             "status": "in-progress",
             "selection": {
                 "paths_file": paths_file,
@@ -1015,7 +1063,14 @@ def main():
             print("fail=0")
             print("unsupported=0")
             print("blocked=0")
+            print("build_only=0")
             print("skip_with_reason=0")
+            print("executable_build_pass=0")
+            print("differential_pass=0")
+            print("negative_compile_pass=0")
+            print("negative_compile_unverified=0")
+            print("negative_compile_mismatch=0")
+            print("conformance_pass=0")
             print("unsupported_diagcodes=")
             print("unsupported_features=")
             print("semantic_enabled=0")
@@ -1072,6 +1127,10 @@ def main():
         blocked = 0
         oracle_skipped = 0
         build_only = 0
+        negative_compile_pass = 0
+        negative_compile_unverified = 0
+        negative_compile_mismatch = 0
+        unresolved_name_by_symbol = {}
         total_duration_ms = 0
         completed = 0
         total = len(files)
@@ -1248,7 +1307,7 @@ def main():
 
         def consume_record(jsonl_out, record, status):
             nonlocal passed, failed, unsupported, blocked, oracle_skipped, build_only, total_duration_ms
-            nonlocal completed, last_progress
+            nonlocal completed, last_progress, negative_compile_pass, negative_compile_unverified, negative_compile_mismatch, unresolved_name_by_symbol
             if record:
                 jsonl_out.write(record + "\n")
                 try:
@@ -1256,11 +1315,32 @@ def main():
                 except json.JSONDecodeError:
                     pass
             if status == "pass":
-                passed += 1
+                # Detect negative compile passes (expected field starts with "negative")
+                try:
+                    rec_data = json.loads(record)
+                    expected = rec_data.get("expected", "")
+                    if isinstance(expected, str) and expected.startswith("negative"):
+                        negative_compile_pass += 1
+                    else:
+                        passed += 1
+                except (json.JSONDecodeError, TypeError):
+                    passed += 1
             elif status in ("fail", "mismatch", "runtime_error"):
                 failed += 1
             elif status == "unsupported":
                 unsupported += 1
+                try:
+                    rec_data = json.loads(record)
+                    reason = rec_data.get("reason", "")
+                    if "UnresolvedName/" in reason:
+                        symbol = t262.extract_unresolved_name(reason) or "unknown"
+                        unresolved_name_by_symbol[symbol] = unresolved_name_by_symbol.get(symbol, 0) + 1
+                    if reason.startswith("NegativeCompileUnverified/"):
+                        negative_compile_unverified += 1
+                    elif reason.startswith("ExpectedNegativeSyntax/"):
+                        negative_compile_mismatch += 1
+                except (json.JSONDecodeError, TypeError):
+                    pass
             elif status == "blocked":
                 blocked += 1
             elif status == "oracle_skipped":
@@ -1941,6 +2021,10 @@ def main():
         if os.environ.get("TS2WASM_REFERENCE_COVERAGE_SHOW_CASE_DURATION_SUM") == "1":
             print(f"CaseDurationSum: {total_duration_ms}ms", file=sys.stderr)
 
+        differential_pass = passed
+        executable_build_pass = passed + build_only + oracle_skipped
+        conformance_pass = differential_pass + negative_compile_pass
+
         summary = {
             "suite": suite,
             "passed": passed,
@@ -1950,6 +2034,15 @@ def main():
             "oracle_skipped": oracle_skipped,
             "build_only": build_only,
             "total": passed + build_only + oracle_skipped + failed + unsupported + blocked,
+            "executable_build_pass": executable_build_pass,
+            "differential_pass": differential_pass,
+            "negative_compile_pass": negative_compile_pass,
+            "negative_compile_unverified": negative_compile_unverified,
+            "negative_compile_mismatch": negative_compile_mismatch,
+            "conformance_pass": conformance_pass,
+            "build_pass_by_detail": {},
+            "unresolved_name_by_symbol": unresolved_name_by_symbol,
+            "harness_includes": [],
             "duration_ms": wall_duration_ms,
             "wall_duration_ms": wall_duration_ms,
             "case_duration_sum_ms": total_duration_ms,
@@ -1997,8 +2090,12 @@ def main():
     fail_count = 0
     unsupported_count = 0
     blocked_count = 0
+    build_only_count = 0
+    verified_negative_count = 0
+    negative_compile_unverified_count = 0
+    negative_compile_mismatch_count = 0
     skip_count = 0
-    
+
     unsupported_diag_counts = {}
     unsupported_feature_counts = {}
     unsupported_by_phase = {}
@@ -2124,7 +2221,7 @@ def main():
         else:
             result_metrics["mismatch"] = True
     
-    def _classify_build_response(build_resp, item, semantic_enabled, tmp_dir):
+    def _classify_build_response(build_resp, item, semantic_enabled, tmp_dir, server_mode_batch=False):
         """Classify a batch build response into result_metrics. Returns result_metrics."""
         rm = item["result_metrics"]
         detail_path = item["detail_path"]
@@ -2132,7 +2229,9 @@ def main():
         if build_resp["status"] == "ok":
             rm["build_pass"] = True
             
-            if semantic_enabled:
+            # For positive tests in server batch mode, we defer semantic execution 
+            # to a separate parallel pool in main().
+            if semantic_enabled and not server_mode_batch:
                 _complete_semantic_for_build_item(item, rm, tmp_dir)
             
             if detail_output and not rm.get("detail_line"):
@@ -2147,7 +2246,7 @@ def main():
                 if t262r.can_pass_compile_negative(metadata, diag_code, build_resp.get("phase", "")):
                     _mark_verified_negative_compile_pass(rm, semantic_enabled)
                     if detail_output:
-                        rm["detail_line"] = f"{detail_path}: build_pass"
+                        rm["detail_line"] = f"{detail_path}: build_pass: verified negative parse/SyntaxError"
                 else:
                     rm["unsupported"] = True
                     rm["diag_code"] = "NegativeCompileUnverified"
@@ -2170,7 +2269,10 @@ def main():
                 rm["unsupported"] = True
                 diag_phase = build_resp.get("phase")
                 rm["diag_phase"] = diag_phase
-                rm["feature_label"] = feature_label(diag_code, None, str(item["file_path"]), diag_phase)
+                message = build_resp.get("message") or ""
+                rm["feature_label"] = feature_label(diag_code, message, str(item["file_path"]), diag_phase)
+                if diag_code == "UnresolvedName":
+                    rm["unresolved_symbol"] = _extract_unresolved_name(message)
                 if detail_output:
                     rm["detail_line"] = f"{detail_path}: {diag_code}: {rm['feature_label']}"
 
@@ -2207,6 +2309,13 @@ def main():
                     item["file_path"], item["source_code"], item["metadata"],
                     thread_tmp, out_wasm, result_metrics
                 )
+            else:
+                # server returned 'ok' but standalone emission failed (possible server/cli mismatch or OOM)
+                result_metrics["blocked"] = True
+                result_metrics["diag_code"] = "SemanticWasmEmitFailed"
+                result_metrics["feature_label"] = "coverage-runner"
+                if detail_output:
+                    result_metrics["detail_line"] = f"{item['detail_path']}: blocked: SemanticWasmEmitFailed"
             return result_metrics
         finally:
             shutil.rmtree(thread_tmp, ignore_errors=True)
@@ -2214,11 +2323,20 @@ def main():
     def _accumulate_case_result(result, item):
         """Update counters/detail output from a normalized result dict."""
         nonlocal executed, build_pass_count, semantic_pass_count, mismatch_count
-        nonlocal runtime_error_count, blocked_count, fail_count
+        nonlocal runtime_error_count, blocked_count, fail_count, build_only_count
+        nonlocal verified_negative_count, negative_compile_unverified_count, negative_compile_mismatch_count
         nonlocal unsupported_count, unsupported_diag_counts, unsupported_feature_counts
         nonlocal unsupported_by_phase
+        nonlocal build_pass_by_detail
+        nonlocal unresolved_name_by_symbol
+        nonlocal harness_includes_used
 
         executed += 1
+        # Track unique harness include files used
+        file_includes = result.get("harness_includes", [])
+        if isinstance(file_includes, list):
+            for inc in file_includes:
+                harness_includes_used.add(inc)
         if detail_output:
             result.setdefault("file_path", str(item["file_path"]))
             result.setdefault("detail_path", item["detail_path"])
@@ -2226,7 +2344,7 @@ def main():
             _append_suite_detail(result)
 
         if result["unsupported"] and result["diag_code"] == "ExpectedNegativeSyntax":
-            unsupported_count += 1
+            negative_compile_mismatch_count += 1
             unsupported_diag_counts["ExpectedNegativeSyntax"] = unsupported_diag_counts.get("ExpectedNegativeSyntax", 0) + 1
             unsupported_feature_counts["negative-parse-syntaxerror"] = unsupported_feature_counts.get("negative-parse-syntaxerror", 0) + 1
             if result["detail_line"]:
@@ -2234,6 +2352,21 @@ def main():
             return
         if result["build_pass"]:
             build_pass_count += 1
+            # Classify build_pass_detail for every build_pass result
+            if result.get("verified_negative"):
+                build_pass_detail = "verified-negative-compile"
+            elif result["semantic_pass"]:
+                build_pass_detail = "differential-match"
+            elif result.get("build_only"):
+                build_pass_detail = "wasm-built"
+            elif result.get("mismatch"):
+                build_pass_detail = "differential-mismatch"
+            elif result.get("runtime_error"):
+                build_pass_detail = "runtime-error"
+            else:
+                build_pass_detail = "semantic-pending"
+            result["build_pass_detail"] = build_pass_detail
+            build_pass_by_detail[build_pass_detail] = build_pass_by_detail.get(build_pass_detail, 0) + 1
             if result["semantic_pass"]:
                 semantic_pass_count += 1
             elif result["mismatch"]:
@@ -2242,6 +2375,10 @@ def main():
                 runtime_error_count += 1
             elif result["blocked"]:
                 blocked_count += 1
+            else:
+                build_only_count += 1
+            if result.get("verified_negative"):
+                verified_negative_count += 1
             if result["detail_line"]:
                 file_details.append(result["detail_line"])
             return
@@ -2256,14 +2393,22 @@ def main():
                 file_details.append(result["detail_line"])
             return
         if result["unsupported"]:
-            unsupported_count += 1
             diag_code = result["diag_code"]
+            # Separate negative-compile-unverified from generic unsupported
+            if diag_code == "NegativeCompileUnverified":
+                negative_compile_unverified_count += 1
+            else:
+                unsupported_count += 1
             feat = result["feature_label"]
             unsupported_diag_counts[diag_code] = unsupported_diag_counts.get(diag_code, 0) + 1
             unsupported_feature_counts[feat] = unsupported_feature_counts.get(feat, 0) + 1
             diag_phase = result.get("diag_phase")
             if diag_phase:
                 unsupported_by_phase[diag_phase] = unsupported_by_phase.get(diag_phase, 0) + 1
+            # Aggregate UnresolvedName by symbol
+            if diag_code == "UnresolvedName":
+                symbol = result.get("unresolved_symbol") or "unknown"
+                unresolved_name_by_symbol[symbol] = unresolved_name_by_symbol.get(symbol, 0) + 1
             if result["detail_line"]:
                 file_details.append(result["detail_line"])
             return
@@ -2272,6 +2417,7 @@ def main():
         """Fallback path: run a pre-processed build item through standalone compiler."""
         rm = item["result_metrics"]
         detail_path = item["detail_path"]
+        metadata = item.get("metadata")
         thread_tmp = Path(tempfile.mkdtemp(dir=tmp_dir))
         try:
             build_input = thread_tmp / "in.js"
@@ -2306,6 +2452,23 @@ def main():
             diag_code = diag_match.group(1) if diag_match else "Unknown"
             diag_phase = diag_match.group(2) if diag_match and diag_match.group(2) else None
             rm["diag_code"] = diag_code
+            rm["diag_phase"] = diag_phase
+
+            if metadata is not None and metadata.expects_negative:
+                t262r = _ensure_test262_runner()
+                if t262r.can_pass_compile_negative(metadata, diag_code, diag_phase or ""):
+                    _mark_verified_negative_compile_pass(rm, semantic_enabled)
+                    if detail_output:
+                        rm["detail_line"] = f"{detail_path}: build_pass: verified negative parse/SyntaxError"
+                else:
+                    rm["unsupported"] = True
+                    rm["diag_code"] = "NegativeCompileUnverified"
+                    feat = feature_label(diag_code, err_content, str(item["file_path"]), diag_phase)
+                    rm["feature_label"] = feat
+                    if detail_output:
+                        rm["detail_line"] = f"{detail_path}: NegativeCompileUnverified: {feat}"
+                return rm
+
             if diag_code == "BackendIo":
                 rm["blocked"] = True
                 if detail_output:
@@ -2317,12 +2480,14 @@ def main():
             else:
                 rm["unsupported"] = True
                 rm["feature_label"] = feature_label(diag_code, err_content, str(item["file_path"]), diag_phase)
+                if diag_code == "UnresolvedName":
+                    rm["unresolved_symbol"] = _extract_unresolved_name(err_content)
                 if detail_output:
                     rm["detail_line"] = f"{detail_path}: {diag_code}: {rm['feature_label']}"
             return rm
         finally:
             shutil.rmtree(thread_tmp, ignore_errors=True)
-    
+
     def _process_one_file(file_path):
         """Process a single file for coverage measurement. Thread-safe.
         
@@ -2372,6 +2537,15 @@ def main():
                     result_metrics["detail_line"] = f"{detail_path}: UnsupportedTest262Metadata: test262-metadata"
                 return result_metrics
             t262.HARNESS_DIR = test262_harness_dir_for(file_path)
+            result_metrics["harness_includes"] = list(metadata.includes) if metadata.includes else []
+            # Validate harness includes using public modules
+            meta_dict = _t262_meta.parse_test262_metadata(str(file_path))
+            if meta_dict.get("includes"):
+                harness_sources = _t262_harness.get_harness_sources(meta_dict["includes"])
+                if len(harness_sources) < len(meta_dict["includes"]):
+                    missing = [inc for inc in meta_dict["includes"] if inc not in ("assert.js", "sta.js")]
+                    if missing:
+                        print(f"  warn: no inline stub for harness: {missing}", file=sys.stderr)
             build_source = t262.build_test262_source(
                 file_path, source_code, metadata, target="wasm"
             )
@@ -2434,7 +2608,7 @@ def main():
                 if t262.can_pass_compile_negative(metadata, diag_code, diag_phase or ""):
                     _mark_verified_negative_compile_pass(result_metrics, semantic_enabled)
                     if detail_output:
-                        result_metrics["detail_line"] = f"{detail_path}: build_pass"
+                        result_metrics["detail_line"] = f"{detail_path}: build_pass: verified negative parse/SyntaxError"
                 else:
                     result_metrics["unsupported"] = True
                     result_metrics["diag_code"] = "NegativeCompileUnverified"
@@ -2456,17 +2630,26 @@ def main():
                 result_metrics["unsupported"] = True
                 feat = feature_label(diag_code, err_content, str(file_path), diag_phase)
                 result_metrics["feature_label"] = feat
+                if diag_code == "UnresolvedName":
+                    result_metrics["unresolved_symbol"] = _extract_unresolved_name(err_content)
                 if detail_output:
                     result_metrics["detail_line"] = f"{detail_path}: {diag_code}: {feat}"
             return result_metrics
         finally:
             shutil.rmtree(thread_tmp, ignore_errors=True)
-    
+
     build_pass_count = 0
     semantic_pass_count = 0
     mismatch_count = 0
     runtime_error_count = 0
-    
+    build_only_count = 0
+    verified_negative_count = 0
+    negative_compile_unverified_count = 0
+    negative_compile_mismatch_count = 0
+    build_pass_by_detail = {}
+    unresolved_name_by_symbol = {}
+    harness_includes_used = set()
+
     file_details = []
     
     # Thread-safe counter for server items (list for mutation in closure)
@@ -2594,15 +2777,20 @@ def main():
                     if build_response.get("wasm_path"):
                         item["wasm_path"] = build_response["wasm_path"]
                     result = _classify_build_response(
-                        build_response, item, False, tmp_dir
+                        build_response, item, semantic_enabled, tmp_dir, server_mode_batch=True
                     )
                     classified_results.append((item, result))
 
                 if semantic_enabled:
                     def _complete_pair(pair):
                         item, result = pair
-                        if result["build_pass"]:
+                        # Skip if already a verified negative compile pass
+                        if result["build_pass"] and not result["semantic_pass"]:
                             result = _complete_semantic_for_build_item(item, result, tmp_dir)
+                        
+                        if detail_output and result["semantic_pass"] and not result.get("detail_line"):
+                             result["detail_line"] = f"{item['detail_path']}: pass: Node/iwasm semantic match"
+                             
                         return item, result
 
                     with ThreadPoolExecutor(max_workers=jobs) as pool:
@@ -2626,11 +2814,15 @@ def main():
                     if result is None:
                         continue
                     executed += 1
+                    file_includes = result.get("harness_includes", [])
+                    if isinstance(file_includes, list):
+                        for inc in file_includes:
+                            harness_includes_used.add(inc)
                     if detail_output:
                         _append_suite_detail(result)
-                    
+
                     if result["unsupported"] and result["diag_code"] == "ExpectedNegativeSyntax":
-                        unsupported_count += 1
+                        negative_compile_mismatch_count += 1
                         unsupported_diag_counts["ExpectedNegativeSyntax"] = unsupported_diag_counts.get("ExpectedNegativeSyntax", 0) + 1
                         unsupported_feature_counts["negative-parse-syntaxerror"] = unsupported_feature_counts.get("negative-parse-syntaxerror", 0) + 1
                         if result["detail_line"]:
@@ -2639,6 +2831,20 @@ def main():
                     
                     if result["build_pass"]:
                         build_pass_count += 1
+                        if result.get("verified_negative"):
+                            build_pass_detail = "verified-negative-compile"
+                        elif result["semantic_pass"]:
+                            build_pass_detail = "differential-match"
+                        elif result.get("build_only"):
+                            build_pass_detail = "wasm-built"
+                        elif result.get("mismatch"):
+                            build_pass_detail = "differential-mismatch"
+                        elif result.get("runtime_error"):
+                            build_pass_detail = "runtime-error"
+                        else:
+                            build_pass_detail = "semantic-pending"
+                        result["build_pass_detail"] = build_pass_detail
+                        build_pass_by_detail[build_pass_detail] = build_pass_by_detail.get(build_pass_detail, 0) + 1
                         if result["semantic_pass"]:
                             semantic_pass_count += 1
                         elif result["mismatch"]:
@@ -2647,6 +2853,8 @@ def main():
                             runtime_error_count += 1
                         elif result["blocked"]:
                             blocked_count += 1
+                        else:
+                            build_only_count += 1
                         if result["detail_line"]:
                             file_details.append(result["detail_line"])
                         continue
@@ -2664,18 +2872,25 @@ def main():
                         continue
                     
                     if result["unsupported"]:
-                        unsupported_count += 1
                         diag_code = result["diag_code"]
+                        # Separate negative-compile-unverified from generic unsupported
+                        if diag_code == "NegativeCompileUnverified":
+                            negative_compile_unverified_count += 1
+                        else:
+                            unsupported_count += 1
                         feat = result["feature_label"]
                         unsupported_diag_counts[diag_code] = unsupported_diag_counts.get(diag_code, 0) + 1
                         unsupported_feature_counts[feat] = unsupported_feature_counts.get(feat, 0) + 1
                         diag_phase = result.get("diag_phase")
                         if diag_phase:
                             unsupported_by_phase[diag_phase] = unsupported_by_phase.get(diag_phase, 0) + 1
+                        if diag_code == "UnresolvedName":
+                            symbol = result.get("unresolved_symbol") or "unknown"
+                            unresolved_name_by_symbol[symbol] = unresolved_name_by_symbol.get(symbol, 0) + 1
                         if result["detail_line"]:
                             file_details.append(result["detail_line"])
                         continue
-    
+
         # Server cleanup
         if server_mode and server_proc:
             try:
@@ -2689,6 +2904,12 @@ def main():
                 server_proc.kill()
                 server_proc.wait()
     
+    # Compute derived metrics
+    negative_compile_pass = verified_negative_count
+    differential_pass = semantic_pass_count
+    executable_build_pass = build_pass_count - verified_negative_count
+    conformance_pass = differential_pass + negative_compile_pass
+
     # Build unsupported diagcodes string
     unsupported_diagcodes = ",".join(
         f"{code}:{count}" for code, count in 
@@ -2723,11 +2944,22 @@ def main():
         "fail": fail_count,
         "unsupported": unsupported_count,
         "blocked": blocked_count,
+        "verified_negative": verified_negative_count,
+        "negative_compile_unverified": negative_compile_unverified_count,
+        "negative_compile_mismatch": negative_compile_mismatch_count,
+        "build_only": build_only_count,
         "skip_with_reason": skip_count,
+        "executable_build_pass": executable_build_pass,
+        "differential_pass": differential_pass,
+        "negative_compile_pass": negative_compile_pass,
+        "conformance_pass": conformance_pass,
         "duration_ms": int(round((time.perf_counter() - coverage_started_at) * 1000)),
         "unsupported_diagcodes": unsupported_diag_counts,
         "unsupported_features": unsupported_feature_counts,
         "unsupported_by_phase": unsupported_by_phase,
+        "build_pass_by_detail": build_pass_by_detail,
+        "unresolved_name_by_symbol": unresolved_name_by_symbol,
+        "harness_includes": sorted(harness_includes_used),
         "status": "in-progress",
         "selection": {
             "paths_file": paths_file,
@@ -2845,7 +3077,15 @@ def main():
         print(f"fail={fail_count}")
         print(f"unsupported={unsupported_count}")
         print(f"blocked={blocked_count}")
+        print(f"verified_negative={verified_negative_count}")
+        print(f"build_only={build_only_count}")
         print(f"skip_with_reason={skip_count}")
+        print(f"executable_build_pass={executable_build_pass}")
+        print(f"differential_pass={differential_pass}")
+        print(f"negative_compile_pass={negative_compile_pass}")
+        print(f"negative_compile_unverified={negative_compile_unverified_count}")
+        print(f"negative_compile_mismatch={negative_compile_mismatch_count}")
+        print(f"conformance_pass={conformance_pass}")
         print(f"unsupported_diagcodes={unsupported_diagcodes}")
         print(f"unsupported_features={unsupported_features}")
         print(f"semantic_enabled={1 if semantic_enabled else 0}")

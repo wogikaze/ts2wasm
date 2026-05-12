@@ -767,6 +767,8 @@ return Err(Diagnostic {
 });
 ```
 
+新機能追加時は `docs/feature-checklist.md` に従うこと。
+
 ## 15. Test Policy
 
 変更種別ごとの必須テスト:

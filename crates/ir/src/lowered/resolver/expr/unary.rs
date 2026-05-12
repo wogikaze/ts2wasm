@@ -23,7 +23,7 @@ impl super::super::Resolver {
                     Span::generated("num"),
                 ));
             }
-            if self.resolved_expr_is_bigint(expr) {
+            if crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, expr) {
                 return Ok(LoweredExpr::RuntimeCall {
                     intrinsic: RuntimeFn::BigIntUnaryMinus,
                     args: vec![self.lower_expr(expr)?],
@@ -31,7 +31,7 @@ impl super::super::Resolver {
                 });
             }
         }
-        if *op == UnaryOp::BitwiseNot && self.resolved_expr_is_bigint(expr) {
+        if *op == UnaryOp::BitwiseNot && crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, expr) {
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::BigIntBitwiseNot,
                 args: vec![self.lower_expr(expr)?],

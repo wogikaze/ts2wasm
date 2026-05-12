@@ -15,8 +15,8 @@ impl super::super::Resolver {
         expr: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
         let local = self.resolve_local(name)?;
-        self.invalidate_static_object_literal_local(local);
-        self.invalidate_static_function_array_like_local(local);
+        crate::lowered::resolver::expr::facts::invalidate_static_object_literal_local(&mut self.ctx, local);
+        crate::lowered::resolver::expr::facts::invalidate_static_function_array_like_local(&mut self.ctx, local);
         let expr = Box::new(self.lower_expr(expr)?);
         if self.ctx.facts.env_cell_locals.contains(&local) {
             Ok(LoweredExpr::EnvCellSet {
@@ -40,8 +40,8 @@ impl super::super::Resolver {
         expr: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
         let local = self.resolve_local(name)?;
-        self.invalidate_static_object_literal_local(local);
-        self.invalidate_static_function_array_like_local(local);
+        crate::lowered::resolver::expr::facts::invalidate_static_object_literal_local(&mut self.ctx, local);
+        crate::lowered::resolver::expr::facts::invalidate_static_function_array_like_local(&mut self.ctx, local);
         Ok(LoweredExpr::LogicalAssign {
             local,
             op: lower_logical_assign_op(*op),
@@ -61,7 +61,7 @@ impl super::super::Resolver {
             return Err(private_storage_observable_access_diagnostic(None));
         }
         let object = self.resolve_local(object)?;
-        self.invalidate_static_object_literal_local(object);
+        crate::lowered::resolver::expr::facts::invalidate_static_object_literal_local(&mut self.ctx, object);
         Ok(LoweredExpr::LogicalPropertyAssign {
             object,
             key: key.to_owned(),
@@ -79,7 +79,7 @@ impl super::super::Resolver {
         expr: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
         let object = self.resolve_local(object)?;
-        self.invalidate_static_object_literal_local(object);
+        crate::lowered::resolver::expr::facts::invalidate_static_object_literal_local(&mut self.ctx, object);
         if self.local_has_private_progress_storage(object) {
             return Err(private_storage_observable_access_diagnostic(None));
         }
@@ -139,7 +139,7 @@ impl super::super::Resolver {
         if let ResolvedExpr::Ident(name) = object
             && let Ok(local_id) = self.resolve_local(name)
         {
-            self.invalidate_static_object_literal_local(local_id);
+            crate::lowered::resolver::expr::facts::invalidate_static_object_literal_local(&mut self.ctx, local_id);
         }
         if is_private_field_storage_key(key) {
             return Err(private_storage_observable_access_diagnostic(Some(span)));
@@ -183,8 +183,8 @@ impl super::super::Resolver {
         if let ResolvedExpr::Ident(name) = object
             && let Ok(local_id) = self.resolve_local(name)
         {
-            self.invalidate_static_object_literal_local(local_id);
-            self.update_static_function_array_like_index(local_id, key, value);
+            crate::lowered::resolver::expr::facts::invalidate_static_object_literal_local(&mut self.ctx, local_id);
+            crate::lowered::resolver::expr::facts::update_static_function_array_like_index(&mut self.ctx, local_id, key, value);
         }
         if self.expr_has_private_progress_storage(object) {
             return Err(private_storage_observable_access_diagnostic(None));

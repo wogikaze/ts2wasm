@@ -149,14 +149,35 @@ def main():
         sys.exit(0)
 
     if args and args[0] == "--self-test":
+        # Canonical 5-status TestRecord schema (see docs/17-jsonl-test-record-schema.md).
+        # Coverage-runner extensions (build_pass, node_exit_status, etc.) are NOT
+        # validated here — only canonical fields are checked.
+        #
+        # Note: coverage-runner output adds build_pass status and requires
+        # expected/actual/node_exit_status/iwasm_exit_status/semantic_checked for
+        # pass records. Those extended checks are performed by scripts/gate/coverage.py.
         test_data = [
+            # pass: canonical form with optional extended fields
             '{"suite":"self","case":"pass","target":"wasm-iwasm","status":"pass",'
             '"expected":"ok","actual":"ok","node_exit_status":0,"iwasm_exit_status":0,"semantic_checked":true}',
-            '{"suite":"self","case":"build_pass","target":"wasm-iwasm","status":"build_pass","reason":"build only"}',
-            '{"suite":"self","case":"unsup","target":"node","status":"unsupported","reason":"r","tracking":"t"}',
+            # fail: expected/actual optional in canonical schema
+            '{"suite":"self","case":"fail","target":"wasm32-wasi","status":"fail",'
+            '"expected":"3\\n","actual":"5\\n","reason":"stdout mismatch","tracking":null}',
+            # unsupported: reason and tracking required
+            '{"suite":"self","case":"unsupported","target":"wasm32-wasi",'
+            '"status":"unsupported","expected":null,"actual":null,'
+            '"reason":"Unsupported syntax","tracking":"feature:async"}',
+            # blocked: reason and tracking required
+            '{"suite":"self","case":"blocked","target":"wasm32-wasi",'
+            '"status":"blocked","expected":null,"actual":null,'
+            '"reason":"I/O error","tracking":"issue-5011"}',
+            # skip-with-reason: reason and tracking required
+            '{"suite":"self","case":"skip","target":"wasm32-wasi",'
+            '"status":"skip-with-reason","expected":null,"actual":null,'
+            '"reason":"skipped","tracking":"feature:skip"}',
         ]
         if validate_stream(test_data):
-            print("check_test_records_schema: self-test OK", file=sys.stderr)
+            print("check_test_records_schema: self-test OK (canonical 5-status schema)", file=sys.stderr)
             sys.exit(0)
         else:
             sys.exit(1)

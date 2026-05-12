@@ -26,6 +26,7 @@ use crate::lowered::types::{
     ClassConstructorMap, ClassMethodMap, ClassPrivateFieldSlots, ClassStaticPrivateFields,
 };
 use crate::lowered::{FuncId, LocalId, LoweredFunction, ModuleInfo};
+use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 
 /// Combined lowering context wrapping all sub-contexts.
 ///
@@ -173,6 +174,32 @@ impl LoweringCtx {
                 .insert(local_id, current_class.clone());
         }
         local_id
+    }
+
+    pub fn resolve_local(&self, name: &str) -> Result<LocalId, Diagnostic> {
+        self.symbols.resolve(name).ok_or_else(|| Diagnostic {
+            code: DiagCode::UnresolvedName,
+            message: format!("unresolved name: `{name}`"),
+            span: None,
+            phase: None,
+        })
+    }
+
+    pub fn resolve_func(&self, name: &str) -> Result<FuncId, Diagnostic> {
+        self.symbols.function_ids.get(name).copied().ok_or_else(|| Diagnostic {
+            code: DiagCode::UnresolvedFunction,
+            message: format!("unresolved function: `{name}`"),
+            span: None,
+            phase: None,
+        })
+    }
+
+    pub fn alloc_temp(&mut self) -> LocalId {
+        self.symbols.alloc_temp()
+    }
+
+    pub fn declare(&mut self, name: &str) -> LocalId {
+        self.symbols.declare(name)
     }
 }
 

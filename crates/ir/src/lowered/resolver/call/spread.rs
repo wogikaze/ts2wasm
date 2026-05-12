@@ -202,7 +202,7 @@ impl<'a> super::super::Resolver {
             });
         }
 
-        let Some(input) = self.resolved_expr_static_string_value(object) else {
+        let Some(input) = crate::lowered::resolver::string::resolved_expr_static_string_value(&self.ctx, object) else {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "issue-5129: String.prototype.matchAll currently requires a static string receiver"
@@ -349,14 +349,14 @@ impl<'a> super::super::Resolver {
                             }
                         }
                     } else if let Some(value) =
-                        self.static_string_spread_value(spread_expr.as_ref())
+                        crate::lowered::resolver::string::static_string_spread_value(&self.ctx, spread_expr.as_ref())
                     {
-                        lowered_args.extend(Self::lower_ascii_string_spread_chars(&value)?);
-                    } else if self.is_generator_call_spread_operand(spread_expr.as_ref()) {
-                        return Err(Self::unsupported_generator_spread_diagnostic());
-                    } else if self.resolved_expr_has_symbol_iterator_property(spread_expr.as_ref())
+                        lowered_args.extend(crate::lowered::resolver::string::lower_ascii_string_spread_chars(&value)?);
+                    } else if crate::lowered::resolver::expr::facts::is_generator_call_spread_operand(&self.ctx, spread_expr.as_ref()) {
+                        return Err(crate::lowered::resolver::expr::facts::unsupported_generator_spread_diagnostic());
+                    } else if crate::lowered::resolver::expr::facts::resolved_expr_has_symbol_iterator_property(&self.ctx, spread_expr.as_ref())
                     {
-                        return Err(Self::unsupported_symbol_iterator_spread_diagnostic());
+                        return Err(crate::lowered::resolver::expr::facts::unsupported_symbol_iterator_spread_diagnostic());
                     } else if let Some(map_array) =
                         self.lower_map_spread_operand(spread_expr.as_ref())?
                     {

@@ -383,22 +383,59 @@ def normalized_suite_metrics(item):
     executed = int(item.get("executed", 0) or total or 0)
     build_pass = int(item.get("build_pass", 0) or 0)
     semantic_pass = int(item.get("semantic_pass", 0) or 0)
+    executable_bp = int(item.get("executable_build_pass", 0) or 0)
+    differential_pass = int(item.get("differential_pass", 0) or 0)
+    negative_compile_pass = int(item.get("negative_compile_pass", 0) or 0)
+    negative_compile_unverified = int(item.get("negative_compile_unverified", 0) or 0)
+    negative_compile_mismatch = int(item.get("negative_compile_mismatch", 0) or 0)
+    conformance_pass = int(item.get("conformance_pass", 0) or 0)
     if "semantic_pass" not in item and "build_pass" not in item:
         semantic_pass = int(item.get("passed", 0) or 0)
+    build_coverage_percent = item.get("build_coverage_percent")
+    if build_coverage_percent is None:
+        build_coverage_percent = (
+            f"{(build_pass / denominator) * 100:.2f}" if denominator else "0.00"
+        )
+    semantic_coverage_percent = item.get("semantic_coverage_percent")
+    if semantic_coverage_percent is None:
+        semantic_coverage_percent = (
+            f"{(semantic_pass / denominator) * 100:.2f}" if denominator else "0.00"
+        )
     fail = int(item.get("fail", item.get("failed", 0)) or 0)
     unsupported = int(item.get("unsupported", 0) or 0)
     blocked = int(item.get("blocked", 0) or 0)
     skip_with_reason = int(item.get("skip_with_reason", item.get("skipped", 0)) or 0)
+    build_pass_by_detail = item.get("build_pass_by_detail", {})
+    if not isinstance(build_pass_by_detail, dict):
+        build_pass_by_detail = {}
+    unresolved_name_by_symbol = item.get("unresolved_name_by_symbol", {})
+    if not isinstance(unresolved_name_by_symbol, dict):
+        unresolved_name_by_symbol = {}
+    harness_includes = item.get("harness_includes", [])
+    if not isinstance(harness_includes, list):
+        harness_includes = []
+
     return {
         "suite": suite,
         "denominator": denominator,
         "executed": executed,
+        "build_coverage_percent": str(build_coverage_percent),
+        "semantic_coverage_percent": str(semantic_coverage_percent),
         "build_pass": build_pass,
         "semantic_pass": semantic_pass,
+        "executable_build_pass": executable_bp,
+        "differential_pass": differential_pass,
+        "negative_compile_pass": negative_compile_pass,
+        "negative_compile_unverified": negative_compile_unverified,
+        "negative_compile_mismatch": negative_compile_mismatch,
+        "conformance_pass": conformance_pass,
         "unsupported": unsupported,
         "blocked": blocked,
         "fail": fail,
         "skip_with_reason": skip_with_reason,
+        "build_pass_by_detail": build_pass_by_detail,
+        "unresolved_name_by_symbol": unresolved_name_by_symbol,
+        "harness_includes": harness_includes,
         "source": item["_source_path"],
     }
 
@@ -407,11 +444,21 @@ def build_coverage(artifacts):
     suites = [normalized_suite_metrics(item) for item in artifacts]
     total = sum(item["denominator"] for item in suites)
     build_implemented = sum(item["build_pass"] for item in suites)
+    semantic_pass = sum(item["semantic_pass"] for item in suites)
+    differential_pass = sum(item["differential_pass"] for item in suites)
+    negative_compile_pass = sum(item["negative_compile_pass"] for item in suites)
+    conformance_pass = sum(item["conformance_pass"] for item in suites)
     unsupported = sum(item["unsupported"] for item in suites)
     failed = sum(item["fail"] for item in suites)
     blocked = sum(item["blocked"] for item in suites)
     executed = sum(item["executed"] for item in suites)
     future = max(total - executed, 0)
+    build_coverage_percent = (
+        f"{(build_implemented / total) * 100:.2f}" if total else "0.00"
+    )
+    semantic_coverage_percent = (
+        f"{(semantic_pass / total) * 100:.2f}" if total else "0.00"
+    )
 
     by_priority = {"p0": failed + blocked, "p1": 0, "p2": 0, "p3": 0, "future": future}
     for artifact in artifacts:
@@ -434,7 +481,14 @@ def build_coverage(artifacts):
 
     return {
         "total": total,
+        "implemented": build_implemented,
         "build_implemented": build_implemented,
+        "build_coverage_percent": build_coverage_percent,
+        "semantic_pass": semantic_pass,
+        "semantic_coverage_percent": semantic_coverage_percent,
+        "differential_pass": differential_pass,
+        "negative_compile_pass": negative_compile_pass,
+        "conformance_pass": conformance_pass,
         "unimplemented": unimplemented,
         "future": future,
         "byPriority": by_priority,
@@ -564,7 +618,7 @@ def build_metadata(artifacts, jsonl_paths, generated_at, out_dir):
 def write_json(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
-        json.dump(data, handle, indent=2, sort_keys=True)
+        json.dump(data, handle, separators=(",", ":"), sort_keys=True)
         handle.write("\n")
 
 

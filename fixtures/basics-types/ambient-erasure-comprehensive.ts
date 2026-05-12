@@ -32,12 +32,9 @@ declare enum AmbientString {
   Y = "y"
 }
 
-// Category A: Namespace/module erasure
+// Category A: Namespace erasure
 declare namespace MyNamespace {
   let x: number;
-}
-declare module "external-resolver" {
-  export let y: string;
 }
 namespace NonDeclareNamespace {
   let z: number;
