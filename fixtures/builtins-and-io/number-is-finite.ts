@@ -6,6 +6,9 @@ function check(actual: boolean, expected: boolean): void {
 
 check(Number.isFinite(42), true);
 check(Number.isFinite(0), true);
+check(Number.isFinite(2147483647), true);
+check(Number.isFinite(1073741824), true);
+check(Number.isFinite(-1073741824), true);
 check(Number.isFinite(NaN), false);
 check(Number.isFinite(Infinity), false);
 check(Number.isFinite(-Infinity), false);

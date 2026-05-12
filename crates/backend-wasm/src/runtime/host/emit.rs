@@ -1821,7 +1821,15 @@ impl WatEmitter<'_> {
             r##"
   (func $number_is_finite (param $v i32) (result i32)
     (local $tag i32)
+    (local $obj i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (if (i32.eq
+              (i32.load (local.get $obj))
+              (i32.const {heap_number_sentinel}))
+          (then (return (i32.const {true_tag}))))))
     (if (i32.ne (local.get $tag) (i32.const {number_tag}))
       (then (return (i32.const {false_tag}))))
     (return
@@ -1836,6 +1844,9 @@ impl WatEmitter<'_> {
 "##,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
             infinity_value = tagged_number_sentinel(ValueTag::INFINITY_PAYLOAD),
             neg_infinity_value = tagged_number_sentinel(ValueTag::NEG_INFINITY_PAYLOAD),
