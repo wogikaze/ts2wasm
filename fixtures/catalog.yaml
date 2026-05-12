@@ -470,6 +470,11 @@ directories:
     - null.ts
     - number.ts
     - object.ts
+    - object-literal-numeric-keys.ts
+    - object-literal-mixed-types.ts
+    - object-literal-inline-access.ts
+    - object-literal-dup-keys.ts
+    - object-literal-computed-keys.ts
     - optional-call.ts
     - optional-index.ts
     - optional-member.ts

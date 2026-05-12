@@ -290,6 +290,20 @@ impl Parser {
 
                 phase: None,});
         }
+        // Handle string literal computed keys: ["key"]
+        if let Some(Token::String(s)) = self.peek() {
+            let key = s.clone();
+            self.advance();
+            let _end = self.expect(TokenKind::RightBracket)?;
+            return Ok(key);
+        }
+        // Handle number literal computed keys: [42]
+        if let Some(Token::Number(value)) = self.peek() {
+            let key = value.to_string();
+            self.advance();
+            let _end = self.expect(TokenKind::RightBracket)?;
+            return Ok(key);
+        }
         let (object, _) = self.expect_ident()?;
         self.expect(TokenKind::Dot)?;
         let (property, _) = self.expect_ident()?;
