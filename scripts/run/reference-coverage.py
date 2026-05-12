@@ -540,6 +540,50 @@ def _mark_verified_negative_compile_pass(metrics, semantic_enabled):
     if semantic_enabled:
         metrics["semantic_pass"] = True
 
+def _negative_compile_detail(metadata, via_node=False):
+    phase = metadata.negative_phase or "unknown"
+    typ = metadata.negative_type or "error"
+    if via_node:
+        return f"verified negative {phase}/{typ} via node oracle"
+    return f"verified negative {phase}/{typ}"
+
+def _negative_unverified_classification(metadata):
+    if getattr(metadata, "expects_compile_negative", False):
+        return (
+            "NegativeCompileUnverified",
+            "negative-compile-unverified",
+            "negative compile test rejected during compilation but phase/error type was not verified",
+        )
+    return (
+        "NegativeRuntimeUnverified",
+        "negative-runtime-unverified",
+        "negative runtime test rejected during compilation before runtime error verification",
+    )
+
+def _negative_compile_mismatch_classification(metadata):
+    phase = metadata.negative_phase or "unknown"
+    typ = metadata.negative_type or "error"
+    return (
+        "NegativeCompileMismatch",
+        "negative-compile-mismatch",
+        f"negative compile test did not match expected {phase}/{typ}",
+    )
+
+def _verify_compile_negative_with_node(item, metadata, tmp_dir):
+    t262 = _ensure_test262_runner()
+    source_code = item.get("source_code")
+    if source_code is None:
+        try:
+            source_code = item["file_path"].read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            source_code = ""
+    return t262.verify_compile_negative_with_node(
+        item["file_path"],
+        source_code,
+        metadata,
+        tmp_dir,
+    )
+
 def refresh_web_ui_data():
     """Regenerate web UI data without changing this command's stdout contract."""
     command = [sys.executable, str(REPO_ROOT / "scripts/gen/web-ui-data.py")]
@@ -1344,7 +1388,7 @@ def main():
                         unresolved_name_by_symbol[symbol] = unresolved_name_by_symbol.get(symbol, 0) + 1
                     if reason.startswith("NegativeCompileUnverified/"):
                         negative_compile_unverified += 1
-                    elif reason.startswith("ExpectedNegativeSyntax/"):
+                    elif reason.startswith("ExpectedNegativeSyntax/") or reason.startswith("NegativeCompileMismatch/"):
                         negative_compile_mismatch += 1
                 except (json.JSONDecodeError, TypeError):
                     pass
@@ -1666,11 +1710,27 @@ def main():
                         actual=reason,
                         stderr=stderr,
                     )
+                verified, oracle_reason, oracle_output = _verify_compile_negative_with_node(
+                    item, metadata, tmp_dir
+                )
+                if verified:
+                    return make_negative_pass_record(
+                        item,
+                        metadata.negative_phase,
+                        metadata.negative_type,
+                        oracle_reason,
+                        actual=oracle_reason,
+                        stderr=f"{stderr}\n[node oracle]\n{oracle_output}",
+                    )
+                if metadata.expects_compile_negative:
+                    unverified_code, unverified_feature, unverified_reason = _negative_compile_mismatch_classification(metadata)
+                else:
+                    unverified_code, unverified_feature, unverified_reason = _negative_unverified_classification(metadata)
                 return make_unsupported_record(
                     item,
-                    "NegativeCompileUnverified",
-                    "negative-compile-unverified",
-                    "negative test rejected during compilation but phase/error type was not verified",
+                    unverified_code,
+                    unverified_feature,
+                    f"{unverified_reason}: {oracle_reason}",
                     stderr=stderr,
                 )
 
@@ -2253,15 +2313,27 @@ def main():
                 if t262r.can_pass_compile_negative(metadata, diag_code, build_resp.get("phase", "")):
                     _mark_verified_negative_compile_pass(rm, semantic_enabled)
                     if detail_output:
-                        rm["detail_line"] = f"{detail_path}: build_pass: verified negative parse/SyntaxError"
+                        rm["detail_line"] = f"{detail_path}: build_pass: {_negative_compile_detail(metadata)}"
                 else:
-                    rm["unsupported"] = True
-                    rm["diag_code"] = "NegativeCompileUnverified"
-                    diag_phase = build_resp.get("phase")
-                    rm["diag_phase"] = diag_phase
-                    rm["feature_label"] = feature_label(diag_code, None, str(item["file_path"]), diag_phase)
-                    if detail_output:
-                        rm["detail_line"] = f"{detail_path}: NegativeCompileUnverified: {rm['feature_label']}"
+                    verified, oracle_reason, _oracle_output = _verify_compile_negative_with_node(
+                        item, metadata, tmp_dir
+                    )
+                    if verified:
+                        _mark_verified_negative_compile_pass(rm, semantic_enabled)
+                        if detail_output:
+                            rm["detail_line"] = f"{detail_path}: build_pass: {_negative_compile_detail(metadata, via_node=True)}"
+                    else:
+                        rm["unsupported"] = True
+                        if metadata.expects_compile_negative:
+                            unverified_code, unverified_feature, _unverified_reason = _negative_compile_mismatch_classification(metadata)
+                        else:
+                            unverified_code, unverified_feature, _unverified_reason = _negative_unverified_classification(metadata)
+                        rm["diag_code"] = unverified_code
+                        diag_phase = build_resp.get("phase")
+                        rm["diag_phase"] = diag_phase
+                        rm["feature_label"] = unverified_feature
+                        if detail_output:
+                            rm["detail_line"] = f"{detail_path}: {unverified_code}: {rm['feature_label']} ({oracle_reason})"
                 return rm
             
             if diag_code == "BackendIo":
@@ -2351,10 +2423,11 @@ def main():
             result.setdefault("case_name", item["file_path"].name)
             _append_suite_detail(result)
 
-        if result["unsupported"] and result["diag_code"] == "ExpectedNegativeSyntax":
+        if result["unsupported"] and result["diag_code"] in {"ExpectedNegativeSyntax", "NegativeCompileMismatch"}:
             negative_compile_mismatch_count += 1
-            unsupported_diag_counts["ExpectedNegativeSyntax"] = unsupported_diag_counts.get("ExpectedNegativeSyntax", 0) + 1
-            unsupported_feature_counts["negative-parse-syntaxerror"] = unsupported_feature_counts.get("negative-parse-syntaxerror", 0) + 1
+            feature = result.get("feature_label") or "negative-parse-syntaxerror"
+            unsupported_diag_counts[result["diag_code"]] = unsupported_diag_counts.get(result["diag_code"], 0) + 1
+            unsupported_feature_counts[feature] = unsupported_feature_counts.get(feature, 0) + 1
             if result["detail_line"]:
                 file_details.append(result["detail_line"])
             return
@@ -2469,14 +2542,25 @@ def main():
                 if t262r.can_pass_compile_negative(metadata, diag_code, diag_phase or ""):
                     _mark_verified_negative_compile_pass(rm, semantic_enabled)
                     if detail_output:
-                        rm["detail_line"] = f"{detail_path}: build_pass: verified negative parse/SyntaxError"
+                        rm["detail_line"] = f"{detail_path}: build_pass: {_negative_compile_detail(metadata)}"
                 else:
-                    rm["unsupported"] = True
-                    rm["diag_code"] = "NegativeCompileUnverified"
-                    feat = feature_label(diag_code, err_content, str(item["file_path"]), diag_phase)
-                    rm["feature_label"] = feat
-                    if detail_output:
-                        rm["detail_line"] = f"{detail_path}: NegativeCompileUnverified: {feat}"
+                    verified, oracle_reason, _oracle_output = _verify_compile_negative_with_node(
+                        item, metadata, thread_tmp
+                    )
+                    if verified:
+                        _mark_verified_negative_compile_pass(rm, semantic_enabled)
+                        if detail_output:
+                            rm["detail_line"] = f"{detail_path}: build_pass: {_negative_compile_detail(metadata, via_node=True)}"
+                    else:
+                        rm["unsupported"] = True
+                        if metadata.expects_compile_negative:
+                            unverified_code, feat, _unverified_reason = _negative_compile_mismatch_classification(metadata)
+                        else:
+                            unverified_code, feat, _unverified_reason = _negative_unverified_classification(metadata)
+                        rm["diag_code"] = unverified_code
+                        rm["feature_label"] = feat
+                        if detail_output:
+                            rm["detail_line"] = f"{detail_path}: {unverified_code}: {feat} ({oracle_reason})"
                 return rm
 
             if diag_code == "BackendIo":
@@ -2619,14 +2703,27 @@ def main():
                 if t262.can_pass_compile_negative(metadata, diag_code, diag_phase or ""):
                     _mark_verified_negative_compile_pass(result_metrics, semantic_enabled)
                     if detail_output:
-                        result_metrics["detail_line"] = f"{detail_path}: build_pass: verified negative parse/SyntaxError"
+                        result_metrics["detail_line"] = f"{detail_path}: build_pass: {_negative_compile_detail(metadata)}"
                 else:
-                    result_metrics["unsupported"] = True
-                    result_metrics["diag_code"] = "NegativeCompileUnverified"
-                    feat = feature_label(diag_code, err_content, str(file_path), diag_phase)
-                    result_metrics["feature_label"] = feat
-                    if detail_output:
-                        result_metrics["detail_line"] = f"{detail_path}: NegativeCompileUnverified: {feat}"
+                    verified, oracle_reason, _oracle_output = _verify_compile_negative_with_node(
+                        {"file_path": file_path, "source_code": source_code},
+                        metadata,
+                        thread_tmp,
+                    )
+                    if verified:
+                        _mark_verified_negative_compile_pass(result_metrics, semantic_enabled)
+                        if detail_output:
+                            result_metrics["detail_line"] = f"{detail_path}: build_pass: {_negative_compile_detail(metadata, via_node=True)}"
+                    else:
+                        result_metrics["unsupported"] = True
+                        if metadata.expects_compile_negative:
+                            unverified_code, feat, _unverified_reason = _negative_compile_mismatch_classification(metadata)
+                        else:
+                            unverified_code, feat, _unverified_reason = _negative_unverified_classification(metadata)
+                        result_metrics["diag_code"] = unverified_code
+                        result_metrics["feature_label"] = feat
+                        if detail_output:
+                            result_metrics["detail_line"] = f"{detail_path}: {unverified_code}: {feat} ({oracle_reason})"
                 return result_metrics
             
             if diag_code == "BackendIo":

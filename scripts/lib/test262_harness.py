@@ -64,6 +64,7 @@ BLOCKED_FEATURES = (
 )
 
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
+COMPILE_NEGATIVE_PHASES = {"parse", "early", "resolution"}
 
 # Inline minimal harness stubs used when the real test262 harness files
 # are not available (e.g. running from a partial checkout).
@@ -213,6 +214,10 @@ class Test262Metadata:
     def expects_parse_syntax_error(self):
         return self.negative_phase == "parse" and self.negative_type == "SyntaxError"
 
+    @property
+    def expects_compile_negative(self):
+        return self.negative_phase in COMPILE_NEGATIVE_PHASES
+
 
 
 def _parse_yaml_list(value):
@@ -317,7 +322,10 @@ def build_test262_source(test_file, source_code, metadata, target="wasm"):
         return source_code
     case_source = source_code
 
-    chunks = [COMMON_HOST_PRELUDE]
+    chunks = []
+    if "onlyStrict" in metadata.flags:
+        chunks.append('"use strict";')
+    chunks.append(COMMON_HOST_PRELUDE)
     if target == "wasm":
         chunks.append("\n/* standard globals shim */\n")
         chunks.append(WASM_GLOBALS)
@@ -438,6 +446,80 @@ def can_pass_compile_negative(metadata, result_diag, diag_phase):
             and diag_phase in {"lexer", "parser"}
         )
     )
+
+
+def _negative_type_matches(metadata, output):
+    expected_type = metadata.negative_type
+    if not expected_type:
+        return False
+    return re.search(rf"\b{re.escape(expected_type)}\b", output or "") is not None
+
+
+def verify_compile_negative_with_node(test_file, source_code, metadata, tmp_dir):
+    """Use Node as the oracle for compile-phase negative tests not verified by ts2wasm.
+
+    This is intentionally limited to test262 compile-time negative phases.  Runtime
+    negative tests still require runtime error-type verification and must not become
+    compile passes just because ts2wasm rejected unsupported syntax.
+    """
+    if not metadata.expects_compile_negative:
+        return False, "negative test is not a compile-phase expectation", ""
+
+    node_dir = Path(tmp_dir) / f"node-negative-{os.getpid()}-{time.monotonic_ns()}"
+    node_dir.mkdir(parents=True, exist_ok=True)
+    node_source = node_dir / "negative.js"
+    try:
+        prepared_source = build_test262_source(test_file, source_code, metadata, target="node")
+        node_source.write_text(prepared_source, encoding="utf-8")
+    except Exception as exc:
+        return False, f"node negative oracle source preparation failed: {exc}", ""
+
+    try:
+        if "module" in metadata.flags:
+            result = subprocess.run(
+                ["timeout", "8s", "node", "--input-type=module", "--check"],
+                input=prepared_source,
+                capture_output=True,
+                text=True,
+                cwd=REPO_ROOT,
+            )
+        else:
+            result = subprocess.run(
+                [
+                    "timeout",
+                    "8s",
+                    "node",
+                    "-e",
+                    (
+                        "const fs = require('fs');"
+                        "const vm = require('vm');"
+                        "const sourcePath = process.argv[1];"
+                        "new vm.Script(fs.readFileSync(sourcePath, 'utf8'), { filename: sourcePath });"
+                    ),
+                    str(node_source),
+                ],
+                capture_output=True,
+                text=True,
+                cwd=REPO_ROOT,
+            )
+    except OSError as exc:
+        return False, f"node negative oracle failed to start: {exc}", ""
+
+    output = (result.stdout or "") + (result.stderr or "")
+    if result.returncode == 0:
+        return False, "node negative oracle completed successfully", output
+    if not _negative_type_matches(metadata, output):
+        return (
+            False,
+            f"node negative oracle did not report {metadata.negative_type or 'expected error'}",
+            output,
+        )
+
+    reason = (
+        f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} "
+        "rejected during compilation; node oracle matched error type"
+    )
+    return True, reason, output
 
 def classify_completed_negative(metadata):
     if metadata.expects_parse_syntax_error:
