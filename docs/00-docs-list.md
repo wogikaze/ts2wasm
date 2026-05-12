@@ -26,13 +26,15 @@
 | `docs/23-coverage-runner-completeness.md` | coverage runner の分類パス完全性、build_pass/semantic_pass ギャップの分析方法と修正 | `reference-coverage.py` の 3 つのコードパス、_classify_build_response / _complete_semantic_for_build_item | 新規追加 |
 | `docs/24-architecture-decoupling-and-llm-friendly-sizing.md` | アーキテクチャ結合度分析と phase/semantic/capability 三重分離、LLM コンテキストに収まる粒度基準、リファクタリング手順 | 現状の結合ポイント一覧、目標アーキテクチャ、Validated\<T\>、Runtime catalog domain 分割、HIR/MIR/Wasm IR 責務明確化、fitness functions | 新規追加 |
 | `docs/25-robust-test-design.md` | P15 robust test design completion report and durable test-hardening contract | TestRecord schema、fixture catalog、differential runner、boundary snapshots、negative diagnostics、RuntimeLinkPlan/manifest/host/wasm validation、coverage regression、flaky/perf smoke | completion evidence and gate tiers |
+| `docs/26-semantic-feature-matrix.md` | fixture catalog と coverage label をつなぐ semantic feature matrix | value/types、expressions、classes、builtins、modules、async の feature label | 新規追加 |
+| `docs/27-coverage-expansion-epics.md` | 2026-05-12 coverage expansion wave の 6 epic、issue 対応、focused gate、parent/child 実行手順 | test262/tsc/tsgo baseline、unsupported label burn-down、parallel worktree contract | 新規追加 |
+| `docs/27-ir-layer-completion.md` | IR layer の完成形、HIR→MIR→WasmIR phase boundary、migration gates、parallel issue plan | HIR/MIR/WasmIR current bridge state、native MIR completion criteria、P16 semantic gate、typed WasmIR migration | 新規追加 |
 | `docs/current-state.md` | generated semantic coverage snapshot for docs-site/dashboard readers | test262 metric snapshot、semantic canary suite、test262 harness infrastructure | generated coverage state |
 | `docs/language-reference/javascript-features.md` | JavaScript 構文・機能の対応方針と実装状況 | ECMA-262 仕様に基づく機能一覧 | 新規追加 |
 | `docs/language-reference/typescript-features.md` | TypeScript 構文・機能の対応方針と実装状況 | TypeScript Handbook に基づく機能一覧 | 新規追加 |
 | `docs/language-reference/frontend-parser-wave.md` | frontend/parser 仕様 slice の issue 分割・検証運用 | ECMA-262 / TypeScript parser / reference tests に基づく parser wave | 新規追加 |
 | `docs/language-reference/wasm-features.md` | WebAssembly 提案・機能の対応方針と実装状況 | WebAssembly Spec に基づく機能一覧 | 新規追加 |
 | `docs/language-reference/wasi-features.md` | WASI 機能の対応方針と実装状況 | WASI Preview 1/2 に基づく機能一覧 | 新規追加 |
-| `current-state.md` | 現在の実装事実、未実装範囲、検証状況 | なし | status tracking |
 
 ## Language reference tracking
 
@@ -87,7 +89,7 @@ mise run coverage-report -- --format markdown
 | Coverage schema と列定義 | `docs/15-coverage-matrix.md` + `mise run reference-coverage` の stdout キー | `docs/06` はテスト分類。実測行は artifact のみ |
 | Coverage 実測値 | `artifacts/coverage/reference-coverage-matrix.md` | `docs/15` に数値を複製しない |
 | Capability / manifest schema | `docs/11`, `docs/09` | `docs/03` は API 方針 |
-| 実装の現在地・代表コマンド | `current-state.md` | README は入口に留める |
+| 実装の現在地・代表コマンド | `docs/current-state.md` | README は入口に留める |
 | Runtime ABI / RawValue | `docs/14`, `docs/04` | `crates/shared` の型とテストで機械的に固定 |
 
 ## Recommended maintenance rule
@@ -95,10 +97,11 @@ mise run coverage-report -- --format markdown
 - README は 150〜250 行程度を上限にする。
 - 仕様・設計・テスト・性能の詳細は docs に置く。
 - 新しい設計判断は ADR または該当 docs に置く。
-- 実装状況が変わった場合、`current-state.md` を同じ変更で更新する。
+- 実装状況が変わった場合、`docs/current-state.md` を同じ変更で更新する。
 - project goal、workstreams、gates、test status schema、capability manifest、optimization mode、benchmark policy を更新する場合、`docs/11-shared-definitions.md` を更新し、個別 doc では再定義しない。
 - `docs/12-coding-standard.md`、`docs/13-ir-contracts.md`、`docs/14-runtime-abi.md`、`docs/15-coverage-matrix.md` のいずれかを変更した場合は、コード規約・IR 不変条件・runtime ABI・coverage ポリシーが実装・artifact と一致しているか確認する。
 - coverage 進捗更新は `artifacts/coverage/reference-coverage-matrix.md` を同じ変更で更新する。
+- coverage expansion wave の epic/issue/parent-child worktree 運用を変更する場合は `docs/27-coverage-expansion-epics.md`、`docs/19-parallel-development.md`、`issues/` を同時に確認する。
 - host API を増やした場合、`docs/03-api-and-host-capability.md`、`docs/09-security-and-capability-model.md`、`docs/11-shared-definitions.md` の capability manifest を同時に確認する。
 
 ## Recommended Reading Path
@@ -109,7 +112,7 @@ mise run coverage-report -- --format markdown
 2. **docs/01-project-definition.md** - 目標、非目標、禁止事項
 3. **docs/04-compiler-architecture-and-runtime.md** - Compiler pipeline と runtime ABI
 4. **docs/12-coding-standard.md** - Rust コード規約と禁止事項
-5. **current-state.md** - 現在の実装状態と次のステップ
+5. **docs/current-state.md** - 現在の実装状態と次のステップ
 6. **docs/05-compatibility-and-semantics.md** - TypeScript/JavaScript 対応方針
 7. **docs/06-testing-and-coverage.md** - テスト方針と differential testing
 8. **docs/11-shared-definitions.md** - Workstreams、Gates、共有定義

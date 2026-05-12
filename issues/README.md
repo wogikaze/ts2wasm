@@ -75,6 +75,8 @@ mise run issue-lint                # 必須チェック
 mise run issue-index               # index.json 再生成 (commit禁止)
 ```
 
+Active IR layer completion work is summarized in `docs/27-ir-layer-completion.md`.
+
 ## AI flow
 
 ```python

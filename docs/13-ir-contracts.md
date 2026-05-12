@@ -5,7 +5,7 @@
 
 ## IR contracts validation summary
 
-IR contracts は各 phase の入口で検証する。現在は `LoweredProgram` の `validate_lowered` に加えて、初期 Semantic HIR slice に `validate_hir` を持つ。build pipeline は HIR lowering が対応済みの subset では `validate_hir` を実行し、未対応構文は既存 `LoweredProgram` pipeline を維持する。HIR が対応した構文で invariant violation が出た場合は compiler bug として `InvariantViolation` を返す。
+IR contracts は各 phase の入口で検証する。現在は `LoweredProgram` の `validate_lowered`、初期 Semantic HIR slice の `validate_hir`、および `MirProgram` boundary の `validate_mir` wrapper を持つ。`MirProgram` は現時点では `LoweredProgram` alias であり、`Validated<MirProgram>` は native MIR 完成前の bridge boundary として使う。build pipeline は HIR lowering が対応済みの subset では `validate_hir` を実行し、未対応構文は既存 `LoweredProgram` pipeline を維持する。HIR が対応した構文で invariant violation が出た場合は compiler bug として `InvariantViolation` を返す。
 
 ## IR 段階の概観
 
@@ -32,18 +32,18 @@ Optimized HIR
   `ts2wasm dump --optimize -O0..-O3` はこの phase を structural debug output として表示する。
   `ts2wasm dump --optimize --unparse -O2` は optimizer 後の HIR を pseudo source として表示する。
 
-MIR (Mid-level IR / Runtime IR) — 未実装（予定）
-  runtime ABI 呼び出しに寄せた表現。
-  RawValue / HeapPtr を直接扱う。
+MIR (Mid-level IR / Runtime IR) — alias/bridge 実装済み、native MIR は未完
+  現在は `MirProgram = LoweredProgram` alias として runtime ABI intent の boundary を提供する。
+  `Validated<MirProgram>` と optional `emit_mir_wat` path は存在するが、native MIR data model と native MIR emitter は次段の作業である。
 
-Wasm IR — 未実装（予定）
-  wasm local / function / import / memory / data segment に直接対応。
-  wasm-encoder や WasmFunc builder の入力形式。
+Wasm IR — backend-core typed IR 実装済み、main pipeline 全面移行は未完
+  wasm local / function / import / memory / data segment に直接対応する typed node。
+  `WasmInstr` / `WasmModule`、`WatWriter::emit_module`、feature-gated wasm-encoder path が存在する。
 
-LoweredProgram（現在の lowering 出力）
+LoweredProgram（現在の default lowering 出力 / MIR compatibility bridge）
   NameResolver + Lowering が Resolved 表現を LocalId / FuncId に解決した後の表現。
   backend が AST を直接参照しないための隔離層。
-  HIR / MIR の分割が完了するまでの暫定形式。
+  native MIR が完成するまで、default backend input かつ `MirProgram` alias の実体として使う。
 ```
 
 ## AST
@@ -211,7 +211,7 @@ pub fn validate_hir(program: &HirProgram) -> Result<(), Vec<Diagnostic>>
 
 * Resolver が名前を ID に解決した後の表現。
 * backend が AST / parser 型を直接インポートしないための隔離層。
-* HIR が完成するまでの暫定形式。
+* native MIR が完成するまでの default backend input / MIR compatibility bridge。
 
 ### 構造
 
@@ -219,17 +219,24 @@ pub fn validate_hir(program: &HirProgram) -> Result<(), Vec<Diagnostic>>
 pub struct LoweredProgram {
     /// トップレベルの実行文（関数定義を除く）。_start に入る。
     pub top_level_statements: Vec<LoweredStmt>,
-    /// _start で使う local 変数の数。
-    pub top_level_locals: u32,
+    /// _start で使う local 変数 ID。
+    pub top_level_locals: Vec<LocalId>,
     /// 定義されたユーザー関数。
     pub functions: Vec<LoweredFunction>,
+    /// module graph lowering information。
+    pub modules: Vec<ModuleInfo>,
 }
 
 pub struct LoweredFunction {
     pub id: FuncId,
-    pub params: u32,
-    pub locals: u32,
+    pub params: Vec<LocalId>,
+    pub uses_receiver: bool,
+    pub min_required_params: usize,
+    pub rest_param_index: Option<usize>,
+    pub locals: Vec<LocalId>,
     pub body: Vec<LoweredStmt>,
+    pub recursion_depth: usize,
+    pub is_async: bool,
 }
 ```
 
@@ -292,33 +299,71 @@ pub struct Resolver {
 * scope が存在しない名前は `Err(Diagnostic { code: UnresolvedName })` を返すことを目標とする。
   現状では panic せず、将来のエラー対応の準備として `None` を返す場合がある。
 
-## MIR — Mid-level IR（予定）
+## MIR — Mid-level IR（alias/bridge 実装済み、native MIR 未完）
+
+### 現在の実体
+
+現時点の MIR は独立した data model ではなく、`crates/ir/src/lowered/mir.rs` の type alias である。
+
+```rust
+pub type MirProgram = LoweredProgram;
+pub type MirExpr = LoweredExpr;
+pub type MirStmt = LoweredStmt;
+```
+
+この alias により、`Validated<MirProgram>`、`validate_mir`、`emit_mir_wat` の phase boundary は operational になっている。一方で、これは native MIR が完成したことを意味しない。
 
 ### 責務
 
-* runtime ABI と value representation に寄せた表現。
-* `RawValue`, `HeapPtr` を直接扱う。
-* `CallRuntime(RuntimeFn::Add)`, `AllocString(len)`, `ReadHeap(offset)` など。
+* HIR の semantic operation を runtime ABI intent に寄せる。
+* `RuntimeFn`、locals、functions、modules、classes、closures、control-flow invariants を backend に渡せる形で保持する。
+* parser syntax と WAT string を持たない。
 
-### 不変条件（予定）
+### 現在の bridge path
 
-* HIR の semantic operation はすべて runtime call か wasm primitive に落とされている。
-* JS の動的分岐（`typeof`, `instanceof` など）は runtime call に変換済み。
-* `RawValue` は `runtime/value.rs` で定義された tagged encoding のみ。
+* `lower_hir_to_mir` は `HirProgram` を `LoweredProgram` 互換の MIR に変換する。
+* `Validated<MirProgram>::new_mir` は `validate_mir` を通して invariant violation を fatal にする。
+* backend の `emit_mir_wat` は `Validated<MirProgram>` を受け取るが、現状は standard `LoweredProgram` emitter への委譲 bridge である。
 
-## Wasm IR（予定）
+### Native MIR の完成条件
+
+* `MirProgram` / `MirStmt` / `MirExpr` が alias ではなく独立型になる。
+* `validate_mir` が native MIR の local/function/module/control-flow invariants を直接検査する。
+* `lower_hir_to_mir` が native MIR を直接返す。
+* `emit_mir_wat` が selected subset から native MIR を直接 emit し、bridge 委譲を段階的に縮小する。
+
+## Wasm IR（backend-core typed IR 実装済み、全面移行未完）
+
+### 現在の実体
+
+`crates/backend-core/src/wasm_ir.rs` に typed wasm module model が存在する。主な型は以下である。
+
+```rust
+pub enum WasmInstr { /* typed wasm instructions */ }
+pub struct WasmFunction { /* params/results/locals/body */ }
+pub struct WasmModule { /* imports/globals/memory/data/functions/exports */ }
+```
+
+`backend-wasm` の `WatWriter` は `WasmInstr` / `WasmModule` を WAT に出力できる。feature `wasm-encoder-backend` では `WasmModule` から binary を生成する path もある。
 
 ### 責務
 
-* wasm binary の直接表現。
-* `WasmFunc`, `WasmLocal`, `WasmInstr`, `WasmImport`, `DataSegment` などの typed node。
-* `wasm-encoder` の入力形式、または独自 `ModuleBuilder` の入力形式。
+* wasm module structure の typed representation。
+* imports / globals / memory / data segment / functions / exports を保持する。
+* WAT writer と binary encoder の共有入力になる。
 
-### 不変条件（予定）
+### 不変条件
 
-* すべての local は型 (`i32` / `i64` / `f32` / `f64`) を持つ。
-* function index は `FuncId` の u32 値に対応する。
-* 生成された wasm binary は `wasm-tools validate` を通る。
+* すべての local は型 (`i32` / `i64` など) を持つ。
+* function/import/global/export は module 内で解決可能な symbol / index に対応する。
+* host import は RuntimeLinkPlan / manifest と一致する。
+* 生成された WAT / wasm binary は validation tool を通る。
+
+### 未完了範囲
+
+* default backend path はまだ `Validated<LoweredProgram>` → WAT emitter が中心である。
+* `WasmInstr::Raw` は migration 中の escape hatch であり、完成形では audited legacy helper に限定する。
+* main pipeline の MIR → WasmIR → WAT/binary 全面移行は `docs/27-ir-layer-completion.md` の gate で進める。
 
 ## 禁止パターン
 

@@ -20,11 +20,26 @@ artifacts/coverage/ = 診断データ（自動生成、issues/ には書かな�
 
 ## Rules
 
-- Roadmap item は epic であり、そのまま `issues/` にコピーしない。
-- `issues/` には、Roadmap から手で切り出した小さな作業だけを入れる（1 PR / 1 agent session の粒度）。
+- Roadmap item は epic であり、通常はそのまま `issues/` にコピーしない。例外は、`docs/27-coverage-expansion-epics.md` のように parallel wave doc が source of truth と acceptance gate を定義し、epic-level coordination issue として明示した場合のみ。
+- `issues/` には、Roadmap から手で切り出した小さな作業（1 PR / 1 agent session の粒度）か、parallel wave doc に紐づく coordination issue だけを入れる。
 - coverage / reference-coverage / dashboard の結果から `issues/` を自動生成しない。
 - `issues/` の item は acceptance command と done evidence を必須にする。
-- `issues/` の active item は最大 1 件。
+- 通常の単独開発では `issues/` の active item は最大 1 件。parent/child parallel wave は `docs/27-coverage-expansion-epics.md` のような wave doc で明示した場合に限り、複数 ready issue を同時に扱える。
+
+## 2026-05-12 Coverage Expansion Wave
+
+The current parallel coverage push is tracked in `docs/27-coverage-expansion-epics.md` and six open issue files under `issues/`:
+
+| Epic | Issue | Roadmap lane | Coverage gap |
+|---|---|---|---|
+| Builtin API Coverage Expansion | `I-20260512-BTAP7K` | W4 | `builtin-api`, `array-builtin` |
+| Class Implementation Completion | `I-20260512-CA5S2K` | W5 | `class` |
+| Async/Await Support | `I-20260512-ASYNC3` | W5 | `async` |
+| Import/Export Module System | `I-20260512-MD7EX4` | W5 | `import-export` |
+| TypeScript Erased Features + tsc/tsgo Ramp | `I-20260512-TSG6R2` | W2/W6 | `tsc`, `tsgo`, TS erasure |
+| Name Resolution Improvements | `I-20260512-NAM3R5` | W3 | `name-resolution` |
+
+These are parallel worktree epics, not a strict phase order. Parent merge review owns conflict resolution and final coverage artifact regeneration.
 
 ## Gate overview
 

@@ -1,5 +1,20 @@
 # Current State
 
+## Next Priority Slice
+
+The active coverage expansion wave is prepared for parallel parent/child worktree execution. The source-of-truth plan is `docs/27-coverage-expansion-epics.md`; the ready issue files are:
+
+| Priority | Issue | Slice | Expected coverage movement |
+|---:|---|---|---|
+| 1 | `I-20260512-NAM3R5` | Name Resolution Improvements | Reduce the largest test262 unsupported bucket (`name-resolution`) without semantic regression |
+| 2 | `I-20260512-BTAP7K` | Builtin API Coverage Expansion | Increase test262 semantic_pass by implementing Math/JSON/Object/Array/String builtins |
+| 3 | `I-20260512-CA5S2K` | Class Implementation Completion | Burn down `class` unsupported records and keep class fixtures differential |
+| 4 | `I-20260512-TSG6R2` | TypeScript Erased Features + tsc/tsgo Ramp | Bring tsc to >=10% build coverage and tsgo to >=5% semantic coverage |
+| 5 | `I-20260512-ASYNC3` | Async/Await Support | Reduce `async` unsupported records with Promise-backed async lowering |
+| 6 | `I-20260512-MD7EX4` | Import/Export Module System | Reduce `import-export` unsupported records and pass module fixtures |
+
+Run `python scripts/manager.py issue-lint` and `python scripts/manager.py issue-index` before spawning child worktrees.
+
 ## Semantic Coverage
 
 ### test262

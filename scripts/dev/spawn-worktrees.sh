@@ -75,6 +75,17 @@ if [[ -n "$COUNT" ]]; then
   RESOLVED=("${RESOLVED[@]:0:$COUNT}")
 fi
 
+
+issue_field() {
+  local file="$1" field="$2"
+  awk -F':[[:space:]]*' -v key="$field" 'tolower($1)==tolower(key){print $2; exit}' "$file" 2>/dev/null \
+    | sed 's/^[[:space:]"]*//; s/[[:space:]"]*$//'
+}
+
+slugify() {
+  sed 's/[^a-zA-Z0-9_-]/_/g'
+}
+
 # Parent directory for worktrees
 PARENT_DIR="${TARGET_DIR:-"$(dirname "$R")"}"
 mkdir -p "$PARENT_DIR"
@@ -85,14 +96,15 @@ MANIFEST='{"worktrees":[]}'
 for issue_file in "${RESOLVED[@]}"; do
   issue_file="$(realpath "$issue_file")"
 
-  # Extract issue ID and title from YAML frontmatter, with filename fallback.
-  ISSUE_ID=$(awk -F': ' '/^id:/{print $2;exit}' "$issue_file" 2>/dev/null | tr -d '"' || true)
+  # Extract issue ID and title from either repo-local `Id:` headers or legacy
+  # lowercase/YAML-style headers, with filename fallback.
+  ISSUE_ID=$(issue_field "$issue_file" "id" || true)
   if [[ -z "$ISSUE_ID" ]]; then
-    ISSUE_ID="$(basename "$issue_file" | sed -E 's/^([0-9]+[a-z]?).*/\1/')"
+    ISSUE_ID="$(basename "$issue_file" .md)"
   fi
-  ISSUE_TITLE=$(awk -F': ' '/^title:/{print $2;exit}' "$issue_file" 2>/dev/null | tr -d '"' | sed 's/[^a-zA-Z0-9_-]/_/g' || true)
+  ISSUE_TITLE=$(issue_field "$issue_file" "title" | slugify || true)
   if [[ -z "$ISSUE_TITLE" ]]; then
-    ISSUE_TITLE="$(basename "$issue_file" .md | sed -E 's/^[0-9]+[a-z]?[-_]//' | sed 's/[^a-zA-Z0-9_-]/_/g')"
+    ISSUE_TITLE="$(basename "$issue_file" .md | sed -E 's/^[0-9]+[a-z]?[-_]//' | slugify)"
   fi
 
   TIMESTAMP=$(date +%Y%m%d%H%M%S)
@@ -125,8 +137,13 @@ rustflags = ["-C", "link-arg=-fuse-ld=mold"]
 TOML
 
   mkdir -p "$(dirname "$ASSIGNMENT_PATH")"
-  ISSUE_AREA=$(awk -F': ' '/^area:/{print $2;exit}' "$issue_file" 2>/dev/null || echo "unknown")
-  ISSUE_AREA="${ISSUE_AREA//\"/}"
+  ISSUE_AREA=$(issue_field "$issue_file" "area" || true)
+  if [[ -z "$ISSUE_AREA" ]]; then
+    ISSUE_AREA=$(issue_field "$issue_file" "labels" || true)
+  fi
+  if [[ -z "$ISSUE_AREA" ]]; then
+    ISSUE_AREA="unknown"
+  fi
   cat > "$ASSIGNMENT_PATH" << MD
 # Child Assignment: $AGENT_ID
 

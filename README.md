@@ -70,6 +70,10 @@ flowchart TB
 | `docs/13-ir-contracts.md` | AST / HIR / MIR / Wasm IR の責務と不変条件。validate_* の仕様 |
 | `docs/14-runtime-abi.md` | RawValue tagged encoding、heap layout、RuntimeFn catalog、host import ABI |
 | `docs/15-coverage-matrix.md` | coverage 運用ポリシーと gate 判定基準 |
+| `docs/19-parallel-development.md` | parent/child worktree による並列開発運用 |
+| `docs/26-semantic-feature-matrix.md` | semantic feature label と fixture/coverage の対応表 |
+| `docs/27-coverage-expansion-epics.md` | coverage expansion wave の 6 epic、issue 対応、focused gate |
+| `docs/27-ir-layer-completion.md` | IR layer の完成形、HIR→MIR→WasmIR migration gates、parallel issue plan |
 
 ## Development Init
 
@@ -135,7 +139,7 @@ curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.car
 
 ### parent/child worktree 開発
 
-複数 child に分ける開発では `mise run spawn-worktrees` で worktree を作成し、`mise run worktree-status` で状態を集約する。child worker 用の prompt は `.agents/prompts/autonomous-child-worker.md`。
+複数 child に分ける開発では `mise run spawn-worktrees` で issue ごとの worktree を作成し、`mise run worktree-status` で状態を集約する。child worker 用の prompt は `.agents/prompts/autonomous-child-worker.md`。2026-05-12 coverage expansion wave は `docs/27-coverage-expansion-epics.md` と `issues/I-20260512-*.md` を参照。
 
 ## FAQ
 
@@ -159,7 +163,7 @@ A: Node host import を必要としないプログラム。WASI のみで実行�
 
 ### Q: どの issue から着手すべきか？
 
-A: `current-state.md` の「Next Priority Slice」セクションに優先度順のリストがある。AI エージェントや自律開発ループではこのリストを参照。
+A: `docs/current-state.md` の「Next Priority Slice」セクションと `docs/27-coverage-expansion-epics.md` に優先度順の coverage expansion issue がある。AI エージェントや自律開発ループではこのリストを参照。
 
 ### Q: テストはどう実行するのか？
 

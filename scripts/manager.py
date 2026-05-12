@@ -35,6 +35,12 @@ COMMANDS = {
     "check-runtimefn-invariants": ("python", "scripts/check/runtimefn-invariants.py"),
     "check-wasm-validation": ("python", "scripts/check/wasm-validation.py"),
     "check-tracking-consistency": ("python", "scripts/check/tracking-consistency.py"),
+    "issue-create": ("python", "scripts/issue-create.py"),
+    "issue-index": ("python", "scripts/issue-index.py"),
+    "update-issue-index": ("python", "scripts/issue-index.py"),
+    "issue-lint": ("python", "scripts/issue-lint.py"),
+    "issue-show": ("python", "scripts/issue-show.py"),
+    "issue-status": ("python", "scripts/issue-status.py"),
     "install-hooks": ("bash", "scripts/dev/install-git-hooks.sh"),
     "link-reference": ("python", "scripts/dev/link-reference.py"),
     "spawn-worktrees": ("bash", "scripts/dev/spawn-worktrees.sh"),
@@ -62,7 +68,7 @@ CHECK_ALL_PARTS = [
     "architecture", "diagnostics", "coverage",
     "toolchain", "ast-grep", "host",
     "runtimefn", "wasm", "assert-true",
-    "tracking",
+    "tracking", "issues",
 ]
 
 CHECK_PARTS = {
@@ -96,6 +102,8 @@ CHECK_PARTS = {
     "assert-true-detect": "check-assert-true-detect",
     "tracking": "check-tracking-consistency",
     "tracking-consistency": "check-tracking-consistency",
+    "issues": "issue-lint",
+    "issue-lint": "issue-lint",
 }
 
 def usage():
@@ -125,6 +133,11 @@ def usage():
         ("spawn-worktrees", "Create child worktrees and local assignment files"),
         ("worktree-status", "Collect status from child worktrees"),
         ("git-worktree", "Small git worktree helper"),
+        ("issue-create", "Create a repo-local issue file"),
+        ("issue-index", "Generate issue-views/index.json"),
+        ("issue-lint", "Validate issue files"),
+        ("issue-show", "Show an issue by id, legacy id, partial id, or title word"),
+        ("issue-status", "Change issue status and optionally append evidence"),
         ("update-coverage-matrix", "Refresh reference coverage table"),
         ("reference-coverage", "Reference suite coverage runner"),
         ("reference-triage", "Rich single-case reference diagnostic report"),
