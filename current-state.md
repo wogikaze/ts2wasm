@@ -168,3 +168,22 @@ See `TRACKING.yaml` for open work items. Run `git diff --check` before commit; t
 - 実装の現在地と検証手順の要約はこの `current-state.md` を正とする。
 - coverage 実測値は `artifacts/coverage/reference-coverage-matrix.md` を正とする。
 - project goal、gates、schema は `docs/11-shared-definitions.md` を正とし、他 doc で再定義しない。
+
+## Architecture Sizing (#364 / #365)
+
+The architecture checker enforces LLM-friendly sizing and coupling limits:
+
+| Metric | Hard Gate | Allowlisted |
+|--------|-----------|-------------|
+| Max file lines (non-.rs) | 1200 | 4 files |
+| Max Rust file lines | 1200 | 35 files |
+| Max function lines | 200 | 28 functions |
+| Max public API items | 30 | 12 files |
+| Max match arms (error) | 50 | 33 files |
+| Max crate dependencies | 10 | 0 files |
+
+Allowlisted entries carry documented P-item refactoring plans. All are pre-existing
+violations — new code is expected to stay within limits without allowlisting.
+
+See `scripts/check/architecture-rules.py` for the full allowlist definitions and
+`docs/24-architecture-decoupling-and-llm-friendly-sizing.md` for the design contract.

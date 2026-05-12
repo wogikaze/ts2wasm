@@ -7,9 +7,62 @@ meta:
     canonical_source: TRACKING.yaml
     roadmap_source: docs/roadmap.md
     closed_source: docs/done-tracking.yaml
-open: []
-active: []
+open:
+  - id: 365
+    title: "Add coupling hardening checks for fan-out, public API count, and match arm size"
+    priority: P2
+    type: tooling
+    area: cross
+    status: open
+    created: 2026-05-12
+    updated: 2026-05-12
+    acceptance:
+      - "mise run check architecture passes"
+      - "grep fan_out scripts/check/architecture-rules.py matches"
+      - "grep public_api scripts/check/architecture-rules.py matches"
+      - "grep match.*arms scripts/check/architecture-rules.py matches"
+    non_goals:
+      - "No immediate ban on RuntimeFn-sized enums."
+      - "No semantic refactor."
+    plan:
+      goal: "Move coupling metrics from documentation into CI. Track and gate excessive module fan-out, public API count, and giant match expressions."
+      files:
+        - "scripts/check/architecture-rules.py"
+        - "current-state.md"
+        - "docs/24-architecture-decoupling-and-llm-friendly-sizing.md"
+      acceptance: "mise run check architecture && grep fan_out scripts/check/architecture-rules.py && grep public_api scripts/check/architecture-rules.py && grep match.*arms scripts/check/architecture-rules.py"
 done:
+  - id: 364
+    title: "Move LLM-friendly hard gates to 1200-line files and 200-line functions"
+    priority: P2
+    type: tooling
+    area: cross
+    status: done
+    created: 2026-05-12
+    updated: 2026-05-12
+    acceptance:
+      - "cargo test --workspace passes"
+      - "mise run check architecture passes"
+      - "grep MAX_FILE_LINES scripts/check/architecture-rules.py matches"
+      - "grep MAX_FUNCTION_LINES scripts/check/architecture-rules.py matches"
+    non_goals:
+      - "No semantic behavior change."
+      - "No requirement every module reaches 300-800 LOC."
+    plan:
+      goal: "Complete the staged LLM-friendly sizing reduction. 1200-line files and 200-line functions become hard gates, with only explicit, documented allowlists."
+      files:
+        - "scripts/check/architecture-rules.py"
+        - "current-state.md"
+        - "docs/24-architecture-decoupling-and-llm-friendly-sizing.md"
+      acceptance: "mise run check architecture && grep MAX_FILE_LINES scripts/check/architecture-rules.py"
+    evidence:
+      commit: ""
+      commands:
+        - "python3 scripts/check/architecture-rules.py => exit 0"
+        - "cargo fmt --all --check => exit 0"
+        - "git diff --check => exit 0"
+        - "grep MAX_FILE_LINES scripts/check/architecture-rules.py => exit 0"
+        - "grep MAX_FUNCTION_LINES scripts/check/architecture-rules.py => exit 0"
   - id: 242
     title: "Upgrade class fixtures from build_smoke to semantic_diff (W9a)"
     priority: P2
