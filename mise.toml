@@ -214,7 +214,7 @@ description = "Generate issue-views/index.json (active issues only)"
 run = "python scripts/issue-index.py"
 
 [tasks."gen-site"]
-description = "Generate documentation site content from docs/TRACKING.yaml/fixtures"
+description = "Generate documentation site content from issues//fixtures"
 run = "python scripts/gen-site.py"
 
 [tasks."build-site"]

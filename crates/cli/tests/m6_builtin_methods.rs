@@ -1465,7 +1465,7 @@ fn triple_slash_reference_unsupported_diagnostic() {
     );
 }
 
-// === W2: Nullish coalescing (id 120, TRACKING.yaml) ===
+// === W2: Nullish coalescing ===
 
 #[test]
 fn build_smoke_nullish_coalescing() {
@@ -1477,7 +1477,7 @@ fn build_smoke_nullish_coalescing() {
     );
 }
 
-// === W3/String dispatch (id 121, TRACKING.yaml) ===
+// === W3/String dispatch ===
 
 #[test]
 fn build_smoke_string_starts_with() {
@@ -1529,7 +1529,7 @@ fn build_smoke_string_trim_end() {
     );
 }
 
-// === W3/Array dispatch (id 122, TRACKING.yaml) ===
+// === W3/Array dispatch ===
 
 #[test]
 fn build_smoke_array_map() {
@@ -1567,7 +1567,7 @@ fn build_smoke_array_last_index_of() {
     );
 }
 
-// === New tests for open TRACKING.yaml items and remaining roadmap items ===
+// === New tests for open issues and remaining roadmap items ===
 
 // id 124: Cover initializer for (var x = y in obj) — build_smoke (parser + compiler work)
 #[test]
@@ -1832,7 +1832,7 @@ fn live_binding_unsupported_diagnostic() {
     );
 }
 
-// === Open TRACKING items — W4/W5 fixtures (RED phase) ===
+// === Open issues — W4/W5 fixtures (RED phase) ===
 
 // Proxy basic trap — ID 205 (W4, P3)
 #[test]

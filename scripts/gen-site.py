@@ -24,7 +24,7 @@ from typing import Dict, List, Any
 PROJECT_ROOT = Path(__file__).parent.parent
 SITE_DOCS = PROJECT_ROOT / "site" / "docs"
 DOCS_DIR = PROJECT_ROOT / "docs"
-ISSUES_DIR = PROJECT_ROOT / "issues"  # kept for backward compat, content now from TRACKING.yaml
+ISSUES_DIR = PROJECT_ROOT / "issues"
 FIXTURES_DIR = PROJECT_ROOT / "fixtures"
 COVERAGE_DIR = PROJECT_ROOT / "artifacts" / "coverage"
 REFERENCE_DIR = PROJECT_ROOT / "reference"
@@ -96,65 +96,80 @@ def extract_title(file_path: Path) -> str:
         return match.group(1).strip()
     return file_path.stem
 
+def parse_issue_header(path):
+    """Parse header from issues/<id>.md (NOT YAML, first : splits key/value)."""
+    content = path.read_text(encoding="utf-8")
+    parts = content.split("\n---\n", 1)
+    header = {}
+    for line in parts[0].strip().split("\n"):
+        if ":" in line:
+            k, _, v = line.partition(":")
+            header[k.strip()] = v.strip()
+    return header
+
 def process_issues():
-    """Generate issue pages from TRACKING.yaml."""
+    """Generate issue pages from issues/ directory."""
     issues_output = SITE_DOCS / "issues"
     ensure_dir(issues_output / "index.md")
     
-    tracking_file = PROJECT_ROOT / "TRACKING.yaml"
-    if not tracking_file.exists():
-        print("  TRACKING.yaml not found, skipping issues")
+    issues_dir = PROJECT_ROOT / "issues"
+    if not issues_dir.exists():
+        print("  issues/ not found, skipping")
         return
     
-    with open(tracking_file) as f:
-        tracking = yaml.safe_load(f)
+    all_issues = []
+    for f in sorted(issues_dir.glob("I-*.md")):
+        h = parse_issue_header(f)
+        if "Id" in h:
+            all_issues.append(h)
     
-    open_items = tracking.get("open", []) or []
-    active_items = tracking.get("active", []) or []
-    done_items = tracking.get("done", []) or []
+    open_items = [h for h in all_issues if h.get("Status") == "open"]
+    doing_items = [h for h in all_issues if h.get("Status") == "doing"]
+    blocked_items = [h for h in all_issues if h.get("Status") == "blocked"]
+    done_items = [h for h in all_issues if h.get("Status") == "done"]
+    dropped_items = [h for h in all_issues if h.get("Status") == "dropped"]
     
     main_content = """# Issues
 
 This section tracks all project issues and their status.
 
-Tracking source: `TRACKING.yaml`
+Tracking source: `issues/` directory
 
 ## Summary
 
 | Status | Count |
 |--------|------|
 | Open | {} |
-| Active | {} |
+| Doing | {} |
+| Blocked | {} |
 | Done | {} |
+| Dropped | {} |
 | **Total** | **{}** |
 
-""".format(len(open_items), len(active_items), len(done_items),
-           len(open_items) + len(active_items) + len(done_items))
+""".format(len(open_items), len(doing_items), len(blocked_items),
+           len(done_items), len(dropped_items), len(all_issues))
     
     (issues_output / "index.md").write_text(main_content, encoding="utf-8")
     
-    # Generate open items page
-    open_content = "# Open Items\n\n"
-    for item in open_items:
-        open_content += "- **#{}**: {} [P{}, {}] — {}\n".format(
-            item["id"], item["title"], item.get("priority", "?"), item["area"], item["status"])
-    (issues_output / "open.md").write_text(open_content, encoding="utf-8")
+    for status, label, filename in [
+        ("open", "Open", "open"),
+        ("doing", "Doing", "doing"),
+        ("blocked", "Blocked", "blocked"),
+        ("done", "Done", "done"),
+    ]:
+        items = [h for h in all_issues if h.get("Status") == status]
+        content = f"# {label} Items\n\n"
+        for h in sorted(items, key=lambda x: x.get("Priority", "P9")):
+            iid = h.get("Id", "?")
+            pri = h.get("Priority", "?")
+            title = h.get("Title", "?")
+            summary = h.get("Summary", "")[:80]
+            deps = h.get("DependsOn", "")
+            dep_str = f" [depends: {deps}]" if deps else ""
+            content += f"- **{iid}** [P{pri}]: {title}{dep_str}\n  - {summary}\n"
+        (issues_output / f"{filename}.md").write_text(content, encoding="utf-8")
     
-    # Generate active items page
-    active_content = "# Active Items\n\n"
-    for item in active_items:
-        active_content += "- **#{}**: {} [P{}, {}] — {}\n".format(
-            item["id"], item["title"], item.get("priority", "?"), item["area"], item["status"])
-        if "plan" in item:
-            active_content += "  - Goal: {}\n".format(item["plan"].get("goal", ""))
-    (issues_output / "active.md").write_text(active_content, encoding="utf-8")
-    
-    # Generate done page
-    done_content = "# Done Items\n\n"
-    for item in done_items:
-        done_content += "- **#{}**: {} [P{}] — {}\n".format(
-            item["id"], item["title"], item.get("priority", "?"), item.get("closed", ""))
-    (issues_output / "done.md").write_text(done_content, encoding="utf-8")
+    print(f"  issues: {len(all_issues)} total ({len(open_items)} open, {len(done_items)} done)")
 
 def process_fixtures():
     """Process fixtures and generate test case listing pages."""
@@ -322,7 +337,7 @@ TypeScript to WebAssembly compiler - Documentation and Test Explorer
 ## Quick Links
 
 - [Documentation](./docs/) - Design documentation
-- [Issues](./issues/) - Issue tracker (from TRACKING.yaml)
+- [Issues](./issues/) - Issue tracker
 - [Fixtures](./fixtures/) - Test fixtures browser
 - [Coverage](./coverage/) - Test coverage results
 - [Coverage dashboard](/dashboard/) - Interactive dashboard UI
@@ -334,15 +349,11 @@ TypeScript to WebAssembly compiler - Documentation and Test Explorer
     # Add statistics
     doc_count = len(list(DOCS_DIR.glob("*.md")))
     fixture_count = len(list(FIXTURES_DIR.rglob("*.ts"))) + len(list(FIXTURES_DIR.rglob("*.js")))
-    tracking_file = PROJECT_ROOT / "TRACKING.yaml"
-    tracking_count = 0
-    if tracking_file.exists():
-        with open(tracking_file) as f:
-            tracking = yaml.safe_load(f)
-            tracking_count = len(tracking.get("open", []) or []) + len(tracking.get("active", []) or []) + len(tracking.get("done", []) or [])
+    issues_dir = PROJECT_ROOT / "issues"
+    issue_count = len(list(issues_dir.glob("I-*.md"))) if issues_dir.exists() else 0
     
     home_content += f"- **Documentation Files:** {doc_count}\n"
-    home_content += f"- **Total Items (TRACKING.yaml):** {tracking_count}\n"
+    home_content += f"- **Total Issues:** {issue_count}\n"
     home_content += f"- **Test Fixtures:** {fixture_count}\n"
     
     # Add recent activity

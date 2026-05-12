@@ -3,7 +3,7 @@
 This document defines the architecture boundary contract for keeping `ts2wasm`
 small enough to reason about feature-by-feature. It is a final-state design
 contract, not a progress log. Implementation status and open slices are tracked
-in `TRACKING.yaml` and `current-state.md`.
+in `issues/` and `current-state.md`.
 
 The architecture has three independent boundary axes:
 
@@ -275,7 +275,7 @@ Required checks include:
 
 The final architecture gate combines these checks with the workspace tests,
 reference coverage smoke command, crate-layout existence checks, and manifest /
-coverage data checks listed in `TRACKING.yaml`.
+coverage data checks listed in `issues/`.
 
 ### Final Gate Recipe
 
@@ -320,7 +320,7 @@ Corollaries:
 - capability manifest contents are derived only from runtime catalog and
   validated link-plan data;
 - final-state docs define contracts, while `current-state.md` and
-  `TRACKING.yaml` record implementation gaps.
+  `issues/` record implementation gaps.
 
 ## References
 
@@ -333,7 +333,7 @@ Corollaries:
 - `docs/15-coverage-matrix.md`
 - `docs/17-jsonl-test-record-schema.md`
 - `current-state.md`
-- `TRACKING.yaml`
+- `issues/`
 - `scripts/check/architecture-rules.py`
 - `crates/runtime-catalog/`
 - `crates/backend-core/`

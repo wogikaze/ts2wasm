@@ -16,18 +16,18 @@ Last updated: 2026-05-12
 
 ## Architecture decoupling status
 
-P14 architecture decoupling is closed through issue 369. `TRACKING.yaml` has no
+P14 architecture decoupling is closed through issue 369. `issues/` has no
 open or active items for the architecture decoupling tracker; issues 348-369 are
 recorded as `done` with evidence. The final roll-up gate covered workspace
 tests, `mise run check architecture`, a test262 `language/statements` reference
 coverage smoke run, dashboard `semantic_pass` evidence, dependency/string
 boundary checks, `Validated<LoweredProgram>` and validated runtime link-plan
 checks, target crate existence checks, tracking consistency, and `git diff
---check -- TRACKING.yaml`.
+--check -- issues/`.
 
 Future work should be cut as feature-specific vertical slices. New slices should
 use `docs/templates/feature-slice.md`, keep final-state contracts in `docs/`,
-and record live implementation status in this file plus `TRACKING.yaml`.
+and record live implementation status in this file plus `issues/`.
 
 ## Last verified commands（代表）
 
@@ -127,7 +127,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 - `StringOrigin` enum implemented (`StringOrigin::UserLiteral` / `StringOrigin::Runtime(RuntimeFn)`) with origin tracking through `RuntimeLinkPlan::string_origins()`. All interned strings carry origin metadata; `is_runtime_string()` enables audit of data segment contents. Linker structure tests verify conditional interning: no console.log → zero Log/Write runtime strings, console.log present → Log/Write runtime strings present.
 - reference coverage パイプライン（`mise run reference-coverage`, `mise run update-coverage-matrix`, `mise run update-coverage-matrix -- --check`）
 - generated coverage table（`artifacts/coverage/reference-coverage-matrix.md`）
-- work tracker（`TRACKING.yaml` が唯一の作業台帳。`scripts/check/tracking-consistency.py` が構造検証）
+- work tracker（`issues/` が唯一の作業台帳。`scripts/check/tracking-consistency.py` が構造検証）
 - harness scripts（`mise run check-fast-gate`、`mise run check-manifest-imports`、`mise run check-test-records-schema`、`mise run check-fixture-catalog`、`mise run check-architecture-rules`、`mise run check-compiler-diagnostics`；pre-push は `.githooks/pre-push`）
 
 ## Known blockers / gaps
@@ -178,7 +178,7 @@ Semantic gap tracking:
 
 ## Next Priority Steps
 
-See `TRACKING.yaml` for open work items. As of 2026-05-12 there are no open or
+See `issues/` for open work items. As of 2026-05-12 there are no open or
 active architecture decoupling tracker items. Run `git diff --check` before
 commit; the pre-push gate runs `python3 scripts/check/tracking-consistency.py`
 for structural validation.

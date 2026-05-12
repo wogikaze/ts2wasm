@@ -2,7 +2,7 @@
 
 大きな未実装領域を W0-W8 で整理する。
 
-このファイルは **epic 一覧**であり、個別の実装作業は `TRACKING.yaml` で管理する。
+このファイルは **epic 一覧**であり、個別の実装作業は `issues/` で管理する。
 
 ## Roadmap model
 
@@ -13,18 +13,18 @@ W0-W8 は厳密な直列フェーズではない。
 - **W8**: 後回しの最適化領域（semantic coverage が安定した後）
 
 ```txt
-TRACKING.yaml   = 今週の作業台帳（最大 20 件、active 1 件）
+issues/   = 今週の作業台帳（最大 20 件、active 1 件）
 docs/roadmap.md = 大きな未実装領域の分類
-artifacts/coverage/ = 診断データ（自動生成、TRACKING.yaml には書かない）
+artifacts/coverage/ = 診断データ（自動生成、issues/ には書かない）
 ```
 
 ## Rules
 
-- Roadmap item は epic であり、そのまま `TRACKING.yaml` にコピーしない。
-- `TRACKING.yaml` には、Roadmap から手で切り出した小さな作業だけを入れる（1 PR / 1 agent session の粒度）。
-- coverage / reference-coverage / dashboard の結果から `TRACKING.yaml` を自動生成しない。
-- `TRACKING.yaml` の item は acceptance command と done evidence を必須にする。
-- `TRACKING.yaml` の active item は最大 1 件。
+- Roadmap item は epic であり、そのまま `issues/` にコピーしない。
+- `issues/` には、Roadmap から手で切り出した小さな作業だけを入れる（1 PR / 1 agent session の粒度）。
+- coverage / reference-coverage / dashboard の結果から `issues/` を自動生成しない。
+- `issues/` の item は acceptance command と done evidence を必須にする。
+- `issues/` の active item は最大 1 件。
 
 ## Gate overview
 
@@ -228,7 +228,7 @@ Work here runs in parallel with W2-W5 implementation: each feature change should
 - [X] Gate progress visualization — done (id 218 done)
 
 Non-goals:
-- Do not auto-create `TRACKING.yaml` entries from coverage gaps.
+- Do not auto-create `issues/` entries from coverage gaps.
 - Do not treat coverage summaries as issue lists.
 - Do not block normal build on dashboard generation.
 

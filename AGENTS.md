@@ -92,45 +92,37 @@ git status --short
 
 ## 3) Tracking workflow
 
-このリポジトリは `TRACKING.yaml` を唯一の作業台帳として使う。
+このリポジトリは `issues/` を唯一の作業台帳として使う。
+各 issue は `issues/<id>.md` の1ファイル。詳細は `issues/README.md` 参照。
 
 ### ハードルール
 
-- issue ファイルを作成しない。
-- tracking エントリを自動生成しない。
-- スクリプトから `TRACKING.yaml` に書き込まない。
-- coverage gap を直接 tracking エントリに変換しない。
-- 同時に作業する `active` アイテムは最大1つ。
-- コードを書き始める前に、1つのアイテムを `open` から `active` に移動する。
-- 途中で止める場合は、`active` アイテムの `notes` に経過を追記する。
-- `evidence` なしで `done` に移動しない。
+- 新規 issue は `mise run issue-create` で作成する。手動作成禁止。
+- 状態変更は `mise run issue-status` を使う。ヘッダの手動編集は避ける。
+- 本文 (Acceptance / Notes / Evidence) は直接編集してよい。
+- 変更後は必ず `mise run issue-lint` を実行する。
+- 同時に作業する issue は最大1つ。
+- `issue-views/index.json` は生成物、commit しない。
+- `evidence` なしで `done` にしない。
 
 ### 作業開始
 
-1. `TRACKING.yaml` を読む。
-2. 1つの `open` アイテムを選ぶ。
-3. `active` セクションに移動し、`status: active` に設定する。
-4. `updated` を更新する。
-5. plan に goal、non_goals、acceptance コマンドを明記する。
+1. `mise run issue-index && cat issue-views/index.json` で状況把握。
+2. `ready == true` かつ `status == "open"` の P1 から選ぶ。
+3. `mise run issue-status <id> doing --owner <agent-name>` で着手宣言。
+4. `mise run issue-show <id>` で詳細確認。
 
-### 作業終了（close）
+### 作業終了（done）
 
-`done` に移せる条件:
+- acceptance の全コマンドを実行する。
+- `mise run issue-status <id> done --evidence "mise run gate: exit 0"`
+- 必要なら Evidence セクションを追記する (commit hash は任意)。
+- 残作業がある場合は、`mise run issue-create` で新規 issue に分離する。
 
-- acceptance の全コマンドを実行した。
-- 全コマンドが exit code 0 で終了した。
-- `evidence.commit` に commit hash を記入した。
-- `evidence.commands` に実行コマンドと exit code を記入した。
-- 残作業がある場合は、新しい `open` アイテムとして分離した。
+### 途中終了
 
-### 途中終了（commit しないで止める場合）
-
-アイテムを `active` に残し、`notes` に以下を追記する:
-
-- 何を変更したか
-- 何がまだ失敗するか
-- 次の正確な1ステップ
-- 実行したコマンドとその結果
+`mise run issue-status <id> open` で戻す。
+Notes セクションに経過を残す。
 
 ## 4) 並列開発のルール
 

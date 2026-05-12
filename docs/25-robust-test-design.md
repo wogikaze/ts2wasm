@@ -121,13 +121,13 @@ Goal: P15 開始前に `issue-NNN` の意味を tracking YAML、diagnostic messa
 Result:
 
 - `rg "issue-3(69|70|71|72|73|74|75|76|77|78|79|8[0-9]|9[0-9])"` の棚卸しを実施
-- `TRACKING.yaml` に全 P15 issue を登録
+- `issues/` に全 P15 issue を登録
 - `scripts/check/tracking-consistency.py` が issue-NNN tracking と TRACKING.yaml の一致を検査
 - この `docs/25-robust-test-design.md` を設計書として作成
 
 Key files:
 
-- `TRACKING.yaml`
+- `issues/`
 - `scripts/check/tracking-consistency.py`
 - `docs/25-robust-test-design.md`
 
@@ -592,7 +592,7 @@ Note: `fixtures/arrays-objects/array.ts` は P14 IR restructuring の regression
 
 Key files:
 
-- `TRACKING.yaml`
+- `issues/`
 - `crates/cli/tests/m2_node_diff.rs`
 
 ---

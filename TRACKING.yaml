@@ -1,4 +1,31 @@
-active: []
+active:
+- id: 390
+  title: Restore arrays-objects array semantic regression fixture
+  priority: P1
+  area: ir
+  type: bug
+  roadmap: P16-semantic-correctness
+  status: active
+  ready: true
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  plan:
+    goal: Restore fixtures/arrays-objects/array.ts to differential should-pass by
+      fixing the P14 IR restructuring regression that broke array element access (iwasm
+      returns undefined for arr[0] instead of 1).
+    files:
+    - crates/ir/src/lowered/resolver/expr/property.rs
+    - crates/ir/src/lowered/resolver/array.rs
+    - crates/cli/tests/m2_node_diff.rs
+    - fixtures/arrays-objects/array.ts
+  acceptance:
+  - cargo test -p ts2wasm-cli --test m2_node_diff
+  - fixture arrays-objects/array.ts returns "1\n3\n3" under iwasm
+  non_goals:
+  - No new array feature support beyond index-read and length-read already present
+    in fixture
+  notes: Pre-existing P14 regression from IR restructuring. The fixture builds but
+    iwasm returns undefined for array element access.
 done:
 - acceptance:
   - cargo test -p ts2wasm-backend-core -p ts2wasm-backend-wasm -p ts2wasm-compiler
@@ -1935,3 +1962,300 @@ meta:
     roadmap_source: docs/roadmap.md
   version: 1
 open:
+- id: 391
+  title: Define semantic feature matrix for supported language subset
+  priority: P1
+  area: cross
+  type: tooling
+  roadmap: P16-semantic-correctness
+  status: open
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  plan:
+    goal: Define a machine-readable semantic feature matrix that maps each supported
+      language construct to its test coverage. Connect to fixtures/catalog.yaml.
+    files:
+    - fixtures/catalog.yaml
+    - docs/26-semantic-feature-matrix.md
+  acceptance:
+  - test -f docs/26-semantic-feature-matrix.md
+  - grep -R 'feature:' fixtures/catalog.yaml
+  non_goals:
+  - No full ECMAScript spec conformance
+- id: 392
+  title: Add fixture assertion DSL for semantic expectations
+  priority: P1
+  area: cross
+  type: tooling
+  roadmap: P16-semantic-correctness
+  status: open
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  plan:
+    goal: 'Add machine-readable assertion fields to fixture catalog: expected stdout,
+      exit code, host imports, and diagnostics.'
+    files:
+    - fixtures/catalog.yaml
+    - scripts/check/fixture-assertions.py
+  acceptance:
+  - python3 scripts/check/fixture-assertions.py --self-test
+  - grep -R 'assert:' fixtures/catalog.yaml
+  non_goals:
+  - No runtime semantic change
+  depends_on:
+  - 391
+- id: 393
+  title: Add expression-level Node oracle differential generator
+  priority: P2
+  area: cross
+  type: tooling
+  roadmap: P16-semantic-correctness
+  status: open
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  plan:
+    goal: Build a generator that creates small expression-level programs, runs them
+      through Node and ts2wasm, and compares stdout output.
+    files:
+    - scripts/generate/expression-semantics.py
+    - scripts/check/expression-differential.py
+  acceptance:
+  - python3 scripts/generate/expression-semantics.py --smoke
+  - python3 scripts/check/expression-differential.py --seed 42
+  non_goals:
+  - No arbitrary JS generation
+  - No full fuzzing harness in this issue
+  depends_on:
+  - 390
+  - 392
+- id: 394
+  title: Add numeric and coercion semantic property tests
+  priority: P2
+  area: cross
+  type: test
+  roadmap: P16-semantic-correctness
+  status: open
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  plan:
+    goal: Property-based tests for numeric operations (+, -, *, /, %, comparison,
+      NaN, Infinity, -0) and type coercion (==, !=, truthiness, string/number conversion).
+    files:
+    - crates/cli/tests/numeric_semantics.rs
+    - fixtures/semantic/numeric/
+  acceptance:
+  - cargo test -p ts2wasm-cli --test numeric_semantics
+  non_goals:
+  - No BigInt semantics in this issue
+  depends_on:
+  - 393
+- id: 395
+  title: Add control-flow semantics differential suite
+  priority: P2
+  area: cross
+  type: test
+  roadmap: P16-semantic-correctness
+  status: open
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  plan:
+    goal: 'Systematic tests for control flow: if/else, while, for, break, continue,
+      return, and try/catch/finally.'
+    files:
+    - fixtures/semantic/control-flow/
+  acceptance:
+  - python3 scripts/check/expression-differential.py --area control-flow
+  non_goals:
+  - No async/await or generator semantics
+  depends_on:
+  - 390
+  - 392
+- id: 396
+  title: Add arrays/objects semantic vertical slice
+  priority: P2
+  area: cross
+  type: test
+  roadmap: P16-semantic-correctness
+  status: open
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  plan:
+    goal: 'Systematic tests for array and object semantics: literal, index access,
+      length, property read/write, missing property, nested objects, mutation, holes.'
+    files:
+    - fixtures/semantic/arrays/
+    - fixtures/semantic/objects/
+  acceptance:
+  - pytest scripts/check/expression-differential.py --area arrays
+  - pytest scripts/check/expression-differential.py --area objects
+  non_goals:
+  - No Proxy or defineProperty semantics
+  depends_on:
+  - 390
+  - 392
+- id: 397
+  title: Add function/call semantics differential suite
+  priority: P2
+  area: cross
+  type: test
+  roadmap: P16-semantic-correctness
+  status: open
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  plan:
+    goal: 'Systematic tests for function call semantics: call, return, parameters,
+      recursion, closures, variadic args.'
+    files:
+    - fixtures/semantic/functions/
+  acceptance:
+  - pytest scripts/check/expression-differential.py --area functions
+  non_goals:
+  - No class/constructor semantics in this issue
+  depends_on:
+  - 390
+  - 392
+- id: 398
+  title: Add runtime builtin semantic contracts
+  priority: P2
+  area: runtime
+  type: test
+  roadmap: P16-semantic-correctness
+  status: open
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  plan:
+    goal: Add semantic-level tests for runtime builtins (console, Math helpers, string/object
+      methods) that verify observable behavior matches Node, not just structural contracts.
+    files:
+    - crates/runtime-catalog/tests/builtin_semantics.rs
+    - fixtures/semantic/builtins/
+  acceptance:
+  - cargo test -p ts2wasm-runtime-catalog --test builtin_semantics
+  non_goals:
+  - No implementation of new builtins
+  depends_on:
+  - 392
+- id: 399
+  title: Create property-based semantic generator MVP
+  priority: P2
+  area: cross
+  type: tooling
+  roadmap: P16-semantic-correctness
+  status: open
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  plan:
+    goal: Property-based generator that creates programs within a restricted subset
+      and compares Node vs ts2wasm output with deterministic seed replay.
+    files:
+    - scripts/generate/property-semantics.py
+  acceptance:
+  - python3 scripts/generate/property-semantics.py --seed 42 --limit 100
+  non_goals:
+  - No full JavaScript fuzzing
+  depends_on:
+  - 393
+- id: 400
+  title: Create differential fuzzing harness MVP
+  priority: P3
+  area: cross
+  type: tooling
+  roadmap: P16-semantic-correctness
+  status: open
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  plan:
+    goal: Differential fuzzing harness that generates programs, compiles with ts2wasm,
+      runs under iwasm, compares to Node, and detects mismatches.
+    files:
+    - scripts/fuzz/differential-fuzz.py
+  acceptance:
+  - python3 scripts/fuzz/differential-fuzz.py --timeout 30
+  non_goals:
+  - No structured crash minimization in this issue
+  depends_on:
+  - 399
+- id: 401
+  title: Add counterexample minimization and fixture promotion
+  priority: P3
+  area: cross
+  type: tooling
+  roadmap: P16-semantic-correctness
+  status: open
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  plan:
+    goal: When generated tests fail, minimize the failing program to its essential
+      form and promote it to the fixture catalog with proper semantic tracking.
+    files:
+    - scripts/fuzz/counterexample.py
+    - fixtures/catalog.yaml
+  acceptance:
+  - python3 scripts/fuzz/counterexample.py --self-test
+  non_goals:
+  - No automatic fix generation
+  depends_on:
+  - 400
+- id: 402
+  title: Add semantic coverage dashboard and gate
+  priority: P3
+  area: coverage
+  type: tooling
+  roadmap: P16-semantic-correctness
+  status: open
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  plan:
+    goal: Create a semantic coverage dashboard that shows per-feature coverage rather
+      than raw test counts. Gate CI on semantic feature regression.
+    files:
+    - scripts/dashboard/semantic-coverage.py
+    - scripts/gate/semantic-regression.py
+    - docs/current-state.md
+  acceptance:
+  - python3 scripts/dashboard/semantic-coverage.py
+  - python3 scripts/gate/semantic-regression.py
+  non_goals:
+  - No test262 full run in CI
+  depends_on:
+  - 391
+  - 392
+- id: 403
+  title: P16 final semantic correctness gate
+  priority: P1
+  area: cross
+  type: tooling
+  roadmap: P16-semantic-correctness
+  status: open
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  plan:
+    goal: 'Final roll-up gate for P16: all semantic regression fixtures pass, generator
+      produces deterministic results, counterexample pipeline works, dashboard shows
+      per-feature coverage.'
+    files:
+    - crates/**
+    - scripts/**
+    - fixtures/**
+    - docs/**
+  acceptance:
+  - python3 scripts/check/tracking-consistency.py
+  - cargo test --workspace
+  - mise run check architecture
+  - python3 scripts/dashboard/semantic-coverage.py --check-regression
+  non_goals:
+  - No full ECMAScript compliance
+  depends_on:
+  - 390
+  - 391
+  - 392
+  - 393
+  - 394
+  - 395
+  - 396
+  - 397
+  - 398
+  - 399
+  - 400
+  - 401
+  - 402

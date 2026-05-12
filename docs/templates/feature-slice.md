@@ -77,4 +77,4 @@ Each row is a required layer unless marked optional.
 - [ ] build_smoke test added (compilation check)
 - [ ] Coverage dashboard updated (if applicable to test262)
 - [ ] `docs/current-state.md` reflects the new capability
-- [ ] `TRACKING.yaml` entry closed with commit evidence
+- [ ] `issues.yaml` entry closed with commit evidence

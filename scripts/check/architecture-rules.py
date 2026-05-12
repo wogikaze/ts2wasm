@@ -397,7 +397,7 @@ def should_count_lines(path: Path) -> bool:
         return False
     if any(part in EXCLUDED_PATH_PARTS for part in relative.parts):
         return False
-    if relative == Path("TRACKING.yaml"):
+    if relative == Path("issues/README.md"):
         return False
     if path.suffix not in LINE_COUNT_SUFFIXES:
         return False
@@ -425,7 +425,7 @@ def find_oversized_files(max_file_lines: int) -> list[tuple[int, Path]]:
             for dirname in dirnames
             if dirname not in EXCLUDED_PATH_PARTS
             and dirname not in EXCLUDED_FILENAMES
-            and (rel_root / dirname) != Path("TRACKING.yaml")
+            and (rel_root / dirname) != Path("issues/README.md")
         ]
         for filename in filenames:
             path = Path(root) / filename
@@ -448,7 +448,7 @@ def iter_repo_files(suffix: str | None = None):
             for dirname in dirnames
             if dirname not in EXCLUDED_PATH_PARTS
             and dirname not in EXCLUDED_FILENAMES
-            and (rel_root / dirname) != Path("TRACKING.yaml")
+            and (rel_root / dirname) != Path("issues/README.md")
         ]
         for filename in filenames:
             path = Path(root) / filename

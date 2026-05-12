@@ -44,7 +44,7 @@ issue の追加・更新は、ファイル作成・更新ごとにこまめに�
 
 対象:
 
-- `TRACKING.yaml` (open/active/done items)
+- `issues/` (open/active/done items)
 - audit note
 - progress note
 - checklist tracking issue

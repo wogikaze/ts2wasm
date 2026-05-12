@@ -1,21 +1,19 @@
 #!/usr/bin/env python3
-"""Validate TRACKING.yaml structural consistency and ID sequence integrity.
+"""Validate issue-NNN namespace consistency across source/diagnostic refs.
 
-Also checks for issue-NNN namespace conflicts between source/diagnostic
-references and active/reserved issue ranges.
+The old TRACKING.yaml is replaced by issues/<id>.md files per issue.
+This script checks that issue-NNN references in source code and diagnostic
+messages are not stale or conflicting.
 
-Read-only: this script must never modify TRACKING.yaml.
+Use mise run issue-lint for per-issue structural validation.
 """
 import glob as glob_module
 import re
 import sys
 from pathlib import Path
 
-import yaml
-
 ROOT = Path(__file__).resolve().parents[2]
-TRACKING = ROOT / "TRACKING.yaml"
-DEFAULT_CLOSED_SOURCE = ROOT / "docs" / "done-tracking.yaml"
+ISSUES_DIR = ROOT / "issues"
 
 # Known historical gaps in ID sequence (never existed, not lost).
 # Add exceptions here with a comment explaining why.
@@ -285,23 +283,31 @@ def check_plan_files(data: dict, root: Path) -> None:
 
 
 def main() -> None:
-    if not TRACKING.exists():
-        fail("TRACKING.yaml does not exist")
+    if not ISSUES_DIR.exists():
+        fail("issues/ dir does not exist — run mise run issue-lint instead")
 
-    try:
-        data = yaml.safe_load(TRACKING.read_text())
-    except Exception as e:
-        fail(f"YAML parse error: {e}")
+    # issue-lint.py now handles per-file validation.
+    # This script only checks issue-NNN namespace consistency in diagnostics.
+    issue_ids = set()
+    legacy_ids = set()
+    
+    for f in sorted(ISSUES_DIR.glob("I-*.md")):
+        content = f.read_text(encoding="utf-8")
+        header_text = content.split("\n---\n", 1)[0]
+        header = {}
+        for line in header_text.strip().split("\n"):
+            if ":" in line:
+                k, _, v = line.partition(":")
+                header[k.strip()] = v.strip()
+        iid = header.get("Id", "")
+        lid = header.get("LegacyId", "")
+        if iid:
+            issue_ids.add(iid)
+        if lid and lid.isdigit():
+            legacy_ids.add(int(lid))
 
-    if not isinstance(data, dict):
-        fail("root must be a mapping")
-
-    meta = data.get("meta", {})
-    if not isinstance(meta, dict):
-        fail("meta must be a mapping")
-
-    open_limit = int(meta.get("open_limit", 50))
-    active_limit = int(meta.get("active_limit", 1))
+    open_limit = 50
+    active_limit = 1
     closed_source = meta.get("closed_source")
     closed_path = ROOT / closed_source if closed_source else DEFAULT_CLOSED_SOURCE
     closed_ids = load_closed_ids(closed_path)
@@ -334,7 +340,7 @@ def main() -> None:
             if item_id in ids:
                 fail(f"duplicate id: {item_id}")
             if item_id in closed_ids:
-                fail(f"id {item_id}: appears in both TRACKING.yaml and {closed_path.relative_to(ROOT)}")
+                fail(f"id {item_id}: appears in both issues/ and {closed_path.relative_to(ROOT)}")
             ids.add(item_id)
 
             # Collect depends_on references for cross-reference validation
