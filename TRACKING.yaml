@@ -1465,16 +1465,6 @@ done:
       exit: 0
   acceptance:
   - python3 scripts/check/tracking-consistency.py
-meta:
-  active_limit: 1
-  open_limit: 40
-  policy:
-    canonical_source: TRACKING.yaml
-    closed_source: docs/done-tracking.yaml
-    generated_entries: forbidden
-    roadmap_source: docs/roadmap.md
-  version: 1
-open:
 - acceptance:
   - cargo test -p ts2wasm-ir -p ts2wasm-backend-wasm -p ts2wasm-compiler
   - grep -R "CompletionRecord" crates/ir/src/lowered
@@ -1482,10 +1472,24 @@ open:
   - grep -R "TryFinally" crates/ir/src/lowered crates/backend-wasm/src
   - mise run check architecture
   area: ir
+  closed: '2026-05-12'
   created: '2026-05-12'
   depends_on:
   - 348
   - 349
+  evidence:
+    commands:
+    - command: cargo test -p ts2wasm-ir -p ts2wasm-backend-wasm -p ts2wasm-compiler
+      exit: 0
+    - command: grep -R "CompletionRecord" crates/ir/src/lowered
+      exit: 0
+    - command: grep -R "CompletionKind" crates/ir/src/lowered
+      exit: 0
+    - command: grep -R "TryFinally" crates/ir/src/lowered crates/backend-wasm/src
+      exit: 0
+    - command: mise run check architecture
+      exit: 0
+    commit: 477929c6f
   id: 352
   non_goals:
   - No async/await completion semantics.
@@ -1506,7 +1510,7 @@ open:
       '
   priority: P1
   roadmap: P14-semantic-kernels
-  status: open
+  status: done
   title: Introduce CompletionRecord lowering for return, throw, break, continue, and try-finally
   type: refactor
   updated: '2026-05-12'
@@ -1518,7 +1522,23 @@ open:
   - grep -R "validate_mir" crates/ir/src crates/ir/tests
   - mise run check architecture
   area: ir
+  closed: '2026-05-12'
   created: '2026-05-12'
+  evidence:
+    commands:
+    - command: cargo test -p ts2wasm-ir
+      exit: 0
+    - command: grep -R "dump_hir\|HirDump" crates/ir/src crates/ir/tests
+      exit: 0
+    - command: grep -R "dump_mir\|MirDump" crates/ir/src crates/ir/tests
+      exit: 0
+    - command: grep -R "validate_hir" crates/ir/src crates/ir/tests
+      exit: 0
+    - command: grep -R "validate_mir" crates/ir/src crates/ir/tests
+      exit: 0
+    - command: mise run check architecture
+      exit: 0
+    commit: 4081bf9ff
   id: 353
   non_goals:
   - No full replacement of LoweredProgram.
@@ -1542,19 +1562,34 @@ open:
       '
   priority: P1
   roadmap: P14-ir-contracts
-  status: open
+  status: done
   title: Add HIR and MIR variant dump, snapshot, and validator hard coverage
   type: test
   updated: '2026-05-12'
 - acceptance:
   - cargo test -p ts2wasm-ir -p ts2wasm-backend-wasm -p ts2wasm-compiler
   - grep -R "lower_hir_to_mir" crates/ir/src crates/compiler/src
-  - grep -R "CallRuntime.*RuntimeFn" crates/ir/src/lowered crates/ir/tests
+  - grep -R "RuntimeCall" crates/ir/src/lowered crates/ir/tests
+  - grep -R "RuntimeFn" crates/ir/src/lowered crates/ir/tests
   - mise run check architecture
   area: ir
+  closed: '2026-05-12'
   created: '2026-05-12'
   depends_on:
   - 353
+  evidence:
+    commands:
+    - command: cargo test -p ts2wasm-ir -p ts2wasm-backend-wasm -p ts2wasm-compiler
+      exit: 0
+    - command: grep -R "lower_hir_to_mir" crates/ir/src crates/compiler/src
+      exit: 0
+    - command: grep -R "RuntimeCall" crates/ir/src/lowered crates/ir/tests
+      exit: 0
+    - command: grep -R "RuntimeFn" crates/ir/src/lowered crates/ir/tests
+      exit: 0
+    - command: mise run check architecture
+      exit: 0
+    commit: 30826da69
   id: 354
   non_goals:
   - No full ECMAScript feature migration.
@@ -1575,7 +1610,7 @@ open:
       '
   priority: P1
   roadmap: P14-ir-contracts
-  status: open
+  status: done
   title: Complete HIR to MIR lowering for the currently supported feature surface
   type: refactor
   updated: '2026-05-12'
@@ -1586,9 +1621,23 @@ open:
   - grep -R "HostImport" crates/runtime-catalog/tests crates/backend-wasm/tests crates/compiler/tests
   - grep -R "manifest" crates/compiler/tests
   area: runtime
+  closed: '2026-05-12'
   created: '2026-05-12'
   depends_on:
   - 356
+  evidence:
+    commands:
+    - command: cargo test -p ts2wasm-runtime-catalog -p ts2wasm-backend-wasm -p ts2wasm-compiler
+      exit: 0
+    - command: mise run check architecture
+      exit: 0
+    - command: grep -R "Capability" crates/runtime-catalog/tests crates/backend-wasm/tests crates/compiler/tests
+      exit: 0
+    - command: grep -R "HostImport" crates/runtime-catalog/tests crates/backend-wasm/tests crates/compiler/tests
+      exit: 0
+    - command: grep -R "manifest" crates/compiler/tests
+      exit: 0
+    commit: 16379c628
   id: 357
   non_goals:
   - No capability policy redesign.
@@ -1610,7 +1659,7 @@ open:
       '
   priority: P1
   roadmap: P14-runtime-catalog-hardening
-  status: open
+  status: done
   title: Extract runtime-abi crate for RawValue tags, layout constants, and logical ABI definitions
   type: refactor
   updated: '2026-05-12'
@@ -1619,9 +1668,19 @@ open:
   - cargo test -p ts2wasm-resolve -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler
   - grep -R "ts2wasm_resolve" crates/ir crates/compiler
   area: ir
+  closed: '2026-05-12'
   created: '2026-05-12'
   depends_on:
   - 359
+  evidence:
+    commands:
+    - command: test -f crates/resolve/Cargo.toml
+      exit: 0
+    - command: cargo test -p ts2wasm-resolve -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler
+      exit: 0
+    - command: grep -R "ts2wasm_resolve" crates/ir crates/compiler
+      exit: 0
+    commit: d004815dd
   id: 360
   non_goals:
   - No resolver semantic expansion.
@@ -1641,7 +1700,7 @@ open:
       '
   priority: P2
   roadmap: P14-target-crate-layout
-  status: open
+  status: done
   title: Extract resolve crate for name resolution, scopes, symbols, and resolved IDs
   type: refactor
   updated: '2026-05-12'
@@ -1650,9 +1709,19 @@ open:
   - cargo test -p ts2wasm-semantics -p ts2wasm-ir -p ts2wasm-compiler
   - grep -R "ts2wasm_semantics" crates/ir crates/compiler
   area: ir
+  closed: '2026-05-12'
   created: '2026-05-12'
   depends_on:
   - 360
+  evidence:
+    commands:
+    - command: test -f crates/semantics/Cargo.toml
+      exit: 0
+    - command: cargo test -p ts2wasm-semantics -p ts2wasm-ir -p ts2wasm-compiler
+      exit: 0
+    - command: grep -R "ts2wasm_semantics" crates/ir crates/compiler
+      exit: 0
+    commit: e6859e2ff
   id: 361
   non_goals:
   - No new builtin support.
@@ -1672,7 +1741,7 @@ open:
       '
   priority: P2
   roadmap: P14-target-crate-layout
-  status: open
+  status: done
   title: Extract semantics crate for builtin resolution, TypeScript erasure, and host API classification
   type: refactor
   updated: '2026-05-12'
@@ -1682,7 +1751,19 @@ open:
   - grep -R "MAX_FILE_LINES.*1200\\|DEFAULT_MAX_FILE_LINES = 1200" scripts/check/architecture-rules.py
   - grep -R "MAX_FUNCTION_LINES.*200\\|FUNCTION.*200" scripts/check/architecture-rules.py
   area: cross
+  closed: '2026-05-12'
   created: '2026-05-12'
+  evidence:
+    commands:
+    - command: cargo test --workspace
+      exit: 0
+    - command: mise run check architecture
+      exit: 0
+    - command: grep -R "MAX_FILE_LINES.*1200\|DEFAULT_MAX_FILE_LINES = 1200" scripts/check/architecture-rules.py
+      exit: 0
+    - command: grep -R "MAX_FUNCTION_LINES.*200\|FUNCTION.*200" scripts/check/architecture-rules.py
+      exit: 0
+    commit: 1dd5730fc
   id: 364
   non_goals:
   - No semantic behavior change.
@@ -1701,7 +1782,7 @@ open:
       '
   priority: P2
   roadmap: P14-final-sizing
-  status: open
+  status: done
   title: Move LLM-friendly hard gates to 1200-line files and 200-line functions
   type: tooling
   updated: '2026-05-12'
@@ -1711,9 +1792,21 @@ open:
   - grep -R "public_api" scripts/check/architecture-rules.py
   - grep -R "match.*arms" scripts/check/architecture-rules.py
   area: cross
+  closed: '2026-05-12'
   created: '2026-05-12'
   depends_on:
   - 364
+  evidence:
+    commands:
+    - command: mise run check architecture
+      exit: 0
+    - command: grep -R "fan_out" scripts/check/architecture-rules.py
+      exit: 0
+    - command: grep -R "public_api" scripts/check/architecture-rules.py
+      exit: 0
+    - command: grep -R "match.*arms" scripts/check/architecture-rules.py
+      exit: 0
+    commit: 6d2c39309
   id: 365
   non_goals:
   - No immediate ban on RuntimeFn-sized enums.
@@ -1731,10 +1824,21 @@ open:
       '
   priority: P2
   roadmap: P14-final-sizing
-  status: open
+  status: done
   title: Add coupling hardening checks for fan-out, public API count, and match arm size
   type: tooling
   updated: '2026-05-12'
+
+meta:
+  active_limit: 1
+  open_limit: 40
+  policy:
+    canonical_source: TRACKING.yaml
+    closed_source: docs/done-tracking.yaml
+    generated_entries: forbidden
+    roadmap_source: docs/roadmap.md
+  version: 1
+open:
 - acceptance:
   - cargo test --workspace
   - mise run check architecture
