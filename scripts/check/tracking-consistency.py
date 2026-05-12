@@ -6,6 +6,7 @@ references and active/reserved issue ranges.
 
 Read-only: this script must never modify TRACKING.yaml.
 """
+import glob as glob_module
 import re
 import sys
 from pathlib import Path
@@ -74,7 +75,7 @@ REQUIRED = {
 }
 
 VALID_PRIORITIES = {"P1", "P2", "P3", "P4"}
-VALID_STATUSES = {"open", "active", "done"}
+VALID_STATUSES = {"open", "active", "done", "blocked"}
 VALID_TYPES = {
     "feature",
     "runtime-builtin",
@@ -224,6 +225,65 @@ def check_issue_namespace() -> int:
     return violations
 
 
+# ---------------------------------------------------------------------------
+# Plan files existence checks
+# ---------------------------------------------------------------------------
+
+
+def _check_plan_files_item(item: dict, root: Path) -> None:
+    """Check that plan.files entries for a single item reference real paths.
+
+    Handles:
+    - Exact file paths (must exist or parent must exist)
+    - Glob patterns (must have at least one match or parent must exist)
+    - Directory references (must exist or parent must exist)
+    """
+    item_id = item.get("id", "?")
+    plan = item.get("plan")
+    if not isinstance(plan, dict):
+        return
+    files = plan.get("files")
+    if not isinstance(files, list):
+        return
+
+    for entry in files:
+        if not isinstance(entry, str) or not entry.strip():
+            continue
+        entry = entry.strip()
+
+        # Build absolute path from repo root
+        full = root / entry
+
+        # Check exact path existence
+        if full.exists():
+            continue
+
+        # Check glob pattern (handles **, *, ? patterns)
+        normalized = str(full)
+        matches = glob_module.glob(normalized, recursive=True)
+        if matches:
+            continue
+
+        # Check parent directory exists — catches typos while allowing
+        # planned files that haven't been created yet
+        parent = full.parent
+        if parent.exists():
+            continue
+
+        fail(
+            f"id {item_id}: plan.files entry '{entry}' references a path that "
+            f"does not exist and whose parent directory also does not exist"
+        )
+
+
+def check_plan_files(data: dict, root: Path) -> None:
+    """Validate plan.files paths for all sections."""
+    for section in SECTIONS:
+        items = data.get(section, []) or []
+        for item in items:
+            _check_plan_files_item(item, root)
+
+
 def main() -> None:
     if not TRACKING.exists():
         fail("TRACKING.yaml does not exist")
@@ -288,7 +348,9 @@ def main() -> None:
                     depends_on_refs.append((item_id, dep_id))
 
             if item.get("status") != section:
-                fail(f"id {item_id}: status must be '{section}'")
+                # Allow "blocked" status in the "open" section
+                if not (item.get("status") == "blocked" and section == "open"):
+                    fail(f"id {item_id}: status must be '{section}' (got '{item.get('status')}')")
 
             # Priority validation
             priority = item.get("priority")
@@ -298,7 +360,7 @@ def main() -> None:
             # Status validation (explicit enum check)
             item_status = item.get("status")
             if item_status not in VALID_STATUSES:
-                fail(f"id {item_id}: invalid status '{item_status}'; must be open/active/done")
+                fail(f"id {item_id}: invalid status '{item_status}'; must be open/active/done/blocked")
 
             # Type validation
             item_type = item.get("type")
@@ -365,6 +427,9 @@ def main() -> None:
                 for referrer, dep in missing_deps
             )
             fail(f"depends_on references non-existent IDs: {msg}")
+
+    # plan.files existence check
+    check_plan_files(data, ROOT)
 
     # ID sequence integrity check: no gaps, no deletions
     all_ids = ids | closed_ids

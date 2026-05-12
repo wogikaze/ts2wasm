@@ -1096,6 +1096,36 @@ done:
   status: done
   updated: '2026-05-12'
   closed: '2026-05-12'
+- id: 385
+  title: Add semantic canary test suite
+  priority: P2
+  area: coverage
+  type: test
+  roadmap: P15-test-hardening
+  status: done
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  closed: '2026-05-12'
+  depends_on:
+  - 372
+  - 383
+  non_goals:
+  - No full test262 conformance.
+  plan:
+    files:
+    - scripts/data/
+    - fixtures/catalog.yaml
+    - docs/current-state.md
+    goal: Small curated set of fixtures that exercise all active semantic paths.
+  acceptance:
+  - grep -R 'canary' fixtures/catalog.yaml docs/current-state.md
+  evidence:
+    commit: a65d66f25
+    commands:
+    - command: grep 'canary' fixtures/catalog.yaml docs/current-state.md
+      exit: 0
+    - command: git diff --check
+      exit: 0
 meta:
   active_limit: 1
   open_limit: 40
@@ -1592,35 +1622,6 @@ open:
     goal: Every compiled fixture produces valid wasm (wat2wasm or wasm-validate).
   acceptance:
   - python3 scripts/check/wasm-validation.py
-- id: 385
-  title: Add semantic canary test suite
-  priority: P2
-  area: coverage
-  type: test
-  roadmap: P15-test-hardening
-  status: done
-  created: '2026-05-12'
-  updated: '2026-05-12'
-  depends_on:
-  - 372
-  - 383
-  non_goals:
-  - No full test262 conformance.
-  plan:
-    files:
-    - scripts/data/
-    - fixtures/catalog.yaml
-    - docs/current-state.md
-    goal: Small curated set of fixtures that exercise all active semantic paths.
-  acceptance:
-  - grep -R 'canary' fixtures/catalog.yaml docs/current-state.md
-  evidence:
-    commit: a65d66f25
-    commands:
-    - command: grep 'canary' fixtures/catalog.yaml docs/current-state.md
-      exit: 0
-    - command: git diff --check
-      exit: 0
 - id: 386
   title: Add tracking integrity automation
   priority: P2
