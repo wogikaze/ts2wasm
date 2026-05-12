@@ -3,13 +3,15 @@
 // Every `LoweredStmt` and `LoweredExpr` variant is explicitly handled so
 // that adding a new variant without updating the dump is a compile error.
 
-use crate::lowered::mir::MirProgram;
 use crate::lowered::{LoweredArraySlot, LoweredProgram};
 use crate::{LoweredExpr, LoweredFunction, LoweredStmt};
 
 /// Produce a dump string for the entire MIR (lowered) program.
-pub fn dump_mir(program: &MirProgram) -> String {
-    let lowered: LoweredProgram = program.clone().into();
+pub fn dump_mir<P>(program: P) -> String
+where
+    P: Into<LoweredProgram>,
+{
+    let lowered: LoweredProgram = program.into();
     let program = &lowered;
     let mut out = String::new();
     out.push_str("MirProgram {\n");

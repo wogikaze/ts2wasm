@@ -1025,8 +1025,8 @@ mod tests {
                     name: "isPrimitive".to_string(),
                     span: Span { start: 0, end: 11 },
                 }),
-                args: vec![Expr::Ident {
-                    name: "value".to_string(),
+                args: vec![Expr::Number {
+                    value: 1,
                     span: Span { start: 12, end: 17 },
                 }],
                 span: Span { start: 0, end: 18 },

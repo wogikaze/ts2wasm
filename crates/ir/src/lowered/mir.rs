@@ -1423,6 +1423,18 @@ impl From<MirProgram> for LoweredProgram {
     }
 }
 
+impl From<&MirProgram> for LoweredProgram {
+    fn from(program: &MirProgram) -> Self {
+        program.clone().into()
+    }
+}
+
+impl From<&LoweredProgram> for LoweredProgram {
+    fn from(program: &LoweredProgram) -> Self {
+        program.clone()
+    }
+}
+
 // ---------------------------------------------------------------------------
 // MirExpr helper
 // ---------------------------------------------------------------------------

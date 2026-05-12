@@ -436,9 +436,8 @@ fn lowers_function_body() {
         }],
     };
     let mir = lower_hir_to_mir_native(&hir);
-    let lowered = mir.as_lowered();
-    assert_eq!(lowered.functions.len(), 1);
-    let f = &lowered.functions[0];
+    assert_eq!(mir.functions.len(), 1);
+    let f = &mir.functions[0];
     assert_eq!(f.id, FuncId(0));
     assert_eq!(f.params, vec![LocalId(0)]);
     assert_eq!(f.locals, vec![LocalId(0)]);
