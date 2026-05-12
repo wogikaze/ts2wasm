@@ -1664,7 +1664,7 @@ open:
   acceptance:
   - python3 scripts/check/flaky-detect.py --help
   evidence:
-    commit: PLACEHOLDER
+    commit: e7f31f34f
     commands:
     - command: python3 scripts/check/flaky-detect.py --help
       exit: 0
