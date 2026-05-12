@@ -33,7 +33,7 @@ done:
         - "docs/24-architecture-decoupling-and-llm-friendly-sizing.md"
       acceptance: "mise run check architecture && grep fan_out scripts/check/architecture-rules.py && grep public_api scripts/check/architecture-rules.py && grep match.*arms scripts/check/architecture-rules.py"
     evidence:
-      commit: ""
+      commit: 0e0696d60
       commands:
         - "python3 scripts/check/architecture-rules.py => exit 0"
         - "grep fan_out scripts/check/architecture-rules.py => exit 0"
