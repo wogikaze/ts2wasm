@@ -10,6 +10,68 @@ meta:
 open: []
 active: []
 done:
+  - id: 354
+    title: "Complete HIR-to-MIR lowering for currently supported feature surface"
+    priority: P1
+    type: refactor
+    area: ir
+    status: done
+    created: 2026-05-12
+    updated: 2026-05-12
+    roadmap: W8
+    acceptance:
+      - "cargo nextest run -p ts2wasm-ir --test hir_to_mir"
+      - "python3 scripts/check/architecture-rules.py"
+    non_goals:
+      - "No runtime-level lowering beyond RuntimeCall nodes."
+      - "No new MIR optimization passes."
+    plan:
+      goal: "Lower every HIR variant (6 HirStmt, 19 HirExpr) to its MIR counterpart for the current supported feature surface"
+      files:
+        - "crates/ir/src/lowered/hir_to_mir.rs: HirToMirLowerer with complete variant mapping"
+        - "crates/ir/src/lowered/lower.rs: lower() entry point"
+        - "crates/compiler/src/stages/lower.rs: compiler stage with HIR validation"
+        - "crates/ir/tests/hir_to_mir.rs: 28 tests covering every variant"
+      acceptance: "cargo nextest run -p ts2wasm-ir --test hir_to_mir && architecture-rules.py pass"
+    evidence:
+      commit: 30826da69
+      commands:
+        - "cargo nextest run -p ts2wasm-ir --test hir_to_mir => exit 0 (28/28)"
+        - "cargo fmt --all --check => exit 0"
+        - "git diff --check => exit 0"
+        - "python3 scripts/check/architecture-rules.py => exit 0"
+  - id: 353
+    title: "Add HIR/MIR variant dump, snapshot, and validator coverage"
+    priority: P1
+    type: test
+    area: ir
+    status: done
+    created: 2026-05-12
+    updated: 2026-05-12
+    roadmap: W8
+    acceptance:
+      - "cargo nextest run -p ts2wasm-ir --test hir_snapshot"
+      - "cargo nextest run -p ts2wasm-ir --test mir_snapshot"
+      - "python3 scripts/check/architecture-rules.py"
+    non_goals:
+      - "No MIR-level optimization passes."
+      - "No lowering tests (covered by issue 354)."
+    plan:
+      goal: "Every HIR (19) and MIR (18 stmt + 34 expr) variant must be dumpable, snapshot-testable, and validator-covered"
+      files:
+        - "crates/ir/src/lowered/hir_dump.rs: dump_hir() covering all 19 HirExpr + 6 HirStmt variants"
+        - "crates/ir/src/lowered/mir_dump.rs: dump_mir() covering all 34 LoweredExpr + 18 LoweredStmt variants"
+        - "crates/ir/tests/hir_snapshot.rs: 28 tests for HIR variants"
+        - "crates/ir/tests/mir_snapshot.rs: 61 tests for MIR variants"
+      acceptance: "snapshot tests pass && architecture-rules checks for dump/validate functions"
+    evidence:
+      commit: 4081bf9ff
+      commands:
+        - "cargo nextest run -p ts2wasm-ir --test hir_snapshot => exit 0 (28/28)"
+        - "cargo nextest run -p ts2wasm-ir --test mir_snapshot => exit 0 (61/61)"
+        - "cargo fmt --all --check => exit 0"
+        - "git diff --check => exit 0"
+        - "python3 scripts/check/architecture-rules.py => exit 0"
   - id: 242
     title: "Upgrade class fixtures from build_smoke to semantic_diff (W9a)"
     priority: P2
