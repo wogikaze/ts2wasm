@@ -377,3 +377,8 @@ fn build_smoke_live_binding() {
 fn build_smoke_dynamic_import() {
     assert_fixture_build_smoke("builtins-and-io/dynamic-import.ts");
 }
+
+#[test]
+fn static_binary_import_build_smoke() {
+    assert_fixture_build_smoke("module-system/static-binary-import-entry.ts");
+}
