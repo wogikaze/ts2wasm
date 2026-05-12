@@ -16,3 +16,4 @@ check(Math.trunc(-7), -7);
 check(Math.sign(5), 1);
 check(Math.sign(0), 0);
 check(Math.sign(-3), -1);
+console.log("done");

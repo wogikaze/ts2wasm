@@ -264,12 +264,7 @@ fn standalone_wasi_math_trunc_sign() {
         result.iwasm_success,
         "iwasm should succeed for math-trunc-sign"
     );
-    // This fixture uses check() which throws on failure, so success == all checks passed
-    assert!(
-        result.iwasm_stdout.is_empty(),
-        "stdout should be empty (fixture uses throw on failure): got {}",
-        result.iwasm_stdout
-    );
+    assert_eq!(result.iwasm_stdout, "done\n", "stdout should be done");
 
     assert_standalone_manifest(&result.manifest, "math-trunc-sign.ts");
     assert_no_node_host_imports(&result.wasm_bytes, "math-trunc-sign.ts");

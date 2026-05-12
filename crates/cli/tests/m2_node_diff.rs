@@ -991,6 +991,7 @@ fn extended_math_builtins_match_node() {
     for fixture in [
         "fixtures/builtins-and-io/math-cbrt.ts",
         "fixtures/builtins-and-io/math-sqrt.ts",
+        "fixtures/builtins-and-io/math-trunc-sign.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
