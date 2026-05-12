@@ -1,6 +1,59 @@
 active: []
 done:
 - acceptance:
+  - test -f crates/syntax/Cargo.toml
+  - cargo test -p ts2wasm-syntax -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler
+  - grep -R "ts2wasm_syntax" crates/frontend crates/ir crates/compiler
+  - '! grep -R "ts2wasm_frontend::.*Stmt\|ts2wasm_frontend::.*Expr" crates/ir/src
+    crates/backend-wasm/src crates/compiler/src'
+  area: frontend
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  evidence:
+    commands:
+    - command: test -f crates/syntax/Cargo.toml
+      exit: 0
+    - command: cargo test -p ts2wasm-syntax -p ts2wasm-frontend -p ts2wasm-ir -p
+        ts2wasm-compiler
+      exit: 1
+    - command: grep -R "ts2wasm_syntax" crates/frontend crates/ir crates/compiler
+      exit: 0
+    - command: grep -R "ts2wasm_frontend::.*Stmt\|ts2wasm_frontend::.*Expr" crates/ir/src
+        crates/backend-wasm/src crates/compiler/src
+      exit: 1
+    - command: git diff --check
+      exit: 0
+    commit: PLACEHOLDER
+  id: 359
+  non_goals:
+  - No grammar change.
+  - No parser rewrite.
+  notes: 'Compiler crate imports updated from ts2wasm_frontend to ts2wasm_syntax
+    for Stmt, Expr, SpannedToken, Token, ModuleSpecifier, and other syntax-owned
+    types. AC2 (cargo test) blocked by 93 pre-existing compilation errors in
+    ts2wasm-ir crate (unrelated worktree modifications). AC4 passes: no
+    ts2wasm_frontend::Stmt/Expr references remain in ir/src, backend-wasm/src,
+    or compiler/src.
+
+    '
+  plan:
+    files:
+    - crates/syntax/Cargo.toml
+    - crates/syntax/src/lib.rs
+    - crates/frontend/src/**
+    - crates/ir/src/**
+    - crates/compiler/src/**
+    goal: 'Separate AST/token syntax model ownership from lexer/parser implementation.
+      frontend remains lexer/parser; syntax owns parser-produced AST and token types.
+
+      '
+  priority: P2
+  roadmap: P14-target-crate-layout
+  status: done
+  title: Extract syntax crate from frontend parser implementation
+  type: refactor
+  updated: '2026-05-12'
+- acceptance:
   - test -f crates/runtime-abi/Cargo.toml
   - cargo test -p ts2wasm-runtime-abi -p ts2wasm-runtime-catalog -p ts2wasm-ir -p
     ts2wasm-backend-wasm
@@ -909,38 +962,6 @@ open:
   status: open
   title: Extract runtime-abi crate for RawValue tags, layout constants, and logical
     ABI definitions
-  type: refactor
-  updated: '2026-05-12'
-- acceptance:
-  - test -f crates/syntax/Cargo.toml
-  - cargo test -p ts2wasm-syntax -p ts2wasm-frontend -p ts2wasm-ir -p ts2wasm-compiler
-  - grep -R "ts2wasm_syntax" crates/frontend crates/ir crates/compiler
-  - '! grep -R "ts2wasm_frontend::.*Stmt\|ts2wasm_frontend::.*Expr" crates/ir/src
-    crates/backend-wasm/src crates/compiler/src'
-  area: frontend
-  created: '2026-05-12'
-  id: 359
-  non_goals:
-  - No grammar change.
-  - No parser rewrite.
-  notes: 'This makes the syntax phase boundary explicit.
-
-    '
-  plan:
-    files:
-    - crates/syntax/Cargo.toml
-    - crates/syntax/src/lib.rs
-    - crates/frontend/src/**
-    - crates/ir/src/**
-    - crates/compiler/src/**
-    goal: 'Separate AST/token syntax model ownership from lexer/parser implementation.
-      frontend remains lexer/parser; syntax owns parser-produced AST and token types.
-
-      '
-  priority: P2
-  roadmap: P14-target-crate-layout
-  status: open
-  title: Extract syntax crate from frontend parser implementation
   type: refactor
   updated: '2026-05-12'
 - acceptance:

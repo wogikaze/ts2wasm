@@ -1,6 +1,7 @@
 use std::path::Path;
 
-use ts2wasm_frontend::{Diagnostic, Stmt};
+use ts2wasm_diagnostic::Diagnostic;
+use ts2wasm_syntax::Stmt;
 
 use crate::module_graph::{ModuleGraph, build_entry_module_graph, validate_init_order};
 

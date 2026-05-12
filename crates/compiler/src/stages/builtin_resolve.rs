@@ -1,4 +1,5 @@
-use ts2wasm_frontend::{Diagnostic, Stmt};
+use ts2wasm_diagnostic::Diagnostic;
+use ts2wasm_syntax::Stmt;
 use ts2wasm_ir::ResolvedStmt;
 
 /// Run builtin resolution on the name-resolved AST.
