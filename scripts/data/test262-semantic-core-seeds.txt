@@ -2,21 +2,30 @@
 # Entries are repo-relative paths selected from official test262 language tests.
 # They were verified as build-pass and semantic-pass on 2026-04-28 with:
 #   scripts/manager reference-coverage test262 --paths-file scripts/data/test262-semantic-core-seeds.txt --detail
+#
+# Seeds are grouped by shard category (first path segment under test/).
+# Current shards: language (60 seeds)
+#
+# Category: language (60 seeds)
+#   Subcategory: language/asi (5 seeds)
 reference/test262/test/language/asi/S7.9_A6.1_T1.js
 reference/test262/test/language/asi/S7.9_A6.1_T2.js
 reference/test262/test/language/asi/S7.9_A6.1_T3.js
 reference/test262/test/language/asi/S7.9_A6.1_T4.js
 reference/test262/test/language/asi/S7.9_A6.1_T5.js
+#   Subcategory: language/comments (6 seeds)
 reference/test262/test/language/comments/S7.4_A1_T2.js
 reference/test262/test/language/comments/S7.4_A4_T2.js
 reference/test262/test/language/comments/S7.4_A4_T3.js
 reference/test262/test/language/comments/S7.4_A4_T5.js
 reference/test262/test/language/comments/S7.4_A4_T6.js
 reference/test262/test/language/comments/S7.4_A4_T7.js
+#   Subcategory: language/expressions (4 seeds)
 reference/test262/test/language/expressions/dynamic-import/catch/empty_FIXTURE.js
 reference/test262/test/language/expressions/dynamic-import/empty_FIXTURE.js
 reference/test262/test/language/expressions/dynamic-import/namespace/empty_FIXTURE.js
 reference/test262/test/language/expressions/dynamic-import/syntax/valid/empty_FIXTURE.js
+#   Subcategory: language/future-reserved-words (15 seeds)
 reference/test262/test/language/future-reserved-words/abstract.js
 reference/test262/test/language/future-reserved-words/boolean.js
 reference/test262/test/language/future-reserved-words/byte.js
@@ -32,15 +41,19 @@ reference/test262/test/language/future-reserved-words/short.js
 reference/test262/test/language/future-reserved-words/synchronized.js
 reference/test262/test/language/future-reserved-words/transient.js
 reference/test262/test/language/future-reserved-words/volatile.js
+#   Subcategory: language/module-code (2 seeds)
 reference/test262/test/language/module-code/ambiguous-export-bindings/namespace-empty-module_FIXTURE.js
 reference/test262/test/language/module-code/top-level-await/dynamic-import-of-waiting-module-2_FIXTURE.js
+#   Subcategory: language/statements (4 seeds)
 reference/test262/test/language/statements/const/syntax/with-initializer-case-expression-statement-list.js
 reference/test262/test/language/statements/const/syntax/with-initializer-default-statement-list.js
 reference/test262/test/language/statements/let/syntax/with-initialisers-in-statement-positions-case-expression-statement-list.js
 reference/test262/test/language/statements/let/syntax/with-initialisers-in-statement-positions-default-statement-list.js
+#   Subcategory: language/types (3 seeds)
 reference/test262/test/language/types/null/S8.2_A1_T1.js
 reference/test262/test/language/types/null/S8.2_A1_T2.js
 reference/test262/test/language/types/undefined/S8.1_A1_T1.js
+#   Subcategory: language/white-space (21 seeds)
 reference/test262/test/language/white-space/after-regular-expression-literal-carriage-return.js
 reference/test262/test/language/white-space/after-regular-expression-literal-em-quad.js
 reference/test262/test/language/white-space/after-regular-expression-literal-em-space.js

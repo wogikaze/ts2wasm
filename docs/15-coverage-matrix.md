@@ -133,6 +133,41 @@ The coverage matrix above shows test262 execution counts. For detailed test resu
 - `current-state.md` は実装詳細、`docs/15-coverage-matrix.md` は coverage のポリシーと判定基準に専念する。
 - Gate F 判定では test262 行の `executed > 0` と status 内訳が必須。
 
+## Coverage Shards
+
+test262 の coverage データは、`test/` 直下の最初のパスセグメントに基づいてカテゴリ別にシャード分割される。
+
+### Shard Categories
+
+test262 の主要シャードカテゴリ:
+
+| Category | Description |
+|---|---|
+| `language` | ECMAScript language syntax and semantics |
+| `built-ins` | Built-in objects and functions |
+| `staging` | Staging tests for upcoming features |
+| `annexB` | Annex B (legacy browser semantics) |
+| `intl402` | ECMAScript Internationalization API |
+| `harness` | Test harness infrastructure |
+
+### Seeds File
+
+`scripts/data/test262-semantic-core-seeds.txt` はカテゴリ別にグループ化されている。
+各カテゴリのテストパスは、`# Category: <name>` ヘッダの下に配置される。
+
+Shard Gate は `scripts/gate/coverage.py --shards` で実行する。
+
+### Shard Baseline (Regression Detection)
+
+`--check-regression` フラグは、JSONL 結果を解析し、各カテゴリの現在のカバレッジメトリクスを事前に保存されたベースラインと比較する。ベースラインは `artifacts/coverage/baselines/shard-baseline.json` に保存される。
+
+検出する回帰:
+- 任意のカテゴリで `pass` / `build_pass` が減少
+- 任意のカテゴリで `fail` が増加
+- 総実行数が増加していない場合の `unsupported` の増加
+
+成功した実行はベースラインを更新する。回帰が検出された場合はベースラインは更新されない。
+
 ## 更新チェックリスト
 
 - reference suite の分母が変わっていないか確認したか
@@ -140,3 +175,4 @@ The coverage matrix above shows test262 execution counts. For detailed test resu
 - `build_coverage%` / `semantic_coverage%` の再計算を反映したか
 - `Unsupported Features` と `Unsupported Diagnostic Codes` 補助表が最新の実行結果を反映しているか
 - 必要なら `current-state.md` と整合したか
+- シャード構造を変更した場合は `scripts/data/test262-semantic-core-seeds.txt` と `docs/15-coverage-matrix.md` の両方を更新する
