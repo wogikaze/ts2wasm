@@ -1549,8 +1549,8 @@ open:
   area: runtime
   type: test
   roadmap: P15-test-hardening
-  status: open
-  created: '2026-05-12'
+  status: done
+  closed: '2026-05-12'  created: '2026-05-12'
   updated: '2026-05-12'
   depends_on:
   - 378
@@ -1569,8 +1569,8 @@ open:
   area: runtime
   type: test
   roadmap: P15-test-hardening
-  status: open
-  created: '2026-05-12'
+  status: done
+  closed: '2026-05-12'  created: '2026-05-12'
   updated: '2026-05-12'
   depends_on:
   - 379
