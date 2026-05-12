@@ -1,5 +1,6 @@
 // MIR validation wrapper — converts to LoweredProgram and delegates.
 
+<<<<<<< HEAD
 use crate::lowered::MirProgram;
 use ts2wasm_diagnostic::Diagnostic;
 

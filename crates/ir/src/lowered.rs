@@ -23,7 +23,11 @@ pub mod validate;
 pub use hir_dump::dump_hir;
 pub use hir_to_mir::{lower_hir_to_mir, lower_hir_to_mir_native};
 pub use hir_validate::validate_hir;
-pub use mir::MirProgram;
+pub use mir::{
+    MirArraySlot, MirBinaryOp, MirBuiltinErrorConstructor, MirClassPrototypeRef,
+    MirClosureRepresentation, MirExpr, MirFunction, MirFunctionCallKind, MirLogicalAssignOp,
+    MirModuleInfo, MirProgram, MirStmt, MirUnaryOp,
+};
 pub use mir_dump::dump_mir;
 pub use mir_validate::validate_mir;
 pub use program::lower_program;

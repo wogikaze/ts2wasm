@@ -15,8 +15,9 @@ pub use builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 pub use builtin_resolved::{ClassMethod, ResolvedExpr, ResolvedStmt};
 pub use builtin_resolver::resolve_builtins;
 pub use lowered::{
-    FuncId, LocalId, LoweredExpr, LoweredFunction, LoweredProgram, LoweredStmt, MirProgram,
-    ModuleInfo, RuntimeFn, Validated, dump_hir, dump_mir, lower_hir_to_mir, lower_hir_to_mir_native,
+    FuncId, LocalId, LoweredExpr, LoweredFunction, LoweredProgram, LoweredStmt, MirExpr,
+    MirFunction, MirProgram, MirStmt, ModuleInfo, RuntimeFn, Validated, dump_hir, dump_mir,
+    lower_hir_to_mir, lower_hir_to_mir_native,
 };
 pub use optimizer::{OptimizationLevel, OptimizationPass, OptimizedHirProgram, optimize_hir};
 pub use semantic::{

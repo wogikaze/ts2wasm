@@ -9,6 +9,7 @@ use super::{
     FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredFunction,
     LoweredProgram, LoweredStmt, LoweredUnaryOp, MirProgram,
 };
+use crate::lowered::mir::MirProgram;
 use crate::{HirExpr, HirFunction, HirProgram, HirRelationalOp, HirStmt};
 use ts2wasm_runtime_catalog::RuntimeFn;
 

@@ -5,7 +5,7 @@
 
 use ts2wasm_ir::{
     FuncId, HirExpr, HirFunction, HirFunctionId, HirLocalId, HirProgram, HirRelationalOp, HirStmt,
-    LocalId, lower_hir_to_mir,
+    LocalId, lower_hir_to_mir, lower_hir_to_mir_native,
 };
 
 // ---------------------------------------------------------------------------
@@ -22,7 +22,7 @@ fn lowers_let_stmt() {
         locals: vec![HirLocalId(0)],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("Let("), "dump: {}", dump);
     assert!(dump.contains("Number(42)"), "dump: {}", dump);
@@ -38,7 +38,7 @@ fn lowers_store_local_stmt() {
         locals: vec![HirLocalId(0)],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("Assign("), "dump: {}", dump);
     assert!(dump.contains("Number(99)"), "dump: {}", dump);
@@ -51,7 +51,7 @@ fn lowers_expr_stmt() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("Expr"), "dump: {}", dump);
     assert!(dump.contains("Null"), "dump: {}", dump);
@@ -68,7 +68,7 @@ fn lowers_branch_if_truthy() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("If"), "dump: {}", dump);
     assert!(dump.contains("then_body"), "dump: {}", dump);
@@ -87,7 +87,7 @@ fn lowers_loop_while() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("While"), "dump: {}", dump);
     assert!(dump.contains("Bool(true)"), "dump: {}", dump);
@@ -101,7 +101,7 @@ fn lowers_return_stmt() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("Return"), "dump: {}", dump);
     assert!(dump.contains("String("), "dump: {}", dump);
@@ -118,7 +118,7 @@ fn lowers_const_undefined() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("Undefined"), "dump: {}", dump);
 }
@@ -130,7 +130,7 @@ fn lowers_const_null() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("Null"), "dump: {}", dump);
 }
@@ -145,7 +145,7 @@ fn lowers_const_bool() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("Bool(true)"), "dump: {}", dump);
     assert!(dump.contains("Bool(false)"), "dump: {}", dump);
@@ -158,7 +158,7 @@ fn lowers_const_number() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("Number(42)"), "dump: {}", dump);
 }
@@ -170,7 +170,7 @@ fn lowers_const_bigint() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("BigIntLiteral(123"), "dump: {}", dump);
 }
@@ -182,7 +182,7 @@ fn lowers_const_string() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("String("), "dump: {}", dump);
 }
@@ -203,7 +203,7 @@ fn lowers_load_local() {
         locals: vec![HirLocalId(0)],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("Local("), "dump: {}", dump);
 }
@@ -215,7 +215,7 @@ fn lowers_load_builtin() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("RuntimeCall"), "dump: {}", dump);
     assert!(dump.contains("PropertyGet"), "dump: {}", dump);
@@ -230,7 +230,7 @@ fn lowers_to_boolean() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("RuntimeCall"), "dump: {}", dump);
     assert!(dump.contains("TruthyBool"), "dump: {}", dump);
@@ -245,7 +245,7 @@ fn lowers_js_unary_not() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("Unary(Not)"), "dump: {}", dump);
 }
@@ -260,7 +260,7 @@ fn lowers_js_add() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("Binary(Add)"), "dump: {}", dump);
 }
@@ -275,7 +275,7 @@ fn lowers_js_strict_equal() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("Binary(StrictEqual)"), "dump: {}", dump);
 }
@@ -290,7 +290,7 @@ fn lowers_js_abstract_equal() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("Binary(EqualEqual)"), "dump: {}", dump);
 }
@@ -313,7 +313,7 @@ fn lowers_js_relational() {
             locals: vec![],
             functions: vec![],
         };
-        let mir = lower_hir_to_mir(&hir);
+        let mir = lower_hir_to_mir_native(&hir);
         let dump = ts2wasm_ir::dump_mir(&mir);
         assert!(
             dump.contains(&format!("Binary({})", expected_mir)),
@@ -334,7 +334,7 @@ fn lowers_get_prop() {
         locals: vec![HirLocalId(0)],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("PropertyGet("), "dump: {}", dump);
 }
@@ -349,7 +349,7 @@ fn lowers_get_index() {
         locals: vec![HirLocalId(0)],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("PropertyGetDynamic"), "dump: {}", dump);
 }
@@ -363,7 +363,7 @@ fn lowers_array_length() {
         locals: vec![HirLocalId(0)],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("GetLength"), "dump: {}", dump);
 }
@@ -379,7 +379,7 @@ fn lowers_call_builtin() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("Call("), "dump: {}", dump);
     assert!(dump.contains("ConsoleLog"), "dump: {}", dump);
@@ -395,7 +395,7 @@ fn lowers_call_function() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&call_hir);
+    let mir = lower_hir_to_mir_native(&call_hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("Call("), "dump: {}", dump);
     assert!(dump.contains("User("), "dump: {}", dump);
@@ -413,7 +413,7 @@ fn lowers_call_method() {
         locals: vec![],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("RuntimeCall"), "dump: {}", dump);
     assert!(dump.contains("PropertyGet"), "dump: {}", dump);
@@ -435,9 +435,10 @@ fn lowers_function_body() {
             body: vec![HirStmt::Return(HirExpr::LoadLocal(HirLocalId(0)))],
         }],
     };
-    let mir = lower_hir_to_mir(&hir);
-    assert_eq!(mir.functions.len(), 1);
-    let f = &mir.functions[0];
+    let mir = lower_hir_to_mir_native(&hir);
+    let lowered = mir.as_lowered();
+    assert_eq!(lowered.functions.len(), 1);
+    let f = &lowered.functions[0];
     assert_eq!(f.id, FuncId(0));
     assert_eq!(f.params, vec![LocalId(0)]);
     assert_eq!(f.locals, vec![LocalId(0)]);
@@ -470,7 +471,7 @@ fn lowers_integration() {
         locals: vec![HirLocalId(0)],
         functions: vec![],
     };
-    let mir = lower_hir_to_mir(&hir);
+    let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
     assert!(dump.contains("Let("), "dump: {}", dump);
     assert!(dump.contains("If"), "dump: {}", dump);

@@ -656,8 +656,25 @@ impl Validated<MirProgram> {
         ))
     }
 
-    // program() and into_inner() inherited from Validated<LoweredProgram>
-    // since MirProgram = LoweredProgram.
+    /// Access the validated MIR program.
+    pub fn program(&self) -> &MirProgram {
+        &self.inner
+    }
+
+    /// Consume the wrapper and return the validated MIR program.
+    pub fn into_inner(self) -> MirProgram {
+        self.inner
+    }
+
+    /// Returns non-fatal diagnostics collected during validation.
+    pub fn warnings(&self) -> &[Diagnostic] {
+        &self.non_fatal
+    }
+
+    /// Take the non-fatal diagnostics, leaving an empty vec.
+    pub fn take_warnings(&mut self) -> Vec<Diagnostic> {
+        std::mem::take(&mut self.non_fatal)
+    }
 }
 
 impl<T> AsRef<T> for Validated<T> {

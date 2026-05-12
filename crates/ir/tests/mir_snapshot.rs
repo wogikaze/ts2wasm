@@ -8,13 +8,14 @@ use ts2wasm_frontend::Span;
 use ts2wasm_ir::dump_mir;
 use ts2wasm_ir::lowered::{
     LoweredArraySlot, LoweredBinaryOp, LoweredExpr, LoweredFunction, LoweredLogicalAssignOp,
-    LoweredProgram, LoweredStmt, LoweredUnaryOp,
+    LoweredProgram, LoweredStmt, LoweredUnaryOp, MirProgram,
 };
 use ts2wasm_ir::{FuncId, LocalId};
 
 /// Helper: dump an MIR program and check it contains expected strings.
 fn assert_mir_dump_contains(mir: &LoweredProgram, expected: &[&str]) {
-    let dump = dump_mir(mir);
+    let mir_prog = MirProgram::from(mir.clone());
+    let dump = dump_mir(&mir_prog);
     for pattern in expected {
         assert!(
             dump.contains(pattern),
