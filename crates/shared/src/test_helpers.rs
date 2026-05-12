@@ -4,12 +4,31 @@
 /// code in sibling crates (cli, backend-wasm, compiler) can import them.
 use std::path::{Path, PathBuf};
 
-/// Root of the repository, resolved relative to `CARGO_MANIFEST_DIR`.
+/// Root of the repository, resolved from the test process working directory.
 ///
-/// `CARGO_MANIFEST_DIR` is set by Cargo at compile time. The shared crate
-/// lives at `<root>/crates/shared/`, so we need to go up two levels.
+/// Cargo target directories can be shared across worktrees. Avoid relying only
+/// on compile-time `CARGO_MANIFEST_DIR`, which can point at a stale worktree
+/// when an already-built helper crate is reused.
 pub fn repo_root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("..").join("..")
+    if let Ok(cwd) = std::env::current_dir()
+        && let Some(root) = find_repo_root(&cwd)
+    {
+        return root;
+    }
+
+    let manifest_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+    find_repo_root(manifest_dir).unwrap_or_else(|| manifest_dir.join("..").join(".."))
+}
+
+fn find_repo_root(start: &Path) -> Option<PathBuf> {
+    start
+        .ancestors()
+        .find(|path| {
+            path.join("Cargo.toml").is_file()
+                && path.join("fixtures").is_dir()
+                && path.join("crates").is_dir()
+        })
+        .map(Path::to_path_buf)
 }
 
 /// Full path to a fixture file, resolved relative to the repo root.
@@ -71,4 +90,19 @@ pub fn unique_temp_dir(label: &str) -> PathBuf {
     let dir = std::env::temp_dir().join(format!("ts2wasm-{label}-{unique}-{}", std::process::id()));
     std::fs::create_dir_all(&dir).ok();
     dir
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn repo_root_points_at_fixture_tree() {
+        let root = repo_root();
+        assert!(root.join("Cargo.toml").is_file(), "root={root:?}");
+        assert!(
+            root.join("fixtures/basics-hello/hello.ts").is_file(),
+            "root={root:?}"
+        );
+    }
 }
