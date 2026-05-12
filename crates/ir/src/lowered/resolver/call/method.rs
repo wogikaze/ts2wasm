@@ -1,3 +1,4 @@
+use super::super::*;
 use super::super::{
     bigint_runtime_fn_intrinsic, is_array_from_call_receiver, is_array_prototype_map_call_receiver,
     is_array_prototype_push_expr, is_identity_arrow_callback, is_set_prototype_property_expr,
@@ -13,7 +14,6 @@ use crate::lowered::*;
 use std::collections::HashMap;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
-use super::super::*;
 
 impl<'a> super::super::Resolver {
     pub(crate) fn lower_method_call_expr(
@@ -446,7 +446,9 @@ impl<'a> super::super::Resolver {
                 Some(span),
             ));
         }
-        if method == "getYear" && crate::lowered::resolver::expr::facts::is_invalid_date_expr(&self.ctx, object) {
+        if method == "getYear"
+            && crate::lowered::resolver::expr::facts::is_invalid_date_expr(&self.ctx, object)
+        {
             if !args.is_empty() {
                 return Err(Diagnostic {
                     code: DiagCode::ArityMismatch,
@@ -651,7 +653,9 @@ impl<'a> super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
-        if method == "concat" && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object) {
+        if method == "concat"
+            && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
+        {
             let mut lowered_args = vec![self.lower_expr(object)?];
             lowered_args.extend(
                 args.iter()
@@ -692,8 +696,7 @@ impl<'a> super::super::Resolver {
             }));
         }
         if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
-            if (intrinsic == RuntimeFn::ArrayPush
-                || intrinsic == RuntimeFn::ArrayPushGrow)
+            if (intrinsic == RuntimeFn::ArrayPush || intrinsic == RuntimeFn::ArrayPushGrow)
                 && args.len() != 1
             {
                 if !matches!(object, ResolvedExpr::Ident(_)) {
@@ -829,7 +832,10 @@ impl<'a> super::super::Resolver {
         // Sparse arrays with known holes — route through hole-aware
         // lower_array_map_elements before optimized paths.
         if method == "map"
-            && let Some(elements) = crate::lowered::resolver::expr::facts::resolved_expr_static_array_slots(&self.ctx, object)
+            && let Some(elements) =
+                crate::lowered::resolver::expr::facts::resolved_expr_static_array_slots(
+                    &self.ctx, object,
+                )
             && elements
                 .iter()
                 .any(|element| matches!(element, ResolvedArrayElement::Hole))
@@ -851,7 +857,10 @@ impl<'a> super::super::Resolver {
             }));
         }
 
-        if method == "map" && unary_plus_arrow_callback(args) && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object) {
+        if method == "map"
+            && unary_plus_arrow_callback(args)
+            && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
+        {
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::ArrayMapUnaryPlus,
                 args: vec![self.lower_expr(object)?],
@@ -883,7 +892,9 @@ impl<'a> super::super::Resolver {
             }));
         }
 
-        if method == "sort" && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object) {
+        if method == "sort"
+            && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
+        {
             if numeric_ascending_sort_arrow_callback(args) {
                 return Ok(Some(LoweredExpr::RuntimeCall {
                     intrinsic: RuntimeFn::ArraySortNumeric,
@@ -1048,7 +1059,9 @@ impl<'a> super::super::Resolver {
                         || proto_method == "reduce"
                         || proto_method == "reduceRight"
                         || proto_method == "flatMap")
-                    && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, receiver)
+                    && crate::lowered::resolver::expr::facts::is_known_array_expr(
+                        &self.ctx, receiver,
+                    )
                 {
                     let lowered_receiver = self.lower_expr(receiver)?;
                     return Ok(Some(self.lower_array_callback_method(

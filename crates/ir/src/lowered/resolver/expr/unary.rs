@@ -1,12 +1,10 @@
-use super::super::{
-    is_private_field_storage_key, private_storage_observable_access_diagnostic,
-};
+use super::super::{is_private_field_storage_key, private_storage_observable_access_diagnostic};
 use crate::builtin_resolved::ResolvedExpr;
 use crate::lowered::object_kernel;
 use crate::lowered::*;
-use ts2wasm_syntax::UnaryOp;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
+use ts2wasm_syntax::UnaryOp;
 
 impl super::super::Resolver {
     pub(super) fn lower_unary_expr(
@@ -32,7 +30,9 @@ impl super::super::Resolver {
                 });
             }
         }
-        if *op == UnaryOp::BitwiseNot && crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, expr) {
+        if *op == UnaryOp::BitwiseNot
+            && crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, expr)
+        {
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::BigIntBitwiseNot,
                 args: vec![self.lower_expr(expr)?],
@@ -49,16 +49,9 @@ impl super::super::Resolver {
         })
     }
 
-    fn lower_delete_expr(
-        &mut self,
-        expr: &ResolvedExpr,
-    ) -> Result<LoweredExpr, Diagnostic> {
+    fn lower_delete_expr(&mut self, expr: &ResolvedExpr) -> Result<LoweredExpr, Diagnostic> {
         match expr {
-            ResolvedExpr::PropertyAccess {
-                object,
-                key,
-                span,
-            } => {
+            ResolvedExpr::PropertyAccess { object, key, span } => {
                 if is_private_field_storage_key(key) {
                     return Err(private_storage_observable_access_diagnostic(Some(*span)));
                 }

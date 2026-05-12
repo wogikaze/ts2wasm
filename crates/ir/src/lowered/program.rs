@@ -5,9 +5,9 @@ use crate::builtin_resolved::{
 };
 use crate::lowered::symbols::FunctionSignature;
 use std::collections::{HashMap, HashSet};
-use ts2wasm_syntax::{BinaryOp, LogicalAssignOp, UnaryOp};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
+use ts2wasm_syntax::{BinaryOp, LogicalAssignOp, UnaryOp};
 #[path = "program_builtins.rs"]
 pub(crate) mod program_builtins;
 #[path = "program_captures.rs"]

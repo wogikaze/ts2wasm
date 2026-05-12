@@ -3,8 +3,8 @@ use std::path::Path;
 
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_frontend::{Lexer, Parser};
-use ts2wasm_syntax::{SpannedToken, Stmt, Token};
 use ts2wasm_source::Span;
+use ts2wasm_syntax::{SpannedToken, Stmt, Token};
 
 pub fn parse_program(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
     let tokens = Lexer::new(source).tokenize()?;

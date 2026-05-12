@@ -19,5 +19,5 @@ pub use capability::{
     WasiCapabilities,
 };
 pub use diagnostic::{DiagCode, Diagnostic, InternalDiagnostic, SourceDiagnostic};
-pub use ts2wasm_source::Span;
 pub use test_status::{TestRecord, TestStatus, TrackingId};
+pub use ts2wasm_source::Span;

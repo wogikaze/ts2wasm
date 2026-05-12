@@ -186,12 +186,16 @@ impl LoweringCtx {
     }
 
     pub fn resolve_func(&self, name: &str) -> Result<FuncId, Diagnostic> {
-        self.symbols.function_ids.get(name).copied().ok_or_else(|| Diagnostic {
-            code: DiagCode::UnresolvedFunction,
-            message: format!("unresolved function: `{name}`"),
-            span: None,
-            phase: None,
-        })
+        self.symbols
+            .function_ids
+            .get(name)
+            .copied()
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::UnresolvedFunction,
+                message: format!("unresolved function: `{name}`"),
+                span: None,
+                phase: None,
+            })
     }
 
     pub fn alloc_temp(&mut self) -> LocalId {

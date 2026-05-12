@@ -1,5 +1,5 @@
-use ts2wasm_syntax::{BinaryOp, LogicalAssignOp, UnaryOp};
 use ts2wasm_source::Span;
+use ts2wasm_syntax::{BinaryOp, LogicalAssignOp, UnaryOp};
 
 use super::builtin::{BuiltinId, BuiltinPropertyId};
 use crate::binding_pattern::BindingPattern;

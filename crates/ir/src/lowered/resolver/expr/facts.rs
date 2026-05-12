@@ -1,18 +1,18 @@
+use super::super::program_builtins::looks_like_regexp_literal;
+use super::super::*;
 use super::super::{
     is_invalid_date_constructor_expr, is_set_prototype_property_expr,
     is_static_copy_safe_object_prop_value, string_constructor_arrow_callback,
     unary_plus_arrow_callback,
 };
-use super::super::program_builtins::looks_like_regexp_literal;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::StaticFunctionArrayLike;
 use crate::lowered::*;
 use std::collections::HashSet;
-use ts2wasm_syntax::{BinaryOp, OBJECT_SPREAD_SENTINEL, SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
-use super::super::*;
+use ts2wasm_syntax::{BinaryOp, OBJECT_SPREAD_SENTINEL, SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp};
 
 pub(crate) fn update_bigint_local(ctx: &mut LoweringCtx, local_id: LocalId, expr: &ResolvedExpr) {
     if resolved_expr_is_bigint(ctx, expr) {
@@ -23,7 +23,9 @@ pub(crate) fn update_bigint_local(ctx: &mut LoweringCtx, local_id: LocalId, expr
 }
 
 pub(crate) fn update_control_flow_bigint_assignment(ctx: &mut LoweringCtx, local_id: LocalId) {
-    ctx.facts.control_flow_bigint_div_rem_locals.remove(&local_id);
+    ctx.facts
+        .control_flow_bigint_div_rem_locals
+        .remove(&local_id);
     ctx.facts.control_flow_mixed_bigint_locals.remove(&local_id);
 }
 
@@ -82,9 +84,7 @@ pub(crate) fn resolved_expr_has_symbol_iterator_property(
         ResolvedExpr::Ident(name) => ctx
             .resolve_local(name)
             .ok()
-            .is_some_and(|local_id| {
-                ctx.facts.symbol_iterator_object_locals.contains(&local_id)
-            }),
+            .is_some_and(|local_id| ctx.facts.symbol_iterator_object_locals.contains(&local_id)),
         _ => false,
     }
 }
@@ -130,11 +130,15 @@ pub(crate) fn update_static_object_literal_local_on_let(
     expr: &ResolvedExpr,
 ) {
     if let Some(props) = static_copy_safe_object_literal_props(ctx, expr) {
-        ctx.facts.static_object_literal_locals.insert(local_id, props);
+        ctx.facts
+            .static_object_literal_locals
+            .insert(local_id, props);
         update_static_object_literal_alias_sources(ctx, local_id, expr);
     } else {
         ctx.facts.static_object_literal_locals.remove(&local_id);
-        ctx.facts.static_object_literal_alias_sources.remove(&local_id);
+        ctx.facts
+            .static_object_literal_alias_sources
+            .remove(&local_id);
     }
 }
 
@@ -144,14 +148,18 @@ pub(crate) fn update_static_function_array_like_local_on_let(
     expr: &ResolvedExpr,
 ) {
     let ResolvedExpr::FunctionExpr { params, .. } = expr else {
-        ctx.facts.static_function_array_like_locals.remove(&local_id);
+        ctx.facts
+            .static_function_array_like_locals
+            .remove(&local_id);
         return;
     };
     if params
         .iter()
         .any(|param| param.default.is_some() || param.is_rest)
     {
-        ctx.facts.static_function_array_like_locals.remove(&local_id);
+        ctx.facts
+            .static_function_array_like_locals
+            .remove(&local_id);
         return;
     }
     ctx.facts.static_function_array_like_locals.insert(
@@ -162,8 +170,13 @@ pub(crate) fn update_static_function_array_like_local_on_let(
     );
 }
 
-pub(crate) fn invalidate_static_function_array_like_local(ctx: &mut LoweringCtx, local_id: LocalId) {
-    ctx.facts.static_function_array_like_locals.remove(&local_id);
+pub(crate) fn invalidate_static_function_array_like_local(
+    ctx: &mut LoweringCtx,
+    local_id: LocalId,
+) {
+    ctx.facts
+        .static_function_array_like_locals
+        .remove(&local_id);
 }
 
 pub(crate) fn update_static_function_array_like_index(
@@ -197,10 +210,7 @@ pub(crate) fn static_function_array_like_elements(
     name: &str,
 ) -> Option<Vec<ResolvedExpr>> {
     let local_id = ctx.resolve_local(name).ok()?;
-    let static_receiver = ctx
-        .facts
-        .static_function_array_like_locals
-        .get(&local_id)?;
+    let static_receiver = ctx.facts.static_function_array_like_locals.get(&local_id)?;
     static_receiver
         .elements
         .iter()
@@ -213,7 +223,9 @@ pub(crate) fn static_function_array_like_elements(
 
 pub(crate) fn invalidate_static_object_literal_local(ctx: &mut LoweringCtx, local_id: LocalId) {
     ctx.facts.static_object_literal_locals.remove(&local_id);
-    ctx.facts.static_object_literal_alias_sources.remove(&local_id);
+    ctx.facts
+        .static_object_literal_alias_sources
+        .remove(&local_id);
     let dependent_aliases = ctx
         .facts
         .static_object_literal_alias_sources
@@ -250,7 +262,10 @@ pub(crate) fn static_copy_safe_object_literal_props(
             if ctx.facts.env_cell_locals.contains(&local_id) {
                 return None;
             }
-            ctx.facts.static_object_literal_locals.get(&local_id).cloned()
+            ctx.facts
+                .static_object_literal_locals
+                .get(&local_id)
+                .cloned()
         }
         _ => None,
     }
@@ -261,7 +276,9 @@ pub(crate) fn update_static_object_literal_alias_sources(
     local_id: LocalId,
     expr: &ResolvedExpr,
 ) {
-    ctx.facts.static_object_literal_alias_sources.remove(&local_id);
+    ctx.facts
+        .static_object_literal_alias_sources
+        .remove(&local_id);
     if let ResolvedExpr::Ident(name) = expr
         && let Ok(source_id) = ctx.resolve_local(name)
     {
@@ -272,20 +289,19 @@ pub(crate) fn update_static_object_literal_alias_sources(
             .cloned()
             .unwrap_or_default();
         sources.insert(source_id);
-        ctx.facts.static_object_literal_alias_sources.insert(local_id, sources);
+        ctx.facts
+            .static_object_literal_alias_sources
+            .insert(local_id, sources);
     }
 }
 
 pub(crate) fn resolved_expr_produces_dense_array(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
     match expr {
         ResolvedExpr::Array(_) => true,
-        ResolvedExpr::Ident(name) => ctx
-            .resolve_local(name)
-            .ok()
-            .is_some_and(|local_id| {
-                ctx.facts.array_locals.contains(&local_id)
-                    && !ctx.facts.env_cell_locals.contains(&local_id)
-            }),
+        ResolvedExpr::Ident(name) => ctx.resolve_local(name).ok().is_some_and(|local_id| {
+            ctx.facts.array_locals.contains(&local_id)
+                && !ctx.facts.env_cell_locals.contains(&local_id)
+        }),
         ResolvedExpr::Binary {
             left,
             op: BinaryOp::Or | BinaryOp::And,
@@ -301,8 +317,7 @@ pub(crate) fn resolved_expr_produces_dense_array(ctx: &LoweringCtx, expr: &Resol
             ..
         } if method == "map" => {
             is_known_array_expr(ctx, object)
-                && (string_constructor_arrow_callback(args)
-                    || unary_plus_arrow_callback(args))
+                && (string_constructor_arrow_callback(args) || unary_plus_arrow_callback(args))
         }
         ResolvedExpr::MethodCall {
             object,
@@ -310,7 +325,8 @@ pub(crate) fn resolved_expr_produces_dense_array(ctx: &LoweringCtx, expr: &Resol
             args,
             ..
         } if method == "matchAll" => {
-            crate::lowered::resolver::string::resolved_expr_static_string_value(ctx, object).is_some()
+            crate::lowered::resolver::string::resolved_expr_static_string_value(ctx, object)
+                .is_some()
                 && matches!(
                     args.as_slice(),
                     [ResolvedExpr::String(raw)] if looks_like_regexp_literal(raw)
@@ -320,9 +336,7 @@ pub(crate) fn resolved_expr_produces_dense_array(ctx: &LoweringCtx, expr: &Resol
             ResolvedExpr::Ident(name) => ctx
                 .resolve_func(name)
                 .ok()
-                .and_then(|func_id| {
-                    ctx.symbols.function_signatures.get(&func_id)
-                })
+                .and_then(|func_id| ctx.symbols.function_signatures.get(&func_id))
                 .is_some_and(|signature| signature.returns_dense_array),
             _ => false,
         },
@@ -342,7 +356,11 @@ pub(crate) fn update_native_set_add_local(
     }
 }
 
-pub(crate) fn update_invalid_date_local(ctx: &mut LoweringCtx, local_id: LocalId, expr: &ResolvedExpr) {
+pub(crate) fn update_invalid_date_local(
+    ctx: &mut LoweringCtx,
+    local_id: LocalId,
+    expr: &ResolvedExpr,
+) {
     if is_invalid_date_constructor_expr(expr) {
         ctx.facts.invalid_date_locals.insert(local_id);
     } else {
@@ -392,9 +410,7 @@ pub(crate) fn resolved_expr_static_array_slots(
         ResolvedExpr::Ident(name) => ctx
             .resolve_local(name)
             .ok()
-            .and_then(|local_id| {
-                ctx.facts.static_array_slots.get(&local_id).cloned()
-            }),
+            .and_then(|local_id| ctx.facts.static_array_slots.get(&local_id).cloned()),
         _ => None,
     }
 }
@@ -432,18 +448,14 @@ pub(crate) fn expr_is_known_heap_closure(ctx: &LoweringCtx, expr: &ResolvedExpr)
             ResolvedExpr::Ident(name) => ctx
                 .resolve_func(name)
                 .ok()
-                .and_then(|func_id| {
-                    ctx.symbols.function_signatures.get(&func_id)
-                })
+                .and_then(|func_id| ctx.symbols.function_signatures.get(&func_id))
                 .is_some_and(|signature| signature.returns_heap_closure),
             _ => false,
         },
         ResolvedExpr::Ident(name) => ctx
             .resolve_local(name)
             .ok()
-            .is_some_and(|local_id| {
-                ctx.facts.heap_closure_locals.contains(&local_id)
-            }),
+            .is_some_and(|local_id| ctx.facts.heap_closure_locals.contains(&local_id)),
         _ => false,
     }
 }
@@ -489,16 +501,15 @@ pub(crate) fn resolved_expr_is_bigint_div_rem_operand(
     expr: &ResolvedExpr,
 ) -> bool {
     match expr {
-        ResolvedExpr::Ident(name) => ctx
-            .resolve_local(name)
-            .ok()
-            .is_some_and(|local_id| {
-                ctx.facts.bigint_locals.contains(&local_id)
-                    || ctx.facts.control_flow_bigint_div_rem_locals.contains(&local_id)
-            }),
+        ResolvedExpr::Ident(name) => ctx.resolve_local(name).ok().is_some_and(|local_id| {
+            ctx.facts.bigint_locals.contains(&local_id)
+                || ctx
+                    .facts
+                    .control_flow_bigint_div_rem_locals
+                    .contains(&local_id)
+        }),
         ResolvedExpr::Unary { op, expr } => {
-            *op == UnaryOp::Negate
-                && resolved_expr_is_bigint_div_rem_operand(ctx, expr)
+            *op == UnaryOp::Negate && resolved_expr_is_bigint_div_rem_operand(ctx, expr)
         }
         _ => resolved_expr_is_bigint(ctx, expr),
     }
@@ -512,12 +523,15 @@ pub(crate) fn resolved_expr_is_control_flow_mixed_bigint(
         return false;
     };
     ctx.resolve_local(name).ok().is_some_and(|local_id| {
-        ctx.facts.control_flow_mixed_bigint_locals.contains(&local_id)
+        ctx.facts
+            .control_flow_mixed_bigint_locals
+            .contains(&local_id)
     })
 }
 
 pub(crate) fn bigint_div_rem_candidate_locals(ctx: &LoweringCtx) -> HashSet<LocalId> {
-    ctx.facts.bigint_locals
+    ctx.facts
+        .bigint_locals
         .union(&ctx.facts.control_flow_bigint_div_rem_locals)
         .copied()
         .collect()

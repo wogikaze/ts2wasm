@@ -21,37 +21,33 @@ impl super::super::Resolver {
         }
     }
 
-    pub(super) fn lower_new_target_expr(
-        &mut self,
-        span: Span,
-    ) -> Result<LoweredExpr, Diagnostic> {
+    pub(super) fn lower_new_target_expr(&mut self, span: Span) -> Result<LoweredExpr, Diagnostic> {
         if !self.ctx.classes.in_constructor {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "issue-236: new.target is only supported in class constructors"
-                    .to_owned(),
+                message: "issue-236: new.target is only supported in class constructors".to_owned(),
                 span: Some(span),
                 phase: None,
             });
         }
-        let class_name = self.ctx.classes.current_class.clone().ok_or_else(|| {
-            Diagnostic {
+        let class_name = self
+            .ctx
+            .classes
+            .current_class
+            .clone()
+            .ok_or_else(|| Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "issue-236: new.target requires a class constructor context".to_owned(),
                 span: Some(span),
                 phase: None,
-            }
-        })?;
+            })?;
         Ok(LoweredExpr::ClassPrototype(
             self.class_prototype_ref(&class_name)?,
             span,
         ))
     }
 
-    pub(super) fn lower_ident_expr(
-        &mut self,
-        name: &str,
-    ) -> Result<LoweredExpr, Diagnostic> {
+    pub(super) fn lower_ident_expr(&mut self, name: &str) -> Result<LoweredExpr, Diagnostic> {
         use ts2wasm_runtime_abi::ValueTag;
         if name == "Infinity" {
             return Ok(LoweredExpr::Number(

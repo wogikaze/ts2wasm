@@ -1,6 +1,6 @@
-use ts2wasm_syntax::{ArrayLiteralElement, Expr};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
+use ts2wasm_syntax::{ArrayLiteralElement, Expr};
 
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 

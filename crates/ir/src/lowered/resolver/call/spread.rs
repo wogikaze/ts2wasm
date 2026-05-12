@@ -1,3 +1,4 @@
+use super::super::*;
 use super::super::{
     is_array_from_call_receiver, is_array_prototype_map_call_receiver,
     is_array_prototype_push_expr, is_identity_arrow_callback, is_set_prototype_property_expr,
@@ -9,10 +10,9 @@ use super::super::{
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
 use crate::lowered::*;
 use std::collections::HashMap;
-use ts2wasm_syntax::SYMBOL_ITERATOR_OBJECT_KEY;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
-use super::super::*;
+use ts2wasm_syntax::SYMBOL_ITERATOR_OBJECT_KEY;
 
 impl<'a> super::super::Resolver {
     pub(crate) fn lower_function_call_args(
@@ -203,7 +203,9 @@ impl<'a> super::super::Resolver {
             });
         }
 
-        let Some(input) = crate::lowered::resolver::string::resolved_expr_static_string_value(&self.ctx, object) else {
+        let Some(input) =
+            crate::lowered::resolver::string::resolved_expr_static_string_value(&self.ctx, object)
+        else {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "issue-5129: String.prototype.matchAll currently requires a static string receiver"

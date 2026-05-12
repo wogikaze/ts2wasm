@@ -1,6 +1,4 @@
-use super::super::{
-    is_static_copy_safe_object_prop_value, lowered_binding_default,
-};
+use super::super::{is_static_copy_safe_object_prop_value, lowered_binding_default};
 use crate::binding_pattern::{ArrayBinding, BindingDefault, BindingPattern, ObjectBinding};
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
 use crate::lowered::*;
@@ -46,10 +44,7 @@ impl super::super::Resolver {
                 args: vec![
                     value.clone(),
                     LoweredExpr::Number(binding.index as i32, Span::generated("num")),
-                    LoweredExpr::GetLength(
-                        Box::new(value.clone()),
-                        Span::generated("get_length"),
-                    ),
+                    LoweredExpr::GetLength(Box::new(value.clone()), Span::generated("get_length")),
                 ],
                 span: Span::generated("runtime_call"),
             }
@@ -132,7 +127,11 @@ impl super::super::Resolver {
                 binding.span,
             );
         }
-        self.lower_binding_declaration_with_default(local_id, property_value, binding.default.as_ref())
+        self.lower_binding_declaration_with_default(
+            local_id,
+            property_value,
+            binding.default.as_ref(),
+        )
     }
 
     pub(crate) fn lower_object_rest_binding_declaration(

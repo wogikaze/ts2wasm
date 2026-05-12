@@ -16,9 +16,9 @@ use super::{
 use crate::builtin::{BuiltinId, BuiltinPropertyId};
 use crate::builtin_resolved::ResolvedExpr;
 use crate::lowered::*;
-use ts2wasm_syntax::{BinaryOp, UnaryOp};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
+use ts2wasm_syntax::{BinaryOp, UnaryOp};
 
 impl super::Resolver {
     pub(crate) fn lower_expr(&mut self, expr: &ResolvedExpr) -> Result<LoweredExpr, Diagnostic> {
@@ -118,9 +118,7 @@ impl super::Resolver {
             ResolvedExpr::OptionalCall { callee, args, span } => {
                 self.lower_optional_call(callee, args, *span)
             }
-            ResolvedExpr::Call { callee, args, span } => {
-                self.lower_call_expr(callee, args, *span)
-            }
+            ResolvedExpr::Call { callee, args, span } => self.lower_call_expr(callee, args, *span),
             ResolvedExpr::BuiltinCall { builtin, args } => {
                 self.lower_builtin_call_expr(*builtin, args)
             }
@@ -155,9 +153,7 @@ impl super::Resolver {
             ResolvedExpr::FunctionExpr { name, params, body } => {
                 self.lower_named_function_expr(name, params, body)
             }
-            ResolvedExpr::ClassExpr { .. } => {
-                Ok(LoweredExpr::Undefined(Span::generated("undef")))
-            }
+            ResolvedExpr::ClassExpr { .. } => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
         }
     }
 }
@@ -194,8 +190,9 @@ pub(super) fn lower_global_builtin_function_metadata_property(
 fn global_builtin_function_length(name: &str) -> i32 {
     match name {
         "parseInt" => 2,
-        "escape" | "unescape" | "isNaN" | "parseFloat" | "isFinite" | "encodeURI"
-        | "decodeURI" => 1,
+        "escape" | "unescape" | "isNaN" | "parseFloat" | "isFinite" | "encodeURI" | "decodeURI" => {
+            1
+        }
         _ => 0,
     }
 }

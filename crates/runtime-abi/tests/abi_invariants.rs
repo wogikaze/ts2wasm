@@ -205,9 +205,7 @@ fn local_raw_value_zero_is_undefined() {
 
 #[test]
 fn local_raw_value_identity_for_all_tags() {
-    for tag_val in [
-        0i32, 1, 2, 3, 4, 5, 6, 7,
-    ] {
+    for tag_val in [0i32, 1, 2, 3, 4, 5, 6, 7] {
         let raw = LocalRawValue::new(tag_val);
         assert_eq!(raw.as_tagged().tag(), tag_val);
     }
@@ -314,15 +312,9 @@ fn array_header_offsets_are_4_byte_aligned() {
 fn array_header_offset_order() {
     // Offsets must be strictly increasing.
     assert!(Layout::ARRAY_CAPACITY_OFFSET > 0);
-    assert!(
-        Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET > Layout::ARRAY_CAPACITY_OFFSET
-    );
-    assert!(
-        Layout::ARRAY_ELEMENTS_OFFSET_OFFSET > Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET
-    );
-    assert!(
-        Layout::ARRAY_PRESENCE_WORDS_OFFSET > Layout::ARRAY_ELEMENTS_OFFSET_OFFSET
-    );
+    assert!(Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET > Layout::ARRAY_CAPACITY_OFFSET);
+    assert!(Layout::ARRAY_ELEMENTS_OFFSET_OFFSET > Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET);
+    assert!(Layout::ARRAY_PRESENCE_WORDS_OFFSET > Layout::ARRAY_ELEMENTS_OFFSET_OFFSET);
 }
 
 // ---------------------------------------------------------------------------

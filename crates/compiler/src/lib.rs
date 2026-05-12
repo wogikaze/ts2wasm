@@ -7,7 +7,7 @@ mod test262_preprocessor;
 pub use stages::parse::parse_program;
 
 mod pipeline;
-pub use pipeline::{build_file, build_file_with_options, build_file_with_host_deny};
+pub use pipeline::{build_file, build_file_with_host_deny, build_file_with_options};
 
 pub mod io;
 

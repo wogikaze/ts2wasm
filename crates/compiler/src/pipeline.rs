@@ -76,9 +76,11 @@ pub fn build_file_with_host_deny(
     let lowered = lowered::lower_program(&resolved).map_err(|d| d.with_phase("lowering"))?;
 
     // Stage: static import resolution (read & export phases)
-    let lowered =
-        static_imports::lower_static_named_import_reads_for_build(lowered, &static_module_binding.named_imports)
-            .map_err(|d| d.with_phase("module-resolver"))?;
+    let lowered = static_imports::lower_static_named_import_reads_for_build(
+        lowered,
+        &static_module_binding.named_imports,
+    )
+    .map_err(|d| d.with_phase("module-resolver"))?;
     let lowered = static_imports::populate_static_module_exports_for_build(
         lowered,
         &module_graph,

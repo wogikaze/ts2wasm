@@ -2,9 +2,7 @@ use super::super::{
     is_array_prototype_push_property, is_private_field_storage_key, is_set_prototype_property,
     private_storage_observable_access_diagnostic,
 };
-use super::{
-    is_global_builtin_function_name, lower_global_builtin_function_metadata_property,
-};
+use super::{is_global_builtin_function_name, lower_global_builtin_function_metadata_property};
 use crate::builtin::BuiltinPropertyId;
 use crate::builtin_resolved::ResolvedExpr;
 use crate::lowered::object_kernel;
@@ -159,14 +157,17 @@ impl super::super::Resolver {
         key: &str,
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
-        let class_name = self.ctx.classes.current_class.as_ref().ok_or_else(|| {
-            Diagnostic {
+        let class_name = self
+            .ctx
+            .classes
+            .current_class
+            .as_ref()
+            .ok_or_else(|| Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "super property access requires class context".to_owned(),
                 span: Some(span),
                 phase: None,
-            }
-        })?;
+            })?;
         let parent_name = self
             .ctx
             .classes
@@ -192,14 +193,17 @@ impl super::super::Resolver {
         _object: &ResolvedExpr,
         index: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
-        let class_name = self.ctx.classes.current_class.as_ref().ok_or_else(|| {
-            Diagnostic {
+        let class_name = self
+            .ctx
+            .classes
+            .current_class
+            .as_ref()
+            .ok_or_else(|| Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "super computed access requires class context".to_owned(),
                 span: None,
                 phase: None,
-            }
-        })?;
+            })?;
         let parent_name = self
             .ctx
             .classes

@@ -1,12 +1,12 @@
 use super::FunctionSignature;
+use super::*;
 use crate::RuntimeFn;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 use crate::lowered::types::FuncId;
 use std::collections::HashMap;
-use ts2wasm_syntax::UnaryOp;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
-use super::*;
+use ts2wasm_syntax::UnaryOp;
 
 pub(crate) fn resolve_method_to_runtime_fn(
     object: &ResolvedExpr,
@@ -42,9 +42,7 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "entries" => Some(RuntimeFn::ObjectEntries),
                 "hasOwnProperty" => Some(RuntimeFn::ObjectHasOwnProperty),
                 "hasOwn" => Some(RuntimeFn::ObjectHasOwn),
-                "getOwnPropertyDescriptor" => {
-                    Some(RuntimeFn::ObjectGetOwnPropertyDescriptor)
-                }
+                "getOwnPropertyDescriptor" => Some(RuntimeFn::ObjectGetOwnPropertyDescriptor),
                 "getPrototypeOf" => Some(RuntimeFn::ObjectGetPrototypeOf),
                 "setPrototypeOf" => Some(RuntimeFn::ObjectSetPrototypeOf),
                 "seal" => Some(RuntimeFn::ObjectSeal),
@@ -142,10 +140,7 @@ pub(crate) fn unsupported_annex_b_string_method(_method: &str, _span: Span) -> O
     None
 }
 
-pub(crate) fn collection_method_runtime_fn(
-    class_name: &str,
-    method: &str,
-) -> Option<RuntimeFn> {
+pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Option<RuntimeFn> {
     match (class_name, method) {
         ("DataView", "getInt32") => Some(RuntimeFn::DataViewGetInt32),
         ("DataView", "setInt32") => Some(RuntimeFn::DataViewSetInt32),

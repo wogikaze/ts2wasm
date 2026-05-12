@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use ts2wasm_syntax::{BinaryOp, UnaryOp};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
+use ts2wasm_syntax::{BinaryOp, UnaryOp};
 
 use crate::builtin::{BuiltinId, BuiltinPropertyId};
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};

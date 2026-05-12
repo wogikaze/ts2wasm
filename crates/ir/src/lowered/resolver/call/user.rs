@@ -1,3 +1,4 @@
+use super::super::*;
 use super::super::{
     bigint_runtime_fn_intrinsic, block_contains_arguments, block_contains_this,
     is_array_from_call_receiver, is_array_prototype_map_call_receiver,
@@ -12,7 +13,6 @@ use crate::lowered::*;
 use std::collections::HashMap;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
-use super::super::*;
 
 impl<'a> super::super::Resolver {
     pub(crate) fn lower_call_expr(

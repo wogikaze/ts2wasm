@@ -1,3 +1,4 @@
+use super::super::*;
 use super::super::{
     is_array_from_call_receiver, is_array_prototype_map_call_receiver,
     is_array_prototype_push_expr, is_identity_arrow_callback, is_set_prototype_property_expr,
@@ -11,7 +12,6 @@ use crate::lowered::*;
 use std::collections::HashMap;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
-use super::super::*;
 
 impl<'a> super::super::Resolver {
     pub(crate) fn lower_set_for_each_method(

@@ -1,5 +1,5 @@
-use ts2wasm_syntax::Stmt;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
+use ts2wasm_syntax::Stmt;
 
 use crate::builtin_resolved::{ClassMethodKind, ResolvedExpr};
 

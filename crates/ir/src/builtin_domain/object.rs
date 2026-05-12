@@ -1,5 +1,5 @@
-use ts2wasm_syntax::Expr;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
+use ts2wasm_syntax::Expr;
 
 use crate::builtin_resolved::ResolvedExpr;
 

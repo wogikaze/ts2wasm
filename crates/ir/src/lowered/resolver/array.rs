@@ -53,8 +53,17 @@ impl super::Resolver {
                         continue;
                     }
 
-                    if let Some(value) = crate::lowered::resolver::string::static_string_spread_value(&self.ctx, spread_expr.as_ref()) {
-                        pending_dense.extend(crate::lowered::resolver::string::lower_ascii_string_spread_chars(&value)?);
+                    if let Some(value) =
+                        crate::lowered::resolver::string::static_string_spread_value(
+                            &self.ctx,
+                            spread_expr.as_ref(),
+                        )
+                    {
+                        pending_dense.extend(
+                            crate::lowered::resolver::string::lower_ascii_string_spread_chars(
+                                &value,
+                            )?,
+                        );
                         continue;
                     }
 
@@ -78,7 +87,10 @@ impl super::Resolver {
                         continue;
                     }
 
-                    if crate::lowered::resolver::expr::facts::is_generator_call_spread_operand(&self.ctx, spread_expr.as_ref()) {
+                    if crate::lowered::resolver::expr::facts::is_generator_call_spread_operand(
+                        &self.ctx,
+                        spread_expr.as_ref(),
+                    ) {
                         return Err(crate::lowered::resolver::expr::facts::unsupported_generator_spread_diagnostic());
                     }
 
@@ -165,7 +177,11 @@ impl super::Resolver {
                 self.lower_array_map_elements(receiver, &elements, map_args, span)
             }
             ResolvedExpr::Ident(name) => {
-                let Some(elements) = crate::lowered::resolver::expr::facts::static_function_array_like_elements(&self.ctx, name) else {
+                let Some(elements) =
+                    crate::lowered::resolver::expr::facts::static_function_array_like_elements(
+                        &self.ctx, name,
+                    )
+                else {
                     if is_identity_arrow_callback(map_args) {
                         return Ok(LoweredExpr::RuntimeCall {
                             intrinsic: RuntimeFn::ArrayMapArrayLikeIdentity,

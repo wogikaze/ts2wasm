@@ -1,6 +1,6 @@
+use super::*;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
 use std::collections::HashSet;
-use super::*;
 
 pub(crate) fn collect_arrow_captures(
     expr: &ResolvedExpr,

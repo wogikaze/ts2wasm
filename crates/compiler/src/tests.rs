@@ -1,8 +1,8 @@
 use super::*;
 use crate::stages::lower::ModuleExport;
 use crate::stages::parse::is_typescript_virtual_section;
-use ts2wasm_syntax::{Expr, Stmt};
 use ts2wasm_source::Span;
+use ts2wasm_syntax::{Expr, Stmt};
 
 #[test]
 fn parses_console_log_string() {
