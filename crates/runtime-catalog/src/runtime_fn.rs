@@ -3,6 +3,7 @@ use ts2wasm_runtime_abi::RuntimeString;
 use crate::Capability;
 use crate::HostImport;
 use crate::RuntimeDomain;
+use crate::signature::RuntimeSignature;
 
 pub const NATIVE_SET_ADD_SENTINEL: i32 = -4;
 
@@ -532,18 +533,6 @@ pub struct RuntimeSpec {
     pub capability: &'static [Capability],
     pub runtime_strings: &'static [&'static str],
     pub result: RuntimeResult,
-}
-
-/// Stack-effect signature for a runtime function call.
-///
-/// Describes how many i32 values the function consumes (params) and
-/// produces (results) on the wasm stack.  All runtime functions use
-/// i32 for heap pointers, so per-type tracking is deferred to the
-/// backend layer.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct RuntimeSignature {
-    pub params: usize,
-    pub results: usize,
 }
 
 const NO_DEPS: &[RuntimeFn] = &[];

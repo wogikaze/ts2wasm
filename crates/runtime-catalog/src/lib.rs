@@ -3,6 +3,7 @@ mod domain;
 mod host_import;
 pub mod link_plan;
 mod runtime_fn;
+pub mod signature;
 
 pub use capability::Capability;
 pub use domain::RuntimeDomain;
@@ -13,5 +14,6 @@ pub use link_plan::{
 };
 pub use runtime_fn::{
     GLOBALS_EXCEPTION_RUNTIME, NATIVE_SET_ADD_SENTINEL, RuntimeFn, RuntimeGlobal, RuntimeResult,
-    RuntimeSignature, RuntimeSpec, StringOrigin, runtime_fn_from_name,
+    RuntimeSpec, StringOrigin, runtime_fn_from_name,
 };
+pub use signature::RuntimeSignature;
