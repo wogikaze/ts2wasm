@@ -62,9 +62,12 @@ def validate_result(result_path: Path, result: dict) -> None:
     ):
         errors.append("executed must be between zero and denominator")
 
-    for field in ("build_coverage_percent", "semantic_coverage_percent", "status", "evidence"):
+    for field in ("build_coverage_percent", "semantic_coverage_percent", "status"):
         if not isinstance(result.get(field), str) or not result.get(field):
             errors.append(f"{field} must be a non-empty string")
+
+    if not evidence_text(result):
+        errors.append("evidence must be a non-empty string or structured argv evidence")
 
     for field in ("unsupported_diagcodes", "unsupported_features"):
         if not isinstance(result.get(field), dict):
@@ -113,6 +116,21 @@ def suite_rows(result: dict, suite_key: str) -> list[dict]:
     return [result] + result.get("evidence_rows", [])
 
 
+def evidence_text(result: dict) -> str:
+    """Return a renderable evidence command from legacy or structured artifacts."""
+    evidence = result.get("evidence")
+    if isinstance(evidence, str):
+        return evidence
+    if isinstance(evidence, dict):
+        argv_str = evidence.get("argv_str")
+        if isinstance(argv_str, str) and argv_str:
+            return argv_str
+        argv = evidence.get("argv")
+        if isinstance(argv, list) and all(isinstance(part, str) for part in argv):
+            return " ".join(argv)
+    return ""
+
+
 def breakdown_columns(results: dict[str, dict], field: str) -> list[str]:
     """Return stable breakdown columns ordered by total descending."""
     totals: dict[str, int] = {}
@@ -141,7 +159,7 @@ def render_row(result: dict, suite_key: str) -> str:
     blocked = result.get("blocked", 0)
     skip = result.get("skip_with_reason", 0)
     status = result.get("status", "in-progress")
-    evidence = result.get("evidence", f"scripts/manager reference-coverage {suite_key} --limit {executed}")
+    evidence = evidence_text(result) or f"scripts/manager reference-coverage {suite_key} --limit {executed}"
 
     return f"| {suite_name} | {denominator} | {executed} | {build_cov} | {semantic_cov} | {build_pass} | {semantic_pass} | {executable_bp} | {differential_pass} | {negative_compile_pass} | {conformance_pass} | {fail} | {unsupported} | {blocked} | {skip} | {status} | `{evidence}` |"
 
@@ -154,7 +172,7 @@ def render_breakdown_row(result: dict, suite_key: str, field: str, columns: list
     breakdown = result.get(field, {})
     counts = [str(breakdown.get(column, 0)) for column in columns]
     count_cells = f" | {' | '.join(counts)}" if counts else ""
-    evidence = result.get("evidence", f"scripts/manager reference-coverage {suite_key} --limit {executed}")
+    evidence = evidence_text(result) or f"scripts/manager reference-coverage {suite_key} --limit {executed}"
 
     return f"| {suite_name} | {executed} | {unsupported}{count_cells} | `{evidence}` |"
 

@@ -612,8 +612,30 @@ def refresh_web_ui_data():
 def write_coverage_result(summary):
     COVERAGE_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     output_path = COVERAGE_RESULTS_DIR / f"{summary['suite']}.json"
+    result = dict(summary)
+    evidence = result.get("evidence")
+    if isinstance(evidence, dict):
+        result["evidence_detail"] = evidence
+        result["evidence"] = evidence.get("argv_str") or " ".join(evidence.get("argv", []))
     with output_path.open("w", encoding="utf-8") as handle:
-        json.dump(summary, handle, indent=2, sort_keys=False)
+        json.dump(result, handle, indent=2, sort_keys=False)
+        handle.write("\n")
+
+def write_latest_coverage_jsonl(summary):
+    latest_dir = REPO_ROOT / "artifacts" / "coverage" / summary["suite"]
+    latest_dir.mkdir(parents=True, exist_ok=True)
+    latest_path = latest_dir / "latest.jsonl"
+    latest_record = dict(summary)
+    executed = summary.get("executed", summary.get("total", 0))
+    denominator = summary.get("denominator", executed)
+    latest_record["summary_line"] = (
+        f"executed={executed} "
+        f"denominator={denominator} "
+        f"build_pass={summary.get('build_pass', 0)} "
+        f"semantic_pass={summary.get('semantic_pass', 0)}"
+    )
+    with latest_path.open("w", encoding="utf-8") as handle:
+        handle.write(json.dumps(latest_record, sort_keys=True))
         handle.write("\n")
 
 def test262_harness_dir_for(file_path):
@@ -1125,6 +1147,7 @@ def main():
             print("unsupported_diagcodes=")
             print("unsupported_features=")
             print("semantic_enabled=0")
+        write_latest_coverage_jsonl(summary)
         sys.exit(0)
 
     if paths_file:
@@ -2121,6 +2144,7 @@ def main():
         }
         summary_file = results_dir / f"{suite}-summary.json"
         summary_file.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+        write_latest_coverage_jsonl(summary)
 
         legacy = dict(summary)
         legacy.pop("jsonl_file", None)
@@ -3172,6 +3196,7 @@ def main():
     if web_ui:
         write_coverage_result(summary)
         refresh_web_ui_data()
+    write_latest_coverage_jsonl(summary)
     if detail_output and suite_detail_rows:
         results_dir = REPO_ROOT / "artifacts" / "coverage" / "results"
         results_dir.mkdir(parents=True, exist_ok=True)
