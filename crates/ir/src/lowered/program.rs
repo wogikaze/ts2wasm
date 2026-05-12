@@ -650,6 +650,11 @@ fn collect_array_map_callback_function_names_in_expr(
         ResolvedExpr::Await { expr } => {
             collect_array_map_callback_function_names_in_expr(expr, names);
         }
+        ResolvedExpr::Yield { expr } => {
+            if let Some(expr) = expr {
+                collect_array_map_callback_function_names_in_expr(expr, names);
+            }
+        }
         ResolvedExpr::MethodCall {
             object,
             method,
@@ -1621,6 +1626,11 @@ fn collect_call_targets_in_expr(expr: &ResolvedExpr, targets: &mut HashSet<Strin
         ResolvedExpr::Await { expr } => {
             collect_call_targets_in_expr(expr, targets);
         }
+        ResolvedExpr::Yield { expr } => {
+            if let Some(expr) = expr {
+                collect_call_targets_in_expr(expr, targets);
+            }
+        }
         ResolvedExpr::Call { callee, args, .. } => {
             // Record the callee if it's a direct function reference
             if let ResolvedExpr::Ident(name) = callee.as_ref() {
@@ -1941,6 +1951,7 @@ fn stmt_contains_this(stmt: &ResolvedStmt) -> bool {
 fn expr_contains_this(expr: &ResolvedExpr) -> bool {
     match expr {
         ResolvedExpr::Await { expr } => expr_contains_this(expr),
+        ResolvedExpr::Yield { expr } => expr.as_deref().is_some_and(expr_contains_this),
         ResolvedExpr::This { .. } => true,
         ResolvedExpr::NewTarget { .. } => false,
         ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => expr_contains_this(expr),
@@ -2159,6 +2170,7 @@ fn stmt_contains_arguments(stmt: &ResolvedStmt) -> bool {
 fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
     match expr {
         ResolvedExpr::Await { expr } => expr_contains_arguments(expr),
+        ResolvedExpr::Yield { expr } => expr.as_deref().is_some_and(expr_contains_arguments),
         ResolvedExpr::Ident(name) => name == "arguments",
         ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
             expr_contains_arguments(expr)
@@ -2412,6 +2424,11 @@ pub(super) fn lower_function(
         }
     }
     body_with_defaults.extend(resolver.lower_block(body)?);
+    let generator_state = if is_generator {
+        Some(generator_state_for_body(&body_with_defaults))
+    } else {
+        None
+    };
 
     let min_required = params
         .iter()
@@ -2431,11 +2448,99 @@ pub(super) fn lower_function(
             recursion_depth: options.recursion_depth,
             is_async,
             is_generator,
-            generator_state: is_generator.then(GeneratorState::empty),
+            generator_state,
         },
         generated_functions: resolver.ctx.functions.generated_functions,
         next_func_id: resolver.ctx.functions.next_func_id,
     })
+}
+
+fn generator_state_for_body(body: &[LoweredStmt]) -> GeneratorState {
+    let mut suspend_points = Vec::new();
+    collect_suspend_points(body, &mut suspend_points);
+    if suspend_points.is_empty() {
+        GeneratorState::empty()
+    } else {
+        GeneratorState {
+            completed_state: suspend_points.len() + 1,
+            suspend_points,
+        }
+    }
+}
+
+fn collect_suspend_points(stmts: &[LoweredStmt], suspend_points: &mut Vec<SuspendPoint>) {
+    for stmt in stmts {
+        match stmt {
+            LoweredStmt::Yield(_, _) => {
+                let index = suspend_points.len();
+                suspend_points.push(SuspendPoint {
+                    index,
+                    resume_state: index + 1,
+                });
+            }
+            LoweredStmt::Block(stmts, _)
+            | LoweredStmt::While { body: stmts, .. }
+            | LoweredStmt::DoWhile { body: stmts, .. }
+            | LoweredStmt::ForIn { body: stmts, .. }
+            | LoweredStmt::ForOf { body: stmts, .. } => {
+                collect_suspend_points(stmts, suspend_points);
+            }
+            LoweredStmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                collect_suspend_points(then_body, suspend_points);
+                collect_suspend_points(else_body, suspend_points);
+            }
+            LoweredStmt::For { init, body, .. } => {
+                if let Some(init) = init {
+                    collect_suspend_points(std::slice::from_ref(init.as_ref()), suspend_points);
+                }
+                collect_suspend_points(body, suspend_points);
+            }
+            LoweredStmt::TryFinally {
+                try_body,
+                finally_body,
+                ..
+            } => {
+                collect_suspend_points(try_body, suspend_points);
+                collect_suspend_points(finally_body, suspend_points);
+            }
+            LoweredStmt::TryCatch {
+                try_body,
+                catch_body,
+                finally_body,
+                ..
+            } => {
+                collect_suspend_points(try_body, suspend_points);
+                if let Some(catch_body) = catch_body {
+                    collect_suspend_points(catch_body, suspend_points);
+                }
+                if let Some(finally_body) = finally_body {
+                    collect_suspend_points(finally_body, suspend_points);
+                }
+            }
+            LoweredStmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    collect_suspend_points(body, suspend_points);
+                }
+            }
+            LoweredStmt::Labeled { body, .. } => {
+                collect_suspend_points(std::slice::from_ref(body.as_ref()), suspend_points);
+            }
+            LoweredStmt::Let(_, _, _)
+            | LoweredStmt::Assign(_, _, _)
+            | LoweredStmt::Expr(_, _)
+            | LoweredStmt::Return(_, _)
+            | LoweredStmt::Throw(_, _)
+            | LoweredStmt::Break { .. }
+            | LoweredStmt::Continue { .. }
+            | LoweredStmt::Export { .. }
+            | LoweredStmt::ModuleExportsAssign { .. }
+            | LoweredStmt::ClassDecl { .. } => {}
+        }
+    }
 }
 
 pub(super) fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnostic> {

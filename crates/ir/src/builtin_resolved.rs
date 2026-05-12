@@ -143,6 +143,9 @@ pub enum ResolvedExpr {
     Await {
         expr: Box<ResolvedExpr>,
     },
+    Yield {
+        expr: Option<Box<ResolvedExpr>>,
+    },
     Ident(String),
     Unary {
         op: UnaryOp,

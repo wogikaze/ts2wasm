@@ -142,6 +142,25 @@ fn lowered_snapshot_generator_function_metadata() {
 }
 
 #[test]
+fn lowered_snapshot_generator_yields_suspend_points() {
+    let program = parse_resolve_lower("function* gen() { yield 1; yield 2; }");
+    validate_lowered(&program).expect("generator yield lowered IR should validate");
+    assert_eq!(program.functions.len(), 1);
+    let function = &program.functions[0];
+    assert!(function.is_generator);
+    let generator_state = function
+        .generator_state
+        .as_ref()
+        .expect("generator function should carry generator state");
+    assert_eq!(generator_state.suspend_points.len(), 2);
+    assert_eq!(generator_state.suspend_points[0].index, 0);
+    assert_eq!(generator_state.suspend_points[0].resume_state, 1);
+    assert_eq!(generator_state.suspend_points[1].index, 1);
+    assert_eq!(generator_state.suspend_points[1].resume_state, 2);
+    assert_eq!(generator_state.completed_state, 3);
+}
+
+#[test]
 fn lowered_snapshot_if_statement() {
     let program = parse_resolve_lower("if (true) { let x = 1; } else { let x = 0; }");
     assert_eq!(program.top_level_statements.len(), 1);

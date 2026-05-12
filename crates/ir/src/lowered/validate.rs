@@ -164,6 +164,9 @@ fn validate_stmt(
         LoweredStmt::Expr(expr, _) => {
             validate_expr(expr, local_count, num_funcs, program, errors, false);
         }
+        LoweredStmt::Yield(expr, _) => {
+            validate_expr(expr, local_count, num_funcs, program, errors, true);
+        }
         LoweredStmt::Return(expr, _) => {
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }

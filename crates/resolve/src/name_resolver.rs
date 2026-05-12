@@ -859,6 +859,13 @@ impl NameResolver {
                 expr: Box::new(self.resolve_expr(expr)?),
                 span: *span,
             }),
+            Expr::Yield { expr, span } => Ok(Expr::Yield {
+                expr: expr
+                    .as_ref()
+                    .map(|expr| self.resolve_expr(expr).map(Box::new))
+                    .transpose()?,
+                span: *span,
+            }),
             Expr::This { span } => Ok(Expr::This { span: *span }),
             Expr::NewTarget { span } => Ok(Expr::NewTarget { span: *span }),
             Expr::ClassExpr {
@@ -1911,6 +1918,7 @@ fn expr_contains_bigint_literal(expr: &Expr) -> bool {
         | Expr::TypeOf { expr, .. }
         | Expr::Await { expr, .. }
         | Expr::Spread { expr, .. } => expr_contains_bigint_literal(expr),
+        Expr::Yield { expr, .. } => expr.as_deref().is_some_and(expr_contains_bigint_literal),
         Expr::Binary { left, right, .. }
         | Expr::InstanceOf {
             expr: left,

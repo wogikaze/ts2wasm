@@ -444,6 +444,9 @@ pub(super) fn first_outer_local_reference_in_expr(
         | Expr::Spread { expr, .. } => {
             first_outer_local_reference_in_expr(expr, outer_bindings, method_locals, class_names)
         }
+        Expr::Yield { expr, .. } => expr.as_deref().and_then(|expr| {
+            first_outer_local_reference_in_expr(expr, outer_bindings, method_locals, class_names)
+        }),
         Expr::Binary { left, right, .. } => {
             first_outer_local_reference_in_expr(left, outer_bindings, method_locals, class_names)
                 .or_else(|| {

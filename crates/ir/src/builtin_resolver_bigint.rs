@@ -1324,6 +1324,12 @@ impl BigIntRuntimeGuard {
                 self.expr_bigint_info(object)?;
                 Ok(None)
             }
+            Expr::Yield { expr, .. } => {
+                if let Some(expr) = expr {
+                    self.expr_bigint_info(expr)?;
+                }
+                Ok(None)
+            }
             Expr::Assign { name, expr, .. } | Expr::LogicalAssign { name, expr, .. } => {
                 let info = self.expr_bigint_info(expr)?;
                 if let Some(info) = &info {

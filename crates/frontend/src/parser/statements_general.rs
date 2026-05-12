@@ -42,6 +42,9 @@ impl Parser {
                     phase: None,})
             }
             Some(Token::Return) => self.return_statement(),
+            Some(Token::Ident(name)) if self.in_generator_fn && name == "yield" => {
+                self.yield_statement()
+            }
             Some(Token::Async) if matches!(self.peek_n(1), Some(Token::Function)) => {
                 self.async_function_statement()
             }
@@ -1528,12 +1531,15 @@ impl Parser {
         if self.consume(TokenKind::Colon) {
             self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
         }
-        self.skip_balanced_brace_block(start)?;
-        let end = self.peek_span().map(|span| span.start).unwrap_or(start.end);
+        let prev_in_generator_fn = self.in_generator_fn;
+        self.in_generator_fn = true;
+        let body = self.block()?;
+        self.in_generator_fn = prev_in_generator_fn;
+        let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
         Ok(Stmt::Function {
             name,
             params,
-            body: Vec::new(),
+            body,
             is_generator: true,
             is_async: false,
             is_ambient: false,
@@ -1665,6 +1671,58 @@ impl Parser {
                 start: start.start,
                 end,
             },
+        })
+    }
+
+    fn yield_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        let Some(SpannedToken {
+            kind: Token::Ident(name),
+            span: start,
+        }) = self.advance()
+        else {
+            return Err(Diagnostic {
+                code: DiagCode::SyntaxError,
+                message: "expected yield statement".to_owned(),
+                span: self.peek_span(),
+
+                phase: None,
+            });
+        };
+        debug_assert_eq!(name, "yield");
+        if let Some(semi) = self.consume_span(TokenKind::Semicolon) {
+            let span = Span {
+                start: start.start,
+                end: semi.end,
+            };
+            return Ok(Stmt::Expr {
+                expr: Expr::Yield { expr: None, span },
+                span,
+            });
+        }
+        if self.is_at_end()
+            || self.peek().is_some_and(is_statement_boundary_token)
+            || self.next_token_has_preceding_newline()
+        {
+            return Ok(Stmt::Expr {
+                expr: Expr::Yield {
+                    expr: None,
+                    span: start,
+                },
+                span: start,
+            });
+        }
+        let expr = self.expression()?;
+        let end = self.statement_terminator_end(expr.span().end)?;
+        let span = Span {
+            start: start.start,
+            end,
+        };
+        Ok(Stmt::Expr {
+            expr: Expr::Yield {
+                expr: Some(Box::new(expr)),
+                span,
+            },
+            span,
         })
     }
 

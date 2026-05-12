@@ -471,6 +471,11 @@ impl TypeScriptCallArityValidator {
             ResolvedExpr::Await { expr } => {
                 self.validate_expr(expr)?;
             }
+            ResolvedExpr::Yield { expr } => {
+                if let Some(expr) = expr {
+                    self.validate_expr(expr)?;
+                }
+            }
             ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
                 self.validate_expr(expr)?;
             }
@@ -744,6 +749,7 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         | ResolvedExpr::Undefined
         | ResolvedExpr::ModuleLoad { .. } => false,
         ResolvedExpr::Await { expr } => expr_contains_arguments(expr),
+        ResolvedExpr::Yield { expr } => expr.as_deref().is_some_and(expr_contains_arguments),
         ResolvedExpr::Unary { expr, .. } => expr_contains_arguments(expr),
         ResolvedExpr::Binary { left, right, .. } => {
             expr_contains_arguments(left) || expr_contains_arguments(right)

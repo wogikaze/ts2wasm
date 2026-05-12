@@ -1,6 +1,4 @@
-use std::fmt::Write as _;
-use std::fs;
-use std::path::Path;
+use std::{fmt::Write as _, fs, path::Path};
 
 use super::{
     backend, build_multi_section_file, lowered, split_file_name_sections, test262_preprocessor,
@@ -111,8 +109,6 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
         return Ok(format_section("ast", &format!("{ast:#?}")));
     }
 
-    // Check for @Filename multi-section files — use the multi-section build path
-    // so each section gets its own scope and DuplicateLocal across sections is avoided.
     let sections = split_file_name_sections(&source);
     if !sections.is_empty()
         && matches!(
@@ -136,7 +132,6 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
 
     let pipeline = build_dump_pipeline(input, &source, options.optimization_level)?;
     let mut out = String::new();
-
     match options.phase {
         DumpPhase::All => {
             push_section(&mut out, "tokens", &format!("{:#?}", pipeline.tokens));
@@ -774,6 +769,10 @@ fn unparse_expr(expr: &Expr) -> String {
         Expr::Null { .. } => "null".to_owned(),
         Expr::Undefined { .. } => "undefined".to_owned(),
         Expr::Await { expr, .. } => format!("await {}", unparse_expr(expr)),
+        Expr::Yield { expr, .. } => match expr {
+            Some(expr) => format!("yield {}", unparse_expr(expr)),
+            None => "yield".to_owned(),
+        },
         Expr::Ident { name, .. } => name.clone(),
         Expr::Unary { op, expr, .. } => match op {
             UnaryOp::Not => format!("!{}", unparse_expr(expr)),

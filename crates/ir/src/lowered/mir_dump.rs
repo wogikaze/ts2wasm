@@ -78,6 +78,10 @@ fn dump_mir_stmt(stmt: &LoweredStmt, out: &mut String, indent: usize) {
             out.push_str(&format!("{}Expr\n", prefix));
             dump_mir_expr(expr, out, indent + 2);
         }
+        LoweredStmt::Yield(expr, _) => {
+            out.push_str(&format!("{}Yield\n", prefix));
+            dump_mir_expr(expr, out, indent + 2);
+        }
         LoweredStmt::If {
             condition,
             then_body,

@@ -332,6 +332,11 @@ pub(super) fn collect_assigned_names_in_expr(expr: &Expr, names: &mut HashSet<St
         | Expr::TypeOf { expr, .. }
         | Expr::Await { expr, .. }
         | Expr::Spread { expr, .. } => collect_assigned_names_in_expr(expr, names),
+        Expr::Yield { expr, .. } => {
+            if let Some(expr) = expr {
+                collect_assigned_names_in_expr(expr, names);
+            }
+        }
         Expr::Call { callee, args, .. } | Expr::OptionalCall { callee, args, .. } => {
             collect_assigned_names_in_expr(callee, names);
             for arg in args {
@@ -814,6 +819,7 @@ pub(super) fn expr_contains_bigint(expr: &Expr) -> bool {
         | Expr::TypeOf { expr, .. }
         | Expr::Await { expr, .. }
         | Expr::Spread { expr, .. } => expr_contains_bigint(expr),
+        Expr::Yield { expr, .. } => expr.as_deref().is_some_and(expr_contains_bigint),
         Expr::Binary { left, right, .. }
         | Expr::InstanceOf {
             expr: left,

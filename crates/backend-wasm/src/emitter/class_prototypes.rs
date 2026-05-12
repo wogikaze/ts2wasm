@@ -191,6 +191,7 @@ impl WatEmitter<'_> {
                 LoweredStmt::Let(_, expr, _)
                 | LoweredStmt::Assign(_, expr, _)
                 | LoweredStmt::Expr(expr, _)
+                | LoweredStmt::Yield(expr, _)
                 | LoweredStmt::Return(expr, _)
                 | LoweredStmt::Throw(expr, _)
                 | LoweredStmt::Export { expr, .. }
@@ -295,6 +296,7 @@ impl WatEmitter<'_> {
                 LoweredStmt::Let(_, expr, _)
                 | LoweredStmt::Assign(_, expr, _)
                 | LoweredStmt::Expr(expr, _)
+                | LoweredStmt::Yield(expr, _)
                 | LoweredStmt::Return(expr, _)
                 | LoweredStmt::Throw(expr, _)
                 | LoweredStmt::Export { expr, .. }

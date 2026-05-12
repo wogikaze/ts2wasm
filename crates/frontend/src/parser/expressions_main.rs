@@ -2292,6 +2292,7 @@ fn parser_expr_is_bigint_literal_operand(expr: &Expr) -> bool {
         | Expr::NewTarget { .. }
         | Expr::TypeOf { .. }
         | Expr::Await { .. }
+        | Expr::Yield { .. }
         | Expr::Spread { .. } => false,
     }
 }

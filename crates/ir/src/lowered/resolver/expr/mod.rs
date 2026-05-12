@@ -39,6 +39,13 @@ impl super::Resolver {
 
             // Control flow
             ResolvedExpr::Await { expr } => self.lower_await_expr(expr),
+            ResolvedExpr::Yield { expr } => expr
+                .as_ref()
+                .map(|expr| self.lower_expr(expr))
+                .transpose()
+                .map(|expr| {
+                    expr.unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("yield")))
+                }),
             ResolvedExpr::This { .. } => self.lower_this_expr(),
             ResolvedExpr::NewTarget { span } => self.lower_new_target_expr(*span),
             ResolvedExpr::Ident(name) => self.lower_ident_expr(name),

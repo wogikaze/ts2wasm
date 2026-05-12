@@ -439,6 +439,7 @@ fn expr_contains_super_ref(expr: &ResolvedExpr) -> bool {
             expr_contains_super_ref(callee) || args.iter().any(expr_contains_super_ref)
         }
         ResolvedExpr::Await { expr } => expr_contains_super_ref(expr),
+        ResolvedExpr::Yield { expr } => expr.as_deref().is_some_and(expr_contains_super_ref),
         ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
             expr_contains_super_ref(expr)
         }

@@ -13,6 +13,11 @@ pub(crate) fn collect_arrow_captures(
         ResolvedExpr::Await { expr } => {
             collect_arrow_captures(expr, params, captures);
         }
+        ResolvedExpr::Yield { expr } => {
+            if let Some(expr) = expr {
+                collect_arrow_captures(expr, params, captures);
+            }
+        }
         ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
             collect_arrow_captures(expr, params, captures);
         }
@@ -406,6 +411,9 @@ pub(crate) fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bo
             names.iter().any(|capture| capture == name) || expr_assigns_any_name(expr, names)
         }
         ResolvedExpr::Await { expr } => expr_assigns_any_name(expr, names),
+        ResolvedExpr::Yield { expr } => expr
+            .as_deref()
+            .is_some_and(|expr| expr_assigns_any_name(expr, names)),
         ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
             expr_assigns_any_name(expr, names)
         }

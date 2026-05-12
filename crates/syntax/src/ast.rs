@@ -377,6 +377,10 @@ pub enum Expr {
         expr: Box<Expr>,
         span: Span,
     },
+    Yield {
+        expr: Option<Box<Expr>>,
+        span: Span,
+    },
     Ident {
         name: String,
         span: Span,
@@ -588,6 +592,7 @@ impl Expr {
             | Self::Null { span }
             | Self::Undefined { span }
             | Self::Await { span, .. }
+            | Self::Yield { span, .. }
             | Self::Ident { span, .. }
             | Self::Unary { span, .. }
             | Self::Binary { span, .. }

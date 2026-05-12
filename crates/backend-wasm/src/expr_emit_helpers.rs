@@ -115,7 +115,7 @@ pub(super) fn stmt_may_collect(stmt: &LoweredStmt) -> bool {
     match stmt {
         LoweredStmt::Block(stmts, _) => stmts.iter().any(stmt_may_collect),
         LoweredStmt::Let(_, expr, _) | LoweredStmt::Assign(_, expr, _) => expr_may_collect(expr),
-        LoweredStmt::Expr(expr, _) => expr_may_collect(expr),
+        LoweredStmt::Expr(expr, _) | LoweredStmt::Yield(expr, _) => expr_may_collect(expr),
         LoweredStmt::If {
             condition,
             then_body,

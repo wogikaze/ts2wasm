@@ -360,6 +360,7 @@ pub(super) fn span_of_expr(expr: &Expr) -> Option<Span> {
         | Expr::This { span }
         | Expr::Undefined { span }
         | Expr::Await { span, .. }
+        | Expr::Yield { span, .. }
         | Expr::Ident { span, .. }
         | Expr::Unary { span, .. }
         | Expr::Binary { span, .. }

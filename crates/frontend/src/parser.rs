@@ -19,6 +19,8 @@ pub struct Parser {
     has_preceding_newline: Vec<bool>,
     /// Whether we are inside an async function body (for context-sensitive `await` parsing).
     in_async_fn: bool,
+    /// Whether we are inside a generator function body (for context-sensitive `yield` parsing).
+    in_generator_fn: bool,
     fn_depth: u32,
     /// Maps class names to their TypeScript-`private` field names (erased at runtime).
     class_private_fields: HashMap<String, Vec<String>>,

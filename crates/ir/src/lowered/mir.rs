@@ -248,6 +248,7 @@ pub enum MirStmt {
     Let(LocalId, MirExpr, Span),
     Assign(LocalId, MirExpr, Span),
     Expr(MirExpr, Span),
+    Yield(MirExpr, Span),
     If {
         condition: MirExpr,
         then_body: Vec<MirStmt>,
@@ -709,6 +710,7 @@ fn lower_stmt_to_mir(stmt: &LoweredStmt) -> MirStmt {
             MirStmt::Assign(*local, lower_expr_to_mir(expr), *span)
         }
         LoweredStmt::Expr(expr, span) => MirStmt::Expr(lower_expr_to_mir(expr), *span),
+        LoweredStmt::Yield(expr, span) => MirStmt::Yield(lower_expr_to_mir(expr), *span),
         LoweredStmt::If {
             condition,
             then_body,
@@ -1232,6 +1234,7 @@ fn mir_stmt_to_lower(stmt: &MirStmt) -> LoweredStmt {
             LoweredStmt::Assign(*local, mir_expr_to_lower(expr), *span)
         }
         MirStmt::Expr(expr, span) => LoweredStmt::Expr(mir_expr_to_lower(expr), *span),
+        MirStmt::Yield(expr, span) => LoweredStmt::Yield(mir_expr_to_lower(expr), *span),
         MirStmt::If {
             condition,
             then_body,

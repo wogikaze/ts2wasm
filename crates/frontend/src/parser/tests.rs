@@ -223,7 +223,7 @@ mod tests {
         };
         assert_eq!(name, "gen");
         assert!(*is_generator);
-        assert!(body.is_empty());
+        assert_eq!(body.len(), 2);
     }
 
     #[test]

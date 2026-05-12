@@ -171,6 +171,12 @@ impl WatEmitter<'_> {
                     writer.drop(indent);
                 }
             }
+            LoweredStmt::Yield(expr, _) => {
+                self.emit_expr(writer, expr, indent, frame);
+                if self.expr_produces_value(expr) {
+                    writer.drop(indent);
+                }
+            }
             LoweredStmt::If {
                 condition,
                 then_body,

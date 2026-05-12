@@ -78,6 +78,7 @@ fn collect_required_runtime_stmts(plan: &mut RuntimeLinkPlan, statements: &[Lowe
             LoweredStmt::Let(_, expr, _)
             | LoweredStmt::Assign(_, expr, _)
             | LoweredStmt::Expr(expr, _)
+            | LoweredStmt::Yield(expr, _)
             | LoweredStmt::Return(expr, _)
             | LoweredStmt::Throw(expr, _) => {
                 plan.add_required_globals(GLOBALS_EXCEPTION_RUNTIME);

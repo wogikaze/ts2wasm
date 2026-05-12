@@ -239,6 +239,11 @@ pub(crate) fn collect_direct_eval_function_assignment_expr(
         ResolvedExpr::Await { expr } => {
             collect_direct_eval_function_assignment_expr(function_name, expr, env);
         }
+        ResolvedExpr::Yield { expr } => {
+            if let Some(expr) = expr {
+                collect_direct_eval_function_assignment_expr(function_name, expr, env);
+            }
+        }
         ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
             collect_direct_eval_function_assignment_expr(function_name, expr, env);
         }

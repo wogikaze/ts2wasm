@@ -119,6 +119,7 @@ pub enum LoweredStmt {
     Let(LocalId, LoweredExpr, Span),
     Assign(LocalId, LoweredExpr, Span),
     Expr(LoweredExpr, Span),
+    Yield(LoweredExpr, Span),
     If {
         condition: LoweredExpr,
         then_body: Vec<LoweredStmt>,

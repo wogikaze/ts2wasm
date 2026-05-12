@@ -508,6 +508,12 @@ pub(super) fn validate_static_block_expr(expr: &Expr) -> Result<(), Diagnostic> 
         | Expr::Assign { expr, .. }
         | Expr::Await { expr, .. }
         | Expr::Spread { expr, .. } => validate_static_block_expr(expr),
+        Expr::Yield { expr, .. } => {
+            if let Some(expr) = expr {
+                validate_static_block_expr(expr)?;
+            }
+            Ok(())
+        }
         Expr::Binary {
             left: expr_left,
             right: expr_right,
