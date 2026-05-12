@@ -2597,6 +2597,16 @@ fn global_isfinite_matches_node_under_iwasm() {
 }
 
 #[test]
+fn number_static_nan_and_finite_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/builtins-and-io/number-is-nan.ts",
+        "fixtures/builtins-and-io/number-is-finite.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
 fn math_builtin_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/math-abs.ts",

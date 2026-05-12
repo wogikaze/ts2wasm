@@ -20,6 +20,17 @@ use super::emitter::{
 };
 use super::stmt_emit::LoopContext;
 
+fn tagged_number_sentinel(payload: i32) -> i32 {
+    ((payload as i64) << (ValueTag::NUMBER_SHIFT as u32)) as i32 | ValueTag::NUMBER
+}
+
+fn is_tagged_number_sentinel(value: i32) -> bool {
+    value == tagged_number_sentinel(ValueTag::NAN_PAYLOAD)
+        || value == tagged_number_sentinel(ValueTag::INFINITY_PAYLOAD)
+        || value == tagged_number_sentinel(ValueTag::NEG_INFINITY_PAYLOAD)
+        || value == tagged_number_sentinel(ValueTag::NEG_ZERO_PAYLOAD)
+}
+
 pub(super) const CLOSURE_SENTINEL: i32 = -2;
 pub(super) const CLOSURE_SUBTYPE_OFFSET: u32 = 0;
 pub(super) const CLOSURE_CODE_ID_OFFSET: u32 = 4;
@@ -1250,7 +1261,9 @@ impl WatEmitter<'_> {
     ) {
         match expr {
             LoweredExpr::Number(value, _) => {
-                if ValueTag::can_encode_number(*value) {
+                if is_tagged_number_sentinel(*value) {
+                    writer.i32_const(indent, *value);
+                } else if ValueTag::can_encode_number(*value) {
                     writer.i32_const(indent, ValueTag::encode_number(*value));
                 } else {
                     writer.i32_const(indent, *value);

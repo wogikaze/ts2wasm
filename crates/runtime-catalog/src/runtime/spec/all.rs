@@ -1376,7 +1376,7 @@ match self {
             },
             Self::NumberIsNaN => RuntimeSpec {
                 symbol: "$number_is_nan",
-                deps: &[RuntimeFn::IsNaN],
+                deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -1384,7 +1384,7 @@ match self {
             },
             Self::NumberIsFinite => RuntimeSpec {
                 symbol: "$number_is_finite",
-                deps: &[RuntimeFn::IsFinite],
+                deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,

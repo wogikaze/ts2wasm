@@ -1,6 +1,10 @@
 use crate::emitter::WatEmitter;
 use ts2wasm_runtime_abi::{consts::RuntimeConst, layout::Layout, value::ValueTag};
 
+fn tagged_number_sentinel(payload: i32) -> i32 {
+    ((payload as i64) << (ValueTag::NUMBER_SHIFT as u32)) as i32 | ValueTag::NUMBER
+}
+
 impl WatEmitter<'_> {
     pub(crate) fn emit_math_floor(&self, wat: &mut String) {
         wat.push_str(&format!(
@@ -1310,7 +1314,12 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (if (i32.eq (local.get $tag) (i32.const {number_tag}))
-      (then (return (i32.const {false_tag}))))
+      (then
+        (return
+          (select
+            (i32.const {true_tag})
+            (i32.const {false_tag})
+            (i32.eq (local.get $v) (i32.const {nan_value}))))))
     (if (i32.eq (local.get $v) (i32.const {undefined}))
       (then (return (i32.const {true_tag}))))
     (if (i32.eq (local.get $tag) (i32.const {string_tag}))
@@ -1322,6 +1331,7 @@ impl WatEmitter<'_> {
             number_tag = ValueTag::NUMBER,
             string_tag = ValueTag::STRING,
             undefined = ValueTag::UNDEFINED,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
             false_tag = ValueTag::FALSE,
             true_tag = ValueTag::TRUE,
         ));
@@ -1583,7 +1593,16 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (if (i32.eq (local.get $tag) (i32.const {number_tag}))
-      (then (return (i32.const {true_tag}))))
+      (then
+        (return
+          (select
+            (i32.const {false_tag})
+            (i32.const {true_tag})
+            (i32.or
+              (i32.or
+                (i32.eq (local.get $v) (i32.const {nan_value}))
+                (i32.eq (local.get $v) (i32.const {infinity_value})))
+              (i32.eq (local.get $v) (i32.const {neg_infinity_value})))))))
     (if (i32.eq (local.get $v) (i32.const {undefined}))
       (then (return (i32.const {false_tag}))))
     (if (i32.eq (local.get $tag) (i32.const {string_tag}))
@@ -1595,6 +1614,9 @@ impl WatEmitter<'_> {
             number_tag = ValueTag::NUMBER,
             string_tag = ValueTag::STRING,
             undefined = ValueTag::UNDEFINED,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+            infinity_value = tagged_number_sentinel(ValueTag::INFINITY_PAYLOAD),
+            neg_infinity_value = tagged_number_sentinel(ValueTag::NEG_INFINITY_PAYLOAD),
             true_tag = ValueTag::TRUE,
             false_tag = ValueTag::FALSE,
         ));
@@ -1742,24 +1764,50 @@ impl WatEmitter<'_> {
         ));
     }
 
-    /// Emit $number_is_nan — wrapper around $is_nan for Number.isNaN().
+    /// Emit $number_is_nan — non-coercing SameValue(NaN) check for Number.isNaN().
     pub(crate) fn emit_number_is_nan(&self, wat: &mut String) {
-        wat.push_str(
+        wat.push_str(&format!(
             r##"
   (func $number_is_nan (param $v i32) (result i32)
-    (return (call $is_nan (local.get $v))))
+    (return
+      (select
+        (i32.const {true_tag})
+        (i32.const {false_tag})
+        (i32.eq (local.get $v) (i32.const {nan_value})))))
 "##,
-        );
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+        ));
     }
 
-    /// Emit $number_is_finite — wrapper around $is_finite for Number.isFinite().
+    /// Emit $number_is_finite — non-coercing finite-number check for Number.isFinite().
     pub(crate) fn emit_number_is_finite(&self, wat: &mut String) {
-        wat.push_str(
+        wat.push_str(&format!(
             r##"
   (func $number_is_finite (param $v i32) (result i32)
-    (return (call $is_finite (local.get $v))))
+    (local $tag i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {number_tag}))
+      (then (return (i32.const {false_tag}))))
+    (return
+      (select
+        (i32.const {false_tag})
+        (i32.const {true_tag})
+        (i32.or
+          (i32.or
+            (i32.eq (local.get $v) (i32.const {nan_value}))
+            (i32.eq (local.get $v) (i32.const {infinity_value})))
+          (i32.eq (local.get $v) (i32.const {neg_infinity_value}))))))
 "##,
-        );
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+            infinity_value = tagged_number_sentinel(ValueTag::INFINITY_PAYLOAD),
+            neg_infinity_value = tagged_number_sentinel(ValueTag::NEG_INFINITY_PAYLOAD),
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+        ));
     }
 
     /// Emit $number_is_integer.

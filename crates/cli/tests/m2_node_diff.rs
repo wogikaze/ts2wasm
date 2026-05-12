@@ -980,6 +980,12 @@ fn object_has_own_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-has-own.ts");
 }
 
+#[test]
+fn number_static_nan_and_finite_match_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-is-nan.ts");
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-is-finite.ts");
+}
+
 // Object semantics kernel fixtures (items 175-181)
 #[test]
 fn writable_false_enforcement_matches_node_output() {

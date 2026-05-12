@@ -18,7 +18,7 @@ impl super::super::Resolver {
             {
                 use ts2wasm_runtime_abi::ValueTag;
                 return Ok(LoweredExpr::Number(
-                    ValueTag::NUMBER_PAYLOAD_MIN,
+                    ValueTag::NEG_INFINITY_PAYLOAD << ValueTag::NUMBER_SHIFT | ValueTag::NUMBER,
                     Span::generated("num"),
                 ));
             }

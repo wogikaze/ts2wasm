@@ -529,6 +529,26 @@ fn number_is_integer_method_emits() {
 }
 
 #[test]
+fn number_is_nan_method_emits() {
+    let result = run_fixture("builtins-and-io/number-is-nan.ts");
+    assert!(
+        result.is_ok(),
+        "Number.isNaN should compile: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn number_is_finite_method_emits() {
+    let result = run_fixture("builtins-and-io/number-is-finite.ts");
+    assert!(
+        result.is_ok(),
+        "Number.isFinite should compile: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn number_is_safe_integer_method_emits() {
     let result = run_fixture("builtins-and-io/number-is-safe-integer.ts");
     assert!(

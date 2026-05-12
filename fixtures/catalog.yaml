@@ -298,6 +298,8 @@ directories:
     - math-random.ts
     - math-round.ts
     - math-trunc-sign.ts
+    - number-is-finite.ts
+    - number-is-nan.ts
     - object-assign-descriptors.ts
     - object-assign.ts
     - object-create.ts
