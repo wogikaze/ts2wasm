@@ -198,7 +198,7 @@ The sizing policy optimizes for bounded context, not just short files.
 |---|---:|
 | Ideal module | 300-800 LOC |
 | Target maximum | 1200 LOC |
-| Migration hard cap | configured by architecture check |
+| Migration hard cap | 1200 LOC |
 | Danger zone | 2000 LOC and above |
 
 The architecture checker exposes the 1200-line target and reports hard-cap
@@ -213,7 +213,7 @@ feature code is expected to stay at or below the target maximum.
 | Ideal function | 20-80 LOC |
 | Normal maximum | 120 LOC |
 | Warning threshold | 200 LOC |
-| Hard danger threshold | 300 LOC |
+| Hard danger threshold | 200 LOC |
 
 Large dispatch functions are split by domain. When a large match remains because
 it is a registry or encoder table, it needs an allowlist reason and focused
