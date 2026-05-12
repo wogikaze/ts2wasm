@@ -435,6 +435,30 @@ fn static_namespace_re_export_module_import_fixture_matches_node_output_under_iw
 }
 
 #[test]
+fn static_default_namespace_module_import_fixture_matches_node_output_under_iwasm() {
+    super::assert_static_module_fixture_matches_node_variant_with_sources(
+        "fixtures/module-system/static-default-namespace-import-entry.ts",
+        "import value, * as ns from './static-default-namespace-import-source.ts';\nconsole.log(value);\nconsole.log(ns.x);\n",
+        &[(
+            "static-default-namespace-import-source.ts",
+            "export const x = 1;\nexport default 42;\n",
+        )],
+    );
+}
+
+#[test]
+fn static_export_function_import_fixture_matches_node_output_under_iwasm() {
+    super::assert_static_module_fixture_matches_node_variant_with_sources(
+        "fixtures/module-system/static-export-function-import-entry.ts",
+        "import { f } from './static-export-function-entry.ts';\nconsole.log(f());\n",
+        &[(
+            "static-export-function-entry.ts",
+            "export function f() {\n  return 1;\n}\n",
+        )],
+    );
+}
+
+#[test]
 fn regexp_literal_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/regexp-literal.ts");
 }

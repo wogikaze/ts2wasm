@@ -1341,6 +1341,48 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
                 }
                 exports.insert(specifier.exported.clone(), expr.clone());
                 literal_locals.insert(specifier.local.clone(), expr.clone());
+            } else if let Stmt::Function {
+                name,
+                params,
+                body,
+                is_generator: false,
+                is_async: false,
+                is_ambient: false,
+                span,
+                ..
+            } = declaration.as_ref()
+            {
+                let func_expr = Expr::FunctionExpr {
+                    name: name.clone(),
+                    params: params.clone(),
+                    body: body.clone(),
+                    span: *span,
+                };
+                exports.insert(specifier.exported.clone(), func_expr.clone());
+                literal_locals.insert(name.clone(), func_expr);
+            } else if let Stmt::ClassDecl {
+                name,
+                extends,
+                body,
+                static_blocks,
+                private_elements,
+                ts_private_field_names,
+                interface_heritage,
+                span,
+            } = declaration.as_ref()
+            {
+                let class_expr = Expr::ClassExpr {
+                    name: name.clone(),
+                    extends: extends.clone(),
+                    body: body.clone(),
+                    static_blocks: static_blocks.clone(),
+                    private_elements: private_elements.clone(),
+                    ts_private_field_names: ts_private_field_names.clone(),
+                    interface_heritage: interface_heritage.clone(),
+                    span: *span,
+                };
+                exports.insert(specifier.exported.clone(), class_expr.clone());
+                literal_locals.insert(name.clone(), class_expr);
             }
         } else if let Stmt::ExportDefault { expr, .. } = stmt {
             if !is_static_export_literal(expr) {
@@ -1359,6 +1401,50 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
             if is_static_export_literal(expr) {
                 literal_locals.insert(name.clone(), expr.clone());
             }
+        } else if let Stmt::Function {
+            name,
+            params,
+            body,
+            is_generator: false,
+            is_async: false,
+            is_ambient: false,
+            span,
+            ..
+        } = stmt
+        {
+            literal_locals.insert(
+                name.clone(),
+                Expr::FunctionExpr {
+                    name: name.clone(),
+                    params: params.clone(),
+                    body: body.clone(),
+                    span: *span,
+                },
+            );
+        } else if let Stmt::ClassDecl {
+            name,
+            extends,
+            body,
+            static_blocks,
+            private_elements,
+            ts_private_field_names,
+            interface_heritage,
+            span,
+        } = stmt
+        {
+            literal_locals.insert(
+                name.clone(),
+                Expr::ClassExpr {
+                    name: name.clone(),
+                    extends: extends.clone(),
+                    body: body.clone(),
+                    static_blocks: static_blocks.clone(),
+                    private_elements: private_elements.clone(),
+                    ts_private_field_names: ts_private_field_names.clone(),
+                    interface_heritage: interface_heritage.clone(),
+                    span: *span,
+                },
+            );
         } else if let Stmt::ExportNamed { specifiers, .. } = stmt {
             for specifier in specifiers {
                 let expr = literal_locals.get(&specifier.local).ok_or_else(|| Diagnostic {
@@ -1498,5 +1584,7 @@ fn is_static_export_literal(expr: &Expr) -> bool {
             | Expr::Bool { .. }
             | Expr::Null { .. }
             | Expr::Undefined { .. }
+            | Expr::FunctionExpr { .. }
+            | Expr::ClassExpr { .. }
     )
 }
