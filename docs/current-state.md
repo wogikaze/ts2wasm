@@ -35,6 +35,12 @@
 | differential-mismatch | 50 |
 | runtime-error | 14 |
 
+### test262 Semantic Core Seeds
+
+The file `scripts/data/test262-semantic-core-seeds.txt` contains a deterministic subset of test262
+language tests used for coverage probing and regression detection. Parsed by
+`scripts/gate/coverage.py` for seeds-based shard metrics when JSONL results are unavailable.
+
 ### Coverage dashboard data locations
 
 - `site/docs/coverage/web-ui/public/data/`

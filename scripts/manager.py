@@ -57,6 +57,14 @@ COMMANDS = {
     "nextest": ("cargo", "nextest run"),
 }
 
+CHECK_ALL_PARTS = [
+    "scripts", "manifest", "records", "fixtures",
+    "architecture", "diagnostics", "coverage",
+    "toolchain", "ast-grep", "host",
+    "runtimefn", "wasm", "assert-true",
+    "tracking",
+]
+
 CHECK_PARTS = {
     "scripts": "check-scripts",
     "shell-syntax": "check-scripts",
@@ -223,6 +231,19 @@ def main():
         if args[0] in ("-h", "--help"):
             check_usage()
             sys.exit(0)
+        if args[0] == "all":
+            cmds = []
+            extra = args[1:]
+            for name in CHECK_ALL_PARTS:
+                part_cmd = CHECK_PARTS[name]
+                script_type, script_info = COMMANDS[part_cmd]
+                if script_type == "python":
+                    cmds.append([PYTHON_BIN, str(REPO_ROOT / script_info)] + extra)
+                elif script_type == "cargo":
+                    cmds.append(["cargo"] + script_info.split() + extra)
+                else:
+                    cmds.append(["bash", str(REPO_ROOT / script_info)] + extra)
+            run_sequence(cmds)
         part = args[0]
         if part not in CHECK_PARTS:
             print(f"Unknown check part: {part}", file=sys.stderr)
