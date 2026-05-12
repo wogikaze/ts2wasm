@@ -5,8 +5,12 @@
 // Complex runtime-level lowering (e.g., full method call dispatch) is
 // represented as RuntimeCall nodes that downstream passes expand further.
 
+use super::{
+    FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredFunction,
+    LoweredProgram, LoweredStmt, LoweredUnaryOp,
+};
 use crate::{HirExpr, HirFunction, HirProgram, HirRelationalOp, HirStmt};
-use super::*;
+use ts2wasm_runtime_catalog::RuntimeFn;
 
 /// Lower a HirProgram to a LoweredProgram (MIR).
 pub fn lower_hir_to_mir(program: &HirProgram) -> LoweredProgram {

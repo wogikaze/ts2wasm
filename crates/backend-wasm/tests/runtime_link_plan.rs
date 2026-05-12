@@ -19,7 +19,10 @@ fn link_plan_snapshot_is_valid_json() {
     let snapshot = snapshot(program);
     let parsed: serde_json::Value =
         serde_json::from_str(&snapshot).expect("link plan snapshot should be valid JSON");
-    assert!(parsed.get("imports").is_some(), "snapshot should have imports field");
+    assert!(
+        parsed.get("imports").is_some(),
+        "snapshot should have imports field"
+    );
     assert!(
         parsed.get("capabilities").is_some(),
         "snapshot should have capabilities field"
@@ -49,8 +52,8 @@ fn empty_program_always_includes_proc_exit_import() {
 
     let snapshot = snapshot(program);
     assert!(
-        snapshot.contains("proc_exit"),
-        "even empty programs should include proc_exit import"
+        snapshot.contains("wasi_snapshot_preview1.proc_exit"),
+        "even empty programs should include wasi_snapshot_preview1.proc_exit import"
     );
 }
 

@@ -1041,6 +1041,7 @@ done:
       exit: 0
     - command: python3 scripts/check/compiler-diagnostics.py
       exit: 0
+  closed: '2026-05-12'
 - id: 383
   title: Split coverage data into shards by category
   priority: P2
@@ -1124,6 +1125,61 @@ done:
     - command: grep 'canary' fixtures/catalog.yaml docs/current-state.md
       exit: 0
     - command: git diff --check
+      exit: 0
+- id: 387
+  title: Add flaky test detection tool
+  priority: P3
+  area: cross
+  type: tooling
+  roadmap: P15-test-hardening
+  status: done
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  depends_on:
+  - 374
+  non_goals:
+  - No existing flaky test fix.
+  plan:
+    files:
+    - scripts/check/flaky-detect.py
+    goal: Repeated smoke gate runs with cross-run comparison detect non-deterministic results.
+  acceptance:
+  - python3 scripts/check/flaky-detect.py --help
+  evidence:
+    commit: e7f31f34f
+    commands:
+    - command: python3 scripts/check/flaky-detect.py --help
+      exit: 0
+    - command: python3 -m py_compile scripts/check/flaky-detect.py
+      exit: 0
+- id: 388
+  title: Add performance smoke test
+  priority: P3
+  area: cross
+  type: tooling
+  roadmap: P15-test-hardening
+  status: done
+  closed: '2026-05-12'
+  created: '2026-05-12'
+  updated: '2026-05-12'
+  depends_on:
+  - 374
+  - 382
+  non_goals:
+  - No comprehensive benchmark suite.
+  plan:
+    files:
+    - scripts/perf/benchmark-tracker.py
+    goal: Compilation time and wasm size tracked per commit with regression alerts.
+  acceptance:
+  - python3 scripts/perf/benchmark-tracker.py --help
+  evidence:
+    commit: 233ff24ba
+    commands:
+    - command: python3 scripts/perf/benchmark-tracker.py --help
+      exit: 0
+    - command: python3 -m py_compile scripts/perf/benchmark-tracker.py
       exit: 0
 meta:
   active_limit: 1
@@ -1642,47 +1698,6 @@ open:
     goal: Automated checks prevent TRACKING.yaml from falling out of sync with reality.
   acceptance:
   - python3 scripts/check/tracking-consistency.py
-- id: 387
-  title: Add flaky test detection tool
-  priority: P3
-  area: cross
-  type: tooling
-  roadmap: P15-test-hardening
-  status: done
-  closed: '2026-05-12'
-  created: '2026-05-12'
-  updated: '2026-05-12'
-  depends_on:
-  - 374
-  non_goals:
-  - No existing flaky test fix.
-  plan:
-    files:
-    - scripts/check/flaky-detect.py
-    goal: Repeated smoke gate runs with cross-run comparison detect non-deterministic results.
-  acceptance:
-  - python3 scripts/check/flaky-detect.py --help
-- id: 388
-  title: Add performance smoke test
-  priority: P3
-  area: cross
-  type: tooling
-  roadmap: P15-test-hardening
-  status: done
-  closed: '2026-05-12'
-  created: '2026-05-12'
-  updated: '2026-05-12'
-  depends_on:
-  - 374
-  - 382
-  non_goals:
-  - No comprehensive benchmark suite.
-  plan:
-    files:
-    - scripts/perf/benchmark-tracker.py
-    goal: Compilation time and wasm size tracked per commit with regression alerts.
-  acceptance:
-  - python3 scripts/perf/benchmark-tracker.py --help
 - id: 389
   title: Final P15 test architecture completion gate
   priority: P1

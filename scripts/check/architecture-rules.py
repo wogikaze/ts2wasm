@@ -211,6 +211,8 @@ FUNCTION_LENGTH_ALLOWLIST = {
     ("crates/ir/src/builtin_resolver.rs", "resolve_expr"): "P7: resolver decomposition -- 577 lines",
     ("crates/ir/src/lowered/program.rs", "lower_program"): "P7: resolver decomposition -- 359 lines",
     ("crates/ir/src/lowered/validate.rs", "validate_expr"): "P7: resolver decomposition -- 430 lines",
+    ("crates/ir/src/lowered/mir_dump.rs", "dump_mir_stmt"): "P14: MIR dump variant coverage dispatch -- 239 lines",
+    ("crates/ir/src/lowered/mir_dump.rs", "dump_mir_expr"): "P14: MIR dump variant coverage dispatch -- 298 lines",
     ("crates/ir/src/lowered/mir_dump.rs", "runtime_intrinsic_name"): "P4: dump intrinsic name match -- 332 lines",
     ("crates/ir/src/lowered/hir_to_mir.rs", "lower_hir_expr"): "P7: resolver decomposition -- 206 lines",
     ("crates/ir/src/lowered/resolver/array.rs", "lower_variable_array_callback_method"): "P7: resolver decomposition -- 200+ lines",
@@ -243,6 +245,7 @@ FUNCTION_LENGTH_ALLOWLIST = {
     ("crates/compiler/src/lib.rs", "rewrite_static_module_body_for_build"): "compiler pipeline -- 308 lines",
     ("crates/compiler/src/stages/lower.rs", "rewrite_static_module_body_for_build"): "compiler pipeline -- 200+ lines",
     ("crates/compiler/src/dump.rs", "unparse_expr"): "P4: dump expression dispatch -- 315 lines",
+    ("crates/compiler/src/dump.rs", "unparse_stmt"): "P14: dump statement dispatch -- 329 lines",
     ("crates/compiler/src/test262_preprocessor.rs", "build_feature_stubs"): "P4: preprocessor stub builder -- 362 lines",
     # Runtime function registry — large match by design
     ("crates/runtime-catalog/src/runtime_fn.rs", "runtime_fn_from_name"): "runtime function registry -- 296 lines",
@@ -275,6 +278,7 @@ HIGH_PUBLIC_API_COUNT_ALLOWLIST = {
     "crates/ir/src/lowered/program_builtins.rs": "41 pub items — program builtins exports all runtime fn routing",
     "crates/ir/src/lowered/resolver/mod.rs": "33 pub items — resolver module re-exports many sub-resolvers",
     "crates/ir/src/lowered/resolver_extra.rs": "114 pub items — resolver extra exports many helpers",
+    "crates/ir/src/lowered.rs": "32 pub items — lowered IR boundary re-exports HIR/MIR and compatibility types",
     "crates/ir/src/lowered/types.rs": "35 pub items — lowered IR types are inherently public",
     "crates/runtime-abi/src/layout.rs": "type layout definitions are inherently public",
     "crates/runtime-abi/src/value.rs": "value type definitions are inherently public",
@@ -571,7 +575,7 @@ def check_function_length() -> list[str]:
             brace_depth = 0
             j = i
             while j < len(lines) and brace_depth == 0:
-                brace_depth += lines[j].count('{') - lines[j].count('}')
+                brace_depth += rust_code_brace_delta(lines[j])
                 if brace_depth > 0:
                     break
                 j += 1
@@ -582,7 +586,7 @@ def check_function_length() -> list[str]:
 
             j += 1
             while j < len(lines) and brace_depth > 0:
-                brace_depth += lines[j].count('{') - lines[j].count('}')
+                brace_depth += rust_code_brace_delta(lines[j])
                 j += 1
 
             fn_length = j - fn_start
@@ -597,6 +601,48 @@ def check_function_length() -> list[str]:
             i = j
 
     return violations
+
+
+def rust_code_brace_delta(line: str) -> int:
+    """Return brace delta for Rust code, ignoring string/char literals and comments."""
+    delta = 0
+    i = 0
+    in_string = False
+    in_char = False
+    escaped = False
+    while i < len(line):
+        ch = line[i]
+        nxt = line[i + 1] if i + 1 < len(line) else ""
+        if not in_string and not in_char and ch == "/" and nxt == "/":
+            break
+        if in_string:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                in_string = False
+            i += 1
+            continue
+        if in_char:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == "'":
+                in_char = False
+            i += 1
+            continue
+        if ch == '"':
+            in_string = True
+        elif ch == "'":
+            in_char = True
+        elif ch == "{":
+            delta += 1
+        elif ch == "}":
+            delta -= 1
+        i += 1
+    return delta
 
 
 def check_no_new_string_runtime_call() -> list[str]:
@@ -1127,7 +1173,7 @@ def check_smaller_function_warning() -> list[str]:
             brace_depth = 0
             j = i
             while j < len(lines) and brace_depth == 0:
-                brace_depth += lines[j].count('{') - lines[j].count('}')
+                brace_depth += rust_code_brace_delta(lines[j])
                 if brace_depth > 0:
                     break
                 j += 1
@@ -1138,7 +1184,7 @@ def check_smaller_function_warning() -> list[str]:
 
             j += 1
             while j < len(lines) and brace_depth > 0:
-                brace_depth += lines[j].count('{') - lines[j].count('}')
+                brace_depth += rust_code_brace_delta(lines[j])
                 j += 1
 
             fn_length = j - fn_start

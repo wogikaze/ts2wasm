@@ -3,8 +3,8 @@
 // Every `LoweredStmt` and `LoweredExpr` variant is explicitly handled so
 // that adding a new variant without updating the dump is a compile error.
 
-use crate::{LoweredExpr, LoweredProgram, LoweredStmt};
-use super::*;
+use crate::lowered::LoweredArraySlot;
+use crate::{LoweredExpr, LoweredFunction, LoweredProgram, LoweredStmt};
 
 /// Produce a dump string for the entire MIR (lowered) program.
 pub fn dump_mir(program: &LoweredProgram) -> String {
@@ -17,7 +17,10 @@ pub fn dump_mir(program: &LoweredProgram) -> String {
         dump_mir_function(func, &mut out);
     }
     for module in &program.modules {
-        out.push_str(&format!("  module[{}] ({:?}) {{\n", module.id, module.specifier));
+        out.push_str(&format!(
+            "  module[{}] ({:?}) {{\n",
+            module.id, module.specifier
+        ));
         for stmt in &module.statements {
             dump_mir_stmt(stmt, &mut out, 4);
         }
@@ -83,7 +86,9 @@ fn dump_mir_stmt(stmt: &LoweredStmt, out: &mut String, indent: usize) {
                 dump_mir_stmt(s, out, indent + 4);
             }
         }
-        LoweredStmt::While { condition, body, .. } => {
+        LoweredStmt::While {
+            condition, body, ..
+        } => {
             out.push_str(&format!("{}While\n", prefix));
             out.push_str(&format!("{}  condition:\n", prefix));
             dump_mir_expr(condition, out, indent + 4);
@@ -144,7 +149,9 @@ fn dump_mir_stmt(stmt: &LoweredStmt, out: &mut String, indent: usize) {
                 }
             }
         }
-        LoweredStmt::DoWhile { body, condition, .. } => {
+        LoweredStmt::DoWhile {
+            body, condition, ..
+        } => {
             out.push_str(&format!("{}DoWhile\n", prefix));
             out.push_str(&format!("{}  body:\n", prefix));
             for s in body {
@@ -262,7 +269,11 @@ fn dump_mir_stmt(stmt: &LoweredStmt, out: &mut String, indent: usize) {
                 out.push_str(&format!("{}  private_field: {:?}\n", prefix, pf));
             }
         }
-        LoweredStmt::TryFinally { try_body, finally_body, .. } => {
+        LoweredStmt::TryFinally {
+            try_body,
+            finally_body,
+            ..
+        } => {
             out.push_str(&format!("{}TryFinally\n", prefix));
             out.push_str(&format!("{}  try_body:\n", prefix));
             for s in try_body {
@@ -282,10 +293,11 @@ fn dump_mir_expr(expr: &LoweredExpr, out: &mut String, indent: usize) {
         LoweredExpr::Number(v, _) => {
             out.push_str(&format!("{}Number({})\n", prefix, v));
         }
-        LoweredExpr::BigIntLiteral {
-            decimal, sign, ..
-        } => {
-            out.push_str(&format!("{}BigIntLiteral({} sign={})\n", prefix, decimal, sign));
+        LoweredExpr::BigIntLiteral { decimal, sign, .. } => {
+            out.push_str(&format!(
+                "{}BigIntLiteral({} sign={})\n",
+                prefix, decimal, sign
+            ));
         }
         LoweredExpr::String(v, _) => {
             out.push_str(&format!("{}String({:?})\n", prefix, v));
@@ -343,12 +355,18 @@ fn dump_mir_expr(expr: &LoweredExpr, out: &mut String, indent: usize) {
             out.push_str(&format!("{}Assign({:?})\n", prefix, local));
             dump_mir_expr(expr, out, indent + 2);
         }
-        LoweredExpr::LogicalAssign { local, op, expr, .. } => {
+        LoweredExpr::LogicalAssign {
+            local, op, expr, ..
+        } => {
             out.push_str(&format!("{}LogicalAssign({:?}, {:?})\n", prefix, local, op));
             dump_mir_expr(expr, out, indent + 2);
         }
         LoweredExpr::LogicalPropertyAssign {
-            object, key, op, expr, ..
+            object,
+            key,
+            op,
+            expr,
+            ..
         } => {
             out.push_str(&format!(
                 "{}LogicalPropertyAssign({:?}, {:?})\n",
@@ -387,7 +405,11 @@ fn dump_mir_expr(expr: &LoweredExpr, out: &mut String, indent: usize) {
             dump_mir_expr(expr, out, indent + 2);
         }
         LoweredExpr::LogicalMemberAssign {
-            object, key, op, expr, ..
+            object,
+            key,
+            op,
+            expr,
+            ..
         } => {
             out.push_str(&format!("{}LogicalMemberAssign({:?})\n", prefix, op));
             out.push_str(&format!("{}  key: {:?}\n", prefix, key));
@@ -401,7 +423,11 @@ fn dump_mir_expr(expr: &LoweredExpr, out: &mut String, indent: usize) {
             }
         }
         LoweredExpr::ArrayNewSparse { slots, .. } => {
-            out.push_str(&format!("{}ArrayNewSparse({} slots)\n", prefix, slots.len()));
+            out.push_str(&format!(
+                "{}ArrayNewSparse({} slots)\n",
+                prefix,
+                slots.len()
+            ));
             for slot in slots {
                 match slot {
                     LoweredArraySlot::Present(elem) => {
@@ -499,7 +525,10 @@ fn dump_mir_expr(expr: &LoweredExpr, out: &mut String, indent: usize) {
             dump_mir_expr(key, out, indent + 2);
         }
         LoweredExpr::PropertySetDynamic {
-            object, index, value, ..
+            object,
+            index,
+            value,
+            ..
         } => {
             out.push_str(&format!("{}PropertySetDynamic\n", prefix));
             dump_mir_expr(object, out, indent + 2);
@@ -547,9 +576,7 @@ fn dump_mir_expr(expr: &LoweredExpr, out: &mut String, indent: usize) {
             out.push_str(&format!("{}This\n", prefix));
         }
         LoweredExpr::ArrowFn {
-            func_id,
-            captures,
-            ..
+            func_id, captures, ..
         } => {
             out.push_str(&format!(
                 "{}ArrowFn(id={:?}, captures={:?})\n",

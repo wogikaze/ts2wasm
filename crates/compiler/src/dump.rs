@@ -4,16 +4,15 @@ use std::path::Path;
 
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_frontend::{Lexer, Parser, validate_type_reference_directives};
-use ts2wasm_syntax::{
-    ArrayLiteralElement, BinaryOp, ClassPrivateElement, Expr, LogicalAssignOp,
-    OBJECT_SPREAD_SENTINEL, SpannedToken, Stmt, UnaryOp,
-};
 use ts2wasm_ir::builtin::BuiltinId;
 use ts2wasm_ir::builtin_resolved::ResolvedStmt;
 use ts2wasm_ir::lowered::{LoweredProgram, Validated};
 use ts2wasm_ir::optimizer::{OptimizationLevel, OptimizedHirProgram};
 use ts2wasm_ir::semantic::{HirExpr, HirProgram, HirRelationalOp, HirStmt};
-
+use ts2wasm_syntax::{
+    ArrayLiteralElement, BinaryOp, ClassPrivateElement, Expr, LogicalAssignOp,
+    OBJECT_SPREAD_SENTINEL, SpannedToken, Stmt, UnaryOp,
+};
 use super::{
     backend, build_multi_section_file, lowered, split_file_name_sections, test262_preprocessor,
 };
