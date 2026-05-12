@@ -248,20 +248,27 @@ impl Parser {
             )) || matches!(self.peek(), Some(Token::Abstract)) {
                 self.advance();
             }
-            // TypeScript rejects `const` in class members (TS1248)
+            // Check if abstract modifier was used — don't add to body/initializers
+            // Check for var/let in class members — skip the member
+            let has_other_invalid = self.tokens[modifier_start..self.cursor]
+                .iter()
+                .any(|t| matches!(t.kind, Token::Var | Token::Let));
+            if has_other_invalid {
+                self.skip_to_semicolon_or_next_member()?;
+                continue;
+            }
+
+            let has_abstract = self.tokens[modifier_start..self.cursor]
+                .iter()
+                .any(|t| matches!(t.kind, Token::Abstract));
+
+            // Skip class members with `const` (TS1248) or `export` — these are invalid
             if self.tokens[modifier_start..self.cursor]
                 .iter()
-                .any(|t| matches!(t.kind, Token::Const))
+                .any(|t| matches!(t.kind, Token::Const | Token::Export))
             {
-                let span = self.tokens[modifier_start].span;
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "issue-073: a class member cannot have the 'const' keyword"
-                            .to_owned(),
-                    span: Some(span),
-
-                    phase: None,});
+                self.skip_to_semicolon_or_next_member()?;
+                continue;
             }
             let has_private_modifier = self.tokens[modifier_start..self.cursor]
                 .iter()
@@ -741,6 +748,58 @@ impl Parser {
                 end: semi.end,
             },
         })
+    }
+
+    /// Skip tokens until a semicolon or `}` (class body end) at depth 0.
+    /// Used when an invalid class member should be erased.
+    fn skip_to_semicolon_or_next_member(&mut self) -> Result<(), Diagnostic> {
+        let mut paren_depth = 0usize;
+        let mut bracket_depth = 0usize;
+        let mut brace_depth = 0usize;
+        while !self.is_at_end() {
+            match self.peek() {
+                Some(Token::LeftParen) => {
+                    paren_depth += 1;
+                    self.advance();
+                }
+                Some(Token::RightParen) => {
+                    paren_depth = paren_depth.saturating_sub(1);
+                    self.advance();
+                }
+                Some(Token::LeftBracket) => {
+                    bracket_depth += 1;
+                    self.advance();
+                }
+                Some(Token::RightBracket) => {
+                    bracket_depth = bracket_depth.saturating_sub(1);
+                    self.advance();
+                }
+                Some(Token::LeftBrace) => {
+                    brace_depth += 1;
+                    self.advance();
+                }
+                Some(Token::RightBrace) => {
+                    if paren_depth == 0 && bracket_depth == 0 && brace_depth == 0 {
+                        return Ok(());
+                    }
+                    brace_depth = brace_depth.saturating_sub(1);
+                    self.advance();
+                }
+                Some(token)
+                    if paren_depth == 0
+                        && bracket_depth == 0
+                        && brace_depth == 0
+                        && TokenKind::Semicolon.matches(token) =>
+                {
+                    self.advance();
+                    return Ok(());
+                }
+                _ => {
+                    self.advance();
+                }
+            }
+        }
+        Ok(())
     }
 }
 

@@ -11,6 +11,18 @@ impl Parser {
             || matches!(self.peek(), Some(Token::Static | Token::Export))
         {
             if !allow_parameter_property {
+                // Parameter property modifiers (public, private, protected, readonly)
+                // outside constructors are TypeScript erased syntax.
+                // Check that this really is a modifier and not a parameter name
+                // by looking ahead: a modifier is always followed by an identifier,
+                // `?`, or `:`, not by `,` or `)`.
+                let is_modifier = self.peek_parameter_property_modifier()
+                    && matches!(self.peek_n(1), Some(Token::Ident(_) | Token::Question | Token::Colon
+                        | Token::LeftBrace | Token::LeftBracket | Token::DotDotDot));
+                if is_modifier {
+                    self.advance();
+                    continue;
+                }
                 let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
