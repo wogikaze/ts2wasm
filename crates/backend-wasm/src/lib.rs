@@ -2,6 +2,7 @@ mod binary_mvp;
 mod capability_manifest;
 mod emitter;
 mod expr_emit;
+mod mir_emit;
 mod runtime;
 mod runtime_arrays;
 mod runtime_async;
@@ -32,7 +33,7 @@ mod wasm_ir;
 mod wat_writer;
 
 pub use ts2wasm_diagnostic::{DiagCode, Diagnostic};
-use ts2wasm_ir::lowered::{LoweredProgram, Validated};
+use ts2wasm_ir::lowered::{LoweredProgram, MirProgram, Validated};
 
 pub use runtime_fn::{RuntimeFn, runtime_fn_from_name};
 pub use runtime_link_plan::{
@@ -56,6 +57,12 @@ pub fn emit_wat(program: &Validated<LoweredProgram>) -> Result<String, Diagnosti
     // Validated guarantees no fatal InvariantViolation errors.
     // Non-fatal diagnostics (UnsupportedModule etc.) produce valid WAT.
     emitter::emit_wat(program.as_ref())
+}
+
+pub fn emit_mir_wat(program: &Validated<MirProgram>) -> Result<String, Diagnostic> {
+    // Feature-gated MIR emission path. Delegates through MirProgram → LoweredProgram
+    // conversion to the standard emitter until native MIR emission is implemented.
+    mir_emit::emit_mir_wat_validated(program)
 }
 
 pub fn emit_wasm_binary_mvp(program: &Validated<LoweredProgram>) -> Result<Vec<u8>, Diagnostic> {

@@ -5,9 +5,9 @@ pub mod completion;
 pub mod ctx;
 pub mod facts;
 pub mod hir;
-pub mod hir_validate;
 pub mod hir_dump;
 pub mod hir_to_mir;
+pub mod hir_validate;
 pub mod lower;
 pub mod mir;
 pub mod mir_dump;
@@ -20,17 +20,18 @@ pub mod types;
 pub mod validate;
 
 // Re-exports for backward compatibility
+pub use hir_to_mir::lower_hir_to_mir;
+pub use hir_validate::validate_hir;
+pub use mir::MirProgram;
+pub use mir_validate::validate_mir;
 pub use program::lower_program;
 pub(crate) use program::*;
-pub use ts2wasm_runtime_catalog::RuntimeFn;
 pub(crate) use symbols::FunctionSignature;
+pub use ts2wasm_runtime_catalog::RuntimeFn;
 pub(crate) use types::*;
 pub use types::{
     BuiltinErrorConstructor, ClassPrototypeRef, ClosureRepresentation, FuncId, FunctionCallKind,
     InferredType, LocalId, LoweredArraySlot, LoweredBinaryOp, LoweredExpr, LoweredFunction,
     LoweredLogicalAssignOp, LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo, Validated,
 };
-pub use hir_to_mir::lower_hir_to_mir;
-pub use hir_validate::validate_hir;
-pub use mir_validate::validate_mir;
 pub use validate::validate_lowered;
