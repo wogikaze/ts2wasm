@@ -142,6 +142,50 @@ fn semantic_diff_async_exception() {
     assert_fixture_matches_node_semantic("fixtures/async-await/async-exception.ts");
 }
 
+#[test]
+fn build_smoke_async_void() {
+    let result = build_fixture("fixtures/async-await/async-void.ts");
+    assert!(
+        result.is_ok(),
+        "async-void should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn semantic_diff_async_void() {
+    assert_fixture_matches_node_semantic("fixtures/async-await/async-void.ts");
+}
+
+#[test]
+fn build_smoke_async_nested() {
+    let result = build_fixture("fixtures/async-await/async-nested.ts");
+    assert!(
+        result.is_ok(),
+        "async-nested should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn semantic_diff_async_nested() {
+    assert_fixture_matches_node_semantic("fixtures/async-await/async-nested.ts");
+}
+
+#[test]
+fn build_smoke_async_arrow() {
+    let result = build_fixture("fixtures/async-await/async-arrow.ts");
+    assert!(
+        result.is_ok(),
+        "async-arrow should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn semantic_diff_async_arrow() {
+    assert_fixture_matches_node_semantic("fixtures/async-await/async-arrow.ts");
+}
 // Async generator basic — ID 215 (W5, P3)
 #[test]
 fn build_smoke_async_generator() {
