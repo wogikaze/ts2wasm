@@ -2302,3 +2302,23 @@ fn build_smoke_string_static() {
         result.err()
     );
 }
+
+#[test]
+fn build_smoke_string_charcode_tostring_radix() {
+    let result = run_fixture("builtins-and-io/string-charcode-tostring-radix.ts");
+    assert!(
+        result.is_ok(),
+        "String.charCodeAt(...).toString(radix) should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_string_constructor_call() {
+    let result = run_fixture("builtins-and-io/string-constructor-call.ts");
+    assert!(
+        result.is_ok(),
+        "String(...) constructor-style calls should build: {:?}",
+        result.err()
+    );
+}

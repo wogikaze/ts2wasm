@@ -65,6 +65,21 @@ impl super::super::Resolver {
             }
         };
 
+        if func_name == "String" {
+            let lowered = match args.first() {
+                None => LoweredExpr::String(String::new(), Span::generated("str")),
+                Some(ResolvedExpr::String(value)) => {
+                    LoweredExpr::String(value.clone(), Span::generated("str"))
+                }
+                Some(value) => LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::BooleanToString,
+                    args: vec![self.lower_expr(value)?],
+                    span: Span::generated("runtime_call"),
+                },
+            };
+            return Ok(lowered);
+        }
+
         if let Some(intrinsic) = bigint_runtime_fn_intrinsic(func_name) {
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic,

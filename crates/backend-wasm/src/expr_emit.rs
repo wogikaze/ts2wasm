@@ -2027,6 +2027,20 @@ impl WatEmitter<'_> {
             self.emit_private_brand_check(writer, args, indent, frame);
             return;
         }
+        if *intrinsic == RuntimeFn::BooleanToString && args.len() > 1 {
+            self.emit_expr(writer, &args[0], indent, frame);
+            for arg in &args[1..] {
+                self.emit_expr(writer, arg, indent, frame);
+                if self.expr_produces_value(arg) {
+                    writer.drop(indent);
+                }
+            }
+            writer.line_fmt(
+                indent,
+                format_args!("(call {})", RuntimeFn::BooleanToString.symbol()),
+            );
+            return;
+        }
         if (*intrinsic == RuntimeFn::StringIncludes
             || *intrinsic == RuntimeFn::StringStartsWith
             || *intrinsic == RuntimeFn::StringEndsWith)
