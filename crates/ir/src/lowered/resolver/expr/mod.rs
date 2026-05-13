@@ -159,6 +159,7 @@ impl super::Resolver {
                 is_dynamic_import,
             } => Ok(LoweredExpr::ModuleLoad {
                 module_id: self.module_id_for_specifier(specifier),
+                // ModuleLoadDynamic: dynamic import() keeps async module-load identity in lowered IR.
                 kind: if *is_dynamic_import {
                     ModuleLoadKind::DynamicImport
                 } else {

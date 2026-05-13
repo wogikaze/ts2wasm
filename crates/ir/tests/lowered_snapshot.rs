@@ -10,6 +10,7 @@ use ts2wasm_ir::builtin_resolver::resolve_builtins;
 use ts2wasm_ir::lowered::validate::validate_lowered;
 use ts2wasm_ir::lowered::{
     FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt,
+    ModuleLoadKind,
 };
 use ts2wasm_ir::lowered::{lower_program, lower_program_with_module_url};
 
@@ -144,6 +145,31 @@ fn lowered_snapshot_import_meta_url() {
         }
         other => panic!("expected import.meta to lower to metadata object, got: {other:?}"),
     }
+}
+
+#[test]
+fn lowered_snapshot_dynamic_import_module_load() {
+    let program = parse_resolve_lower(r#"let ns = import("./dep.ts");"#);
+    assert_eq!(program.top_level_statements.len(), 1);
+    match &program.top_level_statements[0] {
+        LoweredStmt::Let(
+            _,
+            LoweredExpr::ModuleLoad {
+                module_id,
+                kind: ModuleLoadKind::DynamicImport,
+                ..
+            },
+            _,
+        ) => {
+            assert_eq!(*module_id, 1);
+        }
+        other => {
+            panic!("expected dynamic import to lower to DynamicImport ModuleLoad, got: {other:?}")
+        }
+    }
+    assert_eq!(program.modules.len(), 1);
+    assert_eq!(program.modules[0].id, 1);
+    assert_eq!(program.modules[0].specifier, "./dep.ts");
 }
 
 #[test]
