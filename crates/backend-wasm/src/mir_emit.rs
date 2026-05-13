@@ -219,12 +219,12 @@ impl<'a> NativeMirWatEmitter<'a> {
                 Some(*span),
                 "native MIR WAT subset does not emit labels, break, or continue",
             )),
-            MirStmt::Export { span, .. } | MirStmt::ModuleExportsAssign { span, .. } => {
-                Err(unsupported(
-                    Some(*span),
-                    "native MIR WAT subset does not emit module exports",
-                ))
-            }
+            MirStmt::Export { span, .. }
+            | MirStmt::ModuleExportsUpdate { span, .. }
+            | MirStmt::ModuleExportsAssign { span, .. } => Err(unsupported(
+                Some(*span),
+                "native MIR WAT subset does not emit module exports",
+            )),
             MirStmt::ClassDecl { span, .. } => Err(unsupported(
                 Some(*span),
                 "native MIR WAT subset does not emit class declarations",

@@ -179,6 +179,7 @@ pub(super) fn stmt_may_collect(stmt: &LoweredStmt) -> bool {
         LoweredStmt::Export { expr, .. } | LoweredStmt::ModuleExportsAssign { expr, .. } => {
             expr_may_collect(expr)
         }
+        LoweredStmt::ModuleExportsUpdate { .. } => false,
         LoweredStmt::ClassDecl { .. } => false,
     }
 }

@@ -901,40 +901,10 @@ fn lower_source_as_module_body(
         .map_err(|d| d.with_phase("hir-validator"))?;
     let lowered_module = lowered::lower_program(&resolved).map_err(|d| d.with_phase("lowering"))?;
 
-    let mut statements = lowered_module.top_level_statements;
-    for export in &body.module_exports {
-        let stmt = statements
-            .get(export.lowered_statement_index)
-            .ok_or_else(|| Diagnostic {
-                code: DiagCode::InvariantViolation,
-                message: format!(
-                    "module export `{}` lowered statement index {} out of range",
-                    export.name, export.lowered_statement_index
-                ),
-                span: None,
-                phase: None,
-            })?;
-        match stmt {
-            lowered::LoweredStmt::Let(_, expr, _) => {
-                statements.push(lowered::LoweredStmt::Export {
-                    name: export.name.clone(),
-                    expr: expr.clone(),
-                    span: Span::generated("Export"),
-                });
-            }
-            other => {
-                return Err(Diagnostic {
-                    code: DiagCode::InvariantViolation,
-                    message: format!(
-                        "module export `{}` maps to non-let statement: {other:?}",
-                        export.name
-                    ),
-                    span: None,
-                    phase: None,
-                });
-            }
-        }
-    }
+    let statements = insert_module_export_live_binding_statements(
+        lowered_module.top_level_statements,
+        &body.module_exports,
+    )?;
 
     if statements.is_empty() {
         return Ok(None);
@@ -969,8 +939,30 @@ fn lower_static_module_body_for_build(
     crate::stages::validate::validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
     let lowered_module = lowered::lower_program(&resolved)?;
 
-    let mut statements = lowered_module.top_level_statements;
-    for export in &body.module_exports {
+    let statements = insert_module_export_live_binding_statements(
+        lowered_module.top_level_statements,
+        &body.module_exports,
+    )?;
+
+    if statements.is_empty() {
+        return Ok(None);
+    }
+
+    Ok(Some(lowered::ModuleInfo {
+        id: module_id,
+        specifier,
+        statements,
+        locals_count: lowered_module.top_level_locals.len(),
+    }))
+}
+
+fn insert_module_export_live_binding_statements(
+    statements: Vec<lowered::LoweredStmt>,
+    module_exports: &[ModuleExport],
+) -> Result<Vec<lowered::LoweredStmt>, Diagnostic> {
+    let mut export_initializers: BTreeMap<usize, Vec<String>> = BTreeMap::new();
+    let mut exported_locals: HashMap<lowered::LocalId, Vec<String>> = HashMap::new();
+    for export in module_exports {
         let stmt = statements
             .get(export.lowered_statement_index)
             .ok_or_else(|| Diagnostic {
@@ -983,12 +975,15 @@ fn lower_static_module_body_for_build(
                 phase: None,
             })?;
         match stmt {
-            lowered::LoweredStmt::Let(_, expr, _) => {
-                statements.push(lowered::LoweredStmt::Export {
-                    name: export.name.clone(),
-                    expr: expr.clone(),
-                    span: Span::generated("Export"),
-                });
+            lowered::LoweredStmt::Let(local, _, _) => {
+                export_initializers
+                    .entry(export.lowered_statement_index)
+                    .or_default()
+                    .push(export.name.clone());
+                exported_locals
+                    .entry(*local)
+                    .or_default()
+                    .push(export.name.clone());
             }
             other => {
                 return Err(Diagnostic {
@@ -1004,16 +999,185 @@ fn lower_static_module_body_for_build(
         }
     }
 
-    if statements.is_empty() {
-        return Ok(None);
+    if exported_locals.is_empty() {
+        return Ok(statements);
     }
-
-    Ok(Some(lowered::ModuleInfo {
-        id: module_id,
-        specifier,
+    Ok(insert_live_binding_statements_in_stmts(
         statements,
-        locals_count: lowered_module.top_level_locals.len(),
-    }))
+        &export_initializers,
+        &exported_locals,
+    ))
+}
+
+fn insert_live_binding_statements_in_stmts(
+    statements: Vec<lowered::LoweredStmt>,
+    export_initializers: &BTreeMap<usize, Vec<String>>,
+    exported_locals: &HashMap<lowered::LocalId, Vec<String>>,
+) -> Vec<lowered::LoweredStmt> {
+    let mut rewritten = Vec::new();
+    for (index, mut stmt) in statements.into_iter().enumerate() {
+        rewrite_live_binding_update_children(&mut stmt, exported_locals);
+        let initializer = match &stmt {
+            lowered::LoweredStmt::Let(_, expr, _) => export_initializers
+                .get(&index)
+                .map(|names| (expr.clone(), names.clone())),
+            _ => None,
+        };
+        let update = match &stmt {
+            lowered::LoweredStmt::Assign(local, _, span) => exported_locals
+                .get(local)
+                .map(|names| (*local, *span, names.clone())),
+            _ => None,
+        };
+        rewritten.push(stmt);
+        if let Some((expr, names)) = initializer {
+            for name in names {
+                rewritten.push(lowered::LoweredStmt::Export {
+                    name,
+                    expr: expr.clone(),
+                    span: Span::generated("Export"),
+                });
+            }
+        }
+        if let Some((local, span, names)) = update {
+            for name in names {
+                rewritten.push(lowered::LoweredStmt::ModuleExportsUpdate { name, local, span });
+            }
+        }
+    }
+    rewritten
+}
+
+fn rewrite_live_binding_update_children(
+    stmt: &mut lowered::LoweredStmt,
+    exported_locals: &HashMap<lowered::LocalId, Vec<String>>,
+) {
+    match stmt {
+        lowered::LoweredStmt::Block(statements, _)
+        | lowered::LoweredStmt::While {
+            body: statements, ..
+        }
+        | lowered::LoweredStmt::DoWhile {
+            body: statements, ..
+        }
+        | lowered::LoweredStmt::ForIn {
+            body: statements, ..
+        }
+        | lowered::LoweredStmt::ForOf {
+            body: statements, ..
+        } => {
+            let old = std::mem::take(statements);
+            *statements =
+                insert_live_binding_statements_in_stmts(old, &BTreeMap::new(), exported_locals);
+        }
+        lowered::LoweredStmt::For { init, body, .. } => {
+            if let Some(init) = init {
+                rewrite_live_binding_update_children(init, exported_locals);
+            }
+            let old = std::mem::take(body);
+            *body = insert_live_binding_statements_in_stmts(old, &BTreeMap::new(), exported_locals);
+        }
+        lowered::LoweredStmt::If {
+            then_body,
+            else_body,
+            ..
+        } => {
+            let old_then = std::mem::take(then_body);
+            *then_body = insert_live_binding_statements_in_stmts(
+                old_then,
+                &BTreeMap::new(),
+                exported_locals,
+            );
+            let old_else = std::mem::take(else_body);
+            *else_body = insert_live_binding_statements_in_stmts(
+                old_else,
+                &BTreeMap::new(),
+                exported_locals,
+            );
+        }
+        lowered::LoweredStmt::TryFinally {
+            try_body,
+            finally_body,
+            ..
+        } => {
+            let old_try = std::mem::take(try_body);
+            *try_body =
+                insert_live_binding_statements_in_stmts(old_try, &BTreeMap::new(), exported_locals);
+            let old_finally = std::mem::take(finally_body);
+            *finally_body = insert_live_binding_statements_in_stmts(
+                old_finally,
+                &BTreeMap::new(),
+                exported_locals,
+            );
+        }
+        lowered::LoweredStmt::TryCatch {
+            try_body,
+            catch_body,
+            finally_body,
+            ..
+        } => {
+            let old_try = std::mem::take(try_body);
+            *try_body =
+                insert_live_binding_statements_in_stmts(old_try, &BTreeMap::new(), exported_locals);
+            if let Some(body) = catch_body {
+                let old_catch = std::mem::take(body);
+                *body = insert_live_binding_statements_in_stmts(
+                    old_catch,
+                    &BTreeMap::new(),
+                    exported_locals,
+                );
+            }
+            if let Some(body) = finally_body {
+                let old_finally = std::mem::take(body);
+                *body = insert_live_binding_statements_in_stmts(
+                    old_finally,
+                    &BTreeMap::new(),
+                    exported_locals,
+                );
+            }
+        }
+        lowered::LoweredStmt::Switch { cases, .. } => {
+            for (_, body) in cases {
+                let old = std::mem::take(body);
+                *body =
+                    insert_live_binding_statements_in_stmts(old, &BTreeMap::new(), exported_locals);
+            }
+        }
+        lowered::LoweredStmt::Labeled { body, .. } => {
+            let old = std::mem::replace(
+                body,
+                Box::new(lowered::LoweredStmt::Block(
+                    Vec::new(),
+                    Span::generated("live_binding_placeholder"),
+                )),
+            );
+            let mut rewritten = insert_live_binding_statements_in_stmts(
+                vec![*old],
+                &BTreeMap::new(),
+                exported_locals,
+            );
+            *body = if rewritten.len() == 1 {
+                Box::new(rewritten.pop().expect("labeled body should remain present"))
+            } else {
+                Box::new(lowered::LoweredStmt::Block(
+                    rewritten,
+                    Span::generated("live_binding_labeled_body"),
+                ))
+            };
+        }
+        lowered::LoweredStmt::Let(_, _, _)
+        | lowered::LoweredStmt::Assign(_, _, _)
+        | lowered::LoweredStmt::Expr(_, _)
+        | lowered::LoweredStmt::Yield(_, _)
+        | lowered::LoweredStmt::Return(_, _)
+        | lowered::LoweredStmt::Throw(_, _)
+        | lowered::LoweredStmt::Break { .. }
+        | lowered::LoweredStmt::Continue { .. }
+        | lowered::LoweredStmt::Export { .. }
+        | lowered::LoweredStmt::ModuleExportsUpdate { .. }
+        | lowered::LoweredStmt::ModuleExportsAssign { .. }
+        | lowered::LoweredStmt::ClassDecl { .. } => {}
+    }
 }
 
 fn rewrite_static_module_body_for_build(

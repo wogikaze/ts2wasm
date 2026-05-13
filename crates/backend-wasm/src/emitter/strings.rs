@@ -131,6 +131,9 @@ impl WatEmitter<'_> {
                 self.intern_string(name);
                 self.collect_expr_strings(expr);
             }
+            LoweredStmt::ModuleExportsUpdate { name, .. } => {
+                self.intern_string(name);
+            }
             LoweredStmt::ModuleExportsAssign { expr, .. } => {
                 self.collect_expr_strings(expr);
             }

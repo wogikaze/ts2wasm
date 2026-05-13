@@ -287,6 +287,25 @@ Focused coverage is `fixtures/builtins-and-io/dynamic-import.ts`,
 `cargo nextest run -p ts2wasm-cli --test m9_modules build_smoke_dynamic_import`,
 and `cargo test -p ts2wasm-cli --test ir_lowering lowering_preserves_dynamic_import_module_load_kind`.
 
+## ES Module Live Bindings
+
+Last audited: 2026-05-13T23:55:00+09:00.
+
+Dependency modules now preserve direct assignment updates to exported local
+bindings. During module-body lowering, `export let value = ...; value = ...`
+emits a `ModuleExportsUpdate` after the local assignment; backend emission
+routes that update through `$module_exports_set` against the current module
+cache entry. Static import reads still load from the module exports object via
+`PropertyGet(ModuleLoad, "name")`.
+
+This is a direct exported-local mutation path. Circular dependency evaluation,
+async dynamic import semantics, namespace-object live accessors, and full
+re-export update propagation remain outside this slice.
+
+Focused coverage is `fixtures/builtins-and-io/es-module-live-binding.ts`,
+`cargo nextest run -p ts2wasm-cli --test m9_modules build_smoke_live_binding`,
+and `grep -R 'ModuleExportsUpdate\|live_binding' crates/ir/src/lowered crates/backend-wasm/src/runtime`.
+
 ## Known compiler limitations
 
 ### test262 harness

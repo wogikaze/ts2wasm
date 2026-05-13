@@ -296,6 +296,9 @@ fn validate_stmt(
         LoweredStmt::Export { expr, .. } | LoweredStmt::ModuleExportsAssign { expr, .. } => {
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
+        LoweredStmt::ModuleExportsUpdate { local, .. } => {
+            check_local_id(*local, local_count, errors);
+        }
         LoweredStmt::ClassDecl {
             constructor,
             methods,

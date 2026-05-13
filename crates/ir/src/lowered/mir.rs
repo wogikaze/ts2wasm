@@ -335,6 +335,11 @@ pub enum MirStmt {
         expr: MirExpr,
         span: Span,
     },
+    ModuleExportsUpdate {
+        name: String,
+        local: LocalId,
+        span: Span,
+    },
     ModuleExportsAssign {
         expr: MirExpr,
         span: Span,
@@ -868,6 +873,11 @@ fn lower_stmt_to_mir(stmt: &LoweredStmt) -> MirStmt {
         LoweredStmt::Export { name, expr, span } => MirStmt::Export {
             name: name.clone(),
             expr: lower_expr_to_mir(expr),
+            span: *span,
+        },
+        LoweredStmt::ModuleExportsUpdate { name, local, span } => MirStmt::ModuleExportsUpdate {
+            name: name.clone(),
+            local: *local,
             span: *span,
         },
         LoweredStmt::ModuleExportsAssign { expr, span } => MirStmt::ModuleExportsAssign {
@@ -1405,6 +1415,11 @@ fn mir_stmt_to_lower(stmt: &MirStmt) -> LoweredStmt {
         MirStmt::Export { name, expr, span } => LoweredStmt::Export {
             name: name.clone(),
             expr: mir_expr_to_lower(expr),
+            span: *span,
+        },
+        MirStmt::ModuleExportsUpdate { name, local, span } => LoweredStmt::ModuleExportsUpdate {
+            name: name.clone(),
+            local: *local,
             span: *span,
         },
         MirStmt::ModuleExportsAssign { expr, span } => LoweredStmt::ModuleExportsAssign {

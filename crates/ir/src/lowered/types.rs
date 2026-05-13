@@ -204,6 +204,11 @@ pub enum LoweredStmt {
         expr: LoweredExpr,
         span: Span,
     },
+    ModuleExportsUpdate {
+        name: String,
+        local: LocalId,
+        span: Span,
+    },
     ModuleExportsAssign {
         expr: LoweredExpr,
         span: Span,

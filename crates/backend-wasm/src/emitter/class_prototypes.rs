@@ -279,6 +279,7 @@ impl WatEmitter<'_> {
                 ),
                 LoweredStmt::Break { .. }
                 | LoweredStmt::Continue { .. }
+                | LoweredStmt::ModuleExportsUpdate { .. }
                 | LoweredStmt::ClassDecl { .. } => {}
             }
         }
@@ -303,6 +304,7 @@ impl WatEmitter<'_> {
                 | LoweredStmt::ModuleExportsAssign { expr, .. } => {
                     Self::collect_builtin_error_prototypes_from_expr(expr, prototypes);
                 }
+                LoweredStmt::ModuleExportsUpdate { .. } => {}
                 LoweredStmt::If {
                     condition,
                     then_body,

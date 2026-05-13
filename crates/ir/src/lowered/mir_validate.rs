@@ -310,6 +310,9 @@ fn validate_stmt(
         MirStmt::Export { expr, .. } | MirStmt::ModuleExportsAssign { expr, .. } => {
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
+        MirStmt::ModuleExportsUpdate { local, .. } => {
+            check_local_id(*local, local_count, errors);
+        }
         MirStmt::ClassDecl {
             constructor,
             methods,

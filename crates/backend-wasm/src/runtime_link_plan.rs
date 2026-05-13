@@ -194,6 +194,9 @@ fn collect_required_runtime_stmts(plan: &mut RuntimeLinkPlan, statements: &[Lowe
                 collect_required_runtime_expr(plan, expr);
                 plan.add_required_runtime(RuntimeFn::ModuleExportsSet);
             }
+            LoweredStmt::ModuleExportsUpdate { .. } => {
+                plan.add_required_runtime(RuntimeFn::ModuleExportsSet);
+            }
             LoweredStmt::ModuleExportsAssign { expr, .. } => {
                 collect_required_runtime_expr(plan, expr);
                 plan.add_required_runtime(RuntimeFn::ModuleExportsAssign);

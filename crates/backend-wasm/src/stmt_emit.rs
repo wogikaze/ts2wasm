@@ -413,6 +413,14 @@ impl WatEmitter<'_> {
                 self.emit_expr(writer, expr, indent, frame);
                 writer.call(indent, RuntimeFn::ModuleExportsSet.symbol());
             }
+            LoweredStmt::ModuleExportsUpdate { name, local, .. } => {
+                let name_ptr = self.string_offset(name) + Layout::STRING_HEADER_SIZE;
+                let name_len = name.len() as u32;
+                writer.line_fmt(indent, format_args!("(i32.const {name_ptr})"));
+                writer.line_fmt(indent, format_args!("(i32.const {name_len})"));
+                writer.local_get(indent, local_index(*local));
+                writer.call(indent, RuntimeFn::ModuleExportsSet.symbol());
+            }
             LoweredStmt::ModuleExportsAssign { expr, .. } => {
                 self.emit_expr(writer, expr, indent, frame);
                 writer.call(indent, RuntimeFn::ModuleExportsAssign.symbol());

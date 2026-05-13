@@ -3064,6 +3064,7 @@ fn collect_suspend_points(stmts: &[LoweredStmt], suspend_points: &mut Vec<Suspen
             | LoweredStmt::Break { .. }
             | LoweredStmt::Continue { .. }
             | LoweredStmt::Export { .. }
+            | LoweredStmt::ModuleExportsUpdate { .. }
             | LoweredStmt::ModuleExportsAssign { .. }
             | LoweredStmt::ClassDecl { .. } => {}
         }

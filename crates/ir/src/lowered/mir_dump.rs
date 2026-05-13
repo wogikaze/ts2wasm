@@ -253,6 +253,12 @@ fn dump_mir_stmt(stmt: &LoweredStmt, out: &mut String, indent: usize) {
             out.push_str(&format!("{}Export({:?})\n", prefix, name));
             dump_mir_expr(expr, out, indent + 2);
         }
+        LoweredStmt::ModuleExportsUpdate { name, local, .. } => {
+            out.push_str(&format!(
+                "{}ModuleExportsUpdate({:?}, {:?})\n",
+                prefix, name, local
+            ));
+        }
         LoweredStmt::ModuleExportsAssign { expr, .. } => {
             out.push_str(&format!("{}ModuleExportsAssign\n", prefix));
             dump_mir_expr(expr, out, indent + 2);

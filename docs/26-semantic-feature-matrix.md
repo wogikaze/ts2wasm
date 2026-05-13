@@ -247,7 +247,7 @@ Last updated: 2026-05-13
 | `module:namespace-import` | namespace import | 部分実装 | module-system |
 | `module:re-export` | re-export | 部分実装 | module-system |
 | `module:side-effect-import` | side-effect import | 部分実装 | module-system |
-| `module:live-binding` | live ES module bindings | 未実装 | module-system (unsupported) |
+| `module:live-binding` | live ES module bindings | 部分実装 (exported local assignment emits ModuleExportsUpdate; no circular/re-export propagation) | builtins-and-io, module-system |
 
 ### 非同期 (Async)
 

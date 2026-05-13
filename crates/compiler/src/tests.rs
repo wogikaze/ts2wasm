@@ -561,6 +561,71 @@ console.log(value);
 }
 
 #[test]
+fn static_module_live_binding_update_follows_exported_assignment() {
+    let dir = unique_temp_dir("static-module-live-binding-update");
+    std::fs::create_dir_all(&dir).expect("temp dir should be created");
+    let entry = dir.join("entry.ts");
+    let source = dir.join("source.ts");
+    let entry_source = r#"import { value } from "./source"; console.log(value);"#;
+    std::fs::write(&entry, entry_source).expect("entry should be written");
+    std::fs::write(&source, "export let value = 41;\nvalue = 42;\n")
+        .expect("source module should be written");
+
+    let program = parse_program(entry_source).expect("entry should parse");
+    validate_ast(&program).expect("entry should validate");
+    let graph = build_entry_module_graph(&entry, &program).expect("graph should build");
+    let static_module_binding = lower_static_named_import_bindings_for_build(&program, &graph)
+        .expect("static named import binding should lower");
+    let name_resolved =
+        ts2wasm_ir::name_resolver::resolve_names(&static_module_binding.rewritten_program)
+            .expect("names should resolve");
+    let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&name_resolved)
+        .expect("builtins should resolve");
+    let lowered_program = lowered::lower_program(&resolved).expect("program should lower");
+    let lowered_program = lower_static_named_import_reads_for_build(
+        lowered_program,
+        &static_module_binding.named_imports,
+    )
+    .expect("static named import reads should lower through module exports");
+    let lowered_program = populate_static_module_exports_for_build(lowered_program, &graph, &[])
+        .expect("static module exports should populate lowered metadata");
+
+    let module = lowered_program
+        .modules
+        .iter()
+        .find(|module| module.specifier == "./source")
+        .expect("source module should be lowered");
+    match &module.statements[..] {
+        [
+            lowered::LoweredStmt::Let(local, lowered::LoweredExpr::Number(41, _), _),
+            lowered::LoweredStmt::Export {
+                name: init_name, ..
+            },
+            lowered::LoweredStmt::Assign(assign_local, lowered::LoweredExpr::Number(42, _), _),
+            lowered::LoweredStmt::ModuleExportsUpdate {
+                name: update_name,
+                local: update_local,
+                ..
+            },
+        ] => {
+            assert_eq!(init_name, "value");
+            assert_eq!(update_name, "value");
+            assert_eq!(assign_local, local);
+            assert_eq!(update_local, local);
+        }
+        other => panic!("unexpected live binding module statements: {other:?}"),
+    }
+
+    let (validated, _diags) =
+        ts2wasm_ir::lowered::Validated::new(lowered_program).expect("should validate");
+    let wat = backend::emit_wat(&validated).expect("module live binding should emit WAT");
+    assert!(wat.contains("$module_exports_set"));
+    assert!(wat.matches("(call $module_exports_set)").count() >= 2);
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn static_default_export_rewrite_uses_unique_synthetic_locals() {
     let dir = unique_temp_dir("static-default-export-unique");
     std::fs::create_dir_all(&dir).expect("temp dir should be created");
