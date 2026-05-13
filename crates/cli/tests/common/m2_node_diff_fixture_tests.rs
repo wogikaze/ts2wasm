@@ -3255,6 +3255,16 @@ fn number_static_nan_and_finite_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn number_is_nan_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-is-nan.ts");
+}
+
+#[test]
+fn number_is_finite_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-is-finite.ts");
+}
+
+#[test]
 fn number_static_integer_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/number-is-integer.ts",
@@ -3264,6 +3274,26 @@ fn number_static_integer_fixtures_match_node_output_under_iwasm() {
     ] {
         assert_fixture_matches_node(fixture);
     }
+}
+
+#[test]
+fn number_is_integer_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-is-integer.ts");
+}
+
+#[test]
+fn number_is_safe_integer_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-is-safe-integer.ts");
+}
+
+#[test]
+fn number_is_integer_i32_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-is-integer-i32.ts");
+}
+
+#[test]
+fn number_is_safe_integer_i32_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-is-safe-integer-i32.ts");
 }
 
 #[test]
