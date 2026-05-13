@@ -3007,6 +3007,11 @@ fn object_define_property_getter_matches_node() {
 }
 
 #[test]
+fn object_define_property_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-define-property.ts");
+}
+
+#[test]
 fn object_entries_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-entries.ts");
 }
@@ -3034,6 +3039,31 @@ fn object_seal_matches_node() {
 #[test]
 fn object_string_keys_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-string-keys.ts");
+}
+
+#[test]
+fn object_get_prototype_of_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-get-prototype-of.ts");
+}
+
+#[test]
+fn object_keys_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-keys.ts");
+}
+
+#[test]
+fn object_keys_arguments_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-keys-arguments.ts");
+}
+
+#[test]
+fn object_assign_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-assign.ts");
+}
+
+#[test]
+fn object_value_of_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/value-of.ts");
 }
 
 #[test]
