@@ -33,6 +33,7 @@ pub type MirUnaryOp = LoweredUnaryOp;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MirExpr {
     Number(i32, Span),
+    DecimalNumber(String, Span),
     BigIntLiteral {
         decimal: String,
         sign: i32,
@@ -391,6 +392,7 @@ pub struct MirProgram {
 fn lower_expr_to_mir(expr: &LoweredExpr) -> MirExpr {
     match expr {
         LoweredExpr::Number(v, span) => MirExpr::Number(*v, *span),
+        LoweredExpr::DecimalNumber(v, span) => MirExpr::DecimalNumber(v.clone(), *span),
         LoweredExpr::BigIntLiteral {
             decimal,
             sign,
@@ -915,6 +917,7 @@ impl From<LoweredProgram> for MirProgram {
 fn mir_expr_to_lower(expr: &MirExpr) -> LoweredExpr {
     match expr {
         MirExpr::Number(v, span) => LoweredExpr::Number(*v, *span),
+        MirExpr::DecimalNumber(v, span) => LoweredExpr::DecimalNumber(v.clone(), *span),
         MirExpr::BigIntLiteral {
             decimal,
             sign,
@@ -1453,7 +1456,7 @@ impl MirExpr {
     /// Mirrors `LoweredExpr::inferred_type`.
     pub fn inferred_type(&self) -> super::InferredType {
         match self {
-            Self::Number(_, _) => super::InferredType::Number,
+            Self::Number(_, _) | Self::DecimalNumber(_, _) => super::InferredType::Number,
             Self::BigIntLiteral { .. } => super::InferredType::Unknown,
             Self::String(_, _) => super::InferredType::String,
             Self::Bool(_, _) => super::InferredType::Boolean,

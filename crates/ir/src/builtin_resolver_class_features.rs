@@ -609,6 +609,7 @@ pub(super) fn validate_static_block_expr(expr: &Expr) -> Result<(), Diagnostic> 
         Expr::FunctionExpr { body, .. } => validate_static_block_stmts(body),
         Expr::ClassExpr { body, .. } => validate_static_block_stmts(body),
         Expr::Number { .. }
+        | Expr::DecimalNumber { .. }
         | Expr::BigInt { .. }
         | Expr::String { .. }
         | Expr::Bool { .. }

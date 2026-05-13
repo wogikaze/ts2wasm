@@ -841,6 +841,10 @@ impl NameResolver {
                 value: *value,
                 span: *span,
             }),
+            Expr::DecimalNumber { value, span } => Ok(Expr::DecimalNumber {
+                value: value.clone(),
+                span: *span,
+            }),
             Expr::BigInt { raw, span } => Ok(Expr::BigInt {
                 raw: raw.clone(),
                 span: *span,
@@ -1995,6 +1999,7 @@ fn expr_contains_bigint_literal(expr: &Expr) -> bool {
         Expr::FunctionExpr { .. }
         | Expr::ClassExpr { .. }
         | Expr::Number { .. }
+        | Expr::DecimalNumber { .. }
         | Expr::String { .. }
         | Expr::Bool { .. }
         | Expr::Null { .. }

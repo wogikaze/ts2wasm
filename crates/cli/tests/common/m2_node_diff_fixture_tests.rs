@@ -2683,6 +2683,8 @@ fn number_static_nan_and_finite_fixtures_match_node_output_under_iwasm() {
 #[test]
 fn number_static_integer_fixtures_match_node_output_under_iwasm() {
     for fixture in [
+        "fixtures/builtins-and-io/number-is-integer.ts",
+        "fixtures/builtins-and-io/number-is-safe-integer.ts",
         "fixtures/builtins-and-io/number-is-integer-i32.ts",
         "fixtures/builtins-and-io/number-is-safe-integer-i32.ts",
     ] {

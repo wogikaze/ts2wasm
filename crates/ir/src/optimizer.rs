@@ -151,6 +151,7 @@ fn fold_literal_numeric_add_expr(expr: &mut HirExpr) -> bool {
         | HirExpr::ConstNull
         | HirExpr::ConstBool(_)
         | HirExpr::ConstNumber(_)
+        | HirExpr::ConstDecimalNumber(_)
         | HirExpr::ConstBigInt(_)
         | HirExpr::ConstString(_)
         | HirExpr::LoadLocal(_)

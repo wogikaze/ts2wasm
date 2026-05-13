@@ -636,6 +636,7 @@ pub(super) fn first_outer_local_reference_in_expr(
         }
         Expr::ArrowFn { .. } | Expr::FunctionExpr { .. } | Expr::ClassExpr { .. } => None,
         Expr::Number { .. }
+        | Expr::DecimalNumber { .. }
         | Expr::BigInt { .. }
         | Expr::String { .. }
         | Expr::Bool { .. }

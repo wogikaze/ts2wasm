@@ -97,6 +97,10 @@ impl Parser {
                 span,
             }) => Ok((n.to_string(), span)),
             Some(SpannedToken {
+                kind: Token::DecimalNumber(n),
+                span,
+            }) => Ok((n, span)),
+            Some(SpannedToken {
                 kind: Token::String(s),
                 span,
             }) => Ok((s, span)),
@@ -248,6 +252,11 @@ impl Parser {
                 self.advance();
                 Ok(key)
             }
+            Some(Token::DecimalNumber(value)) => {
+                let key = value.clone();
+                self.advance();
+                Ok(key)
+            }
             Some(Token::BigIntLiteral(_)) | Some(Token::PrivateIdentifier(_)) => Err(Diagnostic {
                 code: DiagCode::SyntaxError,
                 message: format!(
@@ -300,6 +309,12 @@ impl Parser {
         // Handle number literal computed keys: [42]
         if let Some(Token::Number(value)) = self.peek() {
             let key = value.to_string();
+            self.advance();
+            let _end = self.expect(TokenKind::RightBracket)?;
+            return Ok(key);
+        }
+        if let Some(Token::DecimalNumber(value)) = self.peek() {
+            let key = value.clone();
             self.advance();
             let _end = self.expect(TokenKind::RightBracket)?;
             return Ok(key);

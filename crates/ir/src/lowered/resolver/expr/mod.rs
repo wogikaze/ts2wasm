@@ -18,6 +18,10 @@ impl super::Resolver {
         match expr {
             // Literals (trivial constructors)
             ResolvedExpr::Number(value) => Ok(LoweredExpr::Number(*value, Span::generated("num"))),
+            ResolvedExpr::DecimalNumber(value) => Ok(LoweredExpr::DecimalNumber(
+                value.clone(),
+                Span::generated("num"),
+            )),
             ResolvedExpr::BigIntLiteral {
                 decimal,
                 sign,

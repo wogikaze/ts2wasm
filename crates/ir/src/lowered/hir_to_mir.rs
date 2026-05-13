@@ -117,6 +117,7 @@ impl HirToMirLowerer {
             HirExpr::ConstNull => LoweredExpr::Null(span),
             HirExpr::ConstBool(b) => LoweredExpr::Bool(*b, span),
             HirExpr::ConstNumber(n) => LoweredExpr::Number(*n, span),
+            HirExpr::ConstDecimalNumber(n) => LoweredExpr::DecimalNumber(n.clone(), span),
             HirExpr::ConstBigInt(decimal) => {
                 let (sign, limb_low, limb_high) = parse_bigint(decimal);
                 LoweredExpr::BigIntLiteral {

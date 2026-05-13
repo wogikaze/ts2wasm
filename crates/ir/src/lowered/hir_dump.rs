@@ -99,6 +99,9 @@ fn dump_hir_expr(expr: &HirExpr, out: &mut String, indent: usize) {
         HirExpr::ConstNumber(v) => {
             out.push_str(&format!("{}ConstNumber({})\n", prefix, v));
         }
+        HirExpr::ConstDecimalNumber(v) => {
+            out.push_str(&format!("{}ConstDecimalNumber({})\n", prefix, v));
+        }
         HirExpr::ConstBigInt(v) => {
             out.push_str(&format!("{}ConstBigInt({})\n", prefix, v));
         }

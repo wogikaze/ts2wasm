@@ -342,7 +342,7 @@ fn validate_expr(
     value_required: bool,
 ) {
     match expr {
-        LoweredExpr::Number(_, _) => {}
+        LoweredExpr::Number(_, _) | LoweredExpr::DecimalNumber(_, _) => {}
         LoweredExpr::BigIntLiteral { .. } => {}
         LoweredExpr::Local(id, _) => check_local_id(*id, local_count, errors),
         LoweredExpr::EnvCellNew(expr, _) => {

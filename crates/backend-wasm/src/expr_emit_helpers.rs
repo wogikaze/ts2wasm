@@ -93,6 +93,7 @@ pub(super) fn expr_may_collect(expr: &LoweredExpr) -> bool {
         } => expr_may_collect(object) || expr_may_collect(index) || expr_may_collect(value),
         LoweredExpr::MethodCall { object, .. } => expr_may_collect(object),
         LoweredExpr::Number(value, _) => !ValueTag::can_encode_number(*value),
+        LoweredExpr::DecimalNumber(_, _) => true,
         LoweredExpr::String(_, _)
         | LoweredExpr::Bool(_, _)
         | LoweredExpr::Null(..)
@@ -236,6 +237,7 @@ pub(super) fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         }
         LoweredExpr::RuntimeCall { args, .. } => args.iter().any(expr_uses_caller_backend_tmp),
         LoweredExpr::Number(_, _)
+        | LoweredExpr::DecimalNumber(_, _)
         | LoweredExpr::String(_, _)
         | LoweredExpr::Bool(_, _)
         | LoweredExpr::Null(..)

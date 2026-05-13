@@ -763,6 +763,7 @@ fn unparse_for_init(stmt: &Stmt) -> String {
 fn unparse_expr(expr: &Expr) -> String {
     match expr {
         Expr::Number { value, .. } => value.to_string(),
+        Expr::DecimalNumber { value, .. } => value.clone(),
         Expr::BigInt { raw, .. } => raw.clone(),
         Expr::String { value, .. } => format!("{:?}", value),
         Expr::Bool { value, .. } => value.to_string(),
@@ -1095,6 +1096,7 @@ fn unparse_hir_expr(expr: &HirExpr) -> String {
         HirExpr::ConstNull => "null".to_owned(),
         HirExpr::ConstBool(value) => value.to_string(),
         HirExpr::ConstNumber(value) => value.to_string(),
+        HirExpr::ConstDecimalNumber(value) => value.clone(),
         HirExpr::ConstBigInt(value) => format!("{value}n"),
         HirExpr::ConstString(value) => format!("{value:?}"),
         HirExpr::LoadLocal(local) => format!("local${}", local.0),

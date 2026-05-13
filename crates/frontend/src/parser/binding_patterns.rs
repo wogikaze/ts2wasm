@@ -353,6 +353,10 @@ let binding = self.parse_binding_pattern()?;
                 kind: Token::Number(value),
                 ..
             }) => Ok((value.to_string(), false)),
+            Some(SpannedToken {
+                kind: Token::DecimalNumber(value),
+                ..
+            }) => Ok((value, false)),
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("issue-247: expected object binding property key, got {other:?}"),
@@ -377,6 +381,7 @@ let binding = self.parse_binding_pattern()?;
     fn binding_default_expr_text(&self, expr: &Expr) -> String {
         match expr {
             Expr::Number { value, .. } => value.to_string(),
+            Expr::DecimalNumber { value, .. } => value.clone(),
             Expr::String { value, .. } => format!("{value:?}"),
             Expr::Bool { value, .. } => value.to_string(),
             Expr::Null { .. } => "null".to_owned(),

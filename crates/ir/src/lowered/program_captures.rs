@@ -132,6 +132,7 @@ pub(crate) fn collect_arrow_captures(
         | ResolvedExpr::ClassExpr { .. }
         | ResolvedExpr::ModuleLoad { .. }
         | ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
         | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
@@ -493,6 +494,7 @@ pub(crate) fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bo
         | ResolvedExpr::Ident(_)
         | ResolvedExpr::ModuleLoad { .. }
         | ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
         | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)

@@ -325,6 +325,7 @@ impl Parser {
             Token::Ident(_)
                 | Token::PrivateIdentifier(_)
                 | Token::Number(_)
+                | Token::DecimalNumber(_)
                 | Token::BigIntLiteral(_)
                 | Token::String(_)
                 | Token::TemplateLiteral(_)

@@ -1250,6 +1250,7 @@ impl BigIntRuntimeGuard {
                     Expr::String { .. }
                     | Expr::Bool { .. }
                     | Expr::Number { .. }
+                    | Expr::DecimalNumber { .. }
                     | Expr::BigInt { .. } => true,
                     Expr::Unary {
                         op: UnaryOp::Negate,
@@ -1463,6 +1464,7 @@ impl BigIntRuntimeGuard {
                 Ok(None)
             }
             Expr::Number { .. }
+            | Expr::DecimalNumber { .. }
             | Expr::String { .. }
             | Expr::Bool { .. }
             | Expr::Null { .. }

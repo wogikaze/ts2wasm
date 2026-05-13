@@ -1748,6 +1748,10 @@ impl Parser {
                 span,
             }) => Ok(Expr::Number { value, span }),
             Some(SpannedToken {
+                kind: Token::DecimalNumber(value),
+                span,
+            }) => Ok(Expr::DecimalNumber { value, span }),
+            Some(SpannedToken {
                 kind: Token::BigIntLiteral(raw),
                 span,
             }) => Ok(Expr::BigInt { raw, span }),
@@ -2000,7 +2004,20 @@ impl Parser {
             Some(SpannedToken {
                 kind: Token::Dot,
                 span: dot_span,
-            }) if matches!(self.peek(), Some(Token::Number(_))) => {
+            }) if matches!(self.peek(), Some(Token::Number(_) | Token::DecimalNumber(_))) => {
+                if let Some(SpannedToken {
+                    kind: Token::DecimalNumber(value),
+                    span: num_span,
+                }) = self.advance()
+                {
+                    return Ok(Expr::DecimalNumber {
+                        value: format!(".{value}"),
+                        span: Span {
+                            start: dot_span.start,
+                            end: num_span.end,
+                        },
+                    });
+                }
                 let Some(SpannedToken {
                     kind: Token::Number(value),
                     span: num_span,
@@ -2264,6 +2281,7 @@ fn parser_expr_is_bigint_literal_operand(expr: &Expr) -> bool {
         Expr::FunctionExpr { .. }
         | Expr::ClassExpr { .. }
         | Expr::Number { .. }
+        | Expr::DecimalNumber { .. }
         | Expr::String { .. }
         | Expr::Bool { .. }
         | Expr::Null { .. }

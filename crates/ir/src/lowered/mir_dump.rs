@@ -307,6 +307,9 @@ fn dump_mir_expr(expr: &LoweredExpr, out: &mut String, indent: usize) {
         LoweredExpr::Number(v, _) => {
             out.push_str(&format!("{}Number({})\n", prefix, v));
         }
+        LoweredExpr::DecimalNumber(v, _) => {
+            out.push_str(&format!("{}DecimalNumber({})\n", prefix, v));
+        }
         LoweredExpr::BigIntLiteral { decimal, sign, .. } => {
             out.push_str(&format!(
                 "{}BigIntLiteral({} sign={})\n",

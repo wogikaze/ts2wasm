@@ -92,6 +92,7 @@ impl WatEmitter<'_> {
         let pad = " ".repeat(indent);
         match expr {
             LoweredExpr::Number(..)
+            | LoweredExpr::DecimalNumber(..)
             | LoweredExpr::String(..)
             | LoweredExpr::BigIntLiteral { .. }
             | LoweredExpr::Bool(..)
@@ -1257,7 +1258,7 @@ impl WatEmitter<'_> {
         writer: &mut WatWriter,
         expr: &LoweredExpr,
         indent: usize,
-        _frame: &LocalFrame,
+        frame: &LocalFrame,
     ) {
         match expr {
             LoweredExpr::Number(value, _) => {
@@ -1270,6 +1271,55 @@ impl WatEmitter<'_> {
 
                     writer.call(indent, RuntimeFn::NumberFromI32.symbol());
                 }
+            }
+            LoweredExpr::DecimalNumber(value, _) => {
+                let ptr = frame.heap_base_tmp();
+                let alloc_size = Layout::HEAP_NUMBER_DECIMAL_DATA_OFFSET as usize + value.len();
+                writer.line_fmt(
+                    indent,
+                    format_args!(
+                        "(local.set {ptr} (call {} (i32.const {alloc_size})))",
+                        RuntimeFn::AllocHeap.symbol()
+                    ),
+                );
+                writer.line_fmt(
+                    indent,
+                    format_args!(
+                        "(i32.store (local.get {ptr}) (i32.const {}))",
+                        Layout::HEAP_NUMBER_SENTINEL
+                    ),
+                );
+                writer.line_fmt(
+                    indent,
+                    format_args!(
+                        "(i32.store (i32.add (local.get {ptr}) (i32.const {})) (i32.const 0))",
+                        Layout::OBJECT_PROTOTYPE_OFFSET
+                    ),
+                );
+                writer.line_fmt(
+                    indent,
+                    format_args!(
+                        "(i32.store (i32.add (local.get {ptr}) (i32.const {})) (i32.const {}))",
+                        Layout::HEAP_NUMBER_DECIMAL_LEN_OFFSET,
+                        value.len()
+                    ),
+                );
+                for (offset, byte) in value.bytes().enumerate() {
+                    writer.line_fmt(
+                        indent,
+                        format_args!(
+                            "(i32.store8 (i32.add (local.get {ptr}) (i32.const {})) (i32.const {byte}))",
+                            Layout::HEAP_NUMBER_DECIMAL_DATA_OFFSET as usize + offset
+                        ),
+                    );
+                }
+                writer.line_fmt(
+                    indent,
+                    format_args!(
+                        "(i32.or (local.get {ptr}) (i32.const {}))",
+                        ValueTag::OBJECT
+                    ),
+                );
             }
             LoweredExpr::String(value, _) => {
                 writer.i32_const(indent, self.string_value(value) as i32);

@@ -211,6 +211,7 @@ fn is_ambient_value_asi_boundary_token(token: &Token) -> bool {
                 | Token::LeftBracket
                 | Token::String(_)
                 | Token::Number(_)
+                | Token::DecimalNumber(_)
                 | Token::BigIntLiteral(_)
                 | Token::TemplateLiteral(_)
                 | Token::True

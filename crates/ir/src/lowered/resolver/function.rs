@@ -512,6 +512,7 @@ fn expr_contains_super_ref(expr: &ResolvedExpr) -> bool {
         | ResolvedExpr::ClassExpr { .. }
         | ResolvedExpr::ModuleLoad { .. }
         | ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
         | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)

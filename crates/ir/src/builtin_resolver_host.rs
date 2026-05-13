@@ -352,6 +352,7 @@ pub(super) fn validate_read_stdin_utf8_args(
 pub(super) fn span_of_expr(expr: &Expr) -> Option<Span> {
     match expr {
         Expr::Number { span, .. }
+        | Expr::DecimalNumber { span, .. }
         | Expr::BigInt { span, .. }
         | Expr::String { span, .. }
         | Expr::Bool { span, .. }

@@ -2013,6 +2013,10 @@ impl WatEmitter<'_> {
   (func $number_is_integer (param $v i32) (result i32)
     (local $tag i32)
     (local $obj i32)
+    (local $len i32)
+    (local $i i32)
+    (local $ch i32)
+    (local $fractional i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (if (i32.eq (local.get $tag) (i32.const {number_tag}))
       (then
@@ -2030,7 +2034,27 @@ impl WatEmitter<'_> {
         (if (i32.eq
               (i32.load (local.get $obj))
               (i32.const {heap_number_sentinel}))
-          (then (return (i32.const {true_tag}))))))
+          (then
+            (local.set $len (i32.load (i32.add (local.get $obj) (i32.const {heap_number_len}))))
+            (block $scan_done
+              (loop $scan
+                (br_if $scan_done (i32.ge_u (local.get $i) (local.get $len)))
+                (local.set $ch
+                  (i32.load8_u
+                    (i32.add
+                      (local.get $obj)
+                      (i32.add (i32.const {heap_number_data}) (local.get $i)))))
+                (if (i32.eq (local.get $ch) (i32.const {ascii_dot}))
+                  (then (local.set $fractional (i32.const {one})))
+                  (else
+                    (if
+                      (i32.and
+                        (local.get $fractional)
+                        (i32.ne (local.get $ch) (i32.const {ascii_zero})))
+                      (then (return (i32.const {false_tag}))))))
+                (local.set $i (i32.add (local.get $i) (i32.const {one})))
+                (br $scan)))
+            (return (i32.const {true_tag}))))))
     (return (i32.const {false_tag})))
 "##,
             tag_mask = ValueTag::TAG_MASK,
@@ -2038,11 +2062,16 @@ impl WatEmitter<'_> {
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            heap_number_len = Layout::HEAP_NUMBER_DECIMAL_LEN_OFFSET,
+            heap_number_data = Layout::HEAP_NUMBER_DECIMAL_DATA_OFFSET,
             nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
             infinity_value = tagged_number_sentinel(ValueTag::INFINITY_PAYLOAD),
             neg_infinity_value = tagged_number_sentinel(ValueTag::NEG_INFINITY_PAYLOAD),
             true_tag = ValueTag::TRUE,
             false_tag = ValueTag::FALSE,
+            ascii_dot = b'.',
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            one = RuntimeConst::ONE,
         ));
     }
 
@@ -2053,6 +2082,10 @@ impl WatEmitter<'_> {
   (func $number_is_safe_integer (param $v i32) (result i32)
     (local $tag i32)
     (local $obj i32)
+    (local $len i32)
+    (local $i i32)
+    (local $ch i32)
+    (local $fractional i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (if (i32.eq (local.get $tag) (i32.const {number_tag}))
       (then
@@ -2070,7 +2103,27 @@ impl WatEmitter<'_> {
         (if (i32.eq
               (i32.load (local.get $obj))
               (i32.const {heap_number_sentinel}))
-          (then (return (i32.const {true_tag}))))))
+          (then
+            (local.set $len (i32.load (i32.add (local.get $obj) (i32.const {heap_number_len}))))
+            (block $scan_done
+              (loop $scan
+                (br_if $scan_done (i32.ge_u (local.get $i) (local.get $len)))
+                (local.set $ch
+                  (i32.load8_u
+                    (i32.add
+                      (local.get $obj)
+                      (i32.add (i32.const {heap_number_data}) (local.get $i)))))
+                (if (i32.eq (local.get $ch) (i32.const {ascii_dot}))
+                  (then (local.set $fractional (i32.const {one})))
+                  (else
+                    (if
+                      (i32.and
+                        (local.get $fractional)
+                        (i32.ne (local.get $ch) (i32.const {ascii_zero})))
+                      (then (return (i32.const {false_tag}))))))
+                (local.set $i (i32.add (local.get $i) (i32.const {one})))
+                (br $scan)))
+            (return (i32.const {true_tag}))))))
     (return (i32.const {false_tag})))
 "##,
             tag_mask = ValueTag::TAG_MASK,
@@ -2078,11 +2131,16 @@ impl WatEmitter<'_> {
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            heap_number_len = Layout::HEAP_NUMBER_DECIMAL_LEN_OFFSET,
+            heap_number_data = Layout::HEAP_NUMBER_DECIMAL_DATA_OFFSET,
             nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
             infinity_value = tagged_number_sentinel(ValueTag::INFINITY_PAYLOAD),
             neg_infinity_value = tagged_number_sentinel(ValueTag::NEG_INFINITY_PAYLOAD),
             true_tag = ValueTag::TRUE,
             false_tag = ValueTag::FALSE,
+            ascii_dot = b'.',
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            one = RuntimeConst::ONE,
         ));
     }
 

@@ -234,6 +234,7 @@ pub enum LoweredArraySlot {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LoweredExpr {
     Number(i32, Span),
+    DecimalNumber(String, Span),
     BigIntLiteral {
         decimal: String,
         sign: i32,
@@ -492,7 +493,7 @@ pub enum InferredType {
 impl LoweredExpr {
     pub fn inferred_type(&self) -> InferredType {
         match self {
-            Self::Number(_, _) => InferredType::Number,
+            Self::Number(_, _) | Self::DecimalNumber(_, _) => InferredType::Number,
             Self::BigIntLiteral { .. } => InferredType::Unknown,
             Self::String(_, _) => InferredType::String,
             Self::Bool(_, _) => InferredType::Boolean,

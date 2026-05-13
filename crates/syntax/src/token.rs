@@ -5,6 +5,7 @@ pub enum Token {
     Ident(String),
     PrivateIdentifier(String),
     Number(i32),
+    DecimalNumber(String),
     BigIntLiteral(String),
     String(String),
     TemplateLiteral(String),

@@ -755,6 +755,7 @@ impl BigIntStaticBuiltinFolder {
                 span: *span,
             },
             Expr::Number { .. }
+            | Expr::DecimalNumber { .. }
             | Expr::BigInt { .. }
             | Expr::String { .. }
             | Expr::Bool { .. }
@@ -1441,6 +1442,7 @@ fn resolve_stmt_with_outer_bindings(
 fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
     match expr {
         Expr::Number { value, .. } => Ok(ResolvedExpr::Number(*value)),
+        Expr::DecimalNumber { value, .. } => Ok(ResolvedExpr::DecimalNumber(value.clone())),
         Expr::BigInt { raw, span } => parse_bigint_literal(raw, *span),
         Expr::String { value, .. } => Ok(ResolvedExpr::String(value.clone())),
         Expr::Bool { value, .. } => Ok(ResolvedExpr::Bool(*value)),

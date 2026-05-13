@@ -13,6 +13,12 @@ impl super::super::Resolver {
         expr: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
         if *op == UnaryOp::Negate {
+            if let ResolvedExpr::DecimalNumber(value) = expr {
+                return Ok(LoweredExpr::DecimalNumber(
+                    format!("-{value}"),
+                    Span::generated("num"),
+                ));
+            }
             if let ResolvedExpr::Ident(name) = expr
                 && name == "Infinity"
             {

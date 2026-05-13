@@ -341,6 +341,7 @@ pub(crate) fn collect_direct_eval_function_assignment_expr(
         | ResolvedExpr::Ident(_)
         | ResolvedExpr::ModuleLoad { .. }
         | ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
         | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)

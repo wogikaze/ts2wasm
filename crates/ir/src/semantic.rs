@@ -175,6 +175,7 @@ pub enum HirExpr {
     ConstNull,
     ConstBool(bool),
     ConstNumber(i32),
+    ConstDecimalNumber(String),
     ConstBigInt(String),
     ConstString(String),
     LoadLocal(HirLocalId),
@@ -459,6 +460,7 @@ impl TypeScriptCallArityValidator {
     fn validate_expr(&mut self, expr: &ResolvedExpr) -> Result<(), Diagnostic> {
         match expr {
             ResolvedExpr::Number(_)
+            | ResolvedExpr::DecimalNumber(_)
             | ResolvedExpr::BigIntLiteral { .. }
             | ResolvedExpr::String(_)
             | ResolvedExpr::Bool(_)
@@ -742,6 +744,7 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::This { .. }
         | ResolvedExpr::NewTarget { .. }
         | ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
         | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
@@ -940,6 +943,7 @@ fn validate_expr(expr: &HirExpr, context: ValidationContext<'_>, errors: &mut Ve
         | HirExpr::ConstNull
         | HirExpr::ConstBool(_)
         | HirExpr::ConstNumber(_)
+        | HirExpr::ConstDecimalNumber(_)
         | HirExpr::ConstBigInt(_)
         | HirExpr::ConstString(_) => {}
     }
@@ -1089,6 +1093,7 @@ impl<'a> HirLowerer<'a> {
     fn lower_expr(&mut self, expr: &ResolvedExpr) -> Result<HirExpr, Diagnostic> {
         match expr {
             ResolvedExpr::Number(value) => Ok(HirExpr::ConstNumber(*value)),
+            ResolvedExpr::DecimalNumber(value) => Ok(HirExpr::ConstDecimalNumber(value.clone())),
             ResolvedExpr::BigIntLiteral { decimal, .. } => {
                 Ok(HirExpr::ConstBigInt(decimal.clone()))
             }

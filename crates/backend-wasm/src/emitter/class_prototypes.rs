@@ -522,6 +522,7 @@ impl WatEmitter<'_> {
                 Self::collect_class_prototypes_from_expr(expr, prototypes);
             }
             LoweredExpr::Number(_, _)
+            | LoweredExpr::DecimalNumber(_, _)
             | LoweredExpr::String(_, _)
             | LoweredExpr::BigIntLiteral { .. }
             | LoweredExpr::Bool(_, _)
@@ -660,6 +661,7 @@ impl WatEmitter<'_> {
                 Self::collect_builtin_error_prototypes_from_expr(obj, prototypes);
             }
             LoweredExpr::Number(_, _)
+            | LoweredExpr::DecimalNumber(_, _)
             | LoweredExpr::String(_, _)
             | LoweredExpr::BigIntLiteral { .. }
             | LoweredExpr::Bool(_, _)

@@ -404,6 +404,9 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
                 plan.add_required_runtime(RuntimeFn::NumberFromI32);
             }
         }
+        LoweredExpr::DecimalNumber(_, _) => {
+            plan.add_required_runtime(RuntimeFn::AllocHeap);
+        }
         LoweredExpr::String(_, _)
         | LoweredExpr::Bool(_, _)
         | LoweredExpr::Null(..)

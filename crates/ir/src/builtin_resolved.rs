@@ -124,6 +124,7 @@ pub enum ClassMethodKind {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ResolvedExpr {
     Number(i32),
+    DecimalNumber(String),
     BigIntLiteral {
         decimal: String,
         sign: i32,

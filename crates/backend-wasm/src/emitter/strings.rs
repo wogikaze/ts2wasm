@@ -155,6 +155,7 @@ impl WatEmitter<'_> {
                 self.intern_string(decimal);
             }
             LoweredExpr::Number(_, _)
+            | LoweredExpr::DecimalNumber(_, _)
             | LoweredExpr::Bool(_, _)
             | LoweredExpr::Null(..)
             | LoweredExpr::Undefined(..)

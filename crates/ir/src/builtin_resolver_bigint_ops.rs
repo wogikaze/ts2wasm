@@ -409,6 +409,7 @@ pub(super) fn collect_assigned_names_in_expr(expr: &Expr, names: &mut HashSet<St
         Expr::ArrowFn { .. }
         | Expr::FunctionExpr { .. }
         | Expr::Number { .. }
+        | Expr::DecimalNumber { .. }
         | Expr::BigInt { .. }
         | Expr::String { .. }
         | Expr::Bool { .. }
@@ -885,6 +886,7 @@ pub(super) fn expr_contains_bigint(expr: &Expr) -> bool {
                 || expr_contains_bigint(value)
         }
         Expr::Number { .. }
+        | Expr::DecimalNumber { .. }
         | Expr::String { .. }
         | Expr::Bool { .. }
         | Expr::Null { .. }

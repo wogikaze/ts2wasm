@@ -757,6 +757,7 @@ fn collect_array_map_callback_function_names_in_expr(
         ResolvedExpr::FunctionExpr { .. }
         | ResolvedExpr::ClassExpr { .. }
         | ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
         | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
@@ -1750,6 +1751,7 @@ fn collect_call_targets_in_expr(expr: &ResolvedExpr, targets: &mut HashSet<Strin
         | ResolvedExpr::NewTarget { .. }
         | ResolvedExpr::Ident(_)
         | ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
         | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
@@ -2016,6 +2018,7 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::FunctionExpr { .. } => false,
         ResolvedExpr::ClassExpr { .. } => false,
         ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
         | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
@@ -2248,6 +2251,7 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::This { .. }
         | ResolvedExpr::NewTarget { .. }
         | ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
         | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)

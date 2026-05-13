@@ -67,6 +67,16 @@ impl<'a> Lexer<'a> {
 
         self.reject_invalid_decimal_bigint_suffix(start)?;
 
+        if radix == 10 && digits.contains('.') {
+            return Ok(SpannedToken {
+                kind: Token::DecimalNumber(digits.replace('_', "")),
+                span: Span {
+                    start,
+                    end: self.cursor,
+                },
+            });
+        }
+
         let value = match self.number_value(&digits, radix, start) {
             Ok(v) => v,
             Err(_) => {
