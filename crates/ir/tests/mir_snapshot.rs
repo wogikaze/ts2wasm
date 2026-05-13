@@ -8,7 +8,7 @@ use ts2wasm_frontend::Span;
 use ts2wasm_ir::dump_mir;
 use ts2wasm_ir::lowered::{
     LoweredArraySlot, LoweredBinaryOp, LoweredExpr, LoweredFunction, LoweredLogicalAssignOp,
-    LoweredProgram, LoweredStmt, LoweredUnaryOp, MirProgram,
+    LoweredProgram, LoweredStmt, LoweredUnaryOp, MirExpr, MirProgram, MirStmt, RuntimeFn,
 };
 use ts2wasm_ir::{FuncId, LocalId};
 
@@ -38,6 +38,30 @@ fn empty_mir() -> LoweredProgram {
         functions: vec![],
         modules: vec![],
     }
+}
+
+#[test]
+fn dump_native_mir_runtime_call_is_distinct_from_hir_and_lowered_debug() {
+    let mir = MirProgram {
+        top_level_statements: vec![MirStmt::Expr(
+            MirExpr::RuntimeCall {
+                intrinsic: RuntimeFn::TruthyBool,
+                args: vec![MirExpr::Bool(true, make_span())],
+                span: make_span(),
+            },
+            make_span(),
+        )],
+        top_level_locals: vec![],
+        functions: vec![],
+        modules: vec![],
+    };
+
+    let dump = dump_mir(&mir);
+    assert!(dump.contains("MirProgram"), "dump: {dump}");
+    assert!(dump.contains("RuntimeCall"), "dump: {dump}");
+    assert!(dump.contains("TruthyBool"), "dump: {dump}");
+    assert!(!dump.contains("HirProgram"), "dump: {dump}");
+    assert!(!dump.contains("LoweredProgram"), "dump: {dump}");
 }
 
 // ---------------------------------------------------------------------------

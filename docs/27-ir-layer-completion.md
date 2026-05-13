@@ -44,7 +44,7 @@ Source
 |---|---|---|
 | HIR | `crates/ir/src/semantic.rs` に `HirProgram` / `HirStmt` / `HirExpr`、`lower_to_hir`、`validate_hir` がある。初期 slice は実装済み。 | 対応構文を P16 semantic correctness matrix と同期し、UnsupportedSyntax 境界を fixture 化する。 |
 | HIR → MIR | `crates/ir/src/lowered/hir_to_mir.rs` の `lower_hir_to_mir` が現行 HIR variant を `LoweredProgram` 互換に下ろし、`lower_hir_to_mir_native` が native `MirProgram` を返す。 | Span/metadata の損失、method call runtime intent、default pipeline switch を詰める。 |
-| MIR | `crates/ir/src/lowered/mir.rs` に独立した `MirProgram` / `MirFunction` / `MirStmt` / `MirExpr` がある。`From<LoweredProgram>` / `From<MirProgram>` bridge と `Validated<MirProgram>::new_mir` は operational。 | `validate_mir` はまだ `validate_lowered` wrapper であり、native MIR validator は未完。 |
+| MIR | `crates/ir/src/lowered/mir.rs` に独立した `MirProgram` / `MirFunction` / `MirStmt` / `MirExpr` がある。`From<LoweredProgram>` / `From<MirProgram>` bridge、native `validate_mir`、`Validated<MirProgram>::new_mir` は operational。 | native MIR emitter は未完。 |
 | MIR backend path | `emit_mir` / `emit_mir_wat` があり、`Validated<MirProgram>` を受け取れる。 | 現状は `mir_emit` bridge が standard emitter に委譲する。native MIR emitter は未完。 |
 | WasmIR | `backend-core` に typed `WasmInstr` / `WasmModule` があり、`WatWriter::emit_module` と feature-gated `wasm-encoder` path がある。 | main build pipeline の全面入力にはまだなっていない。raw WAT legacy helper を段階移行する。 |
 
@@ -168,7 +168,7 @@ MIR が持ってはいけない情報:
 Bridge の扱い:
 
 - `Validated<MirProgram>` backend path の smoke / compatibility に使える。
-- `validate_mir` は native MIR validator が入るまで `validate_lowered` wrapper として扱う。
+- `validate_mir` は native MIR の local / function / module / class reference / control-flow invariants を直接検査する。
 - `mir_emit` は native emitter が入るまで standard emitter への委譲 bridge として扱う。
 - issue / docs では `LoweredProgram` compatibility bridge と `native MIR` を区別して記述する。
 
@@ -179,7 +179,6 @@ Native MIR は以下を満たしたとき完成とする。
 - `MirProgram` / `MirFunction` / `MirStmt` / `MirExpr` が alias ではない独立型として存在する。
 - `From<LoweredProgram>` または compatibility bridge があり、移行中の backend parity を測れる。
 - HIR lowering から native MIR を返す明示 API があり、compatibility bridge と snapshot parity を保つ。
-- `validate_mir` が native MIR の invariant を検査する。
 - `emit_mir_wat` が native MIR を直接読める subset から始まり、bridge 委譲を段階的に縮小する。
 - MIR dump / snapshot が HIR と別の runtime intent を示す。
 - runtime call は string ではなく typed `RuntimeFn` を使う。

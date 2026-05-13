@@ -15,7 +15,6 @@ use super::{
 };
 use ts2wasm_source::Span;
 
-pub type MirArraySlot = LoweredArraySlot;
 pub type MirBinaryOp = LoweredBinaryOp;
 pub type MirBuiltinErrorConstructor = BuiltinErrorConstructor;
 pub type MirClassPrototypeRef = ClassPrototypeRef;
@@ -24,6 +23,12 @@ pub type MirFunctionCallKind = FunctionCallKind;
 pub type MirLogicalAssignOp = LoweredLogicalAssignOp;
 pub type MirModuleInfo = ModuleInfo;
 pub type MirUnaryOp = LoweredUnaryOp;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MirArraySlot {
+    Present(MirExpr),
+    Hole,
+}
 
 // ---------------------------------------------------------------------------
 // MirExpr — native expression type
@@ -123,7 +128,7 @@ pub enum MirExpr {
         span: Span,
     },
     ArrayNewSparse {
-        slots: Vec<LoweredArraySlot>,
+        slots: Vec<MirArraySlot>,
         span: Span,
     },
     ArrayGet {
@@ -524,7 +529,7 @@ fn lower_expr_to_mir(expr: &LoweredExpr) -> MirExpr {
             span: *span,
         },
         LoweredExpr::ArrayNewSparse { slots, span } => MirExpr::ArrayNewSparse {
-            slots: slots.clone(),
+            slots: slots.iter().map(lower_array_slot_to_mir).collect(),
             span: *span,
         },
         LoweredExpr::ArrayGet { arr, index, span } => MirExpr::ArrayGet {
@@ -699,6 +704,13 @@ fn lower_expr_to_mir(expr: &LoweredExpr) -> MirExpr {
             representation: *representation,
             span: *span,
         },
+    }
+}
+
+fn lower_array_slot_to_mir(slot: &LoweredArraySlot) -> MirArraySlot {
+    match slot {
+        LoweredArraySlot::Present(expr) => MirArraySlot::Present(lower_expr_to_mir(expr)),
+        LoweredArraySlot::Hole => MirArraySlot::Hole,
     }
 }
 
@@ -1049,7 +1061,7 @@ fn mir_expr_to_lower(expr: &MirExpr) -> LoweredExpr {
             span: *span,
         },
         MirExpr::ArrayNewSparse { slots, span } => LoweredExpr::ArrayNewSparse {
-            slots: slots.clone(),
+            slots: slots.iter().map(mir_array_slot_to_lower).collect(),
             span: *span,
         },
         MirExpr::ArrayGet { arr, index, span } => LoweredExpr::ArrayGet {
@@ -1224,6 +1236,13 @@ fn mir_expr_to_lower(expr: &MirExpr) -> LoweredExpr {
             representation: *representation,
             span: *span,
         },
+    }
+}
+
+fn mir_array_slot_to_lower(slot: &MirArraySlot) -> LoweredArraySlot {
+    match slot {
+        MirArraySlot::Present(expr) => LoweredArraySlot::Present(mir_expr_to_lower(expr)),
+        MirArraySlot::Hole => LoweredArraySlot::Hole,
     }
 }
 
