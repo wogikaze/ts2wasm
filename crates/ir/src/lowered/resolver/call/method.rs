@@ -695,6 +695,20 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
+        if method == "lastIndexOf"
+            && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
+        {
+            let search = if let Some(arg) = args.first() {
+                self.lower_expr(arg)?
+            } else {
+                LoweredExpr::Undefined(Span::generated("undef"))
+            };
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ArrayLastIndexOf,
+                args: vec![self.lower_expr(object)?, search],
+                span: Span::generated("runtime_call"),
+            }));
+        }
         if crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
             && matches!(method, "copyWithin" | "fill" | "slice" | "subarray")
         {
