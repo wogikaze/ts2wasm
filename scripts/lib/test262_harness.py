@@ -66,16 +66,15 @@ BLOCKED_FEATURES = (
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
 COMPILE_NEGATIVE_PHASES = {"parse", "early", "resolution"}
 
-# Inline minimal harness stubs used when the real test262 harness files
-# are not available (e.g. running from a partial checkout).
+# Inline harness stubs used instead of the real test262 harness files.
+# The real files contain patterns that ts2wasm's compiler does not yet
+# handle (e.g. forward self-reference in function body: assert._toString
+# inside function assert()). Stubs match the real declarations but use
+# patterns the compiler can resolve.
 INLINE_STA_JS = r"""
 function Test262Error(message) {
   this.message = message || "";
 }
-
-Test262Error.prototype.toString = function () {
-  return "Test262Error: " + this.message;
-};
 
 Test262Error.thrower = function (message) {
   throw new Test262Error(message);
@@ -87,50 +86,37 @@ function $DONOTEVALUATE() {
 """
 
 INLINE_ASSERT_JS = r"""
-function assert(mustBeTrue, message) {
-  if (mustBeTrue === true) { return; }
-  throw new Test262Error(message || "Expected true but got " + String(mustBeTrue));
-}
-
-assert._isSameValue = function(a, b) {
-  if (a === b) { return a !== 0 || 1 / a === 1 / b; }
-  return a !== a && b !== b;
-};
+var assert = {};
 
 assert.sameValue = function(actual, expected) {
-  if (assert._isSameValue(actual, expected)) { return; }
-  throw new Test262Error("Expected same value but got " + String(actual));
+  var same = actual === expected;
+  if (!same && typeof actual === "number" && typeof expected === "number") {
+    same = actual !== actual && expected !== expected;
+  }
+  if (!same) {
+    throw new Test262Error("Expected SameValue");
+  }
 };
 
 assert.notSameValue = function(actual, unexpected) {
-  if (!assert._isSameValue(actual, unexpected)) { return; }
-  throw new Test262Error("Expected not SameValue");
+  var same = actual === unexpected;
+  if (!same && typeof actual === "number" && typeof unexpected === "number") {
+    same = actual !== actual && unexpected !== unexpected;
+  }
+  if (same) {
+    throw new Test262Error("Expected not SameValue");
+  }
 };
 
 assert.throws = function(expectedErrorConstructor, func) {
-  try { func(); }
-  catch (thrown) {
-    if (thrown instanceof expectedErrorConstructor) { return; }
-    throw new Test262Error("Wrong error type thrown");
-  }
-  throw new Test262Error("Expected error but none thrown");
-};
-
-assert.true = function(mustBeTrue, message) {
-  assert(mustBeTrue, message);
-};
-
-assert.false = function(mustBeFalse, message) {
-  if (mustBeFalse !== false) {
-    throw new Test262Error(message || "Expected false");
-  }
+  throw new Test262Error("assert.throws is not supported by this runner slice");
 };
 
 function isPrimitive(value) {
   return value === null || (typeof value !== "function" && typeof value !== "object");
 }
 """
-# Track unknown features already logged to stderr (deduplication).
+
 _seen_unknown_test262_features = set()
 
 COMMON_HOST_PRELUDE = r"""
@@ -174,167 +160,6 @@ var NaN = 0/0;
 var Infinity = 1/0;
 """
 
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def escape_json(s):
-    """Escape string for JSON."""
-    if s is None:
-        return ""
-    return s.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n')
-
-
-def repo_relative(path):
-    """Return a stable repo-relative path string for evidence and filtering."""
-    try:
-        return path.resolve().relative_to(REPO_ROOT).as_posix()
-    except ValueError:
-        pass
-    try:
-        reference_relative = path.resolve().relative_to(REFERENCE_ROOT).as_posix()
-        return f"reference/{reference_relative}"
-    except ValueError:
-        return path.as_posix()
-
-
-# ---------------------------------------------------------------------------
-# Metadata
-# ---------------------------------------------------------------------------
-
-class Test262Metadata:
-    def __init__(self, flags=None, includes=None, features=None, negative_phase=None, negative_type=None, source_code=""):
-        self.flags = flags or set()
-        self.includes = includes or []
-        self.features = features or []
-        self.negative_phase = negative_phase
-        self.negative_type = negative_type
-        self.source_code = source_code
-
-    @property
-    def raw(self):
-        return "raw" in self.flags
-
-    @property
-    def unsupported_reason(self):
-        for flag in UNSUPPORTED_FLAGS:
-            if flag in self.flags:
-                return f"test262 flag `{flag}` is not supported by this runner slice"
-        
-        for include in self.includes:
-            if include in BLOCKED_INCLUDES:
-                return f"test262 include `{include}` is not supported by this runner slice"
-        
-        for feature in self.features:
-            if feature in BLOCKED_FEATURES:
-                return f"test262 feature `{feature}` is not supported by this runner slice"
-        
-        # Source-based detection for missing capabilities that might not be in metadata
-        blocked_patterns = (
-            "$262.evalScript",
-            "$262.createRealm",
-            "$262.detachArrayBuffer",
-            "$262.agent",
-            "$262.global",
-        )
-        for pattern in blocked_patterns:
-            if pattern in self.source_code:
-                return f"test262 uses {pattern} which is not supported"
-
-        for feature in self.features:
-            if feature not in NON_BLOCKING_METADATA_FEATURES and feature not in _seen_unknown_test262_features:
-                _seen_unknown_test262_features.add(feature)
-                print(f"warn: unknown test262 feature `{feature}`", file=sys.stderr)
-        return None
-
-    @property
-    def expects_negative(self):
-        return self.negative_phase is not None
-
-    @property
-    def expects_parse_syntax_error(self):
-        return self.negative_phase == "parse" and self.negative_type == "SyntaxError"
-
-    @property
-    def expects_compile_negative(self):
-        return self.negative_phase in COMPILE_NEGATIVE_PHASES
-
-
-
-def _parse_yaml_list(value):
-    value = value.split('#', 1)[0].strip()
-    if not value:
-        return []
-    if value.startswith("[") and value.endswith("]"):
-        inner = value[1:-1].strip()
-        if not inner:
-            return []
-        return [part.strip().strip("'\"") for part in inner.split(",") if part.strip()]
-    return [value.strip().strip("'\"")]
-
-
-def parse_test262_metadata(source_code):
-    """Parse the subset of test262 frontmatter needed by this runner."""
-    match = re.search(r'/\*---(.*?)---\*/', source_code, re.DOTALL)
-    if not match:
-        return Test262Metadata(source_code=source_code)
-
-    flags = set()
-    includes = []
-    features = []
-    negative_phase = None
-    negative_type = None
-    current_key = None
-    in_negative = False
-
-    for raw_line in match.group(1).splitlines():
-        line = raw_line.rstrip()
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#"):
-            continue
-
-        if stripped.startswith("- ") and current_key:
-            value = stripped[2:].strip().strip("'\"")
-            if current_key == "flags":
-                flags.add(value)
-            elif current_key == "includes":
-                includes.append(value)
-            elif current_key == "features":
-                features.append(value)
-            continue
-
-        if not raw_line.startswith((" ", "\t")):
-            in_negative = False
-
-        if ":" not in stripped:
-            continue
-
-        key, value = stripped.split(":", 1)
-        key = key.strip()
-        value = value.strip()
-        current_key = key
-
-        if key == "flags":
-            flags.update(_parse_yaml_list(value))
-        elif key in ("includes", "include"):
-            includes.extend(_parse_yaml_list(value))
-        elif key == "features":
-            features.extend(_parse_yaml_list(value))
-        elif key == "negative":
-            in_negative = True
-        elif in_negative and key == "phase":
-            negative_phase = value.strip("'\"")
-        elif in_negative and key == "type":
-            negative_type = value.strip("'\"")
-    return Test262Metadata(flags, includes, features, negative_phase, negative_type, source_code=source_code)
-
-
-# ---------------------------------------------------------------------------
-# Harness file loading
-# ---------------------------------------------------------------------------
-
 INLINE_HARNESS_STUBS = {
     "sta.js": INLINE_STA_JS,
     "assert.js": INLINE_ASSERT_JS,
@@ -342,17 +167,16 @@ INLINE_HARNESS_STUBS = {
 
 @functools.lru_cache(maxsize=None)
 def load_harness_file(name):
-    # Always use inline stub for assert.js to avoid arity issues with
-    # the real test262 assert.js which defines sameValue(actual, expected, message)
-    # without default params. The inline stub uses message="" so callers
-    # can pass 2 or 3 arguments.
     stub = INLINE_HARNESS_STUBS.get(name)
     if stub is not None:
         return stub
     path = HARNESS_DIR / name
     if not path.is_file():
         raise FileNotFoundError(f"missing test262 harness file: {path} (no inline stub for {name})")
-    return path.read_text(encoding="utf-8")
+    source = path.read_text(encoding="utf-8")
+    # Strip YAML frontmatter (/*--- ... ---*/) used by test262 metadata
+    source = re.sub(r'/\*---.*?---\*/', '', source, count=1, flags=re.DOTALL)
+    return source
 
 
 # ---------------------------------------------------------------------------

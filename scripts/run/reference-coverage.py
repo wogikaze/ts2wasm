@@ -658,7 +658,7 @@ def prepare_build_inputs(suite, file_path, tmp_dir):
         if len(harness_sources) < len(metadata_dict["includes"]):
             missing = [inc for inc in metadata_dict["includes"] if inc not in ("assert.js", "sta.js")]
             if missing:
-                print(f"  warn: no inline stub for harness: {missing}", file=sys.stderr)
+                print(f"  warn: missing harness file: {missing}", file=sys.stderr)
 
     t262 = _ensure_test262_runner()
     source_code = file_path.read_text(encoding="utf-8")
@@ -2664,7 +2664,7 @@ def main():
                 if len(harness_sources) < len(meta_dict["includes"]):
                     missing = [inc for inc in meta_dict["includes"] if inc not in ("assert.js", "sta.js")]
                     if missing:
-                        print(f"  warn: no inline stub for harness: {missing}", file=sys.stderr)
+                        print(f"  warn: missing harness file: {missing}", file=sys.stderr)
             build_source = t262.build_test262_source(
                 file_path, source_code, metadata, target="wasm"
             )
