@@ -165,14 +165,6 @@ impl WatEmitter<'_> {
         (return
           (i32.or
             (i32.shl
-              (call $string_code_point_length (local.get $v))
-              (i32.const {number_shift}))
-            (i32.const {number_tag})))))
-    (if (i32.eq (local.get $tag) (i32.const {array_tag}))
-      (then
-        (return
-          (i32.or
-            (i32.shl
               (i32.load (i32.and (local.get $v) (i32.const {heap_mask})))
               (i32.const {number_shift}))
             (i32.const {number_tag})))))

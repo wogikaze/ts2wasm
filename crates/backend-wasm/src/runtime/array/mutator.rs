@@ -105,14 +105,10 @@ impl WatEmitter<'_> {
     (local.set $old_len
       (i32.load (i32.and (local.get $arr) (i32.const {heap_mask}))))
     (local.set $old_capacity
-      (i32.shr_u
-        (i32.sub
-          (i32.load
-            (i32.add
-              (i32.sub (i32.and (local.get $arr) (i32.const {heap_mask})) (i32.const {gc_header_size}))
-              (i32.const {gc_body_size_offset})))
-          (i32.const {array_header}))
-        (i32.const {elem_shift})))
+      (i32.load
+        (i32.add
+          (i32.and (local.get $arr) (i32.const {heap_mask}))
+          (i32.const {array_capacity_offset}))))
     (if (result i32)
       (i32.lt_u (local.get $old_len) (local.get $old_capacity))
       (then
@@ -174,6 +170,11 @@ impl WatEmitter<'_> {
             (i32.store
               (i32.and (local.get $arr) (i32.const {heap_mask}))
               (i32.add (local.get $old_len) (i32.const {one})))
+            (i32.store
+              (i32.add
+                (i32.and (local.get $arr) (i32.const {heap_mask}))
+                (i32.const {array_capacity_offset}))
+              (local.get $new_capacity))
             (global.set $alloc_bytes_since_last_gc
               (i32.add
                 (global.get $alloc_bytes_since_last_gc)
@@ -220,6 +221,15 @@ impl WatEmitter<'_> {
             (i32.store
               (local.get $new_array)
               (i32.add (local.get $old_len) (i32.const {one})))
+            (i32.store
+              (i32.add (local.get $new_array) (i32.const {array_capacity_offset}))
+              (local.get $new_capacity))
+            (i32.store
+              (i32.add (local.get $new_array) (i32.const {presence_word_count_offset}))
+              (i32.const {one}))
+            (i32.store
+              (i32.add (local.get $new_array) (i32.const {array_elements_offset_offset}))
+              (i32.const {array_header}))
             (call $copy
               (i32.add (i32.and (local.get $arr) (i32.const {heap_mask})) (i32.const {array_header}))
               (i32.add (local.get $new_array) (i32.const {array_header}))
@@ -240,6 +250,9 @@ impl WatEmitter<'_> {
             gc_header_size = Layout::GC_HEADER_SIZE,
             gc_body_size_offset = Layout::GC_BODY_SIZE_OFFSET,
             array_header = Layout::ARRAY_HEADER_SIZE,
+            array_capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
+            presence_word_count_offset = Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+            array_elements_offset_offset = Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
             one = RuntimeConst::ONE,
             linear_growth_threshold = ARRAY_PUSH_GROW_LINEAR_GROWTH_THRESHOLD,
