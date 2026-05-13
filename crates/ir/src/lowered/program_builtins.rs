@@ -145,6 +145,10 @@ pub(crate) fn unsupported_annex_b_string_method(_method: &str, _span: Span) -> O
 
 pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Option<RuntimeFn> {
     match (class_name, method) {
+        ("DataView", "getInt8") => Some(RuntimeFn::DataViewGetInt8),
+        ("DataView", "setInt8") => Some(RuntimeFn::DataViewSetInt8),
+        ("DataView", "getUint8") => Some(RuntimeFn::DataViewGetUint8),
+        ("DataView", "setUint8") => Some(RuntimeFn::DataViewSetUint8),
         ("DataView", "getInt16") => Some(RuntimeFn::DataViewGetInt16),
         ("DataView", "setInt16") => Some(RuntimeFn::DataViewSetInt16),
         ("DataView", "getUint16") => Some(RuntimeFn::DataViewGetUint16),

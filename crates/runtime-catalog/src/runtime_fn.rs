@@ -153,6 +153,10 @@ pub enum RuntimeFn {
     /// Issue 206: ArrayBuffer/DataView runtime.
     ArrayBufferNew,
     DataViewNew,
+    DataViewGetInt8,
+    DataViewSetInt8,
+    DataViewGetUint8,
+    DataViewSetUint8,
     DataViewGetInt16,
     DataViewSetInt16,
     DataViewGetUint16,
@@ -1193,6 +1197,10 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "TypedArraySet" => Some(RuntimeFn::TypedArraySet),
         "ArrayBufferNew" => Some(RuntimeFn::ArrayBufferNew),
         "DataViewNew" => Some(RuntimeFn::DataViewNew),
+        "DataViewGetInt8" => Some(RuntimeFn::DataViewGetInt8),
+        "DataViewSetInt8" => Some(RuntimeFn::DataViewSetInt8),
+        "DataViewGetUint8" => Some(RuntimeFn::DataViewGetUint8),
+        "DataViewSetUint8" => Some(RuntimeFn::DataViewSetUint8),
         "DataViewGetInt16" => Some(RuntimeFn::DataViewGetInt16),
         "DataViewSetInt16" => Some(RuntimeFn::DataViewSetInt16),
         "DataViewGetUint16" => Some(RuntimeFn::DataViewGetUint16),
@@ -1652,6 +1660,10 @@ impl RuntimeFn {
             Self::TypedArrayFromArray
             | Self::TypedArraySet
             | Self::DataViewNew
+            | Self::DataViewGetInt8
+            | Self::DataViewSetInt8
+            | Self::DataViewGetUint8
+            | Self::DataViewSetUint8
             | Self::DataViewGetInt16
             | Self::DataViewSetInt16
             | Self::DataViewGetUint16
@@ -1752,6 +1764,8 @@ impl RuntimeFn {
             | Self::ValueToStringInto
             | Self::ArrayPush
             | Self::ArrayPushGrow
+            | Self::DataViewGetInt8
+            | Self::DataViewGetUint8
             | Self::DataViewGetInt16
             | Self::DataViewGetUint16
             | Self::DataViewGetInt32
@@ -1772,6 +1786,8 @@ impl RuntimeFn {
 
             // 3 params, 0 results
             Self::ModuleExportsSet
+            | Self::DataViewSetInt8
+            | Self::DataViewSetUint8
             | Self::DataViewSetInt16
             | Self::DataViewSetUint16
             | Self::DataViewSetInt32
@@ -1923,6 +1939,10 @@ impl RuntimeFn {
             Self::WeakSetDelete,
             Self::ArrayBufferNew,
             Self::DataViewNew,
+            Self::DataViewGetInt8,
+            Self::DataViewSetInt8,
+            Self::DataViewGetUint8,
+            Self::DataViewSetUint8,
             Self::DataViewGetInt16,
             Self::DataViewSetInt16,
             Self::DataViewGetUint16,
@@ -2255,6 +2275,10 @@ impl RuntimeFn {
             Self::WeakSetDelete,
             Self::ArrayBufferNew,
             Self::DataViewNew,
+            Self::DataViewGetInt8,
+            Self::DataViewSetInt8,
+            Self::DataViewGetUint8,
+            Self::DataViewSetUint8,
             Self::DataViewGetInt16,
             Self::DataViewSetInt16,
             Self::DataViewGetUint16,
