@@ -164,3 +164,26 @@ inputs do not receive test262 globals.
   }
 }
 <!-- semantic-coverage-baseline:end -->
+
+## Known compiler limitations
+
+### test262 harness
+
+The real test262 harness files (`reference/test262/harness/{assert.js,sta.js}`) cannot be used directly.
+Inline stubs in `scripts/lib/test262_harness.py` are used instead, which may produce inaccurate semantic coverage.
+
+Compiler gaps blocking real harness usage:
+
+| Gap | Symptom | Location |
+|---|---|---|
+| Method call on untyped receiver | `unknown receiver class for method X` | `crates/ir/src/lowered/resolver/call/method.rs` |
+| Function self-reference in body | `unresolved name: X` | `crates/ir/src/semantic.rs` |
+| Prototype property as metadata | `prototype metadata is not supported` | `crates/ir/src/lowered/resolver/call/user.rs` |
+
+Tracking: `I-20260513-HDW7PQ`, `I-20260513-4E2BR9`
+Plan: `plans/457-harness-compiler-gaps.md`
+
+### tsc / tsgo
+
+No harness involved. Raw `.ts` files compiled directly via `reference-coverage`.
+tsc build_pass=668/6537 (10.4%), tsgo build_pass=50/166 (30.1%).
