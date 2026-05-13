@@ -186,6 +186,7 @@ directories:
     - arraybuffer-dataview-int8-uint8.ts
     - arraybuffer-dataview-int16.ts
     - arraybuffer-dataview-uint16.ts
+    - arraybuffer-dataview-uint32.ts
     - async-generator-basic.ts
     - atomics-unsupported.ts
     - bun-stdin-text.ts

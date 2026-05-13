@@ -321,6 +321,62 @@ impl WatEmitter<'_> {
         ));
     }
 
+    /// DataView.prototype.getUint32(byteOffset, littleEndian?) - read unsigned u32.
+    /// Args: (dataview_value, byte_offset) - byteOffset is a tagged runtime number.
+    /// Returns a tagged number value for values representable in the current small-int runtime.
+    pub(super) fn emit_dataview_get_uint32(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $dataview_get_uint32 (param $dv i32) (param $offset i32) (result i32)
+    (local $dv_base i32)
+    (local $buf_base i32)
+    (local $buf_offset i32)
+    (local $byte_offset i32)
+    (local $value i32)
+    (local.set $dv_base (i32.and (local.get $dv) (i32.const {heap_mask})))
+    (local.set $buf_base (i32.load (local.get $dv_base)))
+    (local.set $buf_offset (i32.load (i32.add (local.get $dv_base) (i32.const 4))))
+    (local.set $byte_offset (i32.shr_s (local.get $offset) (i32.const {num_shift})))
+    (local.set $value
+      (i32.load
+        (i32.add
+          (local.get $buf_base)
+          (i32.add (i32.const {array_header}) (i32.add (local.get $buf_offset) (local.get $byte_offset))))))
+    (i32.or (i32.shl (local.get $value) (i32.const {num_shift})) (i32.const {num_tag})))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            num_shift = ValueTag::NUMBER_SHIFT,
+            num_tag = ValueTag::NUMBER,
+        ));
+    }
+
+    /// DataView.prototype.setUint32(byteOffset, value, littleEndian?) - write unsigned u32.
+    /// Args: (dataview_value, byte_offset, value), with numeric args tagged.
+    pub(super) fn emit_dataview_set_uint32(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $dataview_set_uint32 (param $dv i32) (param $offset i32) (param $value i32)
+    (local $dv_base i32)
+    (local $buf_base i32)
+    (local $buf_offset i32)
+    (local $byte_offset i32)
+    (local.set $dv_base (i32.and (local.get $dv) (i32.const {heap_mask})))
+    (local.set $buf_base (i32.load (local.get $dv_base)))
+    (local.set $buf_offset (i32.load (i32.add (local.get $dv_base) (i32.const 4))))
+    (local.set $byte_offset (i32.shr_s (local.get $offset) (i32.const {num_shift})))
+    (i32.store
+      (i32.add
+        (local.get $buf_base)
+        (i32.add (i32.const {array_header}) (i32.add (local.get $buf_offset) (local.get $byte_offset))))
+      (i32.shr_s (local.get $value) (i32.const {num_shift}))))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            num_shift = ValueTag::NUMBER_SHIFT,
+        ));
+    }
+
     /// DataView.prototype.getFloat64(byteOffset, littleEndian?) — read the runtime number slot.
     /// The current runtime represents decimal numbers as tagged heap values, so this slice stores
     /// and restores that tagged value rather than attempting binary IEEE-754 byte materialization.

@@ -66,6 +66,8 @@ impl WatEmitter<'_> {
             RuntimeFn::DataViewSetUint16 => self.emit_dataview_set_uint16(wat),
             RuntimeFn::DataViewGetInt32 => self.emit_dataview_get_int32(wat),
             RuntimeFn::DataViewSetInt32 => self.emit_dataview_set_int32(wat),
+            RuntimeFn::DataViewGetUint32 => self.emit_dataview_get_uint32(wat),
+            RuntimeFn::DataViewSetUint32 => self.emit_dataview_set_uint32(wat),
             RuntimeFn::DataViewGetFloat64 => self.emit_dataview_get_float64(wat),
             RuntimeFn::DataViewSetFloat64 => self.emit_dataview_set_float64(wat),
             _ => unreachable!("non-array RuntimeFn routed to array dispatch"),

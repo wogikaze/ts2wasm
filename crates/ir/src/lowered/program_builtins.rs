@@ -155,6 +155,8 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("DataView", "setUint16") => Some(RuntimeFn::DataViewSetUint16),
         ("DataView", "getInt32") => Some(RuntimeFn::DataViewGetInt32),
         ("DataView", "setInt32") => Some(RuntimeFn::DataViewSetInt32),
+        ("DataView", "getUint32") => Some(RuntimeFn::DataViewGetUint32),
+        ("DataView", "setUint32") => Some(RuntimeFn::DataViewSetUint32),
         ("DataView", "getFloat64") => Some(RuntimeFn::DataViewGetFloat64),
         ("DataView", "setFloat64") => Some(RuntimeFn::DataViewSetFloat64),
         ("Map", "get") => Some(RuntimeFn::MapGet),
