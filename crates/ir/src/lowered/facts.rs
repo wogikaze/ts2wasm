@@ -79,6 +79,8 @@ pub struct StaticFacts {
     pub arrow_locals: HashMap<LocalId, ArrowClosure>,
     /// Static `Function.prototype.bind` locals that can be expanded at call sites.
     pub bound_function_locals: HashMap<LocalId, BoundFunction>,
+    /// Static Proxy locals created as `new Proxy(target, handler)`.
+    pub proxy_locals: HashMap<LocalId, ProxyBinding>,
 }
 
 /// Tracks the known elements of a function-parameter-based array-like value
@@ -101,6 +103,13 @@ pub struct BoundFunction {
     pub func_id: FuncId,
     pub receiver: ResolvedExpr,
     pub bound_args: Vec<ResolvedExpr>,
+}
+
+/// Tracks the statically visible target and handler for a Proxy local.
+#[derive(Debug, Clone)]
+pub struct ProxyBinding {
+    pub target: ResolvedExpr,
+    pub handler: ResolvedExpr,
 }
 
 impl ArrowClosure {
@@ -143,6 +152,7 @@ impl StaticFacts {
             heap_closure_names: HashSet::new(),
             arrow_locals: HashMap::new(),
             bound_function_locals: HashMap::new(),
+            proxy_locals: HashMap::new(),
         }
     }
 

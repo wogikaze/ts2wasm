@@ -70,6 +70,16 @@ impl super::super::Resolver {
         left: &ResolvedExpr,
         right: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
+        if let Some(proxy) =
+            crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(&self.ctx, right)
+        {
+            return self.lower_proxy_trap_call(
+                proxy,
+                "has",
+                vec![left.clone()],
+                Span::generated("proxy_has"),
+            );
+        }
         match left {
             ResolvedExpr::Number(index) => Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::ArrayIndexPresent,

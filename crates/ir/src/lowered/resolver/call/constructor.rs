@@ -17,15 +17,16 @@ impl super::super::Resolver {
             ));
         }
         if class_name == "Proxy" {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-106: Proxy constructor — Proxy is not implemented yet; use plain objects instead"
+            let [target, _handler] = args else {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-106: Proxy constructor requires target and handler arguments"
                         .to_owned(),
-                span: Some(span),
-
-                phase: None,
-            });
+                    span: Some(span),
+                    phase: None,
+                });
+            };
+            return self.lower_expr(target);
         }
         if class_name == "Reflect" {
             return Err(Diagnostic {

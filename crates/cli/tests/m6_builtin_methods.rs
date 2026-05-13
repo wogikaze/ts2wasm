@@ -1394,12 +1394,12 @@ fn proxy_reflect_unsupported_diagnostic() {
     let result = run_fixture("builtins-and-io/proxy-reflect-unsupported-diagnostic.ts");
     assert!(
         result.is_err(),
-        "Proxy should produce unsupported diagnostic"
+        "Reflect should produce unsupported diagnostic"
     );
     let err_msg = result.err().unwrap();
     assert!(
-        err_msg.contains("Proxy"),
-        "Diagnostic should mention Proxy: {}",
+        err_msg.contains("Reflect"),
+        "Diagnostic should mention Reflect: {}",
         err_msg
     );
 }
@@ -1799,19 +1799,14 @@ fn type_only_import_unsupported_diagnostic() {
 
 // === W4: Builtin API semantics — new fixtures ===
 
-// Proxy handler traps — has precise diagnostic (id 106)
+// Proxy handler traps — static get/set/has/deleteProperty slice (id 106)
 #[test]
-fn proxy_handler_traps_unsupported_diagnostic() {
+fn build_smoke_proxy_all_traps() {
     let result = run_fixture("builtins-and-io/proxy-handler-traps-unsupported.ts");
     assert!(
-        result.is_err(),
-        "Proxy handler traps should produce unsupported diagnostic"
-    );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("Proxy"),
-        "Diagnostic should mention Proxy: {}",
-        err_msg
+        result.is_ok(),
+        "Proxy handler traps should build: {:?}",
+        result.err()
     );
 }
 
@@ -2022,8 +2017,9 @@ fn live_binding_unsupported_diagnostic() {
 fn build_smoke_proxy_basic_trap() {
     let result = run_fixture("builtins-and-io/proxy-handler-traps-unsupported.ts");
     assert!(
-        result.is_err(),
-        "Proxy should produce unsupported diagnostic until implemented"
+        result.is_ok(),
+        "Proxy basic trap should build: {:?}",
+        result.err()
     );
 }
 

@@ -71,6 +71,18 @@ impl super::super::Resolver {
                         phase: None,
                     });
                 }
+                if let Some(proxy) =
+                    crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(
+                        &self.ctx, object,
+                    )
+                {
+                    return self.lower_proxy_trap_call(
+                        proxy,
+                        "deleteProperty",
+                        vec![ResolvedExpr::String(key.to_owned())],
+                        *span,
+                    );
+                }
                 Ok(object_kernel::ordinary_delete(
                     self.lower_expr(object)?,
                     key,
@@ -85,6 +97,18 @@ impl super::super::Resolver {
                     && is_private_field_storage_key(key)
                 {
                     return Err(private_storage_observable_access_diagnostic(None));
+                }
+                if let Some(proxy) =
+                    crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(
+                        &self.ctx, object,
+                    )
+                {
+                    return self.lower_proxy_trap_call(
+                        proxy,
+                        "deleteProperty",
+                        vec![index.as_ref().clone()],
+                        Span::generated("proxy_delete"),
+                    );
                 }
                 Ok(object_kernel::ordinary_delete_dynamic(
                     self.lower_expr(object)?,

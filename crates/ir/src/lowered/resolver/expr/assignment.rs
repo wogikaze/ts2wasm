@@ -185,6 +185,16 @@ impl super::super::Resolver {
         if key.starts_with('#') {
             return self.lower_private_field_assign(object, key, value, span);
         }
+        if let Some(proxy) =
+            crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(&self.ctx, object)
+        {
+            return self.lower_proxy_trap_call(
+                proxy,
+                "set",
+                vec![ResolvedExpr::String(key.to_owned()), value.clone()],
+                span,
+            );
+        }
         if matches!(object, ResolvedExpr::Ident(name) if name == "super") {
             return self.lower_super_property_assign(object, key, value, span);
         }
@@ -239,6 +249,16 @@ impl super::super::Resolver {
         }
         if self.expr_has_private_progress_storage(object) {
             return Err(private_storage_observable_access_diagnostic(None));
+        }
+        if let Some(proxy) =
+            crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(&self.ctx, object)
+        {
+            return self.lower_proxy_trap_call(
+                proxy,
+                "set",
+                vec![key.clone(), value.clone()],
+                Span::generated("proxy_set"),
+            );
         }
         if matches!(object, ResolvedExpr::Ident(name) if name == "super") {
             return self.lower_super_property_assign_dynamic(object, key, value);

@@ -6,6 +6,7 @@ use super::super::{
 };
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 use crate::lowered::ctx::LoweringCtx;
+use crate::lowered::facts::ProxyBinding;
 use crate::lowered::facts::StaticFunctionArrayLike;
 use crate::lowered::*;
 use std::collections::HashSet;
@@ -93,6 +94,37 @@ pub(crate) fn update_generator_iterator_local(
     } else {
         ctx.facts.generator_iterator_locals.remove(&local_id);
     }
+}
+
+pub(crate) fn update_proxy_local(ctx: &mut LoweringCtx, local_id: LocalId, expr: &ResolvedExpr) {
+    if let ResolvedExpr::New {
+        class_name, args, ..
+    } = expr
+        && class_name == "Proxy"
+        && let [target, handler] = args.as_slice()
+    {
+        ctx.facts.proxy_locals.insert(
+            local_id,
+            ProxyBinding {
+                target: target.clone(),
+                handler: handler.clone(),
+            },
+        );
+    } else {
+        ctx.facts.proxy_locals.remove(&local_id);
+    }
+}
+
+pub(crate) fn resolved_expr_proxy_binding(
+    ctx: &LoweringCtx,
+    expr: &ResolvedExpr,
+) -> Option<ProxyBinding> {
+    let ResolvedExpr::Ident(name) = expr else {
+        return None;
+    };
+    ctx.resolve_local(name)
+        .ok()
+        .and_then(|local_id| ctx.facts.proxy_locals.get(&local_id).cloned())
 }
 
 pub(crate) fn resolved_expr_is_array_iterator(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {

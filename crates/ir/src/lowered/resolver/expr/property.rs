@@ -87,6 +87,16 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             });
         }
+        if let Some(proxy) =
+            crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(&self.ctx, object)
+        {
+            return self.lower_proxy_trap_call(
+                proxy,
+                "get",
+                vec![ResolvedExpr::String(key.to_owned())],
+                span,
+            );
+        }
         Ok(object_kernel::ordinary_get(
             self.lower_expr(object)?,
             key,
@@ -259,6 +269,19 @@ impl super::super::Resolver {
             })),
             _ => Ok(None),
         }
+    }
+
+    pub(crate) fn lower_proxy_trap_call(
+        &mut self,
+        proxy: crate::lowered::facts::ProxyBinding,
+        trap: &str,
+        mut args: Vec<ResolvedExpr>,
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let mut trap_args = Vec::with_capacity(args.len() + 1);
+        trap_args.push(proxy.target);
+        trap_args.append(&mut args);
+        self.lower_method_call_expr(&proxy.handler, trap, &trap_args, span)
     }
 
     fn lower_private_field_get(
