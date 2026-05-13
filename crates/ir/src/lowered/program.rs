@@ -22,7 +22,8 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
     let function_ids = collect_function_ids(program)?;
     let generator_function_names = collect_generator_function_names(program);
     let generator_function_yields = collect_generator_function_yields(program);
-    let generator_function_steps = collect_generator_function_steps(program);
+    let (generator_function_steps, generator_function_completion_steps) =
+        collect_generator_function_steps(program);
     let mut function_signatures = collect_function_signatures(program, &function_ids);
     let top_level_local_names = collect_top_level_local_names(program)?;
     let map_callback_function_names = collect_array_map_callback_function_names(program);
@@ -315,6 +316,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
     );
     resolver.ctx.facts.generator_function_yields = generator_function_yields;
     resolver.ctx.facts.generator_function_steps = generator_function_steps;
+    resolver.ctx.facts.generator_function_completion_steps = generator_function_completion_steps;
     let mut top_level_statements = Vec::new();
     for stmt in program {
         match stmt {
@@ -588,8 +590,12 @@ fn collect_generator_function_yields(
 
 fn collect_generator_function_steps(
     program: &[ResolvedStmt],
-) -> HashMap<String, Vec<GeneratorYieldStep>> {
+) -> (
+    HashMap<String, Vec<GeneratorYieldStep>>,
+    HashMap<String, Vec<ResolvedStmt>>,
+) {
     let mut steps = HashMap::new();
+    let mut completion_steps = HashMap::new();
     for stmt in program {
         if let ResolvedStmt::Function {
             name,
@@ -599,22 +605,29 @@ fn collect_generator_function_steps(
         } = stmt
             && let Some(function_steps) = collect_straight_line_generator_steps(body)
         {
-            steps.insert(name.clone(), function_steps);
+            steps.insert(name.clone(), function_steps.steps);
+            completion_steps.insert(name.clone(), function_steps.completion);
         }
     }
-    steps
+    (steps, completion_steps)
 }
 
-fn collect_straight_line_generator_steps(
-    stmts: &[ResolvedStmt],
-) -> Option<Vec<GeneratorYieldStep>> {
+fn collect_straight_line_generator_steps(stmts: &[ResolvedStmt]) -> Option<GeneratorStepPlan> {
     let mut collector = GeneratorStepCollector::default();
     collector.collect_stmts(stmts)?;
-    if collector.pending.is_empty() && !collector.steps.is_empty() {
-        Some(collector.steps)
+    if !collector.steps.is_empty() {
+        Some(GeneratorStepPlan {
+            steps: collector.steps,
+            completion: collector.pending,
+        })
     } else {
         None
     }
+}
+
+struct GeneratorStepPlan {
+    steps: Vec<GeneratorYieldStep>,
+    completion: Vec<ResolvedStmt>,
 }
 
 #[derive(Default)]

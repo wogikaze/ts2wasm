@@ -88,16 +88,22 @@ pub(crate) fn update_generator_iterator_local(
     ctx: &mut LoweringCtx,
     local_id: LocalId,
     expr: &ResolvedExpr,
+    state_local: Option<LocalId>,
 ) {
     if let Some(func_name) = resolved_generator_function_call_name(ctx, expr) {
-        ctx.facts.generator_iterator_locals.insert(local_id);
-        ctx.facts.generator_iterator_bindings.insert(
-            local_id,
-            GeneratorIteratorBinding {
-                func_name,
-                next_index: 0,
-            },
-        );
+        if let Some(state_local) = state_local {
+            ctx.facts.generator_iterator_locals.insert(local_id);
+            ctx.facts.generator_iterator_bindings.insert(
+                local_id,
+                GeneratorIteratorBinding {
+                    func_name,
+                    state_local,
+                },
+            );
+        } else {
+            ctx.facts.generator_iterator_locals.remove(&local_id);
+            ctx.facts.generator_iterator_bindings.remove(&local_id);
+        }
     } else if let ResolvedExpr::Ident(name) = expr
         && let Ok(source_local) = ctx.resolve_local(name)
         && let Some(binding) = ctx

@@ -347,6 +347,17 @@ impl Resolver {
                 let bound_function = self.bound_function_for_expr(expr)?;
                 let function_method = self.function_method_binding_for_expr(expr)?;
                 let bound_constructor = self.bound_constructor_for_expr(expr);
+                let generator_state_local =
+                    crate::lowered::resolver::expr::facts::resolved_generator_function_call_name(
+                        &self.ctx, expr,
+                    )
+                    .filter(|func_name| {
+                        self.ctx
+                            .facts
+                            .generator_function_steps
+                            .contains_key(func_name)
+                    })
+                    .map(|_| self.alloc_temp());
                 let lowered = if bound_function.is_some()
                     || function_method.is_some()
                     || bound_constructor.is_some()
@@ -444,6 +455,7 @@ impl Resolver {
                     &mut self.ctx,
                     local_id,
                     expr,
+                    generator_state_local,
                 );
                 crate::lowered::resolver::expr::facts::update_proxy_local(
                     &mut self.ctx,
@@ -484,11 +496,22 @@ impl Resolver {
                     local_id,
                     expr,
                 );
-                Ok(LoweredStmt::Let(
-                    local_id,
-                    lowered,
-                    Span::generated("let_stmt"),
-                ))
+                let local_stmt = LoweredStmt::Let(local_id, lowered, Span::generated("let_stmt"));
+                if let Some(state_local) = generator_state_local {
+                    Ok(LoweredStmt::Block(
+                        vec![
+                            local_stmt,
+                            LoweredStmt::Let(
+                                state_local,
+                                LoweredExpr::Number(0, Span::generated("num")),
+                                Span::generated("let_stmt"),
+                            ),
+                        ],
+                        Span::generated("block"),
+                    ))
+                } else {
+                    Ok(local_stmt)
+                }
             }
             ResolvedStmt::Assign(name, expr) => {
                 let local_id = self.resolve_local(name)?;
@@ -511,6 +534,17 @@ impl Resolver {
                 let bound_function = self.bound_function_for_expr(expr)?;
                 let function_method = self.function_method_binding_for_expr(expr)?;
                 let bound_constructor = self.bound_constructor_for_expr(expr);
+                let generator_state_local =
+                    crate::lowered::resolver::expr::facts::resolved_generator_function_call_name(
+                        &self.ctx, expr,
+                    )
+                    .filter(|func_name| {
+                        self.ctx
+                            .facts
+                            .generator_function_steps
+                            .contains_key(func_name)
+                    })
+                    .map(|_| self.alloc_temp());
                 let lowered = if bound_function.is_some()
                     || function_method.is_some()
                     || bound_constructor.is_some()
@@ -591,6 +625,7 @@ impl Resolver {
                     &mut self.ctx,
                     local_id,
                     expr,
+                    generator_state_local,
                 );
                 crate::lowered::resolver::expr::facts::update_proxy_local(
                     &mut self.ctx,
@@ -629,8 +664,8 @@ impl Resolver {
                     local_id,
                     expr,
                 );
-                if self.ctx.facts.env_cell_locals.contains(&local_id) {
-                    Ok(LoweredStmt::Expr(
+                let assign_stmt = if self.ctx.facts.env_cell_locals.contains(&local_id) {
+                    LoweredStmt::Expr(
                         LoweredExpr::EnvCellSet {
                             cell: local_id,
                             expr: Box::new(lowered),
@@ -638,13 +673,24 @@ impl Resolver {
                             span: Span::generated("env_cell_set"),
                         },
                         Span::generated("expr_stmt"),
+                    )
+                } else {
+                    LoweredStmt::Assign(local_id, lowered, Span::generated("assign"))
+                };
+                if let Some(state_local) = generator_state_local {
+                    Ok(LoweredStmt::Block(
+                        vec![
+                            assign_stmt,
+                            LoweredStmt::Let(
+                                state_local,
+                                LoweredExpr::Number(0, Span::generated("num")),
+                                Span::generated("let_stmt"),
+                            ),
+                        ],
+                        Span::generated("block"),
                     ))
                 } else {
-                    Ok(LoweredStmt::Assign(
-                        local_id,
-                        lowered,
-                        Span::generated("assign"),
-                    ))
+                    Ok(assign_stmt)
                 }
             }
             ResolvedStmt::Expr(expr) => {

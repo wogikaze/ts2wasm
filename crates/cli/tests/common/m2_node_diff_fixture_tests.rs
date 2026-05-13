@@ -1761,6 +1761,26 @@ fn generator_lazy_between_yields_matches_node_output() {
 }
 
 #[test]
+fn generator_multiple_instances_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/generator-multiple-instances.ts");
+}
+
+#[test]
+fn generator_alias_state_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/generator-alias-state.ts");
+}
+
+#[test]
+fn generator_direct_next_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/generator-direct-next.ts");
+}
+
+#[test]
+fn generator_trailing_completion_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/generator-trailing-completion.ts");
+}
+
+#[test]
 fn proxy_traps_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/proxy-handler-traps-unsupported.ts");
 }

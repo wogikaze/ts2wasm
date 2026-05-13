@@ -79,65 +79,154 @@ impl super::super::Resolver {
         &mut self,
         object: &ResolvedExpr,
     ) -> Result<Option<LoweredExpr>, Diagnostic> {
-        let ResolvedExpr::Ident(name) = object else {
-            return Ok(None);
+        let (func_name, state_local, prelude) = match object {
+            ResolvedExpr::Ident(name) => {
+                let local_id = self.resolve_local(name)?;
+                let Some(binding) = self.ctx.facts.generator_iterator_bindings.get(&local_id)
+                else {
+                    return Ok(None);
+                };
+                (binding.func_name.clone(), binding.state_local, Vec::new())
+            }
+            _ => {
+                let Some(func_name) =
+                    crate::lowered::resolver::expr::facts::resolved_generator_function_call_name(
+                        &self.ctx, object,
+                    )
+                else {
+                    return Ok(None);
+                };
+                if !self
+                    .ctx
+                    .facts
+                    .generator_function_steps
+                    .contains_key(&func_name)
+                {
+                    return Ok(None);
+                }
+                let state_local = self.alloc_temp();
+                (
+                    func_name,
+                    state_local,
+                    vec![LoweredStmt::Let(
+                        state_local,
+                        LoweredExpr::Number(0, Span::generated("num")),
+                        Span::generated("let_stmt"),
+                    )],
+                )
+            }
         };
-        let local_id = self.resolve_local(name)?;
-        let Some((func_name, next_index)) = self
-            .ctx
-            .facts
-            .generator_iterator_bindings
-            .get_mut(&local_id)
-            .map(|binding| {
-                let next_index = binding.next_index;
-                binding.next_index += 1;
-                (binding.func_name.clone(), next_index)
-            })
-        else {
-            return Ok(None);
-        };
+        Ok(Some(self.lower_generator_resume_with_state(
+            &func_name,
+            state_local,
+            prelude,
+        )?))
+    }
+
+    fn lower_generator_resume_with_state(
+        &mut self,
+        func_name: &str,
+        state_local: LocalId,
+        prelude: Vec<LoweredStmt>,
+    ) -> Result<LoweredExpr, Diagnostic> {
         let steps = self
             .ctx
             .facts
             .generator_function_steps
-            .get(&func_name)
+            .get(func_name)
             .cloned()
             .unwrap_or_default();
-        if let Some(step) = steps.get(next_index) {
-            let mut stmts = Vec::new();
+        let completion = self
+            .ctx
+            .facts
+            .generator_function_completion_steps
+            .get(func_name)
+            .cloned()
+            .unwrap_or_default();
+        let result_local = self.alloc_temp();
+        let snapshot_local = self.alloc_temp();
+        let mut stmts = prelude;
+        stmts.push(LoweredStmt::Let(
+            result_local,
+            Self::generator_next_result(LoweredExpr::Undefined(Span::generated("undefined")), true),
+            Span::generated("let_stmt"),
+        ));
+        stmts.push(LoweredStmt::Let(
+            snapshot_local,
+            LoweredExpr::Local(state_local, Span::generated("local")),
+            Span::generated("let_stmt"),
+        ));
+        for (index, step) in steps.iter().enumerate() {
+            let mut then_body = Vec::new();
             for stmt in &step.statements {
-                stmts.push(self.lower_stmt(stmt)?);
+                then_body.push(self.lower_stmt(stmt)?);
             }
-            return Ok(Some(LoweredExpr::Block {
-                stmts,
-                result: Box::new(LoweredExpr::ObjectNew {
-                    props: vec![
-                        ("value".to_owned(), self.lower_expr(&step.value)?),
-                        (
-                            "done".to_owned(),
-                            LoweredExpr::Bool(false, Span::generated("bool")),
-                        ),
-                    ],
-                    non_enumerable: 0,
-                    span: Span::generated("object"),
-                }),
-                span: Span::generated("block"),
-            }));
+            then_body.push(LoweredStmt::Assign(
+                result_local,
+                Self::generator_next_result(self.lower_expr(&step.value)?, false),
+                Span::generated("assign"),
+            ));
+            then_body.push(LoweredStmt::Assign(
+                state_local,
+                LoweredExpr::Number((index + 1) as i32, Span::generated("num")),
+                Span::generated("assign"),
+            ));
+            stmts.push(LoweredStmt::If {
+                condition: Self::state_equals(snapshot_local, index),
+                then_body,
+                else_body: vec![],
+                span: Span::generated("if_stmt"),
+            });
         }
-        Ok(Some(LoweredExpr::ObjectNew {
+        let completed_state = steps.len() + 1;
+        let mut completion_body = Vec::new();
+        for stmt in &completion {
+            completion_body.push(self.lower_stmt(stmt)?);
+        }
+        completion_body.push(LoweredStmt::Assign(
+            result_local,
+            Self::generator_next_result(LoweredExpr::Undefined(Span::generated("undefined")), true),
+            Span::generated("assign"),
+        ));
+        completion_body.push(LoweredStmt::Assign(
+            state_local,
+            LoweredExpr::Number(completed_state as i32, Span::generated("num")),
+            Span::generated("assign"),
+        ));
+        stmts.push(LoweredStmt::If {
+            condition: Self::state_equals(snapshot_local, steps.len()),
+            then_body: completion_body,
+            else_body: vec![],
+            span: Span::generated("if_stmt"),
+        });
+        Ok(LoweredExpr::Block {
+            stmts,
+            result: Box::new(LoweredExpr::Local(result_local, Span::generated("local"))),
+            span: Span::generated("block"),
+        })
+    }
+
+    fn generator_next_result(value: LoweredExpr, done: bool) -> LoweredExpr {
+        LoweredExpr::ObjectNew {
             props: vec![
-                (
-                    "value".to_owned(),
-                    LoweredExpr::Undefined(Span::generated("undefined")),
-                ),
+                ("value".to_owned(), value),
                 (
                     "done".to_owned(),
-                    LoweredExpr::Bool(true, Span::generated("bool")),
+                    LoweredExpr::Bool(done, Span::generated("bool")),
                 ),
             ],
             non_enumerable: 0,
             span: Span::generated("object"),
-        }))
+        }
+    }
+
+    fn state_equals(state_local: LocalId, state: usize) -> LoweredExpr {
+        LoweredExpr::Binary {
+            left: Box::new(LoweredExpr::Local(state_local, Span::generated("local"))),
+            op: LoweredBinaryOp::StrictEqual,
+            right: Box::new(LoweredExpr::Number(state as i32, Span::generated("num"))),
+            span: Span::generated("binary"),
+        }
     }
 
     fn lower_function_call_apply_method(

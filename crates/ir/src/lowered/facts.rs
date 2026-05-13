@@ -55,7 +55,9 @@ pub struct StaticFacts {
     pub generator_function_yields: HashMap<String, Vec<ResolvedExpr>>,
     /// Statically collected lazy resume steps for simple top-level generator functions.
     pub generator_function_steps: HashMap<String, Vec<GeneratorYieldStep>>,
-    /// Locals holding statically visible generator iterators with a compile-time next index.
+    /// Statically collected statements that run when a generator resumes to completion.
+    pub generator_function_completion_steps: HashMap<String, Vec<ResolvedStmt>>,
+    /// Locals holding statically visible generator iterators with a runtime state local.
     pub generator_iterator_bindings: HashMap<LocalId, GeneratorIteratorBinding>,
     /// Static object literal contents: local → (key, value) pairs.
     pub static_object_literal_locals: HashMap<LocalId, Vec<(String, ResolvedExpr)>>,
@@ -109,7 +111,7 @@ pub struct GeneratorYieldStep {
 #[derive(Debug, Clone)]
 pub struct GeneratorIteratorBinding {
     pub func_name: String,
-    pub next_index: usize,
+    pub state_local: LocalId,
 }
 
 /// Tracks an arrow function closure that can be inlined or heap-allocated.
@@ -184,6 +186,7 @@ impl StaticFacts {
             generator_iterator_locals: HashSet::new(),
             generator_function_yields: HashMap::new(),
             generator_function_steps: HashMap::new(),
+            generator_function_completion_steps: HashMap::new(),
             generator_iterator_bindings: HashMap::new(),
             static_object_literal_locals: HashMap::new(),
             static_object_literal_alias_sources: HashMap::new(),
