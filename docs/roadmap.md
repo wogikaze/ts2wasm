@@ -4,278 +4,186 @@
 
 このファイルは **epic 一覧**であり、個別の実装作業は `issues/` で管理する。
 
+## Current State (2026-05-13)
+
+```
+issues/ total: 147 (Open: 50, Done: 92, Doing: 5)
+test262 coverage:
+  total: 53,469 | executed: 9,359 | semantic_pass: 773 | negative_compile_pass: 640
+  semantic coverage: ~1.45% | target: >90%
+```
+
+**Completed phases:** P13 (architecture decoupling), P14 (architecture hardening), P15 (test hardening)
+**Current phase:** P16 (semantic correctness — 79 open feature issues across all layers)
+**Target:** test262 >90% semantic coverage
+
+## Issue structure
+
+- issues are **single-layer**: each covers one of Frontend / IR / Runtime / Backend / Host / Coverage
+- each issue is **substantial**: completing it significantly advances the project
+- all 79 open issues resolved → test262 >90%
+- see `issues/README.md` for format and commands
+
 ## Roadmap model
 
-W0-W8 は厳密な直列フェーズではない。
-
-- **W0-W5**: 主な実装レーン
-- **W6-W7**: 横断的な検証レーン（W2-W5 の各実装と同時に進む）
-- **W8**: 後回しの最適化領域（semantic coverage が安定した後）
+W0-W8 は厳密な直列フェーズではない。現在の主要な作業は W4/W5 (builtin semantics + language runtime)。
 
 ```txt
-issues/   = 今週の作業台帳（最大 20 件、active 1 件）
+issues/        = 作業台帳（147件, 50 open）
 docs/roadmap.md = 大きな未実装領域の分類
-artifacts/coverage/ = 診断データ（自動生成、issues/ には書かない）
 ```
 
 ## Rules
 
-- Roadmap item は epic であり、通常はそのまま `issues/` にコピーしない。例外は、`docs/27-coverage-expansion-epics.md` のように parallel wave doc が source of truth と acceptance gate を定義し、epic-level coordination issue として明示した場合のみ。
-- `issues/` には、Roadmap から手で切り出した小さな作業（1 PR / 1 agent session の粒度）か、parallel wave doc に紐づく coordination issue だけを入れる。
-- coverage / reference-coverage / dashboard の結果から `issues/` を自動生成しない。
+- Roadmap item は epic であり、そのまま `issues/` にコピーしない。
 - `issues/` の item は acceptance command と done evidence を必須にする。
-- 通常の単独開発では `issues/` の active item は最大 1 件。parent/child parallel wave は `docs/27-coverage-expansion-epics.md` のような wave doc で明示した場合に限り、複数 ready issue を同時に扱える。
+- coverage / reference-coverage の結果から `issues/` を自動生成しない。
 
-## 2026-05-12 Coverage Expansion Wave
+## Open feature issues by layer
 
-The current parallel coverage push is tracked in `docs/27-coverage-expansion-epics.md` and six open issue files under `issues/`:
+| Layer | Issues | P1 | P2 | P3 | Description |
+|-------|--------|----|----|----|-------------|
+| runtime | 31 | 4 | 21 | 6 | WAT runtime functions for builtins and language features |
+| ir | 14 | 2 | 8 | 4 | IR lowering, name resolution, state machines |
+| coverage | 7 | 4 | 3 | 0 | test262 ramp, canary, negative verification, differential, perf |
+| frontend | 5 | 0 | 4 | 1 | Syntax parsing for remaining constructs |
+| semantics | 3 | 0 | 3 | 0 | Resolution and dispatch |
+| backend | 2 | 1 | 1 | 0 | wasm-encoder parity |
+| host | 2 | 1 | 1 | 0 | $262 harness, Node.js shim |
+| compiler | 1 | 0 | 1 | 0 | Pipeline integration |
 
-| Epic | Issue | Roadmap lane | Coverage gap |
-|---|---|---|---|
-| Builtin API Coverage Expansion | `I-20260512-BTAP7K` | W4 | `builtin-api`, `array-builtin` |
-| Class Implementation Completion | `I-20260512-CA5S2K` | W5 | `class` |
-| Async/Await Support | `I-20260512-ASYNC3` | W5 | `async` |
-| Import/Export Module System | `I-20260512-MD7EX4` | W5 | `import-export` |
-| TypeScript Erased Features + tsc/tsgo Ramp | `I-20260512-TSG6R2` | W2/W6 | `tsc`, `tsgo`, TS erasure |
-| Name Resolution Improvements | `I-20260512-NAM3R5` | W3 | `name-resolution` |
-
-These are parallel worktree epics, not a strict phase order. Parent merge review owns conflict resolution and final coverage artifact regeneration.
+**Ready to work: 45 items** | **P1 open: 13 items**
 
 ## Gate overview
 
-| Gate | Meaning | Main waves |
-|------|---------|------------|
-| Gate A | Stable runtime substrate | W0 |
-| Gate B | Standalone WASI execution | W1 |
-| Gate C | Parser does not block common fixtures | W2 |
-| Gate D | Known names and builtin dispatch are explicit | W3 |
-| Gate E | Core runtime builtins are implemented or precisely rejected | W4 |
-| Gate F | JS/TS runtime semantics become coherent | W5 |
-| Gate G | test262 ramp is measurable and regression-safe | W6 |
-| Gate H | Host capability boundary is auditable | W7 |
-| Post-Gate H | Optimization and large backend replacement | W8 |
+| Gate | Meaning | Status |
+|------|---------|--------|
+| Gate A | Stable runtime substrate | ✅ W0 done |
+| Gate B | Standalone WASI execution | ✅ W1 done |
+| Gate C | Parser does not block common fixtures | ✅ W2 done |
+| Gate D | Known names and builtin dispatch are explicit | ✅ W3 done |
+| Gate E | Core runtime builtins are implemented or precisely rejected | 🔄 W4 in progress (31 open runtime issues) |
+| Gate F | JS/TS runtime semantics become coherent | 🔄 W5 in progress (14 open IR issues) |
+| Gate G | test262 ramp is measurable and regression-safe | 🔄 W6 in progress (7 open coverage issues) |
+| Gate H | Host capability boundary is auditable | ✅ W7 done |
+| Post-Gate H | Optimization and large backend replacement | ⏳ W8 deferred |
 
 ---
 
-## W0: Runtime substrate / ABI baseline（Gate A precondition）
+## W0: Runtime substrate / ABI baseline ✅ COMPLETE
 
-Goal: generated WASM should have a stable runtime substrate before adding large JS semantics.
+- [X] Minimal binary WASM emitter path for simple programs
+- [X] Runtime core raw WAT reduction where it blocks maintainability
+- [X] ABI contract document: logical values vs wire representation
+- [X] ABI mismatch tests for `i64` logical value vs `i32` wire handle/value representation
+- [X] Runtime value representation smoke tests under iwasm/WAMR
 
-This wave is about **minimum correctness and maintainability**, not full optimization.
-W8 handles the post-90% full replacement.
+## W1: Standalone WASI baseline ✅ COMPLETE
 
-- [X] Minimal binary WASM emitter path for simple programs — id 112 done
-- [X] Runtime core raw WAT reduction where it blocks maintainability — id 223 done
-- [X] ABI contract document: logical values vs wire representation — id 115 done
-- [X] ABI mismatch tests for `i64` logical value vs `i32` wire handle/value representation — id 116 done
-- [X] Runtime value representation smoke tests under iwasm/WAMR — id 117 done
+- [X] WASI args/env/exit/clock/random host imports
+- [X] Standalone iwasm/WAMR smoke test coverage
+- [X] Capability manifest entries for every WASI import
 
-Non-goals:
-- No full WAT replacement — that is W8.
-- No optimization passes — that is W8.
-- No post-90% binary emitter rewrite — that is W8.
+## W2: Syntax acceptance and precise rejection ✅ COMPLETE
 
----
+- [X] All common JS/TS syntax accepted or precisely rejected
+- [X] JSX, decorators, module augmentation → precise diagnostics
+- [X] TypeScript erasure (enum, namespace, type-only imports, etc.)
+- [X] Remaining parser gaps tracked: hashbang (#474), import assertions (#475), shorthand (#443)
 
-## W1: Standalone WASI baseline
+## W3: Name/call resolution and builtin dispatch ✅ COMPLETE
 
-Goal: generated WASM should run as a standalone WASI program where the supported host capabilities are explicit.
+- [X] Core ECMAScript global builtin names registered
+- [X] TypedArray constructor names (11 types)
+- [X] Well-known symbols (iterator, toStringTag, hasInstance, toPrimitive, for, keyFor)
+- [X] Builtin method dispatch table (program_builtins.rs)
+- [ ] **Remaining:** test262 harness globals (#457, ~13,426 tests)
 
-W1 is the **initial baseline gate**. Ongoing host capability auditing belongs to W7 (cross-cutting validation track).
+## W4: Builtin API semantics 🔄 IN PROGRESS
 
-- [X] WASI args support: `args_get` / `args_sizes_get` — done (id 134)
-- [X] WASI env support: `environ_get` / `environ_sizes_get` — done (id 138)
-- [X] WASI `proc_exit` clean exit — routed through HostImport system during issue 128
-- [X] WASI clock resolution: `clock_res_get` — done (id 142)
-- [X] Standalone iwasm/WAMR smoke test coverage — done (id 161)
-- [X] Capability manifest entries for every new WASI import — covered by m11_host_deny suite (id 129, 136, 137)
+Goal: implement selected builtins after names and dispatch paths are explicit.
 
-Non-goals:
-- No implicit Node.js compatibility layer.
-- No broad `process` emulation.
-- No hidden host import expansion.
+**Runtime issues (31 open):**
 
----
+| Issue | Feature | test262 impact |
+|-------|---------|----------------|
+| #419-#420 | TypedArray constructors + methods | ~5,000 |
+| #421-#422 | Map/Set iterator protocol + Set algebra | ~1,300 |
+| #423 | WeakMap/WeakSet complete | ~300 |
+| #424 | DataView complete | ~500 |
+| #425 | ArrayBuffer/SharedArrayBuffer | ~500 |
+| #426 | Object static methods | ~300 |
+| #427 | Math builtins complete | ~500 |
+| #428 | Number methods complete | ~300 |
+| #429 | Date methods complete | ~500 |
+| #430 | Error subclasses | ~500 |
+| #431 | console API complete | ~200 |
+| #432 | JSON replacer/reviver | ~200 |
+| #433 | BigInt arithmetic complete | ~2,000 |
+| #434 | Symbol.for/keyFor registry | ~300 |
+| #435 | Atomics complete | ~1,500 |
+| #436-#437 | Intl.DateTimeFormat + NumberFormat | ~3,500 |
+| #438 | Proxy complete (13 traps) | ~3,000 |
+| #439-#441 | RegExp exec/test + advanced | ~3,000 |
+| #442 | eval/Function constructor | ~300 |
+| #458-#459 | Function.prototype bind/call/apply/toString | ~500 |
+| #460-#461 | String supplementary + static methods | ~800 |
+| #462 | Object.prototype methods | ~500 |
+| #463 | Boolean/Symbol.prototype | ~100 |
+| #464 | Promise supplementary (any, withResolvers) | ~500 |
+| #465-#466 | Iterator helpers + Array copying | ~500 |
+| #467 | WeakRef/FinalizationRegistry | ~200 |
+| #468 | Atomics.waitAsync | ~300 |
+| #469-#470 | Map/Set supplementary | ~300 |
+| #480 | Micro-task queue | ~500 |
+| #481 | NativeError types | ~300 |
+| #482 | Global object properties | ~500 |
 
-## W2: Syntax acceptance and precise rejection
+## W5: Language runtime semantics 🔄 IN PROGRESS
 
-Goal: parser should accept or precisely reject common JS/TS syntax without generic parse failures.
+Goal: runtime behavior should match the supported JS/TS subset.
 
-W2 = "parse or precise reject". Runtime semantics belong to W4/W5.
+**IR issues (14 open):**
 
-- [X] RegExp literal flags: `g`, `i`, `m` — id 109 done
-- [X] RegExp literal flags: `s`, `u`, `y` — id 110 done (d flag rejected with precise diagnostic)
-- [X] SequenceExpression — already implemented, id 118
-- [X] Optional chaining — already implemented (OptionalMember/OptionalCall/OptionalIndex in AST)
-- [X] Nullish coalescing — already implemented (BinaryOp::NullishCoalesce)
-- [X] `yield` / generator syntax parsing — already compiles
-- [X] `async` / `await` syntax parsing — already compiles
-- [X] `with` / `debugger` — precise diagnostic added, id 125
-- [X] Annex B block-level function hoisting syntax handling — id 126
-- [X] Cover initializers — id 124
-- [X] Labelled function declarations — id 126
-- [X] JSX parsing — precise unsupported diagnostic added (id 130 done); full parser tracked as id 194
-- [X] Decorator parsing — precise unsupported diagnostic added (id 131 done); full parser tracked as id 195
-- [X] TypeScript parameter property parsing — parser + lowering complete (id 132 done)
-- [X] Parser-specific regression tests — integrated into m6_builtin_methods suite (id 140 done)
+| Issue | Feature | test262 impact |
+|-------|---------|----------------|
+| #404 | async/await Promise integration | ~1,300 |
+| #405 | Generator functions (function*/yield) | ~800 |
+| #406 | Well-known Symbol runtime wiring | ~500 |
+| #407 | Proxy handler traps (basic) | ~3,000 |
+| #408 | Dynamic import() | ~500 |
+| #409 | Live module bindings | ~300 |
+| #410 | Object shorthand/computed/method | ~200 |
+| #411 | BigInt arithmetic complete | ~2,000 |
+| #412 | Sparse array holes | ~200 |
+| #415 | for-await-of | ~300 |
+| #416 | Async generators | ~300 |
+| #417 | Strict mode semantics | ~500 |
+| #446 | Generator state-machine lowering | ~800 |
+| #471-#473 | super.prop, import.meta, new.target | ~500 |
+| #483 | Destructuring patterns | ~500 |
 
-TypeScript erasure parser items:
-- [X] Angle bracket type assertion disambiguation — fixed (id 151 done)
-- [X] Enum erasure — fixed (id 149 done)
-- [X] Async function for-await-of consumption — fixed (id 152 done)
-- [X] Top-level block flattening — fixed (id 153 done)
-- [X] RegExp d flag rejection — fixed (id 154 done)
-- [X] Ambient form diagnostics — fixed (id 155 done)
-- [X] Module augmentation diagnostic — fixed (id 148, 156 done)
-- [X] Triple-slash directive diagnostic — fixed (id 147 done)
-- [X] Type-only import diagnostic — fixed (id 145 done)
-- [X] Nested namespace diagnostic (A.B.C) — fixed (id 143 done)
-- [X] Nullish coalescing parse — implemented (id 120 done)
+## W6: Coverage and regression infrastructure 🔄 IN PROGRESS
 
-Non-goals:
-- Parser support does not imply runtime semantics.
-- `async`, `yield`, decorators, JSX may initially lower to explicit unsupported diagnostics.
-- Do not combine syntax parsing with runtime implementation unless the feature is tiny.
+- [X] Ramp 500 → 2,000 → 10,000 → 30,000 → 53,445 with stable parallel execution
+- [X] Regression detection: fail on build_pass / semantic_pass decrease
+- [X] Delta reporting: feature-level and diagnostic-class pass/fail deltas
+- [X] Coverage dashboard: trend graph, feature-level burn-down, diagnostic burn-down
+- [X] Gate progress visualization
+- [ ] **Remaining:** Full sampler ramp (#477), canary expansion (#455), negative classification (#456), differential infra (#478), perf gate (#479)
 
----
+## W7: Host capability boundary ✅ COMPLETE
 
-## W3: Name/call resolution and builtin dispatch
+- [X] Full host import audit with `--emit-manifest`
+- [X] Manifest golden tests for all supported fixtures
+- [X] Host-deny test matrix expansion
+- [X] Standalone assurance for Promise, Proxy, Reflect, TypedArray, WASI
+- [X] CI gate for unexpected host imports
+- [ ] **Remaining:** $262 harness (#451), Node.js shim (#452), WASI filesystem (#476)
 
-Goal: unresolved names/functions should become either known supported operations or precise unsupported diagnostics.
+## W8: Optimization and backend replacement ⏳ DEFERRED
 
-This wave should reduce `UnresolvedName` / `UnresolvedFunction` noise without pretending unsupported runtime semantics exist.
-
-- [X] Register core ECMAScript global builtin names:
-  [x] `Symbol`, `Proxy`, `Reflect`, `Promise` (id 101 done)
-  [x] `ArrayBuffer`, `DataView` (id 102 done)
-  [x] `WeakMap`, `WeakSet`, `Atomics`, `Intl`, `globalThis`, `AggregateError`, `URIError`, `EvalError` (done)
-  [x] `Map`, `Set`, `Error`, `TypeError`, `RangeError`, `ReferenceError`, `SyntaxError` (already registered)
-- [X] Register TypedArray constructor names:
-  [x] `Int8Array` through `BigUint64Array` (11 types) — id 102 done
-- [X] Register well-known symbols:
-  [x] `Symbol.iterator`, `toStringTag`, `hasInstance`, `toPrimitive`, `for`, `keyFor` — id 103 done
-- [X] Builtin method dispatch table — already complete (program_builtins.rs)
-- [X] String / Array / Object / Number / Function.prototype method dispatch routing — already complete
-- [X] Nested namespace/module resolution: `A.B.C` — precise diagnostic (id 143 done)
-- [X] Type-only imports — precise diagnostic (id 145 done)
-- [X] Triple-slash directives — precise diagnostic (id 147 done)
-- [X] Module augmentation — precise diagnostic (id 148, 156 done)
-
-Non-goals:
-- Name registration does not imply runtime implementation.
-- Unsupported builtins should route to precise diagnostics.
-- Avoid "complete all methods" as one work item.
-
----
-
-## W4: Builtin API semantics
-
-Goal: implement selected builtins only after names and dispatch paths are explicit.
-
-See `docs/language-reference/` for the detailed feature coverage tables.
-
-- [ ] Promise minimal substrate and constructor
-- [X] `Promise.prototype.then` / `catch` / `finally` — precise unsupported diagnostic added (id 104 done)
-- [ ] `Promise.resolve` / `reject` / `all` / `race` / `allSettled` / `any` / `withResolvers`
-- [X] Proxy constructor — [x] precise unsupported diagnostic (id 106 done)
-- [ ] Proxy handler trap slices + `Proxy.revocable`
-- [X] Reflect API — [x] precise unsupported diagnostic (id 106 done)
-- [ ] TypedArray constructors by family + basic read/write
-- [ ] ArrayBuffer / SharedArrayBuffer / DataView
-- [ ] WeakMap / WeakSet
-- [ ] Symbol constructor + well-known symbol runtime behavior
-- [ ] Atomics / Intl
-- [ ] `String.prototype.replace` / `replaceAll` / `matchAll`
-- [ ] `Array.prototype.sort` / `reduceRight`
-- [X] `Array.prototype.reduce` — [x] already works via array-like routing (id 105 done)
-- [ ] Upgrade selected existing builtins from build_smoke to semantic_diff
-
-Non-goals:
-- Do not implement whole builtin families as single work items.
-- Do not add async/await lowering here — that is W5 (after Promise substrate exists).
-- Do not implement Proxy/Reflect fully before object model invariants are clear.
-
----
-
-## W5: Language runtime semantics
-
-Goal: runtime behavior should match the supported JS/TS subset, not only parse or build.
-
-W4 = API surface / builtin method behavior.
-W5 = language execution model / control flow / object model invariants.
-
-- [ ] Iterator protocol: Array/String/Map/Set iterators + `Iterator.prototype`
-- [ ] Well-known symbol runtime wiring: `Symbol.iterator`, `hasInstance`, `toPrimitive`, `toStringTag`
-- [X] Completion Records Phase 0-1: base types + return/throw — done (id 188, 189 done)
-- [X] Completion Records Phase 2: try-catch-finally — done (id 190 done)
-- [X] Completion Records Phase 3: labeled break/continue — done (id 191 done)
-- [X] Completion Records Phase 4: async/await integration — done (id 192 done)
-- [X] Object semantics kernel W5.0-W5.7: property descriptors, freeze/seal prototype get/set, class prototype — done (ids 173-186)
-- [X] Object.defineProperty WAT template fix — done (id 174)
-- [X] Freeze/seal writable/configurable flag enforcement in $property_set/$property_delete — done (id 184)
-- [ ] Generator functions: `function*`, `yield`, `yield*`, `Generator.prototype`
-- [X] Promise-backed async/await lowering — done (ids 170-172 done)
-- [ ] Async generators + `for-await-of`
-- [ ] ES module live binding updates + module namespace objects
-- [ ] Dynamic import + circular dependency evaluation
-- [X] Mutable capture environments for escaping closures — done (id 214 done)
-- [ ] `this` binding: global this, strict-mode receiver, method receiver
-
-Non-goals:
-- Do not use W5 as a dumping ground for parser gaps.
-- Do not start generators or async before completion records are reliable.
-- Do not implement object model invariants partially without diagnostics.
-
----
-
-## W6: Coverage and regression infrastructure
-
-Goal: coverage growth should be measurable, reproducible, and regression-safe.
-
-This is a **cross-cutting validation track**, not a sequential phase.
-Work here runs in parallel with W2-W5 implementation: each feature change should be accompanied by coverage measurement, regression detection, and delta reporting.
-
-- [X] Ramp 500 → 2,000 with stable parallel execution and caching — already works (--jobs N flag)
-- [X] Ramp 2,000 → 10,000 / 10,000 → 30,000 / 30,000 → 53,445 — done (id 216 done)
-- [X] Regression detection: fail on build_pass / semantic_pass decrease — [x] `--record-baseline` / `--compare-baseline` flags (id 107 done)
-- [X] Delta reporting: feature-level and diagnostic-class pass/fail deltas — id 128
-- [X] Coverage dashboard: trend graph, feature-level burn-down, diagnostic burn-down — done (id 217 done)
-- [X] Gate progress visualization — done (id 218 done)
-
-Non-goals:
-- Do not auto-create `issues/` entries from coverage gaps.
-- Do not treat coverage summaries as issue lists.
-- Do not block normal build on dashboard generation.
-
----
-
-## W7: Host capability boundary
-
-Goal: every host interaction should be explicit, auditable, and deny-testable.
-
-This is a **cross-cutting validation track** that protects the core project constraint:
-generated WASM should not silently depend on Node.js or hidden host capabilities.
-
-- [X] Full host import audit with `--emit-manifest` — id 129
-- [X] Manifest golden tests for all supported fixtures — done (id 219 done)
-- [X] Host-deny test matrix expansion — done (id 220 done)
-- [X] Standalone assurance for new features (Promise, Proxy, Reflect, TypedArray, WASI args/env) — done (ids 221-222 done)
-- [X] Capability review checklist in coding standard — [x] already documented (id 113 done)
-- [X] CI gate for unexpected host imports — done (id 222 done)
-
-Non-goals:
-- No broad host shim.
-- No hidden Node.js delegation.
-- No "temporary" imports without manifest entries.
-
----
-
-## W8: Optimization and backend replacement（deferred）
-
-Goal: after semantic coverage is high enough, improve speed, size, maintainability, and backend quality.
-
-**Entry condition**: semantic_diff coverage is stable, host capability boundary is audited,
-test262 ramp is regression-safe, major runtime semantics are no longer moving daily.
+**Entry condition**: semantic_diff coverage stable, test262 ramp regression-safe.
 
 - [ ] Benchmark suite + performance regression tracker
 - [ ] Typed fast path / packed array / devirtualization
@@ -283,8 +191,4 @@ test262 ramp is regression-safe, major runtime semantics are no longer moving da
 - [ ] Full binary WASM emitter replacing WAT text dependency
 - [ ] Replace giant WAT templates with typed writers
 - [ ] ABI bridge cleanup after logical/wire contract is stable
-
-Non-goals:
-- Do not start broad optimization before semantic correctness.
-- Do not replace WAT wholesale while runtime semantics are still unstable.
-- Do not treat W8 as a prerequisite for early test262 growth.
+- [ ] wasm-encoder backend parity (#453)
