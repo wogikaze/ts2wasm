@@ -1646,6 +1646,46 @@ fn array_from_matches_node() {
 }
 
 #[test]
+fn array_join_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-join.ts");
+}
+
+#[test]
+fn array_pop_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-pop.ts");
+}
+
+#[test]
+fn array_push_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-push.ts");
+}
+
+#[test]
+fn array_slice_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-slice.ts");
+}
+
+#[test]
+fn array_fill_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-fill.ts");
+}
+
+#[test]
+fn array_at_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-at.ts");
+}
+
+#[test]
+fn array_last_index_of_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-last-index-of.ts");
+}
+
+#[test]
+fn array_shift_unshift_splice_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-shift-unshift-splice.ts");
+}
+
+#[test]
 fn json_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/json-parse-array.ts",
