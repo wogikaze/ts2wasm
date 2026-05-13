@@ -1618,6 +1618,11 @@ fn arraybuffer_dataview_endian_int32_uint32_matches_node_output() {
 }
 
 #[test]
+fn arraybuffer_dataview_float32_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/arraybuffer-dataview-float32.ts");
+}
+
+#[test]
 fn arraybuffer_dataview_int8_uint8_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/arraybuffer-dataview-int8-uint8.ts");
 }

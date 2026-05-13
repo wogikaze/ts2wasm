@@ -1594,10 +1594,14 @@ impl super::super::Resolver {
         );
         if class_name == "DataView" {
             match method {
-                "getInt16" | "getUint16" | "getInt32" | "getUint32" if args.len() == 1 => {
+                "getInt16" | "getUint16" | "getInt32" | "getUint32" | "getFloat32"
+                    if args.len() == 1 =>
+                {
                     lowered_args.push(LoweredExpr::Bool(false, Span::generated("bool")));
                 }
-                "setInt16" | "setUint16" | "setInt32" | "setUint32" if args.len() == 2 => {
+                "setInt16" | "setUint16" | "setInt32" | "setUint32" | "setFloat32"
+                    if args.len() == 2 =>
+                {
                     lowered_args.push(LoweredExpr::Bool(false, Span::generated("bool")));
                 }
                 _ => {}

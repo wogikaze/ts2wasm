@@ -2483,6 +2483,22 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::EffectOnly,
             },
+            Self::DataViewGetFloat32 => RuntimeSpec {
+                symbol: "$dataview_get_float32",
+                deps: &[],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::DataViewSetFloat32 => RuntimeSpec {
+                symbol: "$dataview_set_float32",
+                deps: &[],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::EffectOnly,
+            },
             Self::DataViewGetFloat64 => RuntimeSpec {
                 symbol: "$dataview_get_float64",
                 deps: &[],

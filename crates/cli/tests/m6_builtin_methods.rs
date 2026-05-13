@@ -2046,6 +2046,16 @@ fn build_smoke_arraybuffer_dataview_endian_int32_uint32() {
 }
 
 #[test]
+fn build_smoke_arraybuffer_dataview_float32() {
+    let result = run_fixture("builtins-and-io/arraybuffer-dataview-float32.ts");
+    assert!(
+        result.is_ok(),
+        "DataView float32 should build successfully: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_arraybuffer_dataview_int8_uint8() {
     let result = run_fixture("builtins-and-io/arraybuffer-dataview-int8-uint8.ts");
     assert!(

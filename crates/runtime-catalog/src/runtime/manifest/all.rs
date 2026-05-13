@@ -315,6 +315,8 @@ match self {
             Self::DataViewSetInt32 => "dataview_set_int32",
             Self::DataViewGetUint32 => "dataview_get_uint32",
             Self::DataViewSetUint32 => "dataview_set_uint32",
+            Self::DataViewGetFloat32 => "dataview_get_float32",
+            Self::DataViewSetFloat32 => "dataview_set_float32",
             Self::DataViewGetFloat64 => "dataview_get_float64",
             Self::DataViewSetFloat64 => "dataview_set_float64",
             Self::ArrayPushMany => "pseudo_array_push_many",

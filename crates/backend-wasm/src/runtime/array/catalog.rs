@@ -71,6 +71,8 @@ pub const ARRAY_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::DataViewSetInt32,
     RuntimeFn::DataViewGetUint32,
     RuntimeFn::DataViewSetUint32,
+    RuntimeFn::DataViewGetFloat32,
+    RuntimeFn::DataViewSetFloat32,
     RuntimeFn::DataViewGetFloat64,
     RuntimeFn::DataViewSetFloat64,
 ];
