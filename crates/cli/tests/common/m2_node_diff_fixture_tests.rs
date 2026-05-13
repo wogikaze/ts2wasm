@@ -2213,6 +2213,16 @@ fn map_iteration_matches_node_output() {
 }
 
 #[test]
+fn map_supplementary_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/map-supplementary.ts");
+}
+
+#[test]
+fn map_nan_minus0_key_equality_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/map-nan-minus0-key-equality.ts");
+}
+
+#[test]
 fn set_size_clear_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/set-size-clear.ts");
 }

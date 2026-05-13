@@ -1311,6 +1311,11 @@ impl super::super::Resolver {
             // lowers to an object bucket-building loop.
             return Ok(Some(self.lower_object_group_by_callback(args, span)?));
         }
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Map") && method == "groupBy" {
+            // MapGroupByCallback: statically visible array + arrow callback
+            // lowers to a Map bucket-building loop.
+            return Ok(Some(self.lower_map_group_by_callback(args, span)?));
+        }
 
         if let ResolvedExpr::Ident(receiver_name) = object
             && let Ok(obj_local) = self.resolve_local(receiver_name)

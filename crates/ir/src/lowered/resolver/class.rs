@@ -459,6 +459,12 @@ impl super::Resolver {
     pub(super) fn infer_class_for_expr(&self, expr: &ResolvedExpr) -> Option<String> {
         match expr {
             ResolvedExpr::New { class_name, .. } => Some(class_name.clone()),
+            ResolvedExpr::MethodCall { object, method, .. }
+                if method == "groupBy"
+                    && matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Map") =>
+            {
+                Some("Map".to_owned())
+            }
             ResolvedExpr::Array(_) => Some("Array".to_owned()),
             ResolvedExpr::Ident(name) => self
                 .resolve_local(name)

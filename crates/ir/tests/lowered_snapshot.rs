@@ -487,6 +487,37 @@ fn lowered_snapshot_object_group_by_arrow_callback_builds_buckets() {
 }
 
 #[test]
+fn lowered_snapshot_map_group_by_arrow_callback_builds_buckets() {
+    let program = parse_resolve_lower(
+        r#"
+        let grouped = Map.groupBy([1, 2, 3], (value) => value % 2);
+        "#,
+    );
+
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(|stmt| { lowered_stmt_contains_runtime_call(stmt, RuntimeFn::MapSet) }),
+        "expected Map.groupBy to create bucket arrays in the result Map"
+    );
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(|stmt| { lowered_stmt_contains_runtime_call(stmt, RuntimeFn::ArrayPushGrow) }),
+        "expected Map.groupBy to append repeated-key values into bucket arrays"
+    );
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(lowered_stmt_contains_user_call_with_local_receiver),
+        "expected Map.groupBy to call the static arrow callback"
+    );
+}
+
+#[test]
 fn lowered_snapshot_let_bool() {
     let program = parse_resolve_lower("let a = true; let b = false;");
     assert_eq!(program.top_level_statements.len(), 2);

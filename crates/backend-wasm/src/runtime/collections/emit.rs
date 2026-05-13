@@ -1,6 +1,10 @@
 use crate::emitter::WatEmitter;
 use ts2wasm_runtime_abi::{consts::RuntimeConst, layout::Layout, value::ValueTag};
 
+fn tagged_number_sentinel(payload: i32) -> i32 {
+    ((payload as i64) << (ValueTag::NUMBER_SHIFT as u32)) as i32 | ValueTag::NUMBER
+}
+
 impl WatEmitter<'_> {
     pub(crate) fn emit_array_get(&self, wat: &mut String) {
         wat.push_str(&format!(
@@ -570,11 +574,15 @@ impl WatEmitter<'_> {
             r#"
   (func $map_get (param $map i32) (param $key i32) (result i32)
     (local $key_len i32)
+    (if (i32.eq (local.get $key) (i32.const {negative_zero}))
+      (then (local.set $key (i32.const {positive_zero}))))
     (local.set $key_len
       (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
     (call $property_get (local.get $map) (i32.const {scratch_offset}) (local.get $key_len)))
 "#,
             scratch_offset = Layout::SCRATCH_OFFSET,
+            negative_zero = tagged_number_sentinel(ValueTag::NEG_ZERO_PAYLOAD),
+            positive_zero = ValueTag::encode_number(0),
         ));
     }
 
@@ -583,6 +591,8 @@ impl WatEmitter<'_> {
             r#"
   (func $map_set (param $map i32) (param $key i32) (param $value i32) (result i32)
     (local $key_len i32)
+    (if (i32.eq (local.get $key) (i32.const {negative_zero}))
+      (then (local.set $key (i32.const {positive_zero}))))
     (local.set $key_len
       (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
     (drop
@@ -594,6 +604,8 @@ impl WatEmitter<'_> {
     (local.get $map))
 "#,
             scratch_offset = Layout::SCRATCH_OFFSET,
+            negative_zero = tagged_number_sentinel(ValueTag::NEG_ZERO_PAYLOAD),
+            positive_zero = ValueTag::encode_number(0),
         ));
     }
 
@@ -602,11 +614,15 @@ impl WatEmitter<'_> {
             r#"
   (func $map_has (param $map i32) (param $key i32) (result i32)
     (local $key_len i32)
+    (if (i32.eq (local.get $key) (i32.const {negative_zero}))
+      (then (local.set $key (i32.const {positive_zero}))))
     (local.set $key_len
       (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
     (call $property_has (local.get $map) (i32.const {scratch_offset}) (local.get $key_len)))
 "#,
             scratch_offset = Layout::SCRATCH_OFFSET,
+            negative_zero = tagged_number_sentinel(ValueTag::NEG_ZERO_PAYLOAD),
+            positive_zero = ValueTag::encode_number(0),
         ));
     }
 
@@ -615,11 +631,15 @@ impl WatEmitter<'_> {
             r#"
   (func $map_delete (param $map i32) (param $key i32) (result i32)
     (local $key_len i32)
+    (if (i32.eq (local.get $key) (i32.const {negative_zero}))
+      (then (local.set $key (i32.const {positive_zero}))))
     (local.set $key_len
       (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
     (call $property_delete (local.get $map) (i32.const {scratch_offset}) (local.get $key_len)))
 "#,
             scratch_offset = Layout::SCRATCH_OFFSET,
+            negative_zero = tagged_number_sentinel(ValueTag::NEG_ZERO_PAYLOAD),
+            positive_zero = ValueTag::encode_number(0),
         ));
     }
 

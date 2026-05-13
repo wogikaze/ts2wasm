@@ -1254,6 +1254,16 @@ fn build_smoke_map_iteration() {
 }
 
 #[test]
+fn build_smoke_map_supplementary() {
+    let result = run_fixture("builtins-and-io/map-supplementary.ts");
+    assert!(
+        result.is_ok(),
+        "Map supplementary methods should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_test_math_pow() {
     let result = run_fixture("builtins-and-io/test-math-pow.ts");
     assert!(
