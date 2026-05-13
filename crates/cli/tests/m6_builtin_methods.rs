@@ -1038,6 +1038,26 @@ fn build_smoke_global_decode_uri() {
 }
 
 #[test]
+fn build_smoke_global_properties() {
+    for fixture in [
+        "builtins-and-io/global-0-args.ts",
+        "builtins-and-io/global-isnan.ts",
+        "builtins-and-io/global-isfinite.ts",
+        "builtins-and-io/global-parseint.ts",
+        "builtins-and-io/global-parsefloat.ts",
+        "builtins-and-io/global-escape.ts",
+        "builtins-and-io/global-unescape.ts",
+        "builtins-and-io/global-escape-value.ts",
+        "builtins-and-io/global-unescape-value.ts",
+        "builtins-and-io/global-encode-uri.ts",
+        "builtins-and-io/global-decode-uri.ts",
+    ] {
+        let result = run_fixture(fixture);
+        assert!(result.is_ok(), "{fixture} should build: {:?}", result.err());
+    }
+}
+
+#[test]
 fn build_smoke_date_to_string() {
     let result = run_fixture("builtins-and-io/date-to-string-timezone-unsupported.ts");
     assert!(

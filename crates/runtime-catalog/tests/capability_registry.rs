@@ -102,26 +102,6 @@ const HOST_IMPORT_RUNTIME_CASES: &[RuntimeImportCase] = &[
         capabilities: &[Capability::HostCryptoRandomBytes],
     },
     RuntimeImportCase {
-        runtime_fn: RuntimeFn::EncodeURI,
-        imports: &[HostImport::EncodeURI],
-        capabilities: &[Capability::HostEncodeURI],
-    },
-    RuntimeImportCase {
-        runtime_fn: RuntimeFn::DecodeURI,
-        imports: &[HostImport::DecodeURI],
-        capabilities: &[Capability::HostDecodeURI],
-    },
-    RuntimeImportCase {
-        runtime_fn: RuntimeFn::Escape,
-        imports: &[HostImport::Escape],
-        capabilities: &[Capability::HostEscape],
-    },
-    RuntimeImportCase {
-        runtime_fn: RuntimeFn::Unescape,
-        imports: &[HostImport::Unescape],
-        capabilities: &[Capability::HostUnescape],
-    },
-    RuntimeImportCase {
         runtime_fn: RuntimeFn::DateToString,
         imports: &[HostImport::DateToString],
         capabilities: &[Capability::HostDateToString],
@@ -183,6 +163,10 @@ const NON_RUNTIME_LINK_PLAN_HOST_IMPORTS: &[HostImport] = &[
     HostImport::ClockResGet,
     HostImport::FsReadFileSync,
     HostImport::FsWriteFileSync,
+    HostImport::EncodeURI,
+    HostImport::DecodeURI,
+    HostImport::Escape,
+    HostImport::Unescape,
 ];
 
 const ALL_CAPABILITIES: &[Capability] = &[
@@ -218,6 +202,10 @@ const NON_RUNTIME_LINK_PLAN_CAPABILITIES: &[Capability] = &[
     Capability::WasiFilesystemAppend,
     Capability::HostFsReadFileSync,
     Capability::HostFsWriteFileSync,
+    Capability::HostEncodeURI,
+    Capability::HostDecodeURI,
+    Capability::HostEscape,
+    Capability::HostUnescape,
 ];
 
 #[test]

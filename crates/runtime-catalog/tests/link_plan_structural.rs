@@ -74,6 +74,10 @@ const NON_RUNTIME_LINK_PLAN_CAPABILITIES: &[Capability] = &[
     Capability::WasiFilesystemAppend,
     Capability::HostFsReadFileSync,
     Capability::HostFsWriteFileSync,
+    Capability::HostEncodeURI,
+    Capability::HostDecodeURI,
+    Capability::HostEscape,
+    Capability::HostUnescape,
 ];
 
 // ---------------------------------------------------------------------------

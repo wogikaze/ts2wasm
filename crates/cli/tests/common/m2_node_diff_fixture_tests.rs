@@ -2610,6 +2610,45 @@ fn global_isfinite_matches_node_under_iwasm() {
 }
 
 #[test]
+fn global_escape_matches_node_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-escape.ts");
+}
+
+#[test]
+fn global_unescape_matches_node_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-unescape.ts");
+}
+
+#[test]
+fn global_encode_uri_matches_node_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-encode-uri.ts");
+}
+
+#[test]
+fn global_decode_uri_matches_node_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-decode-uri.ts");
+}
+
+#[test]
+fn global_properties_matches_node_output() {
+    for fixture in [
+        "fixtures/builtins-and-io/global-0-args.ts",
+        "fixtures/builtins-and-io/global-isnan.ts",
+        "fixtures/builtins-and-io/global-isfinite.ts",
+        "fixtures/builtins-and-io/global-parseint.ts",
+        "fixtures/builtins-and-io/global-parsefloat.ts",
+        "fixtures/builtins-and-io/global-escape.ts",
+        "fixtures/builtins-and-io/global-unescape.ts",
+        "fixtures/builtins-and-io/global-escape-value.ts",
+        "fixtures/builtins-and-io/global-unescape-value.ts",
+        "fixtures/builtins-and-io/global-encode-uri.ts",
+        "fixtures/builtins-and-io/global-decode-uri.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
 fn number_static_nan_and_finite_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/number-is-nan.ts",

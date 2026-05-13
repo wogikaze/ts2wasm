@@ -720,8 +720,21 @@ fn standalone_global_parseint() {
     assert_standalone_category("builtins-and-io/global-parseint.ts", "parseInt");
 }
 
+#[test]
+fn standalone_global_uri_and_escape() {
+    // URI and legacy escape helpers use pure WAT for the supported ASCII subset.
+    for (fixture, category) in [
+        ("builtins-and-io/global-encode-uri.ts", "encodeURI"),
+        ("builtins-and-io/global-decode-uri.ts", "decodeURI"),
+        ("builtins-and-io/global-escape.ts", "escape"),
+        ("builtins-and-io/global-unescape.ts", "unescape"),
+    ] {
+        assert_standalone_category(fixture, category);
+    }
+}
+
 /// Negative tests: each Node host import must be rejected under --host-deny node.
-/// Covers: crypto (1), process (1), path (4), date (3), URI (4) = 13 imports.
+/// Covers: crypto (1), process (1), path (4), date (3) = 9 imports.
 
 #[test]
 fn host_deny_rejects_crypto_random_bytes() {
@@ -775,28 +788,4 @@ fn host_deny_rejects_date_to_iso_string() {
 fn host_deny_rejects_date_get_timezone_offset() {
     // Date.prototype.getTimezoneOffset uses Node host import for $host_date_get_timezone_offset
     assert_host_deny_rejects("builtins-and-io/date-get-timezone-offset.ts");
-}
-
-#[test]
-fn host_deny_rejects_encode_uri() {
-    // encodeURI uses Node host import for $host_encode_uri
-    assert_host_deny_rejects("builtins-and-io/global-encode-uri.ts");
-}
-
-#[test]
-fn host_deny_rejects_decode_uri() {
-    // decodeURI uses Node host import for $host_decode_uri
-    assert_host_deny_rejects("builtins-and-io/global-decode-uri.ts");
-}
-
-#[test]
-fn host_deny_rejects_escape() {
-    // escape uses Node host import for $host_escape
-    assert_host_deny_rejects("builtins-and-io/global-escape.ts");
-}
-
-#[test]
-fn host_deny_rejects_unescape() {
-    // unescape uses Node host import for $host_unescape
-    assert_host_deny_rejects("builtins-and-io/global-unescape.ts");
 }
