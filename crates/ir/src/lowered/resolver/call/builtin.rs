@@ -30,20 +30,20 @@ pub(super) fn lower_html_wrapper_string_method(
     args: Vec<LoweredExpr>,
     span: Span,
 ) -> Result<LoweredExpr, Diagnostic> {
-    let (open_prefix, open_suffix, close_tag) = match method {
-        "anchor" => ("<a name=\"", "\"", "</a>"),
-        "big" => ("<big>", "", "</big>"),
-        "blink" => ("<blink>", "", "</blink>"),
-        "bold" => ("<b>", "", "</b>"),
-        "fixed" => ("<tt>", "", "</tt>"),
-        "fontcolor" => ("<font color=\"", "\"", "</font>"),
-        "fontsize" => ("<font size=\"", "\"", "</font>"),
-        "italics" => ("<i>", "", "</i>"),
-        "link" => ("<a href=\"", "\"", "</a>"),
-        "small" => ("<small>", "", "</small>"),
-        "strike" => ("<strike>", "", "</strike>"),
-        "sub" => ("<sub>", "", "</sub>"),
-        "sup" => ("<sup>", "", "</sup>"),
+    let (open_prefix, attr_suffix, close_tag) = match method {
+        "anchor" => ("<a name=\"", Some("\">"), "</a>"),
+        "big" => ("<big>", None, "</big>"),
+        "blink" => ("<blink>", None, "</blink>"),
+        "bold" => ("<b>", None, "</b>"),
+        "fixed" => ("<tt>", None, "</tt>"),
+        "fontcolor" => ("<font color=\"", Some("\">"), "</font>"),
+        "fontsize" => ("<font size=\"", Some("\">"), "</font>"),
+        "italics" => ("<i>", None, "</i>"),
+        "link" => ("<a href=\"", Some("\">"), "</a>"),
+        "small" => ("<small>", None, "</small>"),
+        "strike" => ("<strike>", None, "</strike>"),
+        "sub" => ("<sub>", None, "</sub>"),
+        "sup" => ("<sup>", None, "</sup>"),
         _ => {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -55,67 +55,37 @@ pub(super) fn lower_html_wrapper_string_method(
         }
     };
 
-    let mut result = LoweredExpr::RuntimeCall {
-        intrinsic: RuntimeFn::Concat,
-        args: vec![
-            object,
-            LoweredExpr::String(close_tag.to_owned(), Span::generated("str")),
-        ],
+    fn string_lit(value: &str) -> LoweredExpr {
+        LoweredExpr::String(value.to_owned(), Span::generated("str"))
+    }
 
-        span: Span::generated("runtime_call"),
-    };
+    fn concat(left: LoweredExpr, right: LoweredExpr) -> LoweredExpr {
+        LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::Concat,
+            args: vec![left, right],
+            span: Span::generated("runtime_call"),
+        }
+    }
 
-    let has_arg = !open_suffix.is_empty();
-    if has_arg {
+    let mut result = string_lit(open_prefix);
+
+    if let Some(attr_suffix) = attr_suffix {
         let needs_escaping = matches!(method, "anchor" | "fontcolor" | "fontsize" | "link");
-        let mut arg = args.into_iter().next().unwrap_or(LoweredExpr::String(
-            "undefined".to_owned(),
-            Span::generated("str"),
-        ));
-        // Spec requires escaping " as &quot; in attribute values (B.2.3.10, B.2.3.6, etc.)
+        let mut attr = args
+            .into_iter()
+            .next()
+            .unwrap_or_else(|| string_lit("undefined"));
         if needs_escaping {
-            arg = LoweredExpr::RuntimeCall {
+            attr = LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::StringReplaceAll,
-                args: vec![
-                    arg,
-                    LoweredExpr::String("\"".to_owned(), Span::generated("str")),
-                    LoweredExpr::String("&quot;".to_owned(), Span::generated("str")),
-                ],
-
+                args: vec![attr, string_lit("\""), string_lit("&quot;")],
                 span: Span::generated("runtime_call"),
             };
         }
-        result = LoweredExpr::RuntimeCall {
-            intrinsic: RuntimeFn::Concat,
-            args: vec![
-                arg,
-                LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeFn::Concat,
-                    args: vec![
-                        LoweredExpr::String(open_suffix.to_owned(), Span::generated("str")),
-                        LoweredExpr::RuntimeCall {
-                            intrinsic: RuntimeFn::Concat,
-                            args: vec![
-                                LoweredExpr::String(">".to_owned(), Span::generated("str")),
-                                result,
-                            ],
-
-                            span: Span::generated("runtime_call"),
-                        },
-                    ],
-                    span: Span::generated("RuntimeCall"),
-                },
-            ],
-            span: Span::generated("RuntimeCall"),
-        };
+        result = concat(result, attr);
+        result = concat(result, string_lit(attr_suffix));
     }
 
-    Ok(LoweredExpr::RuntimeCall {
-        intrinsic: RuntimeFn::Concat,
-        args: vec![
-            LoweredExpr::String(open_prefix.to_owned(), Span::generated("str")),
-            result,
-        ],
-        span: Span::generated("runtime_call"),
-    })
+    result = concat(result, object);
+    Ok(concat(result, string_lit(close_tag)))
 }
