@@ -1555,6 +1555,44 @@ fn json_stringify_space_string_matches_node() {
 }
 
 #[test]
+fn json_stringify_replacer_array_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-stringify-replacer-array.ts");
+}
+
+#[test]
+fn json_stringify_replacer_array_number_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-stringify-replacer-array-number.ts");
+}
+
+#[test]
+fn json_stringify_replacer_array_multikey_matches_node() {
+    assert_fixture_matches_node(
+        "fixtures/builtins-and-io/json-stringify-replacer-array-multikey.ts",
+    );
+}
+
+#[test]
+fn json_stringify_replacer_function_keep_matches_node() {
+    assert_fixture_matches_node(
+        "fixtures/builtins-and-io/json-stringify-replacer-function-keep.ts",
+    );
+}
+
+#[test]
+fn json_stringify_replacer_function_drop_matches_node() {
+    assert_fixture_matches_node(
+        "fixtures/builtins-and-io/json-stringify-replacer-function-drop.ts",
+    );
+}
+
+#[test]
+fn json_stringify_replacer_function_transform_matches_node() {
+    assert_fixture_matches_node(
+        "fixtures/builtins-and-io/json-stringify-replacer-function-transform.ts",
+    );
+}
+
+#[test]
 fn json_parse_trailing_tokens_rejected_under_node_and_iwasm() {
     assert_fixture_rejected_by_node_and_iwasm(
         "fixtures/builtins-and-io/json-parse-trailing-invalid.ts",
