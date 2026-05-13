@@ -49,6 +49,7 @@ pub const ARRAY_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::ArrayValues,
     RuntimeFn::ArrayKeys,
     RuntimeFn::ArrayEntries,
+    RuntimeFn::ArrayIteratorNext,
     RuntimeFn::ArrayToSpliced,
     RuntimeFn::ArrayShift,
     RuntimeFn::ArrayUnshift,

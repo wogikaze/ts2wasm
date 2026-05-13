@@ -46,6 +46,7 @@ impl WatEmitter<'_> {
             RuntimeFn::ArrayValues => self.emit_array_values(wat),
             RuntimeFn::ArrayKeys => self.emit_array_keys(wat),
             RuntimeFn::ArrayEntries => self.emit_array_entries(wat),
+            RuntimeFn::ArrayIteratorNext => self.emit_array_iterator_next(wat),
             RuntimeFn::ArrayToSpliced => self.emit_array_to_spliced(wat),
             RuntimeFn::ArrayShift => self.emit_array_shift(wat),
             RuntimeFn::ArrayUnshift => self.emit_array_unshift(wat),

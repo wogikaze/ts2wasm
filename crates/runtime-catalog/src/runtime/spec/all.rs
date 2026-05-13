@@ -318,7 +318,7 @@ match self {
                 deps: ARRAY_VALUES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
-                runtime_strings: NO_RUNTIME_STRINGS,
+                runtime_strings: ARRAY_ITERATOR_STATE_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::ArrayKeys => RuntimeSpec {
@@ -326,7 +326,7 @@ match self {
                 deps: ARRAY_KEYS_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
-                runtime_strings: NO_RUNTIME_STRINGS,
+                runtime_strings: ARRAY_ITERATOR_STATE_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::ArrayEntries => RuntimeSpec {
@@ -334,7 +334,15 @@ match self {
                 deps: ARRAY_ENTRIES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
-                runtime_strings: NO_RUNTIME_STRINGS,
+                runtime_strings: ARRAY_ITERATOR_STATE_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ArrayIteratorNext => RuntimeSpec {
+                symbol: "$array_iterator_next",
+                deps: ARRAY_ITERATOR_NEXT_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: ARRAY_ITERATOR_NEXT_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::ArrayShift => RuntimeSpec {

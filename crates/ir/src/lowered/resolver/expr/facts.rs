@@ -71,6 +71,38 @@ pub(crate) fn update_symbol_iterator_object_local(
     }
 }
 
+pub(crate) fn update_array_iterator_local(
+    ctx: &mut LoweringCtx,
+    local_id: LocalId,
+    expr: &ResolvedExpr,
+) {
+    if resolved_expr_is_array_iterator(ctx, expr) {
+        ctx.facts.array_iterator_locals.insert(local_id);
+    } else {
+        ctx.facts.array_iterator_locals.remove(&local_id);
+    }
+}
+
+pub(crate) fn resolved_expr_is_array_iterator(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
+    match expr {
+        ResolvedExpr::Ident(name) => ctx
+            .resolve_local(name)
+            .ok()
+            .is_some_and(|local_id| ctx.facts.array_iterator_locals.contains(&local_id)),
+        ResolvedExpr::MethodCall {
+            object,
+            method,
+            args,
+            ..
+        } => {
+            args.is_empty()
+                && matches!(method.as_str(), "values" | "keys" | "entries")
+                && is_known_array_expr(ctx, object)
+        }
+        _ => false,
+    }
+}
+
 pub(crate) fn resolved_expr_has_symbol_iterator_property(
     ctx: &LoweringCtx,
     expr: &ResolvedExpr,

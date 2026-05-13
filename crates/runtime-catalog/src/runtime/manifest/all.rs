@@ -43,6 +43,7 @@ match self {
             Self::ArrayValues => "array_values",
             Self::ArrayKeys => "array_keys",
             Self::ArrayEntries => "array_entries",
+            Self::ArrayIteratorNext => "array_iterator_next",
             Self::ArrayShift => "array_shift",
             Self::ArrayUnshift => "array_unshift",
             Self::ArraySplice => "array_splice",

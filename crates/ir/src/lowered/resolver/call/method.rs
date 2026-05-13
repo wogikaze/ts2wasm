@@ -30,6 +30,18 @@ impl super::super::Resolver {
         if let Some(result) = self.lower_mcall_date_string(object, method, args, span)? {
             return Ok(result);
         }
+        if method == "next"
+            && args.is_empty()
+            && crate::lowered::resolver::expr::facts::resolved_expr_is_array_iterator(
+                &self.ctx, object,
+            )
+        {
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ArrayIteratorNext,
+                args: vec![self.lower_expr(object)?],
+                span: Span::generated("runtime_call"),
+            });
+        }
         if let Some(result) = self.lower_mcall_array_runtime(object, method, args, span)? {
             return Ok(result);
         }

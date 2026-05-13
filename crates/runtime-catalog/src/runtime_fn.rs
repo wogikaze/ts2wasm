@@ -295,12 +295,14 @@ pub enum RuntimeFn {
     ArrayToSorted,
     /// Array.prototype.toSpliced(start, deleteCount) — returns new array with elements removed
     ArrayToSpliced,
-    /// Array.prototype.values() — returns copy of array
+    /// Array.prototype.values() — returns an array iterator object
     ArrayValues,
-    /// Array.prototype.keys() — returns array of indices [0, 1, ..., n-1]
+    /// Array.prototype.keys() — returns an array iterator object over indices
     ArrayKeys,
-    /// Array.prototype.entries() — returns array of [index, value] pairs
+    /// Array.prototype.entries() — returns an array iterator object over [index, value] pairs
     ArrayEntries,
+    /// Array iterator `next()` — returns `{ value, done }`
+    ArrayIteratorNext,
     /// Array.prototype.shift() — removes and returns first element
     ArrayShift,
     /// Array.prototype.unshift(val) — adds element at beginning, returns new length
@@ -906,9 +908,12 @@ const ARRAY_TO_SORTED_DEPS: &[RuntimeFn] = &[
     RuntimeFn::NumberToI32,
 ];
 const ARRAY_TO_SPLICED_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
-const ARRAY_VALUES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const ARRAY_VALUES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const ARRAY_KEYS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const ARRAY_ENTRIES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const ARRAY_ITERATOR_NEXT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::ArrayGet];
+const ARRAY_ITERATOR_STATE_RUNTIME_STRINGS: &[&str] = &["array", "index", "kind"];
+const ARRAY_ITERATOR_NEXT_RUNTIME_STRINGS: &[&str] = &["value", "done"];
 const ARRAY_SHIFT_DEPS: &[RuntimeFn] = &[];
 const ARRAY_UNSHIFT_DEPS: &[RuntimeFn] = &[];
 const ARRAY_SPLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
@@ -1147,6 +1152,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayValues" => Some(RuntimeFn::ArrayValues),
         "ArrayKeys" => Some(RuntimeFn::ArrayKeys),
         "ArrayEntries" => Some(RuntimeFn::ArrayEntries),
+        "ArrayIteratorNext" => Some(RuntimeFn::ArrayIteratorNext),
         "ArrayShift" => Some(RuntimeFn::ArrayShift),
         "ArrayUnshift" => Some(RuntimeFn::ArrayUnshift),
         "ArraySplice" => Some(RuntimeFn::ArraySplice),
@@ -1368,6 +1374,7 @@ impl RuntimeFn {
             | Self::ArrayValues
             | Self::ArrayKeys
             | Self::ArrayEntries
+            | Self::ArrayIteratorNext
             | Self::ArrayShift
             | Self::ArrayUnshift
             | Self::ArraySplice
@@ -1978,6 +1985,7 @@ impl RuntimeFn {
             Self::ArrayValues,
             Self::ArrayKeys,
             Self::ArrayEntries,
+            Self::ArrayIteratorNext,
             Self::ArrayShift,
             Self::ArrayUnshift,
             Self::ArraySplice,
@@ -2303,6 +2311,7 @@ impl RuntimeFn {
             Self::ArrayValues,
             Self::ArrayKeys,
             Self::ArrayEntries,
+            Self::ArrayIteratorNext,
             Self::ArrayShift,
             Self::ArrayUnshift,
             Self::ArraySplice,

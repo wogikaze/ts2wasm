@@ -2,6 +2,59 @@ use crate::emitter::WatEmitter;
 use ts2wasm_runtime_abi::{consts::RuntimeConst, layout::Layout, value::ValueTag};
 
 impl WatEmitter<'_> {
+    fn emit_array_iterator_factory(&self, wat: &mut String, symbol: &str, kind: i32) {
+        let array_key = self.string_value("array");
+        let index_key = self.string_value("index");
+        let kind_key = self.string_value("kind");
+        let internal_flags = ((1 << 3) - 1) << Layout::OBJECT_NON_ENUM_SHIFT;
+        wat.push_str(&format!(
+            r#"
+  (func ${symbol} (param $arr i32) (result i32)
+    (local $tag i32)
+    (local $iter_ptr i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $iter_ptr
+      (call $alloc_heap
+        (i32.const {iter_size})))
+    (i32.store (local.get $iter_ptr) (i32.const 3))
+    (i32.store (i32.add (local.get $iter_ptr) (i32.const {object_flags})) (i32.const {internal_flags}))
+    (i32.store (i32.add (local.get $iter_ptr) (i32.const {object_proto})) (i32.const 0))
+    (i32.store (i32.add (local.get $iter_ptr) (i32.const {entry0_key})) (i32.const {array_key}))
+    (i32.store (i32.add (local.get $iter_ptr) (i32.const {entry0_value})) (local.get $arr))
+    (i32.store (i32.add (local.get $iter_ptr) (i32.const {entry1_key})) (i32.const {index_key}))
+    (i32.store (i32.add (local.get $iter_ptr) (i32.const {entry1_value})) (i32.const {zero_number}))
+    (i32.store (i32.add (local.get $iter_ptr) (i32.const {entry2_key})) (i32.const {kind_key}))
+    (i32.store (i32.add (local.get $iter_ptr) (i32.const {entry2_value})) (i32.const {kind_value}))
+    (i32.or (local.get $iter_ptr) (i32.const {object_tag})))
+"#,
+            symbol = symbol,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            object_flags = Layout::OBJECT_FLAGS_OFFSET,
+            object_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            iter_size = Layout::OBJECT_HEADER_SIZE + 3 * Layout::OBJECT_ENTRY_SIZE,
+            internal_flags = internal_flags,
+            entry0_key = Layout::OBJECT_ENTRIES_OFFSET,
+            entry0_value = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
+            entry1_key = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE,
+            entry1_value = Layout::OBJECT_ENTRIES_OFFSET
+                + Layout::OBJECT_ENTRY_SIZE
+                + Layout::OBJECT_VALUE_OFFSET,
+            entry2_key = Layout::OBJECT_ENTRIES_OFFSET + 2 * Layout::OBJECT_ENTRY_SIZE,
+            entry2_value = Layout::OBJECT_ENTRIES_OFFSET
+                + 2 * Layout::OBJECT_ENTRY_SIZE
+                + Layout::OBJECT_VALUE_OFFSET,
+            array_key = array_key,
+            index_key = index_key,
+            kind_key = kind_key,
+            zero_number = ValueTag::encode_number(0),
+            kind_value = ValueTag::encode_number(kind),
+        ));
+    }
+
     pub(crate) fn emit_array_with(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -260,177 +313,124 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_array_values(&self, wat: &mut String) {
-        wat.push_str(&format!(
-            r#"
-  (func $array_values (param $arr i32) (result i32)
-    (local $obj i32)
-    (local $tag i32)
-    (local $len i32)
-    (local $alloc_size i32)
-    (local $result_ptr i32)
-    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
-    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
-    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
-    (local.set $len (i32.load (local.get $obj)))
-    (local.set $alloc_size
-      (i32.add (i32.const {array_header}) (i32.shl (local.get $len) (i32.const {elem_shift}))))
-    (local.set $result_ptr (call $alloc_heap (local.get $alloc_size)))
-    (call $copy (local.get $obj) (local.get $result_ptr) (local.get $alloc_size))
-    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
-"#,
-            tag_mask = ValueTag::TAG_MASK,
-            array_tag = ValueTag::ARRAY,
-            heap_mask = ValueTag::HEAP_MASK,
-            array_header = Layout::ARRAY_HEADER_SIZE,
-            elem_shift = Layout::ARRAY_ELEM_SHIFT,
-            undefined = ValueTag::UNDEFINED,
-        ));
+        self.emit_array_iterator_factory(wat, "array_values", 0);
     }
 
     pub(crate) fn emit_array_keys(&self, wat: &mut String) {
-        wat.push_str(&format!(
-            r#"
-  (func $array_keys (param $arr i32) (result i32)
-    (local $obj i32)
-    (local $tag i32)
-    (local $len i32)
-    (local $i i32)
-    (local $result_ptr i32)
-    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
-    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
-    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
-    (local.set $len (i32.load (local.get $obj)))
-    ;; Allocate new array: header + len * 4
-    (local.set $result_ptr
-      (call $alloc_heap
-        (i32.add (i32.const {array_header}) (i32.shl (local.get $len) (i32.const {elem_shift})))))
-    (i32.store (local.get $result_ptr) (local.get $len))
-    (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $len))
-    (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
-    (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
-    ;; Set presence bitmap (dense: bits 0..len-1 = 1)
-    (block $presence
-      (if (i32.eqz (local.get $len))
-        (then
-          (i32.store (i32.add (local.get $result_ptr) (i32.const 16)) (i32.const 0))
-          (br $presence)))
-      (if (i32.gt_u (local.get $len) (i32.const 31))
-        (then
-          (i32.store (i32.add (local.get $result_ptr) (i32.const 16)) (i32.const -1))
-          (br $presence)))
-      (i32.store
-        (i32.add (local.get $result_ptr) (i32.const 16))
-        (i32.sub (i32.shl (i32.const 1) (local.get $len)) (i32.const 1))))
-    ;; Fill with indices 0, 1, 2, ..., len-1 (tagged as numbers)
-    (local.set $i (i32.const {zero}))
-    (block $loop_done
-      (loop $loop
-        (br_if $loop_done (i32.ge_u (local.get $i) (local.get $len)))
-        (i32.store
-          (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header})
-            (i32.shl (local.get $i) (i32.const {elem_shift}))))
-          (i32.or (i32.shl (local.get $i) (i32.const {number_shift})) (i32.const {number_tag})))
-        (local.set $i (i32.add (local.get $i) (i32.const {one})))
-        (br $loop)))
-    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
-"#,
-            tag_mask = ValueTag::TAG_MASK,
-            array_tag = ValueTag::ARRAY,
-            heap_mask = ValueTag::HEAP_MASK,
-            array_header = Layout::ARRAY_HEADER_SIZE,
-            elem_shift = Layout::ARRAY_ELEM_SHIFT,
-            number_shift = ValueTag::NUMBER_SHIFT,
-            number_tag = ValueTag::NUMBER,
-            zero = RuntimeConst::ZERO,
-            one = RuntimeConst::ONE,
-            undefined = ValueTag::UNDEFINED,
-        ));
+        self.emit_array_iterator_factory(wat, "array_keys", 1);
     }
 
     pub(crate) fn emit_array_entries(&self, wat: &mut String) {
+        self.emit_array_iterator_factory(wat, "array_entries", 2);
+    }
+
+    pub(crate) fn emit_array_iterator_next(&self, wat: &mut String) {
+        let value_key = self.string_value("value");
+        let done_key = self.string_value("done");
         wat.push_str(&format!(
             r#"
-  (func $array_entries (param $arr i32) (result i32)
-    (local $obj i32)
+  (func $array_iterator_next (param $iter i32) (result i32)
+    (local $iter_base i32)
+    (local $arr i32)
+    (local $arr_base i32)
     (local $tag i32)
     (local $len i32)
-    (local $i i32)
+    (local $index_tag i32)
+    (local $index i32)
+    (local $kind i32)
+    (local $next_value i32)
+    (local $done i32)
     (local $result_ptr i32)
     (local $pair_ptr i32)
-    (local $val i32)
+    (local.set $tag (i32.and (local.get $iter) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $iter_base (i32.and (local.get $iter) (i32.const {heap_mask})))
+    (local.set $arr (i32.load (i32.add (local.get $iter_base) (i32.const {entry0_value}))))
     (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
-    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
-    (local.set $len (i32.load (local.get $obj)))
-    ;; Allocate result array: header + len * 4
+    (local.set $arr_base (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $arr_base)))
+    (local.set $index_tag (i32.load (i32.add (local.get $iter_base) (i32.const {entry1_value}))))
+    (local.set $index (i32.shr_s (local.get $index_tag) (i32.const {number_shift})))
+    (local.set $kind
+      (i32.shr_s
+        (i32.load (i32.add (local.get $iter_base) (i32.const {entry2_value})))
+        (i32.const {number_shift})))
+    (local.set $next_value (i32.const {undefined}))
+    (local.set $done (i32.const {true}))
+    (if (i32.lt_u (local.get $index) (local.get $len))
+      (then
+        (local.set $done (i32.const {false}))
+        (local.set $next_value (call $array_get (local.get $arr) (local.get $index_tag)))
+        (if (i32.eq (local.get $kind) (i32.const 1))
+          (then
+            (local.set $next_value (local.get $index_tag))))
+        (if (i32.eq (local.get $kind) (i32.const 2))
+          (then
+            (local.set $pair_ptr
+              (call $alloc_heap
+                (i32.add (i32.const {array_header}) (i32.shl (i32.const 2) (i32.const {elem_shift})))))
+            (i32.store (local.get $pair_ptr) (i32.const 2))
+            (i32.store (i32.add (local.get $pair_ptr) (i32.const {array_capacity})) (i32.const 2))
+            (i32.store (i32.add (local.get $pair_ptr) (i32.const {array_presence_count})) (i32.const 1))
+            (i32.store (i32.add (local.get $pair_ptr) (i32.const {array_elements_offset})) (i32.const {array_header}))
+            (i32.store (i32.add (local.get $pair_ptr) (i32.const {array_presence_words})) (i32.const 3))
+            (i32.store (i32.add (local.get $pair_ptr) (i32.const {array_header})) (local.get $index_tag))
+            (i32.store
+              (i32.add (local.get $pair_ptr) (i32.add (i32.const {array_header}) (i32.const 4)))
+              (local.get $next_value))
+            (local.set $next_value (i32.or (local.get $pair_ptr) (i32.const {array_tag})))))
+        (i32.store
+          (i32.add (local.get $iter_base) (i32.const {entry1_value}))
+          (i32.or
+            (i32.shl (i32.add (local.get $index) (i32.const {one})) (i32.const {number_shift}))
+            (i32.const {number_tag})))))
     (local.set $result_ptr
       (call $alloc_heap
-        (i32.add (i32.const {array_header}) (i32.shl (local.get $len) (i32.const {elem_shift})))))
-    (i32.store (local.get $result_ptr) (local.get $len))
-    (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $len))
-    (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
-    (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
-    ;; Set presence bitmap (dense: bits 0..len-1 = 1)
-    (block $presence
-      (if (i32.eqz (local.get $len))
-        (then
-          (i32.store (i32.add (local.get $result_ptr) (i32.const 16)) (i32.const 0))
-          (br $presence)))
-      (if (i32.gt_u (local.get $len) (i32.const 31))
-        (then
-          (i32.store (i32.add (local.get $result_ptr) (i32.const 16)) (i32.const -1))
-          (br $presence)))
-      (i32.store
-        (i32.add (local.get $result_ptr) (i32.const 16))
-        (i32.sub (i32.shl (i32.const 1) (local.get $len)) (i32.const 1))))
-    ;; For each index, create a [index, value] pair array
-    (local.set $i (i32.const {zero}))
-    (block $loop_done
-      (loop $loop
-        (br_if $loop_done (i32.ge_u (local.get $i) (local.get $len)))
-        (local.set $val
-          (i32.load
-            (i32.add (local.get $obj) (i32.add (i32.const {array_header})
-              (i32.shl (local.get $i) (i32.const {elem_shift}))))))
-        ;; Allocate 2-element pair array
-        (local.set $pair_ptr
-          (call $alloc_heap
-            (i32.add (i32.const {array_header}) (i32.shl (i32.const 2) (i32.const {elem_shift})))))
-        (i32.store (local.get $pair_ptr) (i32.const 2))
-        (i32.store (i32.add (local.get $pair_ptr) (i32.const 4)) (i32.const 2))
-        (i32.store (i32.add (local.get $pair_ptr) (i32.const 8)) (i32.const 1))
-        (i32.store (i32.add (local.get $pair_ptr) (i32.const 12)) (i32.const {array_header}))
-        ;; Pair presence: 2 elements, bits 0 and 1 set
-        (i32.store (i32.add (local.get $pair_ptr) (i32.const 16)) (i32.const 3))
-        ;; pair[0] = i (tagged number)
-        (i32.store
-          (i32.add (local.get $pair_ptr) (i32.add (i32.const {array_header})
-            (i32.shl (i32.const 0) (i32.const {elem_shift}))))
-          (i32.or (i32.shl (local.get $i) (i32.const {number_shift})) (i32.const {number_tag})))
-        ;; pair[1] = val
-        (i32.store
-          (i32.add (local.get $pair_ptr) (i32.add (i32.const {array_header})
-            (i32.shl (i32.const 1) (i32.const {elem_shift}))))
-          (local.get $val))
-        ;; result[i] = pair_ptr | ARRAY_TAG
-        (i32.store
-          (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header})
-            (i32.shl (local.get $i) (i32.const {elem_shift}))))
-          (i32.or (local.get $pair_ptr) (i32.const {array_tag})))
-        (local.set $i (i32.add (local.get $i) (i32.const {one})))
-        (br $loop)))
-    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+        (i32.const {result_size})))
+    (i32.store (local.get $result_ptr) (i32.const 2))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {object_flags})) (i32.const 0))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {object_proto})) (i32.const 0))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {result_value_key})) (i32.const {value_key}))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {result_value_slot})) (local.get $next_value))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {result_done_key})) (i32.const {done_key}))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {result_done_slot})) (local.get $done))
+    (i32.or (local.get $result_ptr) (i32.const {object_tag})))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             array_tag = ValueTag::ARRAY,
+            object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             array_header = Layout::ARRAY_HEADER_SIZE,
+            array_capacity = Layout::ARRAY_CAPACITY_OFFSET,
+            array_presence_count = Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+            array_elements_offset = Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
+            array_presence_words = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            object_flags = Layout::OBJECT_FLAGS_OFFSET,
+            object_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            entry0_value = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
+            entry1_value = Layout::OBJECT_ENTRIES_OFFSET
+                + Layout::OBJECT_ENTRY_SIZE
+                + Layout::OBJECT_VALUE_OFFSET,
+            entry2_value = Layout::OBJECT_ENTRIES_OFFSET
+                + 2 * Layout::OBJECT_ENTRY_SIZE
+                + Layout::OBJECT_VALUE_OFFSET,
+            result_size = Layout::OBJECT_HEADER_SIZE + 2 * Layout::OBJECT_ENTRY_SIZE,
+            result_value_key = Layout::OBJECT_ENTRIES_OFFSET,
+            result_value_slot = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
+            result_done_key = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE,
+            result_done_slot = Layout::OBJECT_ENTRIES_OFFSET
+                + Layout::OBJECT_ENTRY_SIZE
+                + Layout::OBJECT_VALUE_OFFSET,
             number_shift = ValueTag::NUMBER_SHIFT,
             number_tag = ValueTag::NUMBER,
-            zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,
+            false = ValueTag::FALSE,
+            true = ValueTag::TRUE,
+            value_key = value_key,
+            done_key = done_key,
         ));
     }
 
