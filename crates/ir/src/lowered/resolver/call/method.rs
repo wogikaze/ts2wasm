@@ -1306,6 +1306,12 @@ impl super::super::Resolver {
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Object") && method == "groupBy" {
+            // ObjectGroupByCallback: statically visible array + arrow callback
+            // lowers to an object bucket-building loop.
+            return Ok(Some(self.lower_object_group_by_callback(args, span)?));
+        }
+
         if let ResolvedExpr::Ident(receiver_name) = object
             && let Ok(obj_local) = self.resolve_local(receiver_name)
             && let Some(method_id) = self

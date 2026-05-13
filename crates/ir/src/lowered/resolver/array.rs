@@ -4,6 +4,7 @@ use super::{
 use crate::builtin_resolved::{
     ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedParam, ResolvedStmt,
 };
+use crate::lowered::object_kernel;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
@@ -837,6 +838,208 @@ impl super::Resolver {
             param_count,
             init_expr,
         )
+    }
+
+    pub(super) fn lower_object_group_by_callback(
+        &mut self,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let [items, callback] = args else {
+            return Err(Diagnostic {
+                code: DiagCode::ArityMismatch,
+                message: "Object.groupBy requires items and callback arguments".to_owned(),
+                span: Some(span),
+                phase: None,
+            });
+        };
+        if !crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, items) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message:
+                    "issue-5004: Object.groupBy currently supports statically known array inputs"
+                        .to_owned(),
+                span: Some(span),
+                phase: None,
+            });
+        }
+        let ResolvedExpr::ArrowFn {
+            params,
+            body,
+            body_stmts,
+            ..
+        } = callback
+        else {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-5004: Object.groupBy currently supports arrow callbacks".to_owned(),
+                span: Some(span),
+                phase: None,
+            });
+        };
+        if params.len() > 3 {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-5004: Object.groupBy callbacks support up to 3 parameters"
+                    .to_owned(),
+                span: Some(span),
+                phase: None,
+            });
+        }
+        let LoweredExpr::ArrowFn {
+            func_id, captures, ..
+        } = self.lower_arrow_fn(params, body, body_stmts)?
+        else {
+            return Err(unsupported_array_map_diagnostic(Some(span)));
+        };
+
+        let receiver = self.lower_expr(items)?;
+        let mut stmts = Vec::new();
+        let receiver_local = match receiver {
+            LoweredExpr::Local(id, _) => id,
+            lowered => {
+                let temp = self.alloc_temp();
+                stmts.push(LoweredStmt::Let(
+                    temp,
+                    lowered,
+                    Span::generated("object_group_by_items"),
+                ));
+                temp
+            }
+        };
+
+        let len = self.alloc_temp();
+        let result = self.alloc_temp();
+        let i = self.alloc_temp();
+        stmts.push(LoweredStmt::Let(
+            len,
+            LoweredExpr::GetLength(
+                Box::new(LoweredExpr::Local(receiver_local, Span::generated("local"))),
+                Span::generated("get_length"),
+            ),
+            Span::generated("let_stmt"),
+        ));
+        stmts.push(LoweredStmt::Let(
+            result,
+            LoweredExpr::ObjectNew {
+                props: Vec::new(),
+                non_enumerable: 0,
+                span: Span::generated("object_new"),
+            },
+            Span::generated("let_stmt"),
+        ));
+        stmts.push(LoweredStmt::Let(
+            i,
+            LoweredExpr::Number(0, Span::generated("num")),
+            Span::generated("let_stmt"),
+        ));
+
+        let elem = self.alloc_temp();
+        let key = self.alloc_temp();
+        let group = self.alloc_temp();
+        let arr_ref = || LoweredExpr::Local(receiver_local, Span::generated("local"));
+        let result_ref = || LoweredExpr::Local(result, Span::generated("local"));
+        let elem_ref = || LoweredExpr::Local(elem, Span::generated("local"));
+        let key_ref = || LoweredExpr::Local(key, Span::generated("local"));
+        let group_ref = || LoweredExpr::Local(group, Span::generated("local"));
+
+        let mut while_body = Vec::new();
+        while_body.push(LoweredStmt::Let(
+            elem,
+            LoweredExpr::ArrayGet {
+                arr: Box::new(arr_ref()),
+                index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                span: Span::generated("array_get"),
+            },
+            Span::generated("let_stmt"),
+        ));
+        let mut call_args = vec![
+            elem_ref(),
+            LoweredExpr::Local(i, Span::generated("local")),
+            arr_ref(),
+        ]
+        .into_iter()
+        .take(params.len())
+        .collect::<Vec<_>>();
+        call_args.extend(
+            captures
+                .iter()
+                .copied()
+                .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+        );
+        while_body.push(LoweredStmt::Let(
+            key,
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(func_id),
+                args: call_args,
+                span: Span::generated("object_group_by_callback"),
+            },
+            Span::generated("let_stmt"),
+        ));
+        while_body.push(LoweredStmt::Let(
+            group,
+            object_kernel::ordinary_get_dynamic(
+                result_ref(),
+                key_ref(),
+                Span::generated("object_group_by_get"),
+            ),
+            Span::generated("let_stmt"),
+        ));
+        while_body.push(LoweredStmt::If {
+            condition: LoweredExpr::Binary {
+                left: Box::new(group_ref()),
+                op: LoweredBinaryOp::StrictEqual,
+                right: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+                span: Span::generated("binary"),
+            },
+            then_body: vec![LoweredStmt::Expr(
+                object_kernel::ordinary_set_dynamic(
+                    result_ref(),
+                    key_ref(),
+                    LoweredExpr::ArrayNew {
+                        elements: vec![elem_ref()],
+                        span: Span::generated("array_new"),
+                    },
+                    Span::generated("object_group_by_set"),
+                ),
+                Span::generated("expr_stmt"),
+            )],
+            else_body: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::ArrayPushGrow,
+                    args: vec![group_ref(), elem_ref()],
+                    span: Span::generated("runtime_call"),
+                },
+                Span::generated("expr_stmt"),
+            )],
+            span: Span::generated("if_stmt"),
+        });
+        while_body.push(LoweredStmt::Assign(
+            i,
+            LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                op: LoweredBinaryOp::Add,
+                right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                span: Span::generated("binary"),
+            },
+            Span::generated("assign"),
+        ));
+        stmts.push(LoweredStmt::While {
+            condition: LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                op: LoweredBinaryOp::Less,
+                right: Box::new(LoweredExpr::Local(len, Span::generated("local"))),
+                span: Span::generated("binary"),
+            },
+            body: while_body,
+            span: Span::generated("while"),
+        });
+
+        Ok(LoweredExpr::Block {
+            stmts,
+            result: Box::new(result_ref()),
+            span: Span::generated("object_group_by"),
+        })
     }
 
     /// Lower a callback method on a variable array (Ident receiver).

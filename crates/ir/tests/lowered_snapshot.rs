@@ -138,6 +138,14 @@ fn lowered_stmt_contains_runtime_call(stmt: &LoweredStmt, runtime: RuntimeFn) ->
         LoweredStmt::Block(stmts, _) => stmts
             .iter()
             .any(|stmt| lowered_stmt_contains_runtime_call(stmt, runtime)),
+        LoweredStmt::While {
+            condition, body, ..
+        } => {
+            lowered_expr_contains_runtime_call(condition, runtime)
+                || body
+                    .iter()
+                    .any(|stmt| lowered_stmt_contains_runtime_call(stmt, runtime))
+        }
         LoweredStmt::If {
             condition,
             then_body,
@@ -208,6 +216,14 @@ fn lowered_stmt_contains_user_call_with_local_receiver(stmt: &LoweredStmt) -> bo
         LoweredStmt::Block(stmts, _) => stmts
             .iter()
             .any(lowered_stmt_contains_user_call_with_local_receiver),
+        LoweredStmt::While {
+            condition, body, ..
+        } => {
+            lowered_expr_contains_user_call_with_local_receiver(condition)
+                || body
+                    .iter()
+                    .any(lowered_stmt_contains_user_call_with_local_receiver)
+        }
         LoweredStmt::If {
             condition,
             then_body,
@@ -443,6 +459,30 @@ fn lowered_snapshot_object_method_super_property_uses_object_prototype() {
             .iter()
             .any(lowered_stmt_contains_user_call_with_local_receiver),
         "expected object literal method call to dispatch with the object receiver"
+    );
+}
+
+#[test]
+fn lowered_snapshot_object_group_by_arrow_callback_builds_buckets() {
+    let program = parse_resolve_lower(
+        r#"
+        let grouped = Object.groupBy([1, 2, 3], (value) => value % 2);
+        "#,
+    );
+
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(|stmt| { lowered_stmt_contains_runtime_call(stmt, RuntimeFn::ArrayPushGrow) }),
+        "expected Object.groupBy to append repeated-key values into bucket arrays"
+    );
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(lowered_stmt_contains_user_call_with_local_receiver),
+        "expected Object.groupBy to call the static arrow callback"
     );
 }
 
