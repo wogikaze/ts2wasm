@@ -2015,6 +2015,16 @@ fn build_smoke_arraybuffer_dataview_int16() {
     );
 }
 
+#[test]
+fn build_smoke_arraybuffer_dataview_uint16() {
+    let result = run_fixture("builtins-and-io/arraybuffer-dataview-uint16.ts");
+    assert!(
+        result.is_ok(),
+        "DataView uint16 should build successfully: {:?}",
+        result.err()
+    );
+}
+
 // Well-known symbol properties — ID 211 (W5, P2)
 #[test]
 fn build_smoke_well_known_symbol_runtime() {

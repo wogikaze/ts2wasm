@@ -1597,6 +1597,11 @@ fn arraybuffer_dataview_int16_matches_node_output() {
 }
 
 #[test]
+fn arraybuffer_dataview_uint16_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/arraybuffer-dataview-uint16.ts");
+}
+
+#[test]
 fn symbol_constructor_basic_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/symbol-constructor-basic.ts");
 }

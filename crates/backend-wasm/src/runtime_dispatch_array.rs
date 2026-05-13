@@ -58,6 +58,8 @@ impl WatEmitter<'_> {
             RuntimeFn::DataViewNew => self.emit_dataview_new(wat),
             RuntimeFn::DataViewGetInt16 => self.emit_dataview_get_int16(wat),
             RuntimeFn::DataViewSetInt16 => self.emit_dataview_set_int16(wat),
+            RuntimeFn::DataViewGetUint16 => self.emit_dataview_get_uint16(wat),
+            RuntimeFn::DataViewSetUint16 => self.emit_dataview_set_uint16(wat),
             RuntimeFn::DataViewGetInt32 => self.emit_dataview_get_int32(wat),
             RuntimeFn::DataViewSetInt32 => self.emit_dataview_set_int32(wat),
             RuntimeFn::DataViewGetFloat64 => self.emit_dataview_get_float64(wat),

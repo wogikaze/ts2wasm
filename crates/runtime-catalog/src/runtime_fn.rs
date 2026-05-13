@@ -155,6 +155,8 @@ pub enum RuntimeFn {
     DataViewNew,
     DataViewGetInt16,
     DataViewSetInt16,
+    DataViewGetUint16,
+    DataViewSetUint16,
     DataViewGetInt32,
     DataViewSetInt32,
     DataViewGetFloat64,
@@ -1193,6 +1195,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DataViewNew" => Some(RuntimeFn::DataViewNew),
         "DataViewGetInt16" => Some(RuntimeFn::DataViewGetInt16),
         "DataViewSetInt16" => Some(RuntimeFn::DataViewSetInt16),
+        "DataViewGetUint16" => Some(RuntimeFn::DataViewGetUint16),
+        "DataViewSetUint16" => Some(RuntimeFn::DataViewSetUint16),
         "DataViewGetInt32" => Some(RuntimeFn::DataViewGetInt32),
         "DataViewSetInt32" => Some(RuntimeFn::DataViewSetInt32),
         "DataViewGetFloat64" => Some(RuntimeFn::DataViewGetFloat64),
@@ -1650,6 +1654,8 @@ impl RuntimeFn {
             | Self::DataViewNew
             | Self::DataViewGetInt16
             | Self::DataViewSetInt16
+            | Self::DataViewGetUint16
+            | Self::DataViewSetUint16
             | Self::DataViewGetInt32
             | Self::DataViewSetInt32
             | Self::DataViewGetFloat64
@@ -1747,6 +1753,7 @@ impl RuntimeFn {
             | Self::ArrayPush
             | Self::ArrayPushGrow
             | Self::DataViewGetInt16
+            | Self::DataViewGetUint16
             | Self::DataViewGetInt32
             | Self::DataViewGetFloat64
             | Self::SymbolToPrimitive
@@ -1766,6 +1773,7 @@ impl RuntimeFn {
             // 3 params, 0 results
             Self::ModuleExportsSet
             | Self::DataViewSetInt16
+            | Self::DataViewSetUint16
             | Self::DataViewSetInt32
             | Self::DataViewSetFloat64 => RuntimeSignature {
                 params: 3,
@@ -1917,6 +1925,8 @@ impl RuntimeFn {
             Self::DataViewNew,
             Self::DataViewGetInt16,
             Self::DataViewSetInt16,
+            Self::DataViewGetUint16,
+            Self::DataViewSetUint16,
             Self::DataViewGetInt32,
             Self::DataViewSetInt32,
             Self::DataViewGetFloat64,
@@ -2247,6 +2257,8 @@ impl RuntimeFn {
             Self::DataViewNew,
             Self::DataViewGetInt16,
             Self::DataViewSetInt16,
+            Self::DataViewGetUint16,
+            Self::DataViewSetUint16,
             Self::DataViewGetInt32,
             Self::DataViewSetInt32,
             Self::DataViewGetFloat64,
