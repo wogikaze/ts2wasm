@@ -1561,6 +1561,39 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(crate) fn emit_string_code_point_at(&self, wat: &mut String) {
+        // In UTF-8 encoding, codePointAt is equivalent to charCodeAt
+        // since we decode full code points (not UTF-16 surrogates).
+        self.emit_utf8_decode_cp_at_byte(wat);
+        self.emit_string_code_point_length(wat);
+        wat.push_str(&format!(
+            r#"
+  (func $string_code_point_at (param $s i32) (param $index i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $idx i32)
+    (local $byte_pos i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $len (call $utf8_cp_count (local.get $obj)))
+    (local.set $idx (i32.shr_s (local.get $index) (i32.const {number_shift})))
+    ;; Handle negative index using CP length
+    (if (i32.lt_s (local.get $idx) (i32.const {zero}))
+      (then (local.set $idx (i32.add (local.get $len) (local.get $idx)))))
+    ;; Clamp to [0, len)
+    (if (i32.lt_s (local.get $idx) (i32.const {zero})) (then (local.set $idx (i32.const {zero}))))
+    (if (i32.ge_u (local.get $idx) (local.get $len)) (then (return (i32.const {undefined}))))
+    ;; Convert code point index to byte index and decode
+    (local.set $byte_pos (call $utf8_cp_to_byte_index (local.get $obj) (local.get $idx)))
+    (return (call $utf8_decode_cp_at_byte (local.get $obj) (local.get $byte_pos))))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            undefined = ValueTag::UNDEFINED,
+            zero = RuntimeConst::ZERO,
+        ));
+    }
+
     pub(crate) fn emit_string_from_char_code(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

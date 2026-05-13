@@ -30,7 +30,7 @@ impl WatEmitter<'_> {
             RuntimeFn::StringToUpperCase => self.emit_string_to_upper_case(wat),
             RuntimeFn::StringToLowerCase => self.emit_string_to_lower_case(wat),
             RuntimeFn::StringCharCodeAt => self.emit_string_char_code_at(wat),
-            RuntimeFn::StringCodePointAt => self.emit_string_at(wat),
+            RuntimeFn::StringCodePointAt => self.emit_string_code_point_at(wat),
             RuntimeFn::StringIsWellFormed => self.emit_string_is_well_formed(wat),
             RuntimeFn::StringToWellFormed => self.emit_string_to_well_formed(wat),
             RuntimeFn::StringFromCharCode => self.emit_string_from_char_code(wat),

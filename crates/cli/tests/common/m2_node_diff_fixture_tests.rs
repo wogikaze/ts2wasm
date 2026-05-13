@@ -1506,6 +1506,11 @@ fn string_char_code_at_matches_node() {
 }
 
 #[test]
+fn string_code_point_at_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-code-point-at.ts");
+}
+
+#[test]
 fn string_from_char_code_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/string-from-char-code.ts");
 }
@@ -4126,4 +4131,9 @@ fn fncsem_computed_call_unsupported_reports_unsupported_syntax() {
         "fixtures/semantic/functions/dynamic-call-unsupported.ts",
         "only identifier calls are supported",
     );
+}
+
+#[test]
+fn string_static_methods_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-static.ts");
 }
