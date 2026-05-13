@@ -1530,6 +1530,11 @@ fn string_replace_all_matches_node() {
 }
 
 #[test]
+fn string_split_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-split.ts");
+}
+
+#[test]
 fn string_indexing_fixture_is_not_marked_as_semantic_pass() {
     assert_fixture_not_semantically_pass("string", "fixtures/builtins-and-io/string-indexing.ts");
 }
