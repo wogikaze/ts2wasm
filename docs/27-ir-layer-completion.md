@@ -44,8 +44,8 @@ Source
 |---|---|---|
 | HIR | `crates/ir/src/semantic.rs` に `HirProgram` / `HirStmt` / `HirExpr`、`lower_to_hir`、`validate_hir` がある。初期 slice は実装済み。 | 対応構文を P16 semantic correctness matrix と同期し、UnsupportedSyntax 境界を fixture 化する。 |
 | HIR → MIR | `crates/ir/src/lowered/hir_to_mir.rs` の `lower_hir_to_mir` が現行 HIR variant を `LoweredProgram` 互換に下ろし、`lower_hir_to_mir_native` が native `MirProgram` を返す。 | Span/metadata の損失、method call runtime intent、default pipeline switch を詰める。 |
-| MIR | `crates/ir/src/lowered/mir.rs` に独立した `MirProgram` / `MirFunction` / `MirStmt` / `MirExpr` がある。`From<LoweredProgram>` / `From<MirProgram>` bridge、native `validate_mir`、`Validated<MirProgram>::new_mir` は operational。 | native MIR emitter は未完。 |
-| MIR backend path | `emit_mir` / `emit_mir_wat` があり、`Validated<MirProgram>` を受け取れる。 | 現状は `mir_emit` bridge が standard emitter に委譲する。native MIR emitter は未完。 |
+| MIR | `crates/ir/src/lowered/mir.rs` に独立した `MirProgram` / `MirFunction` / `MirStmt` / `MirExpr` がある。`From<LoweredProgram>` / `From<MirProgram>` bridge、native `validate_mir`、`Validated<MirProgram>::new_mir` は operational。 | native MIR emitter は small subset から開始済み。 |
+| MIR backend path | `emit_mir` / `emit_mir_wat` があり、`Validated<MirProgram>` を受け取れる。 | `mir_emit` は constants / locals / expression statements / `if` / `while` / function `return` / selected runtime call / exact-arity user calls を native MIR から直接 WAT に emit し、subset 外は明示的な `emit_mir_wat_via_lowered_compat` bridge に委譲する。default pipeline には未接続。 |
 | WasmIR | `backend-core` に typed `WasmInstr` / `WasmModule` があり、`WatWriter::emit_module` と feature-gated `wasm-encoder` path がある。 | main build pipeline の全面入力にはまだなっていない。raw WAT legacy helper を段階移行する。 |
 
 このため、完了判定は「IR 名が存在するか」ではなく、**default pipeline が validated phase boundary を通り、backend が native MIR / typed WasmIR を primary input として使えるか**で判断する。

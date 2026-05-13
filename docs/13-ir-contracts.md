@@ -312,7 +312,7 @@ pub enum MirStmt { ... }
 pub enum MirExpr { ... }
 ```
 
-`Validated<MirProgram>`、`validate_mir`、`emit_mir_wat` の phase boundary は operational になっている。`validate_mir` は native MIR の local / function / module / class reference / control-flow invariants を直接検査する。一方で、`emit_mir_wat` はまだ `LoweredProgram` compatibility bridge に委譲するため、native MIR emitter が完成したことを意味しない。
+`Validated<MirProgram>`、`validate_mir`、`emit_mir_wat` の phase boundary は operational になっている。`validate_mir` は native MIR の local / function / module / class reference / control-flow invariants を直接検査する。`emit_mir_wat` は constants / locals / expression statements / `if` / `while` / function `return` / selected runtime call / exact-arity user calls の small subset を native MIR から直接 WAT に emit し、subset 外は `emit_mir_wat_via_lowered_compat` で `LoweredProgram` compatibility bridge に明示委譲する。
 
 ### 責務
 
@@ -325,7 +325,7 @@ pub enum MirExpr { ... }
 * `lower_hir_to_mir` は `HirProgram` を `LoweredProgram` compatibility path に変換する。
 * `lower_hir_to_mir_native` は `HirProgram` を native `MirProgram` に変換し、compatibility path と snapshot parity を保つ。
 * `Validated<MirProgram>::new_mir` は `validate_mir` を通して invariant violation を fatal にする。
-* backend の `emit_mir_wat` は `Validated<MirProgram>` を受け取るが、現状は standard `LoweredProgram` emitter への委譲 bridge である。
+* backend の `emit_mir_wat` は `Validated<MirProgram>` を受け取り、native MIR subset を直接 emit する。subset 外は `emit_mir_wat_via_lowered_compat` で standard `LoweredProgram` emitter に委譲する。
 
 ### Native MIR の完成条件
 

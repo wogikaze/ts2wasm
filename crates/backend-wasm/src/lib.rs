@@ -60,8 +60,8 @@ pub fn emit_wat(program: &Validated<LoweredProgram>) -> Result<String, Diagnosti
 }
 
 pub fn emit_mir_wat(program: &Validated<MirProgram>) -> Result<String, Diagnostic> {
-    // Feature-gated MIR emission path. Delegates through MirProgram → LoweredProgram
-    // conversion to the standard emitter until native MIR emission is implemented.
+    // Feature-gated MIR emission path. Native MIR subset emission is attempted
+    // first; unsupported MIR remains on the explicit compatibility fallback.
     mir_emit::emit_mir_wat_validated(program)
 }
 
