@@ -1476,6 +1476,31 @@ fn array_to_reversed_matches_node() {
 }
 
 #[test]
+fn array_to_spliced_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-to-spliced.ts");
+}
+
+#[test]
+fn array_to_sorted_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-to-sorted.ts");
+}
+
+#[test]
+fn array_is_array_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-is-array.ts");
+}
+
+#[test]
+fn array_to_string_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-to-string.ts");
+}
+
+#[test]
+fn array_from_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-from.ts");
+}
+
+#[test]
 fn json_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/json-parse-array.ts",
