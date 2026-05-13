@@ -572,12 +572,106 @@ fn collect_generator_function_yields(
             ..
         } = stmt
         {
-            let mut values = Vec::new();
-            collect_generator_yield_values(body, &mut values);
+            let values = evaluate_straight_line_generator_yields(body).unwrap_or_else(|| {
+                let mut values = Vec::new();
+                collect_generator_yield_values(body, &mut values);
+                values
+            });
             yields.insert(name.clone(), values);
         }
     }
     yields
+}
+
+fn evaluate_straight_line_generator_yields(stmts: &[ResolvedStmt]) -> Option<Vec<ResolvedExpr>> {
+    let mut evaluator = GeneratorYieldEvaluator::default();
+    evaluator.eval_stmts(stmts)?;
+    Some(evaluator.yields)
+}
+
+#[derive(Default)]
+struct GeneratorYieldEvaluator {
+    locals: HashMap<String, ResolvedExpr>,
+    yields: Vec<ResolvedExpr>,
+}
+
+impl GeneratorYieldEvaluator {
+    fn eval_stmts(&mut self, stmts: &[ResolvedStmt]) -> Option<()> {
+        for stmt in stmts {
+            self.eval_stmt(stmt)?;
+        }
+        Some(())
+    }
+
+    fn eval_stmt(&mut self, stmt: &ResolvedStmt) -> Option<()> {
+        match stmt {
+            ResolvedStmt::Let(name, expr) | ResolvedStmt::Assign(name, expr) => {
+                let value = self.eval_expr(expr)?;
+                self.locals.insert(name.clone(), value);
+                Some(())
+            }
+            ResolvedStmt::Expr(ResolvedExpr::Assign { name, expr }) => {
+                let value = self.eval_expr(expr)?;
+                self.locals.insert(name.clone(), value);
+                Some(())
+            }
+            ResolvedStmt::Expr(ResolvedExpr::Yield { expr }) => {
+                let value = expr
+                    .as_ref()
+                    .map(|expr| self.eval_expr(expr))
+                    .unwrap_or(Some(ResolvedExpr::Undefined))?;
+                self.yields.push(value);
+                Some(())
+            }
+            ResolvedStmt::Block { statements } => self.eval_stmts(statements),
+            _ => None,
+        }
+    }
+
+    fn eval_expr(&self, expr: &ResolvedExpr) -> Option<ResolvedExpr> {
+        match expr {
+            ResolvedExpr::Number(_)
+            | ResolvedExpr::DecimalNumber(_)
+            | ResolvedExpr::BigIntLiteral { .. }
+            | ResolvedExpr::String(_)
+            | ResolvedExpr::Bool(_)
+            | ResolvedExpr::Null
+            | ResolvedExpr::Undefined => Some(expr.clone()),
+            ResolvedExpr::Ident(name) => self.locals.get(name).cloned(),
+            ResolvedExpr::Binary { left, op, right } => self.eval_binary_expr(left, *op, right),
+            _ => None,
+        }
+    }
+
+    fn eval_binary_expr(
+        &self,
+        left: &ResolvedExpr,
+        op: BinaryOp,
+        right: &ResolvedExpr,
+    ) -> Option<ResolvedExpr> {
+        let left = self.eval_expr(left)?;
+        let right = self.eval_expr(right)?;
+        match (left, op, right) {
+            (ResolvedExpr::Number(left), BinaryOp::Add, ResolvedExpr::Number(right)) => {
+                Some(ResolvedExpr::Number(left.checked_add(right)?))
+            }
+            (ResolvedExpr::Number(left), BinaryOp::Subtract, ResolvedExpr::Number(right)) => {
+                Some(ResolvedExpr::Number(left.checked_sub(right)?))
+            }
+            (ResolvedExpr::Number(left), BinaryOp::Multiply, ResolvedExpr::Number(right)) => {
+                Some(ResolvedExpr::Number(left.checked_mul(right)?))
+            }
+            (ResolvedExpr::Number(left), BinaryOp::Divide, ResolvedExpr::Number(right))
+                if right != 0 =>
+            {
+                Some(ResolvedExpr::Number(left / right))
+            }
+            (ResolvedExpr::String(left), BinaryOp::Add, ResolvedExpr::String(right)) => {
+                Some(ResolvedExpr::String(format!("{left}{right}")))
+            }
+            _ => None,
+        }
+    }
 }
 
 fn collect_generator_yield_values(stmts: &[ResolvedStmt], values: &mut Vec<ResolvedExpr>) {

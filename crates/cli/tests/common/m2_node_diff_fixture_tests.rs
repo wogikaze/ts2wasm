@@ -1746,6 +1746,11 @@ fn generator_basic_matches_node_output() {
 }
 
 #[test]
+fn generator_local_state_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/generator-local-state.ts");
+}
+
+#[test]
 fn proxy_traps_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/proxy-handler-traps-unsupported.ts");
 }

@@ -225,6 +225,7 @@ directories:
     - eval-unsupported.ts
     - function-declaration-value.ts
     - generator-basic.ts
+    - generator-local-state.ts
     - global-0-args.ts
     - global-decode-uri.ts
     - global-encode-uri.ts
