@@ -365,6 +365,7 @@ pub(super) fn span_of_expr(expr: &Expr) -> Option<Span> {
         | Expr::Bool { span, .. }
         | Expr::Null { span }
         | Expr::NewTarget { span }
+        | Expr::ImportMeta { span }
         | Expr::This { span }
         | Expr::Undefined { span }
         | Expr::Await { span, .. }

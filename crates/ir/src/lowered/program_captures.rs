@@ -8,7 +8,7 @@ pub(crate) fn collect_arrow_captures(
 ) {
     match expr {
         ResolvedExpr::This { .. } => push_capture("this", params, captures),
-        ResolvedExpr::NewTarget { .. } => {}
+        ResolvedExpr::NewTarget { .. } | ResolvedExpr::ImportMeta { .. } => {}
         ResolvedExpr::Ident(name) => push_capture(name, params, captures),
         ResolvedExpr::Await { expr } => {
             collect_arrow_captures(expr, params, captures);
@@ -501,6 +501,7 @@ pub(crate) fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bo
         | ResolvedExpr::ClassExpr { .. }
         | ResolvedExpr::This { .. }
         | ResolvedExpr::NewTarget { .. }
+        | ResolvedExpr::ImportMeta { .. }
         | ResolvedExpr::Ident(_)
         | ResolvedExpr::ModuleLoad { .. }
         | ResolvedExpr::Number(_)

@@ -52,6 +52,8 @@ pub struct LoweringCtx {
     pub functions: FunctionsContext,
     /// Module resolution state.
     pub modules: ModuleEnv,
+    /// URL/specifier for the module currently being lowered.
+    pub current_module_url: String,
     /// ECMAScript strict-mode state for the currently lowered scope.
     pub strict_mode: StrictModeContext,
 }
@@ -108,6 +110,7 @@ impl LoweringCtx {
             captures: CaptureEnv::new(),
             functions: FunctionsContext::new(),
             modules: ModuleEnv::new(),
+            current_module_url: "<entry>".to_owned(),
             strict_mode: StrictModeContext::default(),
         }
     }
@@ -130,6 +133,7 @@ impl LoweringCtx {
         class_private_fields: ClassPrivateFieldSlots,
         class_static_private_fields: ClassStaticPrivateFields,
         next_func_id: usize,
+        current_module_url: &str,
         is_strict_context: bool,
     ) -> Self {
         Self {
@@ -161,6 +165,7 @@ impl LoweringCtx {
                 next_func_id,
             ),
             modules: ModuleEnv::new(),
+            current_module_url: current_module_url.to_owned(),
             strict_mode: StrictModeContext { is_strict_context },
         }
     }

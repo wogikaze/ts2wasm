@@ -2119,6 +2119,22 @@ impl Parser {
             Some(SpannedToken {
                 kind: Token::Import,
                 span: import_span,
+            }) if matches!(self.peek(), Some(Token::Dot))
+                && matches!(self.peek_n(1), Some(Token::Ident(name)) if name == "meta") =>
+            {
+                self.advance(); // consume '.'
+                self.advance(); // consume 'meta'
+                let end = self.prev_span().map(|s| s.end).unwrap_or(import_span.end);
+                Ok(Expr::ImportMeta {
+                    span: Span {
+                        start: import_span.start,
+                        end,
+                    },
+                })
+            }
+            Some(SpannedToken {
+                kind: Token::Import,
+                span: import_span,
             }) if matches!(self.peek(), Some(Token::LeftParen)) => {
                 self.advance(); // consume '('
                 let expr = self.expression()?;
@@ -2360,6 +2376,7 @@ fn parser_expr_is_bigint_literal_operand(expr: &Expr) -> bool {
         | Expr::PropertyAssign { .. }
         | Expr::IndexAssign { .. }
         | Expr::NewTarget { .. }
+        | Expr::ImportMeta { .. }
         | Expr::TypeOf { .. }
         | Expr::Await { .. }
         | Expr::Yield { .. }

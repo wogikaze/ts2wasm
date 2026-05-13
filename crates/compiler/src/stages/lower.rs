@@ -915,7 +915,8 @@ fn lower_source_as_module_body(
         .map_err(|d| d.with_phase("semantic-validator"))?;
     crate::stages::validate::validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)
         .map_err(|d| d.with_phase("hir-validator"))?;
-    let lowered_module = lowered::lower_program(&resolved).map_err(|d| d.with_phase("lowering"))?;
+    let lowered_module = lowered::lower_program_with_module_url(&resolved, specifier.clone())
+        .map_err(|d| d.with_phase("lowering"))?;
 
     let statements = insert_module_export_live_binding_statements(
         lowered_module.top_level_statements,
@@ -953,7 +954,7 @@ fn lower_static_module_body_for_build(
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
     crate::stages::validate::validate_typescript_semantics_for_path(path, &resolved)?;
     crate::stages::validate::validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
-    let lowered_module = lowered::lower_program(&resolved)?;
+    let lowered_module = lowered::lower_program_with_module_url(&resolved, specifier.clone())?;
 
     let statements = insert_module_export_live_binding_statements(
         lowered_module.top_level_statements,

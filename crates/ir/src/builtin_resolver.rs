@@ -702,6 +702,7 @@ impl BigIntStaticBuiltinFolder {
                 expr: Box::new(self.fold_expr(expr)),
                 span: *span,
             },
+            Expr::ImportMeta { span } => Expr::ImportMeta { span: *span },
             Expr::Yield {
                 expr,
                 delegate,
@@ -1505,6 +1506,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::Undefined { .. } => Ok(ResolvedExpr::Undefined),
         Expr::This { span } => Ok(ResolvedExpr::This { span: *span }),
         Expr::NewTarget { span } => Ok(ResolvedExpr::NewTarget { span: *span }),
+        Expr::ImportMeta { span } => Ok(ResolvedExpr::ImportMeta { span: *span }),
         Expr::Await { expr, .. } => {
             // Resolve the inner expression and wrap in Await
             Ok(ResolvedExpr::Await {

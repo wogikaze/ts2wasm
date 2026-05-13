@@ -1475,6 +1475,7 @@ impl BigIntRuntimeGuard {
             | Expr::Null { .. }
             | Expr::Undefined { .. }
             | Expr::NewTarget { .. }
+            | Expr::ImportMeta { .. }
             | Expr::This { .. } => Ok(None),
         }
     }

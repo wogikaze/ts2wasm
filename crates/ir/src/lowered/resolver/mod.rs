@@ -42,6 +42,7 @@ impl Resolver {
         class_static_private_fields: ClassStaticPrivateFields,
         generator_function_names: HashSet<String>,
         next_func_id: usize,
+        current_module_url: &str,
         is_strict_context: bool,
     ) -> Self {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
@@ -64,6 +65,7 @@ impl Resolver {
                 class_private_fields,
                 class_static_private_fields,
                 next_func_id,
+                current_module_url,
                 is_strict_context,
             ),
         }
@@ -86,6 +88,7 @@ impl Resolver {
         current_class: Option<&str>,
         in_constructor: bool,
         next_func_id: usize,
+        current_module_url: &str,
         is_strict_context: bool,
     ) -> Result<(Self, Vec<LocalId>), Diagnostic> {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
@@ -108,6 +111,7 @@ impl Resolver {
                 class_private_fields,
                 class_static_private_fields,
                 next_func_id,
+                current_module_url,
                 is_strict_context,
             ),
         };

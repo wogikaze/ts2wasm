@@ -45,6 +45,9 @@ impl super::super::Resolver {
         if matches!(object, ResolvedExpr::Ident(name) if name == "super") {
             return self.lower_super_property_get(object, key, span);
         }
+        if matches!(object, ResolvedExpr::ImportMeta { .. }) && key == "url" {
+            return Ok(self.lower_module_meta_url(span));
+        }
         if matches!(object, ResolvedExpr::Ident(name) if name == "Object") && key == "prototype" {
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::ObjectPrototype,

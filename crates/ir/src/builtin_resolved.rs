@@ -146,6 +146,9 @@ pub enum ResolvedExpr {
     NewTarget {
         span: Span,
     },
+    ImportMeta {
+        span: Span,
+    },
     Await {
         expr: Box<ResolvedExpr>,
     },

@@ -120,6 +120,7 @@ impl super::Resolver {
                     object_function_props: None,
                 }),
                 recursion_depth: 0,
+                module_url: self.ctx.current_module_url.as_str(),
                 strict_context: self.ctx.is_strict_context(),
             },
         )?;
@@ -266,6 +267,7 @@ impl super::Resolver {
                 next_func_id: self.ctx.functions.next_func_id,
                 self_closure,
                 recursion_depth: 0,
+                module_url: self.ctx.current_module_url.as_str(),
                 strict_context: self.ctx.is_strict_context(),
             },
         )?;
@@ -551,6 +553,7 @@ fn expr_contains_super_ref(expr: &ResolvedExpr) -> bool {
         | ResolvedExpr::Undefined
         | ResolvedExpr::This { .. }
         | ResolvedExpr::NewTarget { .. }
+        | ResolvedExpr::ImportMeta { .. }
         | ResolvedExpr::Ident(_) => false,
     }
 }

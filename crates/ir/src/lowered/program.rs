@@ -19,6 +19,14 @@ pub(crate) use program_builtins::*;
 pub(crate) use program_captures::*;
 pub(crate) use program_direct_eval::*;
 pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnostic> {
+    lower_program_with_module_url(program, "<entry>")
+}
+
+pub fn lower_program_with_module_url(
+    program: &[ResolvedStmt],
+    module_url: impl Into<String>,
+) -> Result<LoweredProgram, Diagnostic> {
+    let module_url = module_url.into();
     let program_is_strict = block_has_use_strict_directive(program);
     let function_ids = collect_function_ids(program)?;
     let generator_function_names = collect_generator_function_names(program);
@@ -128,6 +136,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         next_func_id,
                         self_closure,
                         recursion_depth: *function_recursion_depths.get(&func_id).unwrap_or(&0),
+                        module_url: module_url.as_str(),
                         strict_context: program_is_strict,
                     },
                 )?;
@@ -196,6 +205,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         next_func_id,
                         self_closure: None,
                         recursion_depth: *function_recursion_depths.get(&ctor_id).unwrap_or(&0),
+                        module_url: module_url.as_str(),
                         strict_context: true,
                     },
                 )?;
@@ -256,6 +266,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                             recursion_depth: *function_recursion_depths
                                 .get(&method_id)
                                 .unwrap_or(&0),
+                            module_url: module_url.as_str(),
                             strict_context: true,
                         },
                     )?;
@@ -298,6 +309,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                 next_func_id,
                 self_closure,
                 recursion_depth: 0,
+                module_url: module_url.as_str(),
                 strict_context: program_is_strict,
             },
         )?;
@@ -320,6 +332,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
         class_static_private_fields,
         generator_function_names,
         next_func_id,
+        module_url.as_str(),
         program_is_strict,
     );
     resolver.ctx.facts.generator_function_yields = generator_function_yields;
@@ -1227,6 +1240,7 @@ fn collect_array_map_callback_function_names_in_expr(
         | ResolvedExpr::Undefined
         | ResolvedExpr::This { .. }
         | ResolvedExpr::NewTarget { .. }
+        | ResolvedExpr::ImportMeta { .. }
         | ResolvedExpr::Ident(_)
         | ResolvedExpr::ModuleLoad { .. } => {}
     }
@@ -2319,6 +2333,7 @@ fn collect_call_targets_in_expr(expr: &ResolvedExpr, targets: &mut HashSet<Strin
         }
         ResolvedExpr::This { .. }
         | ResolvedExpr::NewTarget { .. }
+        | ResolvedExpr::ImportMeta { .. }
         | ResolvedExpr::Ident(_)
         | ResolvedExpr::Number(_)
         | ResolvedExpr::DecimalNumber(_)
@@ -2530,6 +2545,7 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::Yield { expr, .. } => expr.as_deref().is_some_and(expr_contains_this),
         ResolvedExpr::This { .. } => true,
         ResolvedExpr::NewTarget { .. } => false,
+        ResolvedExpr::ImportMeta { .. } => false,
         ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => expr_contains_this(expr),
         ResolvedExpr::Binary { left, right, .. } => {
             expr_contains_this(left) || expr_contains_this(right)
@@ -2830,6 +2846,7 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::FunctionExpr { .. } | ResolvedExpr::ClassExpr { .. } => false,
         ResolvedExpr::This { .. }
         | ResolvedExpr::NewTarget { .. }
+        | ResolvedExpr::ImportMeta { .. }
         | ResolvedExpr::Number(_)
         | ResolvedExpr::DecimalNumber(_)
         | ResolvedExpr::BigIntLiteral { .. }
@@ -2848,6 +2865,7 @@ pub(crate) struct LowerFunctionOptions<'a> {
     pub(crate) self_closure: Option<SelfClosureOptions<'a>>,
     /// Recursion depth for this function (0 = not recursive, 1+ = recursive).
     pub(crate) recursion_depth: usize,
+    pub(crate) module_url: &'a str,
     pub(crate) strict_context: bool,
 }
 
@@ -2919,6 +2937,7 @@ pub(super) fn lower_function(
         options.current_class,
         options.in_constructor,
         options.next_func_id,
+        options.module_url,
         is_strict_context,
     )?;
 

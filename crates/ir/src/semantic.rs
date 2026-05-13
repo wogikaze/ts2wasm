@@ -470,6 +470,7 @@ impl TypeScriptCallArityValidator {
             | ResolvedExpr::Undefined
             | ResolvedExpr::This { .. }
             | ResolvedExpr::NewTarget { .. }
+            | ResolvedExpr::ImportMeta { .. }
             | ResolvedExpr::Ident(_)
             | ResolvedExpr::ModuleLoad { .. } => {}
             ResolvedExpr::Await { expr } => {
@@ -750,6 +751,7 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::Ident(name) => name == "arguments",
         ResolvedExpr::This { .. }
         | ResolvedExpr::NewTarget { .. }
+        | ResolvedExpr::ImportMeta { .. }
         | ResolvedExpr::Number(_)
         | ResolvedExpr::DecimalNumber(_)
         | ResolvedExpr::BigIntLiteral { .. }

@@ -344,6 +344,7 @@ pub(crate) fn collect_direct_eval_function_assignment_expr(
         | ResolvedExpr::ClassExpr { .. }
         | ResolvedExpr::This { .. }
         | ResolvedExpr::NewTarget { .. }
+        | ResolvedExpr::ImportMeta { .. }
         | ResolvedExpr::Ident(_)
         | ResolvedExpr::ModuleLoad { .. }
         | ResolvedExpr::Number(_)

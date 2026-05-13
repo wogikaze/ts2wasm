@@ -7,11 +7,11 @@
 
 use ts2wasm_frontend::{Lexer, Parser};
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
-use ts2wasm_ir::lowered::lower_program;
 use ts2wasm_ir::lowered::validate::validate_lowered;
 use ts2wasm_ir::lowered::{
     FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt,
 };
+use ts2wasm_ir::lowered::{lower_program, lower_program_with_module_url};
 
 fn parse_resolve_lower(source: &str) -> LoweredProgram {
     let tokens = Lexer::new(source).tokenize().unwrap();
@@ -27,6 +27,13 @@ fn parse_resolve_lower_result(
     let stmts = Parser::new(tokens, source).parse_program().unwrap();
     let resolved = resolve_builtins(&stmts).unwrap();
     lower_program(&resolved)
+}
+
+fn parse_resolve_lower_with_module_url(source: &str, module_url: &str) -> LoweredProgram {
+    let tokens = Lexer::new(source).tokenize().unwrap();
+    let stmts = Parser::new(tokens, source).parse_program().unwrap();
+    let resolved = resolve_builtins(&stmts).unwrap();
+    lower_program_with_module_url(&resolved, module_url).unwrap()
 }
 
 #[test]
@@ -61,6 +68,41 @@ fn lowered_snapshot_let_string() {
             assert_eq!(value, "hello");
         }
         other => panic!("expected LoweredStmt::Let(_, String), got: {other:?}"),
+    }
+}
+
+#[test]
+fn lowered_snapshot_import_meta_url() {
+    let program = parse_resolve_lower_with_module_url(
+        r#"let url = import.meta.url; let meta = import.meta;"#,
+        "./dep.ts",
+    );
+    assert_eq!(program.top_level_statements.len(), 2);
+    match &program.top_level_statements[0] {
+        LoweredStmt::Let(_, LoweredExpr::String(value, _), _) => {
+            assert_eq!(value, "./dep.ts");
+        }
+        other => panic!("expected import.meta.url to lower to module URL, got: {other:?}"),
+    }
+    match &program.top_level_statements[1] {
+        LoweredStmt::Let(
+            _,
+            LoweredExpr::ObjectNew {
+                props,
+                non_enumerable,
+                ..
+            },
+            _,
+        ) => {
+            assert_eq!(*non_enumerable, 0);
+            assert_eq!(props.len(), 1);
+            assert_eq!(props[0].0, "url");
+            assert!(matches!(
+                &props[0].1,
+                LoweredExpr::String(value, _) if value == "./dep.ts"
+            ));
+        }
+        other => panic!("expected import.meta to lower to metadata object, got: {other:?}"),
     }
 }
 

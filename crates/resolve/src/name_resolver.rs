@@ -898,6 +898,7 @@ impl NameResolver {
             }),
             Expr::This { span } => Ok(Expr::This { span: *span }),
             Expr::NewTarget { span } => Ok(Expr::NewTarget { span: *span }),
+            Expr::ImportMeta { span } => Ok(Expr::ImportMeta { span: *span }),
             Expr::ClassExpr {
                 name,
                 extends,
@@ -2051,6 +2052,7 @@ fn expr_contains_bigint_literal(expr: &Expr) -> bool {
         | Expr::Null { .. }
         | Expr::Undefined { .. }
         | Expr::This { .. }
+        | Expr::ImportMeta { .. }
         | Expr::Ident { .. } => false,
         Expr::NewTarget { .. } => false,
     }

@@ -583,6 +583,9 @@ pub enum Expr {
     NewTarget {
         span: Span,
     },
+    ImportMeta {
+        span: Span,
+    },
     This {
         span: Span,
     },
@@ -688,6 +691,7 @@ impl Expr {
             | Self::IndexAssign { span, .. }
             | Self::ClassExpr { span, .. }
             | Self::NewTarget { span }
+            | Self::ImportMeta { span }
             | Self::This { span } => *span,
         }
     }

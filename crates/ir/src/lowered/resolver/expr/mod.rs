@@ -61,6 +61,7 @@ impl super::Resolver {
             }
             ResolvedExpr::This { .. } => self.lower_this_expr(),
             ResolvedExpr::NewTarget { span } => self.lower_new_target_expr(*span),
+            ResolvedExpr::ImportMeta { span } => self.lower_import_meta_expr(*span),
             ResolvedExpr::Ident(name) => self.lower_ident_expr(name),
             ResolvedExpr::Spread(_) => self.lower_spread_expr(),
 
@@ -176,6 +177,19 @@ impl super::Resolver {
             }
             ResolvedExpr::ClassExpr { .. } => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
         }
+    }
+
+    pub(super) fn lower_import_meta_expr(&mut self, span: Span) -> Result<LoweredExpr, Diagnostic> {
+        Ok(LoweredExpr::ObjectNew {
+            props: vec![("url".to_owned(), self.lower_module_meta_url(span))],
+            non_enumerable: 0,
+            span,
+        })
+    }
+
+    pub(super) fn lower_module_meta_url(&self, span: Span) -> LoweredExpr {
+        // ModuleMetaUrl: import.meta.url resolves to the active module URL/specifier.
+        LoweredExpr::String(self.ctx.current_module_url.clone(), span)
     }
 }
 
