@@ -1593,6 +1593,47 @@ fn json_stringify_replacer_function_transform_matches_node() {
 }
 
 #[test]
+fn json_stringify_replacer_array_boxed_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-stringify-replacer-array-boxed.ts");
+}
+
+#[test]
+fn json_stringify_replacer_array_boxed_unsupported_matches_node() {
+    assert_fixture_matches_node(
+        "fixtures/builtins-and-io/json-stringify-replacer-array-boxed-unsupported.ts",
+    );
+}
+
+#[test]
+fn json_stringify_replacer_array_ignored_matches_node() {
+    assert_fixture_matches_node(
+        "fixtures/builtins-and-io/json-stringify-replacer-array-ignored.ts",
+    );
+}
+
+#[test]
+fn json_stringify_space_boxed_symbol_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-stringify-space-boxed-symbol.ts");
+}
+
+#[test]
+fn json_stringify_space_boxed_unsupported_matches_node() {
+    assert_fixture_matches_node(
+        "fixtures/builtins-and-io/json-stringify-space-boxed-unsupported.ts",
+    );
+}
+
+#[test]
+fn json_stringify_space_boolean_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-stringify-space-boolean.ts");
+}
+
+#[test]
+fn json_stringify_space_object_function_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-stringify-space-object-function.ts");
+}
+
+#[test]
 fn json_parse_trailing_tokens_rejected_under_node_and_iwasm() {
     assert_fixture_rejected_by_node_and_iwasm(
         "fixtures/builtins-and-io/json-parse-trailing-invalid.ts",
