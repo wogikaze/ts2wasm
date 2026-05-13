@@ -12,7 +12,9 @@ use std::collections::{HashMap, HashSet};
 use crate::binding_pattern::{BindingDefault, parse_binding_pattern};
 use crate::builtin_resolved::{ResolvedExpr, ResolvedStmt};
 use crate::lowered::ctx::LoweringCtx;
-use crate::lowered::facts::{ArrowClosure, BoundFunction};
+use crate::lowered::facts::{
+    ArrowClosure, BoundFunction, FunctionMethodBinding, FunctionMethodKind,
+};
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
@@ -164,6 +166,19 @@ impl Resolver {
         else {
             return Ok(None);
         };
+        if method == "call"
+            && let Some("bind") = function_prototype_method_name(object)
+            && let Some(ResolvedExpr::Ident(func_name)) = args.first()
+        {
+            let Ok(func_id) = self.resolve_func(func_name) else {
+                return Ok(None);
+            };
+            return Ok(Some(BoundFunction {
+                func_id,
+                receiver: args.get(1).cloned().unwrap_or(ResolvedExpr::Undefined),
+                bound_args: args.iter().skip(2).cloned().collect(),
+            }));
+        }
         if method != "bind" {
             return Ok(None);
         }
@@ -178,6 +193,38 @@ impl Resolver {
             receiver: args.first().cloned().unwrap_or(ResolvedExpr::Undefined),
             bound_args: args.iter().skip(1).cloned().collect(),
         }))
+    }
+
+    fn function_method_binding_for_expr(
+        &self,
+        expr: &ResolvedExpr,
+    ) -> Result<Option<FunctionMethodBinding>, Diagnostic> {
+        let ResolvedExpr::MethodCall {
+            object,
+            method,
+            args,
+            ..
+        } = expr
+        else {
+            return Ok(None);
+        };
+        if method != "bind" {
+            return Ok(None);
+        }
+        let Some(kind) = function_prototype_method_name(object).and_then(|name| match name {
+            "call" => Some(FunctionMethodKind::Call),
+            "apply" => Some(FunctionMethodKind::Apply),
+            _ => None,
+        }) else {
+            return Ok(None);
+        };
+        let Some(ResolvedExpr::Ident(func_name)) = args.first() else {
+            return Ok(None);
+        };
+        let Ok(func_id) = self.resolve_func(func_name) else {
+            return Ok(None);
+        };
+        Ok(Some(FunctionMethodBinding { func_id, kind }))
     }
 
     fn lower_direct_iife_stmt(
@@ -268,7 +315,8 @@ impl Resolver {
                 }
                 let function_props = self.function_props_for_object_expr(expr);
                 let bound_function = self.bound_function_for_expr(expr)?;
-                let lowered = if bound_function.is_some() {
+                let function_method = self.function_method_binding_for_expr(expr)?;
+                let lowered = if bound_function.is_some() || function_method.is_some() {
                     LoweredExpr::Undefined(Span::generated("undef"))
                 } else if let ResolvedExpr::ArrowFn {
                     params,
@@ -308,6 +356,14 @@ impl Resolver {
                         .insert(local_id, bound_function);
                 } else {
                     self.ctx.facts.bound_function_locals.remove(&local_id);
+                }
+                if let Some(function_method) = function_method {
+                    self.ctx
+                        .facts
+                        .function_method_locals
+                        .insert(local_id, function_method);
+                } else {
+                    self.ctx.facts.function_method_locals.remove(&local_id);
                 }
                 self.update_heap_closure_local(local_id, expr, &lowered);
                 if self.ctx.facts.heap_closure_names.contains(name) {
@@ -410,7 +466,13 @@ impl Resolver {
                     self.ctx.classes.local_classes.remove(&local_id);
                 }
                 let function_props = self.function_props_for_object_expr(expr);
-                let lowered = self.lower_expr(expr)?;
+                let bound_function = self.bound_function_for_expr(expr)?;
+                let function_method = self.function_method_binding_for_expr(expr)?;
+                let lowered = if bound_function.is_some() || function_method.is_some() {
+                    LoweredExpr::Undefined(Span::generated("undef"))
+                } else {
+                    self.lower_expr(expr)?
+                };
                 if let LoweredExpr::ArrowFn {
                     func_id, captures, ..
                 } = &lowered
@@ -424,6 +486,22 @@ impl Resolver {
                     );
                 } else {
                     self.ctx.facts.arrow_locals.remove(&local_id);
+                }
+                if let Some(bound_function) = bound_function {
+                    self.ctx
+                        .facts
+                        .bound_function_locals
+                        .insert(local_id, bound_function);
+                } else {
+                    self.ctx.facts.bound_function_locals.remove(&local_id);
+                }
+                if let Some(function_method) = function_method {
+                    self.ctx
+                        .facts
+                        .function_method_locals
+                        .insert(local_id, function_method);
+                } else {
+                    self.ctx.facts.function_method_locals.remove(&local_id);
                 }
                 self.update_heap_closure_local(local_id, expr, &lowered);
                 crate::lowered::resolver::expr::facts::update_nullish_local(
@@ -1246,6 +1324,32 @@ pub(crate) fn numeric_ascending_sort_arrow_callback(args: &[ResolvedExpr]) -> bo
     };
     matches!(left.as_ref(), ResolvedExpr::Ident(name) if name == left_param)
         && matches!(right.as_ref(), ResolvedExpr::Ident(name) if name == right_param)
+}
+
+pub(crate) fn function_prototype_method_name(expr: &ResolvedExpr) -> Option<&str> {
+    let ResolvedExpr::PropertyAccess {
+        object,
+        key: method_name,
+        ..
+    } = expr
+    else {
+        return None;
+    };
+    let ResolvedExpr::PropertyAccess {
+        object: class_expr,
+        key: proto_key,
+        ..
+    } = object.as_ref()
+    else {
+        return None;
+    };
+    if proto_key != "prototype" {
+        return None;
+    }
+    if !matches!(class_expr.as_ref(), ResolvedExpr::Ident(name) if name == "Function") {
+        return None;
+    }
+    Some(method_name)
 }
 
 /// Wrapper that converts bigint_runtime_fn_name string output to RuntimeFn.

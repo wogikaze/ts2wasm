@@ -79,6 +79,8 @@ pub struct StaticFacts {
     pub arrow_locals: HashMap<LocalId, ArrowClosure>,
     /// Static `Function.prototype.bind` locals that can be expanded at call sites.
     pub bound_function_locals: HashMap<LocalId, BoundFunction>,
+    /// Static `Function.prototype.call/apply.bind(fn)` locals expanded at call sites.
+    pub function_method_locals: HashMap<LocalId, FunctionMethodBinding>,
     /// Static Proxy locals created as `new Proxy(target, handler)`.
     pub proxy_locals: HashMap<LocalId, ProxyBinding>,
 }
@@ -103,6 +105,19 @@ pub struct BoundFunction {
     pub func_id: FuncId,
     pub receiver: ResolvedExpr,
     pub bound_args: Vec<ResolvedExpr>,
+}
+
+/// Tracks a statically known Function.prototype method bound to a target function.
+#[derive(Debug, Clone)]
+pub struct FunctionMethodBinding {
+    pub func_id: FuncId,
+    pub kind: FunctionMethodKind,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FunctionMethodKind {
+    Call,
+    Apply,
 }
 
 /// Tracks the statically visible target and handler for a Proxy local.
@@ -152,6 +167,7 @@ impl StaticFacts {
             heap_closure_names: HashSet::new(),
             arrow_locals: HashMap::new(),
             bound_function_locals: HashMap::new(),
+            function_method_locals: HashMap::new(),
             proxy_locals: HashMap::new(),
         }
     }

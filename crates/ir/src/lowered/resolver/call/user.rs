@@ -1,5 +1,6 @@
 use super::super::{bigint_runtime_fn_intrinsic, block_contains_arguments, block_contains_this};
-use crate::builtin_resolved::{ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::lowered::facts::FunctionMethodKind;
 use crate::lowered::*;
 use std::collections::HashMap;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -70,6 +71,31 @@ impl super::super::Resolver {
                 args: self.lower_call_args(args)?,
 
                 span: Span::generated("runtime_call"),
+            });
+        }
+
+        if let Ok(local_id) = self.resolve_local(func_name)
+            && let Some(binding) = self
+                .ctx
+                .facts
+                .function_method_locals
+                .get(&local_id)
+                .cloned()
+        {
+            let receiver = match args.first() {
+                Some(receiver) => self.lower_expr(receiver)?,
+                None => LoweredExpr::Undefined(Span::generated("undef")),
+            };
+            let explicit_args = match binding.kind {
+                FunctionMethodKind::Call => args.iter().skip(1).cloned().collect::<Vec<_>>(),
+                FunctionMethodKind::Apply => function_apply_explicit_args(args, span)?,
+            };
+            let lowered_args =
+                self.lower_function_call_args(binding.func_id, receiver, &explicit_args)?;
+            return Ok(LoweredExpr::Call {
+                kind: FunctionCallKind::User(binding.func_id),
+                args: lowered_args,
+                span: Span::generated("call"),
             });
         }
 
@@ -624,5 +650,30 @@ impl super::super::Resolver {
                 phase: None,
             }),
         }
+    }
+}
+
+fn function_apply_explicit_args(
+    args: &[ResolvedExpr],
+    span: Span,
+) -> Result<Vec<ResolvedExpr>, Diagnostic> {
+    match args.get(1) {
+        None | Some(ResolvedExpr::Undefined | ResolvedExpr::Null) => Ok(Vec::new()),
+        Some(ResolvedExpr::Array(elements)) => Ok(elements
+            .iter()
+            .map(|element| match element {
+                ResolvedArrayElement::Present(expr) => expr.clone(),
+                ResolvedArrayElement::Hole => ResolvedExpr::Undefined,
+            })
+            .collect()),
+        Some(ResolvedExpr::Ident(name)) => Ok(vec![ResolvedExpr::Spread(Box::new(
+            ResolvedExpr::Ident(name.clone()),
+        ))]),
+        Some(_) => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "issue-458: Function.prototype.apply bound values currently support array literals, dense array locals, null, or undefined argArray".to_owned(),
+            span: Some(span),
+            phase: None,
+        }),
     }
 }

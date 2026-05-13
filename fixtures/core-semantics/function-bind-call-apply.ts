@@ -20,3 +20,12 @@ console.log(boundSum(2, 3));
 
 const boundBase = addBase.bind(ctx, 6);
 console.log(boundBase());
+
+const sumCall = Function.prototype.call.bind(sum3);
+console.log(sumCall(undefined, 2, 4, 6));
+
+const sumApply = Function.prototype.apply.bind(sum3);
+console.log(sumApply(undefined, [3, 6, 9]));
+
+const reboundSum = Function.prototype.bind.call(sum3, undefined, 4, 5);
+console.log(reboundSum(6));
