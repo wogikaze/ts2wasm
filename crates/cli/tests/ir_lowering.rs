@@ -264,6 +264,53 @@ fn lowering_keeps_non_eval_block_function_out_of_enclosing_scope() {
 }
 
 #[test]
+fn lowering_binds_function_name_inside_own_body() {
+    use ts2wasm_ir::lowered::{ClosureRepresentation, FuncId, LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve("function assert(x) { return assert; }");
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    assert!(matches!(
+        lowered.functions[0].body.as_slice(),
+        [LoweredStmt::Return(
+            LoweredExpr::ArrowFn {
+                func_id: FuncId(0),
+                captures,
+                representation: ClosureRepresentation::HeapObject,
+                ..
+            },
+            _
+        )] if captures.is_empty()
+    ));
+    assert!(matches!(
+        lowered.top_level_statements.first(),
+        Some(LoweredStmt::Let(
+            LocalId(0),
+            LoweredExpr::ArrowFn {
+                func_id: FuncId(0),
+                captures,
+                representation: ClosureRepresentation::DirectLocalToken,
+                ..
+            },
+            _
+        )) if captures.is_empty()
+    ));
+}
+
+#[test]
+fn lowering_preserves_parameter_shadowing_over_function_self_name() {
+    use ts2wasm_ir::lowered::{LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve("function f(f) { return f; }");
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    assert!(matches!(
+        lowered.functions[0].body.as_slice(),
+        [LoweredStmt::Return(LoweredExpr::Local(LocalId(0), _), _)]
+    ));
+}
+
+#[test]
 fn lowering_rejects_unresolved_name() {
     let program = parse_and_resolve("let x = y;");
     let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();

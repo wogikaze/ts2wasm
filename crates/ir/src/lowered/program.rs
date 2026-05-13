@@ -84,6 +84,12 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     .union(&arrow_mutable_captures)
                     .cloned()
                     .collect::<HashSet<_>>();
+                let self_closure = top_level_function_body_references_name(params, body, name)?
+                    .then_some(SelfClosureOptions {
+                        name,
+                        func_id,
+                        capture_names: &[],
+                    });
                 let lowered = lower_function(
                     func_id,
                     &params_with_captures,
@@ -105,7 +111,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         current_class: None,
                         in_constructor: false,
                         next_func_id,
-                        self_closure: None,
+                        self_closure,
                         recursion_depth: *function_recursion_depths.get(&func_id).unwrap_or(&0),
                     },
                 )?;
@@ -528,6 +534,26 @@ fn collect_top_level_local_names(program: &[ResolvedStmt]) -> Result<HashSet<Str
         }
     }
     Ok(names)
+}
+
+fn top_level_function_body_references_name(
+    params: &[ResolvedParam],
+    body: &[ResolvedStmt],
+    name: &str,
+) -> Result<bool, Diagnostic> {
+    let mut excluded = HashSet::new();
+    for param in params {
+        if let Some(pattern) = parse_binding_pattern(&param.name, param.span)? {
+            excluded.extend(pattern.names().into_iter().map(ToOwned::to_owned));
+        } else {
+            excluded.insert(param.name.clone());
+        }
+    }
+    collect_declared_names_in_stmts(body, &mut excluded);
+
+    let mut captures = Vec::new();
+    collect_stmt_captures(body, &excluded, &mut captures);
+    Ok(captures.iter().any(|capture| capture == name))
 }
 
 fn collect_array_map_callback_function_names(program: &[ResolvedStmt]) -> HashSet<String> {
