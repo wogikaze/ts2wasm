@@ -189,6 +189,7 @@ impl super::super::Resolver {
             return self.lower_super_property_assign(object, key, value, span);
         }
         let lowered_value = self.lower_expr(value)?;
+        let lowered_object = self.lower_property_assignment_object(object)?;
         // Track function/arrow assignments on known locals so method calls
         // on untyped receivers (e.g. assert.sameValue()) can be dispatched
         // via object_function_props in lower_mcall_dispatch_early.
@@ -209,7 +210,7 @@ impl super::super::Resolver {
             }
         }
         Ok(object_kernel::ordinary_set(
-            self.lower_expr(object)?,
+            lowered_object,
             key,
             lowered_value,
             span,
@@ -243,11 +244,34 @@ impl super::super::Resolver {
             return self.lower_super_property_assign_dynamic(object, key, value);
         }
         Ok(object_kernel::ordinary_set_dynamic(
-            self.lower_expr(object)?,
+            self.lower_property_assignment_object(object)?,
             self.lower_expr(key)?,
             self.lower_expr(value)?,
             Span::generated("prop_set_dyn"),
         ))
+    }
+
+    fn lower_property_assignment_object(
+        &mut self,
+        object: &ResolvedExpr,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if let ResolvedExpr::PropertyAccess {
+            object: prototype_base,
+            key,
+            ..
+        } = object
+            && key == "prototype"
+            && let ResolvedExpr::Ident(name) = prototype_base.as_ref()
+            && self.resolve_func(name).is_ok()
+        {
+            return Ok(LoweredExpr::ObjectNew {
+                props: Vec::new(),
+                non_enumerable: 0,
+                span: Span::generated("function_prototype_object"),
+            });
+        }
+
+        self.lower_expr(object)
     }
 
     fn lower_private_field_assign(

@@ -311,6 +311,34 @@ fn lowering_preserves_parameter_shadowing_over_function_self_name() {
 }
 
 #[test]
+fn lowering_allows_function_prototype_property_assignment() {
+    use ts2wasm_ir::lowered::{LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        function Test262Error() {}
+        Test262Error.prototype.toString = function() { return "Test262Error"; };
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    assert!(matches!(
+        lowered.top_level_statements.as_slice(),
+        [
+            LoweredStmt::Let(_, _, _),
+            LoweredStmt::Expr(
+                LoweredExpr::PropertySet {
+                    object,
+                    key,
+                    ..
+                },
+                _
+            )
+        ] if key == "toString" && matches!(object.as_ref(), LoweredExpr::ObjectNew { .. })
+    ));
+}
+
+#[test]
 fn lowering_rejects_unresolved_name() {
     let program = parse_and_resolve("let x = y;");
     let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
