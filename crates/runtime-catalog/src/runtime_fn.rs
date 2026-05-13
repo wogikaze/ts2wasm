@@ -1770,6 +1770,7 @@ impl RuntimeFn {
             | Self::ValueToStringInto
             | Self::ArrayPush
             | Self::ArrayPushGrow
+            | Self::DataViewNew
             | Self::DataViewGetInt8
             | Self::DataViewGetUint8
             | Self::DataViewGetInt16

@@ -22,22 +22,25 @@ impl WatEmitter<'_> {
     }
 
     /// Create a DataView wrapping the given buffer.
-    /// Accepts 1 param (buffer) with byte_offset defaulting to 0.
+    /// Accepts buffer and tagged byte_offset params.
     /// Returns an ARRAY-tagged DataView struct.
     /// DataView struct: [buffer_base (raw ptr, i32), byte_offset (i32)] = 8 bytes.
     pub(super) fn emit_dataview_new(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $dataview_new (param $buf i32) (result i32)
+  (func $dataview_new (param $buf i32) (param $byte_offset_value i32) (result i32)
     (local $buf_base i32)
+    (local $byte_offset i32)
     (local $ptr i32)
     (local.set $buf_base (i32.and (local.get $buf) (i32.const {heap_mask})))
+    (local.set $byte_offset (i32.shr_s (local.get $byte_offset_value) (i32.const {num_shift})))
     (local.set $ptr (call $alloc_heap (i32.const {dv_size})))
     (i32.store (local.get $ptr) (local.get $buf_base))
-    (i32.store (i32.add (local.get $ptr) (i32.const 4)) (i32.const 0))
+    (i32.store (i32.add (local.get $ptr) (i32.const 4)) (local.get $byte_offset))
     (i32.or (local.get $ptr) (i32.const {array_tag})))
 "#,
             heap_mask = ValueTag::HEAP_MASK,
+            num_shift = ValueTag::NUMBER_SHIFT,
             dv_size = 8,
             array_tag = ValueTag::ARRAY,
         ));

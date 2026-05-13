@@ -183,6 +183,7 @@ directories:
     - array-values.ts
     - array-with.ts
     - arraybuffer-dataview-basic.ts
+    - arraybuffer-dataview-byte-offset.ts
     - arraybuffer-dataview-int8-uint8.ts
     - arraybuffer-dataview-int16.ts
     - arraybuffer-dataview-int32.ts

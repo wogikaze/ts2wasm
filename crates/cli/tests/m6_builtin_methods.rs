@@ -2006,6 +2006,16 @@ fn build_smoke_arraybuffer_basic() {
 }
 
 #[test]
+fn build_smoke_arraybuffer_dataview_byte_offset() {
+    let result = run_fixture("builtins-and-io/arraybuffer-dataview-byte-offset.ts");
+    assert!(
+        result.is_ok(),
+        "DataView byte offset should build successfully: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_arraybuffer_dataview_int8_uint8() {
     let result = run_fixture("builtins-and-io/arraybuffer-dataview-int8-uint8.ts");
     assert!(

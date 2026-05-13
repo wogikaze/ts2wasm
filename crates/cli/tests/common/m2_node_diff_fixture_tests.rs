@@ -1592,6 +1592,11 @@ fn arraybuffer_dataview_basic_matches_node_output() {
 }
 
 #[test]
+fn arraybuffer_dataview_byte_offset_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/arraybuffer-dataview-byte-offset.ts");
+}
+
+#[test]
 fn arraybuffer_dataview_int8_uint8_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/arraybuffer-dataview-int8-uint8.ts");
 }

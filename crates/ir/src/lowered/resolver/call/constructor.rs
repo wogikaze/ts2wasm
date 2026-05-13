@@ -278,13 +278,23 @@ impl super::super::Resolver {
                     phase: None,
                 });
             }
-            let mut lowered_args = Vec::new();
-            for arg in args {
-                lowered_args.push(self.lower_expr(arg)?);
+            if args.len() > 2 {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-424: DataView constructor byteLength is not supported yet"
+                        .to_owned(),
+                    span: Some(span),
+                    phase: None,
+                });
             }
+            let buffer = self.lower_expr(&args[0])?;
+            let byte_offset = match args.get(1) {
+                Some(offset) => self.lower_expr(offset)?,
+                None => LoweredExpr::Number(0, Span::generated("dataview_byte_offset")),
+            };
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::DataViewNew,
-                args: lowered_args,
+                args: vec![buffer, byte_offset],
                 span: Span::generated("runtime_call"),
             });
         }
