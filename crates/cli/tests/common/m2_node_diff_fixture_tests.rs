@@ -4132,3 +4132,8 @@ fn fncsem_computed_call_unsupported_reports_unsupported_syntax() {
         "only identifier calls are supported",
     );
 }
+
+#[test]
+fn string_static_methods_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-static-methods.ts");
+}

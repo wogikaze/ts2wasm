@@ -227,6 +227,10 @@ pub enum RuntimeFn {
     StringReplace,
     /// String.prototype.replaceAll
     StringReplaceAll,
+    /// String.raw (template tag function)
+    StringRaw,
+    /// String.prototype.toLocaleString
+    StringToLocaleString,
     /// String.prototype.trimStart / trimLeft
     StringTrimStart,
     /// String.prototype.trimEnd / trimRight
@@ -850,6 +854,13 @@ const STRING_CHAR_CODE_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const STRING_CODE_POINT_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const STRING_FROM_CHAR_CODE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const STRING_FROM_CODE_POINT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const STRING_RAW_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::PropertyGet,
+    RuntimeFn::ArrayGet,
+    RuntimeFn::Concat,
+    RuntimeFn::IsString,
+];
+const STRING_RAW_RUNTIME_STRINGS: &[&str] = &["", "raw"];
 const URI_ESCAPE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::IsString];
 
 // String.prototype.replace dependencies
@@ -1162,6 +1173,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringToWellFormed" => Some(RuntimeFn::StringToWellFormed),
         "StringReplace" => Some(RuntimeFn::StringReplace),
         "StringReplaceAll" => Some(RuntimeFn::StringReplaceAll),
+        "StringRaw" => Some(RuntimeFn::StringRaw),
+        "StringToLocaleString" => Some(RuntimeFn::StringToLocaleString),
         "StringTrimStart" => Some(RuntimeFn::StringTrimStart),
         "StringTrimEnd" => Some(RuntimeFn::StringTrimEnd),
         "StringStartsWith" => Some(RuntimeFn::StringStartsWith),
@@ -1701,7 +1714,9 @@ impl RuntimeFn {
             | Self::StringFromCharCode
             | Self::StringFromCodePoint
             | Self::StringReplace
-            | Self::StringReplaceAll => RuntimeDomain::String,
+            | Self::StringReplaceAll
+            | Self::StringRaw
+            | Self::StringToLocaleString => RuntimeDomain::String,
             Self::SymbolNew
             | Self::SymbolFor
             | Self::SymbolKeyFor
@@ -1854,6 +1869,7 @@ impl RuntimeFn {
             | Self::PropertyDelete
             | Self::PropertyHas
             | Self::TypedArraySet
+            | Self::StringRaw
             | Self::DataViewGetInt16
             | Self::DataViewGetUint16
             | Self::DataViewGetInt32
@@ -2091,6 +2107,8 @@ impl RuntimeFn {
             Self::RegexpMatchInner,
             Self::StringReplace,
             Self::StringReplaceAll,
+            Self::StringRaw,
+            Self::StringToLocaleString,
             Self::RegExpTest,
             Self::RegExpMatch,
             Self::RegExpSearch,
@@ -2441,6 +2459,8 @@ impl RuntimeFn {
             Self::RegexpMatchInner,
             Self::StringReplace,
             Self::StringReplaceAll,
+            Self::StringRaw,
+            Self::StringToLocaleString,
             Self::RegExpTest,
             Self::RegExpMatch,
             Self::RegExpSearch,

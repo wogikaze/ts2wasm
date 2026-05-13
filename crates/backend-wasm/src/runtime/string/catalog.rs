@@ -40,6 +40,8 @@ pub const STRING_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::StringFromCodePoint,
     RuntimeFn::StringReplace,
     RuntimeFn::StringReplaceAll,
+    RuntimeFn::StringRaw,
+    RuntimeFn::StringToLocaleString,
     RuntimeFn::RegexpMatchInner,
     RuntimeFn::RegExpTest,
     RuntimeFn::RegExpMatch,

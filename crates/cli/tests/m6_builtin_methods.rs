@@ -2281,3 +2281,14 @@ fn build_smoke_boolean_symbol_prototype() {
         result.err()
     );
 }
+
+// String static and prototype methods
+#[test]
+fn build_smoke_string_static() {
+    let result = run_fixture("builtins-and-io/string-static-methods.ts");
+    assert!(
+        result.is_ok(),
+        "String static/prototype methods should build: {:?}",
+        result.err()
+    );
+}

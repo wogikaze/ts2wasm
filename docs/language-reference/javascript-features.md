@@ -243,6 +243,7 @@ BigInt mixed comparison の object `ToPrimitive` boundary: direct object-literal
 | string indexing `str[n]` | ES5 | UTF-16 code unit | 実装済み (basic) | - | 043 |
 | `String.fromCharCode` | ES1 | code unit to string | 実装済み (basic) | - | 044 |
 | `String.prototype.charCodeAt` | ES1 | string to code unit | 実装済み (basic) | - | 044 |
+| `String.fromCodePoint` / `String.raw` / `String.prototype.at` / `codePointAt` / `toLocaleString` | ES6+ | runtime builtin | 実装済み (basic; `String.raw` は raw 配列 + 1 substitution の Node differential coverage) | - | 461 |
 
 ## 非同期処理
 

@@ -2195,6 +2195,22 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::StringRaw => RuntimeSpec {
+                symbol: "$string_raw",
+                deps: STRING_RAW_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: STRING_RAW_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::StringToLocaleString => RuntimeSpec {
+                symbol: "$string_to_locale_string",
+                deps: &[Self::IsString],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::SymbolNew => RuntimeSpec {
                 symbol: "$symbol_new",
                 deps: SYMBOL_NEW_DEPS,

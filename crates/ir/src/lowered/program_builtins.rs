@@ -65,6 +65,7 @@ pub(crate) fn resolve_method_to_runtime_fn(
             return match method {
                 "fromCharCode" => Some(RuntimeFn::StringFromCharCode),
                 "fromCodePoint" => Some(RuntimeFn::StringFromCodePoint),
+                "raw" => Some(RuntimeFn::StringRaw),
                 _ => None,
             };
         }
@@ -126,6 +127,7 @@ pub(crate) fn resolve_method_to_runtime_fn(
         "toLocaleUpperCase" => Some(RuntimeFn::StringToUpperCase),
         "toLocaleLowerCase" => Some(RuntimeFn::StringToLowerCase),
         "localeCompare" => Some(RuntimeFn::StringLocaleCompare),
+        "toLocaleString" => Some(RuntimeFn::StringToLocaleString),
         "charCodeAt" => Some(RuntimeFn::StringCharCodeAt),
         "codePointAt" => Some(RuntimeFn::StringCodePointAt),
         "isWellFormed" => Some(RuntimeFn::StringIsWellFormed),

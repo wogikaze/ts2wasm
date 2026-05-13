@@ -1561,6 +1561,32 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(crate) fn emit_string_code_point_at(&self, wat: &mut String) {
+        // codePointAt returns the code point as a tagged number (same as charCodeAt for BMP).
+        self.emit_utf8_decode_cp_at_byte(wat);
+        wat.push_str(&format!(
+            r#"
+  (func $string_code_point_at (param $s i32) (param $index i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $idx i32)
+    (local $byte_pos i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $len (call $utf8_cp_count (local.get $obj)))
+    (local.set $idx (i32.shr_s (local.get $index) (i32.const {number_shift})))
+    (if (i32.lt_s (local.get $idx) (i32.const {zero})) (then (return (i32.const {undefined}))))
+    (if (i32.ge_u (local.get $idx) (local.get $len)) (then (return (i32.const {undefined}))))
+    (local.set $byte_pos (call $utf8_cp_to_byte_index (local.get $obj) (local.get $idx)))
+    (return (call $utf8_decode_cp_at_byte (local.get $obj) (local.get $byte_pos))))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            undefined = ValueTag::UNDEFINED,
+            zero = RuntimeConst::ZERO,
+        ));
+    }
+
     pub(crate) fn emit_string_from_char_code(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -1873,5 +1899,53 @@ impl WatEmitter<'_> {
     (local.get $s))"#,
         );
     }
+
+    pub(crate) fn emit_string_to_locale_string(&self, wat: &mut String) {
+        // String.prototype.toLocaleString returns the string value itself.
+        wat.push_str(&format!(
+            r#"  (func $string_to_locale_string (param $s i32) (result i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    (local.get $s))"#,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(crate) fn emit_string_raw(&self, wat: &mut String) {
+        let empty = self.string_value("");
+        let raw_key_ptr = self.string_offset("raw") + Layout::STRING_HEADER_SIZE;
+        let raw_key_len = self.string_len("raw");
+        wat.push_str(&format!(
+            r#"  (func $string_raw (param $template i32) (param $sub0 i32) (param $sub1 i32) (result i32)
+    (local $raw i32)
+    (local $seg0 i32)
+    (local $seg1 i32)
+    (local $joined i32)
+    (local.set $raw
+      (call $property_get
+        (local.get $template)
+        (i32.const {raw_key_ptr})
+        (i32.const {raw_key_len})))
+    (local.set $seg0
+      (call $array_get
+        (local.get $raw)
+        (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag}))))
+    (if (i32.eqz (call $is_string (local.get $seg0)))
+      (then (return (i32.const {empty}))))
+    (local.set $seg1
+      (call $array_get
+        (local.get $raw)
+        (i32.or (i32.shl (i32.const {one}) (i32.const {number_shift})) (i32.const {number_tag}))))
+    (if (i32.eqz (call $is_string (local.get $seg1)))
+      (then (return (local.get $seg0))))
+    (local.set $joined (call $concat (local.get $seg0) (local.get $sub0)))
+    (call $concat (local.get $joined) (local.get $seg1)))"#,
+            empty = empty,
+            raw_key_ptr = raw_key_ptr,
+            raw_key_len = raw_key_len,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+        ));
+    }
 }
-// test

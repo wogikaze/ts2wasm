@@ -286,6 +286,8 @@ match self {
             Self::StringFromCodePoint => "string_from_code_point",
             Self::StringReplace => "string_replace",
             Self::StringReplaceAll => "string_replace_all",
+            Self::StringRaw => "string_raw",
+            Self::StringToLocaleString => "string_to_locale_string",
             Self::SymbolNew => "symbol_new",
             Self::SymbolFor => "symbol_for",
             Self::SymbolKeyFor => "symbol_key_for",
