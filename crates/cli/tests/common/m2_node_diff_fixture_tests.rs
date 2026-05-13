@@ -2336,6 +2336,11 @@ fn symbol_registry_matches_node_output() {
 }
 
 #[test]
+fn symbol_registry_identity_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/symbol-registry-identity.ts");
+}
+
+#[test]
 fn weakmap_weakset_basic_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/weakmap-weakset-basic.ts");
 }

@@ -186,6 +186,23 @@ impl Layout {
     pub const MODULE_CACHE_MAX: u32 = 64;
     /// Size of one module cache entry in bytes (i32 loaded_flag, i32 value).
     pub const MODULE_CACHE_ENTRY_SIZE: u32 = 8;
+
+    // ---- Symbol registry layout -------------------------------------------
+    /// Fixed registry count slot for the small runtime Symbol.for table.
+    pub const SYMBOL_REGISTRY_COUNT_OFFSET: u32 = 48;
+    /// Fixed registry table base. Each entry is (i32 key_string, i32 symbol_value).
+    pub const SYMBOL_REGISTRY_BASE_OFFSET: u32 = 64;
+    /// Initial small Symbol.for registry capacity.
+    pub const SYMBOL_REGISTRY_CAPACITY: u32 = 16;
+    pub const SYMBOL_REGISTRY_ENTRY_SIZE: u32 = 8;
+    pub const SYMBOL_REGISTRY_ENTRY_KEY_OFFSET: u32 = 0;
+    pub const SYMBOL_REGISTRY_ENTRY_VALUE_OFFSET: u32 = 4;
+
+    /// Object payload sentinel for runtime Symbol values.
+    pub const SYMBOL_SENTINEL: i32 = -3;
+    pub const SYMBOL_OBJECT_SIZE: u32 = 12;
+    pub const SYMBOL_REGISTRY_FLAG_OFFSET: u32 = 4;
+    pub const SYMBOL_DESCRIPTION_OFFSET: u32 = 8;
 }
 
 #[cfg(test)]
@@ -220,6 +237,19 @@ mod tests {
             Layout::STDIN_IOVEC_OFFSET,
             nread_end,
             Layout::STDIN_BUFFER_OFFSET
+        );
+    }
+
+    #[test]
+    fn symbol_registry_table_stays_before_data_segments() {
+        let registry_end = Layout::SYMBOL_REGISTRY_BASE_OFFSET
+            + Layout::SYMBOL_REGISTRY_CAPACITY * Layout::SYMBOL_REGISTRY_ENTRY_SIZE;
+        assert!(
+            registry_end <= Layout::DATA_START,
+            "symbol registry [{}, {}) must not overlap static data start {}",
+            Layout::SYMBOL_REGISTRY_BASE_OFFSET,
+            registry_end,
+            Layout::DATA_START
         );
     }
 

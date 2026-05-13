@@ -2528,7 +2528,7 @@ match self {
                 deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
-                runtime_strings: NO_RUNTIME_STRINGS,
+                runtime_strings: BOOLEAN_TO_STRING_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::NumberCoerce => RuntimeSpec {

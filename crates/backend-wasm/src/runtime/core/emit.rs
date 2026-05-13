@@ -332,49 +332,143 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_symbol_for(&self, wat: &mut String) {
-        let str_symbol_open = self.string_value("Symbol(");
-        let str_close_paren = self.string_value(")");
         wat.push_str(&format!(
             r#"
   (func $symbol_for (param $key i32) (result i32)
-    (return (call $concat
-      (call $concat (i32.const {str_symbol_open}) (local.get $key))
-      (i32.const {str_close_paren}))))
+    (local $i i32)
+    (local $entry i32)
+    (local $symbol i32)
+    (block $found
+      (loop $scan
+        (br_if $found
+          (i32.ge_u
+            (local.get $i)
+            (i32.load (i32.const {registry_count_offset}))))
+        (local.set $entry
+          (i32.add
+            (i32.const {registry_base_offset})
+            (i32.mul (local.get $i) (i32.const {registry_entry_size}))))
+        (if (i32.eq
+              (call $string_equal
+                (i32.load
+                  (i32.add
+                    (local.get $entry)
+                    (i32.const {registry_entry_key_offset})))
+                (local.get $key))
+              (i32.const {true_tag}))
+          (then
+            (return
+              (i32.load
+                (i32.add
+                  (local.get $entry)
+                  (i32.const {registry_entry_value_offset}))))))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $scan)))
+    (local.set $symbol (call $alloc_heap (i32.const {symbol_object_size})))
+    (i32.store (local.get $symbol) (i32.const {symbol_sentinel}))
+    (i32.store
+      (i32.add (local.get $symbol) (i32.const {symbol_registry_flag_offset}))
+      (i32.const 1))
+    (i32.store
+      (i32.add (local.get $symbol) (i32.const {symbol_description_offset}))
+      (local.get $key))
+    (if
+      (i32.lt_u
+        (i32.load (i32.const {registry_count_offset}))
+        (i32.const {registry_capacity}))
+      (then
+        (local.set $entry
+          (i32.add
+            (i32.const {registry_base_offset})
+            (i32.mul
+              (i32.load (i32.const {registry_count_offset}))
+              (i32.const {registry_entry_size}))))
+        (i32.store
+          (i32.add
+            (local.get $entry)
+            (i32.const {registry_entry_key_offset}))
+          (local.get $key))
+        (i32.store
+          (i32.add
+            (local.get $entry)
+            (i32.const {registry_entry_value_offset}))
+          (i32.or (local.get $symbol) (i32.const {object_tag})))
+        (i32.store
+          (i32.const {registry_count_offset})
+          (i32.add
+            (i32.load (i32.const {registry_count_offset}))
+            (i32.const 1)))))
+    (i32.or (local.get $symbol) (i32.const {object_tag})))
 "#,
-            str_symbol_open = str_symbol_open,
-            str_close_paren = str_close_paren,
+            registry_count_offset = Layout::SYMBOL_REGISTRY_COUNT_OFFSET,
+            registry_base_offset = Layout::SYMBOL_REGISTRY_BASE_OFFSET,
+            registry_capacity = Layout::SYMBOL_REGISTRY_CAPACITY,
+            registry_entry_size = Layout::SYMBOL_REGISTRY_ENTRY_SIZE,
+            registry_entry_key_offset = Layout::SYMBOL_REGISTRY_ENTRY_KEY_OFFSET,
+            registry_entry_value_offset = Layout::SYMBOL_REGISTRY_ENTRY_VALUE_OFFSET,
+            symbol_object_size = Layout::SYMBOL_OBJECT_SIZE,
+            symbol_sentinel = Layout::SYMBOL_SENTINEL,
+            symbol_registry_flag_offset = Layout::SYMBOL_REGISTRY_FLAG_OFFSET,
+            symbol_description_offset = Layout::SYMBOL_DESCRIPTION_OFFSET,
+            object_tag = ValueTag::OBJECT,
+            true_tag = ValueTag::TRUE,
         ));
     }
 
     pub(crate) fn emit_symbol_key_for(&self, wat: &mut String) {
-        wat.push_str(
+        wat.push_str(&format!(
             r#"
   (func $symbol_key_for (param $sym i32) (result i32)
-    (return (call $symbol_description (local.get $sym))))
+    (local $symbol i32)
+    (if (i32.ne
+          (i32.and (local.get $sym) (i32.const {tag_mask}))
+          (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $symbol (i32.and (local.get $sym) (i32.const {heap_mask})))
+    (if (i32.ne (i32.load (local.get $symbol)) (i32.const {symbol_sentinel}))
+      (then (return (i32.const {undefined}))))
+    (if (i32.eq
+          (i32.load
+            (i32.add
+              (local.get $symbol)
+              (i32.const {symbol_registry_flag_offset})))
+          (i32.const 0))
+      (then (return (i32.const {undefined}))))
+    (i32.load
+      (i32.add
+        (local.get $symbol)
+        (i32.const {symbol_description_offset}))))
 "#,
-        );
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            undefined = ValueTag::UNDEFINED,
+            symbol_sentinel = Layout::SYMBOL_SENTINEL,
+            symbol_registry_flag_offset = Layout::SYMBOL_REGISTRY_FLAG_OFFSET,
+            symbol_description_offset = Layout::SYMBOL_DESCRIPTION_OFFSET,
+        ));
     }
 
     pub(crate) fn emit_symbol_new(&self, wat: &mut String) {
-        let str_symbol_open = self.string_value("Symbol(");
-        let str_close_paren = self.string_value(")");
-        let str_empty = self.string_value("");
         wat.push_str(&format!(
             r#"
   (func $symbol_new (param $desc i32) (result i32)
-    (if (i32.eq (local.get $desc) (i32.const {undefined_tag}))
-      (then (return
-        (call $concat
-          (call $concat (i32.const {str_symbol_open}) (i32.const {str_empty}))
-          (i32.const {str_close_paren})))))
-    (return (call $concat
-      (call $concat (i32.const {str_symbol_open}) (local.get $desc))
-      (i32.const {str_close_paren}))))
+    (local $symbol i32)
+    (local.set $symbol (call $alloc_heap (i32.const {symbol_object_size})))
+    (i32.store (local.get $symbol) (i32.const {symbol_sentinel}))
+    (i32.store
+      (i32.add (local.get $symbol) (i32.const {symbol_registry_flag_offset}))
+      (i32.const 0))
+    (i32.store
+      (i32.add (local.get $symbol) (i32.const {symbol_description_offset}))
+      (local.get $desc))
+    (i32.or (local.get $symbol) (i32.const {object_tag})))
 "#,
-            undefined_tag = ValueTag::UNDEFINED,
-            str_symbol_open = str_symbol_open,
-            str_close_paren = str_close_paren,
-            str_empty = str_empty,
+            symbol_object_size = Layout::SYMBOL_OBJECT_SIZE,
+            symbol_sentinel = Layout::SYMBOL_SENTINEL,
+            symbol_registry_flag_offset = Layout::SYMBOL_REGISTRY_FLAG_OFFSET,
+            symbol_description_offset = Layout::SYMBOL_DESCRIPTION_OFFSET,
+            object_tag = ValueTag::OBJECT,
         ));
     }
 
@@ -420,30 +514,33 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $symbol_description (param $v i32) (result i32)
-    (local $heap_ptr i32)
-    (local $total_len i32)
-    (local $desc_len i32)
-    (local $new_ptr i32)
-    (local.set $heap_ptr (i32.and (local.get $v) (i32.const {heap_mask})))
-    (local.set $total_len (i32.load (local.get $heap_ptr)))
-    (local.set $desc_len (i32.sub (local.get $total_len) (i32.const 8)))
-    (if (i32.le_s (local.get $desc_len) (i32.const 0))
+    (local $symbol i32)
+    (if (i32.ne
+          (i32.and (local.get $v) (i32.const {tag_mask}))
+          (i32.const {object_tag}))
       (then (return (i32.const {undefined}))))
-    (local.set $new_ptr
-      (call $alloc_heap
-        (i32.add (i32.const {string_header_size}) (local.get $desc_len))))
-    (i32.store (local.get $new_ptr) (local.get $desc_len))
-    (call $copy
-      (i32.add (local.get $heap_ptr) (i32.const {data_offset}))
-      (i32.add (local.get $new_ptr) (i32.const {string_header_size}))
-      (local.get $desc_len))
-    (i32.or (local.get $new_ptr) (i32.const {string_tag})))
+    (local.set $symbol (i32.and (local.get $v) (i32.const {heap_mask})))
+    (if (i32.ne (i32.load (local.get $symbol)) (i32.const {symbol_sentinel}))
+      (then (return (i32.const {undefined}))))
+    (if
+      (i32.eq
+        (i32.load
+          (i32.add
+            (local.get $symbol)
+            (i32.const {symbol_description_offset})))
+        (i32.const {undefined}))
+      (then (return (i32.const {undefined}))))
+    (i32.load
+      (i32.add
+        (local.get $symbol)
+        (i32.const {symbol_description_offset}))))
 "#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             undefined = ValueTag::UNDEFINED,
-            string_header_size = Layout::STRING_HEADER_SIZE,
-            data_offset = Layout::STRING_HEADER_SIZE + 7,
-            string_tag = ValueTag::STRING,
+            symbol_sentinel = Layout::SYMBOL_SENTINEL,
+            symbol_description_offset = Layout::SYMBOL_DESCRIPTION_OFFSET,
         ));
     }
 }

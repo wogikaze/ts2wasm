@@ -797,6 +797,7 @@ const TYPEOF_RUNTIME_STRINGS: &[&str] = &[
     "string",
     "bigint",
 ];
+const BOOLEAN_TO_STRING_RUNTIME_STRINGS: &[&str] = &[RuntimeString::FALSE, RuntimeString::TRUE];
 const BIGINT_UNARY_MINUS_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
 const BIGINT_SUB_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
@@ -1105,11 +1106,11 @@ const JSON_PARSE_DEPS: &[RuntimeFn] = &[
 const JSON_PARSE_RUNTIME_STRINGS: &[&str] = &[RuntimeString::JSON_PARSE_SYNTAX_ERROR];
 
 // Symbol function dependencies
-const SYMBOL_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::Concat];
-const SYMBOL_FOR_DEPS: &[RuntimeFn] = &[RuntimeFn::Concat];
-const SYMBOL_KEY_FOR_DEPS: &[RuntimeFn] = &[RuntimeFn::SymbolDescription];
-const SYMBOL_NEW_RUNTIME_STRINGS: &[&str] = &["Symbol(", ")", ""];
-const SYMBOL_FOR_RUNTIME_STRINGS: &[&str] = &["Symbol(", ")"];
+const SYMBOL_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const SYMBOL_FOR_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::StringEqual];
+const SYMBOL_KEY_FOR_DEPS: &[RuntimeFn] = &[];
+const SYMBOL_NEW_RUNTIME_STRINGS: &[&str] = &[];
+const SYMBOL_FOR_RUNTIME_STRINGS: &[&str] = &[];
 
 pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
     match name {

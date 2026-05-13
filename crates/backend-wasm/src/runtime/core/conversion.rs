@@ -354,6 +354,8 @@ impl WatEmitter<'_> {
 
     (local $digit i32)
 
+    (local $desc i32)
+
     (if (i32.eq (local.get $v) (i32.const {undefined_tag}))
 
       (then
@@ -403,6 +405,62 @@ impl WatEmitter<'_> {
       (then
 
         (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+
+        (if (i32.eq (i32.load (local.get $obj)) (i32.const {symbol_sentinel}))
+
+          (then
+
+            (i32.store8 (local.get $ptr) (i32.const {ascii_upper_s}))
+
+            (i32.store8
+              (i32.add (local.get $ptr) (i32.const 1))
+              (i32.const {ascii_y}))
+
+            (i32.store8
+              (i32.add (local.get $ptr) (i32.const 2))
+              (i32.const {ascii_m}))
+
+            (i32.store8
+              (i32.add (local.get $ptr) (i32.const 3))
+              (i32.const {ascii_b}))
+
+            (i32.store8
+              (i32.add (local.get $ptr) (i32.const 4))
+              (i32.const {ascii_o}))
+
+            (i32.store8
+              (i32.add (local.get $ptr) (i32.const 5))
+              (i32.const {ascii_l}))
+
+            (i32.store8
+              (i32.add (local.get $ptr) (i32.const 6))
+              (i32.const {ascii_open_paren}))
+
+            (local.set $len (i32.const {symbol_open_len}))
+
+            (local.set $desc
+              (i32.load
+                (i32.add
+                  (local.get $obj)
+                  (i32.const {symbol_description_offset}))))
+
+            (if (i32.ne (local.get $desc) (i32.const {undefined_tag}))
+              (then
+                (local.set $len
+                  (i32.add
+                    (local.get $len)
+                    (call $value_to_string_into
+                      (local.get $desc)
+                      (i32.add (local.get $ptr) (local.get $len)))))))
+
+            (i32.store8
+              (i32.add (local.get $ptr) (local.get $len))
+              (i32.const {ascii_close_paren}))
+
+            (return
+              (i32.add
+                (local.get $len)
+                (i32.const {symbol_close_len})))))
 
         (if (i32.eq
 
@@ -557,6 +615,30 @@ impl WatEmitter<'_> {
             heap_number_len_offset = 8,
 
             heap_number_data_offset = 12,
+
+            symbol_sentinel = Layout::SYMBOL_SENTINEL,
+
+            symbol_description_offset = Layout::SYMBOL_DESCRIPTION_OFFSET,
+
+            symbol_open_len = "Symbol(".len() as i32,
+
+            symbol_close_len = ")".len() as i32,
+
+            ascii_upper_s = 'S' as i32,
+
+            ascii_y = 'y' as i32,
+
+            ascii_m = 'm' as i32,
+
+            ascii_b = 'b' as i32,
+
+            ascii_o = 'o' as i32,
+
+            ascii_l = 'l' as i32,
+
+            ascii_open_paren = '(' as i32,
+
+            ascii_close_paren = ')' as i32,
 
             undefined_len = RuntimeString::UNDEFINED.len() as i32,
 

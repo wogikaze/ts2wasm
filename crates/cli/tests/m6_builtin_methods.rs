@@ -1974,6 +1974,16 @@ fn build_smoke_symbol_registry() {
     );
 }
 
+#[test]
+fn build_smoke_symbol_registry_identity() {
+    let result = run_fixture("builtins-and-io/symbol-registry-identity.ts");
+    assert!(
+        result.is_ok(),
+        "Symbol registry identity semantics should build with runtime support: {:?}",
+        result.err()
+    );
+}
+
 // Atomics — stub that resolves without error
 #[test]
 fn build_smoke_atomics_intl_stubs() {

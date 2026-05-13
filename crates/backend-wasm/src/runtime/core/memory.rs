@@ -110,7 +110,7 @@ impl WatEmitter<'_> {
             .collect::<String>();
 
         let gc_roots = format!(
-            "\n    (call $gc_mark_registered_roots)\n    (call $gc_mark_call_frame_roots){gc_collect_roots}{global_this_root}{class_prototype_roots}{builtin_error_prototype_roots}"
+            "\n    (call $gc_mark_registered_roots)\n    (call $gc_mark_call_frame_roots)\n    (call $gc_mark_symbol_registry_roots){gc_collect_roots}{global_this_root}{class_prototype_roots}{builtin_error_prototype_roots}"
         );
 
         wat.push_str(&format!(
@@ -669,6 +669,58 @@ impl WatEmitter<'_> {
 
 
 
+  (func $gc_mark_symbol_registry_roots
+
+    (local $i i32)
+
+    (local $entry i32)
+
+    (block $done
+
+      (loop $scan
+
+        (br_if $done
+
+          (i32.ge_u
+
+            (local.get $i)
+
+            (i32.load (i32.const {symbol_registry_count_offset}))))
+
+        (local.set $entry
+
+          (i32.add
+
+            (i32.const {symbol_registry_base_offset})
+
+            (i32.mul (local.get $i) (i32.const {symbol_registry_entry_size}))))
+
+        (call $gc_mark_value
+
+          (i32.load
+
+            (i32.add
+
+              (local.get $entry)
+
+              (i32.const {symbol_registry_entry_key_offset}))))
+
+        (call $gc_mark_value
+
+          (i32.load
+
+            (i32.add
+
+              (local.get $entry)
+
+              (i32.const {symbol_registry_entry_value_offset}))))
+
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+
+        (br $scan))))
+
+
+
   (func $gc_mark_payload_header (param $payload i32) (result i32)
 
     (local $header i32)
@@ -852,6 +904,22 @@ impl WatEmitter<'_> {
     (if (i32.eq (local.get $count) (i32.const {heap_number_sentinel}))
 
       (then (return)))
+
+    (if (i32.eq (local.get $count) (i32.const {symbol_sentinel}))
+
+      (then
+
+        (call $gc_mark_value
+
+          (i32.load
+
+            (i32.add
+
+              (local.get $payload)
+
+              (i32.const {symbol_description_offset}))))
+
+        (return)))
 
     (local.set $proto
 
@@ -1190,6 +1258,20 @@ impl WatEmitter<'_> {
             closure_capture_slots_offset = CLOSURE_CAPTURE_SLOTS_OFFSET,
 
             closure_capture_slot_size = CLOSURE_CAPTURE_SLOT_SIZE,
+
+            symbol_registry_count_offset = Layout::SYMBOL_REGISTRY_COUNT_OFFSET,
+
+            symbol_registry_base_offset = Layout::SYMBOL_REGISTRY_BASE_OFFSET,
+
+            symbol_registry_entry_size = Layout::SYMBOL_REGISTRY_ENTRY_SIZE,
+
+            symbol_registry_entry_key_offset = Layout::SYMBOL_REGISTRY_ENTRY_KEY_OFFSET,
+
+            symbol_registry_entry_value_offset = Layout::SYMBOL_REGISTRY_ENTRY_VALUE_OFFSET,
+
+            symbol_sentinel = Layout::SYMBOL_SENTINEL,
+
+            symbol_description_offset = Layout::SYMBOL_DESCRIPTION_OFFSET,
 
             gc_roots = gc_roots,
 
