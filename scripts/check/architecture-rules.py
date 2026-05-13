@@ -58,6 +58,7 @@ MAX_MATCH_ARMS_HARD = 50
 OVERSIZED_ALLOWLIST = {
     # Tracking data files
     "docs/done-tracking.yaml": "tracking data",
+    "fixtures/catalog.yaml": "I-20260513-HGGTXF: monolithic fixture registry pending domain-sharded catalog",
     # Coverage and build scripts (naturally large)
     "scripts/run/reference-coverage.py": "coverage script — naturally large",
     # The architecture check script itself
@@ -138,9 +139,13 @@ FILE_SIZE_ALLOWLIST_1200 = {
     "crates/backend-wasm/src/runtime_objects.rs": "P4: runtime domain split",
     "crates/backend-wasm/src/runtime_strings.rs": "P4: runtime domain split",
     # P7: Resolver decomposition
+    "crates/backend-wasm/src/runtime/object/emit.rs": "I-20260513-HGGTXF: object runtime emitter pending domain split",
+    "crates/compiler/src/dump.rs": "I-20260513-HGGTXF: dump dispatcher pending AST/HIR/MIR domain split",
+    "crates/ir/src/lowered/mir.rs": "I-20260512-MRDATA/I-20260512-MRVADT: MIR bridge pending native model split",
     "crates/ir/src/lowered/program.rs": "P7: resolver decomposition",
     "crates/ir/src/lowered/resolver/array.rs": "P7: resolver decomposition",
     "crates/ir/src/lowered/resolver/call/method.rs": "P7: resolver decomposition",
+    "crates/ir/src/lowered/resolver/mod.rs": "I-20260513-HGGTXF: resolver facade pending domain export split",
     "crates/ir/src/lowered/resolver_expr.rs": "P7: resolver decomposition",
     "crates/ir/src/lowered/resolver_extra.rs": "P7: resolver decomposition",
     "crates/ir/src/builtin_resolver.rs": "P7: resolver decomposition",
@@ -214,9 +219,12 @@ FUNCTION_LENGTH_ALLOWLIST = {
     ("crates/ir/src/lowered/mir_dump.rs", "dump_mir_stmt"): "P14: MIR dump variant coverage dispatch -- 239 lines",
     ("crates/ir/src/lowered/mir_dump.rs", "dump_mir_expr"): "P14: MIR dump variant coverage dispatch -- 298 lines",
     ("crates/ir/src/lowered/mir_dump.rs", "runtime_intrinsic_name"): "P4: dump intrinsic name match -- 332 lines",
+    ("crates/ir/src/lowered/mir.rs", "lower_expr_to_mir"): "I-20260512-MRDATA/I-20260512-MRVADT: MIR bridge conversion dispatch -- 312 lines",
+    ("crates/ir/src/lowered/mir.rs", "mir_expr_to_lower"): "I-20260512-MRDATA/I-20260512-MRVADT: MIR bridge conversion dispatch -- 312 lines",
     ("crates/ir/src/lowered/hir_to_mir.rs", "lower_hir_expr"): "P7: resolver decomposition -- 206 lines",
     ("crates/ir/src/lowered/resolver/array.rs", "lower_variable_array_callback_method"): "P7: resolver decomposition -- 200+ lines",
     ("crates/ir/src/lowered/resolver/call/method.rs", "lower_mcall_date_string"): "P7: resolver decomposition -- 200+ lines",
+    ("crates/ir/src/lowered/resolver/call/method.rs", "lower_mcall_array_runtime"): "I-20260513-HGGTXF: array method runtime dispatcher pending helper split -- 245 lines",
     ("crates/ir/src/lowered/resolver/call/method.rs", "lower_mcall_class_dispatch"): "P7: resolver decomposition -- 200+ lines",
     ("crates/resolve/src/name_resolver.rs", "resolve_stmt"): "P7: resolver decomposition -- 498 lines",
     ("crates/resolve/src/name_resolver.rs", "resolve_expr"): "P7: resolver decomposition -- 498 lines",
@@ -276,6 +284,7 @@ HIGH_PUBLIC_API_COUNT_ALLOWLIST = {
     "crates/backend-wasm/src/runtime_strings.rs": "39 pub items — runtime strings emit exports many helpers",
     "crates/ir/src/builtin_resolver_bigint.rs": "65 pub items — bigint builtin resolver exports many match arms",
     "crates/ir/src/lowered/program_builtins.rs": "41 pub items — program builtins exports all runtime fn routing",
+    "crates/ir/src/lowered/resolver/expr/facts.rs": "36 pub items — I-20260513-HGGTXF: static fact helpers pending fact-context split",
     "crates/ir/src/lowered/resolver/mod.rs": "33 pub items — resolver module re-exports many sub-resolvers",
     "crates/ir/src/lowered/resolver_extra.rs": "114 pub items — resolver extra exports many helpers",
     "crates/ir/src/lowered.rs": "32 pub items — lowered IR boundary re-exports HIR/MIR and compatibility types",
