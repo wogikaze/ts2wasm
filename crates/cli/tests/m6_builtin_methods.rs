@@ -103,6 +103,16 @@ fn build_smoke_bigint_arithmetic() {
 }
 
 #[test]
+fn build_smoke_array_holes() {
+    let result = run_fixture("builtins-and-io/array-sparse-iteration.ts");
+    assert!(
+        result.is_ok(),
+        "array-sparse-iteration should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_math_trunc_sign_method() {
     let result = run_fixture("builtins-and-io/math-trunc-sign.ts");
     assert!(

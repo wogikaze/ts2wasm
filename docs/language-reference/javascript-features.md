@@ -214,7 +214,7 @@ BigInt mixed comparison の object `ToPrimitive` boundary: direct object-literal
 | array literal `[e0, e1, ...]` | ES1 | heap object | 実装済み (dense) | - | - |
 | array index `arr[n]` | ES1 | numeric index | 実装済み | - | - |
 | `arr.length` | ES1 | length property | 実装済み | - | - |
-| array holes `[1, , 3]` | ES1 | sparse array | 未実装 | P2 | - |
+| array holes `[1, , 3]` | ES1 | sparse array | 部分実装 (literal/new Array holes preserve presence bits; covered map/iteration paths match Node) | P2 | 412 |
 | spread elements `[...arr]` | ES6 | array spreading | 実装済み (basic: dense literals / known array locals including sparse arrays and simple aliases / known Set locals / ASCII literal-derived strings, including static `+` concatenation; sparse source holes materialize as present `undefined`) | - | 274, 354 |
 | destructuring binding patterns `let [a, b] = arr` | ES6 | pattern matching | Parser accepts declarations/parameters; simple identifier-only array/object declaration bindings are runtime-supported for the covered dense-array/object-property subset, including array elisions/rest, nested array/object bindings, static object-literal rest, and literal default initializers; object rest for dynamic sources remains issue-linked unsupported | P2 | 247, 251 |
 | destructuring assignment `[a, b] = arr` | ES6 | pattern matching | Parser accepts array/object assignment patterns; runtime assignment semantics are 未実装 | P2 | 252 |

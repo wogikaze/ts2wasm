@@ -146,7 +146,7 @@ Last updated: 2026-05-13
 | `array:length` | `.length` | 実装済み | arrays-objects |
 | `array:spread` | array spread | 実装済み | spread-args, core-semantics |
 | `array:destructuring` | array destructuring | 部分実装 | core-semantics |
-| `array:holes` | sparse / holes | 未実装 | - |
+| `array:holes` | sparse / holes | 部分実装 (literal/new Array holes preserve presence bits; covered map/iteration paths match Node) | builtins-and-io, core-semantics |
 | `array:nonnumber-index` | non-number index | 実装済み | arrays-objects |
 
 ### クラス (Classes)
