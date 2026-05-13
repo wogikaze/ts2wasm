@@ -658,6 +658,30 @@ impl GeneratorStepCollector {
                 Some(())
             }
             ResolvedStmt::Block { statements } => self.collect_stmts(statements),
+            ResolvedStmt::If {
+                condition,
+                then_body,
+                else_body,
+            } => {
+                let then_expr = single_generator_yield_value(then_body)?;
+                let else_expr = single_generator_yield_value(else_body)?;
+                self.steps.push(GeneratorYieldStep {
+                    statements: std::mem::take(&mut self.pending),
+                    value: ResolvedExpr::Ternary {
+                        condition: Box::new(condition.clone()),
+                        then_expr: Box::new(then_expr),
+                        else_expr: Box::new(else_expr),
+                        span: Span::generated("ternary"),
+                    },
+                });
+                Some(())
+            }
+            ResolvedStmt::For {
+                init: Some(init),
+                condition: Some(condition),
+                update: Some(update),
+                body,
+            } => self.collect_static_counter_for(init, condition, update, body),
             ResolvedStmt::Let(..)
             | ResolvedStmt::Assign(..)
             | ResolvedStmt::Expr(..)
@@ -667,6 +691,92 @@ impl GeneratorStepCollector {
             }
             _ => None,
         }
+    }
+
+    fn collect_static_counter_for(
+        &mut self,
+        init: &ResolvedStmt,
+        condition: &ResolvedExpr,
+        update: &ResolvedExpr,
+        body: &[ResolvedStmt],
+    ) -> Option<()> {
+        let (var, start) = parse_generator_for_init(init)?;
+        let end = parse_generator_for_less_than(condition, &var)?;
+        parse_generator_for_increment(update, &var)?;
+        let value = single_generator_yield_value(body)?;
+        if start > end || end - start > 1024 {
+            return None;
+        }
+
+        let mut first_statements = std::mem::take(&mut self.pending);
+        first_statements.push(init.clone());
+        for index in start..end {
+            let statements = if index == start {
+                std::mem::take(&mut first_statements)
+            } else {
+                vec![ResolvedStmt::Expr(update.clone())]
+            };
+            self.steps.push(GeneratorYieldStep {
+                statements,
+                value: value.clone(),
+            });
+        }
+        self.pending.push(ResolvedStmt::Expr(update.clone()));
+        Some(())
+    }
+}
+
+fn single_generator_yield_value(stmts: &[ResolvedStmt]) -> Option<ResolvedExpr> {
+    let [stmt] = stmts else {
+        return None;
+    };
+    match stmt {
+        ResolvedStmt::Expr(ResolvedExpr::Yield { expr }) => Some(
+            expr.as_ref()
+                .map(|expr| expr.as_ref().clone())
+                .unwrap_or(ResolvedExpr::Undefined),
+        ),
+        ResolvedStmt::Block { statements } => single_generator_yield_value(statements),
+        _ => None,
+    }
+}
+
+fn parse_generator_for_init(stmt: &ResolvedStmt) -> Option<(String, i32)> {
+    match stmt {
+        ResolvedStmt::Let(name, ResolvedExpr::Number(value))
+        | ResolvedStmt::Assign(name, ResolvedExpr::Number(value)) => Some((name.clone(), *value)),
+        _ => None,
+    }
+}
+
+fn parse_generator_for_less_than(expr: &ResolvedExpr, var: &str) -> Option<i32> {
+    match expr {
+        ResolvedExpr::Binary { left, op, right }
+            if *op == BinaryOp::Less
+                && matches!(left.as_ref(), ResolvedExpr::Ident(name) if name == var) =>
+        {
+            match right.as_ref() {
+                ResolvedExpr::Number(value) => Some(*value),
+                _ => None,
+            }
+        }
+        _ => None,
+    }
+}
+
+fn parse_generator_for_increment(expr: &ResolvedExpr, var: &str) -> Option<()> {
+    match expr {
+        ResolvedExpr::Assign { name, expr } if name == var => match expr.as_ref() {
+            ResolvedExpr::Binary { left, op, right }
+                if *op == BinaryOp::Add
+                    && matches!(left.as_ref(), ResolvedExpr::Ident(name) if name == var)
+                    && matches!(right.as_ref(), ResolvedExpr::Number(1)) =>
+            {
+                Some(())
+            }
+            _ => None,
+        },
+        _ => None,
     }
 }
 

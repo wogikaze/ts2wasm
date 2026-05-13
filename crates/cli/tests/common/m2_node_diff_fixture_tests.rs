@@ -1781,6 +1781,16 @@ fn generator_trailing_completion_matches_node_output() {
 }
 
 #[test]
+fn generator_branch_yield_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/generator-branch-yield.ts");
+}
+
+#[test]
+fn generator_loop_yield_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/generator-loop-yield.ts");
+}
+
+#[test]
 fn proxy_traps_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/proxy-handler-traps-unsupported.ts");
 }
