@@ -74,6 +74,25 @@ impl super::super::Resolver {
         }
 
         if let Ok(local_id) = self.resolve_local(func_name)
+            && let Some(bound) = self.ctx.facts.bound_function_locals.get(&local_id).cloned()
+        {
+            let combined_args = bound
+                .bound_args
+                .iter()
+                .chain(args.iter())
+                .cloned()
+                .collect::<Vec<_>>();
+            let receiver = self.lower_expr(&bound.receiver)?;
+            let lowered_args =
+                self.lower_function_call_args(bound.func_id, receiver, &combined_args)?;
+            return Ok(LoweredExpr::Call {
+                kind: FunctionCallKind::User(bound.func_id),
+                args: lowered_args,
+                span: Span::generated("call"),
+            });
+        }
+
+        if let Ok(local_id) = self.resolve_local(func_name)
             && let Some(closure) = self.ctx.facts.arrow_locals.get(&local_id).cloned()
         {
             let mut lowered_args = self.lower_call_args(args)?;

@@ -73,6 +73,8 @@ pub struct StaticFacts {
     pub heap_closure_names: HashSet<String>,
     /// Arrow closure locals: local_id → ArrowClosure (for inline arrow fn expansion).
     pub arrow_locals: HashMap<LocalId, ArrowClosure>,
+    /// Static `Function.prototype.bind` locals that can be expanded at call sites.
+    pub bound_function_locals: HashMap<LocalId, BoundFunction>,
 }
 
 /// Tracks the known elements of a function-parameter-based array-like value
@@ -87,6 +89,14 @@ pub struct StaticFunctionArrayLike {
 pub struct ArrowClosure {
     pub func_id: FuncId,
     pub captures: Vec<LocalId>,
+}
+
+/// Tracks a statically known bound function local.
+#[derive(Debug, Clone)]
+pub struct BoundFunction {
+    pub func_id: FuncId,
+    pub receiver: ResolvedExpr,
+    pub bound_args: Vec<ResolvedExpr>,
 }
 
 impl ArrowClosure {
@@ -126,6 +136,7 @@ impl StaticFacts {
             env_cell_locals: HashSet::new(),
             heap_closure_names: HashSet::new(),
             arrow_locals: HashMap::new(),
+            bound_function_locals: HashMap::new(),
         }
     }
 

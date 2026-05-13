@@ -14,3 +14,9 @@ console.log(sum3.bind(undefined, 7)(8, 9));
 console.log(addBase.call(ctx, 3));
 console.log(addBase.apply(ctx, [4]));
 console.log(addBase.bind(ctx)(5));
+
+const boundSum = sum3.bind(undefined, 1);
+console.log(boundSum(2, 3));
+
+const boundBase = addBase.bind(ctx, 6);
+console.log(boundBase());

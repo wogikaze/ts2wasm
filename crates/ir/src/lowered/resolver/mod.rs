@@ -12,7 +12,7 @@ use std::collections::{HashMap, HashSet};
 use crate::binding_pattern::{BindingDefault, parse_binding_pattern};
 use crate::builtin_resolved::{ResolvedExpr, ResolvedStmt};
 use crate::lowered::ctx::LoweringCtx;
-use crate::lowered::facts::ArrowClosure;
+use crate::lowered::facts::{ArrowClosure, BoundFunction};
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
@@ -151,6 +151,35 @@ impl Resolver {
         lowered
     }
 
+    fn bound_function_for_expr(
+        &self,
+        expr: &ResolvedExpr,
+    ) -> Result<Option<BoundFunction>, Diagnostic> {
+        let ResolvedExpr::MethodCall {
+            object,
+            method,
+            args,
+            ..
+        } = expr
+        else {
+            return Ok(None);
+        };
+        if method != "bind" {
+            return Ok(None);
+        }
+        let ResolvedExpr::Ident(func_name) = object.as_ref() else {
+            return Ok(None);
+        };
+        let Ok(func_id) = self.resolve_func(func_name) else {
+            return Ok(None);
+        };
+        Ok(Some(BoundFunction {
+            func_id,
+            receiver: args.first().cloned().unwrap_or(ResolvedExpr::Undefined),
+            bound_args: args.iter().skip(1).cloned().collect(),
+        }))
+    }
+
     fn lower_direct_iife_stmt(
         &mut self,
         expr: &ResolvedExpr,
@@ -238,7 +267,10 @@ impl Resolver {
                         .insert(local_id, class_name.clone());
                 }
                 let function_props = self.function_props_for_object_expr(expr);
-                let lowered = if let ResolvedExpr::ArrowFn {
+                let bound_function = self.bound_function_for_expr(expr)?;
+                let lowered = if bound_function.is_some() {
+                    LoweredExpr::Undefined(Span::generated("undef"))
+                } else if let ResolvedExpr::ArrowFn {
                     params,
                     body,
                     body_stmts,
@@ -268,6 +300,14 @@ impl Resolver {
                     );
                 } else {
                     self.ctx.facts.arrow_locals.remove(&local_id);
+                }
+                if let Some(bound_function) = bound_function {
+                    self.ctx
+                        .facts
+                        .bound_function_locals
+                        .insert(local_id, bound_function);
+                } else {
+                    self.ctx.facts.bound_function_locals.remove(&local_id);
                 }
                 self.update_heap_closure_local(local_id, expr, &lowered);
                 if self.ctx.facts.heap_closure_names.contains(name) {
