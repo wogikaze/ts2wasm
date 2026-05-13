@@ -6,6 +6,11 @@ fn basics_hello_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn console_log_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/console-log.ts");
+}
+
+#[test]
 fn m2_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/primitives-control-flow/number.ts",
