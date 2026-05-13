@@ -1349,6 +1349,7 @@ fn string_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/string-index-of.ts",
         "fixtures/builtins-and-io/string-last-index-of.ts",
         "fixtures/builtins-and-io/string-locale-compare.ts",
+        "fixtures/builtins-and-io/string-to-locale-case.ts",
         "fixtures/builtins-and-io/string-split.ts",
         "fixtures/builtins-and-io/string-slice.ts",
         "fixtures/builtins-and-io/string-substring.ts",
