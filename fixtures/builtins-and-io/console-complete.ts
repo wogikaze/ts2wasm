@@ -1,0 +1,13 @@
+console.log("log", 1);
+console.info("info", true);
+console.debug("debug", false);
+console.warn("warn", "message");
+console.error("error", "message");
+console.table("table", 2);
+console.group("group");
+console.groupEnd("group");
+console.time("timer");
+console.timeEnd("timer");
+console.count("counter");
+console.countReset("counter");
+console.assert(true, "assertion checked");

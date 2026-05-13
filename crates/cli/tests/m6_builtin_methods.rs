@@ -2405,3 +2405,13 @@ fn build_smoke_number_complete() {
         result.err()
     );
 }
+
+#[test]
+fn build_smoke_console_complete() {
+    let result = run_fixture("builtins-and-io/console-complete.ts");
+    assert!(
+        result.is_ok(),
+        "console method family should build: {:?}",
+        result.err()
+    );
+}
