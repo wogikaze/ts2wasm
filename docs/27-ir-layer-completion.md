@@ -234,7 +234,7 @@ Default pipeline switch は semantic correctness gate の後に行う。
 | C1 | P16 semantic correctness gate | canary + function/call suite + HIR support matrix が pass / recorded。 | default path switch issue を着手可能にする |
 | C2 | Native MIR model | alias ではない MIR 型、compat bridge、validator skeleton、snapshots がある。 | native MIR emitter work |
 | C3 | Native MIR emitter subset | selected MIR subset が bridge なしで WAT を出し、legacy path と parity を持つ。 | feature-gated pipeline path |
-| C4 | Feature-gated HIR→MIR→emit path | CLI/compiler に opt-in path があり、fallback と比較できる。 | default switch rehearsal |
+| C4 | Feature-gated HIR→MIR→emit path | CLI/compiler に `--experimental-hir-mir` strict mode と `--experimental-hir-mir-compat-fallback` mode があり、`hir-mir-compare` / `hir-mir-fallback` diagnostics で legacy path と比較できる。 | default switch rehearsal |
 | C5 | Default path switch | P16 gate + C3/C4 parity が pass。fallback は diagnostic/compat mode のみ。 | LoweredProgram bridge 縮小 |
 | C6 | Typed WasmIR backend expansion | selected runtime/emitter domain が typed WasmIR に移り、WAT/binary parity tests を持つ。 | raw WAT legacy helper 削減 |
 

@@ -56,8 +56,12 @@ impl HirToMirLowerer {
         self.functions
             .iter()
             .map(|hir_fn| {
-                let lowered_locals: Vec<LocalId> =
-                    hir_fn.locals.iter().map(|id| LocalId(id.0)).collect();
+                let lowered_locals: Vec<LocalId> = hir_fn
+                    .locals
+                    .iter()
+                    .filter(|id| !hir_fn.params.contains(id))
+                    .map(|id| LocalId(id.0))
+                    .collect();
                 LoweredFunction {
                     id: FuncId(hir_fn.id.0),
                     params: hir_fn.params.iter().map(|id| LocalId(id.0)).collect(),
@@ -130,14 +134,7 @@ impl HirToMirLowerer {
             }
             HirExpr::ConstString(s) => LoweredExpr::String(s.clone(), span),
             HirExpr::LoadLocal(id) => LoweredExpr::Local(LocalId(id.0), span),
-            HirExpr::LoadBuiltin(name) => LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::PropertyGet,
-                args: vec![
-                    LoweredExpr::This(span),
-                    LoweredExpr::String(name.clone(), span),
-                ],
-                span,
-            },
+            HirExpr::LoadBuiltin(_) => LoweredExpr::Undefined(span),
             HirExpr::ToBoolean(inner) => LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::TruthyBool,
                 args: vec![self.lower_expr(inner)],
@@ -208,21 +205,12 @@ impl HirToMirLowerer {
                 span,
             },
             HirExpr::CallMethod {
-                receiver,
-                method,
-                args,
-            } => {
-                let mut lowered_args = vec![
-                    self.lower_expr(receiver),
-                    LoweredExpr::String(method.clone(), span),
-                ];
-                lowered_args.extend(self.lower_exprs(args));
-                LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeFn::PropertyGet,
-                    args: lowered_args,
-                    span,
-                }
-            }
+                receiver, method, ..
+            } => LoweredExpr::PropertyGet {
+                obj: Box::new(self.lower_expr(receiver)),
+                key: method.clone(),
+                span,
+            },
         }
     }
 

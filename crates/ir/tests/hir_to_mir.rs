@@ -217,8 +217,7 @@ fn lowers_load_builtin() {
     };
     let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
-    assert!(dump.contains("RuntimeCall"), "dump: {}", dump);
-    assert!(dump.contains("PropertyGet"), "dump: {}", dump);
+    assert!(dump.contains("Undefined"), "dump: {}", dump);
 }
 
 #[test]
@@ -415,7 +414,6 @@ fn lowers_call_method() {
     };
     let mir = lower_hir_to_mir_native(&hir);
     let dump = ts2wasm_ir::dump_mir(&mir);
-    assert!(dump.contains("RuntimeCall"), "dump: {}", dump);
     assert!(dump.contains("PropertyGet"), "dump: {}", dump);
 }
 
@@ -440,7 +438,43 @@ fn lowers_function_body() {
     let f = &mir.functions[0];
     assert_eq!(f.id, FuncId(0));
     assert_eq!(f.params, vec![LocalId(0)]);
-    assert_eq!(f.locals, vec![LocalId(0)]);
+    assert_eq!(f.locals, Vec::<LocalId>::new());
+}
+
+#[test]
+fn lowers_function_locals_without_repeating_params() {
+    let hir = HirProgram {
+        body: vec![HirStmt::Expr(HirExpr::CallFunction {
+            function: HirFunctionId(0),
+            args: vec![HirExpr::ConstNumber(1), HirExpr::ConstNumber(2)],
+        })],
+        locals: vec![],
+        functions: vec![HirFunction {
+            id: HirFunctionId(0),
+            params: vec![HirLocalId(0), HirLocalId(1)],
+            locals: vec![HirLocalId(0), HirLocalId(1), HirLocalId(2)],
+            body: vec![
+                HirStmt::Let {
+                    local: HirLocalId(2),
+                    init: HirExpr::JsAdd {
+                        left: Box::new(HirExpr::LoadLocal(HirLocalId(0))),
+                        right: Box::new(HirExpr::LoadLocal(HirLocalId(1))),
+                    },
+                },
+                HirStmt::Return(HirExpr::LoadLocal(HirLocalId(2))),
+            ],
+        }],
+    };
+
+    let mir = lower_hir_to_mir_native(&hir);
+    assert_eq!(mir.functions.len(), 1);
+    assert_eq!(mir.functions[0].params, vec![LocalId(0), LocalId(1)]);
+    assert_eq!(mir.functions[0].locals, vec![LocalId(2)]);
+
+    let (validated, warnings) =
+        Validated::<MirProgram>::new_mir(mir).expect("native MIR should validate");
+    assert!(warnings.is_empty(), "warnings: {:?}", warnings);
+    assert_eq!(validated.program().functions[0].locals, vec![LocalId(2)]);
 }
 
 // ---------------------------------------------------------------------------

@@ -22,6 +22,12 @@ enum Command {
         /// path, workaround, next crate to implement)
         #[arg(long)]
         explain_unsupported: bool,
+        /// Build through the opt-in HIR -> MIR -> emit_mir pipeline.
+        #[arg(long = "experimental-hir-mir")]
+        experimental_hir_mir: bool,
+        /// Build through HIR -> MIR when supported, otherwise fall back to the legacy pipeline.
+        #[arg(long = "experimental-hir-mir-compat-fallback")]
+        experimental_hir_mir_compat_fallback: bool,
     },
     /// Check a TypeScript source file for parse errors
     Check { input: PathBuf },
@@ -79,12 +85,33 @@ fn run() -> Result<(), String> {
             manifest,
             host_deny,
             explain_unsupported,
+            experimental_hir_mir,
+            experimental_hir_mir_compat_fallback,
         } => {
-            let result = if let Some(ref _host) = host_deny {
-                ts2wasm_cli::build_file_with_host_deny(&input, &output, manifest.as_deref(), true)
+            if experimental_hir_mir && experimental_hir_mir_compat_fallback {
+                return Err(
+                    "--experimental-hir-mir and --experimental-hir-mir-compat-fallback are mutually exclusive"
+                        .to_owned(),
+                );
+            }
+
+            let hir_mir_mode = if experimental_hir_mir {
+                ts2wasm_cli::HirMirBuildMode::Strict
+            } else if experimental_hir_mir_compat_fallback {
+                ts2wasm_cli::HirMirBuildMode::CompatFallback
             } else {
-                ts2wasm_cli::build_file_with_options(&input, &output, manifest.as_deref())
+                ts2wasm_cli::HirMirBuildMode::Disabled
             };
+
+            let result = ts2wasm_cli::build_file_with_pipeline_options(
+                &input,
+                &output,
+                manifest.as_deref(),
+                ts2wasm_cli::BuildPipelineOptions {
+                    host_deny: host_deny.is_some(),
+                    hir_mir_mode,
+                },
+            );
             match result {
                 Ok(report) => {
                     for diag in &report.diagnostics {

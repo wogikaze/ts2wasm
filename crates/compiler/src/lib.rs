@@ -9,7 +9,10 @@ mod test262_preprocessor;
 pub use stages::parse::parse_program;
 
 mod pipeline;
-pub use pipeline::{build_file, build_file_with_host_deny, build_file_with_options};
+pub use pipeline::{
+    BuildPipelineOptions, HirMirBuildMode, build_file, build_file_with_host_deny,
+    build_file_with_options, build_file_with_pipeline_options,
+};
 
 pub mod io;
 

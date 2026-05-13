@@ -94,6 +94,23 @@ so it is a scope comparison rather than a regression signal. The sample run reco
 `differential_pass=17`, `negative_compile_pass=1`, `fail=32`, `unsupported=250`, and
 `blocked=0`.
 
+### HIR to MIR Opt-In Build Path
+
+Last audited: 2026-05-13T22:49:00+09:00.
+
+The default build path still uses `LoweredProgram`. The CLI now exposes two
+manual rehearsal modes for the target pipeline:
+
+- `ts2wasm build --experimental-hir-mir`: strict `BuiltinResolved AST -> Validated<HirProgram> -> Validated<MirProgram> -> emit_mir` mode. HIR lowering or MIR validation failures fail the build.
+- `ts2wasm build --experimental-hir-mir-compat-fallback`: runs the same opt-in path when supported, but records a `hir-mir-fallback` warning and emits the legacy WAT when the HIR/MIR path rejects the program.
+
+Successful opt-in builds record a `hir-mir-compare` warning containing legacy
+and MIR WAT byte counts plus `wat_equal=<bool>` when the legacy path can also
+lower the program. If the HIR/MIR path builds but the legacy path rejects the
+same fixture, `hir-mir-compare` records that comparison was unavailable. This is
+a rehearsal signal, not a default-switch approval. The P16 blockers above still
+keep the default switch at no-go.
+
 ### test262 Semantic Core Seeds
 
 The file `scripts/data/test262-semantic-core-seeds.txt` contains a deterministic subset of test262

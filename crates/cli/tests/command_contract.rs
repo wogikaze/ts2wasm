@@ -115,6 +115,103 @@ fn build_with_manifest_emits_json() {
 }
 
 #[test]
+fn build_experimental_hir_mir_reports_comparison() {
+    let input = write_temp_source(
+        "contract-hir-mir",
+        "function add(left, right) { return left + right; } let result = add(1, 2); console.log(result);",
+    );
+    let output =
+        std::env::temp_dir().join(format!("contract-hir-mir-out-{}.wasm", unique_suffix()));
+
+    let result = Command::new(cli_binary())
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .arg("--experimental-hir-mir")
+        .output()
+        .expect("ts2wasm build should execute");
+
+    assert!(
+        result.status.success(),
+        "experimental HIR/MIR build should succeed\nstderr:\n{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    assert!(
+        output.exists(),
+        "build should produce wasm output: {output:?}"
+    );
+    let stderr = String::from_utf8_lossy(&result.stderr);
+    assert!(stderr.contains("hir-mir-compare"), "stderr: {stderr}");
+    assert!(stderr.contains("wat_equal="), "stderr: {stderr}");
+}
+
+#[test]
+fn build_experimental_hir_mir_strict_rejects_unsupported_hir() {
+    let input = write_temp_source(
+        "contract-hir-mir-strict",
+        "let value = true ? 1 : 2; console.log(value);",
+    );
+    let output = std::env::temp_dir().join(format!(
+        "contract-hir-mir-strict-out-{}.wasm",
+        unique_suffix()
+    ));
+
+    let result = Command::new(cli_binary())
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .arg("--experimental-hir-mir")
+        .output()
+        .expect("ts2wasm build should execute");
+
+    assert!(
+        !result.status.success(),
+        "strict HIR/MIR build should reject unsupported HIR"
+    );
+    let stderr = String::from_utf8_lossy(&result.stderr);
+    assert!(stderr.contains("hir-lowering"), "stderr: {stderr}");
+}
+
+#[test]
+fn build_experimental_hir_mir_fallback_records_compat_path() {
+    let input = write_temp_source(
+        "contract-hir-mir-fallback",
+        "let value = true ? 1 : 2; console.log(value);",
+    );
+    let output = std::env::temp_dir().join(format!(
+        "contract-hir-mir-fallback-out-{}.wasm",
+        unique_suffix()
+    ));
+
+    let result = Command::new(cli_binary())
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .arg("--experimental-hir-mir-compat-fallback")
+        .output()
+        .expect("ts2wasm build should execute");
+
+    assert!(
+        result.status.success(),
+        "compat fallback HIR/MIR build should succeed\nstderr:\n{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    assert!(
+        output.exists(),
+        "build should produce wasm output: {output:?}"
+    );
+    let stderr = String::from_utf8_lossy(&result.stderr);
+    assert!(stderr.contains("hir-mir-fallback"), "stderr: {stderr}");
+    assert!(
+        stderr.contains("compatibility fallback used"),
+        "stderr: {stderr}"
+    );
+}
+
+#[test]
 fn build_with_host_deny_rejects_host_imports() {
     let input = write_temp_source(
         "contract-host-deny",
