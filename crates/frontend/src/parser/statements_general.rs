@@ -153,9 +153,16 @@ impl Parser {
         match self.peek() {
             Some(Token::String(_)) => {
                 let specifier = self.expect_module_specifier()?;
-                let end = self.statement_terminator_end(specifier.span.end)?;
+                let attributes = self.parse_import_attributes()?;
+                let end = self.statement_terminator_end(
+                    attributes
+                        .last()
+                        .map(|attribute| attribute.span.end)
+                        .unwrap_or(specifier.span.end),
+                )?;
                 Ok(Stmt::ImportSideEffect {
                     specifier,
+                    attributes,
                     span: Span {
                         start: import_span.start,
                         end,
@@ -181,6 +188,7 @@ impl Parser {
                             span: import_span,
                         },
                         source,
+                        attributes: Vec::new(),
                         span: Span { start: import_span.start, end },
                     });
                 }
@@ -451,10 +459,17 @@ impl Parser {
         let specifiers = self.parse_import_named_specifiers()?;
         self.expect_contextual_keyword("from")?;
         let source = self.expect_module_specifier()?;
-        let end = self.statement_terminator_end(source.span.end)?;
+        let attributes = self.parse_import_attributes()?;
+        let end = self.statement_terminator_end(
+            attributes
+                .last()
+                .map(|attribute| attribute.span.end)
+                .unwrap_or(source.span.end),
+        )?;
         Ok(Stmt::ImportNamed {
             specifiers,
             source,
+            attributes,
             import_type,
             span: Span {
                 start: import_span.start,
@@ -485,10 +500,17 @@ impl Parser {
         }
         self.expect_contextual_keyword("from")?;
         let source = self.expect_module_specifier()?;
-        let end = self.statement_terminator_end(source.span.end)?;
+        let attributes = self.parse_import_attributes()?;
+        let end = self.statement_terminator_end(
+            attributes
+                .last()
+                .map(|attribute| attribute.span.end)
+                .unwrap_or(source.span.end),
+        )?;
         Ok(Stmt::ImportDefault {
             specifier: default,
             source,
+            attributes,
             span: Span {
                 start: import_span.start,
                 end,
@@ -504,11 +526,18 @@ impl Parser {
         let specifiers = self.parse_import_named_specifiers()?;
         self.expect_contextual_keyword("from")?;
         let source = self.expect_module_specifier()?;
-        let end = self.statement_terminator_end(source.span.end)?;
+        let attributes = self.parse_import_attributes()?;
+        let end = self.statement_terminator_end(
+            attributes
+                .last()
+                .map(|attribute| attribute.span.end)
+                .unwrap_or(source.span.end),
+        )?;
         Ok(Stmt::ImportDefaultNamed {
             default,
             specifiers,
             source,
+            attributes,
             span: Span {
                 start: import_span.start,
                 end,
@@ -524,11 +553,18 @@ impl Parser {
         let namespace = self.parse_import_namespace_specifier()?;
         self.expect_contextual_keyword("from")?;
         let source = self.expect_module_specifier()?;
-        let end = self.statement_terminator_end(source.span.end)?;
+        let attributes = self.parse_import_attributes()?;
+        let end = self.statement_terminator_end(
+            attributes
+                .last()
+                .map(|attribute| attribute.span.end)
+                .unwrap_or(source.span.end),
+        )?;
         Ok(Stmt::ImportDefaultNamespace {
             default,
             namespace,
             source,
+            attributes,
             span: Span {
                 start: import_span.start,
                 end,
@@ -540,15 +576,72 @@ impl Parser {
         let specifier = self.parse_import_namespace_specifier()?;
         self.expect_contextual_keyword("from")?;
         let source = self.expect_module_specifier()?;
-        let end = self.statement_terminator_end(source.span.end)?;
+        let attributes = self.parse_import_attributes()?;
+        let end = self.statement_terminator_end(
+            attributes
+                .last()
+                .map(|attribute| attribute.span.end)
+                .unwrap_or(source.span.end),
+        )?;
         Ok(Stmt::ImportNamespace {
             specifier,
             source,
+            attributes,
             span: Span {
                 start: import_span.start,
                 end,
             },
         })
+    }
+
+    fn parse_import_attributes(&mut self) -> Result<Vec<ImportAttribute>, Diagnostic> {
+        if !(self.peek_contextual_keyword("assert") || self.peek_contextual_keyword("with")) {
+            return Ok(Vec::new());
+        }
+        self.advance();
+        self.expect(TokenKind::LeftBrace)?;
+        let mut attributes = Vec::new();
+        if self.consume(TokenKind::RightBrace) {
+            return Ok(attributes);
+        }
+        loop {
+            let (key, key_span) = self.expect_module_specifier_name()?;
+            self.expect(TokenKind::Colon)?;
+            let value = match self.advance() {
+                Some(SpannedToken {
+                    kind: Token::String(value),
+                    span: value_span,
+                }) => (value, value_span),
+                other => {
+                    return Err(Diagnostic {
+                        code: DiagCode::SyntaxError,
+                        message: format!(
+                            "expected import assertion string literal value, got {other:?}"
+                        ),
+                        span: self.peek_span(),
+                        phase: None,
+                    });
+                }
+            };
+            attributes.push(ImportAttribute {
+                key,
+                key_span,
+                value: value.0,
+                value_span: value.1,
+                span: Span {
+                    start: key_span.start,
+                    end: value.1.end,
+                },
+            });
+            if self.consume(TokenKind::RightBrace) {
+                break;
+            }
+            self.expect(TokenKind::Comma)?;
+            if self.consume(TokenKind::RightBrace) {
+                break;
+            }
+        }
+        Ok(attributes)
     }
 
     fn parse_import_namespace_specifier(&mut self) -> Result<ImportNamespaceSpecifier, Diagnostic> {

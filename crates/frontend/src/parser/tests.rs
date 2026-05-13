@@ -2464,6 +2464,7 @@ b /* parameter b */,
                 source,
                 span,
                 import_type,
+                ..
             } => {
                 assert_eq!(*span, Span { start: 0, end: 59 });
                 assert_eq!(source.value, "./module-source");
@@ -2491,7 +2492,9 @@ b /* parameter b */,
         assert_eq!(program.len(), 1);
 
         match &program[0] {
-            Stmt::ImportSideEffect { specifier, span } => {
+            Stmt::ImportSideEffect {
+                specifier, span, ..
+            } => {
                 assert_eq!(*span, Span { start: 0, end: 25 });
                 assert_eq!(specifier.value, "./module-source");
                 assert_eq!(specifier.span, Span { start: 7, end: 24 });
@@ -2510,6 +2513,7 @@ b /* parameter b */,
                 specifier,
                 source,
                 span,
+                ..
             } => {
                 assert_eq!(*span, Span { start: 0, end: 38 });
                 assert_eq!(specifier.local, "ns");
@@ -2535,6 +2539,7 @@ b /* parameter b */,
                 specifiers,
                 source,
                 span,
+                ..
             } => {
                 assert_eq!(*span, Span { start: 0, end: 64 });
                 assert_eq!(default.local, "defaultName");
@@ -2564,6 +2569,7 @@ b /* parameter b */,
                 namespace,
                 source,
                 span,
+                ..
             } => {
                 assert_eq!(*span, Span { start: 0, end: 51 });
                 assert_eq!(default.local, "defaultName");
@@ -2589,6 +2595,7 @@ b /* parameter b */,
                 specifier,
                 source,
                 span,
+                ..
             } => {
                 assert_eq!(*span, Span { start: 0, end: 36 });
                 assert_eq!(specifier.local, "value");
@@ -2596,6 +2603,35 @@ b /* parameter b */,
                 assert_eq!(specifier.span, Span { start: 7, end: 12 });
                 assert_eq!(source.value, "./module-source");
                 assert_eq!(source.span, Span { start: 18, end: 35 });
+            }
+            other => panic!("unexpected import statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_import_assertions() {
+        let program = parse_program("import data from './data.json' assert { type: 'json' };")
+            .unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::ImportDefault {
+                specifier,
+                source,
+                attributes,
+                span,
+            } => {
+                assert_eq!(*span, Span { start: 0, end: 55 });
+                assert_eq!(specifier.local, "data");
+                assert_eq!(specifier.local_span, Span { start: 7, end: 11 });
+                assert_eq!(source.value, "./data.json");
+                assert_eq!(source.span, Span { start: 17, end: 30 });
+                assert_eq!(attributes.len(), 1);
+                assert_eq!(attributes[0].key, "type");
+                assert_eq!(attributes[0].key_span, Span { start: 40, end: 44 });
+                assert_eq!(attributes[0].value, "json");
+                assert_eq!(attributes[0].value_span, Span { start: 46, end: 52 });
+                assert_eq!(attributes[0].span, Span { start: 40, end: 52 });
             }
             other => panic!("unexpected import statement: {other:?}"),
         }
@@ -2877,7 +2913,7 @@ b /* parameter b */,
     }
 
     #[test]
-    fn parses_namespace_re_export_with_source_and_declaration_spans() {
+    fn parses_export_namespace() {
         let program = parse_program("export * as ns from './module-source';").unwrap();
         assert_eq!(program.len(), 1);
 

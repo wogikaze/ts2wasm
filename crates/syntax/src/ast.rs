@@ -84,6 +84,15 @@ pub struct ImportNamespaceSpecifier {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ImportAttribute {
+    pub key: String,
+    pub key_span: Span,
+    pub value: String,
+    pub value_span: Span,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExportNamedSpecifier {
     pub local: String,
     pub local_span: Span,
@@ -152,34 +161,40 @@ pub enum ClassPrivateElement {
 pub enum Stmt {
     ImportSideEffect {
         specifier: ModuleSpecifier,
+        attributes: Vec<ImportAttribute>,
         span: Span,
     },
     ImportNamed {
         specifiers: Vec<ImportNamedSpecifier>,
         source: ModuleSpecifier,
+        attributes: Vec<ImportAttribute>,
         span: Span,
         import_type: bool,
     },
     ImportDefault {
         specifier: ImportDefaultSpecifier,
         source: ModuleSpecifier,
+        attributes: Vec<ImportAttribute>,
         span: Span,
     },
     ImportDefaultNamed {
         default: ImportDefaultSpecifier,
         specifiers: Vec<ImportNamedSpecifier>,
         source: ModuleSpecifier,
+        attributes: Vec<ImportAttribute>,
         span: Span,
     },
     ImportNamespace {
         specifier: ImportNamespaceSpecifier,
         source: ModuleSpecifier,
+        attributes: Vec<ImportAttribute>,
         span: Span,
     },
     ImportDefaultNamespace {
         default: ImportDefaultSpecifier,
         namespace: ImportNamespaceSpecifier,
         source: ModuleSpecifier,
+        attributes: Vec<ImportAttribute>,
         span: Span,
     },
     ExportNamed {

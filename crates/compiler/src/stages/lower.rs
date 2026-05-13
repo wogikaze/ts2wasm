@@ -295,7 +295,9 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                 });
                 lowered_statement_index += 1;
             }
-            Stmt::ImportSideEffect { specifier, span } => {
+            Stmt::ImportSideEffect {
+                specifier, span, ..
+            } => {
                 let _ = module_graph
                     .entry()
                     .dependencies()
@@ -315,6 +317,7 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                 specifier: ns_specifier,
                 source,
                 span,
+                ..
             } => {
                 let dependency = module_graph
                     .entry()
