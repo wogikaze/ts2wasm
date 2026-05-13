@@ -1925,6 +1925,13 @@ fn json_stringify_replacer_function_transform_matches_node() {
 }
 
 #[test]
+fn json_stringify_replacer_function_root_holder_matches_node() {
+    assert_fixture_matches_node(
+        "fixtures/builtins-and-io/json-stringify-replacer-function-root-holder.ts",
+    );
+}
+
+#[test]
 fn json_stringify_replacer_array_boxed_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/json-stringify-replacer-array-boxed.ts");
 }
