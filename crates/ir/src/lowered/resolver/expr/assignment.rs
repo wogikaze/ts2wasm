@@ -188,10 +188,30 @@ impl super::super::Resolver {
         if matches!(object, ResolvedExpr::Ident(name) if name == "super") {
             return self.lower_super_property_assign(object, key, value, span);
         }
+        let lowered_value = self.lower_expr(value)?;
+        // Track function/arrow assignments on known locals so method calls
+        // on untyped receivers (e.g. assert.sameValue()) can be dispatched
+        // via object_function_props in lower_mcall_dispatch_early.
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(local_id) = self.resolve_local(name)
+        {
+            let func_id = match &lowered_value {
+                LoweredExpr::ArrowFn { func_id, .. } => Some(*func_id),
+                _ => None,
+            };
+            if let Some(fid) = func_id {
+                self.ctx
+                    .classes
+                    .object_function_props
+                    .entry(local_id)
+                    .or_default()
+                    .insert(key.to_owned(), fid);
+            }
+        }
         Ok(object_kernel::ordinary_set(
             self.lower_expr(object)?,
             key,
-            self.lower_expr(value)?,
+            lowered_value,
             span,
         ))
     }

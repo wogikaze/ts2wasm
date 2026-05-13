@@ -61,7 +61,13 @@ impl super::super::Resolver {
         if let ResolvedExpr::Ident(name) = object
             && self.resolve_func(name.as_str()).is_ok()
         {
-            return self.lower_function_metadata_property(name.as_str(), key, span);
+            // Function metadata properties (name, length, prototype) go directly
+            // to the metadata resolver.  Non-metadata properties (e.g. user-defined
+            // properties like assert._isSameValue) fall through to OrdinaryGet so
+            // they work when assigned at runtime via assert.foo = function(){}.
+            if matches!(key, "name" | "length" | "prototype") {
+                return self.lower_function_metadata_property(name.as_str(), key, span);
+            }
         }
         if let ResolvedExpr::Ident(name) = object
             && is_global_builtin_function_name(name)

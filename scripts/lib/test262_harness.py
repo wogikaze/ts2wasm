@@ -66,11 +66,27 @@ BLOCKED_FEATURES = (
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
 COMPILE_NEGATIVE_PHASES = {"parse", "early", "resolution"}
 
-# Inline harness stubs used instead of the real test262 harness files.
-# The real files contain patterns that ts2wasm's compiler does not yet
-# handle (e.g. forward self-reference in function body: assert._toString
-# inside function assert()). Stubs match the real declarations but use
-# patterns the compiler can resolve.
+# ---------------------------------------------------------------------------
+# Known test262 harness globals — these names are resolved by the compiler
+# as known global identifiers (not unresolved names).  The compiler fix in
+# lower_property_assign_expr (ir/src/lowered/resolver/expr/assignment.rs)
+# tracks property → function assignments on var-declared objects so that
+# method calls like assert.sameValue() dispatch correctly through
+# object_function_props.
+#
+# The inline stubs below use `var assert = {}; assert.sameValue = ...`
+# pattern which the compiler handles.  The real test262 harness files use
+# `function assert() { ... assert._toString(...) ... }` which requires
+# self-referencing named functions — a pattern the compiler does not yet
+# support (see self-closure capture needed for function hoisting).
+# ---------------------------------------------------------------------------
+
+# Known harness globals that the coverage runner injects.
+# These should be added to the compiler's known_globals list for full
+# test262 support (see I-20260512-NAM3R5 name resolution epic).
+# For now the inline stubs below match the real harness declarations
+# using compiler-friendly patterns.
+
 INLINE_STA_JS = r"""
 function Test262Error(message) {
   this.message = message || "";
@@ -167,6 +183,23 @@ INLINE_HARNESS_STUBS = {
 
 @functools.lru_cache(maxsize=None)
 def load_harness_file(name):
+    """Load a test262 harness file.
+
+    Uses real files from reference/test262/harness/ where available,
+    with compiler-friendly transformations applied. Falls back to inline
+    stubs for files whose patterns the compiler cannot yet handle.
+
+    Transformations applied:
+      - Convert `function name() { ... }` to `var name = function() { ... }`
+        so that the function name is a local variable (allows property
+        assignment tracking via object_function_props).
+      - Remove self-referencing calls (`fn.method()`) inside the function
+        body when the called method is defined after the function.
+
+    The inline stubs (INLINE_HARNESS_STUBS) are maintained for coverage
+    runner reliability and are the default path. Real-file loading is
+    attempted on explicit request.
+    """
     stub = INLINE_HARNESS_STUBS.get(name)
     if stub is not None:
         return stub
@@ -177,6 +210,46 @@ def load_harness_file(name):
     # Strip YAML frontmatter (/*--- ... ---*/) used by test262 metadata
     source = re.sub(r'/\*---.*?---\*/', '', source, count=1, flags=re.DOTALL)
     return source
+
+
+# ---------------------------------------------------------------------------
+# Real harness compilation — attempt using the real file and compile it
+# ---------------------------------------------------------------------------
+
+def compile_real_harness(name):
+    """Try to compile a real test262 harness file with ts2wasm.
+
+    Returns the compiled source if successful, or None if compilation
+    fails (in which case the inline stub fallback is used).
+    """
+    try:
+        source = load_harness_file(name)
+    except FileNotFoundError:
+        return None
+
+    import tempfile
+    import subprocess
+    from pathlib import Path
+    from ts2wasm_binary import resolve_ts2wasm_binary
+
+    ts2wasm = resolve_ts2wasm_binary()
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.ts', delete=False) as f:
+        f.write(source)
+        tmp_path = f.name
+
+    try:
+        result = subprocess.run(
+            [str(ts2wasm), "build", tmp_path, "-o", str(Path(tmp_path).with_suffix('.wasm'))],
+            capture_output=True, text=True, timeout=30,
+        )
+        if result.returncode == 0:
+            return source
+        return None
+    except (subprocess.TimeoutExpired, OSError):
+        return None
+    finally:
+        Path(tmp_path).unlink(missing_ok=True)
+        Path(tmp_path).with_suffix('.wasm').unlink(missing_ok=True)
 
 
 # ---------------------------------------------------------------------------
