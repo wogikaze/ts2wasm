@@ -342,6 +342,11 @@ impl Resolver {
                     local_id,
                     expr,
                 );
+                crate::lowered::resolver::expr::facts::update_generator_iterator_local(
+                    &mut self.ctx,
+                    local_id,
+                    expr,
+                );
                 crate::lowered::resolver::expr::facts::update_static_object_literal_local_on_let(
                     &mut self.ctx,
                     local_id,
@@ -441,6 +446,11 @@ impl Resolver {
                     expr,
                 );
                 crate::lowered::resolver::expr::facts::update_array_iterator_local(
+                    &mut self.ctx,
+                    local_id,
+                    expr,
+                );
+                crate::lowered::resolver::expr::facts::update_generator_iterator_local(
                     &mut self.ctx,
                     local_id,
                     expr,

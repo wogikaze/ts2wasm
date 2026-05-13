@@ -321,6 +321,28 @@ impl super::super::Resolver {
         self.lower_call_with_func_id(func_id, func_name, args, span)
     }
 
+    fn lower_generator_call(&mut self, func_name: &str) -> Result<LoweredExpr, Diagnostic> {
+        let yields = self
+            .ctx
+            .facts
+            .generator_function_yields
+            .get(func_name)
+            .cloned()
+            .unwrap_or_default();
+        let elements = yields
+            .iter()
+            .map(|expr| self.lower_expr(expr))
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::GeneratorYield,
+            args: vec![LoweredExpr::ArrayNew {
+                elements,
+                span: Span::generated("array"),
+            }],
+            span: Span::generated("runtime_call"),
+        })
+    }
+
     /// Helper for lower_call_expr: emit the function call after resolution,
     /// checking for receiver binding requirements.
     fn lower_call_with_func_id(
@@ -330,6 +352,9 @@ impl super::super::Resolver {
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
+        if args.is_empty() && self.ctx.facts.generator_function_names.contains(func_name) {
+            return self.lower_generator_call(func_name);
+        }
         if self
             .ctx
             .symbols

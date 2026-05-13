@@ -49,6 +49,10 @@ pub struct StaticFacts {
     pub symbol_iterator_object_locals: HashSet<LocalId>,
     /// Locals holding Array iterator objects returned by values/keys/entries.
     pub array_iterator_locals: HashSet<LocalId>,
+    /// Locals holding generator iterator objects returned by generator calls.
+    pub generator_iterator_locals: HashSet<LocalId>,
+    /// Statically collected yield values for simple top-level generator functions.
+    pub generator_function_yields: HashMap<String, Vec<ResolvedExpr>>,
     /// Static object literal contents: local → (key, value) pairs.
     pub static_object_literal_locals: HashMap<LocalId, Vec<(String, ResolvedExpr)>>,
     /// Alias source tracking for static object literals: alias → source_ids.
@@ -126,6 +130,8 @@ impl StaticFacts {
             static_array_slots: HashMap::new(),
             symbol_iterator_object_locals: HashSet::new(),
             array_iterator_locals: HashSet::new(),
+            generator_iterator_locals: HashSet::new(),
+            generator_function_yields: HashMap::new(),
             static_object_literal_locals: HashMap::new(),
             static_object_literal_alias_sources: HashMap::new(),
             static_function_array_like_locals: HashMap::new(),

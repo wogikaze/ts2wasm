@@ -1741,6 +1741,11 @@ fn array_entries_matches_node() {
 }
 
 #[test]
+fn generator_basic_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/generator-basic.ts");
+}
+
+#[test]
 fn array_sort_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/array-sort.ts");
 }

@@ -35,6 +35,9 @@ impl WatEmitter<'_> {
             RuntimeFn::SymbolHasInstance => self.emit_symbol_has_instance(wat),
             RuntimeFn::GetIterator => self.emit_get_iterator(wat),
             RuntimeFn::IteratorNext => self.emit_iterator_next(wat),
+            RuntimeFn::GeneratorYield => self.emit_generator_yield(wat),
+            RuntimeFn::GeneratorReturn => self.emit_generator_return(wat),
+            RuntimeFn::GeneratorNext => self.emit_generator_next(wat),
             _ => unreachable!("non-host RuntimeFn routed to host dispatch"),
         }
     }

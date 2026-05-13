@@ -32,6 +32,18 @@ impl super::super::Resolver {
         }
         if method == "next"
             && args.is_empty()
+            && crate::lowered::resolver::expr::facts::resolved_expr_is_generator_iterator(
+                &self.ctx, object,
+            )
+        {
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::GeneratorNext,
+                args: vec![self.lower_expr(object)?],
+                span: Span::generated("runtime_call"),
+            });
+        }
+        if method == "next"
+            && args.is_empty()
             && crate::lowered::resolver::expr::facts::resolved_expr_is_array_iterator(
                 &self.ctx, object,
             )

@@ -20,6 +20,7 @@ pub(crate) use program_direct_eval::*;
 pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnostic> {
     let function_ids = collect_function_ids(program)?;
     let generator_function_names = collect_generator_function_names(program);
+    let generator_function_yields = collect_generator_function_yields(program);
     let mut function_signatures = collect_function_signatures(program, &function_ids);
     let top_level_local_names = collect_top_level_local_names(program)?;
     let map_callback_function_names = collect_array_map_callback_function_names(program);
@@ -310,6 +311,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
         generator_function_names,
         next_func_id,
     );
+    resolver.ctx.facts.generator_function_yields = generator_function_yields;
     let mut top_level_statements = Vec::new();
     for stmt in program {
         match stmt {
@@ -556,6 +558,81 @@ fn collect_generator_function_names(program: &[ResolvedStmt]) -> HashSet<String>
             _ => None,
         })
         .collect()
+}
+
+fn collect_generator_function_yields(
+    program: &[ResolvedStmt],
+) -> HashMap<String, Vec<ResolvedExpr>> {
+    let mut yields = HashMap::new();
+    for stmt in program {
+        if let ResolvedStmt::Function {
+            name,
+            body,
+            is_generator: true,
+            ..
+        } = stmt
+        {
+            let mut values = Vec::new();
+            collect_generator_yield_values(body, &mut values);
+            yields.insert(name.clone(), values);
+        }
+    }
+    yields
+}
+
+fn collect_generator_yield_values(stmts: &[ResolvedStmt], values: &mut Vec<ResolvedExpr>) {
+    for stmt in stmts {
+        match stmt {
+            ResolvedStmt::Expr(ResolvedExpr::Yield { expr }) => {
+                values.push(
+                    expr.as_ref()
+                        .map(|expr| expr.as_ref().clone())
+                        .unwrap_or(ResolvedExpr::Undefined),
+                );
+            }
+            ResolvedStmt::Block { statements } => {
+                collect_generator_yield_values(statements, values)
+            }
+            ResolvedStmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                collect_generator_yield_values(then_body, values);
+                collect_generator_yield_values(else_body, values);
+            }
+            ResolvedStmt::While { body, .. }
+            | ResolvedStmt::DoWhile { body, .. }
+            | ResolvedStmt::ForIn { body, .. }
+            | ResolvedStmt::ForOf { body, .. } => collect_generator_yield_values(body, values),
+            ResolvedStmt::For { init, body, .. } => {
+                if let Some(init) = init {
+                    collect_generator_yield_values(std::slice::from_ref(init.as_ref()), values);
+                }
+                collect_generator_yield_values(body, values);
+            }
+            ResolvedStmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                collect_generator_yield_values(try_block, values);
+                if let Some(catch_block) = catch_block {
+                    collect_generator_yield_values(catch_block, values);
+                }
+                if let Some(finally_block) = finally_block {
+                    collect_generator_yield_values(finally_block, values);
+                }
+            }
+            ResolvedStmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    collect_generator_yield_values(body, values);
+                }
+            }
+            _ => {}
+        }
+    }
 }
 
 fn collect_top_level_local_names(program: &[ResolvedStmt]) -> Result<HashSet<String>, Diagnostic> {

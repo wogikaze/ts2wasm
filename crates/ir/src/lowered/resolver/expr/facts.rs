@@ -83,6 +83,18 @@ pub(crate) fn update_array_iterator_local(
     }
 }
 
+pub(crate) fn update_generator_iterator_local(
+    ctx: &mut LoweringCtx,
+    local_id: LocalId,
+    expr: &ResolvedExpr,
+) {
+    if resolved_expr_is_generator_iterator(ctx, expr) {
+        ctx.facts.generator_iterator_locals.insert(local_id);
+    } else {
+        ctx.facts.generator_iterator_locals.remove(&local_id);
+    }
+}
+
 pub(crate) fn resolved_expr_is_array_iterator(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
     match expr {
         ResolvedExpr::Ident(name) => ctx
@@ -98,6 +110,22 @@ pub(crate) fn resolved_expr_is_array_iterator(ctx: &LoweringCtx, expr: &Resolved
             args.is_empty()
                 && matches!(method.as_str(), "values" | "keys" | "entries")
                 && is_known_array_expr(ctx, object)
+        }
+        _ => false,
+    }
+}
+
+pub(crate) fn resolved_expr_is_generator_iterator(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
+    match expr {
+        ResolvedExpr::Ident(name) => ctx
+            .resolve_local(name)
+            .ok()
+            .is_some_and(|local_id| ctx.facts.generator_iterator_locals.contains(&local_id)),
+        ResolvedExpr::Call { callee, args, .. } if args.is_empty() => {
+            matches!(
+                callee.as_ref(),
+                ResolvedExpr::Ident(name) if ctx.facts.generator_function_names.contains(name)
+            )
         }
         _ => false,
     }

@@ -2828,4 +2828,57 @@ impl WatEmitter<'_> {
   "#,
         );
     }
+
+    pub(crate) fn emit_generator_yield(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $generator_yield (param $values i32) (result i32)
+    (call $array_values (local.get $values)))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_generator_next(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $generator_next (param $generator i32) (result i32)
+    (call $array_iterator_next (local.get $generator)))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_generator_return(&self, wat: &mut String) {
+        let value_key = self.string_value("value");
+        let done_key = self.string_value("done");
+        wat.push_str(&format!(
+            r#"
+  (func $generator_return (param $value i32) (result i32)
+    (local $result_ptr i32)
+    (local.set $result_ptr
+      (call $alloc_heap
+        (i32.const {result_size})))
+    (i32.store (local.get $result_ptr) (i32.const 2))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {object_flags})) (i32.const 0))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {object_proto})) (i32.const 0))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {result_value_key})) (i32.const {value_key}))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {result_value_slot})) (local.get $value))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {result_done_key})) (i32.const {done_key}))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {result_done_slot})) (i32.const {true}))
+    (i32.or (local.get $result_ptr) (i32.const {object_tag})))
+"#,
+            result_size = Layout::OBJECT_HEADER_SIZE + 2 * Layout::OBJECT_ENTRY_SIZE,
+            object_flags = Layout::OBJECT_FLAGS_OFFSET,
+            object_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            result_value_key = Layout::OBJECT_ENTRIES_OFFSET,
+            result_value_slot = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
+            result_done_key = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE,
+            result_done_slot = Layout::OBJECT_ENTRIES_OFFSET
+                + Layout::OBJECT_ENTRY_SIZE
+                + Layout::OBJECT_VALUE_OFFSET,
+            value_key = value_key,
+            done_key = done_key,
+            true = ValueTag::TRUE,
+            object_tag = ValueTag::OBJECT,
+        ));
+    }
 }

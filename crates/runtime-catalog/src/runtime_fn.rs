@@ -459,6 +459,12 @@ pub enum RuntimeFn {
     /// ECMAScript IteratorNext(iterator) — calls iterator.next() and returns
     /// the result object { value, done }.
     IteratorNext,
+    /// GeneratorYield(values) — creates a generator iterator from collected yield values.
+    GeneratorYield,
+    /// GeneratorReturn(value) — creates a completed generator result object.
+    GeneratorReturn,
+    /// GeneratorNext(generator) — advances a generator iterator.
+    GeneratorNext,
     /// Promise constructor — creates a promise object with initial state=pending
     PromiseConstructor,
     /// Promise.resolve(value) — creates a fulfilled promise
@@ -933,6 +939,9 @@ const ARRAY_ENTRIES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const ARRAY_ITERATOR_NEXT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::ArrayGet];
 const ARRAY_ITERATOR_STATE_RUNTIME_STRINGS: &[&str] = &["array", "index", "kind"];
 const ARRAY_ITERATOR_NEXT_RUNTIME_STRINGS: &[&str] = &["value", "done"];
+const GENERATOR_YIELD_DEPS: &[RuntimeFn] = &[RuntimeFn::ArrayValues];
+const GENERATOR_NEXT_DEPS: &[RuntimeFn] = &[RuntimeFn::ArrayIteratorNext];
+const GENERATOR_RETURN_RUNTIME_STRINGS: &[&str] = &["value", "done"];
 const ARRAY_SHIFT_DEPS: &[RuntimeFn] = &[];
 const ARRAY_UNSHIFT_DEPS: &[RuntimeFn] = &[];
 const ARRAY_SPLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
@@ -1266,6 +1275,9 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "Dollar262Eval" => Some(RuntimeFn::Dollar262Eval),
         "GetIterator" => Some(RuntimeFn::GetIterator),
         "IteratorNext" => Some(RuntimeFn::IteratorNext),
+        "GeneratorYield" => Some(RuntimeFn::GeneratorYield),
+        "GeneratorReturn" => Some(RuntimeFn::GeneratorReturn),
+        "GeneratorNext" => Some(RuntimeFn::GeneratorNext),
         "PromiseConstructor" => Some(RuntimeFn::PromiseConstructor),
         "PromiseResolve" => Some(RuntimeFn::PromiseResolve),
         "PromiseReject" => Some(RuntimeFn::PromiseReject),
@@ -1489,7 +1501,11 @@ impl RuntimeFn {
             | Self::CryptoRandomBytes
             | Self::Dollar262Global
             | Self::Dollar262Eval => RuntimeDomain::Host,
-            Self::GetIterator | Self::IteratorNext => RuntimeDomain::Iterator,
+            Self::GetIterator
+            | Self::IteratorNext
+            | Self::GeneratorYield
+            | Self::GeneratorReturn
+            | Self::GeneratorNext => RuntimeDomain::Iterator,
             Self::JsonStringify | Self::JsonParse => RuntimeDomain::Json,
             Self::MapNew
             | Self::MapGet
@@ -2157,6 +2173,9 @@ impl RuntimeFn {
             Self::DecodeURIComponent,
             Self::GetIterator,
             Self::IteratorNext,
+            Self::GeneratorYield,
+            Self::GeneratorReturn,
+            Self::GeneratorNext,
             Self::PromiseConstructor,
             Self::PromiseResolve,
             Self::PromiseReject,
@@ -2495,6 +2514,9 @@ impl RuntimeFn {
             Self::EncodeURIComponent,
             Self::GetIterator,
             Self::IteratorNext,
+            Self::GeneratorYield,
+            Self::GeneratorReturn,
+            Self::GeneratorNext,
             Self::PromiseConstructor,
             Self::PromiseResolve,
             Self::PromiseReject,

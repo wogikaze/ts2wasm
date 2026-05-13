@@ -48,4 +48,7 @@ pub const HOST_FUNCTIONS: &[RuntimeFn] = &[
     // Iterator
     RuntimeFn::GetIterator,
     RuntimeFn::IteratorNext,
+    RuntimeFn::GeneratorYield,
+    RuntimeFn::GeneratorReturn,
+    RuntimeFn::GeneratorNext,
 ];
