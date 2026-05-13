@@ -1612,6 +1612,16 @@ impl WatEmitter<'_> {
         (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (local.get $i)))))
         (if (i32.eq (local.get $ch) (i32.const {space}))
           (then (local.set $i (i32.add (local.get $i) (i32.const {one}))) (br $ws_loop)))
+        (if (i32.ge_u (local.get $ch) (i32.const 0x80))
+          (then
+            (if (i32.lt_u (local.get $ch) (i32.const 0xC0))
+              (then (local.set $i (i32.add (local.get $i) (i32.const {one}))))
+              (if (i32.lt_u (local.get $ch) (i32.const 0xE0))
+                (then (local.set $i (i32.add (local.get $i) (i32.const 2))))
+                (if (i32.lt_u (local.get $ch) (i32.const 0xF0))
+                  (then (local.set $i (i32.add (local.get $i) (i32.const 3))))
+                  (local.set $i (i32.add (local.get $i) (i32.const 4))))))
+            (br $ws_loop)))
         (br $ws_done)))
     (if (i32.lt_u (local.get $i) (local.get $len))
       (then
@@ -1651,9 +1661,9 @@ impl WatEmitter<'_> {
         (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (local.get $i)))))
         (if (i32.and (i32.ge_u (local.get $ch) (i32.const {ascii_zero})) (i32.le_u (local.get $ch) (i32.const {ascii_nine})))
           (then (local.set $digit (i32.sub (local.get $ch) (i32.const {ascii_zero}))))
-          (if (i32.and (i32.ge_u (local.get $ch) (i32.const {ascii_lower_a})) (i32.le_u (local.get $ch) (i32.const {ascii_lower_f})))
+          (if (i32.and (i32.ge_u (local.get $ch) (i32.const {ascii_lower_a})) (i32.le_u (local.get $ch) (i32.const {ascii_lower_z})))
             (then (local.set $digit (i32.add (i32.sub (local.get $ch) (i32.const {ascii_lower_a})) (i32.const 10))))
-            (if (i32.and (i32.ge_u (local.get $ch) (i32.const {ascii_upper_a})) (i32.le_u (local.get $ch) (i32.const {ascii_upper_f})))
+            (if (i32.and (i32.ge_u (local.get $ch) (i32.const {ascii_upper_a})) (i32.le_u (local.get $ch) (i32.const {ascii_upper_z})))
               (then (local.set $digit (i32.add (i32.sub (local.get $ch) (i32.const {ascii_upper_a})) (i32.const 10))))
               (br $parse_done))))
         (if (i32.ge_u (local.get $digit) (local.get $r))
@@ -1684,9 +1694,9 @@ impl WatEmitter<'_> {
             ascii_lower_x = 120,
             ascii_upper_x = 88,
             ascii_lower_a = 97,
-            ascii_lower_f = 102,
+            ascii_lower_z = 122,
             ascii_upper_a = 65,
-            ascii_upper_f = 70,
+            ascii_upper_z = 90,
         ));
     }
 
