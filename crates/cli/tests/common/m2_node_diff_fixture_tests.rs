@@ -1420,6 +1420,36 @@ fn string_concat_matches_node() {
 }
 
 #[test]
+fn string_search_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-search.ts");
+}
+
+#[test]
+fn string_match_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-match.ts");
+}
+
+#[test]
+fn string_at_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-at.ts");
+}
+
+#[test]
+fn string_char_at_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-char-at.ts");
+}
+
+#[test]
+fn string_index_of_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-index-of.ts");
+}
+
+#[test]
+fn string_last_index_of_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-last-index-of.ts");
+}
+
+#[test]
 fn string_indexing_fixture_is_not_marked_as_semantic_pass() {
     assert_fixture_not_semantically_pass("string", "fixtures/builtins-and-io/string-indexing.ts");
 }
