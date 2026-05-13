@@ -112,10 +112,7 @@ impl WatEmitter<'_> {
         for function in &self.program.functions {
             writer.line_fmt(
                 4,
-                format_args!(
-                    "(if (i32.eq (local.get $id) (i32.const {})))",
-                    function.id.0
-                ),
+                format_args!("(if (i32.eq (local.get $id) (i32.const {}))", function.id.0),
             );
             writer.then(4);
             let mut supplied = 0usize;
@@ -159,7 +156,7 @@ impl WatEmitter<'_> {
         );
         writer.line(
             6,
-            "(then (return (call $set_add (local.get $set) (local.get $value))))",
+            "(then (return (call $set_add (local.get $set) (local.get $value)))))",
         );
         writer.line_fmt(
             4,
@@ -172,7 +169,7 @@ impl WatEmitter<'_> {
         writer.line_fmt(
             6,
             format_args!(
-                "(then (return (i32.const {undefined})))",
+                "(then (return (i32.const {undefined}))))",
                 undefined = ValueTag::UNDEFINED
             ),
         );
@@ -187,10 +184,7 @@ impl WatEmitter<'_> {
         for function in &self.program.functions {
             writer.line_fmt(
                 4,
-                format_args!(
-                    "(if (i32.eq (local.get $id) (i32.const {})))",
-                    function.id.0
-                ),
+                format_args!("(if (i32.eq (local.get $id) (i32.const {}))", function.id.0),
             );
             writer.then(4);
             let mut supplied = 0usize;
@@ -211,6 +205,6 @@ impl WatEmitter<'_> {
             );
         }
 
-        writer.line(4, "(call $set_add (local.get $set) (local.get $value))");
+        writer.line(4, "(call $set_add (local.get $set) (local.get $value)))");
     }
 }
