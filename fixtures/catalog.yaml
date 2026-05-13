@@ -350,7 +350,7 @@ directories:
     - set-iteration.ts
     - set-size-clear.ts
     - stdin.ts
-    - string-anchor-annexb-unsupported.ts
+    - string-anchor-annexb.ts
     - string-at.ts
     - string-char-at.ts
     - string-char-code-at.ts

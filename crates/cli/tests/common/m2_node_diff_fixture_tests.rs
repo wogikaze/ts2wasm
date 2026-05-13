@@ -1590,6 +1590,11 @@ fn typedarray_methods_matches_node_output() {
 }
 
 #[test]
+fn typedarray_constructors_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/typedarray-constructors.ts");
+}
+
+#[test]
 fn weakmap_weakset_basic_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/weakmap-weakset-basic.ts");
 }
@@ -2908,6 +2913,11 @@ fn function_declaration_value_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn string_html_wrappers_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/string-html-wrappers.ts");
+}
+
+#[test]
+fn string_anchor_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-anchor-annexb.ts");
 }
 
 #[test]
