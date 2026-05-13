@@ -1490,6 +1490,46 @@ fn string_to_well_formed_matches_node() {
 }
 
 #[test]
+fn string_normalize_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-normalize.ts");
+}
+
+#[test]
+fn string_locale_compare_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-locale-compare.ts");
+}
+
+#[test]
+fn string_to_locale_case_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-to-locale-case.ts");
+}
+
+#[test]
+fn string_trim_start_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-trim-start.ts");
+}
+
+#[test]
+fn string_trim_end_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-trim-end.ts");
+}
+
+#[test]
+fn string_trim_left_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-trim-left.ts");
+}
+
+#[test]
+fn string_trim_right_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-trim-right.ts");
+}
+
+#[test]
+fn string_replace_all_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-replace-all.ts");
+}
+
+#[test]
 fn string_indexing_fixture_is_not_marked_as_semantic_pass() {
     assert_fixture_not_semantically_pass("string", "fixtures/builtins-and-io/string-indexing.ts");
 }
