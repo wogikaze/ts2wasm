@@ -1425,6 +1425,7 @@ fn array_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/array-sparse-iteration.ts",
         "fixtures/builtins-and-io/array-to-string.ts",
         "fixtures/builtins-and-io/array-from.ts",
+        "fixtures/builtins-and-io/array-reduce.ts",
         "fixtures/builtins-and-io/array-reduce-right.ts",
         "fixtures/builtins-and-io/array-sort.ts",
         "fixtures/builtins-and-io/array-sort-comparator.ts",
