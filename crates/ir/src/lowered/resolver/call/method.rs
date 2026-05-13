@@ -39,10 +39,68 @@ impl super::super::Resolver {
         if let Some(result) = self.lower_mcall_nonident_receiver(object, method, args, span)? {
             return Ok(result);
         }
+        if let Some(result) = self.lower_function_call_apply_method(object, method, args, span)? {
+            return Ok(result);
+        }
         let ResolvedExpr::Ident(receiver_name) = object else {
             unreachable!()
         };
         self.lower_mcall_class_dispatch(receiver_name, object, method, args, span)
+    }
+
+    fn lower_function_call_apply_method(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if method != "call" && method != "apply" {
+            return Ok(None);
+        }
+        let ResolvedExpr::Ident(func_name) = object else {
+            return Ok(None);
+        };
+        let Ok(func_id) = self.resolve_func(func_name) else {
+            return Ok(None);
+        };
+        let receiver = match args.first() {
+            Some(receiver) => self.lower_expr(receiver)?,
+            None => LoweredExpr::Undefined(Span::generated("undef")),
+        };
+        let explicit_args = if method == "call" {
+            args.iter().skip(1).cloned().collect::<Vec<_>>()
+        } else {
+            match args.get(1) {
+                None | Some(ResolvedExpr::Undefined | ResolvedExpr::Null) => Vec::new(),
+                Some(ResolvedExpr::Array(elements)) => elements
+                    .iter()
+                    .map(|element| match element {
+                        ResolvedArrayElement::Present(expr) => expr.clone(),
+                        ResolvedArrayElement::Hole => ResolvedExpr::Undefined,
+                    })
+                    .collect(),
+                Some(ResolvedExpr::Ident(name)) => {
+                    vec![ResolvedExpr::Spread(Box::new(ResolvedExpr::Ident(
+                        name.clone(),
+                    )))]
+                }
+                Some(_) => {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "issue-458: Function.prototype.apply currently supports array literals, dense array locals, null, or undefined argArray".to_owned(),
+                        span: Some(span),
+                        phase: None,
+                    });
+                }
+            }
+        };
+        let lowered_args = self.lower_function_call_args(func_id, receiver, &explicit_args)?;
+        Ok(Some(LoweredExpr::Call {
+            kind: FunctionCallKind::User(func_id),
+            args: lowered_args,
+            span: Span::generated("call"),
+        }))
     }
 
     /// Helper for lower_method_call_expr: early-return checks (array push.call,

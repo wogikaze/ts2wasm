@@ -25,6 +25,17 @@ impl super::super::Resolver {
             return self.lower_arrow_fn_iife(params, body, body_stmts, args, span);
         }
 
+        if let ResolvedExpr::MethodCall {
+            object,
+            method,
+            args: bind_args,
+            ..
+        } = callee
+            && method == "bind"
+        {
+            return self.lower_function_bind_direct_call(object, bind_args, args, span);
+        }
+
         let func_name = match callee {
             ResolvedExpr::Ident(name) => name,
             expr @ (ResolvedExpr::Call { .. } | ResolvedExpr::New { .. }) => {
@@ -330,6 +341,43 @@ impl super::super::Resolver {
             span: Span::generated("call"),
         })
     }
+
+    fn lower_function_bind_direct_call(
+        &mut self,
+        object: &ResolvedExpr,
+        bind_args: &[ResolvedExpr],
+        call_args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let ResolvedExpr::Ident(func_name) = object else {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message:
+                    "issue-458: Function.prototype.bind direct calls require an identifier function"
+                        .to_owned(),
+                span: Some(span),
+                phase: None,
+            });
+        };
+        let func_id = self.resolve_func(func_name)?;
+        let receiver = match bind_args.first() {
+            Some(receiver) => self.lower_expr(receiver)?,
+            None => LoweredExpr::Undefined(Span::generated("undef")),
+        };
+        let combined_args = bind_args
+            .iter()
+            .skip(1)
+            .chain(call_args.iter())
+            .cloned()
+            .collect::<Vec<_>>();
+        let lowered_args = self.lower_function_call_args(func_id, receiver, &combined_args)?;
+        Ok(LoweredExpr::Call {
+            kind: FunctionCallKind::User(func_id),
+            args: lowered_args,
+            span: Span::generated("call"),
+        })
+    }
+
     pub(crate) fn lower_arrow_fn_iife(
         &mut self,
         params: &[String],

@@ -1841,6 +1841,16 @@ fn build_smoke_this_binding() {
     );
 }
 
+#[test]
+fn build_smoke_function_bind_call_apply() {
+    let result = run_fixture("core-semantics/function-bind-call-apply.ts");
+    assert!(
+        result.is_ok(),
+        "Function.prototype bind/call/apply should build successfully: {:?}",
+        result.err()
+    );
+}
+
 // Symbol constructor — builds with runtime support
 #[test]
 fn build_smoke_symbol_runtime() {

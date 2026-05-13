@@ -2061,6 +2061,11 @@ fn function_this_receiver_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn function_bind_call_apply_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/function-bind-call-apply.ts");
+}
+
+#[test]
 fn function_arguments_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/function-arguments.ts");
     assert_fixture_matches_node("fixtures/core-semantics/arguments-object-property-call.ts");
