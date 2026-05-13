@@ -99,19 +99,18 @@ impl WatEmitter<'_> {
     (local $state i32)
     (local.set $base (i32.and (local.get $promise) (i32.const {heap_mask})))
     (local.set $state (i32.load (i32.add (local.get $base) (i32.const {slot0_offset}))))
-    (if (i32.eq (local.get $state) (i32.const {fulfilled}))
+    (if (result i32)
+      (i32.eq (local.get $state) (i32.const {fulfilled}))
       (then
-        ;; Store onFulfilled and call it with result
         (i32.store (i32.add (local.get $base) (i32.const {slot2_offset})) (local.get $on_fulfilled))
         (local.get $promise))
       (else
-        (if (i32.eq (local.get $state) (i32.const {rejected}))
+        (if (result i32)
+          (i32.eq (local.get $state) (i32.const {rejected}))
           (then
-            ;; Store onRejected and call it with result
             (i32.store (i32.add (local.get $base) (i32.const {slot3_offset})) (local.get $on_rejected))
             (local.get $promise))
           (else
-            ;; pending: store both callbacks
             (i32.store (i32.add (local.get $base) (i32.const {slot2_offset})) (local.get $on_fulfilled))
             (i32.store (i32.add (local.get $base) (i32.const {slot3_offset})) (local.get $on_rejected))
             (local.get $promise))))))
@@ -133,22 +132,48 @@ impl WatEmitter<'_> {
     (local $state i32)
     (local.set $base (i32.and (local.get $promise) (i32.const {heap_mask})))
     (local.set $state (i32.load (i32.add (local.get $base) (i32.const {slot0_offset}))))
-    (if (i32.eq (local.get $state) (i32.const {rejected}))
+    (if (result i32)
+      (i32.eq (local.get $state) (i32.const {rejected}))
       (then
         (i32.store (i32.add (local.get $base) (i32.const {slot3_offset})) (local.get $on_rejected))
         (local.get $promise))
       (else
-        (if (i32.eq (local.get $state) (i32.const {pending}))
+        (if (result i32)
+          (i32.eq (local.get $state) (i32.const {pending}))
           (then
             (i32.store (i32.add (local.get $base) (i32.const {slot3_offset})) (local.get $on_rejected))
             (local.get $promise))
           (else
-            ;; fulfilled: store nothing, return promise
             (local.get $promise))))))
 "#,
             slot0_offset = Layout::ARRAY_HEADER_SIZE,
             slot3_offset = Layout::ARRAY_HEADER_SIZE + 12,
             rejected = 2,
+            pending = 0,
+            heap_mask = ValueTag::HEAP_MASK,
+        ));
+    }
+
+    pub(super) fn emit_promise_finally(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $promise_finally (param $promise i32) (param $on_finally i32) (result i32)
+    (local $base i32)
+    (local $state i32)
+    (local.set $base (i32.and (local.get $promise) (i32.const {heap_mask})))
+    (local.set $state (i32.load (i32.add (local.get $base) (i32.const {slot0_offset}))))
+    (if (result i32)
+      (i32.eq (local.get $state) (i32.const {pending}))
+      (then
+        (i32.store (i32.add (local.get $base) (i32.const {slot2_offset})) (local.get $on_finally))
+        (i32.store (i32.add (local.get $base) (i32.const {slot3_offset})) (local.get $on_finally))
+        (local.get $promise))
+      (else
+        (local.get $promise))))
+"#,
+            slot0_offset = Layout::ARRAY_HEADER_SIZE,
+            slot2_offset = Layout::ARRAY_HEADER_SIZE + 8,
+            slot3_offset = Layout::ARRAY_HEADER_SIZE + 12,
             pending = 0,
             heap_mask = ValueTag::HEAP_MASK,
         ));

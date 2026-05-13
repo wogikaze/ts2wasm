@@ -208,6 +208,7 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         // Promise prototype methods
         ("Promise", "then") => Some(RuntimeFn::PromiseThen),
         ("Promise", "catch") => Some(RuntimeFn::PromiseCatch),
+        ("Promise", "finally") => Some(RuntimeFn::PromiseFinally),
         _ if is_typed_array_class(class_name) => typed_array_method_runtime_fn(method),
         _ => None,
     }

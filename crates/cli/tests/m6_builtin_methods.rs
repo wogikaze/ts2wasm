@@ -1272,19 +1272,14 @@ fn build_smoke_global_names_well_known_symbols() {
     );
 }
 
-// Precise unsupported diagnostic for Promise.then (issue 104)
+// Promise.prototype.then now routes to runtime via RuntimeFn::PromiseThen
 #[test]
-fn promise_then_unsupported_diagnostic() {
+fn build_smoke_promise_then() {
     let result = run_fixture("builtins-and-io/promise-then-unsupported-diagnostic.ts");
     assert!(
-        result.is_err(),
-        "Promise.then should produce unsupported diagnostic"
-    );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("Promise.prototype.then"),
-        "Diagnostic should mention Promise.prototype.then: {}",
-        err_msg
+        result.is_ok(),
+        "Promise.then should build: {:?}",
+        result.err()
     );
 }
 

@@ -446,6 +446,8 @@ pub enum RuntimeFn {
     PromiseThen,
     /// Promise.prototype.catch(onRejected) — registers rejection callback
     PromiseCatch,
+    /// Promise.prototype.finally(onFinally) — registers settlement callback
+    PromiseFinally,
     /// Promise.all(iterable) — returns a promise that fulfills when all fulfill
     PromiseAll,
     /// Promise.race(iterable) — returns a promise that settles with the first settled
@@ -1222,6 +1224,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "PromiseReject" => Some(RuntimeFn::PromiseReject),
         "PromiseThen" => Some(RuntimeFn::PromiseThen),
         "PromiseCatch" => Some(RuntimeFn::PromiseCatch),
+        "PromiseFinally" => Some(RuntimeFn::PromiseFinally),
         "PromiseAll" => Some(RuntimeFn::PromiseAll),
         "PromiseRace" => Some(RuntimeFn::PromiseRace),
         "SymbolNew" => Some(RuntimeFn::SymbolNew),
@@ -1551,6 +1554,7 @@ impl RuntimeFn {
             | Self::PromiseReject
             | Self::PromiseThen
             | Self::PromiseCatch
+            | Self::PromiseFinally
             | Self::PromiseAll
             | Self::PromiseRace => RuntimeDomain::Promise,
             Self::RegExpTest | Self::RegExpMatch | Self::RegExpSearch | Self::RegexpMatchInner => {
@@ -2046,6 +2050,7 @@ impl RuntimeFn {
             Self::PromiseReject,
             Self::PromiseThen,
             Self::PromiseCatch,
+            Self::PromiseFinally,
             Self::PromiseAll,
             Self::PromiseRace,
             // Async / state-machine functions
@@ -2366,6 +2371,7 @@ impl RuntimeFn {
             Self::PromiseReject,
             Self::PromiseThen,
             Self::PromiseCatch,
+            Self::PromiseFinally,
             Self::PromiseAll,
             Self::PromiseRace,
             // Async / state-machine functions

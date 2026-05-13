@@ -14,6 +14,7 @@ pub const PROMISE_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::PromiseReject,
     RuntimeFn::PromiseThen,
     RuntimeFn::PromiseCatch,
+    RuntimeFn::PromiseFinally,
     RuntimeFn::PromiseAll,
     RuntimeFn::PromiseRace,
 ];

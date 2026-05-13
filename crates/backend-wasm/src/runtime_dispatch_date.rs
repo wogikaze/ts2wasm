@@ -41,6 +41,7 @@ impl WatEmitter<'_> {
             RuntimeFn::PromiseReject => self.emit_promise_reject(wat),
             RuntimeFn::PromiseThen => self.emit_promise_then(wat),
             RuntimeFn::PromiseCatch => self.emit_promise_catch(wat),
+            RuntimeFn::PromiseFinally => self.emit_promise_finally(wat),
             RuntimeFn::PromiseAll => self.emit_promise_all(wat),
             RuntimeFn::PromiseRace => self.emit_promise_race(wat),
             RuntimeFn::TaskPoll => self.emit_task_poll(wat),
