@@ -560,7 +560,7 @@ impl WatEmitter<'_> {
     pub(super) fn emit_dataview_get_float64(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $dataview_get_float64 (param $dv i32) (param $offset i32) (result i32)
+  (func $dataview_get_float64 (param $dv i32) (param $offset i32) (param $little_endian i32) (result i32)
     (local $dv_base i32)
     (local $buf_base i32)
     (local $buf_offset i32)
@@ -587,7 +587,7 @@ impl WatEmitter<'_> {
     pub(super) fn emit_dataview_set_float64(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $dataview_set_float64 (param $dv i32) (param $offset i32) (param $value i32)
+  (func $dataview_set_float64 (param $dv i32) (param $offset i32) (param $value i32) (param $little_endian i32)
     (local $dv_base i32)
     (local $buf_base i32)
     (local $buf_offset i32)
