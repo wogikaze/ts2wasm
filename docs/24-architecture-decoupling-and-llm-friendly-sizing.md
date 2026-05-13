@@ -3,7 +3,7 @@
 This document defines the architecture boundary contract for keeping `ts2wasm`
 small enough to reason about feature-by-feature. It is a final-state design
 contract, not a progress log. Implementation status and open slices are tracked
-in `issues/` and `current-state.md`.
+in `TRACKING.yaml` and `current-state.md`.
 
 The architecture has three independent boundary axes:
 
@@ -199,12 +199,13 @@ The sizing policy optimizes for bounded context, not just short files.
 | Ideal module | 300-800 LOC |
 | Target maximum | 1200 LOC |
 | Migration hard cap | 1200 LOC |
-| Danger zone | 2000 LOC and above |
+| Danger zone | above 1200 LOC without an explicit allowlist reason |
 
-The architecture checker exposes the 1200-line target and reports hard-cap
-violations with allowlist context. Existing generated-style registries and
-legacy dispatch files may be allowlisted only with a reason. New hand-written
-feature code is expected to stay at or below the target maximum.
+The architecture checker enforces the 1200-line hard cap for repo-owned source
+and documentation files. Existing generated-style registries, test files,
+coverage scripts, and legacy dispatch files may be allowlisted only with a
+reason tied to a refactoring plan. New hand-written feature code is expected to
+stay at or below the target maximum.
 
 ### Function Size
 
@@ -212,12 +213,12 @@ feature code is expected to stay at or below the target maximum.
 |---|---:|
 | Ideal function | 20-80 LOC |
 | Normal maximum | 120 LOC |
-| Warning threshold | 200 LOC |
+| Warning threshold | 150 LOC |
 | Hard danger threshold | 200 LOC |
 
 Large dispatch functions are split by domain. When a large match remains because
-it is a registry or encoder table, it needs an allowlist reason and focused
-coverage.
+it is a registry, parser dispatch, resolver dispatch, or encoder table, it needs
+an allowlist reason and focused coverage.
 
 ### Coupling Metrics
 
@@ -225,11 +226,12 @@ coverage.
 |---|---:|---:|
 | module fan-out | 5 imports or fewer | more than 10 |
 | public API count | 5-15 public items | more than 30 |
-| match arms | 20 or fewer | more than 50 |
+| match arms | 20 or fewer | more than 50, or more than 30 without a warning reason |
 | change amplification | 5-8 files per feature | more than 20 |
 | context load | 3000 LOC or fewer | more than 10000 LOC |
 
-The architecture checker warns on public API count and large match expressions,
+The architecture checker errors on crate fan-out and public API count above the
+hard threshold, warns on large match expressions above the warning threshold,
 and errors on unallowlisted giant matches above the hard threshold.
 
 ## Feature Slice Checklist
@@ -275,7 +277,7 @@ Required checks include:
 
 The final architecture gate combines these checks with the workspace tests,
 reference coverage smoke command, crate-layout existence checks, and manifest /
-coverage data checks listed in `issues/`.
+coverage data checks recorded in `TRACKING.yaml`.
 
 ### Final Gate Recipe
 
@@ -293,7 +295,8 @@ The reusable final architecture gate is:
   backend, and compiler code;
 - verify the target source, diagnostic, syntax, resolve, semantics,
   runtime-abi, runtime-catalog, and backend-core crates exist;
-- run tracking consistency and diff whitespace checks.
+- run `python scripts/check/tracking-consistency.py`;
+- run diff whitespace checks.
 
 ## Design Rules
 
@@ -320,7 +323,7 @@ Corollaries:
 - capability manifest contents are derived only from runtime catalog and
   validated link-plan data;
 - final-state docs define contracts, while `current-state.md` and
-  `issues/` record implementation gaps.
+  `TRACKING.yaml` record implementation gaps.
 
 ## References
 
@@ -333,7 +336,7 @@ Corollaries:
 - `docs/15-coverage-matrix.md`
 - `docs/17-jsonl-test-record-schema.md`
 - `current-state.md`
-- `issues/`
+- `TRACKING.yaml`
 - `scripts/check/architecture-rules.py`
 - `crates/runtime-catalog/`
 - `crates/backend-core/`
