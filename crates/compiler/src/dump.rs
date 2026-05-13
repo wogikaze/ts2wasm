@@ -366,7 +366,21 @@ fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
         Stmt::ImportDefault {
             specifier, source, ..
         } => {
-            let _ = writeln!(out, "import {} from '{}';", specifier.local, source.value);
+            let _ = if matches!(
+                stmt,
+                Stmt::ImportDefault {
+                    phase: ts2wasm_syntax::ImportPhase::Source,
+                    ..
+                }
+            ) {
+                writeln!(
+                    out,
+                    "import source {} from '{}';",
+                    specifier.local, source.value
+                )
+            } else {
+                writeln!(out, "import {} from '{}';", specifier.local, source.value)
+            };
         }
         Stmt::ImportDefaultNamed {
             default,

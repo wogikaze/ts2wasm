@@ -1,7 +1,7 @@
 use crate::{
     BinaryOp, DiagCode, Diagnostic, ExportNamedSpecifier, Expr, ImportAttribute,
-    ImportDefaultSpecifier, ImportNamedSpecifier, ImportNamespaceSpecifier, LogicalAssignOp,
-    ModuleSpecifier, OBJECT_SPREAD_SENTINEL, ObjectProp, ReExportNamedSpecifier,
+    ImportDefaultSpecifier, ImportNamedSpecifier, ImportNamespaceSpecifier, ImportPhase,
+    LogicalAssignOp, ModuleSpecifier, OBJECT_SPREAD_SENTINEL, ObjectProp, ReExportNamedSpecifier,
     SYMBOL_ITERATOR_OBJECT_KEY, Span, SpannedToken, Stmt, Token, TokenKind, UnaryOp,
     ast::{ClassPrivateElement, ClassStaticBlock, ReExportNamespaceSpecifier},
 };

@@ -142,6 +142,9 @@ impl Parser {
 
     fn import_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let import_span = self.expect(TokenKind::Import)?;
+        if self.is_source_phase_import_start() {
+            return self.source_phase_import_statement(import_span);
+        }
         // Handle `import type { ... } from "..."` — the `type` keyword is a
         // TypeScript-only compile-time annotation that is erased at runtime.
         let import_type = if self.peek_contextual_keyword("type") {
@@ -189,6 +192,7 @@ impl Parser {
                         },
                         source,
                         attributes: Vec::new(),
+                        phase: ImportPhase::Evaluation,
                         span: Span { start: import_span.start, end },
                     });
                 }
@@ -203,6 +207,41 @@ impl Parser {
             Some(Token::LeftParen) => self.unsupported_module_form(import_span, "dynamic import"),
             _ => self.unsupported_module_form(import_span, "static import"),
         }
+    }
+
+    fn is_source_phase_import_start(&self) -> bool {
+        matches!(self.peek(), Some(Token::Ident(name)) if name == "source")
+            && matches!(self.peek_n(1), Some(Token::Ident(name)) if name != "from")
+            && matches!(self.peek_n(2), Some(Token::Ident(name)) if name == "from")
+    }
+
+    fn source_phase_import_statement(&mut self, import_span: Span) -> Result<Stmt, Diagnostic> {
+        self.expect_contextual_keyword("source")?;
+        let (local, local_span) = self.expect_ident()?;
+        let specifier = ImportDefaultSpecifier {
+            local,
+            local_span,
+            span: local_span,
+        };
+        self.expect_contextual_keyword("from")?;
+        let source = self.expect_module_specifier()?;
+        let attributes = self.parse_import_attributes()?;
+        let end = self.statement_terminator_end(
+            attributes
+                .last()
+                .map(|attribute| attribute.span.end)
+                .unwrap_or(source.span.end),
+        )?;
+        Ok(Stmt::ImportDefault {
+            specifier,
+            source,
+            attributes,
+            phase: ImportPhase::Source,
+            span: Span {
+                start: import_span.start,
+                end,
+            },
+        })
     }
 
     fn export_statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -511,6 +550,7 @@ impl Parser {
             specifier: default,
             source,
             attributes,
+            phase: ImportPhase::Evaluation,
             span: Span {
                 start: import_span.start,
                 end,
@@ -595,7 +635,7 @@ impl Parser {
     }
 
     fn parse_import_attributes(&mut self) -> Result<Vec<ImportAttribute>, Diagnostic> {
-        if !(self.peek_contextual_keyword("assert") || self.peek_contextual_keyword("with")) {
+        if !(self.peek_contextual_keyword("assert") || matches!(self.peek(), Some(Token::With))) {
             return Ok(Vec::new());
         }
         self.advance();

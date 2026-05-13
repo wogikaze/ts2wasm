@@ -10,8 +10,8 @@ pub mod typescript_oracle;
 pub use ast::{
     ArrayLiteralElement, BinaryOp, ClassPrivateElement, ClassStaticBlock, ExportNamedSpecifier,
     Expr, ImportAttribute, ImportDefaultSpecifier, ImportNamedSpecifier, ImportNamespaceSpecifier,
-    LogicalAssignOp, ModuleSpecifier, OBJECT_SPREAD_SENTINEL, ObjectProp, ReExportNamedSpecifier,
-    SYMBOL_ITERATOR_OBJECT_KEY, Stmt, UnaryOp,
+    ImportPhase, LogicalAssignOp, ModuleSpecifier, OBJECT_SPREAD_SENTINEL, ObjectProp,
+    ReExportNamedSpecifier, SYMBOL_ITERATOR_OBJECT_KEY, Stmt, UnaryOp,
 };
 pub use diagnostic::{DiagCode, Diagnostic, Span};
 pub use lexer::{Lexer, SpannedToken, Token, TokenKind};

@@ -2609,6 +2609,22 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_import_assertion() {
+        let program =
+            parse_program("import data from './data.json' with { type: 'json' };").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::ImportDefault { attributes, .. } => {
+                assert_eq!(attributes.len(), 1);
+                assert_eq!(attributes[0].key, "type");
+                assert_eq!(attributes[0].value, "json");
+            }
+            other => panic!("unexpected import statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_import_assertions() {
         let program = parse_program("import data from './data.json' assert { type: 'json' };")
             .unwrap();
@@ -2620,6 +2636,7 @@ b /* parameter b */,
                 source,
                 attributes,
                 span,
+                ..
             } => {
                 assert_eq!(*span, Span { start: 0, end: 55 });
                 assert_eq!(specifier.local, "data");
@@ -2632,6 +2649,30 @@ b /* parameter b */,
                 assert_eq!(attributes[0].value, "json");
                 assert_eq!(attributes[0].value_span, Span { start: 46, end: 52 });
                 assert_eq!(attributes[0].span, Span { start: 40, end: 52 });
+            }
+            other => panic!("unexpected import statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_module_source_phase() {
+        let program = parse_program("import source mod from './module.wasm';").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::ImportDefault {
+                specifier,
+                source,
+                phase,
+                span,
+                ..
+            } => {
+                assert_eq!(*phase, ImportPhase::Source);
+                assert_eq!(*span, Span { start: 0, end: 39 });
+                assert_eq!(specifier.local, "mod");
+                assert_eq!(specifier.local_span, Span { start: 14, end: 17 });
+                assert_eq!(source.value, "./module.wasm");
+                assert_eq!(source.span, Span { start: 23, end: 38 });
             }
             other => panic!("unexpected import statement: {other:?}"),
         }

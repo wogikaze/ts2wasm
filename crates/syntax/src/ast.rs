@@ -76,6 +76,12 @@ pub struct ImportDefaultSpecifier {
     pub span: Span,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ImportPhase {
+    Evaluation,
+    Source,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ImportNamespaceSpecifier {
     pub local: String,
@@ -175,6 +181,7 @@ pub enum Stmt {
         specifier: ImportDefaultSpecifier,
         source: ModuleSpecifier,
         attributes: Vec<ImportAttribute>,
+        phase: ImportPhase,
         span: Span,
     },
     ImportDefaultNamed {

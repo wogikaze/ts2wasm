@@ -6,7 +6,7 @@ use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_frontend::validate_type_reference_directives;
 use ts2wasm_ir::{OptimizationLevel, builtin_resolver, lowered, name_resolver};
 use ts2wasm_source::Span;
-use ts2wasm_syntax::{Expr, ObjectProp, Stmt};
+use ts2wasm_syntax::{Expr, ImportPhase, ObjectProp, Stmt};
 
 use crate::module_graph::ModuleGraph;
 use crate::stages::parse::{self, parse_program, validate_ast};
@@ -104,8 +104,21 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                 }
             }
             Stmt::ImportDefault {
+                phase: ImportPhase::Source,
+                span,
+                ..
+            } => {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "source phase imports are parsed but not lowered yet".to_owned(),
+                    span: Some(*span),
+                    phase: None,
+                });
+            }
+            Stmt::ImportDefault {
                 specifier: default_specifier,
                 source,
+                phase: ImportPhase::Evaluation,
                 ..
             } => {
                 let dependency = module_graph
