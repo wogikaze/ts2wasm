@@ -2374,3 +2374,14 @@ fn build_smoke_symbol_registry() {
         result.err()
     );
 }
+
+// Number static methods: isNaN, isFinite, isInteger, isSafeInteger
+#[test]
+fn build_smoke_number_complete() {
+    let result = run_fixture("builtins-and-io/number-complete.ts");
+    assert!(
+        result.is_ok(),
+        "Number static methods should build: {:?}",
+        result.err()
+    );
+}

@@ -4176,3 +4176,9 @@ fn array_copying_matches_node_output() {
 fn symbol_registry_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/symbol-registry.ts");
 }
+
+// Number static methods: isNaN, isFinite, isInteger, isSafeInteger
+#[test]
+fn number_methods_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-complete.ts");
+}

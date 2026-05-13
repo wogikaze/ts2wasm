@@ -182,7 +182,6 @@ impl WatEmitter<'_> {
     }
 
     #[allow(dead_code)]
-    #[allow(dead_code)]
     pub(super) fn emit_number_to_exponential(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -206,7 +205,6 @@ impl WatEmitter<'_> {
         ));
     }
 
-    #[allow(dead_code)]
     #[allow(dead_code)]
     pub(super) fn emit_number_to_precision(&self, wat: &mut String) {
         wat.push_str(&format!(
