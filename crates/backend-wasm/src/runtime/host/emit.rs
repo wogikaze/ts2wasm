@@ -2830,21 +2830,117 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_generator_yield(&self, wat: &mut String) {
-        wat.push_str(
+        let values_key = self.string_value("values");
+        let state_key = self.string_value("state");
+        let internal_flags = ((1 << 2) - 1) << Layout::OBJECT_NON_ENUM_SHIFT;
+        wat.push_str(&format!(
             r#"
   (func $generator_yield (param $values i32) (result i32)
-    (call $array_values (local.get $values)))
+    (local $generator_ptr i32)
+    (local.set $generator_ptr
+      (call $alloc_heap
+        (i32.const {generator_size})))
+    (i32.store (local.get $generator_ptr) (i32.const 2))
+    (i32.store (i32.add (local.get $generator_ptr) (i32.const {object_flags})) (i32.const {internal_flags}))
+    (i32.store (i32.add (local.get $generator_ptr) (i32.const {object_proto})) (i32.const 0))
+    (i32.store (i32.add (local.get $generator_ptr) (i32.const {entry0_key})) (i32.const {values_key}))
+    (i32.store (i32.add (local.get $generator_ptr) (i32.const {entry0_value})) (local.get $values))
+    (i32.store (i32.add (local.get $generator_ptr) (i32.const {entry1_key})) (i32.const {state_key}))
+    (i32.store (i32.add (local.get $generator_ptr) (i32.const {entry1_value})) (i32.const {zero_number}))
+    (i32.or (local.get $generator_ptr) (i32.const {object_tag})))
 "#,
-        );
+            generator_size = Layout::OBJECT_HEADER_SIZE + 2 * Layout::OBJECT_ENTRY_SIZE,
+            object_flags = Layout::OBJECT_FLAGS_OFFSET,
+            object_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            entry0_key = Layout::OBJECT_ENTRIES_OFFSET,
+            entry0_value = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
+            entry1_key = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE,
+            entry1_value = Layout::OBJECT_ENTRIES_OFFSET
+                + Layout::OBJECT_ENTRY_SIZE
+                + Layout::OBJECT_VALUE_OFFSET,
+            internal_flags = internal_flags,
+            values_key = values_key,
+            state_key = state_key,
+            zero_number = ValueTag::encode_number(0),
+            object_tag = ValueTag::OBJECT,
+        ));
     }
 
     pub(crate) fn emit_generator_next(&self, wat: &mut String) {
-        wat.push_str(
+        let value_key = self.string_value("value");
+        let done_key = self.string_value("done");
+        wat.push_str(&format!(
             r#"
   (func $generator_next (param $generator i32) (result i32)
-    (call $array_iterator_next (local.get $generator)))
+    (local $generator_base i32)
+    (local $values i32)
+    (local $values_base i32)
+    (local $tag i32)
+    (local $len i32)
+    (local $state_tag i32)
+    (local $state i32)
+    (local $next_value i32)
+    (local $done i32)
+    (local $result_ptr i32)
+    (local.set $tag (i32.and (local.get $generator) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $generator_base (i32.and (local.get $generator) (i32.const {heap_mask})))
+    (local.set $values (i32.load (i32.add (local.get $generator_base) (i32.const {entry0_value}))))
+    (local.set $tag (i32.and (local.get $values) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $values_base (i32.and (local.get $values) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $values_base)))
+    (local.set $state_tag (i32.load (i32.add (local.get $generator_base) (i32.const {entry1_value}))))
+    (local.set $state (i32.shr_s (local.get $state_tag) (i32.const {number_shift})))
+    (local.set $next_value (i32.const {undefined}))
+    (local.set $done (i32.const {true}))
+    (if (i32.lt_u (local.get $state) (local.get $len))
+      (then
+        (local.set $done (i32.const {false}))
+        (local.set $next_value (call $array_get (local.get $values) (local.get $state_tag)))
+        (i32.store
+          (i32.add (local.get $generator_base) (i32.const {entry1_value}))
+          (i32.or
+            (i32.shl (i32.add (local.get $state) (i32.const {one})) (i32.const {number_shift}))
+            (i32.const {number_tag})))))
+    (local.set $result_ptr
+      (call $alloc_heap
+        (i32.const {result_size})))
+    (i32.store (local.get $result_ptr) (i32.const 2))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {object_flags})) (i32.const 0))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {object_proto})) (i32.const 0))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {result_value_key})) (i32.const {value_key}))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {result_value_slot})) (local.get $next_value))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {result_done_key})) (i32.const {done_key}))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {result_done_slot})) (local.get $done))
+    (i32.or (local.get $result_ptr) (i32.const {object_tag})))
 "#,
-        );
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            undefined = ValueTag::UNDEFINED,
+            entry0_value = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
+            entry1_value = Layout::OBJECT_ENTRIES_OFFSET
+                + Layout::OBJECT_ENTRY_SIZE
+                + Layout::OBJECT_VALUE_OFFSET,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            one = RuntimeConst::ONE,
+            false = ValueTag::FALSE,
+            true = ValueTag::TRUE,
+            result_size = Layout::OBJECT_HEADER_SIZE + 2 * Layout::OBJECT_ENTRY_SIZE,
+            object_flags = Layout::OBJECT_FLAGS_OFFSET,
+            object_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            result_value_key = Layout::OBJECT_ENTRIES_OFFSET,
+            result_value_slot = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
+            result_done_key = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE,
+            result_done_slot = Layout::OBJECT_ENTRIES_OFFSET
+                + Layout::OBJECT_ENTRY_SIZE
+                + Layout::OBJECT_VALUE_OFFSET,
+            value_key = value_key,
+            done_key = done_key,
+        ));
     }
 
     pub(crate) fn emit_generator_return(&self, wat: &mut String) {

@@ -549,6 +549,47 @@ mod tests {
     }
 
     #[test]
+    fn generator_next_uses_generator_state_object() {
+        let values = LoweredExpr::ArrayNew {
+            elements: vec![
+                LoweredExpr::Number(1, Span::generated("test")),
+                LoweredExpr::Number(2, Span::generated("test")),
+            ],
+            span: Span::generated("test"),
+        };
+        let generator = LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::GeneratorYield,
+            args: vec![values],
+            span: Span::generated("test"),
+        };
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::GeneratorNext,
+                    args: vec![generator],
+                    span: Span::generated("test"),
+                },
+                Span::generated("test"),
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("generator runtime calls should validate");
+        let wat = emit_wat(&v).expect("generator runtime calls should emit WAT");
+        let generator_yield = wat_function(&wat, "generator_yield");
+        let generator_next = wat_function(&wat, "generator_next");
+
+        assert!(generator_yield.contains("(i32.const 2)"));
+        assert!(generator_yield.contains("(call $alloc_heap"));
+        assert!(!generator_yield.contains("(call $array_values"));
+        assert!(generator_next.contains("(call $array_get"));
+        assert!(generator_next.contains("(i32.store"));
+        assert!(!generator_next.contains("(call $array_iterator_next"));
+    }
+
+    #[test]
     fn top_level_locals_are_mirrored_into_gc_root_table() {
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Let(

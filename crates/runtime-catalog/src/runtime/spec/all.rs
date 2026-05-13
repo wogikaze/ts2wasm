@@ -971,7 +971,7 @@ match self {
                 deps: GENERATOR_YIELD_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
-                runtime_strings: NO_RUNTIME_STRINGS,
+                runtime_strings: GENERATOR_YIELD_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::GeneratorReturn => RuntimeSpec {
@@ -987,7 +987,7 @@ match self {
                 deps: GENERATOR_NEXT_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
-                runtime_strings: NO_RUNTIME_STRINGS,
+                runtime_strings: GENERATOR_NEXT_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::JsonStringify => RuntimeSpec {

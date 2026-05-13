@@ -459,7 +459,7 @@ pub enum RuntimeFn {
     /// ECMAScript IteratorNext(iterator) — calls iterator.next() and returns
     /// the result object { value, done }.
     IteratorNext,
-    /// GeneratorYield(values) — creates a generator iterator from collected yield values.
+    /// GeneratorYield(values) — creates a generator state object from collected yield values.
     GeneratorYield,
     /// GeneratorReturn(value) — creates a completed generator result object.
     GeneratorReturn,
@@ -947,8 +947,10 @@ const ARRAY_ENTRIES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const ARRAY_ITERATOR_NEXT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::ArrayGet];
 const ARRAY_ITERATOR_STATE_RUNTIME_STRINGS: &[&str] = &["array", "index", "kind"];
 const ARRAY_ITERATOR_NEXT_RUNTIME_STRINGS: &[&str] = &["value", "done"];
-const GENERATOR_YIELD_DEPS: &[RuntimeFn] = &[RuntimeFn::ArrayValues];
-const GENERATOR_NEXT_DEPS: &[RuntimeFn] = &[RuntimeFn::ArrayIteratorNext];
+const GENERATOR_YIELD_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const GENERATOR_NEXT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::ArrayGet];
+const GENERATOR_YIELD_RUNTIME_STRINGS: &[&str] = &["values", "state"];
+const GENERATOR_NEXT_RUNTIME_STRINGS: &[&str] = &["value", "done"];
 const GENERATOR_RETURN_RUNTIME_STRINGS: &[&str] = &["value", "done"];
 const PROMISE_OBJECT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::ObjectPrototype];
 const PROMISE_WITH_RESOLVERS_DEPS: &[RuntimeFn] = &[
