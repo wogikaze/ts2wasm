@@ -136,6 +136,7 @@ pub fn lower_program_with_module_url(
                         next_func_id,
                         self_closure,
                         recursion_depth: *function_recursion_depths.get(&func_id).unwrap_or(&0),
+                        new_target_class: None,
                         module_url: module_url.as_str(),
                         strict_context: program_is_strict,
                     },
@@ -205,6 +206,7 @@ pub fn lower_program_with_module_url(
                         next_func_id,
                         self_closure: None,
                         recursion_depth: *function_recursion_depths.get(&ctor_id).unwrap_or(&0),
+                        new_target_class: Some(name),
                         module_url: module_url.as_str(),
                         strict_context: true,
                     },
@@ -266,6 +268,7 @@ pub fn lower_program_with_module_url(
                             recursion_depth: *function_recursion_depths
                                 .get(&method_id)
                                 .unwrap_or(&0),
+                            new_target_class: None,
                             module_url: module_url.as_str(),
                             strict_context: true,
                         },
@@ -309,6 +312,7 @@ pub fn lower_program_with_module_url(
                 next_func_id,
                 self_closure,
                 recursion_depth: 0,
+                new_target_class: None,
                 module_url: module_url.as_str(),
                 strict_context: program_is_strict,
             },
@@ -2865,6 +2869,7 @@ pub(crate) struct LowerFunctionOptions<'a> {
     pub(crate) self_closure: Option<SelfClosureOptions<'a>>,
     /// Recursion depth for this function (0 = not recursive, 1+ = recursive).
     pub(crate) recursion_depth: usize,
+    pub(crate) new_target_class: Option<&'a str>,
     pub(crate) module_url: &'a str,
     pub(crate) strict_context: bool,
 }
@@ -2936,6 +2941,7 @@ pub(super) fn lower_function(
         class_static_private_fields,
         options.current_class,
         options.in_constructor,
+        options.new_target_class,
         options.next_func_id,
         options.module_url,
         is_strict_context,

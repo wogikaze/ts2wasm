@@ -22,25 +22,15 @@ impl super::super::Resolver {
     }
 
     pub(super) fn lower_new_target_expr(&mut self, span: Span) -> Result<LoweredExpr, Diagnostic> {
-        if !self.ctx.classes.in_constructor {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-236: new.target is only supported in class constructors".to_owned(),
-                span: Some(span),
-                phase: None,
-            });
-        }
-        let class_name = self
-            .ctx
-            .classes
-            .current_class
-            .clone()
-            .ok_or_else(|| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-236: new.target requires a class constructor context".to_owned(),
-                span: Some(span),
-                phase: None,
-            })?;
+        // NewTargetPropagate: constructor scopes expose new.target and arrows inherit it.
+        let class_name = self.ctx.classes.new_target_class.clone().or_else(|| {
+            (self.ctx.classes.in_constructor)
+                .then(|| self.ctx.classes.current_class.clone())
+                .flatten()
+        });
+        let Some(class_name) = class_name else {
+            return Ok(LoweredExpr::Undefined(span));
+        };
         Ok(LoweredExpr::ClassPrototype(
             self.class_prototype_ref(&class_name)?,
             span,

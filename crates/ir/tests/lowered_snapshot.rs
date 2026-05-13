@@ -36,6 +36,46 @@ fn parse_resolve_lower_with_module_url(source: &str, module_url: &str) -> Lowere
     lower_program_with_module_url(&resolved, module_url).unwrap()
 }
 
+fn lowered_stmt_contains_class_prototype(stmt: &LoweredStmt) -> bool {
+    match stmt {
+        LoweredStmt::Let(_, expr, _)
+        | LoweredStmt::Expr(expr, _)
+        | LoweredStmt::Return(expr, _)
+        | LoweredStmt::Throw(expr, _) => lowered_expr_contains_class_prototype(expr),
+        LoweredStmt::Block(stmts, _) => stmts.iter().any(lowered_stmt_contains_class_prototype),
+        LoweredStmt::If {
+            condition,
+            then_body,
+            else_body,
+            ..
+        } => {
+            lowered_expr_contains_class_prototype(condition)
+                || then_body.iter().any(lowered_stmt_contains_class_prototype)
+                || else_body.iter().any(lowered_stmt_contains_class_prototype)
+        }
+        _ => false,
+    }
+}
+
+fn lowered_expr_contains_class_prototype(expr: &LoweredExpr) -> bool {
+    match expr {
+        LoweredExpr::ClassPrototype(_, _) => true,
+        LoweredExpr::Block { stmts, result, .. } => {
+            stmts.iter().any(lowered_stmt_contains_class_prototype)
+                || lowered_expr_contains_class_prototype(result)
+        }
+        LoweredExpr::Call { args, .. }
+        | LoweredExpr::RuntimeCall { args, .. }
+        | LoweredExpr::ArrayNew { elements: args, .. } => {
+            args.iter().any(lowered_expr_contains_class_prototype)
+        }
+        LoweredExpr::ObjectNew { props, .. } => props
+            .iter()
+            .any(|(_, value)| lowered_expr_contains_class_prototype(value)),
+        _ => false,
+    }
+}
+
 #[test]
 fn lowered_snapshot_empty() {
     let program = parse_resolve_lower("");
@@ -104,6 +144,32 @@ fn lowered_snapshot_import_meta_url() {
         }
         other => panic!("expected import.meta to lower to metadata object, got: {other:?}"),
     }
+}
+
+#[test]
+fn lowered_snapshot_new_target_arrow_inherits_constructor_context() {
+    let program = parse_resolve_lower("class C { constructor() { let f = () => new.target; } }");
+    assert!(
+        program.functions.iter().any(|function| function
+            .body
+            .iter()
+            .any(lowered_stmt_contains_class_prototype)),
+        "expected arrow function lowered body to preserve constructor new.target"
+    );
+}
+
+#[test]
+fn lowered_snapshot_new_target_outside_constructor_lowers_to_undefined() {
+    let program = parse_resolve_lower("function f() { return new.target; }");
+    assert!(
+        program.functions.iter().any(|function| {
+            matches!(
+                function.body.as_slice(),
+                [LoweredStmt::Return(LoweredExpr::Undefined(_), _)]
+            )
+        }),
+        "expected non-constructor new.target to lower to undefined"
+    );
 }
 
 #[test]

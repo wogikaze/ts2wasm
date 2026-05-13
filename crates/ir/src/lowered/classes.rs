@@ -41,6 +41,8 @@ pub struct ClassEnv {
     pub current_class: Option<String>,
     /// Whether the current position is inside a class constructor.
     pub in_constructor: bool,
+    /// Class constructor target visible to `new.target` in this lexical scope.
+    pub new_target_class: Option<String>,
 }
 
 impl ClassEnv {
@@ -57,6 +59,7 @@ impl ClassEnv {
             object_function_props: HashMap::new(),
             current_class: None,
             in_constructor: false,
+            new_target_class: None,
         }
     }
 
@@ -80,6 +83,7 @@ impl ClassEnv {
             object_function_props: HashMap::new(),
             current_class: None,
             in_constructor: false,
+            new_target_class: None,
         }
     }
 

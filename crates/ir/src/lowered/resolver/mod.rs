@@ -87,6 +87,7 @@ impl Resolver {
         class_static_private_fields: ClassStaticPrivateFields,
         current_class: Option<&str>,
         in_constructor: bool,
+        new_target_class: Option<&str>,
         next_func_id: usize,
         current_module_url: &str,
         is_strict_context: bool,
@@ -117,7 +118,7 @@ impl Resolver {
         };
         resolver
             .ctx
-            .set_class_context(current_class, in_constructor);
+            .set_class_context(current_class, in_constructor, new_target_class);
 
         let mut param_ids = Vec::new();
         let mut seen_params = HashMap::new();

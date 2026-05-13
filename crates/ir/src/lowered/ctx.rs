@@ -170,9 +170,15 @@ impl LoweringCtx {
         }
     }
 
-    pub(crate) fn set_class_context(&mut self, current_class: Option<&str>, in_constructor: bool) {
+    pub(crate) fn set_class_context(
+        &mut self,
+        current_class: Option<&str>,
+        in_constructor: bool,
+        new_target_class: Option<&str>,
+    ) {
         self.classes.current_class = current_class.map(ToOwned::to_owned);
         self.classes.in_constructor = in_constructor;
+        self.classes.new_target_class = new_target_class.map(ToOwned::to_owned);
     }
 
     pub(crate) fn is_strict_context(&self) -> bool {

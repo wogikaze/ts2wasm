@@ -120,6 +120,8 @@ impl super::Resolver {
                     object_function_props: None,
                 }),
                 recursion_depth: 0,
+                // NewTargetArrow: arrow functions inherit the enclosing new.target.
+                new_target_class: self.ctx.classes.new_target_class.as_deref(),
                 module_url: self.ctx.current_module_url.as_str(),
                 strict_context: self.ctx.is_strict_context(),
             },
@@ -267,6 +269,7 @@ impl super::Resolver {
                 next_func_id: self.ctx.functions.next_func_id,
                 self_closure,
                 recursion_depth: 0,
+                new_target_class: None,
                 module_url: self.ctx.current_module_url.as_str(),
                 strict_context: self.ctx.is_strict_context(),
             },
