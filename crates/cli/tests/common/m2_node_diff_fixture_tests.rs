@@ -1330,6 +1330,9 @@ fn string_method_fixtures_match_node_output_under_iwasm() {
 fn string_builtin_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/string-normalize.ts",
+        "fixtures/builtins-and-io/string-trim.ts",
+        "fixtures/builtins-and-io/string-to-upper-case.ts",
+        "fixtures/builtins-and-io/string-to-lower-case.ts",
         "fixtures/builtins-and-io/string-pad-start.ts",
         "fixtures/builtins-and-io/string-pad-end.ts",
         "fixtures/builtins-and-io/string-repeat.ts",
