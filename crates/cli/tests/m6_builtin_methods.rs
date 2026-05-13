@@ -2352,3 +2352,14 @@ fn build_smoke_string_constructor_call() {
         result.err()
     );
 }
+
+// Array.prototype copying methods (with, toReversed, toSorted, toSpliced, findLast, findLastIndex)
+#[test]
+fn build_smoke_array_copying_methods() {
+    let result = run_fixture("builtins-and-io/array-copying-methods.ts");
+    assert!(
+        result.is_ok(),
+        "Array.prototype copying methods should build: {:?}",
+        result.err()
+    );
+}

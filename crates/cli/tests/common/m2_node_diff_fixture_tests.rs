@@ -4164,3 +4164,9 @@ fn string_static_methods_matches_node_output() {
 fn object_prototype_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-prototype.ts");
 }
+
+// Array.prototype copying methods
+#[test]
+fn array_copying_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-copying-methods.ts");
+}
