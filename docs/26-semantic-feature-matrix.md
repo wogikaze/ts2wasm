@@ -1,6 +1,6 @@
 # Semantic Feature Matrix
 
-Last updated: 2026-05-12
+Last updated: 2026-05-13
 
 この文書は、ts2wasm が対応する言語機能のセマンティックフィーチャーマトリクスを定義する。
 各 feature label は `fixtures/catalog.yaml` で参照され、テストカバレッジとの対応を機械的に検証できる。
@@ -239,8 +239,8 @@ Last updated: 2026-05-12
 
 | Label | 説明 | 実装状況 | 主な fixture 群 |
 |---|---|---|---|
-| `module:static-import` | static `import` | 部分実装 | module-system, stmt |
-| `module:static-export` | static `export` | 部分実装 | module-system, stmt |
+| `module:static-import` | relative static `import` forms including named, default, namespace, side-effect, combined, repeated, alias, and extensionless specifiers | 部分実装 | module-system, stmt |
+| `module:static-export` | static `export` forms including named lists, default, function export, and re-export entry modules | 部分実装 | module-system, stmt |
 | `module:dynamic-import` | dynamic `import()` | 未実装 | module-system (unsupported), builtins-and-io |
 | `module:named-export` | named export | 部分実装 | module-system |
 | `module:default-export` | default export | 部分実装 | module-system |

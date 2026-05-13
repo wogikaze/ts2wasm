@@ -342,6 +342,18 @@ fn static_namespace_module_import_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn static_binary_module_import_fixture_matches_node_output_under_iwasm() {
+    super::assert_static_module_fixture_matches_node_variant_with_sources(
+        "fixtures/module-system/static-binary-import-entry.ts",
+        "import { a, b } from './static-binary-import-source.ts';\nconsole.log(a + b);\n",
+        &[(
+            "static-binary-import-source.ts",
+            "export const a = 3;\nexport const b = 7;\n",
+        )],
+    );
+}
+
+#[test]
 fn static_combined_named_module_import_fixture_matches_node_output_under_iwasm() {
     super::assert_static_module_fixture_matches_node_variant_with_sources(
         "fixtures/module-system/static-combined-named-import-entry.ts",
@@ -350,6 +362,15 @@ fn static_combined_named_module_import_fixture_matches_node_output_under_iwasm()
             "static-combined-named-import-source.ts",
             "export const x = 1;\nexport default 42;\n",
         )],
+    );
+}
+
+#[test]
+fn static_export_named_list_entry_matches_node_output_under_iwasm() {
+    super::assert_static_module_fixture_matches_node_variant_with_sources(
+        "fixtures/module-system/static-export-named-list-entry.ts",
+        "const a = 1;\nconst b = 2;\nexport { a, b as c };\nconsole.log(a);\n",
+        &[],
     );
 }
 
