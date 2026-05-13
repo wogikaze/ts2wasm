@@ -193,6 +193,16 @@ fn build_smoke_object_has_own() {
 }
 
 #[test]
+fn build_smoke_object_prototype() {
+    let result = run_fixture("builtins-and-io/object-prototype.ts");
+    assert!(
+        result.is_ok(),
+        "Object.prototype methods should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_static_complete() {
     let result = run_fixture("builtins-and-io/object-static-complete.ts");
     assert!(

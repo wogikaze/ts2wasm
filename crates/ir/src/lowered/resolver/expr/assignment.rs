@@ -213,6 +213,13 @@ impl super::super::Resolver {
         if matches!(object, ResolvedExpr::Ident(name) if name == "super") {
             return self.lower_super_property_assign(object, key, value, span);
         }
+        if key == "__proto__" {
+            return Ok(object_kernel::ordinary_set_prototype_of(
+                self.lower_expr(object)?,
+                self.lower_expr(value)?,
+                Span::generated("object_proto_set"),
+            ));
+        }
         let lowered_value = self.lower_expr(value)?;
         let lowered_object = self.lower_property_assignment_object(object)?;
         // Track function/arrow assignments on known locals so method calls

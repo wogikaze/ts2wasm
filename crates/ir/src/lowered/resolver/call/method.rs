@@ -962,6 +962,9 @@ impl super::super::Resolver {
         if let Some(result) = self.lower_static_proxy_object_call(object, method, args, span)? {
             return Ok(Some(result));
         }
+        if let Some(result) = self.lower_object_prototype_dispatch(object, method, args, span)? {
+            return Ok(Some(result));
+        }
         if (method == "indexOf" || method == "includes")
             && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
             && !args.is_empty()
@@ -1295,6 +1298,22 @@ impl super::super::Resolver {
         )?))
     }
 
+    fn lower_static_group_by_dispatch(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Object") && method == "groupBy" {
+            return Ok(Some(self.lower_object_group_by_callback(args, span)?));
+        }
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Map") && method == "groupBy" {
+            return Ok(Some(self.lower_map_group_by_callback(args, span)?));
+        }
+        Ok(None)
+    }
+
     /// Helper for lower_method_call_expr: dispatch early-returns —
     /// object function props, array map special cases (holes, string constructor,
     /// unary-plus, literal, split-result), sort, prototype.map call, user-callback
@@ -1306,15 +1325,11 @@ impl super::super::Resolver {
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<Option<LoweredExpr>, Diagnostic> {
-        if matches!(object, ResolvedExpr::Ident(name) if name == "Object") && method == "groupBy" {
-            // ObjectGroupByCallback: statically visible array + arrow callback
-            // lowers to an object bucket-building loop.
-            return Ok(Some(self.lower_object_group_by_callback(args, span)?));
+        if let Some(lowered) = self.lower_static_group_by_dispatch(object, method, args, span)? {
+            return Ok(Some(lowered));
         }
-        if matches!(object, ResolvedExpr::Ident(name) if name == "Map") && method == "groupBy" {
-            // MapGroupByCallback: statically visible array + arrow callback
-            // lowers to a Map bucket-building loop.
-            return Ok(Some(self.lower_map_group_by_callback(args, span)?));
+        if let Some(lowered) = self.lower_object_prototype_dispatch(object, method, args, span)? {
+            return Ok(Some(lowered));
         }
 
         if let ResolvedExpr::Ident(receiver_name) = object
@@ -1602,6 +1617,15 @@ impl super::super::Resolver {
                         proto_method,
                         lowered_receiver,
                         lowered_call_args,
+                        span,
+                    )?));
+                }
+                if class_name == "Object" && is_object_prototype_method(proto_method) {
+                    let lowered_receiver = self.lower_expr(receiver)?;
+                    return Ok(Some(self.lower_object_prototype_method(
+                        lowered_receiver,
+                        proto_method,
+                        call_args,
                         span,
                     )?));
                 }
@@ -1971,4 +1995,215 @@ impl super::super::Resolver {
         }
         Ok(lowered_args)
     }
+
+    fn lower_object_prototype_dispatch(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if !is_object_prototype_method(method) {
+            return Ok(None);
+        }
+        let is_object_receiver =
+            matches!(self.infer_class_for_expr(object).as_deref(), Some("Object"))
+                || matches!(object, ResolvedExpr::Object(_));
+        if !is_object_receiver {
+            return Ok(None);
+        }
+        let lowered_receiver = self.lower_expr(object)?;
+        Ok(Some(self.lower_object_prototype_method(
+            lowered_receiver,
+            method,
+            args,
+            span,
+        )?))
+    }
+
+    fn lower_object_prototype_method(
+        &mut self,
+        receiver: LoweredExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+        _span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        match method {
+            "hasOwnProperty" => {
+                let key = args
+                    .first()
+                    .map(|arg| self.lower_expr(arg))
+                    .transpose()?
+                    .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+                Ok(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::ObjectHasOwnProperty,
+                    args: vec![receiver, key],
+                    span: Span::generated("runtime_call"),
+                })
+            }
+            "propertyIsEnumerable" => {
+                let key = args
+                    .first()
+                    .map(|arg| self.lower_expr(arg))
+                    .transpose()?
+                    .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+                let desc = self.alloc_temp();
+                let result = self.alloc_temp();
+                Ok(LoweredExpr::Block {
+                    stmts: vec![
+                        LoweredStmt::Let(
+                            desc,
+                            LoweredExpr::RuntimeCall {
+                                intrinsic: RuntimeFn::ObjectGetOwnPropertyDescriptor,
+                                args: vec![receiver, key],
+                                span: Span::generated("runtime_call"),
+                            },
+                            Span::generated("let_stmt"),
+                        ),
+                        LoweredStmt::Let(
+                            result,
+                            LoweredExpr::Bool(false, Span::generated("bool")),
+                            Span::generated("let_stmt"),
+                        ),
+                        LoweredStmt::If {
+                            condition: LoweredExpr::Binary {
+                                left: Box::new(LoweredExpr::Local(desc, Span::generated("local"))),
+                                op: LoweredBinaryOp::StrictNotEqual,
+                                right: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+                                span: Span::generated("binary"),
+                            },
+                            then_body: vec![LoweredStmt::Assign(
+                                result,
+                                LoweredExpr::PropertyGet {
+                                    obj: Box::new(LoweredExpr::Local(
+                                        desc,
+                                        Span::generated("local"),
+                                    )),
+                                    key: "enumerable".to_owned(),
+                                    span: Span::generated("property_get"),
+                                },
+                                Span::generated("assign"),
+                            )],
+                            else_body: Vec::new(),
+                            span: Span::generated("if_stmt"),
+                        },
+                    ],
+                    result: Box::new(LoweredExpr::Local(result, Span::generated("local"))),
+                    span: Span::generated("object_property_is_enumerable"),
+                })
+            }
+            "isPrototypeOf" => {
+                let Some(candidate) = args.first() else {
+                    return Ok(LoweredExpr::Bool(false, Span::generated("bool")));
+                };
+                let current = self.alloc_temp();
+                let found = self.alloc_temp();
+                Ok(LoweredExpr::Block {
+                    stmts: vec![
+                        LoweredStmt::Let(
+                            current,
+                            LoweredExpr::RuntimeCall {
+                                intrinsic: RuntimeFn::ObjectGetPrototypeOf,
+                                args: vec![self.lower_expr(candidate)?],
+                                span: Span::generated("runtime_call"),
+                            },
+                            Span::generated("let_stmt"),
+                        ),
+                        LoweredStmt::Let(
+                            found,
+                            LoweredExpr::Bool(false, Span::generated("bool")),
+                            Span::generated("let_stmt"),
+                        ),
+                        LoweredStmt::While {
+                            condition: LoweredExpr::Binary {
+                                left: Box::new(LoweredExpr::Binary {
+                                    left: Box::new(LoweredExpr::Local(
+                                        current,
+                                        Span::generated("local"),
+                                    )),
+                                    op: LoweredBinaryOp::StrictNotEqual,
+                                    right: Box::new(LoweredExpr::Null(Span::generated("null"))),
+                                    span: Span::generated("binary"),
+                                }),
+                                op: LoweredBinaryOp::And,
+                                right: Box::new(LoweredExpr::Binary {
+                                    left: Box::new(LoweredExpr::Local(
+                                        current,
+                                        Span::generated("local"),
+                                    )),
+                                    op: LoweredBinaryOp::StrictNotEqual,
+                                    right: Box::new(LoweredExpr::Undefined(Span::generated(
+                                        "undef",
+                                    ))),
+                                    span: Span::generated("binary"),
+                                }),
+                                span: Span::generated("binary"),
+                            },
+                            body: vec![LoweredStmt::If {
+                                condition: LoweredExpr::Binary {
+                                    left: Box::new(LoweredExpr::Local(
+                                        current,
+                                        Span::generated("local"),
+                                    )),
+                                    op: LoweredBinaryOp::StrictEqual,
+                                    right: Box::new(receiver),
+                                    span: Span::generated("binary"),
+                                },
+                                then_body: vec![
+                                    LoweredStmt::Assign(
+                                        found,
+                                        LoweredExpr::Bool(true, Span::generated("bool")),
+                                        Span::generated("assign"),
+                                    ),
+                                    LoweredStmt::Assign(
+                                        current,
+                                        LoweredExpr::Null(Span::generated("null")),
+                                        Span::generated("assign"),
+                                    ),
+                                ],
+                                else_body: vec![LoweredStmt::Assign(
+                                    current,
+                                    LoweredExpr::RuntimeCall {
+                                        intrinsic: RuntimeFn::ObjectGetPrototypeOf,
+                                        args: vec![LoweredExpr::Local(
+                                            current,
+                                            Span::generated("local"),
+                                        )],
+                                        span: Span::generated("runtime_call"),
+                                    },
+                                    Span::generated("assign"),
+                                )],
+                                span: Span::generated("if_stmt"),
+                            }],
+                            span: Span::generated("while"),
+                        },
+                    ],
+                    result: Box::new(LoweredExpr::Local(found, Span::generated("local"))),
+                    span: Span::generated("object_is_prototype_of"),
+                })
+            }
+            "toString" | "toLocaleString" => Ok(LoweredExpr::String(
+                "[object Object]".to_owned(),
+                Span::generated("str"),
+            )),
+            "valueOf" => Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ValueOf,
+                args: vec![receiver],
+                span: Span::generated("runtime_call"),
+            }),
+            _ => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
+        }
+    }
+}
+
+fn is_object_prototype_method(method: &str) -> bool {
+    matches!(
+        method,
+        "hasOwnProperty"
+            | "propertyIsEnumerable"
+            | "isPrototypeOf"
+            | "toString"
+            | "valueOf"
+            | "toLocaleString"
+    )
 }

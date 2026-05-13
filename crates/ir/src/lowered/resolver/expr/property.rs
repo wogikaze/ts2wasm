@@ -55,6 +55,12 @@ impl super::super::Resolver {
                 span: Span::generated("object_prototype"),
             });
         }
+        if key == "__proto__" {
+            return Ok(object_kernel::ordinary_get_prototype_of(
+                self.lower_expr(object)?,
+                Span::generated("object_proto_get"),
+            ));
+        }
         if is_array_prototype_push_property(object, key) {
             return Ok(LoweredExpr::Number(0, Span::generated("num")));
         }

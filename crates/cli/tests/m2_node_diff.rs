@@ -1040,6 +1040,11 @@ fn object_has_own_matches_node() {
 }
 
 #[test]
+fn object_prototype_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-prototype.ts");
+}
+
+#[test]
 fn number_static_nan_and_finite_match_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/number-is-nan.ts");
     assert_fixture_matches_node("fixtures/builtins-and-io/number-is-finite.ts");
