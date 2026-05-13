@@ -342,6 +342,7 @@ directories:
     - promise-static-methods.ts
     - promise-then-unsupported-diagnostic.ts
     - proxy-handler-traps-unsupported.ts
+    - proxy-remaining-traps.ts
     - proxy-reflect-unsupported-diagnostic.ts
     - regexp-0-args.ts
     - regexp-digit.ts

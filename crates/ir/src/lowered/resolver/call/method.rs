@@ -800,6 +800,9 @@ impl super::super::Resolver {
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if let Some(result) = self.lower_static_proxy_object_call(object, method, args, span)? {
+            return Ok(Some(result));
+        }
         if (method == "indexOf" || method == "includes")
             && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
             && !args.is_empty()
@@ -1034,6 +1037,100 @@ impl super::super::Resolver {
             }));
         }
         Ok(None)
+    }
+
+    fn lower_static_proxy_object_call(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Proxy") && method == "revocable" {
+            let [target, _handler] = args else {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-438: Proxy.revocable requires target and handler arguments"
+                        .to_owned(),
+                    span: Some(span),
+                    phase: None,
+                });
+            };
+            return Ok(Some(LoweredExpr::ObjectNew {
+                props: vec![
+                    ("proxy".to_owned(), self.lower_expr(target)?),
+                    (
+                        "revoke".to_owned(),
+                        LoweredExpr::Undefined(Span::generated("undef")),
+                    ),
+                ],
+                non_enumerable: 0,
+                span: Span::generated("object_new"),
+            }));
+        }
+
+        if !matches!(object, ResolvedExpr::Ident(name) if name == "Object") {
+            return Ok(None);
+        }
+        let Some(proxy) = args.first().and_then(|arg| {
+            crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(&self.ctx, arg)
+        }) else {
+            return Ok(None);
+        };
+
+        let trap = match method {
+            "keys" => "ownKeys",
+            "getOwnPropertyDescriptor" => "getOwnPropertyDescriptor",
+            "defineProperty" => "defineProperty",
+            "getPrototypeOf" => "getPrototypeOf",
+            "setPrototypeOf" => "setPrototypeOf",
+            _ => return Ok(None),
+        };
+        let trap_args = match method {
+            "keys" | "getPrototypeOf" => Vec::new(),
+            "getOwnPropertyDescriptor" => {
+                let Some(key) = args.get(1) else {
+                    return Err(Diagnostic {
+                        code: DiagCode::ArityMismatch,
+                        message:
+                            "Object.getOwnPropertyDescriptor proxy trap requires a property key"
+                                .to_owned(),
+                        span: Some(span),
+                        phase: None,
+                    });
+                };
+                vec![key.clone()]
+            }
+            "defineProperty" => {
+                let (Some(key), Some(desc)) = (args.get(1), args.get(2)) else {
+                    return Err(Diagnostic {
+                        code: DiagCode::ArityMismatch,
+                        message: "Object.defineProperty proxy trap requires a property key and descriptor"
+                            .to_owned(),
+                        span: Some(span),
+                        phase: None,
+                    });
+                };
+                vec![key.clone(), desc.clone()]
+            }
+            "setPrototypeOf" => {
+                let Some(proto) = args.get(1) else {
+                    return Err(Diagnostic {
+                        code: DiagCode::ArityMismatch,
+                        message: "Object.setPrototypeOf proxy trap requires a prototype argument"
+                            .to_owned(),
+                        span: Some(span),
+                        phase: None,
+                    });
+                };
+                vec![proto.clone()]
+            }
+            _ => unreachable!("filtered above"),
+        };
+
+        Ok(Some(
+            self.lower_proxy_trap_call(proxy, trap, trap_args, span)?,
+        ))
     }
 
     /// Helper for lower_method_call_expr: dispatch early-returns —
