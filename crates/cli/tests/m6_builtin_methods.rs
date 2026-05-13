@@ -2363,3 +2363,14 @@ fn build_smoke_array_copying_methods() {
         result.err()
     );
 }
+
+// Symbol.for / Symbol.keyFor global registry
+#[test]
+fn build_smoke_symbol_registry() {
+    let result = run_fixture("builtins-and-io/symbol-registry.ts");
+    assert!(
+        result.is_ok(),
+        "Symbol registry methods should build: {:?}",
+        result.err()
+    );
+}

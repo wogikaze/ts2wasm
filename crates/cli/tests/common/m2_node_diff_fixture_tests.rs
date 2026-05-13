@@ -4170,3 +4170,9 @@ fn object_prototype_matches_node_output() {
 fn array_copying_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/array-copying-methods.ts");
 }
+
+// Symbol.for / Symbol.keyFor global registry
+#[test]
+fn symbol_registry_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/symbol-registry.ts");
+}

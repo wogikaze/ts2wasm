@@ -97,6 +97,13 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 _ => None,
             };
         }
+        if name == "Symbol" {
+            return match method {
+                "for" => Some(RuntimeFn::SymbolFor),
+                "keyFor" => Some(RuntimeFn::SymbolKeyFor),
+                _ => None,
+            };
+        }
     }
     match method {
         "concat" => Some(RuntimeFn::Concat),
