@@ -4128,3 +4128,9 @@ fn fncsem_computed_call_unsupported_reports_unsupported_syntax() {
         "only identifier calls are supported",
     );
 }
+
+// Object.prototype methods
+#[test]
+fn object_prototype_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-prototype.ts");
+}

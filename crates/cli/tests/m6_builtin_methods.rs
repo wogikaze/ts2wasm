@@ -2271,3 +2271,14 @@ fn build_smoke_boolean_symbol_prototype() {
         result.err()
     );
 }
+
+// Object.prototype methods
+#[test]
+fn build_smoke_object_prototype() {
+    let result = run_fixture("builtins-and-io/object-prototype.ts");
+    assert!(
+        result.is_ok(),
+        "Object.prototype methods should build: {:?}",
+        result.err()
+    );
+}

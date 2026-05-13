@@ -33,6 +33,10 @@ impl WatEmitter<'_> {
             RuntimeFn::ObjectPrototype => self.emit_object_prototype(wat),
             RuntimeFn::GlobalThis => self.emit_global_this(wat),
             RuntimeFn::ObjectIs => self.emit_object_is(wat),
+            RuntimeFn::PropertyIsEnumerable => self.emit_object_property_is_enumerable(wat),
+            RuntimeFn::IsPrototypeOf => self.emit_object_is_prototype_of(wat),
+            RuntimeFn::ObjectToString => self.emit_object_to_string(wat),
+            RuntimeFn::ObjectToLocaleString => self.emit_object_to_locale_string(wat),
             _ => unreachable!("non-object RuntimeFn routed to object dispatch"),
         }
     }

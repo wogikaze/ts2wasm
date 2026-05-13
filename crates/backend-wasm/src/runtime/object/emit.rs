@@ -1287,4 +1287,135 @@ tag_mask = ValueTag::TAG_MASK, object_tag = ValueTag::OBJECT, heap_mask = ValueT
             false_tag = ValueTag::FALSE,
         ));
     }
+
+    pub(crate) fn emit_object_property_is_enumerable(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $property_is_enumerable (param $obj i32) (param $key i32) (result i32)
+    (local $key_len i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $pk_raw i32)
+    (local $pk_ptr i32)
+    (local $pk_len i32)
+    (local $flags i32)
+    (local.set $key_len
+      (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
+    (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
+    (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+    (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (local.get $count))
+    (block $not_found
+      (loop $scan
+        (br_if $not_found (i32.eq (local.get $i) (i32.const {zero})))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (local.set $pk_raw (i32.load (local.get $entry_base)))
+        (local.set $pk_ptr
+          (i32.add (i32.and (local.get $pk_raw) (i32.const {heap_mask})) (i32.const {str_header})))
+        (local.set $pk_len
+          (i32.load (i32.and (local.get $pk_raw) (i32.const {heap_mask}))))
+        (if (i32.eq (local.get $key_len) (local.get $pk_len))
+          (then
+            (if (call $mem_equal
+                  (i32.const {scratch_offset}) (local.get $pk_ptr) (local.get $key_len))
+              (then
+                (if (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_enum_shift}))))
+                  (then (return (i32.const {false})))
+                  (else (return (i32.const {true}))))))))
+      (br $scan)))
+    (i32.const {false}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            non_enum_shift = Layout::OBJECT_NON_ENUM_SHIFT,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            str_header = Layout::STRING_HEADER_SIZE,
+            scratch_offset = Layout::SCRATCH_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            false = ValueTag::FALSE,
+            true = ValueTag::TRUE,
+        ));
+    }
+
+    pub(crate) fn emit_object_is_prototype_of(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $is_prototype_of (param $this_proto i32) (param $obj i32) (result i32)
+    (local $tag i32)
+    (local $proto i32)
+    (local $proto_ptr i32)
+    (local $this_proto_ptr i32)
+    (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
+    (local.set $this_proto_ptr (i32.and (local.get $this_proto) (i32.const {heap_mask})))
+    (local.set $proto (i32.and (local.get $obj) (i32.const {heap_mask})))
+    (block $chain_done
+      (loop $chain
+        (local.set $proto_ptr (i32.load (i32.add (local.get $proto) (i32.const {obj_proto}))))
+        (if (i32.eqz (local.get $proto_ptr)) (then (br $chain_done)))
+        (if (i32.eq (local.get $proto_ptr) (local.get $this_proto_ptr))
+          (then (return (i32.const {true}))))
+        (local.set $proto (local.get $proto_ptr))
+        (br $chain)))
+    (i32.const {false}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            false = ValueTag::FALSE,
+            true = ValueTag::TRUE,
+        ));
+    }
+
+    pub(crate) fn emit_object_to_string(&self, wat: &mut String) {
+        let object_string = self.string_value("[object Object]");
+        wat.push_str(&format!(
+            r#"
+  (func $object_to_string (param $v i32) (result i32)
+    (local $tag i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    ;; Object -> return "[object Object]"
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then (return (i32.const {object_string}))))
+    ;; Boolean -> delegate to $boolean_to_string
+    (if (i32.eq (local.get $tag) (i32.const {false_tag}))
+      (then (return (call $boolean_to_string (local.get $v)))))
+    (if (i32.eq (local.get $tag) (i32.const {true_tag}))
+      (then (return (call $boolean_to_string (local.get $v)))))
+    ;; String -> return as-is
+    (if (call $is_string (local.get $v))
+      (then (return (local.get $v))))
+    ;; Fallback: return value unchanged
+    (local.get $v))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            object_string = object_string,
+            false_tag = ValueTag::FALSE,
+            true_tag = ValueTag::TRUE,
+        ));
+    }
+
+    pub(crate) fn emit_object_to_locale_string(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $object_to_locale_string (param $v i32) (result i32)
+    (return (call $object_to_string (local.get $v))))
+"#,
+        );
+    }
 }
