@@ -364,6 +364,14 @@ pub enum RuntimeFn {
     GlobalThis,
     /// Object.is(value1, value2) — SameValue comparison
     ObjectIs,
+    /// Object.prototype.propertyIsEnumerable(key) — checks if a property is enumerable
+    PropertyIsEnumerable,
+    /// Object.prototype.isPrototypeOf(obj) — checks if this is in the prototype chain of obj
+    IsPrototypeOf,
+    /// Object.prototype.toString — returns "[object Object]" for objects, delegates to type-specific toString otherwise
+    ObjectToString,
+    /// Object.prototype.toLocaleString — returns result of toString() for objects
+    ObjectToLocaleString,
     /// Object.prototype.valueOf — returns the value unchanged (identity)
     ValueOf,
     /// Instanceof operator
@@ -800,6 +808,7 @@ const BIGINT_MIXED_ARITHMETIC_TYPE_ERROR_DEPS: &[RuntimeFn] =
     &[RuntimeFn::AllocHeap, RuntimeFn::Write];
 const BIGINT_STRING_COMPARISON_BOUNDARY_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write];
 const PRIVATE_BRAND_TYPE_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Write];
+const HEAP_CLOSURE_CALL_DEPS: &[RuntimeFn] = &[RuntimeFn::Write];
 const BIGINT_MIXED_ARITHMETIC_TYPE_ERROR_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::BIGINT_MIXED_ARITHMETIC_TYPE_ERROR,
     "Cannot mix BigInt and other types, use explicit conversions",
@@ -817,6 +826,7 @@ const PRIVATE_BRAND_TYPE_ERROR_RUNTIME_STRINGS: &[&str] = &[
     "Cannot read private member from an object whose class did not declare it",
     "message",
 ];
+const HEAP_CLOSURE_CALL_RUNTIME_STRINGS: &[&str] = &[RuntimeString::NOT_CALLABLE_TYPE_ERROR];
 const BIGINT_BITWISE_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_LEFT_SHIFT_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_RIGHT_SHIFT_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
@@ -1027,6 +1037,12 @@ const OBJECT_ASSIGN_DEPS: &[RuntimeFn] = &[
 ];
 const OBJECT_CREATE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const OBJECT_PROTOTYPE_OBJECT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const PROPERTY_IS_ENUMERABLE_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::ValueToStringInto, RuntimeFn::MemEqual];
+const IS_PROTOTYPE_OF_DEPS: &[RuntimeFn] = &[];
+const OBJECT_TO_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::BooleanToString];
+const OBJECT_TO_STRING_RUNTIME_STRINGS: &[&str] = &["[object Object]"];
+const OBJECT_TO_LOCALE_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::ObjectToString];
 const GLOBAL_THIS_DEPS: &[RuntimeFn] = &[RuntimeFn::ObjectCreate];
 const INDEX_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
@@ -1156,6 +1172,10 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ObjectPrototype" => Some(RuntimeFn::ObjectPrototype),
         "GlobalThis" => Some(RuntimeFn::GlobalThis),
         "ObjectIs" => Some(RuntimeFn::ObjectIs),
+        "PropertyIsEnumerable" => Some(RuntimeFn::PropertyIsEnumerable),
+        "IsPrototypeOf" => Some(RuntimeFn::IsPrototypeOf),
+        "ObjectToString" => Some(RuntimeFn::ObjectToString),
+        "ObjectToLocaleString" => Some(RuntimeFn::ObjectToLocaleString),
         "ValueOf" => Some(RuntimeFn::ValueOf),
         "$instanceof" => Some(RuntimeFn::InstanceOf),
         "Concat" => Some(RuntimeFn::Concat),
@@ -1649,7 +1669,11 @@ impl RuntimeFn {
             | Self::ObjectCreate
             | Self::ObjectPrototype
             | Self::GlobalThis
-            | Self::ObjectIs => RuntimeDomain::Object,
+            | Self::ObjectIs
+            | Self::PropertyIsEnumerable
+            | Self::IsPrototypeOf
+            | Self::ObjectToString
+            | Self::ObjectToLocaleString => RuntimeDomain::Object,
             Self::Add
             | Self::AddFast
             | Self::Sub
@@ -2193,6 +2217,10 @@ impl RuntimeFn {
             Self::ObjectPrototype,
             Self::GlobalThis,
             Self::ObjectIs,
+            Self::PropertyIsEnumerable,
+            Self::IsPrototypeOf,
+            Self::ObjectToString,
+            Self::ObjectToLocaleString,
             Self::ValueOf,
             // Instanceof operator
             Self::InstanceOf,
@@ -2546,6 +2574,10 @@ impl RuntimeFn {
             Self::ObjectPrototype,
             Self::GlobalThis,
             Self::ObjectIs,
+            Self::PropertyIsEnumerable,
+            Self::IsPrototypeOf,
+            Self::ObjectToString,
+            Self::ObjectToLocaleString,
             Self::ValueOf,
             // Instanceof operator
             Self::InstanceOf,

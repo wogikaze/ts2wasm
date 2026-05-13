@@ -2341,4 +2341,3 @@ fn build_smoke_string_constructor_call() {
         "String(...) constructor-style calls should build: {:?}",
         result.err()
     );
-}

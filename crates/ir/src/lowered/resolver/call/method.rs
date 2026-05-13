@@ -1923,6 +1923,32 @@ impl super::super::Resolver {
                 });
             }
             None => {
+                // Object.prototype methods: route to RuntimeFn for untyped receivers
+                let obj_methods =
+                    ["hasOwnProperty", "propertyIsEnumerable", "isPrototypeOf", "toString", "toLocaleString", "valueOf"];
+                if obj_methods.contains(&method) {
+                    let intrinsic = resolve_method_to_runtime_fn(
+                        &ResolvedExpr::Ident(receiver_name.to_string()),
+                        method,
+                    ).ok_or_else(|| Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!("method `{}` not found for untyped receiver", method),
+                        span: Some(span),
+                        phase: None,
+                    })?;
+                    let mut lowered_args =
+                        vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
+                    lowered_args.extend(
+                        args.iter()
+                            .map(|e| self.lower_expr(e))
+                            .collect::<Result<Vec<_>, _>>()?,
+                    );
+                    return Ok(LoweredExpr::RuntimeCall {
+                        intrinsic,
+                        args: lowered_args,
+                        span: Span::generated("runtime_call"),
+                    });
+                }
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: format!(

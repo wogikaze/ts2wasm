@@ -34,4 +34,8 @@ pub const OBJECT_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::ObjectCreate,
     RuntimeFn::GlobalThis,
     RuntimeFn::ObjectIs,
+    RuntimeFn::PropertyIsEnumerable,
+    RuntimeFn::IsPrototypeOf,
+    RuntimeFn::ObjectToString,
+    RuntimeFn::ObjectToLocaleString,
 ];
