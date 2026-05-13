@@ -374,6 +374,7 @@ pub enum LoweredExpr {
     ErrorNew {
         constructor: BuiltinErrorConstructor,
         message: Box<LoweredExpr>,
+        cause: Option<Box<LoweredExpr>>,
         span: Span,
     },
     PropertyGet {

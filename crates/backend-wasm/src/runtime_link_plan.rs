@@ -464,10 +464,13 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
                 collect_required_runtime_expr(plan, val);
             }
         }
-        LoweredExpr::ErrorNew { message, .. } => {
+        LoweredExpr::ErrorNew { message, cause, .. } => {
             plan.add_required_runtime(RuntimeFn::AllocHeap);
             plan.add_required_runtime(RuntimeFn::Concat);
             collect_required_runtime_expr(plan, message);
+            if let Some(cause) = cause {
+                collect_required_runtime_expr(plan, cause);
+            }
         }
         LoweredExpr::PropertyGet { obj, .. } => {
             plan.add_required_runtime(RuntimeFn::PropertyGet);

@@ -4177,6 +4177,12 @@ fn symbol_registry_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/symbol-registry.ts");
 }
 
+// Error subclasses with stack and cause support
+#[test]
+fn error_stack_cause_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/error-subclasses.ts");
+}
+
 // Number static methods: isNaN, isFinite, isInteger, isSafeInteger
 #[test]
 fn number_methods_matches_node_output() {

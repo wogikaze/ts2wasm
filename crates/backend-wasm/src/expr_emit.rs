@@ -1867,9 +1867,10 @@ impl WatEmitter<'_> {
             LoweredExpr::ErrorNew {
                 constructor,
                 message,
+                cause,
                 ..
             } => {
-                let prop_count = 2;
+                let prop_count = if cause.is_some() { 3 } else { 2 };
                 let prop_capacity = prop_count + 8;
                 let size =
                     Layout::OBJECT_HEADER_SIZE + (prop_capacity as u32) * Layout::OBJECT_ENTRY_SIZE;
@@ -1950,6 +1951,32 @@ impl WatEmitter<'_> {
                     stack_entry_offset + Layout::OBJECT_VALUE_OFFSET,
                     frame.heap_value_tmp(),
                 ));
+                if let Some(cause) = cause {
+                    let cause_entry_offset =
+                        Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE * 2;
+                    let cause_key_raw = self.string_value("cause");
+                    let cause_frame = frame.child_temp_frame();
+                    writer.push_str(&format!(
+                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+                        frame.heap_base_tmp(),
+                        cause_entry_offset,
+                        cause_key_raw,
+                    ));
+                    self.emit_expr(writer, cause, indent, &cause_frame);
+                    writer.local_set(indent, cause_frame.heap_value_tmp());
+                    self.emit_gc_root_mirror_index(
+                        writer.output_mut(),
+                        &pad,
+                        cause_frame.heap_value_tmp(),
+                        &cause_frame,
+                    );
+                    writer.push_str(&format!(
+                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
+                        frame.heap_base_tmp(),
+                        cause_entry_offset + Layout::OBJECT_VALUE_OFFSET,
+                        cause_frame.heap_value_tmp(),
+                    ));
+                }
                 writer.push_str(&format!(
                     "{pad}(i32.or (local.get {}) (i32.const {}))\n",
                     frame.heap_base_tmp(),

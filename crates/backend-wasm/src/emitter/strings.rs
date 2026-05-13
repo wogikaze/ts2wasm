@@ -256,12 +256,17 @@ impl WatEmitter<'_> {
             LoweredExpr::ErrorNew {
                 constructor,
                 message,
+                cause,
                 ..
             } => {
                 self.intern_string("message");
                 self.intern_string("stack");
+                self.intern_string("cause");
                 self.intern_string(super::builtin_error_stack_prefix(*constructor));
                 self.collect_expr_strings(message);
+                if let Some(cause) = cause {
+                    self.collect_expr_strings(cause);
+                }
             }
             LoweredExpr::PropertyGet { obj, key, .. } => {
                 self.collect_expr_strings(obj);

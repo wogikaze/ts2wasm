@@ -2387,6 +2387,17 @@ fn build_smoke_native_error_types() {
     );
 }
 
+// Error subclasses with stack and cause support
+#[test]
+fn build_smoke_error_subclasses() {
+    let result = run_fixture("builtins-and-io/error-subclasses.ts");
+    assert!(
+        result.is_ok(),
+        "Error subclasses should build: {:?}",
+        result.err()
+    );
+}
+
 // Number static methods: isNaN, isFinite, isInteger, isSafeInteger
 #[test]
 fn build_smoke_number_complete() {

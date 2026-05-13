@@ -618,8 +618,11 @@ fn validate_expr(
                 validate_expr(val, local_count, num_funcs, program, errors, true);
             }
         }
-        LoweredExpr::ErrorNew { message, .. } => {
+        LoweredExpr::ErrorNew { message, cause, .. } => {
             validate_expr(message, local_count, num_funcs, program, errors, true);
+            if let Some(cause) = cause {
+                validate_expr(cause, local_count, num_funcs, program, errors, true);
+            }
         }
         LoweredExpr::PropertyGet { obj, .. } => {
             validate_expr(obj, local_count, num_funcs, program, errors, true);

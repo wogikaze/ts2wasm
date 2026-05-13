@@ -351,9 +351,22 @@ impl super::super::Resolver {
                 },
                 None => LoweredExpr::String(String::new(), Span::generated("str")),
             };
+            let cause = if args.len() >= 2 {
+                match &args[1] {
+                    ResolvedExpr::Object(props) => props
+                        .iter()
+                        .find(|p| p.static_key() == Some("cause"))
+                        .map(|prop| self.lower_expr(prop.value()))
+                        .transpose()?,
+                    _ => None,
+                }
+            } else {
+                None
+            };
             return Ok(LoweredExpr::ErrorNew {
                 constructor,
                 message: Box::new(message),
+                cause: cause.map(Box::new),
                 span: Span::generated("error_new"),
             });
         }

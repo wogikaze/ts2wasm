@@ -557,10 +557,14 @@ impl WatEmitter<'_> {
             LoweredExpr::ErrorNew {
                 constructor,
                 message,
+                cause,
                 ..
             } => {
                 emitter::add_builtin_error_prototype_ref(*constructor, prototypes);
                 Self::collect_builtin_error_prototypes_from_expr(message, prototypes);
+                if let Some(cause) = cause {
+                    Self::collect_builtin_error_prototypes_from_expr(cause, prototypes);
+                }
             }
             LoweredExpr::Unary { expr, .. }
             | LoweredExpr::GetLength(expr, _)
