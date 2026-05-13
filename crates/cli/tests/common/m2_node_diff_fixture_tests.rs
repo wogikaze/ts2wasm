@@ -2716,6 +2716,16 @@ fn global_unescape_matches_node_under_iwasm() {
 }
 
 #[test]
+fn global_escape_value_matches_node_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-escape-value.ts");
+}
+
+#[test]
+fn global_unescape_value_matches_node_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-unescape-value.ts");
+}
+
+#[test]
 fn global_encode_uri_matches_node_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/global-encode-uri.ts");
 }
