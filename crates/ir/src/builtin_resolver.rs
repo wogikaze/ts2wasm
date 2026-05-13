@@ -1701,6 +1701,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             {
                 Ok(ResolvedExpr::ModuleLoad {
                     specifier: specifier.clone(),
+                    is_dynamic_import: false,
                 })
             } else {
                 Err(Diagnostic {
@@ -1711,6 +1712,20 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     phase: None,
                 })
             }
+        }
+        Expr::Call { callee, args, .. } if is_dynamic_import_call(callee, args) => {
+            let [
+                Expr::String {
+                    value: specifier, ..
+                },
+            ] = args.as_slice()
+            else {
+                unreachable!("is_dynamic_import_call validates a single string literal argument");
+            };
+            Ok(ResolvedExpr::ModuleLoad {
+                specifier: specifier.clone(),
+                is_dynamic_import: true,
+            })
         }
         Expr::Call { callee, args, span } => {
             if is_test262_assert_reference_error_probe(callee, args) {

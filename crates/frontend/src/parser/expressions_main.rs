@@ -2084,7 +2084,7 @@ impl Parser {
                 span: self.peek_span(),
 
                 phase: None,}),
-            // Dynamic import: import(expr) — lowered to require(expr) for compilation
+            // Dynamic import: keep a distinct callee so IR can preserve import() vs require().
             Some(SpannedToken {
                 kind: Token::Import,
                 span: import_span,
@@ -2095,7 +2095,7 @@ impl Parser {
                 let end = self.prev_span().map(|s| s.end).unwrap_or(import_span.end);
                 Ok(Expr::Call {
                     callee: Box::new(Expr::Ident {
-                        name: "require".to_owned(),
+                        name: "__ts2wasm_dynamic_import".to_owned(),
                         span: import_span,
                     }),
                     args: vec![expr],

@@ -666,6 +666,7 @@ pub(crate) fn lower_static_named_import_reads_for_build(
                 *expr = lowered::LoweredExpr::PropertyGet {
                     obj: Box::new(lowered::LoweredExpr::ModuleLoad {
                         module_id: binding.source_module_id,
+                        kind: lowered::ModuleLoadKind::StaticRequire,
                         span: Span::generated("ModuleLoad"),
                     }),
                     key: binding.imported_name.clone(),

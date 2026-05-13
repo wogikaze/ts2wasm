@@ -258,7 +258,7 @@ BigInt mixed comparison の object `ToPrimitive` boundary: direct object-literal
 | 機能 | ECMAScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
 |---|---|---|---|---|---|
 | `import` / `export` | ES6 | static module system | 未実装 | P1 | - |
-| `import()` (dynamic) | ES2020 | dynamic import | 未実装 | P2 | - |
+| `import()` (dynamic) | ES2020 | dynamic import | 部分実装 (literal specifier build path; IR preserves dynamic-import module-load kind) | P2 | 408 |
 | `require()` (CommonJS) | (非標準) | compile-time builtin | 未実装 | P2 | - |
 
 ## その他

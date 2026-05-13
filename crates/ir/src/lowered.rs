@@ -39,6 +39,6 @@ pub use types::{
     BuiltinErrorConstructor, ClassPrototypeRef, ClosureRepresentation, FuncId, FunctionCallKind,
     GeneratorState, InferredType, LocalId, LoweredArraySlot, LoweredBinaryOp, LoweredExpr,
     LoweredFunction, LoweredLogicalAssignOp, LoweredProgram, LoweredStmt, LoweredUnaryOp,
-    ModuleInfo, SuspendPoint, Validated,
+    ModuleInfo, ModuleLoadKind, SuspendPoint, Validated,
 };
 pub use validate::validate_lowered;

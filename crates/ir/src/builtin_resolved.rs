@@ -261,6 +261,7 @@ pub enum ResolvedExpr {
     },
     ModuleLoad {
         specifier: String,
+        is_dynamic_import: bool,
     },
     ArrowFn {
         params: Vec<String>,

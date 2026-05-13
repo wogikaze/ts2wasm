@@ -42,6 +42,7 @@ pub fn default_allowed_globals() -> std::collections::HashSet<String> {
         "console",
         "process",
         "require",
+        "__ts2wasm_dynamic_import",
         "exports",
         "module",
         "Buffer",

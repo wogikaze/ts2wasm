@@ -241,7 +241,7 @@ Last updated: 2026-05-13
 |---|---|---|---|
 | `module:static-import` | relative static `import` forms including named, default, namespace, side-effect, combined, repeated, alias, and extensionless specifiers | 部分実装 | module-system, stmt |
 | `module:static-export` | static `export` forms including named lists, default, function export, and re-export entry modules | 部分実装 | module-system, stmt |
-| `module:dynamic-import` | dynamic `import()` | 未実装 | module-system (unsupported), builtins-and-io |
+| `module:dynamic-import` | dynamic `import()` | 部分実装 (literal specifier build path; IR preserves DynamicImport module-load kind) | builtins-and-io |
 | `module:named-export` | named export | 部分実装 | module-system |
 | `module:default-export` | default export | 部分実装 | module-system |
 | `module:namespace-import` | namespace import | 部分実装 | module-system |

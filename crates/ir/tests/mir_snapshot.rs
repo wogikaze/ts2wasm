@@ -8,7 +8,8 @@ use ts2wasm_frontend::Span;
 use ts2wasm_ir::dump_mir;
 use ts2wasm_ir::lowered::{
     LoweredArraySlot, LoweredBinaryOp, LoweredExpr, LoweredFunction, LoweredLogicalAssignOp,
-    LoweredProgram, LoweredStmt, LoweredUnaryOp, MirExpr, MirProgram, MirStmt, RuntimeFn,
+    LoweredProgram, LoweredStmt, LoweredUnaryOp, MirExpr, MirProgram, MirStmt, ModuleLoadKind,
+    RuntimeFn,
 };
 use ts2wasm_ir::{FuncId, LocalId};
 
@@ -1082,6 +1083,7 @@ fn dump_mir_module_load() {
         top_level_statements: vec![LoweredStmt::Expr(
             LoweredExpr::ModuleLoad {
                 module_id: 1,
+                kind: ModuleLoadKind::StaticRequire,
                 span: make_span(),
             },
             make_span(),

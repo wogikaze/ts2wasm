@@ -120,7 +120,8 @@ mod tests {
     use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{
         ClassPrototypeRef, FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr,
-        LoweredFunction, LoweredProgram, LoweredStmt, ModuleInfo, RuntimeFn, Validated,
+        LoweredFunction, LoweredProgram, LoweredStmt, ModuleInfo, ModuleLoadKind, RuntimeFn,
+        Validated,
     };
     use ts2wasm_runtime_abi::{Layout, ValueTag};
     use ts2wasm_shared::test_helpers::unique_temp_dir;
@@ -803,6 +804,7 @@ mod tests {
             top_level_statements: vec![LoweredStmt::Expr(
                 LoweredExpr::ModuleLoad {
                     module_id: 1,
+                    kind: ModuleLoadKind::StaticRequire,
                     span: Span::generated("test"),
                 },
                 Span::generated("test"),
@@ -857,6 +859,7 @@ mod tests {
                 LoweredExpr::PropertyGet {
                     obj: Box::new(LoweredExpr::ModuleLoad {
                         module_id: 1,
+                        kind: ModuleLoadKind::StaticRequire,
                         span: Span::generated("test"),
                     }),
                     key: "value".to_owned(),

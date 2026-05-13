@@ -28,6 +28,12 @@ pub struct ClassPrototypeRef {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum ModuleLoadKind {
+    StaticRequire,
+    DynamicImport,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum BuiltinErrorConstructor {
     Error,
     RangeError,
@@ -425,6 +431,7 @@ pub enum LoweredExpr {
     BuiltinErrorPrototype(BuiltinErrorConstructor, Span),
     ModuleLoad {
         module_id: usize,
+        kind: ModuleLoadKind,
         span: Span,
     },
     Block {

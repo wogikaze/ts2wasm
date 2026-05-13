@@ -144,8 +144,16 @@ impl super::Resolver {
                 args,
                 span,
             } => self.lower_new_expr(class_name, args, *span),
-            ResolvedExpr::ModuleLoad { specifier } => Ok(LoweredExpr::ModuleLoad {
+            ResolvedExpr::ModuleLoad {
+                specifier,
+                is_dynamic_import,
+            } => Ok(LoweredExpr::ModuleLoad {
                 module_id: self.module_id_for_specifier(specifier),
+                kind: if *is_dynamic_import {
+                    ModuleLoadKind::DynamicImport
+                } else {
+                    ModuleLoadKind::StaticRequire
+                },
                 span: Span::generated("module_load"),
             }),
             ResolvedExpr::ArrowFn {

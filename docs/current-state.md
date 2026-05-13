@@ -271,6 +271,22 @@ Object literals now preserve ES2015 property forms through parser and IR:
 Focused coverage is `fixtures/core-expressions/object-shorthand-computed-method.ts` and
 `cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_object_shorthand`.
 
+## Dynamic Import
+
+Last audited: 2026-05-13T23:45:00+09:00.
+
+Dynamic `import("literal")` in expression position now preserves a distinct IR
+load kind instead of collapsing completely into `require("literal")`. The parser
+emits an internal dynamic-import callee marker, builtin resolution records
+`is_dynamic_import`, and lowering emits `ModuleLoadKind::DynamicImport`. The
+current backend still routes that load through the existing module cache/runtime
+require path, so this is a literal-specifier build path rather than complete
+ECMAScript Promise/job semantics.
+
+Focused coverage is `fixtures/builtins-and-io/dynamic-import.ts`,
+`cargo nextest run -p ts2wasm-cli --test m9_modules build_smoke_dynamic_import`,
+and `cargo test -p ts2wasm-cli --test ir_lowering lowering_preserves_dynamic_import_module_load_kind`.
+
 ## Known compiler limitations
 
 ### test262 harness

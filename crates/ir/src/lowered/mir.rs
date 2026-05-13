@@ -11,7 +11,8 @@
 use super::{
     BuiltinErrorConstructor, ClassPrototypeRef, ClosureRepresentation, FuncId, FunctionCallKind,
     GeneratorState, LocalId, LoweredArraySlot, LoweredBinaryOp, LoweredExpr, LoweredFunction,
-    LoweredLogicalAssignOp, LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo, RuntimeFn,
+    LoweredLogicalAssignOp, LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo,
+    ModuleLoadKind, RuntimeFn,
 };
 use ts2wasm_source::Span;
 
@@ -227,6 +228,7 @@ pub enum MirExpr {
     BuiltinErrorPrototype(BuiltinErrorConstructor, Span),
     ModuleLoad {
         module_id: usize,
+        kind: ModuleLoadKind,
         span: Span,
     },
     Block {
@@ -679,8 +681,13 @@ fn lower_expr_to_mir(expr: &LoweredExpr) -> MirExpr {
         LoweredExpr::BuiltinErrorPrototype(ctor, span) => {
             MirExpr::BuiltinErrorPrototype(*ctor, *span)
         }
-        LoweredExpr::ModuleLoad { module_id, span } => MirExpr::ModuleLoad {
+        LoweredExpr::ModuleLoad {
+            module_id,
+            kind,
+            span,
+        } => MirExpr::ModuleLoad {
             module_id: *module_id,
+            kind: *kind,
             span: *span,
         },
         LoweredExpr::Block {
@@ -1211,8 +1218,13 @@ fn mir_expr_to_lower(expr: &MirExpr) -> LoweredExpr {
         MirExpr::BuiltinErrorPrototype(ctor, span) => {
             LoweredExpr::BuiltinErrorPrototype(*ctor, *span)
         }
-        MirExpr::ModuleLoad { module_id, span } => LoweredExpr::ModuleLoad {
+        MirExpr::ModuleLoad {
+            module_id,
+            kind,
+            span,
+        } => LoweredExpr::ModuleLoad {
             module_id: *module_id,
+            kind: *kind,
             span: *span,
         },
         MirExpr::Block {
@@ -1761,6 +1773,7 @@ mod tests {
             LoweredExpr::This(make_span()),
             LoweredExpr::ModuleLoad {
                 module_id: 1,
+                kind: ModuleLoadKind::StaticRequire,
                 span: make_span(),
             },
         ];

@@ -2,7 +2,7 @@ use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_frontend::Span;
 use ts2wasm_ir::lowered::{
     FuncId, FunctionCallKind, LocalId, MirExpr, MirFunction, MirProgram, MirStmt, ModuleInfo,
-    Validated, validate_mir,
+    ModuleLoadKind, Validated, validate_mir,
 };
 
 fn span() -> Span {
@@ -120,6 +120,7 @@ fn native_mir_validate_rejects_invalid_module_reference() {
         top_level_statements: vec![MirStmt::Expr(
             MirExpr::ModuleLoad {
                 module_id: 7,
+                kind: ModuleLoadKind::StaticRequire,
                 span: span(),
             },
             span(),

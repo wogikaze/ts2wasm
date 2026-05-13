@@ -1827,6 +1827,23 @@ fn lowering_connects_read_file_sync_idiom_to_builtin_call_shape() {
 }
 
 #[test]
+fn lowering_preserves_dynamic_import_module_load_kind() {
+    let ast =
+        ts2wasm_cli::parse_program("let mod = import(\"./dynamic-import-helper.ts\");").unwrap();
+    let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&ast).unwrap();
+    let lowered = ts2wasm_ir::lowered::lower_program(&resolved).unwrap();
+
+    match &lowered.top_level_statements[0] {
+        ts2wasm_ir::lowered::LoweredStmt::Let(
+            _,
+            ts2wasm_ir::lowered::LoweredExpr::ModuleLoad { kind, .. },
+            _,
+        ) => assert_eq!(*kind, ts2wasm_ir::lowered::ModuleLoadKind::DynamicImport),
+        other => panic!("dynamic import should lower to DynamicImport ModuleLoad, got {other:?}"),
+    }
+}
+
+#[test]
 fn inferred_type_marks_number_addition_as_number() {
     use ts2wasm_ir::lowered::{InferredType, LoweredBinaryOp, LoweredExpr};
     let expr = LoweredExpr::Binary {

@@ -90,6 +90,13 @@ pub(super) fn is_require_call(callee: &Expr, args: &[Expr]) -> bool {
     name == "require" && args.len() == 1 && matches!(&args[0], Expr::String { .. })
 }
 
+pub(super) fn is_dynamic_import_call(callee: &Expr, args: &[Expr]) -> bool {
+    let Expr::Ident { name, .. } = callee else {
+        return false;
+    };
+    name == "__ts2wasm_dynamic_import" && args.len() == 1 && matches!(&args[0], Expr::String { .. })
+}
+
 pub(super) fn resolve_builtin_call(
     callee: &Expr,
     call_args: &[Expr],
