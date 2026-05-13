@@ -1875,6 +1875,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::PromiseFinally => RuntimeSpec {
+                symbol: "$promise_finally",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::PromiseAll => RuntimeSpec {
                 symbol: "$promise_all",
                 deps: &[Self::AllocHeap],

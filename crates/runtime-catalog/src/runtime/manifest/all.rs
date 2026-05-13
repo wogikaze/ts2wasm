@@ -234,6 +234,7 @@ match self {
             Self::PromiseReject => "promise_reject",
             Self::PromiseThen => "promise_then",
             Self::PromiseCatch => "promise_catch",
+            Self::PromiseFinally => "promise_finally",
             Self::PromiseAll => "promise_all",
             Self::PromiseRace => "promise_race",
             Self::RegExpTest => "regexp_test",

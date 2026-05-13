@@ -1405,15 +1405,31 @@ impl super::super::Resolver {
             None if array_like_methods.contains(&method) => "Array".to_owned(),
             None if number_methods.contains(&method) => "Number".to_owned(),
             None if promise_methods.contains(&method) => {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-104: Promise.prototype.{}(...) — Promise runtime is not implemented yet. Register Promise as a tracked class to route through the Promise runtime path.",
-                        method
-                    ),
-                    span: Some(span),
-
-                    phase: None,
+                let intrinsic = match method {
+                    "then" => RuntimeFn::PromiseThen,
+                    "catch" => RuntimeFn::PromiseCatch,
+                    "finally" => RuntimeFn::PromiseFinally,
+                    _ => unreachable!(),
+                };
+                let mut lowered_args =
+                    vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
+                lowered_args.extend(
+                    args.iter()
+                        .map(|e| self.lower_expr(e))
+                        .collect::<Result<Vec<_>, _>>()?,
+                );
+                let expected_count: usize = match method {
+                    "then" => 2,
+                    "catch" | "finally" => 1,
+                    _ => unreachable!(),
+                };
+                while lowered_args.len() < expected_count + 1 {
+                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                }
+                return Ok(LoweredExpr::RuntimeCall {
+                    intrinsic,
+                    args: lowered_args,
+                    span: Span::generated("runtime_call"),
                 });
             }
             None => {
