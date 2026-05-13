@@ -113,6 +113,11 @@ EXCLUDED_FILENAMES = {
 # Every entry must have a documented refactoring plan or be a test file.
 FILE_SIZE_ALLOWLIST_1200 = {
     # P4: Decomposition — parser / lexer / runtime domain
+    "fixtures/catalog.yaml": "P16: coverage matrix — 1697 lines",
+    "crates/backend-wasm/src/runtime/object/emit.rs": "P4: runtime domain split — 1290 lines",
+    "crates/compiler/src/dump.rs": "P4: compiler dump — 1203 lines",
+    "crates/ir/src/lowered/mir.rs": "P14: MIR lowering — 1791 lines",
+    "crates/ir/src/lowered/resolver/mod.rs": "P14: resolver main mod — 1417 lines",
     "crates/backend-wasm/src/runtime/core/bigint.rs": "P4: runtime domain split",
     "crates/backend-wasm/src/expr_emit.rs": "P4: expression emitter — pending domain split",
     "crates/backend-wasm/src/runtime/core/comparison.rs": "P4: runtime domain split",

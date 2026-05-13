@@ -2084,27 +2084,61 @@ mod tests {
         validate_hir(&hir).unwrap();
     }
 
-    /// Verify the diagnostic message content for each rejection category is
-    /// stable and descriptive. This prevents silent fallback to legacy paths.
     #[test]
-    fn rejection_diagnostics_are_stable() {
-        let cases: Vec<(&str, &str)> = vec![
-            ("nested function", "nested function"),
-            ("statement kind", "not part of the initial HIR slice"),
-            ("ternary", "ternary expressions"),
-            ("assignment expr", "assignment expressions"),
-            ("String(", "String("),
-            ("dynamic call", "dynamic function calls"),
-            ("binary operator", "binary operator"),
-            ("expression kind", "not part of the initial HIR slice"),
+    fn hir_support_fixtures_round_trip() {
+        for (path, source) in [
+            (
+                "fixtures/hir-support/supported-statements-and-expressions.ts",
+                include_str!(
+                    "../../../fixtures/hir-support/supported-statements-and-expressions.ts"
+                ),
+            ),
+            (
+                "fixtures/hir-support/supported-function-calls.ts",
+                include_str!("../../../fixtures/hir-support/supported-function-calls.ts"),
+            ),
+        ] {
+            let hir = parse_to_hir_result(source).unwrap_or_else(|error| {
+                panic!("{path} should lower to HIR, got {error:?}");
+            });
+            validate_hir(&hir).unwrap_or_else(|errors| {
+                panic!("{path} should validate as HIR, got {errors:?}");
+            });
+        }
+    }
+
+    /// Verify each fixture-backed rejection category is stable and descriptive.
+    /// This prevents silent fallback to legacy paths.
+    #[test]
+    fn hir_rejection_fixtures_produce_stable_diagnostics() {
+        let cases: Vec<(&str, &str, &str)> = vec![
+            (
+                "fixtures/hir-support/unsupported-nested-function.ts",
+                include_str!("../../../fixtures/hir-support/unsupported-nested-function.ts"),
+                "nested function declarations",
+            ),
+            (
+                "fixtures/hir-support/unsupported-ternary-expression.ts",
+                include_str!("../../../fixtures/hir-support/unsupported-ternary-expression.ts"),
+                "ternary expressions",
+            ),
+            (
+                "fixtures/hir-support/unsupported-assignment-expression.ts",
+                include_str!("../../../fixtures/hir-support/unsupported-assignment-expression.ts"),
+                "assignment expressions",
+            ),
+            (
+                "fixtures/hir-support/unsupported-dynamic-call.ts",
+                include_str!("../../../fixtures/hir-support/unsupported-dynamic-call.ts"),
+                "dynamic function calls",
+            ),
         ];
-        for (_label, expected_substr) in cases {
-            // Verify the existence of the message pattern in the source code.
-            // These exact strings are defined in lower_stmt and lower_expr.
-            let source = include_str!("semantic.rs");
+        for (path, source, expected_substr) in cases {
+            let error = parse_to_hir_result(source).unwrap_err();
+            assert_eq!(error.code, DiagCode::UnsupportedSyntax, "{path}");
             assert!(
-                source.contains(expected_substr),
-                "expected message pattern '{expected_substr}' must exist in semantic.rs"
+                error.message.contains(expected_substr),
+                "{path} diagnostic {error:?} should contain {expected_substr:?}"
             );
         }
     }

@@ -113,6 +113,20 @@ HIR が持ってはいけない情報:
 
 未対応構文は silently fallback ではなく、`UnsupportedSyntax` で明示的に境界化する。
 
+### HIR support matrix
+
+| HIR boundary | Feature labels | Fixture evidence | Expected HIR result |
+|---|---|---|---|
+| `HirStmt::Let` / `StoreLocal` / `Expr` | `stmt:let`, `expr:arithmetic`, `expr:call` | `fixtures/hir-support/supported-statements-and-expressions.ts` | lower and validate |
+| `HirStmt::BranchIfTruthy` / `LoopWhile` | `stmt:if`, `stmt:while`, `expr:relational` | `fixtures/hir-support/supported-statements-and-expressions.ts` | lower conditions through `ToBoolean` and validate |
+| `HirStmt::Return` inside direct user functions | `stmt:return`, `fn:declaration`, `expr:call` | `fixtures/hir-support/supported-function-calls.ts` | lower function body and direct call, then validate |
+| constants and local / builtin loads | `value-types:undefined`, `value-types:null`, `value-types:boolean`, `value-types:number`, `value-types:string`, `value-types:bigint` | `fixtures/hir-support/supported-statements-and-expressions.ts` | lower to `HirExpr::Const*`, `LoadLocal`, and `LoadBuiltin` |
+| property / index / method receiver forms | `expr:member-access`, `expr:computed-access`, `expr:call` | `fixtures/hir-support/supported-statements-and-expressions.ts` | lower to `GetProp`, `GetIndex`, `ArrayLength`, and `CallMethod` |
+| nested function declarations | `stmt:function-decl` | `fixtures/hir-support/unsupported-nested-function.ts` | reject with `UnsupportedSyntax` |
+| ternary expressions | `expr:ternary` | `fixtures/hir-support/unsupported-ternary-expression.ts` | reject with `UnsupportedSyntax` |
+| assignment expressions | `expr:property-assign` / assignment-expression boundary | `fixtures/hir-support/unsupported-assignment-expression.ts` | reject with `UnsupportedSyntax` |
+| dynamic function calls | `expr:call` | `fixtures/hir-support/unsupported-dynamic-call.ts` | reject with `UnsupportedSyntax` |
+
 ### Completion criteria
 
 HIR layer は以下を満たしたとき完成とする。

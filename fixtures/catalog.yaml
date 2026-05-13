@@ -202,6 +202,7 @@ directories:
     - date-annexb-get-year.ts
     - date-annexb-set-year-unsupported.ts
     - date-annexb-to-gmt-string-unsupported.ts
+    - date-epoch-constructor.ts
     - date-epoch-get-time.ts
     - date-epoch-value-of.ts
     - date-get-timezone-offset.ts
@@ -235,7 +236,9 @@ directories:
     - generator-multiple-instances.ts
     - generator-trailing-completion.ts
     - global-0-args.ts
+    - global-this.ts
     - global-decode-uri.ts
+    - global-uri-component.ts
     - global-encode-uri.ts
     - global-escape-value.ts
     - global-escape.ts
@@ -310,17 +313,23 @@ directories:
     - map-iteration.ts
     - map-set.ts
     - math-abs.ts
+    - math-cbrt.ts
     - math-ceil.ts
+    - math-clz32.ts
     - math-floor.ts
+    - math-imul.ts
     - math-max.ts
     - math-min.ts
     - math-pow.ts
     - math-random.ts
     - math-round.ts
+    - math-sqrt.ts
     - math-trunc-sign.ts
     - number-is-finite.ts
+    - number-is-integer.ts
     - number-is-integer-i32.ts
     - number-is-nan.ts
+    - number-is-safe-integer.ts
     - number-is-safe-integer-i32.ts
     - object-assign-descriptors.ts
     - object-assign.ts
@@ -379,6 +388,7 @@ directories:
     - string-concat.ts
     - string-ends-with.ts
     - string-from-char-code.ts
+    - string-from-code-point.ts
     - string-html-wrappers.ts
     - string-includes.ts
     - string-index-of.ts
@@ -401,9 +411,12 @@ directories:
     - string-substr.ts
     - string-substring.ts
     - string-to-lower-case.ts
+    - string-to-locale-case.ts
     - string-to-upper-case.ts
     - string-to-well-formed.ts
     - string-trim-end.ts
+    - string-trim-left.ts
+    - string-trim-right.ts
     - string-trim-start.ts
     - string-trim.ts
     - symbol-constructor-basic.ts
@@ -441,8 +454,10 @@ directories:
     expected: class inheritance, super, and extends
     fixtures:
     - class-basic.ts
+    - class-derived-fields.ts
     - class-expression.ts
     - class-extends.ts
+    - class-fields-methods.ts
     - class-generic.ts
     - class-only.ts
     - class-static.ts
@@ -663,6 +678,12 @@ directories:
     - bigint-shift-literal-runtime.ts
     - bigint-shift-unsupported.ts
     - bigint-unary-minus-unsupported.ts
+    - builtin-call-hir.ts
+    - call-arity-mismatch.ts
+    - call-extra-args-reject.ts
+    - call-extra-args.ts
+    - call-fewer-args-reject.ts
+    - call-fewer-args.ts
     - class-default-derived-ctor-arity.ts
     - class-dstr-initcount-unsupported.ts
     - class-method-immutable-outer-capture.ts
@@ -705,6 +726,17 @@ directories:
     - duplicate-class-decl-unsupported.ts
     - duplicate-function-decl-unsupported.ts
     - duplicate-local-same-scope-unsupported.ts
+    - dynamic-call-assign-unsupported.ts
+    - fncsem-arguments-object.ts
+    - fncsem-builtin-call.ts
+    - fncsem-call-extra-args.ts
+    - fncsem-call-fewer-args.ts
+    - fncsem-class-method-call.ts
+    - fncsem-dynamic-call-reassigned-unsupported.ts
+    - fncsem-method-receiver.ts
+    - fncsem-spread-dynamic-unsupported.ts
+    - fncsem-spread-literal-call.ts
+    - fncsem-user-call.ts
     - for-await-of-unsupported.ts
     - for-loop-nonidentifier-update-unsupported.ts
     - for-loop-post-decrement.ts
@@ -714,6 +746,7 @@ directories:
     - for-of-array.ts
     - function-arguments.ts
     - function-constructor-call-unsupported.ts
+    - function-bind-call-apply.ts
     - function-expression-iife-return-this.ts
     - function-let-conflict-unsupported.ts
     - function-object-metadata.ts
@@ -740,6 +773,7 @@ directories:
     - logical-assignment-index.ts
     - logical-assignment-member.ts
     - logical-assignment.ts
+    - method-call-receiver-preserve.ts
     - module-augmentation-unsupported.ts
     - mutable-capture-closure.ts
     - named-function-expression-recursive.ts
@@ -885,6 +919,25 @@ directories:
     - html-close.ts
     - html-open.ts
     - html-operators.ts
+  hir-support:
+    category: semantic
+    status: pass
+    expected: HIR supported slice and UnsupportedSyntax boundary fixtures
+    fixtures:
+    - supported-function-calls.ts
+    - supported-statements-and-expressions.ts
+    - name: unsupported-assignment-expression.ts
+      status: unsupported
+      expected: HIR rejects assignment expressions with UnsupportedSyntax
+    - name: unsupported-dynamic-call.ts
+      status: unsupported
+      expected: HIR rejects dynamic function calls with UnsupportedSyntax
+    - name: unsupported-nested-function.ts
+      status: unsupported
+      expected: HIR rejects nested function declarations with UnsupportedSyntax
+    - name: unsupported-ternary-expression.ts
+      status: unsupported
+      expected: HIR rejects ternary expressions with UnsupportedSyntax
   linker:
     category: build-smoke
     status: unknown
@@ -904,6 +957,8 @@ directories:
     - empty-export.ts
     - live-binding-unsupported.ts
     - static-bare-import-unsupported.ts
+    - static-binary-import-entry.ts
+    - static-binary-import-source.ts
     - static-class-export-unsupported.ts
     - static-combined-named-import-entry.ts
     - static-combined-named-import-source.ts
@@ -924,6 +979,7 @@ directories:
     - static-entry-source.ts
     - static-entry.ts
     - static-export-function-entry.ts
+    - static-export-function-import-entry.ts
     - static-export-named-list-entry.ts
     - static-local-named-export-duplicate-unsupported.ts
     - static-local-named-export-missing-unsupported.ts
@@ -1536,6 +1592,27 @@ feature_matrix:
       feature:
       - misc:html-comment
       status: pass
+      assert: {}
+    hir-support:
+      feature:
+      - value-types:undefined
+      - value-types:null
+      - value-types:boolean
+      - value-types:number
+      - value-types:string
+      - value-types:bigint
+      - stmt:let
+      - stmt:return
+      - stmt:if
+      - stmt:while
+      - expr:call
+      - expr:member-access
+      - expr:computed-access
+      - expr:arithmetic
+      - expr:relational
+      - expr:strict-equality
+      - expr:abstract-equality
+      status: partial
       assert: {}
     linker:
       feature:
