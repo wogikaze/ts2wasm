@@ -1955,6 +1955,10 @@ impl WatEmitter<'_> {
             self.emit_array_push_grow_call(writer, args, indent, frame);
             return;
         }
+        if *intrinsic == RuntimeFn::Concat {
+            self.emit_concat_call(writer, args, indent, frame);
+            return;
+        }
         if *intrinsic == RuntimeFn::HeapClosureCall {
             self.emit_heap_closure_dispatch(writer, args, indent, frame);
             return;
@@ -1996,6 +2000,42 @@ impl WatEmitter<'_> {
             .map(|f| f.symbol().to_owned())
             .unwrap_or_else(|| format!("{:?}", intrinsic));
         writer.line_fmt(indent, format_args!("(call {})", fn_name));
+    }
+
+    fn emit_concat_call(
+        &self,
+        writer: &mut WatWriter,
+        args: &[LoweredExpr],
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let Some((first, rest)) = args.split_first() else {
+            writer.i32_const(indent, ValueTag::UNDEFINED);
+            return;
+        };
+        if rest.is_empty() {
+            self.emit_expr(writer, first, indent, frame);
+            return;
+        }
+
+        let pad = " ".repeat(indent);
+        let result = frame.heap_base_tmp();
+        let child_frame = frame.child_temp_frame();
+        let next = child_frame.heap_value_tmp();
+        self.emit_expr(writer, first, indent, frame);
+        writer.local_set(indent, result);
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, result, frame);
+        for arg in rest {
+            self.emit_expr(writer, arg, indent, &child_frame);
+            writer.local_set(indent, next);
+            self.emit_gc_root_mirror_index(writer.output_mut(), &pad, next, &child_frame);
+            writer.local_get(indent, result);
+            writer.local_get(indent, next);
+            writer.call(indent, RuntimeFn::Concat.symbol());
+            writer.local_set(indent, result);
+            self.emit_gc_root_mirror_index(writer.output_mut(), &pad, result, frame);
+        }
+        writer.local_get(indent, result);
     }
 
     fn emit_property_set_expr(
