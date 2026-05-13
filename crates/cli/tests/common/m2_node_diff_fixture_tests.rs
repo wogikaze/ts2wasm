@@ -1439,6 +1439,7 @@ fn json_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/json-stringify-nested-object.ts",
         "fixtures/builtins-and-io/json-stringify-replacer-array.ts",
         "fixtures/builtins-and-io/json-stringify-replacer-array-boxed.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-array-ignored.ts",
         "fixtures/builtins-and-io/json-stringify-replacer-array-multikey.ts",
         "fixtures/builtins-and-io/json-stringify-replacer-array-number.ts",
         "fixtures/builtins-and-io/json-stringify-replacer-function-drop.ts",
@@ -1454,24 +1455,6 @@ fn json_fixtures_match_node_output_under_iwasm() {
     ] {
         assert_fixture_matches_node(fixture);
     }
-}
-
-#[test]
-fn json_stringify_replacer_array_ignored_builds_successfully() {
-    // wat2wasm fails on generated WAT (syntax error)
-    let fixture = "fixtures/builtins-and-io/json-stringify-replacer-array-ignored.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../")
-        .join(fixture);
-    let output = temp_wasm_path(fixture);
-    let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&fixture_path)
-        .arg("-o")
-        .arg(&output)
-        .output()
-        .unwrap();
-    // Just verifying build attempt — output may fail
 }
 
 #[test]
