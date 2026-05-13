@@ -5,7 +5,7 @@
 
 ## IR contracts validation summary
 
-IR contracts は各 phase の入口で検証する。現在は `LoweredProgram` の `validate_lowered`、初期 Semantic HIR slice の `validate_hir`、および `MirProgram` boundary の `validate_mir` wrapper を持つ。`MirProgram` は現時点では `LoweredProgram` alias であり、`Validated<MirProgram>` は native MIR 完成前の bridge boundary として使う。build pipeline は HIR lowering が対応済みの subset では `validate_hir` を実行し、未対応構文は既存 `LoweredProgram` pipeline を維持する。HIR が対応した構文で invariant violation が出た場合は compiler bug として `InvariantViolation` を返す。
+IR contracts は各 phase の入口で検証する。現在は `LoweredProgram` の `validate_lowered`、初期 Semantic HIR slice の `validate_hir`、および `MirProgram` boundary の `validate_mir` wrapper を持つ。`MirProgram` は `LoweredProgram` とは別の native data model であり、`From<LoweredProgram>` / `From<MirProgram>` の compatibility bridge で既存 backend path と接続する。`Validated<MirProgram>` は native MIR validator / emitter 完成前の MIR phase boundary として使う。build pipeline は HIR lowering が対応済みの subset では `validate_hir` を実行し、未対応構文は既存 `LoweredProgram` pipeline を維持する。HIR が対応した構文で invariant violation が出た場合は compiler bug として `InvariantViolation` を返す。
 
 ## IR 段階の概観
 
@@ -32,9 +32,9 @@ Optimized HIR
   `ts2wasm dump --optimize -O0..-O3` はこの phase を structural debug output として表示する。
   `ts2wasm dump --optimize --unparse -O2` は optimizer 後の HIR を pseudo source として表示する。
 
-MIR (Mid-level IR / Runtime IR) — alias/bridge 実装済み、native MIR は未完
-  現在は `MirProgram = LoweredProgram` alias として runtime ABI intent の boundary を提供する。
-  `Validated<MirProgram>` と optional `emit_mir_wat` path は存在するが、native MIR data model と native MIR emitter は次段の作業である。
+MIR (Mid-level IR / Runtime IR) — native data model 実装済み、validator/emitter は bridge
+  `MirProgram` / `MirFunction` / `MirStmt` / `MirExpr` は `LoweredProgram` とは別型である。
+  `Validated<MirProgram>` と optional `emit_mir_wat` path は存在するが、native MIR validator と native MIR emitter は次段の作業である。
 
 Wasm IR — backend-core typed IR 実装済み、main pipeline 全面移行は未完
   wasm local / function / import / memory / data segment に直接対応する typed node。
@@ -43,7 +43,7 @@ Wasm IR — backend-core typed IR 実装済み、main pipeline 全面移行は�
 LoweredProgram（現在の default lowering 出力 / MIR compatibility bridge）
   NameResolver + Lowering が Resolved 表現を LocalId / FuncId に解決した後の表現。
   backend が AST を直接参照しないための隔離層。
-  native MIR が完成するまで、default backend input かつ `MirProgram` alias の実体として使う。
+  default backend input として残り、`MirProgram` とは compatibility bridge で相互変換される。
 ```
 
 ## AST
@@ -299,19 +299,20 @@ pub struct Resolver {
 * scope が存在しない名前は `Err(Diagnostic { code: UnresolvedName })` を返すことを目標とする。
   現状では panic せず、将来のエラー対応の準備として `None` を返す場合がある。
 
-## MIR — Mid-level IR（alias/bridge 実装済み、native MIR 未完）
+## MIR — Mid-level IR（native data model 実装済み、validator/emitter は bridge）
 
 ### 現在の実体
 
-現時点の MIR は独立した data model ではなく、`crates/ir/src/lowered/mir.rs` の type alias である。
+現時点の MIR は `crates/ir/src/lowered/mir.rs` の独立した data model である。
 
 ```rust
-pub type MirProgram = LoweredProgram;
-pub type MirExpr = LoweredExpr;
-pub type MirStmt = LoweredStmt;
+pub struct MirProgram { ... }
+pub struct MirFunction { ... }
+pub enum MirStmt { ... }
+pub enum MirExpr { ... }
 ```
 
-この alias により、`Validated<MirProgram>`、`validate_mir`、`emit_mir_wat` の phase boundary は operational になっている。一方で、これは native MIR が完成したことを意味しない。
+`Validated<MirProgram>`、`validate_mir`、`emit_mir_wat` の phase boundary は operational になっている。一方で、`validate_mir` と `emit_mir_wat` はまだ `LoweredProgram` compatibility bridge に委譲するため、native MIR validator / emitter が完成したことを意味しない。
 
 ### 責務
 
@@ -321,15 +322,15 @@ pub type MirStmt = LoweredStmt;
 
 ### 現在の bridge path
 
-* `lower_hir_to_mir` は `HirProgram` を `LoweredProgram` 互換の MIR に変換する。
+* `lower_hir_to_mir` は `HirProgram` を `LoweredProgram` compatibility path に変換する。
+* `lower_hir_to_mir_native` は `HirProgram` を native `MirProgram` に変換し、compatibility path と snapshot parity を保つ。
 * `Validated<MirProgram>::new_mir` は `validate_mir` を通して invariant violation を fatal にする。
 * backend の `emit_mir_wat` は `Validated<MirProgram>` を受け取るが、現状は standard `LoweredProgram` emitter への委譲 bridge である。
 
 ### Native MIR の完成条件
 
-* `MirProgram` / `MirStmt` / `MirExpr` が alias ではなく独立型になる。
 * `validate_mir` が native MIR の local/function/module/control-flow invariants を直接検査する。
-* `lower_hir_to_mir` が native MIR を直接返す。
+* default MIR lowering path が native MIR を直接返す。
 * `emit_mir_wat` が selected subset から native MIR を直接 emit し、bridge 委譲を段階的に縮小する。
 
 ## Wasm IR（backend-core typed IR 実装済み、全面移行未完）

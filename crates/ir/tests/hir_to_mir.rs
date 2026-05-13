@@ -5,7 +5,7 @@
 
 use ts2wasm_ir::{
     FuncId, HirExpr, HirFunction, HirFunctionId, HirLocalId, HirProgram, HirRelationalOp, HirStmt,
-    LocalId, lower_hir_to_mir_native,
+    LocalId, LoweredProgram, MirProgram, Validated, lower_hir_to_mir, lower_hir_to_mir_native,
 };
 
 // ---------------------------------------------------------------------------
@@ -478,4 +478,45 @@ fn lowers_integration() {
     assert!(dump.contains("TruthyBool"), "dump: {}", dump);
     assert!(dump.contains("Binary(Add)"), "dump: {}", dump);
     assert!(dump.contains("Number("), "dump: {}", dump);
+}
+
+#[test]
+fn native_mir_bridge_preserves_existing_hir_to_mir_snapshot() {
+    let hir = HirProgram {
+        body: vec![
+            HirStmt::Let {
+                local: HirLocalId(0),
+                init: HirExpr::ConstNumber(10),
+            },
+            HirStmt::Expr(HirExpr::CallFunction {
+                function: HirFunctionId(0),
+                args: vec![],
+            }),
+        ],
+        locals: vec![HirLocalId(0)],
+        functions: vec![HirFunction {
+            id: HirFunctionId(0),
+            params: vec![],
+            locals: vec![],
+            body: vec![HirStmt::Return(HirExpr::JsAdd {
+                left: Box::new(HirExpr::ConstNumber(41)),
+                right: Box::new(HirExpr::ConstNumber(1)),
+            })],
+        }],
+    };
+
+    let compatibility_mir = lower_hir_to_mir(&hir);
+    let native_mir = lower_hir_to_mir_native(&hir);
+    let native_as_lowered: LoweredProgram = native_mir.clone().into();
+
+    assert_eq!(compatibility_mir, native_as_lowered);
+    assert_eq!(
+        ts2wasm_ir::dump_mir(&compatibility_mir),
+        ts2wasm_ir::dump_mir(&native_mir)
+    );
+
+    let (validated, warnings) =
+        Validated::<MirProgram>::new_mir(native_mir).expect("native MIR should validate");
+    assert!(warnings.is_empty(), "warnings: {:?}", warnings);
+    assert_eq!(validated.program().functions.len(), 1);
 }
