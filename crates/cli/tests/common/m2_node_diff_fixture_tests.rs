@@ -3022,6 +3022,21 @@ fn object_is_matches_node() {
 }
 
 #[test]
+fn object_freeze_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-freeze.ts");
+}
+
+#[test]
+fn object_seal_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-seal.ts");
+}
+
+#[test]
+fn object_string_keys_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-string-keys.ts");
+}
+
+#[test]
 fn object_assign_descriptors_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-assign-descriptors.ts");
 }
