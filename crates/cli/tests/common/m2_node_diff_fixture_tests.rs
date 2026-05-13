@@ -1872,6 +1872,51 @@ fn json_parse_unicode_nonascii_matches_node() {
 }
 
 #[test]
+fn json_parse_unsupported_surrogate_low_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-unsupported-surrogate-low.ts");
+}
+
+#[test]
+fn json_parse_unsupported_surrogate_pair_matches_node() {
+    assert_fixture_matches_node(
+        "fixtures/builtins-and-io/json-parse-unsupported-surrogate-pair.ts",
+    );
+}
+
+#[test]
+fn json_parse_unsupported_unicode_array_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-unsupported-unicode-array.ts");
+}
+
+#[test]
+fn json_parse_unsupported_unicode_object_matches_node() {
+    assert_fixture_matches_node(
+        "fixtures/builtins-and-io/json-parse-unsupported-unicode-object.ts",
+    );
+}
+
+#[test]
+fn json_parse_unsupported_noninteger_number_matches_node() {
+    assert_fixture_matches_node(
+        "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number.ts",
+    );
+}
+
+#[test]
+fn json_parse_unsupported_noninteger_number_array_matches_node() {
+    assert_fixture_matches_node(
+        "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-array.ts",
+    );
+}
+
+#[test]
+fn json_parse_unsupported_noninteger_number_object_matches_node() {
+    assert_fixture_matches_node(
+        "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-object.ts",
+    );
+}
+
+#[test]
 fn json_stringify_basic_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/json-stringify.ts");
 }
