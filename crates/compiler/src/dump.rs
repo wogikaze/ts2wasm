@@ -649,6 +649,14 @@ fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
             write_indent(out, indent);
             let _ = writeln!(out, "}}");
         }
+        Stmt::ForAwaitOf {
+            var, iter, body, ..
+        } => {
+            let _ = writeln!(out, "for await (let {var} of {}) {{", unparse_expr(iter));
+            unparse_block(out, body, indent + 1);
+            write_indent(out, indent);
+            let _ = writeln!(out, "}}");
+        }
         Stmt::Labeled { label, body, .. } => {
             let _ = writeln!(out, "{label}:");
             unparse_stmt(out, body, indent + 1);

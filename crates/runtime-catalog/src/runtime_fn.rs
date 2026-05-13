@@ -429,6 +429,8 @@ pub enum RuntimeFn {
     ParseFloat,
     /// Global isFinite function
     IsFinite,
+    /// Boolean.prototype.toString — returns "true" or "false" as a tagged string
+    BooleanToString,
     /// Global Boolean(x) coercion
     BooleanCoerce,
     /// Global Number(x) coercion
@@ -501,6 +503,10 @@ pub enum RuntimeFn {
     SymbolToPrimitive,
     SymbolToStringTag,
     SymbolHasInstance,
+    /// Symbol.prototype.toString — returns the symbolic description string "Symbol(desc)"
+    SymbolToString,
+    /// Symbol.prototype.description getter — extracts description from "Symbol(desc)" format
+    SymbolDescription,
     /// Pseudo-intrinsic: expanded into ArrayPushGrow + ArrayPush during IR lowering.
     /// Not a real runtime function.
     ArrayPushMany,
@@ -1283,6 +1289,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ParseFloat" => Some(RuntimeFn::ParseFloat),
         "IsFinite" => Some(RuntimeFn::IsFinite),
         "BooleanCoerce" => Some(RuntimeFn::BooleanCoerce),
+        "BooleanToString" => Some(RuntimeFn::BooleanToString),
         "NumberCoerce" => Some(RuntimeFn::NumberCoerce),
         "NumberIsNaN" => Some(RuntimeFn::NumberIsNaN),
         "NumberIsFinite" => Some(RuntimeFn::NumberIsFinite),
@@ -1319,6 +1326,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "SymbolToPrimitive" => Some(RuntimeFn::SymbolToPrimitive),
         "SymbolToStringTag" => Some(RuntimeFn::SymbolToStringTag),
         "SymbolHasInstance" => Some(RuntimeFn::SymbolHasInstance),
+        "SymbolToString" => Some(RuntimeFn::SymbolToString),
+        "SymbolDescription" => Some(RuntimeFn::SymbolDescription),
         "Add" => Some(RuntimeFn::Add),
         "AddFast" => Some(RuntimeFn::AddFast),
         "AllocHeap" => Some(RuntimeFn::AllocHeap),
@@ -1698,7 +1707,9 @@ impl RuntimeFn {
             | Self::SymbolKeyFor
             | Self::SymbolToPrimitive
             | Self::SymbolToStringTag
-            | Self::SymbolHasInstance => RuntimeDomain::Symbol,
+            | Self::SymbolHasInstance
+            | Self::SymbolToString
+            | Self::SymbolDescription => RuntimeDomain::Symbol,
             Self::TaskPoll | Self::TaskResult | Self::TaskDrop => RuntimeDomain::Task,
             Self::TruthyBool
             | Self::Not
@@ -1711,6 +1722,7 @@ impl RuntimeFn {
             | Self::ParseFloat
             | Self::IsFinite
             | Self::BooleanCoerce
+            | Self::BooleanToString
             | Self::NumberCoerce => RuntimeDomain::TypeCoercion,
             Self::TypedArrayFromArray
             | Self::TypedArraySet
@@ -1795,7 +1807,10 @@ impl RuntimeFn {
             | Self::TruthyBool
             | Self::TypeOf
             | Self::NumberFromI32
-            | Self::ObjectKeys => RuntimeSignature {
+            | Self::ObjectKeys
+            | Self::BooleanToString
+            | Self::SymbolToString
+            | Self::SymbolDescription => RuntimeSignature {
                 params: 1,
                 results: 1,
             },
@@ -2194,6 +2209,7 @@ impl RuntimeFn {
             Self::IsFinite,
             // Boolean/Number coercion (341b/341c)
             Self::BooleanCoerce,
+            Self::BooleanToString,
             Self::NumberCoerce,
             Self::NumberIsNaN,
             Self::NumberIsFinite,
@@ -2231,6 +2247,8 @@ impl RuntimeFn {
             Self::SymbolToPrimitive,
             Self::SymbolToStringTag,
             Self::SymbolHasInstance,
+            Self::SymbolToString,
+            Self::SymbolDescription,
             Self::Escape,
             Self::Unescape,
             Self::ArrayPushMany,
@@ -2541,6 +2559,7 @@ impl RuntimeFn {
             Self::IsFinite,
             // Boolean/Number coercion (341b/341c)
             Self::BooleanCoerce,
+            Self::BooleanToString,
             Self::NumberCoerce,
             Self::NumberIsNaN,
             Self::NumberIsFinite,
@@ -2576,6 +2595,8 @@ impl RuntimeFn {
             Self::SymbolToPrimitive,
             Self::SymbolToStringTag,
             Self::SymbolHasInstance,
+            Self::SymbolToString,
+            Self::SymbolDescription,
             Self::DecodeURI,
             Self::DecodeURIComponent,
             Self::Escape,

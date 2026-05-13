@@ -303,6 +303,24 @@ fn validate_stmt(
             validate_expr(iter, local_count, num_funcs, program, errors, true);
             validate_stmts(body, local_count, num_funcs, program, scope, errors);
         }
+        MirStmt::ForAwaitOfLower {
+            var,
+            iter,
+            async_iter_local,
+            next_result_local,
+            done_local,
+            value_local,
+            body,
+            ..
+        } => {
+            check_local_id(*var, local_count, errors);
+            check_local_id(*async_iter_local, local_count, errors);
+            check_local_id(*next_result_local, local_count, errors);
+            check_local_id(*done_local, local_count, errors);
+            check_local_id(*value_local, local_count, errors);
+            validate_expr(iter, local_count, num_funcs, program, errors, true);
+            validate_stmts(body, local_count, num_funcs, program, scope, errors);
+        }
         MirStmt::Labeled { body, .. } => {
             validate_stmt(body, local_count, num_funcs, program, scope, errors)
         }

@@ -1915,6 +1915,23 @@ impl WatEmitter<'_> {
         ));
     }
 
+    /// Emit $boolean_to_string global function.
+    pub(crate) fn emit_boolean_to_string(&self, wat: &mut String) {
+        let false_str = self.string_value("false");
+        let true_str = self.string_value("true");
+        wat.push_str(&format!(
+            r#"
+  (func $boolean_to_string (param $v i32) (result i32)
+    (if (i32.eq (local.get $v) (i32.const {false_tag}))
+      (then (return (i32.const {false_str}))))
+    (return (i32.const {true_str})))
+"#,
+            false_tag = ValueTag::FALSE,
+            false_str = false_str,
+            true_str = true_str,
+        ));
+    }
+
     /// Emit $number_coerce global function.
     pub(crate) fn emit_number_coerce(&self, wat: &mut String) {
         wat.push_str(&format!(

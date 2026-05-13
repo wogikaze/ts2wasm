@@ -295,7 +295,8 @@ pub(super) fn stmt_contains_return_stmt(stmt: &Stmt) -> bool {
         Stmt::While { body, .. }
         | Stmt::DoWhile { body, .. }
         | Stmt::ForIn { body, .. }
-        | Stmt::ForOf { body, .. } => block_contains_return_stmt(body),
+        | Stmt::ForOf { body, .. }
+        | Stmt::ForAwaitOf { body, .. } => block_contains_return_stmt(body),
         Stmt::For { init, body, .. } => {
             init.as_deref().is_some_and(stmt_contains_return_stmt)
                 || block_contains_return_stmt(body)
@@ -457,7 +458,9 @@ pub(super) fn validate_static_block_stmt(stmt: &Stmt) -> Result<(), Diagnostic> 
             }
             validate_static_block_stmts(body)
         }
-        Stmt::ForIn { iter, body, .. } | Stmt::ForOf { iter, body, .. } => {
+        Stmt::ForIn { iter, body, .. }
+        | Stmt::ForOf { iter, body, .. }
+        | Stmt::ForAwaitOf { iter, body, .. } => {
             validate_static_block_expr(iter)?;
             validate_static_block_stmts(body)
         }

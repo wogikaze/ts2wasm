@@ -269,7 +269,9 @@ impl WatEmitter<'_> {
                     }
                     Self::collect_class_prototypes_from_stmts(body, prototypes);
                 }
-                LoweredStmt::ForIn { iter, body, .. } | LoweredStmt::ForOf { iter, body, .. } => {
+                LoweredStmt::ForIn { iter, body, .. }
+                | LoweredStmt::ForOf { iter, body, .. }
+                | LoweredStmt::ForAwaitOfLower { iter, body, .. } => {
                     Self::collect_class_prototypes_from_expr(iter, prototypes);
                     Self::collect_class_prototypes_from_stmts(body, prototypes);
                 }
@@ -376,7 +378,9 @@ impl WatEmitter<'_> {
                     }
                     Self::collect_builtin_error_prototypes_from_stmts(body, prototypes);
                 }
-                LoweredStmt::ForIn { iter, body, .. } | LoweredStmt::ForOf { iter, body, .. } => {
+                LoweredStmt::ForIn { iter, body, .. }
+                | LoweredStmt::ForOf { iter, body, .. }
+                | LoweredStmt::ForAwaitOfLower { iter, body, .. } => {
                     Self::collect_builtin_error_prototypes_from_expr(iter, prototypes);
                     Self::collect_builtin_error_prototypes_from_stmts(body, prototypes);
                 }

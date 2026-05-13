@@ -145,9 +145,9 @@ pub(super) fn stmt_may_collect(stmt: &LoweredStmt) -> bool {
                 || update.as_ref().is_some_and(expr_may_collect)
                 || body.iter().any(stmt_may_collect)
         }
-        LoweredStmt::ForIn { body, .. } | LoweredStmt::ForOf { body, .. } => {
-            body.iter().any(stmt_may_collect)
-        }
+        LoweredStmt::ForIn { body, .. }
+        | LoweredStmt::ForOf { body, .. }
+        | LoweredStmt::ForAwaitOfLower { body, .. } => body.iter().any(stmt_may_collect),
         LoweredStmt::Return(expr, _) | LoweredStmt::Throw(expr, _) => expr_may_collect(expr),
         LoweredStmt::TryFinally {
             try_body,

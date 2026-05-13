@@ -239,6 +239,27 @@ fn dump_mir_stmt(stmt: &LoweredStmt, out: &mut String, indent: usize) {
                 dump_mir_stmt(s, out, indent + 4);
             }
         }
+        LoweredStmt::ForAwaitOfLower {
+            var,
+            iter,
+            async_iter_local,
+            next_result_local,
+            done_local,
+            value_local,
+            body,
+            ..
+        } => {
+            out.push_str(&format!(
+                "{}ForAwaitOfLower(var={:?}, async_iter_local={:?}, next_result_local={:?}, done_local={:?}, value_local={:?})\n",
+                prefix, var, async_iter_local, next_result_local, done_local, value_local
+            ));
+            out.push_str(&format!("{}  AsyncIteratorNext iter:\n", prefix));
+            dump_mir_expr(iter, out, indent + 4);
+            out.push_str(&format!("{}  body:\n", prefix));
+            for s in body {
+                dump_mir_stmt(s, out, indent + 4);
+            }
+        }
         LoweredStmt::Labeled { label, body, .. } => {
             out.push_str(&format!("{}Labeled({:?})\n", prefix, label));
             dump_mir_stmt(body, out, indent + 2);

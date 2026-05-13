@@ -1065,6 +1065,9 @@ fn rewrite_live_binding_update_children(
         }
         | lowered::LoweredStmt::ForOf {
             body: statements, ..
+        }
+        | lowered::LoweredStmt::ForAwaitOfLower {
+            body: statements, ..
         } => {
             let old = std::mem::take(statements);
             *statements =

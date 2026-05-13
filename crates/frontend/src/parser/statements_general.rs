@@ -1810,32 +1810,31 @@ impl Parser {
                 phase: None,});
         }
         self.expect(TokenKind::LeftParen)?;
-        {
-            let mut depth = 1u32;
-            while depth > 0 {
-                match self.advance() {
-                    Some(t) if matches!(t.kind, Token::LeftParen) => depth += 1,
-                    Some(t) if matches!(t.kind, Token::RightParen) => depth -= 1,
-                    None => break,
-                    _ => {}
-                }
-            }
+        if matches!(self.peek(), Some(Token::Var | Token::Let | Token::Const)) {
+            self.advance();
         }
-        if matches!(self.peek(), Some(Token::LeftBrace)) {
-            self.skip_balanced_brace_block(Span::generated("for-await body"))?;
+        let var_name = if matches!(self.peek(), Some(Token::LeftBracket)) {
+            self.skip_balanced_bracket_block()?;
+            "_binding".to_owned()
         } else {
-            self.statement()?;
+            let (name, _) = self.expect_ident()?;
+            name
+        };
+        if self.consume(TokenKind::Colon) {
+            self.skip_type_annotation_until(&[TokenKind::Of])?;
         }
-        Ok(Stmt::Expr {
-            expr: Expr::Undefined {
-                span: Span {
-                    start: for_span.start,
-                    end: await_span.end,
-                },
-            },
+        self.expect(TokenKind::Of)?;
+        let iter = self.expression()?;
+        self.expect(TokenKind::RightParen)?;
+        let body = self.block()?;
+        let end = body.last().map(|s| s.span().end).unwrap_or(await_span.end);
+        Ok(Stmt::ForAwaitOf {
+            var: var_name,
+            iter,
+            body,
             span: Span {
                 start: for_span.start,
-                end: await_span.end,
+                end,
             },
         })
     }

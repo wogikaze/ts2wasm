@@ -1032,6 +1032,19 @@ impl Resolver {
                     span: Span::generated("for_of"),
                 })
             }
+            ResolvedStmt::ForAwaitOf { var, iter, body } => {
+                let var_id = self.declare_local(var)?;
+                Ok(LoweredStmt::ForAwaitOfLower {
+                    var: var_id,
+                    iter: self.lower_expr(iter)?,
+                    async_iter_local: self.alloc_temp(),
+                    next_result_local: self.alloc_temp(),
+                    done_local: self.alloc_temp(),
+                    value_local: self.alloc_temp(),
+                    body: self.lower_nested_block(body)?,
+                    span: Span::generated("for_await_of"),
+                })
+            }
             ResolvedStmt::Labeled { label, body } => Ok(LoweredStmt::Labeled {
                 label: label.clone(),
                 body: Box::new(self.lower_stmt(body)?),

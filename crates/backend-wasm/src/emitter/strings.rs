@@ -121,6 +121,9 @@ impl WatEmitter<'_> {
             }
             LoweredStmt::ForOf {
                 var: _, iter, body, ..
+            }
+            | LoweredStmt::ForAwaitOfLower {
+                var: _, iter, body, ..
             } => {
                 self.collect_expr_strings(iter);
                 self.collect_program_strings(body);

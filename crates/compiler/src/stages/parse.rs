@@ -146,6 +146,7 @@ fn validate_stmt(
         Stmt::For { body, .. } => validate_block(body),
         Stmt::ForIn { body, .. } => validate_block(body),
         Stmt::ForOf { body, .. } => validate_block(body),
+        Stmt::ForAwaitOf { body, .. } => validate_block(body),
         Stmt::Switch { cases, .. } => {
             for (_, case_body) in cases {
                 validate_block(case_body)?;

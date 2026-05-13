@@ -350,6 +350,27 @@ impl BigIntStaticBuiltinFolder {
                     span: *span,
                 }
             }
+            Stmt::ForAwaitOf {
+                var,
+                iter,
+                body,
+                span,
+            } => {
+                let iter = self.fold_expr(iter);
+                let mut body_folder = self.fork();
+                body_folder.locals.remove(var);
+                body_folder.object_toprimitive_locals.remove(var);
+                let body = body_folder.fold_stmts(body);
+                self.locals.remove(var);
+                self.object_toprimitive_locals.remove(var);
+                self.invalidate_assigned_in_stmts(body.as_slice());
+                Stmt::ForAwaitOf {
+                    var: var.clone(),
+                    iter,
+                    body,
+                    span: *span,
+                }
+            }
             Stmt::Labeled { label, body, span } => Stmt::Labeled {
                 label: label.clone(),
                 body: Box::new(self.fold_stmt(body)),
@@ -1407,6 +1428,16 @@ fn resolve_stmt_with_outer_bindings(
         Stmt::ForOf {
             var, iter, body, ..
         } => Ok(ResolvedStmt::ForOf {
+            var: var.clone(),
+            iter: resolve_expr(iter)?,
+            body: body
+                .iter()
+                .map(resolve_stmt)
+                .collect::<Result<Vec<_>, _>>()?,
+        }),
+        Stmt::ForAwaitOf {
+            var, iter, body, ..
+        } => Ok(ResolvedStmt::ForAwaitOf {
             var: var.clone(),
             iter: resolve_expr(iter)?,
             body: body

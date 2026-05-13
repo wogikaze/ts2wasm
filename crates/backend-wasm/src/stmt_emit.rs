@@ -293,6 +293,12 @@ impl WatEmitter<'_> {
                     bound_label,
                 );
             }
+            LoweredStmt::ForAwaitOfLower { .. } => {
+                writer.line(
+                    indent,
+                    "unreachable ;; issue-447: for-await-of async iterator runtime is not implemented",
+                );
+            }
             LoweredStmt::Labeled { label, body, .. } => {
                 if is_loop_stmt(body) {
                     self.emit_statement_with_label(
@@ -1157,5 +1163,6 @@ fn is_loop_stmt(statement: &LoweredStmt) -> bool {
             | LoweredStmt::For { .. }
             | LoweredStmt::ForIn { .. }
             | LoweredStmt::ForOf { .. }
+            | LoweredStmt::ForAwaitOfLower { .. }
     )
 }

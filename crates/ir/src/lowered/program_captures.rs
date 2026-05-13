@@ -170,7 +170,8 @@ pub(crate) fn collect_declared_names_in_stmts(stmts: &[ResolvedStmt], names: &mu
             ResolvedStmt::While { body, .. }
             | ResolvedStmt::DoWhile { body, .. }
             | ResolvedStmt::ForIn { body, .. }
-            | ResolvedStmt::ForOf { body, .. } => collect_declared_names_in_stmts(body, names),
+            | ResolvedStmt::ForOf { body, .. }
+            | ResolvedStmt::ForAwaitOf { body, .. } => collect_declared_names_in_stmts(body, names),
             ResolvedStmt::For { init, body, .. } => {
                 if let Some(init) = init {
                     collect_declared_names_in_stmt(init, names);
@@ -296,7 +297,9 @@ pub(crate) fn collect_stmt_captures(
                 }
                 collect_stmt_captures(body, excluded, captures);
             }
-            ResolvedStmt::ForIn { iter, body, .. } | ResolvedStmt::ForOf { iter, body, .. } => {
+            ResolvedStmt::ForIn { iter, body, .. }
+            | ResolvedStmt::ForOf { iter, body, .. }
+            | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
                 collect_expr_captures(iter, excluded, captures);
                 collect_stmt_captures(body, excluded, captures);
             }
@@ -393,7 +396,9 @@ pub(crate) fn stmt_assigns_any_name(stmt: &ResolvedStmt, names: &[String]) -> bo
                     .is_some_and(|expr| expr_assigns_any_name(expr, names))
                 || block_assigns_any_name(body, names)
         }
-        ResolvedStmt::ForIn { iter, body, .. } | ResolvedStmt::ForOf { iter, body, .. } => {
+        ResolvedStmt::ForIn { iter, body, .. }
+        | ResolvedStmt::ForOf { iter, body, .. }
+        | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
             expr_assigns_any_name(iter, names) || block_assigns_any_name(body, names)
         }
         ResolvedStmt::Labeled { body, .. } => stmt_assigns_any_name(body, names),

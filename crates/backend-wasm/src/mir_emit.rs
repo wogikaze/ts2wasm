@@ -209,7 +209,8 @@ impl<'a> NativeMirWatEmitter<'a> {
             MirStmt::DoWhile { span, .. }
             | MirStmt::For { span, .. }
             | MirStmt::ForIn { span, .. }
-            | MirStmt::ForOf { span, .. } => Err(unsupported(
+            | MirStmt::ForOf { span, .. }
+            | MirStmt::ForAwaitOfLower { span, .. } => Err(unsupported(
                 Some(*span),
                 "native MIR WAT subset does not emit this loop form",
             )),

@@ -66,9 +66,13 @@ pub(super) fn collect_stmt_declared_bindings(
         | Stmt::DoWhile { body, .. }
         | Stmt::For { body, .. }
         | Stmt::ForIn { body, .. }
-        | Stmt::ForOf { body, .. } => {
+        | Stmt::ForOf { body, .. }
+        | Stmt::ForAwaitOf { body, .. } => {
             collect_stmt_declared_bindings_in_block(body, bindings)?;
-            if let Stmt::ForIn { var, .. } | Stmt::ForOf { var, .. } = stmt {
+            if let Stmt::ForIn { var, .. }
+            | Stmt::ForOf { var, .. }
+            | Stmt::ForAwaitOf { var, .. } = stmt
+            {
                 bindings.insert(var.clone());
             }
         }
@@ -335,7 +339,9 @@ pub(super) fn first_outer_local_reference_in_stmt(
                     class_names,
                 )
             }),
-        Stmt::ForIn { iter, body, .. } | Stmt::ForOf { iter, body, .. } => {
+        Stmt::ForIn { iter, body, .. }
+        | Stmt::ForOf { iter, body, .. }
+        | Stmt::ForAwaitOf { iter, body, .. } => {
             first_outer_local_reference_in_expr(iter, outer_bindings, method_locals, class_names)
                 .or_else(|| {
                     first_outer_local_reference_in_stmts(

@@ -424,7 +424,9 @@ impl TypeScriptCallArityValidator {
                 }
                 self.validate_lexical_block(body)?;
             }
-            ResolvedStmt::ForIn { iter, body, .. } | ResolvedStmt::ForOf { iter, body, .. } => {
+            ResolvedStmt::ForIn { iter, body, .. }
+            | ResolvedStmt::ForOf { iter, body, .. }
+            | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
                 self.validate_expr(iter)?;
                 self.validate_lexical_block(body)?;
             }
@@ -711,7 +713,9 @@ fn stmt_contains_arguments(stmt: &ResolvedStmt) -> bool {
                 || update.as_ref().is_some_and(expr_contains_arguments)
                 || block_contains_arguments(body)
         }
-        ResolvedStmt::ForIn { iter, body, .. } | ResolvedStmt::ForOf { iter, body, .. } => {
+        ResolvedStmt::ForIn { iter, body, .. }
+        | ResolvedStmt::ForOf { iter, body, .. }
+        | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
             expr_contains_arguments(iter) || block_contains_arguments(body)
         }
         ResolvedStmt::TryCatch {

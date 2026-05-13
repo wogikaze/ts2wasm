@@ -576,6 +576,9 @@ fn stmt_contains_super_ref(stmt: &ResolvedStmt) -> bool {
         }
         | ResolvedStmt::ForOf {
             var: _, iter, body, ..
+        }
+        | ResolvedStmt::ForAwaitOf {
+            var: _, iter, body, ..
         } => expr_contains_super_ref(iter) || block_contains_super_ref(body),
         ResolvedStmt::Block { statements } => block_contains_super_ref(statements),
         ResolvedStmt::TryCatch {

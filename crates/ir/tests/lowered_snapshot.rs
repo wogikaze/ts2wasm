@@ -161,6 +161,37 @@ fn lowered_snapshot_generator_yields_suspend_points() {
 }
 
 #[test]
+fn lowered_snapshot_for_await_of_keeps_async_iterator_ir() {
+    let program = parse_resolve_lower(
+        "async function f(values) { for await (let value of values) { console.log(value); } }",
+    );
+    validate_lowered(&program).expect("for-await-of lowered IR should validate");
+    assert_eq!(program.functions.len(), 1);
+    let function = &program.functions[0];
+    assert!(function.is_async);
+    match &function.body[0] {
+        LoweredStmt::ForAwaitOfLower {
+            var,
+            iter,
+            async_iter_local,
+            next_result_local,
+            done_local,
+            value_local,
+            body,
+            ..
+        } => {
+            assert_ne!(var, async_iter_local);
+            assert_ne!(async_iter_local, next_result_local);
+            assert_ne!(next_result_local, done_local);
+            assert_ne!(done_local, value_local);
+            assert!(matches!(iter, LoweredExpr::Local(LocalId(0), _)));
+            assert!(!body.is_empty());
+        }
+        other => panic!("expected ForAwaitOfLower, got: {other:?}"),
+    }
+}
+
+#[test]
 fn lowered_snapshot_if_statement() {
     let program = parse_resolve_lower("if (true) { let x = 1; } else { let x = 0; }");
     assert_eq!(program.top_level_statements.len(), 1);

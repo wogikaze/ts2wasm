@@ -406,4 +406,44 @@ impl WatEmitter<'_> {
             false = ValueTag::FALSE,
         ));
     }
+
+    pub(crate) fn emit_symbol_to_string(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $symbol_to_string (param $v i32) (result i32)
+    (local.get $v))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_symbol_description(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $symbol_description (param $v i32) (result i32)
+    (local $heap_ptr i32)
+    (local $total_len i32)
+    (local $desc_len i32)
+    (local $new_ptr i32)
+    (local.set $heap_ptr (i32.and (local.get $v) (i32.const {heap_mask})))
+    (local.set $total_len (i32.load (local.get $heap_ptr)))
+    (local.set $desc_len (i32.sub (local.get $total_len) (i32.const 8)))
+    (if (i32.le_s (local.get $desc_len) (i32.const 0))
+      (then (return (i32.const {undefined}))))
+    (local.set $new_ptr
+      (call $alloc_heap
+        (i32.add (i32.const {string_header_size}) (local.get $desc_len))))
+    (i32.store (local.get $new_ptr) (local.get $desc_len))
+    (call $copy
+      (i32.add (local.get $heap_ptr) (i32.const {data_offset}))
+      (i32.add (local.get $new_ptr) (i32.const {string_header_size}))
+      (local.get $desc_len))
+    (i32.or (local.get $new_ptr) (i32.const {string_tag})))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            undefined = ValueTag::UNDEFINED,
+            string_header_size = Layout::STRING_HEADER_SIZE,
+            data_offset = Layout::STRING_HEADER_SIZE + 7,
+            string_tag = ValueTag::STRING,
+        ));
+    }
 }

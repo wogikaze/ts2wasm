@@ -314,6 +314,12 @@ pub enum Stmt {
         body: Vec<Stmt>,
         span: Span,
     },
+    ForAwaitOf {
+        var: String,
+        iter: Expr,
+        body: Vec<Stmt>,
+        span: Span,
+    },
     Labeled {
         label: String,
         body: Box<Stmt>,
@@ -592,6 +598,7 @@ impl Stmt {
             | Self::For { span, .. }
             | Self::ForIn { span, .. }
             | Self::ForOf { span, .. }
+            | Self::ForAwaitOf { span, .. }
             | Self::Labeled { span, .. }
             | Self::Break { span, .. }
             | Self::Continue { span, .. }

@@ -73,6 +73,11 @@ pub enum ResolvedStmt {
         iter: ResolvedExpr,
         body: Vec<ResolvedStmt>,
     },
+    ForAwaitOf {
+        var: String,
+        iter: ResolvedExpr,
+        body: Vec<ResolvedStmt>,
+    },
     Labeled {
         label: String,
         body: Box<ResolvedStmt>,

@@ -718,6 +718,26 @@ impl NameResolver {
                     span: *span,
                 })
             }
+            Stmt::ForAwaitOf {
+                var,
+                iter,
+                body,
+                span,
+            } => {
+                self.enter_scope();
+                self.declare_variable(var, None, false)?;
+                let resolved_iter = self.resolve_expr(iter)?;
+                self.enter_loop();
+                let resolved_body = self.resolve_block(body)?;
+                self.exit_loop();
+                self.exit_scope();
+                Ok(Stmt::ForAwaitOf {
+                    var: var.clone(),
+                    iter: resolved_iter,
+                    body: resolved_body,
+                    span: *span,
+                })
+            }
             Stmt::Labeled { label, body, span } => {
                 if self.labels.iter().any(|binding| binding.name == *label) {
                     return Err(Diagnostic {
@@ -1932,6 +1952,7 @@ fn is_loop_stmt(stmt: &Stmt) -> bool {
             | Stmt::For { .. }
             | Stmt::ForIn { .. }
             | Stmt::ForOf { .. }
+            | Stmt::ForAwaitOf { .. }
     )
 }
 

@@ -37,7 +37,8 @@ pub(crate) fn collect_direct_eval_block_function_env_from_stmts(
             ResolvedStmt::While { body, .. }
             | ResolvedStmt::DoWhile { body, .. }
             | ResolvedStmt::ForIn { body, .. }
-            | ResolvedStmt::ForOf { body, .. } => {
+            | ResolvedStmt::ForOf { body, .. }
+            | ResolvedStmt::ForAwaitOf { body, .. } => {
                 collect_direct_eval_block_function_env_from_stmts(body, env);
             }
             ResolvedStmt::For { init, body, .. } => {
@@ -194,7 +195,9 @@ pub(crate) fn collect_direct_eval_function_assignment_env(
                 }
                 collect_direct_eval_function_assignment_env(function_name, body, env);
             }
-            ResolvedStmt::ForIn { iter, body, .. } | ResolvedStmt::ForOf { iter, body, .. } => {
+            ResolvedStmt::ForIn { iter, body, .. }
+            | ResolvedStmt::ForOf { iter, body, .. }
+            | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
                 collect_direct_eval_function_assignment_expr(function_name, iter, env);
                 collect_direct_eval_function_assignment_env(function_name, body, env);
             }

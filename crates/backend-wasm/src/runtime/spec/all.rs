@@ -2243,6 +2243,22 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::SymbolToString => RuntimeSpec {
+                symbol: "$symbol_to_string",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::SymbolDescription => RuntimeSpec {
+                symbol: "$symbol_description",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::TaskPoll => RuntimeSpec {
                 symbol: "$task_poll",
                 deps: NO_DEPS,
@@ -2349,6 +2365,14 @@ match self {
             },
             Self::BooleanCoerce => RuntimeSpec {
                 symbol: "$boolean_coerce",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::BooleanToString => RuntimeSpec {
+                symbol: "$boolean_to_string",
                 deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,

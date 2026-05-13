@@ -895,7 +895,8 @@ fn collect_generator_yield_values(stmts: &[ResolvedStmt], values: &mut Vec<Resol
             ResolvedStmt::While { body, .. }
             | ResolvedStmt::DoWhile { body, .. }
             | ResolvedStmt::ForIn { body, .. }
-            | ResolvedStmt::ForOf { body, .. } => collect_generator_yield_values(body, values),
+            | ResolvedStmt::ForOf { body, .. }
+            | ResolvedStmt::ForAwaitOf { body, .. } => collect_generator_yield_values(body, values),
             ResolvedStmt::For { init, body, .. } => {
                 if let Some(init) = init {
                     collect_generator_yield_values(std::slice::from_ref(init.as_ref()), values);
@@ -1025,7 +1026,9 @@ fn collect_array_map_callback_function_names_in_stmt(
                 collect_array_map_callback_function_names_in_stmt(stmt, names);
             }
         }
-        ResolvedStmt::ForIn { iter, body, .. } | ResolvedStmt::ForOf { iter, body, .. } => {
+        ResolvedStmt::ForIn { iter, body, .. }
+        | ResolvedStmt::ForOf { iter, body, .. }
+        | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
             collect_array_map_callback_function_names_in_expr(iter, names);
             for stmt in body {
                 collect_array_map_callback_function_names_in_stmt(stmt, names);
@@ -1396,7 +1399,8 @@ fn collect_block_arrow_fn_mutable_captures(stmts: &[ResolvedStmt]) -> HashSet<St
             }
             ResolvedStmt::For { body, .. }
             | ResolvedStmt::ForIn { body, .. }
-            | ResolvedStmt::ForOf { body, .. } => {
+            | ResolvedStmt::ForOf { body, .. }
+            | ResolvedStmt::ForAwaitOf { body, .. } => {
                 mutable_captures.extend(collect_block_arrow_fn_mutable_captures(body));
             }
             ResolvedStmt::TryCatch {
@@ -1809,7 +1813,8 @@ fn scan_dense_array_returns(
             ResolvedStmt::While { body, .. }
             | ResolvedStmt::DoWhile { body, .. }
             | ResolvedStmt::ForIn { body, .. }
-            | ResolvedStmt::ForOf { body, .. } => {
+            | ResolvedStmt::ForOf { body, .. }
+            | ResolvedStmt::ForAwaitOf { body, .. } => {
                 scan_dense_array_returns(body, dense_locals, saw_return, all_returns_dense);
             }
             ResolvedStmt::For { init, body, .. } => {
@@ -2089,7 +2094,9 @@ fn collect_call_targets_in_stmts(stmts: &[ResolvedStmt], targets: &mut HashSet<S
                 }
                 collect_call_targets_in_stmts(body, targets);
             }
-            ResolvedStmt::ForIn { iter, body, .. } | ResolvedStmt::ForOf { iter, body, .. } => {
+            ResolvedStmt::ForIn { iter, body, .. }
+            | ResolvedStmt::ForOf { iter, body, .. }
+            | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
                 collect_call_targets_in_expr(iter, targets);
                 collect_call_targets_in_stmts(body, targets);
             }
@@ -2297,7 +2304,8 @@ fn collect_declared_function_names(stmts: &[ResolvedStmt], names: &mut HashSet<S
             ResolvedStmt::While { body, .. }
             | ResolvedStmt::DoWhile { body, .. }
             | ResolvedStmt::ForIn { body, .. }
-            | ResolvedStmt::ForOf { body, .. } => collect_declared_function_names(body, names),
+            | ResolvedStmt::ForOf { body, .. }
+            | ResolvedStmt::ForAwaitOf { body, .. } => collect_declared_function_names(body, names),
             ResolvedStmt::For { init, body, .. } => {
                 if let Some(init) = init {
                     collect_declared_function_names(std::slice::from_ref(init.as_ref()), names);
@@ -2360,7 +2368,8 @@ fn stmt_returns_any_name(stmt: &ResolvedStmt, names: &HashSet<String>) -> bool {
         ResolvedStmt::While { body, .. }
         | ResolvedStmt::DoWhile { body, .. }
         | ResolvedStmt::ForIn { body, .. }
-        | ResolvedStmt::ForOf { body, .. } => block_returns_any_name(body, names),
+        | ResolvedStmt::ForOf { body, .. }
+        | ResolvedStmt::ForAwaitOf { body, .. } => block_returns_any_name(body, names),
         ResolvedStmt::For { init, body, .. } => {
             init.as_ref()
                 .is_some_and(|stmt| stmt_returns_any_name(stmt, names))
@@ -2452,7 +2461,9 @@ fn stmt_contains_this(stmt: &ResolvedStmt) -> bool {
                 || update.as_ref().is_some_and(expr_contains_this)
                 || block_contains_this(body)
         }
-        ResolvedStmt::ForIn { iter, body, .. } | ResolvedStmt::ForOf { iter, body, .. } => {
+        ResolvedStmt::ForIn { iter, body, .. }
+        | ResolvedStmt::ForOf { iter, body, .. }
+        | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
             expr_contains_this(iter) || block_contains_this(body)
         }
         ResolvedStmt::Labeled { body, .. } => stmt_contains_this(body),
@@ -2601,7 +2612,8 @@ fn stmt_has_direct_return(stmt: &ResolvedStmt) -> bool {
             .any(|(_, body)| direct_iife_body_has_unsupported_return(body)),
         ResolvedStmt::For { body, .. }
         | ResolvedStmt::ForIn { body, .. }
-        | ResolvedStmt::ForOf { body, .. } => direct_iife_body_has_unsupported_return(body),
+        | ResolvedStmt::ForOf { body, .. }
+        | ResolvedStmt::ForAwaitOf { body, .. } => direct_iife_body_has_unsupported_return(body),
         ResolvedStmt::Labeled { body, .. } => stmt_has_direct_return(body),
         ResolvedStmt::Block { statements, .. } => {
             direct_iife_body_has_unsupported_return(statements)
@@ -2674,7 +2686,9 @@ fn stmt_contains_arguments(stmt: &ResolvedStmt) -> bool {
                 || update.as_ref().is_some_and(expr_contains_arguments)
                 || block_contains_arguments(body)
         }
-        ResolvedStmt::ForIn { iter, body, .. } | ResolvedStmt::ForOf { iter, body, .. } => {
+        ResolvedStmt::ForIn { iter, body, .. }
+        | ResolvedStmt::ForOf { iter, body, .. }
+        | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
             expr_contains_arguments(iter) || block_contains_arguments(body)
         }
         ResolvedStmt::Labeled { body, .. } => stmt_contains_arguments(body),
@@ -3009,7 +3023,8 @@ fn collect_suspend_points(stmts: &[LoweredStmt], suspend_points: &mut Vec<Suspen
             | LoweredStmt::While { body: stmts, .. }
             | LoweredStmt::DoWhile { body: stmts, .. }
             | LoweredStmt::ForIn { body: stmts, .. }
-            | LoweredStmt::ForOf { body: stmts, .. } => {
+            | LoweredStmt::ForOf { body: stmts, .. }
+            | LoweredStmt::ForAwaitOfLower { body: stmts, .. } => {
                 collect_suspend_points(stmts, suspend_points);
             }
             LoweredStmt::If {

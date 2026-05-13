@@ -2375,6 +2375,10 @@ b /* parameter b */,
                 assert_eq!(name, "f");
                 assert_eq!(body.len(), 1);
                 assert!(!is_generator);
+                assert!(matches!(
+                    &body[0],
+                    Stmt::ForAwaitOf { var, .. } if var == "value"
+                ));
             }
             other => panic!("expected Function, got {other:?}"),
         }

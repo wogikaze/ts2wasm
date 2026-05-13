@@ -26,6 +26,7 @@ impl WatEmitter<'_> {
             RuntimeFn::ParseFloat => self.emit_parse_float(wat),
             RuntimeFn::IsFinite => self.emit_is_finite(wat),
             RuntimeFn::BooleanCoerce => self.emit_boolean_coerce(wat),
+            RuntimeFn::BooleanToString => self.emit_boolean_to_string(wat),
             RuntimeFn::NumberCoerce => self.emit_number_coerce(wat),
             RuntimeFn::ValueOf => self.emit_value_of(wat),
             RuntimeFn::NumberFromI32 => self.emit_number_from_i32(wat),

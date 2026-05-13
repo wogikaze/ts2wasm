@@ -295,6 +295,32 @@ fn dump_mir_for_of() {
 }
 
 #[test]
+fn dump_mir_for_await_of_lower() {
+    let mir = LoweredProgram {
+        top_level_statements: vec![LoweredStmt::ForAwaitOfLower {
+            var: LocalId(0),
+            iter: LoweredExpr::Local(LocalId(1), make_span()),
+            async_iter_local: LocalId(2),
+            next_result_local: LocalId(3),
+            done_local: LocalId(4),
+            value_local: LocalId(5),
+            body: vec![],
+            span: make_span(),
+        }],
+        top_level_locals: vec![
+            LocalId(0),
+            LocalId(1),
+            LocalId(2),
+            LocalId(3),
+            LocalId(4),
+            LocalId(5),
+        ],
+        ..empty_mir()
+    };
+    assert_mir_dump_contains(&mir, &["ForAwaitOfLower", "AsyncIteratorNext"]);
+}
+
+#[test]
 fn dump_mir_labeled() {
     let mir = LoweredProgram {
         top_level_statements: vec![LoweredStmt::Labeled {

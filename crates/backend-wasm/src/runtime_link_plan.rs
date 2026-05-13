@@ -186,6 +186,10 @@ fn collect_required_runtime_stmts(plan: &mut RuntimeLinkPlan, statements: &[Lowe
                 plan.add_required_runtime(RuntimeFn::Add);
                 collect_required_runtime_stmts(plan, body);
             }
+            LoweredStmt::ForAwaitOfLower { iter, body, .. } => {
+                collect_required_runtime_expr(plan, iter);
+                collect_required_runtime_stmts(plan, body);
+            }
             LoweredStmt::Labeled { body, .. } => {
                 collect_required_runtime_stmts(plan, std::slice::from_ref(body.as_ref()));
             }

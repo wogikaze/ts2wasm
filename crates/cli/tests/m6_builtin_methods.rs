@@ -2260,3 +2260,14 @@ fn build_smoke_string_to_locale_case() {
         result.err()
     );
 }
+
+// Boolean/Symbol prototype methods
+#[test]
+fn build_smoke_boolean_symbol_prototype() {
+    let result = run_fixture("builtins-and-io/boolean-symbol-prototype.ts");
+    assert!(
+        result.is_ok(),
+        "Boolean/Symbol prototype methods should build: {:?}",
+        result.err()
+    );
+}

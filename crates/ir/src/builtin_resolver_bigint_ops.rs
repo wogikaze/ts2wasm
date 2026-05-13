@@ -266,6 +266,9 @@ pub(super) fn collect_assigned_names_in_stmt(stmt: &Stmt, names: &mut HashSet<St
         }
         | Stmt::ForOf {
             var, iter, body, ..
+        }
+        | Stmt::ForAwaitOf {
+            var, iter, body, ..
         } => {
             names.insert(var.clone());
             collect_assigned_names_in_expr(iter, names);

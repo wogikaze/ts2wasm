@@ -809,6 +809,9 @@ impl BigIntRuntimeGuard {
             }
             | Stmt::ForOf {
                 var, iter, body, ..
+            }
+            | Stmt::ForAwaitOf {
+                var, iter, body, ..
             } => {
                 self.expr_bigint_info(iter)?;
                 let mut body_guard = self.fork();

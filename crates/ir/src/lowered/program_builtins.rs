@@ -131,6 +131,7 @@ pub(crate) fn resolve_method_to_runtime_fn(
         "isWellFormed" => Some(RuntimeFn::StringIsWellFormed),
         "toWellFormed" => Some(RuntimeFn::StringToWellFormed),
         "hasOwnProperty" => Some(RuntimeFn::ObjectHasOwnProperty),
+        "toString" => Some(RuntimeFn::BooleanToString),
         "valueOf" => Some(RuntimeFn::ValueOf),
         "push" => Some(RuntimeFn::ArrayPush),
         "pop" => Some(RuntimeFn::ArrayPop),

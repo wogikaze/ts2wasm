@@ -186,6 +186,16 @@ pub enum LoweredStmt {
         body: Vec<LoweredStmt>,
         span: Span,
     },
+    ForAwaitOfLower {
+        var: LocalId,
+        iter: LoweredExpr,
+        async_iter_local: LocalId,
+        next_result_local: LocalId,
+        done_local: LocalId,
+        value_local: LocalId,
+        body: Vec<LoweredStmt>,
+        span: Span,
+    },
     Labeled {
         label: String,
         body: Box<LoweredStmt>,
