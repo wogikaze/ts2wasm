@@ -23,3 +23,13 @@
   - Decision: Use recursive-mode for each P-item individually; start with P1 (Span/Diagnostic extraction)
   - Decision: Each P-item gets its own worktree and commit
   - Full analysis captured in `.recursive/run/arch-design-review-2026-05-11/reference/`
+- `coverage-epics-2026-05-12`: 6 parallel coverage expansion epics
+  - Epic 1 (Builtin API): implemented via independent work, commits on master
+  - Epic 2 (Class): new derived-fields + fields-methods fixtures, commit a61d16d72 (cherry-picked)
+  - Epic 3 (Async): Promise.then/catch/finally RuntimeFn, commit 7c136d926 (merged)
+  - Epic 4 (Module): binary import fixture, commit cb121104c (cherry-picked)
+  - Epic 5 (TS Erased): erased syntax patterns + tsc ramp to 668, commit d21978374
+  - Epic 6 (Name Resolution): already on master at 7225708a8
+  - Decision: 6 independent epics implemented in parallel child worktrees, parent merged and resolved
+  - Decision: Architecture rules (mir.rs function lengths, catalog.yaml size) are pre-existing and deferred
+  - Total tests: 1780 → 2037 (+257), 0 regressions

@@ -1,10 +1,19 @@
 # STATE.md
 
-## Current State (2026-05-11)
+## Current State (2026-05-13)
 
+- Coverage expansion epics completed (coverage-epics-2026-05-12)
+  - 6 epics implemented in parallel child worktrees, parent-merged to master
+  - Builtin API Math/JSON coverage expanded (Math.cbrt, Math.clz32, Math.imul, etc.)
+  - Class derived fields + fields-methods fixtures added, all 127 class tests passing
+  - Promise.then/catch/finally routed through RuntimeFn
+  - Module binary import fixture added
+  - TypeScript erased syntax patterns: tsc build_pass 1 → 668 (+66700%)
+  - Name resolution already complete on master (7225708a8)
+  - Total tests: 1780 → 2037 (+257), 0 regressions
 - Architecture design review completed and captured as `arch-design-review-2026-05-11`
   - 25-section analysis covering coupling points, target architecture, refactoring methodology
-  - 8 priority-ordered refactoring items (P1-P8) defined
+  - 8 priority-ordered refactoring items defined (P1-P8)
   - Design principles and refactoring patterns saved to recursive memory
   - Run ready for Phase 2 (TO-BE Plan) per item
 
