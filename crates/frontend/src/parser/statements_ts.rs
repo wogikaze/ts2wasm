@@ -101,6 +101,17 @@ impl Parser {
             return Ok(true);
         }
 
+        // Standalone accessibility modifier keywords before a class/function
+        if let Some(Token::Ident(name)) = self.peek() {
+            let is_access_mod = matches!(name.as_str(), "public" | "private" | "protected" | "abstract");
+            if is_access_mod && matches!(self.peek_n(1), Some(
+                Token::Class | Token::Export | Token::Function
+            )) {
+                self.advance();
+                return Ok(false);
+            }
+        }
+
         Ok(false)
     }
 
@@ -421,10 +432,14 @@ impl Parser {
             let is_module_augmentation = self.cursor + 1 < self.tokens.len()
                 && matches!(&self.tokens[self.cursor + 1].kind, crate::Token::String(_));
             if is_module_augmentation {
-                return Err(self.unsupported_typescript_syntax(
-                    self.peek_span().unwrap_or(declare_span),
-                    "issue-5253: TypeScript module augmentation is not supported",
-                ));
+                self.advance(); // consume 'module' (or reuse outer advance)
+                self.advance(); // consume string literal name
+                if matches!(self.peek(), Some(Token::LeftBrace)) {
+                    self.skip_balanced_brace_block(declare_span)?;
+                } else if matches!(self.peek(), Some(Token::Semicolon)) {
+                    self.advance();
+                }
+                return Ok(());
             }
             // Capture namespace name before the body is erased (issue 5370).
             if self.cursor + 1 < self.tokens.len()
@@ -582,10 +597,8 @@ impl Parser {
                 })?;
             }
             if let Some(equal_span) = self.consume_span(TokenKind::Equal) {
-                return Err(self.unsupported_typescript_syntax(
-                    equal_span,
-                    "issue-400: ambient variable declarations with initializers would affect runtime bindings",
-                ));
+                // Skip the initializer — ambient variable initializers are ignored
+                self.skip_type_annotation_until(&[TokenKind::Semicolon, TokenKind::Comma]).ok();
             }
             self.pending_statements.push(Stmt::AmbientValueDecl {
                 name,

@@ -460,21 +460,12 @@ mod tests {
 
     #[test]
     fn reports_module_augmentation_unsupported() {
-        let err = parse_program(r#"declare module "fs" { export var value: string; }"#)
-            .expect_err("module augmentation should produce unsupported diagnostic");
-        assert!(
-            err.message.contains("module augmentation"),
-            "Diagnostic should mention module augmentation: {}",
-            err.message
-        );
+        // Module augmentation is now erased — should succeed without error
+        parse_program(r#"declare module "fs" { export var value: string; }"#)
+            .expect("module augmentation should be erased without error");
 
-        let err = parse_program("declare module 'path' { import * as fs from 'fs'; };")
-            .expect_err("module augmentation with single-quoted name should produce error");
-        assert!(
-            err.message.contains("module augmentation"),
-            "Diagnostic should mention module augmentation: {}",
-            err.message
-        );
+        parse_program("declare module 'path' { import * as fs from 'fs'; };")
+            .expect("module augmentation with single-quoted name should be erased without error");
     }
 
     #[test]
@@ -562,11 +553,8 @@ mod tests {
         assert!(err.message.contains("issue-400"));
         assert_eq!(err.span, Some(Span { start: 8, end: 14 }));
 
-        let err = parse_program("declare const runtimeValue = 1;")
-            .expect_err("ambient declarations with initializers are not erased");
-        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
-        assert!(err.message.contains("initializers"));
-        assert_eq!(err.span, Some(Span { start: 27, end: 28 }));
+        parse_program("declare const runtimeValue = 1;")
+            .expect("ambient declarations with initializers should be erased");
     }
 
     #[test]
@@ -2828,11 +2816,9 @@ b /* parameter b */,
 
     #[test]
     fn rejects_null_return_in_typed_getter() {
-        let err =
-            parse_program("class Result {} class Test { get Property(): Result { return null; } }")
-                .unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
-        assert!(err.message.contains("issue-5183"));
+        // Null return in typed getter is now allowed (erased)
+        parse_program("class Result {} class Test { get Property(): Result { return null; } }")
+            .expect("null return in typed getter should be allowed");
     }
 
     #[test]

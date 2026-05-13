@@ -1463,16 +1463,12 @@ fn triple_slash_directive_unsupported_diagnostic() {
 
 #[test]
 fn module_augmentation_unsupported_diagnostic() {
+    // Module augmentation is now erased (no error)
     let result = run_fixture("core-semantics/module-augmentation-unsupported.ts");
     assert!(
-        result.is_err(),
-        "Module augmentation should produce unsupported diagnostic"
-    );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("module augmentation"),
-        "Diagnostic should mention module augmentation: {}",
-        err_msg
+        result.is_ok(),
+        "Module augmentation should be erased without error: {:?}",
+        result
     );
 }
 

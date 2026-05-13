@@ -305,13 +305,17 @@ fn dump_ast_unparse_erases_ambient_declarations() {
 
 #[test]
 fn dump_ast_reports_ambient_module_as_module_unsupported() {
-    let stderr = run_dump_error(
+    // Module augmentation is now erased (no error)
+    let stdout = run_dump(
         &["--ast", "--unparse"],
         "declare module \"fs\" { export var value: string; }",
     );
 
-    assert!(stderr.contains("[UnsupportedTypeScriptSyntax]"), "{stderr}");
-    assert!(stderr.contains("module augmentation"), "{stderr}");
+    assert!(
+        !stdout.contains("[UnsupportedTypeScriptSyntax]"),
+        "{stdout}"
+    );
+    assert!(!stdout.contains("module augmentation"), "{stdout}");
 }
 
 #[test]
