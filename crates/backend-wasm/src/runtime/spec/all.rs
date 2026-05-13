@@ -1280,7 +1280,7 @@ match self {
             },
             Self::MathCbrt => RuntimeSpec {
                 symbol: "$math_cbrt",
-                deps: MATH_NO_DEPS,
+                deps: MATH_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -1304,7 +1304,7 @@ match self {
             },
             Self::MathSqrt => RuntimeSpec {
                 symbol: "$math_sqrt",
-                deps: MATH_NO_DEPS,
+                deps: MATH_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,

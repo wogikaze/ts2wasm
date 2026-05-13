@@ -975,10 +975,9 @@ const DATE_NOW_DEPS: &[RuntimeFn] = &[RuntimeFn::DateEpochMsNowNumber];
 const DATE_NEW_LIVE_DEPS: &[RuntimeFn] = &[RuntimeFn::DateEpochMsNowNumber, RuntimeFn::DateNew];
 const DATE_EPOCH_MS_NOW_NUMBER_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 
-// Math function dependencies (no deps)
+// Math function dependencies
 const MATH_DEPS: &[RuntimeFn] = &[RuntimeFn::NumberToI32, RuntimeFn::NumberFromI32];
 const MATH_RANDOM_DEPS: &[RuntimeFn] = &[];
-const MATH_NO_DEPS: &[RuntimeFn] = &[];
 
 // JSON function dependencies
 const JSON_STRINGIFY_DEPS: &[RuntimeFn] = &[

@@ -355,6 +355,8 @@ impl WatEmitter<'_> {
             r#"
   (func $math_cbrt (param $v i32) (result i32)
     (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
     (local $n i32)
     (local $abs_n i32)
     (local $neg i32)
@@ -363,8 +365,16 @@ impl WatEmitter<'_> {
     (local $mid i32)
     (local $cube i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
-    (if (i32.ne (local.get $tag) (i32.const {number_tag})) (then (return (i32.const {undefined}))))
-    (local.set $n (i32.shr_s (local.get $v) (i32.const {number_shift})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {undefined}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
     (if (i32.eq (local.get $n) (i32.const {zero}))
       (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
     (if (i32.lt_s (local.get $n) (i32.const {zero}))
@@ -374,7 +384,7 @@ impl WatEmitter<'_> {
       (else
         (local.set $abs_n (local.get $n))))
     (local.set $lo (i32.const {zero}))
-    (local.set $hi (i32.const 1291))
+    (local.set $hi (i32.const 1290))
     (block $cbrt_done
       (loop $cbrt_loop
         (br_if $cbrt_done (i32.gt_s (local.get $lo) (local.get $hi)))
@@ -398,6 +408,9 @@ impl WatEmitter<'_> {
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             number_shift = ValueTag::NUMBER_SHIFT,
             undefined = ValueTag::UNDEFINED,
             zero = RuntimeConst::ZERO,
@@ -498,18 +511,28 @@ impl WatEmitter<'_> {
             r#"
   (func $math_sqrt (param $v i32) (result i32)
     (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
     (local $n i32)
     (local $lo i32)
     (local $hi i32)
     (local $mid i32)
     (local $sq i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
-    (if (i32.ne (local.get $tag) (i32.const {number_tag})) (then (return (i32.const {undefined}))))
-    (local.set $n (i32.shr_s (local.get $v) (i32.const {number_shift})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {undefined}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
     (if (i32.le_s (local.get $n) (i32.const {zero}))
       (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
     (local.set $lo (i32.const {zero}))
-    (local.set $hi (local.get $n))
+    (local.set $hi (i32.const 46340))
     (block $sqrt_done
       (loop $sqrt_loop
         (br_if $sqrt_done (i32.gt_s (local.get $lo) (local.get $hi)))
@@ -529,6 +552,9 @@ impl WatEmitter<'_> {
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             number_shift = ValueTag::NUMBER_SHIFT,
             undefined = ValueTag::UNDEFINED,
             zero = RuntimeConst::ZERO,
