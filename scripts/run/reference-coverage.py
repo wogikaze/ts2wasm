@@ -638,6 +638,88 @@ def write_latest_coverage_jsonl(summary):
         handle.write(json.dumps(latest_record, sort_keys=True))
         handle.write("\n")
 
+def build_test262_jsonl_summary(
+    *,
+    denominator,
+    passed,
+    build_only,
+    oracle_skipped,
+    failed,
+    unsupported,
+    blocked,
+    negative_compile_pass,
+    negative_compile_unverified,
+    negative_compile_mismatch,
+    unresolved_name_by_symbol,
+    wall_duration_ms,
+    total_duration_ms,
+    evidence,
+    paths_file,
+    path_filters,
+    jsonl_file,
+    server_mode,
+    semantic_check,
+):
+    """Build the aggregate coverage record for a test262 JSONL run."""
+    differential_pass = passed
+    executable_build_pass = passed + build_only + oracle_skipped
+    conformance_pass = differential_pass + negative_compile_pass
+    executed = passed + build_only + oracle_skipped + failed + unsupported + blocked
+    build_pass = executable_build_pass + negative_compile_pass
+    build_coverage_percent = "0.00"
+    semantic_coverage_percent = "0.00"
+    if denominator > 0:
+        build_coverage_percent = f"{(build_pass / denominator) * 100:.2f}"
+        semantic_coverage_percent = f"{(conformance_pass / denominator) * 100:.2f}"
+
+    return {
+        "suite": "test262",
+        "suite_name": "test262",
+        "denominator": denominator,
+        "executed": executed,
+        "build_coverage_percent": build_coverage_percent,
+        "semantic_coverage_percent": semantic_coverage_percent,
+        "build_pass": build_pass,
+        "semantic_pass": conformance_pass,
+        "mismatch": 0,
+        "runtime_error": 0,
+        "fail": failed,
+        "passed": passed,
+        "failed": failed,
+        "unsupported": unsupported,
+        "blocked": blocked,
+        "oracle_skipped": oracle_skipped,
+        "build_only": build_only,
+        "total": executed,
+        "executable_build_pass": executable_build_pass,
+        "differential_pass": differential_pass,
+        "negative_compile_pass": negative_compile_pass,
+        "negative_compile_unverified": negative_compile_unverified,
+        "negative_compile_mismatch": negative_compile_mismatch,
+        "conformance_pass": conformance_pass,
+        "build_pass_by_detail": {},
+        "unsupported_diagcodes": {},
+        "unsupported_features": {},
+        "unsupported_by_phase": {},
+        "unresolved_name_by_symbol": unresolved_name_by_symbol,
+        "harness_includes": [],
+        "duration_ms": wall_duration_ms,
+        "wall_duration_ms": wall_duration_ms,
+        "case_duration_sum_ms": total_duration_ms,
+        "skip_with_reason": 0,
+        "verified_negative": negative_compile_pass,
+        "status": "in-progress",
+        "selection": {
+            "paths_file": paths_file,
+            "path_filters": path_filters,
+        },
+        "timestamp": datetime.now().isoformat(),
+        "jsonl_file": str(jsonl_file),
+        "server_mode": bool(server_mode),
+        "semantic_enabled": bool(semantic_check),
+        "evidence": evidence,
+    }
+
 def test262_harness_dir_for(file_path):
     parts = file_path.resolve().parts
     for index, part in enumerate(parts):
@@ -2111,37 +2193,27 @@ def main():
         if os.environ.get("TS2WASM_REFERENCE_COVERAGE_SHOW_CASE_DURATION_SUM") == "1":
             print(f"CaseDurationSum: {total_duration_ms}ms", file=sys.stderr)
 
-        differential_pass = passed
-        executable_build_pass = passed + build_only + oracle_skipped
-        conformance_pass = differential_pass + negative_compile_pass
-
-        summary = {
-            "suite": suite,
-            "passed": passed,
-            "failed": failed,
-            "unsupported": unsupported,
-            "blocked": blocked,
-            "oracle_skipped": oracle_skipped,
-            "build_only": build_only,
-            "total": passed + build_only + oracle_skipped + failed + unsupported + blocked,
-            "executable_build_pass": executable_build_pass,
-            "differential_pass": differential_pass,
-            "negative_compile_pass": negative_compile_pass,
-            "negative_compile_unverified": negative_compile_unverified,
-            "negative_compile_mismatch": negative_compile_mismatch,
-            "conformance_pass": conformance_pass,
-            "build_pass_by_detail": {},
-            "unresolved_name_by_symbol": unresolved_name_by_symbol,
-            "harness_includes": [],
-            "duration_ms": wall_duration_ms,
-            "wall_duration_ms": wall_duration_ms,
-            "case_duration_sum_ms": total_duration_ms,
-            "timestamp": datetime.now().isoformat(),
-            "jsonl_file": str(jsonl_file),
-            "server_mode": bool(server_mode),
-            "semantic_enabled": bool(semantic_check),
-            "evidence": evidence,
-        }
+        summary = build_test262_jsonl_summary(
+            denominator=denominator,
+            passed=passed,
+            build_only=build_only,
+            oracle_skipped=oracle_skipped,
+            failed=failed,
+            unsupported=unsupported,
+            blocked=blocked,
+            negative_compile_pass=negative_compile_pass,
+            negative_compile_unverified=negative_compile_unverified,
+            negative_compile_mismatch=negative_compile_mismatch,
+            unresolved_name_by_symbol=unresolved_name_by_symbol,
+            wall_duration_ms=wall_duration_ms,
+            total_duration_ms=total_duration_ms,
+            evidence=evidence,
+            paths_file=paths_file,
+            path_filters=path_filters,
+            jsonl_file=jsonl_file,
+            server_mode=server_mode,
+            semantic_check=semantic_check,
+        )
         summary_file = results_dir / f"{suite}-summary.json"
         summary_file.write_text(json.dumps(summary, indent=2), encoding="utf-8")
         write_latest_coverage_jsonl(summary)
@@ -2657,17 +2729,17 @@ def main():
                 return result_metrics
             t262.HARNESS_DIR = test262_harness_dir_for(file_path)
             result_metrics["harness_includes"] = list(metadata.includes) if metadata.includes else []
-            # Validate harness includes using public modules
-            meta_dict = _t262_meta.parse_test262_metadata(str(file_path))
-            if meta_dict.get("includes"):
-                harness_sources = _t262_harness.get_harness_sources(meta_dict["includes"])
-                if len(harness_sources) < len(meta_dict["includes"]):
-                    missing = [inc for inc in meta_dict["includes"] if inc not in ("assert.js", "sta.js")]
-                    if missing:
-                        print(f"  warn: missing harness file: {missing}", file=sys.stderr)
-            build_source = t262.build_test262_source(
-                file_path, source_code, metadata, target="wasm"
-            )
+            try:
+                build_source = t262.build_test262_source(
+                    file_path, source_code, metadata, target="wasm"
+                )
+            except Exception as exc:
+                result_metrics["blocked"] = True
+                result_metrics["diag_code"] = "HarnessError"
+                result_metrics["feature_label"] = "test262-harness"
+                if detail_output:
+                    result_metrics["detail_line"] = f"{detail_path}: HarnessError: test262-harness ({exc})"
+                return result_metrics
         else:
             metadata = None
             build_source = source_code

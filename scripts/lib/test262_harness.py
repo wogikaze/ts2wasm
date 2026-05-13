@@ -135,6 +135,131 @@ function isPrimitive(value) {
 
 _seen_unknown_test262_features = set()
 
+
+class Test262Metadata:
+    def __init__(
+        self,
+        *,
+        flags=None,
+        includes=None,
+        features=None,
+        negative_phase=None,
+        negative_type=None,
+    ):
+        self.flags = flags or []
+        self.includes = includes or []
+        self.features = features or []
+        self.negative_phase = negative_phase
+        self.negative_type = negative_type
+        self.raw = "raw" in self.flags
+        self.expects_negative = negative_phase is not None or negative_type is not None
+        self.expects_compile_negative = (negative_phase or "") in COMPILE_NEGATIVE_PHASES
+        self.expects_parse_syntax_error = (
+            negative_phase == "parse" and negative_type == "SyntaxError"
+        )
+        self.unsupported_reason = unsupported_metadata_reason(
+            self.flags,
+            self.includes,
+            self.features,
+        )
+
+
+def _strip_inline_comment(value):
+    return value.split("#", 1)[0].strip()
+
+
+def _parse_metadata_list(value):
+    value = _strip_inline_comment(value)
+    if not value:
+        return []
+    if value.startswith("[") and value.endswith("]"):
+        inner = value[1:-1].strip()
+        if not inner:
+            return []
+        return [
+            part.strip().strip("'\"")
+            for part in inner.split(",")
+            if part.strip()
+        ]
+    return [value.strip().strip("'\"")]
+
+
+def unsupported_metadata_reason(flags, includes, features):
+    for flag in flags:
+        if flag in UNSUPPORTED_FLAGS:
+            return f"test262 flag `{flag}` is not supported by this runner slice"
+    for include in includes:
+        if include in BLOCKED_INCLUDES:
+            return f"test262 include `{include}` is not supported by this runner slice"
+    for feature in features:
+        if feature in BLOCKED_FEATURES:
+            return f"test262 feature `{feature}` is not supported by this runner slice"
+    return None
+
+
+def parse_test262_metadata(source_code):
+    """Parse the test262 frontmatter subset used by the coverage runner."""
+    match = re.search(r"/\*---(.*?)---\*/", source_code, re.DOTALL)
+    if not match:
+        return Test262Metadata()
+
+    fields = {
+        "flags": [],
+        "includes": [],
+        "features": [],
+    }
+    negative = {}
+    active_list = None
+    in_negative = False
+
+    for raw_line in match.group(1).splitlines():
+        line = raw_line.rstrip()
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+
+        if active_list and stripped.startswith("-"):
+            fields[active_list].extend(_parse_metadata_list(stripped[1:].strip()))
+            continue
+
+        if not line.startswith((" ", "\t")):
+            in_negative = False
+            active_list = None
+
+        if ":" not in stripped:
+            continue
+
+        key, value = stripped.split(":", 1)
+        key = key.strip()
+        value = value.strip()
+
+        if key in ("flags", "includes", "features"):
+            parsed = _parse_metadata_list(value)
+            if parsed:
+                fields[key].extend(parsed)
+                active_list = None
+            else:
+                active_list = key
+        elif key == "include":
+            fields["includes"].extend(_parse_metadata_list(value))
+            active_list = None
+        elif key == "negative":
+            negative = {}
+            in_negative = True
+            active_list = None
+        elif in_negative and key == "phase":
+            negative["phase"] = value.strip("'\"")
+        elif in_negative and key == "type":
+            negative["type"] = value.strip("'\"")
+
+    return Test262Metadata(
+        flags=fields["flags"],
+        includes=fields["includes"],
+        features=fields["features"],
+        negative_phase=negative.get("phase"),
+        negative_type=negative.get("type"),
+    )
+
 COMMON_HOST_PRELUDE = r"""
 function print(message) {
   console.log(message);
