@@ -490,6 +490,7 @@ impl super::Resolver {
                 name,
                 func_id,
                 capture_names: &capture_names,
+                object_function_props: None,
             })
             .filter(|_| !self.ctx.facts.env_cell_names.contains(name));
         let mut function_signatures = self.ctx.symbols.function_signatures.clone();

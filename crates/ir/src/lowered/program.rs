@@ -20,7 +20,7 @@ pub(crate) use program_direct_eval::*;
 pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnostic> {
     let function_ids = collect_function_ids(program)?;
     let generator_function_names = collect_generator_function_names(program);
-    let function_signatures = collect_function_signatures(program, &function_ids);
+    let mut function_signatures = collect_function_signatures(program, &function_ids);
     let top_level_local_names = collect_top_level_local_names(program)?;
     let map_callback_function_names = collect_array_map_callback_function_names(program);
     let function_captures = collect_callback_function_captures(
@@ -50,6 +50,13 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
     let class_static_private_fields = collect_class_static_private_fields(program);
     let function_recursion_depths = compute_recursion_depths(program, &function_ids);
     let mut next_func_id = function_ids.len();
+    let preindexed_function_properties = collect_preindexed_function_properties(
+        program,
+        &mut next_func_id,
+        &mut function_signatures,
+    );
+    let function_property_assignments =
+        function_property_assignment_map(&preindexed_function_properties);
     let mut functions_by_id = vec![None; function_ids.len()];
     let mut generated_functions = Vec::new();
 
@@ -89,6 +96,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         name,
                         func_id,
                         capture_names: &[],
+                        object_function_props: function_property_assignments.get(name),
                     });
                 let lowered = lower_function(
                     func_id,
@@ -248,6 +256,43 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
             }
             _ => {}
         }
+    }
+
+    for property_function in &preindexed_function_properties {
+        let self_closure = (!property_function.name.is_empty()).then_some(SelfClosureOptions {
+            name: property_function.name.as_str(),
+            func_id: property_function.func_id,
+            capture_names: &[],
+            object_function_props: None,
+        });
+        let lowered = lower_function(
+            property_function.func_id,
+            &property_function.params,
+            &property_function.body,
+            false,
+            false,
+            &function_ids,
+            &function_signatures,
+            &function_captures,
+            &function_mutable_captures,
+            &class_method_captures,
+            &class_method_mutable_captures,
+            &HashSet::new(),
+            &HashSet::new(),
+            class_parents.clone(),
+            class_private_fields.clone(),
+            class_static_private_fields.clone(),
+            LowerFunctionOptions {
+                current_class: None,
+                in_constructor: false,
+                next_func_id,
+                self_closure,
+                recursion_depth: 0,
+            },
+        )?;
+        next_func_id = lowered.next_func_id;
+        generated_functions.push(lowered.function);
+        generated_functions.extend(lowered.generated_functions);
     }
 
     let mut resolver = crate::lowered::resolver::Resolver::new(
@@ -1163,6 +1208,79 @@ fn collect_function_signatures(
     }
 
     signatures
+}
+
+#[derive(Debug, Clone)]
+struct PreindexedFunctionProperty {
+    receiver: String,
+    key: String,
+    name: String,
+    func_id: FuncId,
+    params: Vec<ResolvedParam>,
+    body: Vec<ResolvedStmt>,
+}
+
+fn collect_preindexed_function_properties(
+    program: &[ResolvedStmt],
+    next_func_id: &mut usize,
+    function_signatures: &mut HashMap<FuncId, FunctionSignature>,
+) -> Vec<PreindexedFunctionProperty> {
+    let mut properties = Vec::new();
+    for stmt in program {
+        let ResolvedStmt::Expr(ResolvedExpr::PropertyAssign {
+            object, key, value, ..
+        }) = stmt
+        else {
+            continue;
+        };
+        let ResolvedExpr::Ident(receiver) = object.as_ref() else {
+            continue;
+        };
+        let ResolvedExpr::FunctionExpr { name, params, body } = value.as_ref() else {
+            continue;
+        };
+        let func_id = FuncId(*next_func_id);
+        *next_func_id += 1;
+        function_signatures.insert(func_id, function_signature_for_params_body(params, body));
+        properties.push(PreindexedFunctionProperty {
+            receiver: receiver.clone(),
+            key: key.clone(),
+            name: name.clone(),
+            func_id,
+            params: params.clone(),
+            body: body.clone(),
+        });
+    }
+    properties
+}
+
+fn function_property_assignment_map(
+    properties: &[PreindexedFunctionProperty],
+) -> HashMap<String, HashMap<String, FuncId>> {
+    let mut by_receiver: HashMap<String, HashMap<String, FuncId>> = HashMap::new();
+    for property in properties {
+        by_receiver
+            .entry(property.receiver.clone())
+            .or_default()
+            .insert(property.key.clone(), property.func_id);
+    }
+    by_receiver
+}
+
+fn function_signature_for_params_body(
+    params: &[ResolvedParam],
+    body: &[ResolvedStmt],
+) -> FunctionSignature {
+    FunctionSignature {
+        explicit_params: params.len(),
+        needs_receiver: block_contains_this(body),
+        needs_arguments: block_contains_arguments(body)
+            && !params.iter().any(|param| param.name == "arguments"),
+        has_rest: params.iter().any(|param| param.is_rest),
+        metadata_length: fixed_arity_metadata_length(params),
+        returns_heap_closure: block_returns_declared_function(body),
+        returns_dense_array: block_returns_dense_array_local(body),
+    }
 }
 
 fn collect_class_method_captures(
@@ -2300,6 +2418,7 @@ pub(crate) struct SelfClosureOptions<'a> {
     pub(crate) name: &'a str,
     pub(crate) func_id: FuncId,
     pub(crate) capture_names: &'a [String],
+    pub(crate) object_function_props: Option<&'a HashMap<String, FuncId>>,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -2369,6 +2488,7 @@ pub(super) fn lower_function(
             self_closure.name,
             self_closure.func_id,
             self_closure.capture_names,
+            self_closure.object_function_props,
         )?;
     }
 

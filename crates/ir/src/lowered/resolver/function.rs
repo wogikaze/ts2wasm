@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use super::binding_param_names;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
@@ -117,6 +117,7 @@ impl super::Resolver {
                     name,
                     func_id,
                     capture_names: &capture_names,
+                    object_function_props: None,
                 }),
                 recursion_depth: 0,
             },
@@ -229,6 +230,7 @@ impl super::Resolver {
                 name,
                 func_id,
                 capture_names: &capture_names,
+                object_function_props: None,
             })
             .filter(|_| !self.ctx.facts.env_cell_names.contains(name));
 
@@ -347,6 +349,7 @@ impl super::Resolver {
         name: &str,
         func_id: FuncId,
         capture_names: &[String],
+        object_function_props: Option<&HashMap<String, FuncId>>,
     ) -> Result<(), Diagnostic> {
         let local_id = self.declare_local(name)?;
         let captures = capture_names
@@ -357,6 +360,12 @@ impl super::Resolver {
             .facts
             .arrow_locals
             .insert(local_id, ArrowClosure { func_id, captures });
+        if let Some(props) = object_function_props {
+            self.ctx
+                .classes
+                .object_function_props
+                .insert(local_id, props.clone());
+        }
         Ok(())
     }
 

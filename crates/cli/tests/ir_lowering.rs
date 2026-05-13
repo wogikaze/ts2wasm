@@ -298,6 +298,31 @@ fn lowering_binds_function_name_inside_own_body() {
 }
 
 #[test]
+fn lowering_preindexes_function_self_property_method_assignment() {
+    use ts2wasm_ir::lowered::{FunctionCallKind, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        function assert(x) { return assert._toString(x); }
+        assert._toString = function(x) { return x; };
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    assert!(matches!(
+        lowered.functions[0].body.as_slice(),
+        [LoweredStmt::Return(
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(_),
+                args,
+                ..
+            },
+            _
+        )] if matches!(args.as_slice(), [LoweredExpr::Local(_, _)])
+    ));
+}
+
+#[test]
 fn lowering_preserves_parameter_shadowing_over_function_self_name() {
     use ts2wasm_ir::lowered::{LocalId, LoweredExpr, LoweredStmt};
 
