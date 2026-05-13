@@ -467,6 +467,12 @@ impl super::Resolver {
                 Some("Map".to_owned())
             }
             ResolvedExpr::MethodCall { object, method, .. }
+                if method == "NumberFormat"
+                    && matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Intl") =>
+            {
+                Some("Intl.NumberFormat".to_owned())
+            }
+            ResolvedExpr::MethodCall { object, method, .. }
                 if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Object")
                     && matches!(method.as_str(), "create" | "fromEntries" | "groupBy") =>
             {

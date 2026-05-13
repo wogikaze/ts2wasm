@@ -137,7 +137,6 @@ pub(crate) fn resolve_method_to_runtime_fn(
         "propertyIsEnumerable" => Some(RuntimeFn::PropertyIsEnumerable),
         "isPrototypeOf" => Some(RuntimeFn::IsPrototypeOf),
         "toString" => Some(RuntimeFn::ObjectToString),
-        "toLocaleString" => Some(RuntimeFn::ObjectToLocaleString),
         "valueOf" => Some(RuntimeFn::ValueOf),
         "push" => Some(RuntimeFn::ArrayPush),
         "pop" => Some(RuntimeFn::ArrayPop),

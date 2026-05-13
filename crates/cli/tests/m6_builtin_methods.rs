@@ -1967,6 +1967,16 @@ fn build_smoke_atomics_intl_stubs() {
     assert!(result.is_ok(), "Intl stub should build: {:?}", result.err());
 }
 
+#[test]
+fn build_smoke_intl_numberformat() {
+    let result = run_fixture("builtins-and-io/intl-numberformat.ts");
+    assert!(
+        result.is_ok(),
+        "Intl.NumberFormat should build: {:?}",
+        result.err()
+    );
+}
+
 // === W5: Language runtime semantics — new fixtures ===
 
 // for...of on array (iterator protocol)
@@ -2341,3 +2351,4 @@ fn build_smoke_string_constructor_call() {
         "String(...) constructor-style calls should build: {:?}",
         result.err()
     );
+}

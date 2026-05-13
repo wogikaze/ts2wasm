@@ -9,6 +9,7 @@ use super::super::{
 use super::builtin::{is_html_wrapper_string_method, lower_html_wrapper_string_method};
 use super::receiver::extract_prototype_method_name;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
+use crate::lowered::facts::IntlNumberFormatOptions;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
@@ -22,6 +23,9 @@ impl super::super::Resolver {
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
         if let Some(result) = self.lower_mcall_early(object, method, args, span)? {
+            return Ok(result);
+        }
+        if let Some(result) = self.lower_mcall_intl_number_format(object, method, args)? {
             return Ok(result);
         }
         if let Some(result) = self.lower_mcall_json_date_regexp(object, method, args, span)? {
@@ -422,6 +426,27 @@ impl super::super::Resolver {
 
                 span: Span::generated("call"),
             }));
+        }
+        Ok(None)
+    }
+
+    fn lower_mcall_intl_number_format(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Intl") && method == "NumberFormat"
+        {
+            return Ok(Some(self.lower_intl_number_format_constructor(args)?));
+        }
+        if self.is_intl_number_format_expr(object) && is_intl_number_format_method(method) {
+            let options = self.intl_number_format_options_for_expr(object);
+            return Ok(Some(self.lower_intl_number_format_method(
+                method,
+                args,
+                options.as_ref(),
+            )?));
         }
         Ok(None)
     }
@@ -1739,6 +1764,24 @@ impl super::super::Resolver {
             }
         }
 
+        if let Ok(obj_local) = self.resolve_local(receiver_name)
+            && self
+                .ctx
+                .classes
+                .local_classes
+                .get(&obj_local)
+                .is_some_and(is_intl_number_format_class)
+            && is_intl_number_format_method(method)
+        {
+            let options = self
+                .ctx
+                .facts
+                .intl_number_format_locals
+                .get(&obj_local)
+                .cloned();
+            return self.lower_intl_number_format_method(method, args, options.as_ref());
+        }
+
         // Local class runtime_fn
         if let Ok(obj_local) = self.resolve_local(receiver_name)
             && let Some(class_name) = self.ctx.classes.local_classes.get(&obj_local)
@@ -1924,25 +1967,29 @@ impl super::super::Resolver {
             }
             None => {
                 // Object.prototype methods: route to RuntimeFn for untyped receivers
-                let obj_methods =
-                    ["hasOwnProperty", "propertyIsEnumerable", "isPrototypeOf", "toString", "toLocaleString", "valueOf"];
+                let obj_methods = [
+                    "hasOwnProperty",
+                    "propertyIsEnumerable",
+                    "isPrototypeOf",
+                    "toString",
+                    "toLocaleString",
+                    "valueOf",
+                ];
                 if obj_methods.contains(&method) {
-                    let intrinsic = resolve_method_to_runtime_fn(
-                        &ResolvedExpr::Ident(receiver_name.to_string()),
-                        method,
-                    ).ok_or_else(|| Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!("method `{}` not found for untyped receiver", method),
-                        span: Some(span),
-                        phase: None,
-                    })?;
+                    let intrinsic =
+                        object_prototype_runtime_fn(method).ok_or_else(|| Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!("method `{}` not found for untyped receiver", method),
+                            span: Some(span),
+                            phase: None,
+                        })?;
                     let mut lowered_args =
                         vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
-                    lowered_args.extend(
-                        args.iter()
-                            .map(|e| self.lower_expr(e))
-                            .collect::<Result<Vec<_>, _>>()?,
-                    );
+                    lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<Result<
+                        Vec<_>,
+                        _,
+                    >>(
+                    )?);
                     return Ok(LoweredExpr::RuntimeCall {
                         intrinsic,
                         args: lowered_args,
@@ -2020,6 +2067,165 @@ impl super::super::Resolver {
             }
         }
         Ok(lowered_args)
+    }
+
+    pub(crate) fn lower_intl_number_format_constructor(
+        &mut self,
+        args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let options = self
+            .intl_number_format_options_from_args(args)
+            .unwrap_or_else(default_intl_number_format_options);
+        Ok(LoweredExpr::ObjectNew {
+            props: vec![
+                ("locale".to_owned(), string_lit(options.locale)),
+                ("style".to_owned(), string_lit(options.style)),
+                ("currency".to_owned(), string_lit(options.currency)),
+                ("notation".to_owned(), string_lit(options.notation)),
+                (
+                    "compactDisplay".to_owned(),
+                    string_lit(options.compact_display),
+                ),
+                ("signDisplay".to_owned(), string_lit(options.sign_display)),
+            ],
+            non_enumerable: 0,
+            span: Span::generated("intl_number_format"),
+        })
+    }
+
+    pub(crate) fn intl_number_format_options_for_expr(
+        &self,
+        expr: &ResolvedExpr,
+    ) -> Option<IntlNumberFormatOptions> {
+        match expr {
+            ResolvedExpr::New {
+                class_name, args, ..
+            } if matches!(class_name.as_str(), "Intl.NumberFormat" | "NumberFormat") => {
+                self.intl_number_format_options_from_args(args)
+            }
+            ResolvedExpr::MethodCall {
+                object,
+                method,
+                args,
+                ..
+            } if method == "NumberFormat"
+                && matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Intl") =>
+            {
+                self.intl_number_format_options_from_args(args)
+            }
+            ResolvedExpr::Ident(name) => self.resolve_local(name).ok().and_then(|local| {
+                self.ctx
+                    .facts
+                    .intl_number_format_locals
+                    .get(&local)
+                    .cloned()
+            }),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn intl_number_format_options_from_args(
+        &self,
+        args: &[ResolvedExpr],
+    ) -> Option<IntlNumberFormatOptions> {
+        if args.len() > 2 {
+            return None;
+        }
+        let defaults = default_intl_number_format_options();
+        let locale = args
+            .first()
+            .and_then(static_string_expr)
+            .unwrap_or(defaults.locale.as_str())
+            .to_owned();
+        let options = args.get(1);
+        Some(IntlNumberFormatOptions {
+            locale,
+            style: static_object_string_option(options, "style")
+                .unwrap_or(defaults.style.as_str())
+                .to_owned(),
+            currency: static_object_string_option(options, "currency")
+                .unwrap_or(defaults.currency.as_str())
+                .to_owned(),
+            notation: static_object_string_option(options, "notation")
+                .unwrap_or(defaults.notation.as_str())
+                .to_owned(),
+            compact_display: static_object_string_option(options, "compactDisplay")
+                .unwrap_or(defaults.compact_display.as_str())
+                .to_owned(),
+            sign_display: static_object_string_option(options, "signDisplay")
+                .unwrap_or(defaults.sign_display.as_str())
+                .to_owned(),
+        })
+    }
+
+    fn is_intl_number_format_expr(&self, expr: &ResolvedExpr) -> bool {
+        matches!(
+            self.infer_class_for_expr(expr).as_deref(),
+            Some("Intl.NumberFormat" | "NumberFormat")
+        )
+    }
+
+    fn lower_intl_number_format_method(
+        &mut self,
+        method: &str,
+        args: &[ResolvedExpr],
+        options: Option<&IntlNumberFormatOptions>,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let defaults = default_intl_number_format_options();
+        let options = options.unwrap_or(&defaults);
+        match method {
+            "format" => Ok(string_lit(
+                args.first()
+                    .and_then(|arg| static_number_format_arg(arg, options))
+                    .unwrap_or_else(|| "NaN".to_owned()),
+            )),
+            "formatToParts" => Ok(LoweredExpr::ArrayNew {
+                elements: vec![LoweredExpr::ObjectNew {
+                    props: vec![
+                        (
+                            "type".to_owned(),
+                            string_lit(number_format_part_type(options)),
+                        ),
+                        (
+                            "value".to_owned(),
+                            string_lit(
+                                args.first()
+                                    .and_then(|arg| static_number_format_arg(arg, options))
+                                    .unwrap_or_else(|| "NaN".to_owned()),
+                            ),
+                        ),
+                    ],
+                    non_enumerable: 0,
+                    span: Span::generated("object_new"),
+                }],
+                span: Span::generated("array_new"),
+            }),
+            "resolvedOptions" => Ok(LoweredExpr::ObjectNew {
+                props: vec![
+                    ("locale".to_owned(), string_lit(options.locale.clone())),
+                    ("numberingSystem".to_owned(), string_lit("latn")),
+                    ("style".to_owned(), string_lit(options.style.clone())),
+                    ("currency".to_owned(), string_lit(options.currency.clone())),
+                    ("notation".to_owned(), string_lit(options.notation.clone())),
+                    (
+                        "compactDisplay".to_owned(),
+                        string_lit(options.compact_display.clone()),
+                    ),
+                    (
+                        "signDisplay".to_owned(),
+                        string_lit(options.sign_display.clone()),
+                    ),
+                ],
+                non_enumerable: 0,
+                span: Span::generated("object_new"),
+            }),
+            _ => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("Intl.NumberFormat.prototype.{method} is not supported"),
+                span: None,
+                phase: None,
+            }),
+        }
     }
 
     fn lower_object_prototype_dispatch(
@@ -2232,4 +2438,157 @@ fn is_object_prototype_method(method: &str) -> bool {
             | "valueOf"
             | "toLocaleString"
     )
+}
+
+fn object_prototype_runtime_fn(method: &str) -> Option<RuntimeFn> {
+    match method {
+        "hasOwnProperty" => Some(RuntimeFn::ObjectHasOwnProperty),
+        "propertyIsEnumerable" => Some(RuntimeFn::PropertyIsEnumerable),
+        "isPrototypeOf" => Some(RuntimeFn::IsPrototypeOf),
+        "toString" => Some(RuntimeFn::ObjectToString),
+        "toLocaleString" => Some(RuntimeFn::ObjectToLocaleString),
+        "valueOf" => Some(RuntimeFn::ValueOf),
+        _ => None,
+    }
+}
+
+fn is_intl_number_format_method(method: &str) -> bool {
+    matches!(method, "format" | "formatToParts" | "resolvedOptions")
+}
+
+fn is_intl_number_format_class(class_name: &String) -> bool {
+    matches!(class_name.as_str(), "Intl.NumberFormat" | "NumberFormat")
+}
+
+fn static_string_expr(expr: &ResolvedExpr) -> Option<&str> {
+    match expr {
+        ResolvedExpr::String(value) => Some(value),
+        _ => None,
+    }
+}
+
+fn static_object_string_option<'a>(expr: Option<&'a ResolvedExpr>, key: &str) -> Option<&'a str> {
+    let Some(ResolvedExpr::Object(props)) = expr else {
+        return None;
+    };
+    props
+        .iter()
+        .rev()
+        .find(|prop| prop.static_key() == Some(key))
+        .and_then(|prop| static_string_expr(prop.value()))
+}
+
+fn static_number_format_arg(
+    expr: &ResolvedExpr,
+    options: &IntlNumberFormatOptions,
+) -> Option<String> {
+    match expr {
+        ResolvedExpr::Number(value) => Some(format_intl_number_i32(*value, options)),
+        ResolvedExpr::DecimalNumber(value) => {
+            Some(apply_intl_number_affixes(value.clone(), options))
+        }
+        _ => None,
+    }
+}
+
+fn default_intl_number_format_options() -> IntlNumberFormatOptions {
+    IntlNumberFormatOptions {
+        locale: "en-US".to_owned(),
+        style: "decimal".to_owned(),
+        currency: String::new(),
+        notation: "standard".to_owned(),
+        compact_display: "short".to_owned(),
+        sign_display: "auto".to_owned(),
+    }
+}
+
+fn number_format_part_type(options: &IntlNumberFormatOptions) -> &'static str {
+    match options.style.as_str() {
+        "currency" => "currency",
+        "percent" => "percent",
+        _ => "integer",
+    }
+}
+
+fn format_intl_number_i32(value: i32, options: &IntlNumberFormatOptions) -> String {
+    let scaled = if options.style == "percent" {
+        value.saturating_mul(100)
+    } else {
+        value
+    };
+    let formatted = if options.notation == "compact" {
+        format_compact_i32(scaled, options)
+    } else {
+        format_i32_grouped(scaled)
+    };
+    apply_intl_number_affixes(formatted, options)
+}
+
+fn apply_intl_number_affixes(mut formatted: String, options: &IntlNumberFormatOptions) -> String {
+    if options.sign_display == "never" && formatted.starts_with('-') {
+        formatted.remove(0);
+    } else if matches!(options.sign_display.as_str(), "always" | "exceptZero")
+        && !formatted.starts_with('-')
+        && formatted != "0"
+    {
+        formatted.insert(0, '+');
+    }
+
+    match options.style.as_str() {
+        "currency" if options.currency == "USD" => format!("${formatted}.00"),
+        "currency" if !options.currency.is_empty() => format!("{} {formatted}", options.currency),
+        "percent" => format!("{formatted}%"),
+        _ => formatted,
+    }
+}
+
+fn format_compact_i32(value: i32, options: &IntlNumberFormatOptions) -> String {
+    let negative = value < 0;
+    let abs = (value as i64).abs();
+    let (divisor, short_suffix, long_suffix) = if abs >= 1_000_000_000 {
+        (1_000_000_000_i64, "B", " billion")
+    } else if abs >= 1_000_000 {
+        (1_000_000_i64, "M", " million")
+    } else if abs >= 1_000 {
+        (1_000_i64, "K", " thousand")
+    } else {
+        return format_i32_grouped(value);
+    };
+    let whole = abs / divisor;
+    let first_decimal = (abs % divisor) * 10 / divisor;
+    let mut formatted = if first_decimal == 0 {
+        whole.to_string()
+    } else {
+        format!("{whole}.{first_decimal}")
+    };
+    if options.compact_display == "long" {
+        formatted.push_str(long_suffix);
+    } else {
+        formatted.push_str(short_suffix);
+    }
+    if negative {
+        formatted.insert(0, '-');
+    }
+    formatted
+}
+
+fn format_i32_grouped(value: i32) -> String {
+    let negative = value < 0;
+    let digits = (value as i64).abs().to_string();
+    let mut grouped = String::new();
+    for (idx, ch) in digits.chars().rev().enumerate() {
+        if idx > 0 && idx % 3 == 0 {
+            grouped.push(',');
+        }
+        grouped.push(ch);
+    }
+    let mut formatted = grouped.chars().rev().collect::<String>();
+    if negative {
+        formatted.insert(0, '-');
+    }
+    formatted
+}
+
+fn string_lit(value: impl Into<String>) -> LoweredExpr {
+    LoweredExpr::String(value.into(), Span::generated("str"))
 }

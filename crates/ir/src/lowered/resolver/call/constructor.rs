@@ -53,6 +53,9 @@ impl super::super::Resolver {
                 phase: None,
             });
         }
+        if matches!(class_name, "Intl.NumberFormat" | "NumberFormat") {
+            return self.lower_intl_number_format_constructor(args);
+        }
         if class_name == "Date" {
             if args.is_empty() {
                 return Ok(LoweredExpr::RuntimeCall {

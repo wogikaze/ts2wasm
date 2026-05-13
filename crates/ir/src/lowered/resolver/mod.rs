@@ -518,6 +518,14 @@ impl Resolver {
                     local_id,
                     expr,
                 );
+                if let Some(options) = self.intl_number_format_options_for_expr(expr) {
+                    self.ctx
+                        .facts
+                        .intl_number_format_locals
+                        .insert(local_id, options);
+                } else {
+                    self.ctx.facts.intl_number_format_locals.remove(&local_id);
+                }
                 if let Some(props) = function_props {
                     self.ctx
                         .classes

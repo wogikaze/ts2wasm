@@ -93,6 +93,8 @@ pub struct StaticFacts {
     pub bound_constructor_locals: HashMap<LocalId, BoundConstructor>,
     /// Static Proxy locals created as `new Proxy(target, handler)`.
     pub proxy_locals: HashMap<LocalId, ProxyBinding>,
+    /// Static Intl.NumberFormat locals with constructor options visible at compile time.
+    pub intl_number_format_locals: HashMap<LocalId, IntlNumberFormatOptions>,
 }
 
 /// Tracks the known elements of a function-parameter-based array-like value
@@ -156,6 +158,17 @@ pub enum FunctionMethodKind {
 pub struct ProxyBinding {
     pub target: ResolvedExpr,
     pub handler: ResolvedExpr,
+}
+
+/// Statically visible Intl.NumberFormat constructor options.
+#[derive(Debug, Clone)]
+pub struct IntlNumberFormatOptions {
+    pub locale: String,
+    pub style: String,
+    pub currency: String,
+    pub notation: String,
+    pub compact_display: String,
+    pub sign_display: String,
 }
 
 /// Static Proxy trap lowering kinds for the supported MVP trap slice.
@@ -226,6 +239,7 @@ impl StaticFacts {
             function_method_locals: HashMap::new(),
             bound_constructor_locals: HashMap::new(),
             proxy_locals: HashMap::new(),
+            intl_number_format_locals: HashMap::new(),
         }
     }
 
