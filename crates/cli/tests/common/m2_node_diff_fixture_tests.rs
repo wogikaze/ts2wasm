@@ -2104,10 +2104,10 @@ fn arrow_assigned_recursive_unsupported_builds_but_produces_wrong_output() {
 }
 
 #[test]
-fn arrow_assigned_recursive_reassignment_reports_function_valued_call_gap() {
-    assert_build_fails_with_unsupported_syntax(
+fn arrow_assigned_recursive_reassignment_traps_after_node_typeerror() {
+    super::assert_fixture_node_fails_and_iwasm_traps_after_stdout(
         "fixtures/core-semantics/arrow-assigned-recursive-reassigned-unsupported.ts",
-        "issue-211: function-valued local calls such as extracted method `fact(...)` are not supported",
+        "",
     );
 }
 
