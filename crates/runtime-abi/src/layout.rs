@@ -19,14 +19,14 @@ impl Layout {
     pub const STRING_HEADER_SIZE: u32 = 4;
     pub const HEAP_BUMP_PADDING: u32 = Self::STRING_HEADER_SIZE + Self::ALIGN_MASK;
     /// Initial value of the `$heap` global (base of the dynamic heap).
-    pub const HEAP_START: u32 = 2048;
+    pub const HEAP_START: u32 = 33280;
     /// Linear memory offset used as a scratch buffer by `$log` /
     /// `$value_to_string_into`.
-    pub const SCRATCH_OFFSET: u32 = 1500;
+    pub const SCRATCH_OFFSET: u32 = 32768;
     /// Scratch buffer size (in bytes) reserved for temporary runtime string output.
     pub const SCRATCH_SIZE: u32 = 256;
     /// Temporary stdin staging buffer offset for `fd_read` runtime path.
-    pub const STDIN_BUFFER_OFFSET: u32 = 1792;
+    pub const STDIN_BUFFER_OFFSET: u32 = 33024;
     /// Temporary stdin staging buffer size for one `fd_read` chunk.
     pub const STDIN_BUFFER_SIZE: u32 = 256;
     /// Maximum total bytes that one `readFileSync(0, "utf8")` call may consume (64 KiB).
@@ -450,12 +450,12 @@ mod tests {
             heap_tag = ValueTag::OBJECT,
         );
         let expected = "\
-ABI v1\n\
+ABI v2\n\
 WASM_PAGE_SIZE=65536\n\
 MEMORY_MIN_PAGES=2 MEMORY_MAX_PAGES=185\n\
-DATA_START=256 HEAP_START=2048\n\
-SCRATCH_OFFSET=1500 SCRATCH_SIZE=256\n\
-STDIN_BUFFER_OFFSET=1792 STDIN_BUFFER_SIZE=256\n\
+DATA_START=256 HEAP_START=33280\n\
+SCRATCH_OFFSET=32768 SCRATCH_SIZE=256\n\
+STDIN_BUFFER_OFFSET=33024 STDIN_BUFFER_SIZE=256\n\
 STDIN_IOVEC_OFFSET=16 STDIN_NREAD_OFFSET=24\n\
 GC_HEADER_SIZE=16 GC_THRESHOLD=65536\n\
 GC_HEADROOM_PAGES=12 HEAP_GROW_MIN_PAGES=16\n\
@@ -581,7 +581,7 @@ HEAP_MASK=-8 HEAP_TAG=7";
     }
     #[test]
     #[allow(clippy::assertions_on_constants)]
-    fn backward_compat_v1_archive_matches_current() {
+    fn backward_compat_archive_matches_current() {
         use crate::consts::RuntimeConst;
         use crate::value::ValueTag;
 
@@ -623,16 +623,19 @@ HEAP_MASK=-8 HEAP_TAG=7";
             hm = ValueTag::HEAP_MASK,
         );
 
-        let archive = include_str!("../compat/v1-snapshot.txt");
+        let archive = match RuntimeConst::ABI_VERSION {
+            1 => include_str!("../compat/v1-snapshot.txt"),
+            2 => include_str!("../compat/v2-snapshot.txt"),
+            version => panic!("missing ABI compat archive for v{version}"),
+        };
 
         assert_eq!(
             snapshot,
             archive.trim_end(),
-            "ABI v1 backward-compat archive mismatch!\n\
-             Current constants differ from the v1 archive at\n\
-             `crates/runtime-abi/compat/v1-snapshot.txt`.\n\n\
-             If you intentionally bumped ABI_VERSION, create a new\n\
-             `compat/v2-snapshot.txt` and leave the v1 archive unchanged.\n\n\
+            "ABI backward-compat archive mismatch!\n\
+             Current constants differ from the selected compat archive.\n\n\
+             If you intentionally bumped ABI_VERSION, create a new compat archive\n\
+             and leave older archives unchanged.\n\n\
              If constants were modified without bumping ABI_VERSION, restore\n\
              the v1 baseline or create a new archive for the new constants.\n\n\
              Got:\n{snapshot}\n\n\

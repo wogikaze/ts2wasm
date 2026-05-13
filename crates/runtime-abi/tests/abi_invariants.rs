@@ -250,8 +250,8 @@ fn stack_effect_property_set() {
 // ---------------------------------------------------------------------------
 
 #[test]
-fn runtime_const_abi_version_is_one() {
-    assert_eq!(RuntimeConst::ABI_VERSION, 1);
+fn runtime_const_abi_version_is_current() {
+    assert_eq!(RuntimeConst::ABI_VERSION, 2);
 }
 
 #[test]

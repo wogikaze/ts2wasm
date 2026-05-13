@@ -167,6 +167,10 @@ fn source_has_var_binding(source: &str, name: &str) -> bool {
         || source.contains(&format!("var {name};"))
 }
 
+fn source_has_binding(source: &str, name: &str) -> bool {
+    source_has_function(source, name) || source_has_var_binding(source, name)
+}
+
 fn disable_test262_preprocessor_stubs() -> bool {
     std::env::var("TS2WASM_DISABLE_TEST262_PREPROCESSOR_STUBS")
         .map(|value| matches!(value.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
@@ -263,7 +267,7 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
         // Skip injection if the functions are already present (e.g. from Python harness wrap).
         let body = &source[frontmatter_end + 5..];
         let mut stubs = String::new();
-        if !disable_stubs && !source_has_function(source, "assert") {
+        if !disable_stubs && !source_has_binding(source, "assert") {
             stubs.push_str("function assert() {}\n");
         }
         if !disable_stubs && !source_has_function(source, "verifyProperty") {
@@ -564,7 +568,7 @@ fn extract_function_stubs(_helper_source: &str, full_source: &str) -> String {
     ];
     candidate_stubs
         .iter()
-        .filter(|(_, name)| !source_has_function(full_source, name))
+        .filter(|(_, name)| !source_has_binding(full_source, name))
         .map(|(stub, _)| *stub)
         .collect::<Vec<_>>()
         .join("\n")
@@ -690,6 +694,27 @@ var IsHTMLDDA = $262.IsHTMLDDA;"#;
         assert!(processed.contains("$262.IsHTMLDDA = {};"));
         assert!(processed.contains("function assert() {}"));
         assert!(processed.contains("if (typeof Symbol === 'object'"));
+    }
+
+    #[test]
+    fn test_process_includes_reuses_existing_assert_var_binding() {
+        let source = r#"/*---
+includes:
+  - assert.js
+---*/
+
+var assert = {};
+assert.sameValue = function(actual, expected) {};
+assert.sameValue(1, 1);"#;
+        let input = Path::new(env!("CARGO_MANIFEST_DIR")).join(
+            "../../reference/test262/test/built-ins/String/prototype/localeCompare/15.5.4.9_CE.js",
+        );
+        let processed = process_test262_includes(&input, source)
+            .expect("include processing should reuse existing assert var binding");
+
+        assert_eq!(processed.matches("var assert").count(), 1);
+        assert!(!processed.contains("function assert() {}"));
+        assert!(processed.contains("function __assert_sameValue"));
     }
 
     #[test]
