@@ -192,6 +192,7 @@ match self {
             Self::SpreadViaIterator => "spread_via_iterator",
             Self::ObjectValues => "object_values",
             Self::ObjectEntries => "object_entries",
+            Self::ObjectFromEntries => "object_from_entries",
             Self::ObjectHasOwnProperty => "object_has_own_property",
             Self::ObjectHasOwn => "object_has_own",
             Self::ObjectGetOwnPropertyDescriptor => "object_get_own_property_descriptor",

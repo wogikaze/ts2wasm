@@ -330,6 +330,8 @@ pub enum RuntimeFn {
     SpreadViaIterator,
     ObjectValues,
     ObjectEntries,
+    /// Object.fromEntries(iterable) — creates an object from key-value pairs
+    ObjectFromEntries,
     ObjectHasOwnProperty,
     ObjectHasOwn,
     ObjectGetOwnPropertyDescriptor,
@@ -984,6 +986,8 @@ const OBJECT_SPREAD_DEPS: &[RuntimeFn] = &[
 ];
 const OBJECT_VALUES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const OBJECT_ENTRIES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const OBJECT_FROM_ENTRIES_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::AllocHeap, RuntimeFn::ObjectCreate, RuntimeFn::ValueToStringInto, RuntimeFn::PropertySet];
 const OBJECT_HAS_OWN_DEPS: &[RuntimeFn] = &[RuntimeFn::ObjectHasOwnProperty];
 const OBJECT_HAS_OWN_PROPERTY_DEPS: &[RuntimeFn] =
     &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyHas];
@@ -1118,6 +1122,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "SpreadViaIterator" => Some(RuntimeFn::SpreadViaIterator),
         "ObjectValues" => Some(RuntimeFn::ObjectValues),
         "ObjectEntries" => Some(RuntimeFn::ObjectEntries),
+        "ObjectFromEntries" => Some(RuntimeFn::ObjectFromEntries),
         "ObjectHasOwnProperty" => Some(RuntimeFn::ObjectHasOwnProperty),
         "ObjectHasOwn" => Some(RuntimeFn::ObjectHasOwn),
         "ObjectGetOwnPropertyDescriptor" => Some(RuntimeFn::ObjectGetOwnPropertyDescriptor),
@@ -1609,6 +1614,7 @@ impl RuntimeFn {
             | Self::SpreadViaIterator
             | Self::ObjectValues
             | Self::ObjectEntries
+            | Self::ObjectFromEntries
             | Self::ObjectHasOwnProperty
             | Self::ObjectHasOwn
             | Self::ObjectGetOwnPropertyDescriptor
@@ -2146,6 +2152,7 @@ impl RuntimeFn {
             Self::SpreadViaIterator,
             Self::ObjectValues,
             Self::ObjectEntries,
+            Self::ObjectFromEntries,
             Self::ObjectHasOwnProperty,
             Self::ObjectHasOwn,
             Self::ObjectGetOwnPropertyDescriptor,
@@ -2496,6 +2503,7 @@ impl RuntimeFn {
             Self::SpreadViaIterator,
             Self::ObjectValues,
             Self::ObjectEntries,
+            Self::ObjectFromEntries,
             Self::ObjectHasOwnProperty,
             Self::ObjectHasOwn,
             Self::ObjectGetOwnPropertyDescriptor,

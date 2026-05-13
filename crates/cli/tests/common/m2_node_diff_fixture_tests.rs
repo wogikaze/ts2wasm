@@ -3841,6 +3841,11 @@ fn array_reduce_right_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn object_static_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-static.ts");
+}
+
+#[test]
 fn comma_operator_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/comma-operator.ts");
 }

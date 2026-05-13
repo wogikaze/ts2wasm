@@ -309,6 +309,26 @@ fn build_smoke_object_is_method() {
 }
 
 #[test]
+fn build_smoke_object_from_entries() {
+    let result = run_fixture("builtins-and-io/object-from-entries.ts");
+    assert!(
+        result.is_ok(),
+        "Object.fromEntries should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_static_complete() {
+    let result = run_fixture("builtins-and-io/object-static.ts");
+    assert!(
+        result.is_ok(),
+        "Object static methods should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_json_stringify_method() {
     let result = run_fixture("builtins-and-io/json-stringify.ts");
     assert!(
