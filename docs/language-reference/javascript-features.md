@@ -267,7 +267,7 @@ BigInt mixed comparison の object `ToPrimitive` boundary: direct object-literal
 |---|---|---|---|---|---|
 | `eval` | ES1 | dynamic code evaluation | 部分実装 (static string direct `eval(...)` expression statements are expanded in the parser/resolver slice; indirect/dynamic runtime eval remains unsupported) | P3 | 347, 349 |
 | `with` | ES1 | scope extension | 未実装 (unsupported-dynamic-code) | P3 | - |
-| `Proxy` | ES6 | meta-programming | 未実装 | P3 | - |
+| `Proxy` | ES6 | meta-programming | 部分実装 (statically visible `new Proxy(target, handler)` locals support basic get/set/has/deleteProperty trap lowering) | P3 | 407 |
 | `Reflect` | ES6 | reflection API | 未実装 | P3 | - |
 | `Map` / `Set` / `WeakMap` / `WeakSet` | ES6 | collection types | 未実装 | P1 | - |
 | `Date` | ES1 | date/time | 未実装 | P1 | - |

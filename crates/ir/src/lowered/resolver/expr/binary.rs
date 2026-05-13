@@ -75,7 +75,7 @@ impl super::super::Resolver {
         {
             return self.lower_proxy_trap_call(
                 proxy,
-                "has",
+                crate::lowered::facts::ProxyTrapKind::ProxyHas,
                 vec![left.clone()],
                 Span::generated("proxy_has"),
             );

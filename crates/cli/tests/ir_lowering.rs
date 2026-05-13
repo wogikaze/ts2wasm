@@ -7,6 +7,59 @@ fn parse_and_resolve(source: &str) -> Vec<ts2wasm_ir::builtin_resolved::Resolved
 }
 
 #[test]
+fn lowering_routes_computed_proxy_get_through_proxy_get_trap() {
+    use ts2wasm_ir::builtin::BuiltinId;
+    use ts2wasm_ir::lowered::{FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        const target = { x: 10 };
+        function proxyGet(obj: any, prop: string) {
+          return obj[prop];
+        }
+        const handler = { get: proxyGet };
+        const proxy = new Proxy(target, handler);
+        const key = "x";
+        console.log(proxy[key]);
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    let console_arg = lowered
+        .top_level_statements
+        .iter()
+        .find_map(|stmt| match stmt {
+            LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args,
+                    ..
+                },
+                _,
+            ) => args.first(),
+            _ => None,
+        })
+        .expect("console.log argument should be lowered");
+
+    match console_arg {
+        LoweredExpr::Call {
+            kind: FunctionCallKind::User(_),
+            args,
+            ..
+        } => {
+            assert!(
+                matches!(
+                    args.as_slice(),
+                    [LoweredExpr::Local(LocalId(0), _), LoweredExpr::Local(_, _),]
+                ),
+                "ProxyGet trap should receive target and computed key, got {args:?}"
+            );
+        }
+        other => panic!("computed proxy get should lower to ProxyGet handler call, got {other:?}"),
+    }
+}
+
+#[test]
 fn lowering_passes_mutable_class_method_outer_local_capture() {
     use ts2wasm_ir::lowered::{FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
 

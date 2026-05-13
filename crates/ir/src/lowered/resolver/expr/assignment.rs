@@ -190,7 +190,7 @@ impl super::super::Resolver {
         {
             return self.lower_proxy_trap_call(
                 proxy,
-                "set",
+                crate::lowered::facts::ProxyTrapKind::ProxySet,
                 vec![ResolvedExpr::String(key.to_owned()), value.clone()],
                 span,
             );
@@ -255,7 +255,7 @@ impl super::super::Resolver {
         {
             return self.lower_proxy_trap_call(
                 proxy,
-                "set",
+                crate::lowered::facts::ProxyTrapKind::ProxySet,
                 vec![key.clone(), value.clone()],
                 Span::generated("proxy_set"),
             );

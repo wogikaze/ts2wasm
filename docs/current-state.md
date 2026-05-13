@@ -127,6 +127,23 @@ prototype initializer snippets, and statement/top-level lowering. Those paths
 still depend on legacy emitter-local layouts and are outside the bounded
 WASMDM slice.
 
+### Proxy Basic Trap Slice
+
+Last audited: 2026-05-13T23:18:00+09:00.
+
+The resolver tracks statically visible `new Proxy(target, handler)` locals and
+routes the MVP trap slice through explicit Proxy trap lowering kinds:
+`ProxyGet`, `ProxySet`, `ProxyHas`, and `ProxyDeleteProperty`. Supported
+operations are static and computed property get, static and computed property
+set, `in`, and `delete` when the proxy local and handler object are visible to
+lowering. The emitted lowered IR calls the corresponding handler method with
+the target as the first argument.
+
+This is not a full runtime Proxy object model. Reflect, revocation semantics,
+prototype traps, own-key/descriptor/define-property traps beyond the existing
+static object helper paths, function apply/construct traps, and non-local proxy
+aliasing remain outside the current slice.
+
 ### test262 Semantic Core Seeds
 
 The file `scripts/data/test262-semantic-core-seeds.txt` contains a deterministic subset of test262

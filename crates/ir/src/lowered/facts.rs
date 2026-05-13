@@ -156,6 +156,28 @@ pub struct ProxyBinding {
     pub handler: ResolvedExpr,
 }
 
+/// Static Proxy trap lowering kinds for the supported MVP trap slice.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ProxyTrapKind {
+    ProxyGet,
+    ProxySet,
+    ProxyHas,
+    ProxyDeleteProperty,
+    Named(&'static str),
+}
+
+impl ProxyTrapKind {
+    pub fn method_name(self) -> &'static str {
+        match self {
+            Self::ProxyGet => "get",
+            Self::ProxySet => "set",
+            Self::ProxyHas => "has",
+            Self::ProxyDeleteProperty => "deleteProperty",
+            Self::Named(name) => name,
+        }
+    }
+}
+
 impl ArrowClosure {
     /// Convert this closure to a lowered expression with the given representation.
     pub fn to_expr(&self, representation: ClosureRepresentation) -> LoweredExpr {

@@ -213,7 +213,7 @@ Last updated: 2026-05-13
 | `builtin:iterator` | Iterator protocol | 実装済み | builtins-and-io, core-semantics |
 | `builtin:atomics` | Atomics | 未実装 | builtins-and-io (unsupported) |
 | `builtin:intl` | Intl | 未実装 | builtins-and-io (unsupported) |
-| `builtin:proxy-reflect` | Proxy / Reflect | 未実装 | builtins-and-io (unsupported) |
+| `builtin:proxy-reflect` | Proxy / Reflect | 部分実装 | builtins-and-io (Proxy basic trap slice; Reflect unsupported) |
 | `builtin:eval` | eval / Function constructor | 部分実装 | builtins-and-io (unsupported for dynamic) |
 
 ### 制御フロー (ControlFlow)

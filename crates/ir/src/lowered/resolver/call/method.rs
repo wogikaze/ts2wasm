@@ -1285,9 +1285,12 @@ impl super::super::Resolver {
             _ => unreachable!("filtered above"),
         };
 
-        Ok(Some(
-            self.lower_proxy_trap_call(proxy, trap, trap_args, span)?,
-        ))
+        Ok(Some(self.lower_proxy_trap_call(
+            proxy,
+            crate::lowered::facts::ProxyTrapKind::Named(trap),
+            trap_args,
+            span,
+        )?))
     }
 
     /// Helper for lower_method_call_expr: dispatch early-returns —

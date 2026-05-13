@@ -78,7 +78,7 @@ impl super::super::Resolver {
                 {
                     return self.lower_proxy_trap_call(
                         proxy,
-                        "deleteProperty",
+                        crate::lowered::facts::ProxyTrapKind::ProxyDeleteProperty,
                         vec![ResolvedExpr::String(key.to_owned())],
                         *span,
                     );
@@ -105,7 +105,7 @@ impl super::super::Resolver {
                 {
                     return self.lower_proxy_trap_call(
                         proxy,
-                        "deleteProperty",
+                        crate::lowered::facts::ProxyTrapKind::ProxyDeleteProperty,
                         vec![index.as_ref().clone()],
                         Span::generated("proxy_delete"),
                     );
