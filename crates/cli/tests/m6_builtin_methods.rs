@@ -2373,3 +2373,13 @@ fn build_smoke_array_copying_methods() {
         result.err()
     );
 }
+
+#[test]
+fn build_smoke_console_complete() {
+    let result = run_fixture("builtins-and-io/console-complete.ts");
+    assert!(
+        result.is_ok(),
+        "complete console API smoke fixture should build: {:?}",
+        result.err()
+    );
+}

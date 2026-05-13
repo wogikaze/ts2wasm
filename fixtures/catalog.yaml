@@ -198,6 +198,7 @@ directories:
     - async-generator-basic.ts
     - atomics-unsupported.ts
     - bun-stdin-text.ts
+    - console-complete.ts
     - console-log.ts
     - date-annexb-get-year.ts
     - date-annexb-set-year-unsupported.ts

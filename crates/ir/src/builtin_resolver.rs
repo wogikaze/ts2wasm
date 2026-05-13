@@ -1782,6 +1782,9 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             if let Some(resolved) = try_resolve_array_call(callee.as_ref(), &resolved_args, *span) {
                 return Ok(resolved);
             }
+            if let Some(resolved) = resolve_console_call_expr(callee.as_ref(), &resolved_args)? {
+                return Ok(resolved);
+            }
             if let Some(builtin) = resolve_global_identifier_call(callee.as_ref()) {
                 return Ok(ResolvedExpr::BuiltinCall {
                     builtin,

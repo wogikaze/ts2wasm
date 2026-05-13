@@ -1780,7 +1780,7 @@ impl super::super::Resolver {
                 .classes
                 .local_classes
                 .get(&obj_local)
-                .is_some_and(is_intl_number_format_class)
+                .is_some_and(|class_name| is_intl_number_format_class(class_name.as_str()))
             && is_intl_number_format_method(method)
         {
             let options = self
@@ -2479,8 +2479,8 @@ fn is_number_format_runtime_fn(intrinsic: RuntimeFn) -> bool {
     )
 }
 
-fn is_intl_number_format_class(class_name: &String) -> bool {
-    matches!(class_name.as_str(), "Intl.NumberFormat" | "NumberFormat")
+fn is_intl_number_format_class(class_name: &str) -> bool {
+    matches!(class_name, "Intl.NumberFormat" | "NumberFormat")
 }
 
 fn static_string_expr(expr: &ResolvedExpr) -> Option<&str> {
@@ -2626,7 +2626,7 @@ fn static_number_format_method_call(
     }
     let value = static_i64_number_expr(object)?;
     let precision = args.first().and_then(static_usize_number_expr);
-    if args.first().is_some() && precision.is_none() {
+    if !args.is_empty() && precision.is_none() {
         return None;
     }
     match method {

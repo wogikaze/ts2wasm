@@ -48,6 +48,50 @@ fn builds_console_log_hi_and_runs_with_iwasm() {
 }
 
 #[test]
+fn console_output_runs_under_iwasm() {
+    let temp = std::env::temp_dir().join(format!("ts2wasm-m1-console-{}", std::process::id()));
+    fs::create_dir_all(&temp).unwrap();
+
+    let output = temp.join("console-complete.wasm");
+    let input = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join("fixtures/builtins-and-io/console-complete.ts");
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        build.status.success(),
+        "build failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let run = run_iwasm_with_timeout(Command::new("iwasm").arg(&output)).unwrap();
+    assert!(
+        !run.timed_out,
+        "iwasm timed out\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&run.output.stdout),
+        String::from_utf8_lossy(&run.output.stderr)
+    );
+    assert!(
+        run.output.status.success(),
+        "iwasm failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&run.output.stdout),
+        String::from_utf8_lossy(&run.output.stderr)
+    );
+    assert_eq!(
+        String::from_utf8_lossy(&run.output.stdout),
+        "log\ninfo 1\ndebug\nwarn\nerror\ntable\ngroup\ncollapsed\ncount\ntimer\nassert\n"
+    );
+}
+
+#[test]
 fn oom_alloc_check_must_fail_iwasm() {
     let temp = std::env::temp_dir().join(format!("ts2wasm-m1-oom-check-{}", std::process::id()));
     fs::create_dir_all(&temp).unwrap();

@@ -1,0 +1,11 @@
+console.log("log");
+console.info("info", 1);
+console.debug("debug");
+console.warn("warn");
+console.error("error");
+console.table("table");
+console.group("group");
+console.groupCollapsed("collapsed");
+console.count("count");
+console.timeEnd("timer");
+console.assert(false, "assert");

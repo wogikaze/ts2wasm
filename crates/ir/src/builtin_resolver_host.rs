@@ -309,6 +309,62 @@ pub(super) fn resolve_require_module_builtin(
     Ok(Some(builtin))
 }
 
+pub(super) fn resolve_console_call_expr(
+    callee: &Expr,
+    resolved_args: &[ResolvedExpr],
+) -> Result<Option<ResolvedExpr>, Diagnostic> {
+    let Expr::Member {
+        object, property, ..
+    } = callee
+    else {
+        return Ok(None);
+    };
+    if !matches!(object.as_ref(), Expr::Ident { name, .. } if name == "console") {
+        return Ok(None);
+    }
+
+    let log_expr = |args: Vec<ResolvedExpr>| {
+        let args = if args.is_empty() {
+            vec![ResolvedExpr::String(String::new())]
+        } else {
+            args
+        };
+        ResolvedExpr::BuiltinCall {
+            builtin: BuiltinId::ConsoleLog,
+            args,
+        }
+    };
+
+    match property.as_str() {
+        "log" | "info" | "debug" | "warn" | "error" | "table" | "group" | "groupCollapsed"
+        | "count" | "timeEnd" => Ok(Some(log_expr(resolved_args.to_vec()))),
+        "assert" => {
+            let Some((condition, message_args)) = resolved_args.split_first() else {
+                return Ok(Some(log_expr(vec![ResolvedExpr::String(
+                    "Assertion failed".to_owned(),
+                )])));
+            };
+            if matches!(condition, ResolvedExpr::Bool(true)) {
+                return Ok(Some(ResolvedExpr::Undefined));
+            }
+            if message_args.is_empty() {
+                Ok(Some(log_expr(vec![ResolvedExpr::String(
+                    "Assertion failed".to_owned(),
+                )])))
+            } else {
+                Ok(Some(log_expr(message_args.to_vec())))
+            }
+        }
+        "time" | "groupEnd" | "clear" => Ok(Some(ResolvedExpr::Undefined)),
+        unsupported => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("console.{unsupported} is not supported in this milestone"),
+            span: span_of_expr(callee),
+            phase: None,
+        }),
+    }
+}
+
 pub(super) fn validate_read_stdin_utf8_args(
     args: &[Expr],
     callee: &Expr,
