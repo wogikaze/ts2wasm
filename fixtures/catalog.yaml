@@ -337,6 +337,7 @@ directories:
     - object-string-keys.ts
     - object-values.ts
     - promise-basic.ts
+    - promise-supplementary.ts
     - promise-static-methods-unsupported-diagnostic.ts
     - promise-static-methods.ts
     - promise-then-unsupported-diagnostic.ts
@@ -1443,6 +1444,7 @@ feature_matrix:
       - builtin:typed-array
       - builtin:weakmap-weakset
       - builtin:symbol
+      - builtin:promise
       - builtin:iterator
       - builtin:proxy-reflect
       - builtin:intl

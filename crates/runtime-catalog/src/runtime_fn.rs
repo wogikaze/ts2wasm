@@ -479,8 +479,16 @@ pub enum RuntimeFn {
     PromiseFinally,
     /// Promise.all(iterable) — returns a promise that fulfills when all fulfill
     PromiseAll,
+    /// Promise.allSettled(iterable) — returns a fulfilled promise of settlement records
+    PromiseAllSettled,
+    /// Promise.any(iterable) — returns the first fulfilled promise or AggregateError rejection
+    PromiseAny,
     /// Promise.race(iterable) — returns a promise that settles with the first settled
     PromiseRace,
+    /// Promise.withResolvers() — returns { promise, resolve, reject }
+    PromiseWithResolvers,
+    /// AggregateError(errors, message) — creates a minimal AggregateError object
+    AggregateError,
     /// TaskPoll(frame_ptr) — reads frame[0] (state), returns 0=PENDING, 1=DONE
     TaskPoll,
     /// TaskResult(frame_ptr) — reads frame[1] (return_value)
@@ -942,6 +950,19 @@ const ARRAY_ITERATOR_NEXT_RUNTIME_STRINGS: &[&str] = &["value", "done"];
 const GENERATOR_YIELD_DEPS: &[RuntimeFn] = &[RuntimeFn::ArrayValues];
 const GENERATOR_NEXT_DEPS: &[RuntimeFn] = &[RuntimeFn::ArrayIteratorNext];
 const GENERATOR_RETURN_RUNTIME_STRINGS: &[&str] = &["value", "done"];
+const PROMISE_OBJECT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::ObjectPrototype];
+const PROMISE_WITH_RESOLVERS_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::ObjectPrototype,
+    RuntimeFn::PromiseConstructor,
+];
+const PROMISE_ANY_DEPS: &[RuntimeFn] = &[RuntimeFn::PromiseReject, RuntimeFn::AggregateError];
+const PROMISE_ALL_SETTLED_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::ObjectPrototype];
+const PROMISE_WITH_RESOLVERS_RUNTIME_STRINGS: &[&str] = &["promise", "resolve", "reject"];
+const PROMISE_ALL_SETTLED_RUNTIME_STRINGS: &[&str] =
+    &["status", "value", "reason", "fulfilled", "rejected"];
+const AGGREGATE_ERROR_RUNTIME_STRINGS: &[&str] = &["errors", "message", "name", "AggregateError"];
+const PROMISE_ANY_RUNTIME_STRINGS: &[&str] = &["All promises were rejected"];
 const ARRAY_SHIFT_DEPS: &[RuntimeFn] = &[];
 const ARRAY_UNSHIFT_DEPS: &[RuntimeFn] = &[];
 const ARRAY_SPLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
@@ -1285,7 +1306,11 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "PromiseCatch" => Some(RuntimeFn::PromiseCatch),
         "PromiseFinally" => Some(RuntimeFn::PromiseFinally),
         "PromiseAll" => Some(RuntimeFn::PromiseAll),
+        "PromiseAllSettled" => Some(RuntimeFn::PromiseAllSettled),
+        "PromiseAny" => Some(RuntimeFn::PromiseAny),
         "PromiseRace" => Some(RuntimeFn::PromiseRace),
+        "PromiseWithResolvers" => Some(RuntimeFn::PromiseWithResolvers),
+        "AggregateError" => Some(RuntimeFn::AggregateError),
         "SymbolNew" => Some(RuntimeFn::SymbolNew),
         "SymbolFor" => Some(RuntimeFn::SymbolFor),
         "SymbolKeyFor" => Some(RuntimeFn::SymbolKeyFor),
@@ -1626,7 +1651,11 @@ impl RuntimeFn {
             | Self::PromiseCatch
             | Self::PromiseFinally
             | Self::PromiseAll
-            | Self::PromiseRace => RuntimeDomain::Promise,
+            | Self::PromiseAllSettled
+            | Self::PromiseAny
+            | Self::PromiseRace
+            | Self::PromiseWithResolvers
+            | Self::AggregateError => RuntimeDomain::Promise,
             Self::RegExpTest | Self::RegExpMatch | Self::RegExpSearch | Self::RegexpMatchInner => {
                 RuntimeDomain::RegExp
             }
@@ -1743,7 +1772,8 @@ impl RuntimeFn {
             Self::PrivateBrandTypeError
             | Self::Dollar262Global
             | Self::ObjectPrototype
-            | Self::GlobalThis => RuntimeSignature {
+            | Self::GlobalThis
+            | Self::PromiseWithResolvers => RuntimeSignature {
                 params: 0,
                 results: 1,
             },
@@ -1788,6 +1818,7 @@ impl RuntimeFn {
             | Self::GreaterEqualFast
             | Self::MathPow
             | Self::MathImul
+            | Self::AggregateError
             | Self::StrictEqual
             | Self::ValueToStringInto
             | Self::ArrayPush
@@ -2176,6 +2207,7 @@ impl RuntimeFn {
             Self::GeneratorYield,
             Self::GeneratorReturn,
             Self::GeneratorNext,
+            Self::PromiseWithResolvers,
             Self::PromiseConstructor,
             Self::PromiseResolve,
             Self::PromiseReject,
@@ -2183,7 +2215,10 @@ impl RuntimeFn {
             Self::PromiseCatch,
             Self::PromiseFinally,
             Self::PromiseAll,
+            Self::PromiseAllSettled,
+            Self::PromiseAny,
             Self::PromiseRace,
+            Self::AggregateError,
             // Async / state-machine functions
             Self::TaskPoll,
             Self::TaskResult,
@@ -2517,6 +2552,7 @@ impl RuntimeFn {
             Self::GeneratorYield,
             Self::GeneratorReturn,
             Self::GeneratorNext,
+            Self::PromiseWithResolvers,
             Self::PromiseConstructor,
             Self::PromiseResolve,
             Self::PromiseReject,
@@ -2524,7 +2560,10 @@ impl RuntimeFn {
             Self::PromiseCatch,
             Self::PromiseFinally,
             Self::PromiseAll,
+            Self::PromiseAllSettled,
+            Self::PromiseAny,
             Self::PromiseRace,
+            Self::AggregateError,
             // Async / state-machine functions
             Self::TaskPoll,
             Self::TaskResult,

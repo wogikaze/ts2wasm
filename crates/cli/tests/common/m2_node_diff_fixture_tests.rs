@@ -3865,6 +3865,11 @@ fn promise_basic_matches_node_output() {
 }
 
 #[test]
+fn promise_supplementary_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/promise-supplementary.ts");
+}
+
+#[test]
 fn upgraded_builtin_fixture_matches_node_output() {
     for fixture in [
         // Promoted from build_smoke to semantic_diff (ID 210)

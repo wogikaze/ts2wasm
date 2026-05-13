@@ -1557,6 +1557,16 @@ fn build_smoke_promise_static_methods() {
     );
 }
 
+#[test]
+fn build_smoke_promise_supplementary() {
+    let result = run_fixture("builtins-and-io/promise-supplementary.ts");
+    assert!(
+        result.is_ok(),
+        "Promise supplementary methods should build: {:?}",
+        result.err()
+    );
+}
+
 // === More W2/W3/W4 tests ===
 
 // Optional chaining (call) — W2: build smoke

@@ -215,6 +215,29 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             });
         }
+        if class_name == "AggregateError" {
+            let errors = args
+                .first()
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::ArrayNew {
+                    elements: Vec::new(),
+                    span: Span::generated("array_new"),
+                });
+            let message = match args.get(1) {
+                Some(message) => LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::ErrorMessage,
+                    args: vec![self.lower_expr(message)?],
+                    span: Span::generated("runtime_call"),
+                },
+                None => LoweredExpr::String(String::new(), Span::generated("str")),
+            };
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::AggregateError,
+                args: vec![errors, message],
+                span: Span::generated("runtime_call"),
+            });
+        }
         if is_typed_array_constructor(class_name) {
             if args.is_empty() {
                 return Ok(LoweredExpr::ArrayNew {

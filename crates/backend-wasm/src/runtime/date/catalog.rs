@@ -43,8 +43,13 @@ pub const DATE_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::PromiseReject,
     RuntimeFn::PromiseThen,
     RuntimeFn::PromiseCatch,
+    RuntimeFn::PromiseFinally,
     RuntimeFn::PromiseAll,
+    RuntimeFn::PromiseAllSettled,
+    RuntimeFn::PromiseAny,
     RuntimeFn::PromiseRace,
+    RuntimeFn::PromiseWithResolvers,
+    RuntimeFn::AggregateError,
     // Task
     RuntimeFn::TaskPoll,
     RuntimeFn::TaskResult,

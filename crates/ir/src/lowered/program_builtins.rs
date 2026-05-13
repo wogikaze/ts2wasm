@@ -88,7 +88,10 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "resolve" => Some(RuntimeFn::PromiseResolve),
                 "reject" => Some(RuntimeFn::PromiseReject),
                 "all" => Some(RuntimeFn::PromiseAll),
+                "allSettled" => Some(RuntimeFn::PromiseAllSettled),
+                "any" => Some(RuntimeFn::PromiseAny),
                 "race" => Some(RuntimeFn::PromiseRace),
+                "withResolvers" => Some(RuntimeFn::PromiseWithResolvers),
                 _ => None,
             };
         }
