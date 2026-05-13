@@ -1385,6 +1385,8 @@ fn array_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/array-fill.ts",
         "fixtures/builtins-and-io/array-filter-thisarg.ts",
         "fixtures/builtins-and-io/array-find-thisarg.ts",
+        "fixtures/builtins-and-io/array-find-last.ts",
+        "fixtures/builtins-and-io/array-find-last-index.ts",
         "fixtures/builtins-and-io/array-values.ts",
         "fixtures/builtins-and-io/array-keys.ts",
         "fixtures/builtins-and-io/array-entries.ts",
@@ -1401,6 +1403,7 @@ fn array_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/array-sparse-iteration.ts",
         "fixtures/builtins-and-io/array-to-string.ts",
         "fixtures/builtins-and-io/array-from.ts",
+        "fixtures/builtins-and-io/array-reduce-right.ts",
         "fixtures/builtins-and-io/array-sort.ts",
         "fixtures/builtins-and-io/array-sort-comparator.ts",
     ] {
