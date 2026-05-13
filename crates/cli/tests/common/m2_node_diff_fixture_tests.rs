@@ -1329,6 +1329,7 @@ fn string_method_fixtures_match_node_output_under_iwasm() {
 #[test]
 fn string_builtin_fixtures_match_node_output_under_iwasm() {
     for fixture in [
+        "fixtures/builtins-and-io/string-normalize.ts",
         "fixtures/builtins-and-io/string-pad-start.ts",
         "fixtures/builtins-and-io/string-pad-end.ts",
         "fixtures/builtins-and-io/string-repeat.ts",
@@ -1359,6 +1360,25 @@ fn string_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/string-from-code-point.ts",
         "fixtures/builtins-and-io/string-is-well-formed.ts",
         "fixtures/builtins-and-io/string-to-well-formed.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
+fn string_supplementary_matches_node_output() {
+    for fixture in [
+        "fixtures/builtins-and-io/string-normalize.ts",
+        "fixtures/builtins-and-io/string-locale-compare.ts",
+        "fixtures/builtins-and-io/string-match-all.ts",
+        "fixtures/builtins-and-io/string-replace-all.ts",
+        "fixtures/builtins-and-io/string-is-well-formed.ts",
+        "fixtures/builtins-and-io/string-to-well-formed.ts",
+        "fixtures/builtins-and-io/string-trim-start.ts",
+        "fixtures/builtins-and-io/string-trim-end.ts",
+        "fixtures/builtins-and-io/string-pad-start.ts",
+        "fixtures/builtins-and-io/string-pad-end.ts",
+        "fixtures/builtins-and-io/string-repeat.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }

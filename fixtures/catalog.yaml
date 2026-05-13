@@ -377,6 +377,7 @@ directories:
     - string-locale-compare.ts
     - string-match-all.ts
     - string-match.ts
+    - string-normalize.ts
     - string-pad-end.ts
     - string-pad-start.ts
     - string-repeat.ts

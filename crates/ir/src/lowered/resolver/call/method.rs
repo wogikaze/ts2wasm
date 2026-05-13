@@ -659,6 +659,11 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
+        if method == "normalize" {
+            return Ok(Some(
+                self.lower_static_ascii_string_normalize(object, args, span)?,
+            ));
+        }
         if matches!(object, ResolvedExpr::String(_)) {
             if is_html_wrapper_string_method(method) {
                 let lowered_object = self.lower_expr(object)?;
@@ -699,6 +704,79 @@ impl super::super::Resolver {
             });
         }
         Ok(None)
+    }
+
+    fn lower_static_ascii_string_normalize(
+        &mut self,
+        object: &ResolvedExpr,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if args.len() > 1 {
+            return Err(Diagnostic {
+                code: DiagCode::ArityMismatch,
+                message: format!(
+                    "String.prototype.normalize expects at most 1 argument, got {}",
+                    args.len()
+                ),
+                span: Some(span),
+
+                phase: None,
+            });
+        }
+        if let Some(form) = args.first()
+            && !matches!(form, ResolvedExpr::Undefined)
+        {
+            let Some(form_value) =
+                crate::lowered::resolver::string::resolved_expr_static_string_value(
+                    &self.ctx, form,
+                )
+            else {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-460: String.prototype.normalize currently requires a static normalization form".to_owned(),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            };
+            if !matches!(form_value.as_str(), "NFC" | "NFD" | "NFKC" | "NFKD") {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-460: String.prototype.normalize form `{form_value}` is not supported in this milestone"
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+        }
+        let Some(value) =
+            crate::lowered::resolver::string::resolved_expr_static_string_value(&self.ctx, object)
+        else {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message:
+                    "issue-460: String.prototype.normalize currently requires a static receiver"
+                        .to_owned(),
+                span: Some(span),
+
+                phase: None,
+            });
+        };
+        if !value.is_ascii() {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message:
+                    "issue-460: String.prototype.normalize currently supports ASCII strings only"
+                        .to_owned(),
+                span: Some(span),
+
+                phase: None,
+            });
+        }
+        self.lower_expr(object)
     }
 
     /// Helper for lower_method_call_expr: array method dispatch (indexOf, includes,

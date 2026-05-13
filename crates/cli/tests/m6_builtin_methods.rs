@@ -469,6 +469,40 @@ fn build_smoke_string_to_well_formed_method() {
 }
 
 #[test]
+fn build_smoke_string_normalize_method() {
+    let result = run_fixture("builtins-and-io/string-normalize.ts");
+    assert!(
+        result.is_ok(),
+        "String.normalize should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_string_supplementary() {
+    for fixture in [
+        "builtins-and-io/string-normalize.ts",
+        "builtins-and-io/string-locale-compare.ts",
+        "builtins-and-io/string-match-all.ts",
+        "builtins-and-io/string-replace-all.ts",
+        "builtins-and-io/string-is-well-formed.ts",
+        "builtins-and-io/string-to-well-formed.ts",
+        "builtins-and-io/string-trim-start.ts",
+        "builtins-and-io/string-trim-end.ts",
+        "builtins-and-io/string-pad-start.ts",
+        "builtins-and-io/string-pad-end.ts",
+        "builtins-and-io/string-repeat.ts",
+    ] {
+        let result = run_fixture(fixture);
+        assert!(
+            result.is_ok(),
+            "supplementary string fixture should build: {fixture}: {:?}",
+            result.err()
+        );
+    }
+}
+
+#[test]
 fn string_trim_method_emits() {
     let result = run_fixture("builtins-and-io/string-trim.ts");
     assert!(
