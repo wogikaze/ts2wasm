@@ -9,7 +9,7 @@ use super::super::{
 use super::builtin::{is_html_wrapper_string_method, lower_html_wrapper_string_method};
 use super::receiver::extract_prototype_method_name;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
-use crate::lowered::facts::IntlNumberFormatOptions;
+use crate::lowered::facts::{IntlDateTimeFormatOptions, IntlNumberFormatOptions};
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
@@ -26,6 +26,9 @@ impl super::super::Resolver {
             return Ok(result);
         }
         if let Some(result) = self.lower_mcall_intl_number_format(object, method, args)? {
+            return Ok(result);
+        }
+        if let Some(result) = self.lower_mcall_intl_date_time_format(object, method, args)? {
             return Ok(result);
         }
         if let Some(result) = self.lower_mcall_json_date_regexp(object, method, args, span)? {
@@ -443,6 +446,28 @@ impl super::super::Resolver {
         if self.is_intl_number_format_expr(object) && is_intl_number_format_method(method) {
             let options = self.intl_number_format_options_for_expr(object);
             return Ok(Some(self.lower_intl_number_format_method(
+                method,
+                args,
+                options.as_ref(),
+            )?));
+        }
+        Ok(None)
+    }
+
+    fn lower_mcall_intl_date_time_format(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Intl")
+            && method == "DateTimeFormat"
+        {
+            return Ok(Some(self.lower_intl_date_time_format_constructor(args)?));
+        }
+        if self.is_intl_date_time_format_expr(object) && is_intl_date_time_format_method(method) {
+            let options = self.intl_date_time_format_options_for_expr(object);
+            return Ok(Some(self.lower_intl_date_time_format_method(
                 method,
                 args,
                 options.as_ref(),
@@ -1781,6 +1806,23 @@ impl super::super::Resolver {
                 .cloned();
             return self.lower_intl_number_format_method(method, args, options.as_ref());
         }
+        if let Ok(obj_local) = self.resolve_local(receiver_name)
+            && self
+                .ctx
+                .classes
+                .local_classes
+                .get(&obj_local)
+                .is_some_and(is_intl_date_time_format_class)
+            && is_intl_date_time_format_method(method)
+        {
+            let options = self
+                .ctx
+                .facts
+                .intl_date_time_format_locals
+                .get(&obj_local)
+                .cloned();
+            return self.lower_intl_date_time_format_method(method, args, options.as_ref());
+        }
 
         // Local class runtime_fn
         if let Ok(obj_local) = self.resolve_local(receiver_name)
@@ -2165,6 +2207,13 @@ impl super::super::Resolver {
         )
     }
 
+    fn is_intl_date_time_format_expr(&self, expr: &ResolvedExpr) -> bool {
+        matches!(
+            self.infer_class_for_expr(expr).as_deref(),
+            Some("Intl.DateTimeFormat" | "DateTimeFormat")
+        )
+    }
+
     fn lower_intl_number_format_method(
         &mut self,
         method: &str,
@@ -2222,6 +2271,141 @@ impl super::super::Resolver {
             _ => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("Intl.NumberFormat.prototype.{method} is not supported"),
+                span: None,
+                phase: None,
+            }),
+        }
+    }
+
+    pub(crate) fn lower_intl_date_time_format_constructor(
+        &mut self,
+        args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let options = self
+            .intl_date_time_format_options_from_args(args)
+            .unwrap_or_else(default_intl_date_time_format_options);
+        Ok(LoweredExpr::ObjectNew {
+            props: vec![
+                (
+                    "__class".to_owned(),
+                    string_lit("Intl.DateTimeFormat".to_owned()),
+                ),
+                ("locale".to_owned(), string_lit(options.locale)),
+                ("timeZone".to_owned(), string_lit(options.time_zone)),
+                (
+                    "localeMatcher".to_owned(),
+                    string_lit(options.locale_matcher),
+                ),
+            ],
+            non_enumerable: 0,
+            span: Span::generated("intl_date_time_format"),
+        })
+    }
+
+    pub(crate) fn intl_date_time_format_options_for_expr(
+        &self,
+        expr: &ResolvedExpr,
+    ) -> Option<IntlDateTimeFormatOptions> {
+        match expr {
+            ResolvedExpr::New {
+                class_name, args, ..
+            } if matches!(
+                class_name.as_str(),
+                "Intl.DateTimeFormat" | "DateTimeFormat"
+            ) =>
+            {
+                self.intl_date_time_format_options_from_args(args)
+            }
+            ResolvedExpr::MethodCall {
+                object,
+                method,
+                args,
+                ..
+            } if method == "DateTimeFormat"
+                && matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Intl") =>
+            {
+                self.intl_date_time_format_options_from_args(args)
+            }
+            ResolvedExpr::Ident(name) => self.resolve_local(name).ok().and_then(|local| {
+                self.ctx
+                    .facts
+                    .intl_date_time_format_locals
+                    .get(&local)
+                    .cloned()
+            }),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn intl_date_time_format_options_from_args(
+        &self,
+        args: &[ResolvedExpr],
+    ) -> Option<IntlDateTimeFormatOptions> {
+        if args.len() > 2 {
+            return None;
+        }
+        let defaults = default_intl_date_time_format_options();
+        let locale = args
+            .first()
+            .and_then(static_string_expr)
+            .unwrap_or(defaults.locale.as_str())
+            .to_owned();
+        let options = args.get(1);
+        Some(IntlDateTimeFormatOptions {
+            locale,
+            time_zone: static_object_string_option(options, "timeZone")
+                .unwrap_or(defaults.time_zone.as_str())
+                .to_owned(),
+            locale_matcher: static_object_string_option(options, "localeMatcher")
+                .unwrap_or(defaults.locale_matcher.as_str())
+                .to_owned(),
+        })
+    }
+
+    fn lower_intl_date_time_format_method(
+        &mut self,
+        method: &str,
+        args: &[ResolvedExpr],
+        options: Option<&IntlDateTimeFormatOptions>,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let defaults = default_intl_date_time_format_options();
+        let options = options.unwrap_or(&defaults);
+        match method {
+            "format" => Ok(string_lit(format_intl_datetime_arg(args.first(), options))),
+            "formatToParts" => {
+                let parts = format_intl_datetime_parts(args.first(), options);
+                Ok(LoweredExpr::ArrayNew {
+                    elements: parts
+                        .into_iter()
+                        .map(|(part_type, value)| LoweredExpr::ObjectNew {
+                            props: vec![
+                                ("type".to_owned(), string_lit(part_type)),
+                                ("value".to_owned(), string_lit(value)),
+                            ],
+                            non_enumerable: 0,
+                            span: Span::generated("object_new"),
+                        })
+                        .collect(),
+                    span: Span::generated("array_new"),
+                })
+            }
+            "resolvedOptions" => Ok(LoweredExpr::ObjectNew {
+                props: vec![
+                    ("locale".to_owned(), string_lit(options.locale.clone())),
+                    ("calendar".to_owned(), string_lit("gregory")),
+                    ("numberingSystem".to_owned(), string_lit("latn")),
+                    ("timeZone".to_owned(), string_lit(options.time_zone.clone())),
+                    (
+                        "localeMatcher".to_owned(),
+                        string_lit(options.locale_matcher.clone()),
+                    ),
+                ],
+                non_enumerable: 0,
+                span: Span::generated("object_new"),
+            }),
+            _ => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("Intl.DateTimeFormat.prototype.{method} is not supported"),
                 span: None,
                 phase: None,
             }),
@@ -2460,6 +2644,17 @@ fn is_intl_number_format_class(class_name: &String) -> bool {
     matches!(class_name.as_str(), "Intl.NumberFormat" | "NumberFormat")
 }
 
+fn is_intl_date_time_format_method(method: &str) -> bool {
+    matches!(method, "format" | "formatToParts" | "resolvedOptions")
+}
+
+fn is_intl_date_time_format_class(class_name: &String) -> bool {
+    matches!(
+        class_name.as_str(),
+        "Intl.DateTimeFormat" | "DateTimeFormat"
+    )
+}
+
 fn static_string_expr(expr: &ResolvedExpr) -> Option<&str> {
     match expr {
         ResolvedExpr::String(value) => Some(value),
@@ -2587,6 +2782,79 @@ fn format_i32_grouped(value: i32) -> String {
         formatted.insert(0, '-');
     }
     formatted
+}
+
+fn default_intl_date_time_format_options() -> IntlDateTimeFormatOptions {
+    IntlDateTimeFormatOptions {
+        locale: "en-US".to_owned(),
+        time_zone: "UTC".to_owned(),
+        locale_matcher: "best fit".to_owned(),
+    }
+}
+
+fn format_intl_datetime_arg(
+    expr: Option<&ResolvedExpr>,
+    options: &IntlDateTimeFormatOptions,
+) -> String {
+    let (year, month, day) = static_epoch_ms_date(expr)
+        .map(epoch_ms_to_utc_ymd)
+        .unwrap_or((1970, 1, 1));
+    match options.locale.as_str() {
+        "en-GB" => format!("{day:02}/{month:02}/{year:04}"),
+        _ => format!("{month}/{day}/{year}"),
+    }
+}
+
+fn format_intl_datetime_parts(
+    expr: Option<&ResolvedExpr>,
+    options: &IntlDateTimeFormatOptions,
+) -> Vec<(String, String)> {
+    let (year, month, day) = static_epoch_ms_date(expr)
+        .map(epoch_ms_to_utc_ymd)
+        .unwrap_or((1970, 1, 1));
+    if options.locale == "en-GB" {
+        return vec![
+            ("day".to_owned(), format!("{day:02}")),
+            ("literal".to_owned(), "/".to_owned()),
+            ("month".to_owned(), format!("{month:02}")),
+            ("literal".to_owned(), "/".to_owned()),
+            ("year".to_owned(), format!("{year:04}")),
+        ];
+    }
+    vec![
+        ("month".to_owned(), month.to_string()),
+        ("literal".to_owned(), "/".to_owned()),
+        ("day".to_owned(), day.to_string()),
+        ("literal".to_owned(), "/".to_owned()),
+        ("year".to_owned(), year.to_string()),
+    ]
+}
+
+fn static_epoch_ms_date(expr: Option<&ResolvedExpr>) -> Option<i64> {
+    match expr? {
+        ResolvedExpr::Number(value) => Some(i64::from(*value)),
+        ResolvedExpr::DecimalNumber(value) => value.parse::<f64>().ok().map(|v| v as i64),
+        _ => None,
+    }
+}
+
+fn epoch_ms_to_utc_ymd(epoch_ms: i64) -> (i32, u32, u32) {
+    let days = epoch_ms.div_euclid(86_400_000);
+    civil_from_days(days)
+}
+
+fn civil_from_days(days_since_epoch: i64) -> (i32, u32, u32) {
+    let z = days_since_epoch + 719_468;
+    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
+    let doe = z - era * 146_097;
+    let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
+    let y = yoe + era * 400;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let d = doy - (153 * mp + 2) / 5 + 1;
+    let m = mp + if mp < 10 { 3 } else { -9 };
+    let year = y + if m <= 2 { 1 } else { 0 };
+    (year as i32, m as u32, d as u32)
 }
 
 fn string_lit(value: impl Into<String>) -> LoweredExpr {

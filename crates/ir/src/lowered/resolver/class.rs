@@ -473,6 +473,12 @@ impl super::Resolver {
                 Some("Intl.NumberFormat".to_owned())
             }
             ResolvedExpr::MethodCall { object, method, .. }
+                if method == "DateTimeFormat"
+                    && matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Intl") =>
+            {
+                Some("Intl.DateTimeFormat".to_owned())
+            }
+            ResolvedExpr::MethodCall { object, method, .. }
                 if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Object")
                     && matches!(method.as_str(), "create" | "fromEntries" | "groupBy") =>
             {
