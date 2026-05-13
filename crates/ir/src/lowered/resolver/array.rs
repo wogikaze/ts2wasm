@@ -240,7 +240,7 @@ impl super::Resolver {
 
         if crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, source) {
             return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::ArrayValues,
+                intrinsic: RuntimeFn::ArrayMapArrayLikeIdentity,
                 args: vec![self.lower_expr(source)?],
 
                 span: Span::generated("runtime_call"),
