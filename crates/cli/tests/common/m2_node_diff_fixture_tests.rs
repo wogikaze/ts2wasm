@@ -2867,6 +2867,8 @@ fn object_builtin_method_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/object-freeze.ts",
         "fixtures/builtins-and-io/object-define-property.ts",
+        "fixtures/builtins-and-io/object-define-property-data.ts",
+        "fixtures/builtins-and-io/object-define-property-getter.ts",
         "fixtures/builtins-and-io/object-entries.ts",
         "fixtures/builtins-and-io/object-get-own-property-descriptor.ts",
         "fixtures/builtins-and-io/object-has-own.ts",
