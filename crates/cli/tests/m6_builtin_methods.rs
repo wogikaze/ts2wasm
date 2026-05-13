@@ -1943,6 +1943,16 @@ fn build_smoke_function_bind_call_apply() {
     );
 }
 
+#[test]
+fn build_smoke_function_prototype() {
+    let result = run_fixture("core-semantics/function-object-metadata.ts");
+    assert!(
+        result.is_ok(),
+        "Function metadata properties should build successfully: {:?}",
+        result.err()
+    );
+}
+
 // Symbol constructor — builds with runtime support
 #[test]
 fn build_smoke_symbol_runtime() {
