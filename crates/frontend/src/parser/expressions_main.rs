@@ -2005,33 +2005,30 @@ impl Parser {
                 kind: Token::Dot,
                 span: dot_span,
             }) if matches!(self.peek(), Some(Token::Number(_) | Token::DecimalNumber(_))) => {
-                if let Some(SpannedToken {
-                    kind: Token::DecimalNumber(value),
-                    span: num_span,
-                }) = self.advance()
-                {
-                    return Ok(Expr::DecimalNumber {
-                        value: format!(".{value}"),
-                        span: Span {
-                            start: dot_span.start,
-                            end: num_span.end,
-                        },
-                    });
-                }
                 let Some(SpannedToken {
-                    kind: Token::Number(value),
+                    kind: number_kind,
                     span: num_span,
                 }) = self.advance()
                 else {
                     unreachable!()
                 };
-                Ok(Expr::Number {
-                    value,
-                    span: Span {
-                        start: dot_span.start,
-                        end: num_span.end,
-                    },
-                })
+                match number_kind {
+                    Token::DecimalNumber(value) => Ok(Expr::DecimalNumber {
+                        value: format!(".{value}"),
+                        span: Span {
+                            start: dot_span.start,
+                            end: num_span.end,
+                        },
+                    }),
+                    Token::Number(value) => Ok(Expr::Number {
+                        value,
+                        span: Span {
+                            start: dot_span.start,
+                            end: num_span.end,
+                        },
+                    }),
+                    _ => unreachable!(),
+                }
             }
             Some(SpannedToken {
                 kind: Token::At,

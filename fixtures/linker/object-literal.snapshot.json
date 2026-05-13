@@ -6,7 +6,8 @@
     "log",
     "alloc_heap",
     "mem_equal",
-    "property_get"
+    "property_get",
+    "object_prototype"
   ],
   "globals": [
     "$alloc_bytes_since_last_gc",
@@ -20,7 +21,8 @@
     "$gc_call_frame_limit",
     "$gc_call_frame_current",
     "$exception_pending",
-    "$exception_handler_depth"
+    "$exception_handler_depth",
+    "$object_prototype_object"
   ],
   "imports": [
     "wasi_snapshot_preview1.fd_write",
