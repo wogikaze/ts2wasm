@@ -3921,6 +3921,11 @@ fn new_target_fixture_matches_node_output() {
 }
 
 #[test]
+fn bound_constructor_function_objects_match_node_output() {
+    assert_fixture_matches_node("fixtures/classes/class-bound-constructor.ts");
+}
+
+#[test]
 fn class_field_initialization_fixture_matches_node_output() {
     assert_fixture_matches_node("fixtures/classes/class-field-initializers.ts");
 }

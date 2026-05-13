@@ -10,6 +10,22 @@ impl super::super::Resolver {
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
+        if let Ok(local_id) = self.resolve_local(class_name)
+            && let Some(bound) = self
+                .ctx
+                .facts
+                .bound_constructor_locals
+                .get(&local_id)
+                .cloned()
+        {
+            let combined_args = bound
+                .bound_args
+                .iter()
+                .chain(args.iter())
+                .cloned()
+                .collect::<Vec<_>>();
+            return self.lower_new_with_prototype(&bound.class_name, &combined_args, span);
+        }
         if class_name == "RegExp" {
             return Ok(LoweredExpr::String(
                 regexp_constructor_literal(args)?,

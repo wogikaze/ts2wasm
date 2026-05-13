@@ -13,7 +13,7 @@ use crate::binding_pattern::{BindingDefault, parse_binding_pattern};
 use crate::builtin_resolved::{ResolvedExpr, ResolvedStmt};
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::{
-    ArrowClosure, BoundFunction, FunctionMethodBinding, FunctionMethodKind,
+    ArrowClosure, BoundConstructor, BoundFunction, FunctionMethodBinding, FunctionMethodKind,
 };
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -227,6 +227,36 @@ impl Resolver {
         Ok(Some(FunctionMethodBinding { func_id, kind }))
     }
 
+    fn bound_constructor_for_expr(&self, expr: &ResolvedExpr) -> Option<BoundConstructor> {
+        let ResolvedExpr::MethodCall {
+            object,
+            method,
+            args,
+            ..
+        } = expr
+        else {
+            return None;
+        };
+        if method != "bind" {
+            return None;
+        }
+        let ResolvedExpr::Ident(class_name) = object.as_ref() else {
+            return None;
+        };
+        if !self
+            .ctx
+            .classes
+            .class_constructor_ids
+            .contains_key(class_name)
+        {
+            return None;
+        }
+        Some(BoundConstructor {
+            class_name: class_name.clone(),
+            bound_args: args.iter().skip(1).cloned().collect(),
+        })
+    }
+
     fn lower_direct_iife_stmt(
         &mut self,
         expr: &ResolvedExpr,
@@ -316,7 +346,11 @@ impl Resolver {
                 let function_props = self.function_props_for_object_expr(expr);
                 let bound_function = self.bound_function_for_expr(expr)?;
                 let function_method = self.function_method_binding_for_expr(expr)?;
-                let lowered = if bound_function.is_some() || function_method.is_some() {
+                let bound_constructor = self.bound_constructor_for_expr(expr);
+                let lowered = if bound_function.is_some()
+                    || function_method.is_some()
+                    || bound_constructor.is_some()
+                {
                     LoweredExpr::Undefined(Span::generated("undef"))
                 } else if let ResolvedExpr::ArrowFn {
                     params,
@@ -364,6 +398,14 @@ impl Resolver {
                         .insert(local_id, function_method);
                 } else {
                     self.ctx.facts.function_method_locals.remove(&local_id);
+                }
+                if let Some(bound_constructor) = bound_constructor {
+                    self.ctx
+                        .facts
+                        .bound_constructor_locals
+                        .insert(local_id, bound_constructor);
+                } else {
+                    self.ctx.facts.bound_constructor_locals.remove(&local_id);
                 }
                 self.update_heap_closure_local(local_id, expr, &lowered);
                 if self.ctx.facts.heap_closure_names.contains(name) {
@@ -468,7 +510,11 @@ impl Resolver {
                 let function_props = self.function_props_for_object_expr(expr);
                 let bound_function = self.bound_function_for_expr(expr)?;
                 let function_method = self.function_method_binding_for_expr(expr)?;
-                let lowered = if bound_function.is_some() || function_method.is_some() {
+                let bound_constructor = self.bound_constructor_for_expr(expr);
+                let lowered = if bound_function.is_some()
+                    || function_method.is_some()
+                    || bound_constructor.is_some()
+                {
                     LoweredExpr::Undefined(Span::generated("undef"))
                 } else {
                     self.lower_expr(expr)?
@@ -502,6 +548,14 @@ impl Resolver {
                         .insert(local_id, function_method);
                 } else {
                     self.ctx.facts.function_method_locals.remove(&local_id);
+                }
+                if let Some(bound_constructor) = bound_constructor {
+                    self.ctx
+                        .facts
+                        .bound_constructor_locals
+                        .insert(local_id, bound_constructor);
+                } else {
+                    self.ctx.facts.bound_constructor_locals.remove(&local_id);
                 }
                 self.update_heap_closure_local(local_id, expr, &lowered);
                 crate::lowered::resolver::expr::facts::update_nullish_local(

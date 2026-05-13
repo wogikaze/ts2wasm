@@ -411,6 +411,7 @@ directories:
     expected: class declaration and expression semantics
     fixtures:
     - class-basic-build.ts
+    - class-bound-constructor.ts
     - class-expression-named.ts
     - class-extends-builtin.ts
     - class-extends-null.ts

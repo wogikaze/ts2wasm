@@ -81,6 +81,8 @@ pub struct StaticFacts {
     pub bound_function_locals: HashMap<LocalId, BoundFunction>,
     /// Static `Function.prototype.call/apply.bind(fn)` locals expanded at call sites.
     pub function_method_locals: HashMap<LocalId, FunctionMethodBinding>,
+    /// Static bound class constructor locals created with `ClassName.bind(...)`.
+    pub bound_constructor_locals: HashMap<LocalId, BoundConstructor>,
     /// Static Proxy locals created as `new Proxy(target, handler)`.
     pub proxy_locals: HashMap<LocalId, ProxyBinding>,
 }
@@ -104,6 +106,13 @@ pub struct ArrowClosure {
 pub struct BoundFunction {
     pub func_id: FuncId,
     pub receiver: ResolvedExpr,
+    pub bound_args: Vec<ResolvedExpr>,
+}
+
+/// Tracks a statically known bound class constructor.
+#[derive(Debug, Clone)]
+pub struct BoundConstructor {
+    pub class_name: String,
     pub bound_args: Vec<ResolvedExpr>,
 }
 
@@ -168,6 +177,7 @@ impl StaticFacts {
             arrow_locals: HashMap::new(),
             bound_function_locals: HashMap::new(),
             function_method_locals: HashMap::new(),
+            bound_constructor_locals: HashMap::new(),
             proxy_locals: HashMap::new(),
         }
     }
