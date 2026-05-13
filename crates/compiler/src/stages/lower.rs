@@ -1501,7 +1501,10 @@ fn rewrite_static_module_body_for_build(
 fn lowers_to_top_level_statement(stmt: &Stmt) -> bool {
     !matches!(
         stmt,
-        Stmt::Function { .. } | Stmt::ClassDecl { .. } | Stmt::EnumDecl { .. }
+        Stmt::Function { .. }
+            | Stmt::ClassDecl { .. }
+            | Stmt::EnumDecl { .. }
+            | Stmt::AmbientValueDecl { .. }
     )
 }
 
