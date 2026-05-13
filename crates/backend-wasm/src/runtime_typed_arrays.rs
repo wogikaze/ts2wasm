@@ -95,9 +95,9 @@ impl WatEmitter<'_> {
         ));
     }
 
-    /// DataView.prototype.getFloat64(byteOffset, littleEndian?) — read f64 from buffer.
-    /// Returns a tagged number value (stored as i32 with NUMBER tag for the small-int path;
-    /// for float64 values the f64 is stored in heap and the pointer is tagged).
+    /// DataView.prototype.getFloat64(byteOffset, littleEndian?) — read the runtime number slot.
+    /// The current runtime represents decimal numbers as tagged heap values, so this slice stores
+    /// and restores that tagged value rather than attempting binary IEEE-754 byte materialization.
     pub(super) fn emit_dataview_get_float64(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -113,17 +113,15 @@ impl WatEmitter<'_> {
       (i32.add
         (local.get $buf_base)
         (i32.add (i32.const {array_header}) (i32.add (local.get $buf_offset) (local.get $offset)))))
-    (i32.or (local.get $value_addr) (i32.const {array_tag})))
+    (i32.load (local.get $value_addr)))
 "#,
             heap_mask = ValueTag::HEAP_MASK,
             array_header = Layout::ARRAY_HEADER_SIZE,
-            array_tag = ValueTag::ARRAY,
         ));
     }
 
     /// DataView.prototype.setFloat64(byteOffset, value, littleEndian?) — write f64 to buffer.
-    /// The value is expected as a tagged number (i32 with NUMBER shift).
-    /// For the small-int slice this stores the raw i32 value.
+    /// The value is expected as a tagged runtime number, either small-int or heap-backed decimal.
     pub(super) fn emit_dataview_set_float64(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -139,11 +137,10 @@ impl WatEmitter<'_> {
       (i32.add
         (local.get $buf_base)
         (i32.add (i32.const {array_header}) (i32.add (local.get $buf_offset) (local.get $offset)))))
-    (i32.store (local.get $target) (i32.shr_s (local.get $value) (i32.const {num_shift}))))
+    (i32.store (local.get $target) (local.get $value)))
 "#,
             heap_mask = ValueTag::HEAP_MASK,
             array_header = Layout::ARRAY_HEADER_SIZE,
-            num_shift = ValueTag::NUMBER_SHIFT,
         ));
     }
 

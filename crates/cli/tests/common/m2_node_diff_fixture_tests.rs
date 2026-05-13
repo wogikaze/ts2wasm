@@ -1587,6 +1587,11 @@ fn typedarray_constructors_matches_node_output() {
 }
 
 #[test]
+fn arraybuffer_dataview_basic_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/arraybuffer-dataview-basic.ts");
+}
+
+#[test]
 fn symbol_constructor_basic_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/symbol-constructor-basic.ts");
 }
