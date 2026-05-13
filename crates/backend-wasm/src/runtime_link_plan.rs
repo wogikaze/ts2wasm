@@ -3,6 +3,7 @@ use ts2wasm_ir::lowered::{
     LoweredProgram, LoweredStmt, LoweredUnaryOp, Validated,
 };
 use ts2wasm_runtime_abi::ValueTag;
+use ts2wasm_runtime_abi::consts::RuntimeString;
 
 // Re-export catalog types so existing `super::runtime_link_plan::RuntimeLinkPlan`
 // import paths continue to work.
@@ -545,6 +546,15 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
             }
             if *intrinsic == RuntimeFn::ArrayPushGrow {
                 plan.add_required_runtime(RuntimeFn::ArrayPushGrow);
+            }
+            if *intrinsic == RuntimeFn::HeapClosureCall {
+                plan.add_required_runtime(RuntimeFn::Write);
+                plan.required_runtime_strings
+                    .insert(RuntimeString::NOT_CALLABLE_TYPE_ERROR);
+                plan.string_origins
+                    .entry(RuntimeString::NOT_CALLABLE_TYPE_ERROR)
+                    .or_default()
+                    .push(RuntimeFn::HeapClosureCall);
             }
             if *intrinsic == RuntimeFn::PrivateFieldGet
                 || *intrinsic == RuntimeFn::PrivateFieldSet

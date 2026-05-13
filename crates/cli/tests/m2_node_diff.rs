@@ -336,6 +336,73 @@ fn assert_fixture_node_typeerror_and_iwasm_reports_typeerror(fixture: &str) {
     );
 }
 
+fn assert_fixture_node_typeerror_and_iwasm_reports_typeerror_containing(
+    fixture: &str,
+    node_expected: &str,
+    iwasm_expected: &str,
+) {
+    if skip_m2_node_diff_by_default() {
+        return;
+    }
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let node = node_command().arg(&fixture_path).output().unwrap();
+    assert!(
+        !node.status.success(),
+        "node unexpectedly accepted {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&node.stdout),
+        String::from_utf8_lossy(&node.stderr)
+    );
+    let node_stderr = String::from_utf8_lossy(&node.stderr).to_ascii_lowercase();
+    assert!(
+        node_stderr.contains("typeerror")
+            && node_stderr.contains(&node_expected.to_ascii_lowercase()),
+        "expected Node TypeError containing {node_expected:?} for {fixture}, got:\n{node_stderr}"
+    );
+
+    let output = temp_wasm_path(fixture);
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert!(
+        build.status.success(),
+        "build failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let iwasm = run_iwasm_with_timeout(iwasm_command().arg(&output))
+        .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
+    assert!(
+        !iwasm.timed_out,
+        "iwasm timed out for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+    assert!(
+        !iwasm.output.status.success(),
+        "iwasm unexpectedly accepted {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+    let iwasm_output = format!(
+        "{}{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    )
+    .to_ascii_lowercase();
+    assert!(
+        iwasm_output.contains("typeerror")
+            && iwasm_output.contains(&iwasm_expected.to_ascii_lowercase()),
+        "expected iwasm TypeError containing {iwasm_expected:?} for {fixture}, got:\n{iwasm_output}"
+    );
+}
+
 fn assert_live_time_fixture_in_host_window(fixture: &str) {
     if skip_m2_node_diff_by_default() {
         return;

@@ -31,4 +31,5 @@ impl RuntimeString {
     pub const BIGINT_STRING_COMPARISON_BOUNDARY_ERROR: &'static str = "issue-375: BigInt/String comparison StringToBigInt value is outside the runtime comparison boundary\n";
     pub const PRIVATE_BRAND_TYPE_ERROR: &'static str =
         "TypeError: Cannot read private member from an object whose class did not declare it\n";
+    pub const NOT_CALLABLE_TYPE_ERROR: &'static str = "TypeError: not a function\n";
 }

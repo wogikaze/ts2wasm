@@ -12,7 +12,7 @@ use ts2wasm_ir::lowered::{
 };
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
-use ts2wasm_runtime_abi::consts::RuntimeConst;
+use ts2wasm_runtime_abi::consts::{RuntimeConst, RuntimeString};
 
 use super::emitter::{
     builtin_error_prototype_global, builtin_error_stack_prefix, class_prototype_global,
@@ -22,6 +22,12 @@ use super::stmt_emit::LoopContext;
 
 fn tagged_number_sentinel(payload: i32) -> i32 {
     ((payload as i64) << (ValueTag::NUMBER_SHIFT as u32)) as i32 | ValueTag::NUMBER
+}
+
+const DIRECT_LOCAL_TOKEN_PAYLOAD_BASE: i32 = ValueTag::NAN_PAYLOAD + 16;
+
+fn tagged_direct_local_token(func_id: i32) -> i32 {
+    tagged_number_sentinel(DIRECT_LOCAL_TOKEN_PAYLOAD_BASE + func_id)
 }
 
 fn is_tagged_number_sentinel(value: i32) -> bool {
@@ -123,7 +129,7 @@ impl WatEmitter<'_> {
                 ClosureRepresentation::DirectLocalToken => {
                     // Local-arrow calls are devirtualized during lowering; this opaque
                     // token prevents local initialization from becoming `undefined`.
-                    writer.i32_const(indent, ValueTag::encode_number(func_id.0 as i32));
+                    writer.i32_const(indent, tagged_direct_local_token(func_id.0 as i32));
                 }
                 ClosureRepresentation::HeapObject => {
                     self.emit_heap_closure_alloc(writer, *func_id, captures, indent, frame);
@@ -486,7 +492,8 @@ impl WatEmitter<'_> {
                 frame,
             );
         }
-        // Check for NUMBER-tagged DirectLocalToken (func_id << NUMBER_SHIFT | NUMBER_TAG)
+        // Check for NUMBER-tagged DirectLocalToken using a reserved payload
+        // range outside ordinary small-int values.
         writer.push_str(&format!(
             "{pad}  (if (i32.eq (i32.and (local.get {closure_value}) (i32.const {tag_mask})) (i32.const {number_tag}))\n",
             tag_mask = ValueTag::TAG_MASK,
@@ -497,12 +504,12 @@ impl WatEmitter<'_> {
             "{pad}      (local.set {payload} (i32.shr_u (local.get {closure_value}) (i32.const {num_shift})))\n",
             num_shift = ValueTag::NUMBER_SHIFT,
         ));
-        // Dispatch table for NUMBER-tagged functions
+        // Dispatch table for NUMBER-tagged direct-local function tokens.
         for function in &self.program.functions {
             if function.params.is_empty() {
                 writer.push_str(&format!(
                     "{pad}      (if (i32.eq (local.get {payload}) (i32.const {}))\n",
-                    function.id.0
+                    DIRECT_LOCAL_TOKEN_PAYLOAD_BASE + function.id.0 as i32
                 ));
                 writer.push_str(&format!(
                     "{pad}        (then (br $heap_closure_dispatch_done (call ${})))\n",
@@ -511,15 +518,19 @@ impl WatEmitter<'_> {
                 writer.push_str(&format!("{pad}      )\n"));
             }
         }
-        writer.push_str(&format!("{pad}      (unreachable)\n"));
+        self.emit_not_callable_type_error(writer, indent + 6);
         writer.push_str(&format!("{pad}    ))\n"));
 
         // Existing OBJECT/closure dispatch
         writer.line_fmt(indent, format_args!("{pad}  (if (i32.ne (i32.and (local.get {closure_value}) (i32.const {})) (i32.const {}))\n", ValueTag::TAG_MASK, ValueTag::OBJECT_TAG));
-        writer.push_str(&format!("{pad}    (then (unreachable)))\n"));
+        writer.push_str(&format!("{pad}    (then\n"));
+        self.emit_not_callable_type_error(writer, indent + 6);
+        writer.push_str(&format!("{pad}    ))\n"));
         writer.line_fmt(indent, format_args!("{pad}  (local.set {payload} (i32.and (local.get {closure_value}) (i32.const {})))\n", ValueTag::HEAP_MASK));
         writer.line_fmt(indent, format_args!("{pad}  (if (i32.ne (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_SUBTYPE_OFFSET}))) (i32.const {CLOSURE_SENTINEL}))\n"));
-        writer.push_str(&format!("{pad}    (then (unreachable)))\n"));
+        writer.push_str(&format!("{pad}    (then\n"));
+        self.emit_not_callable_type_error(writer, indent + 6);
+        writer.push_str(&format!("{pad}    ))\n"));
 
         for function in &self.program.functions {
             let Some(capture_count) = function.params.len().checked_sub(user_args.len()) else {
@@ -542,8 +553,21 @@ impl WatEmitter<'_> {
             writer.push_str(&format!("{pad}      (br $heap_closure_dispatch_done)))\n"));
         }
 
-        writer.push_str(&format!("{pad}  (unreachable)\n"));
+        self.emit_not_callable_type_error(writer, indent + 2);
         writer.end(indent);
+    }
+
+    fn emit_not_callable_type_error(&self, writer: &mut WatWriter, indent: usize) {
+        let message = RuntimeString::NOT_CALLABLE_TYPE_ERROR;
+        let message_ptr = self.string_offset(message) + Layout::STRING_HEADER_SIZE;
+        writer.line_fmt(
+            indent,
+            format_args!(
+                "(call $write (i32.const {message_ptr}) (i32.const {}))",
+                message.len()
+            ),
+        );
+        writer.unreachable(indent);
     }
 
     fn emit_private_field_get(

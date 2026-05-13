@@ -2833,9 +2833,10 @@ fn arrow_assigned_recursive_unsupported_builds_but_produces_wrong_output() {
 
 #[test]
 fn arrow_assigned_recursive_reassignment_traps_after_node_typeerror() {
-    super::assert_fixture_node_fails_and_iwasm_traps_after_stdout(
+    super::assert_fixture_node_typeerror_and_iwasm_reports_typeerror_containing(
         "fixtures/core-semantics/arrow-assigned-recursive-reassigned-unsupported.ts",
-        "",
+        "is not a function",
+        "not a function",
     );
 }
 
