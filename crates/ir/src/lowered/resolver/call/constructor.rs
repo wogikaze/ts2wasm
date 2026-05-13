@@ -303,7 +303,7 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             });
         }
-        if class_name == "ArrayBuffer" {
+        if matches!(class_name, "ArrayBuffer" | "SharedArrayBuffer") {
             let mut lowered_args = Vec::new();
             for arg in args {
                 lowered_args.push(self.lower_expr(arg)?);

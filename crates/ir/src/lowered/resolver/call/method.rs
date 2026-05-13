@@ -25,6 +25,9 @@ impl super::super::Resolver {
         if let Some(result) = self.lower_mcall_early(object, method, args, span)? {
             return Ok(result);
         }
+        if let Some(result) = self.lower_mcall_arraybuffer(object, method, args)? {
+            return Ok(result);
+        }
         if let Some(result) = self.lower_mcall_intl_number_format(object, method, args)? {
             return Ok(result);
         }
@@ -450,6 +453,42 @@ impl super::super::Resolver {
                 args,
                 options.as_ref(),
             )?));
+        }
+        Ok(None)
+    }
+
+    fn lower_mcall_arraybuffer(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if matches!(object, ResolvedExpr::Ident(name) if name == "ArrayBuffer")
+            && method == "isView"
+        {
+            let is_view = args
+                .first()
+                .and_then(|arg| self.infer_class_for_expr(arg))
+                .is_some_and(|class_name| {
+                    class_name == "DataView" || is_typed_array_class(&class_name)
+                });
+            return Ok(Some(LoweredExpr::Bool(is_view, Span::generated("bool"))));
+        }
+        if matches!(
+            self.infer_class_for_expr(object).as_deref(),
+            Some("ArrayBuffer" | "SharedArrayBuffer")
+        ) && method == "transfer"
+        {
+            let new_len = args
+                .first()
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Number(0, Span::generated("num")));
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ArrayBufferNew,
+                args: vec![new_len],
+                span: Span::generated("runtime_call"),
+            }));
         }
         Ok(None)
     }

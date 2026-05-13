@@ -2236,6 +2236,16 @@ fn build_smoke_arraybuffer_dataview_float64_endian() {
 }
 
 #[test]
+fn build_smoke_arraybuffer_transfer() {
+    let result = run_fixture("builtins-and-io/arraybuffer-transfer.ts");
+    assert!(
+        result.is_ok(),
+        "ArrayBuffer transfer/isView/SharedArrayBuffer fixture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_arraybuffer_dataview_int8_uint8() {
     let result = run_fixture("builtins-and-io/arraybuffer-dataview-int8-uint8.ts");
     assert!(
