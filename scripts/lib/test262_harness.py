@@ -72,20 +72,63 @@ INLINE_STA_JS = r"""
 function Test262Error(message) {
   this.message = message || "";
 }
+
+Test262Error.prototype.toString = function () {
+  return "Test262Error: " + this.message;
+};
+
+Test262Error.thrower = function (message) {
+  throw new Test262Error(message);
+};
+
+function $DONOTEVALUATE() {
+  throw "Test262: This statement should not be evaluated.";
+}
 """
 
 INLINE_ASSERT_JS = r"""
-var assert = {};
+function assert(mustBeTrue, message) {
+  if (mustBeTrue === true) { return; }
+  throw new Test262Error(message || "Expected true but got " + String(mustBeTrue));
+}
+
+assert._isSameValue = function(a, b) {
+  if (a === b) { return a !== 0 || 1 / a === 1 / b; }
+  return a !== a && b !== b;
+};
+
 assert.sameValue = function(actual, expected) {
-  var same = actual === expected;
-  // SameValue algorithm: NaN must compare equal to NaN
-  if (!same && typeof actual === "number" && typeof expected === "number") {
-    same = actual !== actual && expected !== expected;
+  if (assert._isSameValue(actual, expected)) { return; }
+  throw new Test262Error("Expected same value but got " + String(actual));
+};
+
+assert.notSameValue = function(actual, unexpected) {
+  if (!assert._isSameValue(actual, unexpected)) { return; }
+  throw new Test262Error("Expected not SameValue");
+};
+
+assert.throws = function(expectedErrorConstructor, func) {
+  try { func(); }
+  catch (thrown) {
+    if (thrown instanceof expectedErrorConstructor) { return; }
+    throw new Test262Error("Wrong error type thrown");
   }
-  if (!same) {
-    throw new Test262Error(" expected same value");
+  throw new Test262Error("Expected error but none thrown");
+};
+
+assert.true = function(mustBeTrue, message) {
+  assert(mustBeTrue, message);
+};
+
+assert.false = function(mustBeFalse, message) {
+  if (mustBeFalse !== false) {
+    throw new Test262Error(message || "Expected false");
   }
 };
+
+function isPrimitive(value) {
+  return value === null || (typeof value !== "function" && typeof value !== "object");
+}
 """
 # Track unknown features already logged to stderr (deduplication).
 _seen_unknown_test262_features = set()
