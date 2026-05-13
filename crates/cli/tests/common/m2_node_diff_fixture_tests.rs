@@ -1495,6 +1495,36 @@ fn json_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn json_parse_array_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-array.ts");
+}
+
+#[test]
+fn json_parse_array_object_nested_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-array-object-nested.ts");
+}
+
+#[test]
+fn json_parse_escaped_string_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-escaped-string.ts");
+}
+
+#[test]
+fn json_parse_number_decimal_exponent_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-number-decimal-exponent.ts");
+}
+
+#[test]
+fn json_parse_object_nested_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-object-nested.ts");
+}
+
+#[test]
+fn json_parse_unicode_escape_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-unicode-escape.ts");
+}
+
+#[test]
 fn json_parse_trailing_tokens_rejected_under_node_and_iwasm() {
     assert_fixture_rejected_by_node_and_iwasm(
         "fixtures/builtins-and-io/json-parse-trailing-invalid.ts",
