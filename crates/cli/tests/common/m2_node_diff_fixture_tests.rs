@@ -1359,6 +1359,7 @@ fn string_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/string-substr.ts",
         "fixtures/builtins-and-io/string-char-code-at.ts",
         "fixtures/builtins-and-io/string-from-char-code.ts",
+        "fixtures/builtins-and-io/string-from-code-point.ts",
         "fixtures/builtins-and-io/string-is-well-formed.ts",
         "fixtures/builtins-and-io/string-to-well-formed.ts",
     ] {

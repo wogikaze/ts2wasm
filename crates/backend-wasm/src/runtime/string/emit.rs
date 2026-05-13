@@ -1580,8 +1580,8 @@ impl WatEmitter<'_> {
     ;; Allocate: HEADER + byte_len
     (local.set $ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $byte_len))))
     (local.set $addr (i32.add (local.get $ptr) (i32.const {header})))
-    ;; Store code point count = 1
-    (i32.store (local.get $ptr) (i32.const {one}))
+    ;; Store byte length for the UTF-8 payload.
+    (i32.store (local.get $ptr) (local.get $byte_len))
     ;; 1-byte UTF-8: 0xxxxxxx
     (if (i32.eq (local.get $byte_len) (i32.const 1))
       (then (i32.store8 (local.get $addr) (local.get $cp))))
@@ -1600,7 +1600,6 @@ impl WatEmitter<'_> {
 "#,
             number_shift = ValueTag::NUMBER_SHIFT,
             zero = RuntimeConst::ZERO,
-            one = RuntimeConst::ONE,
             header = Layout::STRING_HEADER_SIZE,
             string_tag = ValueTag::STRING,
         ));
@@ -1626,8 +1625,8 @@ impl WatEmitter<'_> {
     ;; Allocate: HEADER + byte_len
     (local.set $ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $byte_len))))
     (local.set $addr (i32.add (local.get $ptr) (i32.const {header})))
-    ;; Store code point count = 1
-    (i32.store (local.get $ptr) (i32.const {one}))
+    ;; Store byte length for the UTF-8 payload.
+    (i32.store (local.get $ptr) (local.get $byte_len))
     ;; 1-byte UTF-8: 0xxxxxxx
     (if (i32.eq (local.get $byte_len) (i32.const 1))
       (then (i32.store8 (local.get $addr) (local.get $cp))))
@@ -1653,7 +1652,6 @@ impl WatEmitter<'_> {
 "#,
             number_shift = ValueTag::NUMBER_SHIFT,
             zero = RuntimeConst::ZERO,
-            one = RuntimeConst::ONE,
             header = Layout::STRING_HEADER_SIZE,
             string_tag = ValueTag::STRING,
         ));
