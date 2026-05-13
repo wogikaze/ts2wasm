@@ -19,9 +19,8 @@ pub fn resolve_global_identifier_call(callee: &Expr) -> Option<BuiltinId> {
         "decodeURI" => Some(BuiltinId::DecodeURI),
         "escape" => Some(BuiltinId::Escape),
         "unescape" => Some(BuiltinId::Unescape),
-        // Additional global functions (epic I-20260513)
-        "encodeURIComponent" => Some(BuiltinId::EncodeURI),
-        "decodeURIComponent" => Some(BuiltinId::DecodeURI),
+        "encodeURIComponent" => Some(BuiltinId::EncodeURIComponent),
+        "decodeURIComponent" => Some(BuiltinId::DecodeURIComponent),
         _ => None,
     }
 }

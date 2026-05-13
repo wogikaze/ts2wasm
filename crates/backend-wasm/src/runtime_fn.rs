@@ -30,7 +30,9 @@ pub(crate) const fn runtime_fn_from_builtin(builtin: BuiltinId) -> RuntimeFn {
         BuiltinId::BooleanCoerce => RuntimeFn::BooleanCoerce,
         BuiltinId::NumberCoerce => RuntimeFn::NumberCoerce,
         BuiltinId::EncodeURI => RuntimeFn::EncodeURI,
+        BuiltinId::EncodeURIComponent => RuntimeFn::EncodeURIComponent,
         BuiltinId::DecodeURI => RuntimeFn::DecodeURI,
+        BuiltinId::DecodeURIComponent => RuntimeFn::DecodeURIComponent,
         BuiltinId::Escape => RuntimeFn::Escape,
         BuiltinId::Unescape => RuntimeFn::Unescape,
     }

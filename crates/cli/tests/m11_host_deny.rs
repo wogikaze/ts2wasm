@@ -726,6 +726,10 @@ fn standalone_global_uri_and_escape() {
     for (fixture, category) in [
         ("builtins-and-io/global-encode-uri.ts", "encodeURI"),
         ("builtins-and-io/global-decode-uri.ts", "decodeURI"),
+        (
+            "builtins-and-io/global-uri-component.ts",
+            "URI component helpers",
+        ),
         ("builtins-and-io/global-escape.ts", "escape"),
         ("builtins-and-io/global-unescape.ts", "unescape"),
     ] {

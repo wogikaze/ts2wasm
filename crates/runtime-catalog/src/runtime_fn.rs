@@ -424,8 +424,12 @@ pub enum RuntimeFn {
     NumberIsSafeInteger,
     /// Global encodeURI function
     EncodeURI,
+    /// Global encodeURIComponent function
+    EncodeURIComponent,
     /// Global decodeURI function
     DecodeURI,
+    /// Global decodeURIComponent function
+    DecodeURIComponent,
     /// Global escape function
     Escape,
     /// Global unescape function
@@ -1205,7 +1209,9 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "NumberIsInteger" => Some(RuntimeFn::NumberIsInteger),
         "NumberIsSafeInteger" => Some(RuntimeFn::NumberIsSafeInteger),
         "EncodeURI" => Some(RuntimeFn::EncodeURI),
+        "EncodeURIComponent" => Some(RuntimeFn::EncodeURIComponent),
         "DecodeURI" => Some(RuntimeFn::DecodeURI),
+        "DecodeURIComponent" => Some(RuntimeFn::DecodeURIComponent),
         "Escape" => Some(RuntimeFn::Escape),
         "Unescape" => Some(RuntimeFn::Unescape),
         "Dollar262Global" => Some(RuntimeFn::Dollar262Global),
@@ -1414,9 +1420,12 @@ impl RuntimeFn {
             | Self::DateGetUtcDate
             | Self::DateGetUtcMonth
             | Self::DateGetUtcFullYear => RuntimeDomain::Date,
-            Self::EncodeURI | Self::DecodeURI | Self::Escape | Self::Unescape => {
-                RuntimeDomain::Encoding
-            }
+            Self::EncodeURI
+            | Self::EncodeURIComponent
+            | Self::DecodeURI
+            | Self::DecodeURIComponent
+            | Self::Escape
+            | Self::Unescape => RuntimeDomain::Encoding,
             Self::FsReadFileSync
             | Self::FsWriteFileSync
             | Self::FsAppendFileSync
@@ -2035,7 +2044,9 @@ impl RuntimeFn {
             Self::NumberIsSafeInteger,
             // URI encoding/decoding (341e)
             Self::EncodeURI,
+            Self::EncodeURIComponent,
             Self::DecodeURI,
+            Self::DecodeURIComponent,
             Self::GetIterator,
             Self::IteratorNext,
             Self::PromiseConstructor,
@@ -2357,6 +2368,7 @@ impl RuntimeFn {
             Self::NumberIsSafeInteger,
             // URI encoding/decoding (341e)
             Self::EncodeURI,
+            Self::EncodeURIComponent,
             Self::GetIterator,
             Self::IteratorNext,
             Self::PromiseConstructor,
@@ -2378,6 +2390,7 @@ impl RuntimeFn {
             Self::SymbolToStringTag,
             Self::SymbolHasInstance,
             Self::DecodeURI,
+            Self::DecodeURIComponent,
             Self::Escape,
             Self::Unescape,
             Self::ArrayPushMany,

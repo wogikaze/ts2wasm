@@ -22,7 +22,9 @@ pub enum BuiltinId {
     BooleanCoerce,
     NumberCoerce,
     EncodeURI,
+    EncodeURIComponent,
     DecodeURI,
+    DecodeURIComponent,
     Escape,
     Unescape,
 }
@@ -64,7 +66,9 @@ impl BuiltinId {
             Self::BooleanCoerce => 1,
             Self::NumberCoerce => 1,
             Self::EncodeURI => 1,
+            Self::EncodeURIComponent => 1,
             Self::DecodeURI => 1,
+            Self::DecodeURIComponent => 1,
             Self::Escape => 1,
             Self::Unescape => 1,
         }
@@ -99,7 +103,9 @@ impl BuiltinId {
             Self::BooleanCoerce => 0,
             Self::NumberCoerce => 0,
             Self::EncodeURI => 0,
+            Self::EncodeURIComponent => 0,
             Self::DecodeURI => 0,
+            Self::DecodeURIComponent => 0,
             Self::Escape => 0,
             Self::Unescape => 0,
         }
@@ -129,7 +135,9 @@ impl BuiltinId {
             Self::BooleanCoerce => BuiltinResult::Value,
             Self::NumberCoerce => BuiltinResult::Value,
             Self::EncodeURI => BuiltinResult::Value,
+            Self::EncodeURIComponent => BuiltinResult::Value,
             Self::DecodeURI => BuiltinResult::Value,
+            Self::DecodeURIComponent => BuiltinResult::Value,
             Self::Escape => BuiltinResult::Value,
             Self::Unescape => BuiltinResult::Value,
         }

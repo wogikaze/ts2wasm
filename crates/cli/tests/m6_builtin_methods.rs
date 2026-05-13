@@ -1051,6 +1051,7 @@ fn build_smoke_global_properties() {
         "builtins-and-io/global-unescape-value.ts",
         "builtins-and-io/global-encode-uri.ts",
         "builtins-and-io/global-decode-uri.ts",
+        "builtins-and-io/global-uri-component.ts",
     ] {
         let result = run_fixture(fixture);
         assert!(result.is_ok(), "{fixture} should build: {:?}", result.err());

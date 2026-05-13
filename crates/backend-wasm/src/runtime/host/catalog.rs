@@ -33,7 +33,9 @@ pub const HOST_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::ModuleExportsAssign,
     // Encoding / URI
     RuntimeFn::EncodeURI,
+    RuntimeFn::EncodeURIComponent,
     RuntimeFn::DecodeURI,
+    RuntimeFn::DecodeURIComponent,
     RuntimeFn::Escape,
     RuntimeFn::Unescape,
     // Symbol
