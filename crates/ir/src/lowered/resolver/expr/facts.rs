@@ -6,8 +6,8 @@ use super::super::{
 };
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 use crate::lowered::ctx::LoweringCtx;
-use crate::lowered::facts::ProxyBinding;
 use crate::lowered::facts::StaticFunctionArrayLike;
+use crate::lowered::facts::{GeneratorIteratorBinding, ProxyBinding};
 use crate::lowered::*;
 use std::collections::HashSet;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -89,10 +89,33 @@ pub(crate) fn update_generator_iterator_local(
     local_id: LocalId,
     expr: &ResolvedExpr,
 ) {
-    if resolved_expr_is_generator_iterator(ctx, expr) {
+    if let Some(func_name) = resolved_generator_function_call_name(ctx, expr) {
         ctx.facts.generator_iterator_locals.insert(local_id);
+        ctx.facts.generator_iterator_bindings.insert(
+            local_id,
+            GeneratorIteratorBinding {
+                func_name,
+                next_index: 0,
+            },
+        );
+    } else if let ResolvedExpr::Ident(name) = expr
+        && let Ok(source_local) = ctx.resolve_local(name)
+        && let Some(binding) = ctx
+            .facts
+            .generator_iterator_bindings
+            .get(&source_local)
+            .cloned()
+    {
+        ctx.facts.generator_iterator_locals.insert(local_id);
+        ctx.facts
+            .generator_iterator_bindings
+            .insert(local_id, binding);
+    } else if resolved_expr_is_generator_iterator(ctx, expr) {
+        ctx.facts.generator_iterator_locals.insert(local_id);
+        ctx.facts.generator_iterator_bindings.remove(&local_id);
     } else {
         ctx.facts.generator_iterator_locals.remove(&local_id);
+        ctx.facts.generator_iterator_bindings.remove(&local_id);
     }
 }
 
@@ -153,13 +176,23 @@ pub(crate) fn resolved_expr_is_generator_iterator(ctx: &LoweringCtx, expr: &Reso
             .resolve_local(name)
             .ok()
             .is_some_and(|local_id| ctx.facts.generator_iterator_locals.contains(&local_id)),
-        ResolvedExpr::Call { callee, args, .. } if args.is_empty() => {
-            matches!(
-                callee.as_ref(),
-                ResolvedExpr::Ident(name) if ctx.facts.generator_function_names.contains(name)
-            )
-        }
+        ResolvedExpr::Call { .. } => resolved_generator_function_call_name(ctx, expr).is_some(),
         _ => false,
+    }
+}
+
+pub(crate) fn resolved_generator_function_call_name(
+    ctx: &LoweringCtx,
+    expr: &ResolvedExpr,
+) -> Option<String> {
+    match expr {
+        ResolvedExpr::Call { callee, args, .. } if args.is_empty() => match callee.as_ref() {
+            ResolvedExpr::Ident(name) if ctx.facts.generator_function_names.contains(name) => {
+                Some(name.clone())
+            }
+            _ => None,
+        },
+        _ => None,
     }
 }
 

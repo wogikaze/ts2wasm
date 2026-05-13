@@ -36,6 +36,9 @@ impl super::super::Resolver {
                 &self.ctx, object,
             )
         {
+            if let Some(result) = self.lower_static_generator_next(object)? {
+                return Ok(result);
+            }
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::GeneratorNext,
                 args: vec![self.lower_expr(object)?],
@@ -70,6 +73,71 @@ impl super::super::Resolver {
             unreachable!()
         };
         self.lower_mcall_class_dispatch(receiver_name, object, method, args, span)
+    }
+
+    fn lower_static_generator_next(
+        &mut self,
+        object: &ResolvedExpr,
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        let ResolvedExpr::Ident(name) = object else {
+            return Ok(None);
+        };
+        let local_id = self.resolve_local(name)?;
+        let Some((func_name, next_index)) = self
+            .ctx
+            .facts
+            .generator_iterator_bindings
+            .get_mut(&local_id)
+            .map(|binding| {
+                let next_index = binding.next_index;
+                binding.next_index += 1;
+                (binding.func_name.clone(), next_index)
+            })
+        else {
+            return Ok(None);
+        };
+        let steps = self
+            .ctx
+            .facts
+            .generator_function_steps
+            .get(&func_name)
+            .cloned()
+            .unwrap_or_default();
+        if let Some(step) = steps.get(next_index) {
+            let mut stmts = Vec::new();
+            for stmt in &step.statements {
+                stmts.push(self.lower_stmt(stmt)?);
+            }
+            return Ok(Some(LoweredExpr::Block {
+                stmts,
+                result: Box::new(LoweredExpr::ObjectNew {
+                    props: vec![
+                        ("value".to_owned(), self.lower_expr(&step.value)?),
+                        (
+                            "done".to_owned(),
+                            LoweredExpr::Bool(false, Span::generated("bool")),
+                        ),
+                    ],
+                    non_enumerable: 0,
+                    span: Span::generated("object"),
+                }),
+                span: Span::generated("block"),
+            }));
+        }
+        Ok(Some(LoweredExpr::ObjectNew {
+            props: vec![
+                (
+                    "value".to_owned(),
+                    LoweredExpr::Undefined(Span::generated("undefined")),
+                ),
+                (
+                    "done".to_owned(),
+                    LoweredExpr::Bool(true, Span::generated("bool")),
+                ),
+            ],
+            non_enumerable: 0,
+            span: Span::generated("object"),
+        }))
     }
 
     fn lower_function_call_apply_method(

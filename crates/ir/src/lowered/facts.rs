@@ -14,7 +14,7 @@
 
 use std::collections::{HashMap, HashSet};
 
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
+use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
 use crate::lowered::{ClosureRepresentation, FuncId, LocalId, LoweredExpr};
 use ts2wasm_source::Span;
 
@@ -53,6 +53,10 @@ pub struct StaticFacts {
     pub generator_iterator_locals: HashSet<LocalId>,
     /// Statically collected yield values for simple top-level generator functions.
     pub generator_function_yields: HashMap<String, Vec<ResolvedExpr>>,
+    /// Statically collected lazy resume steps for simple top-level generator functions.
+    pub generator_function_steps: HashMap<String, Vec<GeneratorYieldStep>>,
+    /// Locals holding statically visible generator iterators with a compile-time next index.
+    pub generator_iterator_bindings: HashMap<LocalId, GeneratorIteratorBinding>,
     /// Static object literal contents: local → (key, value) pairs.
     pub static_object_literal_locals: HashMap<LocalId, Vec<(String, ResolvedExpr)>>,
     /// Alias source tracking for static object literals: alias → source_ids.
@@ -92,6 +96,20 @@ pub struct StaticFacts {
 #[derive(Debug, Clone)]
 pub struct StaticFunctionArrayLike {
     pub elements: Vec<Option<ResolvedArrayElement>>,
+}
+
+/// A straight-line chunk of generator body that executes before one yield.
+#[derive(Debug, Clone)]
+pub struct GeneratorYieldStep {
+    pub statements: Vec<ResolvedStmt>,
+    pub value: ResolvedExpr,
+}
+
+/// Compile-time state for a statically visible generator iterator local.
+#[derive(Debug, Clone)]
+pub struct GeneratorIteratorBinding {
+    pub func_name: String,
+    pub next_index: usize,
 }
 
 /// Tracks an arrow function closure that can be inlined or heap-allocated.
@@ -165,6 +183,8 @@ impl StaticFacts {
             array_iterator_locals: HashSet::new(),
             generator_iterator_locals: HashSet::new(),
             generator_function_yields: HashMap::new(),
+            generator_function_steps: HashMap::new(),
+            generator_iterator_bindings: HashMap::new(),
             static_object_literal_locals: HashMap::new(),
             static_object_literal_alias_sources: HashMap::new(),
             static_function_array_like_locals: HashMap::new(),

@@ -1751,6 +1751,16 @@ fn generator_local_state_matches_node_output() {
 }
 
 #[test]
+fn generator_lazy_creation_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/generator-lazy-creation.ts");
+}
+
+#[test]
+fn generator_lazy_between_yields_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/generator-lazy-between-yields.ts");
+}
+
+#[test]
 fn proxy_traps_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/proxy-handler-traps-unsupported.ts");
 }

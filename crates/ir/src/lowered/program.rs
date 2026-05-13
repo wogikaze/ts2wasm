@@ -3,6 +3,7 @@ use crate::binding_pattern::parse_binding_pattern;
 use crate::builtin_resolved::{
     ClassMethodKind, ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt,
 };
+use crate::lowered::facts::GeneratorYieldStep;
 use crate::lowered::symbols::FunctionSignature;
 use std::collections::{HashMap, HashSet};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -21,6 +22,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
     let function_ids = collect_function_ids(program)?;
     let generator_function_names = collect_generator_function_names(program);
     let generator_function_yields = collect_generator_function_yields(program);
+    let generator_function_steps = collect_generator_function_steps(program);
     let mut function_signatures = collect_function_signatures(program, &function_ids);
     let top_level_local_names = collect_top_level_local_names(program)?;
     let map_callback_function_names = collect_array_map_callback_function_names(program);
@@ -312,6 +314,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
         next_func_id,
     );
     resolver.ctx.facts.generator_function_yields = generator_function_yields;
+    resolver.ctx.facts.generator_function_steps = generator_function_steps;
     let mut top_level_statements = Vec::new();
     for stmt in program {
         match stmt {
@@ -581,6 +584,77 @@ fn collect_generator_function_yields(
         }
     }
     yields
+}
+
+fn collect_generator_function_steps(
+    program: &[ResolvedStmt],
+) -> HashMap<String, Vec<GeneratorYieldStep>> {
+    let mut steps = HashMap::new();
+    for stmt in program {
+        if let ResolvedStmt::Function {
+            name,
+            body,
+            is_generator: true,
+            ..
+        } = stmt
+            && let Some(function_steps) = collect_straight_line_generator_steps(body)
+        {
+            steps.insert(name.clone(), function_steps);
+        }
+    }
+    steps
+}
+
+fn collect_straight_line_generator_steps(
+    stmts: &[ResolvedStmt],
+) -> Option<Vec<GeneratorYieldStep>> {
+    let mut collector = GeneratorStepCollector::default();
+    collector.collect_stmts(stmts)?;
+    if collector.pending.is_empty() && !collector.steps.is_empty() {
+        Some(collector.steps)
+    } else {
+        None
+    }
+}
+
+#[derive(Default)]
+struct GeneratorStepCollector {
+    pending: Vec<ResolvedStmt>,
+    steps: Vec<GeneratorYieldStep>,
+}
+
+impl GeneratorStepCollector {
+    fn collect_stmts(&mut self, stmts: &[ResolvedStmt]) -> Option<()> {
+        for stmt in stmts {
+            self.collect_stmt(stmt)?;
+        }
+        Some(())
+    }
+
+    fn collect_stmt(&mut self, stmt: &ResolvedStmt) -> Option<()> {
+        match stmt {
+            ResolvedStmt::Expr(ResolvedExpr::Yield { expr }) => {
+                let value = expr
+                    .as_ref()
+                    .map(|expr| expr.as_ref().clone())
+                    .unwrap_or(ResolvedExpr::Undefined);
+                self.steps.push(GeneratorYieldStep {
+                    statements: std::mem::take(&mut self.pending),
+                    value,
+                });
+                Some(())
+            }
+            ResolvedStmt::Block { statements } => self.collect_stmts(statements),
+            ResolvedStmt::Let(..)
+            | ResolvedStmt::Assign(..)
+            | ResolvedStmt::Expr(..)
+            | ResolvedStmt::DestructureLet { .. } => {
+                self.pending.push(stmt.clone());
+                Some(())
+            }
+            _ => None,
+        }
+    }
 }
 
 fn evaluate_straight_line_generator_yields(stmts: &[ResolvedStmt]) -> Option<Vec<ResolvedExpr>> {

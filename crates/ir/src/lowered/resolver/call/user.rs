@@ -348,6 +348,21 @@ impl super::super::Resolver {
     }
 
     fn lower_generator_call(&mut self, func_name: &str) -> Result<LoweredExpr, Diagnostic> {
+        if self
+            .ctx
+            .facts
+            .generator_function_steps
+            .contains_key(func_name)
+        {
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::GeneratorYield,
+                args: vec![LoweredExpr::ArrayNew {
+                    elements: vec![],
+                    span: Span::generated("array"),
+                }],
+                span: Span::generated("runtime_call"),
+            });
+        }
         let yields = self
             .ctx
             .facts
