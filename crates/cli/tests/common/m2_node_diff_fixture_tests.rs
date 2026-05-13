@@ -1344,6 +1344,7 @@ fn string_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/string-search.ts",
         "fixtures/builtins-and-io/string-match.ts",
         "fixtures/builtins-and-io/string-concat.ts",
+        "fixtures/builtins-and-io/string-replace-all.ts",
         "fixtures/builtins-and-io/string-at.ts",
         "fixtures/builtins-and-io/string-char-at.ts",
         "fixtures/builtins-and-io/string-index-of.ts",

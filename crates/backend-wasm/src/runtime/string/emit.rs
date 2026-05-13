@@ -597,39 +597,52 @@ impl WatEmitter<'_> {
                 (local.set $replace_obj (i32.and (local.get $replace) (i32.const {heap_mask})))
                 (local.set $search_len (i32.load (local.get $search_obj)))
                 (local.set $replace_len (i32.load (local.get $replace_obj)))
-                ;; Search loop for first occurrence
-                (local.set $pos (i32.const {zero}))
-                (block $not_found
-                  (loop $search
-                    (br_if $not_found (i32.gt_u (local.get $pos) (i32.sub (local.get $s_len) (local.get $search_len))))
-                    (if (call $mem_equal
-                          (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $pos))
-                          (i32.add (local.get $search_obj) (i32.const {str_header}))
-                          (local.get $search_len))
-                      (then (br $not_found)))
-                    (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
-                    (br $search)))
-                (if (i32.gt_u (local.get $pos) (i32.sub (local.get $s_len) (local.get $search_len)))
+                (if (i32.gt_u (local.get $search_len) (local.get $s_len))
                   (then (local.set $result (local.get $s)))
                   (else
-                    (local.set $pre_len (local.get $pos))
-                    (local.set $post_len (i32.sub (i32.sub (local.get $s_len) (local.get $pos)) (local.get $search_len)))
-                    (local.set $result_len (i32.add (i32.add (local.get $pre_len) (local.get $replace_len)) (local.get $post_len)))
-                    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $result_len))))
-                    (i32.store (local.get $result_ptr) (local.get $result_len))
-                    (call $copy
-                      (i32.add (local.get $s_obj) (i32.const {str_header}))
-                      (i32.add (local.get $result_ptr) (i32.const {str_header}))
-                      (local.get $pre_len))
-                    (call $copy
-                      (i32.add (local.get $replace_obj) (i32.const {str_header}))
-                      (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $pre_len))
-                      (local.get $replace_len))
-                    (call $copy
-                      (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (i32.add (local.get $pos) (local.get $search_len)))
-                      (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (i32.add (local.get $pre_len) (local.get $replace_len)))
-                      (local.get $post_len))
-                    (local.set $result (i32.or (local.get $result_ptr) (i32.const {string_tag})))))))))))
+                    ;; Search loop for first occurrence
+                    (local.set $pos (i32.const {zero}))
+                    (block $not_found
+                      (loop $search
+                        (br_if $not_found (i32.gt_u (local.get $pos) (i32.sub (local.get $s_len) (local.get $search_len))))
+                        (if (call $mem_equal
+                              (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $pos))
+                              (i32.add (local.get $search_obj) (i32.const {str_header}))
+                              (local.get $search_len))
+                          (then (br $not_found)))
+                        (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
+                        (br $search)))
+                    (if (i32.gt_u (local.get $pos) (i32.sub (local.get $s_len) (local.get $search_len)))
+                      (then (local.set $result (local.get $s)))
+                      (else
+                        (local.set $pre_len (local.get $pos))
+                        (local.set $post_len (i32.sub (i32.sub (local.get $s_len) (local.get $pos)) (local.get $search_len)))
+                        (local.set $result_len (i32.add (i32.add (local.get $pre_len) (local.get $replace_len)) (local.get $post_len)))
+                        (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $result_len))))
+                        (i32.store (local.get $result_ptr) (local.get $result_len))
+                        (call $copy
+                          (i32.add (local.get $s_obj) (i32.const {str_header}))
+                          (i32.add (local.get $result_ptr) (i32.const {str_header}))
+                          (local.get $pre_len))
+                        (call $copy
+                          (i32.add (local.get $replace_obj) (i32.const {str_header}))
+                          (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $pre_len))
+                          (local.get $replace_len))
+                        (call $copy
+                          (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (i32.add (local.get $pos) (local.get $search_len)))
+                          (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (i32.add (local.get $pre_len) (local.get $replace_len)))
+                          (local.get $post_len))
+                        (local.set $result (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
     (local.get $result))
 "#,
             heap_mask = ValueTag::HEAP_MASK,
@@ -642,13 +655,64 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_string_replace_all(&self, wat: &mut String) {
-        wat.push_str(
+        wat.push_str(&format!(
             r#"
   ;; Replace all occurrences of $search in $s with $replace
-  ;; Delegates to $string_replace in a loop
   (func $string_replace_all (param $s i32) (param $search i32) (param $replace i32) (result i32)
     (local $prev i32)
     (local $curr i32)
+    (local $s_obj i32)
+    (local $search_obj i32)
+    (local $replace_obj i32)
+    (local $s_len i32)
+    (local $search_len i32)
+    (local $replace_len i32)
+    (local $result_len i32)
+    (local $result_ptr i32)
+    (local $i i32)
+    (local $dst i32)
+    (if (i32.eqz (call $is_string (local.get $s)))
+      (then (return (local.get $s))))
+    (if (i32.eqz (call $is_string (local.get $search)))
+      (then (return (local.get $s))))
+    (if (i32.eqz (call $is_string (local.get $replace)))
+      (then (return (local.get $s))))
+    (local.set $s_obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $search_obj (i32.and (local.get $search) (i32.const {heap_mask})))
+    (local.set $replace_obj (i32.and (local.get $replace) (i32.const {heap_mask})))
+    (local.set $s_len (i32.load (local.get $s_obj)))
+    (local.set $search_len (i32.load (local.get $search_obj)))
+    (local.set $replace_len (i32.load (local.get $replace_obj)))
+    (if (i32.eqz (local.get $search_len))
+      (then
+        (local.set $result_len
+          (i32.add
+            (local.get $s_len)
+            (i32.mul (local.get $replace_len) (i32.add (local.get $s_len) (i32.const {one})))))
+        (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $result_len))))
+        (i32.store (local.get $result_ptr) (local.get $result_len))
+        (local.set $dst (i32.add (local.get $result_ptr) (i32.const {str_header})))
+        (call $copy
+          (i32.add (local.get $replace_obj) (i32.const {str_header}))
+          (local.get $dst)
+          (local.get $replace_len))
+        (local.set $dst (i32.add (local.get $dst) (local.get $replace_len)))
+        (local.set $i (i32.const {zero}))
+        (block $done_empty_search
+          (loop $empty_search_loop
+            (br_if $done_empty_search (i32.ge_u (local.get $i) (local.get $s_len)))
+            (i32.store8
+              (local.get $dst)
+              (i32.load8_u (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $i))))
+            (local.set $dst (i32.add (local.get $dst) (i32.const {one})))
+            (call $copy
+              (i32.add (local.get $replace_obj) (i32.const {str_header}))
+              (local.get $dst)
+              (local.get $replace_len))
+            (local.set $dst (i32.add (local.get $dst) (local.get $replace_len)))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $empty_search_loop)))
+        (return (i32.or (local.get $result_ptr) (i32.const {string_tag})))))
     (local.set $prev (local.get $s))
     (loop $replace_loop
       (local.set $curr (call $string_replace (local.get $prev) (local.get $search) (local.get $replace)))
@@ -658,7 +722,12 @@ impl WatEmitter<'_> {
       (br $replace_loop))
     (local.get $prev))
 "#,
-        );
+            heap_mask = ValueTag::HEAP_MASK,
+            string_tag = ValueTag::STRING,
+            str_header = Layout::STRING_HEADER_SIZE,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+        ));
     }
 
     /// Helper: return the byte length of a string value (raw i32, not tagged)
