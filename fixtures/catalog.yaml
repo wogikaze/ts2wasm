@@ -877,6 +877,7 @@ directories:
     - spread-sparse-call-undefined.ts
     - spread-string-static-concat.ts
     - strict-equal.ts
+    - strict-function-this-iife.ts
     - template-literal-legacy-octal-strict-unsupported.ts
     - template-literal-legacy-octal.ts
     - template-literal.ts

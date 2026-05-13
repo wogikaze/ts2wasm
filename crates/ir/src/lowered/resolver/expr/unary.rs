@@ -57,6 +57,21 @@ impl super::super::Resolver {
 
     fn lower_delete_expr(&mut self, expr: &ResolvedExpr) -> Result<LoweredExpr, Diagnostic> {
         match expr {
+            ResolvedExpr::Ident(name)
+                if self
+                    .ctx
+                    .strict_mode_check(crate::lowered::ctx::StrictModeCheck::StrictDelete) =>
+            {
+                Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-450: {:?} strict mode forbids deleting identifier `{name}`",
+                        crate::lowered::ctx::StrictModeCheck::StrictDelete
+                    ),
+                    span: None,
+                    phase: None,
+                })
+            }
             ResolvedExpr::PropertyAccess { object, key, span } => {
                 if is_private_field_storage_key(key) {
                     return Err(private_storage_observable_access_diagnostic(Some(*span)));

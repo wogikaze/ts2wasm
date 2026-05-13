@@ -15,6 +15,21 @@ impl super::super::Resolver {
         name: &str,
         expr: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
+        if self
+            .ctx
+            .strict_mode_check(crate::lowered::ctx::StrictModeCheck::StrictEval)
+            && matches!(name, "eval" | "arguments")
+        {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-450: {:?} strict mode forbids assigning to `{name}`",
+                    crate::lowered::ctx::StrictModeCheck::StrictEval
+                ),
+                span: None,
+                phase: None,
+            });
+        }
         let local = self.resolve_local(name)?;
         crate::lowered::resolver::expr::facts::invalidate_static_object_literal_local(
             &mut self.ctx,

@@ -48,6 +48,8 @@ pub struct FunctionSignature {
     pub explicit_params: usize,
     /// Whether the function uses `this` as a receiver.
     pub needs_receiver: bool,
+    /// Whether the function body is evaluated as ECMAScript strict mode code.
+    pub is_strict: bool,
     /// Whether the function references `arguments`.
     pub needs_arguments: bool,
     /// Whether the function has a rest parameter.

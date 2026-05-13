@@ -120,6 +120,7 @@ impl super::Resolver {
                     object_function_props: None,
                 }),
                 recursion_depth: 0,
+                strict_context: self.ctx.is_strict_context(),
             },
         )?;
         self.ctx.functions.next_func_id = lowered.next_func_id;
@@ -166,6 +167,14 @@ impl super::Resolver {
             // the `this` references are valid receiver accesses, not closure captures.
             if block_contains_this(body) && params.iter().any(|p| p.name == "this") {
                 // Explicit `this` parameter: this is a receiver function, not a closure issue.
+            } else if block_contains_this(body)
+                && crate::lowered::program::function_body_is_strict(
+                    self.ctx.is_strict_context(),
+                    body,
+                )
+            {
+                // Strict functions do not substitute globalThis for direct calls;
+                // unresolved `this` lowers to undefined in this resolver scope.
             } else if block_contains_this(body) {
                 // No explicit `this` parameter — this usage will have implicit `any` type.
                 // Report a more specific TS2683-compatible diagnostic.
@@ -257,6 +266,7 @@ impl super::Resolver {
                 next_func_id: self.ctx.functions.next_func_id,
                 self_closure,
                 recursion_depth: 0,
+                strict_context: self.ctx.is_strict_context(),
             },
         )?;
         self.ctx.functions.next_func_id = lowered.next_func_id;
@@ -328,6 +338,17 @@ impl super::Resolver {
     }
 
     pub(crate) fn declare_local(&mut self, name: &str) -> Result<LocalId, Diagnostic> {
+        if self.ctx.is_strict_context() && matches!(name, "eval" | "arguments") {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-450: {:?} strict mode forbids binding local `{name}`",
+                    crate::lowered::ctx::StrictModeCheck::StrictEval
+                ),
+                span: None,
+                phase: None,
+            });
+        }
         let scope = self
             .ctx
             .symbols

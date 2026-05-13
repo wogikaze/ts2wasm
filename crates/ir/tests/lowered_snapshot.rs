@@ -20,6 +20,15 @@ fn parse_resolve_lower(source: &str) -> LoweredProgram {
     lower_program(&resolved).unwrap()
 }
 
+fn parse_resolve_lower_result(
+    source: &str,
+) -> Result<LoweredProgram, ts2wasm_diagnostic::Diagnostic> {
+    let tokens = Lexer::new(source).tokenize().unwrap();
+    let stmts = Parser::new(tokens, source).parse_program().unwrap();
+    let resolved = resolve_builtins(&stmts).unwrap();
+    lower_program(&resolved)
+}
+
 #[test]
 fn lowered_snapshot_empty() {
     let program = parse_resolve_lower("");
@@ -67,6 +76,72 @@ fn lowered_snapshot_let_bool() {
         LoweredStmt::Let(_, LoweredExpr::Bool(false, _), _) => {}
         other => panic!("expected LoweredStmt::Let(_, Bool(false)), got: {other:?}"),
     }
+}
+
+#[test]
+fn strict_function_direct_this_call_passes_undefined_receiver() {
+    let program = parse_resolve_lower(
+        r#"
+        function read() {
+          "use strict";
+          return this;
+        }
+        let value = read();
+        "#,
+    );
+
+    let read = &program.functions[0];
+    assert!(
+        program.top_level_statements.iter().any(|stmt| matches!(
+            stmt,
+            LoweredStmt::Let(
+                _,
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::User(_),
+                    args,
+                    ..
+                },
+                _
+            ) if matches!(args.as_slice(), [LoweredExpr::Undefined(_)])
+        )),
+        "strict direct function call should pass undefined as receiver: {program:?}"
+    );
+    assert_eq!(read.params.len(), 1);
+    assert!(read.uses_receiver);
+}
+
+#[test]
+fn strict_function_expression_iife_return_this_lowers_to_undefined() {
+    let program = parse_resolve_lower(
+        r#"
+        let value = (function() {
+          "use strict";
+          return this;
+        })();
+        "#,
+    );
+
+    assert!(matches!(
+        program.top_level_statements.as_slice(),
+        [LoweredStmt::Let(_, LoweredExpr::Undefined(_), _)]
+    ));
+}
+
+#[test]
+fn strict_delete_identifier_reports_strict_delete_check() {
+    let err = parse_resolve_lower_result(
+        r#"
+        "use strict";
+        let value = 1;
+        delete value;
+        "#,
+    )
+    .unwrap_err();
+
+    assert!(
+        err.message.contains("StrictDelete"),
+        "unexpected diagnostic: {err:?}"
+    );
 }
 
 #[test]

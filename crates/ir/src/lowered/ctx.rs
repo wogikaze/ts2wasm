@@ -52,6 +52,22 @@ pub struct LoweringCtx {
     pub functions: FunctionsContext,
     /// Module resolution state.
     pub modules: ModuleEnv,
+    /// ECMAScript strict-mode state for the currently lowered scope.
+    pub strict_mode: StrictModeContext,
+}
+
+/// Strict-mode state and checks that affect lowering decisions.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct StrictModeContext {
+    pub is_strict_context: bool,
+}
+
+/// Strict-mode checks enforced during lowering.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum StrictModeCheck {
+    StrictThis,
+    StrictEval,
+    StrictDelete,
 }
 
 /// Function table context for the lowering pass.
@@ -92,6 +108,7 @@ impl LoweringCtx {
             captures: CaptureEnv::new(),
             functions: FunctionsContext::new(),
             modules: ModuleEnv::new(),
+            strict_mode: StrictModeContext::default(),
         }
     }
 
@@ -113,6 +130,7 @@ impl LoweringCtx {
         class_private_fields: ClassPrivateFieldSlots,
         class_static_private_fields: ClassStaticPrivateFields,
         next_func_id: usize,
+        is_strict_context: bool,
     ) -> Self {
         Self {
             symbols: SymbolEnv::with_functions(function_ids.clone(), function_signatures.clone()),
@@ -143,12 +161,27 @@ impl LoweringCtx {
                 next_func_id,
             ),
             modules: ModuleEnv::new(),
+            strict_mode: StrictModeContext { is_strict_context },
         }
     }
 
     pub(crate) fn set_class_context(&mut self, current_class: Option<&str>, in_constructor: bool) {
         self.classes.current_class = current_class.map(ToOwned::to_owned);
         self.classes.in_constructor = in_constructor;
+    }
+
+    pub(crate) fn is_strict_context(&self) -> bool {
+        self.strict_mode.is_strict_context
+    }
+
+    pub(crate) fn strict_mode_check(&self, check: StrictModeCheck) -> bool {
+        self.strict_mode.is_strict_context
+            && matches!(
+                check,
+                StrictModeCheck::StrictThis
+                    | StrictModeCheck::StrictEval
+                    | StrictModeCheck::StrictDelete
+            )
     }
 
     pub(crate) fn declare_parameter(&mut self, name: &str) -> LocalId {

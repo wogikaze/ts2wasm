@@ -1,4 +1,7 @@
-use super::super::{bigint_runtime_fn_intrinsic, block_contains_arguments, block_contains_this};
+use super::super::{
+    bigint_runtime_fn_intrinsic, block_contains_arguments, block_contains_this,
+    function_body_is_strict,
+};
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
 use crate::lowered::facts::FunctionMethodKind;
 use crate::lowered::*;
@@ -411,13 +414,14 @@ impl super::super::Resolver {
         if args.is_empty() && self.ctx.facts.generator_function_names.contains(func_name) {
             return self.lower_generator_call(func_name);
         }
-        if self
+        let signature = self
             .ctx
             .symbols
             .function_signatures
             .get(&func_id)
-            .is_some_and(|signature| signature.needs_receiver)
-        {
+            .copied()
+            .unwrap_or_default();
+        if signature.needs_receiver && !signature.is_strict {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!(
@@ -528,12 +532,10 @@ impl super::super::Resolver {
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
-        if Self::is_direct_return_this_iife(params, body, args) {
-            return Ok(LoweredExpr::ObjectNew {
-                props: Vec::new(),
-                non_enumerable: 0,
-                span: Span::generated("object_new"),
-            });
+        if let Some(result) =
+            Self::direct_return_this_iife_result(self.ctx.is_strict_context(), params, body, args)
+        {
+            return Ok(result);
         }
         if params.iter().any(|param| param.is_rest) {
             return Err(Diagnostic {
@@ -590,14 +592,39 @@ impl super::super::Resolver {
         })
     }
 
-    fn is_direct_return_this_iife(
+    fn direct_return_this_iife_result(
+        parent_is_strict: bool,
         params: &[ResolvedParam],
         body: &[ResolvedStmt],
         args: &[ResolvedExpr],
-    ) -> bool {
-        params.is_empty()
-            && args.is_empty()
-            && matches!(body, [ResolvedStmt::Return(ResolvedExpr::This { .. })])
+    ) -> Option<LoweredExpr> {
+        if !params.is_empty() || !args.is_empty() {
+            return None;
+        }
+
+        let mut first_non_directive = 0;
+        while let Some(ResolvedStmt::Expr(ResolvedExpr::String(_))) = body.get(first_non_directive)
+        {
+            first_non_directive += 1;
+        }
+        let returns_this = matches!(
+            &body[first_non_directive..],
+            [ResolvedStmt::Return(ResolvedExpr::This { .. })]
+        );
+        if !returns_this {
+            return None;
+        }
+
+        if function_body_is_strict(parent_is_strict, body) {
+            let _check = crate::lowered::ctx::StrictModeCheck::StrictThis;
+            return Some(LoweredExpr::Undefined(Span::generated("undef")));
+        }
+
+        Some(LoweredExpr::ObjectNew {
+            props: Vec::new(),
+            non_enumerable: 0,
+            span: Span::generated("object_new"),
+        })
     }
 
     pub(crate) fn function_props_for_object_expr(

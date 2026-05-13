@@ -42,6 +42,7 @@ impl Resolver {
         class_static_private_fields: ClassStaticPrivateFields,
         generator_function_names: HashSet<String>,
         next_func_id: usize,
+        is_strict_context: bool,
     ) -> Self {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
             class_maps(function_ids);
@@ -63,6 +64,7 @@ impl Resolver {
                 class_private_fields,
                 class_static_private_fields,
                 next_func_id,
+                is_strict_context,
             ),
         }
     }
@@ -84,6 +86,7 @@ impl Resolver {
         current_class: Option<&str>,
         in_constructor: bool,
         next_func_id: usize,
+        is_strict_context: bool,
     ) -> Result<(Self, Vec<LocalId>), Diagnostic> {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
             class_maps(function_ids);
@@ -105,6 +108,7 @@ impl Resolver {
                 class_private_fields,
                 class_static_private_fields,
                 next_func_id,
+                is_strict_context,
             ),
         };
         resolver
@@ -116,6 +120,17 @@ impl Resolver {
 
         for param in params {
             let clean_name = param.strip_prefix("...").unwrap_or(param.as_str());
+            if resolver.ctx.is_strict_context() && matches!(clean_name, "eval" | "arguments") {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-450: {:?} strict mode forbids binding parameter `{clean_name}`",
+                        crate::lowered::ctx::StrictModeCheck::StrictEval
+                    ),
+                    span: None,
+                    phase: None,
+                });
+            }
             if seen_params.contains_key(clean_name) {
                 return Err(Diagnostic {
                     code: DiagCode::DuplicateParameter,

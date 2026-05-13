@@ -1,3 +1,4 @@
+use crate::RuntimeFn;
 use crate::emitter::{LocalFrame, WatEmitter, module_init_symbol};
 use crate::stmt_emit::LoopContext;
 use crate::wasm_ir::WasmInstr;
@@ -135,7 +136,7 @@ fn set_current_module_id_instrs(module_id: usize, context: &str) -> Vec<WasmInst
 fn module_cache_init_instrs(cache_size: u32) -> Vec<WasmInstr> {
     vec![
         WasmInstr::I32Const(checked_i32(cache_size, "module cache size")),
-        WasmInstr::Call("$alloc_heap".to_owned()),
+        WasmInstr::Call(RuntimeFn::AllocHeap.symbol().to_owned()),
         WasmInstr::GlobalSet("$module_cache".to_owned()),
     ]
 }

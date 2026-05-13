@@ -19,12 +19,14 @@ pub(crate) use program_builtins::*;
 pub(crate) use program_captures::*;
 pub(crate) use program_direct_eval::*;
 pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnostic> {
+    let program_is_strict = block_has_use_strict_directive(program);
     let function_ids = collect_function_ids(program)?;
     let generator_function_names = collect_generator_function_names(program);
     let generator_function_yields = collect_generator_function_yields(program);
     let (generator_function_steps, generator_function_completion_steps) =
         collect_generator_function_steps(program);
-    let mut function_signatures = collect_function_signatures(program, &function_ids);
+    let mut function_signatures =
+        collect_function_signatures(program, &function_ids, program_is_strict);
     let top_level_local_names = collect_top_level_local_names(program)?;
     let map_callback_function_names = collect_array_map_callback_function_names(program);
     let function_captures = collect_callback_function_captures(
@@ -58,6 +60,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
         program,
         &mut next_func_id,
         &mut function_signatures,
+        program_is_strict,
     );
     let function_property_assignments =
         function_property_assignment_map(&preindexed_function_properties);
@@ -125,6 +128,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         next_func_id,
                         self_closure,
                         recursion_depth: *function_recursion_depths.get(&func_id).unwrap_or(&0),
+                        strict_context: program_is_strict,
                     },
                 )?;
                 next_func_id = lowered.next_func_id;
@@ -192,6 +196,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         next_func_id,
                         self_closure: None,
                         recursion_depth: *function_recursion_depths.get(&ctor_id).unwrap_or(&0),
+                        strict_context: true,
                     },
                 )?;
                 next_func_id = lowered.next_func_id;
@@ -251,6 +256,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                             recursion_depth: *function_recursion_depths
                                 .get(&method_id)
                                 .unwrap_or(&0),
+                            strict_context: true,
                         },
                     )?;
                     next_func_id = lowered.next_func_id;
@@ -292,6 +298,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                 next_func_id,
                 self_closure,
                 recursion_depth: 0,
+                strict_context: program_is_strict,
             },
         )?;
         next_func_id = lowered.next_func_id;
@@ -313,6 +320,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
         class_static_private_fields,
         generator_function_names,
         next_func_id,
+        program_is_strict,
     );
     resolver.ctx.facts.generator_function_yields = generator_function_yields;
     resolver.ctx.facts.generator_function_steps = generator_function_steps;
@@ -1505,6 +1513,7 @@ fn collect_class_static_private_fields(program: &[ResolvedStmt]) -> ClassStaticP
 fn collect_function_signatures(
     program: &[ResolvedStmt],
     function_ids: &HashMap<String, FuncId>,
+    parent_is_strict: bool,
 ) -> HashMap<FuncId, FunctionSignature> {
     let mut signatures = HashMap::new();
 
@@ -1518,6 +1527,7 @@ fn collect_function_signatures(
                     FunctionSignature {
                         explicit_params: params.len(),
                         needs_receiver: block_contains_this(body),
+                        is_strict: function_body_is_strict(parent_is_strict, body),
                         needs_arguments: block_contains_arguments(body)
                             && !params.iter().any(|param| param.name == "arguments"),
                         has_rest: params.iter().any(|param| param.is_rest),
@@ -1557,6 +1567,7 @@ fn collect_function_signatures(
                     FunctionSignature {
                         explicit_params: ctor_params_len,
                         has_rest: ctor_has_rest,
+                        is_strict: true,
                         returns_heap_closure: ctor_returns_heap_closure,
                         returns_dense_array: ctor_returns_dense_array,
                         ..FunctionSignature::default()
@@ -1571,6 +1582,7 @@ fn collect_function_signatures(
                         FunctionSignature {
                             explicit_params: method.params.len() + receiver_param_count,
                             has_rest: method.params.iter().any(|param| param.is_rest),
+                            is_strict: true,
                             returns_heap_closure: block_returns_declared_function(&method.body),
                             returns_dense_array: block_returns_dense_array_local(&method.body),
                             ..FunctionSignature::default()
@@ -1599,6 +1611,7 @@ fn collect_preindexed_function_properties(
     program: &[ResolvedStmt],
     next_func_id: &mut usize,
     function_signatures: &mut HashMap<FuncId, FunctionSignature>,
+    parent_is_strict: bool,
 ) -> Vec<PreindexedFunctionProperty> {
     let mut properties = Vec::new();
     for stmt in program {
@@ -1616,7 +1629,10 @@ fn collect_preindexed_function_properties(
         };
         let func_id = FuncId(*next_func_id);
         *next_func_id += 1;
-        function_signatures.insert(func_id, function_signature_for_params_body(params, body));
+        function_signatures.insert(
+            func_id,
+            function_signature_for_params_body(params, body, parent_is_strict),
+        );
         properties.push(PreindexedFunctionProperty {
             receiver: receiver.clone(),
             key: key.clone(),
@@ -1645,10 +1661,12 @@ fn function_property_assignment_map(
 fn function_signature_for_params_body(
     params: &[ResolvedParam],
     body: &[ResolvedStmt],
+    parent_is_strict: bool,
 ) -> FunctionSignature {
     FunctionSignature {
         explicit_params: params.len(),
         needs_receiver: block_contains_this(body),
+        is_strict: function_body_is_strict(parent_is_strict, body),
         needs_arguments: block_contains_arguments(body)
             && !params.iter().any(|param| param.name == "arguments"),
         has_rest: params.iter().any(|param| param.is_rest),
@@ -1742,6 +1760,24 @@ pub(crate) struct DirectEvalBlockFunctionEnv {
 
 pub(super) fn block_contains_this(stmts: &[ResolvedStmt]) -> bool {
     stmts.iter().any(stmt_contains_this)
+}
+
+pub(crate) fn function_body_is_strict(parent_is_strict: bool, stmts: &[ResolvedStmt]) -> bool {
+    parent_is_strict || block_has_use_strict_directive(stmts)
+}
+
+pub(crate) fn block_has_use_strict_directive(stmts: &[ResolvedStmt]) -> bool {
+    for stmt in stmts {
+        match stmt {
+            ResolvedStmt::Expr(ResolvedExpr::String(value)) => {
+                if value == "use strict" {
+                    return true;
+                }
+            }
+            _ => return false,
+        }
+    }
+    false
 }
 
 fn fixed_arity_metadata_length(params: &[ResolvedParam]) -> Option<usize> {
@@ -2803,6 +2839,7 @@ pub(crate) struct LowerFunctionOptions<'a> {
     pub(crate) self_closure: Option<SelfClosureOptions<'a>>,
     /// Recursion depth for this function (0 = not recursive, 1+ = recursive).
     pub(crate) recursion_depth: usize,
+    pub(crate) strict_context: bool,
 }
 
 pub(crate) struct SelfClosureOptions<'a> {
@@ -2833,6 +2870,7 @@ pub(super) fn lower_function(
     options: LowerFunctionOptions<'_>,
 ) -> Result<FunctionLowering, Diagnostic> {
     let signature = function_signatures.get(&id).copied().unwrap_or_default();
+    let is_strict_context = function_body_is_strict(options.strict_context, body);
     let mut lowered_params = Vec::new();
     if signature.needs_receiver {
         lowered_params.push(ResolvedParam {
@@ -2872,6 +2910,7 @@ pub(super) fn lower_function(
         options.current_class,
         options.in_constructor,
         options.next_func_id,
+        is_strict_context,
     )?;
 
     if let Some(self_closure) = options.self_closure {

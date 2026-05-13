@@ -3052,6 +3052,11 @@ fn function_expression_return_this_iife_fixture_matches_node_output_under_iwasm(
 }
 
 #[test]
+fn strict_function_this_iife_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/strict-function-this-iife.ts");
+}
+
+#[test]
 fn spread_operator_literal_array_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/spread-array-literal.ts");
 }

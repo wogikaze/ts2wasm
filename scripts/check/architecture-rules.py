@@ -172,6 +172,7 @@ FILE_SIZE_ALLOWLIST_1200 = {
     "crates/cli/tests/m6_builtin_methods.rs": "test file",
     "crates/cli/tests/ir_lowering.rs": "test file",
     "crates/cli/tests/m2_node_diff.rs": "test file",
+    "crates/ir/tests/mir_snapshot.rs": "test file",
 }
 
 # Files that use `use super::*` outside test modules (known legacy pattern).
@@ -220,7 +221,9 @@ FUNCTION_LENGTH_ALLOWLIST = {
     ("crates/ir/src/builtin_resolver.rs", "resolve_stmt_with_outer_bindings"): "P7: resolver decomposition -- 457 lines",
     ("crates/ir/src/builtin_resolver.rs", "resolve_expr"): "P7: resolver decomposition -- 577 lines",
     ("crates/ir/src/lowered/program.rs", "lower_program"): "P7: resolver decomposition -- 359 lines",
+    ("crates/ir/src/lowered/validate.rs", "validate_stmt"): "P7: lowered validator decomposition -- 207 lines",
     ("crates/ir/src/lowered/validate.rs", "validate_expr"): "P7: resolver decomposition -- 430 lines",
+    ("crates/ir/src/lowered/mir_validate.rs", "validate_expr"): "P14: MIR validator decomposition -- 228 lines",
     ("crates/ir/src/lowered/mir_dump.rs", "dump_mir_stmt"): "P14: MIR dump variant coverage dispatch -- 239 lines",
     ("crates/ir/src/lowered/mir_dump.rs", "dump_mir_expr"): "P14: MIR dump variant coverage dispatch -- 298 lines",
     ("crates/ir/src/lowered/mir_dump.rs", "runtime_intrinsic_name"): "P4: dump intrinsic name match -- 332 lines",

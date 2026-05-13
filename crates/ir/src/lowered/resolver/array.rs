@@ -501,6 +501,7 @@ impl super::Resolver {
             FunctionSignature {
                 explicit_params: params.len(),
                 needs_receiver: true,
+                is_strict: self.ctx.is_strict_context(),
                 ..FunctionSignature::default()
             },
         );
@@ -527,6 +528,7 @@ impl super::Resolver {
                 next_func_id: self.ctx.functions.next_func_id,
                 self_closure,
                 recursion_depth: 0,
+                strict_context: self.ctx.is_strict_context(),
             },
         )?;
         self.ctx.functions.next_func_id = lowered.next_func_id;
