@@ -2026,6 +2026,16 @@ fn build_smoke_arraybuffer_dataview_int16() {
 }
 
 #[test]
+fn build_smoke_arraybuffer_dataview_int32() {
+    let result = run_fixture("builtins-and-io/arraybuffer-dataview-int32.ts");
+    assert!(
+        result.is_ok(),
+        "DataView int32 should build successfully: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_arraybuffer_dataview_uint16() {
     let result = run_fixture("builtins-and-io/arraybuffer-dataview-uint16.ts");
     assert!(
