@@ -1,4 +1,5 @@
 use crate::emitter::WatEmitter;
+use crate::runtime_fn::RuntimeGlobal;
 use ts2wasm_runtime_abi::{consts::RuntimeConst, layout::Layout, value::ValueTag};
 
 impl WatEmitter<'_> {
@@ -1157,6 +1158,20 @@ tag_mask = ValueTag::TAG_MASK, object_tag = ValueTag::OBJECT, heap_mask = ValueT
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
+        ));
+    }
+
+    pub(crate) fn emit_global_this(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $global_this (result i32)
+    (if (i32.eqz (global.get {global_this}))
+      (then
+        (global.set {global_this} (call $object_create (i32.const {null})))))
+    (global.get {global_this}))
+"#,
+            global_this = RuntimeGlobal::GlobalThisObject.symbol(),
+            null = ValueTag::NULL,
         ));
     }
 

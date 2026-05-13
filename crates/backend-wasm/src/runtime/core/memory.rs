@@ -18,9 +18,18 @@ impl WatEmitter<'_> {
             .link_plan
             .required_globals()
             .contains(&RuntimeGlobal::ModuleCache);
+        let mark_global_this_root = self
+            .link_plan
+            .required_globals()
+            .contains(&RuntimeGlobal::GlobalThisObject);
 
         let gc_collect_roots = if mark_module_cache_roots {
             "\n    (call $gc_mark_module_cache_roots)"
+        } else {
+            ""
+        };
+        let global_this_root = if mark_global_this_root {
+            "\n    (call $gc_mark_value (global.get $global_this_object))"
         } else {
             ""
         };
@@ -101,7 +110,7 @@ impl WatEmitter<'_> {
             .collect::<String>();
 
         let gc_roots = format!(
-            "\n    (call $gc_mark_registered_roots)\n    (call $gc_mark_call_frame_roots){gc_collect_roots}{class_prototype_roots}{builtin_error_prototype_roots}"
+            "\n    (call $gc_mark_registered_roots)\n    (call $gc_mark_call_frame_roots){gc_collect_roots}{global_this_root}{class_prototype_roots}{builtin_error_prototype_roots}"
         );
 
         wat.push_str(&format!(

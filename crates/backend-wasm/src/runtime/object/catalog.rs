@@ -31,5 +31,6 @@ pub const OBJECT_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::ObjectDefineProperty,
     RuntimeFn::ObjectAssign,
     RuntimeFn::ObjectCreate,
+    RuntimeFn::GlobalThis,
     RuntimeFn::ObjectIs,
 ];

@@ -2635,6 +2635,11 @@ fn global_uri_component_matches_node_under_iwasm() {
 }
 
 #[test]
+fn global_this_matches_node_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-this.ts");
+}
+
+#[test]
 fn global_properties_matches_node_output() {
     for fixture in [
         "fixtures/builtins-and-io/global-0-args.ts",
@@ -2649,6 +2654,7 @@ fn global_properties_matches_node_output() {
         "fixtures/builtins-and-io/global-encode-uri.ts",
         "fixtures/builtins-and-io/global-decode-uri.ts",
         "fixtures/builtins-and-io/global-uri-component.ts",
+        "fixtures/builtins-and-io/global-this.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }

@@ -62,7 +62,11 @@ impl super::super::Resolver {
             ));
         }
         if name == "globalThis" {
-            return Ok(LoweredExpr::Undefined(Span::generated("undef")));
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::GlobalThis,
+                args: Vec::new(),
+                span: Span::generated("globalThis"),
+            });
         }
         if name == "Number"
             || name == "Boolean"
@@ -94,7 +98,6 @@ impl super::super::Resolver {
             || name == "WeakSet"
             || name == "Atomics"
             || name == "Intl"
-            || name == "globalThis"
             || name == "ArrayBuffer"
             || name == "DataView"
             || name == "Int8Array"
