@@ -1686,6 +1686,46 @@ fn array_shift_unshift_splice_matches_node() {
 }
 
 #[test]
+fn array_find_index_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-find-index.ts");
+}
+
+#[test]
+fn array_filter_thisarg_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-filter-thisarg.ts");
+}
+
+#[test]
+fn array_find_thisarg_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-find-thisarg.ts");
+}
+
+#[test]
+fn array_foreach_thisarg_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-foreach-thisarg.ts");
+}
+
+#[test]
+fn array_sparse_iteration_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-sparse-iteration.ts");
+}
+
+#[test]
+fn array_values_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-values.ts");
+}
+
+#[test]
+fn array_keys_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-keys.ts");
+}
+
+#[test]
+fn array_entries_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-entries.ts");
+}
+
+#[test]
 fn json_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/json-parse-array.ts",
