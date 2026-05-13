@@ -1212,6 +1212,7 @@ impl super::super::Resolver {
                         || name == "String"
                         || name == "Number"
                         || name == "Boolean"
+                        || name == "Symbol"
                         || name == "Array"
                         || name == "Promise"
             );

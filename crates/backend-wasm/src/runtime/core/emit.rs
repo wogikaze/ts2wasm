@@ -350,7 +350,7 @@ impl WatEmitter<'_> {
         wat.push_str(
             r#"
   (func $symbol_key_for (param $sym i32) (result i32)
-    (return (local.get $sym)))
+    (return (call $symbol_description (local.get $sym))))
 "#,
         );
     }

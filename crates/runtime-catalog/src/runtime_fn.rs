@@ -1107,7 +1107,7 @@ const JSON_PARSE_RUNTIME_STRINGS: &[&str] = &[RuntimeString::JSON_PARSE_SYNTAX_E
 // Symbol function dependencies
 const SYMBOL_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::Concat];
 const SYMBOL_FOR_DEPS: &[RuntimeFn] = &[RuntimeFn::Concat];
-const SYMBOL_KEY_FOR_DEPS: &[RuntimeFn] = &[];
+const SYMBOL_KEY_FOR_DEPS: &[RuntimeFn] = &[RuntimeFn::SymbolDescription];
 const SYMBOL_NEW_RUNTIME_STRINGS: &[&str] = &["Symbol(", ")", ""];
 const SYMBOL_FOR_RUNTIME_STRINGS: &[&str] = &["Symbol(", ")"];
 

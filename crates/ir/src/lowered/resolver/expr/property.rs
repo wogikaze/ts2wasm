@@ -61,6 +61,13 @@ impl super::super::Resolver {
                 Span::generated("object_proto_get"),
             ));
         }
+        if key == "description" {
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::SymbolDescription,
+                args: vec![self.lower_expr(object)?],
+                span: Span::generated("runtime_call"),
+            });
+        }
         if is_array_prototype_push_property(object, key) {
             return Ok(LoweredExpr::Number(0, Span::generated("num")));
         }

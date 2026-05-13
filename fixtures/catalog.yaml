@@ -421,6 +421,7 @@ directories:
     - string-trim-start.ts
     - string-trim.ts
     - symbol-constructor-basic.ts
+    - symbol-registry.ts
     - test-math-pow.ts
     - test-set-samevaluezero.ts
     - typedarray-basic.ts

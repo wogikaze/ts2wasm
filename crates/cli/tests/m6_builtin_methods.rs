@@ -1964,6 +1964,16 @@ fn build_smoke_symbol_runtime() {
     );
 }
 
+#[test]
+fn build_smoke_symbol_registry() {
+    let result = run_fixture("builtins-and-io/symbol-registry.ts");
+    assert!(
+        result.is_ok(),
+        "Symbol registry methods should build with runtime support: {:?}",
+        result.err()
+    );
+}
+
 // Atomics — stub that resolves without error
 #[test]
 fn build_smoke_atomics_intl_stubs() {

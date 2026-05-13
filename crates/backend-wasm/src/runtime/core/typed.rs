@@ -114,14 +114,18 @@ pub fn build_is_string() -> WasmFunction {
 
 /// Build the `$symbol_key_for` function.
 ///
-/// Simply returns its argument (identity function).
+/// Returns the registry key by unwrapping the symbol description payload.
 ///
 /// Remaining raw escape hatches: none.
 pub fn build_symbol_key_for() -> WasmFunction {
     WasmFunction::new("$symbol_key_for")
         .param(WasmValType::I32)
         .result(WasmValType::I32)
-        .body(vec![WasmInstr::LocalGet(0), WasmInstr::Return])
+        .body(vec![
+            WasmInstr::LocalGet(0),
+            WasmInstr::Call("$symbol_description".to_owned()),
+            WasmInstr::Return,
+        ])
 }
 
 /// Build the `$symbol_for` function.
@@ -472,9 +476,10 @@ mod tests {
     #[test]
     fn typed_symbol_key_for_emits_valid_wat() {
         let f = build_symbol_key_for();
-        let wat = emit_and_validate(&f);
+        let stubs = &[("$symbol_description", "i32", "i32")];
+        let wat = emit_and_validate_with_stubs(&f, stubs);
         assert!(wat.contains("$symbol_key_for"));
-        assert!(wat.contains("local.get 0"));
+        assert!(wat.contains("$symbol_description"));
     }
 
     #[test]
@@ -571,6 +576,9 @@ mod tests {
         w.emit_function(&build_symbol_key_for());
         w.emit_function(&build_symbol_for(open, close));
         w.emit_function(&build_symbol_new(open, close, empty, ValueTag::UNDEFINED));
+        w.push_str("  (func $symbol_description (param i32) (result i32)\n");
+        w.line(4, "(i32.const 0)");
+        w.func_end();
         w.push_str("  (func $concat (param i32) (param i32) (result i32)\n");
         w.line(4, "(i32.const 0)");
         w.func_end();
