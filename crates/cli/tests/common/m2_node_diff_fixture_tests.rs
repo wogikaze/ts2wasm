@@ -1726,6 +1726,16 @@ fn array_entries_matches_node() {
 }
 
 #[test]
+fn array_sort_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-sort.ts");
+}
+
+#[test]
+fn array_sort_comparator_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-sort-comparator.ts");
+}
+
+#[test]
 fn json_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/json-parse-array.ts",
