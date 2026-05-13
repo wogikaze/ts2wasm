@@ -77,6 +77,58 @@ fn lowered_expr_contains_class_prototype(expr: &LoweredExpr) -> bool {
     }
 }
 
+fn count_user_calls_in_stmt(stmt: &LoweredStmt) -> usize {
+    match stmt {
+        LoweredStmt::Let(_, expr, _)
+        | LoweredStmt::Expr(expr, _)
+        | LoweredStmt::Return(expr, _)
+        | LoweredStmt::Throw(expr, _) => count_user_calls_in_expr(expr),
+        LoweredStmt::Block(stmts, _) => stmts.iter().map(count_user_calls_in_stmt).sum(),
+        LoweredStmt::If {
+            condition,
+            then_body,
+            else_body,
+            ..
+        } => {
+            count_user_calls_in_expr(condition)
+                + then_body
+                    .iter()
+                    .map(count_user_calls_in_stmt)
+                    .sum::<usize>()
+                + else_body
+                    .iter()
+                    .map(count_user_calls_in_stmt)
+                    .sum::<usize>()
+        }
+        _ => 0,
+    }
+}
+
+fn count_user_calls_in_expr(expr: &LoweredExpr) -> usize {
+    match expr {
+        LoweredExpr::Call { kind, args, .. } => {
+            usize::from(matches!(kind, FunctionCallKind::User(_)))
+                + args.iter().map(count_user_calls_in_expr).sum::<usize>()
+        }
+        LoweredExpr::Block { stmts, result, .. } => {
+            stmts.iter().map(count_user_calls_in_stmt).sum::<usize>()
+                + count_user_calls_in_expr(result)
+        }
+        LoweredExpr::RuntimeCall { args, .. } | LoweredExpr::ArrayNew { elements: args, .. } => {
+            args.iter().map(count_user_calls_in_expr).sum()
+        }
+        LoweredExpr::ObjectNew { props, .. } => props
+            .iter()
+            .map(|(_, value)| count_user_calls_in_expr(value))
+            .sum(),
+        LoweredExpr::Unary { expr, .. } => count_user_calls_in_expr(expr),
+        LoweredExpr::Binary { left, right, .. } => {
+            count_user_calls_in_expr(left) + count_user_calls_in_expr(right)
+        }
+        _ => 0,
+    }
+}
+
 #[test]
 fn lowered_snapshot_empty() {
     let program = parse_resolve_lower("");
@@ -170,6 +222,34 @@ fn lowered_snapshot_dynamic_import_module_load() {
     assert_eq!(program.modules.len(), 1);
     assert_eq!(program.modules[0].id, 1);
     assert_eq!(program.modules[0].specifier, "./dep.ts");
+}
+
+#[test]
+fn lowered_snapshot_proxy_property_ops_dispatch_to_handler_traps() {
+    let program = parse_resolve_lower(
+        r#"
+        const target = { x: 10 };
+        function proxyGet(obj: any, prop: string) { return obj[prop]; }
+        function proxySet(obj: any, prop: string, value: number) { obj[prop] = value; return true; }
+        function proxyHas(obj: any, prop: string) { return true; }
+        function proxyDeleteProperty(obj: any, prop: string) { delete obj[prop]; return true; }
+        const handler = { get: proxyGet, set: proxySet, has: proxyHas, deleteProperty: proxyDeleteProperty };
+        const proxy = new Proxy(target, handler);
+        let getValue = proxy.x;
+        proxy.y = 7;
+        let hasValue = "x" in proxy;
+        let deleteValue = delete proxy.x;
+        "#,
+    );
+    let top_level_user_calls = program
+        .top_level_statements
+        .iter()
+        .map(count_user_calls_in_stmt)
+        .sum::<usize>();
+    assert_eq!(
+        top_level_user_calls, 4,
+        "expected get/set/has/delete proxy operations to dispatch through handler functions"
+    );
 }
 
 #[test]

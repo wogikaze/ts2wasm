@@ -291,6 +291,7 @@ impl super::super::Resolver {
         mut args: Vec<ResolvedExpr>,
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
+        // ProxyDispatch: statically known Proxy receivers route through handler traps.
         let mut trap_args = Vec::with_capacity(args.len() + 1);
         trap_args.push(proxy.target);
         trap_args.append(&mut args);
