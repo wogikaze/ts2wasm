@@ -642,6 +642,9 @@ impl WatEmitter<'_> {
     (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $dc))
     (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
     (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    (i32.store
+      (i32.add (local.get $result_ptr) (i32.const {presence_words_offset}))
+      (i32.sub (i32.shl (i32.const 1) (local.get $dc)) (i32.const 1)))
     ;; Copy removed elements to result
     (local.set $i (i32.const {zero}))
     (block $copy_done
@@ -685,6 +688,7 @@ impl WatEmitter<'_> {
             array_tag = ValueTag::ARRAY,
             heap_mask = ValueTag::HEAP_MASK,
             array_header = Layout::ARRAY_HEADER_SIZE,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
             number_shift = ValueTag::NUMBER_SHIFT,
             zero = RuntimeConst::ZERO,
