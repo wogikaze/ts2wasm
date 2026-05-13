@@ -1398,6 +1398,8 @@ fn array_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/array-join.ts",
         "fixtures/builtins-and-io/array-pop.ts",
         "fixtures/builtins-and-io/array-push.ts",
+        "fixtures/builtins-and-io/array-push-multi-arg.ts",
+        "fixtures/builtins-and-io/array-prototype-push-array-like.ts",
         "fixtures/builtins-and-io/array-index-of.ts",
         "fixtures/builtins-and-io/array-includes.ts",
         "fixtures/builtins-and-io/array-find.ts",
