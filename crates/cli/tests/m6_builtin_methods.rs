@@ -1882,6 +1882,16 @@ fn build_smoke_weakmap_weakset_basic() {
     );
 }
 
+#[test]
+fn build_smoke_weakmap_complete() {
+    let result = run_fixture("builtins-and-io/weakmap-weakset-basic.ts");
+    assert!(
+        result.is_ok(),
+        "complete WeakMap/WeakSet operations should build successfully: {:?}",
+        result.err()
+    );
+}
+
 // Global this / this binding — top-level this resolves to undefined in WASM
 #[test]
 fn build_smoke_this_binding() {

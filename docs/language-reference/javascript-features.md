@@ -269,7 +269,7 @@ BigInt mixed comparison の object `ToPrimitive` boundary: direct object-literal
 | `with` | ES1 | scope extension | 未実装 (unsupported-dynamic-code) | P3 | - |
 | `Proxy` | ES6 | meta-programming | 部分実装 (statically visible `new Proxy(target, handler)` locals support basic get/set/has/deleteProperty trap lowering) | P3 | 407 |
 | `Reflect` | ES6 | reflection API | 未実装 | P3 | - |
-| `Map` / `Set` / `WeakMap` / `WeakSet` | ES6 | collection types | 未実装 | P1 | - |
+| `Map` / `Set` / `WeakMap` / `WeakSet` | ES6 | collection types | 実装済み (WeakMap set/get/has/delete and WeakSet add/has/delete are covered by Node differential fixtures) | P1 | 423 |
 | `Date` | ES1 | date/time | 未実装 | P1 | - |
 | `RegExp` | ES3 | regular expressions | 部分実装 (literal pattern byte matching; `test`/`match`/`exec`; character class `[...]` / case-insensitive `i` flag / extended escape sequences supported) | P1 | 051, 214, 5004 |
 | `JSON` | ES5 | JSON parsing/stringifying | 未実装 | P1 | - |
