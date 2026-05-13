@@ -30,6 +30,7 @@ impl WatEmitter<'_> {
             RuntimeFn::ObjectDefineProperty => self.emit_object_define_property(wat),
             RuntimeFn::ObjectAssign => self.emit_object_assign(wat),
             RuntimeFn::ObjectCreate => self.emit_object_create(wat),
+            RuntimeFn::ObjectPrototype => self.emit_object_prototype(wat),
             RuntimeFn::GlobalThis => self.emit_global_this(wat),
             RuntimeFn::ObjectIs => self.emit_object_is(wat),
             _ => unreachable!("non-object RuntimeFn routed to object dispatch"),

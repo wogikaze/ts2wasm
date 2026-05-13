@@ -1758,9 +1758,11 @@ impl WatEmitter<'_> {
                     flags,
                 ));
                 writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 0))\n",
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.and (call {}) (i32.const {})))\n",
                     frame.heap_base_tmp(),
                     Layout::OBJECT_PROTOTYPE_OFFSET,
+                    RuntimeFn::ObjectPrototype.symbol(),
+                    ValueTag::HEAP_MASK,
                 ));
                 let child_frame = frame.child_temp_frame();
                 for (i, (key, val)) in props.iter().enumerate() {

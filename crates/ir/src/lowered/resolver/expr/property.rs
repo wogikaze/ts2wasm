@@ -45,6 +45,13 @@ impl super::super::Resolver {
         if matches!(object, ResolvedExpr::Ident(name) if name == "super") {
             return self.lower_super_property_get(object, key, span);
         }
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Object") && key == "prototype" {
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ObjectPrototype,
+                args: Vec::new(),
+                span: Span::generated("object_prototype"),
+            });
+        }
         if is_array_prototype_push_property(object, key) {
             return Ok(LoweredExpr::Number(0, Span::generated("num")));
         }

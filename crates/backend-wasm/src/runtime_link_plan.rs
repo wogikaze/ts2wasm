@@ -448,6 +448,7 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
         }
         LoweredExpr::ObjectNew { props, .. } => {
             plan.add_required_runtime(RuntimeFn::AllocHeap);
+            plan.add_required_runtime(RuntimeFn::ObjectPrototype);
             for (_, val) in props {
                 collect_required_runtime_expr(plan, val);
             }

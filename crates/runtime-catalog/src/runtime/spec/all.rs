@@ -1614,6 +1614,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ObjectPrototype => RuntimeSpec {
+                symbol: "$object_prototype",
+                deps: OBJECT_PROTOTYPE_OBJECT_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::GlobalThis => RuntimeSpec {
                 symbol: "$global_this",
                 deps: GLOBAL_THIS_DEPS,

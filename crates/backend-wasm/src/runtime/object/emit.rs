@@ -1193,6 +1193,27 @@ tag_mask = ValueTag::TAG_MASK, object_tag = ValueTag::OBJECT, heap_mask = ValueT
         ));
     }
 
+    pub(crate) fn emit_object_prototype(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_prototype (result i32)
+    (if (i32.eqz (global.get {object_prototype}))
+      (then
+        (global.set {object_prototype} (call $alloc_heap (i32.const {obj_header})))
+        (i32.store (global.get {object_prototype}) (i32.const {zero}))
+        (i32.store (i32.add (global.get {object_prototype}) (i32.const {obj_flags})) (i32.const {zero}))
+        (i32.store (i32.add (global.get {object_prototype}) (i32.const {obj_proto})) (i32.const {zero}))))
+    (i32.or (global.get {object_prototype}) (i32.const {object_tag})))
+"#,
+            object_prototype = RuntimeGlobal::ObjectPrototypeObject.symbol(),
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            object_tag = ValueTag::OBJECT,
+            zero = RuntimeConst::ZERO,
+        ));
+    }
+
     pub(crate) fn emit_global_this(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

@@ -340,6 +340,8 @@ pub enum RuntimeFn {
     ObjectAssign,
     /// Object.create(proto, propertiesObject)
     ObjectCreate,
+    /// Singleton ECMAScript Object.prototype object.
+    ObjectPrototype,
     /// Singleton ECMAScript globalThis object.
     GlobalThis,
     /// Object.is(value1, value2) — SameValue comparison
@@ -513,6 +515,7 @@ pub enum RuntimeGlobal {
     ExceptionPending,
     ExceptionHandlerDepth,
     GlobalThisObject,
+    ObjectPrototypeObject,
 }
 
 impl RuntimeGlobal {
@@ -534,6 +537,7 @@ impl RuntimeGlobal {
             Self::ExceptionPending => "$exception_pending",
             Self::ExceptionHandlerDepth => "$exception_handler_depth",
             Self::GlobalThisObject => "$global_this_object",
+            Self::ObjectPrototypeObject => "$object_prototype_object",
         }
     }
 
@@ -552,7 +556,7 @@ impl RuntimeGlobal {
             Self::ModuleCache | Self::CurrentModuleId => 0,
             Self::SetPrototypeAdd => NATIVE_SET_ADD_SENTINEL,
             Self::ExceptionPending | Self::ExceptionHandlerDepth => 0,
-            Self::GlobalThisObject => 0,
+            Self::GlobalThisObject | Self::ObjectPrototypeObject => 0,
         }
     }
 }
@@ -588,6 +592,7 @@ const GLOBALS_MODULE_RUNTIME: &[RuntimeGlobal] =
     &[RuntimeGlobal::ModuleCache, RuntimeGlobal::CurrentModuleId];
 const GLOBALS_SET_PROTOTYPE_ADD: &[RuntimeGlobal] = &[RuntimeGlobal::SetPrototypeAdd];
 const GLOBALS_GLOBAL_THIS: &[RuntimeGlobal] = &[RuntimeGlobal::GlobalThisObject];
+const GLOBALS_OBJECT_PROTOTYPE: &[RuntimeGlobal] = &[RuntimeGlobal::ObjectPrototypeObject];
 pub const GLOBALS_EXCEPTION_RUNTIME: &[RuntimeGlobal] = &[
     RuntimeGlobal::ExceptionPending,
     RuntimeGlobal::ExceptionHandlerDepth,
@@ -949,6 +954,7 @@ const OBJECT_ASSIGN_DEPS: &[RuntimeFn] = &[
     RuntimeFn::PropertySet,
 ];
 const OBJECT_CREATE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const OBJECT_PROTOTYPE_OBJECT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const GLOBAL_THIS_DEPS: &[RuntimeFn] = &[RuntimeFn::ObjectCreate];
 const INDEX_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
@@ -1074,6 +1080,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ObjectDefineProperty" => Some(RuntimeFn::ObjectDefineProperty),
         "ObjectAssign" => Some(RuntimeFn::ObjectAssign),
         "ObjectCreate" => Some(RuntimeFn::ObjectCreate),
+        "ObjectPrototype" => Some(RuntimeFn::ObjectPrototype),
         "GlobalThis" => Some(RuntimeFn::GlobalThis),
         "ObjectIs" => Some(RuntimeFn::ObjectIs),
         "ValueOf" => Some(RuntimeFn::ValueOf),
@@ -1536,6 +1543,7 @@ impl RuntimeFn {
             | Self::ObjectDefineProperty
             | Self::ObjectAssign
             | Self::ObjectCreate
+            | Self::ObjectPrototype
             | Self::GlobalThis
             | Self::ObjectIs => RuntimeDomain::Object,
             Self::Add
@@ -1655,6 +1663,7 @@ impl RuntimeFn {
             Self::SetFromArray | Self::SetPrototypeAddGet | Self::SetPrototypeAddSet => {
                 GLOBALS_SET_PROTOTYPE_ADD
             }
+            Self::ObjectPrototype => GLOBALS_OBJECT_PROTOTYPE,
             Self::GlobalThis => GLOBALS_GLOBAL_THIS,
             _ => NO_GLOBALS,
         }
@@ -1675,12 +1684,13 @@ impl RuntimeFn {
     pub const fn stack_effect(self) -> RuntimeSignature {
         match self {
             // 0 params, 1 result
-            Self::PrivateBrandTypeError | Self::Dollar262Global | Self::GlobalThis => {
-                RuntimeSignature {
-                    params: 0,
-                    results: 1,
-                }
-            }
+            Self::PrivateBrandTypeError
+            | Self::Dollar262Global
+            | Self::ObjectPrototype
+            | Self::GlobalThis => RuntimeSignature {
+                params: 0,
+                results: 1,
+            },
 
             // 1 param, 0 results (side-effect only)
             Self::ModuleExportsAssign => RuntimeSignature {
@@ -2010,6 +2020,7 @@ impl RuntimeFn {
             Self::ObjectDefineProperty,
             Self::ObjectAssign,
             Self::ObjectCreate,
+            Self::ObjectPrototype,
             Self::GlobalThis,
             Self::ObjectIs,
             Self::ValueOf,
@@ -2336,6 +2347,7 @@ impl RuntimeFn {
             Self::ObjectDefineProperty,
             Self::ObjectAssign,
             Self::ObjectCreate,
+            Self::ObjectPrototype,
             Self::GlobalThis,
             Self::ObjectIs,
             Self::ValueOf,

@@ -202,6 +202,7 @@ match self {
             Self::ObjectDefineProperty => "object_define_property",
             Self::ObjectAssign => "object_assign",
             Self::ObjectCreate => "object_create",
+            Self::ObjectPrototype => "object_prototype",
             Self::GlobalThis => "global_this",
             Self::ObjectIs => "object_is",
             Self::Add => "add",
