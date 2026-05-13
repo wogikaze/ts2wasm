@@ -1773,8 +1773,6 @@ impl RuntimeFn {
             | Self::DataViewNew
             | Self::DataViewGetInt8
             | Self::DataViewGetUint8
-            | Self::DataViewGetInt32
-            | Self::DataViewGetUint32
             | Self::DataViewGetFloat64
             | Self::SymbolToPrimitive
             | Self::SymbolHasInstance => RuntimeSignature {
@@ -1788,7 +1786,9 @@ impl RuntimeFn {
             | Self::PropertyHas
             | Self::TypedArraySet
             | Self::DataViewGetInt16
-            | Self::DataViewGetUint16 => RuntimeSignature {
+            | Self::DataViewGetUint16
+            | Self::DataViewGetInt32
+            | Self::DataViewGetUint32 => RuntimeSignature {
                 params: 3,
                 results: 1,
             },
@@ -1797,8 +1797,6 @@ impl RuntimeFn {
             Self::ModuleExportsSet
             | Self::DataViewSetInt8
             | Self::DataViewSetUint8
-            | Self::DataViewSetInt32
-            | Self::DataViewSetUint32
             | Self::DataViewSetFloat64 => RuntimeSignature {
                 params: 3,
                 results: 0,
@@ -1811,7 +1809,10 @@ impl RuntimeFn {
             },
 
             // 4 params, 0 results
-            Self::DataViewSetInt16 | Self::DataViewSetUint16 => RuntimeSignature {
+            Self::DataViewSetInt16
+            | Self::DataViewSetUint16
+            | Self::DataViewSetInt32
+            | Self::DataViewSetUint32 => RuntimeSignature {
                 params: 4,
                 results: 0,
             },

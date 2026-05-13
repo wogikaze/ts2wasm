@@ -318,114 +318,184 @@ impl WatEmitter<'_> {
     }
 
     /// DataView.prototype.getInt32(byteOffset, littleEndian?) — read i32 from buffer.
-    /// Args: (dataview_value, byte_offset) — byteOffset is a tagged runtime number.
+    /// Args: (dataview_value, byte_offset, little_endian) — byteOffset is a tagged runtime number.
     /// Returns a tagged number value.
     pub(super) fn emit_dataview_get_int32(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $dataview_get_int32 (param $dv i32) (param $offset i32) (result i32)
+  (func $dataview_get_int32 (param $dv i32) (param $offset i32) (param $little_endian i32) (result i32)
     (local $dv_base i32)
     (local $buf_base i32)
     (local $buf_offset i32)
     (local $byte_offset i32)
+    (local $addr i32)
+    (local $b0 i32)
+    (local $b1 i32)
+    (local $b2 i32)
+    (local $b3 i32)
     (local $value i32)
     (local.set $dv_base (i32.and (local.get $dv) (i32.const {heap_mask})))
     (local.set $buf_base (i32.load (local.get $dv_base)))
     (local.set $buf_offset (i32.load (i32.add (local.get $dv_base) (i32.const 4))))
     (local.set $byte_offset (i32.shr_s (local.get $offset) (i32.const {num_shift})))
-    (local.set $value
-      (i32.load
-        (i32.add
-          (local.get $buf_base)
-          (i32.add (i32.const {array_header}) (i32.add (local.get $buf_offset) (local.get $byte_offset))))))
+    (local.set $addr
+      (i32.add
+        (local.get $buf_base)
+        (i32.add (i32.const {array_header}) (i32.add (local.get $buf_offset) (local.get $byte_offset)))))
+    (local.set $b0 (i32.load8_u (local.get $addr)))
+    (local.set $b1 (i32.load8_u (i32.add (local.get $addr) (i32.const 1))))
+    (local.set $b2 (i32.load8_u (i32.add (local.get $addr) (i32.const 2))))
+    (local.set $b3 (i32.load8_u (i32.add (local.get $addr) (i32.const 3))))
+    (if (i32.eq (local.get $little_endian) (i32.const {true_tag}))
+      (then
+        (local.set $value
+          (i32.or
+            (i32.or (local.get $b0) (i32.shl (local.get $b1) (i32.const 8)))
+            (i32.or (i32.shl (local.get $b2) (i32.const 16)) (i32.shl (local.get $b3) (i32.const 24))))))
+      (else
+        (local.set $value
+          (i32.or
+            (i32.or (i32.shl (local.get $b0) (i32.const 24)) (i32.shl (local.get $b1) (i32.const 16)))
+            (i32.or (i32.shl (local.get $b2) (i32.const 8)) (local.get $b3))))))
     (i32.or (i32.shl (local.get $value) (i32.const {num_shift})) (i32.const {num_tag})))
 "#,
             heap_mask = ValueTag::HEAP_MASK,
             array_header = Layout::ARRAY_HEADER_SIZE,
             num_shift = ValueTag::NUMBER_SHIFT,
             num_tag = ValueTag::NUMBER,
+            true_tag = ValueTag::TRUE,
         ));
     }
 
     /// DataView.prototype.setInt32(byteOffset, value, littleEndian?) — write i32 to buffer.
-    /// Args: (dataview_value, byte_offset, value).
+    /// Args: (dataview_value, byte_offset, value, little_endian).
     pub(super) fn emit_dataview_set_int32(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $dataview_set_int32 (param $dv i32) (param $offset i32) (param $value i32)
+  (func $dataview_set_int32 (param $dv i32) (param $offset i32) (param $value i32) (param $little_endian i32)
     (local $dv_base i32)
     (local $buf_base i32)
     (local $buf_offset i32)
     (local $byte_offset i32)
+    (local $addr i32)
+    (local $raw i32)
     (local.set $dv_base (i32.and (local.get $dv) (i32.const {heap_mask})))
     (local.set $buf_base (i32.load (local.get $dv_base)))
     (local.set $buf_offset (i32.load (i32.add (local.get $dv_base) (i32.const 4))))
     (local.set $byte_offset (i32.shr_s (local.get $offset) (i32.const {num_shift})))
-    (i32.store
+    (local.set $addr
       (i32.add
         (local.get $buf_base)
-        (i32.add (i32.const {array_header}) (i32.add (local.get $buf_offset) (local.get $byte_offset))))
-      (i32.shr_s (local.get $value) (i32.const {num_shift}))))
+        (i32.add (i32.const {array_header}) (i32.add (local.get $buf_offset) (local.get $byte_offset)))))
+    (local.set $raw (i32.shr_s (local.get $value) (i32.const {num_shift})))
+    (if (i32.eq (local.get $little_endian) (i32.const {true_tag}))
+      (then
+        (i32.store8 (local.get $addr) (local.get $raw))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 1)) (i32.shr_u (local.get $raw) (i32.const 8)))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 2)) (i32.shr_u (local.get $raw) (i32.const 16)))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 3)) (i32.shr_u (local.get $raw) (i32.const 24))))
+      (else
+        (i32.store8 (local.get $addr) (i32.shr_u (local.get $raw) (i32.const 24)))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 1)) (i32.shr_u (local.get $raw) (i32.const 16)))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 2)) (i32.shr_u (local.get $raw) (i32.const 8)))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 3)) (local.get $raw))))
+  )
 "#,
             heap_mask = ValueTag::HEAP_MASK,
             array_header = Layout::ARRAY_HEADER_SIZE,
             num_shift = ValueTag::NUMBER_SHIFT,
+            true_tag = ValueTag::TRUE,
         ));
     }
 
     /// DataView.prototype.getUint32(byteOffset, littleEndian?) - read unsigned u32.
-    /// Args: (dataview_value, byte_offset) - byteOffset is a tagged runtime number.
+    /// Args: (dataview_value, byte_offset, little_endian) - byteOffset is a tagged runtime number.
     /// Returns a tagged number value for values representable in the current small-int runtime.
     pub(super) fn emit_dataview_get_uint32(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $dataview_get_uint32 (param $dv i32) (param $offset i32) (result i32)
+  (func $dataview_get_uint32 (param $dv i32) (param $offset i32) (param $little_endian i32) (result i32)
     (local $dv_base i32)
     (local $buf_base i32)
     (local $buf_offset i32)
     (local $byte_offset i32)
+    (local $addr i32)
+    (local $b0 i32)
+    (local $b1 i32)
+    (local $b2 i32)
+    (local $b3 i32)
     (local $value i32)
     (local.set $dv_base (i32.and (local.get $dv) (i32.const {heap_mask})))
     (local.set $buf_base (i32.load (local.get $dv_base)))
     (local.set $buf_offset (i32.load (i32.add (local.get $dv_base) (i32.const 4))))
     (local.set $byte_offset (i32.shr_s (local.get $offset) (i32.const {num_shift})))
-    (local.set $value
-      (i32.load
-        (i32.add
-          (local.get $buf_base)
-          (i32.add (i32.const {array_header}) (i32.add (local.get $buf_offset) (local.get $byte_offset))))))
+    (local.set $addr
+      (i32.add
+        (local.get $buf_base)
+        (i32.add (i32.const {array_header}) (i32.add (local.get $buf_offset) (local.get $byte_offset)))))
+    (local.set $b0 (i32.load8_u (local.get $addr)))
+    (local.set $b1 (i32.load8_u (i32.add (local.get $addr) (i32.const 1))))
+    (local.set $b2 (i32.load8_u (i32.add (local.get $addr) (i32.const 2))))
+    (local.set $b3 (i32.load8_u (i32.add (local.get $addr) (i32.const 3))))
+    (if (i32.eq (local.get $little_endian) (i32.const {true_tag}))
+      (then
+        (local.set $value
+          (i32.or
+            (i32.or (local.get $b0) (i32.shl (local.get $b1) (i32.const 8)))
+            (i32.or (i32.shl (local.get $b2) (i32.const 16)) (i32.shl (local.get $b3) (i32.const 24))))))
+      (else
+        (local.set $value
+          (i32.or
+            (i32.or (i32.shl (local.get $b0) (i32.const 24)) (i32.shl (local.get $b1) (i32.const 16)))
+            (i32.or (i32.shl (local.get $b2) (i32.const 8)) (local.get $b3))))))
     (i32.or (i32.shl (local.get $value) (i32.const {num_shift})) (i32.const {num_tag})))
 "#,
             heap_mask = ValueTag::HEAP_MASK,
             array_header = Layout::ARRAY_HEADER_SIZE,
             num_shift = ValueTag::NUMBER_SHIFT,
             num_tag = ValueTag::NUMBER,
+            true_tag = ValueTag::TRUE,
         ));
     }
 
     /// DataView.prototype.setUint32(byteOffset, value, littleEndian?) - write unsigned u32.
-    /// Args: (dataview_value, byte_offset, value), with numeric args tagged.
+    /// Args: (dataview_value, byte_offset, value, little_endian), with numeric args tagged.
     pub(super) fn emit_dataview_set_uint32(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $dataview_set_uint32 (param $dv i32) (param $offset i32) (param $value i32)
+  (func $dataview_set_uint32 (param $dv i32) (param $offset i32) (param $value i32) (param $little_endian i32)
     (local $dv_base i32)
     (local $buf_base i32)
     (local $buf_offset i32)
     (local $byte_offset i32)
+    (local $addr i32)
+    (local $raw i32)
     (local.set $dv_base (i32.and (local.get $dv) (i32.const {heap_mask})))
     (local.set $buf_base (i32.load (local.get $dv_base)))
     (local.set $buf_offset (i32.load (i32.add (local.get $dv_base) (i32.const 4))))
     (local.set $byte_offset (i32.shr_s (local.get $offset) (i32.const {num_shift})))
-    (i32.store
+    (local.set $addr
       (i32.add
         (local.get $buf_base)
-        (i32.add (i32.const {array_header}) (i32.add (local.get $buf_offset) (local.get $byte_offset))))
-      (i32.shr_s (local.get $value) (i32.const {num_shift}))))
+        (i32.add (i32.const {array_header}) (i32.add (local.get $buf_offset) (local.get $byte_offset)))))
+    (local.set $raw (i32.shr_s (local.get $value) (i32.const {num_shift})))
+    (if (i32.eq (local.get $little_endian) (i32.const {true_tag}))
+      (then
+        (i32.store8 (local.get $addr) (local.get $raw))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 1)) (i32.shr_u (local.get $raw) (i32.const 8)))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 2)) (i32.shr_u (local.get $raw) (i32.const 16)))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 3)) (i32.shr_u (local.get $raw) (i32.const 24))))
+      (else
+        (i32.store8 (local.get $addr) (i32.shr_u (local.get $raw) (i32.const 24)))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 1)) (i32.shr_u (local.get $raw) (i32.const 16)))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 2)) (i32.shr_u (local.get $raw) (i32.const 8)))
+        (i32.store8 (i32.add (local.get $addr) (i32.const 3)) (local.get $raw))))
+  )
 "#,
             heap_mask = ValueTag::HEAP_MASK,
             array_header = Layout::ARRAY_HEADER_SIZE,
             num_shift = ValueTag::NUMBER_SHIFT,
+            true_tag = ValueTag::TRUE,
         ));
     }
 
