@@ -957,17 +957,7 @@ impl WatEmitter<'_> {
                       (i32.add (local.get $ptr) (local.get $out))
                       (local.get $gap)
                       (local.get $gap_ptr)
-                      (i32.add (local.get $depth) (i32.const {one})))))
-                (local.set $out (i32.add (local.get $out) (call $json_write_newline_indent
-                  (i32.add (local.get $ptr) (local.get $out))
-                  (local.get $gap)
-                  (local.get $gap_ptr)
-                  (i32.add (local.get $depth) (i32.const {one})))))
-                (local.set $out (i32.add (local.get $out) (call $json_write_newline_indent
-                  (i32.add (local.get $ptr) (local.get $out))
-                  (local.get $gap)
-                  (local.get $gap_ptr)
-                  (i32.add (local.get $depth) (i32.const {one})))))))
+                      (i32.add (local.get $depth) (i32.const {one})))))))
             (local.set $child_len
               (call $json_write_escaped_string
                 (local.get $key_raw)
