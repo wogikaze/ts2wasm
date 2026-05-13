@@ -1390,6 +1390,21 @@ fn string_supplementary_matches_node_output() {
 }
 
 #[test]
+fn string_trim_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-trim.ts");
+}
+
+#[test]
+fn string_to_upper_case_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-to-upper-case.ts");
+}
+
+#[test]
+fn string_to_lower_case_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-to-lower-case.ts");
+}
+
+#[test]
 fn string_pad_start_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/string-pad-start.ts");
 }
