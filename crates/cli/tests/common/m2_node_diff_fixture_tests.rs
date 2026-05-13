@@ -3106,4 +3106,3 @@ fn fncsem_computed_call_unsupported_reports_unsupported_syntax() {
         "only identifier calls are supported",
     );
 }
-}

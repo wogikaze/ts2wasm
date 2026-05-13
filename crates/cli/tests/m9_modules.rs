@@ -383,7 +383,6 @@ fn static_binary_import_build_smoke() {
     assert_fixture_build_smoke("module-system/static-binary-import-entry.ts");
 }
 
-
 #[test]
 fn static_export_function_import_build_smoke() {
     assert_fixture_build_smoke("module-system/static-export-function-import-entry.ts");
