@@ -1502,20 +1502,13 @@ fn build_smoke_string_match_all() {
     );
 }
 
-// Array.prototype.sort — W4: precise unsupported diagnostic for non-comparator sort
-// Current: "Array.prototype.sort is currently supported only for dense numeric arrays with comparator"
 #[test]
-fn build_smoke_array_sort_unsupported_diagnostic() {
+fn build_smoke_array_sort_default() {
     let result = run_fixture("builtins-and-io/array-sort.ts");
     assert!(
-        result.is_err(),
-        "Array.sort (non-comparator) should produce unsupported diagnostic"
-    );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("sort") && err_msg.contains("supported only"),
-        "Diagnostic should mention sort conditional support: {}",
-        err_msg
+        result.is_ok(),
+        "Array.sort default should build: {:?}",
+        result.err()
     );
 }
 

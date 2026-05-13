@@ -958,14 +958,6 @@ fn regexp_compile_fixture_reports_issue_051() {
 }
 
 #[test]
-fn array_sort_unsupported_forms_report_issue_299() {
-    assert_build_fails_with_unsupported_builtin(
-        "fixtures/core-semantics/array-sort-default-unsupported.ts",
-        "issue-299: Array.prototype.sort",
-    );
-}
-
-#[test]
 fn object_get_own_property_descriptor_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-get-own-property-descriptor.ts");
 }

@@ -15,6 +15,7 @@ match self {
             Self::ArrayMapArrayLikeIdentity => "array_map_array_like_identity",
             Self::ArrayMapArrayLikeDouble => "array_map_array_like_double",
             Self::ArraySortNumeric => "array_sort_numeric",
+            Self::ArraySortLexicographic => "array_sort_lexicographic",
             Self::ArrayJoin => "array_join",
             Self::ArrayReverse => "array_reverse",
             Self::ArrayIndexOf => "array_index_of",

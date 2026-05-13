@@ -247,6 +247,7 @@ pub enum RuntimeFn {
     ArrayMapArrayLikeIdentity,
     ArrayMapArrayLikeDouble,
     ArraySortNumeric,
+    ArraySortLexicographic,
     ArrayJoin,
     ArrayReverse,
     /// Array.prototype.indexOf
@@ -879,6 +880,7 @@ const ARRAY_MAP_ARRAY_LIKE_DOUBLE_DEPS: &[RuntimeFn] = &[
     RuntimeFn::Mul,
 ];
 const ARRAY_SORT_NUMERIC_DEPS: &[RuntimeFn] = &[RuntimeFn::NumberToI32];
+const ARRAY_SORT_LEXICOGRAPHIC_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto];
 const ARRAY_JOIN_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ValueToStringInto,
     RuntimeFn::AllocHeap,
@@ -1131,6 +1133,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayMapArrayLikeIdentity" => Some(RuntimeFn::ArrayMapArrayLikeIdentity),
         "ArrayMapArrayLikeDouble" => Some(RuntimeFn::ArrayMapArrayLikeDouble),
         "ArraySortNumeric" => Some(RuntimeFn::ArraySortNumeric),
+        "ArraySortLexicographic" => Some(RuntimeFn::ArraySortLexicographic),
         "ArrayJoin" => Some(RuntimeFn::ArrayJoin),
         "ArrayReverse" => Some(RuntimeFn::ArrayReverse),
         "ArrayIndexOf" => Some(RuntimeFn::ArrayIndexOf),
@@ -1353,6 +1356,7 @@ impl RuntimeFn {
             | Self::ArrayMapArrayLikeIdentity
             | Self::ArrayMapArrayLikeDouble
             | Self::ArraySortNumeric
+            | Self::ArraySortLexicographic
             | Self::ArrayJoin
             | Self::ArrayReverse
             | Self::ArrayIndexOf
@@ -1967,6 +1971,7 @@ impl RuntimeFn {
             Self::ArrayMapArrayLikeIdentity,
             Self::ArrayMapArrayLikeDouble,
             Self::ArraySortNumeric,
+            Self::ArraySortLexicographic,
             Self::ArrayJoin,
             Self::ArrayReverse,
             Self::ArrayIndexOf,
@@ -2294,6 +2299,7 @@ impl RuntimeFn {
             Self::ArrayMapArrayLikeIdentity,
             Self::ArrayMapArrayLikeDouble,
             Self::ArraySortNumeric,
+            Self::ArraySortLexicographic,
             Self::ArrayJoin,
             Self::ArrayReverse,
             Self::ArrayIndexOf,

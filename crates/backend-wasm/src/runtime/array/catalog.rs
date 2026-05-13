@@ -21,6 +21,7 @@ pub const ARRAY_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::ArrayMapArrayLikeIdentity,
     RuntimeFn::ArrayMapArrayLikeDouble,
     RuntimeFn::ArraySortNumeric,
+    RuntimeFn::ArraySortLexicographic,
     RuntimeFn::ArrayJoin,
     RuntimeFn::ArrayToReversed,
     RuntimeFn::ArrayToSorted,

@@ -1049,6 +1049,14 @@ impl super::super::Resolver {
         if method == "sort"
             && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
         {
+            if args.is_empty() {
+                return Ok(Some(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::ArraySortLexicographic,
+                    args: vec![self.lower_expr(object)?],
+
+                    span: Span::generated("runtime_call"),
+                }));
+            }
             if numeric_ascending_sort_arrow_callback(args) {
                 return Ok(Some(LoweredExpr::RuntimeCall {
                     intrinsic: RuntimeFn::ArraySortNumeric,

@@ -113,6 +113,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ArraySortLexicographic => RuntimeSpec {
+                symbol: "$array_sort_lexicographic",
+                deps: ARRAY_SORT_LEXICOGRAPHIC_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ArrayJoin => RuntimeSpec {
                 symbol: "$array_join",
                 deps: ARRAY_JOIN_DEPS,

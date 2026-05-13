@@ -377,6 +377,101 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(crate) fn emit_array_sort_lexicographic(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_sort_lexicographic (param $arr i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $i i32)
+    (local $j i32)
+    (local $k i32)
+    (local $left_addr i32)
+    (local $right_addr i32)
+    (local $left_value i32)
+    (local $right_value i32)
+    (local $left_len i32)
+    (local $right_len i32)
+    (local $left_byte i32)
+    (local $right_byte i32)
+    (if (i32.ne (i32.and (local.get $arr) (i32.const {tag_mask})) (i32.const {array_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (if (i32.lt_u (local.get $len) (i32.const 2)) (then (return (local.get $arr))))
+    (block $outer_done
+      (loop $outer_loop
+        (br_if $outer_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $j (i32.const {zero}))
+        (block $inner_done
+          (loop $inner_loop
+            (br_if $inner_done
+              (i32.ge_u
+                (i32.add (local.get $j) (i32.const {one}))
+                (local.get $len)))
+            (local.set $left_addr
+              (i32.add
+                (local.get $obj)
+                (i32.add
+                  (i32.const {array_header})
+                  (i32.shl (local.get $j) (i32.const {elem_shift})))))
+            (local.set $right_addr
+              (i32.add (local.get $left_addr) (i32.const 4)))
+            (local.set $left_value (i32.load (local.get $left_addr)))
+            (local.set $right_value (i32.load (local.get $right_addr)))
+            (local.set $left_len
+              (call $value_to_string_into
+                (local.get $left_value)
+                (i32.const {scratch_left})))
+            (local.set $right_len
+              (call $value_to_string_into
+                (local.get $right_value)
+                (i32.const {scratch_right})))
+            (local.set $k (i32.const {zero}))
+            (block $compare_done
+              (loop $compare_loop
+                (br_if $compare_done
+                  (i32.or
+                    (i32.ge_u (local.get $k) (local.get $left_len))
+                    (i32.ge_u (local.get $k) (local.get $right_len))))
+                (local.set $left_byte
+                  (i32.load8_u (i32.add (i32.const {scratch_left}) (local.get $k))))
+                (local.set $right_byte
+                  (i32.load8_u (i32.add (i32.const {scratch_right}) (local.get $k))))
+                (if (i32.gt_u (local.get $left_byte) (local.get $right_byte))
+                  (then
+                    (i32.store (local.get $left_addr) (local.get $right_value))
+                    (i32.store (local.get $right_addr) (local.get $left_value))
+                    (br $compare_done)))
+                (if (i32.lt_u (local.get $left_byte) (local.get $right_byte))
+                  (then (br $compare_done)))
+                (local.set $k (i32.add (local.get $k) (i32.const {one})))
+                (br $compare_loop)))
+            (if (i32.gt_u (local.get $left_len) (local.get $right_len))
+              (then
+                (if (i32.eq (local.get $k) (local.get $right_len))
+                  (then
+                    (i32.store (local.get $left_addr) (local.get $right_value))
+                    (i32.store (local.get $right_addr) (local.get $left_value))))))
+            (local.set $j (i32.add (local.get $j) (i32.const {one})))
+            (br $inner_loop)))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $outer_loop)))
+    (local.get $arr))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            scratch_left = Layout::SCRATCH_OFFSET,
+            scratch_right = Layout::SCRATCH_OFFSET + 128,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
     pub(crate) fn emit_array_filter(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
