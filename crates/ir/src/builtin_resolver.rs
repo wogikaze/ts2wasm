@@ -702,8 +702,13 @@ impl BigIntStaticBuiltinFolder {
                 expr: Box::new(self.fold_expr(expr)),
                 span: *span,
             },
-            Expr::Yield { expr, span } => Expr::Yield {
+            Expr::Yield {
+                expr,
+                delegate,
+                span,
+            } => Expr::Yield {
                 expr: expr.as_ref().map(|expr| Box::new(self.fold_expr(expr))),
+                delegate: *delegate,
                 span: *span,
             },
             Expr::InstanceOf {
@@ -1506,11 +1511,12 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 expr: Box::new(resolve_expr(expr)?),
             })
         }
-        Expr::Yield { expr, .. } => Ok(ResolvedExpr::Yield {
+        Expr::Yield { expr, delegate, .. } => Ok(ResolvedExpr::Yield {
             expr: expr
                 .as_ref()
                 .map(|expr| resolve_expr(expr).map(Box::new))
                 .transpose()?,
+            delegate: *delegate,
         }),
         Expr::Ident { name, .. } => Ok(ResolvedExpr::Ident(name.clone())),
         Expr::InstanceOf {

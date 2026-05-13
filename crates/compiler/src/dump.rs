@@ -778,10 +778,13 @@ fn unparse_expr(expr: &Expr) -> String {
         Expr::Null { .. } => "null".to_owned(),
         Expr::Undefined { .. } => "undefined".to_owned(),
         Expr::Await { expr, .. } => format!("await {}", unparse_expr(expr)),
-        Expr::Yield { expr, .. } => match expr {
-            Some(expr) => format!("yield {}", unparse_expr(expr)),
-            None => "yield".to_owned(),
-        },
+        Expr::Yield { expr, delegate, .. } => {
+            let keyword = if *delegate { "yield*" } else { "yield" };
+            match expr {
+                Some(expr) => format!("{keyword} {}", unparse_expr(expr)),
+                None => keyword.to_owned(),
+            }
+        }
         Expr::Ident { name, .. } => name.clone(),
         Expr::Unary { op, expr, .. } => match op {
             UnaryOp::Not => format!("!{}", unparse_expr(expr)),

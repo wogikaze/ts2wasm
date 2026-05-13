@@ -3,6 +3,31 @@ impl Parser {
         self.assignment()
     }
 
+    fn yield_expression_after_keyword(&mut self, start: Span) -> Result<Expr, Diagnostic> {
+        if self.is_at_end()
+            || self.peek().is_some_and(is_statement_boundary_token)
+            || self.next_token_has_preceding_newline()
+        {
+            return Ok(Expr::Yield {
+                expr: None,
+                delegate: false,
+                span: start,
+            });
+        }
+
+        let delegate = self.consume(TokenKind::Star);
+        let expr = self.expression()?;
+        let span = Span {
+            start: start.start,
+            end: expr.span().end,
+        };
+        Ok(Expr::Yield {
+            expr: Some(Box::new(expr)),
+            delegate,
+            span,
+        })
+    }
+
     fn assignment(&mut self) -> Result<Expr, Diagnostic> {
         // Check for arrow function: (params) => expr, id => expr, or <T>(params) => expr
         let saved_cursor = self.cursor;
@@ -1787,6 +1812,12 @@ impl Parser {
                 kind: Token::Ident(name),
                 span,
             }) if name == "debugger" => Ok(Expr::Undefined { span }),
+            Some(SpannedToken {
+                kind: Token::Ident(name),
+                span,
+            }) if self.in_generator_fn && name == "yield" => {
+                self.yield_expression_after_keyword(span)
+            }
             Some(SpannedToken {
                 kind: Token::Ident(name),
                 span,

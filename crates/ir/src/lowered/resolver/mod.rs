@@ -325,13 +325,23 @@ impl Resolver {
                     Span::generated("expr_stmt"),
                 ))
             }
-            ResolvedStmt::Expr(ResolvedExpr::Yield { expr }) => Ok(LoweredStmt::Yield(
-                expr.as_ref()
-                    .map(|expr| self.lower_expr(expr))
-                    .transpose()?
-                    .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("yield"))),
-                Span::generated("yield_stmt"),
-            )),
+            ResolvedStmt::Expr(ResolvedExpr::Yield { expr, delegate }) => {
+                if *delegate {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "yield* delegation is parsed but not lowered yet".to_owned(),
+                        span: Some(Span::generated("yield_star")),
+                        phase: None,
+                    });
+                }
+                Ok(LoweredStmt::Yield(
+                    expr.as_ref()
+                        .map(|expr| self.lower_expr(expr))
+                        .transpose()?
+                        .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("yield"))),
+                    Span::generated("yield_stmt"),
+                ))
+            }
             ResolvedStmt::DestructureLet { pattern, expr } => {
                 let value_local = self.alloc_temp();
                 let mut statements = vec![LoweredStmt::Let(

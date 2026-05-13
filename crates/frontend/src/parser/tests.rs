@@ -235,6 +235,51 @@ mod tests {
     }
 
     #[test]
+    fn parses_yield_star() {
+        let program =
+            parse_program("function* gen() { yield* other; let value = yield* other; }").unwrap();
+        assert_eq!(program.len(), 1);
+        let Stmt::Function {
+            is_generator,
+            body,
+            ..
+        } = &program[0]
+        else {
+            panic!("expected generator function declaration");
+        };
+        assert!(*is_generator);
+        assert_eq!(body.len(), 2);
+
+        let Stmt::Expr {
+            expr:
+                Expr::Yield {
+                    expr: Some(stmt_target),
+                    delegate: true,
+                    ..
+                },
+            ..
+        } = &body[0]
+        else {
+            panic!("expected yield* statement");
+        };
+        assert!(matches!(stmt_target.as_ref(), Expr::Ident { name, .. } if name == "other"));
+
+        let Stmt::Let {
+            expr:
+                Expr::Yield {
+                    expr: Some(let_target),
+                    delegate: true,
+                    ..
+                },
+            ..
+        } = &body[1]
+        else {
+            panic!("expected yield* expression in let initializer");
+        };
+        assert!(matches!(let_target.as_ref(), Expr::Ident { name, .. } if name == "other"));
+    }
+
+    #[test]
     fn this_parameter_erased_from_function_expression_params() {
         let program =
             parse_program("let fn = function (this: any, value: number) { return value; };")

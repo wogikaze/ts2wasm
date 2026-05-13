@@ -884,11 +884,16 @@ impl NameResolver {
                 expr: Box::new(self.resolve_expr(expr)?),
                 span: *span,
             }),
-            Expr::Yield { expr, span } => Ok(Expr::Yield {
+            Expr::Yield {
+                expr,
+                delegate,
+                span,
+            } => Ok(Expr::Yield {
                 expr: expr
                     .as_ref()
                     .map(|expr| self.resolve_expr(expr).map(Box::new))
                     .transpose()?,
+                delegate: *delegate,
                 span: *span,
             }),
             Expr::This { span } => Ok(Expr::This { span: *span }),

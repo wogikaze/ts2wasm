@@ -654,7 +654,10 @@ impl GeneratorStepCollector {
 
     fn collect_stmt(&mut self, stmt: &ResolvedStmt) -> Option<()> {
         match stmt {
-            ResolvedStmt::Expr(ResolvedExpr::Yield { expr }) => {
+            ResolvedStmt::Expr(ResolvedExpr::Yield { expr, delegate }) => {
+                if *delegate {
+                    return None;
+                }
                 let value = expr
                     .as_ref()
                     .map(|expr| expr.as_ref().clone())
@@ -739,7 +742,7 @@ fn single_generator_yield_value(stmts: &[ResolvedStmt]) -> Option<ResolvedExpr> 
         return None;
     };
     match stmt {
-        ResolvedStmt::Expr(ResolvedExpr::Yield { expr }) => Some(
+        ResolvedStmt::Expr(ResolvedExpr::Yield { expr, delegate }) if !*delegate => Some(
             expr.as_ref()
                 .map(|expr| expr.as_ref().clone())
                 .unwrap_or(ResolvedExpr::Undefined),
@@ -820,7 +823,10 @@ impl GeneratorYieldEvaluator {
                 self.locals.insert(name.clone(), value);
                 Some(())
             }
-            ResolvedStmt::Expr(ResolvedExpr::Yield { expr }) => {
+            ResolvedStmt::Expr(ResolvedExpr::Yield { expr, delegate }) => {
+                if *delegate {
+                    return None;
+                }
                 let value = expr
                     .as_ref()
                     .map(|expr| self.eval_expr(expr))
@@ -882,7 +888,10 @@ impl GeneratorYieldEvaluator {
 fn collect_generator_yield_values(stmts: &[ResolvedStmt], values: &mut Vec<ResolvedExpr>) {
     for stmt in stmts {
         match stmt {
-            ResolvedStmt::Expr(ResolvedExpr::Yield { expr }) => {
+            ResolvedStmt::Expr(ResolvedExpr::Yield { expr, delegate }) => {
+                if *delegate {
+                    return;
+                }
                 values.push(
                     expr.as_ref()
                         .map(|expr| expr.as_ref().clone())
@@ -1100,7 +1109,7 @@ fn collect_array_map_callback_function_names_in_expr(
         ResolvedExpr::Await { expr } => {
             collect_array_map_callback_function_names_in_expr(expr, names);
         }
-        ResolvedExpr::Yield { expr } => {
+        ResolvedExpr::Yield { expr, .. } => {
             if let Some(expr) = expr {
                 collect_array_map_callback_function_names_in_expr(expr, names);
             }
@@ -2185,7 +2194,7 @@ fn collect_call_targets_in_expr(expr: &ResolvedExpr, targets: &mut HashSet<Strin
         ResolvedExpr::Await { expr } => {
             collect_call_targets_in_expr(expr, targets);
         }
-        ResolvedExpr::Yield { expr } => {
+        ResolvedExpr::Yield { expr, .. } => {
             if let Some(expr) = expr {
                 collect_call_targets_in_expr(expr, targets);
             }
@@ -2518,7 +2527,7 @@ fn stmt_contains_this(stmt: &ResolvedStmt) -> bool {
 fn expr_contains_this(expr: &ResolvedExpr) -> bool {
     match expr {
         ResolvedExpr::Await { expr } => expr_contains_this(expr),
-        ResolvedExpr::Yield { expr } => expr.as_deref().is_some_and(expr_contains_this),
+        ResolvedExpr::Yield { expr, .. } => expr.as_deref().is_some_and(expr_contains_this),
         ResolvedExpr::This { .. } => true,
         ResolvedExpr::NewTarget { .. } => false,
         ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => expr_contains_this(expr),
@@ -2743,7 +2752,7 @@ fn stmt_contains_arguments(stmt: &ResolvedStmt) -> bool {
 fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
     match expr {
         ResolvedExpr::Await { expr } => expr_contains_arguments(expr),
-        ResolvedExpr::Yield { expr } => expr.as_deref().is_some_and(expr_contains_arguments),
+        ResolvedExpr::Yield { expr, .. } => expr.as_deref().is_some_and(expr_contains_arguments),
         ResolvedExpr::Ident(name) => name == "arguments",
         ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
             expr_contains_arguments(expr)

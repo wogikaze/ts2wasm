@@ -424,6 +424,7 @@ pub enum Expr {
     },
     Yield {
         expr: Option<Box<Expr>>,
+        delegate: bool,
         span: Span,
     },
     Ident {

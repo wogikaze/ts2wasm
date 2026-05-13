@@ -1689,39 +1689,22 @@ impl Parser {
             });
         };
         debug_assert_eq!(name, "yield");
-        if let Some(semi) = self.consume_span(TokenKind::Semicolon) {
-            let span = Span {
-                start: start.start,
-                end: semi.end,
-            };
-            return Ok(Stmt::Expr {
-                expr: Expr::Yield { expr: None, span },
-                span,
-            });
-        }
-        if self.is_at_end()
-            || self.peek().is_some_and(is_statement_boundary_token)
-            || self.next_token_has_preceding_newline()
-        {
-            return Ok(Stmt::Expr {
-                expr: Expr::Yield {
-                    expr: None,
-                    span: start,
-                },
-                span: start,
-            });
-        }
-        let expr = self.expression()?;
+        let expr = self.yield_expression_after_keyword(start)?;
         let end = self.statement_terminator_end(expr.span().end)?;
         let span = Span {
             start: start.start,
             end,
         };
-        Ok(Stmt::Expr {
-            expr: Expr::Yield {
-                expr: Some(Box::new(expr)),
+        let expr = match expr {
+            Expr::Yield { expr, delegate, .. } => Expr::Yield {
+                expr,
+                delegate,
                 span,
             },
+            _ => unreachable!("yield expression parser must return a yield expression"),
+        };
+        Ok(Stmt::Expr {
+            expr,
             span,
         })
     }

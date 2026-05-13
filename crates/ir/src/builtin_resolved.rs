@@ -151,6 +151,7 @@ pub enum ResolvedExpr {
     },
     Yield {
         expr: Option<Box<ResolvedExpr>>,
+        delegate: bool,
     },
     Ident(String),
     Unary {

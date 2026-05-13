@@ -10,7 +10,7 @@ mod ternary;
 mod unary;
 
 use crate::builtin_resolved::ResolvedExpr;
-use ts2wasm_diagnostic::Diagnostic;
+use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 
 impl super::Resolver {
@@ -43,13 +43,22 @@ impl super::Resolver {
 
             // Control flow
             ResolvedExpr::Await { expr } => self.lower_await_expr(expr),
-            ResolvedExpr::Yield { expr } => expr
-                .as_ref()
-                .map(|expr| self.lower_expr(expr))
-                .transpose()
-                .map(|expr| {
-                    expr.unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("yield")))
-                }),
+            ResolvedExpr::Yield { expr, delegate } => {
+                if *delegate {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "yield* delegation is parsed but not lowered yet".to_owned(),
+                        span: Some(Span::generated("yield_star")),
+                        phase: None,
+                    });
+                }
+                expr.as_ref()
+                    .map(|expr| self.lower_expr(expr))
+                    .transpose()
+                    .map(|expr| {
+                        expr.unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("yield")))
+                    })
+            }
             ResolvedExpr::This { .. } => self.lower_this_expr(),
             ResolvedExpr::NewTarget { span } => self.lower_new_target_expr(*span),
             ResolvedExpr::Ident(name) => self.lower_ident_expr(name),
