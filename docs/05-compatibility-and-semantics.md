@@ -112,7 +112,7 @@ Broader object `ToPrimitive` for mixed BigInt comparison is split by the object-
 | dynamic property key | 実装済み (basic) | string key による `obj[key]` / assignment をサポート |
 | prototype / method call | 部分実装 (basic) | `[[Prototype]]` slot と method receiver の basic path をサポート。`instanceof` full traversal and `this` receiver parity are tracked by issues 207 and 211 |
 | non-ASCII string literal | 実装済み (basic) | UTF-8 byte storage。decode/encode runtime helper は追跡中 |
-| object literal key (string literal) | 未実装 | `{key: v}` の key は identifier only; `{"x": v}` は parse error |
+| object literal keys and ES2015 property forms | 実装済み (basic) | identifier/string/numeric keys, shorthand `{x}`, method shorthand, and computed keys `{[expr]: v}` are represented in the AST and lower through object property writes where needed |
 | `obj["key"]` computed property | 実装済み (basic) | object property lookup path を使う |
 | heap OOM check | 実装済み | `$alloc_heap` は memory.size を検査し、超過時に trap する |
 

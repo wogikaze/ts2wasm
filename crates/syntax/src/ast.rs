@@ -350,6 +350,41 @@ impl ArrayLiteralElement {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ObjectProp {
+    KeyValue { key: String, value: Expr },
+    Shorthand { key: String, value: Expr },
+    ComputedKey { key: Box<Expr>, value: Expr },
+    MethodShorthand { key: String, value: Expr },
+}
+
+impl ObjectProp {
+    pub fn static_key(&self) -> Option<&str> {
+        match self {
+            Self::KeyValue { key, .. }
+            | Self::Shorthand { key, .. }
+            | Self::MethodShorthand { key, .. } => Some(key),
+            Self::ComputedKey { .. } => None,
+        }
+    }
+
+    pub fn value(&self) -> &Expr {
+        match self {
+            Self::KeyValue { value, .. }
+            | Self::Shorthand { value, .. }
+            | Self::ComputedKey { value, .. }
+            | Self::MethodShorthand { value, .. } => value,
+        }
+    }
+
+    pub fn computed_key(&self) -> Option<&Expr> {
+        match self {
+            Self::ComputedKey { key, .. } => Some(key),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Expr {
     Number {
         value: i32,
@@ -445,7 +480,7 @@ pub enum Expr {
         span: Span,
     },
     Object {
-        props: Vec<(String, Expr)>,
+        props: Vec<ObjectProp>,
         span: Span,
     },
     Index {

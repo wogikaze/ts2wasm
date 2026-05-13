@@ -3,7 +3,7 @@ mod tests {
     use crate::name_resolver;
     use ts2wasm_diagnostic::DiagCode;
     use ts2wasm_source::Span;
-    use ts2wasm_syntax::{ArrayLiteralElement, BinaryOp, Expr, Stmt};
+    use ts2wasm_syntax::{ArrayLiteralElement, BinaryOp, Expr, ObjectProp, Stmt};
 
     #[test]
     fn test_resolve_variable_declaration() {
@@ -68,13 +68,13 @@ mod tests {
                 is_var: true,
                 name: "obj".to_string(),
                 expr: Expr::Object {
-                    props: vec![(
-                        "c".to_string(),
-                        Expr::Ident {
+                    props: vec![ObjectProp::KeyValue {
+                        key: "c".to_string(),
+                        value: Expr::Ident {
                             name: "e".to_string(),
                             span: Span { start: 28, end: 29 },
                         },
-                    )],
+                    }],
                     span: Span { start: 23, end: 31 },
                 },
                 span: Span { start: 17, end: 32 },
@@ -107,13 +107,13 @@ mod tests {
                 is_var: true,
                 name: "obj".to_string(),
                 expr: Expr::Object {
-                    props: vec![(
-                        "c".to_string(),
-                        Expr::Ident {
+                    props: vec![ObjectProp::KeyValue {
+                        key: "c".to_string(),
+                        value: Expr::Ident {
                             name: "c".to_string(),
                             span: Span { start: 13, end: 14 },
                         },
-                    )],
+                    }],
                     span: Span { start: 11, end: 16 },
                 },
                 span: Span { start: 4, end: 17 },
@@ -629,13 +629,13 @@ mod tests {
                 is_var: false,
                 name: "$262".to_string(),
                 expr: Expr::Object {
-                    props: vec![(
-                        "IsHTMLDDA".to_string(),
-                        Expr::Number {
+                    props: vec![ObjectProp::KeyValue {
+                        key: "IsHTMLDDA".to_string(),
+                        value: Expr::Number {
                             value: 1,
                             span: Span { start: 23, end: 24 },
                         },
-                    )],
+                    }],
                     span: Span { start: 11, end: 26 },
                 },
                 span: Span { start: 0, end: 27 },

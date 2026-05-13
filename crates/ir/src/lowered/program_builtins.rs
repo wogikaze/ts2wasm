@@ -492,9 +492,10 @@ pub(crate) fn json_stringify_replacer_entry(
             Some(JsonStringifyReplacerEntry::Ignored)
         }
         ResolvedExpr::Object(props)
-            if props
-                .iter()
-                .all(|(_, value)| is_json_stringify_side_effect_free_static_value(value)) =>
+            if props.iter().all(|prop| {
+                prop.computed_key().is_none()
+                    && is_json_stringify_side_effect_free_static_value(prop.value())
+            }) =>
         {
             Some(JsonStringifyReplacerEntry::Ignored)
         }
@@ -608,9 +609,10 @@ pub(crate) fn is_json_stringify_side_effect_free_static_value(value: &ResolvedEx
         ResolvedExpr::Unary { op, expr } if *op == UnaryOp::Negate => {
             matches!(expr.as_ref(), ResolvedExpr::Number(_))
         }
-        ResolvedExpr::Object(props) => props
-            .iter()
-            .all(|(_, value)| is_json_stringify_side_effect_free_static_value(value)),
+        ResolvedExpr::Object(props) => props.iter().all(|prop| {
+            prop.computed_key().is_none()
+                && is_json_stringify_side_effect_free_static_value(prop.value())
+        }),
         ResolvedExpr::Array(elements) => elements.iter().all(|element| match element {
             ResolvedArrayElement::Present(expr) => {
                 is_json_stringify_side_effect_free_static_value(expr)

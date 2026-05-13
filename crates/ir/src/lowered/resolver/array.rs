@@ -1,7 +1,9 @@
 use super::{
     is_identity_arrow_callback, is_number_double_arrow_callback, unsupported_array_map_diagnostic,
 };
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::builtin_resolved::{
+    ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedParam, ResolvedStmt,
+};
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
@@ -1916,10 +1918,10 @@ impl super::Resolver {
     }
 }
 
-fn dense_array_like_object_elements(props: &[(String, ResolvedExpr)]) -> Option<Vec<ResolvedExpr>> {
-    let len = props.iter().find_map(|(key, value)| {
-        if key == "length" {
-            if let ResolvedExpr::Number(len) = value {
+fn dense_array_like_object_elements(props: &[ResolvedObjectProp]) -> Option<Vec<ResolvedExpr>> {
+    let len = props.iter().find_map(|prop| {
+        if prop.static_key() == Some("length") {
+            if let ResolvedExpr::Number(len) = prop.value() {
                 usize::try_from(*len).ok()
             } else {
                 None
@@ -1931,9 +1933,9 @@ fn dense_array_like_object_elements(props: &[(String, ResolvedExpr)]) -> Option<
     let mut elements = Vec::with_capacity(len);
     for index in 0..len {
         let key = index.to_string();
-        let value = props
-            .iter()
-            .find_map(|(prop_key, prop_value)| (prop_key == &key).then(|| prop_value.clone()))?;
+        let value = props.iter().find_map(|prop| {
+            (prop.static_key() == Some(key.as_str())).then(|| prop.value().clone())
+        })?;
         elements.push(value);
     }
     Some(elements)

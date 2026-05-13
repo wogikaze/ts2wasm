@@ -258,6 +258,19 @@ inputs do not receive test262 globals.
   }
 }
 <!-- semantic-coverage-baseline:end -->
+## Object Literal Syntax
+
+Last audited: 2026-05-13T23:30:00+09:00.
+
+Object literals now preserve ES2015 property forms through parser and IR:
+
+- shorthand properties `{x}` become explicit `Shorthand` object properties;
+- computed keys `{[expr]: value}` become explicit `ComputedKey` object properties and lower through dynamic property writes;
+- method shorthand `{method() { ... }}` becomes explicit `MethodShorthand` object properties.
+
+Focused coverage is `fixtures/core-expressions/object-shorthand-computed-method.ts` and
+`cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_object_shorthand`.
+
 ## Known compiler limitations
 
 ### test262 harness

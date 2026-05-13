@@ -594,11 +594,12 @@ impl super::super::Resolver {
         };
         let function_props = props
             .iter()
-            .filter_map(|(key, value)| {
-                if let ResolvedExpr::Ident(name) = value {
+            .filter_map(|prop| {
+                let key = prop.static_key()?;
+                if let ResolvedExpr::Ident(name) = prop.value() {
                     self.resolve_func(name)
                         .ok()
-                        .map(|func_id| (key.clone(), func_id))
+                        .map(|func_id| (key.to_owned(), func_id))
                 } else {
                     None
                 }

@@ -159,13 +159,14 @@ impl super::super::Resolver {
             .collect::<HashSet<_>>();
         let rest_props = props
             .iter()
-            .filter(|(key, _)| !excluded_keys.contains(key.as_str()))
-            .map(|(key, _)| {
+            .filter_map(|prop| prop.static_key())
+            .filter(|key| !excluded_keys.contains(key))
+            .map(|key| {
                 (
-                    key.clone(),
+                    key.to_owned(),
                     LoweredExpr::PropertyGet {
                         obj: Box::new(value.clone()),
-                        key: key.clone(),
+                        key: key.to_owned(),
                         span: Span::generated("prop_get"),
                     },
                 )

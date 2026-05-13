@@ -407,10 +407,12 @@ let binding = self.parse_binding_pattern()?;
                 "{{{}}}",
                 props
                     .iter()
-                    .map(|(key, value)| {
-                        if key == OBJECT_SPREAD_SENTINEL {
+                    .map(|prop| {
+                        let value = prop.value();
+                        if prop.static_key() == Some(OBJECT_SPREAD_SENTINEL) {
                             format!("...{}", self.binding_default_expr_text(value))
                         } else {
+                            let key = prop.static_key().unwrap_or("[computed]");
                             format!("{key}: {}", self.binding_default_expr_text(value))
                         }
                     })

@@ -1,6 +1,6 @@
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
-use ts2wasm_syntax::{ArrayLiteralElement, BinaryOp, Expr, Stmt, UnaryOp};
+use ts2wasm_syntax::{ArrayLiteralElement, BinaryOp, Expr, ObjectProp, Stmt, UnaryOp};
 
 use crate::binding_pattern::parse_binding_pattern;
 
@@ -1227,7 +1227,26 @@ impl NameResolver {
             Expr::Object { props, span } => Ok(Expr::Object {
                 props: props
                     .iter()
-                    .map(|(k, v)| Ok((k.clone(), self.resolve_expr(v)?)))
+                    .map(|prop| match prop {
+                        ObjectProp::KeyValue { key, value } => Ok(ObjectProp::KeyValue {
+                            key: key.clone(),
+                            value: self.resolve_expr(value)?,
+                        }),
+                        ObjectProp::Shorthand { key, value } => Ok(ObjectProp::Shorthand {
+                            key: key.clone(),
+                            value: self.resolve_expr(value)?,
+                        }),
+                        ObjectProp::ComputedKey { key, value } => Ok(ObjectProp::ComputedKey {
+                            key: Box::new(self.resolve_expr(key)?),
+                            value: self.resolve_expr(value)?,
+                        }),
+                        ObjectProp::MethodShorthand { key, value } => {
+                            Ok(ObjectProp::MethodShorthand {
+                                key: key.clone(),
+                                value: self.resolve_expr(value)?,
+                            })
+                        }
+                    })
                     .collect::<Result<Vec<_>, _>>()?,
                 span: *span,
             }),
@@ -1970,7 +1989,7 @@ fn expr_contains_bigint_literal(expr: &Expr) -> bool {
         }),
         Expr::Object { props, .. } => props
             .iter()
-            .any(|(_, value)| expr_contains_bigint_literal(value)),
+            .any(|prop| expr_contains_bigint_literal(prop.value())),
         Expr::New { args, .. } => args.iter().any(expr_contains_bigint_literal),
         Expr::Ternary {
             condition,

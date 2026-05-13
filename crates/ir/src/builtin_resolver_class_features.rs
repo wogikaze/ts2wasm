@@ -586,8 +586,8 @@ pub(super) fn validate_static_block_expr(expr: &Expr) -> Result<(), Diagnostic> 
             Ok(())
         }
         Expr::Object { props, .. } => {
-            for (_, value) in props {
-                validate_static_block_expr(value)?;
+            for prop in props {
+                validate_static_block_expr(prop.value())?;
             }
             Ok(())
         }

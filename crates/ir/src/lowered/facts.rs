@@ -14,7 +14,9 @@
 
 use std::collections::{HashMap, HashSet};
 
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
+use crate::builtin_resolved::{
+    ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedStmt,
+};
 use crate::lowered::{ClosureRepresentation, FuncId, LocalId, LoweredExpr};
 use ts2wasm_source::Span;
 
@@ -59,8 +61,8 @@ pub struct StaticFacts {
     pub generator_function_completion_steps: HashMap<String, Vec<ResolvedStmt>>,
     /// Locals holding statically visible generator iterators with a runtime state local.
     pub generator_iterator_bindings: HashMap<LocalId, GeneratorIteratorBinding>,
-    /// Static object literal contents: local → (key, value) pairs.
-    pub static_object_literal_locals: HashMap<LocalId, Vec<(String, ResolvedExpr)>>,
+    /// Static object literal contents: local → property records.
+    pub static_object_literal_locals: HashMap<LocalId, Vec<ResolvedObjectProp>>,
     /// Alias source tracking for static object literals: alias → source_ids.
     pub static_object_literal_alias_sources: HashMap<LocalId, HashSet<LocalId>>,
     /// Locals that are function-like arrays (e.g., `arguments` based on function params).

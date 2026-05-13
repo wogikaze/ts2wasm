@@ -79,8 +79,11 @@ pub(crate) fn collect_arrow_captures(
             }
         }
         ResolvedExpr::Object(props) => {
-            for (_, value) in props {
-                collect_arrow_captures(value, params, captures);
+            for prop in props {
+                if let Some(key) = prop.computed_key() {
+                    collect_arrow_captures(key, params, captures);
+                }
+                collect_arrow_captures(prop.value(), params, captures);
             }
         }
         ResolvedExpr::ComputedIndex { object, index } => {
@@ -453,9 +456,11 @@ pub(crate) fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bo
             ResolvedArrayElement::Present(expr) => expr_assigns_any_name(expr, names),
             ResolvedArrayElement::Hole => false,
         }),
-        ResolvedExpr::Object(props) => props
-            .iter()
-            .any(|(_, value)| expr_assigns_any_name(value, names)),
+        ResolvedExpr::Object(props) => props.iter().any(|prop| {
+            prop.computed_key()
+                .is_some_and(|key| expr_assigns_any_name(key, names))
+                || expr_assigns_any_name(prop.value(), names)
+        }),
         ResolvedExpr::ComputedIndex { object, index } => {
             expr_assigns_any_name(object, names) || expr_assigns_any_name(index, names)
         }

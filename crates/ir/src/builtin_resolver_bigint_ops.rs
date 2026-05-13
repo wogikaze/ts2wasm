@@ -367,8 +367,8 @@ pub(super) fn collect_assigned_names_in_expr(expr: &Expr, names: &mut HashSet<St
             }
         }
         Expr::Object { props, .. } => {
-            for (_, value) in props {
-                collect_assigned_names_in_expr(value, names);
+            for prop in props {
+                collect_assigned_names_in_expr(prop.value(), names);
             }
         }
         Expr::ClassExpr { body, .. } => {
@@ -858,7 +858,7 @@ pub(super) fn expr_contains_bigint(expr: &Expr) -> bool {
             }
             ArrayLiteralElement::Hole(_) => false,
         }),
-        Expr::Object { props, .. } => props.iter().any(|(_, value)| expr_contains_bigint(value)),
+        Expr::Object { props, .. } => props.iter().any(|prop| expr_contains_bigint(prop.value())),
         Expr::New { args, .. } => args.iter().any(expr_contains_bigint),
         Expr::Ternary {
             condition,

@@ -542,8 +542,11 @@ impl TypeScriptCallArityValidator {
                 }
             }
             ResolvedExpr::Object(props) => {
-                for (_, value) in props {
-                    self.validate_expr(value)?;
+                for prop in props {
+                    if let Some(key) = prop.computed_key() {
+                        self.validate_expr(key)?;
+                    }
+                    self.validate_expr(prop.value())?;
                 }
             }
             ResolvedExpr::BuiltinProperty { object, .. }
@@ -785,9 +788,10 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
             ResolvedArrayElement::Present(expr) => expr_contains_arguments(expr),
             ResolvedArrayElement::Hole => false,
         }),
-        ResolvedExpr::Object(props) => props
-            .iter()
-            .any(|(_, value)| expr_contains_arguments(value)),
+        ResolvedExpr::Object(props) => props.iter().any(|prop| {
+            prop.computed_key().is_some_and(expr_contains_arguments)
+                || expr_contains_arguments(prop.value())
+        }),
         ResolvedExpr::PropertyAccess { object, .. }
         | ResolvedExpr::OptionalPropertyAccess { object, .. } => expr_contains_arguments(object),
         ResolvedExpr::ComputedIndex { object, index }

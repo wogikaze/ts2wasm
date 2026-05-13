@@ -1170,8 +1170,11 @@ fn collect_array_map_callback_function_names_in_expr(
             }
         }
         ResolvedExpr::Object(props) => {
-            for (_, value) in props {
-                collect_array_map_callback_function_names_in_expr(value, names);
+            for prop in props {
+                if let Some(key) = prop.computed_key() {
+                    collect_array_map_callback_function_names_in_expr(key, names);
+                }
+                collect_array_map_callback_function_names_in_expr(prop.value(), names);
             }
         }
         ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
@@ -2227,8 +2230,11 @@ fn collect_call_targets_in_expr(expr: &ResolvedExpr, targets: &mut HashSet<Strin
             }
         }
         ResolvedExpr::Object(props) => {
-            for (_, value) in props {
-                collect_call_targets_in_expr(value, targets);
+            for prop in props {
+                if let Some(key) = prop.computed_key() {
+                    collect_call_targets_in_expr(key, targets);
+                }
+                collect_call_targets_in_expr(prop.value(), targets);
             }
         }
         ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
@@ -2501,7 +2507,9 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
             ResolvedArrayElement::Present(expr) => expr_contains_this(expr),
             ResolvedArrayElement::Hole => false,
         }),
-        ResolvedExpr::Object(props) => props.iter().any(|(_, value)| expr_contains_this(value)),
+        ResolvedExpr::Object(props) => props.iter().any(|prop| {
+            prop.computed_key().is_some_and(expr_contains_this) || expr_contains_this(prop.value())
+        }),
         ResolvedExpr::ComputedIndex { object, index } => {
             expr_contains_this(object) || expr_contains_this(index)
         }
@@ -2729,9 +2737,10 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
             ResolvedArrayElement::Present(expr) => expr_contains_arguments(expr),
             ResolvedArrayElement::Hole => false,
         }),
-        ResolvedExpr::Object(props) => props
-            .iter()
-            .any(|(_, value)| expr_contains_arguments(value)),
+        ResolvedExpr::Object(props) => props.iter().any(|prop| {
+            prop.computed_key().is_some_and(expr_contains_arguments)
+                || expr_contains_arguments(prop.value())
+        }),
         ResolvedExpr::ComputedIndex { object, index } => {
             expr_contains_arguments(object) || expr_contains_arguments(index)
         }

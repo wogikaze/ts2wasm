@@ -4,7 +4,7 @@ use super::super::{
     is_static_copy_safe_object_prop_value, string_constructor_arrow_callback,
     unary_plus_arrow_callback,
 };
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
+use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp};
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::StaticFunctionArrayLike;
 use crate::lowered::facts::{GeneratorIteratorBinding, ProxyBinding};
@@ -209,7 +209,7 @@ pub(crate) fn resolved_expr_has_symbol_iterator_property(
     match expr {
         ResolvedExpr::Object(props) => props
             .iter()
-            .any(|(key, _)| key == SYMBOL_ITERATOR_OBJECT_KEY),
+            .any(|prop| prop.static_key() == Some(SYMBOL_ITERATOR_OBJECT_KEY)),
         ResolvedExpr::Ident(name) => ctx
             .resolve_local(name)
             .ok()
@@ -370,11 +370,13 @@ pub(crate) fn invalidate_static_object_literal_local(ctx: &mut LoweringCtx, loca
 pub(crate) fn static_copy_safe_object_literal_props(
     ctx: &LoweringCtx,
     expr: &ResolvedExpr,
-) -> Option<Vec<(String, ResolvedExpr)>> {
+) -> Option<Vec<ResolvedObjectProp>> {
     match expr {
         ResolvedExpr::Object(props) => {
             let mut flattened = Vec::new();
-            for (key, value) in props {
+            for prop in props {
+                let key = prop.static_key()?;
+                let value = prop.value();
                 if key == OBJECT_SPREAD_SENTINEL {
                     flattened.extend(static_copy_safe_object_literal_props(ctx, value)?);
                     continue;
@@ -382,7 +384,7 @@ pub(crate) fn static_copy_safe_object_literal_props(
                 if !is_static_copy_safe_object_prop_value(value) {
                     return None;
                 }
-                flattened.push((key.clone(), value.clone()));
+                flattened.push(prop.clone());
             }
             Some(flattened)
         }

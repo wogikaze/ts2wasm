@@ -725,14 +725,14 @@ mod tests {
         };
         assert_eq!(props.len(), 2);
         assert!(matches!(
-            &props[0].1,
+            props[0].value(),
             Expr::FunctionExpr {
                 name,
                 ..
             } if name == "id"
         ));
         assert!(matches!(
-            &props[1].1,
+            props[1].value(),
             Expr::FunctionExpr {
                 name,
                 ..
@@ -808,8 +808,8 @@ mod tests {
         else {
             panic!("expected object literal let statement");
         };
-        assert_eq!(props[1].0, OBJECT_SPREAD_SENTINEL);
-        assert!(matches!(props[1].1, Expr::Ident { .. }));
+        assert_eq!(props[1].static_key(), Some(OBJECT_SPREAD_SENTINEL));
+        assert!(matches!(props[1].value(), Expr::Ident { .. }));
     }
 
     #[test]
@@ -1258,7 +1258,7 @@ mod tests {
                 ..
             } => {
                 assert_eq!(props.len(), 4);
-                let names: Vec<&str> = props.iter().map(|(n, _)| n.as_str()).collect();
+                let names: Vec<&str> = props.iter().filter_map(|prop| prop.static_key()).collect();
                 assert!(names.contains(&"if"));
                 assert!(names.contains(&"break"));
                 assert!(names.contains(&"function"));
@@ -1278,10 +1278,10 @@ mod tests {
                 ..
             } => {
                 assert_eq!(props.len(), 2);
-                assert_eq!(props[0].0, "name");
-                assert!(matches!(&props[0].1, Expr::String { value, .. } if value == "Alice"));
-                assert_eq!(props[1].0, "age");
-                assert!(matches!(props[1].1, Expr::Number { value: 30, .. }));
+                assert_eq!(props[0].static_key(), Some("name"));
+                assert!(matches!(props[0].value(), Expr::String { value, .. } if value == "Alice"));
+                assert_eq!(props[1].static_key(), Some("age"));
+                assert!(matches!(props[1].value(), Expr::Number { value: 30, .. }));
             }
             other => panic!("unexpected statement: {other:?}"),
         }
@@ -1392,8 +1392,8 @@ mod tests {
                 ..
             } => {
                 assert_eq!(props.len(), 2);
-                assert_eq!(props[0].0, "0");
-                assert_eq!(props[1].0, "1");
+                assert_eq!(props[0].static_key(), Some("0"));
+                assert_eq!(props[1].static_key(), Some("1"));
             }
             other => panic!("unexpected statement: {other:?}"),
         }
@@ -2128,8 +2128,42 @@ b /* parameter b */,
                 ..
             } => {
                 assert_eq!(props.len(), 1);
-                assert_eq!(props[0].0, SYMBOL_ITERATOR_OBJECT_KEY);
-                assert!(matches!(props[0].1, Expr::FunctionExpr { .. }));
+                assert_eq!(props[0].static_key(), Some(SYMBOL_ITERATOR_OBJECT_KEY));
+                assert!(matches!(props[0].value(), Expr::FunctionExpr { .. }));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_object_shorthand_computed_key_and_method_shorthand() {
+        let program = parse_program("let key = 'x'; let value = 1; let object = { value, [key]: 2, method() { return value; } };").unwrap();
+
+        match &program[2] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 3);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::Shorthand { key, value: Expr::Ident { name, .. } }
+                        if key == "value" && name == "value"
+                ));
+                assert!(matches!(
+                    &props[1],
+                    ObjectProp::ComputedKey {
+                        key,
+                        value: Expr::Number { value: 2, .. }
+                    } if matches!(key.as_ref(), Expr::Ident { name, .. } if name == "key")
+                ));
+                assert!(matches!(
+                    &props[2],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, .. }
+                    } if key == "method" && name == "method"
+                ));
             }
             other => panic!("unexpected statement: {other:?}"),
         }

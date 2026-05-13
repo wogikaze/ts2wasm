@@ -456,10 +456,12 @@ impl super::super::Resolver {
                         continue;
                     }
 
-                    if let Some((key, value)) =
-                        props.iter().rev().find(|(key, _)| key == &allowed_key)
+                    if let Some(prop) = props
+                        .iter()
+                        .rev()
+                        .find(|prop| prop.static_key() == Some(allowed_key.as_str()))
                     {
-                        lowered_props.push((key.clone(), self.lower_expr(value)?));
+                        lowered_props.push((allowed_key.clone(), self.lower_expr(prop.value())?));
                     }
                 }
                 LoweredExpr::ObjectNew {

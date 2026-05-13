@@ -119,9 +119,9 @@ Last updated: 2026-05-13
 | `obj:spread` | object spread | 実装済み | core-semantics |
 | `obj:prototype` | prototype chain | 実装済み | core-semantics, object-semantics-kernel |
 | `obj:getter-setter` | getter/setter | 部分実装 | object-semantics-kernel |
-| `obj:method-shorthand` | method shorthand | 未実装 | - |
-| `obj:computed-literal-key` | computed property keys `{[expr]: v}` | 未実装 | - |
-| `obj:shorthand-property` | shorthand `{x}` | 未実装 | - |
+| `obj:method-shorthand` | method shorthand | 実装済み (basic build/runtime value) | core-expressions |
+| `obj:computed-literal-key` | computed property keys `{[expr]: v}` | 実装済み (basic) | core-expressions |
+| `obj:shorthand-property` | shorthand `{x}` | 実装済み | core-expressions |
 
 ### Object Semantics Kernel
 

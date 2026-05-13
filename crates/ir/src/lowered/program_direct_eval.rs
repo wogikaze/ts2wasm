@@ -275,8 +275,11 @@ pub(crate) fn collect_direct_eval_function_assignment_expr(
             }
         }
         ResolvedExpr::Object(props) => {
-            for (_, value) in props {
-                collect_direct_eval_function_assignment_expr(function_name, value, env);
+            for prop in props {
+                if let Some(key) = prop.computed_key() {
+                    collect_direct_eval_function_assignment_expr(function_name, key, env);
+                }
+                collect_direct_eval_function_assignment_expr(function_name, prop.value(), env);
             }
         }
         ResolvedExpr::ComputedIndex { object, index }

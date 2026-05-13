@@ -6,7 +6,7 @@ use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_frontend::validate_type_reference_directives;
 use ts2wasm_ir::{OptimizationLevel, builtin_resolver, lowered, name_resolver};
 use ts2wasm_source::Span;
-use ts2wasm_syntax::{Expr, Stmt};
+use ts2wasm_syntax::{Expr, ObjectProp, Stmt};
 
 use crate::module_graph::ModuleGraph;
 use crate::stages::parse::{self, parse_program, validate_ast};
@@ -331,7 +331,10 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                         phase: None,
                     })?;
                 let exports = collect_literal_named_exports(dependency.resolved_path())?;
-                let props: Vec<(String, Expr)> = exports.into_iter().collect();
+                let props = exports
+                    .into_iter()
+                    .map(|(key, value)| ObjectProp::KeyValue { key, value })
+                    .collect();
                 rewritten.push(Stmt::Let {
                     name: ns_specifier.local.clone(),
                     expr: Expr::Object { props, span: *span },
@@ -535,7 +538,10 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                         phase: None,
                     })?;
                 let exports = collect_literal_named_exports(dependency.resolved_path())?;
-                let props: Vec<(String, Expr)> = exports.into_iter().collect();
+                let props = exports
+                    .into_iter()
+                    .map(|(key, value)| ObjectProp::KeyValue { key, value })
+                    .collect();
                 let local_name = format!("__ts2wasm_ns_{}", namespace.exported);
                 rewritten.push(Stmt::Let {
                     name: local_name.clone(),
@@ -601,10 +607,13 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                 named_imports.push(default_binding);
                 lowered_statement_index += 1;
 
-                let props: Vec<(String, Expr)> = exports
+                let props = exports
                     .iter()
                     .filter(|(k, _)| k.as_str() != "default")
-                    .map(|(k, v)| (k.clone(), v.clone()))
+                    .map(|(key, value)| ObjectProp::KeyValue {
+                        key: key.clone(),
+                        value: value.clone(),
+                    })
                     .collect();
                 rewritten.push(Stmt::Let {
                     name: namespace.local.clone(),
@@ -1253,7 +1262,8 @@ fn rewrite_static_module_body_for_build(
                     resolve_static_re_export_source_path(path, &source.value, source.span)?;
                 let props = collect_literal_named_exports(&source_path)?
                     .into_iter()
-                    .collect::<Vec<_>>();
+                    .map(|(key, value)| ObjectProp::KeyValue { key, value })
+                    .collect();
                 if !exported_names.insert(namespace.exported.clone()) {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
@@ -1494,7 +1504,8 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
                 resolve_static_re_export_source_path(path, &source.value, source.span)?;
             let props = collect_literal_named_exports(&source_path)?
                 .into_iter()
-                .collect::<Vec<_>>();
+                .map(|(key, value)| ObjectProp::KeyValue { key, value })
+                .collect();
             exports.insert(
                 namespace.exported.clone(),
                 Expr::Object { props, span: *span },

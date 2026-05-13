@@ -844,11 +844,15 @@ fn unparse_expr(expr: &Expr) -> String {
         Expr::Object { props, .. } => {
             let props = props
                 .iter()
-                .map(|(key, value)| {
-                    if key == OBJECT_SPREAD_SENTINEL {
+                .map(|prop| {
+                    let value = prop.value();
+                    if prop.static_key() == Some(OBJECT_SPREAD_SENTINEL) {
                         format!("...{}", unparse_expr(value))
-                    } else {
+                    } else if let Some(key) = prop.static_key() {
                         format!("{key}: {}", unparse_expr(value))
+                    } else {
+                        let key = prop.computed_key().map(unparse_expr).unwrap_or_default();
+                        format!("[{key}]: {}", unparse_expr(value))
                     }
                 })
                 .collect::<Vec<_>>()

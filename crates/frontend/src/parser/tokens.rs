@@ -45,6 +45,11 @@ fn keyword_to_property_name(token: &Token) -> Option<&'static str> {
     }
 }
 
+enum ParsedObjectKey {
+    Static { key: String, span: Span },
+    ComputedKey { key: Expr },
+}
+
 impl Parser {
     fn expect_ident(&mut self) -> Result<(String, Span), Diagnostic> {
         match self.advance() {
@@ -234,28 +239,32 @@ impl Parser {
         }
     }
 
-    fn parse_object_key(&mut self) -> Result<String, Diagnostic> {
+    fn parse_object_key(&mut self) -> Result<ParsedObjectKey, Diagnostic> {
         match self.peek() {
             Some(Token::LeftBracket) => self.parse_computed_object_key(),
             Some(Token::Ident(name)) => {
                 let key = name.clone();
+                let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
                 self.advance();
-                Ok(key)
+                Ok(ParsedObjectKey::Static { key, span })
             }
             Some(Token::String(s)) => {
                 let key = s.clone();
+                let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
                 self.advance();
-                Ok(key)
+                Ok(ParsedObjectKey::Static { key, span })
             }
             Some(Token::Number(value)) => {
                 let key = value.to_string();
+                let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
                 self.advance();
-                Ok(key)
+                Ok(ParsedObjectKey::Static { key, span })
             }
             Some(Token::DecimalNumber(value)) => {
                 let key = value.clone();
+                let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
                 self.advance();
-                Ok(key)
+                Ok(ParsedObjectKey::Static { key, span })
             }
             Some(Token::BigIntLiteral(_)) | Some(Token::PrivateIdentifier(_)) => Err(Diagnostic {
                 code: DiagCode::SyntaxError,
@@ -268,8 +277,9 @@ impl Parser {
                 phase: None,}),
             Some(token) if keyword_to_property_name(token).is_some() => {
                 let key = keyword_to_property_name(token).unwrap().to_owned();
+                let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
                 self.advance();
-                Ok(key)
+                Ok(ParsedObjectKey::Static { key, span })
             }
             other => Err(Diagnostic {
                 code: DiagCode::SyntaxError,
@@ -282,7 +292,7 @@ impl Parser {
         }
     }
 
-    fn parse_computed_object_key(&mut self) -> Result<String, Diagnostic> {
+    fn parse_computed_object_key(&mut self) -> Result<ParsedObjectKey, Diagnostic> {
         let start = self.expect(TokenKind::LeftBracket)?;
         // Handle BigInt literal computed keys: [1n]
         if matches!(self.peek(), Some(Token::BigIntLiteral(_))) {
@@ -303,42 +313,61 @@ impl Parser {
         if let Some(Token::String(s)) = self.peek() {
             let key = s.clone();
             self.advance();
-            let _end = self.expect(TokenKind::RightBracket)?;
-            return Ok(key);
+            let end = self.expect(TokenKind::RightBracket)?;
+            return Ok(ParsedObjectKey::Static {
+                key,
+                span: Span {
+                    start: start.start,
+                    end: end.end,
+                },
+            });
         }
         // Handle number literal computed keys: [42]
         if let Some(Token::Number(value)) = self.peek() {
             let key = value.to_string();
             self.advance();
-            let _end = self.expect(TokenKind::RightBracket)?;
-            return Ok(key);
+            let end = self.expect(TokenKind::RightBracket)?;
+            return Ok(ParsedObjectKey::Static {
+                key,
+                span: Span {
+                    start: start.start,
+                    end: end.end,
+                },
+            });
         }
         if let Some(Token::DecimalNumber(value)) = self.peek() {
             let key = value.clone();
             self.advance();
-            let _end = self.expect(TokenKind::RightBracket)?;
-            return Ok(key);
-        }
-        let (object, _) = self.expect_ident()?;
-        self.expect(TokenKind::Dot)?;
-        let (property, _) = self.expect_ident()?;
-        let end = self.expect(TokenKind::RightBracket)?;
-
-        if object == "Symbol" && property == "iterator" {
-            Ok(SYMBOL_ITERATOR_OBJECT_KEY.to_owned())
-        } else {
-            Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-402: only computed [Symbol.iterator] object keys are supported in this milestone"
-                        .to_owned(),
-                span: Some(Span {
+            let end = self.expect(TokenKind::RightBracket)?;
+            return Ok(ParsedObjectKey::Static {
+                key,
+                span: Span {
                     start: start.start,
                     end: end.end,
-                }),
-
-                phase: None,})
+                },
+            });
         }
+        let checkpoint = self.cursor;
+        if let Ok((object, _)) = self.expect_ident()
+            && self.consume(TokenKind::Dot)
+            && let Ok((property, _)) = self.expect_ident()
+        {
+            let end = self.expect(TokenKind::RightBracket)?;
+            if object == "Symbol" && property == "iterator" {
+                return Ok(ParsedObjectKey::Static {
+                    key: SYMBOL_ITERATOR_OBJECT_KEY.to_owned(),
+                    span: Span {
+                        start: start.start,
+                        end: end.end,
+                    },
+                });
+            }
+        }
+        self.cursor = checkpoint;
+
+        let key = self.expression()?;
+        self.expect(TokenKind::RightBracket)?;
+        Ok(ParsedObjectKey::ComputedKey { key })
     }
 
     fn expect(&mut self, kind: TokenKind) -> Result<Span, Diagnostic> {

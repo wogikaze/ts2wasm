@@ -198,13 +198,13 @@ BigInt mixed comparison の object `ToPrimitive` boundary: direct object-literal
 
 | 機能 | ECMAScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
 |---|---|---|---|---|---|
-| object literal `{k: v}` | ES1 | heap object | 実装済み (identifier keys only) | - | - |
+| object literal `{k: v}` | ES1 | heap object | 実装済み (identifier/string/numeric keys, shorthand, method shorthand, and basic computed keys) | - | - |
 | computed property `obj[key]` | ES1 | dynamic property access | 実装済み (basic) | - | 014 |
 | property access `obj.key` | ES1 | static property access | 実装済み | - | - |
-| method shorthand | ES2015 | object method | 未実装 | P2 | - |
-| computed property literal | ES2015 | `{[expr]: v}` | 未実装 | P2 | - |
+| method shorthand | ES2015 | object method | 実装済み (basic build/runtime value) | - | 410 |
+| computed property literal | ES2015 | `{[expr]: v}` | 実装済み (basic) | - | 410 |
 | spread properties `...obj` | ES2018 | object spreading | 実装済み (basic: static object literals / known static object-literal locals and simple aliases / runtime object values with own string-keyed enumerable data properties) | - | 274, 355 |
-| shorthand properties `{x}` | ES2015 | property shorthand | 未実装 | P2 | - |
+| shorthand properties `{x}` | ES2015 | property shorthand | 実装済み | - | 410 |
 | getter / setter | ES5 | accessor properties | 未実装 | P2 | - |
 
 ## 配列

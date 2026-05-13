@@ -951,9 +951,10 @@ impl BigIntRuntimeGuard {
         };
         let values = props
             .iter()
-            .filter_map(|(key, value)| {
-                self.expr_static_string_value(value)
-                    .map(|value| (key.clone(), value))
+            .filter_map(|prop| {
+                let key = prop.static_key()?;
+                self.expr_static_string_value(prop.value())
+                    .map(|value| (key.to_owned(), value))
             })
             .collect::<HashMap<_, _>>();
         (!values.is_empty()).then_some(values)
@@ -965,8 +966,8 @@ impl BigIntRuntimeGuard {
         };
         let values = props
             .iter()
-            .filter(|(_, value)| self.expr_is_tracked_bigint_value(value))
-            .map(|(key, _)| key.clone())
+            .filter(|prop| self.expr_is_tracked_bigint_value(prop.value()))
+            .filter_map(|prop| prop.static_key().map(str::to_owned))
             .collect::<HashSet<_>>();
         (!values.is_empty()).then_some(values)
     }
@@ -995,8 +996,8 @@ impl BigIntRuntimeGuard {
                 .cloned(),
             Expr::Object { props, .. } => props
                 .iter()
-                .find(|(key, _)| key == property)
-                .and_then(|(_, value)| self.expr_static_string_value(value)),
+                .find(|prop| prop.static_key() == Some(property))
+                .and_then(|prop| self.expr_static_string_value(prop.value())),
             _ => None,
         }
     }
@@ -1025,8 +1026,9 @@ impl BigIntRuntimeGuard {
                     .object_bigint_props
                     .get(name)
                     .is_some_and(|props| props.contains(property)),
-                Expr::Object { props, .. } => props.iter().any(|(key, value)| {
-                    key == property && self.expr_is_tracked_bigint_value(value)
+                Expr::Object { props, .. } => props.iter().any(|prop| {
+                    prop.static_key() == Some(property)
+                        && self.expr_is_tracked_bigint_value(prop.value())
                 }),
                 _ => false,
             },
@@ -1047,7 +1049,7 @@ impl BigIntRuntimeGuard {
             Expr::Ident { name, .. } => self.object_toprimitive_locals.contains(name),
             Expr::Object { props, .. } => props
                 .iter()
-                .any(|(key, _)| matches!(key.as_str(), "valueOf" | "toString")),
+                .any(|prop| matches!(prop.static_key(), Some("valueOf" | "toString"))),
             _ => false,
         }
     }
@@ -1401,8 +1403,8 @@ impl BigIntRuntimeGuard {
                 Ok(None)
             }
             Expr::Object { props, .. } => {
-                for (_, value) in props {
-                    self.expr_bigint_info(value)?;
+                for prop in props {
+                    self.expr_bigint_info(prop.value())?;
                 }
                 Ok(None)
             }
@@ -1559,14 +1561,17 @@ pub(super) fn bigint_object_toprimitive_diagnostic(span: Span) -> Diagnostic {
         phase: None,}
 }
 
-fn object_toprimitive_string_boundary_return(props: &[(String, Expr)]) -> Option<()> {
-    if props.iter().any(|(key, _)| key == "valueOf") {
+fn object_toprimitive_string_boundary_return(props: &[ObjectProp]) -> Option<()> {
+    if props
+        .iter()
+        .any(|prop| prop.static_key() == Some("valueOf"))
+    {
         return None;
     }
     props
         .iter()
-        .find(|(key, _)| key == "toString")
-        .and_then(|(_, value)| match value {
+        .find(|prop| prop.static_key() == Some("toString"))
+        .and_then(|prop| match prop.value() {
             Expr::ArrowFn { params, body, .. } if params.is_empty() => match body.as_ref() {
                 Expr::String { value, span } => match bigint_from_string_builtin(value, *span) {
                     Ok(parsed) if bigint_fits_runtime_mixed_string(&parsed) => None,

@@ -491,9 +491,10 @@ fn expr_contains_super_ref(expr: &ResolvedExpr) -> bool {
             ResolvedArrayElement::Present(expr) => expr_contains_super_ref(expr),
             ResolvedArrayElement::Hole => false,
         }),
-        ResolvedExpr::Object(props) => props
-            .iter()
-            .any(|(_, value)| expr_contains_super_ref(value)),
+        ResolvedExpr::Object(props) => props.iter().any(|prop| {
+            prop.computed_key().is_some_and(expr_contains_super_ref)
+                || expr_contains_super_ref(prop.value())
+        }),
         ResolvedExpr::ComputedIndex { object, index } => {
             expr_contains_super_ref(object) || expr_contains_super_ref(index)
         }

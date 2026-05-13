@@ -524,8 +524,13 @@ pub(super) fn first_outer_local_reference_in_expr(
             }
             ArrayLiteralElement::Hole(_) => None,
         }),
-        Expr::Object { props, .. } => props.iter().find_map(|(_, value)| {
-            first_outer_local_reference_in_expr(value, outer_bindings, method_locals, class_names)
+        Expr::Object { props, .. } => props.iter().find_map(|prop| {
+            first_outer_local_reference_in_expr(
+                prop.value(),
+                outer_bindings,
+                method_locals,
+                class_names,
+            )
         }),
         Expr::Index { object, index, .. } | Expr::OptionalIndex { object, index, .. } => {
             first_outer_local_reference_in_expr(object, outer_bindings, method_locals, class_names)

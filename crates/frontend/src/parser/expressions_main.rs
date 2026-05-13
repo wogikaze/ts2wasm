@@ -1884,13 +1884,34 @@ impl Parser {
                     loop {
                         if self.consume(TokenKind::DotDotDot) {
                             let val = self.assignment()?;
-                            props.push((OBJECT_SPREAD_SENTINEL.to_owned(), val));
-                        } else {
-                            let key = self.parse_object_key()?;
-                            let key_span = self.prev_span().unwrap_or(Span {
-                                start: start.start,
-                                end: start.start,
+                            props.push(ObjectProp::KeyValue {
+                                key: OBJECT_SPREAD_SENTINEL.to_owned(),
+                                value: val,
                             });
+                        } else {
+                            let parsed_key = self.parse_object_key()?;
+                            let (key, key_span) = match parsed_key {
+                                ParsedObjectKey::Static { key, span } => (key, span),
+                                ParsedObjectKey::ComputedKey { key } => {
+                                    self.expect(TokenKind::Colon)?;
+                                    let value = self.expression()?;
+                                    props.push(ObjectProp::ComputedKey {
+                                        key: Box::new(key),
+                                        value,
+                                    });
+                                    if self.consume(TokenKind::RightBrace) {
+                                        break;
+                                    }
+                                    if self.consume(TokenKind::Comma) {
+                                        if self.consume(TokenKind::RightBrace) {
+                                            break;
+                                        }
+                                        continue;
+                                    }
+                                    self.expect(TokenKind::Comma)?;
+                                    continue;
+                                }
+                            };
                             let key_start = key_span.start;
 
                             // Handle getter/setter accessor in object literals: { get foo() {} }
@@ -1941,7 +1962,10 @@ impl Parser {
                                             end,
                                         },
                                     };
-                                    props.push((prop_name, expr));
+                                    props.push(ObjectProp::MethodShorthand {
+                                        key: prop_name,
+                                        value: expr,
+                                    });
                                     if self.consume(TokenKind::RightBrace) {
                                         break;
                                     }
@@ -1959,17 +1983,17 @@ impl Parser {
                             if let Some(val) =
                                 self.parse_object_literal_method(key.clone(), key_start)?
                             {
-                                props.push((key, val));
+                                props.push(ObjectProp::MethodShorthand { key, value: val });
                             } else if matches!(self.peek(), Some(Token::Colon)) {
                                 self.expect(TokenKind::Colon)?;
                                 let val = self.expression()?;
-                                props.push((key, val));
+                                props.push(ObjectProp::KeyValue { key, value: val });
                             } else {
                                 let val = Expr::Ident {
                                     name: key.clone(),
                                     span: key_span,
                                 };
-                                props.push((key, val));
+                                props.push(ObjectProp::Shorthand { key, value: val });
                             }
                         }
                         if self.consume(TokenKind::RightBrace) {

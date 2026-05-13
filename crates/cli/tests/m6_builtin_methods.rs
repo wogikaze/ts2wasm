@@ -133,6 +133,16 @@ fn build_smoke_object_values_method() {
 }
 
 #[test]
+fn build_smoke_object_shorthand() {
+    let result = run_fixture("core-expressions/object-shorthand-computed-method.ts");
+    assert!(
+        result.is_ok(),
+        "object shorthand/computed key/method shorthand should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_entries_method() {
     let result = run_fixture("builtins-and-io/object-entries.ts");
     assert!(

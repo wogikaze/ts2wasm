@@ -23,7 +23,7 @@ use std::collections::{HashMap, HashSet};
 use ts2wasm_runtime_abi::ValueTag;
 use ts2wasm_shared::{
     ArrayLiteralElement, BinaryOp, ClassPrivateElement, ClassStaticBlock, DiagCode, Diagnostic,
-    Expr, Span, Stmt, UnaryOp,
+    Expr, ObjectProp, Span, Stmt, UnaryOp,
 };
 
 use super::binding_pattern::parse_binding_pattern;
@@ -629,7 +629,24 @@ impl BigIntStaticBuiltinFolder {
             Expr::Object { props, span } => Expr::Object {
                 props: props
                     .iter()
-                    .map(|(key, value)| (key.clone(), self.fold_expr(value)))
+                    .map(|prop| match prop {
+                        ObjectProp::KeyValue { key, value } => ObjectProp::KeyValue {
+                            key: key.clone(),
+                            value: self.fold_expr(value),
+                        },
+                        ObjectProp::Shorthand { key, value } => ObjectProp::Shorthand {
+                            key: key.clone(),
+                            value: self.fold_expr(value),
+                        },
+                        ObjectProp::ComputedKey { key, value } => ObjectProp::ComputedKey {
+                            key: Box::new(self.fold_expr(key)),
+                            value: self.fold_expr(value),
+                        },
+                        ObjectProp::MethodShorthand { key, value } => ObjectProp::MethodShorthand {
+                            key: key.clone(),
+                            value: self.fold_expr(value),
+                        },
+                    })
                     .collect(),
                 span: *span,
             },
@@ -863,9 +880,11 @@ fn object_toprimitive_supported_primitive_expr(expr: &Expr) -> Option<Expr> {
         return None;
     };
 
-    let value_of = props.iter().find(|(key, _)| key == "valueOf");
-    if let Some((_, value)) = value_of {
-        match object_toprimitive_return_expr(value) {
+    let value_of = props
+        .iter()
+        .find(|prop| prop.static_key() == Some("valueOf"));
+    if let Some(prop) = value_of {
+        match object_toprimitive_return_expr(prop.value()) {
             Some(Ok(expr)) => return Some(expr),
             Some(Err(())) => {}
             None => return None,
@@ -874,8 +893,8 @@ fn object_toprimitive_supported_primitive_expr(expr: &Expr) -> Option<Expr> {
 
     props
         .iter()
-        .find(|(key, _)| key == "toString")
-        .and_then(|(_, value)| object_toprimitive_return_expr(value).and_then(Result::ok))
+        .find(|prop| prop.static_key() == Some("toString"))
+        .and_then(|prop| object_toprimitive_return_expr(prop.value()).and_then(Result::ok))
 }
 
 fn object_toprimitive_return_expr(value: &Expr) -> Option<Result<Expr, ()>> {
