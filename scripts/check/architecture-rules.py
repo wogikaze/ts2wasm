@@ -221,6 +221,7 @@ FUNCTION_LENGTH_ALLOWLIST = {
     ("crates/ir/src/builtin_resolver.rs", "resolve_stmt_with_outer_bindings"): "P7: resolver decomposition -- 457 lines",
     ("crates/ir/src/builtin_resolver.rs", "resolve_expr"): "P7: resolver decomposition -- 577 lines",
     ("crates/ir/src/lowered/program.rs", "lower_program"): "P7: resolver decomposition -- 359 lines",
+    ("crates/ir/src/lowered/program.rs", "lower_program_with_module_url"): "P7: resolver decomposition -- module-aware lowering entrypoint",
     ("crates/ir/src/lowered/validate.rs", "validate_stmt"): "P7: lowered validator decomposition -- 207 lines",
     ("crates/ir/src/lowered/validate.rs", "validate_expr"): "P7: resolver decomposition -- 430 lines",
     ("crates/ir/src/lowered/mir_validate.rs", "validate_expr"): "P14: MIR validator decomposition -- 228 lines",

@@ -246,6 +246,24 @@ impl super::Resolver {
             })
             .filter(|_| !self.ctx.facts.env_cell_names.contains(name));
 
+        if block_contains_super_ref(body) {
+            self.ctx.symbols.function_signatures.insert(
+                func_id,
+                FunctionSignature {
+                    explicit_params: lowered_params.len(),
+                    needs_receiver: true,
+                    is_strict: crate::lowered::program::function_body_is_strict(
+                        self.ctx.is_strict_context(),
+                        body,
+                    ),
+                    needs_arguments: block_contains_arguments(body)
+                        && !params.iter().any(|param| param.name == "arguments"),
+                    ..FunctionSignature::default()
+                },
+            );
+        }
+        let function_signatures = self.ctx.symbols.function_signatures.clone();
+
         let lowered = lower_function(
             func_id,
             &lowered_params,
@@ -253,7 +271,7 @@ impl super::Resolver {
             false,
             false,
             &self.ctx.symbols.function_ids,
-            &self.ctx.symbols.function_signatures,
+            &function_signatures,
             &self.ctx.functions.function_captures,
             &self.ctx.functions.function_mutable_captures,
             &self.ctx.functions.class_method_captures,
@@ -459,7 +477,7 @@ impl super::Resolver {
 /// access.  These expressions require `this` to be available as a local in whatever
 /// scope they are lowered into (see the `receiver_name == "super"` branch in
 /// resolver_expr.rs:1891).
-fn expr_contains_super_ref(expr: &ResolvedExpr) -> bool {
+pub(super) fn expr_contains_super_ref(expr: &ResolvedExpr) -> bool {
     match expr {
         ResolvedExpr::MethodCall { object, args, .. } => {
             (matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "super"))
@@ -563,7 +581,7 @@ fn expr_contains_super_ref(expr: &ResolvedExpr) -> bool {
 
 /// Returns true when any statement in `stmts` contains an expression with a super
 /// reference (super.method() or super.property).
-fn block_contains_super_ref(stmts: &[ResolvedStmt]) -> bool {
+pub(super) fn block_contains_super_ref(stmts: &[ResolvedStmt]) -> bool {
     stmts.iter().any(stmt_contains_super_ref)
 }
 

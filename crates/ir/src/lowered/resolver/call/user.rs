@@ -222,6 +222,8 @@ impl super::super::Resolver {
                     phase: None,
                 })?;
 
+            // SuperCallThis: derived constructors pass the active this local into
+            // the parent constructor before forwarding explicit super(...) args.
             let mut lowered_args = vec![LoweredExpr::Local(
                 self.resolve_local("this")?,
                 Span::generated("local"),
@@ -642,6 +644,30 @@ impl super::super::Resolver {
                     self.resolve_func(name)
                         .ok()
                         .map(|func_id| (key.to_owned(), func_id))
+                } else {
+                    None
+                }
+            })
+            .collect::<HashMap<_, _>>();
+        if function_props.is_empty() {
+            None
+        } else {
+            Some(function_props)
+        }
+    }
+
+    pub(crate) fn function_props_for_lowered_object_expr(
+        &self,
+        expr: &LoweredExpr,
+    ) -> Option<HashMap<String, FuncId>> {
+        let LoweredExpr::ObjectNew { props, .. } = expr else {
+            return None;
+        };
+        let function_props = props
+            .iter()
+            .filter_map(|(key, value)| {
+                if let LoweredExpr::ArrowFn { func_id, .. } = value {
+                    Some((key.clone(), *func_id))
                 } else {
                     None
                 }

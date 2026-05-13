@@ -373,7 +373,7 @@ impl Resolver {
                         .local_classes
                         .insert(local_id, class_name.clone());
                 }
-                let function_props = self.function_props_for_object_expr(expr);
+                let mut function_props = self.function_props_for_object_expr(expr);
                 let bound_function = self.bound_function_for_expr(expr)?;
                 let function_method = self.function_method_binding_for_expr(expr)?;
                 let bound_constructor = self.bound_constructor_for_expr(expr);
@@ -410,6 +410,11 @@ impl Resolver {
                 } else {
                     lowered
                 };
+                if let Some(lowered_props) = self.function_props_for_lowered_object_expr(&lowered) {
+                    function_props
+                        .get_or_insert_with(HashMap::new)
+                        .extend(lowered_props);
+                }
                 if let LoweredExpr::ArrowFn {
                     func_id, captures, ..
                 } = &lowered
@@ -560,7 +565,7 @@ impl Resolver {
                 } else {
                     self.ctx.classes.local_classes.remove(&local_id);
                 }
-                let function_props = self.function_props_for_object_expr(expr);
+                let mut function_props = self.function_props_for_object_expr(expr);
                 let bound_function = self.bound_function_for_expr(expr)?;
                 let function_method = self.function_method_binding_for_expr(expr)?;
                 let bound_constructor = self.bound_constructor_for_expr(expr);
@@ -583,6 +588,11 @@ impl Resolver {
                 } else {
                     self.lower_expr(expr)?
                 };
+                if let Some(lowered_props) = self.function_props_for_lowered_object_expr(&lowered) {
+                    function_props
+                        .get_or_insert_with(HashMap::new)
+                        .extend(lowered_props);
+                }
                 if let LoweredExpr::ArrowFn {
                     func_id, captures, ..
                 } = &lowered

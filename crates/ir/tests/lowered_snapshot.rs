@@ -10,7 +10,7 @@ use ts2wasm_ir::builtin_resolver::resolve_builtins;
 use ts2wasm_ir::lowered::validate::validate_lowered;
 use ts2wasm_ir::lowered::{
     FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt,
-    ModuleLoadKind,
+    ModuleLoadKind, RuntimeFn,
 };
 use ts2wasm_ir::lowered::{lower_program, lower_program_with_module_url};
 
@@ -126,6 +126,129 @@ fn count_user_calls_in_expr(expr: &LoweredExpr) -> usize {
             count_user_calls_in_expr(left) + count_user_calls_in_expr(right)
         }
         _ => 0,
+    }
+}
+
+fn lowered_stmt_contains_runtime_call(stmt: &LoweredStmt, runtime: RuntimeFn) -> bool {
+    match stmt {
+        LoweredStmt::Let(_, expr, _)
+        | LoweredStmt::Expr(expr, _)
+        | LoweredStmt::Return(expr, _)
+        | LoweredStmt::Throw(expr, _) => lowered_expr_contains_runtime_call(expr, runtime),
+        LoweredStmt::Block(stmts, _) => stmts
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, runtime)),
+        LoweredStmt::If {
+            condition,
+            then_body,
+            else_body,
+            ..
+        } => {
+            lowered_expr_contains_runtime_call(condition, runtime)
+                || then_body
+                    .iter()
+                    .any(|stmt| lowered_stmt_contains_runtime_call(stmt, runtime))
+                || else_body
+                    .iter()
+                    .any(|stmt| lowered_stmt_contains_runtime_call(stmt, runtime))
+        }
+        _ => false,
+    }
+}
+
+fn lowered_expr_contains_runtime_call(expr: &LoweredExpr, runtime: RuntimeFn) -> bool {
+    match expr {
+        LoweredExpr::RuntimeCall {
+            intrinsic, args, ..
+        } => {
+            *intrinsic == runtime
+                || args
+                    .iter()
+                    .any(|arg| lowered_expr_contains_runtime_call(arg, runtime))
+        }
+        LoweredExpr::Call { args, .. } | LoweredExpr::ArrayNew { elements: args, .. } => args
+            .iter()
+            .any(|arg| lowered_expr_contains_runtime_call(arg, runtime)),
+        LoweredExpr::Block { stmts, result, .. } => {
+            stmts
+                .iter()
+                .any(|stmt| lowered_stmt_contains_runtime_call(stmt, runtime))
+                || lowered_expr_contains_runtime_call(result, runtime)
+        }
+        LoweredExpr::ObjectNew { props, .. } => props
+            .iter()
+            .any(|(_, value)| lowered_expr_contains_runtime_call(value, runtime)),
+        LoweredExpr::PropertyGet { obj, .. }
+        | LoweredExpr::OptionalPropertyGet { obj, .. }
+        | LoweredExpr::MethodCall { object: obj, .. }
+        | LoweredExpr::Unary { expr: obj, .. } => lowered_expr_contains_runtime_call(obj, runtime),
+        LoweredExpr::PropertyGetDynamic { obj, key, .. }
+        | LoweredExpr::Index {
+            object: obj,
+            index: key,
+            ..
+        } => {
+            lowered_expr_contains_runtime_call(obj, runtime)
+                || lowered_expr_contains_runtime_call(key, runtime)
+        }
+        LoweredExpr::Binary { left, right, .. } => {
+            lowered_expr_contains_runtime_call(left, runtime)
+                || lowered_expr_contains_runtime_call(right, runtime)
+        }
+        _ => false,
+    }
+}
+
+fn lowered_stmt_contains_user_call_with_local_receiver(stmt: &LoweredStmt) -> bool {
+    match stmt {
+        LoweredStmt::Let(_, expr, _)
+        | LoweredStmt::Expr(expr, _)
+        | LoweredStmt::Return(expr, _)
+        | LoweredStmt::Throw(expr, _) => lowered_expr_contains_user_call_with_local_receiver(expr),
+        LoweredStmt::Block(stmts, _) => stmts
+            .iter()
+            .any(lowered_stmt_contains_user_call_with_local_receiver),
+        LoweredStmt::If {
+            condition,
+            then_body,
+            else_body,
+            ..
+        } => {
+            lowered_expr_contains_user_call_with_local_receiver(condition)
+                || then_body
+                    .iter()
+                    .any(lowered_stmt_contains_user_call_with_local_receiver)
+                || else_body
+                    .iter()
+                    .any(lowered_stmt_contains_user_call_with_local_receiver)
+        }
+        _ => false,
+    }
+}
+
+fn lowered_expr_contains_user_call_with_local_receiver(expr: &LoweredExpr) -> bool {
+    match expr {
+        LoweredExpr::Call { kind, args, .. } => {
+            (matches!(kind, FunctionCallKind::User(_))
+                && matches!(args.first(), Some(LoweredExpr::Local(_, _))))
+                || args
+                    .iter()
+                    .any(lowered_expr_contains_user_call_with_local_receiver)
+        }
+        LoweredExpr::RuntimeCall { args, .. } | LoweredExpr::ArrayNew { elements: args, .. } => {
+            args.iter()
+                .any(lowered_expr_contains_user_call_with_local_receiver)
+        }
+        LoweredExpr::ObjectNew { props, .. } => props
+            .iter()
+            .any(|(_, value)| lowered_expr_contains_user_call_with_local_receiver(value)),
+        LoweredExpr::Block { stmts, result, .. } => {
+            stmts
+                .iter()
+                .any(lowered_stmt_contains_user_call_with_local_receiver)
+                || lowered_expr_contains_user_call_with_local_receiver(result)
+        }
+        _ => false,
     }
 }
 
@@ -275,6 +398,51 @@ fn lowered_snapshot_new_target_outside_constructor_lowers_to_undefined() {
             )
         }),
         "expected non-constructor new.target to lower to undefined"
+    );
+}
+
+#[test]
+fn lowered_snapshot_super_call_passes_this_to_parent_constructor() {
+    let program = parse_resolve_lower(
+        r#"
+        class Base { constructor(value) { this.value = value; } }
+        class Derived extends Base { constructor(value) { super(value); } }
+        "#,
+    );
+
+    assert!(
+        program.functions.iter().any(|function| function
+            .body
+            .iter()
+            .any(lowered_stmt_contains_user_call_with_local_receiver)),
+        "expected derived constructor super(...) to pass this as the first parent constructor arg"
+    );
+}
+
+#[test]
+fn lowered_snapshot_object_method_super_property_uses_object_prototype() {
+    let program = parse_resolve_lower(
+        r#"
+        let parent = { value: 42 };
+        let child = { read() { return super.value; } };
+        Object.setPrototypeOf(child, parent);
+        let result = child.read();
+        "#,
+    );
+
+    assert!(
+        program.functions.iter().any(|function| function
+            .body
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::ObjectGetPrototypeOf))),
+        "expected object method super.property to read from Object.getPrototypeOf(this)"
+    );
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(lowered_stmt_contains_user_call_with_local_receiver),
+        "expected object literal method call to dispatch with the object receiver"
     );
 }
 

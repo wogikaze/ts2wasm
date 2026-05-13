@@ -193,17 +193,25 @@ impl super::super::Resolver {
         key: &str,
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
-        let class_name = self
-            .ctx
-            .classes
-            .current_class
-            .as_ref()
-            .ok_or_else(|| Diagnostic {
+        let Some(class_name) = self.ctx.classes.current_class.as_ref() else {
+            let this_local = self.resolve_local("this").map_err(|_| Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "super property access requires class context".to_owned(),
+                message: "super property access requires class context or object method receiver"
+                    .to_owned(),
                 span: Some(span),
                 phase: None,
             })?;
+            // SuperPropertyObject: object literal methods resolve super.prop via
+            // Object.getPrototypeOf(this).prop when statically dispatched.
+            return Ok(object_kernel::ordinary_get(
+                object_kernel::ordinary_get_prototype_of(
+                    LoweredExpr::Local(this_local, Span::generated("local")),
+                    Span::generated("object_home_proto"),
+                ),
+                key,
+                span,
+            ));
+        };
         let parent_name = self
             .ctx
             .classes
@@ -229,17 +237,23 @@ impl super::super::Resolver {
         _object: &ResolvedExpr,
         index: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
-        let class_name = self
-            .ctx
-            .classes
-            .current_class
-            .as_ref()
-            .ok_or_else(|| Diagnostic {
+        let Some(class_name) = self.ctx.classes.current_class.as_ref() else {
+            let this_local = self.resolve_local("this").map_err(|_| Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "super computed access requires class context".to_owned(),
+                message: "super computed access requires class context or object method receiver"
+                    .to_owned(),
                 span: None,
                 phase: None,
             })?;
+            return Ok(object_kernel::ordinary_get_dynamic(
+                object_kernel::ordinary_get_prototype_of(
+                    LoweredExpr::Local(this_local, Span::generated("local")),
+                    Span::generated("object_home_proto"),
+                ),
+                self.lower_expr(index)?,
+                Span::generated("super_index_get"),
+            ));
+        };
         let parent_name = self
             .ctx
             .classes
