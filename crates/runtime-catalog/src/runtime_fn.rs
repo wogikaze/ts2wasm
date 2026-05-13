@@ -324,7 +324,7 @@ pub enum RuntimeFn {
     ObjectFreeze,
     /// Object.seal(obj) — sets SEALED flag + makes all props non-configurable
     ObjectSeal,
-    /// Object.preventExtensions(obj) — sets the OBJECT_FLAG_SEALED flag (non-extensible)
+    /// Object.preventExtensions(obj) — marks the object non-extensible without changing descriptors
     ObjectPreventExtensions,
     /// Object.isExtensible(obj) — returns 1 if object is extensible, 0 otherwise
     ObjectIsExtensible,

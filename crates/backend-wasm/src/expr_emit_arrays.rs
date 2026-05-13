@@ -120,18 +120,19 @@ impl WatEmitter<'_> {
             return;
         };
         let old_array = frame.heap_base_tmp();
-        let pushed_value = frame.heap_value_tmp();
+        let child_frame = frame.child_temp_frame();
+        let pushed_value = child_frame.heap_value_tmp();
         self.emit_expr(writer, array, indent, frame);
         writer.local_set(indent, old_array);
         {
             let pad = " ".repeat(indent);
             self.emit_gc_root_mirror_index(writer.output_mut(), &pad, old_array, frame);
         }
-        self.emit_expr(writer, value, indent, frame);
+        self.emit_expr(writer, value, indent, &child_frame);
         writer.local_set(indent, pushed_value);
         {
             let pad = " ".repeat(indent);
-            self.emit_gc_root_mirror_index(writer.output_mut(), &pad, pushed_value, frame);
+            self.emit_gc_root_mirror_index(writer.output_mut(), &pad, pushed_value, &child_frame);
         }
         writer.push_str(&format!(
             "{pad}(local.get {old_array})\n\

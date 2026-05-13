@@ -596,7 +596,7 @@ impl Parser {
                     )
                 })?;
             }
-            if let Some(equal_span) = self.consume_span(TokenKind::Equal) {
+            if self.consume(TokenKind::Equal) {
                 // Skip the initializer — ambient variable initializers are ignored
                 self.skip_type_annotation_until(&[TokenKind::Semicolon, TokenKind::Comma]).ok();
             }

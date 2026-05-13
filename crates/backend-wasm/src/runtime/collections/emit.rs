@@ -165,14 +165,6 @@ impl WatEmitter<'_> {
         (return
           (i32.or
             (i32.shl
-              (call $string_code_point_length (local.get $v))
-              (i32.const {number_shift}))
-            (i32.const {number_tag})))))
-    (if (i32.eq (local.get $tag) (i32.const {array_tag}))
-      (then
-        (return
-          (i32.or
-            (i32.shl
               (i32.load (i32.and (local.get $v) (i32.const {heap_mask})))
               (i32.const {number_shift}))
             (i32.const {number_tag})))))
@@ -350,6 +342,12 @@ impl WatEmitter<'_> {
           (then
             (if (call $mem_equal (local.get $key_ptr) (local.get $pk_ptr) (local.get $key_len))
               (then
+                (if (i32.lt_u (local.get $i) (i32.const {tracked_attr_count}))
+                  (then
+                    (if (i32.and
+                          (local.get $flags)
+                          (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_writable_shift}))))
+                      (then (return (i32.const {undefined}))))))
                 (i32.store (i32.add (local.get $entry_base) (i32.const {value_off})) (local.get $value))
                 (return (local.get $value))))))
         (br $scan)))
@@ -384,6 +382,9 @@ impl WatEmitter<'_> {
             frozen_flag = Layout::OBJECT_FLAG_FROZEN,
             undefined = ValueTag::UNDEFINED,
             sealed_flag = Layout::OBJECT_FLAG_SEALED,
+            non_writable_shift = Layout::OBJECT_NON_WRITABLE_SHIFT,
+            tracked_attr_count = Layout::OBJECT_ACCESSOR_PROP_SHIFT
+                - Layout::OBJECT_NON_CONFIGURABLE_SHIFT,
         ));
     }
 
@@ -429,6 +430,12 @@ impl WatEmitter<'_> {
           (then
             (if (call $mem_equal (local.get $key_ptr) (local.get $pk_ptr) (local.get $key_len))
               (then
+                (if (i32.lt_u (local.get $i) (i32.const {tracked_attr_count}))
+                  (then
+                    (if (i32.and
+                          (local.get $flags)
+                          (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift}))))
+                      (then (return (i32.const {false}))))))
                 ;; found: clear the entry and decrement count
                 (local.set $entry_base
                   (i32.add (local.get $base)
@@ -454,6 +461,9 @@ impl WatEmitter<'_> {
             obj_flags = Layout::OBJECT_FLAGS_OFFSET,
             frozen_flag = Layout::OBJECT_FLAG_FROZEN,
             one = RuntimeConst::ONE,
+            non_configurable_shift = Layout::OBJECT_NON_CONFIGURABLE_SHIFT,
+            tracked_attr_count = Layout::OBJECT_ACCESSOR_PROP_SHIFT
+                - Layout::OBJECT_NON_CONFIGURABLE_SHIFT,
             false = ValueTag::FALSE,
             true = ValueTag::TRUE,
         ));

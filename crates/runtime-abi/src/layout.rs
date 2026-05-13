@@ -72,7 +72,7 @@ impl Layout {
     // ---- Object heap layout -----------------------------------------------
     /// Bytes before the property entries:
     /// - [0 .. 4): property count (i32)
-    /// - [4 .. 8): flags (i32, bit 0 = FROZEN, bit 1 = SEALED, bits 2+ = per-property non-enumerable mask)
+    /// - [4 .. 8): flags (i32, bit 0 = FROZEN, bit 1 = NON_EXTENSIBLE, bits 2+ = per-property non-enumerable mask)
     /// - [8 .. 12): prototype pointer (raw object heap pointer, i32)
     pub const OBJECT_HEADER_SIZE: u32 = 12;
     /// Offset of the flags field inside the object header.
@@ -89,7 +89,8 @@ impl Layout {
     pub const OBJECT_ENTRY_SIZE: u32 = 8;
     /// Bit 0 of flags: object is frozen (all properties non-writable, non-configurable).
     pub const OBJECT_FLAG_FROZEN: u32 = 1;
-    /// Bit 1 of flags: object is sealed (properties non-configurable).
+    /// Bit 1 of flags: object is non-extensible. Object.seal also marks existing
+    /// properties non-configurable via the per-property mask below.
     pub const OBJECT_FLAG_SEALED: u32 = 2;
     /// Bits 2+ of flags: per-property non-enumerable mask (bit (2+i) = property i is non-enumerable).
     pub const OBJECT_NON_ENUM_SHIFT: u32 = 2;

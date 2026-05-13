@@ -482,10 +482,7 @@ impl WatEmitter<'_> {
                         (if (result i32)
                           (i32.and
                             (i32.eqz (i32.and (local.get $flags) (i32.const {frozen_flag})))
-                            (i32.and
-                              (i32.eqz (i32.and (local.get $flags) (i32.const {sealed_flag})))
-                              (i32.eqz (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift})))))
-                            )
+                            (i32.eqz (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift})))))
                           )
                           (then (i32.const {true}))
                           (else (i32.const {false}))))))
@@ -565,10 +562,7 @@ impl WatEmitter<'_> {
                         (if (result i32)
                           (i32.and
                             (i32.eqz (i32.and (local.get $flags) (i32.const {frozen_flag})))
-                            (i32.and
-                              (i32.eqz (i32.and (local.get $flags) (i32.const {sealed_flag})))
-                              (i32.eqz (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift})))))
-                            )
+                            (i32.eqz (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift})))))
                           )
                           (then (i32.const {true}))
                           (else (i32.const {false})))))
@@ -602,7 +596,6 @@ impl WatEmitter<'_> {
             obj_header = Layout::OBJECT_HEADER_SIZE,
             obj_flags = Layout::OBJECT_FLAGS_OFFSET,
             frozen_flag = Layout::OBJECT_FLAG_FROZEN,
-            sealed_flag = Layout::OBJECT_FLAG_SEALED,
             obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             str_header = Layout::STRING_HEADER_SIZE,
@@ -691,13 +684,34 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $base i32)
     (local $flags i32)
+    (local $count i32)
+    (local $i i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {object_tag}))
       (then (return (local.get $obj))))
     (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
     (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
+    (local.set $flags
+      (i32.or (local.get $flags)
+        (i32.or (i32.const {frozen_flag}) (i32.const {sealed_flag}))))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    (block $freeze_done
+      (loop $freeze_loop
+        (br_if $freeze_done
+          (i32.or
+            (i32.ge_u (local.get $i) (local.get $count))
+            (i32.ge_u (local.get $i) (i32.const {tracked_attr_count}))))
+        (local.set $flags
+          (i32.or (local.get $flags)
+            (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_writable_shift})))))
+        (local.set $flags
+          (i32.or (local.get $flags)
+            (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift})))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $freeze_loop)))
     (i32.store (i32.add (local.get $base) (i32.const {obj_flags}))
-      (i32.or (local.get $flags) (i32.const {frozen_flag})))
+      (local.get $flags))
     (local.get $obj))
 "#,
             tag_mask = ValueTag::TAG_MASK,
@@ -705,6 +719,13 @@ impl WatEmitter<'_> {
             heap_mask = ValueTag::HEAP_MASK,
             obj_flags = Layout::OBJECT_FLAGS_OFFSET,
             frozen_flag = Layout::OBJECT_FLAG_FROZEN,
+            sealed_flag = Layout::OBJECT_FLAG_SEALED,
+            non_writable_shift = Layout::OBJECT_NON_WRITABLE_SHIFT,
+            non_configurable_shift = Layout::OBJECT_NON_CONFIGURABLE_SHIFT,
+            tracked_attr_count =
+                Layout::OBJECT_ACCESSOR_PROP_SHIFT - Layout::OBJECT_NON_CONFIGURABLE_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
         ));
     }
 
@@ -715,13 +736,29 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $base i32)
     (local $flags i32)
+    (local $count i32)
+    (local $i i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {object_tag}))
       (then (return (local.get $obj))))
     (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
     (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
+    (local.set $flags (i32.or (local.get $flags) (i32.const {sealed_flag})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    (block $seal_done
+      (loop $seal_loop
+        (br_if $seal_done
+          (i32.or
+            (i32.ge_u (local.get $i) (local.get $count))
+            (i32.ge_u (local.get $i) (i32.const {tracked_attr_count}))))
+        (local.set $flags
+          (i32.or (local.get $flags)
+            (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift})))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $seal_loop)))
     (i32.store (i32.add (local.get $base) (i32.const {obj_flags}))
-      (i32.or (local.get $flags) (i32.const {sealed_flag})))
+      (local.get $flags))
     (local.get $obj))
 "#,
             tag_mask = ValueTag::TAG_MASK,
@@ -729,6 +766,11 @@ impl WatEmitter<'_> {
             heap_mask = ValueTag::HEAP_MASK,
             obj_flags = Layout::OBJECT_FLAGS_OFFSET,
             sealed_flag = Layout::OBJECT_FLAG_SEALED,
+            non_configurable_shift = Layout::OBJECT_NON_CONFIGURABLE_SHIFT,
+            tracked_attr_count =
+                Layout::OBJECT_ACCESSOR_PROP_SHIFT - Layout::OBJECT_NON_CONFIGURABLE_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
         ));
     }
 
@@ -789,20 +831,44 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $base i32)
     (local $flags i32)
+    (local $count i32)
+    (local $i i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {object_tag}))
       (then (return (i32.const {true_val}))))
     (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
     (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
-    (if (i32.and (local.get $flags) (i32.const {sealed_flag}))
+    (if (i32.eqz (i32.and (local.get $flags) (i32.const {sealed_flag})))
+      (then (return (i32.const {false_val}))))
+    (if (i32.and (local.get $flags) (i32.const {frozen_flag}))
       (then (return (i32.const {true_val}))))
-    (i32.const {false_val}))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    (block $sealed_done
+      (loop $sealed_loop
+        (br_if $sealed_done (i32.ge_u (local.get $i) (local.get $count)))
+        (if (i32.ge_u (local.get $i) (i32.const {tracked_attr_count}))
+          (then (return (i32.const {false_val}))))
+        (if (i32.eqz
+              (i32.and
+                (local.get $flags)
+                (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift})))))
+          (then (return (i32.const {false_val}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $sealed_loop)))
+    (i32.const {true_val}))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             obj_flags = Layout::OBJECT_FLAGS_OFFSET,
             sealed_flag = Layout::OBJECT_FLAG_SEALED,
+            frozen_flag = Layout::OBJECT_FLAG_FROZEN,
+            non_configurable_shift = Layout::OBJECT_NON_CONFIGURABLE_SHIFT,
+            tracked_attr_count = Layout::OBJECT_ACCESSOR_PROP_SHIFT
+                - Layout::OBJECT_NON_CONFIGURABLE_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
             true_val = ValueTag::TRUE,
             false_val = ValueTag::FALSE,
         ));

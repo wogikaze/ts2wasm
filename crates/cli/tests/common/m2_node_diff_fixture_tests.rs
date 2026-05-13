@@ -1343,11 +1343,13 @@ fn string_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/array-map.ts",
         "fixtures/builtins-and-io/string-search.ts",
         "fixtures/builtins-and-io/string-match.ts",
+        "fixtures/builtins-and-io/string-concat.ts",
         "fixtures/builtins-and-io/string-at.ts",
         "fixtures/builtins-and-io/string-char-at.ts",
         "fixtures/builtins-and-io/string-index-of.ts",
         "fixtures/builtins-and-io/string-last-index-of.ts",
         "fixtures/builtins-and-io/string-locale-compare.ts",
+        "fixtures/builtins-and-io/string-to-locale-case.ts",
         "fixtures/builtins-and-io/string-split.ts",
         "fixtures/builtins-and-io/string-slice.ts",
         "fixtures/builtins-and-io/string-substring.ts",
@@ -2104,10 +2106,10 @@ fn arrow_assigned_recursive_unsupported_builds_but_produces_wrong_output() {
 }
 
 #[test]
-fn arrow_assigned_recursive_reassignment_reports_function_valued_call_gap() {
-    assert_build_fails_with_unsupported_syntax(
+fn arrow_assigned_recursive_reassignment_traps_after_node_typeerror() {
+    super::assert_fixture_node_fails_and_iwasm_traps_after_stdout(
         "fixtures/core-semantics/arrow-assigned-recursive-reassigned-unsupported.ts",
-        "issue-211: function-valued local calls such as extracted method `fact(...)` are not supported",
+        "",
     );
 }
 
