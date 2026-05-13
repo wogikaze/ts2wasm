@@ -1494,6 +1494,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ObjectFromEntries => RuntimeSpec {
+                symbol: "$object_from_entries",
+                deps: OBJECT_FROM_ENTRIES_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ObjectHasOwnProperty => RuntimeSpec {
                 symbol: "$object_has_own_property",
                 deps: OBJECT_HAS_OWN_PROPERTY_DEPS,

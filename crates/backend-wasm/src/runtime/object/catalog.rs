@@ -17,6 +17,7 @@ pub const OBJECT_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::SpreadViaIterator,
     RuntimeFn::ObjectValues,
     RuntimeFn::ObjectEntries,
+    RuntimeFn::ObjectFromEntries,
     RuntimeFn::ObjectHasOwnProperty,
     RuntimeFn::ObjectHasOwn,
     RuntimeFn::ObjectGetOwnPropertyDescriptor,

@@ -370,6 +370,79 @@ impl WatEmitter<'_> {
         );
     }
 
+    pub(crate) fn emit_object_from_entries(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_from_entries (param $entries i32) (result i32)
+    (local $tag i32)
+    (local $entries_base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $result_obj i32)
+    (local $pair i32)
+    (local $key i32)
+    (local $value i32)
+    (local $key_len i32)
+    (local $proto i32)
+    (local.set $tag (i32.and (local.get $entries) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag}))
+      (then
+        (return (call $object_create (i32.const {null})))))
+    (local.set $entries_base (i32.and (local.get $entries) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $entries_base)))
+    (local.set $result_obj
+      (call $alloc_heap
+        (i32.add
+          (i32.const {obj_header})
+          (i32.shl (local.get $count) (i32.const {entry_shift})))))
+    (i32.store (local.get $result_obj) (i32.const {zero}))
+    (i32.store (i32.add (local.get $result_obj) (i32.const {obj_flags})) (i32.const {zero}))
+    (local.set $proto (i32.and (call $object_prototype) (i32.const {heap_mask})))
+    (i32.store (i32.add (local.get $result_obj) (i32.const {obj_proto})) (local.get $proto))
+    (local.set $i (i32.const {zero}))
+    (block $done
+      (loop $loop
+        (br_if $done (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $pair
+          (call $array_get
+            (local.get $entries)
+            (i32.or (i32.shl (local.get $i) (i32.const {number_shift})) (i32.const {number_tag}))))
+        (local.set $key
+          (call $array_get
+            (local.get $pair)
+            (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag}))))
+        (local.set $value
+          (call $array_get
+            (local.get $pair)
+            (i32.or (i32.shl (i32.const {one}) (i32.const {number_shift})) (i32.const {number_tag}))))
+        (local.set $key_len (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
+        (drop
+          (call $property_set
+            (i32.or (local.get $result_obj) (i32.const {object_tag}))
+            (i32.const {scratch_offset})
+            (local.get $key_len)
+            (local.get $value)))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $loop)))
+    (i32.or (local.get $result_obj) (i32.const {object_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            scratch_offset = Layout::SCRATCH_OFFSET,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            null = ValueTag::NULL,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+        ));
+    }
+
     pub(crate) fn emit_object_get_own_property_descriptor(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

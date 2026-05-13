@@ -3716,6 +3716,11 @@ fn object_builtin_method_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn object_static_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-static-complete.ts");
+}
+
+#[test]
 fn object_define_property_data_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-define-property-data.ts");
 }

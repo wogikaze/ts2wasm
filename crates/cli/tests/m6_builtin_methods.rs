@@ -193,6 +193,16 @@ fn build_smoke_object_has_own() {
 }
 
 #[test]
+fn build_smoke_object_static_complete() {
+    let result = run_fixture("builtins-and-io/object-static-complete.ts");
+    assert!(
+        result.is_ok(),
+        "Object static method bundle should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_get_own_property_descriptor() {
     let result = run_fixture("builtins-and-io/object-get-own-property-descriptor.ts");
     assert!(

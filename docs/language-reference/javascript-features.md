@@ -199,6 +199,7 @@ BigInt mixed comparison の object `ToPrimitive` boundary: direct object-literal
 | 機能 | ECMAScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
 |---|---|---|---|---|---|
 | object literal `{k: v}` | ES1 | heap object | 実装済み (identifier/string/numeric keys, shorthand, method shorthand, and basic computed keys) | - | - |
+| Object static methods | ES5+ | runtime builtin | 実装済み (basic `Object.keys` / `values` / `entries` / `hasOwn` / `is` / `fromEntries`) | - | 426 |
 | computed property `obj[key]` | ES1 | dynamic property access | 実装済み (basic) | - | 014 |
 | property access `obj.key` | ES1 | static property access | 実装済み | - | - |
 | method shorthand | ES2015 | object method | 実装済み (basic build/runtime value) | - | 410 |
