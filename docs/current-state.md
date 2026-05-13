@@ -111,6 +111,22 @@ same fixture, `hir-mir-compare` records that comparison was unavailable. This is
 a rehearsal signal, not a default-switch approval. The P16 blockers above still
 keep the default switch at no-go.
 
+### Typed WasmIR Backend Expansion
+
+Last audited: 2026-05-13T23:08:00+09:00.
+
+The backend has a focused typed WasmIR migration slice in
+`crates/backend-wasm/src/emitter/initializers.rs`. Start/module-initializer
+orchestration now builds straight-line runtime setup, module initializer calls,
+`$current_module_id` updates, and the normal `$wasi_proc_exit` epilogue as
+`WasmInstr` sequences emitted through `WatWriter::emit_instrs`.
+
+Remaining raw WAT escape hatches for this selected domain are limited to
+function headers/locals, GC frame helper snippets, class and builtin-error
+prototype initializer snippets, and statement/top-level lowering. Those paths
+still depend on legacy emitter-local layouts and are outside the bounded
+WASMDM slice.
+
 ### test262 Semantic Core Seeds
 
 The file `scripts/data/test262-semantic-core-seeds.txt` contains a deterministic subset of test262

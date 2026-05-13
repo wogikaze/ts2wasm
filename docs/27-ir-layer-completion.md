@@ -209,6 +209,7 @@ WasmIR layer は以下を満たしたとき完成とする。
 
 - backend の新規 emission code は `WasmModule` / `WasmInstr` / `WatWriter` helper を優先する。
 - `WasmInstr::Raw` は audited legacy escape hatch として、用途・削減計画・test を持つ。
+- backend initializer orchestration のような bounded domain は straight-line runtime setup / call / exit emission を typed `WasmInstr` に寄せ、legacy raw WAT escape hatch を明示する。
 - representative module fixtures で WAT writer と wasm-encoder path の parity を確認する。
 - generated WAT / wasm binary が validation tool を通る。
 - runtime link plan / capability manifest と import emission が一致する。
@@ -236,7 +237,7 @@ Default pipeline switch は semantic correctness gate の後に行う。
 | C3 | Native MIR emitter subset | selected MIR subset が bridge なしで WAT を出し、legacy path と parity を持つ。 | feature-gated pipeline path |
 | C4 | Feature-gated HIR→MIR→emit path | CLI/compiler に `--experimental-hir-mir` strict mode と `--experimental-hir-mir-compat-fallback` mode があり、`hir-mir-compare` / `hir-mir-fallback` diagnostics で legacy path と比較できる。 | default switch rehearsal |
 | C5 | Default path switch | P16 gate + C3/C4 parity が pass。fallback は diagnostic/compat mode のみ。 | LoweredProgram bridge 縮小 |
-| C6 | Typed WasmIR backend expansion | selected runtime/emitter domain が typed WasmIR に移り、WAT/binary parity tests を持つ。 | raw WAT legacy helper 削減 |
+| C6 | Typed WasmIR backend expansion | `emitter/initializers` の start/module-initializer orchestration が typed `WasmInstr` emission に移り、generated WAT validation test と audited raw escape hatch を持つ。 | wasm-encoder parity fixtures / raw WAT legacy helper 削減 |
 
 ## Parallel implementation lanes
 

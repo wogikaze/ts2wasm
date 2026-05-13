@@ -892,11 +892,12 @@ mod tests {
 
         let (v, _) = Validated::new(program).expect("should validate");
         let wat = emit_wat(&v).expect("module initializers should emit WAT");
+        let compact = wat_words(&wat);
 
         assert!(wat.contains("(func $module_init_2"));
         assert!(wat.contains("(func $module_init_1"));
-        assert!(wat.contains("(global.set $current_module_id (i32.const 2))"));
-        assert!(wat.contains("(global.set $current_module_id (i32.const 1))"));
+        assert!(compact.contains("(i32.const 2) (global.set $current_module_id)"));
+        assert!(compact.contains("(i32.const 1) (global.set $current_module_id)"));
         let call_nested = wat
             .find("(call $module_init_2)")
             .expect("nested module init should be called");
@@ -914,6 +915,25 @@ mod tests {
             call_source < top_level_import,
             "module initializer calls should run before top-level import reads"
         );
+
+        let temp_dir = unique_temp_dir("module-initializers-typed-wasmir");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wat_path = temp_dir.join("out.wat");
+        let wasm_path = temp_dir.join("out.wasm");
+        fs::write(&wat_path, &wat).expect("wat should be written");
+        let wat2wasm = Command::new("wat2wasm")
+            .arg(&wat_path)
+            .arg("-o")
+            .arg(&wasm_path)
+            .output()
+            .expect("wat2wasm should run");
+        assert!(
+            wat2wasm.status.success(),
+            "module initializer WAT should validate\nstdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&wat2wasm.stdout),
+            String::from_utf8_lossy(&wat2wasm.stderr),
+        );
+        let _ = fs::remove_dir_all(temp_dir);
     }
 
     #[test]
