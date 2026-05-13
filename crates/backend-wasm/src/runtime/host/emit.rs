@@ -2476,6 +2476,10 @@ impl WatEmitter<'_> {
     (local $out i32)
     (local $out_pos i32)
     (local $b i32)
+    (local $b2 i32)
+    (local $b3 i32)
+    (local $code i32)
+    (local $width i32)
     (local $n i32)
     (if (i32.eqz (call $is_string (local.get $str))) (then (return (local.get $str))))
     (local.set $obj (i32.and (local.get $str) (i32.const {heap_mask})))
@@ -2487,45 +2491,97 @@ impl WatEmitter<'_> {
       (loop $scan
         (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
         (local.set $b (i32.load8_u (i32.add (i32.add (local.get $obj) (i32.const {str_header})) (local.get $i))))
+        (local.set $code (local.get $b))
+        (local.set $width (i32.const 1))
         (if
-          (i32.or
+          (i32.and
+            (i32.and (i32.ge_u (local.get $b) (i32.const 194)) (i32.le_u (local.get $b) (i32.const 223)))
+            (i32.lt_u (i32.add (local.get $i) (i32.const 1)) (local.get $len)))
+          (then
+            (local.set $b2 (i32.load8_u (i32.add (i32.add (local.get $obj) (i32.const {str_header})) (i32.add (local.get $i) (i32.const 1)))))
+            (if (i32.and (i32.ge_u (local.get $b2) (i32.const 128)) (i32.le_u (local.get $b2) (i32.const 191)))
+              (then
+                (local.set $code
+                  (i32.or
+                    (i32.shl (i32.and (local.get $b) (i32.const 31)) (i32.const 6))
+                    (i32.and (local.get $b2) (i32.const 63))))
+                (local.set $width (i32.const 2))))))
+        (if
+          (i32.and
+            (i32.and (i32.ge_u (local.get $b) (i32.const 224)) (i32.le_u (local.get $b) (i32.const 239)))
+            (i32.lt_u (i32.add (local.get $i) (i32.const 2)) (local.get $len)))
+          (then
+            (local.set $b2 (i32.load8_u (i32.add (i32.add (local.get $obj) (i32.const {str_header})) (i32.add (local.get $i) (i32.const 1)))))
+            (local.set $b3 (i32.load8_u (i32.add (i32.add (local.get $obj) (i32.const {str_header})) (i32.add (local.get $i) (i32.const 2)))))
+            (if
+              (i32.and
+                (i32.and (i32.ge_u (local.get $b2) (i32.const 128)) (i32.le_u (local.get $b2) (i32.const 191)))
+                (i32.and (i32.ge_u (local.get $b3) (i32.const 128)) (i32.le_u (local.get $b3) (i32.const 191))))
+              (then
+                (local.set $code
+                  (i32.or
+                    (i32.or
+                      (i32.shl (i32.and (local.get $b) (i32.const 15)) (i32.const 12))
+                      (i32.shl (i32.and (local.get $b2) (i32.const 63)) (i32.const 6)))
+                    (i32.and (local.get $b3) (i32.const 63))))
+                (local.set $width (i32.const 3))))))
+        (block $escape_done
+          (if
             (i32.or
               (i32.or
-                (i32.and (i32.ge_u (local.get $b) (i32.const 48)) (i32.le_u (local.get $b) (i32.const 57)))
-                (i32.and (i32.ge_u (local.get $b) (i32.const 65)) (i32.le_u (local.get $b) (i32.const 90))))
-              (i32.and (i32.ge_u (local.get $b) (i32.const 97)) (i32.le_u (local.get $b) (i32.const 122))))
-            (i32.or
+                (i32.or
+                  (i32.and (i32.ge_u (local.get $code) (i32.const 48)) (i32.le_u (local.get $code) (i32.const 57)))
+                  (i32.and (i32.ge_u (local.get $code) (i32.const 65)) (i32.le_u (local.get $code) (i32.const 90))))
+                (i32.and (i32.ge_u (local.get $code) (i32.const 97)) (i32.le_u (local.get $code) (i32.const 122))))
               (i32.or
                 (i32.or
                   (i32.or
                     (i32.or
                       (i32.or
-                        (i32.eq (local.get $b) (i32.const 64))
-                        (i32.eq (local.get $b) (i32.const 42)))
-                      (i32.eq (local.get $b) (i32.const 95)))
-                    (i32.eq (local.get $b) (i32.const 43)))
-                  (i32.eq (local.get $b) (i32.const 45)))
-                (i32.eq (local.get $b) (i32.const 46)))
-              (i32.eq (local.get $b) (i32.const 47))))
-          (then
-            (i32.store8 (i32.add (i32.add (local.get $out) (i32.const {str_header})) (local.get $out_pos)) (local.get $b))
-            (local.set $out_pos (i32.add (local.get $out_pos) (i32.const 1))))
-          (else
-            (i32.store8 (i32.add (i32.add (local.get $out) (i32.const {str_header})) (local.get $out_pos)) (i32.const 37))
-            (local.set $n (i32.shr_u (local.get $b) (i32.const 4)))
-            (i32.store8
-              (i32.add (i32.add (local.get $out) (i32.const {str_header})) (i32.add (local.get $out_pos) (i32.const 1)))
-              (if (result i32) (i32.lt_u (local.get $n) (i32.const 10))
-                (then (i32.add (local.get $n) (i32.const 48)))
-                (else (i32.add (local.get $n) (i32.const 55)))))
-            (local.set $n (i32.and (local.get $b) (i32.const 15)))
-            (i32.store8
-              (i32.add (i32.add (local.get $out) (i32.const {str_header})) (i32.add (local.get $out_pos) (i32.const 2)))
-              (if (result i32) (i32.lt_u (local.get $n) (i32.const 10))
-                (then (i32.add (local.get $n) (i32.const 48)))
-                (else (i32.add (local.get $n) (i32.const 55)))))
-            (local.set $out_pos (i32.add (local.get $out_pos) (i32.const 3)))))
-        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+                        (i32.or
+                          (i32.eq (local.get $code) (i32.const 64))
+                          (i32.eq (local.get $code) (i32.const 42)))
+                        (i32.eq (local.get $code) (i32.const 95)))
+                      (i32.eq (local.get $code) (i32.const 43)))
+                    (i32.eq (local.get $code) (i32.const 45)))
+                  (i32.eq (local.get $code) (i32.const 46)))
+                (i32.eq (local.get $code) (i32.const 47))))
+            (then
+              (i32.store8 (i32.add (i32.add (local.get $out) (i32.const {str_header})) (local.get $out_pos)) (local.get $code))
+              (local.set $out_pos (i32.add (local.get $out_pos) (i32.const 1)))
+              (br $escape_done)))
+          (i32.store8 (i32.add (i32.add (local.get $out) (i32.const {str_header})) (local.get $out_pos)) (i32.const 37))
+          (if (i32.gt_u (local.get $code) (i32.const 255))
+            (then
+              (i32.store8 (i32.add (i32.add (local.get $out) (i32.const {str_header})) (i32.add (local.get $out_pos) (i32.const 1))) (i32.const 117))
+              (local.set $n (i32.and (i32.shr_u (local.get $code) (i32.const 12)) (i32.const 15)))
+              (i32.store8 (i32.add (i32.add (local.get $out) (i32.const {str_header})) (i32.add (local.get $out_pos) (i32.const 2)))
+                (if (result i32) (i32.lt_u (local.get $n) (i32.const 10)) (then (i32.add (local.get $n) (i32.const 48))) (else (i32.add (local.get $n) (i32.const 55)))))
+              (local.set $n (i32.and (i32.shr_u (local.get $code) (i32.const 8)) (i32.const 15)))
+              (i32.store8 (i32.add (i32.add (local.get $out) (i32.const {str_header})) (i32.add (local.get $out_pos) (i32.const 3)))
+                (if (result i32) (i32.lt_u (local.get $n) (i32.const 10)) (then (i32.add (local.get $n) (i32.const 48))) (else (i32.add (local.get $n) (i32.const 55)))))
+              (local.set $n (i32.and (i32.shr_u (local.get $code) (i32.const 4)) (i32.const 15)))
+              (i32.store8 (i32.add (i32.add (local.get $out) (i32.const {str_header})) (i32.add (local.get $out_pos) (i32.const 4)))
+                (if (result i32) (i32.lt_u (local.get $n) (i32.const 10)) (then (i32.add (local.get $n) (i32.const 48))) (else (i32.add (local.get $n) (i32.const 55)))))
+              (local.set $n (i32.and (local.get $code) (i32.const 15)))
+              (i32.store8 (i32.add (i32.add (local.get $out) (i32.const {str_header})) (i32.add (local.get $out_pos) (i32.const 5)))
+                (if (result i32) (i32.lt_u (local.get $n) (i32.const 10)) (then (i32.add (local.get $n) (i32.const 48))) (else (i32.add (local.get $n) (i32.const 55)))))
+              (local.set $out_pos (i32.add (local.get $out_pos) (i32.const 6)))
+              (br $escape_done)))
+          (local.set $n (i32.shr_u (local.get $code) (i32.const 4)))
+          (i32.store8
+            (i32.add (i32.add (local.get $out) (i32.const {str_header})) (i32.add (local.get $out_pos) (i32.const 1)))
+            (if (result i32) (i32.lt_u (local.get $n) (i32.const 10))
+              (then (i32.add (local.get $n) (i32.const 48)))
+              (else (i32.add (local.get $n) (i32.const 55)))))
+          (local.set $n (i32.and (local.get $code) (i32.const 15)))
+          (i32.store8
+            (i32.add (i32.add (local.get $out) (i32.const {str_header})) (i32.add (local.get $out_pos) (i32.const 2)))
+            (if (result i32) (i32.lt_u (local.get $n) (i32.const 10))
+              (then (i32.add (local.get $n) (i32.const 48)))
+              (else (i32.add (local.get $n) (i32.const 55)))))
+          (local.set $out_pos (i32.add (local.get $out_pos) (i32.const 3))))
+        (local.set $i (i32.add (local.get $i) (local.get $width)))
         (br $scan)))
     (i32.store (local.get $out) (local.get $out_pos))
     (i32.or (local.get $out) (i32.const {string_tag})))
@@ -2548,8 +2604,14 @@ impl WatEmitter<'_> {
     (local $b i32)
     (local $c1 i32)
     (local $c2 i32)
+    (local $c3 i32)
+    (local $c4 i32)
+    (local $c5 i32)
     (local $h1 i32)
     (local $h2 i32)
+    (local $h3 i32)
+    (local $h4 i32)
+    (local $code i32)
     (if (i32.eqz (call $is_string (local.get $str))) (then (return (local.get $str))))
     (local.set $obj (i32.and (local.get $str) (i32.const {heap_mask})))
     (local.set $len (i32.load (local.get $obj)))
@@ -2567,6 +2629,84 @@ impl WatEmitter<'_> {
           (then
             (local.set $c1 (i32.load8_u (i32.add (i32.add (local.get $obj) (i32.const {str_header})) (i32.add (local.get $i) (i32.const 1)))))
             (local.set $c2 (i32.load8_u (i32.add (i32.add (local.get $obj) (i32.const {str_header})) (i32.add (local.get $i) (i32.const 2)))))
+            (if
+              (i32.and
+                (i32.or (i32.eq (local.get $c1) (i32.const 117)) (i32.eq (local.get $c1) (i32.const 85)))
+                (i32.lt_u (i32.add (local.get $i) (i32.const 5)) (local.get $len)))
+              (then
+                (local.set $c3 (i32.load8_u (i32.add (i32.add (local.get $obj) (i32.const {str_header})) (i32.add (local.get $i) (i32.const 3)))))
+                (local.set $c4 (i32.load8_u (i32.add (i32.add (local.get $obj) (i32.const {str_header})) (i32.add (local.get $i) (i32.const 4)))))
+                (local.set $c5 (i32.load8_u (i32.add (i32.add (local.get $obj) (i32.const {str_header})) (i32.add (local.get $i) (i32.const 5)))))
+                (local.set $h1 (i32.const -1))
+                (local.set $h2 (i32.const -1))
+                (local.set $h3 (i32.const -1))
+                (local.set $h4 (i32.const -1))
+                (if (i32.and (i32.ge_u (local.get $c2) (i32.const 48)) (i32.le_u (local.get $c2) (i32.const 57)))
+                  (then (local.set $h1 (i32.sub (local.get $c2) (i32.const 48)))))
+                (if (i32.and (i32.ge_u (local.get $c2) (i32.const 65)) (i32.le_u (local.get $c2) (i32.const 70)))
+                  (then (local.set $h1 (i32.sub (local.get $c2) (i32.const 55)))))
+                (if (i32.and (i32.ge_u (local.get $c2) (i32.const 97)) (i32.le_u (local.get $c2) (i32.const 102)))
+                  (then (local.set $h1 (i32.sub (local.get $c2) (i32.const 87)))))
+                (if (i32.and (i32.ge_u (local.get $c3) (i32.const 48)) (i32.le_u (local.get $c3) (i32.const 57)))
+                  (then (local.set $h2 (i32.sub (local.get $c3) (i32.const 48)))))
+                (if (i32.and (i32.ge_u (local.get $c3) (i32.const 65)) (i32.le_u (local.get $c3) (i32.const 70)))
+                  (then (local.set $h2 (i32.sub (local.get $c3) (i32.const 55)))))
+                (if (i32.and (i32.ge_u (local.get $c3) (i32.const 97)) (i32.le_u (local.get $c3) (i32.const 102)))
+                  (then (local.set $h2 (i32.sub (local.get $c3) (i32.const 87)))))
+                (if (i32.and (i32.ge_u (local.get $c4) (i32.const 48)) (i32.le_u (local.get $c4) (i32.const 57)))
+                  (then (local.set $h3 (i32.sub (local.get $c4) (i32.const 48)))))
+                (if (i32.and (i32.ge_u (local.get $c4) (i32.const 65)) (i32.le_u (local.get $c4) (i32.const 70)))
+                  (then (local.set $h3 (i32.sub (local.get $c4) (i32.const 55)))))
+                (if (i32.and (i32.ge_u (local.get $c4) (i32.const 97)) (i32.le_u (local.get $c4) (i32.const 102)))
+                  (then (local.set $h3 (i32.sub (local.get $c4) (i32.const 87)))))
+                (if (i32.and (i32.ge_u (local.get $c5) (i32.const 48)) (i32.le_u (local.get $c5) (i32.const 57)))
+                  (then (local.set $h4 (i32.sub (local.get $c5) (i32.const 48)))))
+                (if (i32.and (i32.ge_u (local.get $c5) (i32.const 65)) (i32.le_u (local.get $c5) (i32.const 70)))
+                  (then (local.set $h4 (i32.sub (local.get $c5) (i32.const 55)))))
+                (if (i32.and (i32.ge_u (local.get $c5) (i32.const 97)) (i32.le_u (local.get $c5) (i32.const 102)))
+                  (then (local.set $h4 (i32.sub (local.get $c5) (i32.const 87)))))
+                (if
+                  (i32.and
+                    (i32.and (i32.ge_s (local.get $h1) (i32.const 0)) (i32.ge_s (local.get $h2) (i32.const 0)))
+                    (i32.and (i32.ge_s (local.get $h3) (i32.const 0)) (i32.ge_s (local.get $h4) (i32.const 0))))
+                  (then
+                    (local.set $code
+                      (i32.or
+                        (i32.or
+                          (i32.shl (local.get $h1) (i32.const 12))
+                          (i32.shl (local.get $h2) (i32.const 8)))
+                        (i32.or
+                          (i32.shl (local.get $h3) (i32.const 4))
+                          (local.get $h4))))
+                    (if (i32.lt_u (local.get $code) (i32.const 128))
+                      (then
+                        (i32.store8
+                          (i32.add (i32.add (local.get $out) (i32.const {str_header})) (local.get $out_pos))
+                          (local.get $code))
+                        (local.set $out_pos (i32.add (local.get $out_pos) (i32.const 1))))
+                      (else
+                        (if (i32.lt_u (local.get $code) (i32.const 2048))
+                          (then
+                            (i32.store8
+                              (i32.add (i32.add (local.get $out) (i32.const {str_header})) (local.get $out_pos))
+                              (i32.or (i32.const 192) (i32.shr_u (local.get $code) (i32.const 6))))
+                            (i32.store8
+                              (i32.add (i32.add (local.get $out) (i32.const {str_header})) (i32.add (local.get $out_pos) (i32.const 1)))
+                              (i32.or (i32.const 128) (i32.and (local.get $code) (i32.const 63))))
+                            (local.set $out_pos (i32.add (local.get $out_pos) (i32.const 2))))
+                          (else
+                            (i32.store8
+                              (i32.add (i32.add (local.get $out) (i32.const {str_header})) (local.get $out_pos))
+                              (i32.or (i32.const 224) (i32.shr_u (local.get $code) (i32.const 12))))
+                            (i32.store8
+                              (i32.add (i32.add (local.get $out) (i32.const {str_header})) (i32.add (local.get $out_pos) (i32.const 1)))
+                              (i32.or (i32.const 128) (i32.and (i32.shr_u (local.get $code) (i32.const 6)) (i32.const 63))))
+                            (i32.store8
+                              (i32.add (i32.add (local.get $out) (i32.const {str_header})) (i32.add (local.get $out_pos) (i32.const 2)))
+                              (i32.or (i32.const 128) (i32.and (local.get $code) (i32.const 63))))
+                            (local.set $out_pos (i32.add (local.get $out_pos) (i32.const 3)))))))
+                    (local.set $i (i32.add (local.get $i) (i32.const 6)))
+                    (br $scan)))))
             (local.set $h1 (i32.const -1))
             (local.set $h2 (i32.const -1))
             (if (i32.and (i32.ge_u (local.get $c1) (i32.const 48)) (i32.le_u (local.get $c1) (i32.const 57)))
@@ -2583,10 +2723,21 @@ impl WatEmitter<'_> {
               (then (local.set $h2 (i32.sub (local.get $c2) (i32.const 87)))))
             (if (i32.and (i32.ge_s (local.get $h1) (i32.const 0)) (i32.ge_s (local.get $h2) (i32.const 0)))
               (then
-                (i32.store8
-                  (i32.add (i32.add (local.get $out) (i32.const {str_header})) (local.get $out_pos))
-                  (i32.add (i32.shl (local.get $h1) (i32.const 4)) (local.get $h2)))
-                (local.set $out_pos (i32.add (local.get $out_pos) (i32.const 1)))
+                (local.set $code (i32.add (i32.shl (local.get $h1) (i32.const 4)) (local.get $h2)))
+                (if (i32.lt_u (local.get $code) (i32.const 128))
+                  (then
+                    (i32.store8
+                      (i32.add (i32.add (local.get $out) (i32.const {str_header})) (local.get $out_pos))
+                      (local.get $code))
+                    (local.set $out_pos (i32.add (local.get $out_pos) (i32.const 1))))
+                  (else
+                    (i32.store8
+                      (i32.add (i32.add (local.get $out) (i32.const {str_header})) (local.get $out_pos))
+                      (i32.or (i32.const 192) (i32.shr_u (local.get $code) (i32.const 6))))
+                    (i32.store8
+                      (i32.add (i32.add (local.get $out) (i32.const {str_header})) (i32.add (local.get $out_pos) (i32.const 1)))
+                      (i32.or (i32.const 128) (i32.and (local.get $code) (i32.const 63))))
+                    (local.set $out_pos (i32.add (local.get $out_pos) (i32.const 2)))))
                 (local.set $i (i32.add (local.get $i) (i32.const 3)))
                 (br $scan)))))
         (i32.store8 (i32.add (i32.add (local.get $out) (i32.const {str_header})) (local.get $out_pos)) (local.get $b))
