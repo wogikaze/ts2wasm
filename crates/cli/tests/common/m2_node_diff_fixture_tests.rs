@@ -1390,6 +1390,36 @@ fn string_supplementary_matches_node_output() {
 }
 
 #[test]
+fn string_pad_start_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-pad-start.ts");
+}
+
+#[test]
+fn string_pad_end_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-pad-end.ts");
+}
+
+#[test]
+fn string_repeat_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-repeat.ts");
+}
+
+#[test]
+fn string_starts_with_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-starts-with.ts");
+}
+
+#[test]
+fn string_ends_with_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-ends-with.ts");
+}
+
+#[test]
+fn string_concat_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-concat.ts");
+}
+
+#[test]
 fn string_indexing_fixture_is_not_marked_as_semantic_pass() {
     assert_fixture_not_semantically_pass("string", "fixtures/builtins-and-io/string-indexing.ts");
 }
