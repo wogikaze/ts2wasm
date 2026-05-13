@@ -329,6 +329,16 @@ fn build_smoke_object_static_complete() {
 }
 
 #[test]
+fn build_smoke_number_complete() {
+    let result = run_fixture("builtins-and-io/number-complete.ts");
+    assert!(
+        result.is_ok(),
+        "Number methods should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_json_stringify_method() {
     let result = run_fixture("builtins-and-io/json-stringify.ts");
     assert!(

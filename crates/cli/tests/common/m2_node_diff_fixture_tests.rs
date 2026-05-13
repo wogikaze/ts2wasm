@@ -3846,6 +3846,11 @@ fn object_static_matches_node_output() {
 }
 
 #[test]
+fn number_methods_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-complete.ts");
+}
+
+#[test]
 fn comma_operator_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/comma-operator.ts");
 }

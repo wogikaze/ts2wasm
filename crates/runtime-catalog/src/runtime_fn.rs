@@ -1050,6 +1050,12 @@ const DATE_EPOCH_MS_NOW_NUMBER_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 
 // Math function dependencies
 const MATH_DEPS: &[RuntimeFn] = &[RuntimeFn::NumberToI32, RuntimeFn::NumberFromI32];
+const NUMBER_TO_FIXED_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::ValueToStringInto, RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const NUMBER_TO_EXPONENTIAL_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::ValueToStringInto, RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const NUMBER_TO_PRECISION_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::ValueToStringInto, RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const MATH_RANDOM_DEPS: &[RuntimeFn] = &[];
 
 // JSON function dependencies
