@@ -2375,6 +2375,18 @@ fn build_smoke_symbol_registry() {
     );
 }
 
+// All 7 NativeError types: Error, EvalError, RangeError, ReferenceError,
+// SyntaxError, TypeError, URIError — constructor and instanceof
+#[test]
+fn build_smoke_native_error_types() {
+    let result = run_fixture("builtins-and-io/native-error-types.ts");
+    assert!(
+        result.is_ok(),
+        "NativeError types should build: {:?}",
+        result.err()
+    );
+}
+
 // Number static methods: isNaN, isFinite, isInteger, isSafeInteger
 #[test]
 fn build_smoke_number_complete() {

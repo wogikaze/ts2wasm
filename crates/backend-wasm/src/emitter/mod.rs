@@ -478,6 +478,8 @@ pub(super) fn builtin_error_prototype_global(constructor: BuiltinErrorConstructo
         BuiltinErrorConstructor::TypeError => "error_proto_type_error",
         BuiltinErrorConstructor::ReferenceError => "error_proto_reference_error",
         BuiltinErrorConstructor::SyntaxError => "error_proto_syntax_error",
+        BuiltinErrorConstructor::EvalError => "error_proto_eval_error",
+        BuiltinErrorConstructor::URIError => "error_proto_uri_error",
     }
 }
 
@@ -488,6 +490,8 @@ pub(super) fn builtin_error_stack_prefix(constructor: BuiltinErrorConstructor) -
         BuiltinErrorConstructor::TypeError => "TypeError: ",
         BuiltinErrorConstructor::ReferenceError => "ReferenceError: ",
         BuiltinErrorConstructor::SyntaxError => "SyntaxError: ",
+        BuiltinErrorConstructor::EvalError => "EvalError: ",
+        BuiltinErrorConstructor::URIError => "URIError: ",
     }
 }
 

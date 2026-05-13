@@ -40,6 +40,8 @@ pub enum BuiltinErrorConstructor {
     TypeError,
     ReferenceError,
     SyntaxError,
+    EvalError,
+    URIError,
 }
 
 impl BuiltinErrorConstructor {
@@ -50,6 +52,8 @@ impl BuiltinErrorConstructor {
             "TypeError" => Some(Self::TypeError),
             "ReferenceError" => Some(Self::ReferenceError),
             "SyntaxError" => Some(Self::SyntaxError),
+            "EvalError" => Some(Self::EvalError),
+            "URIError" => Some(Self::URIError),
             _ => None,
         }
     }
@@ -57,9 +61,12 @@ impl BuiltinErrorConstructor {
     pub fn parent(self) -> Option<Self> {
         match self {
             Self::Error => None,
-            Self::RangeError | Self::TypeError | Self::ReferenceError | Self::SyntaxError => {
-                Some(Self::Error)
-            }
+            Self::RangeError
+            | Self::TypeError
+            | Self::ReferenceError
+            | Self::SyntaxError
+            | Self::EvalError
+            | Self::URIError => Some(Self::Error),
         }
     }
 }
