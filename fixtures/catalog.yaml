@@ -183,6 +183,7 @@ directories:
     - array-values.ts
     - array-with.ts
     - arraybuffer-dataview-basic.ts
+    - arraybuffer-dataview-int16.ts
     - async-generator-basic.ts
     - atomics-unsupported.ts
     - bun-stdin-text.ts

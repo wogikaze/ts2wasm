@@ -2387,6 +2387,22 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::DataViewGetInt16 => RuntimeSpec {
+                symbol: "$dataview_get_int16",
+                deps: &[],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::DataViewSetInt16 => RuntimeSpec {
+                symbol: "$dataview_set_int16",
+                deps: &[],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::EffectOnly,
+            },
             Self::DataViewGetInt32 => RuntimeSpec {
                 symbol: "$dataview_get_int32",
                 deps: &[],

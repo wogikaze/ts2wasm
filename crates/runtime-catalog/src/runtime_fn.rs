@@ -153,6 +153,8 @@ pub enum RuntimeFn {
     /// Issue 206: ArrayBuffer/DataView runtime.
     ArrayBufferNew,
     DataViewNew,
+    DataViewGetInt16,
+    DataViewSetInt16,
     DataViewGetInt32,
     DataViewSetInt32,
     DataViewGetFloat64,
@@ -1189,6 +1191,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "TypedArraySet" => Some(RuntimeFn::TypedArraySet),
         "ArrayBufferNew" => Some(RuntimeFn::ArrayBufferNew),
         "DataViewNew" => Some(RuntimeFn::DataViewNew),
+        "DataViewGetInt16" => Some(RuntimeFn::DataViewGetInt16),
+        "DataViewSetInt16" => Some(RuntimeFn::DataViewSetInt16),
         "DataViewGetInt32" => Some(RuntimeFn::DataViewGetInt32),
         "DataViewSetInt32" => Some(RuntimeFn::DataViewSetInt32),
         "DataViewGetFloat64" => Some(RuntimeFn::DataViewGetFloat64),
@@ -1644,6 +1648,8 @@ impl RuntimeFn {
             Self::TypedArrayFromArray
             | Self::TypedArraySet
             | Self::DataViewNew
+            | Self::DataViewGetInt16
+            | Self::DataViewSetInt16
             | Self::DataViewGetInt32
             | Self::DataViewSetInt32
             | Self::DataViewGetFloat64
@@ -1740,6 +1746,9 @@ impl RuntimeFn {
             | Self::ValueToStringInto
             | Self::ArrayPush
             | Self::ArrayPushGrow
+            | Self::DataViewGetInt16
+            | Self::DataViewGetInt32
+            | Self::DataViewGetFloat64
             | Self::SymbolToPrimitive
             | Self::SymbolHasInstance => RuntimeSignature {
                 params: 2,
@@ -1755,7 +1764,10 @@ impl RuntimeFn {
             }
 
             // 3 params, 0 results
-            Self::ModuleExportsSet => RuntimeSignature {
+            Self::ModuleExportsSet
+            | Self::DataViewSetInt16
+            | Self::DataViewSetInt32
+            | Self::DataViewSetFloat64 => RuntimeSignature {
                 params: 3,
                 results: 0,
             },
@@ -1903,6 +1915,8 @@ impl RuntimeFn {
             Self::WeakSetDelete,
             Self::ArrayBufferNew,
             Self::DataViewNew,
+            Self::DataViewGetInt16,
+            Self::DataViewSetInt16,
             Self::DataViewGetInt32,
             Self::DataViewSetInt32,
             Self::DataViewGetFloat64,
@@ -2231,6 +2245,8 @@ impl RuntimeFn {
             Self::WeakSetDelete,
             Self::ArrayBufferNew,
             Self::DataViewNew,
+            Self::DataViewGetInt16,
+            Self::DataViewSetInt16,
             Self::DataViewGetInt32,
             Self::DataViewSetInt32,
             Self::DataViewGetFloat64,

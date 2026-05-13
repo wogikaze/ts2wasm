@@ -59,6 +59,8 @@ pub const ARRAY_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::TypedArrayFromArray,
     RuntimeFn::TypedArraySet,
     RuntimeFn::DataViewNew,
+    RuntimeFn::DataViewGetInt16,
+    RuntimeFn::DataViewSetInt16,
     RuntimeFn::DataViewGetInt32,
     RuntimeFn::DataViewSetInt32,
     RuntimeFn::DataViewGetFloat64,
