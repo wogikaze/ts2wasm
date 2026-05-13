@@ -2170,6 +2170,70 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_object_shorthand() {
+        let program = parse_program("let value = 1; let object = { value };").unwrap();
+
+        match &program[1] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 1);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::Shorthand { key, value: Expr::Ident { name, .. } }
+                        if key == "value" && name == "value"
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_computed_property_key() {
+        let program = parse_program("let key = 'x'; let object = { [key]: 2 };").unwrap();
+
+        match &program[1] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 1);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::ComputedKey {
+                        key,
+                        value: Expr::Number { value: 2, .. }
+                    } if matches!(key.as_ref(), Expr::Ident { name, .. } if name == "key")
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_method_shorthand() {
+        let program = parse_program("let object = { method() { return 1; } };").unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 1);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, .. }
+                    } if key == "method" && name == "method"
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_optional_chaining_expression_forms() {
         let program =
             parse_program("let a = obj?.x; let b = obj?.[key]; let c = fn?.(1);").unwrap();
