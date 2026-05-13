@@ -1247,10 +1247,13 @@ impl super::super::Resolver {
                 }
                 // Non-callback runtime functions
                 if let Some(intrinsic) = collection_method_runtime_fn(class_name, proto_method) {
-                    let mut lowered_args = vec![self.lower_expr(receiver)?];
-                    for arg in call_args {
-                        lowered_args.push(self.lower_expr(arg)?);
-                    }
+                    let lowered_receiver = self.lower_expr(receiver)?;
+                    let lowered_args = self.lower_collection_method_args(
+                        lowered_receiver,
+                        class_name,
+                        proto_method,
+                        call_args,
+                    )?;
                     return Ok(Some(LoweredExpr::RuntimeCall {
                         intrinsic,
                         args: lowered_args,
@@ -1357,6 +1360,8 @@ impl super::super::Resolver {
             && let Some(class_name) = self.ctx.classes.local_classes.get(&obj_local)
             && let Some(intrinsic) = collection_method_runtime_fn(class_name, method)
         {
+            let class_name = class_name.clone();
+            let class_name = class_name.as_str();
             let is_array_like_class = class_name == "Array" || is_typed_array_class(class_name);
             if class_name == "RegExp" && args.len() > 1 {
                 return Err(Diagnostic {
@@ -1395,11 +1400,9 @@ impl super::super::Resolver {
                 // toString/toLocaleString calls join(",") internally
                 lowered_args.push(LoweredExpr::String(",".to_owned(), Span::generated("str")));
             } else {
-                lowered_args.extend(
-                    args.iter()
-                        .map(|e| self.lower_expr(e))
-                        .collect::<Result<Vec<_>, _>>()?,
-                );
+                let receiver = lowered_args.remove(0);
+                lowered_args =
+                    self.lower_collection_method_args(receiver, class_name, method, args)?;
             }
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic,
@@ -1574,5 +1577,32 @@ impl super::super::Resolver {
 
             span: Span::generated("call"),
         })
+    }
+
+    fn lower_collection_method_args(
+        &mut self,
+        receiver: LoweredExpr,
+        class_name: &str,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> Result<Vec<LoweredExpr>, Diagnostic> {
+        let mut lowered_args = vec![receiver];
+        lowered_args.extend(
+            args.iter()
+                .map(|e| self.lower_expr(e))
+                .collect::<Result<Vec<_>, _>>()?,
+        );
+        if class_name == "DataView" {
+            match method {
+                "getInt16" | "getUint16" if args.len() == 1 => {
+                    lowered_args.push(LoweredExpr::Bool(false, Span::generated("bool")));
+                }
+                "setInt16" | "setUint16" if args.len() == 2 => {
+                    lowered_args.push(LoweredExpr::Bool(false, Span::generated("bool")));
+                }
+                _ => {}
+            }
+        }
+        Ok(lowered_args)
     }
 }

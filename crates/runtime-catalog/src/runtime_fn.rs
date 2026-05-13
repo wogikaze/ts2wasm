@@ -1773,8 +1773,6 @@ impl RuntimeFn {
             | Self::DataViewNew
             | Self::DataViewGetInt8
             | Self::DataViewGetUint8
-            | Self::DataViewGetInt16
-            | Self::DataViewGetUint16
             | Self::DataViewGetInt32
             | Self::DataViewGetUint32
             | Self::DataViewGetFloat64
@@ -1785,19 +1783,20 @@ impl RuntimeFn {
             },
 
             // 3 params, 1 result
-            Self::PropertyGet | Self::PropertyDelete | Self::PropertyHas | Self::TypedArraySet => {
-                RuntimeSignature {
-                    params: 3,
-                    results: 1,
-                }
-            }
+            Self::PropertyGet
+            | Self::PropertyDelete
+            | Self::PropertyHas
+            | Self::TypedArraySet
+            | Self::DataViewGetInt16
+            | Self::DataViewGetUint16 => RuntimeSignature {
+                params: 3,
+                results: 1,
+            },
 
             // 3 params, 0 results
             Self::ModuleExportsSet
             | Self::DataViewSetInt8
             | Self::DataViewSetUint8
-            | Self::DataViewSetInt16
-            | Self::DataViewSetUint16
             | Self::DataViewSetInt32
             | Self::DataViewSetUint32
             | Self::DataViewSetFloat64 => RuntimeSignature {
@@ -1809,6 +1808,12 @@ impl RuntimeFn {
             Self::PropertySet => RuntimeSignature {
                 params: 4,
                 results: 1,
+            },
+
+            // 4 params, 0 results
+            Self::DataViewSetInt16 | Self::DataViewSetUint16 => RuntimeSignature {
+                params: 4,
+                results: 0,
             },
 
             // 6 params, 1 result

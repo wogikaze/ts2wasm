@@ -2016,6 +2016,16 @@ fn build_smoke_arraybuffer_dataview_byte_offset() {
 }
 
 #[test]
+fn build_smoke_arraybuffer_dataview_endian_int16_uint16() {
+    let result = run_fixture("builtins-and-io/arraybuffer-dataview-endian-int16-uint16.ts");
+    assert!(
+        result.is_ok(),
+        "DataView 16-bit endian fixture should build successfully: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_arraybuffer_dataview_int8_uint8() {
     let result = run_fixture("builtins-and-io/arraybuffer-dataview-int8-uint8.ts");
     assert!(
