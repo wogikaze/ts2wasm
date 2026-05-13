@@ -13,6 +13,7 @@ use crate::lowered::facts::IntlNumberFormatOptions;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
+use ts2wasm_syntax::UnaryOp;
 
 impl super::super::Resolver {
     pub(crate) fn lower_method_call_expr(
@@ -348,6 +349,12 @@ impl super::super::Resolver {
 
                 span: Span::generated("runtime_call"),
             }));
+        }
+        if let Some(formatted) = static_number_format_method_call(object, method, args) {
+            return Ok(Some(LoweredExpr::String(
+                formatted,
+                Span::generated("number_format"),
+            )));
         }
         if method.starts_with('#') {
             if let Some(method_id) = self.current_static_private_method_id(method) {
@@ -1216,6 +1223,9 @@ impl super::super::Resolver {
                     .map(|e| self.lower_expr(e))
                     .collect::<Result<Vec<_>, _>>()?,
             );
+            if is_number_format_runtime_fn(intrinsic) && args.is_empty() {
+                lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+            }
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic,
                 args: lowered_args,
@@ -2065,6 +2075,8 @@ impl super::super::Resolver {
                 }
                 _ => {}
             }
+        } else if class_name == "Number" && is_number_format_method(method) && args.is_empty() {
+            lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
         }
         Ok(lowered_args)
     }
@@ -2456,6 +2468,17 @@ fn is_intl_number_format_method(method: &str) -> bool {
     matches!(method, "format" | "formatToParts" | "resolvedOptions")
 }
 
+fn is_number_format_method(method: &str) -> bool {
+    matches!(method, "toFixed" | "toExponential" | "toPrecision")
+}
+
+fn is_number_format_runtime_fn(intrinsic: RuntimeFn) -> bool {
+    matches!(
+        intrinsic,
+        RuntimeFn::NumberToFixed | RuntimeFn::NumberToExponential | RuntimeFn::NumberToPrecision
+    )
+}
+
 fn is_intl_number_format_class(class_name: &String) -> bool {
     matches!(class_name.as_str(), "Intl.NumberFormat" | "NumberFormat")
 }
@@ -2591,4 +2614,102 @@ fn format_i32_grouped(value: i32) -> String {
 
 fn string_lit(value: impl Into<String>) -> LoweredExpr {
     LoweredExpr::String(value.into(), Span::generated("str"))
+}
+
+fn static_number_format_method_call(
+    object: &ResolvedExpr,
+    method: &str,
+    args: &[ResolvedExpr],
+) -> Option<String> {
+    if !is_number_format_method(method) || args.len() > 1 {
+        return None;
+    }
+    let value = static_i64_number_expr(object)?;
+    let precision = args.first().and_then(static_usize_number_expr);
+    if args.first().is_some() && precision.is_none() {
+        return None;
+    }
+    match method {
+        "toFixed" => Some(format_number_to_fixed_i64(value, precision.unwrap_or(0))),
+        "toExponential" => format_number_to_exponential_i64(value, precision),
+        "toPrecision" => format_number_to_precision_i64(value, precision),
+        _ => None,
+    }
+}
+
+fn static_i64_number_expr(expr: &ResolvedExpr) -> Option<i64> {
+    match expr {
+        ResolvedExpr::Number(value) => Some(i64::from(*value)),
+        ResolvedExpr::Unary { op, expr } if *op == UnaryOp::Negate => {
+            static_i64_number_expr(expr).map(|value| -value)
+        }
+        _ => None,
+    }
+}
+
+fn static_usize_number_expr(expr: &ResolvedExpr) -> Option<usize> {
+    let value = static_i64_number_expr(expr)?;
+    usize::try_from(value).ok().filter(|value| *value <= 100)
+}
+
+fn format_number_to_fixed_i64(value: i64, digits: usize) -> String {
+    let sign = if value < 0 { "-" } else { "" };
+    let mut result = format!("{sign}{}", value.unsigned_abs());
+    if digits > 0 {
+        result.push('.');
+        result.push_str(&"0".repeat(digits));
+    }
+    result
+}
+
+fn format_number_to_exponential_i64(value: i64, fraction_digits: Option<usize>) -> Option<String> {
+    if value == 0 {
+        return Some(match fraction_digits {
+            Some(digits) => format!("0.{}e+0", "0".repeat(digits)),
+            None => "0e+0".to_owned(),
+        });
+    }
+
+    let sign = if value < 0 { "-" } else { "" };
+    let digits = value.unsigned_abs().to_string();
+    let exponent = digits.len() - 1;
+    let requested =
+        fraction_digits.unwrap_or_else(|| digits.trim_end_matches('0').len().saturating_sub(1));
+    if requested < digits.len().saturating_sub(1) {
+        return None;
+    }
+
+    let first = &digits[..1];
+    let rest = &digits[1..];
+    let mut fraction = rest.to_owned();
+    if requested > fraction.len() {
+        fraction.push_str(&"0".repeat(requested - fraction.len()));
+    }
+    let mantissa = if requested == 0 {
+        format!("{sign}{first}")
+    } else {
+        format!("{sign}{first}.{fraction}")
+    };
+    Some(format!("{mantissa}e+{exponent}"))
+}
+
+fn format_number_to_precision_i64(value: i64, precision: Option<usize>) -> Option<String> {
+    let Some(precision) = precision else {
+        return Some(value.to_string());
+    };
+    if precision == 0 {
+        return None;
+    }
+
+    let sign = if value < 0 { "-" } else { "" };
+    let digits = value.unsigned_abs().to_string();
+    if precision < digits.len() {
+        return format_number_to_exponential_i64(value, Some(precision.saturating_sub(1)));
+    }
+    let mut result = format!("{sign}{digits}");
+    if precision > digits.len() {
+        result.push('.');
+        result.push_str(&"0".repeat(precision - digits.len()));
+    }
+    Some(result)
 }

@@ -161,7 +161,7 @@ impl WatEmitter<'_> {
     pub(super) fn emit_number_to_fixed(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $number_to_fixed (param $v i32) (result i32)
+  (func $number_to_fixed (param $v i32) (param $digits i32) (result i32)
     (local $len i32)
     (local $ptr i32)
     (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
@@ -186,7 +186,7 @@ impl WatEmitter<'_> {
     pub(super) fn emit_number_to_exponential(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $number_to_exponential (param $v i32) (result i32)
+  (func $number_to_exponential (param $v i32) (param $digits i32) (result i32)
     (local $len i32)
     (local $ptr i32)
     (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
@@ -211,7 +211,7 @@ impl WatEmitter<'_> {
     pub(super) fn emit_number_to_precision(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $number_to_precision (param $v i32) (result i32)
+  (func $number_to_precision (param $v i32) (param $precision i32) (result i32)
     (local $len i32)
     (local $ptr i32)
     (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))

@@ -4170,3 +4170,8 @@ fn object_prototype_matches_node_output() {
 fn array_copying_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/array-copying-methods.ts");
 }
+
+#[test]
+fn number_methods_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-complete.ts");
+}
