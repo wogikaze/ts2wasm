@@ -415,6 +415,14 @@ pub(crate) fn is_supported_json_stringify_boxed_space(
         ("Boolean", []) => true,
         ("Boolean", [arg]) => is_json_stringify_primitive_space_arg(arg),
         ("Object", []) => true,
+        ("Object", [ResolvedExpr::String(_)]) => true,
+        ("Object", [arg]) => {
+            is_json_stringify_number_space_arg(arg)
+                || matches!(
+                    arg,
+                    ResolvedExpr::Bool(_) | ResolvedExpr::Null | ResolvedExpr::Undefined
+                )
+        }
         _ => false,
     }
 }
@@ -510,6 +518,18 @@ pub(crate) fn json_stringify_boxed_replacer_entry(
             Some(JsonStringifyReplacerEntry::Ignored)
         }
         ("Object", []) => Some(JsonStringifyReplacerEntry::Ignored),
+        ("Object", [ResolvedExpr::String(key)]) => {
+            Some(JsonStringifyReplacerEntry::Key(key.clone()))
+        }
+        ("Object", [arg]) => json_stringify_number_key(arg)
+            .map(JsonStringifyReplacerEntry::Key)
+            .or_else(|| {
+                matches!(
+                    arg,
+                    ResolvedExpr::Bool(_) | ResolvedExpr::Null | ResolvedExpr::Undefined
+                )
+                .then_some(JsonStringifyReplacerEntry::Ignored)
+            }),
         _ => None,
     }
 }
@@ -635,7 +655,13 @@ pub(crate) fn is_ignored_json_stringify_boxed_space(space: &ResolvedExpr) -> boo
             class_name,
             args,
             ..
-        } if matches!(class_name.as_str(), "Boolean" | "Object")
+        } if matches!(class_name.as_str(), "Boolean")
+            || (class_name == "Object"
+                && (args.is_empty()
+                    || matches!(
+                        args.as_slice(),
+                        [ResolvedExpr::Bool(_) | ResolvedExpr::Null | ResolvedExpr::Undefined]
+                    )))
             || (matches!(class_name.as_str(), "Number" | "String") && args.is_empty())
     )
 }
@@ -648,6 +674,19 @@ pub(crate) fn json_stringify_boxed_space_value(space: &ResolvedExpr) -> Option<&
         ResolvedExpr::New {
             class_name, args, ..
         } if class_name == "String" && args.len() == 1 => args.first(),
+        ResolvedExpr::New {
+            class_name, args, ..
+        } if class_name == "Object" && matches!(args.as_slice(), [ResolvedExpr::String(_)]) => {
+            args.first()
+        }
+        ResolvedExpr::New {
+            class_name, args, ..
+        } if class_name == "Object"
+            && args.len() == 1
+            && is_json_stringify_number_space_arg(&args[0]) =>
+        {
+            args.first()
+        }
         _ => None,
     }
 }

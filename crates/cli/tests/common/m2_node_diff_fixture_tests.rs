@@ -1439,6 +1439,7 @@ fn json_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/json-stringify-nested-object.ts",
         "fixtures/builtins-and-io/json-stringify-replacer-array.ts",
         "fixtures/builtins-and-io/json-stringify-replacer-array-boxed.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-array-boxed-unsupported.ts",
         "fixtures/builtins-and-io/json-stringify-replacer-array-ignored.ts",
         "fixtures/builtins-and-io/json-stringify-replacer-array-multikey.ts",
         "fixtures/builtins-and-io/json-stringify-replacer-array-number.ts",
@@ -1447,6 +1448,7 @@ fn json_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/json-stringify-replacer-function-root-holder.ts",
         "fixtures/builtins-and-io/json-stringify-replacer-function-transform.ts",
         "fixtures/builtins-and-io/json-stringify-space-boxed-symbol.ts",
+        "fixtures/builtins-and-io/json-stringify-space-boxed-unsupported.ts",
         "fixtures/builtins-and-io/json-stringify-space-boolean.ts",
         "fixtures/builtins-and-io/json-stringify-space-object-function.ts",
         "fixtures/builtins-and-io/json-stringify-space.ts",
@@ -1523,14 +1525,6 @@ fn json_stringify_replacer_unsupported_forms_report_issue_052() {
     assert_build_fails_with_unsupported_builtin(
         "fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts",
         "issue-052: JSON.stringify array replacer property lists outside the supported static String/Number property-name and ignored-entry subset are not supported yet",
-    );
-    assert_build_fails_with_unsupported_builtin(
-        "fixtures/builtins-and-io/json-stringify-replacer-array-boxed-unsupported.ts",
-        "issue-052: JSON.stringify array replacer property lists outside the supported static String/Number property-name and ignored-entry subset are not supported yet",
-    );
-    assert_build_fails_with_unsupported_builtin(
-        "fixtures/builtins-and-io/json-stringify-space-boxed-unsupported.ts",
-        "issue-052e: JSON.stringify space currently supports numeric/string primitives, selected boxed Number/String literals, and ignored object/function values; broader object coercion is not supported yet",
     );
 }
 
