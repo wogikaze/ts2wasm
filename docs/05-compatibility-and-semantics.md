@@ -158,7 +158,7 @@ defined in `docs/14-runtime-abi.md`.
 
 The current `Date.prototype.toString()` is blocked on Phase 1 implementation.
 Issue 050 tracks the overall Date implementation. Issue 5244 tracks this policy.
-Annex B legacy methods (`getYear`, `setYear`, `toGMTString`) remain issue-241 diagnostics.
+Annex B legacy methods `setYear` and `toGMTString` remain issue-241 diagnostics.
 
 > **残タスク**: RuntimeLinkPlan と WatEmitter の分離、AST に一貫した `Span`、BuiltinResolver pass の整理、
 > capability manifest の本番出力などは、`current-state.md` と `docs/11-shared-definitions.md` の gate / issue で追跡する。

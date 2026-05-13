@@ -187,7 +187,6 @@ directories:
     - atomics-unsupported.ts
     - bun-stdin-text.ts
     - console-log.ts
-    - date-annexb-get-year-unsupported.ts
     - date-annexb-get-year.ts
     - date-annexb-set-year-unsupported.ts
     - date-annexb-to-gmt-string-unsupported.ts

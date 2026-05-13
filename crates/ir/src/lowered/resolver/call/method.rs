@@ -513,20 +513,17 @@ impl super::super::Resolver {
                     phase: None,
                 });
             }
-            if let ResolvedExpr::New {
-                args: date_args, ..
-            } = object
-                && let Some(ResolvedExpr::Number(year)) = date_args.first()
-            {
-                return Ok(Some(LoweredExpr::Number(
-                    year - 1900,
-                    Span::generated("num"),
-                )));
-            }
-            return Err(unsupported_annex_b_date_method_diagnostic(
-                method,
-                Some(span),
-            ));
+            return Ok(Some(LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::DateGetUtcFullYear,
+                    args: vec![self.lower_expr(object)?],
+
+                    span: Span::generated("runtime_call"),
+                }),
+                op: LoweredBinaryOp::Subtract,
+                right: Box::new(LoweredExpr::Number(1900, Span::generated("num"))),
+                span: Span::generated("binary"),
+            }));
         }
         if method == "getYear"
             && crate::lowered::resolver::expr::facts::is_invalid_date_expr(&self.ctx, object)

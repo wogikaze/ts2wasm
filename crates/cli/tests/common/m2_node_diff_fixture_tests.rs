@@ -1656,6 +1656,11 @@ fn date_epoch_value_of_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn date_annex_b_get_year_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-annexb-get-year.ts");
+}
+
+#[test]
 fn date_live_time_fixtures_return_epoch_ms_within_host_window() {
     for fixture in [
         "fixtures/builtins-and-io/date-now-live-time.ts",
