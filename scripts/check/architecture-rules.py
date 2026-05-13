@@ -1655,7 +1655,8 @@ def main():
     violations.extend(check_validated_backend_contract())
 
     for v in violations:
-        print(v, file=sys.stderr)
+        if ": ERROR " in v:
+            print(v, file=sys.stderr)
     if any(": ERROR " in v for v in violations):
         errors += 1
 
