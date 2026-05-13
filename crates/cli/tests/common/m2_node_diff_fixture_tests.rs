@@ -1450,6 +1450,46 @@ fn string_last_index_of_matches_node() {
 }
 
 #[test]
+fn string_slice_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-slice.ts");
+}
+
+#[test]
+fn string_substring_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-substring.ts");
+}
+
+#[test]
+fn string_substr_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-substr.ts");
+}
+
+#[test]
+fn string_char_code_at_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-char-code-at.ts");
+}
+
+#[test]
+fn string_from_char_code_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-from-char-code.ts");
+}
+
+#[test]
+fn string_from_code_point_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-from-code-point.ts");
+}
+
+#[test]
+fn string_is_well_formed_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-is-well-formed.ts");
+}
+
+#[test]
+fn string_to_well_formed_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-to-well-formed.ts");
+}
+
+#[test]
 fn string_indexing_fixture_is_not_marked_as_semantic_pass() {
     assert_fixture_not_semantically_pass("string", "fixtures/builtins-and-io/string-indexing.ts");
 }
