@@ -1795,8 +1795,33 @@ fn json_parse_array_object_nested_matches_node() {
 }
 
 #[test]
+fn json_parse_array_object_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-array-object.ts");
+}
+
+#[test]
+fn json_parse_array_object_properties_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-array-object-properties.ts");
+}
+
+#[test]
+fn json_parse_escaped_nested_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-escaped-nested.ts");
+}
+
+#[test]
 fn json_parse_escaped_string_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-escaped-string.ts");
+}
+
+#[test]
+fn json_parse_latin1_unicode_escape_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-latin1-unicode-escape.ts");
+}
+
+#[test]
+fn json_parse_nested_array_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-nested-array.ts");
 }
 
 #[test]
@@ -1812,6 +1837,23 @@ fn json_parse_object_nested_matches_node() {
 #[test]
 fn json_parse_unicode_escape_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-unicode-escape.ts");
+}
+
+#[test]
+fn json_parse_basic_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse.ts");
+}
+
+#[test]
+fn json_parse_surrogate_pair_object_array_matches_node() {
+    assert_fixture_matches_node(
+        "fixtures/builtins-and-io/json-parse-surrogate-pair-object-array.ts",
+    );
+}
+
+#[test]
+fn json_parse_unicode_nonascii_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-unicode-nonascii.ts");
 }
 
 #[test]
