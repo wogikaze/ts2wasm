@@ -2881,6 +2881,7 @@ fn object_builtin_method_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/object-values.ts",
         "fixtures/builtins-and-io/value-of.ts",
         "fixtures/builtins-and-io/object-assign.ts",
+        "fixtures/builtins-and-io/object-assign-descriptors.ts",
         "fixtures/builtins-and-io/object-create.ts",
         "fixtures/builtins-and-io/object-seal.ts",
         "fixtures/builtins-and-io/object-string-keys.ts",
