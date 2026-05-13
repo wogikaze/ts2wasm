@@ -1105,6 +1105,7 @@ impl<'a> Lexer<'a> {
     pub fn tokenize(mut self) -> Result<Vec<SpannedToken>, Diagnostic> {
         let mut tokens = Vec::new();
         self.skip_bom();
+        self.skip_hashbang();
         while let Some(ch) = self.peek_char() {
             if self.starts_with("<!--") || (self.at_line_start && self.starts_with("-->")) {
                 let start = self.cursor;
@@ -1191,6 +1192,17 @@ impl<'a> Lexer<'a> {
     fn skip_bom(&mut self) {
         if self.cursor == 0 && self.peek_char() == Some('\u{feff}') {
             self.advance_char();
+        }
+    }
+
+    fn skip_hashbang(&mut self) {
+        if self.starts_with("#!") {
+            while let Some(ch) = self.peek_char() {
+                if is_line_terminator(ch) {
+                    break;
+                }
+                self.advance_char();
+            }
         }
     }
 

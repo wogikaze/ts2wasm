@@ -39,6 +39,14 @@ mod tests {
     }
 
     #[test]
+    fn parses_hashbang() {
+        let program = parse_program("#!/usr/bin/env ts2wasm\nlet value = 1;").unwrap();
+
+        assert_eq!(program.len(), 1);
+        assert!(matches!(program[0], Stmt::Let { .. }));
+    }
+
+    #[test]
     fn rejects_invalid_numeric_literal_separator_placement() {
         for source in [
             "let value = 1__0;",
