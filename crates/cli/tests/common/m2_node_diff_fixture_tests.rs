@@ -3007,6 +3007,21 @@ fn object_define_property_getter_matches_node() {
 }
 
 #[test]
+fn object_entries_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-entries.ts");
+}
+
+#[test]
+fn object_values_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-values.ts");
+}
+
+#[test]
+fn object_is_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-is.ts");
+}
+
+#[test]
 fn object_assign_descriptors_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-assign-descriptors.ts");
 }
