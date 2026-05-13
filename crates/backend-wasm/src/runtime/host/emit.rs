@@ -178,20 +178,33 @@ impl WatEmitter<'_> {
   (func $math_pow (param $base i32) (param $exp i32) (result i32)
     (local $base_tag i32)
     (local $exp_tag i32)
+    (local $obj i32)
+    (local $base_is_number i32)
+    (local $exp_is_number i32)
     (local $base_n i32)
     (local $exp_n i32)
     (local $result i32)
     (local $i i32)
     (local.set $base_tag (i32.and (local.get $base) (i32.const {tag_mask})))
     (local.set $exp_tag (i32.and (local.get $exp) (i32.const {tag_mask})))
-    (if (i32.ne (local.get $base_tag) (i32.const {number_tag}))
+    (local.set $base_is_number (i32.eq (local.get $base_tag) (i32.const {number_tag})))
+    (local.set $exp_is_number (i32.eq (local.get $exp_tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $base_tag) (i32.const {object_tag}))
       (then
-        (if (i32.ne (local.get $base_tag) (i32.const {object_tag}))
-          (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))))
-    (if (i32.ne (local.get $exp_tag) (i32.const {number_tag}))
+        (local.set $obj (i32.and (local.get $base) (i32.const {heap_mask})))
+        (local.set $base_is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eq (local.get $exp_tag) (i32.const {object_tag}))
       (then
-        (if (i32.ne (local.get $exp_tag) (i32.const {object_tag}))
-          (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))))
+        (local.set $obj (i32.and (local.get $exp) (i32.const {heap_mask})))
+        (local.set $exp_is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.or (i32.eqz (local.get $base_is_number)) (i32.eqz (local.get $exp_is_number)))
+      (then (return (i32.const {nan_value}))))
     (local.set $base_n (call $number_to_i32 (local.get $base)))
     (local.set $exp_n (call $number_to_i32 (local.get $exp)))
     (if (i32.eq (local.get $exp_n) (i32.const {zero}))
@@ -212,6 +225,9 @@ impl WatEmitter<'_> {
             number_tag = ValueTag::NUMBER,
             number_shift = ValueTag::NUMBER_SHIFT,
             object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
             undefined = ValueTag::UNDEFINED,
             zero = RuntimeConst::ZERO,
         ));
