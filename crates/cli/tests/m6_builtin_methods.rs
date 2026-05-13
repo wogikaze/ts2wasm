@@ -2026,6 +2026,16 @@ fn build_smoke_arraybuffer_dataview_byte_offset_endian() {
 }
 
 #[test]
+fn build_smoke_arraybuffer_dataview_byte_offset_float() {
+    let result = run_fixture("builtins-and-io/arraybuffer-dataview-byte-offset-float.ts");
+    assert!(
+        result.is_ok(),
+        "DataView byte offset float fixture should build successfully: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_arraybuffer_dataview_endian_int16_uint16() {
     let result = run_fixture("builtins-and-io/arraybuffer-dataview-endian-int16-uint16.ts");
     assert!(

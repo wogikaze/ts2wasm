@@ -1604,6 +1604,13 @@ fn arraybuffer_dataview_byte_offset_endian_matches_node_output() {
 }
 
 #[test]
+fn arraybuffer_dataview_byte_offset_float_matches_node_output() {
+    assert_fixture_matches_node(
+        "fixtures/builtins-and-io/arraybuffer-dataview-byte-offset-float.ts",
+    );
+}
+
+#[test]
 fn arraybuffer_dataview_endian_int16_uint16_matches_node_output() {
     assert_fixture_matches_node(
         "fixtures/builtins-and-io/arraybuffer-dataview-endian-int16-uint16.ts",

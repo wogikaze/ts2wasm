@@ -185,6 +185,7 @@ directories:
     - arraybuffer-dataview-basic.ts
     - arraybuffer-dataview-byte-offset.ts
     - arraybuffer-dataview-byte-offset-endian.ts
+    - arraybuffer-dataview-byte-offset-float.ts
     - arraybuffer-dataview-endian-int16-uint16.ts
     - arraybuffer-dataview-endian-int32-uint32.ts
     - arraybuffer-dataview-float32.ts
