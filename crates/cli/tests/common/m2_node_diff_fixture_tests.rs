@@ -3289,6 +3289,71 @@ fn math_builtin_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn math_abs_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/math-abs.ts");
+}
+
+#[test]
+fn math_cbrt_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/math-cbrt.ts");
+}
+
+#[test]
+fn math_ceil_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/math-ceil.ts");
+}
+
+#[test]
+fn math_clz32_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/math-clz32.ts");
+}
+
+#[test]
+fn math_floor_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/math-floor.ts");
+}
+
+#[test]
+fn math_imul_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/math-imul.ts");
+}
+
+#[test]
+fn math_max_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/math-max.ts");
+}
+
+#[test]
+fn math_min_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/math-min.ts");
+}
+
+#[test]
+fn math_pow_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/math-pow.ts");
+}
+
+#[test]
+fn test_math_pow_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/test-math-pow.ts");
+}
+
+#[test]
+fn math_round_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/math-round.ts");
+}
+
+#[test]
+fn math_sqrt_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/math-sqrt.ts");
+}
+
+#[test]
+fn math_trunc_sign_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/math-trunc-sign.ts");
+}
+
+#[test]
 fn core_expression_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/core-expressions/number.ts",
