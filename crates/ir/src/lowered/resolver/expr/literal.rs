@@ -14,6 +14,25 @@ impl super::super::Resolver {
             .iter()
             .map(|arg| self.lower_expr(arg))
             .collect::<Result<Vec<_>, _>>()?;
+        if builtin == BuiltinId::ConsoleLog && lowered_args.len() > 1 {
+            let mut joined = lowered_args.remove(0);
+            for arg in lowered_args {
+                joined = LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::Concat,
+                    args: vec![
+                        joined,
+                        LoweredExpr::String(" ".to_owned(), Span::generated("str")),
+                    ],
+                    span: Span::generated("runtime_call"),
+                };
+                joined = LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::Concat,
+                    args: vec![joined, arg],
+                    span: Span::generated("runtime_call"),
+                };
+            }
+            lowered_args = vec![joined];
+        }
         if builtin == BuiltinId::ParseInt && lowered_args.len() == 1 {
             lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
         }

@@ -1641,8 +1641,8 @@ fn validate_accepts_console_log_with_extra_args() {
     let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&ast).unwrap();
     let lowered = ts2wasm_ir::lowered::lower_program(&resolved).unwrap();
     let errs = ts2wasm_ir::lowered::validate_lowered(&lowered);
-    // ConsoleLog truncates extra args to 1 at the builtin_resolver level,
-    // so no arity mismatch is produced
+    // ConsoleLog lowers extra args into one space-joined runtime string,
+    // so no arity mismatch is produced.
     if let Err(errors) = errs {
         assert!(!errors.iter().any(|e| e.code == DiagCode::ArityMismatch));
     }
