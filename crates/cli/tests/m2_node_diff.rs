@@ -1202,6 +1202,11 @@ fn direct_eval_fixture_reports_issue_429() {
 }
 
 #[test]
+fn eval_basic_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/eval-basic.ts");
+}
+
+#[test]
 fn new_eval_fixture_reports_issue_429() {
     let fixture = "fixtures/core-semantics/new-eval-unsupported.ts";
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
