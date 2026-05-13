@@ -3006,6 +3006,16 @@ fn class_field_initialization_fixture_matches_node_output() {
 }
 
 #[test]
+fn class_derived_fields_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes-and-inheritance/class-derived-fields.ts");
+}
+
+#[test]
+fn class_fields_methods_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes-and-inheritance/class-fields-methods.ts");
+}
+
+#[test]
 fn class_super_static_fixture_matches_node_output() {
     assert_fixture_matches_node("fixtures/classes/class-super-static.ts");
 }
@@ -3095,4 +3105,5 @@ fn fncsem_computed_call_unsupported_reports_unsupported_syntax() {
         "fixtures/semantic/functions/dynamic-call-unsupported.ts",
         "only identifier calls are supported",
     );
+}
 }
