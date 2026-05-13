@@ -3920,6 +3920,36 @@ fn promise_supplementary_matches_node_output() {
 }
 
 #[test]
+fn async_return_matches_node_output() {
+    assert_fixture_matches_node("fixtures/async-await/basic-async-return.ts");
+}
+
+#[test]
+fn async_await_sequence_matches_node_output() {
+    assert_fixture_matches_node("fixtures/async-await/await-sequence.ts");
+}
+
+#[test]
+fn async_exception_matches_node_output() {
+    assert_fixture_matches_node("fixtures/async-await/async-exception.ts");
+}
+
+#[test]
+fn async_void_matches_node_output() {
+    assert_fixture_matches_node("fixtures/async-await/async-void.ts");
+}
+
+#[test]
+fn async_nested_matches_node_output() {
+    assert_fixture_matches_node("fixtures/async-await/async-nested.ts");
+}
+
+#[test]
+fn async_arrow_matches_node_output() {
+    assert_fixture_matches_node("fixtures/async-await/async-arrow.ts");
+}
+
+#[test]
 fn upgraded_builtin_fixture_matches_node_output() {
     for fixture in [
         // Promoted from build_smoke to semantic_diff (ID 210)

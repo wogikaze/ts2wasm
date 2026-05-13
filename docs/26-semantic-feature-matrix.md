@@ -253,8 +253,8 @@ Last updated: 2026-05-12
 
 | Label | 説明 | 実装状況 | 主な fixture 群 |
 |---|---|---|---|
-| `async:promise` | Promise | 部分実装 | builtins-and-io, core-semantics |
-| `async:async-function` | async/await | 未実装 | async-await, core-semantics (unsupported) |
+| `async:promise` | Promise | 部分実装 | async-await, builtins-and-io, core-semantics |
+| `async:async-function` | async/await return, await sequence, nested async calls, and caught async throw | 実装済み | async-await |
 | `async:for-await` | for-await-of | 未実装 | core-semantics (unsupported) |
 | `async:generator` | generator / async-generator | 未実装 | builtins-and-io, core-semantics (unsupported) |
 

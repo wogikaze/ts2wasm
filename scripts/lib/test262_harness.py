@@ -145,12 +145,14 @@ class Test262Metadata:
         features=None,
         negative_phase=None,
         negative_type=None,
+        source_code="",
     ):
         self.flags = flags or []
         self.includes = includes or []
         self.features = features or []
         self.negative_phase = negative_phase
         self.negative_type = negative_type
+        self.source_code = source_code
         self.raw = "raw" in self.flags
         self.expects_negative = negative_phase is not None or negative_type is not None
         self.expects_compile_negative = (negative_phase or "") in COMPILE_NEGATIVE_PHASES
@@ -430,19 +432,19 @@ def create_test_record(suite, case_path, target, status, expected=None, actual=N
     }
 
     if expected is not None:
-        record["expected"] = escape_json(expected)
+        record["expected"] = expected
     if actual is not None:
-        record["actual"] = escape_json(actual)
+        record["actual"] = actual
     if reason:
-        record["reason"] = escape_json(reason)
+        record["reason"] = reason
     if tracking:
         record["tracking"] = tracking
     if source_code:
-        record["source_code"] = escape_json(source_code)
+        record["source_code"] = source_code
     if error_line is not None:
         record["error_line"] = error_line
     if stderr:
-        record["stderr"] = escape_json(stderr)
+        record["stderr"] = stderr
     if duration_ms is not None:
         record["duration_ms"] = duration_ms
 

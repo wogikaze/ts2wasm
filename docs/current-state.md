@@ -124,16 +124,16 @@ inputs do not receive test262 globals.
 
 <!-- semantic-coverage-baseline:start -->
 {
-  "timestamp": "2026-05-12T14:24:47Z",
+  "timestamp": "2026-05-13T12:46:52Z",
   "feature_count": 30,
-  "pass_count": 23,
-  "unknown_count": 7,
-  "total_fixtures": 857,
-  "pass_fixtures": 823,
+  "pass_count": 24,
+  "unknown_count": 6,
+  "total_fixtures": 900,
+  "pass_fixtures": 869,
   "features": {
     "arrays-objects": "pass",
     "arrow-functions": "pass",
-    "async-await": "unknown",
+    "async-await": "pass",
     "atcoder": "unknown",
     "basics-equality": "pass",
     "basics-hello": "pass",
@@ -164,7 +164,6 @@ inputs do not receive test262 globals.
   }
 }
 <!-- semantic-coverage-baseline:end -->
-
 ## Known compiler limitations
 
 ### test262 harness
