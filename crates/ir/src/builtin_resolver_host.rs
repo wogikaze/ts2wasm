@@ -124,7 +124,11 @@ pub(super) fn resolve_builtin_call(
         }
         if object_name == "console" {
             return if is_supported_console_method(property) {
-                Ok(Some(BuiltinId::ConsoleLog))
+                Ok(Some(match property.as_str() {
+                    "warn" => BuiltinId::ConsoleWarn,
+                    "error" => BuiltinId::ConsoleError,
+                    _ => BuiltinId::ConsoleLog,
+                }))
             } else {
                 Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
@@ -342,26 +346,28 @@ pub(super) fn resolve_console_call_expr(
         return Ok(None);
     }
 
-    let log_expr = |args: Vec<ResolvedExpr>| {
+    let log_expr = |args: Vec<ResolvedExpr>, builtin: BuiltinId| {
         let args = if args.is_empty() {
             vec![ResolvedExpr::String(String::new())]
         } else {
             args
         };
         ResolvedExpr::BuiltinCall {
-            builtin: BuiltinId::ConsoleLog,
+            builtin,
             args,
         }
     };
 
     match property.as_str() {
-        "log" | "info" | "debug" | "warn" | "error" | "table" | "group" | "groupCollapsed"
-        | "count" | "countReset" | "timeEnd" => Ok(Some(log_expr(resolved_args.to_vec()))),
+        "log" | "info" | "debug" | "table" | "group" | "groupCollapsed"
+        | "count" | "countReset" | "timeEnd" => Ok(Some(log_expr(resolved_args.to_vec(), BuiltinId::ConsoleLog))),
+        "warn" => Ok(Some(log_expr(resolved_args.to_vec(), BuiltinId::ConsoleWarn))),
+        "error" => Ok(Some(log_expr(resolved_args.to_vec(), BuiltinId::ConsoleError))),
         "assert" => {
             let Some((condition, message_args)) = resolved_args.split_first() else {
                 return Ok(Some(log_expr(vec![ResolvedExpr::String(
                     "Assertion failed".to_owned(),
-                )])));
+                )], BuiltinId::ConsoleLog)));
             };
             if matches!(condition, ResolvedExpr::Bool(true)) {
                 return Ok(Some(ResolvedExpr::Undefined));
@@ -369,9 +375,9 @@ pub(super) fn resolve_console_call_expr(
             if message_args.is_empty() {
                 Ok(Some(log_expr(vec![ResolvedExpr::String(
                     "Assertion failed".to_owned(),
-                )])))
+                )], BuiltinId::ConsoleLog)))
             } else {
-                Ok(Some(log_expr(message_args.to_vec())))
+                Ok(Some(log_expr(message_args.to_vec(), BuiltinId::ConsoleLog)))
             }
         }
         "time" | "groupEnd" | "clear" => Ok(Some(ResolvedExpr::Undefined)),

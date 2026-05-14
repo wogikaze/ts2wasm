@@ -79,6 +79,8 @@ match self {
             Self::ValueToStringInto => "value_to_string_into",
             Self::ErrorMessage => "error_message",
             Self::Log => "log",
+            Self::LogWarn => "log_warn",
+            Self::LogError => "log_error",
             Self::PrivateBrandTypeError => "private_brand_type_error",
             Self::AllocHeap => "alloc_heap",
             Self::MemEqual => "mem_equal",

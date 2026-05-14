@@ -27,6 +27,8 @@ pub enum RuntimeFn {
     ValueToStringInto,
     ErrorMessage,
     Log,
+    LogWarn,
+    LogError,
     TruthyBool,
     Not,
     TypeOf,
@@ -740,6 +742,8 @@ const ERROR_MESSAGE_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ValueToStringInto,
 ];
 const LOG_DEPS: &[RuntimeFn] = &[RuntimeFn::Write, RuntimeFn::ValueToStringInto];
+const LOG_WARN_DEPS: &[RuntimeFn] = &[RuntimeFn::Write, RuntimeFn::ValueToStringInto];
+const LOG_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write, RuntimeFn::ValueToStringInto];
 const STRING_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const CONCAT_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
@@ -1592,6 +1596,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "LessEqualFast" => Some(RuntimeFn::LessEqualFast),
         "LessFast" => Some(RuntimeFn::LessFast),
         "Log" => Some(RuntimeFn::Log),
+        "LogError" => Some(RuntimeFn::LogError),
+        "LogWarn" => Some(RuntimeFn::LogWarn),
         "MathPow" => Some(RuntimeFn::MathPow),
         "MemEqual" => Some(RuntimeFn::MemEqual),
         "Mod" => Some(RuntimeFn::Mod),
@@ -1723,6 +1729,8 @@ impl RuntimeFn {
             | Self::ValueToStringInto
             | Self::ErrorMessage
             | Self::Log
+            | Self::LogWarn
+            | Self::LogError
             | Self::PrivateBrandTypeError
             | Self::AllocHeap
             | Self::MemEqual

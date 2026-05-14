@@ -14,6 +14,7 @@ Exits with 0 on match, 1 on mismatch (unless --update).
 
 import sys
 import json
+import re
 import argparse
 from pathlib import Path
 
@@ -21,71 +22,66 @@ REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 BASELINE_PATH = REPO_ROOT / "artifacts" / "abi" / "host-imports-baseline.json"
 
 
-def collect_catalog_imports():
-    """Collect HostImport spec entries by parsing the Rust host_import.rs.
+# Mapping from HostImport variant to capability
+VARIANT_TO_CAPABILITY = {
+    # WASI imports
+    "FdRead": "wasi.fd",
+    "FdWrite": "wasi.fd",
+    "PathOpen": "wasi.filesystem",
+    "FdClose": "wasi.fd",
+    "FdSeek": "wasi.fd",
+    "FdPrestatGet": "wasi.fd",
+    "FdPrestatDirName": "wasi.fd",
+    "WasiProcExit": "wasi.proc_exit",
+    "ClockTimeGet": "wasi.clock",
+    "ClockResGet": "wasi.clock",
+    "RandomGet": "wasi.random",
+    "ArgsSizesGet": "wasi.args",
+    "ArgsGet": "wasi.args",
+    "EnvironSizesGet": "wasi.env",
+    "EnvironGet": "wasi.env",
+    "PathCreateDirectory": "wasi.filesystem",
+    "PathFilestatGet": "wasi.filesystem",
+    "PathReadlink": "wasi.filesystem",
+    "PathRemoveDirectory": "wasi.filesystem",
+    "PathRename": "wasi.filesystem",
+    "PathSymlink": "wasi.filesystem",
+    "PathUnlinkFile": "wasi.filesystem",
+    # Node shim imports
+    "FsReadFileSync": "host.fs.readFileSync",
+    "FsWriteFileSync": "host.fs.writeFileSync",
+    "FsAppendFileSync": "host.fs.appendFileSync",
+    "ProcessExit": "host.process.exit",
+    "PathJoin": "host.path.join",
+    "PathResolve": "host.path.resolve",
+    "PathBasename": "host.path.basename",
+    "PathDirname": "host.path.dirname",
+    "CryptoRandomBytes": "host.crypto.randomBytes",
+    "EncodeURI": "host.encodeURI",
+    "DecodeURI": "host.decodeURI",
+    "Escape": "host.escape",
+    "Unescape": "host.unescape",
+    "DateToString": "host.dateToString",
+    "DateGetLocalTimeField": "host.dateGetLocalTimeField",
+    "DateToISOString": "host.dateToISOString",
+    "DateGetTimezoneOffset": "host.dateGetTimezoneOffset",
+    "DateToDateString": "host.dateToDateString",
+    "DateToTimeString": "host.dateToTimeString",
+    "DateParse": "host.dateParse",
+    "DateUTC": "host.dateUTC",
+}
 
-    Returns a sorted list of dicts with module, name, wat_symbol, abi, capability, reason_owner.
-    """
+
+def collect_catalog_imports():
+    """Collect HostImport spec entries by parsing the Rust host_import.rs."""
     host_import_path = REPO_ROOT / "crates" / "runtime-catalog" / "src" / "host_import.rs"
     if not host_import_path.exists():
         print(f"ERROR: host_import.rs not found at {host_import_path}", file=sys.stderr)
         sys.exit(1)
 
     content = host_import_path.read_text()
-
-    # Mapping from HostImport variant to capability
-    VARIANT_TO_CAPABILITY = {
-        # WASI imports
-        "FdRead": "wasi.fd",
-        "FdWrite": "wasi.fd",
-        "PathOpen": "wasi.filesystem",
-        "FdClose": "wasi.fd",
-        "FdSeek": "wasi.fd",
-        "FdPrestatGet": "wasi.fd",
-        "FdPrestatDirName": "wasi.fd",
-        "WasiProcExit": "wasi.proc_exit",
-        "ClockTimeGet": "wasi.clock",
-        "ClockResGet": "wasi.clock",
-        "RandomGet": "wasi.random",
-        "ArgsSizesGet": "wasi.args",
-        "ArgsGet": "wasi.args",
-        "EnvironSizesGet": "wasi.env",
-        "EnvironGet": "wasi.env",
-        "PathCreateDirectory": "wasi.filesystem",
-        "PathFilestatGet": "wasi.filesystem",
-        "PathReadlink": "wasi.filesystem",
-        "PathRemoveDirectory": "wasi.filesystem",
-        "PathRename": "wasi.filesystem",
-        "PathSymlink": "wasi.filesystem",
-        "PathUnlinkFile": "wasi.filesystem",
-        # Node shim imports
-        "FsReadFileSync": "host.fs.readFileSync",
-        "FsWriteFileSync": "host.fs.writeFileSync",
-        "FsAppendFileSync": "host.fs.appendFileSync",
-        "ProcessExit": "host.process.exit",
-        "PathJoin": "host.path.join",
-        "PathResolve": "host.path.resolve",
-        "PathBasename": "host.path.basename",
-        "PathDirname": "host.path.dirname",
-        "CryptoRandomBytes": "host.crypto.randomBytes",
-        "EncodeURI": "host.encodeURI",
-        "DecodeURI": "host.decodeURI",
-        "Escape": "host.escape",
-        "Unescape": "host.unescape",
-        "DateToString": "host.dateToString",
-        "DateGetLocalTimeField": "host.dateGetLocalTimeField",
-        "DateToISOString": "host.dateToISOString",
-        "DateGetTimezoneOffset": "host.dateGetTimezoneOffset",
-        "DateToDateString": "host.dateToDateString",
-        "DateToTimeString": "host.dateToTimeString",
-        "DateParse": "host.dateParse",
-        "DateUTC": "host.dateUTC",
-    }
-
-    import re
     imports = []
 
-    # Parse spec() match arms
     spec_pattern = re.compile(
         r'Self::(\w+)\s*=>\s*HostImportSpec\s*\{'
         r'[^}]*?module:\s*"([^"]+)"'
@@ -102,7 +98,6 @@ def collect_catalog_imports():
         wat_symbol = m.group(4)
         abi = m.group(5)
         capability = VARIANT_TO_CAPABILITY.get(variant, f"unknown.{variant}")
-
         imports.append({
             "module": module,
             "name": name,
@@ -125,7 +120,7 @@ def load_baseline():
 
 
 def save_baseline(imports):
-    """Save baseline JSON. Sort keys for deterministic output."""
+    """Save baseline JSON."""
     baseline = {
         "schema_version": 1,
         "comment": "Host import baseline. Do not edit by hand. Sorted by module then name.",
@@ -137,7 +132,6 @@ def save_baseline(imports):
 
 def diff_imports(catalog_imports, baseline_imports):
     """Compare two sorted import lists. Returns (added, removed, changed)."""
-    # Build lookup by (module, name)
     catalog_map = {(imp["module"], imp["name"]): imp for imp in catalog_imports}
     baseline_map = {(imp["module"], imp["name"]): imp for imp in baseline_imports}
 
@@ -150,9 +144,7 @@ def diff_imports(catalog_imports, baseline_imports):
     changed = []
     common = catalog_keys & baseline_keys
     for key in sorted(common):
-        cat = catalog_map[key]
-        base = baseline_map[key]
-        if cat != base:
+        if catalog_map[key] != baseline_map[key]:
             changed.append(key)
 
     return added, removed, changed
@@ -179,14 +171,11 @@ def main():
 
     if args.diff:
         for key in added:
-            imp = {k: v for k, v in catalog_imports[catalog_imports.index(
-                next(x for x in catalog_imports if x["module"] == key[0] and x["name"] == key[1])
-            )].items()}
-            print(f"+ {key[0]}.{key[1]}: {imp}")
+            imp = catalog_map if False else None
+            cat = next(x for x in catalog_imports if x["module"] == key[0] and x["name"] == key[1])
+            print(f"+ {key[0]}.{key[1]}: {cat}")
         for key in removed:
-            imp = {k: v for k, v in baseline_imports[baseline_imports.index(
-                next(x for x in baseline_imports if x["module"] == key[0] and x["name"] == key[1])
-            )].items()}
+            imp = next(x for x in baseline_imports if x["module"] == key[0] and x["name"] == key[1])
             print(f"- {key[0]}.{key[1]}: {imp}")
         for key in changed:
             print(f"~ {key[0]}.{key[1]}: changed")
@@ -195,14 +184,10 @@ def main():
         return
 
     if has_diff:
-        catalog_count = len(catalog_imports)
-        baseline_count = len(baseline_imports)
         print(f"FAIL: host import baseline mismatch")
-        print(f"  Catalog imports: {catalog_count}")
-        print(f"  Baseline imports: {baseline_count}")
-        print(f"  Added: {len(added)}")
-        print(f"  Removed: {len(removed)}")
-        print(f"  Changed: {len(changed)}")
+        print(f"  Catalog imports: {len(catalog_imports)}")
+        print(f"  Baseline imports: {len(baseline_imports)}")
+        print(f"  Added: {len(added)}, Removed: {len(removed)}, Changed: {len(changed)}")
         for key in added:
             print(f"    + {key[0]}.{key[1]}")
         for key in removed:

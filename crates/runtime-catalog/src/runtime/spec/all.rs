@@ -625,6 +625,22 @@ match self {
                 runtime_strings: LOG_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::LogWarn => RuntimeSpec {
+                symbol: "$log_warn",
+                deps: LOG_WARN_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: LOG_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::LogError => RuntimeSpec {
+                symbol: "$log_error",
+                deps: LOG_ERROR_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: LOG_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::PrivateBrandTypeError => RuntimeSpec {
                 symbol: "$private_brand_type_error",
                 deps: PRIVATE_BRAND_TYPE_ERROR_DEPS,

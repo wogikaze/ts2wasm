@@ -20,10 +20,6 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 
-# ---------------------------------------------------------------------------
-# Allowlist: files that are permitted to contain raw 'host.' module strings
-# or 'wasm32-' target strings.
-# ---------------------------------------------------------------------------
 HOST_STRING_ALLOWLIST = [
     # Runtime catalog: single source of truth for host imports
     "crates/runtime-catalog/",
@@ -59,6 +55,8 @@ HOST_STRING_ALLOWLIST = [
     "reports/",
     # Web UI source
     "site/",
+    # Design plans
+    "plans/",
 ]
 
 TARGET_STRING_ALLOWLIST = [
@@ -97,9 +95,6 @@ TARGET_STRING_ALLOWLIST = [
     "plans/",
 ]
 
-# ---------------------------------------------------------------------------
-# Patterns
-# ---------------------------------------------------------------------------
 HOST_IMPORT_PATTERN = re.compile(r'(?<!\w)"host\.')
 WASM32_TARGET_PATTERN = re.compile(r'"wasm32-')
 
@@ -110,9 +105,7 @@ def is_allowlisted(file_path: Path, allowlist) -> bool:
     for entry in allowlist:
         if rel == entry:
             return True
-        if entry.endswith("/") and rel.startswith(entry):
-            return True
-        if entry.endswith("/") and rel.startswith(entry.rstrip("/")):
+        if entry.endswith("/") and (rel.startswith(entry) or rel == entry.rstrip("/")):
             return True
     return False
 
@@ -120,8 +113,6 @@ def is_allowlisted(file_path: Path, allowlist) -> bool:
 def check_files(directory: str, pattern, allowlist) -> list:
     """Scan source files for raw pattern strings outside the allowlist."""
     violations = []
-
-    # Extensions to scan
     extensions = {".rs", ".py", ".md", ".toml", ".json", ".yaml", ".yml", ".ts"}
 
     src_dir = REPO_ROOT / directory
@@ -133,7 +124,6 @@ def check_files(directory: str, pattern, allowlist) -> list:
             continue
         if fpath.suffix not in extensions:
             continue
-        # Skip hidden files and __pycache__
         if any(part.startswith(".") for part in fpath.parts):
             continue
         if "__pycache__" in fpath.parts:
@@ -224,7 +214,6 @@ def main():
     if args.check:
         all_ok = True
 
-        # Check host strings
         violations = check_files(".", HOST_IMPORT_PATTERN, HOST_STRING_ALLOWLIST)
         if violations:
             print("ERROR: Raw 'host.' import strings found outside allowlisted files:")
@@ -234,7 +223,6 @@ def main():
         else:
             print("OK: No raw 'host.' import strings outside allowlist.")
 
-        # Check target strings
         violations2 = check_files(".", WASM32_TARGET_PATTERN, TARGET_STRING_ALLOWLIST)
         if violations2:
             print("ERROR: Raw 'wasm32-' target strings found outside allowlisted files:")

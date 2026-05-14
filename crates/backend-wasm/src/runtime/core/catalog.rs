@@ -22,6 +22,8 @@ pub const CORE_FUNCTIONS: &[RuntimeFn] = &[
     // Error / logging
     RuntimeFn::ErrorMessage,
     RuntimeFn::Log,
+    RuntimeFn::LogWarn,
+    RuntimeFn::LogError,
     RuntimeFn::PrivateBrandTypeError,
     // Comparison
     RuntimeFn::MemEqual,

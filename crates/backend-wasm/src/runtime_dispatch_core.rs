@@ -11,6 +11,8 @@ impl WatEmitter<'_> {
             RuntimeFn::ValueToStringInto => self.emit_value_to_string_into(wat),
             RuntimeFn::ErrorMessage => self.emit_error_message(wat),
             RuntimeFn::Log => self.emit_log(wat),
+            RuntimeFn::LogWarn => self.emit_log_warn(wat),
+            RuntimeFn::LogError => self.emit_log_error(wat),
             RuntimeFn::PrivateBrandTypeError => self.emit_private_brand_type_error(wat),
             RuntimeFn::AllocHeap => self.emit_alloc_heap(wat),
             RuntimeFn::MemEqual => self.emit_mem_equal(wat),

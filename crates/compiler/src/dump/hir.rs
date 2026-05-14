@@ -182,5 +182,7 @@ fn hir_builtin_name(builtin: BuiltinId) -> &'static str {
         BuiltinId::DecodeURIComponent => "decodeURIComponent",
         BuiltinId::Escape => "escape",
         BuiltinId::Unescape => "unescape",
+        BuiltinId::ConsoleWarn => "console.warn",
+        BuiltinId::ConsoleError => "console.error",
     }
 }
