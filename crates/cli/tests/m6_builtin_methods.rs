@@ -2156,6 +2156,16 @@ fn build_smoke_arraybuffer_basic() {
 }
 
 #[test]
+fn build_smoke_arraybuffer_is_view() {
+    let result = run_fixture("builtins-and-io/arraybuffer-is-view.ts");
+    assert!(
+        result.is_ok(),
+        "ArrayBuffer.isView should build successfully: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_arraybuffer_dataview_byte_offset() {
     let result = run_fixture("builtins-and-io/arraybuffer-dataview-byte-offset.ts");
     assert!(

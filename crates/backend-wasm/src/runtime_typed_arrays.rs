@@ -21,6 +21,25 @@ impl WatEmitter<'_> {
         ));
     }
 
+    /// ArrayBuffer.isView(val) — returns true if val is ARRAY-tagged (DataView or TypedArray).
+    /// Approximation: returns true for all ARRAY-tagged values including regular Arrays.
+    pub(super) fn emit_arraybuffer_is_view(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $arraybuffer_is_view (param $val i32) (result i32)
+    (if (result i32)
+      (i32.eq (i32.and (local.get $val) (i32.const {tag_mask})) (i32.const {array_tag}))
+      (then (i32.const {true}))
+      (else (i32.const {false})))
+  )
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            true = ValueTag::TRUE,
+            false = ValueTag::FALSE,
+        ));
+    }
+
     /// Create a DataView wrapping the given buffer.
     /// Accepts buffer and tagged byte_offset params.
     /// Returns an ARRAY-tagged DataView struct.

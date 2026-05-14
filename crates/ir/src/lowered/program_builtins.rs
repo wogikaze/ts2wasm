@@ -113,6 +113,12 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 _ => None,
             };
         }
+        if name == "ArrayBuffer" {
+            return match method {
+                "isView" => Some(RuntimeFn::ArrayBufferIsView),
+                _ => None,
+            };
+        }
         if name == "Promise" {
             return match method {
                 "resolve" => Some(RuntimeFn::PromiseResolve),
