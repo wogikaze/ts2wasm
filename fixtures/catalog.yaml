@@ -138,6 +138,7 @@ directories:
     fixtures:
     - array-at.ts
     - array-concat.ts
+    - array-copying-methods.ts
     - array-copy-within.ts
     - array-entries.ts
     - array-every.ts
@@ -198,6 +199,7 @@ directories:
     - async-generator-basic.ts
     - atomics-unsupported.ts
     - bun-stdin-text.ts
+    - boolean-symbol-prototype.ts
     - console-log.ts
     - date-annexb-get-year.ts
     - date-annexb-set-year-unsupported.ts
@@ -252,6 +254,7 @@ directories:
     - global-parseint.ts
     - global-unescape-value.ts
     - global-unescape.ts
+    - intl-numberformat.ts
     - intl-unsupported.ts
     - iterator-protocol.ts
     - json-parse-array-object-nested.ts
@@ -311,7 +314,9 @@ directories:
     - json-stringify.ts
     - map-forEach.ts
     - map-iteration.ts
+    - map-nan-minus0-key-equality.ts
     - map-set.ts
+    - map-supplementary.ts
     - math-abs.ts
     - math-cbrt.ts
     - math-ceil.ts
@@ -353,7 +358,9 @@ directories:
     - object-keys-arguments.ts
     - object-keys.ts
     - object-prevent-extensions.ts
+    - object-prototype.ts
     - object-seal.ts
+    - object-static-complete.ts
     - object-string-keys.ts
     - object-values.ts
     - promise-basic.ts
@@ -387,7 +394,9 @@ directories:
     - string-at.ts
     - string-char-at.ts
     - string-char-code-at.ts
+    - string-charcode-tostring-radix.ts
     - string-concat.ts
+    - string-constructor-call.ts
     - string-ends-with.ts
     - string-from-char-code.ts
     - string-from-code-point.ts
@@ -409,6 +418,7 @@ directories:
     - string-search.ts
     - string-slice.ts
     - string-split.ts
+    - string-static-methods.ts
     - string-starts-with.ts
     - string-substr.ts
     - string-substring.ts
@@ -530,6 +540,7 @@ directories:
     - object-literal-inline-access.ts
     - object-literal-dup-keys.ts
     - object-literal-computed-keys.ts
+    - object-shorthand-computed-method.ts
     - optional-call.ts
     - optional-index.ts
     - optional-member.ts
