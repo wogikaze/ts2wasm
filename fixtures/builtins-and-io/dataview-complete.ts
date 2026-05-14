@@ -1,70 +1,85 @@
-// DataView complete get/set methods including BigInt variants
-function testBasicMethods(): void {
+// DataView complete: numeric get/set methods and BigInt variants.
+function testNumericMethods(): void {
     const buf = new ArrayBuffer(32);
-    const dv = new DataView(buf);
+    const view = new DataView(buf);
 
-    // Int8
-    dv.setInt8(0, -128);
-    console.log(dv.getInt8(0));
-    dv.setInt8(1, 127);
-    console.log(dv.getInt8(1));
+    // Int8/Uint8
+    view.setInt8(0, -1);
+    view.setInt8(1, -128);
+    view.setUint8(2, 255);
+    view.setUint8(3, 128);
+    console.log(view.getInt8(0));
+    console.log(view.getInt8(1));
+    console.log(view.getUint8(2));
+    console.log(view.getUint8(3));
 
-    // Uint8
-    dv.setUint8(2, 255);
-    console.log(dv.getUint8(2));
-    dv.setUint8(3, 0);
-    console.log(dv.getUint8(3));
+    // Int16/Uint16 (little-endian)
+    view.setInt16(4, -32768, true);
+    view.setUint16(6, 65535, true);
+    console.log(view.getInt16(4, true));
+    console.log(view.getUint16(6, true));
 
-    // Int16 little-endian
-    dv.setInt16(4, -32768, true);
-    console.log(dv.getInt16(4, true));
-    dv.setInt16(6, 32767, true);
-    console.log(dv.getInt16(6, true));
+    // Int16/Uint16 (big-endian)
+    view.setInt16(8, -32768, false);
+    view.setUint16(10, 65535, false);
+    console.log(view.getInt16(8, false));
+    console.log(view.getUint16(10, false));
 
-    // Uint16 big-endian
-    dv.setUint16(8, 65535, false);
-    console.log(dv.getUint16(8, false));
-    dv.setUint16(10, 0, false);
-    console.log(dv.getUint16(10, false));
+    // Int32/Uint32 (little-endian)
+    view.setInt32(12, -1000000, true);
+    view.setUint32(16, 3000000, true);
+    console.log(view.getInt32(12, true));
+    console.log(view.getUint32(16, true));
 
-    // Int32 little-endian
-    dv.setInt32(12, -32768, true);
-    console.log(dv.getInt32(12, true));
-    dv.setInt32(16, 32767, true);
-    console.log(dv.getInt32(16, true));
+    // Int32/Uint32 (big-endian)
+    view.setInt32(20, -1000000, false);
+    view.setUint32(24, 3000000, false);
+    console.log(view.getInt32(20, false));
+    console.log(view.getUint32(24, false));
+
+    // Float32/Float64
+    view.setFloat32(0, 3.14, true);
+    view.setFloat64(4, 3.141592653589793, true);
+    console.log(view.getFloat32(0, true));
+    console.log(view.getFloat64(4, true));
+
+    // Float32/Float64 big-endian
+    view.setFloat32(12, 3.14, false);
+    view.setFloat64(16, 3.141592653589793, false);
+    console.log(view.getFloat32(12, false));
+    console.log(view.getFloat64(16, false));
+
+    // buffer, byteOffset, byteLength
+    console.log(view.buffer === buf);
+    console.log(view.byteOffset);
+    console.log(view.byteLength);
 }
 
 function testBigIntMethods(): void {
     const buf = new ArrayBuffer(32);
     const dv = new DataView(buf);
 
-    // BigInt64 little-endian: zero
     dv.setBigInt64(0, 0n, true);
     console.log(dv.getBigInt64(0, true));
 
-    // BigInt64 little-endian: positive
     dv.setBigInt64(0, 42n, true);
     console.log(dv.getBigInt64(0, true));
 
-    // BigInt64 little-endian: negative
     dv.setBigInt64(0, -1n, true);
     console.log(dv.getBigInt64(0, true));
 
-    // BigInt64 little-endian: large positive
     dv.setBigInt64(0, 65536n, true);
     console.log(dv.getBigInt64(0, true));
 
-    // BigUint64 little-endian
     dv.setBigUint64(8, 100n, true);
     console.log(dv.getBigUint64(8, true));
 
     dv.setBigUint64(8, 0n, true);
     console.log(dv.getBigUint64(8, true));
 
-    // BigUint64 big-endian
     dv.setBigUint64(8, 100n, false);
     console.log(dv.getBigUint64(8, false));
 }
 
-testBasicMethods();
+testNumericMethods();
 testBigIntMethods();

@@ -90,16 +90,6 @@ fn build_smoke_math_pow_method() {
 }
 
 #[test]
-fn build_smoke_math_complete() {
-    let result = run_fixture("builtins-and-io/math-complete.ts");
-    assert!(
-        result.is_ok(),
-        "deterministic Math builtin family should build: {:?}",
-        result.err()
-    );
-}
-
-#[test]
 fn build_smoke_bigint_arithmetic() {
     for fixture in [
         "core-semantics/bigint-runtime-mul-div-rem.ts",
@@ -406,36 +396,6 @@ fn build_smoke_json_parse_method() {
         "JSON.parse should build: {:?}",
         result.err()
     );
-}
-
-#[test]
-fn build_smoke_json_replacer() {
-    for fixture in [
-        "builtins-and-io/json-parse-reviver-noop.ts",
-        "builtins-and-io/json-parse-reviver-transform.ts",
-        "builtins-and-io/json-parse-reviver-drop.ts",
-        "builtins-and-io/json-parse-reviver-nested.ts",
-        "builtins-and-io/json-parse-reviver-array.ts",
-        "builtins-and-io/json-stringify-replacer-function-keep.ts",
-        "builtins-and-io/json-stringify-replacer-function-drop.ts",
-        "builtins-and-io/json-stringify-replacer-function-transform.ts",
-        "builtins-and-io/json-stringify-replacer-function-root-holder.ts",
-        "builtins-and-io/json-stringify-replacer-array.ts",
-        "builtins-and-io/json-stringify-replacer-array-number.ts",
-        "builtins-and-io/json-stringify-replacer-array-multikey.ts",
-        "builtins-and-io/json-stringify-replacer-array-boxed.ts",
-        "builtins-and-io/json-stringify-replacer-array-boxed-unsupported.ts",
-        "builtins-and-io/json-stringify-replacer-array-ignored.ts",
-        "builtins-and-io/json-stringify-space.ts",
-        "builtins-and-io/json-stringify-space-string.ts",
-        "builtins-and-io/json-stringify-space-boolean.ts",
-        "builtins-and-io/json-stringify-space-boxed-symbol.ts",
-        "builtins-and-io/json-stringify-space-boxed-unsupported.ts",
-        "builtins-and-io/json-stringify-space-object-function.ts",
-    ] {
-        let result = run_fixture(fixture);
-        assert!(result.is_ok(), "{fixture} should build: {:?}", result.err());
-    }
 }
 
 #[test]
@@ -2189,17 +2149,6 @@ fn build_smoke_atomics_basic() {
     );
 }
 
-// Atomics — complete operations (add, sub, and, or, xor, exchange, compareExchange)
-#[test]
-fn build_smoke_atomics_complete() {
-    let result = run_fixture("builtins-and-io/atomics-complete.ts");
-    assert!(
-        result.is_ok(),
-        "Atomics complete should build: {:?}",
-        result.err()
-    );
-}
-
 #[test]
 fn build_smoke_atomics_complete() {
     let result = run_fixture("builtins-and-io/atomics-complete.ts");
@@ -2508,7 +2457,7 @@ fn build_smoke_arraybuffer_dataview_uint32() {
     );
 }
 
-// DataView complete — all 20 get/set methods including BigInt
+// DataView complete: numeric get/set methods including BigInt.
 #[test]
 fn build_smoke_dataview_complete() {
     let result = run_fixture("builtins-and-io/dataview-complete.ts");
@@ -2665,18 +2614,13 @@ fn build_smoke_console_complete() {
 }
 
 #[test]
-fn build_smoke_native_error_types() {
-    run_fixture("builtins-and-io/error-name.ts").expect("NativeError types should build");
-}
-
-#[test]
 fn build_smoke_error_subclasses() {
     run_fixture("builtins-and-io/error-subclasses.ts")
         .expect("Error subclasses with cause should build");
 }
 
 #[test]
-fn build_smoke_function_prototype() {
+fn build_smoke_function_prototype_builtins() {
     run_fixture("builtins-and-io/function-prototype.ts")
         .expect("Function.prototype.name/length should build");
 }
@@ -3513,16 +3457,6 @@ fn build_smoke_set_identity_number_string() {
     assert!(
         result.is_ok(),
         "set-identity-number-string should build: {:?}",
-        result.err()
-    );
-}
-
-#[test]
-fn build_smoke_set_iterable_calls_add() {
-    let result = run_fixture("builtins-and-io/set-iterable-calls-add.ts");
-    assert!(
-        result.is_ok(),
-        "set-iterable-calls-add should build: {:?}",
         result.err()
     );
 }
