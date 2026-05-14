@@ -86,9 +86,7 @@ struct OracleTypeHint {
 }
 
 pub fn collect_typescript_diagnostics(input: &Path) -> Result<TypeScriptCheckReport, Diagnostic> {
-    let script = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../..")
-        .join("scripts/check/typescript-oracle.js");
+    let script = typescript_oracle_script();
     let output = Command::new("node")
         .arg(&script)
         .arg(input)
@@ -162,6 +160,22 @@ pub fn collect_typescript_diagnostics(input: &Path) -> Result<TypeScriptCheckRep
             })
             .collect(),
     })
+}
+
+fn typescript_oracle_script() -> PathBuf {
+    let relative = Path::new("scripts/check/typescript-oracle.js");
+    if let Ok(cwd) = std::env::current_dir() {
+        for ancestor in cwd.ancestors() {
+            let candidate = ancestor.join(relative);
+            if candidate.exists() {
+                return candidate;
+            }
+        }
+    }
+
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(relative)
 }
 
 pub fn check_typescript_file(input: &Path) -> Result<(), Diagnostic> {

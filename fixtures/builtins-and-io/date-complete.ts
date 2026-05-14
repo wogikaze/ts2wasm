@@ -1,0 +1,18 @@
+let epoch = new Date(0);
+console.log(epoch.getTime());
+console.log(epoch.valueOf());
+console.log(epoch.getUTCFullYear());
+console.log(epoch.getUTCMonth());
+console.log(epoch.getUTCDate());
+console.log(epoch.getUTCDay());
+console.log(epoch.getUTCHours());
+console.log(epoch.getUTCMinutes());
+console.log(epoch.getUTCSeconds());
+console.log(epoch.getUTCMilliseconds());
+console.log(epoch.toISOString());
+console.log(epoch.toJSON());
+console.log(epoch.toDateString());
+console.log(epoch.toTimeString());
+console.log(typeof epoch.getTimezoneOffset());
+console.log(Date.parse("1970-01-01T00:00:00.000Z"));
+console.log(Date.UTC(1970, 0, 1));

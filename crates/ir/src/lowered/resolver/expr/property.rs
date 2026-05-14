@@ -25,6 +25,18 @@ impl super::super::Resolver {
                 ResolvedExpr::Ident(name) if is_global_builtin_function_name(name) => {
                     lower_global_builtin_function_metadata_property(name, "length")
                 }
+                ResolvedExpr::PropertyAccess {
+                    object: inner_object,
+                    key: builtin_name,
+                    ..
+                } if matches!(inner_object.as_ref(), ResolvedExpr::Ident(name) if name == "Number")
+                    && crate::lowered::program_builtins::builtin_function_token_value(
+                        builtin_name,
+                    )
+                    .is_some() =>
+                {
+                    lower_global_builtin_function_metadata_property(builtin_name, "length")
+                }
                 _ => Ok(LoweredExpr::GetLength(
                     Box::new(self.lower_expr(object)?),
                     Span::generated("get_length"),
@@ -54,6 +66,25 @@ impl super::super::Resolver {
                 args: Vec::new(),
                 span: Span::generated("object_prototype"),
             });
+        }
+        if let ResolvedExpr::Ident(name) = object
+            && name == "Number"
+            && let Some(token) =
+                crate::lowered::program_builtins::builtin_function_token_expr(key, span)
+        {
+            return Ok(token);
+        }
+        if let ResolvedExpr::PropertyAccess {
+            object: inner_object,
+            key: builtin_name,
+            ..
+        } = object
+            && matches!(inner_object.as_ref(), ResolvedExpr::Ident(name) if name == "Number")
+            && crate::lowered::program_builtins::builtin_function_token_value(builtin_name)
+                .is_some()
+            && matches!(key, "name" | "length")
+        {
+            return lower_global_builtin_function_metadata_property(builtin_name, key);
         }
         if key == "__proto__" {
             return Ok(object_kernel::ordinary_get_prototype_of(

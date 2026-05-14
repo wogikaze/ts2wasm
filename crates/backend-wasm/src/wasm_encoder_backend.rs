@@ -211,16 +211,7 @@ fn build_single_function(
 ) -> wasm_encoder::Function {
     use wasm_encoder::Instruction as I;
 
-    let mut local_groups: Vec<(u32, ValType)> = Vec::new();
-    for local in &f.locals {
-        let ty = val_type(*local);
-        match local_groups.last_mut() {
-            Some((count, last_ty)) if *last_ty == ty => *count += 1,
-            _ => local_groups.push((1, ty)),
-        }
-    }
-
-    let mut func = wasm_encoder::Function::new(local_groups);
+    let mut func = wasm_encoder::Function::new(local_groups_for_function(f));
     for instr in &f.body {
         match instr {
             WasmInstr::LocalGet(i) => {
@@ -403,6 +394,18 @@ fn build_single_function(
 
     func.instruction(&I::End);
     func
+}
+
+fn local_groups_for_function(f: &WasmFunction) -> Vec<(u32, ValType)> {
+    let mut local_groups: Vec<(u32, ValType)> = Vec::new();
+    for local in &f.locals {
+        let ty = val_type(*local);
+        match local_groups.last_mut() {
+            Some((count, last_ty)) if *last_ty == ty => *count += 1,
+            _ => local_groups.push((1, ty)),
+        }
+    }
+    local_groups
 }
 
 fn global_init_expr(instr: &WasmInstr, global_indices: &HashMap<String, u32>) -> ConstExpr {

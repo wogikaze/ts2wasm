@@ -713,6 +713,52 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Date") && method == "parse" {
+            if args.len() != 1 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!("Date.parse expects 1 argument, got {}", args.len()),
+                    span: Some(span),
+                    phase: None,
+                });
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateParse,
+                args: vec![self.lower_expr(&args[0])?],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Date") && method == "UTC" {
+            if args.is_empty() || args.len() > 7 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!("Date.UTC expects 1 to 7 arguments, got {}", args.len()),
+                    span: Some(span),
+                    phase: None,
+                });
+            }
+            let mut lowered_args = Vec::with_capacity(7);
+            for (idx, arg) in args.iter().enumerate() {
+                if idx == 7 {
+                    break;
+                }
+                lowered_args.push(self.lower_expr(arg)?);
+            }
+            while lowered_args.len() < 7 {
+                let default = if lowered_args.len() == 2 { 1 } else { 0 };
+                lowered_args.push(LoweredExpr::Number(
+                    default,
+                    Span::generated("date_utc_default"),
+                ));
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateUTC,
+                args: lowered_args,
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
         if self.is_unsupported_regexp_compile_receiver(object, method) {
             return Err(unsupported_regexp_compile_diagnostic(Some(span)));
         }
@@ -1008,6 +1054,46 @@ impl super::super::Resolver {
             };
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic,
+                args: vec![self.lower_expr(object)?],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if self.is_date_receiver(object) && method == "toDateString" {
+            if !args.is_empty() {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 0 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateToDateString,
+                args: vec![self.lower_expr(object)?],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if self.is_date_receiver(object) && method == "toTimeString" {
+            if !args.is_empty() {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 0 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateToTimeString,
                 args: vec![self.lower_expr(object)?],
 
                 span: Span::generated("runtime_call"),
@@ -1311,6 +1397,60 @@ impl super::super::Resolver {
             )));
         }
         if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
+            if intrinsic == RuntimeFn::JsonParse {
+                if args.is_empty() || args.len() > 2 {
+                    return Err(Diagnostic {
+                        code: DiagCode::ArityMismatch,
+                        message: format!("JSON.parse expects 1 to 2 arguments, got {}", args.len()),
+                        span: Some(span),
+                        phase: None,
+                    });
+                }
+                let mut lowered_args = vec![self.lower_expr(&args[0])?];
+                lowered_args.push(match args.get(1) {
+                    None | Some(ResolvedExpr::Undefined) => {
+                        LoweredExpr::Undefined(Span::generated("undef"))
+                    }
+                    Some(ResolvedExpr::Null) => LoweredExpr::Null(Span::generated("null")),
+                    Some(ResolvedExpr::Ident(name))
+                        if self
+                            .ctx
+                            .symbols
+                            .function_ids
+                            .get(name)
+                            .and_then(|id| self.ctx.symbols.function_signatures.get(id))
+                            .is_some_and(|signature| {
+                                !signature.has_rest && !signature.needs_arguments
+                            }) =>
+                    {
+                        let func_id = self.ctx.symbols.function_ids[name];
+                        LoweredExpr::Number(func_id.0 as i32, Span::generated("num"))
+                    }
+                    Some(ResolvedExpr::Ident(name))
+                        if self.ctx.symbols.function_ids.contains_key(name) =>
+                    {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-432: JSON.parse reviver callbacks with rest parameters or `arguments` are not supported yet".to_owned(),
+                            span: Some(span),
+                            phase: None,
+                        });
+                    }
+                    Some(_) => {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-432: JSON.parse reviver currently supports named function declarations, null, or undefined".to_owned(),
+                            span: Some(span),
+                            phase: None,
+                        });
+                    }
+                });
+                return Ok(Some(LoweredExpr::RuntimeCall {
+                    intrinsic,
+                    args: lowered_args,
+                    span: Span::generated("runtime_call"),
+                }));
+            }
             if (intrinsic == RuntimeFn::ArrayPush || intrinsic == RuntimeFn::ArrayPushGrow)
                 && args.len() != 1
             {
@@ -1449,6 +1589,14 @@ impl super::super::Resolver {
 
         if !matches!(object, ResolvedExpr::Ident(name) if name == "Object") {
             return Ok(None);
+        }
+        if method == "getOwnPropertyDescriptor"
+            && let [ResolvedExpr::Ident(target), ResolvedExpr::String(key)] = args
+            && target == "Number"
+            && let Some(desc) =
+                crate::lowered::program_builtins::builtin_function_data_descriptor(key, span)
+        {
+            return Ok(Some(desc));
         }
         let Some(proxy) = args.first().and_then(|arg| {
             crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(&self.ctx, arg)

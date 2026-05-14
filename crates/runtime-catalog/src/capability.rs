@@ -30,6 +30,10 @@ pub enum Capability {
     HostDateGetLocalTimeField,
     HostDateToISOString,
     HostDateGetTimezoneOffset,
+    HostDateToDateString,
+    HostDateToTimeString,
+    HostDateParse,
+    HostDateUTC,
 }
 
 impl Capability {
@@ -63,6 +67,10 @@ impl Capability {
             Self::HostDateGetLocalTimeField => "host.dateGetLocalTimeField",
             Self::HostDateToISOString => "host.dateToISOString",
             Self::HostDateGetTimezoneOffset => "host.dateGetTimezoneOffset",
+            Self::HostDateToDateString => "host.dateToDateString",
+            Self::HostDateToTimeString => "host.dateToTimeString",
+            Self::HostDateParse => "host.dateParse",
+            Self::HostDateUTC => "host.dateUTC",
         }
     }
 }

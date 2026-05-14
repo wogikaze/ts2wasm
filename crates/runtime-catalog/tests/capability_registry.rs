@@ -121,6 +121,26 @@ const HOST_IMPORT_RUNTIME_CASES: &[RuntimeImportCase] = &[
         imports: &[HostImport::DateGetTimezoneOffset],
         capabilities: &[Capability::HostDateGetTimezoneOffset],
     },
+    RuntimeImportCase {
+        runtime_fn: RuntimeFn::DateToDateString,
+        imports: &[HostImport::DateToDateString],
+        capabilities: &[Capability::HostDateToDateString],
+    },
+    RuntimeImportCase {
+        runtime_fn: RuntimeFn::DateToTimeString,
+        imports: &[HostImport::DateToTimeString],
+        capabilities: &[Capability::HostDateToTimeString],
+    },
+    RuntimeImportCase {
+        runtime_fn: RuntimeFn::DateParse,
+        imports: &[HostImport::DateParse],
+        capabilities: &[Capability::HostDateParse],
+    },
+    RuntimeImportCase {
+        runtime_fn: RuntimeFn::DateUTC,
+        imports: &[HostImport::DateUTC],
+        capabilities: &[Capability::HostDateUTC],
+    },
 ];
 
 const ALL_HOST_IMPORTS: &[HostImport] = &[
@@ -153,6 +173,10 @@ const ALL_HOST_IMPORTS: &[HostImport] = &[
     HostImport::DateGetLocalTimeField,
     HostImport::DateToISOString,
     HostImport::DateGetTimezoneOffset,
+    HostImport::DateToDateString,
+    HostImport::DateToTimeString,
+    HostImport::DateParse,
+    HostImport::DateUTC,
 ];
 
 const NON_RUNTIME_LINK_PLAN_HOST_IMPORTS: &[HostImport] = &[
@@ -196,6 +220,10 @@ const ALL_CAPABILITIES: &[Capability] = &[
     Capability::HostDateGetLocalTimeField,
     Capability::HostDateToISOString,
     Capability::HostDateGetTimezoneOffset,
+    Capability::HostDateToDateString,
+    Capability::HostDateToTimeString,
+    Capability::HostDateParse,
+    Capability::HostDateUTC,
 ];
 
 const NON_RUNTIME_LINK_PLAN_CAPABILITIES: &[Capability] = &[

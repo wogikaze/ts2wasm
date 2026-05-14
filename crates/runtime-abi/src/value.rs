@@ -56,6 +56,23 @@ impl ValueTag {
     pub const NEG_INFINITY_PAYLOAD: i32 = Self::NAN_PAYLOAD + 2;
     /// Sentinel payload for -0 (negative zero).
     pub const NEG_ZERO_PAYLOAD: i32 = Self::NAN_PAYLOAD + 3;
+    /// Reserved payload for the `parseInt` builtin function identity token.
+    pub const BUILTIN_PARSE_INT_PAYLOAD: i32 = Self::NAN_PAYLOAD + 4;
+    /// Reserved payload for the `parseFloat` builtin function identity token.
+    pub const BUILTIN_PARSE_FLOAT_PAYLOAD: i32 = Self::NAN_PAYLOAD + 5;
+    /// First reserved payload for direct-local user function identity tokens.
+    pub const DIRECT_LOCAL_TOKEN_PAYLOAD_BASE: i32 = Self::NAN_PAYLOAD + 16;
+    /// Tagged value for the `parseInt` builtin function identity token.
+    pub const BUILTIN_PARSE_INT_VALUE: i32 =
+        Self::encode_reserved_number_payload(Self::BUILTIN_PARSE_INT_PAYLOAD);
+    /// Tagged value for the `parseFloat` builtin function identity token.
+    pub const BUILTIN_PARSE_FLOAT_VALUE: i32 =
+        Self::encode_reserved_number_payload(Self::BUILTIN_PARSE_FLOAT_PAYLOAD);
+
+    /// Encode an out-of-range reserved number payload as a tagged i32.
+    pub const fn encode_reserved_number_payload(payload: i32) -> WasmTaggedJsWire {
+        ((payload as i64) << (Self::NUMBER_SHIFT as u32)) as i32 | Self::NUMBER
+    }
 
     /// Encode a small signed integer as a tagged i32 value.
     pub fn encode_number(n: i32) -> WasmTaggedJsWire {

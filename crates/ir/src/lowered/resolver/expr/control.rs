@@ -58,6 +58,12 @@ impl super::super::Resolver {
                 span: Span::generated("globalThis"),
             });
         }
+        if let Some(token) = crate::lowered::program_builtins::builtin_function_token_expr(
+            name,
+            Span::generated("builtin_function"),
+        ) {
+            return Ok(token);
+        }
         if name == "Number"
             || name == "Boolean"
             || name == "Math"
@@ -106,8 +112,6 @@ impl super::super::Resolver {
             || name == "Reflect"
             || name == "Proxy"
             || name == "isNaN"
-            || name == "parseInt"
-            || name == "parseFloat"
             || name == "isFinite"
             || name == "encodeURI"
             || name == "decodeURI"

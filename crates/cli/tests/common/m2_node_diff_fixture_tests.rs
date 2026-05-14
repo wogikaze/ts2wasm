@@ -517,8 +517,13 @@ fn regexp_0_args_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn regexp_flag_d_fixture_matches_node_output_under_iwasm() {
-    assert_fixture_matches_node("fixtures/builtins-and-io/regexp-flag-d.ts");
+fn regexp_flag_d_fixture_reports_issue_202() {
+    assert_build_fails_with_diagnostic(
+        "fixtures/builtins-and-io/regexp-flag-d.ts",
+        "[SyntaxError]",
+        "issue-202: unsupported RegExp flag `d`",
+        true,
+    );
 }
 
 #[test]
@@ -1849,6 +1854,7 @@ fn json_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/json-parse-nested-array.ts",
         "fixtures/builtins-and-io/json-parse-number-decimal-exponent.ts",
         "fixtures/builtins-and-io/json-parse-object-nested.ts",
+        "fixtures/builtins-and-io/json-parse-reviver.ts",
         "fixtures/builtins-and-io/json-parse.ts",
         "fixtures/builtins-and-io/json-parse-surrogate-pair-object-array.ts",
         "fixtures/builtins-and-io/json-parse-unsupported-surrogate-low.ts",
@@ -1933,6 +1939,11 @@ fn json_parse_number_decimal_exponent_matches_node() {
 #[test]
 fn json_parse_object_nested_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-object-nested.ts");
+}
+
+#[test]
+fn json_parse_reviver_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-reviver.ts");
 }
 
 #[test]
@@ -2116,6 +2127,26 @@ fn json_stringify_space_boolean_matches_node() {
 #[test]
 fn json_stringify_space_object_function_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/json-stringify-space-object-function.ts");
+}
+
+#[test]
+fn json_replacer_reviver_matches_node_output() {
+    for fixture in [
+        "fixtures/builtins-and-io/json-stringify-replacer-array.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-array-boxed.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-array-ignored.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-array-multikey.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-array-number.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-function-drop.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-function-keep.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-function-root-holder.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-function-transform.ts",
+        "fixtures/builtins-and-io/json-stringify-space.ts",
+        "fixtures/builtins-and-io/json-stringify-space-string.ts",
+        "fixtures/builtins-and-io/json-parse-reviver.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
 }
 
 #[test]
@@ -2519,6 +2550,14 @@ fn date_to_string_no_timezone_fixture_builds_successfully() {
         Ok(_) => {}
         Err(e) => panic!("date-to-string fixture should build but got error: {}", e),
     }
+}
+
+#[test]
+fn date_methods_matches_node_output() {
+    // Date string/timezone methods use Node host shims. The default test command
+    // records this fixture in the node-diff suite while only running the full
+    // iwasm differential when TS2WASM_RUN_M2_NODE_DIFF=1 is explicitly set.
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-complete.ts");
 }
 
 #[test]
@@ -3472,6 +3511,11 @@ fn number_static_parse_matches_node_output() {
 }
 
 #[test]
+fn number_static_parse_properties_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-static-parse-properties.ts");
+}
+
+#[test]
 fn number_static_nan_and_finite_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/number-is-nan.ts",
@@ -4278,4 +4322,9 @@ fn error_stack_cause_matches_node_output() {
 #[test]
 fn set_algebra_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/set-algebra.ts");
+}
+
+#[test]
+fn date_methods_comprehensive_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-methods-comprehensive.ts");
 }

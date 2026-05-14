@@ -147,6 +147,8 @@ impl WatEmitter<'_> {
 
         let str_bigint = self.intern_string("bigint");
 
+        let str_function = self.intern_string("function");
+
         wat.push_str(&format!(
 
             r#"
@@ -172,6 +174,14 @@ impl WatEmitter<'_> {
     (if (i32.eq (local.get $tag) (i32.const {true_tag}))
 
       (then (return (i32.or (i32.const {str_boolean}) (i32.const {string_tag})))))
+
+    (if (i32.and
+          (i32.eq (local.get $tag) (i32.const {number_tag}))
+          (i32.or
+            (i32.eq (local.get $v) (i32.const {builtin_parse_int}))
+            (i32.eq (local.get $v) (i32.const {builtin_parse_float}))))
+
+      (then (return (i32.or (i32.const {str_function}) (i32.const {string_tag})))))
 
     (if (i32.eq (local.get $tag) (i32.const {number_tag}))
 
@@ -235,6 +245,10 @@ impl WatEmitter<'_> {
 
             number_tag = ValueTag::NUMBER,
 
+            builtin_parse_int = ValueTag::BUILTIN_PARSE_INT_VALUE,
+
+            builtin_parse_float = ValueTag::BUILTIN_PARSE_FLOAT_VALUE,
+
             string_tag = ValueTag::STRING_TAG,
 
             object_tag = ValueTag::OBJECT_TAG,
@@ -264,6 +278,8 @@ impl WatEmitter<'_> {
             str_string = str_string + Layout::STRING_HEADER_SIZE,
 
             str_bigint = str_bigint + Layout::STRING_HEADER_SIZE,
+
+            str_function = str_function + Layout::STRING_HEADER_SIZE,
 
         ));
     }

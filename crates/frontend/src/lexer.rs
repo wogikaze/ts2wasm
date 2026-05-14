@@ -157,7 +157,7 @@ impl<'a> Lexer<'a> {
                 break;
             }
 
-            if !matches!(ch, 'd' | 'g' | 'i' | 'm' | 's' | 'u' | 'y') {
+            if !matches!(ch, 'g' | 'i' | 'm' | 's' | 'u' | 'y') {
                 return Err(Diagnostic {
                     code: DiagCode::SyntaxError,
                     message: format!("issue-202: unsupported RegExp flag `{ch}`"),
