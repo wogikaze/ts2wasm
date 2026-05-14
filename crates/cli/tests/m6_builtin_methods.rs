@@ -3345,6 +3345,16 @@ fn build_smoke_set_iterable_calls_add() {
 }
 
 #[test]
+fn build_smoke_set_algebra() {
+    let result = run_fixture("builtins-and-io/set-algebra.ts");
+    assert!(
+        result.is_ok(),
+        "Set algebra methods should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_set_size_clear() {
     let result = run_fixture("builtins-and-io/set-size-clear.ts");
     assert!(

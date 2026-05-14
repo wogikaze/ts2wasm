@@ -1029,6 +1029,338 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(crate) fn emit_set_is_disjoint_from(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $set_is_disjoint_from (param $set i32) (param $other i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local.set $tag (i32.and (local.get $set) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
+    (local.set $base (i32.and (local.get $set) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq
+              (call $set_has (local.get $other) (i32.load (local.get $entry_base)))
+              (i32.const {true}))
+          (then (return (i32.const {false}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (i32.const {true}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            true = ValueTag::TRUE,
+            false = ValueTag::FALSE,
+        ));
+    }
+
+    pub(crate) fn emit_set_is_subset_of(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $set_is_subset_of (param $set i32) (param $other i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local.set $tag (i32.and (local.get $set) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
+    (local.set $base (i32.and (local.get $set) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq
+              (call $set_has (local.get $other) (i32.load (local.get $entry_base)))
+              (i32.const {false}))
+          (then (return (i32.const {false}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (i32.const {true}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            true = ValueTag::TRUE,
+            false = ValueTag::FALSE,
+        ));
+    }
+
+    pub(crate) fn emit_set_is_superset_of(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $set_is_superset_of (param $set i32) (param $other i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local.set $tag (i32.and (local.get $other) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
+    (local.set $base (i32.and (local.get $other) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq
+              (call $set_has (local.get $set) (i32.load (local.get $entry_base)))
+              (i32.const {false}))
+          (then (return (i32.const {false}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (i32.const {true}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            true = ValueTag::TRUE,
+            false = ValueTag::FALSE,
+        ));
+    }
+
+    pub(crate) fn emit_set_union(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $set_union (param $set i32) (param $other i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $result i32)
+    (local $other_base i32)
+    (local $other_count i32)
+    (local.set $result (call $set_new))
+    (local.set $tag (i32.and (local.get $set) (i32.const {tag_mask})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $base (i32.and (local.get $set) (i32.const {heap_mask})))
+        (local.set $count (i32.load (local.get $base)))
+        (local.set $i (i32.const {zero}))
+        (block $done1
+          (loop $scan1
+            (br_if $done1 (i32.ge_u (local.get $i) (local.get $count)))
+            (local.set $entry_base
+              (i32.add (local.get $base)
+                (i32.add (i32.const {obj_header})
+                  (i32.shl (local.get $i) (i32.const {entry_shift})))))
+            (drop (call $set_add_dispatch (local.get $result) (i32.load (local.get $entry_base))))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $scan1)))))
+    (local.set $tag (i32.and (local.get $other) (i32.const {tag_mask})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $other_base (i32.and (local.get $other) (i32.const {heap_mask})))
+        (local.set $other_count (i32.load (local.get $other_base)))
+        (local.set $i (i32.const {zero}))
+        (block $done2
+          (loop $scan2
+            (br_if $done2 (i32.ge_u (local.get $i) (local.get $other_count)))
+            (local.set $entry_base
+              (i32.add (local.get $other_base)
+                (i32.add (i32.const {obj_header})
+                  (i32.shl (local.get $i) (i32.const {entry_shift})))))
+            (drop (call $set_add_dispatch (local.get $result) (i32.load (local.get $entry_base))))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $scan2)))))
+    (local.get $result))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+        ));
+    }
+
+    pub(crate) fn emit_set_intersection(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $set_intersection (param $set i32) (param $other i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $result i32)
+    (local.set $result (call $set_new))
+    (local.set $tag (i32.and (local.get $set) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (local.get $result))))
+    (local.set $base (i32.and (local.get $set) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq
+              (call $set_has (local.get $other) (i32.load (local.get $entry_base)))
+              (i32.const {true}))
+          (then
+            (drop (call $set_add_dispatch (local.get $result) (i32.load (local.get $entry_base))))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (local.get $result))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            true = ValueTag::TRUE,
+        ));
+    }
+
+    pub(crate) fn emit_set_difference(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $set_difference (param $set i32) (param $other i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $result i32)
+    (local.set $result (call $set_new))
+    (local.set $tag (i32.and (local.get $set) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (local.get $result))))
+    (local.set $base (i32.and (local.get $set) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq
+              (call $set_has (local.get $other) (i32.load (local.get $entry_base)))
+              (i32.const {false}))
+          (then
+            (drop (call $set_add_dispatch (local.get $result) (i32.load (local.get $entry_base))))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (local.get $result))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            false = ValueTag::FALSE,
+        ));
+    }
+
+    pub(crate) fn emit_set_symmetric_difference(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $set_symmetric_difference (param $set i32) (param $other i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $result i32)
+    (local $other_base i32)
+    (local $other_count i32)
+    (local.set $result (call $set_new))
+    (local.set $tag (i32.and (local.get $set) (i32.const {tag_mask})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $base (i32.and (local.get $set) (i32.const {heap_mask})))
+        (local.set $count (i32.load (local.get $base)))
+        (local.set $i (i32.const {zero}))
+        (block $done1
+          (loop $scan1
+            (br_if $done1 (i32.ge_u (local.get $i) (local.get $count)))
+            (local.set $entry_base
+              (i32.add (local.get $base)
+                (i32.add (i32.const {obj_header})
+                  (i32.shl (local.get $i) (i32.const {entry_shift})))))
+            (if (i32.eq
+                  (call $set_has (local.get $other) (i32.load (local.get $entry_base)))
+                  (i32.const {false}))
+              (then
+                (drop (call $set_add_dispatch (local.get $result) (i32.load (local.get $entry_base))))))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $scan1)))))
+    (local.set $tag (i32.and (local.get $other) (i32.const {tag_mask})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $other_base (i32.and (local.get $other) (i32.const {heap_mask})))
+        (local.set $other_count (i32.load (local.get $other_base)))
+        (local.set $i (i32.const {zero}))
+        (block $done2
+          (loop $scan2
+            (br_if $done2 (i32.ge_u (local.get $i) (local.get $other_count)))
+            (local.set $entry_base
+              (i32.add (local.get $other_base)
+                (i32.add (i32.const {obj_header})
+                  (i32.shl (local.get $i) (i32.const {entry_shift})))))
+            (if (i32.eq
+                  (call $set_has (local.get $set) (i32.load (local.get $entry_base)))
+                  (i32.const {false}))
+              (then
+                (drop (call $set_add_dispatch (local.get $result) (i32.load (local.get $entry_base))))))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $scan2)))))
+    (local.get $result))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            false = ValueTag::FALSE,
+        ));
+    }
+
     pub(crate) fn emit_map_values_array(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

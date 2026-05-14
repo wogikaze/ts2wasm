@@ -402,6 +402,7 @@ directories:
     - set-iterable-calls-add.ts
     - set-iteration.ts
     - set-size-clear.ts
+    - set-algebra.ts
     - stdin.ts
     - string-anchor-annexb.ts
     - string-at.ts
