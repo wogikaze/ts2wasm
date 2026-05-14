@@ -356,7 +356,7 @@ pub(super) fn resolve_console_call_expr(
 
     match property.as_str() {
         "log" | "info" | "debug" | "warn" | "error" | "table" | "group" | "groupCollapsed"
-        | "count" | "timeEnd" => Ok(Some(log_expr(resolved_args.to_vec()))),
+        | "count" | "countReset" | "timeEnd" => Ok(Some(log_expr(resolved_args.to_vec()))),
         "assert" => {
             let Some((condition, message_args)) = resolved_args.split_first() else {
                 return Ok(Some(log_expr(vec![ResolvedExpr::String(
