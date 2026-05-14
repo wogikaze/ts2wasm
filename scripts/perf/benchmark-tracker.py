@@ -25,6 +25,7 @@ Options:
                               (default: 20). Alert if new size exceeds
                               previous by this %.
   --skip-build                Skip cargo build step (use existing binary).
+  --json                      Output JSON summary to stdout, suppress stderr.
   -v, --verbose               Print detailed per-fixture output.
 
 The script always exits 0 (info-only reporting). Regression alerts are
@@ -40,6 +41,9 @@ import random
 import os
 from pathlib import Path
 from datetime import datetime, timezone
+
+# Module-level flag: when True, suppress stderr (eprint no-ops).
+_JSON_MODE = False
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 DEFAULT_OUTPUT_FILE = "artifacts/benchmark-results.json"
@@ -60,7 +64,8 @@ EXCLUDED_DIRS = {
 
 
 def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
+    if not _JSON_MODE:
+        print(*args, file=sys.stderr, **kwargs)
 
 
 def show_help(exit_code=0):
@@ -99,23 +104,50 @@ def collect_fixtures(fixtures_dir: Path, sample: int) -> list:
     return entries
 
 
+def _find_binary_path() -> Path:
+    """Resolve the ts2wasm binary path, accounting for git worktrees.
+
+    In a git worktree (e.g. .claude/worktrees/*), the target/ directory
+    may not exist. Walk up the git chain to find the actual repo target.
+    """
+    # Fast path: target exists under REPO_ROOT
+    candidate = REPO_ROOT / "target/debug/ts2wasm"
+    if candidate.exists():
+        return candidate
+    # Worktree fallback: use git to find the actual repo root
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True, text=True, cwd=REPO_ROOT,
+        )
+        if result.returncode == 0:
+            actual_root = Path(result.stdout.strip()).resolve()
+            candidate = actual_root / "target/debug/ts2wasm"
+            if candidate.exists():
+                return candidate
+    except Exception:
+        pass
+    return REPO_ROOT / "target/debug/ts2wasm"
+
+
 def build_ts2wasm(skip_build: bool) -> Path | None:
     """Ensure ts2wasm binary is built. Returns path to binary or None on fail."""
-    bin_path = REPO_ROOT / "target/debug/ts2wasm"
+    bin_path = _find_binary_path()
     if skip_build:
         if bin_path.exists():
             return bin_path
         eprint("note: --skip-build specified but binary not found; building anyway")
-    eprint("building ts2wasm-cli...")
-    result = subprocess.run(
-        ["cargo", "build", "-q", "-p", "ts2wasm-cli"],
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        eprint(f"error: cargo build failed:\n{result.stderr.strip()}")
-        return None
+    if not bin_path.exists():
+        eprint("building ts2wasm-cli...")
+        result = subprocess.run(
+            ["cargo", "build", "-q", "-p", "ts2wasm-cli"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            eprint(f"error: cargo build failed:\n{result.stderr.strip()}")
+            return None
     return bin_path
 
 
@@ -249,16 +281,20 @@ def main():
             verbose = True
             i += 1
         elif a.startswith("--"):
-            eprint(f"warning: unknown option '{a}', ignoring")
-            i += 1
+            if a == "--json":
+                # JSON-only mode: suppress stderr, print JSON summary to stdout
+                global _JSON_MODE
+                _JSON_MODE = True
+                i += 1
+            else:
+                eprint(f"warning: unknown option '{a}', ignoring")
+                i += 1
         else:
             eprint(f"warning: unexpected positional argument '{a}', ignoring")
             i += 1
 
     fixtures_dir = REPO_ROOT / fixtures_dir_str
     output_path = REPO_ROOT / output_file_str
-
-    # Collect fixtures
     eprint(f"fixtures directory: {fixtures_dir}")
     eprint(f"output file: {output_path}")
     eprint(f"sample per directory: {sample}")
