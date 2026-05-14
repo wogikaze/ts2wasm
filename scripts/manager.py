@@ -128,6 +128,10 @@ CHECK_PARTS = {
     "reference-coverage-triage": "check-reference-coverage-triage",
     "coverage-parity": "check-coverage-runner-parity",
     "coverage-runner-parity": "check-coverage-runner-parity",
+    "reference-lock": "next-reference-gate",
+    "reference-subsets": "next-reference-gate",
+    "evidence-check": "next-reference-gate",
+    "replay-set": "next-reference-gate",
 }
 
 def usage():
@@ -169,6 +173,9 @@ def usage():
         ("abc451-runtime-costs", "Default-off ABC451 depth-8 runtime cost diagnostic"),
         ("repo-metrics", "Repository line, byte, and content-kind metrics"),
         ("check-ast-grep", "Run ast-grep rule tests and repository scan"),
+        ("check-host-deny", "Host import deny matrix and policy checker"),
+        ("check-host-import-baseline", "Host import baseline checker"),
+        ("check-host-import-boundary", "Host import and target string boundary checker"),
         ("coverage-report", "Language coverage report from language-reference"),
         ("coverage-dashboard-data", "Generate coverage dashboard JSON from coverage artifacts"),
         ("benchmark-tracker", "Performance metrics JSON"),
