@@ -4,7 +4,7 @@ use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
-use ts2wasm_syntax::BinaryOp;
+use ts2wasm_syntax::{BinaryOp, UnaryOp};
 
 pub(super) fn lower_ascii_string_spread_chars(value: &str) -> Result<Vec<LoweredExpr>, Diagnostic> {
     if !value.is_ascii() {
@@ -47,6 +47,18 @@ pub(super) fn update_string_literal_local(
     }
 }
 
+pub(super) fn update_number_literal_local(
+    ctx: &mut LoweringCtx,
+    local_id: LocalId,
+    expr: &ResolvedExpr,
+) {
+    if let Some(value) = resolved_expr_static_number_literal_value(ctx, expr) {
+        ctx.facts.number_literal_locals.insert(local_id, value);
+    } else {
+        ctx.facts.number_literal_locals.remove(&local_id);
+    }
+}
+
 pub(super) fn resolved_expr_static_string_value(
     ctx: &LoweringCtx,
     expr: &ResolvedExpr,
@@ -64,6 +76,30 @@ pub(super) fn resolved_expr_static_string_value(
             let mut value = resolved_expr_static_string_value(ctx, left)?;
             value.push_str(&resolved_expr_static_string_value(ctx, right)?);
             Some(value)
+        }
+        _ => None,
+    }
+}
+
+pub(super) fn resolved_expr_static_number_literal_value(
+    ctx: &LoweringCtx,
+    expr: &ResolvedExpr,
+) -> Option<String> {
+    match expr {
+        ResolvedExpr::Number(value) => Some(value.to_string()),
+        ResolvedExpr::DecimalNumber(value) => Some(value.clone()),
+        ResolvedExpr::Unary { op, expr } if *op == UnaryOp::Negate => {
+            resolved_expr_static_number_literal_value(ctx, expr).map(|value| format!("-{value}"))
+        }
+        ResolvedExpr::Unary { op, expr } if *op == UnaryOp::Plus => {
+            resolved_expr_static_number_literal_value(ctx, expr)
+        }
+        ResolvedExpr::Ident(name) => {
+            let local_id = ctx.resolve_local(name).ok()?;
+            if ctx.facts.env_cell_locals.contains(&local_id) {
+                return None;
+            }
+            ctx.facts.number_literal_locals.get(&local_id).cloned()
         }
         _ => None,
     }

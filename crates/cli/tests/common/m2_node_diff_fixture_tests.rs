@@ -3426,6 +3426,7 @@ fn global_properties_matches_node_output() {
         "fixtures/builtins-and-io/global-0-args.ts",
         "fixtures/builtins-and-io/global-isnan.ts",
         "fixtures/builtins-and-io/global-isfinite.ts",
+        "fixtures/builtins-and-io/global-parseint-radix.ts",
         "fixtures/builtins-and-io/global-parseint.ts",
         "fixtures/builtins-and-io/global-parsefloat.ts",
         "fixtures/builtins-and-io/global-escape.ts",
@@ -3491,6 +3492,16 @@ fn number_is_integer_i32_matches_node() {
 #[test]
 fn number_is_safe_integer_i32_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/number-is-safe-integer-i32.ts");
+}
+
+#[test]
+fn number_formatting_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-formatting.ts");
+}
+
+#[test]
+fn number_formatting_decimal_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-formatting-decimal.ts");
 }
 
 #[test]

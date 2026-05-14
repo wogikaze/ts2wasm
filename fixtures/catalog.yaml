@@ -139,6 +139,7 @@ directories:
     - array-at.ts
     - array-concat.ts
     - array-copy-within.ts
+    - array-copying-methods.ts
     - array-entries.ts
     - array-every.ts
     - array-fill.ts
@@ -197,6 +198,7 @@ directories:
     - arraybuffer-dataview-uint32.ts
     - async-generator-basic.ts
     - atomics-unsupported.ts
+    - boolean-symbol-prototype.ts
     - bun-stdin-text.ts
     - console-complete.ts
     - console-log.ts
@@ -250,9 +252,11 @@ directories:
     - global-names-remaining.ts
     - global-names-well-known-symbols.ts
     - global-parsefloat.ts
+    - global-parseint-radix.ts
     - global-parseint.ts
     - global-unescape-value.ts
     - global-unescape.ts
+    - intl-numberformat.ts
     - intl-unsupported.ts
     - iterator-protocol.ts
     - json-parse-array-object-nested.ts
@@ -312,7 +316,9 @@ directories:
     - json-stringify.ts
     - map-forEach.ts
     - map-iteration.ts
+    - map-nan-minus0-key-equality.ts
     - map-set.ts
+    - map-supplementary.ts
     - math-abs.ts
     - math-cbrt.ts
     - math-ceil.ts
@@ -332,6 +338,8 @@ directories:
     - number-is-nan.ts
     - number-is-safe-integer.ts
     - number-is-safe-integer-i32.ts
+    - number-formatting-decimal.ts
+    - number-formatting.ts
     - object-assign-descriptors.ts
     - object-assign.ts
     - object-create.ts
@@ -352,7 +360,9 @@ directories:
     - object-keys-arguments.ts
     - object-keys.ts
     - object-prevent-extensions.ts
+    - object-prototype.ts
     - object-seal.ts
+    - object-static-complete.ts
     - object-string-keys.ts
     - object-values.ts
     - promise-basic.ts
@@ -384,9 +394,11 @@ directories:
     - stdin.ts
     - string-anchor-annexb.ts
     - string-at.ts
+    - string-charcode-tostring-radix.ts
     - string-char-at.ts
     - string-char-code-at.ts
     - string-concat.ts
+    - string-constructor-call.ts
     - string-ends-with.ts
     - string-from-char-code.ts
     - string-from-code-point.ts
@@ -409,6 +421,7 @@ directories:
     - string-slice.ts
     - string-split.ts
     - string-starts-with.ts
+    - string-static-methods.ts
     - string-substr.ts
     - string-substring.ts
     - string-to-lower-case.ts
@@ -526,6 +539,7 @@ directories:
     - null.ts
     - number.ts
     - object.ts
+    - object-shorthand-computed-method.ts
     - object-literal-numeric-keys.ts
     - object-literal-mixed-types.ts
     - object-literal-inline-access.ts

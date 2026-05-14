@@ -33,11 +33,8 @@ pub enum RuntimeFn {
     NumberFromI32,
     NumberToI32,
     MakeBigIntLiteral,
-    #[allow(dead_code)]
     NumberToExponential,
-    #[allow(dead_code)]
     NumberToFixed,
-    #[allow(dead_code)]
     NumberToPrecision,
     BigIntToString,
     BigIntToBoolean,
@@ -694,6 +691,11 @@ const WRITE_DEPS: &[RuntimeFn] = &[];
 const COPY_DEPS: &[RuntimeFn] = &[];
 const VTS_DEPS: &[RuntimeFn] = &[RuntimeFn::Copy];
 const NUMBER_TO_STRING_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+    RuntimeFn::ValueToStringInto,
+];
+const NUMBER_FORMAT_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,
     RuntimeFn::ValueToStringInto,
@@ -2000,7 +2002,10 @@ impl RuntimeFn {
             | Self::DataViewGetInt8
             | Self::DataViewGetUint8
             | Self::SymbolToPrimitive
-            | Self::SymbolHasInstance => RuntimeSignature {
+            | Self::SymbolHasInstance
+            | Self::NumberToExponential
+            | Self::NumberToFixed
+            | Self::NumberToPrecision => RuntimeSignature {
                 params: 2,
                 results: 1,
             },

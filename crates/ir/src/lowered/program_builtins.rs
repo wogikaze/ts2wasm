@@ -273,6 +273,15 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
     }
 }
 
+pub(crate) fn number_format_method_runtime_fn(method: &str) -> Option<RuntimeFn> {
+    match method {
+        "toFixed" => Some(RuntimeFn::NumberToFixed),
+        "toExponential" => Some(RuntimeFn::NumberToExponential),
+        "toPrecision" => Some(RuntimeFn::NumberToPrecision),
+        _ => None,
+    }
+}
+
 pub(crate) fn is_typed_array_class(class_name: &str) -> bool {
     matches!(
         class_name,

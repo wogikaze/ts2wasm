@@ -1835,14 +1835,13 @@ impl WatEmitter<'_> {
     (if (i32.eq (local.get $tag) (i32.const {number_tag}))
       (then (return (local.get $s))))
     (if (i32.ne (local.get $tag) (i32.const {string_tag}))
-      (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
-    (call $parse_int_string (local.get $s) (i32.const {zero})))
+      (then (return (i32.const {nan_value}))))
+    (call $parse_int_string (local.get $s) (local.get $radix)))
 "##,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
             string_tag = ValueTag::STRING,
-            zero = RuntimeConst::ZERO,
-            number_shift = ValueTag::NUMBER_SHIFT,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
         ));
         wat.push_str(&format!(
             r##"
@@ -1851,6 +1850,8 @@ impl WatEmitter<'_> {
     (local $len i32)
     (local $i i32)
     (local $ch i32)
+    (local $ch2 i32)
+    (local $ch3 i32)
     (local $sign i32)
     (local $n i32)
     (local $r i32)
@@ -1866,6 +1867,18 @@ impl WatEmitter<'_> {
         (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (local.get $i)))))
         (if (i32.eq (local.get $ch) (i32.const {space}))
           (then (local.set $i (i32.add (local.get $i) (i32.const {one}))) (br $ws_loop)))
+        (if (i32.lt_u (i32.add (local.get $i) (i32.const {two})) (local.get $len))
+          (then
+            (local.set $ch2 (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (i32.add (local.get $i) (i32.const {one}))))))
+            (local.set $ch3 (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (i32.add (local.get $i) (i32.const {two}))))))
+            (if (i32.and (i32.and (i32.eq (local.get $ch) (i32.const {utf8_e1})) (i32.eq (local.get $ch2) (i32.const {utf8_9a}))) (i32.eq (local.get $ch3) (i32.const {utf8_80})))
+              (then (local.set $i (i32.add (local.get $i) (i32.const {three}))) (br $ws_loop)))
+            (if (i32.and (i32.and (i32.eq (local.get $ch) (i32.const {utf8_e2})) (i32.eq (local.get $ch2) (i32.const {utf8_80}))) (i32.or (i32.and (i32.ge_u (local.get $ch3) (i32.const {utf8_80})) (i32.le_u (local.get $ch3) (i32.const {utf8_8a}))) (i32.eq (local.get $ch3) (i32.const {utf8_af}))))
+              (then (local.set $i (i32.add (local.get $i) (i32.const {three}))) (br $ws_loop)))
+            (if (i32.and (i32.and (i32.eq (local.get $ch) (i32.const {utf8_e2})) (i32.eq (local.get $ch2) (i32.const {utf8_81}))) (i32.eq (local.get $ch3) (i32.const {utf8_9f})))
+              (then (local.set $i (i32.add (local.get $i) (i32.const {three}))) (br $ws_loop)))
+            (if (i32.and (i32.and (i32.eq (local.get $ch) (i32.const {utf8_e3})) (i32.eq (local.get $ch2) (i32.const {utf8_80}))) (i32.eq (local.get $ch3) (i32.const {utf8_80})))
+              (then (local.set $i (i32.add (local.get $i) (i32.const {three}))) (br $ws_loop)))))
         (br $ws_done)))
     (if (i32.lt_u (local.get $i) (local.get $len))
       (then
@@ -1896,9 +1909,9 @@ impl WatEmitter<'_> {
         (if (i32.eqz (local.get $r))
           (then (local.set $r (i32.const 10))))))
     (if (i32.lt_s (local.get $r) (i32.const 2))
-      (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
+      (then (return (i32.const {nan_value}))))
     (if (i32.gt_s (local.get $r) (i32.const 36))
-      (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
+      (then (return (i32.const {nan_value}))))
     (block $parse_done
       (loop $parse_loop
         (br_if $parse_done (i32.ge_u (local.get $i) (local.get $len)))
@@ -1917,10 +1930,10 @@ impl WatEmitter<'_> {
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
         (br $parse_loop)))
     (if (i32.eqz (local.get $seen))
-      (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
+      (then (return (i32.const {nan_value}))))
     (if (i32.lt_s (local.get $sign) (i32.const {zero}))
       (then (local.set $n (i32.sub (i32.const {zero}) (local.get $n)))))
-    (i32.or (i32.shl (local.get $n) (i32.const {number_shift})) (i32.const {number_tag})))
+    (call $number_from_i32 (local.get $n)))
 "##,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -1930,9 +1943,20 @@ impl WatEmitter<'_> {
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             two = 2,
+            three = 3,
             space = 32,
             plus = 43,
             minus = RuntimeConst::ASCII_MINUS,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+            utf8_80 = 0x80,
+            utf8_81 = 0x81,
+            utf8_8a = 0x8a,
+            utf8_9a = 0x9a,
+            utf8_9f = 0x9f,
+            utf8_af = 0xaf,
+            utf8_e1 = 0xe1,
+            utf8_e2 = 0xe2,
+            utf8_e3 = 0xe3,
             ascii_zero = RuntimeConst::ASCII_ZERO,
             ascii_nine = 57,
             ascii_lower_x = 120,
