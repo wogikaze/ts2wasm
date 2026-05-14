@@ -193,6 +193,16 @@ fn build_smoke_object_literal_getter_descriptor() {
 }
 
 #[test]
+fn build_smoke_object_literal_setter_descriptor() {
+    let result = run_fixture("core-expressions/object-literal-setter-descriptor.ts");
+    assert!(
+        result.is_ok(),
+        "object literal setter descriptor should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_literal_computed_spread() {
     let result = run_fixture("core-expressions/object-literal-computed-spread.ts");
     assert!(

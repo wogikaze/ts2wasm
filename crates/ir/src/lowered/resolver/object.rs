@@ -421,12 +421,14 @@ fn is_object_literal_accessor_function_name(name: &str) -> bool {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum ObjectLiteralAccessorKind {
     Get,
+    Set,
 }
 
 impl ObjectLiteralAccessorKind {
     fn descriptor_key(self) -> &'static str {
         match self {
             Self::Get => "get",
+            Self::Set => "set",
         }
     }
 }
@@ -440,6 +442,8 @@ fn object_literal_accessor_kind(prop: &ResolvedObjectProp) -> Option<ObjectLiter
     };
     if name.starts_with("get ") {
         Some(ObjectLiteralAccessorKind::Get)
+    } else if name.starts_with("set ") {
+        Some(ObjectLiteralAccessorKind::Set)
     } else {
         None
     }
