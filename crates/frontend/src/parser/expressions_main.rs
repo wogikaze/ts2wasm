@@ -178,35 +178,99 @@ impl Parser {
             }
         }
         if let Some(op) = self.compound_assignment_operator() {
-            if let Expr::Ident { name, span } = expr {
-                let value = self.assignment()?;
-                let end = value.span().end;
-                let bin = Expr::Binary {
-                    left: Box::new(Expr::Ident {
-                        name: name.clone(),
-                        span,
-                    }),
-                    op,
-                    right: Box::new(value),
-                    span: Span {
-                        start: span.start,
-                        end,
-                    },
-                };
-                return Ok(Expr::Assign {
-                    name,
-                    span: Span {
-                        start: span.start,
-                        end,
-                    },
-                    expr: Box::new(bin),
-                });
+            let target_span = expr.span();
+            match expr {
+                Expr::Ident { name, span } => {
+                    let value = self.assignment()?;
+                    let end = value.span().end;
+                    let bin = Expr::Binary {
+                        left: Box::new(Expr::Ident {
+                            name: name.clone(),
+                            span,
+                        }),
+                        op,
+                        right: Box::new(value),
+                        span: Span {
+                            start: span.start,
+                            end,
+                        },
+                    };
+                    return Ok(Expr::Assign {
+                        name,
+                        span: Span {
+                            start: span.start,
+                            end,
+                        },
+                        expr: Box::new(bin),
+                    });
+                }
+                Expr::Member {
+                    object,
+                    property,
+                    span,
+                } if !property.is_empty() => {
+                    let value = self.assignment()?;
+                    let end = value.span().end;
+                    let bin = Expr::Binary {
+                        left: Box::new(Expr::Member {
+                            object: object.clone(),
+                            property: property.clone(),
+                            span,
+                        }),
+                        op,
+                        right: Box::new(value),
+                        span: Span {
+                            start: span.start,
+                            end,
+                        },
+                    };
+                    return Ok(Expr::PropertyAssign {
+                        object,
+                        property,
+                        value: Box::new(bin),
+                        span: Span {
+                            start: span.start,
+                            end,
+                        },
+                    });
+                }
+                Expr::Index {
+                    object,
+                    index,
+                    span,
+                } => {
+                    let value = self.assignment()?;
+                    let end = value.span().end;
+                    let bin = Expr::Binary {
+                        left: Box::new(Expr::Index {
+                            object: object.clone(),
+                            index: index.clone(),
+                            span,
+                        }),
+                        op,
+                        right: Box::new(value),
+                        span: Span {
+                            start: span.start,
+                            end,
+                        },
+                    };
+                    return Ok(Expr::IndexAssign {
+                        object,
+                        index,
+                        value: Box::new(bin),
+                        span: Span {
+                            start: span.start,
+                            end,
+                        },
+                    });
+                }
+                _ => {}
             }
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "issue-236: compound assignment expressions currently support only identifier targets"
+                message: "issue-236: compound assignment expressions currently support only identifier, member, and computed member targets"
                     .to_owned(),
-                span: Some(expr.span()),
+                span: Some(target_span),
 
                 phase: None,
             });
