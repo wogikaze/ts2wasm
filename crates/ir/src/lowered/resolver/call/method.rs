@@ -69,6 +69,11 @@ impl super::super::Resolver {
             && args.len() <= 1
             && self.resolved_expr_is_direct_generator_call(object)
         {
+            if args.is_empty()
+                && let Some(result) = self.lower_static_object_generator_return_next(object)
+            {
+                return Ok(result);
+            }
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::GeneratorNext,
                 args: vec![self.lower_expr(object)?],
@@ -155,37 +160,54 @@ impl super::super::Resolver {
 
     fn resolved_expr_is_direct_generator_call(&self, expr: &ResolvedExpr) -> bool {
         match expr {
-            ResolvedExpr::MethodCall { .. } => self.resolved_expr_is_generator_method_call(expr),
+            ResolvedExpr::MethodCall { .. } => self.generator_method_func_id(expr).is_some(),
             ResolvedExpr::Call { callee, .. } => self.resolved_callee_is_generator(callee),
             _ => false,
         }
     }
 
-    fn resolved_expr_is_generator_method_call(&self, expr: &ResolvedExpr) -> bool {
+    fn generator_method_func_id(&self, expr: &ResolvedExpr) -> Option<FuncId> {
         let ResolvedExpr::MethodCall { object, method, .. } = expr else {
-            return false;
+            return None;
         };
         let ResolvedExpr::Ident(receiver_name) = object.as_ref() else {
-            return false;
+            return None;
         };
         let Ok(receiver_local) = self.resolve_local(receiver_name) else {
-            return false;
+            return None;
         };
-        let Some(method_id) = self
+        let method_id = self
             .ctx
             .classes
             .object_function_props
             .get(&receiver_local)
             .and_then(|props| props.get(&ObjectAccessorKey::Property(method.clone())))
-            .copied()
-        else {
-            return false;
-        };
+            .copied()?;
         self.ctx
             .functions
             .generated_functions
             .iter()
             .any(|function| function.id == method_id && function.is_generator)
+            .then_some(method_id)
+    }
+
+    fn lower_static_object_generator_return_next(
+        &self,
+        expr: &ResolvedExpr,
+    ) -> Option<LoweredExpr> {
+        let method_id = self.generator_method_func_id(expr)?;
+        let function = self
+            .ctx
+            .functions
+            .generated_functions
+            .iter()
+            .find(|function| function.id == method_id && function.is_generator)?;
+        let value = match function.body.as_slice() {
+            [] => LoweredExpr::Undefined(Span::generated("undefined")),
+            [LoweredStmt::Return(expr, _)] => static_generator_completion_value(expr)?,
+            _ => return None,
+        };
+        Some(Self::generator_next_result(value, true))
     }
 
     fn resolved_callee_is_generator(&self, callee: &ResolvedExpr) -> bool {
@@ -3583,6 +3605,19 @@ fn static_i64_number_expr(expr: &ResolvedExpr) -> Option<i64> {
         ResolvedExpr::Unary { op, expr } if *op == UnaryOp::Negate => {
             static_i64_number_expr(expr).map(|value| -value)
         }
+        _ => None,
+    }
+}
+
+fn static_generator_completion_value(expr: &LoweredExpr) -> Option<LoweredExpr> {
+    match expr {
+        LoweredExpr::Number(..)
+        | LoweredExpr::DecimalNumber(..)
+        | LoweredExpr::BigIntLiteral { .. }
+        | LoweredExpr::String(..)
+        | LoweredExpr::Bool(..)
+        | LoweredExpr::Null(..)
+        | LoweredExpr::Undefined(..) => Some(expr.clone()),
         _ => None,
     }
 }

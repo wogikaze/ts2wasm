@@ -753,6 +753,32 @@ fn lowered_generator_iterator_without_static_steps_still_lowers_next() {
 }
 
 #[test]
+fn lowered_object_generator_return_next_uses_completion_value() {
+    let program = parse_resolve_lower(
+        "let obj = { *g() { return 1; } };\n\
+         let result = obj.g().next();",
+    );
+
+    validate_lowered(&program).expect("object generator return lowering should validate");
+    let Some(LoweredStmt::Let(_, result_expr, _)) = program.top_level_statements.get(1) else {
+        panic!(
+            "expected result binding: {:?}",
+            program.top_level_statements
+        );
+    };
+    assert!(
+        !lowered_expr_contains_runtime_call(result_expr, RuntimeFn::GeneratorNext),
+        "static object generator return should not call generic GeneratorNext: {result_expr:?}"
+    );
+    assert!(matches!(
+        result_expr,
+        LoweredExpr::ObjectNew { props, .. }
+            if props.iter().any(|(key, value)| key == "value" && matches!(value, LoweredExpr::Number(1, _)))
+                && props.iter().any(|(key, value)| key == "done" && matches!(value, LoweredExpr::Bool(true, _)))
+    ));
+}
+
+#[test]
 fn lowered_generator_function_captures_top_level_assignment() {
     let program = parse_resolve_lower(
         "var obj;\n\
