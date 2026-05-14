@@ -7,11 +7,12 @@ regressions in compilation time or WASM binary size compared to the previous
 benchmark run.
 
 Usage:
-  python scripts/gate/perf-regression.py [--sample N] [--skip-build]
+  python scripts/gate/perf-regression.py [--sample N] [--skip-build] [--json]
 
 Options:
   --sample N      Number of fixtures per directory (default: 5)
   --skip-build    Skip cargo build (use existing binary)
+  --json          Print benchmark summary JSON to stdout.
 
 Exit code:
   0 if no regressions detected (or no prior baseline)
@@ -29,9 +30,9 @@ PYTHON_BIN = os.environ.get("PYTHON_BIN", sys.executable)
 
 
 def main():
-    args = []
     sample = "5"
     skip_build = False
+    json_mode = False
 
     i = 1
     while i < len(sys.argv):
@@ -40,6 +41,9 @@ def main():
             i += 2
         elif sys.argv[i] == "--skip-build":
             skip_build = True
+            i += 1
+        elif sys.argv[i] == "--json":
+            json_mode = True
             i += 1
         elif sys.argv[i] in ("-h", "--help"):
             print(__doc__)
@@ -78,8 +82,10 @@ def main():
         sys.exit(1)
 
     regression_count = summary.get("regression_count", 0)
+    if json_mode:
+        print(json.dumps(summary, sort_keys=True))
     if regression_count > 0:
-        print(f"perf-regression: FAILED — {regression_count} regression(s) detected", file=sys.stderr)
+        print(f"perf-regression: FAILED - {regression_count} regression(s) detected", file=sys.stderr)
         sys.exit(1)
     else:
         avg_time = summary.get("avg_compile_time_ms", 0)

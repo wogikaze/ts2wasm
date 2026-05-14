@@ -55,6 +55,7 @@ COMMANDS = {
     "abc451-runtime-costs": ("python", "scripts/run/abc451-runtime-costs.py"),
     "repo-metrics": ("python", "scripts/run/repo-metrics.py"),
     "benchmark-tracker": ("python", "scripts/perf/benchmark-tracker.py"),
+    "check-perf-regression": ("python", "scripts/gate/perf-regression.py"),
     "test-differential-reporter": ("python", "scripts/report/differential.py"),
     "development-report": ("python", "scripts/report/development-report.py"),
     "discord-report": ("python", "scripts/report/discord-report.py"),
