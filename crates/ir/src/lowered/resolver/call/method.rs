@@ -9,6 +9,7 @@ use super::super::{
 use super::builtin::{is_html_wrapper_string_method, lower_html_wrapper_string_method};
 use super::receiver::extract_prototype_method_name;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
+use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::IntlNumberFormatOptions;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -1126,6 +1127,12 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
+        if let Some(formatted) = static_number_format_method(&self.ctx, object, method, args) {
+            return Ok(Some(LoweredExpr::String(
+                formatted,
+                Span::generated("number_format"),
+            )));
+        }
         if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
             if (intrinsic == RuntimeFn::ArrayPush || intrinsic == RuntimeFn::ArrayPushGrow)
                 && args.len() != 1
@@ -1364,6 +1371,13 @@ impl super::super::Resolver {
         }
         if let Some(lowered) = self.lower_object_prototype_dispatch(object, method, args, span)? {
             return Ok(Some(lowered));
+        }
+
+        if let Some(formatted) = static_number_format_method(&self.ctx, object, method, args) {
+            return Ok(Some(LoweredExpr::String(
+                formatted,
+                Span::generated("number_format"),
+            )));
         }
 
         if let ResolvedExpr::Ident(receiver_name) = object
@@ -2588,6 +2602,153 @@ fn apply_intl_number_affixes(mut formatted: String, options: &IntlNumberFormatOp
         "percent" => format!("{formatted}%"),
         _ => formatted,
     }
+}
+
+fn static_number_format_method(
+    ctx: &LoweringCtx,
+    object: &ResolvedExpr,
+    method: &str,
+    args: &[ResolvedExpr],
+) -> Option<String> {
+    let value =
+        crate::lowered::resolver::string::resolved_expr_static_number_literal_value(ctx, object)?;
+    let precision = args.first().and_then(static_number_format_precision);
+    match method {
+        "toFixed" => Some(format_fixed_decimal(&value, precision.unwrap_or(0))),
+        "toExponential" => Some(format_exponential_decimal(&value, precision)),
+        "toPrecision" => match precision {
+            Some(precision) => Some(format_precision_decimal(&value, precision.max(1))),
+            None => Some(value),
+        },
+        _ => None,
+    }
+}
+
+fn static_number_format_precision(expr: &ResolvedExpr) -> Option<usize> {
+    match expr {
+        ResolvedExpr::Number(value) if *value >= 0 => Some(*value as usize),
+        _ => None,
+    }
+}
+
+fn decimal_parts(value: &str) -> (bool, String, String) {
+    let (negative, unsigned) = match value.strip_prefix('-') {
+        Some(rest) => (true, rest),
+        None => (false, value),
+    };
+    let (int_part, frac_part) = unsigned.split_once('.').unwrap_or((unsigned, ""));
+    let int_part = if int_part.is_empty() { "0" } else { int_part };
+    (negative, int_part.to_owned(), frac_part.to_owned())
+}
+
+fn round_decimal_digits(mut digits: Vec<u8>, keep: usize) -> Vec<u8> {
+    while digits.len() <= keep {
+        digits.push(b'0');
+    }
+    let round_up = digits.get(keep).is_some_and(|digit| *digit >= b'5');
+    digits.truncate(keep);
+    while digits.len() < keep {
+        digits.push(b'0');
+    }
+    if round_up {
+        let mut index = digits.len();
+        loop {
+            if index == 0 {
+                digits.insert(0, b'1');
+                break;
+            }
+            index -= 1;
+            if digits[index] == b'9' {
+                digits[index] = b'0';
+            } else {
+                digits[index] += 1;
+                break;
+            }
+        }
+    }
+    digits
+}
+
+fn format_fixed_decimal(value: &str, frac_digits: usize) -> String {
+    let (negative, int_part, frac_part) = decimal_parts(value);
+    let mut int_len = int_part.len();
+    let mut digits = int_part.into_bytes();
+    digits.extend(frac_part.bytes());
+    let keep = int_len + frac_digits;
+    let mut rounded = round_decimal_digits(digits, keep);
+    if rounded.len() > keep {
+        int_len += 1;
+    }
+    while rounded.len() < int_len + frac_digits {
+        rounded.push(b'0');
+    }
+
+    let mut output = String::new();
+    if negative {
+        output.push('-');
+    }
+    output.push_str(std::str::from_utf8(&rounded[..int_len]).unwrap_or("0"));
+    if frac_digits > 0 {
+        output.push('.');
+        output
+            .push_str(std::str::from_utf8(&rounded[int_len..int_len + frac_digits]).unwrap_or(""));
+    }
+    output
+}
+
+fn significant_digits_and_exponent(value: &str) -> (bool, Vec<u8>, i32) {
+    let (negative, int_part, frac_part) = decimal_parts(value);
+    let decimal_index = int_part.len();
+    let mut digits = int_part.into_bytes();
+    digits.extend(frac_part.bytes());
+    if let Some(first_non_zero) = digits.iter().position(|digit| *digit != b'0') {
+        let exponent = decimal_index as i32 - first_non_zero as i32 - 1;
+        (negative, digits[first_non_zero..].to_vec(), exponent)
+    } else {
+        (negative, vec![b'0'], 0)
+    }
+}
+
+fn round_significant_digits(digits: Vec<u8>, keep: usize, exponent: &mut i32) -> Vec<u8> {
+    let rounded = round_decimal_digits(digits, keep);
+    if rounded.len() > keep {
+        *exponent += 1;
+    }
+    rounded
+}
+
+fn format_exponential_decimal(value: &str, frac_digits: Option<usize>) -> String {
+    let (negative, digits, mut exponent) = significant_digits_and_exponent(value);
+    let keep = frac_digits.map_or(digits.len().max(1), |digits| digits + 1);
+    let mut rounded = round_significant_digits(digits, keep, &mut exponent);
+    while rounded.len() < keep {
+        rounded.push(b'0');
+    }
+
+    let mut output = String::new();
+    if negative {
+        output.push('-');
+    }
+    output.push(rounded[0] as char);
+    if keep > 1 {
+        output.push('.');
+        output.push_str(std::str::from_utf8(&rounded[1..keep]).unwrap_or(""));
+    }
+    output.push('e');
+    if exponent >= 0 {
+        output.push('+');
+    }
+    output.push_str(&exponent.to_string());
+    output
+}
+
+fn format_precision_decimal(value: &str, precision: usize) -> String {
+    let (_, _, exponent) = significant_digits_and_exponent(value);
+    if exponent + 1 > precision as i32 || exponent < -6 {
+        return format_exponential_decimal(value, Some(precision.saturating_sub(1)));
+    }
+    let frac_digits = precision.saturating_sub((exponent + 1).max(0) as usize);
+    format_fixed_decimal(value, frac_digits)
 }
 
 fn format_compact_i32(value: i32, options: &IntlNumberFormatOptions) -> String {

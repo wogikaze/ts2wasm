@@ -3464,6 +3464,11 @@ fn number_formatting_matches_node() {
 }
 
 #[test]
+fn number_formatting_decimal_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-formatting-decimal.ts");
+}
+
+#[test]
 fn math_builtin_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/math-abs.ts",

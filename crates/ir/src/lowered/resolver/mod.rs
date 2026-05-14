@@ -508,6 +508,11 @@ impl Resolver {
                     local_id,
                     expr,
                 );
+                crate::lowered::resolver::string::update_number_literal_local(
+                    &mut self.ctx,
+                    local_id,
+                    expr,
+                );
                 crate::lowered::resolver::expr::facts::update_native_set_add_local(
                     &mut self.ctx,
                     local_id,
@@ -685,6 +690,11 @@ impl Resolver {
                     local_id,
                 );
                 crate::lowered::resolver::string::update_string_literal_local(
+                    &mut self.ctx,
+                    local_id,
+                    expr,
+                );
+                crate::lowered::resolver::string::update_number_literal_local(
                     &mut self.ctx,
                     local_id,
                     expr,

@@ -69,6 +69,8 @@ pub struct StaticFacts {
     pub static_function_array_like_locals: HashMap<LocalId, StaticFunctionArrayLike>,
     /// Locals known to be string literals (with their value).
     pub string_literal_locals: HashMap<LocalId, String>,
+    /// Locals known to be number literals as exact source decimal strings.
+    pub number_literal_locals: HashMap<LocalId, String>,
     /// Locals that are native Set.add method references.
     pub native_set_add_locals: HashSet<LocalId>,
     /// Generator function names (for call-site resolution).
@@ -229,6 +231,7 @@ impl StaticFacts {
             static_object_literal_alias_sources: HashMap::new(),
             static_function_array_like_locals: HashMap::new(),
             string_literal_locals: HashMap::new(),
+            number_literal_locals: HashMap::new(),
             native_set_add_locals: HashSet::new(),
             generator_function_names: HashSet::new(),
             env_cell_names: HashSet::new(),

@@ -336,6 +336,7 @@ directories:
     - number-is-nan.ts
     - number-is-safe-integer.ts
     - number-is-safe-integer-i32.ts
+    - number-formatting-decimal.ts
     - number-formatting.ts
     - object-assign-descriptors.ts
     - object-assign.ts
