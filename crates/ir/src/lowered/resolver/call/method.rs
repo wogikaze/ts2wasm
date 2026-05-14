@@ -66,6 +66,16 @@ impl super::super::Resolver {
             });
         }
         if method == "next"
+            && args.len() <= 1
+            && self.resolved_expr_is_direct_generator_method_call(object)
+        {
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::GeneratorNext,
+                args: vec![self.lower_expr(object)?],
+                span: Span::generated("runtime_call"),
+            });
+        }
+        if method == "next"
             && args.is_empty()
             && crate::lowered::resolver::expr::facts::resolved_expr_is_array_iterator(
                 &self.ctx, object,
@@ -141,6 +151,33 @@ impl super::super::Resolver {
             state_local,
             prelude,
         )?))
+    }
+
+    fn resolved_expr_is_direct_generator_method_call(&self, expr: &ResolvedExpr) -> bool {
+        let ResolvedExpr::MethodCall { object, method, .. } = expr else {
+            return false;
+        };
+        let ResolvedExpr::Ident(receiver_name) = object.as_ref() else {
+            return false;
+        };
+        let Ok(receiver_local) = self.resolve_local(receiver_name) else {
+            return false;
+        };
+        let Some(method_id) = self
+            .ctx
+            .classes
+            .object_function_props
+            .get(&receiver_local)
+            .and_then(|props| props.get(&ObjectAccessorKey::Property(method.clone())))
+            .copied()
+        else {
+            return false;
+        };
+        self.ctx
+            .functions
+            .generated_functions
+            .iter()
+            .any(|function| function.id == method_id && function.is_generator)
     }
 
     fn lower_generator_resume_with_state(

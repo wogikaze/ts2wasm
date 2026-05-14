@@ -738,6 +738,17 @@ fn lowered_object_computed_method_key_uses_to_string_for_static_dispatch() {
 }
 
 #[test]
+fn lowered_object_generator_method_next_on_direct_call_validates() {
+    let program = parse_resolve_lower(
+        "let obj = { *foo(a) {} };\n\
+         let result = obj.foo(3).next();\n\
+         result.done;",
+    );
+
+    validate_lowered(&program).expect("direct generator object-method call next should validate");
+}
+
+#[test]
 fn lowered_snapshot_for_await_of_keeps_async_iterator_ir() {
     let program = parse_resolve_lower(
         "async function f(values) { for await (let value of values) { console.log(value); } }",
