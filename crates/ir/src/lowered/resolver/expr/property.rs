@@ -425,6 +425,16 @@ impl super::super::Resolver {
         {
             return Ok(function);
         }
+        if self.should_lower_decimal_index_as_static_property(object, index)
+            && let Some(static_key) =
+                super::super::string::resolved_expr_static_property_key_value(&self.ctx, index)
+        {
+            return Ok(object_kernel::ordinary_get(
+                self.lower_expr(object)?,
+                &static_key,
+                Span::generated("index"),
+            ));
+        }
         if let Some(proxy) =
             crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(&self.ctx, object)
         {
@@ -469,6 +479,25 @@ impl super::super::Resolver {
                 Span::generated("index"),
             ))
         }
+    }
+
+    fn should_lower_decimal_index_as_static_property(
+        &self,
+        object: &ResolvedExpr,
+        index: &ResolvedExpr,
+    ) -> bool {
+        if !matches!(index, ResolvedExpr::DecimalNumber(_)) {
+            return false;
+        }
+        if matches!(object, ResolvedExpr::Array(_)) {
+            return false;
+        }
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(local) = self.resolve_local(name)
+        {
+            return !self.ctx.facts.array_locals.contains(&local);
+        }
+        true
     }
 
     fn lower_super_property_get(

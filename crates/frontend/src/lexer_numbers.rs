@@ -172,6 +172,7 @@ impl<'a> Lexer<'a> {
             ));
         }
 
+        let mut positive_exponent_shift = 0;
         if matches!(self.peek_char(), Some('e' | 'E')) {
             self.advance_char();
             let negative_exponent = if matches!(self.peek_char(), Some('+' | '-')) {
@@ -222,7 +223,13 @@ impl<'a> Lexer<'a> {
 
                 phase: None,
             })?;
-            digits.extend(std::iter::repeat_n('0', zeros));
+            positive_exponent_shift = zeros;
+        }
+
+        if has_fraction {
+            digits = canonical_decimal_fraction_literal(digits, positive_exponent_shift);
+        } else {
+            digits.extend(std::iter::repeat_n('0', positive_exponent_shift));
         }
 
         Ok((digits, 10))
@@ -493,4 +500,35 @@ fn canonical_positive_exponent_literal(source: &str) -> Option<String> {
         return None;
     }
     Some(format!("{mantissa}e+{exponent}").replace('_', ""))
+}
+
+fn canonical_decimal_fraction_literal(mut digits: String, exponent_shift: usize) -> String {
+    let Some(point) = digits.find('.') else {
+        return digits;
+    };
+    digits.remove(point);
+
+    if exponent_shift > 0 {
+        let new_point = point + exponent_shift;
+        if new_point >= digits.len() {
+            digits.extend(std::iter::repeat_n('0', new_point - digits.len()));
+        } else {
+            digits.insert(new_point, '.');
+        }
+    } else {
+        digits.insert(point, '.');
+    }
+
+    if let Some(point) = digits.find('.') {
+        while digits.ends_with('0') {
+            digits.pop();
+        }
+        if digits.len() == point + 1 {
+            digits.pop();
+        }
+    }
+    if digits.is_empty() {
+        digits.push('0');
+    }
+    digits
 }

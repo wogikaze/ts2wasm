@@ -189,6 +189,30 @@ mod tests {
     }
 
     #[test]
+    fn canonicalizes_positive_exponent_fraction_number_tokens() {
+        let tokens = Lexer::new("let ten = 1.e1; let eleven = 1.10e1; let frac = 1.23e1;")
+            .tokenize()
+            .unwrap();
+        let numbers: Vec<i32> = tokens
+            .iter()
+            .filter_map(|token| match token.kind {
+                Token::Number(value) => Some(value),
+                _ => None,
+            })
+            .collect();
+        let decimals: Vec<&str> = tokens
+            .iter()
+            .filter_map(|token| match &token.kind {
+                Token::DecimalNumber(value) => Some(value.as_str()),
+                _ => None,
+            })
+            .collect();
+
+        assert_eq!(numbers, [10, 11]);
+        assert_eq!(decimals, ["12.3"]);
+    }
+
+    #[test]
     fn recognizes_oversized_positive_decimal_exponent_as_decimal_token() {
         let tokens = Lexer::new("let huge = 1e55;").tokenize().unwrap();
         let decimals: Vec<&str> = tokens
