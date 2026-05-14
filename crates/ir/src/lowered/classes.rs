@@ -48,7 +48,7 @@ pub struct ClassEnv {
     /// Map from local ID to the class name it was inferred to be (e.g., for `any`-typed vars initialized with class instances).
     pub local_classes: HashMap<LocalId, String>,
     /// Map from local ID to function-valued properties on object literals.
-    pub object_function_props: HashMap<LocalId, HashMap<String, FuncId>>,
+    pub object_function_props: HashMap<LocalId, HashMap<ObjectAccessorKey, FuncId>>,
     /// Map from local ID to statically known accessor properties.
     pub object_accessor_props: HashMap<LocalId, HashMap<ObjectAccessorKey, ObjectAccessorProp>>,
     /// The name of the class currently being lowered (for super/new.target/method resolution).

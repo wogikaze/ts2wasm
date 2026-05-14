@@ -579,6 +579,7 @@ directories:
     - object-literal-computed-method-call.ts
     - object-literal-computed-identity-method-call.ts
     - object-literal-computed-number-method-call.ts
+    - object-literal-symbol-method-call.ts
     - object-literal-computed-spread.ts
     - object-literal-proto.ts
     - object-literal-method.ts

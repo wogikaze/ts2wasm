@@ -136,6 +136,18 @@ fn resolved_expr_static_symbol_local(ctx: &LoweringCtx, expr: &ResolvedExpr) -> 
             }
             Some(local_id)
         }
+        ResolvedExpr::Call { callee, args, .. } => {
+            let ResolvedExpr::Ident(name) = callee.as_ref() else {
+                return None;
+            };
+            let func_id = ctx.resolve_func(name).ok()?;
+            let signature = ctx.symbols.function_signatures.get(&func_id)?;
+            if signature.returns_first_param_identity && args.len() == 1 {
+                resolved_expr_static_symbol_local(ctx, &args[0])
+            } else {
+                None
+            }
+        }
         _ => None,
     }
 }

@@ -260,7 +260,7 @@ impl super::super::Resolver {
                     .object_function_props
                     .entry(local_id)
                     .or_default()
-                    .insert(key.to_owned(), fid);
+                    .insert(ObjectAccessorKey::Property(key.to_owned()), fid);
             }
             if self
                 .ctx

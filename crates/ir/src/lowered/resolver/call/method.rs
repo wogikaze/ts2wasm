@@ -9,6 +9,7 @@ use super::super::{
 use super::builtin::{is_html_wrapper_string_method, lower_html_wrapper_string_method};
 use super::receiver::extract_prototype_method_name;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
+use crate::lowered::classes::ObjectAccessorKey;
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::IntlNumberFormatOptions;
 use crate::lowered::*;
@@ -2066,7 +2067,7 @@ impl super::super::Resolver {
                 .classes
                 .object_function_props
                 .get(&obj_local)
-                .and_then(|props| props.get(method))
+                .and_then(|props| props.get(&ObjectAccessorKey::Property(method.to_owned())))
                 .copied()
         {
             let lowered_args = self.lower_function_call_args(

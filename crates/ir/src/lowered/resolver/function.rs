@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use super::binding_param_names;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::lowered::classes::ObjectAccessorKey;
 use crate::lowered::facts::ArrowClosure;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -585,7 +586,7 @@ impl super::Resolver {
         name: &str,
         func_id: FuncId,
         capture_names: &[String],
-        object_function_props: Option<&HashMap<String, FuncId>>,
+        object_function_props: Option<&HashMap<ObjectAccessorKey, FuncId>>,
     ) -> Result<(), Diagnostic> {
         let local_id = self.declare_local(name)?;
         let captures = capture_names

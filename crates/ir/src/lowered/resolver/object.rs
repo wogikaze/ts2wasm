@@ -70,6 +70,16 @@ impl super::Resolver {
         self.lower_expr(value)
     }
 
+    fn lower_object_computed_value(
+        &mut self,
+        value: &ResolvedExpr,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if let ResolvedExpr::FunctionExpr { name, params, body } = value {
+            return self.lower_object_method_function_expr(name, params, body);
+        }
+        self.lower_expr(value)
+    }
+
     pub(super) fn lower_object_literal_expr(
         &mut self,
         props: &[ResolvedObjectProp],
@@ -207,7 +217,7 @@ impl super::Resolver {
                     if let Some(static_key) =
                         super::string::resolved_expr_static_property_key_value(&self.ctx, key)
                     {
-                        let lowered_value = self.lower_expr(value)?;
+                        let lowered_value = self.lower_object_computed_value(value)?;
                         if initialized {
                             let set_expr = object_kernel::ordinary_set(
                                 LoweredExpr::Local(object_local, Span::generated("local")),
@@ -237,7 +247,7 @@ impl super::Resolver {
                     let set_expr = object_kernel::ordinary_set_dynamic(
                         LoweredExpr::Local(object_local, Span::generated("local")),
                         self.lower_expr(key)?,
-                        self.lower_expr(value)?,
+                        self.lower_object_computed_value(value)?,
                         Span::generated("property_set_dynamic"),
                     );
                     stmts.push(LoweredStmt::Expr(

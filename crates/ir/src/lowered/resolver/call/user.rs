@@ -34,7 +34,7 @@ impl super::super::Resolver {
             && let ResolvedExpr::Ident(receiver_name) = object.as_ref()
             && let Ok(obj_local) = self.resolve_local(receiver_name)
             && let Some(key) =
-                super::super::string::resolved_expr_static_property_key_value(&self.ctx, index)
+                super::super::string::resolved_expr_static_accessor_key(&self.ctx, index)
             && let Some(method_id) = self
                 .ctx
                 .classes
@@ -658,7 +658,7 @@ impl super::super::Resolver {
     pub(crate) fn function_props_for_object_expr(
         &self,
         expr: &ResolvedExpr,
-    ) -> Option<HashMap<String, FuncId>> {
+    ) -> Option<HashMap<ObjectAccessorKey, FuncId>> {
         let ResolvedExpr::Object(props) = expr else {
             return None;
         };
@@ -669,7 +669,7 @@ impl super::super::Resolver {
                 if let ResolvedExpr::Ident(name) = prop.value() {
                     self.resolve_func(name)
                         .ok()
-                        .map(|func_id| (key.to_owned(), func_id))
+                        .map(|func_id| (ObjectAccessorKey::Property(key.to_owned()), func_id))
                 } else {
                     None
                 }
@@ -685,7 +685,7 @@ impl super::super::Resolver {
     pub(crate) fn function_props_for_lowered_object_expr(
         &self,
         expr: &LoweredExpr,
-    ) -> Option<HashMap<String, FuncId>> {
+    ) -> Option<HashMap<ObjectAccessorKey, FuncId>> {
         let mut function_props = HashMap::new();
         self.collect_lowered_object_function_props(expr, &mut function_props)?;
         if function_props.is_empty() {
@@ -745,7 +745,7 @@ impl super::super::Resolver {
     fn collect_lowered_object_function_props(
         &self,
         expr: &LoweredExpr,
-        function_props: &mut HashMap<String, FuncId>,
+        function_props: &mut HashMap<ObjectAccessorKey, FuncId>,
     ) -> Option<()> {
         match expr {
             LoweredExpr::ObjectNew { props, .. } => {
@@ -782,10 +782,14 @@ impl super::super::Resolver {
     fn apply_lowered_object_props_to_function_props(
         &self,
         props: &[(String, LoweredExpr)],
-        function_props: &mut HashMap<String, FuncId>,
+        function_props: &mut HashMap<ObjectAccessorKey, FuncId>,
     ) {
         for (key, value) in props {
-            self.apply_function_prop_value(key.clone(), value, function_props);
+            self.apply_function_prop_value(
+                ObjectAccessorKey::Property(key.clone()),
+                value,
+                function_props,
+            );
         }
     }
 
@@ -793,14 +797,18 @@ impl super::super::Resolver {
         &self,
         object_local: LocalId,
         expr: &LoweredExpr,
-        function_props: &mut HashMap<String, FuncId>,
+        function_props: &mut HashMap<ObjectAccessorKey, FuncId>,
     ) -> Option<()> {
         match expr {
             LoweredExpr::PropertySet {
                 object, key, value, ..
             } if matches!(object.as_ref(), LoweredExpr::Local(local, _) if *local == object_local) =>
             {
-                self.apply_function_prop_value(key.clone(), value, function_props);
+                self.apply_function_prop_value(
+                    ObjectAccessorKey::Property(key.clone()),
+                    value,
+                    function_props,
+                );
                 Some(())
             }
             LoweredExpr::PropertySetDynamic {
@@ -810,7 +818,7 @@ impl super::super::Resolver {
                 ..
             } if matches!(object.as_ref(), LoweredExpr::Local(local, _) if *local == object_local) =>
             {
-                let key = self.lowered_static_property_key(index)?;
+                let key = self.lowered_static_accessor_key(index)?;
                 self.apply_function_prop_value(key, value, function_props);
                 Some(())
             }
@@ -900,23 +908,14 @@ impl super::super::Resolver {
 
     fn apply_function_prop_value(
         &self,
-        key: String,
+        key: ObjectAccessorKey,
         value: &LoweredExpr,
-        function_props: &mut HashMap<String, FuncId>,
+        function_props: &mut HashMap<ObjectAccessorKey, FuncId>,
     ) {
         if let LoweredExpr::ArrowFn { func_id, .. } = value {
             function_props.insert(key, *func_id);
         } else {
             function_props.remove(&key);
-        }
-    }
-
-    fn lowered_static_property_key(&self, expr: &LoweredExpr) -> Option<String> {
-        match expr {
-            LoweredExpr::String(value, _) => Some(value.clone()),
-            LoweredExpr::Number(value, _) => Some(value.to_string()),
-            LoweredExpr::Local(local, _) => self.ctx.facts.string_value(*local).cloned(),
-            _ => None,
         }
     }
 
@@ -937,6 +936,18 @@ impl super::super::Resolver {
                         .contains(local)
                         .then_some(ObjectAccessorKey::SymbolLocal(*local))
                 }),
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(func_id),
+                args,
+                ..
+            } => {
+                let signature = self.ctx.symbols.function_signatures.get(func_id)?;
+                if signature.returns_first_param_identity && args.len() == 1 {
+                    self.lowered_static_accessor_key(&args[0])
+                } else {
+                    None
+                }
+            }
             _ => None,
         }
     }

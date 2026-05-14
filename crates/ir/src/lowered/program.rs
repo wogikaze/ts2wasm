@@ -4,6 +4,7 @@ use crate::builtin_resolved::{
     ClassMethodKind, ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedParam,
     ResolvedStmt,
 };
+use crate::lowered::classes::ObjectAccessorKey;
 use crate::lowered::facts::GeneratorYieldStep;
 use crate::lowered::symbols::FunctionSignature;
 use std::collections::{HashMap, HashSet};
@@ -1965,13 +1966,16 @@ fn collect_preindexed_function_properties(
 
 fn function_property_assignment_map(
     properties: &[PreindexedFunctionProperty],
-) -> HashMap<String, HashMap<String, FuncId>> {
-    let mut by_receiver: HashMap<String, HashMap<String, FuncId>> = HashMap::new();
+) -> HashMap<String, HashMap<ObjectAccessorKey, FuncId>> {
+    let mut by_receiver: HashMap<String, HashMap<ObjectAccessorKey, FuncId>> = HashMap::new();
     for property in properties {
         by_receiver
             .entry(property.receiver.clone())
             .or_default()
-            .insert(property.key.clone(), property.func_id);
+            .insert(
+                ObjectAccessorKey::Property(property.key.clone()),
+                property.func_id,
+            );
     }
     by_receiver
 }
@@ -3192,7 +3196,7 @@ pub(crate) struct SelfClosureOptions<'a> {
     pub(crate) name: &'a str,
     pub(crate) func_id: FuncId,
     pub(crate) capture_names: &'a [String],
-    pub(crate) object_function_props: Option<&'a HashMap<String, FuncId>>,
+    pub(crate) object_function_props: Option<&'a HashMap<ObjectAccessorKey, FuncId>>,
 }
 
 #[allow(clippy::too_many_arguments)]
