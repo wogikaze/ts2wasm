@@ -2396,10 +2396,11 @@ fn build_smoke_array_copying_methods() {
 
 #[test]
 fn build_smoke_console_complete() {
-    let result = run_fixture("builtins-and-io/console-complete.ts");
-    assert!(
-        result.is_ok(),
-        "complete console API smoke fixture should build: {:?}",
-        result.err()
-    );
+    run_fixture("builtins-and-io/console-complete.ts")
+        .expect("complete console API smoke fixture should build");
+}
+
+#[test]
+fn build_smoke_native_error_types() {
+    run_fixture("builtins-and-io/error-name.ts").expect("NativeError types should build");
 }

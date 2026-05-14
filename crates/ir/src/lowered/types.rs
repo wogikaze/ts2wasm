@@ -40,26 +40,45 @@ pub enum BuiltinErrorConstructor {
     TypeError,
     ReferenceError,
     SyntaxError,
+    EvalError,
+    URIError,
 }
 
 impl BuiltinErrorConstructor {
     pub fn from_name(name: &str) -> Option<Self> {
         match name {
             "Error" => Some(Self::Error),
+            "EvalError" => Some(Self::EvalError),
             "RangeError" => Some(Self::RangeError),
-            "TypeError" => Some(Self::TypeError),
             "ReferenceError" => Some(Self::ReferenceError),
             "SyntaxError" => Some(Self::SyntaxError),
+            "TypeError" => Some(Self::TypeError),
+            "URIError" => Some(Self::URIError),
             _ => None,
+        }
+    }
+
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Error => "Error",
+            Self::EvalError => "EvalError",
+            Self::RangeError => "RangeError",
+            Self::ReferenceError => "ReferenceError",
+            Self::SyntaxError => "SyntaxError",
+            Self::TypeError => "TypeError",
+            Self::URIError => "URIError",
         }
     }
 
     pub fn parent(self) -> Option<Self> {
         match self {
             Self::Error => None,
-            Self::RangeError | Self::TypeError | Self::ReferenceError | Self::SyntaxError => {
-                Some(Self::Error)
-            }
+            Self::EvalError
+            | Self::RangeError
+            | Self::ReferenceError
+            | Self::SyntaxError
+            | Self::TypeError
+            | Self::URIError => Some(Self::Error),
         }
     }
 }
