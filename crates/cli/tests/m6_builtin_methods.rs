@@ -3345,6 +3345,16 @@ fn build_smoke_set_iterable_calls_add() {
 }
 
 #[test]
+fn build_smoke_set_algebra() {
+    let result = run_fixture("builtins-and-io/set-algebra.ts");
+    assert!(
+        result.is_ok(),
+        "Set algebra methods should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_set_size_clear() {
     let result = run_fixture("builtins-and-io/set-size-clear.ts");
     assert!(
@@ -3408,4 +3418,10 @@ fn build_smoke_string_static_complete() {
 fn build_smoke_native_error_types_complete() {
     run_fixture("builtins-and-io/native-error-types.ts")
         .expect("NativeError types complete fixture should build");
+}
+
+#[test]
+fn build_smoke_set_algebra() {
+    run_fixture("builtins-and-io/set-algebra.ts")
+        .expect("Set algebra methods fixture should build");
 }

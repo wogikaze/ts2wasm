@@ -244,6 +244,22 @@ impl<'a> WatEmitter<'a> {
             .link_plan
             .required_runtime_functions()
             .contains(&RuntimeFn::SetFromArray)
+            || self
+                .link_plan
+                .required_runtime_functions()
+                .contains(&RuntimeFn::SetUnion)
+            || self
+                .link_plan
+                .required_runtime_functions()
+                .contains(&RuntimeFn::SetIntersection)
+            || self
+                .link_plan
+                .required_runtime_functions()
+                .contains(&RuntimeFn::SetDifference)
+            || self
+                .link_plan
+                .required_runtime_functions()
+                .contains(&RuntimeFn::SetSymmetricDifference)
         {
             self.emit_set_add_dispatcher(&mut writer);
         }

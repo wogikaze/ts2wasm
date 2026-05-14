@@ -4255,3 +4255,9 @@ fn string_static_basic_matches_node_output() {
 fn error_stack_cause_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/error-subclasses.ts");
 }
+
+// Set algebraic methods (isDisjointFrom, isSubsetOf, isSupersetOf, union, intersection, difference, symmetricDifference)
+#[test]
+fn set_algebra_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/set-algebra.ts");
+}
