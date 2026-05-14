@@ -2406,6 +2406,12 @@ fn build_smoke_native_error_types() {
 }
 
 #[test]
+fn build_smoke_error_subclasses() {
+    run_fixture("builtins-and-io/error-subclasses.ts")
+        .expect("Error subclasses with cause should build");
+}
+
+#[test]
 fn build_smoke_function_prototype() {
     run_fixture("builtins-and-io/function-prototype.ts")
         .expect("Function.prototype.name/length should build");

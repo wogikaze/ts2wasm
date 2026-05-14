@@ -151,6 +151,7 @@ pub enum MirExpr {
     ErrorNew {
         constructor: BuiltinErrorConstructor,
         message: Box<MirExpr>,
+        cause: Option<Box<MirExpr>>,
         span: Span,
     },
     PropertyGet {
@@ -584,10 +585,12 @@ fn lower_expr_to_mir(expr: &LoweredExpr) -> MirExpr {
         LoweredExpr::ErrorNew {
             constructor,
             message,
+            cause,
             span,
         } => MirExpr::ErrorNew {
             constructor: *constructor,
             message: Box::new(lower_expr_to_mir(message)),
+            cause: cause.as_ref().map(|c| Box::new(lower_expr_to_mir(c))),
             span: *span,
         },
         LoweredExpr::PropertyGet { obj, key, span } => MirExpr::PropertyGet {
@@ -1145,10 +1148,12 @@ fn mir_expr_to_lower(expr: &MirExpr) -> LoweredExpr {
         MirExpr::ErrorNew {
             constructor,
             message,
+            cause,
             span,
         } => LoweredExpr::ErrorNew {
             constructor: *constructor,
             message: Box::new(mir_expr_to_lower(message)),
+            cause: cause.as_ref().map(|c| Box::new(mir_expr_to_lower(c))),
             span: *span,
         },
         MirExpr::PropertyGet { obj, key, span } => LoweredExpr::PropertyGet {
