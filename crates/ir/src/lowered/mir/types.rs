@@ -140,6 +140,7 @@ pub enum MirExpr {
     ErrorNew {
         constructor: BuiltinErrorConstructor,
         message: Box<MirExpr>,
+        cause: Option<Box<MirExpr>>,
         span: Span,
     },
     PropertyGet {

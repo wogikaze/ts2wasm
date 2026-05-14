@@ -1203,10 +1203,6 @@ fn hir_relational_op_text(op: HirRelationalOp) -> &'static str {
 fn hir_builtin_name(builtin: BuiltinId) -> &'static str {
     match builtin {
         BuiltinId::ConsoleLog => "console.log",
-        BuiltinId::ConsoleInfo => "console.info",
-        BuiltinId::ConsoleDebug => "console.debug",
-        BuiltinId::ConsoleWarn => "console.warn",
-        BuiltinId::ConsoleError => "console.error",
         BuiltinId::ReadStdinUtf8 => "readStdinUtf8",
         BuiltinId::FsReadFileSync => "fs.readFileSync",
         BuiltinId::FsWriteFileSync => "fs.writeFileSync",
