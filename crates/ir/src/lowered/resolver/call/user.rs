@@ -781,7 +781,13 @@ impl super::super::Resolver {
                 let closure = self.ctx.facts.arrow_locals.get(&local)?;
                 Some(StaticFunctionMetadataTarget {
                     func_id: closure.func_id,
-                    name: name.clone(),
+                    name: self
+                        .ctx
+                        .facts
+                        .function_metadata_name_locals
+                        .get(&local)
+                        .cloned()
+                        .unwrap_or_else(|| name.clone()),
                 })
             }
             ResolvedExpr::PropertyAccess { object, key, .. } => {

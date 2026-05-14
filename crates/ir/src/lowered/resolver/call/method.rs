@@ -212,7 +212,18 @@ impl super::super::Resolver {
 
     fn local_arrow_function_data_descriptor(&self, target: &str, key: &str) -> Option<LoweredExpr> {
         let value = match key {
-            "name" => LoweredExpr::String(target.to_owned(), Span::generated("str")),
+            "name" => {
+                let local = self.resolve_local(target).ok()?;
+                LoweredExpr::String(
+                    self.ctx
+                        .facts
+                        .function_metadata_name_locals
+                        .get(&local)
+                        .cloned()
+                        .unwrap_or_else(|| target.to_owned()),
+                    Span::generated("str"),
+                )
+            }
             "length" => {
                 let local = self.resolve_local(target).ok()?;
                 let closure = self.ctx.facts.arrow_locals.get(&local)?;

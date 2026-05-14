@@ -226,6 +226,82 @@ impl super::super::Resolver {
             .get(&obj_local)
             .and_then(|props| props.get(&ObjectAccessorKey::Property(key.to_owned())))
             .copied()?;
+        self.function_token_for_object_method(func_id, span)
+    }
+
+    fn computed_object_function_property(
+        &self,
+        object: &ResolvedExpr,
+        index: &ResolvedExpr,
+        span: Span,
+    ) -> Option<LoweredExpr> {
+        let ResolvedExpr::Ident(name) = object else {
+            return None;
+        };
+        let obj_local = self.resolve_local(name).ok()?;
+        let key = super::super::string::resolved_expr_static_accessor_key(&self.ctx, index)?;
+        let func_id = self
+            .ctx
+            .classes
+            .object_function_props
+            .get(&obj_local)
+            .and_then(|props| props.get(&key))
+            .copied()?;
+        self.function_token_for_object_method(func_id, span)
+    }
+
+    fn lowered_object_function_dynamic_property(
+        &self,
+        object: &LoweredExpr,
+        index: &LoweredExpr,
+        span: Span,
+    ) -> Option<LoweredExpr> {
+        let key = self.property_lowered_static_accessor_key(index)?;
+        let props = self.function_props_for_lowered_object_expr(object)?;
+        let func_id = props.get(&key).copied()?;
+        self.function_token_for_object_method(func_id, span)
+    }
+
+    fn property_lowered_static_accessor_key(
+        &self,
+        expr: &LoweredExpr,
+    ) -> Option<ObjectAccessorKey> {
+        match expr {
+            LoweredExpr::String(value, _) => Some(ObjectAccessorKey::Property(value.clone())),
+            LoweredExpr::Number(value, _) => Some(ObjectAccessorKey::Property(value.to_string())),
+            LoweredExpr::Local(local, _) => self
+                .ctx
+                .facts
+                .string_value(*local)
+                .cloned()
+                .map(ObjectAccessorKey::Property)
+                .or_else(|| {
+                    self.ctx
+                        .facts
+                        .symbol_value_locals
+                        .contains(local)
+                        .then_some(ObjectAccessorKey::SymbolLocal(*local))
+                }),
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(func_id),
+                args,
+                ..
+            } => {
+                if let Some(value) = self.ctx.functions.static_string_returns.get(func_id) {
+                    return Some(ObjectAccessorKey::Property(value.clone()));
+                }
+                let signature = self.ctx.symbols.function_signatures.get(func_id)?;
+                if signature.returns_first_param_identity && args.len() == 1 {
+                    self.property_lowered_static_accessor_key(&args[0])
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    }
+
+    fn function_token_for_object_method(&self, func_id: FuncId, span: Span) -> Option<LoweredExpr> {
         let captures = self
             .ctx
             .functions
@@ -321,6 +397,11 @@ impl super::super::Resolver {
                 span: Span::generated("call"),
             });
         }
+        if let Some(function) =
+            self.computed_object_function_property(object, index, Span::generated("index"))
+        {
+            return Ok(function);
+        }
         if let Some(proxy) =
             crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(&self.ctx, object)
         {
@@ -333,6 +414,13 @@ impl super::super::Resolver {
         }
         let lowered_object = self.lower_expr(object)?;
         let lowered_index = self.lower_expr(index)?;
+        if let Some(function) = self.lowered_object_function_dynamic_property(
+            &lowered_object,
+            &lowered_index,
+            Span::generated("index"),
+        ) {
+            return Ok(function);
+        }
 
         if matches!(object, ResolvedExpr::String(_)) {
             Ok(object_kernel::ordinary_get_dynamic(

@@ -91,6 +91,8 @@ pub struct StaticFacts {
     pub heap_closure_names: HashSet<String>,
     /// Arrow closure locals: local_id → ArrowClosure (for inline arrow fn expansion).
     pub arrow_locals: HashMap<LocalId, ArrowClosure>,
+    /// Static ECMAScript `name` metadata for function-token locals when it differs from the binding.
+    pub function_metadata_name_locals: HashMap<LocalId, String>,
     /// Static `Function.prototype.bind` locals that can be expanded at call sites.
     pub bound_function_locals: HashMap<LocalId, BoundFunction>,
     /// Static `Function.prototype.call/apply.bind(fn)` locals expanded at call sites.
@@ -244,6 +246,7 @@ impl StaticFacts {
             env_cell_locals: HashSet::new(),
             heap_closure_names: HashSet::new(),
             arrow_locals: HashMap::new(),
+            function_metadata_name_locals: HashMap::new(),
             bound_function_locals: HashMap::new(),
             function_method_locals: HashMap::new(),
             bound_constructor_locals: HashMap::new(),

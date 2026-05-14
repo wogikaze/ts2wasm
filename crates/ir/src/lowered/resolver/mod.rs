@@ -427,8 +427,25 @@ impl Resolver {
                             captures: captures.clone(),
                         },
                     );
+                    if let Some(metadata_name) =
+                        static_function_metadata_name_for_expr(&self.ctx, expr)
+                    {
+                        self.ctx
+                            .facts
+                            .function_metadata_name_locals
+                            .insert(local_id, metadata_name);
+                    } else {
+                        self.ctx
+                            .facts
+                            .function_metadata_name_locals
+                            .remove(&local_id);
+                    }
                 } else {
                     self.ctx.facts.arrow_locals.remove(&local_id);
+                    self.ctx
+                        .facts
+                        .function_metadata_name_locals
+                        .remove(&local_id);
                 }
                 if let Some(bound_function) = bound_function {
                     self.ctx
@@ -632,8 +649,25 @@ impl Resolver {
                             captures: captures.clone(),
                         },
                     );
+                    if let Some(metadata_name) =
+                        static_function_metadata_name_for_expr(&self.ctx, expr)
+                    {
+                        self.ctx
+                            .facts
+                            .function_metadata_name_locals
+                            .insert(local_id, metadata_name);
+                    } else {
+                        self.ctx
+                            .facts
+                            .function_metadata_name_locals
+                            .remove(&local_id);
+                    }
                 } else {
                     self.ctx.facts.arrow_locals.remove(&local_id);
+                    self.ctx
+                        .facts
+                        .function_metadata_name_locals
+                        .remove(&local_id);
                 }
                 if let Some(bound_function) = bound_function {
                     self.ctx
@@ -1549,6 +1583,32 @@ pub(crate) fn function_prototype_method_name(expr: &ResolvedExpr) -> Option<&str
         return None;
     }
     Some(method_name)
+}
+
+pub(crate) fn static_function_metadata_name_for_expr(
+    ctx: &LoweringCtx,
+    expr: &ResolvedExpr,
+) -> Option<String> {
+    match expr {
+        ResolvedExpr::PropertyAccess { key, .. } => Some(key.clone()),
+        ResolvedExpr::ComputedIndex { index, .. } => {
+            let key = string::resolved_expr_static_accessor_key(ctx, index)?;
+            static_accessor_key_metadata_name(ctx, key)
+        }
+        _ => None,
+    }
+}
+
+fn static_accessor_key_metadata_name(
+    ctx: &LoweringCtx,
+    key: crate::lowered::classes::ObjectAccessorKey,
+) -> Option<String> {
+    match key {
+        crate::lowered::classes::ObjectAccessorKey::Property(name) => Some(name),
+        crate::lowered::classes::ObjectAccessorKey::SymbolLocal(local) => {
+            string::symbol_local_name(ctx, local)
+        }
+    }
 }
 
 /// Wrapper that converts bigint_runtime_fn_name string output to RuntimeFn.

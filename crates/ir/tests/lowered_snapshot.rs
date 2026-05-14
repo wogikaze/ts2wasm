@@ -886,6 +886,28 @@ fn lowered_test262_verify_property_accepts_static_object_method_names() {
 }
 
 #[test]
+fn lowered_test262_verify_property_accepts_extracted_symbol_method_names() {
+    let program = parse_resolve_lower(
+        "function verifyProperty(obj, name, desc) { throw null; }\n\
+         let m = Symbol(\"method\");\n\
+         let method = { [m]() {} }[m];\n\
+         let gen = { *[m]() {} }[m];\n\
+         verifyProperty(method, \"name\", { value: \"[method]\", writable: false, enumerable: false, configurable: true });\n\
+         verifyProperty(gen, \"name\", { value: \"[method]\", writable: false, enumerable: false, configurable: true });",
+    );
+
+    validate_lowered(&program).expect("extracted symbol method names should validate");
+    assert!(matches!(
+        program.top_level_statements.get(4),
+        Some(LoweredStmt::Expr(LoweredExpr::Bool(true, _), _))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(5),
+        Some(LoweredStmt::Expr(LoweredExpr::Bool(true, _), _))
+    ));
+}
+
+#[test]
 fn lowered_generator_function_captures_top_level_assignment() {
     let program = parse_resolve_lower(
         "var obj;\n\
