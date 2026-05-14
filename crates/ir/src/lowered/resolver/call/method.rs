@@ -1552,6 +1552,7 @@ impl super::super::Resolver {
                         || name == "Symbol"
                         || name == "Array"
                         || name == "Promise"
+                        || name == "Atomics"
             );
             if !is_static_call {
                 lowered_args.push(self.lower_expr(object)?);

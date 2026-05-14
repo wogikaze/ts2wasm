@@ -147,6 +147,20 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 _ => None,
             };
         }
+        if name == "Atomics" {
+            return match method {
+                "load" => Some(RuntimeFn::AtomicsLoad),
+                "store" => Some(RuntimeFn::AtomicsStore),
+                "add" => Some(RuntimeFn::AtomicsAdd),
+                "sub" => Some(RuntimeFn::AtomicsSub),
+                "and" => Some(RuntimeFn::AtomicsAnd),
+                "or" => Some(RuntimeFn::AtomicsOr),
+                "xor" => Some(RuntimeFn::AtomicsXor),
+                "exchange" => Some(RuntimeFn::AtomicsExchange),
+                "compareExchange" => Some(RuntimeFn::AtomicsCompareExchange),
+                _ => None,
+            };
+        }
         if name == "Promise" {
             return match method {
                 "resolve" => Some(RuntimeFn::PromiseResolve),

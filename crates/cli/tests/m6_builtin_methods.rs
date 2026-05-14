@@ -2178,6 +2178,28 @@ fn build_smoke_atomics_intl_stubs() {
     assert!(result.is_ok(), "Intl stub should build: {:?}", result.err());
 }
 
+// Atomics — basic load/store
+#[test]
+fn build_smoke_atomics_basic() {
+    let result = run_fixture("builtins-and-io/atomics-basic.ts");
+    assert!(
+        result.is_ok(),
+        "Atomics basic should build: {:?}",
+        result.err()
+    );
+}
+
+// Atomics — complete operations (add, sub, and, or, xor, exchange, compareExchange)
+#[test]
+fn build_smoke_atomics_complete() {
+    let result = run_fixture("builtins-and-io/atomics-complete.ts");
+    assert!(
+        result.is_ok(),
+        "Atomics complete should build: {:?}",
+        result.err()
+    );
+}
+
 #[test]
 fn build_smoke_atomics_complete() {
     let result = run_fixture("builtins-and-io/atomics-complete.ts");

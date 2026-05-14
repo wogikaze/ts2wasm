@@ -90,6 +90,15 @@ impl WatEmitter<'_> {
             RuntimeFn::DataViewSetBigInt64 => self.emit_dataview_set_bigint64(wat),
             RuntimeFn::DataViewGetBigUint64 => self.emit_dataview_get_biguint64(wat),
             RuntimeFn::DataViewSetBigUint64 => self.emit_dataview_set_biguint64(wat),
+            RuntimeFn::AtomicsLoad => self.emit_atomics_load(wat),
+            RuntimeFn::AtomicsStore => self.emit_atomics_store(wat),
+            RuntimeFn::AtomicsAdd => self.emit_atomics_add(wat),
+            RuntimeFn::AtomicsSub => self.emit_atomics_sub(wat),
+            RuntimeFn::AtomicsAnd => self.emit_atomics_and(wat),
+            RuntimeFn::AtomicsOr => self.emit_atomics_or(wat),
+            RuntimeFn::AtomicsXor => self.emit_atomics_xor(wat),
+            RuntimeFn::AtomicsExchange => self.emit_atomics_exchange(wat),
+            RuntimeFn::AtomicsCompareExchange => self.emit_atomics_compare_exchange(wat),
             _ => unreachable!("non-array RuntimeFn routed to array dispatch"),
         }
     }
