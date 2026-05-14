@@ -575,12 +575,14 @@ directories:
     - object-literal-computed-expression-key.ts
     - object-literal-computed-accessor-invocation.ts
     - object-literal-symbol-accessor-invocation.ts
+    - object-literal-computed-await-key.ts
     - object-literal-computed-method.ts
     - object-literal-computed-method-call.ts
     - object-literal-computed-identity-method-call.ts
     - object-literal-computed-constant-number-expression-key.ts
     - object-literal-computed-conditional-key.ts
     - object-literal-computed-decimal-exponent-key.ts
+    - object-literal-computed-function-keys.ts
     - object-literal-computed-fractional-math-key.ts
     - object-literal-computed-number-method-call.ts
     - object-literal-computed-large-exponent-key.ts

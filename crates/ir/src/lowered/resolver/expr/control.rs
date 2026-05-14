@@ -8,6 +8,18 @@ impl super::super::Resolver {
         &mut self,
         expr: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
+        if matches!(
+            expr,
+            ResolvedExpr::Number(_)
+                | ResolvedExpr::DecimalNumber(_)
+                | ResolvedExpr::BigIntLiteral { .. }
+                | ResolvedExpr::String(_)
+                | ResolvedExpr::Bool(_)
+                | ResolvedExpr::Null
+                | ResolvedExpr::Undefined
+        ) {
+            return self.lower_expr(expr);
+        }
         Ok(LoweredExpr::PromiseGetValue {
             promise: Box::new(self.lower_expr(expr)?),
             span: Span::generated("promise_get_value"),

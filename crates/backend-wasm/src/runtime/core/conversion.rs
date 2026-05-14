@@ -9,6 +9,17 @@ fn tagged_number_sentinel(payload: i32) -> i32 {
     ValueTag::encode_reserved_number_payload(payload)
 }
 
+fn wat_store_literal_to_ptr(value: &str, indent: &str) -> String {
+    let mut wat = String::new();
+    for (index, byte) in value.bytes().enumerate() {
+        wat.push_str(&format!(
+            "{indent}(i32.store8 (i32.add (local.get $ptr) (i32.const {index})) (i32.const {byte}))\n"
+        ));
+    }
+    wat.push_str(&format!("{indent}(return (i32.const {}))\n", value.len()));
+    wat
+}
+
 impl WatEmitter<'_> {
     pub(crate) fn emit_bitwise_to_i32(&self, wat: &mut String) {
         wat.push_str(&format!(
@@ -326,6 +337,32 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_value_to_string_into(&self, wat: &mut String) {
+        let direct_function_to_string_branches = self
+            .program
+            .functions
+            .iter()
+            .map(|function| {
+                let payload = ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE + function.id.0 as i32;
+                let spelling = if function.is_async {
+                    "async () => {}"
+                } else if function.is_generator {
+                    "function* () {}"
+                } else {
+                    "function () {}"
+                };
+                format!(
+                    r#"
+        (if (i32.eq (local.get $payload) (i32.const {payload}))
+          (then
+{stores}          ))
+"#,
+                    payload = payload,
+                    stores = wat_store_literal_to_ptr(spelling, "            "),
+                )
+            })
+            .collect::<String>();
+        let object_fallback_to_string = wat_store_literal_to_ptr("[object Object]", "            ");
+
         let undefined = self.string_offset(RuntimeString::UNDEFINED);
 
         let null = self.string_offset(RuntimeString::NULL);
@@ -359,6 +396,8 @@ impl WatEmitter<'_> {
     (local $digit i32)
 
     (local $desc i32)
+
+    (local $payload i32)
 
     (if (i32.eq (local.get $v) (i32.const {undefined_tag}))
 
@@ -492,6 +531,15 @@ impl WatEmitter<'_> {
 
         (return (i32.const {nan_len}))))
 
+    (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {number_tag}))
+
+      (then
+
+        (local.set $payload (i32.shr_u (local.get $v) (i32.const {number_shift})))
+
+{direct_function_to_string_branches}
+      ))
+
     (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {string_tag}))
 
       (then
@@ -610,7 +658,12 @@ impl WatEmitter<'_> {
 
               (local.get $len))
 
-            (return (local.get $len))))))
+            (return (local.get $len))))
+
+        ;; Ordinary objects stringify through the object default. This includes
+        ;; generator iterator objects in the current runtime subset.
+{object_fallback_to_string}
+      ))
 
     (local.set $n (i32.shr_s (local.get $v) (i32.const {number_shift})))
 
@@ -722,6 +775,8 @@ impl WatEmitter<'_> {
 
             number_shift = ValueTag::NUMBER_SHIFT,
 
+            number_tag = ValueTag::NUMBER,
+
             heap_number_sentinel = -1,
 
             heap_number_len_offset = 8,
@@ -791,6 +846,10 @@ impl WatEmitter<'_> {
             zero = RuntimeConst::ZERO,
 
             string_header_size = Layout::STRING_HEADER_SIZE,
+
+            direct_function_to_string_branches = direct_function_to_string_branches,
+
+            object_fallback_to_string = object_fallback_to_string,
 
         ));
     }

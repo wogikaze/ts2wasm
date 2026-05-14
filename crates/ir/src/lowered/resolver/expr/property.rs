@@ -486,10 +486,13 @@ impl super::super::Resolver {
         object: &ResolvedExpr,
         index: &ResolvedExpr,
     ) -> bool {
-        if !matches!(
-            index,
-            ResolvedExpr::DecimalNumber(_) | ResolvedExpr::Ternary { .. }
-        ) {
+        if super::super::string::resolved_expr_static_property_key_value(&self.ctx, index).is_none()
+        {
+            return false;
+        }
+        if crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(&self.ctx, object)
+            .is_some()
+        {
             return false;
         }
         if matches!(object, ResolvedExpr::Array(_)) {

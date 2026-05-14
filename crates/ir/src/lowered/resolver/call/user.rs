@@ -119,11 +119,18 @@ impl super::super::Resolver {
                 Some(ResolvedExpr::Ident(name)) if name == "undefined" => {
                     LoweredExpr::String("undefined".to_owned(), Span::generated("str"))
                 }
+                Some(ResolvedExpr::Undefined) => {
+                    LoweredExpr::String("undefined".to_owned(), Span::generated("str"))
+                }
                 Some(ResolvedExpr::String(value)) => {
                     LoweredExpr::String(value.clone(), Span::generated("str"))
                 }
                 Some(value) => {
-                    if let Some(static_number) =
+                    if let Some(static_string) =
+                        super::super::string::resolved_expr_static_string_value(&self.ctx, value)
+                    {
+                        LoweredExpr::String(static_string, Span::generated("str"))
+                    } else if let Some(static_number) =
                         super::super::string::resolved_expr_static_number_literal_value(
                             &self.ctx, value,
                         )

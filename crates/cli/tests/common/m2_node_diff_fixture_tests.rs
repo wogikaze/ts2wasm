@@ -3758,6 +3758,11 @@ fn object_literal_computed_number_sentinel_keys_fixture_matches_node_output_unde
 }
 
 #[test]
+fn object_literal_computed_await_key_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-expressions/object-literal-computed-await-key.ts");
+}
+
+#[test]
 fn object_literal_computed_constant_number_expression_key_fixture_matches_node_output_under_iwasm()
 {
     assert_fixture_matches_node(
@@ -3776,6 +3781,13 @@ fn object_literal_computed_conditional_key_fixture_matches_node_output_under_iwa
 fn object_literal_computed_decimal_exponent_key_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node(
         "fixtures/core-expressions/object-literal-computed-decimal-exponent-key.ts",
+    );
+}
+
+#[test]
+fn object_literal_computed_function_keys_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-expressions/object-literal-computed-function-keys.ts",
     );
 }
 

@@ -120,10 +120,21 @@ pub(super) fn resolved_expr_static_string_value(
                 resolved_expr_static_string_value(ctx, else_expr)
             }
         }
+        ResolvedExpr::ArrowFn { .. } => Some("function () {}".to_owned()),
+        ResolvedExpr::FunctionExpr { is_generator, .. } => {
+            if *is_generator {
+                Some("function* () {}".to_owned())
+            } else {
+                Some("function () {}".to_owned())
+            }
+        }
         ResolvedExpr::Call { callee, args, .. } => {
             let ResolvedExpr::Ident(name) = callee.as_ref() else {
                 return None;
             };
+            if args.is_empty() && ctx.facts.generator_function_names.contains(name) {
+                return Some("[object Object]".to_owned());
+            }
             let func_id = ctx.resolve_func(name).ok()?;
             let signature = ctx.symbols.function_signatures.get(&func_id)?;
             if signature.returns_first_param_identity && args.len() == 1 {

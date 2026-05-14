@@ -313,6 +313,12 @@ function test262_agent_start() {
   throw new Error("$262.agent is not supported by this runner slice");
 }
 
+function $DONE(error) {
+  if (error !== undefined) {
+    throw error;
+  }
+}
+
 $262.global = (function() { return this; })();
 $262.gc = test262_gc;
 $262.evalScript = test262_evalScript;
@@ -800,20 +806,41 @@ def compile_and_run_test(test_file, tmp_dir):
 # Node reference
 # ---------------------------------------------------------------------------
 
+def run_node_reference_source(
+    prepared_source,
+    metadata,
+    tmp_dir,
+    *,
+    timeout_seconds=5,
+    cwd=REPO_ROOT,
+    text=True,
+    source_stem="node-source",
+):
+    """Run a prepared test262 source with Node using metadata-appropriate mode."""
+    suffix = ".mjs" if "module" in metadata.flags else ".js"
+    tmp_source = Path(tmp_dir) / f"{source_stem}{suffix}"
+    tmp_source.write_text(prepared_source, encoding="utf-8")
+    return subprocess.run(
+        ["timeout", f"{timeout_seconds}s", "node", str(tmp_source)],
+        capture_output=True,
+        text=text,
+        cwd=cwd,
+    )
+
+
 def get_node_reference(test_file, tmp_dir):
     """Get Node.js reference output."""
     tmp_out = tmp_dir / f"node-{os.getpid()}-{id(test_file)}.txt"
     source_code = test_file.read_text(encoding="utf-8")
     metadata = parse_test262_metadata(source_code)
     prepared_source = build_test262_source(test_file, source_code, metadata, target="node")
-    tmp_source = tmp_dir / f"node-source-{os.getpid()}-{id(test_file)}.js"
-    tmp_source.write_text(prepared_source, encoding="utf-8")
-
-    result = subprocess.run(
-        ["timeout", "5s", "node", str(tmp_source)],
-        capture_output=True,
+    result = run_node_reference_source(
+        prepared_source,
+        metadata,
+        tmp_dir,
+        timeout_seconds=5,
         text=True,
-        cwd=REPO_ROOT
+        source_stem=f"node-source-{os.getpid()}-{id(test_file)}",
     )
 
     with open(tmp_out, 'w') as f:

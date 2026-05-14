@@ -244,6 +244,9 @@ impl super::super::Resolver {
                     span: Span::generated("array_new"),
                 });
             let message = match args.get(1) {
+                Some(ResolvedExpr::Undefined) => {
+                    LoweredExpr::String(String::new(), Span::generated("str"))
+                }
                 Some(message) => LoweredExpr::RuntimeCall {
                     intrinsic: RuntimeFn::ErrorMessage,
                     args: vec![self.lower_expr(message)?],
@@ -359,6 +362,9 @@ impl super::super::Resolver {
         }
         if let Some(constructor) = BuiltinErrorConstructor::from_name(class_name) {
             let message = match args.first() {
+                Some(ResolvedExpr::Undefined) => {
+                    LoweredExpr::String(String::new(), Span::generated("str"))
+                }
                 Some(message) => LoweredExpr::RuntimeCall {
                     intrinsic: RuntimeFn::ErrorMessage,
                     args: vec![self.lower_expr(message)?],
