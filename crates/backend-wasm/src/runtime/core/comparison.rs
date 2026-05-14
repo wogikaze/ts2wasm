@@ -1603,6 +1603,18 @@ impl WatEmitter<'_> {
 
     (local $b_is_number i32)
 
+    (local $a_heap_number i32)
+
+    (local $b_heap_number i32)
+
+    (local $a_obj i32)
+
+    (local $b_obj i32)
+
+    (local $a_len i32)
+
+    (local $b_len i32)
+
     (local.set $a_tag (i32.and (local.get $a) (i32.const {tag_mask})))
 
     (local.set $b_tag (i32.and (local.get $b) (i32.const {tag_mask})))
@@ -1637,25 +1649,37 @@ impl WatEmitter<'_> {
 
       (then
 
-        (local.set $a_is_number
+        (local.set $a_obj (i32.and (local.get $a) (i32.const {heap_mask})))
+
+        (local.set $a_heap_number
 
           (i32.eq
 
-            (i32.load (i32.and (local.get $a) (i32.const {heap_mask})))
+            (i32.load (local.get $a_obj))
 
-            (i32.const {heap_number_sentinel})))))
+            (i32.const {heap_number_sentinel})))
+
+        (local.set $a_is_number
+
+          (local.get $a_heap_number))))
 
     (if (i32.eq (local.get $b_tag) (i32.const {object_tag}))
 
       (then
 
-        (local.set $b_is_number
+        (local.set $b_obj (i32.and (local.get $b) (i32.const {heap_mask})))
+
+        (local.set $b_heap_number
 
           (i32.eq
 
-            (i32.load (i32.and (local.get $b) (i32.const {heap_mask})))
+            (i32.load (local.get $b_obj))
 
-            (i32.const {heap_number_sentinel})))))
+            (i32.const {heap_number_sentinel})))
+
+        (local.set $b_is_number
+
+          (local.get $b_heap_number))))
 
     ;; NaN sentinel check: NaN must never be equal to anything (including itself)
 
@@ -1670,6 +1694,40 @@ impl WatEmitter<'_> {
     (if (i32.and (local.get $a_is_number) (local.get $b_is_number))
 
       (then
+
+        (if (i32.and (local.get $a_heap_number) (local.get $b_heap_number))
+
+          (then
+
+            (local.set $a_len (i32.load (i32.add (local.get $a_obj) (i32.const {heap_number_len}))))
+
+            (local.set $b_len (i32.load (i32.add (local.get $b_obj) (i32.const {heap_number_len}))))
+
+            (if (i32.ne (local.get $a_len) (local.get $b_len))
+
+              (then (return (i32.const {false_tag}))))
+
+            (return
+
+              (if (result i32)
+
+                (call $mem_equal
+
+                  (i32.add (local.get $a_obj) (i32.const {heap_number_data}))
+
+                  (i32.add (local.get $b_obj) (i32.const {heap_number_data}))
+
+                  (local.get $a_len))
+
+                (then (i32.const {true_tag}))
+
+                (else (i32.const {false_tag}))))))
+
+        (if (i32.or (local.get $a_heap_number) (local.get $b_heap_number))
+
+          (then
+
+            (return (i32.const {false_tag}))))
 
         (return
 
@@ -1698,6 +1756,8 @@ impl WatEmitter<'_> {
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            heap_number_len = Layout::HEAP_NUMBER_DECIMAL_LEN_OFFSET,
+            heap_number_data = Layout::HEAP_NUMBER_DECIMAL_DATA_OFFSET,
         ));
     }
 

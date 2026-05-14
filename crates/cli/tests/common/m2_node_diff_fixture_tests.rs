@@ -3780,6 +3780,13 @@ fn object_literal_computed_decimal_exponent_key_fixture_matches_node_output_unde
 }
 
 #[test]
+fn object_literal_computed_fractional_math_key_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-expressions/object-literal-computed-fractional-math-key.ts",
+    );
+}
+
+#[test]
 fn symbol_key_dynamic_property_identity_matches_node_output_under_iwasm() {
     assert_fixture_matches_node(
         "fixtures/core-expressions/symbol-key-dynamic-property-identity.ts",

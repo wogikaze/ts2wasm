@@ -581,6 +581,7 @@ directories:
     - object-literal-computed-constant-number-expression-key.ts
     - object-literal-computed-conditional-key.ts
     - object-literal-computed-decimal-exponent-key.ts
+    - object-literal-computed-fractional-math-key.ts
     - object-literal-computed-number-method-call.ts
     - object-literal-computed-large-exponent-key.ts
     - object-literal-computed-number-sentinel-keys.ts

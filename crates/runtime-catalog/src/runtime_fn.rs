@@ -789,6 +789,7 @@ const STRICT_EQUAL_DEPS: &[RuntimeFn] = &[
     RuntimeFn::IsString,
     RuntimeFn::StringEqual,
     RuntimeFn::BigIntCompare,
+    RuntimeFn::MemEqual,
     RuntimeFn::NumberToI32,
 ];
 const EQUAL_EQUAL_DEPS: &[RuntimeFn] = &[
