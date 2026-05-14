@@ -397,6 +397,48 @@ pub enum RuntimeFn {
     MathImul,
     /// Math.sqrt - integer square root (floor).
     MathSqrt,
+    /// Math.acos - exact integer-backed cases.
+    MathAcos,
+    /// Math.acosh - exact integer-backed cases.
+    MathAcosh,
+    /// Math.asin - exact integer-backed cases.
+    MathAsin,
+    /// Math.asinh - exact integer-backed cases.
+    MathAsinh,
+    /// Math.atan - exact integer-backed cases.
+    MathAtan,
+    /// Math.atan2 - exact integer-backed cases.
+    MathAtan2,
+    /// Math.atanh - exact integer-backed cases.
+    MathAtanh,
+    /// Math.cos - exact integer-backed cases.
+    MathCos,
+    /// Math.cosh - exact integer-backed cases.
+    MathCosh,
+    /// Math.exp - exact integer-backed cases.
+    MathExp,
+    /// Math.expm1 - exact integer-backed cases.
+    MathExpm1,
+    /// Math.fround - no-op for integer-backed numbers.
+    MathFround,
+    /// Math.hypot - integer square root of summed squares.
+    MathHypot,
+    /// Math.log - exact integer-backed cases.
+    MathLog,
+    /// Math.log10 - exact integer-backed cases.
+    MathLog10,
+    /// Math.log1p - exact integer-backed cases.
+    MathLog1p,
+    /// Math.log2 - exact integer-backed cases.
+    MathLog2,
+    /// Math.sin - exact integer-backed cases.
+    MathSin,
+    /// Math.sinh - exact integer-backed cases.
+    MathSinh,
+    /// Math.tan - exact integer-backed cases.
+    MathTan,
+    /// Math.tanh - exact integer-backed cases.
+    MathTanh,
     /// M10: JSON functions
     JsonStringify,
     JsonParse,
@@ -1127,6 +1169,27 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MathClz32" => Some(RuntimeFn::MathClz32),
         "MathImul" => Some(RuntimeFn::MathImul),
         "MathSqrt" => Some(RuntimeFn::MathSqrt),
+        "MathAcos" => Some(RuntimeFn::MathAcos),
+        "MathAcosh" => Some(RuntimeFn::MathAcosh),
+        "MathAsin" => Some(RuntimeFn::MathAsin),
+        "MathAsinh" => Some(RuntimeFn::MathAsinh),
+        "MathAtan" => Some(RuntimeFn::MathAtan),
+        "MathAtan2" => Some(RuntimeFn::MathAtan2),
+        "MathAtanh" => Some(RuntimeFn::MathAtanh),
+        "MathCos" => Some(RuntimeFn::MathCos),
+        "MathCosh" => Some(RuntimeFn::MathCosh),
+        "MathExp" => Some(RuntimeFn::MathExp),
+        "MathExpm1" => Some(RuntimeFn::MathExpm1),
+        "MathFround" => Some(RuntimeFn::MathFround),
+        "MathHypot" => Some(RuntimeFn::MathHypot),
+        "MathLog" => Some(RuntimeFn::MathLog),
+        "MathLog10" => Some(RuntimeFn::MathLog10),
+        "MathLog1p" => Some(RuntimeFn::MathLog1p),
+        "MathLog2" => Some(RuntimeFn::MathLog2),
+        "MathSin" => Some(RuntimeFn::MathSin),
+        "MathSinh" => Some(RuntimeFn::MathSinh),
+        "MathTan" => Some(RuntimeFn::MathTan),
+        "MathTanh" => Some(RuntimeFn::MathTanh),
         "ErrorMessage" => Some(RuntimeFn::ErrorMessage),
         "JsonStringify" => Some(RuntimeFn::JsonStringify),
         "JsonParse" => Some(RuntimeFn::JsonParse),
@@ -1636,7 +1699,28 @@ impl RuntimeFn {
             | Self::MathCbrt
             | Self::MathClz32
             | Self::MathImul
-            | Self::MathSqrt => RuntimeDomain::Math,
+            | Self::MathSqrt
+            | Self::MathAcos
+            | Self::MathAcosh
+            | Self::MathAsin
+            | Self::MathAsinh
+            | Self::MathAtan
+            | Self::MathAtan2
+            | Self::MathAtanh
+            | Self::MathCos
+            | Self::MathCosh
+            | Self::MathExp
+            | Self::MathExpm1
+            | Self::MathFround
+            | Self::MathHypot
+            | Self::MathLog
+            | Self::MathLog10
+            | Self::MathLog1p
+            | Self::MathLog2
+            | Self::MathSin
+            | Self::MathSinh
+            | Self::MathTan
+            | Self::MathTanh => RuntimeDomain::Math,
             Self::ModuleRequire | Self::ModuleExportsSet | Self::ModuleExportsAssign => {
                 RuntimeDomain::Module
             }
@@ -1891,6 +1975,8 @@ impl RuntimeFn {
             | Self::GreaterEqualFast
             | Self::MathPow
             | Self::MathImul
+            | Self::MathAtan2
+            | Self::MathHypot
             | Self::AggregateError
             | Self::StrictEqual
             | Self::ValueToStringInto
@@ -2248,6 +2334,27 @@ impl RuntimeFn {
             Self::MathClz32,
             Self::MathImul,
             Self::MathSqrt,
+            Self::MathAcos,
+            Self::MathAcosh,
+            Self::MathAsin,
+            Self::MathAsinh,
+            Self::MathAtan,
+            Self::MathAtan2,
+            Self::MathAtanh,
+            Self::MathCos,
+            Self::MathCosh,
+            Self::MathExp,
+            Self::MathExpm1,
+            Self::MathFround,
+            Self::MathHypot,
+            Self::MathLog,
+            Self::MathLog10,
+            Self::MathLog1p,
+            Self::MathLog2,
+            Self::MathSin,
+            Self::MathSinh,
+            Self::MathTan,
+            Self::MathTanh,
             // JSON functions
             Self::JsonStringify,
             Self::JsonParse,
@@ -2605,6 +2712,27 @@ impl RuntimeFn {
             Self::MathClz32,
             Self::MathImul,
             Self::MathSqrt,
+            Self::MathAcos,
+            Self::MathAcosh,
+            Self::MathAsin,
+            Self::MathAsinh,
+            Self::MathAtan,
+            Self::MathAtan2,
+            Self::MathAtanh,
+            Self::MathCos,
+            Self::MathCosh,
+            Self::MathExp,
+            Self::MathExpm1,
+            Self::MathFround,
+            Self::MathHypot,
+            Self::MathLog,
+            Self::MathLog10,
+            Self::MathLog1p,
+            Self::MathLog2,
+            Self::MathSin,
+            Self::MathSinh,
+            Self::MathTan,
+            Self::MathTanh,
             // JSON functions
             Self::JsonStringify,
             Self::JsonParse,

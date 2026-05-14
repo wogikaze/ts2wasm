@@ -123,6 +123,16 @@ fn build_smoke_math_trunc_sign_method() {
 }
 
 #[test]
+fn build_smoke_math_complete() {
+    let result = run_fixture("builtins-and-io/math-complete.ts");
+    assert!(
+        result.is_ok(),
+        "complete Math static functions should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_keys_method() {
     let result = run_fixture("builtins-and-io/object-keys.ts");
     assert!(

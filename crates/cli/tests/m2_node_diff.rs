@@ -1069,6 +1069,11 @@ fn extended_math_builtins_match_node() {
     }
 }
 
+#[test]
+fn math_functions_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/math-complete.ts");
+}
+
 // Object semantics kernel fixtures (items 175-181)
 #[test]
 fn writable_false_enforcement_matches_node_output() {
