@@ -28,7 +28,7 @@ impl super::super::Resolver {
         }
         if class_name == "RegExp" {
             return Ok(LoweredExpr::String(
-                regexp_constructor_literal(args)?,
+                regexp_constructor_literal(&self.ctx, args)?,
                 Span::generated("str"),
             ));
         }

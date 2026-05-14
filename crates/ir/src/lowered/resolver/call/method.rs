@@ -1004,7 +1004,7 @@ impl super::super::Resolver {
         if let Some(result) = self.try_lower_regexp_ident_local(object, method, args, span)? {
             return Ok(Some(result));
         }
-        if let Some(regexp_args) = regexp_test_runtime(object, method, args, span)? {
+        if let Some(regexp_args) = regexp_test_runtime(&self.ctx, object, method, args, span)? {
             let lowered_args = regexp_args
                 .iter()
                 .map(|e| self.lower_expr(e))
@@ -1016,7 +1016,7 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
-        if let Some(regexp_args) = regexp_exec_runtime(object, method, args, span)? {
+        if let Some(regexp_args) = regexp_exec_runtime(&self.ctx, object, method, args, span)? {
             let lowered_args = regexp_args
                 .iter()
                 .map(|e| self.lower_expr(e))
@@ -1028,7 +1028,9 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
-        if let Some(regexp_args) = regexp_string_match_runtime(object, method, args, span)? {
+        if let Some(regexp_args) =
+            regexp_string_match_runtime(&self.ctx, object, method, args, span)?
+        {
             let lowered_args = regexp_args
                 .iter()
                 .map(|e| self.lower_expr(e))
@@ -3041,10 +3043,12 @@ impl super::super::Resolver {
         ];
         let number_methods = ["toFixed", "toExponential", "toPrecision"];
         let promise_methods = ["then", "catch", "finally"];
+        let regexp_methods = ["test", "exec"];
         let class_name_str = match self.ctx.classes.local_classes.get(&obj_local) {
             Some(c) => c.clone(),
             None if array_like_methods.contains(&method) => "Array".to_owned(),
             None if number_methods.contains(&method) => "Number".to_owned(),
+            None if regexp_methods.contains(&method) => "RegExp".to_owned(),
             None if promise_methods.contains(&method) => {
                 let intrinsic = match method {
                     "then" => RuntimeFn::PromiseThen,
@@ -3151,6 +3155,29 @@ impl super::super::Resolver {
                 args,
                 span,
             );
+        }
+
+        if let Some(intrinsic) = collection_method_runtime_fn(class_name, method) {
+            if class_name == "RegExp" && args.len() > 1 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "RegExp.prototype.{method} expects at most 1 argument, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let receiver = LoweredExpr::Local(obj_local, Span::generated("local"));
+            let lowered_args =
+                self.lower_collection_method_args(receiver, class_name, method, args)?;
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic,
+                args: lowered_args,
+                span: Span::generated("runtime_call"),
+            });
         }
 
         if class_name == "Number"

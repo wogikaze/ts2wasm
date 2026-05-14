@@ -787,6 +787,26 @@ fn lowering_accepts_regexp_i_flag_new_regexp() {
 }
 
 #[test]
+fn lowering_accepts_static_string_regexp_constructor_pattern() {
+    assert!(
+        ts2wasm_ir::lowered::lower_program(&parse_and_resolve(
+            "let alpha = \"[a-z]\"; let r = new RegExp(\"^\" + alpha + \"$\", \"i\");"
+        ))
+        .is_ok()
+    );
+}
+
+#[test]
+fn lowering_accepts_captured_static_regexp_constructor_test() {
+    assert!(
+        ts2wasm_ir::lowered::lower_program(&parse_and_resolve(
+            "function outer() { let alpha = \"[a-z]\"; let r = new RegExp(\"^\" + alpha + \"$\", \"i\"); function inner(value) { return r.test(value); } }"
+        ))
+        .is_ok()
+    );
+}
+
+#[test]
 fn lowering_rejects_duplicate_new_regexp_flags() {
     let program = parse_and_resolve("let r = new RegExp(\"abc\", \"gg\");");
     let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();

@@ -29,7 +29,16 @@ pub(super) fn update_regexp_literal_local(
     local_id: LocalId,
     expr: &ResolvedExpr,
 ) {
-    if matches!(expr, ResolvedExpr::String(raw) if looks_like_regexp_literal(raw)) {
+    let is_regexp_literal = match expr {
+        ResolvedExpr::String(raw) => looks_like_regexp_literal(raw),
+        ResolvedExpr::New {
+            class_name, args, ..
+        } if class_name == "RegExp" => {
+            crate::lowered::program_builtins::regexp_constructor_literal(ctx, args).is_ok()
+        }
+        _ => false,
+    };
+    if is_regexp_literal {
         ctx.facts.regexp_literal_locals.insert(local_id);
     } else {
         ctx.facts.regexp_literal_locals.remove(&local_id);
@@ -90,7 +99,7 @@ pub(super) fn symbol_local_name(ctx: &LoweringCtx, local_id: LocalId) -> Option<
     )
 }
 
-pub(super) fn resolved_expr_static_string_value(
+pub(crate) fn resolved_expr_static_string_value(
     ctx: &LoweringCtx,
     expr: &ResolvedExpr,
 ) -> Option<String> {

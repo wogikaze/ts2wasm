@@ -1,6 +1,7 @@
 use super::FunctionSignature;
 use crate::RuntimeFn;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
+use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::types::{FuncId, LoweredExpr};
 use std::collections::HashMap;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -866,7 +867,10 @@ pub(crate) fn is_local_tz_date_method(method: &str) -> bool {
     )
 }
 
-pub(crate) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String, Diagnostic> {
+pub(crate) fn regexp_constructor_literal(
+    ctx: &LoweringCtx,
+    args: &[ResolvedExpr],
+) -> Result<String, Diagnostic> {
     if !(1..=2).contains(&args.len()) {
         return Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
@@ -879,7 +883,9 @@ pub(crate) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String
             phase: None,
         });
     }
-    let ResolvedExpr::String(pattern) = &args[0] else {
+    let Some(pattern) =
+        crate::lowered::resolver::string::resolved_expr_static_string_value(ctx, &args[0])
+    else {
         return Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message:
@@ -891,26 +897,65 @@ pub(crate) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String
         });
     };
     let flags = match args.get(1) {
-        Some(ResolvedExpr::String(flags)) => flags.as_str(),
-        Some(_) => {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-051: RegExp constructor flags must be a string literal in this subset"
-                        .to_owned(),
-                span: None,
-
-                phase: None,
-            });
+        Some(flags) => {
+            crate::lowered::resolver::string::resolved_expr_static_string_value(ctx, flags)
+                .ok_or_else(|| {
+                    Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "issue-051: RegExp constructor flags must be a string literal in this subset"
+                .to_owned(),
+            span: None,
+            phase: None,
         }
-        None => "",
+                })?
+        }
+        None => String::new(),
     };
     let raw = format!("/{pattern}/{flags}");
-    validate_regexp_plain_literal(&raw, "RegExp constructor")?;
+    validate_regexp_constructor_flags(&flags, &raw, "RegExp constructor")?;
     Ok(raw)
 }
 
+fn validate_regexp_constructor_flags(
+    flags: &str,
+    raw: &str,
+    context: &str,
+) -> Result<(), Diagnostic> {
+    if flags.chars().any(|ch| ch != 'g' && ch != 'i') || flags.chars().count() > 2 {
+        return Err(unsupported_regexp_literal(
+            context,
+            raw,
+            "only the empty flag set, `g`, `i`, or `gi` is supported",
+        ));
+    }
+    let mut seen_g = false;
+    let mut seen_i = false;
+    for ch in flags.chars() {
+        match ch {
+            'g' if seen_g => {
+                return Err(unsupported_regexp_literal(
+                    context,
+                    raw,
+                    "duplicate flag `g`",
+                ));
+            }
+            'i' if seen_i => {
+                return Err(unsupported_regexp_literal(
+                    context,
+                    raw,
+                    "duplicate flag `i`",
+                ));
+            }
+            'g' => seen_g = true,
+            'i' => seen_i = true,
+            _ => unreachable!(),
+        }
+    }
+    Ok(())
+}
+
 pub(crate) fn regexp_test_runtime(
+    ctx: &LoweringCtx,
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
@@ -945,7 +990,7 @@ pub(crate) fn regexp_test_runtime(
             args: ctor_args,
             ..
         } if class_name == "RegExp" => {
-            regexp_constructor_literal(ctor_args)?;
+            regexp_constructor_literal(ctx, ctor_args)?;
             Ok(Some(vec![object.clone(), test_arg]))
         }
         _ => Ok(None),
@@ -953,6 +998,7 @@ pub(crate) fn regexp_test_runtime(
 }
 
 pub(crate) fn regexp_string_match_runtime(
+    ctx: &LoweringCtx,
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
@@ -995,7 +1041,7 @@ pub(crate) fn regexp_string_match_runtime(
         ResolvedExpr::New {
             class_name, args, ..
         } if class_name == "RegExp" => {
-            regexp_constructor_literal(args)?;
+            regexp_constructor_literal(ctx, args)?;
         }
         _ => {
             return Err(Diagnostic {
@@ -1013,6 +1059,7 @@ pub(crate) fn regexp_string_match_runtime(
 }
 
 pub(crate) fn regexp_exec_runtime(
+    ctx: &LoweringCtx,
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
@@ -1047,7 +1094,7 @@ pub(crate) fn regexp_exec_runtime(
             args: ctor_args,
             ..
         } if class_name == "RegExp" => {
-            regexp_constructor_literal(ctor_args)?;
+            regexp_constructor_literal(ctx, ctor_args)?;
             Ok(Some(vec![object.clone(), exec_arg]))
         }
         _ => Ok(None),
