@@ -1849,6 +1849,7 @@ fn json_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/json-parse-nested-array.ts",
         "fixtures/builtins-and-io/json-parse-number-decimal-exponent.ts",
         "fixtures/builtins-and-io/json-parse-object-nested.ts",
+        "fixtures/builtins-and-io/json-parse-reviver.ts",
         "fixtures/builtins-and-io/json-parse.ts",
         "fixtures/builtins-and-io/json-parse-surrogate-pair-object-array.ts",
         "fixtures/builtins-and-io/json-parse-unsupported-surrogate-low.ts",
@@ -1933,6 +1934,11 @@ fn json_parse_number_decimal_exponent_matches_node() {
 #[test]
 fn json_parse_object_nested_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-object-nested.ts");
+}
+
+#[test]
+fn json_parse_reviver_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/json-parse-reviver.ts");
 }
 
 #[test]
@@ -2116,6 +2122,26 @@ fn json_stringify_space_boolean_matches_node() {
 #[test]
 fn json_stringify_space_object_function_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/json-stringify-space-object-function.ts");
+}
+
+#[test]
+fn json_replacer_reviver_matches_node_output() {
+    for fixture in [
+        "fixtures/builtins-and-io/json-stringify-replacer-array.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-array-boxed.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-array-ignored.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-array-multikey.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-array-number.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-function-drop.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-function-keep.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-function-root-holder.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-function-transform.ts",
+        "fixtures/builtins-and-io/json-stringify-space.ts",
+        "fixtures/builtins-and-io/json-stringify-space-string.ts",
+        "fixtures/builtins-and-io/json-parse-reviver.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
 }
 
 #[test]

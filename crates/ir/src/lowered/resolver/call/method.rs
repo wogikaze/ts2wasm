@@ -1216,6 +1216,60 @@ impl super::super::Resolver {
             )));
         }
         if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
+            if intrinsic == RuntimeFn::JsonParse {
+                if args.is_empty() || args.len() > 2 {
+                    return Err(Diagnostic {
+                        code: DiagCode::ArityMismatch,
+                        message: format!("JSON.parse expects 1 to 2 arguments, got {}", args.len()),
+                        span: Some(span),
+                        phase: None,
+                    });
+                }
+                let mut lowered_args = vec![self.lower_expr(&args[0])?];
+                lowered_args.push(match args.get(1) {
+                    None | Some(ResolvedExpr::Undefined) => {
+                        LoweredExpr::Undefined(Span::generated("undef"))
+                    }
+                    Some(ResolvedExpr::Null) => LoweredExpr::Null(Span::generated("null")),
+                    Some(ResolvedExpr::Ident(name))
+                        if self
+                            .ctx
+                            .symbols
+                            .function_ids
+                            .get(name)
+                            .and_then(|id| self.ctx.symbols.function_signatures.get(id))
+                            .is_some_and(|signature| {
+                                !signature.has_rest && !signature.needs_arguments
+                            }) =>
+                    {
+                        let func_id = self.ctx.symbols.function_ids[name];
+                        LoweredExpr::Number(func_id.0 as i32, Span::generated("num"))
+                    }
+                    Some(ResolvedExpr::Ident(name))
+                        if self.ctx.symbols.function_ids.contains_key(name) =>
+                    {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-432: JSON.parse reviver callbacks with rest parameters or `arguments` are not supported yet".to_owned(),
+                            span: Some(span),
+                            phase: None,
+                        });
+                    }
+                    Some(_) => {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-432: JSON.parse reviver currently supports named function declarations, null, or undefined".to_owned(),
+                            span: Some(span),
+                            phase: None,
+                        });
+                    }
+                });
+                return Ok(Some(LoweredExpr::RuntimeCall {
+                    intrinsic,
+                    args: lowered_args,
+                    span: Span::generated("runtime_call"),
+                }));
+            }
             if (intrinsic == RuntimeFn::ArrayPush || intrinsic == RuntimeFn::ArrayPushGrow)
                 && args.len() != 1
             {

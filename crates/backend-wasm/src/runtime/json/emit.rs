@@ -12,6 +12,7 @@ impl WatEmitter<'_> {
             + Layout::STRING_HEADER_SIZE) as i32;
         self.emit_json_parse_syntax_error(wat, syntax_error);
         self.emit_json_parse_main(wat, syntax_error);
+        self.emit_json_parse_reviver(wat);
         self.emit_json_parse_primitives(wat);
         self.emit_json_parse_string(wat);
         self.emit_json_skip_string(wat);
@@ -26,12 +27,13 @@ impl WatEmitter<'_> {
     fn emit_json_parse_main(&self, wat: &mut String, _syntax_error: i32) {
         wat.push_str(&format!(
             r#"
-  (func $json_parse (param $s i32) (result i32)
+  (func $json_parse (param $s i32) (param $reviver i32) (result i32)
     (local $s_obj i32)
     (local $s_len i32)
     (local $pos i32)
     (local $ch i32)
     (local $value i32)
+    (local $root_holder i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
     (local.set $s_obj (i32.and (local.get $s) (i32.const {heap_mask})))
     (local.set $s_len (i32.load (local.get $s_obj)))
@@ -117,6 +119,33 @@ impl WatEmitter<'_> {
     (local.set $pos (call $json_skip_whitespace (local.get $s_obj) (local.get $s_len) (local.get $pos)))
     (if (i32.ne (local.get $pos) (local.get $s_len))
       (then (call $json_parse_syntax_error)))
+    (if
+      (i32.and
+        (i32.ne (local.get $reviver) (i32.const {undefined}))
+        (i32.ne (local.get $reviver) (i32.const {null_tag})))
+      (then
+        (local.set $root_holder (call $alloc_heap (i32.const {root_holder_size})))
+        (i32.store (local.get $root_holder) (i32.const {one}))
+        (i32.store
+          (i32.add (local.get $root_holder) (i32.const {object_flags}))
+          (i32.const {zero}))
+        (i32.store
+          (i32.add (local.get $root_holder) (i32.const {object_proto}))
+          (i32.const {zero}))
+        (i32.store
+          (i32.add (local.get $root_holder) (i32.const {obj_entries}))
+          (i32.const {empty_string}))
+        (i32.store
+          (i32.add
+            (i32.add (local.get $root_holder) (i32.const {obj_entries}))
+            (i32.const {value_off}))
+          (local.get $value))
+        (return
+          (call $json_apply_reviver
+            (local.get $reviver)
+            (i32.or (local.get $root_holder) (i32.const {object_tag}))
+            (i32.const {empty_string})
+            (local.get $value)))))
     (local.get $value))
 "#,
             undefined = ValueTag::UNDEFINED,
@@ -125,7 +154,15 @@ impl WatEmitter<'_> {
             true_tag = ValueTag::TRUE,
             heap_mask = ValueTag::HEAP_MASK,
             str_header = Layout::STRING_HEADER_SIZE,
+            root_holder_size = Layout::OBJECT_HEADER_SIZE + Layout::OBJECT_ENTRY_SIZE,
+            object_flags = Layout::OBJECT_FLAGS_OFFSET,
+            object_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            obj_entries = Layout::OBJECT_ENTRIES_OFFSET,
+            value_off = Layout::OBJECT_VALUE_OFFSET,
+            object_tag = ValueTag::OBJECT,
+            empty_string = self.string_value(""),
             zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
             lbrace = 123,
             lbracket = 91,
             quote = 34,
@@ -138,6 +175,115 @@ impl WatEmitter<'_> {
             ascii_f = 102,
             ascii_a = 97,
             ascii_s = 115,
+        ));
+    }
+
+    fn emit_json_parse_reviver(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $json_reviver_array_index_key (param $i i32) (result i32)
+    (local $result_ptr i32)
+    (local $len i32)
+    (local.set $result_ptr (call $alloc_heap (i32.const {index_key_alloc_size})))
+    (local.set $len
+      (call $value_to_string_into
+        (i32.or
+          (i32.shl (local.get $i) (i32.const {number_shift}))
+          (i32.const {number_tag}))
+        (i32.add (local.get $result_ptr) (i32.const {str_header}))))
+    (i32.store (local.get $result_ptr) (local.get $len))
+    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+
+  (func $json_revive_children (param $reviver i32) (param $value i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $len i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $child i32)
+    (local $new_child i32)
+    (local.set $tag (i32.and (local.get $value) (i32.const {tag_mask})))
+    (if (i32.eq (local.get $tag) (i32.const {array_tag}))
+      (then
+        (local.set $base (i32.and (local.get $value) (i32.const {heap_mask})))
+        (local.set $len (i32.load (local.get $base)))
+        (block $array_done
+          (loop $array_loop
+            (br_if $array_done (i32.ge_u (local.get $i) (local.get $len)))
+            (local.set $child
+              (i32.load
+                (i32.add
+                  (local.get $base)
+                  (i32.add
+                    (i32.const {array_header})
+                    (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+            (local.set $new_child
+              (call $json_apply_reviver
+                (local.get $reviver)
+                (local.get $value)
+                (call $json_reviver_array_index_key (local.get $i))
+                (local.get $child)))
+            (i32.store
+              (i32.add
+                (local.get $base)
+                (i32.add
+                  (i32.const {array_header})
+                  (i32.shl (local.get $i) (i32.const {elem_shift}))))
+              (local.get $new_child))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $array_loop)))))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $base (i32.and (local.get $value) (i32.const {heap_mask})))
+        (local.set $len (i32.load (local.get $base)))
+        (local.set $i (i32.const {zero}))
+        (block $object_done
+          (loop $object_loop
+            (br_if $object_done (i32.ge_u (local.get $i) (local.get $len)))
+            (local.set $entry_base
+              (i32.add
+                (local.get $base)
+                (i32.add
+                  (i32.const {obj_entries})
+                  (i32.shl (local.get $i) (i32.const {entry_shift})))))
+            (local.set $child (i32.load (i32.add (local.get $entry_base) (i32.const {value_off}))))
+            (local.set $new_child
+              (call $json_apply_reviver
+                (local.get $reviver)
+                (local.get $value)
+                (i32.load (local.get $entry_base))
+                (local.get $child)))
+            (i32.store
+              (i32.add (local.get $entry_base) (i32.const {value_off}))
+              (local.get $new_child))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $object_loop)))))
+    (local.get $value))
+
+  (func $json_apply_reviver (param $reviver i32) (param $holder i32) (param $key i32) (param $value i32) (result i32)
+    (local.set $value (call $json_revive_children (local.get $reviver) (local.get $value)))
+    (call $json_replacer_call
+      (local.get $reviver)
+      (local.get $holder)
+      (local.get $key)
+      (local.get $value)))
+"#,
+            index_key_alloc_size = Layout::STRING_HEADER_SIZE + 16,
+            str_header = Layout::STRING_HEADER_SIZE,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            obj_entries = Layout::OBJECT_ENTRIES_OFFSET,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            value_off = Layout::OBJECT_VALUE_OFFSET,
+            tag_mask = ValueTag::TAG_MASK,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            string_tag = ValueTag::STRING,
+            array_tag = ValueTag::ARRAY,
+            object_tag = ValueTag::OBJECT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
         ));
     }
 }

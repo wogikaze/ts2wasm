@@ -1151,12 +1151,13 @@ const JSON_STRINGIFY_DEPS: &[RuntimeFn] = &[
 ];
 const JSON_STRINGIFY_RUNTIME_STRINGS: &[&str] = &[""];
 const JSON_PARSE_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ValueToStringInto,
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,
     RuntimeFn::IsString,
     RuntimeFn::Write,
 ];
-const JSON_PARSE_RUNTIME_STRINGS: &[&str] = &[RuntimeString::JSON_PARSE_SYNTAX_ERROR];
+const JSON_PARSE_RUNTIME_STRINGS: &[&str] = &[RuntimeString::JSON_PARSE_SYNTAX_ERROR, ""];
 
 // Symbol function dependencies
 const SYMBOL_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
@@ -1991,6 +1992,7 @@ impl RuntimeFn {
             | Self::MathAtan2
             | Self::MathHypot
             | Self::ParseInt
+            | Self::JsonParse
             | Self::AggregateError
             | Self::StrictEqual
             | Self::ValueToStringInto
@@ -2012,6 +2014,7 @@ impl RuntimeFn {
             Self::PropertyGet
             | Self::PropertyDelete
             | Self::PropertyHas
+            | Self::JsonStringify
             | Self::TypedArraySet
             | Self::StringRaw
             | Self::DataViewGetInt16

@@ -389,6 +389,27 @@ fn build_smoke_json_parse_method() {
 }
 
 #[test]
+fn build_smoke_json_replacer() {
+    for fixture in [
+        "builtins-and-io/json-stringify-replacer-array.ts",
+        "builtins-and-io/json-stringify-replacer-array-boxed.ts",
+        "builtins-and-io/json-stringify-replacer-array-ignored.ts",
+        "builtins-and-io/json-stringify-replacer-array-multikey.ts",
+        "builtins-and-io/json-stringify-replacer-array-number.ts",
+        "builtins-and-io/json-stringify-replacer-function-drop.ts",
+        "builtins-and-io/json-stringify-replacer-function-keep.ts",
+        "builtins-and-io/json-stringify-replacer-function-root-holder.ts",
+        "builtins-and-io/json-stringify-replacer-function-transform.ts",
+        "builtins-and-io/json-stringify-space.ts",
+        "builtins-and-io/json-stringify-space-string.ts",
+        "builtins-and-io/json-parse-reviver.ts",
+    ] {
+        let result = run_fixture(fixture);
+        assert!(result.is_ok(), "{fixture} should build: {:?}", result.err());
+    }
+}
+
+#[test]
 fn build_smoke_string_char_at_method() {
     let result = run_fixture("builtins-and-io/string-char-at.ts");
     assert!(
