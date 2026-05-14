@@ -1389,6 +1389,49 @@ mod tests {
     }
 
     #[test]
+    fn parses_for_of_with_object_binding_pattern() {
+        let stmts =
+            parse_program("var parts: any[];\nfor (let {value, type} of parts) { value; }")
+                .unwrap();
+
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForOf { var, body, .. } = &stmts[1] else {
+            panic!("expected ForOf statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "_binding");
+        assert!(matches!(
+            body.as_slice(),
+            [
+                Stmt::Let {
+                    name,
+                    expr: Expr::Ident { name: source, .. },
+                    ..
+                },
+                ..
+            ] if name == "{value, type}" && source == "_binding"
+        ));
+    }
+
+    #[test]
+    fn parses_for_in_with_object_binding_pattern() {
+        let stmts = parse_program("var entries: any;\nfor (const {key} in entries) {}").unwrap();
+
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForIn { var, body, .. } = &stmts[1] else {
+            panic!("expected ForIn statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "_binding");
+        assert!(matches!(
+            body.first(),
+            Some(Stmt::Let {
+                name,
+                expr: Expr::Ident { name: source, .. },
+                ..
+            }) if name == "{key}" && source == "_binding"
+        ));
+    }
+
+    #[test]
     fn skips_class_index_signature() {
         let stmts = parse_program("class Foo { [key: string]: number; }").unwrap();
         assert_eq!(stmts.len(), 1);

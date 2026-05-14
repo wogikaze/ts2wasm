@@ -315,7 +315,7 @@ impl NameResolver {
                 ..
             } = stmt
             {
-                self.predeclare_name(name, Some(*span))?;
+                self.predeclare_binding(name, Some(*span))?;
             }
         }
 
@@ -1518,7 +1518,7 @@ impl NameResolver {
                 if *is_var {
                     self.declare_binding(name, None, true)?;
                 } else {
-                    self.predeclare_name(name, Some(*span))?;
+                    self.predeclare_binding(name, Some(*span))?;
                 }
             }
         }
@@ -1874,6 +1874,17 @@ impl NameResolver {
             .expect("predeclared scope should exist")
             .insert(name.to_string());
         Ok(())
+    }
+
+    fn predeclare_binding(&mut self, binding: &str, span: Option<Span>) -> Result<(), Diagnostic> {
+        if let Some(pattern) = parse_binding_pattern(binding, span)? {
+            for name in pattern.names() {
+                self.predeclare_name(name, span)?;
+            }
+            Ok(())
+        } else {
+            self.predeclare_name(binding, span)
+        }
     }
 }
 

@@ -70,6 +70,16 @@ fn resolver_snapshot_let_bool() {
 }
 
 #[test]
+fn resolver_predeclares_destructuring_binding_names() {
+    let stmts = resolve_names(&parse(
+        "function f(value) { let { first = 0, second = 0 } = value; return second; }",
+    ))
+    .unwrap();
+
+    assert_eq!(stmts.len(), 1);
+}
+
+#[test]
 fn resolver_snapshot_null_undefined() {
     let stmts = resolve_names(&parse("let n = null; let u = undefined;")).unwrap();
     assert_eq!(stmts.len(), 2);
