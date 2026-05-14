@@ -73,7 +73,7 @@ IEEE-754 丸めは未実装のまま維持する。
 ## Memory Layout
 
 ```text
-bounded linear memory (current default: initial 2 pages, max 185 pages):
+bounded linear memory (current default: initial 18 pages, max 185 pages):
 
   [0 .. 8)                          — 予約
   [8 .. 16)                         — fd_write iovec (IOVEC_PTR=8, IOVEC_LEN=12)
@@ -91,20 +91,20 @@ bounded linear memory (current default: initial 2 pages, max 185 pages):
 
 | 定数 | 値 | 用途 |
 |---|---|---|
-| `MEMORY_MIN_PAGES` | 2 | wasm memory の初期 page 数 |
+| `MEMORY_MIN_PAGES` | 18 | wasm memory の初期 page 数。大きい test262 static string data と 64 KiB stdin allocation headroom を同時に保持する |
 | `MEMORY_MAX_PAGES` | 185 | wasm memory.grow の現在の上限 (11.5625 MiB)。ABC451 depth-8 live-set reducer が `292743` を出力する最小確認値で、OOM trap 境界は維持する |
 | `DATA_START` | 256 | interned string data の開始オフセット |
 | `ALIGN` | 8 | data segment / heap の alignment |
-| `SCRATCH_OFFSET` | 32768 | 一時バッファの開始オフセット |
+| `SCRATCH_OFFSET` | 1048576 | 一時バッファの開始オフセット |
 | `SCRATCH_SIZE` | 256 | 一時バッファのサイズ |
-| `HEAP_START` | 33280 | heap bump allocator の開始アドレス |
+| `HEAP_START` | 1049088 | heap bump allocator の開始アドレス |
 | `IOVEC_PTR` | 8 | fd_write iovec の ptr フィールドオフセット |
 | `IOVEC_LEN` | 12 | fd_write iovec の len フィールドオフセット |
 | `STDIN_IOVEC_OFFSET` | 16 | stdin fd_read iovec 構造体のベースオフセット |
 | `STDIN_IOVEC_PTR` | 16 | stdin fd_read iovec の buf ptr フィールドオフセット |
 | `STDIN_IOVEC_LEN` | 20 | stdin fd_read iovec の buf_len フィールドオフセット |
 | `STDIN_NREAD_OFFSET` | 24 | fd_read が書き込む nread 値のオフセット |
-| `STDIN_BUFFER_OFFSET` | 33024 | stdin read staging buffer の開始オフセット |
+| `STDIN_BUFFER_OFFSET` | 1048832 | stdin read staging buffer の開始オフセット |
 | `STDIN_BUFFER_SIZE` | 256 | stdin read staging buffer のサイズ |
 | `STDIN_READ_LIMIT` | 65536 | 1 回の readFileSync(0) で読める最大バイト数 (64 KiB) |
 
@@ -666,7 +666,7 @@ GC kind values:
 - `GC_SWEEP_NEXT_OFFSET`: 8
 - `GC_RESERVED_OFFSET`: 12
 
-`RuntimeConst::ABI_VERSION` (現在値: 2) は layout/tag/offset 定数が変更された
+`RuntimeConst::ABI_VERSION` (現在値: 3) は layout/tag/offset 定数が変更された
 ときにインクリメントする。`layout.rs` の `abi_layout_golden_snapshot` テストが
 全定数を文字列スナップショットとして記録しており、定数を変更するたびに
 スナップショット期待値を更新し、同時に `ABI_VERSION` をバンプしなければ
@@ -775,7 +775,7 @@ Entry layout:
 
 ## ABI Versioning
 
-ABI のレイアウト / tag / offset 定数は `RuntimeConst::ABI_VERSION` (現在値: 2) で
+ABI のレイアウト / tag / offset 定数は `RuntimeConst::ABI_VERSION` (現在値: 3) で
 管理する。定数を変更するたびにバージョンをインクリメントする。
 
 機械的検証として `crates/runtime-abi/src/layout.rs` の `abi_layout_golden_snapshot`

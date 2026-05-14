@@ -6,7 +6,7 @@ impl Layout {
     pub const WASM_PAGE_SIZE: u32 = 64 * 1024;
     /// Initial memory pages reserved for runtime scratch + heap + stdin read path.
     /// Current guarantee scope: enough for one max-size stdin allocation from HEAP_START.
-    pub const MEMORY_MIN_PAGES: u32 = 2;
+    pub const MEMORY_MIN_PAGES: u32 = 18;
     /// Maximum pages the core wasm runtime may grow to before trapping allocation.
     /// This bounded default covers the ABC451 depth-8 live-set reducer while
     /// preserving an explicit OOM trap boundary.
@@ -19,14 +19,14 @@ impl Layout {
     pub const STRING_HEADER_SIZE: u32 = 4;
     pub const HEAP_BUMP_PADDING: u32 = Self::STRING_HEADER_SIZE + Self::ALIGN_MASK;
     /// Initial value of the `$heap` global (base of the dynamic heap).
-    pub const HEAP_START: u32 = 33280;
+    pub const HEAP_START: u32 = 1_049_088;
     /// Linear memory offset used as a scratch buffer by `$log` /
     /// `$value_to_string_into`.
-    pub const SCRATCH_OFFSET: u32 = 32768;
+    pub const SCRATCH_OFFSET: u32 = 1_048_576;
     /// Scratch buffer size (in bytes) reserved for temporary runtime string output.
     pub const SCRATCH_SIZE: u32 = 256;
     /// Temporary stdin staging buffer offset for `fd_read` runtime path.
-    pub const STDIN_BUFFER_OFFSET: u32 = 33024;
+    pub const STDIN_BUFFER_OFFSET: u32 = 1_048_832;
     /// Temporary stdin staging buffer size for one `fd_read` chunk.
     pub const STDIN_BUFFER_SIZE: u32 = 256;
     /// Maximum total bytes that one `readFileSync(0, "utf8")` call may consume (64 KiB).
@@ -399,11 +399,10 @@ mod tests {
     fn memory_regions_have_no_unnecessary_gaps_below_heap() {
         // Data segment table marker must be within first page
         assert!(Layout::DATA_START < Layout::WASM_PAGE_SIZE);
-        // SCRATCH and STDIN_BUFFER must be within first page
-        assert!(Layout::SCRATCH_OFFSET + Layout::SCRATCH_SIZE < Layout::WASM_PAGE_SIZE);
-        assert!(Layout::STDIN_BUFFER_OFFSET + Layout::STDIN_BUFFER_SIZE < Layout::WASM_PAGE_SIZE);
-        // HEAP_START should be at most a small multiple of page size from start
-        assert!(Layout::HEAP_START <= 2 * Layout::WASM_PAGE_SIZE);
+        let initial_memory_bytes = Layout::MEMORY_MIN_PAGES * Layout::WASM_PAGE_SIZE;
+        assert!(Layout::SCRATCH_OFFSET + Layout::SCRATCH_SIZE < initial_memory_bytes);
+        assert!(Layout::STDIN_BUFFER_OFFSET + Layout::STDIN_BUFFER_SIZE < initial_memory_bytes);
+        assert!(Layout::HEAP_START <= initial_memory_bytes);
     }
 
     #[test]
@@ -450,12 +449,12 @@ mod tests {
             heap_tag = ValueTag::OBJECT,
         );
         let expected = "\
-ABI v2\n\
+ABI v3\n\
 WASM_PAGE_SIZE=65536\n\
-MEMORY_MIN_PAGES=2 MEMORY_MAX_PAGES=185\n\
-DATA_START=256 HEAP_START=33280\n\
-SCRATCH_OFFSET=32768 SCRATCH_SIZE=256\n\
-STDIN_BUFFER_OFFSET=33024 STDIN_BUFFER_SIZE=256\n\
+MEMORY_MIN_PAGES=18 MEMORY_MAX_PAGES=185\n\
+DATA_START=256 HEAP_START=1049088\n\
+SCRATCH_OFFSET=1048576 SCRATCH_SIZE=256\n\
+STDIN_BUFFER_OFFSET=1048832 STDIN_BUFFER_SIZE=256\n\
 STDIN_IOVEC_OFFSET=16 STDIN_NREAD_OFFSET=24\n\
 GC_HEADER_SIZE=16 GC_THRESHOLD=65536\n\
 GC_HEADROOM_PAGES=12 HEAP_GROW_MIN_PAGES=16\n\
@@ -569,8 +568,9 @@ HEAP_MASK=-8 HEAP_TAG=7";
             "STDIN_BUFFER_SIZE must be ALIGN-aligned",
         );
         assert!(
-            Layout::HEAP_START <= Layout::WASM_PAGE_SIZE,
-            "HEAP_START must be within the first WASM page (page={}, heap_start={})",
+            Layout::HEAP_START <= Layout::MEMORY_MIN_PAGES * Layout::WASM_PAGE_SIZE,
+            "HEAP_START must be within initial memory (pages={}, page_size={}, heap_start={})",
+            Layout::MEMORY_MIN_PAGES,
             Layout::WASM_PAGE_SIZE,
             Layout::HEAP_START,
         );
@@ -626,6 +626,7 @@ HEAP_MASK=-8 HEAP_TAG=7";
         let archive = match RuntimeConst::ABI_VERSION {
             1 => include_str!("../compat/v1-snapshot.txt"),
             2 => include_str!("../compat/v2-snapshot.txt"),
+            3 => include_str!("../compat/v3-snapshot.txt"),
             version => panic!("missing ABI compat archive for v{version}"),
         };
 

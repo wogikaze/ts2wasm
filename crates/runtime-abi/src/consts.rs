@@ -5,7 +5,7 @@ impl RuntimeConst {
     /// in a way that breaks backward compatibility with previously compiled
     /// wasm modules. The golden snapshot test in `layout.rs` must be updated
     /// whenever this version changes.
-    pub const ABI_VERSION: u32 = 2;
+    pub const ABI_VERSION: u32 = 3;
     pub const ZERO: i32 = 0;
     pub const ONE: i32 = 1;
     pub const TEN: i32 = 10;
