@@ -604,6 +604,26 @@ fn sloppy_function_expression_iife_return_this_lowers_to_global_this() {
 }
 
 #[test]
+fn lowered_test262_assert_throws_accepts_method_non_constructor_probes() {
+    let program = parse_resolve_lower(
+        "let obj = { method() {} };\n\
+         assert.throws(TypeError, function() { new obj.method(); });\n\
+         let method = { *method() {} }.method;\n\
+         assert.throws(TypeError, function() { var instance = new method(); });",
+    );
+
+    validate_lowered(&program).expect("static assert.throws constructor probes should validate");
+    assert!(matches!(
+        program.top_level_statements.get(1),
+        Some(LoweredStmt::Expr(LoweredExpr::Undefined(_), _))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(3),
+        Some(LoweredStmt::Expr(LoweredExpr::Undefined(_), _))
+    ));
+}
+
+#[test]
 fn strict_delete_identifier_reports_strict_delete_check() {
     let err = parse_resolve_lower_result(
         r#"

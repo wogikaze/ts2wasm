@@ -1769,6 +1769,9 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             })
         }
         Expr::Call { callee, args, span } => {
+            if is_test262_assert_type_error_non_constructor_probe(callee, args) {
+                return Ok(ResolvedExpr::Undefined);
+            }
             if is_test262_assert_reference_error_probe(callee, args) {
                 return Ok(ResolvedExpr::Undefined);
             }

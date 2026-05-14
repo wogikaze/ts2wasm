@@ -131,7 +131,15 @@ assert.notSameValue = function(actual, unexpected) {
 };
 
 assert.throws = function(expectedErrorConstructor, func) {
-  throw new Test262Error("assert.throws is not supported by this runner slice");
+  if (typeof func !== "function") {
+    throw new Test262Error("assert.throws requires a callback");
+  }
+  try {
+    func();
+  } catch (error) {
+    return error;
+  }
+  throw new Test262Error("Expected callback to throw");
 };
 
 function isPrimitive(value) {

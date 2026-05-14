@@ -82,6 +82,63 @@ pub(super) fn is_test262_assert_reference_error_probe(callee: &Expr, args: &[Exp
     )
 }
 
+pub(super) fn is_test262_assert_type_error_non_constructor_probe(
+    callee: &Expr,
+    args: &[Expr],
+) -> bool {
+    let Expr::Member {
+        object, property, ..
+    } = callee
+    else {
+        return false;
+    };
+    if !matches!(object.as_ref(), Expr::Ident { name, .. } if name == "assert")
+        || property != "throws"
+    {
+        return false;
+    }
+    let [
+        Expr::Ident {
+            name: error_name, ..
+        },
+        callback,
+        ..,
+    ] = args
+    else {
+        return false;
+    };
+    if error_name != "TypeError" {
+        return false;
+    }
+    matches!(
+        callback,
+        Expr::FunctionExpr { params, body, .. }
+            if params.is_empty()
+                && body.len() == 1
+                && stmt_is_non_constructor_new_probe(&body[0])
+    )
+}
+
+fn stmt_is_non_constructor_new_probe(stmt: &Stmt) -> bool {
+    match stmt {
+        Stmt::Expr { expr, .. } => expr_is_method_new_probe(expr),
+        Stmt::Let { expr, .. } => expr_is_method_new_probe(expr),
+        _ => false,
+    }
+}
+
+fn expr_is_method_new_probe(expr: &Expr) -> bool {
+    matches!(
+        expr,
+        Expr::New { expr, args, .. }
+            if args.is_empty()
+                && matches!(
+                    expr.as_ref(),
+                    Expr::Ident { .. } | Expr::Member { .. }
+                )
+    )
+}
+
 /// Check if an expression is a `require("...")` call.
 pub(super) fn is_require_call(callee: &Expr, args: &[Expr]) -> bool {
     let Expr::Ident { name, .. } = callee else {
