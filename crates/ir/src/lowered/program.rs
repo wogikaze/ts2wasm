@@ -39,11 +39,15 @@ pub fn lower_program_with_module_url(
         collect_function_signatures(program, &function_ids, program_is_strict);
     let top_level_local_names = collect_top_level_local_names(program)?;
     let map_callback_function_names = collect_array_map_callback_function_names(program);
+    let capture_function_names = map_callback_function_names
+        .union(&generator_function_names)
+        .cloned()
+        .collect::<HashSet<_>>();
     let function_captures = collect_callback_function_captures(
         program,
         &function_ids,
         &top_level_local_names,
-        &map_callback_function_names,
+        &capture_function_names,
     )?;
     let function_mutable_captures =
         collect_callback_function_mutable_captures(program, &function_captures);

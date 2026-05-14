@@ -49,12 +49,14 @@ impl super::super::Resolver {
             return Ok(result);
         }
         if method == "next"
-            && args.is_empty()
+            && args.len() <= 1
             && crate::lowered::resolver::expr::facts::resolved_expr_is_generator_iterator(
                 &self.ctx, object,
             )
         {
-            if let Some(result) = self.lower_static_generator_next(object)? {
+            if args.is_empty()
+                && let Some(result) = self.lower_static_generator_next(object)?
+            {
                 return Ok(result);
             }
             return Ok(LoweredExpr::RuntimeCall {

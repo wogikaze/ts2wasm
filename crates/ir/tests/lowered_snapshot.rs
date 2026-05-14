@@ -706,6 +706,20 @@ fn lowered_generator_iterator_without_static_steps_still_lowers_next() {
 }
 
 #[test]
+fn lowered_generator_function_captures_top_level_assignment() {
+    let program = parse_resolve_lower(
+        "var obj;\n\
+         function* gen() { obj = { get [yield]() { return 1; } }; }\n\
+         let iter = gen();\n\
+         iter.next();\n\
+         iter.next(\"key\");\n\
+         obj.key;",
+    );
+
+    validate_lowered(&program).expect("generator top-level assignment capture should validate");
+}
+
+#[test]
 fn lowered_snapshot_for_await_of_keeps_async_iterator_ir() {
     let program = parse_resolve_lower(
         "async function f(values) { for await (let value of values) { console.log(value); } }",
