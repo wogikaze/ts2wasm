@@ -233,6 +233,16 @@ fn build_smoke_object_literal_computed_method() {
 }
 
 #[test]
+fn build_smoke_object_literal_computed_method_call() {
+    let result = run_fixture("core-expressions/object-literal-computed-method-call.ts");
+    assert!(
+        result.is_ok(),
+        "object literal computed method direct call should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_entries_method() {
     let result = run_fixture("builtins-and-io/object-entries.ts");
     assert!(

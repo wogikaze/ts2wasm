@@ -660,23 +660,110 @@ impl super::super::Resolver {
         &self,
         expr: &LoweredExpr,
     ) -> Option<HashMap<String, FuncId>> {
-        let LoweredExpr::ObjectNew { props, .. } = expr else {
-            return None;
-        };
-        let function_props = props
-            .iter()
-            .filter_map(|(key, value)| {
-                if let LoweredExpr::ArrowFn { func_id, .. } = value {
-                    Some((key.clone(), *func_id))
-                } else {
-                    None
-                }
-            })
-            .collect::<HashMap<_, _>>();
+        let mut function_props = HashMap::new();
+        self.collect_lowered_object_function_props(expr, &mut function_props)?;
         if function_props.is_empty() {
             None
         } else {
             Some(function_props)
+        }
+    }
+
+    fn collect_lowered_object_function_props(
+        &self,
+        expr: &LoweredExpr,
+        function_props: &mut HashMap<String, FuncId>,
+    ) -> Option<()> {
+        match expr {
+            LoweredExpr::ObjectNew { props, .. } => {
+                self.apply_lowered_object_props_to_function_props(props, function_props);
+                Some(())
+            }
+            LoweredExpr::Block { stmts, result, .. } => {
+                let LoweredExpr::Local(object_local, _) = result.as_ref() else {
+                    return None;
+                };
+                let mut saw_object_init = false;
+                for stmt in stmts {
+                    match stmt {
+                        LoweredStmt::Let(local, value, _) if local == object_local => {
+                            self.collect_lowered_object_function_props(value, function_props)?;
+                            saw_object_init = true;
+                        }
+                        LoweredStmt::Expr(expr, _) if saw_object_init => {
+                            self.apply_lowered_object_property_write_to_function_props(
+                                *object_local,
+                                expr,
+                                function_props,
+                            )?;
+                        }
+                        _ => {}
+                    }
+                }
+                saw_object_init.then_some(())
+            }
+            _ => None,
+        }
+    }
+
+    fn apply_lowered_object_props_to_function_props(
+        &self,
+        props: &[(String, LoweredExpr)],
+        function_props: &mut HashMap<String, FuncId>,
+    ) {
+        for (key, value) in props {
+            self.apply_function_prop_value(key.clone(), value, function_props);
+        }
+    }
+
+    fn apply_lowered_object_property_write_to_function_props(
+        &self,
+        object_local: LocalId,
+        expr: &LoweredExpr,
+        function_props: &mut HashMap<String, FuncId>,
+    ) -> Option<()> {
+        match expr {
+            LoweredExpr::PropertySet {
+                object, key, value, ..
+            } if matches!(object.as_ref(), LoweredExpr::Local(local, _) if *local == object_local) =>
+            {
+                self.apply_function_prop_value(key.clone(), value, function_props);
+                Some(())
+            }
+            LoweredExpr::PropertySetDynamic {
+                object,
+                index,
+                value,
+                ..
+            } if matches!(object.as_ref(), LoweredExpr::Local(local, _) if *local == object_local) =>
+            {
+                let key = self.lowered_static_property_key(index)?;
+                self.apply_function_prop_value(key, value, function_props);
+                Some(())
+            }
+            _ => Some(()),
+        }
+    }
+
+    fn apply_function_prop_value(
+        &self,
+        key: String,
+        value: &LoweredExpr,
+        function_props: &mut HashMap<String, FuncId>,
+    ) {
+        if let LoweredExpr::ArrowFn { func_id, .. } = value {
+            function_props.insert(key, *func_id);
+        } else {
+            function_props.remove(&key);
+        }
+    }
+
+    fn lowered_static_property_key(&self, expr: &LoweredExpr) -> Option<String> {
+        match expr {
+            LoweredExpr::String(value, _) => Some(value.clone()),
+            LoweredExpr::Number(value, _) => Some(value.to_string()),
+            LoweredExpr::Local(local, _) => self.ctx.facts.string_value(*local).cloned(),
+            _ => None,
         }
     }
 
