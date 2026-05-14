@@ -1,5 +1,6 @@
 pub mod consts;
 pub mod layout;
+pub mod layout_snapshot;
 pub mod value;
 
 /// Stack-effect metadata describing how many i32 values a runtime function
