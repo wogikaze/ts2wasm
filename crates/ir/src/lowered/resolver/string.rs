@@ -1,5 +1,6 @@
 use super::program_builtins::looks_like_regexp_literal;
 use crate::builtin_resolved::ResolvedExpr;
+use crate::lowered::classes::ObjectAccessorKey;
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -59,6 +60,18 @@ pub(super) fn update_number_literal_local(
     }
 }
 
+pub(super) fn update_symbol_value_local(
+    ctx: &mut LoweringCtx,
+    local_id: LocalId,
+    expr: &ResolvedExpr,
+) {
+    if resolved_expr_is_symbol_value(ctx, expr) {
+        ctx.facts.symbol_value_locals.insert(local_id);
+    } else {
+        ctx.facts.symbol_value_locals.remove(&local_id);
+    }
+}
+
 pub(super) fn resolved_expr_static_string_value(
     ctx: &LoweringCtx,
     expr: &ResolvedExpr,
@@ -99,6 +112,53 @@ pub(super) fn resolved_expr_static_property_key_value(
 ) -> Option<String> {
     resolved_expr_static_string_value(ctx, expr)
         .or_else(|| resolved_expr_static_number_literal_value(ctx, expr))
+}
+
+pub(super) fn resolved_expr_static_accessor_key(
+    ctx: &LoweringCtx,
+    expr: &ResolvedExpr,
+) -> Option<ObjectAccessorKey> {
+    resolved_expr_static_property_key_value(ctx, expr)
+        .map(ObjectAccessorKey::Property)
+        .or_else(|| {
+            resolved_expr_static_symbol_local(ctx, expr).map(ObjectAccessorKey::SymbolLocal)
+        })
+}
+
+fn resolved_expr_static_symbol_local(ctx: &LoweringCtx, expr: &ResolvedExpr) -> Option<LocalId> {
+    match expr {
+        ResolvedExpr::Ident(name) => {
+            let local_id = ctx.resolve_local(name).ok()?;
+            if ctx.facts.env_cell_locals.contains(&local_id)
+                || !ctx.facts.symbol_value_locals.contains(&local_id)
+            {
+                return None;
+            }
+            Some(local_id)
+        }
+        _ => None,
+    }
+}
+
+fn resolved_expr_is_symbol_value(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
+    match expr {
+        ResolvedExpr::Ident(name) => ctx
+            .resolve_local(name)
+            .ok()
+            .is_some_and(|local_id| ctx.facts.symbol_value_locals.contains(&local_id)),
+        ResolvedExpr::Call { callee, .. } => {
+            matches!(callee.as_ref(), ResolvedExpr::Ident(name) if name == "Symbol")
+        }
+        ResolvedExpr::MethodCall { object, method, .. } => {
+            method == "for"
+                && matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Symbol")
+        }
+        ResolvedExpr::PropertyAccess { object, key, .. } => {
+            key.starts_with("__symbol_")
+                && matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Symbol")
+        }
+        _ => false,
+    }
 }
 
 pub(super) fn resolved_expr_static_number_literal_value(

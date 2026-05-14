@@ -574,6 +574,7 @@ directories:
     - object-literal-computed-keys.ts
     - object-literal-computed-expression-key.ts
     - object-literal-computed-accessor-invocation.ts
+    - object-literal-symbol-accessor-invocation.ts
     - object-literal-computed-method.ts
     - object-literal-computed-method-call.ts
     - object-literal-computed-identity-method-call.ts

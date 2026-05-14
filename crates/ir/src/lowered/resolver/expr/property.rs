@@ -5,6 +5,7 @@ use super::super::{
 use super::{is_global_builtin_function_name, lower_global_builtin_function_metadata_property};
 use crate::builtin::BuiltinPropertyId;
 use crate::builtin_resolved::ResolvedExpr;
+use crate::lowered::classes::ObjectAccessorKey;
 use crate::lowered::object_kernel;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -112,7 +113,7 @@ impl super::super::Resolver {
                 .classes
                 .object_accessor_props
                 .get(&obj_local)
-                .and_then(|props| props.get(key))
+                .and_then(|props| props.get(&ObjectAccessorKey::Property(key.to_owned())))
                 .and_then(|prop| prop.get)
         {
             let lowered_args = self.lower_function_call_args(
@@ -216,7 +217,7 @@ impl super::super::Resolver {
         if let ResolvedExpr::Ident(name) = object
             && let Ok(obj_local) = self.resolve_local(name)
             && let Some(static_key) =
-                super::super::string::resolved_expr_static_property_key_value(&self.ctx, index)
+                super::super::string::resolved_expr_static_accessor_key(&self.ctx, index)
             && let Some(getter_id) = self
                 .ctx
                 .classes

@@ -3,6 +3,7 @@ use super::super::{
     private_storage_observable_access_diagnostic,
 };
 use crate::builtin_resolved::ResolvedExpr;
+use crate::lowered::classes::ObjectAccessorKey;
 use crate::lowered::object_kernel;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -227,7 +228,7 @@ impl super::super::Resolver {
                 .classes
                 .object_accessor_props
                 .get(&obj_local)
-                .and_then(|props| props.get(key))
+                .and_then(|props| props.get(&ObjectAccessorKey::Property(key.to_owned())))
                 .and_then(|prop| prop.set)
         {
             let lowered_args = self.lower_function_call_args(
@@ -266,11 +267,11 @@ impl super::super::Resolver {
                 .classes
                 .object_accessor_props
                 .get(&local_id)
-                .and_then(|props| props.get(key))
+                .and_then(|props| props.get(&ObjectAccessorKey::Property(key.to_owned())))
                 .is_none_or(|prop| prop.set.is_none())
                 && let Some(props) = self.ctx.classes.object_accessor_props.get_mut(&local_id)
             {
-                props.remove(key);
+                props.remove(&ObjectAccessorKey::Property(key.to_owned()));
                 if props.is_empty() {
                     self.ctx.classes.object_accessor_props.remove(&local_id);
                 }
@@ -323,7 +324,7 @@ impl super::super::Resolver {
         if let ResolvedExpr::Ident(name) = object
             && let Ok(obj_local) = self.resolve_local(name)
             && let Some(static_key) =
-                super::super::string::resolved_expr_static_property_key_value(&self.ctx, key)
+                super::super::string::resolved_expr_static_accessor_key(&self.ctx, key)
             && let Some(setter_id) = self
                 .ctx
                 .classes

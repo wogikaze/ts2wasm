@@ -49,6 +49,8 @@ pub struct StaticFacts {
     pub static_array_slots: HashMap<LocalId, Vec<ResolvedArrayElement>>,
     /// Locals with Symbol.iterator property (for custom iteration).
     pub symbol_iterator_object_locals: HashSet<LocalId>,
+    /// Locals known to hold symbol values.
+    pub symbol_value_locals: HashSet<LocalId>,
     /// Locals holding Array iterator objects returned by values/keys/entries.
     pub array_iterator_locals: HashSet<LocalId>,
     /// Locals holding generator iterator objects returned by generator calls.
@@ -221,6 +223,7 @@ impl StaticFacts {
             array_locals: HashSet::new(),
             static_array_slots: HashMap::new(),
             symbol_iterator_object_locals: HashSet::new(),
+            symbol_value_locals: HashSet::new(),
             array_iterator_locals: HashSet::new(),
             generator_iterator_locals: HashSet::new(),
             generator_function_yields: HashMap::new(),

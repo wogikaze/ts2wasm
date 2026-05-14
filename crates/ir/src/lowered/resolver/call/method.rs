@@ -1726,7 +1726,7 @@ impl super::super::Resolver {
             let lowered_desc = self.lower_expr(&args[2])?;
             if let (ResolvedExpr::Ident(target_name), Some(static_key), Some(accessor)) = (
                 &args[0],
-                super::super::string::resolved_expr_static_property_key_value(&self.ctx, &args[1]),
+                super::super::string::resolved_expr_static_accessor_key(&self.ctx, &args[1]),
                 self.accessor_prop_from_descriptor_expr(&lowered_desc),
             ) && let Ok(target_local) = self.resolve_local(target_name)
             {

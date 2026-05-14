@@ -3,7 +3,7 @@ use super::super::{
     function_body_is_strict,
 };
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
-use crate::lowered::classes::ObjectAccessorProp;
+use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
 use crate::lowered::facts::FunctionMethodKind;
 use crate::lowered::*;
 use std::collections::HashMap;
@@ -698,7 +698,7 @@ impl super::super::Resolver {
     pub(crate) fn accessor_props_for_lowered_object_expr(
         &self,
         expr: &LoweredExpr,
-    ) -> Option<HashMap<String, ObjectAccessorProp>> {
+    ) -> Option<HashMap<ObjectAccessorKey, ObjectAccessorProp>> {
         let mut accessor_props = HashMap::new();
         self.collect_lowered_object_accessor_props(expr, &mut accessor_props)?;
         if accessor_props.is_empty() {
@@ -711,7 +711,7 @@ impl super::super::Resolver {
     fn collect_lowered_object_accessor_props(
         &self,
         expr: &LoweredExpr,
-        accessor_props: &mut HashMap<String, ObjectAccessorProp>,
+        accessor_props: &mut HashMap<ObjectAccessorKey, ObjectAccessorProp>,
     ) -> Option<()> {
         match expr {
             LoweredExpr::ObjectNew { .. } => Some(()),
@@ -822,7 +822,7 @@ impl super::super::Resolver {
         &self,
         object_local: LocalId,
         expr: &LoweredExpr,
-        accessor_props: &mut HashMap<String, ObjectAccessorProp>,
+        accessor_props: &mut HashMap<ObjectAccessorKey, ObjectAccessorProp>,
     ) -> Option<()> {
         match expr {
             LoweredExpr::RuntimeCall {
@@ -832,7 +832,7 @@ impl super::super::Resolver {
             } if args.len() == 3
                 && matches!(&args[0], LoweredExpr::Local(local, _) if *local == object_local) =>
             {
-                let key = self.lowered_static_property_key(&args[1])?;
+                let key = self.lowered_static_accessor_key(&args[1])?;
                 self.apply_accessor_descriptor_value(key, &args[2], accessor_props);
                 Some(())
             }
@@ -840,13 +840,14 @@ impl super::super::Resolver {
                 object, key, value, ..
             } if matches!(object.as_ref(), LoweredExpr::Local(local, _) if *local == object_local) =>
             {
-                if let Some(prop) = accessor_props.get(key)
+                let accessor_key = ObjectAccessorKey::Property(key.clone());
+                if let Some(prop) = accessor_props.get(&accessor_key)
                     && prop.set.is_some()
                 {
                     return Some(());
                 }
                 if !matches!(value.as_ref(), LoweredExpr::ArrowFn { .. }) {
-                    accessor_props.remove(key);
+                    accessor_props.remove(&accessor_key);
                 }
                 Some(())
             }
@@ -874,9 +875,9 @@ impl super::super::Resolver {
 
     fn apply_accessor_descriptor_value(
         &self,
-        key: String,
+        key: ObjectAccessorKey,
         desc: &LoweredExpr,
-        accessor_props: &mut HashMap<String, ObjectAccessorProp>,
+        accessor_props: &mut HashMap<ObjectAccessorKey, ObjectAccessorProp>,
     ) {
         if let Some(accessor) = self.accessor_prop_from_descriptor_expr(desc) {
             accessor_props
@@ -915,6 +916,27 @@ impl super::super::Resolver {
             LoweredExpr::String(value, _) => Some(value.clone()),
             LoweredExpr::Number(value, _) => Some(value.to_string()),
             LoweredExpr::Local(local, _) => self.ctx.facts.string_value(*local).cloned(),
+            _ => None,
+        }
+    }
+
+    fn lowered_static_accessor_key(&self, expr: &LoweredExpr) -> Option<ObjectAccessorKey> {
+        match expr {
+            LoweredExpr::String(value, _) => Some(ObjectAccessorKey::Property(value.clone())),
+            LoweredExpr::Number(value, _) => Some(ObjectAccessorKey::Property(value.to_string())),
+            LoweredExpr::Local(local, _) => self
+                .ctx
+                .facts
+                .string_value(*local)
+                .cloned()
+                .map(ObjectAccessorKey::Property)
+                .or_else(|| {
+                    self.ctx
+                        .facts
+                        .symbol_value_locals
+                        .contains(local)
+                        .then_some(ObjectAccessorKey::SymbolLocal(*local))
+                }),
             _ => None,
         }
     }
