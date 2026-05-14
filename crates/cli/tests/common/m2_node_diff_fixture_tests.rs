@@ -2341,6 +2341,11 @@ fn arraybuffer_dataview_uint32_matches_node_output() {
 }
 
 #[test]
+fn dataview_basic_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/dataview-complete.ts");
+}
+
+#[test]
 fn symbol_constructor_basic_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/symbol-constructor-basic.ts");
 }

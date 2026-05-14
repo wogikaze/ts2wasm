@@ -197,6 +197,7 @@ directories:
     - arraybuffer-dataview-int32.ts
     - arraybuffer-dataview-uint16.ts
     - arraybuffer-dataview-uint32.ts
+    - dataview-complete.ts
     - async-generator-basic.ts
     - atomics-unsupported.ts
     - boolean-symbol-prototype.ts
