@@ -1865,20 +1865,47 @@ impl WatEmitter<'_> {
       (loop $ws_loop
         (br_if $ws_done (i32.ge_u (local.get $i) (local.get $len)))
         (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (local.get $i)))))
-        (if (i32.eq (local.get $ch) (i32.const {space}))
+        (if (i32.or
+              (i32.eq (local.get $ch) (i32.const {space}))
+              (i32.and
+                (i32.ge_u (local.get $ch) (i32.const {ascii_tab}))
+                (i32.le_u (local.get $ch) (i32.const {ascii_cr}))))
           (then (local.set $i (i32.add (local.get $i) (i32.const {one}))) (br $ws_loop)))
         (if (i32.lt_u (i32.add (local.get $i) (i32.const {two})) (local.get $len))
           (then
             (local.set $ch2 (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (i32.add (local.get $i) (i32.const {one}))))))
             (local.set $ch3 (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (i32.add (local.get $i) (i32.const {two}))))))
-            (if (i32.and (i32.and (i32.eq (local.get $ch) (i32.const {utf8_e1})) (i32.eq (local.get $ch2) (i32.const {utf8_9a}))) (i32.eq (local.get $ch3) (i32.const {utf8_80})))
-              (then (local.set $i (i32.add (local.get $i) (i32.const {three}))) (br $ws_loop)))
-            (if (i32.and (i32.and (i32.eq (local.get $ch) (i32.const {utf8_e2})) (i32.eq (local.get $ch2) (i32.const {utf8_80}))) (i32.or (i32.and (i32.ge_u (local.get $ch3) (i32.const {utf8_80})) (i32.le_u (local.get $ch3) (i32.const {utf8_8a}))) (i32.eq (local.get $ch3) (i32.const {utf8_af}))))
-              (then (local.set $i (i32.add (local.get $i) (i32.const {three}))) (br $ws_loop)))
-            (if (i32.and (i32.and (i32.eq (local.get $ch) (i32.const {utf8_e2})) (i32.eq (local.get $ch2) (i32.const {utf8_81}))) (i32.eq (local.get $ch3) (i32.const {utf8_9f})))
-              (then (local.set $i (i32.add (local.get $i) (i32.const {three}))) (br $ws_loop)))
-            (if (i32.and (i32.and (i32.eq (local.get $ch) (i32.const {utf8_e3})) (i32.eq (local.get $ch2) (i32.const {utf8_80}))) (i32.eq (local.get $ch3) (i32.const {utf8_80})))
-              (then (local.set $i (i32.add (local.get $i) (i32.const {three}))) (br $ws_loop)))))
+            (if
+              (i32.or
+                (i32.and
+                  (i32.eq (local.get $ch) (i32.const {utf8_e1}))
+                  (i32.and
+                    (i32.eq (local.get $ch2) (i32.const {utf8_9a}))
+                    (i32.eq (local.get $ch3) (i32.const {utf8_80}))))
+                (i32.or
+                  (i32.and
+                    (i32.eq (local.get $ch) (i32.const {utf8_e2}))
+                    (i32.and
+                      (i32.eq (local.get $ch2) (i32.const {utf8_80}))
+                      (i32.or
+                        (i32.and
+                          (i32.ge_u (local.get $ch3) (i32.const {utf8_80}))
+                          (i32.le_u (local.get $ch3) (i32.const {utf8_8a})))
+                        (i32.eq (local.get $ch3) (i32.const {utf8_af})))))
+                  (i32.or
+                    (i32.and
+                      (i32.eq (local.get $ch) (i32.const {utf8_e2}))
+                      (i32.and
+                        (i32.eq (local.get $ch2) (i32.const {utf8_81}))
+                        (i32.eq (local.get $ch3) (i32.const {utf8_9f}))))
+                    (i32.and
+                      (i32.eq (local.get $ch) (i32.const {utf8_e3}))
+                      (i32.and
+                        (i32.eq (local.get $ch2) (i32.const {utf8_80}))
+                        (i32.eq (local.get $ch3) (i32.const {utf8_80})))))))
+              (then
+                (local.set $i (i32.add (local.get $i) (i32.const {three})))
+                (br $ws_loop)))))
         (br $ws_done)))
     (if (i32.lt_u (local.get $i) (local.get $len))
       (then
@@ -1945,6 +1972,8 @@ impl WatEmitter<'_> {
             two = 2,
             three = 3,
             space = 32,
+            ascii_tab = 9,
+            ascii_cr = 13,
             plus = 43,
             minus = RuntimeConst::ASCII_MINUS,
             nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
