@@ -799,4 +799,237 @@ impl WatEmitter<'_> {
             presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
         ));
     }
+
+    pub(super) fn emit_atomics_add(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $atomics_add (param $arr i32) (param $idx_val i32) (param $val i32) (result i32)
+    (local $base i32)
+    (local $idx i32)
+    (local $addr i32)
+    (local $old i32)
+    (local.set $base (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $idx (i32.shr_s (local.get $idx_val) (i32.const {number_shift})))
+    (local.set $addr
+      (i32.add
+        (local.get $base)
+        (i32.add
+          (i32.const {array_header})
+          (i32.shl (local.get $idx) (i32.const {elem_shift})))))
+    (local.set $old (i32.load (local.get $addr)))
+    (i32.store (local.get $addr) (i32.add (local.get $old) (local.get $val)))
+    (i32.store
+      (i32.add (local.get $base) (i32.const {presence_words_offset}))
+      (i32.or
+        (i32.load (i32.add (local.get $base) (i32.const {presence_words_offset})))
+        (i32.shl (i32.const 1) (local.get $idx))))
+    (local.get $old))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_atomics_sub(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $atomics_sub (param $arr i32) (param $idx_val i32) (param $val i32) (result i32)
+    (local $base i32)
+    (local $idx i32)
+    (local $addr i32)
+    (local $old i32)
+    (local.set $base (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $idx (i32.shr_s (local.get $idx_val) (i32.const {number_shift})))
+    (local.set $addr
+      (i32.add
+        (local.get $base)
+        (i32.add
+          (i32.const {array_header})
+          (i32.shl (local.get $idx) (i32.const {elem_shift})))))
+    (local.set $old (i32.load (local.get $addr)))
+    (i32.store (local.get $addr) (i32.sub (local.get $old) (local.get $val)))
+    (i32.store
+      (i32.add (local.get $base) (i32.const {presence_words_offset}))
+      (i32.or
+        (i32.load (i32.add (local.get $base) (i32.const {presence_words_offset})))
+        (i32.shl (i32.const 1) (local.get $idx))))
+    (local.get $old))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_atomics_and(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $atomics_and (param $arr i32) (param $idx_val i32) (param $val i32) (result i32)
+    (local $base i32)
+    (local $idx i32)
+    (local $addr i32)
+    (local $old i32)
+    (local.set $base (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $idx (i32.shr_s (local.get $idx_val) (i32.const {number_shift})))
+    (local.set $addr
+      (i32.add
+        (local.get $base)
+        (i32.add
+          (i32.const {array_header})
+          (i32.shl (local.get $idx) (i32.const {elem_shift})))))
+    (local.set $old (i32.load (local.get $addr)))
+    (i32.store (local.get $addr) (i32.and (local.get $old) (local.get $val)))
+    (i32.store
+      (i32.add (local.get $base) (i32.const {presence_words_offset}))
+      (i32.or
+        (i32.load (i32.add (local.get $base) (i32.const {presence_words_offset})))
+        (i32.shl (i32.const 1) (local.get $idx))))
+    (local.get $old))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_atomics_or(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $atomics_or (param $arr i32) (param $idx_val i32) (param $val i32) (result i32)
+    (local $base i32)
+    (local $idx i32)
+    (local $addr i32)
+    (local $old i32)
+    (local.set $base (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $idx (i32.shr_s (local.get $idx_val) (i32.const {number_shift})))
+    (local.set $addr
+      (i32.add
+        (local.get $base)
+        (i32.add
+          (i32.const {array_header})
+          (i32.shl (local.get $idx) (i32.const {elem_shift})))))
+    (local.set $old (i32.load (local.get $addr)))
+    (i32.store (local.get $addr) (i32.or (local.get $old) (local.get $val)))
+    (i32.store
+      (i32.add (local.get $base) (i32.const {presence_words_offset}))
+      (i32.or
+        (i32.load (i32.add (local.get $base) (i32.const {presence_words_offset})))
+        (i32.shl (i32.const 1) (local.get $idx))))
+    (local.get $old))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_atomics_xor(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $atomics_xor (param $arr i32) (param $idx_val i32) (param $val i32) (result i32)
+    (local $base i32)
+    (local $idx i32)
+    (local $addr i32)
+    (local $old i32)
+    (local.set $base (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $idx (i32.shr_s (local.get $idx_val) (i32.const {number_shift})))
+    (local.set $addr
+      (i32.add
+        (local.get $base)
+        (i32.add
+          (i32.const {array_header})
+          (i32.shl (local.get $idx) (i32.const {elem_shift})))))
+    (local.set $old (i32.load (local.get $addr)))
+    (i32.store (local.get $addr) (i32.xor (local.get $old) (local.get $val)))
+    (i32.store
+      (i32.add (local.get $base) (i32.const {presence_words_offset}))
+      (i32.or
+        (i32.load (i32.add (local.get $base) (i32.const {presence_words_offset})))
+        (i32.shl (i32.const 1) (local.get $idx))))
+    (local.get $old))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_atomics_exchange(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $atomics_exchange (param $arr i32) (param $idx_val i32) (param $val i32) (result i32)
+    (local $base i32)
+    (local $idx i32)
+    (local $addr i32)
+    (local $old i32)
+    (local.set $base (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $idx (i32.shr_s (local.get $idx_val) (i32.const {number_shift})))
+    (local.set $addr
+      (i32.add
+        (local.get $base)
+        (i32.add
+          (i32.const {array_header})
+          (i32.shl (local.get $idx) (i32.const {elem_shift})))))
+    (local.set $old (i32.load (local.get $addr)))
+    (i32.store (local.get $addr) (local.get $val))
+    (i32.store
+      (i32.add (local.get $base) (i32.const {presence_words_offset}))
+      (i32.or
+        (i32.load (i32.add (local.get $base) (i32.const {presence_words_offset})))
+        (i32.shl (i32.const 1) (local.get $idx))))
+    (local.get $old))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_atomics_compare_exchange(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $atomics_compare_exchange (param $arr i32) (param $idx_val i32) (param $expected i32) (param $replacement i32) (result i32)
+    (local $base i32)
+    (local $idx i32)
+    (local $addr i32)
+    (local $old i32)
+    (local.set $base (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $idx (i32.shr_s (local.get $idx_val) (i32.const {number_shift})))
+    (local.set $addr
+      (i32.add
+        (local.get $base)
+        (i32.add
+          (i32.const {array_header})
+          (i32.shl (local.get $idx) (i32.const {elem_shift})))))
+    (local.set $old (i32.load (local.get $addr)))
+    (if (i32.eq (local.get $old) (local.get $expected))
+      (then
+        (i32.store (local.get $addr) (local.get $replacement))
+        (i32.store
+          (i32.add (local.get $base) (i32.const {presence_words_offset}))
+          (i32.or
+            (i32.load (i32.add (local.get $base) (i32.const {presence_words_offset})))
+            (i32.shl (i32.const 1) (local.get $idx))))))
+    (local.get $old))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+        ));
+    }
 }

@@ -103,6 +103,13 @@ pub(crate) fn resolve_method_to_runtime_fn(
             return match method {
                 "load" => Some(RuntimeFn::AtomicsLoad),
                 "store" => Some(RuntimeFn::AtomicsStore),
+                "add" => Some(RuntimeFn::AtomicsAdd),
+                "sub" => Some(RuntimeFn::AtomicsSub),
+                "and" => Some(RuntimeFn::AtomicsAnd),
+                "or" => Some(RuntimeFn::AtomicsOr),
+                "xor" => Some(RuntimeFn::AtomicsXor),
+                "exchange" => Some(RuntimeFn::AtomicsExchange),
+                "compareExchange" => Some(RuntimeFn::AtomicsCompareExchange),
                 _ => None,
             };
         }

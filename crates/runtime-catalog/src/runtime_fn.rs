@@ -141,6 +141,20 @@ pub enum RuntimeFn {
     AtomicsLoad,
     /// Atomics.store(typedArray, index, value)
     AtomicsStore,
+    /// Atomics.add(typedArray, index, value)
+    AtomicsAdd,
+    /// Atomics.sub(typedArray, index, value)
+    AtomicsSub,
+    /// Atomics.and(typedArray, index, value)
+    AtomicsAnd,
+    /// Atomics.or(typedArray, index, value)
+    AtomicsOr,
+    /// Atomics.xor(typedArray, index, value)
+    AtomicsXor,
+    /// Atomics.exchange(typedArray, index, value)
+    AtomicsExchange,
+    /// Atomics.compareExchange(typedArray, index, expected, replacement)
+    AtomicsCompareExchange,
     SetFromArray,
     SetValuesArray,
     SetPrototypeAddGet,
@@ -1291,6 +1305,13 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "TypedArraySet" => Some(RuntimeFn::TypedArraySet),
         "AtomicsLoad" => Some(RuntimeFn::AtomicsLoad),
         "AtomicsStore" => Some(RuntimeFn::AtomicsStore),
+        "AtomicsAdd" => Some(RuntimeFn::AtomicsAdd),
+        "AtomicsSub" => Some(RuntimeFn::AtomicsSub),
+        "AtomicsAnd" => Some(RuntimeFn::AtomicsAnd),
+        "AtomicsOr" => Some(RuntimeFn::AtomicsOr),
+        "AtomicsXor" => Some(RuntimeFn::AtomicsXor),
+        "AtomicsExchange" => Some(RuntimeFn::AtomicsExchange),
+        "AtomicsCompareExchange" => Some(RuntimeFn::AtomicsCompareExchange),
         "ArrayBufferNew" => Some(RuntimeFn::ArrayBufferNew),
         "DataViewNew" => Some(RuntimeFn::DataViewNew),
         "DataViewGetInt8" => Some(RuntimeFn::DataViewGetInt8),
@@ -1789,6 +1810,13 @@ impl RuntimeFn {
             | Self::TypedArraySet
             | Self::AtomicsLoad
             | Self::AtomicsStore
+            | Self::AtomicsAdd
+            | Self::AtomicsSub
+            | Self::AtomicsAnd
+            | Self::AtomicsOr
+            | Self::AtomicsXor
+            | Self::AtomicsExchange
+            | Self::AtomicsCompareExchange
             | Self::DataViewNew
             | Self::DataViewGetInt8
             | Self::DataViewSetInt8
@@ -1922,6 +1950,12 @@ impl RuntimeFn {
             | Self::PropertyHas
             | Self::TypedArraySet
             | Self::AtomicsStore
+            | Self::AtomicsAdd
+            | Self::AtomicsSub
+            | Self::AtomicsAnd
+            | Self::AtomicsOr
+            | Self::AtomicsXor
+            | Self::AtomicsExchange
             | Self::StringRaw
             | Self::DataViewGetInt16
             | Self::DataViewGetUint16
@@ -1942,7 +1976,7 @@ impl RuntimeFn {
             }
 
             // 4 params, 1 result
-            Self::PropertySet => RuntimeSignature {
+            Self::PropertySet | Self::AtomicsCompareExchange => RuntimeSignature {
                 params: 4,
                 results: 1,
             },
@@ -2082,6 +2116,13 @@ impl RuntimeFn {
             Self::TypedArraySet,
             Self::AtomicsLoad,
             Self::AtomicsStore,
+            Self::AtomicsAdd,
+            Self::AtomicsSub,
+            Self::AtomicsAnd,
+            Self::AtomicsOr,
+            Self::AtomicsXor,
+            Self::AtomicsExchange,
+            Self::AtomicsCompareExchange,
             Self::SetFromArray,
             Self::SetValuesArray,
             Self::SetPrototypeAddGet,
@@ -2441,6 +2482,13 @@ impl RuntimeFn {
             Self::TypedArraySet,
             Self::AtomicsLoad,
             Self::AtomicsStore,
+            Self::AtomicsAdd,
+            Self::AtomicsSub,
+            Self::AtomicsAnd,
+            Self::AtomicsOr,
+            Self::AtomicsXor,
+            Self::AtomicsExchange,
+            Self::AtomicsCompareExchange,
             Self::SetFromArray,
             Self::SetValuesArray,
             Self::SetPrototypeAddGet,

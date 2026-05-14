@@ -2405,3 +2405,14 @@ fn build_smoke_atomics_basic() {
         result.err()
     );
 }
+
+// Atomics complete (add, sub, and, or, xor, exchange, compareExchange)
+#[test]
+fn build_smoke_atomics_complete() {
+    let result = run_fixture("builtins-and-io/atomics-complete.ts");
+    assert!(
+        result.is_ok(),
+        "Atomics.add/sub/and/or/xor/exchange/compareExchange should build: {:?}",
+        result.err()
+    );
+}
