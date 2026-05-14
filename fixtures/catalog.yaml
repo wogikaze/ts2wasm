@@ -325,6 +325,7 @@ directories:
     - math-round.ts
     - math-sqrt.ts
     - math-trunc-sign.ts
+    - number-format-no-args.ts
     - number-is-finite.ts
     - number-is-integer.ts
     - number-is-integer-i32.ts

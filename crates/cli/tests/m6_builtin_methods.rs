@@ -633,6 +633,16 @@ fn number_is_safe_integer_method_emits() {
 }
 
 #[test]
+fn build_smoke_number_format_no_args_method() {
+    let result = run_fixture("builtins-and-io/number-format-no-args.ts");
+    assert!(
+        result.is_ok(),
+        "Number formatting methods without arguments should compile: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn string_from_code_point_method_emits() {
     let result = run_fixture("builtins-and-io/string-from-code-point.ts");
     assert!(
