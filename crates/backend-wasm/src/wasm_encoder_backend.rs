@@ -4,6 +4,10 @@ use wasm_encoder::*;
 
 use crate::wasm_ir::*;
 
+type WasmFuncType = (Vec<WasmValType>, Vec<WasmValType>);
+type TypeIndexMap = HashMap<WasmFuncType, u32>;
+type SymbolIndexMap = HashMap<String, u32>;
+
 pub fn emit_wasm_module_binary(module: &WasmModule) -> Vec<u8> {
     let mut wasm = wasm_encoder::Module::new();
 
@@ -129,17 +133,17 @@ pub fn emit_wasm_module_binary(module: &WasmModule) -> Vec<u8> {
 fn build_type_and_mappings(
     module: &WasmModule,
 ) -> (
-    Vec<(Vec<WasmValType>, Vec<WasmValType>)>,
-    HashMap<(Vec<WasmValType>, Vec<WasmValType>), u32>,
-    HashMap<String, u32>,
-    HashMap<String, u32>,
-    HashMap<String, u32>,
+    Vec<WasmFuncType>,
+    TypeIndexMap,
+    SymbolIndexMap,
+    SymbolIndexMap,
+    SymbolIndexMap,
 ) {
-    let mut types: Vec<(Vec<WasmValType>, Vec<WasmValType>)> = Vec::new();
-    let mut func_types: HashMap<(Vec<WasmValType>, Vec<WasmValType>), u32> = HashMap::new();
-    let mut import_func_type_indices: HashMap<String, u32> = HashMap::new();
-    let mut global_indices: HashMap<String, u32> = HashMap::new();
-    let mut func_name_indices: HashMap<String, u32> = HashMap::new();
+    let mut types: Vec<WasmFuncType> = Vec::new();
+    let mut func_types: TypeIndexMap = HashMap::new();
+    let mut import_func_type_indices: SymbolIndexMap = HashMap::new();
+    let mut global_indices: SymbolIndexMap = HashMap::new();
+    let mut func_name_indices: SymbolIndexMap = HashMap::new();
     let mut next_idx: u32 = 0;
 
     // Register import function types and assign indices.
@@ -177,9 +181,9 @@ fn build_type_and_mappings(
 }
 
 fn type_index(
-    types: &mut Vec<(Vec<WasmValType>, Vec<WasmValType>)>,
-    func_types: &mut HashMap<(Vec<WasmValType>, Vec<WasmValType>), u32>,
-    key: &(Vec<WasmValType>, Vec<WasmValType>),
+    types: &mut Vec<WasmFuncType>,
+    func_types: &mut TypeIndexMap,
+    key: &WasmFuncType,
 ) -> u32 {
     if let Some(&idx) = func_types.get(key) {
         return idx;
@@ -388,6 +392,7 @@ fn build_single_function(
         }
     }
 
+    func.instruction(&I::End);
     func
 }
 

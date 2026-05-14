@@ -694,6 +694,13 @@ impl WatWriter {
 mod tests {
     use super::*;
     use crate::wasm_ir::{WasmDataSegment, WasmExport, WasmMemory, WasmValType};
+    #[cfg(feature = "wasm-encoder-backend")]
+    use crate::{
+        emit_wasm_module_binary,
+        wasm_ir::{WasmGlobal, WasmImport},
+    };
+    #[cfg(feature = "wasm-encoder-backend")]
+    use std::{fs, process::Command};
 
     #[test]
     fn render_import_and_data_and_global_via_builder() {
@@ -1034,6 +1041,157 @@ mod tests {
                 ")\n",
             )
         );
+    }
+
+    #[cfg(feature = "wasm-encoder-backend")]
+    fn validate_wat_if_available(test_name: &str, wat: &str) {
+        if Command::new("wat2wasm").arg("--version").output().is_err() {
+            eprintln!("skipping WAT validation for {test_name}: wat2wasm unavailable");
+            return;
+        }
+
+        let wat_path = temp_path(test_name, "wat");
+        let wasm_path = temp_path(test_name, "wat.wasm");
+        fs::write(&wat_path, wat).expect("write temp WAT fixture");
+        let output = Command::new("wat2wasm")
+            .arg(&wat_path)
+            .arg("-o")
+            .arg(&wasm_path)
+            .output()
+            .expect("run wat2wasm");
+        let _ = fs::remove_file(&wat_path);
+        let _ = fs::remove_file(&wasm_path);
+        assert!(
+            output.status.success(),
+            "wat2wasm failed for {test_name}\nstdout:\n{}\nstderr:\n{}\nWAT:\n{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr),
+            wat
+        );
+    }
+
+    #[cfg(feature = "wasm-encoder-backend")]
+    fn validate_wasm_if_available(test_name: &str, wasm: &[u8]) {
+        let wasm_path = temp_path(test_name, "wasm");
+        fs::write(&wasm_path, wasm).expect("write temp wasm fixture");
+
+        let result = if Command::new("wasm-tools").arg("--version").output().is_ok() {
+            Some(
+                Command::new("wasm-tools")
+                    .arg("validate")
+                    .arg(&wasm_path)
+                    .output()
+                    .expect("run wasm-tools validate"),
+            )
+        } else if Command::new("wasm-validate")
+            .arg("--version")
+            .output()
+            .is_ok()
+        {
+            Some(
+                Command::new("wasm-validate")
+                    .arg(&wasm_path)
+                    .output()
+                    .expect("run wasm-validate"),
+            )
+        } else {
+            eprintln!(
+                "skipping wasm binary validation for {test_name}: validation tool unavailable"
+            );
+            None
+        };
+
+        let _ = fs::remove_file(&wasm_path);
+        if let Some(output) = result {
+            assert!(
+                output.status.success(),
+                "wasm validation failed for {test_name}\nstdout:\n{}\nstderr:\n{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+    }
+
+    #[cfg(feature = "wasm-encoder-backend")]
+    fn temp_path(test_name: &str, extension: &str) -> std::path::PathBuf {
+        let sanitized = test_name.replace(|c: char| !c.is_ascii_alphanumeric(), "_");
+        std::env::temp_dir().join(format!(
+            "ts2wasm_{sanitized}_{}_{}.{extension}",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ))
+    }
+
+    #[cfg(feature = "wasm-encoder-backend")]
+    fn assert_module_emits_with_wat_and_wasm_encoder(test_name: &str, module: &WasmModule) {
+        let mut writer = WatWriter::new();
+        writer.emit_module(module);
+        let wat = writer.into_string();
+        validate_wat_if_available(test_name, &wat);
+
+        let wasm = emit_wasm_module_binary(module);
+        assert!(
+            wasm.starts_with(b"\0asm"),
+            "wasm encoder output should start with wasm magic for {test_name}"
+        );
+        validate_wasm_if_available(test_name, &wasm);
+    }
+
+    #[cfg(feature = "wasm-encoder-backend")]
+    fn parity_fixture_function_export() -> WasmModule {
+        WasmModule::new()
+            .function(
+                WasmFunction::new("main")
+                    .result(WasmValType::I32)
+                    .body(vec![WasmInstr::I32Const(42), WasmInstr::Return]),
+            )
+            .export(WasmExport::func("main", "main"))
+    }
+
+    #[cfg(feature = "wasm-encoder-backend")]
+    fn parity_fixture_import_memory_global_data() -> WasmModule {
+        WasmModule::new()
+            .import(WasmImport::func(
+                "env",
+                "bump",
+                "$host_bump",
+                [WasmValType::I32],
+                [WasmValType::I32],
+            ))
+            .memory(WasmMemory::new(1, 1))
+            .global(WasmGlobal::i32_mut("$counter", 0))
+            .data_segment(WasmDataSegment::new(0, b"ok".to_vec()))
+            .function(
+                WasmFunction::new("main")
+                    .result(WasmValType::I32)
+                    .body(vec![
+                        WasmInstr::GlobalGet("$counter".to_owned()),
+                        WasmInstr::I32Const(1),
+                        WasmInstr::I32Add,
+                        WasmInstr::GlobalSet("$counter".to_owned()),
+                        WasmInstr::I32Const(41),
+                        WasmInstr::Call("$host_bump".to_owned()),
+                        WasmInstr::Return,
+                    ]),
+            )
+            .export(WasmExport::func("main", "main"))
+            .export(WasmExport::memory("memory"))
+    }
+
+    #[test]
+    #[cfg(feature = "wasm-encoder-backend")]
+    fn wasm_encoder_parity_fixtures_emit_and_validate() {
+        let fixtures = [
+            ("function_export", parity_fixture_function_export()),
+            (
+                "import_memory_global_data",
+                parity_fixture_import_memory_global_data(),
+            ),
+        ];
+
+        for (name, module) in fixtures {
+            assert_module_emits_with_wat_and_wasm_encoder(name, &module);
+        }
     }
 
     #[test]
