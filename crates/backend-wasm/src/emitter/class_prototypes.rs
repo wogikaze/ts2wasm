@@ -140,6 +140,14 @@ impl WatEmitter<'_> {
             );
             Self::collect_class_prototypes_from_stmts(&function.body, &mut prototypes);
         }
+        for module in &self.program.modules {
+            Self::collect_class_decl_prototypes(
+                &module.statements,
+                &mut prototypes,
+                &self.class_name_to_ctor,
+            );
+            Self::collect_class_prototypes_from_stmts(&module.statements, &mut prototypes);
+        }
         prototypes
     }
 
@@ -175,6 +183,9 @@ impl WatEmitter<'_> {
         );
         for function in &self.program.functions {
             Self::collect_builtin_error_prototypes_from_stmts(&function.body, &mut prototypes);
+        }
+        for module in &self.program.modules {
+            Self::collect_builtin_error_prototypes_from_stmts(&module.statements, &mut prototypes);
         }
         prototypes
     }

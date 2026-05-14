@@ -634,7 +634,7 @@ const GLOBALS_ALLOC_HEAP: &[RuntimeGlobal] = &[
     RuntimeGlobal::GcCallFrameLimit,
     RuntimeGlobal::GcCallFrameCurrent,
 ];
-const GLOBALS_MODULE_RUNTIME: &[RuntimeGlobal] =
+pub const GLOBALS_MODULE_RUNTIME: &[RuntimeGlobal] =
     &[RuntimeGlobal::ModuleCache, RuntimeGlobal::CurrentModuleId];
 const GLOBALS_SET_PROTOTYPE_ADD: &[RuntimeGlobal] = &[RuntimeGlobal::SetPrototypeAdd];
 const GLOBALS_GLOBAL_THIS: &[RuntimeGlobal] = &[RuntimeGlobal::GlobalThisObject];

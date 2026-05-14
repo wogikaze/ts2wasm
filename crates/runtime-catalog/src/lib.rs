@@ -13,7 +13,7 @@ pub use link_plan::{
     validate_runtime_link_plan,
 };
 pub use runtime_fn::{
-    GLOBALS_EXCEPTION_RUNTIME, NATIVE_SET_ADD_SENTINEL, RuntimeFn, RuntimeGlobal, RuntimeResult,
-    RuntimeSpec, StringOrigin, runtime_fn_from_name,
+    GLOBALS_EXCEPTION_RUNTIME, GLOBALS_MODULE_RUNTIME, NATIVE_SET_ADD_SENTINEL, RuntimeFn,
+    RuntimeGlobal, RuntimeResult, RuntimeSpec, StringOrigin, runtime_fn_from_name,
 };
 pub use signature::RuntimeSignature;
