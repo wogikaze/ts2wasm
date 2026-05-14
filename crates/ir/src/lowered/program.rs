@@ -1025,6 +1025,7 @@ fn collect_top_level_function_captures(
     top_level_local_names: &HashSet<String>,
 ) -> Result<HashMap<FuncId, Vec<String>>, Diagnostic> {
     let mut captures = HashMap::new();
+    let mut direct_callee_graph = Vec::new();
     if top_level_local_names.is_empty() {
         return Ok(captures);
     }
@@ -1049,6 +1050,19 @@ fn collect_top_level_function_captures(
 
         let mut found = Vec::new();
         collect_stmt_captures(body, &excluded, &mut found);
+
+        let mut direct_callees = found
+            .iter()
+            .filter(|name| function_ids.contains_key(name.as_str()))
+            .cloned()
+            .collect::<Vec<_>>();
+        collect_direct_function_call_targets_in_stmts(body, &mut direct_callees);
+        let direct_callees = direct_callees
+            .into_iter()
+            .filter_map(|callee| function_ids.get(&callee).copied())
+            .collect::<Vec<_>>();
+        direct_callee_graph.push((function_ids[name], direct_callees));
+
         let found = found
             .into_iter()
             .filter(|capture| top_level_local_names.contains(capture))
@@ -1058,7 +1072,251 @@ fn collect_top_level_function_captures(
         }
     }
 
+    loop {
+        let mut changed = false;
+        for (caller, callees) in &direct_callee_graph {
+            let mut caller_captures = captures.get(caller).cloned().unwrap_or_default();
+            for callee in callees {
+                let Some(callee_captures) = captures.get(callee) else {
+                    continue;
+                };
+                for capture in callee_captures {
+                    if !caller_captures.contains(capture) {
+                        caller_captures.push(capture.clone());
+                        changed = true;
+                    }
+                }
+            }
+            if caller_captures.is_empty() {
+                captures.remove(caller);
+            } else {
+                captures.insert(*caller, caller_captures);
+            }
+        }
+        if !changed {
+            break;
+        }
+    }
+
     Ok(captures)
+}
+
+fn collect_direct_function_call_targets_in_stmts(
+    stmts: &[ResolvedStmt],
+    targets: &mut Vec<String>,
+) {
+    for stmt in stmts {
+        match stmt {
+            ResolvedStmt::Let(_, expr)
+            | ResolvedStmt::DestructureLet { expr, .. }
+            | ResolvedStmt::Assign(_, expr)
+            | ResolvedStmt::Expr(expr)
+            | ResolvedStmt::Return(expr)
+            | ResolvedStmt::Throw(expr) => {
+                collect_direct_function_call_targets_in_expr(expr, targets);
+            }
+            ResolvedStmt::If {
+                condition,
+                then_body,
+                else_body,
+            } => {
+                collect_direct_function_call_targets_in_expr(condition, targets);
+                collect_direct_function_call_targets_in_stmts(then_body, targets);
+                collect_direct_function_call_targets_in_stmts(else_body, targets);
+            }
+            ResolvedStmt::While { condition, body } | ResolvedStmt::DoWhile { body, condition } => {
+                collect_direct_function_call_targets_in_expr(condition, targets);
+                collect_direct_function_call_targets_in_stmts(body, targets);
+            }
+            ResolvedStmt::For {
+                init,
+                condition,
+                update,
+                body,
+            } => {
+                if let Some(init) = init {
+                    collect_direct_function_call_targets_in_stmts(
+                        std::slice::from_ref(init.as_ref()),
+                        targets,
+                    );
+                }
+                if let Some(condition) = condition {
+                    collect_direct_function_call_targets_in_expr(condition, targets);
+                }
+                if let Some(update) = update {
+                    collect_direct_function_call_targets_in_expr(update, targets);
+                }
+                collect_direct_function_call_targets_in_stmts(body, targets);
+            }
+            ResolvedStmt::ForIn { iter, body, .. }
+            | ResolvedStmt::ForOf { iter, body, .. }
+            | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
+                collect_direct_function_call_targets_in_expr(iter, targets);
+                collect_direct_function_call_targets_in_stmts(body, targets);
+            }
+            ResolvedStmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                collect_direct_function_call_targets_in_stmts(try_block, targets);
+                if let Some(block) = catch_block {
+                    collect_direct_function_call_targets_in_stmts(block, targets);
+                }
+                if let Some(block) = finally_block {
+                    collect_direct_function_call_targets_in_stmts(block, targets);
+                }
+            }
+            ResolvedStmt::Switch { expr, cases } => {
+                collect_direct_function_call_targets_in_expr(expr, targets);
+                for (case_expr, body) in cases {
+                    if let Some(case_expr) = case_expr {
+                        collect_direct_function_call_targets_in_expr(case_expr, targets);
+                    }
+                    collect_direct_function_call_targets_in_stmts(body, targets);
+                }
+            }
+            ResolvedStmt::Labeled { body, .. } => {
+                collect_direct_function_call_targets_in_stmts(
+                    std::slice::from_ref(body.as_ref()),
+                    targets,
+                );
+            }
+            ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
+                collect_direct_function_call_targets_in_expr(expr, targets);
+            }
+            ResolvedStmt::Block { statements, .. } => {
+                collect_direct_function_call_targets_in_stmts(statements, targets);
+            }
+            ResolvedStmt::AmbientValue(_)
+            | ResolvedStmt::Function { .. }
+            | ResolvedStmt::ClassDecl { .. }
+            | ResolvedStmt::Break { .. }
+            | ResolvedStmt::Continue { .. } => {}
+        }
+    }
+}
+
+fn collect_direct_function_call_targets_in_expr(expr: &ResolvedExpr, targets: &mut Vec<String>) {
+    match expr {
+        ResolvedExpr::Await { expr } | ResolvedExpr::Spread(expr) => {
+            collect_direct_function_call_targets_in_expr(expr, targets);
+        }
+        ResolvedExpr::Yield { expr, .. } => {
+            if let Some(expr) = expr {
+                collect_direct_function_call_targets_in_expr(expr, targets);
+            }
+        }
+        ResolvedExpr::Call { callee, args, .. }
+        | ResolvedExpr::OptionalCall { callee, args, .. } => {
+            if let ResolvedExpr::Ident(name) = callee.as_ref()
+                && !targets.contains(name)
+            {
+                targets.push(name.clone());
+            }
+            collect_direct_function_call_targets_in_expr(callee, targets);
+            for arg in args {
+                collect_direct_function_call_targets_in_expr(arg, targets);
+            }
+        }
+        ResolvedExpr::MethodCall { object, args, .. } => {
+            collect_direct_function_call_targets_in_expr(object, targets);
+            for arg in args {
+                collect_direct_function_call_targets_in_expr(arg, targets);
+            }
+        }
+        ResolvedExpr::Unary { expr, .. }
+        | ResolvedExpr::BuiltinProperty { object: expr, .. }
+        | ResolvedExpr::PropertyAccess { object: expr, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object: expr, .. } => {
+            collect_direct_function_call_targets_in_expr(expr, targets);
+        }
+        ResolvedExpr::Binary { left, right, .. }
+        | ResolvedExpr::ComputedIndex {
+            object: left,
+            index: right,
+        } => {
+            collect_direct_function_call_targets_in_expr(left, targets);
+            collect_direct_function_call_targets_in_expr(right, targets);
+        }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            collect_direct_function_call_targets_in_expr(condition, targets);
+            collect_direct_function_call_targets_in_expr(then_expr, targets);
+            collect_direct_function_call_targets_in_expr(else_expr, targets);
+        }
+        ResolvedExpr::Assign { expr, .. }
+        | ResolvedExpr::LogicalAssign { expr, .. }
+        | ResolvedExpr::LogicalPropertyAssign { expr, .. } => {
+            collect_direct_function_call_targets_in_expr(expr, targets);
+        }
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            collect_direct_function_call_targets_in_expr(object, targets);
+            collect_direct_function_call_targets_in_expr(expr, targets);
+        }
+        ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
+            collect_direct_function_call_targets_in_expr(key, targets);
+            collect_direct_function_call_targets_in_expr(expr, targets);
+        }
+        ResolvedExpr::LogicalComputedMemberAssign {
+            object, key, expr, ..
+        } => {
+            collect_direct_function_call_targets_in_expr(object, targets);
+            collect_direct_function_call_targets_in_expr(key, targets);
+            collect_direct_function_call_targets_in_expr(expr, targets);
+        }
+        ResolvedExpr::Array(elements) => {
+            for element in elements {
+                if let ResolvedArrayElement::Present(expr) = element {
+                    collect_direct_function_call_targets_in_expr(expr, targets);
+                }
+            }
+        }
+        ResolvedExpr::Object(props) => {
+            for prop in props {
+                if let Some(key) = prop.computed_key() {
+                    collect_direct_function_call_targets_in_expr(key, targets);
+                }
+                collect_direct_function_call_targets_in_expr(prop.value(), targets);
+            }
+        }
+        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+            for arg in args {
+                collect_direct_function_call_targets_in_expr(arg, targets);
+            }
+        }
+        ResolvedExpr::OptionalComputedIndex { object, index, .. }
+        | ResolvedExpr::PropertyAssignDynamic {
+            object, key: index, ..
+        } => {
+            collect_direct_function_call_targets_in_expr(object, targets);
+            collect_direct_function_call_targets_in_expr(index, targets);
+        }
+        ResolvedExpr::PropertyAssign { object, value, .. } => {
+            collect_direct_function_call_targets_in_expr(object, targets);
+            collect_direct_function_call_targets_in_expr(value, targets);
+        }
+        ResolvedExpr::ArrowFn { .. }
+        | ResolvedExpr::FunctionExpr { .. }
+        | ResolvedExpr::ClassExpr { .. }
+        | ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
+        | ResolvedExpr::BigIntLiteral { .. }
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined
+        | ResolvedExpr::This { .. }
+        | ResolvedExpr::NewTarget { .. }
+        | ResolvedExpr::ImportMeta { .. }
+        | ResolvedExpr::Ident(_)
+        | ResolvedExpr::ModuleLoad { .. } => {}
+    }
 }
 
 fn collect_callback_function_mutable_captures(

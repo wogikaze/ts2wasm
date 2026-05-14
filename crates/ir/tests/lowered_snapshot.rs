@@ -666,6 +666,42 @@ fn lowered_top_level_function_captures_helper_locals() {
 }
 
 #[test]
+fn lowered_top_level_function_forwards_callee_helper_captures() {
+    let program = parse_resolve_lower(
+        "var helper = Object.getOwnPropertyDescriptor;\n\
+         function hasDesc(obj, name) { return helper(obj, name) !== undefined; }\n\
+         function verify(obj, name) { return hasDesc(obj, name); }\n\
+         verify({ x: 1 }, \"x\");",
+    );
+
+    validate_lowered(&program).expect("transitive helper capture should validate");
+}
+
+#[test]
+fn lowered_top_level_function_alias_captures_helper_locals() {
+    let program = parse_resolve_lower(
+        "var helper = Object.getOwnPropertyDescriptor;\n\
+         function verify(obj, name) { return helper(obj, name); }\n\
+         var alias = verify;\n\
+         alias({ x: 1 }, \"x\");",
+    );
+
+    validate_lowered(&program).expect("function alias helper capture should validate");
+}
+
+#[test]
+fn lowered_function_body_can_reference_top_level_function_as_value() {
+    let program = parse_resolve_lower(
+        "var helper = Object.getOwnPropertyDescriptor;\n\
+         function verify(obj, name) { return helper(obj, name); }\n\
+         function wrapper(obj, name) { var alias = verify; return alias(obj, name); }\n\
+         wrapper({ x: 1 }, \"x\");",
+    );
+
+    validate_lowered(&program).expect("function-valued declaration reference should validate");
+}
+
+#[test]
 fn lowered_snapshot_generator_function_metadata() {
     let program = parse_resolve_lower("function* gen() {}");
     assert_eq!(program.functions.len(), 1);

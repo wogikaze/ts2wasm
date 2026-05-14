@@ -147,7 +147,27 @@ impl super::super::Resolver {
                     Span::generated("class_proto"),
                 ))
             }
-            Err(err) => Err(err),
+            Err(err) => {
+                let Ok(func_id) = self.resolve_func(name) else {
+                    return Err(err);
+                };
+                let captures = self
+                    .ctx
+                    .functions
+                    .function_captures
+                    .get(&func_id)
+                    .map(Vec::as_slice)
+                    .unwrap_or(&[])
+                    .iter()
+                    .map(|capture| self.resolve_local(capture))
+                    .collect::<Result<Vec<_>, _>>()?;
+                Ok(LoweredExpr::ArrowFn {
+                    func_id,
+                    captures,
+                    representation: ClosureRepresentation::DirectLocalToken,
+                    span: Span::generated("arrow_fn"),
+                })
+            }
         }
     }
 
