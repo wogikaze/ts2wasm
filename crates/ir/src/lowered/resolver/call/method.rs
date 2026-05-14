@@ -674,6 +674,37 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
+        if matches!(object, ResolvedExpr::Ident(name) if name == "JSON") && method == "parse" {
+            if args.is_empty() || args.len() > 2 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!("JSON.parse expects 1 or 2 arguments, got {}", args.len()),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let mut lowered_args = Vec::with_capacity(2);
+            lowered_args.push(self.lower_expr(&args[0])?);
+            lowered_args.push(match args.get(1) {
+                Some(reviver) => {
+                    if let Some(func_id) =
+                        json_stringify_function_replacer_id(reviver, &self.ctx.symbols.function_ids)
+                    {
+                        LoweredExpr::Number(func_id.0 as i32, Span::generated("num"))
+                    } else {
+                        self.lower_expr(reviver)?
+                    }
+                }
+                None => LoweredExpr::Undefined(Span::generated("undef")),
+            });
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::JsonParse,
+                args: lowered_args,
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
         if is_date_now_live_time_call(object, method) {
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::DateNow,

@@ -1204,6 +1204,15 @@ const JSON_PARSE_DEPS: &[RuntimeFn] = &[
     RuntimeFn::Copy,
     RuntimeFn::IsString,
     RuntimeFn::Write,
+    RuntimeFn::PropertyGet,
+    RuntimeFn::PropertySet,
+    RuntimeFn::PropertyDelete,
+    RuntimeFn::ObjectKeys,
+    RuntimeFn::GetLength,
+    RuntimeFn::ArrayGet,
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::ObjectCreate,
+    RuntimeFn::MemEqual,
 ];
 const JSON_PARSE_RUNTIME_STRINGS: &[&str] = &[RuntimeString::JSON_PARSE_SYNTAX_ERROR];
 
@@ -2104,7 +2113,8 @@ impl RuntimeFn {
             | Self::DataViewGetInt8
             | Self::DataViewGetUint8
             | Self::SymbolToPrimitive
-            | Self::SymbolHasInstance => RuntimeSignature {
+            | Self::SymbolHasInstance
+            | Self::JsonParse => RuntimeSignature {
                 params: 2,
                 results: 1,
             },

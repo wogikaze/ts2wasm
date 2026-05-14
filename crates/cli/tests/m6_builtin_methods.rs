@@ -399,6 +399,36 @@ fn build_smoke_json_parse_method() {
 }
 
 #[test]
+fn build_smoke_json_replacer() {
+    for fixture in [
+        "builtins-and-io/json-parse-reviver-noop.ts",
+        "builtins-and-io/json-parse-reviver-transform.ts",
+        "builtins-and-io/json-parse-reviver-drop.ts",
+        "builtins-and-io/json-parse-reviver-nested.ts",
+        "builtins-and-io/json-parse-reviver-array.ts",
+        "builtins-and-io/json-stringify-replacer-function-keep.ts",
+        "builtins-and-io/json-stringify-replacer-function-drop.ts",
+        "builtins-and-io/json-stringify-replacer-function-transform.ts",
+        "builtins-and-io/json-stringify-replacer-function-root-holder.ts",
+        "builtins-and-io/json-stringify-replacer-array.ts",
+        "builtins-and-io/json-stringify-replacer-array-number.ts",
+        "builtins-and-io/json-stringify-replacer-array-multikey.ts",
+        "builtins-and-io/json-stringify-replacer-array-boxed.ts",
+        "builtins-and-io/json-stringify-replacer-array-boxed-unsupported.ts",
+        "builtins-and-io/json-stringify-replacer-array-ignored.ts",
+        "builtins-and-io/json-stringify-space.ts",
+        "builtins-and-io/json-stringify-space-string.ts",
+        "builtins-and-io/json-stringify-space-boolean.ts",
+        "builtins-and-io/json-stringify-space-boxed-symbol.ts",
+        "builtins-and-io/json-stringify-space-boxed-unsupported.ts",
+        "builtins-and-io/json-stringify-space-object-function.ts",
+    ] {
+        let result = run_fixture(fixture);
+        assert!(result.is_ok(), "{fixture} should build: {:?}", result.err());
+    }
+}
+
+#[test]
 fn build_smoke_string_char_at_method() {
     let result = run_fixture("builtins-and-io/string-char-at.ts");
     assert!(

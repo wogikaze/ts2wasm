@@ -2188,6 +2188,19 @@ fn json_stringify_replacer_unsupported_forms_report_issue_052() {
 }
 
 #[test]
+fn json_replacer_reviver_matches_node_output() {
+    for fixture in [
+        "fixtures/builtins-and-io/json-parse-reviver-noop.ts",
+        "fixtures/builtins-and-io/json-parse-reviver-transform.ts",
+        "fixtures/builtins-and-io/json-parse-reviver-drop.ts",
+        "fixtures/builtins-and-io/json-parse-reviver-nested.ts",
+        "fixtures/builtins-and-io/json-parse-reviver-array.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
 fn error_message_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/error-message.ts");
 }

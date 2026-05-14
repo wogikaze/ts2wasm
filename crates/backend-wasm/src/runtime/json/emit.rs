@@ -20,18 +20,21 @@ impl WatEmitter<'_> {
         self.emit_json_skip_number(wat);
         self.emit_json_parse_object(wat);
         self.emit_json_parse_array(wat);
+        self.emit_json_reviver_walk(wat);
     }
 
     /// Emit the main `$json_parse` WAT function.
     fn emit_json_parse_main(&self, wat: &mut String, _syntax_error: i32) {
         wat.push_str(&format!(
             r#"
-  (func $json_parse (param $s i32) (result i32)
+  (func $json_parse (param $s i32) (param $reviver i32) (result i32)
     (local $s_obj i32)
     (local $s_len i32)
     (local $pos i32)
     (local $ch i32)
     (local $value i32)
+    (local $root i32)
+    (local $empty_str i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
     (local.set $s_obj (i32.and (local.get $s) (i32.const {heap_mask})))
     (local.set $s_len (i32.load (local.get $s_obj)))
@@ -117,7 +120,29 @@ impl WatEmitter<'_> {
     (local.set $pos (call $json_skip_whitespace (local.get $s_obj) (local.get $s_len) (local.get $pos)))
     (if (i32.ne (local.get $pos) (local.get $s_len))
       (then (call $json_parse_syntax_error)))
-    (local.get $value))
+    ;; If reviver provided, wrap + walk
+    (if (i32.eq (local.get $reviver) (i32.const {undefined}))
+      (then (return (local.get $value))))
+    (local.set $value (call $json_reviver_walk (local.get $value) (local.get $reviver)))
+    ;; Create root wrapper object with null prototype
+    (local.set $root (call $object_create (i32.const {null_tag})))
+    ;; Create empty string for key ""
+    (local.set $empty_str (call $alloc_heap (i32.const {str_header})))
+    (i32.store (local.get $empty_str) (i32.const {zero}))
+    ;; Set root[""] = walked value
+    (drop
+      (call $property_set
+        (local.get $root)
+        (i32.add (local.get $empty_str) (i32.const {str_header}))
+        (i32.const {zero})
+        (local.get $value)))
+    ;; Call reviver(root, "", value) -> final result
+    (return
+      (call $json_replacer_call
+        (local.get $reviver)
+        (local.get $root)
+        (i32.or (local.get $empty_str) (i32.const {string_tag}))
+        (local.get $value))))
 "#,
             undefined = ValueTag::UNDEFINED,
             null_tag = ValueTag::NULL,
@@ -125,6 +150,7 @@ impl WatEmitter<'_> {
             true_tag = ValueTag::TRUE,
             heap_mask = ValueTag::HEAP_MASK,
             str_header = Layout::STRING_HEADER_SIZE,
+            string_tag = ValueTag::STRING,
             zero = RuntimeConst::ZERO,
             lbrace = 123,
             lbracket = 91,
