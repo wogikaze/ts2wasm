@@ -458,6 +458,61 @@ impl super::super::Resolver {
         Ok(None)
     }
 
+    /// Try to lower test/exec on an Ident local that holds a regexp literal.
+    /// The existing regexp_test_runtime / regexp_exec_runtime helpers only match
+    /// String (inline literal) or New (constructor) patterns, so we must resolve
+    /// the Ident to its local and check regexp_literal_locals here.
+    fn try_lower_regexp_ident_local(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        let ResolvedExpr::Ident(name) = object else {
+            return Ok(None);
+        };
+        let Ok(local_id) = self.resolve_local(name) else {
+            return Ok(None);
+        };
+        if !self.ctx.facts.regexp_literal_locals.contains(&local_id) {
+            return Ok(None);
+        }
+        if method != "test" && method != "exec" {
+            return Ok(None);
+        }
+        if args.len() > 1 {
+            return Err(Diagnostic {
+                code: DiagCode::ArityMismatch,
+                message: format!(
+                    "RegExp.prototype.{} expects at most 1 argument, got {}",
+                    method,
+                    args.len()
+                ),
+                span: Some(span),
+                phase: None,
+            });
+        }
+        let arg = args
+            .first()
+            .cloned()
+            .unwrap_or(ResolvedExpr::String("undefined".to_owned()));
+        let intrinsic = if method == "test" {
+            RuntimeFn::RegExpTest
+        } else {
+            RuntimeFn::RegExpMatch
+        };
+        let lowered_arg = self.lower_expr(&arg)?;
+        Ok(Some(LoweredExpr::RuntimeCall {
+            intrinsic,
+            args: vec![
+                LoweredExpr::Local(local_id, Span::generated("local")),
+                lowered_arg,
+            ],
+            span: Span::generated("runtime_call"),
+        }))
+    }
+
     /// Helper for lower_method_call_expr: JSON.stringify, Date.now, RegExp methods,
     /// Date getTime, Date getTimezoneOffset.
     fn lower_mcall_json_date_regexp(
@@ -487,7 +542,6 @@ impl super::super::Resolver {
                     {
                         continue;
                     }
-
                     if let Some(prop) = props
                         .iter()
                         .rev()
@@ -563,55 +617,10 @@ impl super::super::Resolver {
                 self.lower_string_match_all_literal(object, args, span)?,
             ));
         }
-        // Resolve Ident locals that hold regexp literals or new RegExp(...)
-        let regexp_object = match object {
-            ResolvedExpr::Ident(name) => {
-                if let Ok(local_id) = self.resolve_local(name) {
-                    if self.ctx.facts.regexp_literal_locals.contains(&local_id) {
-                        // Local holds a regexp literal (/pattern/flags). Route test/exec
-                        // directly, since regexp_test_runtime / regexp_exec_runtime only
-                        // match String (literal) or New (constructor) patterns.
-                        if method == "test" || method == "exec" {
-                            let arg = args
-                                .first()
-                                .cloned()
-                                .unwrap_or(ResolvedExpr::String("undefined".to_owned()));
-                            if args.len() > 1 {
-                                return Err(Diagnostic {
-                                    code: DiagCode::ArityMismatch,
-                                    message: format!(
-                                        "RegExp.prototype.{} expects at most 1 argument, got {}",
-                                        method,
-                                        args.len()
-                                    ),
-                                    span: Some(span),
-                                    phase: None,
-                                });
-                            }
-                            let intrinsic = if method == "test" {
-                                RuntimeFn::RegExpTest
-                            } else {
-                                RuntimeFn::RegExpMatch
-                            };
-                            let lowered_arg = self.lower_expr(&arg)?;
-                            return Ok(Some(LoweredExpr::RuntimeCall {
-                                intrinsic,
-                                args: vec![
-                                    LoweredExpr::Local(local_id, Span::generated("local")),
-                                    lowered_arg,
-                                ],
-                                span: Span::generated("runtime_call"),
-                            }));
-                        }
-                    }
-                    // For other methods, leave as Ident so the existing class-based
-                    // routing handles it below.
-                }
-                object
-            }
-            _ => object,
-        };
-        if let Some(regexp_args) = regexp_test_runtime(regexp_object, method, args, span)? {
+        if let Some(result) = self.try_lower_regexp_ident_local(object, method, args, span)? {
+            return Ok(Some(result));
+        }
+        if let Some(regexp_args) = regexp_test_runtime(object, method, args, span)? {
             let lowered_args = regexp_args
                 .iter()
                 .map(|e| self.lower_expr(e))
@@ -651,7 +660,6 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
-        // RegExp.prototype.toString for literal-backed RegExp
         if method == "toString" {
             match object {
                 ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
