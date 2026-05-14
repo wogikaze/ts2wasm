@@ -151,6 +151,10 @@ pub enum RuntimeFn {
     ArrayBufferNew,
     /// ArrayBuffer.isView(val) — returns 1 if val is a DataView or TypedArray, 0 otherwise
     ArrayBufferIsView,
+    /// ArrayBuffer.prototype.transfer(newLength) — creates a new buffer, copies data, detaches old.
+    ArrayBufferTransfer,
+    /// new SharedArrayBuffer(byteLength) — shared memory allocation.
+    SharedArrayBufferNew,
     DataViewNew,
     DataViewGetInt8,
     DataViewSetInt8,
@@ -1173,6 +1177,8 @@ const MAP_ENTRY_PAIRS_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const TYPED_ARRAY_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Index];
 const TYPED_ARRAY_SET_DEPS: &[RuntimeFn] = &[RuntimeFn::GetLength, RuntimeFn::Index];
 const ARRAYBUFFER_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const ARRAYBUFFER_TRANSFER_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const SHARED_ARRAY_BUFFER_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATAVIEW_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATE_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATE_NOW_DEPS: &[RuntimeFn] = &[RuntimeFn::DateEpochMsNowNumber];
@@ -1418,6 +1424,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "TypedArraySet" => Some(RuntimeFn::TypedArraySet),
         "ArrayBufferNew" => Some(RuntimeFn::ArrayBufferNew),
         "ArrayBufferIsView" => Some(RuntimeFn::ArrayBufferIsView),
+        "ArrayBufferTransfer" => Some(RuntimeFn::ArrayBufferTransfer),
+        "SharedArrayBufferNew" => Some(RuntimeFn::SharedArrayBufferNew),
         "DataViewNew" => Some(RuntimeFn::DataViewNew),
         "DataViewGetInt8" => Some(RuntimeFn::DataViewGetInt8),
         "DataViewSetInt8" => Some(RuntimeFn::DataViewSetInt8),
@@ -1617,6 +1625,8 @@ impl RuntimeFn {
             | Self::ArrayIndexPresent
             | Self::ArrayBufferNew
             | Self::ArrayBufferIsView
+            | Self::ArrayBufferTransfer
+            | Self::SharedArrayBufferNew
             | Self::ArrayPush
             | Self::ArrayPushGrow
             | Self::ArrayPop
@@ -2094,6 +2104,7 @@ impl RuntimeFn {
             | Self::NumberToPrecision
             | Self::ArrayPush
             | Self::ArrayPushGrow
+            | Self::ArrayBufferTransfer
             | Self::DataViewNew
             | Self::DataViewGetInt8
             | Self::DataViewGetUint8
@@ -2282,6 +2293,8 @@ impl RuntimeFn {
             Self::WeakSetDelete,
             Self::ArrayBufferNew,
             Self::ArrayBufferIsView,
+            Self::ArrayBufferTransfer,
+            Self::SharedArrayBufferNew,
             Self::DataViewNew,
             Self::DataViewGetInt8,
             Self::DataViewSetInt8,
@@ -2680,6 +2693,8 @@ impl RuntimeFn {
             Self::WeakSetDelete,
             Self::ArrayBufferNew,
             Self::ArrayBufferIsView,
+            Self::ArrayBufferTransfer,
+            Self::SharedArrayBufferNew,
             Self::DataViewNew,
             Self::DataViewGetInt8,
             Self::DataViewSetInt8,

@@ -2774,7 +2774,10 @@ impl super::super::Resolver {
                 }
                 _ => {}
             }
-        } else if class_name == "Number" && is_number_format_method(method) && args.is_empty() {
+        } else if args.is_empty()
+            && ((class_name == "ArrayBuffer" && method == "transfer")
+                || (class_name == "Number" && is_number_format_method(method)))
+        {
             lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
         }
         Ok(lowered_args)

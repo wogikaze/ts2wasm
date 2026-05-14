@@ -40,6 +40,68 @@ impl WatEmitter<'_> {
         ));
     }
 
+    /// ArrayBuffer.prototype.transfer(newLength) — allocates a new buffer, copies min(old,new) bytes,
+    /// detaches the old buffer by zeroing its stored length, and returns the new buffer.
+    /// newLength is a tagged runtime value (undefined defaults to current length).
+    pub(super) fn emit_arraybuffer_transfer(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $arraybuffer_transfer (param $buf i32) (param $new_len_tagged i32) (result i32)
+    (local $buf_ptr i32)
+    (local $old_len i32)
+    (local $new_len i32)
+    (local $min_len i32)
+    (local $new_ptr i32)
+    (local.set $buf_ptr (i32.and (local.get $buf) (i32.const {heap_mask})))
+    (local.set $old_len (i32.load (local.get $buf_ptr)))
+    (local.set $new_len
+      (if (result i32) (i32.eqz (local.get $new_len_tagged))
+        (then (local.get $old_len))
+        (else (i32.shr_s (local.get $new_len_tagged) (i32.const {num_shift})))))
+    (local.set $min_len
+      (if (result i32) (i32.lt_s (local.get $old_len) (local.get $new_len))
+        (then (local.get $old_len))
+        (else (local.get $new_len))))
+    (local.set $new_ptr
+      (call $alloc_heap
+        (i32.add (i32.const {array_header}) (local.get $new_len))))
+    (i32.store (local.get $new_ptr) (local.get $new_len))
+    (memory.fill
+      (i32.add (local.get $new_ptr) (i32.const {array_header}))
+      (i32.const 0)
+      (local.get $new_len))
+    (memory.copy
+      (i32.add (local.get $new_ptr) (i32.const {array_header}))
+      (i32.add (local.get $buf_ptr) (i32.const {array_header}))
+      (local.get $min_len))
+    (i32.store (local.get $buf_ptr) (i32.const 0))
+    (i32.or (local.get $new_ptr) (i32.const {array_tag})))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            num_shift = ValueTag::NUMBER_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            array_tag = ValueTag::ARRAY,
+        ));
+    }
+
+    /// SharedArrayBuffer constructor — allocates shared memory.
+    /// Without Atomics, this is identical to ArrayBuffer allocation.
+    pub(super) fn emit_shared_array_buffer_new(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $shared_array_buffer_new (param $byte_len i32) (result i32)
+    (local $ptr i32)
+    (local.set $ptr
+      (call $alloc_heap
+        (i32.add (i32.const {array_header}) (local.get $byte_len))))
+    (i32.store (local.get $ptr) (local.get $byte_len))
+    (i32.or (local.get $ptr) (i32.const {array_tag})))
+"#,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            array_tag = ValueTag::ARRAY,
+        ));
+    }
+
     /// Create a DataView wrapping the given buffer.
     /// Accepts buffer and tagged byte_offset params.
     /// Returns an ARRAY-tagged DataView struct.

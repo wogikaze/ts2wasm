@@ -197,6 +197,7 @@ directories:
     - arraybuffer-dataview-int32.ts
     - arraybuffer-dataview-uint16.ts
     - arraybuffer-dataview-uint32.ts
+    - arraybuffer-transfer.ts
     - async-generator-basic.ts
     - atomics-unsupported.ts
     - boolean-symbol-prototype.ts
@@ -414,6 +415,7 @@ directories:
     - set-iterable-calls-add.ts
     - set-iteration.ts
     - set-size-clear.ts
+    - sharedarraybuffer-basic.ts
     - stdin.ts
     - string-anchor-annexb.ts
     - string-at.ts

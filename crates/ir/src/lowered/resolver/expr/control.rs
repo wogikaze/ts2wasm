@@ -95,6 +95,7 @@ impl super::super::Resolver {
             || name == "Atomics"
             || name == "Intl"
             || name == "ArrayBuffer"
+            || name == "SharedArrayBuffer"
             || name == "DataView"
             || name == "Int8Array"
             || name == "Uint8Array"

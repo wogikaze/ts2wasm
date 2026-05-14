@@ -311,6 +311,22 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             });
         }
+        if class_name == "SharedArrayBuffer" {
+            if args.is_empty() {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: "SharedArrayBuffer constructor requires a byteLength argument"
+                        .to_owned(),
+                    span: Some(span),
+                    phase: None,
+                });
+            }
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::SharedArrayBufferNew,
+                args: vec![self.lower_expr(&args[0])?],
+                span: Span::generated("runtime_call"),
+            });
+        }
         if class_name == "DataView" {
             if args.is_empty() {
                 return Err(Diagnostic {

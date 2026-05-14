@@ -240,6 +240,7 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("DataView", "setFloat32") => Some(RuntimeFn::DataViewSetFloat32),
         ("DataView", "getFloat64") => Some(RuntimeFn::DataViewGetFloat64),
         ("DataView", "setFloat64") => Some(RuntimeFn::DataViewSetFloat64),
+        ("ArrayBuffer", "transfer") => Some(RuntimeFn::ArrayBufferTransfer),
         ("Map", "get") => Some(RuntimeFn::MapGet),
         ("Map", "set") => Some(RuntimeFn::MapSet),
         ("Map", "has") => Some(RuntimeFn::MapHas),

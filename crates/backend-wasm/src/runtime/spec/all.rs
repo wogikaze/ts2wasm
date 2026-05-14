@@ -33,6 +33,22 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ArrayBufferTransfer => RuntimeSpec {
+                symbol: "$arraybuffer_transfer",
+                deps: ARRAYBUFFER_TRANSFER_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::SharedArrayBufferNew => RuntimeSpec {
+                symbol: "$shared_array_buffer_new",
+                deps: SHARED_ARRAY_BUFFER_NEW_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ArrayPush => RuntimeSpec {
                 symbol: "$array_push",
                 deps: ARRAY_PUSH_DEPS,

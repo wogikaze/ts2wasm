@@ -2453,6 +2453,26 @@ fn build_smoke_arraybuffer_is_view() {
 }
 
 #[test]
+fn build_smoke_arraybuffer_transfer() {
+    let result = run_fixture("builtins-and-io/arraybuffer-transfer.ts");
+    assert!(
+        result.is_ok(),
+        "ArrayBuffer.transfer should build successfully: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_sharedarraybuffer_basic() {
+    let result = run_fixture("builtins-and-io/sharedarraybuffer-basic.ts");
+    assert!(
+        result.is_ok(),
+        "SharedArrayBuffer should build successfully: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_arraybuffer_dataview_byte_offset() {
     let result = run_fixture("builtins-and-io/arraybuffer-dataview-byte-offset.ts");
     assert!(
