@@ -592,6 +592,7 @@ directories:
     - symbol-key-descriptor-identity.ts
     - object-literal-computed-spread.ts
     - object-literal-proto.ts
+    - object-literal-proto-accessor-descriptor.ts
     - object-literal-method.ts
     - object-literal-super-method-args.ts
     - object-literal-method-mutable-capture.ts

@@ -2515,6 +2515,45 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_async_object_methods() {
+        let program = parse_program(
+            "let object = { async method() { return 1; }, async *gen() { yield 2; }, async() { return 3; } };",
+        )
+        .unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 3);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, is_generator: false, .. }
+                    } if key == "method" && name == "method"
+                ));
+                assert!(matches!(
+                    &props[1],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, is_generator: true, .. }
+                    } if key == "gen" && name == "gen"
+                ));
+                assert!(matches!(
+                    &props[2],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, is_generator: false, .. }
+                    } if key == "async" && name == "async"
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_async_arrow_computed_property_key_expression() {
         let program = parse_program("let object = { [async () => {}]: 1 };").unwrap();
 

@@ -1126,6 +1126,7 @@ const OBJECT_HAS_OWN_PROPERTY_DEPS: &[RuntimeFn] =
 const OBJECT_GET_OWN_PROPERTY_DESCRIPTOR_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::ValueToStringInto,
+    RuntimeFn::PropertyGet,
     RuntimeFn::PropertySet,
 ];
 const OBJECT_PROTOTYPE_DEPS: &[RuntimeFn] = &[];
@@ -1134,6 +1135,7 @@ const OBJECT_SEAL_DEPS: &[RuntimeFn] = &[];
 const OBJECT_DEFINE_PROPERTY_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::ValueToStringInto,
+    RuntimeFn::PropertyGet,
     RuntimeFn::PropertySet,
 ];
 const OBJECT_ASSIGN_DEPS: &[RuntimeFn] = &[

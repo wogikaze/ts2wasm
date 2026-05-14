@@ -2044,72 +2044,18 @@ impl Parser {
                                     });
                                 }
                             }
+                        } else if matches!(self.peek(), Some(Token::Async)) {
+                            if let Some(prop) = self.parse_object_literal_async_method()? {
+                                props.push(prop);
+                            } else {
+                                let parsed_key = self.parse_object_key()?;
+                                self.parse_object_literal_property_after_key(
+                                    parsed_key, &mut props,
+                                )?;
+                            }
                         } else {
                             let parsed_key = self.parse_object_key()?;
-                            let (key, key_span) = match parsed_key {
-                                ParsedObjectKey::Static { key, span } => (key, span),
-                                ParsedObjectKey::ComputedKey { key } => {
-                                    let value = if let Some(method) =
-                                        self.parse_object_literal_method(
-                                            "[computed]".to_owned(),
-                                            key.span().start,
-                                        )? {
-                                        method
-                                    } else {
-                                        self.expect(TokenKind::Colon)?;
-                                        self.expression()?
-                                    };
-                                    props.push(ObjectProp::ComputedKey {
-                                        key: Box::new(key),
-                                        value,
-                                    });
-                                    if self.consume(TokenKind::RightBrace) {
-                                        break;
-                                    }
-                                    if self.consume(TokenKind::Comma) {
-                                        if self.consume(TokenKind::RightBrace) {
-                                            break;
-                                        }
-                                        continue;
-                                    }
-                                    self.expect(TokenKind::Comma)?;
-                                    continue;
-                                }
-                            };
-                            let key_start = key_span.start;
-
-                            // Handle getter/setter accessors in object literals:
-                            // `{ get foo() {} }`, `{ get ["foo"]() {} }`.
-                            if let Some(prop) =
-                                self.parse_object_literal_accessor(&key, key_start)?
-                            {
-                                props.push(prop);
-                                if self.consume(TokenKind::RightBrace) {
-                                    break;
-                                }
-                                if self.consume(TokenKind::Comma) {
-                                    if self.consume(TokenKind::RightBrace) {
-                                        break;
-                                    }
-                                    continue;
-                                }
-                                self.expect(TokenKind::Comma)?;
-                            }
-                            if let Some(val) =
-                                self.parse_object_literal_method(key.clone(), key_start)?
-                            {
-                                props.push(ObjectProp::MethodShorthand { key, value: val });
-                            } else if matches!(self.peek(), Some(Token::Colon)) {
-                                self.expect(TokenKind::Colon)?;
-                                let val = self.expression()?;
-                                props.push(ObjectProp::KeyValue { key, value: val });
-                            } else {
-                                let val = Expr::Ident {
-                                    name: key.clone(),
-                                    span: key_span,
-                                };
-                                props.push(ObjectProp::Shorthand { key, value: val });
-                            }
+                            self.parse_object_literal_property_after_key(parsed_key, &mut props)?;
                         }
                         if self.consume(TokenKind::RightBrace) {
                             break;
@@ -2240,6 +2186,85 @@ impl Parser {
 
                 phase: None,}),
         }
+    }
+
+    fn parse_object_literal_property_after_key(
+        &mut self,
+        parsed_key: ParsedObjectKey,
+        props: &mut Vec<ObjectProp>,
+    ) -> Result<(), Diagnostic> {
+        let (key, key_span) = match parsed_key {
+            ParsedObjectKey::Static { key, span } => (key, span),
+            ParsedObjectKey::ComputedKey { key } => {
+                let value = if let Some(method) =
+                    self.parse_object_literal_method("[computed]".to_owned(), key.span().start)?
+                {
+                    method
+                } else {
+                    self.expect(TokenKind::Colon)?;
+                    self.expression()?
+                };
+                props.push(ObjectProp::ComputedKey {
+                    key: Box::new(key),
+                    value,
+                });
+                return Ok(());
+            }
+        };
+        let key_start = key_span.start;
+
+        // Handle getter/setter accessors in object literals:
+        // `{ get foo() {} }`, `{ get ["foo"]() {} }`.
+        if let Some(prop) = self.parse_object_literal_accessor(&key, key_start)? {
+            props.push(prop);
+            return Ok(());
+        }
+        if let Some(val) = self.parse_object_literal_method(key.clone(), key_start)? {
+            props.push(ObjectProp::MethodShorthand { key, value: val });
+        } else if matches!(self.peek(), Some(Token::Colon)) {
+            self.expect(TokenKind::Colon)?;
+            let val = self.expression()?;
+            props.push(ObjectProp::KeyValue { key, value: val });
+        } else {
+            let val = Expr::Ident {
+                name: key.clone(),
+                span: key_span,
+            };
+            props.push(ObjectProp::Shorthand { key, value: val });
+        }
+        Ok(())
+    }
+
+    fn parse_object_literal_async_method(&mut self) -> Result<Option<ObjectProp>, Diagnostic> {
+        let checkpoint = self.cursor;
+        let Some(async_span) = self.consume_span(TokenKind::Async) else {
+            return Ok(None);
+        };
+        let is_generator = self.consume(TokenKind::Star);
+        let parsed_key = match self.parse_object_key() {
+            Ok(key) => key,
+            Err(_) => {
+                self.cursor = checkpoint;
+                return Ok(None);
+            }
+        };
+        let method_name = match &parsed_key {
+            ParsedObjectKey::Static { key, .. } => key.clone(),
+            ParsedObjectKey::ComputedKey { .. } => "[computed]".to_owned(),
+        };
+        let Some(value) =
+            self.parse_object_literal_method_with_generator(method_name, async_span.start, is_generator)?
+        else {
+            self.cursor = checkpoint;
+            return Ok(None);
+        };
+        Ok(Some(match parsed_key {
+            ParsedObjectKey::Static { key, .. } => ObjectProp::MethodShorthand { key, value },
+            ParsedObjectKey::ComputedKey { key } => ObjectProp::ComputedKey {
+                key: Box::new(key),
+                value,
+            },
+        }))
     }
 
     fn parse_object_literal_accessor(

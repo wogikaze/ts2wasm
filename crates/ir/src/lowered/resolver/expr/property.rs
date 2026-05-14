@@ -324,7 +324,11 @@ impl super::super::Resolver {
         }
     }
 
-    fn function_token_for_object_method(&self, func_id: FuncId, span: Span) -> Option<LoweredExpr> {
+    pub(crate) fn function_token_for_object_method(
+        &self,
+        func_id: FuncId,
+        span: Span,
+    ) -> Option<LoweredExpr> {
         let captures = self
             .ctx
             .functions

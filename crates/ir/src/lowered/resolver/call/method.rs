@@ -323,6 +323,49 @@ impl super::super::Resolver {
         })
     }
 
+    fn static_object_accessor_descriptor(
+        &self,
+        target: &str,
+        key: &str,
+        span: Span,
+    ) -> Option<LoweredExpr> {
+        let local = self.resolve_local(target).ok()?;
+        let accessor = self
+            .ctx
+            .classes
+            .object_accessor_props
+            .get(&local)?
+            .get(&ObjectAccessorKey::Property(key.to_owned()))?;
+        let mut props = Vec::new();
+        if let Some(func_id) = accessor.get {
+            props.push((
+                "get".to_owned(),
+                self.function_token_for_object_method(func_id, span)?,
+            ));
+        }
+        if let Some(func_id) = accessor.set {
+            props.push((
+                "set".to_owned(),
+                self.function_token_for_object_method(func_id, span)?,
+            ));
+        }
+        props.extend([
+            (
+                "enumerable".to_owned(),
+                LoweredExpr::Bool(true, Span::generated("bool")),
+            ),
+            (
+                "configurable".to_owned(),
+                LoweredExpr::Bool(true, Span::generated("bool")),
+            ),
+        ]);
+        Some(LoweredExpr::ObjectNew {
+            props,
+            non_enumerable: 0,
+            span: Span::generated("object_accessor_descriptor"),
+        })
+    }
+
     fn resolved_callee_is_generator(&self, callee: &ResolvedExpr) -> bool {
         let ResolvedExpr::Ident(name) = callee else {
             return false;
@@ -2241,6 +2284,12 @@ impl super::super::Resolver {
             && let [ResolvedExpr::Ident(target), ResolvedExpr::String(key)] = args
             && matches!(key.as_str(), "name" | "length")
             && let Some(desc) = self.local_arrow_function_data_descriptor(target, key)
+        {
+            return Ok(Some(desc));
+        }
+        if method == "getOwnPropertyDescriptor"
+            && let [ResolvedExpr::Ident(target), ResolvedExpr::String(key)] = args
+            && let Some(desc) = self.static_object_accessor_descriptor(target, key, span)
         {
             return Ok(Some(desc));
         }
