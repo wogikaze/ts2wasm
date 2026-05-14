@@ -3393,6 +3393,7 @@ fn global_properties_matches_node_output() {
         "fixtures/builtins-and-io/global-isfinite.ts",
         "fixtures/builtins-and-io/global-parseint.ts",
         "fixtures/builtins-and-io/global-parsefloat.ts",
+        "fixtures/builtins-and-io/number-static-parse.ts",
         "fixtures/builtins-and-io/global-escape.ts",
         "fixtures/builtins-and-io/global-unescape.ts",
         "fixtures/builtins-and-io/global-escape-value.ts",

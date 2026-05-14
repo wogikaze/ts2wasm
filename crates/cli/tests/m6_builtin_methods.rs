@@ -1119,6 +1119,7 @@ fn build_smoke_global_properties() {
         "builtins-and-io/global-isfinite.ts",
         "builtins-and-io/global-parseint.ts",
         "builtins-and-io/global-parsefloat.ts",
+        "builtins-and-io/number-static-parse.ts",
         "builtins-and-io/global-escape.ts",
         "builtins-and-io/global-unescape.ts",
         "builtins-and-io/global-escape-value.ts",

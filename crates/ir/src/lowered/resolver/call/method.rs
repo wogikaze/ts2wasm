@@ -1216,6 +1216,12 @@ impl super::super::Resolver {
                     .map(|e| self.lower_expr(e))
                     .collect::<Result<Vec<_>, _>>()?,
             );
+            if intrinsic == RuntimeFn::ParseInt
+                && matches!(object, ResolvedExpr::Ident(name) if name == "Number")
+                && lowered_args.len() == 1
+            {
+                lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
+            }
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic,
                 args: lowered_args,
