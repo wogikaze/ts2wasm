@@ -2443,3 +2443,849 @@ fn build_smoke_console_log() {
         result.err()
     );
 }
+
+#[test]
+fn build_smoke_array_filter_thisarg() {
+    let result = run_fixture("builtins-and-io/array-filter-thisarg.ts");
+    assert!(
+        result.is_ok(),
+        "array-filter-thisarg should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_array_find_thisarg() {
+    let result = run_fixture("builtins-and-io/array-find-thisarg.ts");
+    assert!(
+        result.is_ok(),
+        "array-find-thisarg should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_array_foreach_thisarg() {
+    let result = run_fixture("builtins-and-io/array-foreach-thisarg.ts");
+    assert!(
+        result.is_ok(),
+        "array-foreach-thisarg should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_async_generator_basic() {
+    let result = run_fixture("builtins-and-io/async-generator-basic.ts");
+    assert!(
+        result.is_ok(),
+        "async-generator-basic should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_date_epoch_constructor() {
+    let result = run_fixture("builtins-and-io/date-epoch-constructor.ts");
+    assert!(
+        result.is_ok(),
+        "date-epoch-constructor should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_date_epoch_get_time() {
+    let result = run_fixture("builtins-and-io/date-epoch-get-time.ts");
+    assert!(
+        result.is_ok(),
+        "date-epoch-get-time should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_date_epoch_value_of() {
+    let result = run_fixture("builtins-and-io/date-epoch-value-of.ts");
+    assert!(
+        result.is_ok(),
+        "date-epoch-value-of should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_date_utc_getters() {
+    let result = run_fixture("builtins-and-io/date-utc-getters.ts");
+    assert!(
+        result.is_ok(),
+        "date-utc-getters should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_error_instanceof() {
+    let result = run_fixture("builtins-and-io/error-instanceof.ts");
+    assert!(
+        result.is_ok(),
+        "error-instanceof should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_error_message() {
+    let result = run_fixture("builtins-and-io/error-message.ts");
+    assert!(
+        result.is_ok(),
+        "error-message should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_error_stack() {
+    let result = run_fixture("builtins-and-io/error-stack.ts");
+    assert!(
+        result.is_ok(),
+        "error-stack should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_function_declaration_value() {
+    let result = run_fixture("builtins-and-io/function-declaration-value.ts");
+    assert!(
+        result.is_ok(),
+        "function-declaration-value should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_generator_alias_state() {
+    let result = run_fixture("builtins-and-io/generator-alias-state.ts");
+    assert!(
+        result.is_ok(),
+        "generator-alias-state should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_generator_basic() {
+    let result = run_fixture("builtins-and-io/generator-basic.ts");
+    assert!(
+        result.is_ok(),
+        "generator-basic should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_generator_branch_yield() {
+    let result = run_fixture("builtins-and-io/generator-branch-yield.ts");
+    assert!(
+        result.is_ok(),
+        "generator-branch-yield should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_generator_direct_next() {
+    let result = run_fixture("builtins-and-io/generator-direct-next.ts");
+    assert!(
+        result.is_ok(),
+        "generator-direct-next should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_generator_lazy_between_yields() {
+    let result = run_fixture("builtins-and-io/generator-lazy-between-yields.ts");
+    assert!(
+        result.is_ok(),
+        "generator-lazy-between-yields should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_generator_lazy_creation() {
+    let result = run_fixture("builtins-and-io/generator-lazy-creation.ts");
+    assert!(
+        result.is_ok(),
+        "generator-lazy-creation should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_generator_local_state() {
+    let result = run_fixture("builtins-and-io/generator-local-state.ts");
+    assert!(
+        result.is_ok(),
+        "generator-local-state should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_generator_loop_yield() {
+    let result = run_fixture("builtins-and-io/generator-loop-yield.ts");
+    assert!(
+        result.is_ok(),
+        "generator-loop-yield should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_generator_multiple_instances() {
+    let result = run_fixture("builtins-and-io/generator-multiple-instances.ts");
+    assert!(
+        result.is_ok(),
+        "generator-multiple-instances should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_generator_trailing_completion() {
+    let result = run_fixture("builtins-and-io/generator-trailing-completion.ts");
+    assert!(
+        result.is_ok(),
+        "generator-trailing-completion should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_iterator_protocol() {
+    let result = run_fixture("builtins-and-io/iterator-protocol.ts");
+    assert!(
+        result.is_ok(),
+        "iterator-protocol should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_array_object_nested() {
+    let result = run_fixture("builtins-and-io/json-parse-array-object-nested.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-array-object-nested should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_array_object_properties() {
+    let result = run_fixture("builtins-and-io/json-parse-array-object-properties.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-array-object-properties should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_array_object() {
+    let result = run_fixture("builtins-and-io/json-parse-array-object.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-array-object should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_array() {
+    let result = run_fixture("builtins-and-io/json-parse-array.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-array should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_escaped_nested() {
+    let result = run_fixture("builtins-and-io/json-parse-escaped-nested.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-escaped-nested should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_escaped_string() {
+    let result = run_fixture("builtins-and-io/json-parse-escaped-string.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-escaped-string should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_incomplete_object() {
+    let result = run_fixture("builtins-and-io/json-parse-incomplete-object.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-incomplete-object should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_invalid_control_string_array() {
+    let result = run_fixture("builtins-and-io/json-parse-invalid-control-string-array.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-invalid-control-string-array should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_invalid_control_string_object() {
+    let result = run_fixture("builtins-and-io/json-parse-invalid-control-string-object.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-invalid-control-string-object should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_invalid_control_string() {
+    let result = run_fixture("builtins-and-io/json-parse-invalid-control-string.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-invalid-control-string should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_invalid_literal() {
+    let result = run_fixture("builtins-and-io/json-parse-invalid-literal.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-invalid-literal should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_invalid_number_incomplete_exponent() {
+    let result = run_fixture("builtins-and-io/json-parse-invalid-number-incomplete-exponent.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-invalid-number-incomplete-exponent should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_invalid_number_incomplete_fraction() {
+    let result = run_fixture("builtins-and-io/json-parse-invalid-number-incomplete-fraction.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-invalid-number-incomplete-fraction should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_invalid_number_incomplete_minus() {
+    let result = run_fixture("builtins-and-io/json-parse-invalid-number-incomplete-minus.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-invalid-number-incomplete-minus should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_invalid_number_leading_zero_array() {
+    let result = run_fixture("builtins-and-io/json-parse-invalid-number-leading-zero-array.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-invalid-number-leading-zero-array should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_invalid_number_leading_zero_object() {
+    let result = run_fixture("builtins-and-io/json-parse-invalid-number-leading-zero-object.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-invalid-number-leading-zero-object should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_invalid_number_leading_zero() {
+    let result = run_fixture("builtins-and-io/json-parse-invalid-number-leading-zero.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-invalid-number-leading-zero should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_invalid_unicode_escape() {
+    let result = run_fixture("builtins-and-io/json-parse-invalid-unicode-escape.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-invalid-unicode-escape should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_latin1_unicode_escape() {
+    let result = run_fixture("builtins-and-io/json-parse-latin1-unicode-escape.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-latin1-unicode-escape should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_nested_array() {
+    let result = run_fixture("builtins-and-io/json-parse-nested-array.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-nested-array should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_number_decimal_exponent() {
+    let result = run_fixture("builtins-and-io/json-parse-number-decimal-exponent.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-number-decimal-exponent should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_object_nested() {
+    let result = run_fixture("builtins-and-io/json-parse-object-nested.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-object-nested should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_surrogate_pair_object_array() {
+    let result = run_fixture("builtins-and-io/json-parse-surrogate-pair-object-array.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-surrogate-pair-object-array should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_trailing_invalid() {
+    let result = run_fixture("builtins-and-io/json-parse-trailing-invalid.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-trailing-invalid should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_unicode_escape() {
+    let result = run_fixture("builtins-and-io/json-parse-unicode-escape.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-unicode-escape should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_parse_unicode_nonascii() {
+    let result = run_fixture("builtins-and-io/json-parse-unicode-nonascii.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-unicode-nonascii should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_stringify_escaped_string() {
+    let result = run_fixture("builtins-and-io/json-stringify-escaped-string.ts");
+    assert!(
+        result.is_ok(),
+        "json-stringify-escaped-string should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_stringify_nested_array_object() {
+    let result = run_fixture("builtins-and-io/json-stringify-nested-array-object.ts");
+    assert!(
+        result.is_ok(),
+        "json-stringify-nested-array-object should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_stringify_nested_object() {
+    let result = run_fixture("builtins-and-io/json-stringify-nested-object.ts");
+    assert!(
+        result.is_ok(),
+        "json-stringify-nested-object should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_stringify_replacer_array_boxed() {
+    let result = run_fixture("builtins-and-io/json-stringify-replacer-array-boxed.ts");
+    assert!(
+        result.is_ok(),
+        "json-stringify-replacer-array-boxed should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_stringify_replacer_array_ignored() {
+    let result = run_fixture("builtins-and-io/json-stringify-replacer-array-ignored.ts");
+    assert!(
+        result.is_ok(),
+        "json-stringify-replacer-array-ignored should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_stringify_replacer_array_multikey() {
+    let result = run_fixture("builtins-and-io/json-stringify-replacer-array-multikey.ts");
+    assert!(
+        result.is_ok(),
+        "json-stringify-replacer-array-multikey should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_stringify_replacer_array_number() {
+    let result = run_fixture("builtins-and-io/json-stringify-replacer-array-number.ts");
+    assert!(
+        result.is_ok(),
+        "json-stringify-replacer-array-number should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_stringify_replacer_array() {
+    let result = run_fixture("builtins-and-io/json-stringify-replacer-array.ts");
+    assert!(
+        result.is_ok(),
+        "json-stringify-replacer-array should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_stringify_replacer_function_drop() {
+    let result = run_fixture("builtins-and-io/json-stringify-replacer-function-drop.ts");
+    assert!(
+        result.is_ok(),
+        "json-stringify-replacer-function-drop should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_stringify_replacer_function_keep() {
+    let result = run_fixture("builtins-and-io/json-stringify-replacer-function-keep.ts");
+    assert!(
+        result.is_ok(),
+        "json-stringify-replacer-function-keep should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_stringify_replacer_function_root_holder() {
+    let result = run_fixture("builtins-and-io/json-stringify-replacer-function-root-holder.ts");
+    assert!(
+        result.is_ok(),
+        "json-stringify-replacer-function-root-holder should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_stringify_replacer_function_transform() {
+    let result = run_fixture("builtins-and-io/json-stringify-replacer-function-transform.ts");
+    assert!(
+        result.is_ok(),
+        "json-stringify-replacer-function-transform should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_stringify_space_boolean() {
+    let result = run_fixture("builtins-and-io/json-stringify-space-boolean.ts");
+    assert!(
+        result.is_ok(),
+        "json-stringify-space-boolean should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_stringify_space_boxed_symbol() {
+    let result = run_fixture("builtins-and-io/json-stringify-space-boxed-symbol.ts");
+    assert!(
+        result.is_ok(),
+        "json-stringify-space-boxed-symbol should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_stringify_space_object_function() {
+    let result = run_fixture("builtins-and-io/json-stringify-space-object-function.ts");
+    assert!(
+        result.is_ok(),
+        "json-stringify-space-object-function should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_stringify_space_string() {
+    let result = run_fixture("builtins-and-io/json-stringify-space-string.ts");
+    assert!(
+        result.is_ok(),
+        "json-stringify-space-string should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_json_stringify_space() {
+    let result = run_fixture("builtins-and-io/json-stringify-space.ts");
+    assert!(
+        result.is_ok(),
+        "json-stringify-space should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_map_for_each() {
+    let result = run_fixture("builtins-and-io/map-forEach.ts");
+    assert!(
+        result.is_ok(),
+        "map-forEach should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_map_nan_minus0_key_equality() {
+    let result = run_fixture("builtins-and-io/map-nan-minus0-key-equality.ts");
+    assert!(
+        result.is_ok(),
+        "map-nan-minus0-key-equality should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_map_set() {
+    let result = run_fixture("builtins-and-io/map-set.ts");
+    assert!(result.is_ok(), "map-set should build: {:?}", result.err());
+}
+
+#[test]
+fn build_smoke_number_is_integer_i32() {
+    let result = run_fixture("builtins-and-io/number-is-integer-i32.ts");
+    assert!(
+        result.is_ok(),
+        "number-is-integer-i32 should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_number_is_safe_integer_i32() {
+    let result = run_fixture("builtins-and-io/number-is-safe-integer-i32.ts");
+    assert!(
+        result.is_ok(),
+        "number-is-safe-integer-i32 should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_assign_descriptors() {
+    let result = run_fixture("builtins-and-io/object-assign-descriptors.ts");
+    assert!(
+        result.is_ok(),
+        "object-assign-descriptors should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_define_property_data() {
+    let result = run_fixture("builtins-and-io/object-define-property-data.ts");
+    assert!(
+        result.is_ok(),
+        "object-define-property-data should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_define_property_getter() {
+    let result = run_fixture("builtins-and-io/object-define-property-getter.ts");
+    assert!(
+        result.is_ok(),
+        "object-define-property-getter should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_get_prototype_of() {
+    let result = run_fixture("builtins-and-io/object-get-prototype-of.ts");
+    assert!(
+        result.is_ok(),
+        "object-get-prototype-of should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_keys_arguments() {
+    let result = run_fixture("builtins-and-io/object-keys-arguments.ts");
+    assert!(
+        result.is_ok(),
+        "object-keys-arguments should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_promise_basic() {
+    let result = run_fixture("builtins-and-io/promise-basic.ts");
+    assert!(
+        result.is_ok(),
+        "promise-basic should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_proxy_remaining_traps() {
+    let result = run_fixture("builtins-and-io/proxy-remaining-traps.ts");
+    assert!(
+        result.is_ok(),
+        "proxy-remaining-traps should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_regexp_flag_multi() {
+    let result = run_fixture("builtins-and-io/regexp-flag-multi.ts");
+    assert!(
+        result.is_ok(),
+        "regexp-flag-multi should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_set_constructor_array() {
+    let result = run_fixture("builtins-and-io/set-constructor-array.ts");
+    assert!(
+        result.is_ok(),
+        "set-constructor-array should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_set_for_each() {
+    let result = run_fixture("builtins-and-io/set-forEach.ts");
+    assert!(
+        result.is_ok(),
+        "set-forEach should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_set_identity_number_string() {
+    let result = run_fixture("builtins-and-io/set-identity-number-string.ts");
+    assert!(
+        result.is_ok(),
+        "set-identity-number-string should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_set_iterable_calls_add() {
+    let result = run_fixture("builtins-and-io/set-iterable-calls-add.ts");
+    assert!(
+        result.is_ok(),
+        "set-iterable-calls-add should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_set_size_clear() {
+    let result = run_fixture("builtins-and-io/set-size-clear.ts");
+    assert!(
+        result.is_ok(),
+        "set-size-clear should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_string_anchor_annexb() {
+    let result = run_fixture("builtins-and-io/string-anchor-annexb.ts");
+    assert!(
+        result.is_ok(),
+        "string-anchor-annexb should build: {:?}",
+        result.err()
+    );
+}
