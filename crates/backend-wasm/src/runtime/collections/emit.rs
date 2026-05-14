@@ -478,6 +478,44 @@ impl WatEmitter<'_> {
             (i32.add (i32.const {obj_header})
               (i32.shl (local.get $i) (i32.const {entry_shift})))))
         (local.set $pk_raw (i32.load (local.get $entry_base)))
+        (if (i32.eq (local.get $key_len) (i32.const -1))
+          (then
+            (if (i32.eq (local.get $pk_raw) (local.get $key_ptr))
+              (then
+                (if (i32.lt_u (local.get $i) (i32.const {tracked_attr_count}))
+                  (then
+                    (if (i32.and
+                          (local.get $flags)
+                          (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift}))))
+                      (then (return (i32.const {false}))))))
+                ;; found: move the last active entry into this slot, clear the tail, and decrement count
+                (if (i32.lt_u (local.get $i) (i32.sub (local.get $count) (i32.const {one})))
+                  (then
+                    (local.set $j
+                      (i32.add (local.get $base)
+                        (i32.add (i32.const {obj_header})
+                          (i32.shl (i32.sub (local.get $count) (i32.const {one})) (i32.const {entry_shift})))))
+                    (i32.store (local.get $entry_base) (i32.load (local.get $j)))
+                    (i32.store
+                      (i32.add (local.get $entry_base) (i32.const {value_off}))
+                      (i32.load (i32.add (local.get $j) (i32.const {value_off}))))))
+                (local.set $entry_base
+                  (i32.add (local.get $base)
+                    (i32.add (i32.const {obj_header})
+                      (i32.shl (i32.sub (local.get $count) (i32.const {one})) (i32.const {entry_shift})))))
+                (i32.store (local.get $entry_base) (i32.const {zero}))
+                (i32.store (i32.add (local.get $entry_base) (i32.const {value_off})) (i32.const {zero}))
+                ;; decrement count
+                (i32.store (local.get $base) (i32.sub (local.get $count) (i32.const {one})))
+                (return (i32.const {true}))))
+            (br $scan)))
+        (if
+          (i32.and
+            (i32.eq (i32.and (local.get $pk_raw) (i32.const {tag_mask})) (i32.const {object_tag}))
+            (i32.eq
+              (i32.load (i32.and (local.get $pk_raw) (i32.const {heap_mask})))
+              (i32.const {symbol_sentinel})))
+          (then (br $scan)))
         (local.set $pk_ptr
           (i32.add (i32.and (local.get $pk_raw) (i32.const {heap_mask})) (i32.const {str_header})))
         (local.set $pk_len
@@ -492,11 +530,21 @@ impl WatEmitter<'_> {
                           (local.get $flags)
                           (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift}))))
                       (then (return (i32.const {false}))))))
-                ;; found: clear the entry and decrement count
+                ;; found: move the last active entry into this slot, clear the tail, and decrement count
+                (if (i32.lt_u (local.get $i) (i32.sub (local.get $count) (i32.const {one})))
+                  (then
+                    (local.set $j
+                      (i32.add (local.get $base)
+                        (i32.add (i32.const {obj_header})
+                          (i32.shl (i32.sub (local.get $count) (i32.const {one})) (i32.const {entry_shift})))))
+                    (i32.store (local.get $entry_base) (i32.load (local.get $j)))
+                    (i32.store
+                      (i32.add (local.get $entry_base) (i32.const {value_off}))
+                      (i32.load (i32.add (local.get $j) (i32.const {value_off}))))))
                 (local.set $entry_base
                   (i32.add (local.get $base)
                     (i32.add (i32.const {obj_header})
-                      (i32.shl (local.get $i) (i32.const {entry_shift})))))
+                      (i32.shl (i32.sub (local.get $count) (i32.const {one})) (i32.const {entry_shift})))))
                 (i32.store (local.get $entry_base) (i32.const {zero}))
                 (i32.store (i32.add (local.get $entry_base) (i32.const {value_off})) (i32.const {zero}))
                 ;; decrement count
@@ -520,6 +568,7 @@ impl WatEmitter<'_> {
             non_configurable_shift = Layout::OBJECT_NON_CONFIGURABLE_SHIFT,
             tracked_attr_count = Layout::OBJECT_ACCESSOR_PROP_SHIFT
                 - Layout::OBJECT_NON_CONFIGURABLE_SHIFT,
+            symbol_sentinel = Layout::SYMBOL_SENTINEL,
             false = ValueTag::FALSE,
             true = ValueTag::TRUE,
         ));
@@ -557,6 +606,18 @@ impl WatEmitter<'_> {
               (i32.add (i32.const {obj_header})
                 (i32.shl (local.get $i) (i32.const {entry_shift})))))
           (local.set $pk_raw (i32.load (local.get $entry_base)))
+          (if (i32.eq (local.get $key_len) (i32.const -1))
+            (then
+              (if (i32.eq (local.get $pk_raw) (local.get $key_ptr))
+                (then (return (i32.const {true}))))
+              (br $scan_entries)))
+          (if
+            (i32.and
+              (i32.eq (i32.and (local.get $pk_raw) (i32.const {tag_mask})) (i32.const {object_tag}))
+              (i32.eq
+                (i32.load (i32.and (local.get $pk_raw) (i32.const {heap_mask})))
+                (i32.const {symbol_sentinel})))
+            (then (br $scan_entries)))
           (local.set $pk_ptr
             (i32.add (i32.and (local.get $pk_raw) (i32.const {heap_mask})) (i32.const {str_header})))
           (local.set $pk_len
@@ -586,6 +647,7 @@ impl WatEmitter<'_> {
             obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             str_header = Layout::STRING_HEADER_SIZE,
+            symbol_sentinel = Layout::SYMBOL_SENTINEL,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             false = ValueTag::FALSE,

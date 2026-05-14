@@ -226,6 +226,7 @@ match self {
             Self::PropertyDelete => "property_delete",
             Self::PropertyHas => "property_has",
             Self::ObjectKeys => "object_keys",
+            Self::ObjectGetOwnPropertySymbols => "object_get_own_property_symbols",
             Self::ObjectSpread => "object_spread",
             Self::SpreadViaIterator => "spread_via_iterator",
             Self::ObjectValues => "object_values",

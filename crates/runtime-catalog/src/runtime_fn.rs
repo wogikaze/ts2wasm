@@ -371,6 +371,7 @@ pub enum RuntimeFn {
     ArrayIsArray,
     /// M10: Object statics
     ObjectKeys,
+    ObjectGetOwnPropertySymbols,
     ObjectSpread,
     SpreadViaIterator,
     ObjectValues,
@@ -1102,6 +1103,7 @@ const ARRAY_SPLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy]
 
 // Object method dependencies
 const OBJECT_KEYS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const OBJECT_GET_OWN_PROPERTY_SYMBOLS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const OBJECT_SPREAD_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ObjectKeys,
     RuntimeFn::PropertyGet,
@@ -1292,6 +1294,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "BigIntLeftShift" => Some(RuntimeFn::BigIntLeftShift),
         "BigIntRightShift" => Some(RuntimeFn::BigIntRightShift),
         "ObjectKeys" => Some(RuntimeFn::ObjectKeys),
+        "ObjectGetOwnPropertySymbols" => Some(RuntimeFn::ObjectGetOwnPropertySymbols),
         "ObjectSpread" => Some(RuntimeFn::ObjectSpread),
         "SpreadViaIterator" => Some(RuntimeFn::SpreadViaIterator),
         "ObjectValues" => Some(RuntimeFn::ObjectValues),
@@ -1855,6 +1858,7 @@ impl RuntimeFn {
             | Self::PropertyDelete
             | Self::PropertyHas
             | Self::ObjectKeys
+            | Self::ObjectGetOwnPropertySymbols
             | Self::ObjectSpread
             | Self::SpreadViaIterator
             | Self::ObjectValues
@@ -2065,6 +2069,7 @@ impl RuntimeFn {
             | Self::TypeOf
             | Self::NumberFromI32
             | Self::ObjectKeys
+            | Self::ObjectGetOwnPropertySymbols
             | Self::BooleanToString
             | Self::SymbolToString
             | Self::SymbolDescription => RuntimeSignature {
@@ -2433,6 +2438,7 @@ impl RuntimeFn {
             Self::ArrayIsArray,
             // Object statics
             Self::ObjectKeys,
+            Self::ObjectGetOwnPropertySymbols,
             Self::ObjectSpread,
             Self::SpreadViaIterator,
             Self::ObjectValues,
@@ -2833,6 +2839,7 @@ impl RuntimeFn {
             Self::ArrayIsArray,
             // Object statics
             Self::ObjectKeys,
+            Self::ObjectGetOwnPropertySymbols,
             Self::ObjectSpread,
             Self::SpreadViaIterator,
             Self::ObjectValues,

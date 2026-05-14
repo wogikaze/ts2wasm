@@ -1505,13 +1505,41 @@ impl WatEmitter<'_> {
                     frame,
                 );
                 self.emit_expr(writer, key, indent, frame);
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
                 writer.local_set(indent, frame.heap_value_tmp());
-                writer.local_get(indent, frame.heap_base_tmp());
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.local_get(indent, frame.heap_value_tmp());
-                writer.call(indent, RuntimeFn::PropertyDelete.symbol());
+                writer.push_str(&format!(
+                    "{pad}(if (result i32)\n\
+{pad}  (i32.and\n\
+{pad}    (i32.eq (i32.and (local.get {}) (i32.const {})) (i32.const {}))\n\
+{pad}    (i32.eq (i32.load (i32.and (local.get {}) (i32.const {}))) (i32.const {})))\n\
+{pad}  (then\n\
+{pad}    (call {}\n\
+{pad}      (local.get {})\n\
+{pad}      (local.get {})\n\
+{pad}      (i32.const -1)))\n\
+{pad}  (else\n\
+{pad}    (local.set {} (call {} (local.get {}) (i32.const {})))\n\
+{pad}    (call {}\n\
+{pad}      (local.get {})\n\
+{pad}      (i32.const {})\n\
+{pad}      (local.get {}))))\n",
+                    frame.heap_value_tmp(),
+                    ValueTag::TAG_MASK,
+                    ValueTag::OBJECT,
+                    frame.heap_value_tmp(),
+                    ValueTag::HEAP_MASK,
+                    Layout::SYMBOL_SENTINEL,
+                    RuntimeFn::PropertyDelete.symbol(),
+                    frame.heap_base_tmp(),
+                    frame.heap_value_tmp(),
+                    frame.heap_value_tmp(),
+                    RuntimeFn::ValueToStringInto.symbol(),
+                    frame.heap_value_tmp(),
+                    Layout::SCRATCH_OFFSET,
+                    RuntimeFn::PropertyDelete.symbol(),
+                    frame.heap_base_tmp(),
+                    Layout::SCRATCH_OFFSET,
+                    frame.heap_value_tmp(),
+                ));
             }
             _ => writer.unreachable(indent),
         }
@@ -1544,13 +1572,41 @@ impl WatEmitter<'_> {
                     frame,
                 );
                 self.emit_expr(writer, key, indent, frame);
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
                 writer.local_set(indent, frame.heap_value_tmp());
-                writer.local_get(indent, frame.heap_base_tmp());
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.local_get(indent, frame.heap_value_tmp());
-                writer.call(indent, RuntimeFn::PropertyHas.symbol());
+                writer.push_str(&format!(
+                    "{pad}(if (result i32)\n\
+{pad}  (i32.and\n\
+{pad}    (i32.eq (i32.and (local.get {}) (i32.const {})) (i32.const {}))\n\
+{pad}    (i32.eq (i32.load (i32.and (local.get {}) (i32.const {}))) (i32.const {})))\n\
+{pad}  (then\n\
+{pad}    (call {}\n\
+{pad}      (local.get {})\n\
+{pad}      (local.get {})\n\
+{pad}      (i32.const -1)))\n\
+{pad}  (else\n\
+{pad}    (local.set {} (call {} (local.get {}) (i32.const {})))\n\
+{pad}    (call {}\n\
+{pad}      (local.get {})\n\
+{pad}      (i32.const {})\n\
+{pad}      (local.get {}))))\n",
+                    frame.heap_value_tmp(),
+                    ValueTag::TAG_MASK,
+                    ValueTag::OBJECT,
+                    frame.heap_value_tmp(),
+                    ValueTag::HEAP_MASK,
+                    Layout::SYMBOL_SENTINEL,
+                    RuntimeFn::PropertyHas.symbol(),
+                    frame.heap_base_tmp(),
+                    frame.heap_value_tmp(),
+                    frame.heap_value_tmp(),
+                    RuntimeFn::ValueToStringInto.symbol(),
+                    frame.heap_value_tmp(),
+                    Layout::SCRATCH_OFFSET,
+                    RuntimeFn::PropertyHas.symbol(),
+                    frame.heap_base_tmp(),
+                    Layout::SCRATCH_OFFSET,
+                    frame.heap_value_tmp(),
+                ));
             }
             _ => writer.unreachable(indent),
         }

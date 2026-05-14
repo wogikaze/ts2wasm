@@ -1743,6 +1743,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ObjectGetOwnPropertySymbols => RuntimeSpec {
+                symbol: "$object_get_own_property_symbols",
+                deps: OBJECT_GET_OWN_PROPERTY_SYMBOLS_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ObjectSpread => RuntimeSpec {
                 symbol: "$object_spread",
                 deps: OBJECT_SPREAD_DEPS,

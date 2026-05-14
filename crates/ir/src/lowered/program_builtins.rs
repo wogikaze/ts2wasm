@@ -94,6 +94,7 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "hasOwnProperty" => Some(RuntimeFn::ObjectHasOwnProperty),
                 "hasOwn" => Some(RuntimeFn::ObjectHasOwn),
                 "getOwnPropertyNames" => Some(RuntimeFn::ObjectKeys),
+                "getOwnPropertySymbols" => Some(RuntimeFn::ObjectGetOwnPropertySymbols),
                 "getOwnPropertyDescriptor" => Some(RuntimeFn::ObjectGetOwnPropertyDescriptor),
                 "getPrototypeOf" => Some(RuntimeFn::ObjectGetPrototypeOf),
                 "setPrototypeOf" => Some(RuntimeFn::ObjectSetPrototypeOf),

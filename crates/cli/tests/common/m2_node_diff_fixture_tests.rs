@@ -3712,6 +3712,7 @@ fn core_expression_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-expressions/object-literal-computed-large-exponent-key.ts",
         "fixtures/core-expressions/object-literal-symbol-method-call.ts",
         "fixtures/core-expressions/symbol-key-dynamic-property-identity.ts",
+        "fixtures/core-expressions/symbol-key-descriptor-identity.ts",
         "fixtures/core-expressions/object-literal-computed-spread.ts",
         "fixtures/core-expressions/object-literal-proto.ts",
         "fixtures/core-expressions/object-literal-method.ts",
@@ -3750,6 +3751,11 @@ fn symbol_key_dynamic_property_identity_matches_node_output_under_iwasm() {
     assert_fixture_matches_node(
         "fixtures/core-expressions/symbol-key-dynamic-property-identity.ts",
     );
+}
+
+#[test]
+fn symbol_key_descriptor_identity_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-expressions/symbol-key-descriptor-identity.ts");
 }
 
 #[test]
