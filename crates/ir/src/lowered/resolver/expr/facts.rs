@@ -182,9 +182,60 @@ pub(crate) fn resolved_expr_is_generator_iterator(ctx: &LoweringCtx, expr: &Reso
             .resolve_local(name)
             .ok()
             .is_some_and(|local_id| ctx.facts.generator_iterator_locals.contains(&local_id)),
-        ResolvedExpr::Call { .. } => resolved_generator_function_call_name(ctx, expr).is_some(),
+        ResolvedExpr::Call { callee, .. } => {
+            resolved_generator_function_call_name(ctx, expr).is_some()
+                || resolved_callee_is_local_generator_function(ctx, callee)
+        }
+        ResolvedExpr::MethodCall { object, method, .. } => {
+            resolved_object_method_is_generator(ctx, object, method)
+        }
         _ => false,
     }
+}
+
+fn resolved_callee_is_local_generator_function(ctx: &LoweringCtx, callee: &ResolvedExpr) -> bool {
+    let ResolvedExpr::Ident(name) = callee else {
+        return false;
+    };
+    let Ok(local_id) = ctx.resolve_local(name) else {
+        return false;
+    };
+    let Some(closure) = ctx.facts.arrow_locals.get(&local_id) else {
+        return false;
+    };
+    ctx.functions
+        .generated_functions
+        .iter()
+        .any(|function| function.id == closure.func_id && function.is_generator)
+}
+
+fn resolved_object_method_is_generator(
+    ctx: &LoweringCtx,
+    object: &ResolvedExpr,
+    method: &str,
+) -> bool {
+    let ResolvedExpr::Ident(receiver_name) = object else {
+        return false;
+    };
+    let Ok(receiver_local) = ctx.resolve_local(receiver_name) else {
+        return false;
+    };
+    let Some(method_id) = ctx
+        .classes
+        .object_function_props
+        .get(&receiver_local)
+        .and_then(|props| {
+            props.get(&crate::lowered::classes::ObjectAccessorKey::Property(
+                method.to_owned(),
+            ))
+        })
+    else {
+        return false;
+    };
+    ctx.functions
+        .generated_functions
+        .iter()
+        .any(|function| function.id == *method_id && function.is_generator)
 }
 
 pub(crate) fn resolved_generator_function_call_name(

@@ -52,11 +52,11 @@ impl super::super::Resolver {
         }
         if method == "next"
             && args.len() <= 1
-            && crate::lowered::resolver::expr::facts::resolved_expr_is_generator_iterator(
-                &self.ctx, object,
-            )
+            && self.resolved_expr_is_direct_generator_call(object)
         {
-            if let Some(result) = self.lower_static_generator_next(object, args)? {
+            if args.is_empty()
+                && let Some(result) = self.lower_static_object_generator_return_next(object)
+            {
                 return Ok(result);
             }
             return Ok(LoweredExpr::RuntimeCall {
@@ -67,11 +67,11 @@ impl super::super::Resolver {
         }
         if method == "next"
             && args.len() <= 1
-            && self.resolved_expr_is_direct_generator_call(object)
+            && crate::lowered::resolver::expr::facts::resolved_expr_is_generator_iterator(
+                &self.ctx, object,
+            )
         {
-            if args.is_empty()
-                && let Some(result) = self.lower_static_object_generator_return_next(object)
-            {
+            if let Some(result) = self.lower_static_generator_next(object, args)? {
                 return Ok(result);
             }
             return Ok(LoweredExpr::RuntimeCall {

@@ -1023,6 +1023,42 @@ fn lowered_generator_iterator_without_static_steps_still_lowers_next() {
 }
 
 #[test]
+fn lowered_object_generator_method_iterators_lower_next() {
+    let program = parse_resolve_lower(
+        "let obj = { *method() { yield 1; } };\n\
+         let iter = obj.method();\n\
+         iter.next();",
+    );
+
+    validate_lowered(&program).expect("object generator method iterator should validate");
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(|stmt| { lowered_stmt_contains_runtime_call(stmt, RuntimeFn::GeneratorNext) }),
+        "object generator method iterator should lower .next() through GeneratorNext: {program:?}"
+    );
+}
+
+#[test]
+fn lowered_extracted_object_generator_method_iterators_lower_next() {
+    let program = parse_resolve_lower(
+        "let gen = { *method() { yield 1; } }.method;\n\
+         let iter = gen();\n\
+         iter.next();",
+    );
+
+    validate_lowered(&program).expect("extracted object generator method iterator should validate");
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(|stmt| { lowered_stmt_contains_runtime_call(stmt, RuntimeFn::GeneratorNext) }),
+        "extracted object generator method iterator should lower .next() through GeneratorNext: {program:?}"
+    );
+}
+
+#[test]
 fn lowered_generator_computed_property_yield_splits_static_steps() {
     let program = parse_resolve_lower(
         "function * gen() {\n\
