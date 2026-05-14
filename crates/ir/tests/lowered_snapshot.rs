@@ -624,6 +624,31 @@ fn lowered_test262_assert_throws_accepts_method_non_constructor_probes() {
 }
 
 #[test]
+fn lowered_test262_accepts_generator_method_prototype_metadata() {
+    let program = parse_resolve_lower(
+        "function verifyProperty(obj, name, desc) { throw null; }\n\
+         var GeneratorPrototype = Object.getPrototypeOf(function* () {}).prototype;\n\
+         var method = { *method() {} }.method;\n\
+         assert.sameValue(Object.getPrototypeOf(method.prototype), GeneratorPrototype);\n\
+         verifyProperty(method, \"prototype\", { writable: true, enumerable: false, configurable: false });",
+    );
+
+    validate_lowered(&program).expect("generator method prototype metadata should validate");
+    assert!(matches!(
+        program.top_level_statements.get(1),
+        Some(LoweredStmt::Let(_, LoweredExpr::ObjectNew { .. }, _))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(3),
+        Some(LoweredStmt::Expr(LoweredExpr::Undefined(_), _))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(4),
+        Some(LoweredStmt::Expr(LoweredExpr::Bool(true, _), _))
+    ));
+}
+
+#[test]
 fn strict_delete_identifier_reports_strict_delete_check() {
     let err = parse_resolve_lower_result(
         r#"

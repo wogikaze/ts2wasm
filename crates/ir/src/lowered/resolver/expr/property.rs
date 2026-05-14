@@ -103,6 +103,29 @@ impl super::super::Resolver {
                 Span::generated("object_proto_get"),
             ));
         }
+        if key == "prototype"
+            && let ResolvedExpr::MethodCall {
+                object: callee_object,
+                method,
+                args,
+                ..
+            } = object
+            && matches!(callee_object.as_ref(), ResolvedExpr::Ident(name) if name == "Object")
+            && method == "getPrototypeOf"
+            && matches!(
+                args.as_slice(),
+                [ResolvedExpr::FunctionExpr {
+                    is_generator: true,
+                    ..
+                }]
+            )
+        {
+            return Ok(LoweredExpr::ObjectNew {
+                props: Vec::new(),
+                non_enumerable: 0,
+                span: Span::generated("generator_prototype"),
+            });
+        }
         if key == "description" {
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::SymbolDescription,

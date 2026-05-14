@@ -4,6 +4,9 @@ pub(super) fn resolve_test262_assert_stmt(expr: &Expr) -> Result<Option<Resolved
     let Expr::Call { callee, args, .. } = expr else {
         return Ok(None);
     };
+    if is_test262_generator_prototype_same_value_assert(callee, args) {
+        return Ok(Some(ResolvedStmt::Expr(ResolvedExpr::Undefined)));
+    }
     let Some(op) = test262_assert_failure_op(callee, args) else {
         return Ok(None);
     };
@@ -24,6 +27,48 @@ pub(super) fn resolve_test262_assert_stmt(expr: &Expr) -> Result<Option<Resolved
         })],
         else_body: vec![],
     }))
+}
+
+fn is_test262_generator_prototype_same_value_assert(callee: &Expr, args: &[Expr]) -> bool {
+    let Expr::Member {
+        object, property, ..
+    } = callee
+    else {
+        return false;
+    };
+    if !matches!(object.as_ref(), Expr::Ident { name, .. } if name == "assert")
+        || property != "sameValue"
+    {
+        return false;
+    }
+    let [actual, Expr::Ident { name: expected, .. }, ..] = args else {
+        return false;
+    };
+    expected == "GeneratorPrototype" && expr_is_generator_method_prototype_get(actual)
+}
+
+fn expr_is_generator_method_prototype_get(expr: &Expr) -> bool {
+    let Expr::Call { callee, args, .. } = expr else {
+        return false;
+    };
+    let Expr::Member {
+        object, property, ..
+    } = callee.as_ref()
+    else {
+        return false;
+    };
+    if !matches!(object.as_ref(), Expr::Ident { name, .. } if name == "Object")
+        || property != "getPrototypeOf"
+    {
+        return false;
+    }
+    matches!(
+        args.as_slice(),
+        [Expr::Member {
+            property,
+            ..
+        }] if property == "prototype"
+    )
 }
 
 pub(super) fn test262_assert_failure_op(callee: &Expr, args: &[Expr]) -> Option<BinaryOp> {

@@ -714,6 +714,11 @@ impl super::super::Resolver {
         else {
             return None;
         };
+        if key == "prototype" {
+            return self
+                .static_function_prototype_descriptor_matches(target, desc)
+                .then(|| LoweredExpr::Bool(true, Span::generated("test262_verify_property")));
+        }
         if !matches!(key.as_str(), "name" | "length") {
             let ResolvedExpr::Ident(target_name) = target else {
                 return None;
@@ -729,6 +734,17 @@ impl super::super::Resolver {
             true,
             Span::generated("test262_verify_property"),
         ))
+    }
+
+    fn static_function_prototype_descriptor_matches(
+        &self,
+        target: &ResolvedExpr,
+        desc: &[ResolvedObjectProp],
+    ) -> bool {
+        self.static_function_metadata_target(target).is_some()
+            && resolved_object_bool_prop(desc, "writable") == Some(true)
+            && resolved_object_bool_prop(desc, "enumerable") == Some(false)
+            && resolved_object_bool_prop(desc, "configurable") == Some(false)
     }
 
     fn static_function_descriptor_matches(
