@@ -2331,6 +2331,11 @@ fn symbol_constructor_basic_matches_node_output() {
 }
 
 #[test]
+fn symbol_registry_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/symbol-registry.ts");
+}
+
+#[test]
 fn weakmap_weakset_basic_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/weakmap-weakset-basic.ts");
 }
@@ -3430,6 +3435,11 @@ fn number_is_nan_matches_node() {
 #[test]
 fn number_is_finite_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/number-is-finite.ts");
+}
+
+#[test]
+fn number_format_integer_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-format-integer.ts");
 }
 
 #[test]

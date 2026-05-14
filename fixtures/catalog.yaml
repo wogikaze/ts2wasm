@@ -330,6 +330,7 @@ directories:
     - math-round.ts
     - math-sqrt.ts
     - math-trunc-sign.ts
+    - number-format-integer.ts
     - number-format-no-args.ts
     - number-is-finite.ts
     - number-is-integer.ts
@@ -432,6 +433,7 @@ directories:
     - string-trim-start.ts
     - string-trim.ts
     - symbol-constructor-basic.ts
+    - symbol-registry.ts
     - test-math-pow.ts
     - test-set-samevaluezero.ts
     - typedarray-basic.ts
