@@ -1562,8 +1562,10 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_string_code_point_at(&self, wat: &mut String) {
-        // codePointAt returns the code point as a tagged number (same as charCodeAt for BMP).
+        // In UTF-8 encoding, codePointAt is equivalent to charCodeAt
+        // since we decode full code points (not UTF-16 surrogates).
         self.emit_utf8_decode_cp_at_byte(wat);
+        self.emit_string_code_point_length(wat);
         wat.push_str(&format!(
             r#"
   (func $string_code_point_at (param $s i32) (param $index i32) (result i32)
@@ -1575,8 +1577,13 @@ impl WatEmitter<'_> {
     (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
     (local.set $len (call $utf8_cp_count (local.get $obj)))
     (local.set $idx (i32.shr_s (local.get $index) (i32.const {number_shift})))
-    (if (i32.lt_s (local.get $idx) (i32.const {zero})) (then (return (i32.const {undefined}))))
+    ;; Handle negative index using CP length
+    (if (i32.lt_s (local.get $idx) (i32.const {zero}))
+      (then (local.set $idx (i32.add (local.get $len) (local.get $idx)))))
+    ;; Clamp to [0, len)
+    (if (i32.lt_s (local.get $idx) (i32.const {zero})) (then (local.set $idx (i32.const {zero}))))
     (if (i32.ge_u (local.get $idx) (local.get $len)) (then (return (i32.const {undefined}))))
+    ;; Convert code point index to byte index and decode
     (local.set $byte_pos (call $utf8_cp_to_byte_index (local.get $obj) (local.get $idx)))
     (return (call $utf8_decode_cp_at_byte (local.get $obj) (local.get $byte_pos))))
 "#,

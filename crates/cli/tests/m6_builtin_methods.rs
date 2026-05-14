@@ -3383,3 +3383,12 @@ fn build_smoke_function_prototype_metadata() {
     );
 }
 
+#[test]
+fn build_smoke_string_static_complete() {
+    let result = run_fixture("builtins-and-io/string-static.ts");
+    assert!(
+        result.is_ok(),
+        "String static methods should build: {:?}",
+        result.err()
+    );
+}

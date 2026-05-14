@@ -1506,6 +1506,11 @@ fn string_char_code_at_matches_node() {
 }
 
 #[test]
+fn string_code_point_at_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-code-point-at.ts");
+}
+
+#[test]
 fn string_from_char_code_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/string-from-char-code.ts");
 }
@@ -4215,4 +4220,9 @@ fn array_copying_matches_node_output() {
 #[test]
 fn number_methods_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/number-complete.ts");
+}
+
+#[test]
+fn string_static_basic_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-static.ts");
 }
