@@ -167,7 +167,10 @@ for d in all_parsed:
         if not dep:
             continue
         if dep not in id_map:
-            error(f"DependsOn unknown: {dep}", d["fn"])
+            # Check if the dependency is in issues/done/
+            done_path = os.path.join(ISSUES_DIR, "done", f"{dep}.md")
+            if not os.path.exists(done_path):
+                error(f"DependsOn unknown: {dep}", d["fn"])
     # Cycle detect (BFS, depth limited)
     visited = set()
     queue = [(iid, 0)]
