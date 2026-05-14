@@ -425,7 +425,7 @@ impl super::super::Resolver {
         {
             return Ok(function);
         }
-        if self.should_lower_decimal_index_as_static_property(object, index)
+        if self.should_lower_static_index_as_property(object, index)
             && let Some(static_key) =
                 super::super::string::resolved_expr_static_property_key_value(&self.ctx, index)
         {
@@ -481,12 +481,15 @@ impl super::super::Resolver {
         }
     }
 
-    fn should_lower_decimal_index_as_static_property(
+    fn should_lower_static_index_as_property(
         &self,
         object: &ResolvedExpr,
         index: &ResolvedExpr,
     ) -> bool {
-        if !matches!(index, ResolvedExpr::DecimalNumber(_)) {
+        if !matches!(
+            index,
+            ResolvedExpr::DecimalNumber(_) | ResolvedExpr::Ternary { .. }
+        ) {
             return false;
         }
         if matches!(object, ResolvedExpr::Array(_)) {

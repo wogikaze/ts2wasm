@@ -108,6 +108,18 @@ pub(super) fn resolved_expr_static_string_value(
             value.push_str(&resolved_expr_static_string_value(ctx, right)?);
             Some(value)
         }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            if resolved_expr_static_bool_value(condition)? {
+                resolved_expr_static_string_value(ctx, then_expr)
+            } else {
+                resolved_expr_static_string_value(ctx, else_expr)
+            }
+        }
         ResolvedExpr::Call { callee, args, .. } => {
             let ResolvedExpr::Ident(name) = callee.as_ref() else {
                 return None;
@@ -265,6 +277,18 @@ pub(super) fn resolved_expr_static_number_literal_value(
             };
             Some(value.to_string())
         }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            if resolved_expr_static_bool_value(condition)? {
+                resolved_expr_static_number_literal_value(ctx, then_expr)
+            } else {
+                resolved_expr_static_number_literal_value(ctx, else_expr)
+            }
+        }
         ResolvedExpr::Ident(name) => {
             let local_id = ctx.resolve_local(name).ok()?;
             if ctx.facts.env_cell_locals.contains(&local_id) {
@@ -284,6 +308,13 @@ pub(super) fn resolved_expr_static_number_literal_value(
                 None
             }
         }
+        _ => None,
+    }
+}
+
+fn resolved_expr_static_bool_value(expr: &ResolvedExpr) -> Option<bool> {
+    match expr {
+        ResolvedExpr::Bool(value) => Some(*value),
         _ => None,
     }
 }
