@@ -806,7 +806,8 @@ fn lowered_snapshot_generator_yields_suspend_points() {
 #[test]
 fn lowered_generator_iterator_without_static_steps_still_lowers_next() {
     let program = parse_resolve_lower(
-        "function* gen() { let obj = { [yield 9]: 9 }; }\n\
+        "function key(value) { return value; }\n\
+         function* gen() { let obj = { [key(yield 9)]: 9 }; }\n\
          let iter = gen();\n\
          while (iter.next().done === false) ;",
     );
@@ -817,6 +818,32 @@ fn lowered_generator_iterator_without_static_steps_still_lowers_next() {
             .top_level_statements
             .iter()
             .any(|stmt| { lowered_stmt_contains_runtime_call(stmt, RuntimeFn::GeneratorNext) })
+    );
+}
+
+#[test]
+fn lowered_generator_computed_property_yield_splits_static_steps() {
+    let program = parse_resolve_lower(
+        "function * gen() {\n\
+           let obj = { [yield 10]: 1, a: \"a\" };\n\
+           yield 20;\n\
+           return obj;\n\
+         }\n\
+         let iter = gen();\n\
+         let first = iter.next().value;\n\
+         let second = iter.next().value;\n\
+         let outcome = iter.next().value;\n\
+         outcome[undefined];\n\
+         outcome.a;",
+    );
+
+    validate_lowered(&program).expect("computed property yield should split generator steps");
+    assert!(
+        !program
+            .top_level_statements
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::GeneratorNext)),
+        "computed-property yield should use static generator stepping: {program:?}"
     );
 }
 

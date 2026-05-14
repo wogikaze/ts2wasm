@@ -8,7 +8,7 @@ use super::super::{
 };
 use super::builtin::{is_html_wrapper_string_method, lower_html_wrapper_string_method};
 use super::receiver::extract_prototype_method_name;
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
+use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
 use crate::lowered::classes::ObjectAccessorKey;
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::IntlNumberFormatOptions;
@@ -335,12 +335,17 @@ impl super::super::Resolver {
         }
         let completed_state = steps.len() + 1;
         let mut completion_body = Vec::new();
+        let mut completion_value = LoweredExpr::Undefined(Span::generated("undefined"));
         for stmt in &completion {
-            completion_body.push(self.lower_stmt(stmt)?);
+            if let ResolvedStmt::Return(expr) = stmt {
+                completion_value = self.lower_expr(expr)?;
+            } else {
+                completion_body.push(self.lower_stmt(stmt)?);
+            }
         }
         completion_body.push(LoweredStmt::Assign(
             result_local,
-            Self::generator_next_result(LoweredExpr::Undefined(Span::generated("undefined")), true),
+            Self::generator_next_result(completion_value, true),
             Span::generated("assign"),
         ));
         completion_body.push(LoweredStmt::Assign(

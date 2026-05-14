@@ -686,6 +686,23 @@ impl GeneratorStepCollector {
 
     fn collect_stmt(&mut self, stmt: &ResolvedStmt) -> Option<()> {
         match stmt {
+            ResolvedStmt::Let(name, ResolvedExpr::Object(props)) => {
+                if let Some((value, resumed_props)) =
+                    split_object_literal_computed_yield_step(props)
+                {
+                    self.steps.push(GeneratorYieldStep {
+                        statements: std::mem::take(&mut self.pending),
+                        value,
+                    });
+                    self.pending.push(ResolvedStmt::Let(
+                        name.clone(),
+                        ResolvedExpr::Object(resumed_props),
+                    ));
+                    return Some(());
+                }
+                self.pending.push(stmt.clone());
+                Some(())
+            }
             ResolvedStmt::Expr(ResolvedExpr::Yield { expr, delegate }) => {
                 if *delegate {
                     return None;
@@ -725,9 +742,9 @@ impl GeneratorStepCollector {
                 update: Some(update),
                 body,
             } => self.collect_static_counter_for(init, condition, update, body),
-            ResolvedStmt::Let(..)
-            | ResolvedStmt::Assign(..)
+            ResolvedStmt::Assign(..)
             | ResolvedStmt::Expr(..)
+            | ResolvedStmt::Return(..)
             | ResolvedStmt::DestructureLet { .. } => {
                 self.pending.push(stmt.clone());
                 Some(())
@@ -766,6 +783,160 @@ impl GeneratorStepCollector {
         }
         self.pending.push(ResolvedStmt::Expr(update.clone()));
         Some(())
+    }
+}
+
+fn split_object_literal_computed_yield_step(
+    props: &[ResolvedObjectProp],
+) -> Option<(ResolvedExpr, Vec<ResolvedObjectProp>)> {
+    let mut resumed_props = Vec::with_capacity(props.len());
+    let mut yielded_value = None;
+    for prop in props {
+        match prop {
+            ResolvedObjectProp::ComputedKey { key, value }
+                if yielded_value.is_none()
+                    && matches!(
+                        key.as_ref(),
+                        ResolvedExpr::Yield {
+                            delegate: false,
+                            ..
+                        }
+                    ) =>
+            {
+                let ResolvedExpr::Yield { expr, .. } = key.as_ref() else {
+                    unreachable!("matches! above guarantees a yield expression");
+                };
+                yielded_value = Some(
+                    expr.as_ref()
+                        .map(|expr| expr.as_ref().clone())
+                        .unwrap_or(ResolvedExpr::Undefined),
+                );
+                resumed_props.push(ResolvedObjectProp::ComputedKey {
+                    key: Box::new(ResolvedExpr::Undefined),
+                    value: value.clone(),
+                });
+            }
+            ResolvedObjectProp::ComputedKey { key, .. }
+                if contains_generator_yield_expr(key.as_ref()) =>
+            {
+                return None;
+            }
+            _ => resumed_props.push(prop.clone()),
+        }
+    }
+    yielded_value.map(|value| (value, resumed_props))
+}
+
+fn contains_generator_yield_expr(expr: &ResolvedExpr) -> bool {
+    match expr {
+        ResolvedExpr::Yield { .. } => true,
+        ResolvedExpr::Await { expr }
+        | ResolvedExpr::Spread(expr)
+        | ResolvedExpr::Unary { expr, .. } => contains_generator_yield_expr(expr),
+        ResolvedExpr::Binary { left, right, .. } => {
+            contains_generator_yield_expr(left) || contains_generator_yield_expr(right)
+        }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            contains_generator_yield_expr(condition)
+                || contains_generator_yield_expr(then_expr)
+                || contains_generator_yield_expr(else_expr)
+        }
+        ResolvedExpr::Call { callee, args, .. }
+        | ResolvedExpr::OptionalCall { callee, args, .. } => {
+            contains_generator_yield_expr(callee) || args.iter().any(contains_generator_yield_expr)
+        }
+        ResolvedExpr::MethodCall { object, args, .. } => {
+            contains_generator_yield_expr(object) || args.iter().any(contains_generator_yield_expr)
+        }
+        ResolvedExpr::Object(props) => props.iter().any(|prop| {
+            prop.computed_key()
+                .is_some_and(contains_generator_yield_expr)
+                || contains_generator_yield_expr(prop.value())
+        }),
+        ResolvedExpr::Array(elements) => elements.iter().any(|element| match element {
+            ResolvedArrayElement::Present(expr) => contains_generator_yield_expr(expr),
+            ResolvedArrayElement::Hole => false,
+        }),
+        ResolvedExpr::PropertyAccess { object, .. }
+        | ResolvedExpr::BuiltinProperty { object, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object, .. } => {
+            contains_generator_yield_expr(object)
+        }
+        ResolvedExpr::Assign { expr, .. } | ResolvedExpr::LogicalAssign { expr, .. } => {
+            contains_generator_yield_expr(expr)
+        }
+        ResolvedExpr::LogicalPropertyAssign { expr, .. } => contains_generator_yield_expr(expr),
+        ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. }
+        | ResolvedExpr::LogicalComputedMemberAssign { key, expr, .. } => {
+            contains_generator_yield_expr(key) || contains_generator_yield_expr(expr)
+        }
+        ResolvedExpr::PropertyAssignDynamic {
+            object,
+            key,
+            value: expr,
+        } => {
+            contains_generator_yield_expr(object)
+                || contains_generator_yield_expr(key)
+                || contains_generator_yield_expr(expr)
+        }
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            contains_generator_yield_expr(object) || contains_generator_yield_expr(expr)
+        }
+        ResolvedExpr::ComputedIndex { object, index }
+        | ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
+            contains_generator_yield_expr(object) || contains_generator_yield_expr(index)
+        }
+        ResolvedExpr::PropertyAssign { object, value, .. } => {
+            contains_generator_yield_expr(object) || contains_generator_yield_expr(value)
+        }
+        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+            args.iter().any(contains_generator_yield_expr)
+        }
+        ResolvedExpr::ArrowFn {
+            body, body_stmts, ..
+        } => {
+            contains_generator_yield_expr(body)
+                || body_stmts.iter().any(stmt_contains_generator_yield_expr)
+        }
+        ResolvedExpr::FunctionExpr { .. } => false,
+        _ => false,
+    }
+}
+
+fn stmt_contains_generator_yield_expr(stmt: &ResolvedStmt) -> bool {
+    match stmt {
+        ResolvedStmt::Let(_, expr)
+        | ResolvedStmt::Assign(_, expr)
+        | ResolvedStmt::Expr(expr)
+        | ResolvedStmt::Return(expr)
+        | ResolvedStmt::Throw(expr) => contains_generator_yield_expr(expr),
+        ResolvedStmt::DestructureLet { expr, .. } => contains_generator_yield_expr(expr),
+        ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
+            contains_generator_yield_expr(expr)
+        }
+        ResolvedStmt::If {
+            condition,
+            then_body,
+            else_body,
+        } => {
+            contains_generator_yield_expr(condition)
+                || then_body.iter().any(stmt_contains_generator_yield_expr)
+                || else_body.iter().any(stmt_contains_generator_yield_expr)
+        }
+        ResolvedStmt::While { condition, body } | ResolvedStmt::DoWhile { condition, body } => {
+            contains_generator_yield_expr(condition)
+                || body.iter().any(stmt_contains_generator_yield_expr)
+        }
+        ResolvedStmt::Block { statements } => {
+            statements.iter().any(stmt_contains_generator_yield_expr)
+        }
+        ResolvedStmt::Function { .. } => false,
+        _ => false,
     }
 }
 
