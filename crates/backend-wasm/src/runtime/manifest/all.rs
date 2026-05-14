@@ -91,6 +91,8 @@ match self {
             Self::DateGetLocalTimeField => "date_get_local_time_field",
             Self::DateToISOString => "date_to_iso_string",
             Self::DateGetTimezoneOffset => "date_get_timezone_offset",
+            Self::DateToDateString => "date_to_date_string",
+            Self::DateToTimeString => "date_to_time_string",
             Self::DateGetUtcMilliseconds => "date_get_utc_milliseconds",
             Self::DateGetUtcSeconds => "date_get_utc_seconds",
             Self::DateGetUtcMinutes => "date_get_utc_minutes",

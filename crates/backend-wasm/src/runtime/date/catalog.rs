@@ -18,6 +18,8 @@ pub const DATE_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::DateGetLocalTimeField,
     RuntimeFn::DateToISOString,
     RuntimeFn::DateGetTimezoneOffset,
+    RuntimeFn::DateToDateString,
+    RuntimeFn::DateToTimeString,
     RuntimeFn::DateGetUtcMilliseconds,
     RuntimeFn::DateGetUtcSeconds,
     RuntimeFn::DateGetUtcMinutes,

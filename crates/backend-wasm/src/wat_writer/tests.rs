@@ -1,10 +1,7 @@
 use super::*;
-use crate::wasm_ir::{WasmDataSegment, WasmExport, WasmMemory, WasmValType};
+use crate::wasm_ir::{WasmDataSegment, WasmExport, WasmImport, WasmMemory, WasmValType};
 #[cfg(feature = "wasm-encoder-backend")]
-use crate::{
-    emit_wasm_module_binary,
-    wasm_ir::{WasmGlobal, WasmImport},
-};
+use crate::{emit_wasm_module_binary, wasm_ir::WasmGlobal};
 #[cfg(feature = "wasm-encoder-backend")]
 use std::{fs, process::Command};
 
@@ -347,6 +344,32 @@ fn wat_writer_emits_backend_core_constructed_module() {
             ")\n",
         )
     );
+}
+
+#[test]
+fn wat_writer_imports_prefix_symbols_and_omit_empty_results() {
+    let module = WasmModule::new()
+        .import(WasmImport::func(
+            "env",
+            "print_i32",
+            "print_i32",
+            [WasmValType::I32],
+            [],
+        ))
+        .function(WasmFunction::new("main").body(vec![
+            WasmInstr::I32Const(1),
+            WasmInstr::Call("$print_i32".to_owned()),
+            WasmInstr::Return,
+        ]));
+
+    let mut w = WatWriter::new();
+    w.emit_module(&module);
+
+    assert!(
+        w.as_str()
+            .contains("  (import \"env\" \"print_i32\" (func $print_i32 (param i32)))\n")
+    );
+    assert!(!w.as_str().contains("(result )"));
 }
 
 #[cfg(feature = "wasm-encoder-backend")]

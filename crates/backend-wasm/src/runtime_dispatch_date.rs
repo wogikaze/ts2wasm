@@ -11,6 +11,8 @@ impl WatEmitter<'_> {
             RuntimeFn::DateEpochMsNowNumber => self.emit_date_epoch_ms_now_number(wat),
             RuntimeFn::DateGetTime => self.emit_date_get_time(wat),
             RuntimeFn::DateToString => self.emit_date_to_string(wat),
+            RuntimeFn::DateToDateString => self.emit_date_to_date_string(wat),
+            RuntimeFn::DateToTimeString => self.emit_date_to_time_string(wat),
             RuntimeFn::DateGetLocalTimeField => self.emit_date_get_local_time_field(wat),
             RuntimeFn::DateToISOString => self.emit_date_to_iso_string(wat),
             RuntimeFn::DateGetTimezoneOffset => self.emit_date_get_timezone_offset(wat),

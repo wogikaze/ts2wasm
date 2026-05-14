@@ -191,6 +191,10 @@ pub enum RuntimeFn {
     DateToISOString,
     /// Date.prototype.getTimezoneOffset via host shim.
     DateGetTimezoneOffset,
+    /// Date.prototype.toDateString via host shim.
+    DateToDateString,
+    /// Date.prototype.toTimeString via host shim.
+    DateToTimeString,
     /// M10: String methods
     StringCharAt,
     /// String.prototype.at
@@ -792,6 +796,8 @@ const IMPORT_DATE_TO_STRING: &[HostImport] = &[HostImport::DateToString];
 const IMPORT_DATE_GET_LOCAL_TIME_FIELD: &[HostImport] = &[HostImport::DateGetLocalTimeField];
 const IMPORT_DATE_TO_ISO_STRING: &[HostImport] = &[HostImport::DateToISOString];
 const IMPORT_DATE_GET_TIMEZONE_OFFSET: &[HostImport] = &[HostImport::DateGetTimezoneOffset];
+const IMPORT_DATE_TO_DATE_STRING: &[HostImport] = &[HostImport::DateToDateString];
+const IMPORT_DATE_TO_TIME_STRING: &[HostImport] = &[HostImport::DateToTimeString];
 const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
 const CAP_STDOUT_WRITE: &[Capability] = &[Capability::StdoutWrite];
 const CAP_WASI_CLOCK_REALTIME: &[Capability] = &[Capability::WasiClockRealtime];
@@ -818,6 +824,8 @@ const CAP_HOST_DATE_TO_STRING: &[Capability] = &[Capability::HostDateToString];
 const CAP_HOST_DATE_GET_LOCAL_TIME_FIELD: &[Capability] = &[Capability::HostDateGetLocalTimeField];
 const CAP_HOST_DATE_TO_ISO_STRING: &[Capability] = &[Capability::HostDateToISOString];
 const CAP_HOST_DATE_GET_TIMEZONE_OFFSET: &[Capability] = &[Capability::HostDateGetTimezoneOffset];
+const CAP_HOST_DATE_TO_DATE_STRING: &[Capability] = &[Capability::HostDateToDateString];
+const CAP_HOST_DATE_TO_TIME_STRING: &[Capability] = &[Capability::HostDateToTimeString];
 const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::UNDEFINED,
     RuntimeString::NULL,
@@ -1409,6 +1417,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DateGetLocalTimeField" => Some(RuntimeFn::DateGetLocalTimeField),
         "DateToISOString" => Some(RuntimeFn::DateToISOString),
         "DateGetTimezoneOffset" => Some(RuntimeFn::DateGetTimezoneOffset),
+        "DateToDateString" => Some(RuntimeFn::DateToDateString),
+        "DateToTimeString" => Some(RuntimeFn::DateToTimeString),
         "IsNaN" => Some(RuntimeFn::IsNaN),
         "ParseInt" => Some(RuntimeFn::ParseInt),
         "ParseFloat" => Some(RuntimeFn::ParseFloat),
@@ -1636,6 +1646,8 @@ impl RuntimeFn {
             | Self::DateGetLocalTimeField
             | Self::DateToISOString
             | Self::DateGetTimezoneOffset
+            | Self::DateToDateString
+            | Self::DateToTimeString
             | Self::DateGetUtcMilliseconds
             | Self::DateGetUtcSeconds
             | Self::DateGetUtcMinutes
@@ -2215,6 +2227,8 @@ impl RuntimeFn {
             Self::DateGetLocalTimeField,
             Self::DateToISOString,
             Self::DateGetTimezoneOffset,
+            Self::DateToDateString,
+            Self::DateToTimeString,
             Self::DateGetUtcMilliseconds,
             Self::DateGetUtcSeconds,
             Self::DateGetUtcMinutes,
@@ -2594,6 +2608,8 @@ impl RuntimeFn {
             Self::DateGetLocalTimeField,
             Self::DateToISOString,
             Self::DateGetTimezoneOffset,
+            Self::DateToDateString,
+            Self::DateToTimeString,
             Self::DateGetUtcMilliseconds,
             Self::DateGetUtcSeconds,
             Self::DateGetUtcMinutes,

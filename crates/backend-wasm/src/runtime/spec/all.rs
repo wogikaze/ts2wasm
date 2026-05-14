@@ -721,6 +721,22 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::DateToDateString => RuntimeSpec {
+                symbol: "$date_to_date_string",
+                deps: NO_DEPS,
+                imports: IMPORT_DATE_TO_DATE_STRING,
+                capability: CAP_HOST_DATE_TO_DATE_STRING,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::DateToTimeString => RuntimeSpec {
+                symbol: "$date_to_time_string",
+                deps: NO_DEPS,
+                imports: IMPORT_DATE_TO_TIME_STRING,
+                capability: CAP_HOST_DATE_TO_TIME_STRING,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::DateGetUtcMilliseconds => RuntimeSpec {
                 symbol: "$date_get_utc_milliseconds",
                 deps: NO_DEPS,

@@ -918,6 +918,46 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
+        if self.is_date_receiver(object) && method == "toDateString" {
+            if !args.is_empty() {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 0 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateToDateString,
+                args: vec![self.lower_expr(object)?],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if self.is_date_receiver(object) && method == "toTimeString" {
+            if !args.is_empty() {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 0 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateToTimeString,
+                args: vec![self.lower_expr(object)?],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
         if self.is_date_receiver(object) && matches!(method, "toISOString" | "toJSON") {
             if !args.is_empty() {
                 return Err(Diagnostic {

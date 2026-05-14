@@ -56,6 +56,8 @@ pub enum HostImport {
     DateGetLocalTimeField,
     DateToISOString,
     DateGetTimezoneOffset,
+    DateToDateString,
+    DateToTimeString,
 }
 
 impl HostImport {
@@ -294,6 +296,22 @@ impl HostImport {
                 params: "param i32",
                 result: "result i32",
             },
+            Self::DateToDateString => HostImportSpec {
+                module: "host",
+                name: "dateToDateString",
+                wat_symbol: "$host_date_to_date_string",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
+            Self::DateToTimeString => HostImportSpec {
+                module: "host",
+                name: "dateToTimeString",
+                wat_symbol: "$host_date_to_time_string",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
         }
     }
 
@@ -331,6 +349,8 @@ impl HostImport {
             Self::DateGetLocalTimeField => "host.dateGetLocalTimeField",
             Self::DateToISOString => "host.dateToISOString",
             Self::DateGetTimezoneOffset => "host.dateGetTimezoneOffset",
+            Self::DateToDateString => "host.dateToDateString",
+            Self::DateToTimeString => "host.dateToTimeString",
         }
     }
 }

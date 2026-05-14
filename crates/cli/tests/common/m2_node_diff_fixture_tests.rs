@@ -517,8 +517,13 @@ fn regexp_0_args_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn regexp_flag_d_fixture_matches_node_output_under_iwasm() {
-    assert_fixture_matches_node("fixtures/builtins-and-io/regexp-flag-d.ts");
+fn regexp_flag_d_fixture_reports_issue_202() {
+    assert_build_fails_with_diagnostic(
+        "fixtures/builtins-and-io/regexp-flag-d.ts",
+        "[SyntaxError]",
+        "issue-202: unsupported RegExp flag `d`",
+        true,
+    );
 }
 
 #[test]
@@ -2530,6 +2535,14 @@ fn date_to_string_no_timezone_fixture_builds_successfully() {
 }
 
 #[test]
+fn date_methods_matches_node_output() {
+    // Date string/timezone methods use Node host shims. The default test command
+    // records this fixture in the node-diff suite while only running the full
+    // iwasm differential when TS2WASM_RUN_M2_NODE_DIFF=1 is explicitly set.
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-complete.ts");
+}
+
+#[test]
 fn date_local_getters_fixture_builds() {
     // Local-tz getters use a host shim, so we can only verify compilation, not output
     use std::path::Path;
@@ -4285,4 +4298,9 @@ fn string_static_basic_matches_node_output() {
 #[test]
 fn error_stack_cause_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/error-subclasses.ts");
+}
+
+#[test]
+fn date_methods_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-methods-comprehensive.ts");
 }

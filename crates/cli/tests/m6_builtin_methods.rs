@@ -1276,6 +1276,26 @@ fn build_smoke_date_get_timezone_offset() {
 }
 
 #[test]
+fn build_smoke_date_complete() {
+    let result = run_fixture("builtins-and-io/date-complete.ts");
+    assert!(
+        result.is_ok(),
+        "Date complete prototype method fixture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_date_methods_comprehensive() {
+    let result = run_fixture("builtins-and-io/date-methods-comprehensive.ts");
+    assert!(
+        result.is_ok(),
+        "Date comprehensive method fixture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_date_noarg_live_time() {
     let result = run_fixture("builtins-and-io/date-noarg-live-time.ts");
     assert!(
@@ -1512,7 +1532,7 @@ fn build_smoke_regexp_flags_gim() {
     );
 }
 
-// RegExp literal flags s, u, y, d (issue 110)
+// RegExp literal flags s, u, y (issue 110). The `d` indices flag remains issue-202.
 #[test]
 fn build_smoke_regexp_flags_suy() {
     let result = run_fixture("builtins-and-io/regexp-flags-suy-d.ts");
@@ -2630,6 +2650,16 @@ fn build_smoke_date_utc_getters() {
 }
 
 #[test]
+fn build_smoke_date_complete() {
+    let result = run_fixture("builtins-and-io/date-methods-comprehensive.ts");
+    assert!(
+        result.is_ok(),
+        "date-methods-comprehensive should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_error_instanceof() {
     let result = run_fixture("builtins-and-io/error-instanceof.ts");
     assert!(
@@ -3409,9 +3439,13 @@ fn build_smoke_regexp_0_args() {
 fn build_smoke_regexp_flag_d() {
     let result = run_fixture("builtins-and-io/regexp-flag-d.ts");
     assert!(
-        result.is_ok(),
-        "regexp-flag-d should build: {:?}",
-        result.err()
+        result.is_err(),
+        "regexp-flag-d should remain unsupported until RegExp indices are implemented"
+    );
+    let err = result.err().unwrap();
+    assert!(
+        err.contains("issue-202") && err.contains("unsupported RegExp flag `d`"),
+        "regexp-flag-d should report issue-202: {err}"
     );
 }
 

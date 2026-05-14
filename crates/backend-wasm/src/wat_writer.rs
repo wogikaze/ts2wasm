@@ -608,23 +608,14 @@ impl WatWriter {
         self.open_module();
 
         for imp in &module.imports {
+            let symbol = wat_symbol(&imp.func_symbol);
+            let params = wat_type_group("param", &imp.params);
+            let results = wat_type_group("result", &imp.results);
             self.line(
                 2,
                 &format!(
-                    "(import \"{}\" \"{}\" (func {} (param {}) (result {})))",
-                    imp.module,
-                    imp.name,
-                    imp.func_symbol,
-                    imp.params
-                        .iter()
-                        .map(|t| t.as_str())
-                        .collect::<Vec<_>>()
-                        .join(" "),
-                    imp.results
-                        .iter()
-                        .map(|t| t.as_str())
-                        .collect::<Vec<_>>()
-                        .join(" "),
+                    "(import \"{}\" \"{}\" (func {}{}{}))",
+                    imp.module, imp.name, symbol, params, results,
                 ),
             );
         }
@@ -690,6 +681,27 @@ impl WatWriter {
 
         self.close_module();
     }
+}
+
+fn wat_symbol(symbol: &str) -> std::borrow::Cow<'_, str> {
+    if symbol.starts_with('$') {
+        std::borrow::Cow::Borrowed(symbol)
+    } else {
+        std::borrow::Cow::Owned(format!("${symbol}"))
+    }
+}
+
+fn wat_type_group(kind: &str, types: &[crate::wasm_ir::WasmValType]) -> String {
+    if types.is_empty() {
+        return String::new();
+    }
+
+    let values = types
+        .iter()
+        .map(|t| t.as_str())
+        .collect::<Vec<_>>()
+        .join(" ");
+    format!(" ({kind} {values})")
 }
 
 // ---------------------------------------------------------------------------
