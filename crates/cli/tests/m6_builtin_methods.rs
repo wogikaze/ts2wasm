@@ -223,6 +223,16 @@ fn build_smoke_object_literal_setter_descriptor() {
 }
 
 #[test]
+fn build_smoke_object_literal_computed_accessor_invocation() {
+    let result = run_fixture("core-expressions/object-literal-computed-accessor-invocation.ts");
+    assert!(
+        result.is_ok(),
+        "object literal computed accessor invocation should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_literal_computed_spread() {
     let result = run_fixture("core-expressions/object-literal-computed-spread.ts");
     assert!(

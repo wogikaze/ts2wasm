@@ -320,6 +320,29 @@ impl super::super::Resolver {
         if matches!(object, ResolvedExpr::Ident(name) if name == "super") {
             return self.lower_super_property_assign_dynamic(object, key, value);
         }
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(obj_local) = self.resolve_local(name)
+            && let Some(static_key) =
+                super::super::string::resolved_expr_static_property_key_value(&self.ctx, key)
+            && let Some(setter_id) = self
+                .ctx
+                .classes
+                .object_accessor_props
+                .get(&obj_local)
+                .and_then(|props| props.get(&static_key))
+                .and_then(|prop| prop.set)
+        {
+            let lowered_args = self.lower_function_call_args(
+                setter_id,
+                LoweredExpr::Local(obj_local, Span::generated("local")),
+                std::slice::from_ref(value),
+            )?;
+            return Ok(LoweredExpr::Call {
+                kind: FunctionCallKind::User(setter_id),
+                args: lowered_args,
+                span: Span::generated("call"),
+            });
+        }
         Ok(object_kernel::ordinary_set_dynamic(
             self.lower_property_assignment_object(object)?,
             self.lower_expr(key)?,

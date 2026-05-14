@@ -177,6 +177,33 @@ impl super::Resolver {
         for prop in props {
             match prop {
                 ResolvedObjectProp::ComputedKey { key, value } => {
+                    if let Some(kind) = object_literal_accessor_kind(prop) {
+                        if !initialized {
+                            stmts.push(LoweredStmt::Let(
+                                object_local,
+                                LoweredExpr::ObjectNew {
+                                    props: std::mem::take(&mut pending),
+                                    non_enumerable: 0,
+                                    span: Span::generated("object_new"),
+                                },
+                                Span::generated("object_literal"),
+                            ));
+                            initialized = true;
+                        }
+                        let descriptor =
+                            self.lower_object_literal_accessor_descriptor(prop, kind)?;
+                        let define_expr = object_kernel::ordinary_define_own_property(
+                            LoweredExpr::Local(object_local, Span::generated("local")),
+                            self.lower_expr(key)?,
+                            descriptor,
+                            Span::generated("object_computed_accessor_define"),
+                        );
+                        stmts.push(LoweredStmt::Expr(
+                            define_expr,
+                            Span::generated("object_computed_accessor_define"),
+                        ));
+                        continue;
+                    }
                     if let Some(static_key) =
                         super::string::resolved_expr_static_property_key_value(&self.ctx, key)
                     {
@@ -371,9 +398,7 @@ impl super::Resolver {
         prop: &ResolvedObjectProp,
         kind: ObjectLiteralAccessorKind,
     ) -> Result<LoweredExpr, Diagnostic> {
-        let ResolvedObjectProp::MethodShorthand { value, .. } = prop else {
-            unreachable!("object literal accessor kind only matches method shorthand props");
-        };
+        let value = prop.value();
         let ResolvedExpr::FunctionExpr { name, params, body } = value else {
             unreachable!("object literal accessor kind only matches function values");
         };
@@ -452,8 +477,10 @@ impl ObjectLiteralAccessorKind {
 }
 
 fn object_literal_accessor_kind(prop: &ResolvedObjectProp) -> Option<ObjectLiteralAccessorKind> {
-    let ResolvedObjectProp::MethodShorthand { value, .. } = prop else {
-        return None;
+    let value = match prop {
+        ResolvedObjectProp::MethodShorthand { value, .. }
+        | ResolvedObjectProp::ComputedKey { value, .. } => value,
+        _ => return None,
     };
     let ResolvedExpr::FunctionExpr { name, .. } = value else {
         return None;

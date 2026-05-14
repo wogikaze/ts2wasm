@@ -213,6 +213,29 @@ impl super::super::Resolver {
         if matches!(object, ResolvedExpr::Ident(name) if name == "super") {
             return self.lower_super_computed_index(object, index);
         }
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(obj_local) = self.resolve_local(name)
+            && let Some(static_key) =
+                super::super::string::resolved_expr_static_property_key_value(&self.ctx, index)
+            && let Some(getter_id) = self
+                .ctx
+                .classes
+                .object_accessor_props
+                .get(&obj_local)
+                .and_then(|props| props.get(&static_key))
+                .and_then(|prop| prop.get)
+        {
+            let lowered_args = self.lower_function_call_args(
+                getter_id,
+                LoweredExpr::Local(obj_local, Span::generated("local")),
+                &[],
+            )?;
+            return Ok(LoweredExpr::Call {
+                kind: FunctionCallKind::User(getter_id),
+                args: lowered_args,
+                span: Span::generated("call"),
+            });
+        }
         if let Some(proxy) =
             crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(&self.ctx, object)
         {
