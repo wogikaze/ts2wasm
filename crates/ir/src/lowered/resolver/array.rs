@@ -94,7 +94,11 @@ impl super::Resolver {
                         &self.ctx,
                         spread_expr.as_ref(),
                     ) {
-                        return Err(crate::lowered::resolver::expr::facts::unsupported_generator_spread_diagnostic());
+                        return Err(
+                            crate::lowered::resolver::expr::facts::unsupported_spread_diagnostic(
+                                "generator",
+                            ),
+                        );
                     }
 
                     if crate::lowered::resolver::expr::facts::resolved_expr_has_symbol_iterator_property(&self.ctx, spread_expr.as_ref()) {
@@ -582,10 +586,10 @@ impl super::Resolver {
                     {
                         lowered.extend(crate::lowered::resolver::string::lower_ascii_string_spread_chars(&value)?);
                     } else if crate::lowered::resolver::expr::facts::is_generator_call_spread_operand(&self.ctx, spread_expr.as_ref()) {
-                        return Err(crate::lowered::resolver::expr::facts::unsupported_generator_spread_diagnostic());
+                        return Err(crate::lowered::resolver::expr::facts::unsupported_spread_diagnostic("generator"));
                     } else if crate::lowered::resolver::expr::facts::resolved_expr_has_symbol_iterator_property(&self.ctx, spread_expr.as_ref())
                     {
-                        return Err(crate::lowered::resolver::expr::facts::unsupported_symbol_iterator_spread_diagnostic());
+                        return Err(crate::lowered::resolver::expr::facts::unsupported_spread_diagnostic("symbol_iterator"));
                     } else {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,

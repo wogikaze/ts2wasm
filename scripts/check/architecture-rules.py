@@ -293,7 +293,6 @@ HIGH_PUBLIC_API_COUNT_ALLOWLIST = {
     "crates/backend-wasm/src/runtime_strings.rs": "39 pub items — runtime strings emit exports many helpers",
     "crates/ir/src/builtin_resolver_bigint.rs": "65 pub items — bigint builtin resolver exports many match arms",
     "crates/ir/src/lowered/program_builtins.rs": "41 pub items — program builtins exports all runtime fn routing",
-    "crates/ir/src/lowered/resolver/expr/facts.rs": "36 pub items — I-20260513-HGGTXF: static fact helpers pending fact-context split",
     "crates/ir/src/lowered/resolver/mod.rs": "33 pub items — resolver module re-exports many sub-resolvers",
     "crates/ir/src/lowered/resolver_extra.rs": "114 pub items — resolver extra exports many helpers",
     "crates/ir/src/lowered.rs": "32 pub items — lowered IR boundary re-exports HIR/MIR and compatibility types",

@@ -13,15 +13,12 @@ use std::collections::HashSet;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_syntax::{BinaryOp, OBJECT_SPREAD_SENTINEL, SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp};
 
-pub(crate) fn update_bigint_local(ctx: &mut LoweringCtx, local_id: LocalId, expr: &ResolvedExpr) {
+pub(crate) fn update_bigint_locals(ctx: &mut LoweringCtx, local_id: LocalId, expr: &ResolvedExpr) {
     if resolved_expr_is_bigint(ctx, expr) {
         ctx.facts.bigint_locals.insert(local_id);
     } else {
         ctx.facts.bigint_locals.remove(&local_id);
     }
-}
-
-pub(crate) fn update_control_flow_bigint_assignment(ctx: &mut LoweringCtx, local_id: LocalId) {
     ctx.facts
         .control_flow_bigint_div_rem_locals
         .remove(&local_id);
@@ -36,7 +33,7 @@ pub(crate) fn update_nullish_local(ctx: &mut LoweringCtx, local_id: LocalId, exp
     }
 }
 
-pub(crate) fn resolved_expr_is_nullish(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
+fn resolved_expr_is_nullish(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
     match expr {
         ResolvedExpr::Null | ResolvedExpr::Undefined => true,
         ResolvedExpr::Ident(name) => ctx
@@ -231,25 +228,24 @@ pub(crate) fn is_generator_call_spread_operand(ctx: &LoweringCtx, expr: &Resolve
     ctx.facts.generator_function_names.contains(name)
 }
 
-pub(crate) fn unsupported_generator_spread_diagnostic() -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedRuntimeSubset,
-        message:
-            "issue-353: generator result spread requires iterator protocol runtime lowering in this milestone"
-                .to_owned(),
-        span: None,
-        phase: None,
-    }
-}
-
-pub(crate) fn unsupported_symbol_iterator_spread_diagnostic() -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message:
-            "issue-353: custom iterable spread via Symbol.iterator requires iterator protocol runtime support in this milestone"
-                .to_owned(),
-        span: None,
-        phase: None,
+pub(crate) fn unsupported_spread_diagnostic(kind: &str) -> Diagnostic {
+    match kind {
+        "generator" => Diagnostic {
+            code: DiagCode::UnsupportedRuntimeSubset,
+            message:
+                "issue-353: generator result spread requires iterator protocol runtime lowering in this milestone"
+                    .to_owned(),
+            span: None,
+            phase: None,
+        },
+        _ => Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message:
+                "issue-353: custom iterable spread via Symbol.iterator requires iterator protocol runtime support in this milestone"
+                    .to_owned(),
+            span: None,
+            phase: None,
+        },
     }
 }
 
@@ -367,7 +363,7 @@ pub(crate) fn invalidate_static_object_literal_local(ctx: &mut LoweringCtx, loca
     }
 }
 
-pub(crate) fn static_copy_safe_object_literal_props(
+fn static_copy_safe_object_literal_props(
     ctx: &LoweringCtx,
     expr: &ResolvedExpr,
 ) -> Option<Vec<ResolvedObjectProp>> {
@@ -402,7 +398,7 @@ pub(crate) fn static_copy_safe_object_literal_props(
     }
 }
 
-pub(crate) fn update_static_object_literal_alias_sources(
+fn update_static_object_literal_alias_sources(
     ctx: &mut LoweringCtx,
     local_id: LocalId,
     expr: &ResolvedExpr,
@@ -426,7 +422,7 @@ pub(crate) fn update_static_object_literal_alias_sources(
     }
 }
 
-pub(crate) fn resolved_expr_produces_dense_array(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
+fn resolved_expr_produces_dense_array(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
     match expr {
         ResolvedExpr::Array(_) => true,
         ResolvedExpr::Ident(name) => ctx.resolve_local(name).ok().is_some_and(|local_id| {
@@ -475,7 +471,7 @@ pub(crate) fn resolved_expr_produces_dense_array(ctx: &LoweringCtx, expr: &Resol
     }
 }
 
-pub(crate) fn update_native_set_add_local(
+pub(crate) fn update_native_set_and_date_locals(
     ctx: &mut LoweringCtx,
     local_id: LocalId,
     expr: &ResolvedExpr,
@@ -485,13 +481,6 @@ pub(crate) fn update_native_set_add_local(
     } else {
         ctx.facts.native_set_add_locals.remove(&local_id);
     }
-}
-
-pub(crate) fn update_invalid_date_local(
-    ctx: &mut LoweringCtx,
-    local_id: LocalId,
-    expr: &ResolvedExpr,
-) {
     if is_invalid_date_constructor_expr(expr) {
         ctx.facts.invalid_date_locals.insert(local_id);
     } else {

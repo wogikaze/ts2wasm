@@ -462,14 +462,10 @@ impl Resolver {
                     local_id,
                     expr,
                 );
-                crate::lowered::resolver::expr::facts::update_bigint_local(
+                crate::lowered::resolver::expr::facts::update_bigint_locals(
                     &mut self.ctx,
                     local_id,
                     expr,
-                );
-                crate::lowered::resolver::expr::facts::update_control_flow_bigint_assignment(
-                    &mut self.ctx,
-                    local_id,
                 );
                 crate::lowered::resolver::expr::facts::update_array_local(
                     &mut self.ctx,
@@ -508,12 +504,7 @@ impl Resolver {
                     local_id,
                     expr,
                 );
-                crate::lowered::resolver::expr::facts::update_native_set_add_local(
-                    &mut self.ctx,
-                    local_id,
-                    expr,
-                );
-                crate::lowered::resolver::expr::facts::update_invalid_date_local(
+                crate::lowered::resolver::expr::facts::update_native_set_and_date_locals(
                     &mut self.ctx,
                     local_id,
                     expr,
@@ -645,14 +636,10 @@ impl Resolver {
                     local_id,
                     expr,
                 );
-                crate::lowered::resolver::expr::facts::update_bigint_local(
+                crate::lowered::resolver::expr::facts::update_bigint_locals(
                     &mut self.ctx,
                     local_id,
                     expr,
-                );
-                crate::lowered::resolver::expr::facts::update_control_flow_bigint_assignment(
-                    &mut self.ctx,
-                    local_id,
                 );
                 crate::lowered::resolver::expr::facts::update_array_local(
                     &mut self.ctx,
@@ -689,12 +676,7 @@ impl Resolver {
                     local_id,
                     expr,
                 );
-                crate::lowered::resolver::expr::facts::update_native_set_add_local(
-                    &mut self.ctx,
-                    local_id,
-                    expr,
-                );
-                crate::lowered::resolver::expr::facts::update_invalid_date_local(
+                crate::lowered::resolver::expr::facts::update_native_set_and_date_locals(
                     &mut self.ctx,
                     local_id,
                     expr,
