@@ -3179,6 +3179,16 @@ fn build_smoke_json_stringify_space() {
 }
 
 #[test]
+fn build_smoke_json_replacer() {
+    let result = run_fixture("builtins-and-io/json-parse-reviver.ts");
+    assert!(
+        result.is_ok(),
+        "json-parse-reviver should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_map_for_each() {
     let result = run_fixture("builtins-and-io/map-forEach.ts");
     assert!(
