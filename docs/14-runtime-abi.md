@@ -196,33 +196,68 @@ RawValue が指す先。
 
 ```text
 offset + 0  .. +4  : i32 property_count
-offset + 4  .. +8  : i32 flags
-offset + 8  .. +12 : i32 prototype_ptr   (raw heap pointer, object tag なし)
+offset + 4  .. +8  : i32 flags             (descriptor bit fields, see below)
+offset + 8  .. +12 : i32 prototype_ptr     (raw heap pointer, object tag なし)
 offset + 12 ..     : (key:value) entries × property_count
 
 RawValue = ptr | OBJECT_TAG (ptr は 8-byte aligned)
 ```
 
-`flags` フィールド:
+**Object layout offset reference (defined in `Layout`):**
 
-| Bit | 定数 | 意味 |
+| Offset | Constant | Field | Size |
+|---|---|---|---|
+| +0 | `OBJECT_HEADER_SIZE` base (0) | property_count (i32) | 4 bytes |
+| +4 | `OBJECT_FLAGS_OFFSET` | flags (i32, descriptor bit fields) | 4 bytes |
+| +8 | `OBJECT_PROTOTYPE_OFFSET` | prototype_ptr (i32 raw heap ptr) | 4 bytes |
+| +12 | `OBJECT_ENTRIES_OFFSET` | (key:value) entries start | variable |
+| +12 + i*8 + 0 | `OBJECT_ENTRY_SHIFT` (3) | entry[i] key (RawValue string) | 4 bytes |
+| +12 + i*8 + 4 | `OBJECT_VALUE_OFFSET` = 4 | entry[i] value (RawValue) | 4 bytes |
+
+**Private slot area** (after public property entries, accessed via GC reserved word):
+
+| Mask/Shift | Constant | Field |
 |---|---|---|
-| 0 | `OBJECT_FLAG_FROZEN` (1) | Object.freeze() — 全 property が non-writable, non-configurable |
-| 1 | `OBJECT_FLAG_SEALED` (2) | Object.seal() — 全 property が non-configurable |
-| 2+ | `OBJECT_NON_ENUM_SHIFT` | Per-property non-enumerable mask: bit `(2+i)` が 1 のとき property i は非列挙 |
+| bits 0..15 | `PRIVATE_FIELD_COUNT_MASK` = 0xffff | private slot count (stored in GC reserved word) |
+| bits 16..31 | `PRIVATE_FIELD_BRAND_SHIFT` = 16 | per-class private brand token (stored in GC reserved word) |
 
-各 entry は `OBJECT_ENTRY_SIZE` (8 bytes) 固定で、`(key_raw_value, value_raw_value)`
-のペア。`key` は interned string の tagged `string` value、`value` は任意の
-RawValue。
+Private slot payload follows `OBJECT_HEADER_SIZE + CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY * OBJECT_ENTRY_SIZE`.
+Each private slot is `PRIVATE_FIELD_SLOT_SIZE` = 4 bytes (one RawValue).
 
-定数は `crates/runtime-abi/src/layout.rs` の `Layout` で定義:
-- `OBJECT_HEADER_SIZE` = 12 (property_count + flags + prototype_ptr)
-- `OBJECT_FLAGS_OFFSET` = 4
-- `OBJECT_PROTOTYPE_OFFSET` = 8
-- `OBJECT_ENTRIES_OFFSET` = 12
-- `OBJECT_ENTRY_SIZE` = 8
-- `OBJECT_ENTRY_SHIFT` = 3
-- `OBJECT_VALUE_OFFSET` = 4
+**Descriptor bit fields (flags at offset +4):**
+
+| Bit(s) | Constant | Meaning |
+|---|---|---|
+| 0 | `OBJECT_FLAG_FROZEN` (1) | Object.freeze() — all properties non-writable, non-configurable |
+| 1 | `OBJECT_FLAG_SEALED` (2) | Object.seal() — all properties non-configurable |
+| 2+i (i=0..L) | `OBJECT_NON_ENUM_SHIFT` (2) | Per-property non-enumerable: bit `(2+i)` = 1 means property i is non-enumerable |
+| 10+i (i=0..7) | `OBJECT_NON_WRITABLE_SHIFT` (10) | Per-property non-writable: bit `(10+i)` = 1 means property i is non-writable |
+| 18+i (i=0..7) | `OBJECT_NON_CONFIGURABLE_SHIFT` (18) | Per-property non-configurable: bit `(18+i)` = 1 means property i is non-configurable |
+| 26+i (i=0..5) | `OBJECT_ACCESSOR_PROP_SHIFT` (26) | Per-property accessor: bit `(26+i)` = 1 means entry[i] value is getter |
+
+Each entry is `OBJECT_ENTRY_SIZE` (8 bytes) fixed: `(key_raw_value, value_raw_value)`.
+`key` is an interned string tagged `string` value; `value` is any RawValue.
+
+**Constants (defined in `crates/runtime-abi/src/layout.rs` `Layout`):**
+
+| Constant | Value | Description |
+|---|---|---|
+| `OBJECT_HEADER_SIZE` | 12 | Bytes before property entries (property_count + flags + prototype_ptr) |
+| `OBJECT_FLAGS_OFFSET` | 4 | Offset of flags field within header |
+| `OBJECT_PROTOTYPE_OFFSET` | 8 | Offset of prototype pointer within header |
+| `OBJECT_ENTRIES_OFFSET` | 12 | Offset where property entries begin |
+| `OBJECT_ENTRY_SIZE` | 8 | Bytes per (key, value) entry pair |
+| `OBJECT_ENTRY_SHIFT` | 3 | Shift to compute entry byte offset from index (8 = 2^3) |
+| `OBJECT_VALUE_OFFSET` | 4 | Byte offset of the value field within one entry |
+| `OBJECT_FLAG_FROZEN` | 1 | Bit 0 of flags: frozen |
+| `OBJECT_FLAG_SEALED` | 2 | Bit 1 of flags: sealed/non-extensible |
+| `OBJECT_NON_ENUM_SHIFT` | 2 | Bit position where per-property non-enumerable mask starts |
+| `OBJECT_NON_WRITABLE_SHIFT` | 10 | Bit position where per-property non-writable mask starts |
+| `OBJECT_NON_CONFIGURABLE_SHIFT` | 18 | Bit position where per-property non-configurable mask starts |
+| `OBJECT_ACCESSOR_PROP_SHIFT` | 26 | Bit position where per-property accessor descriptor starts |
+
+`PRIVATE_FIELD_COUNT_MASK`, `PRIVATE_FIELD_BRAND_SHIFT`, `PRIVATE_FIELD_SLOT_SIZE`, and
+`CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY` are defined in `crates/backend-wasm/src/expr_emit.rs`.
 
 Heap number (`HEAP_NUMBER_SENTINEL = -1` が property_count に格納されている object)
 は `object` tag を使うが、上記の property entry 形式ではなく固定 payload 形式を持つ。
@@ -499,7 +534,26 @@ mark_object_payload(payload):
   scan ordinary object prototype and property entries
 ```
 
-Closure allocation must keep all evaluated capture values rooted before calling
+Closure allocation uses `$alloc_heap(size)` followed by writing `GC_KIND_OBJECT`
+into the GC header flags/type field. This ensures closure objects are scanned as
+`GC_KIND_OBJECT` by `$gc_mark_object_payload`, which dispatches on
+`CLOSURE_SENTINEL` to scan exactly `capture_count` capture slots instead of
+ordinary property entries. The GC header kind field is set after allocation and
+before any interior pointer is published to a root slot:
+
+```text
+payload = $alloc_heap(size)
+flags = i32.store(payload - GC_HEADER_SIZE + GC_FLAGS_AND_TYPE_OFFSET, GC_KIND_OBJECT)
+i32.store(payload + 0, CLOSURE_SENTINEL)
+i32.store(payload + 4, code_id)
+i32.store(payload + 8, capture_count)
+i32.store(payload + 12, 0)     // env_flags reserved
+for i in 0..capture_count:
+  i32.store(payload + 16 + i*4, capture[i])
+closure_value = payload | OBJECT_TAG
+```
+
+must keep all evaluated capture values rooted before calling
 `$alloc_heap`; the newly-created closure value is then mirrored into the caller
 root slot like any other heap value. This preserves captured heap objects across
 allocation pressure and after the declaring function's activation has returned.
@@ -671,6 +725,26 @@ GC kind values:
 全定数を文字列スナップショットとして記録しており、定数を変更するたびに
 スナップショット期待値を更新し、同時に `ABI_VERSION` をバンプしなければ
 コンパイルが通らない構造になっている。
+
+### GC_KIND mark expectations
+
+Every GC-managed heap kind must have a mark path in the GC scanner. The current
+scanner dispatch (`$gc_mark_value` → `$gc_mark_object_payload` / `$gc_mark_array_payload`)
+covers these heap kinds:
+
+| Heap kind | GC_KIND value | Mark path | Payload fields marked |
+|---|---|---|---|
+| `GC_KIND_UNKNOWN` | 0 | `$gc_mark_value` skips (no kind header) | None (pre-GC allocations) |
+| `GC_KIND_STRING` | 4 | Not scanned (immutable interned strings) | None |
+| `GC_KIND_ARRAY` | 8 | `$gc_mark_array_payload` | All `length` elements (RawValue) |
+| `GC_KIND_OBJECT` | 12 | `$gc_mark_object_payload` | Prototype pointer, (key, value) entries, private slots; or closure capture slots when `CLOSURE_SENTINEL` |
+| `GC_KIND_BIGINT` | 16 | `$gc_mark_value` returns early (no child references) | None (primitive limbs only) |
+
+Closures within `GC_KIND_OBJECT` are distinguished by `CLOSURE_SENTINEL` at
+payload offset 0. The scanner marks exactly `capture_count` slots at
+`CLOSURE_CAPTURE_SLOTS_OFFSET` and returns before reaching ordinary object entry
+scanning. This ensures closure capture slots are fully marked even when the
+captured values include heap objects (arrays, nested objects, strings).
 
 ### GC Trigger Points
 

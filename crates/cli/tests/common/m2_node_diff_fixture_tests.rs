@@ -4425,3 +4425,18 @@ fn global_decode_uri_fixture_matches_node_output() {
 fn global_uri_component_fixture_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/global-uri-component.ts");
 }
+
+// GC pressure: private fields surviving allocation pressure
+#[test]
+fn private_field_gc_pressure_matches_node_output() {
+    assert_fixture_matches_node("fixtures/object-semantics-kernel/private-field-gc-pressure.ts");
+}
+
+// GC pressure: returned closure capturing an object containing an array,
+// invoked after allocation pressure triggers GC
+#[test]
+fn returned_closure_nested_object_gc_pressure_matches_node_output() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/returned-closure-nested-object-gc-pressure.ts",
+    );
+}
