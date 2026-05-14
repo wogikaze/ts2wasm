@@ -42,13 +42,13 @@ impl CapabilityManifest {
             return Err("node_host.required requires at least one import".to_owned());
         }
 
-        if self.wasi.random && !self.capability_reasons.contains_key("wasi.random") {
-            return Err("wasi.random requires an auditable capability reason".to_owned());
-        }
-
-        if !self.wasi.random && self.capability_reasons.contains_key("wasi.random") {
-            return Err("wasi.random capability reason requires wasi.random=true".to_owned());
-        }
+        // Every enabled WASI capability must have an auditable reason.
+        self.check_reason_for_wasi_cap("wasi.stdout", self.wasi.stdout)?;
+        self.check_reason_for_wasi_cap("wasi.stdin", self.wasi.stdin)?;
+        self.check_reason_for_wasi_cap("wasi.stderr", self.wasi.stderr)?;
+        self.check_reason_for_wasi_cap("wasi.args", self.wasi.args)?;
+        self.check_reason_for_wasi_cap("wasi.env", self.wasi.env)?;
+        self.check_reason_for_wasi_cap("wasi.random", self.wasi.random)?;
 
         if self.wasi.clock.realtime && !self.capability_reasons.contains_key("wasi.clock.realtime")
         {
@@ -63,12 +63,52 @@ impl CapabilityManifest {
             );
         }
 
+        if !self.wasi.filesystem.read.is_empty()
+            && !self.capability_reasons.contains_key("wasi.filesystem.read")
+        {
+            return Err(
+                "wasi.filesystem.read paths require an auditable capability reason".to_owned(),
+            );
+        }
+
+        if !self.wasi.filesystem.write.is_empty()
+            && !self
+                .capability_reasons
+                .contains_key("wasi.filesystem.write")
+        {
+            return Err(
+                "wasi.filesystem.write paths require an auditable capability reason".to_owned(),
+            );
+        }
+
+        // Validate node host imports have reasons
+        if self.node_host.required {
+            for import in &self.node_host.imports {
+                if !self.capability_reasons.contains_key(import) {
+                    return Err(format!(
+                        "node host import `{import}` requires an auditable capability reason"
+                    ));
+                }
+            }
+        }
+
         for import in &self.node_host.imports {
             if !import.starts_with("host.") {
                 return Err(format!("node host import must start with host.: {import}"));
             }
         }
 
+        Ok(())
+    }
+
+    /// Check that a WASI capability has a reason key when enabled.
+    fn check_reason_for_wasi_cap(&self, key: &str, enabled: bool) -> Result<(), String> {
+        if enabled && !self.capability_reasons.contains_key(key) {
+            return Err(format!("{key} requires an auditable capability reason"));
+        }
+        if !enabled && self.capability_reasons.contains_key(key) {
+            return Err(format!("{key} capability reason requires {key}=true"));
+        }
         Ok(())
     }
 
@@ -226,6 +266,146 @@ mod tests {
         assert_eq!(SCHEMA_VERSION, 1);
         let manifest = CapabilityManifest::new_wasi();
         assert_eq!(manifest.schema_version, SCHEMA_VERSION);
+    }
+
+    #[test]
+    fn wasi_stdout_requires_a_reason() {
+        let mut manifest = CapabilityManifest::new_wasi();
+        manifest.wasi.stdout = true;
+
+        assert!(manifest.validate().is_err());
+
+        manifest
+            .capability_reasons
+            .entry("wasi.stdout".to_owned())
+            .or_default()
+            .push("console.log".to_owned());
+
+        assert!(manifest.validate().is_ok());
+    }
+
+    #[test]
+    fn wasi_stdin_requires_a_reason() {
+        let mut manifest = CapabilityManifest::new_wasi();
+        manifest.wasi.stdin = true;
+
+        assert!(manifest.validate().is_err());
+
+        manifest
+            .capability_reasons
+            .entry("wasi.stdin".to_owned())
+            .or_default()
+            .push("fs.readFileSync(0, \"utf8\")".to_owned());
+
+        assert!(manifest.validate().is_ok());
+    }
+
+    #[test]
+    fn wasi_args_requires_a_reason() {
+        let mut manifest = CapabilityManifest::new_wasi();
+        manifest.wasi.args = true;
+
+        assert!(manifest.validate().is_err());
+
+        manifest
+            .capability_reasons
+            .entry("wasi.args".to_owned())
+            .or_default()
+            .push("process.argv".to_owned());
+
+        assert!(manifest.validate().is_ok());
+    }
+
+    #[test]
+    fn wasi_env_requires_a_reason() {
+        let mut manifest = CapabilityManifest::new_wasi();
+        manifest.wasi.env = true;
+
+        assert!(manifest.validate().is_err());
+
+        manifest
+            .capability_reasons
+            .entry("wasi.env".to_owned())
+            .or_default()
+            .push("process.env".to_owned());
+
+        assert!(manifest.validate().is_ok());
+    }
+
+    #[test]
+    fn wasi_filesystem_read_requires_a_reason() {
+        let mut manifest = CapabilityManifest::new_wasi();
+        manifest
+            .wasi
+            .filesystem
+            .read
+            .push("fs.readFileSync".to_owned());
+
+        assert!(manifest.validate().is_err());
+
+        manifest
+            .capability_reasons
+            .entry("wasi.filesystem.read".to_owned())
+            .or_default()
+            .push("fs.readFileSync".to_owned());
+
+        assert!(manifest.validate().is_ok());
+    }
+
+    #[test]
+    fn wasi_filesystem_write_requires_a_reason() {
+        let mut manifest = CapabilityManifest::new_wasi();
+        manifest
+            .wasi
+            .filesystem
+            .write
+            .push("fs.writeFileSync".to_owned());
+
+        assert!(manifest.validate().is_err());
+
+        manifest
+            .capability_reasons
+            .entry("wasi.filesystem.write".to_owned())
+            .or_default()
+            .push("fs.writeFileSync".to_owned());
+
+        assert!(manifest.validate().is_ok());
+    }
+
+    #[test]
+    fn node_host_imports_require_reasons() {
+        let mut manifest = CapabilityManifest::new_wasi();
+        manifest.standalone = false;
+        manifest.target = "wasm32-wasi+node-host".to_owned();
+        manifest.node_host.required = true;
+        manifest
+            .node_host
+            .imports
+            .push("host.crypto.randomBytes".to_owned());
+
+        // Missing reason for host import
+        assert!(manifest.validate().is_err());
+
+        manifest
+            .capability_reasons
+            .entry("host.crypto.randomBytes".to_owned())
+            .or_default()
+            .push("crypto.randomBytes".to_owned());
+
+        assert!(manifest.validate().is_ok());
+    }
+
+    #[test]
+    fn reason_key_without_capability_is_rejected() {
+        let mut manifest = CapabilityManifest::new_wasi();
+        manifest
+            .capability_reasons
+            .entry("wasi.stdout".to_owned())
+            .or_default()
+            .push("console.log".to_owned());
+        // wasi.stdout is false but reason exists
+
+        assert!(manifest.validate().is_err());
     }
 
     #[test]

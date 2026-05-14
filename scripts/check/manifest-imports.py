@@ -231,6 +231,44 @@ def _check_single(fixture: str) -> int:
             if len(parts) >= 2:
                 manifest_imports.add((parts[0], parts[1]))
 
+        # --- Reason completeness check ---
+        reasons = manifest.get("capability_reasons", {})
+        wasi = manifest.get("wasi", {})
+
+        # Check each WASI capability has a reason
+        wasi_cap_reason_keys = {
+            "stdout": "wasi.stdout",
+            "stdin": "wasi.stdin",
+            "stderr": "wasi.stderr",
+            "args": "wasi.args",
+            "env": "wasi.env",
+            "random": "wasi.random",
+        }
+        for cap_key, reason_key in wasi_cap_reason_keys.items():
+            if wasi.get(cap_key) and reason_key not in reasons:
+                print(f"check_manifest_imports: reason completeness failure ({fixture}): {reason_key} is enabled but has no reason", file=sys.stderr)
+                return 1
+
+        if wasi.get("clock", {}).get("realtime") and "wasi.clock.realtime" not in reasons:
+            print(f"check_manifest_imports: reason completeness failure ({fixture}): wasi.clock.realtime is enabled but has no reason", file=sys.stderr)
+            return 1
+
+        filesystem = wasi.get("filesystem", {})
+        read_paths = filesystem.get("read", [])
+        write_paths = filesystem.get("write", [])
+        if read_paths and "wasi.filesystem.read" not in reasons:
+            print(f"check_manifest_imports: reason completeness failure ({fixture}): wasi.filesystem.read paths {read_paths} have no reason", file=sys.stderr)
+            return 1
+        if write_paths and "wasi.filesystem.write" not in reasons:
+            print(f"check_manifest_imports: reason completeness failure ({fixture}): wasi.filesystem.write paths {write_paths} have no reason", file=sys.stderr)
+            return 1
+
+        # Check each node_host import has a reason
+        for imp in manifest.get("node_host", {}).get("imports", []):
+            if imp not in reasons:
+                print(f"check_manifest_imports: reason completeness failure ({fixture}): node_host import `{imp}` has no reason", file=sys.stderr)
+                return 1
+
         result = subprocess.run(
             ["wasm-tools", "print", str(wasm_path)],
             capture_output=True,
