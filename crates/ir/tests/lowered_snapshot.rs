@@ -689,6 +689,23 @@ fn lowered_snapshot_generator_yields_suspend_points() {
 }
 
 #[test]
+fn lowered_generator_iterator_without_static_steps_still_lowers_next() {
+    let program = parse_resolve_lower(
+        "function* gen() { let obj = { [yield 9]: 9 }; }\n\
+         let iter = gen();\n\
+         while (iter.next().done === false) ;",
+    );
+
+    validate_lowered(&program).expect("generator iterator fallback should validate");
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(|stmt| { lowered_stmt_contains_runtime_call(stmt, RuntimeFn::GeneratorNext) })
+    );
+}
+
+#[test]
 fn lowered_snapshot_for_await_of_keeps_async_iterator_ir() {
     let program = parse_resolve_lower(
         "async function f(values) { for await (let value of values) { console.log(value); } }",

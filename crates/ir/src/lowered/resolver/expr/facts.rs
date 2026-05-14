@@ -91,8 +91,8 @@ pub(crate) fn update_generator_iterator_local(
     state_local: Option<LocalId>,
 ) {
     if let Some(func_name) = resolved_generator_function_call_name(ctx, expr) {
+        ctx.facts.generator_iterator_locals.insert(local_id);
         if let Some(state_local) = state_local {
-            ctx.facts.generator_iterator_locals.insert(local_id);
             ctx.facts.generator_iterator_bindings.insert(
                 local_id,
                 GeneratorIteratorBinding {
@@ -101,7 +101,6 @@ pub(crate) fn update_generator_iterator_local(
                 },
             );
         } else {
-            ctx.facts.generator_iterator_locals.remove(&local_id);
             ctx.facts.generator_iterator_bindings.remove(&local_id);
         }
     } else if let ResolvedExpr::Ident(name) = expr

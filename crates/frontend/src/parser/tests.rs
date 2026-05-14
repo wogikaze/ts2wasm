@@ -3631,6 +3631,28 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_while_empty_statement_body() {
+        let program = parse_program("let done = false; while (done === false) ;").unwrap();
+        assert_eq!(program.len(), 2);
+
+        match &program[1] {
+            Stmt::While {
+                condition, body, ..
+            } => {
+                assert!(matches!(
+                    condition,
+                    Expr::Binary {
+                        op: BinaryOp::StrictEqual,
+                        ..
+                    }
+                ));
+                assert!(body.is_empty());
+            }
+            other => panic!("expected While statement, got {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_try_catch_statement() {
         let program = parse_program("try { throw 42; } catch (e) { }").unwrap();
         assert_eq!(program.len(), 1);

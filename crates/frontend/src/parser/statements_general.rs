@@ -1543,11 +1543,16 @@ impl Parser {
         self.expect(TokenKind::LeftParen)?;
         let condition = self.expression()?;
         self.expect(TokenKind::RightParen)?;
-        let body = self.while_statement_body()?;
-        let end = body
-            .last()
-            .map(|stmt| stmt.span().end)
-            .unwrap_or(condition.span().end);
+        let (body, end) = if let Some(semi) = self.consume_span(TokenKind::Semicolon) {
+            (Vec::new(), semi.end)
+        } else {
+            let body = self.while_statement_body()?;
+            let end = body
+                .last()
+                .map(|stmt| stmt.span().end)
+                .unwrap_or(condition.span().end);
+            (body, end)
+        };
         Ok(Stmt::While {
             condition,
             body,
