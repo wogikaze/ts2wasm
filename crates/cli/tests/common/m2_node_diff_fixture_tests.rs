@@ -3708,6 +3708,7 @@ fn core_expression_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-expressions/object-literal-computed-method.ts",
         "fixtures/core-expressions/object-literal-computed-method-call.ts",
         "fixtures/core-expressions/object-literal-computed-identity-method-call.ts",
+        "fixtures/core-expressions/object-literal-computed-constant-number-expression-key.ts",
         "fixtures/core-expressions/object-literal-computed-number-method-call.ts",
         "fixtures/core-expressions/object-literal-computed-large-exponent-key.ts",
         "fixtures/core-expressions/object-literal-computed-number-sentinel-keys.ts",
@@ -3751,6 +3752,14 @@ fn object_literal_super_method_args_match_node_output_under_iwasm() {
 fn object_literal_computed_number_sentinel_keys_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node(
         "fixtures/core-expressions/object-literal-computed-number-sentinel-keys.ts",
+    );
+}
+
+#[test]
+fn object_literal_computed_constant_number_expression_key_fixture_matches_node_output_under_iwasm()
+{
+    assert_fixture_matches_node(
+        "fixtures/core-expressions/object-literal-computed-constant-number-expression-key.ts",
     );
 }
 

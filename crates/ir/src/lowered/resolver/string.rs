@@ -249,6 +249,22 @@ pub(super) fn resolved_expr_static_number_literal_value(
         ResolvedExpr::Unary { op, expr } if *op == UnaryOp::Plus => {
             resolved_expr_static_number_literal_value(ctx, expr)
         }
+        ResolvedExpr::Binary { left, op, right } => {
+            let left = resolved_expr_static_number_literal_value(ctx, left)
+                .and_then(|value| value.parse::<i64>().ok())?;
+            let right = resolved_expr_static_number_literal_value(ctx, right)
+                .and_then(|value| value.parse::<i64>().ok())?;
+            let value = match op {
+                BinaryOp::Add => left.checked_add(right)?,
+                BinaryOp::Subtract => left.checked_sub(right)?,
+                BinaryOp::Multiply => left.checked_mul(right)?,
+                BinaryOp::Divide if right != 0 && left % right == 0 => left / right,
+                BinaryOp::Power if right >= 0 => left.checked_pow(right as u32)?,
+                BinaryOp::BitwiseOr => (left as i32 | right as i32) as i64,
+                _ => return None,
+            };
+            Some(value.to_string())
+        }
         ResolvedExpr::Ident(name) => {
             let local_id = ctx.resolve_local(name).ok()?;
             if ctx.facts.env_cell_locals.contains(&local_id) {

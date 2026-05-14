@@ -578,6 +578,7 @@ directories:
     - object-literal-computed-method.ts
     - object-literal-computed-method-call.ts
     - object-literal-computed-identity-method-call.ts
+    - object-literal-computed-constant-number-expression-key.ts
     - object-literal-computed-number-method-call.ts
     - object-literal-computed-large-exponent-key.ts
     - object-literal-computed-number-sentinel-keys.ts
