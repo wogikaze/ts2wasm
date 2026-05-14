@@ -1518,6 +1518,16 @@ fn dynamic_eval_unsupported_diagnostic() {
     );
 }
 
+#[test]
+fn build_smoke_eval_basic() {
+    let result = run_fixture("core-semantics/eval-basic.ts");
+    assert!(
+        result.is_ok(),
+        "static direct eval basic fixture should build: {:?}",
+        result.err()
+    );
+}
+
 // Array.prototype.reduce build_smoke (issue 105)
 #[test]
 fn build_smoke_array_reduce() {
