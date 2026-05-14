@@ -91,6 +91,18 @@ impl WatEmitter<'_> {
     (local.set $idx_tag (i32.and (local.get $idx) (i32.const {tag_mask})))
     (if (i32.eq (local.get $idx_tag) (i32.const {number_tag}))
       (then
+        ;; Object numeric indexing is property access through ToPropertyKey.
+        (if (i32.eq (local.get $obj_tag) (i32.const {object_tag}))
+          (then
+            (local.set $key_len
+              (call $value_to_string_into
+                (local.get $idx)
+                (i32.const {scratch_offset})))
+            (return
+              (call $property_get
+                (local.get $obj)
+                (i32.const {scratch_offset})
+                (local.get $key_len)))))
         (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
         (local.set $i (i32.shr_s (local.get $idx) (i32.const {number_shift})))
         (if (i32.lt_s (local.get $i) (i32.const {zero})) (then (return (i32.const {undefined}))))
@@ -109,34 +121,22 @@ impl WatEmitter<'_> {
               (i32.add (local.get $base) (i32.const {string_header}))
               (local.get $key_len))
             (return (i32.or (local.get $base) (i32.const {string_tag})))))
-        ;; Object numeric indexing is property access through the decimal index key.
-        (if (i32.eq (local.get $obj_tag) (i32.const {object_tag}))
-          (then
-            (local.set $key_len
-              (call $value_to_string_into
-                (local.get $idx)
-                (i32.const {scratch_offset})))
-            (return
-              (call $property_get
-                (local.get $obj)
-                (i32.const {scratch_offset})
-                (local.get $key_len)))))
         ;; Array indexing
         (if (i32.ne (local.get $obj_tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
         (return (call $array_get (local.get $obj) (local.get $idx))))
         (else
-          (if
-            (i32.and
-              (i32.eq (local.get $idx_tag) (i32.const {object_tag}))
-              (i32.eq
-                (i32.load (i32.and (local.get $idx) (i32.const {heap_mask})))
-                (i32.const {symbol_sentinel})))
+          (if (i32.eq (local.get $idx_tag) (i32.const {object_tag}))
             (then
-              (return
-                (call $property_get
-                  (local.get $obj)
-                  (local.get $idx)
-                  (i32.const -1)))))
+              (if
+                (i32.eq
+                  (i32.load (i32.and (local.get $idx) (i32.const {heap_mask})))
+                  (i32.const {symbol_sentinel}))
+                (then
+                  (return
+                    (call $property_get
+                      (local.get $obj)
+                      (local.get $idx)
+                      (i32.const -1)))))))
           (local.set $key_len (call $value_to_string_into
             (local.get $idx)
             (i32.const {scratch_offset})))

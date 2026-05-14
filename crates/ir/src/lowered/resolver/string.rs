@@ -238,7 +238,13 @@ pub(super) fn resolved_expr_static_number_literal_value(
         ResolvedExpr::Number(value) => Some(value.to_string()),
         ResolvedExpr::DecimalNumber(value) => Some(value.clone()),
         ResolvedExpr::Unary { op, expr } if *op == UnaryOp::Negate => {
-            resolved_expr_static_number_literal_value(ctx, expr).map(|value| format!("-{value}"))
+            resolved_expr_static_number_literal_value(ctx, expr).map(|value| {
+                if value == "0" {
+                    value
+                } else {
+                    format!("-{value}")
+                }
+            })
         }
         ResolvedExpr::Unary { op, expr } if *op == UnaryOp::Plus => {
             resolved_expr_static_number_literal_value(ctx, expr)

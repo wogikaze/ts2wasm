@@ -2288,10 +2288,9 @@ impl WatEmitter<'_> {
                 writer.block(indent + 2, &symbol_key_string);
                 writer.push_str(&format!(
                     "{pad}    (br_if ${symbol_key_string}\n\
-{pad}      (i32.eqz\n\
-{pad}        (i32.and\n\
-{pad}          (i32.eq (i32.and (local.get {}) (i32.const {})) (i32.const {}))\n\
-{pad}          (i32.eq (i32.load (i32.and (local.get {}) (i32.const {}))) (i32.const {})))))\n",
+{pad}      (i32.ne (i32.and (local.get {}) (i32.const {})) (i32.const {})))\n\
+{pad}    (br_if ${symbol_key_string}\n\
+{pad}      (i32.ne (i32.load (i32.and (local.get {}) (i32.const {}))) (i32.const {})))\n",
                     frame.heap_value_tmp(),
                     ValueTag::TAG_MASK,
                     ValueTag::OBJECT,

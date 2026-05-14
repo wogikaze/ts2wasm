@@ -5,6 +5,10 @@ use ts2wasm_runtime_abi::{
     value::ValueTag,
 };
 
+fn tagged_number_sentinel(payload: i32) -> i32 {
+    ValueTag::encode_reserved_number_payload(payload)
+}
+
 impl WatEmitter<'_> {
     pub(crate) fn emit_bitwise_to_i32(&self, wat: &mut String) {
         wat.push_str(&format!(
@@ -388,6 +392,106 @@ impl WatEmitter<'_> {
 
         (return (i32.const {true_len}))))
 
+    (if (i32.eq (local.get $v) (i32.const {neg_zero_value}))
+
+      (then
+
+        (i32.store8 (local.get $ptr) (i32.const {ascii_zero}))
+
+        (return (i32.const {one}))))
+
+    (if (i32.eq (local.get $v) (i32.const {infinity_value}))
+
+      (then
+
+        (i32.store8 (local.get $ptr) (i32.const {ascii_upper_i}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 1))
+          (i32.const {ascii_n}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 2))
+          (i32.const {ascii_f}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 3))
+          (i32.const {ascii_i}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 4))
+          (i32.const {ascii_n}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 5))
+          (i32.const {ascii_i}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 6))
+          (i32.const {ascii_t}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 7))
+          (i32.const {ascii_y}))
+
+        (return (i32.const {infinity_len}))))
+
+    (if (i32.eq (local.get $v) (i32.const {neg_infinity_value}))
+
+      (then
+
+        (i32.store8 (local.get $ptr) (i32.const {ascii_minus}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 1))
+          (i32.const {ascii_upper_i}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 2))
+          (i32.const {ascii_n}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 3))
+          (i32.const {ascii_f}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 4))
+          (i32.const {ascii_i}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 5))
+          (i32.const {ascii_n}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 6))
+          (i32.const {ascii_i}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 7))
+          (i32.const {ascii_t}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 8))
+          (i32.const {ascii_y}))
+
+        (return (i32.const {neg_infinity_len}))))
+
+    (if (i32.eq (local.get $v) (i32.const {nan_value}))
+
+      (then
+
+        (i32.store8 (local.get $ptr) (i32.const {ascii_upper_n}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 1))
+          (i32.const {ascii_a}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 2))
+          (i32.const {ascii_upper_n}))
+
+        (return (i32.const {nan_len}))))
+
     (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {string_tag}))
 
       (then
@@ -588,6 +692,14 @@ impl WatEmitter<'_> {
 
             true_tag = ValueTag::TRUE,
 
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+
+            infinity_value = tagged_number_sentinel(ValueTag::INFINITY_PAYLOAD),
+
+            neg_infinity_value = tagged_number_sentinel(ValueTag::NEG_INFINITY_PAYLOAD),
+
+            neg_zero_value = tagged_number_sentinel(ValueTag::NEG_ZERO_PAYLOAD),
+
             string_tag = ValueTag::STRING,
 
             object_tag = ValueTag::OBJECT,
@@ -626,6 +738,20 @@ impl WatEmitter<'_> {
 
             ascii_upper_s = 'S' as i32,
 
+            ascii_upper_i = 'I' as i32,
+
+            ascii_upper_n = 'N' as i32,
+
+            ascii_a = 'a' as i32,
+
+            ascii_n = 'n' as i32,
+
+            ascii_f = 'f' as i32,
+
+            ascii_i = 'i' as i32,
+
+            ascii_t = 't' as i32,
+
             ascii_y = 'y' as i32,
 
             ascii_m = 'm' as i32,
@@ -647,6 +773,12 @@ impl WatEmitter<'_> {
             false_len = RuntimeString::FALSE.len() as i32,
 
             true_len = RuntimeString::TRUE.len() as i32,
+
+            infinity_len = "Infinity".len() as i32,
+
+            neg_infinity_len = "-Infinity".len() as i32,
+
+            nan_len = "NaN".len() as i32,
 
             ascii_zero = RuntimeConst::ASCII_ZERO,
 
