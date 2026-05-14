@@ -114,7 +114,6 @@ EXCLUDED_FILENAMES = {
 FILE_SIZE_ALLOWLIST_1200 = {
     # P4: Decomposition — parser / lexer / runtime domain
     "fixtures/catalog.yaml": "P16: coverage matrix — 1697 lines",
-    "crates/ir/src/lowered/mir.rs": "P14: MIR lowering — 1791 lines",
     "crates/ir/src/lowered/resolver/mod.rs": "P14: resolver main mod — 1417 lines",
     "crates/backend-wasm/src/runtime/core/bigint.rs": "P4: runtime domain split",
     "crates/backend-wasm/src/expr_emit.rs": "P4: expression emitter — pending domain split",
@@ -142,7 +141,6 @@ FILE_SIZE_ALLOWLIST_1200 = {
     "crates/backend-wasm/src/runtime_objects.rs": "P4: runtime domain split",
     "crates/backend-wasm/src/runtime_strings.rs": "P4: runtime domain split",
     # P7: Resolver decomposition
-    "crates/ir/src/lowered/mir.rs": "I-20260512-MRDATA/I-20260512-MRVADT: MIR bridge pending native model split",
     "crates/ir/src/lowered/program.rs": "P7: resolver decomposition",
     "crates/ir/src/lowered/resolver/array.rs": "P7: resolver decomposition",
     "crates/ir/src/lowered/resolver/call/method.rs": "P7: resolver decomposition",
@@ -223,8 +221,6 @@ FUNCTION_LENGTH_ALLOWLIST = {
     ("crates/ir/src/lowered/mir_dump.rs", "dump_mir_stmt"): "P14: MIR dump variant coverage dispatch -- 239 lines",
     ("crates/ir/src/lowered/mir_dump.rs", "dump_mir_expr"): "P14: MIR dump variant coverage dispatch -- 298 lines",
     ("crates/ir/src/lowered/mir_dump.rs", "runtime_intrinsic_name"): "P4: dump intrinsic name match -- 332 lines",
-    ("crates/ir/src/lowered/mir.rs", "lower_expr_to_mir"): "I-20260512-MRDATA/I-20260512-MRVADT: MIR bridge conversion dispatch -- 312 lines",
-    ("crates/ir/src/lowered/mir.rs", "mir_expr_to_lower"): "I-20260512-MRDATA/I-20260512-MRVADT: MIR bridge conversion dispatch -- 312 lines",
     ("crates/ir/src/lowered/hir_to_mir.rs", "lower_hir_expr"): "P7: resolver decomposition -- 206 lines",
     ("crates/ir/src/lowered/resolver/array.rs", "lower_variable_array_callback_method"): "P7: resolver decomposition -- 200+ lines",
     ("crates/ir/src/lowered/resolver/call/method.rs", "lower_mcall_date_string"): "P7: resolver decomposition -- 200+ lines",
