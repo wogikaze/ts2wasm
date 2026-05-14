@@ -1997,6 +1997,22 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     span: *span,
                 });
             }
+            if let Expr::Member {
+                object, property, ..
+            } = new_expr.as_ref()
+                && matches!(object.as_ref(), Expr::Ident { name, .. } if name == "Intl")
+                && property == "DateTimeFormat"
+            {
+                let resolved_args = args
+                    .iter()
+                    .map(resolve_expr)
+                    .collect::<Result<Vec<_>, _>>()?;
+                return Ok(ResolvedExpr::New {
+                    class_name: "Intl.DateTimeFormat".to_owned(),
+                    args: resolved_args,
+                    span: *span,
+                });
+            }
             // Extract class name from identifier
             if let Expr::Ident {
                 name: class_name, ..

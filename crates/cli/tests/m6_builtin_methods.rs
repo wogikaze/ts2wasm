@@ -2118,6 +2118,16 @@ fn build_smoke_intl_numberformat() {
     );
 }
 
+#[test]
+fn build_smoke_intl_datetimeformat() {
+    let result = run_fixture("builtins-and-io/intl-datetimeformat.ts");
+    assert!(
+        result.is_ok(),
+        "Intl.DateTimeFormat should build: {:?}",
+        result.err()
+    );
+}
+
 // === W5: Language runtime semantics — new fixtures ===
 
 // for...of on array (iterator protocol)

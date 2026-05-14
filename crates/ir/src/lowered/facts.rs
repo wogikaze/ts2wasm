@@ -97,6 +97,8 @@ pub struct StaticFacts {
     pub proxy_locals: HashMap<LocalId, ProxyBinding>,
     /// Static Intl.NumberFormat locals with constructor options visible at compile time.
     pub intl_number_format_locals: HashMap<LocalId, IntlNumberFormatOptions>,
+    /// Static Intl.DateTimeFormat locals with constructor options visible at compile time.
+    pub intl_date_time_format_locals: HashMap<LocalId, IntlDateTimeFormatOptions>,
 }
 
 /// Tracks the known elements of a function-parameter-based array-like value
@@ -173,6 +175,14 @@ pub struct IntlNumberFormatOptions {
     pub sign_display: String,
 }
 
+/// Statically visible Intl.DateTimeFormat constructor options.
+#[derive(Debug, Clone)]
+pub struct IntlDateTimeFormatOptions {
+    pub locale: String,
+    pub time_zone: String,
+    pub locale_matcher: String,
+}
+
 /// Static Proxy trap lowering kinds for the supported MVP trap slice.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ProxyTrapKind {
@@ -243,6 +253,7 @@ impl StaticFacts {
             bound_constructor_locals: HashMap::new(),
             proxy_locals: HashMap::new(),
             intl_number_format_locals: HashMap::new(),
+            intl_date_time_format_locals: HashMap::new(),
         }
     }
 
