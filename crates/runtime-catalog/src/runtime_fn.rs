@@ -174,6 +174,10 @@ pub enum RuntimeFn {
     DateNow,
     DateEpochMsNowNumber,
     DateGetTime,
+    /// Date.parse via host shim.
+    DateParse,
+    /// Date.UTC via host shim.
+    DateUTC,
     /// Issue 240: Date.prototype.toString() via host shim.
     DateToString,
     /// UTC Date getters — pure WAT math (no host shim needed).
@@ -798,6 +802,8 @@ const IMPORT_DATE_TO_ISO_STRING: &[HostImport] = &[HostImport::DateToISOString];
 const IMPORT_DATE_GET_TIMEZONE_OFFSET: &[HostImport] = &[HostImport::DateGetTimezoneOffset];
 const IMPORT_DATE_TO_DATE_STRING: &[HostImport] = &[HostImport::DateToDateString];
 const IMPORT_DATE_TO_TIME_STRING: &[HostImport] = &[HostImport::DateToTimeString];
+const IMPORT_DATE_PARSE: &[HostImport] = &[HostImport::DateParse];
+const IMPORT_DATE_UTC: &[HostImport] = &[HostImport::DateUTC];
 const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
 const CAP_STDOUT_WRITE: &[Capability] = &[Capability::StdoutWrite];
 const CAP_WASI_CLOCK_REALTIME: &[Capability] = &[Capability::WasiClockRealtime];
@@ -826,6 +832,8 @@ const CAP_HOST_DATE_TO_ISO_STRING: &[Capability] = &[Capability::HostDateToISOSt
 const CAP_HOST_DATE_GET_TIMEZONE_OFFSET: &[Capability] = &[Capability::HostDateGetTimezoneOffset];
 const CAP_HOST_DATE_TO_DATE_STRING: &[Capability] = &[Capability::HostDateToDateString];
 const CAP_HOST_DATE_TO_TIME_STRING: &[Capability] = &[Capability::HostDateToTimeString];
+const CAP_HOST_DATE_PARSE: &[Capability] = &[Capability::HostDateParse];
+const CAP_HOST_DATE_UTC: &[Capability] = &[Capability::HostDateUTC];
 const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::UNDEFINED,
     RuntimeString::NULL,
@@ -1405,6 +1413,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DateNewLive" => Some(RuntimeFn::DateNewLive),
         "DateNow" => Some(RuntimeFn::DateNow),
         "DateGetTime" => Some(RuntimeFn::DateGetTime),
+        "DateParse" => Some(RuntimeFn::DateParse),
+        "DateUTC" => Some(RuntimeFn::DateUTC),
         "DateToString" => Some(RuntimeFn::DateToString),
         "DateGetUtcMilliseconds" => Some(RuntimeFn::DateGetUtcMilliseconds),
         "DateGetUtcSeconds" => Some(RuntimeFn::DateGetUtcSeconds),
@@ -1642,6 +1652,8 @@ impl RuntimeFn {
             | Self::DateNow
             | Self::DateEpochMsNowNumber
             | Self::DateGetTime
+            | Self::DateParse
+            | Self::DateUTC
             | Self::DateToString
             | Self::DateGetLocalTimeField
             | Self::DateToISOString
@@ -2223,6 +2235,8 @@ impl RuntimeFn {
             Self::DateNewLive,
             Self::DateNow,
             Self::DateGetTime,
+            Self::DateParse,
+            Self::DateUTC,
             Self::DateToString,
             Self::DateGetLocalTimeField,
             Self::DateToISOString,
@@ -2604,6 +2618,8 @@ impl RuntimeFn {
             Self::DateNewLive,
             Self::DateNow,
             Self::DateGetTime,
+            Self::DateParse,
+            Self::DateUTC,
             Self::DateToString,
             Self::DateGetLocalTimeField,
             Self::DateToISOString,

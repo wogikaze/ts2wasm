@@ -1286,6 +1286,16 @@ fn build_smoke_date_complete() {
 }
 
 #[test]
+fn build_smoke_date_static_parse_utc() {
+    let result = run_fixture("builtins-and-io/date-static-parse-utc.ts");
+    assert!(
+        result.is_ok(),
+        "Date.parse and Date.UTC fixture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_date_methods_comprehensive() {
     let result = run_fixture("builtins-and-io/date-methods-comprehensive.ts");
     assert!(
@@ -2645,16 +2655,6 @@ fn build_smoke_date_utc_getters() {
     assert!(
         result.is_ok(),
         "date-utc-getters should build: {:?}",
-        result.err()
-    );
-}
-
-#[test]
-fn build_smoke_date_complete() {
-    let result = run_fixture("builtins-and-io/date-methods-comprehensive.ts");
-    assert!(
-        result.is_ok(),
-        "date-methods-comprehensive should build: {:?}",
         result.err()
     );
 }

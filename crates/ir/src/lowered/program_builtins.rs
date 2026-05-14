@@ -406,6 +406,16 @@ pub(crate) fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {
         ResolvedExpr::Unary { op, expr } if *op == UnaryOp::Negate => {
             matches!(expr.as_ref(), ResolvedExpr::Number(_))
         }
+        ResolvedExpr::MethodCall {
+            object,
+            method,
+            args,
+            ..
+        } if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Date")
+            && matches!((method.as_str(), args.len()), ("parse", 1) | ("UTC", 1..=7)) =>
+        {
+            true
+        }
         _ => false,
     }
 }

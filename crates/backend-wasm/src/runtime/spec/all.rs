@@ -689,6 +689,22 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::DateParse => RuntimeSpec {
+                symbol: "$date_parse",
+                deps: NO_DEPS,
+                imports: IMPORT_DATE_PARSE,
+                capability: CAP_HOST_DATE_PARSE,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::DateUTC => RuntimeSpec {
+                symbol: "$date_utc",
+                deps: NO_DEPS,
+                imports: IMPORT_DATE_UTC,
+                capability: CAP_HOST_DATE_UTC,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::DateToString => RuntimeSpec {
                 symbol: "$date_to_string",
                 deps: NO_DEPS,

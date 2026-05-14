@@ -618,6 +618,52 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Date") && method == "parse" {
+            if args.len() != 1 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!("Date.parse expects 1 argument, got {}", args.len()),
+                    span: Some(span),
+                    phase: None,
+                });
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateParse,
+                args: vec![self.lower_expr(&args[0])?],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Date") && method == "UTC" {
+            if args.is_empty() || args.len() > 7 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!("Date.UTC expects 1 to 7 arguments, got {}", args.len()),
+                    span: Some(span),
+                    phase: None,
+                });
+            }
+            let mut lowered_args = Vec::with_capacity(7);
+            for (idx, arg) in args.iter().enumerate() {
+                if idx == 7 {
+                    break;
+                }
+                lowered_args.push(self.lower_expr(arg)?);
+            }
+            while lowered_args.len() < 7 {
+                let default = if lowered_args.len() == 2 { 1 } else { 0 };
+                lowered_args.push(LoweredExpr::Number(
+                    default,
+                    Span::generated("date_utc_default"),
+                ));
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateUTC,
+                args: lowered_args,
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
         if self.is_unsupported_regexp_compile_receiver(object, method) {
             return Err(unsupported_regexp_compile_diagnostic(Some(span)));
         }

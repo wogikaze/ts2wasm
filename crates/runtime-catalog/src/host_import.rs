@@ -58,6 +58,8 @@ pub enum HostImport {
     DateGetTimezoneOffset,
     DateToDateString,
     DateToTimeString,
+    DateParse,
+    DateUTC,
 }
 
 impl HostImport {
@@ -312,6 +314,22 @@ impl HostImport {
                 params: "param i32",
                 result: "result i32",
             },
+            Self::DateParse => HostImportSpec {
+                module: "host",
+                name: "dateParse",
+                wat_symbol: "$host_date_parse",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
+            Self::DateUTC => HostImportSpec {
+                module: "host",
+                name: "dateUTC",
+                wat_symbol: "$host_date_utc",
+                abi: HostAbi::NodeShim,
+                params: "param i32 i32 i32 i32 i32 i32 i32",
+                result: "result i32",
+            },
         }
     }
 
@@ -351,6 +369,8 @@ impl HostImport {
             Self::DateGetTimezoneOffset => "host.dateGetTimezoneOffset",
             Self::DateToDateString => "host.dateToDateString",
             Self::DateToTimeString => "host.dateToTimeString",
+            Self::DateParse => "host.dateParse",
+            Self::DateUTC => "host.dateUTC",
         }
     }
 }

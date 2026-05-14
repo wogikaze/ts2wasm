@@ -87,6 +87,8 @@ match self {
             Self::DateNow => "date_now",
             Self::DateEpochMsNowNumber => "date_epoch_ms_now_number",
             Self::DateGetTime => "date_get_time",
+            Self::DateParse => "date_parse",
+            Self::DateUTC => "date_utc",
             Self::DateToString => "date_to_string",
             Self::DateGetLocalTimeField => "date_get_local_time_field",
             Self::DateToISOString => "date_to_iso_string",

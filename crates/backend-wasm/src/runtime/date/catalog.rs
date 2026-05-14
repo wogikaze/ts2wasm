@@ -14,6 +14,8 @@ pub const DATE_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::DateNow,
     RuntimeFn::DateEpochMsNowNumber,
     RuntimeFn::DateGetTime,
+    RuntimeFn::DateParse,
+    RuntimeFn::DateUTC,
     RuntimeFn::DateToString,
     RuntimeFn::DateGetLocalTimeField,
     RuntimeFn::DateToISOString,

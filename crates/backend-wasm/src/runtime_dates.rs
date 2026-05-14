@@ -138,6 +138,51 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_date_parse(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_parse (param $source i32) (result i32)
+    (i32.or
+      (i32.shl
+        (call $host_date_parse (local.get $source))
+        (i32.const {number_shift}))
+      (i32.const {number_tag})))
+"#,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+        ));
+    }
+
+    pub(super) fn emit_date_utc(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_utc
+    (param $year i32)
+    (param $month i32)
+    (param $date i32)
+    (param $hours i32)
+    (param $minutes i32)
+    (param $seconds i32)
+    (param $ms i32)
+    (result i32)
+    (i32.or
+      (i32.shl
+        (call $host_date_utc
+          (i32.shr_s (local.get $year) (i32.const {number_shift}))
+          (i32.shr_s (local.get $month) (i32.const {number_shift}))
+          (i32.shr_s (local.get $date) (i32.const {number_shift}))
+          (i32.shr_s (local.get $hours) (i32.const {number_shift}))
+          (i32.shr_s (local.get $minutes) (i32.const {number_shift}))
+          (i32.shr_s (local.get $seconds) (i32.const {number_shift}))
+          (i32.shr_s (local.get $ms) (i32.const {number_shift})))
+        (i32.const {number_shift}))
+      (i32.const {number_tag})))
+"#,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+        ));
+    }
+
     pub(super) fn emit_date_get_utc_milliseconds(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

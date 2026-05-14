@@ -793,3 +793,21 @@ fn host_deny_rejects_date_get_timezone_offset() {
     // Date.prototype.getTimezoneOffset uses Node host import for $host_date_get_timezone_offset
     assert_host_deny_rejects("builtins-and-io/date-get-timezone-offset.ts");
 }
+
+#[test]
+fn host_deny_rejects_date_to_date_string() {
+    // Date.prototype.toDateString uses Node host import for $host_date_to_date_string
+    assert_host_deny_rejects("builtins-and-io/date-to-date-string.ts");
+}
+
+#[test]
+fn host_deny_rejects_date_to_time_string() {
+    // Date.prototype.toTimeString uses Node host import for $host_date_to_time_string
+    assert_host_deny_rejects("builtins-and-io/date-to-time-string.ts");
+}
+
+#[test]
+fn host_deny_rejects_date_static_parse_utc() {
+    // Date.parse and Date.UTC use Node host imports for date parsing and UTC composition.
+    assert_host_deny_rejects("builtins-and-io/date-static-parse-utc.ts");
+}

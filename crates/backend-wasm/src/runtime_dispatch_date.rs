@@ -10,6 +10,8 @@ impl WatEmitter<'_> {
             RuntimeFn::DateNow => self.emit_date_now(wat),
             RuntimeFn::DateEpochMsNowNumber => self.emit_date_epoch_ms_now_number(wat),
             RuntimeFn::DateGetTime => self.emit_date_get_time(wat),
+            RuntimeFn::DateParse => self.emit_date_parse(wat),
+            RuntimeFn::DateUTC => self.emit_date_utc(wat),
             RuntimeFn::DateToString => self.emit_date_to_string(wat),
             RuntimeFn::DateToDateString => self.emit_date_to_date_string(wat),
             RuntimeFn::DateToTimeString => self.emit_date_to_time_string(wat),

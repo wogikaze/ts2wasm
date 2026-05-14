@@ -32,6 +32,8 @@ pub enum Capability {
     HostDateGetTimezoneOffset,
     HostDateToDateString,
     HostDateToTimeString,
+    HostDateParse,
+    HostDateUTC,
 }
 
 impl Capability {
@@ -67,6 +69,8 @@ impl Capability {
             Self::HostDateGetTimezoneOffset => "host.dateGetTimezoneOffset",
             Self::HostDateToDateString => "host.dateToDateString",
             Self::HostDateToTimeString => "host.dateToTimeString",
+            Self::HostDateParse => "host.dateParse",
+            Self::HostDateUTC => "host.dateUTC",
         }
     }
 }

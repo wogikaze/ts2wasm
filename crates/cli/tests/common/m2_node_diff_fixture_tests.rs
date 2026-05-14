@@ -4301,6 +4301,6 @@ fn error_stack_cause_matches_node_output() {
 }
 
 #[test]
-fn date_methods_matches_node_output() {
+fn date_methods_comprehensive_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/date-methods-comprehensive.ts");
 }

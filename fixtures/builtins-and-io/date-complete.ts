@@ -14,3 +14,5 @@ console.log(epoch.toJSON());
 console.log(epoch.toDateString());
 console.log(epoch.toTimeString());
 console.log(typeof epoch.getTimezoneOffset());
+console.log(Date.parse("1970-01-01T00:00:00.000Z"));
+console.log(Date.UTC(1970, 0, 1));
