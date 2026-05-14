@@ -174,6 +174,7 @@ pub(super) fn lower_expr_to_mir(expr: &LoweredExpr) -> MirExpr {
         LoweredExpr::ErrorNew {
             constructor,
             message,
+            cause: _,
             span,
         } => MirExpr::ErrorNew {
             constructor: *constructor,
