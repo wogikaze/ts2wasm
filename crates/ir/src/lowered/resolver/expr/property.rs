@@ -26,6 +26,16 @@ impl super::super::Resolver {
                 ResolvedExpr::Ident(name) if is_global_builtin_function_name(name) => {
                     lower_global_builtin_function_metadata_property(name, "length")
                 }
+                ResolvedExpr::Ident(name) => {
+                    if let Some(length) = self.local_arrow_function_length(name) {
+                        Ok(LoweredExpr::Number(length as i32, Span::generated("num")))
+                    } else {
+                        Ok(LoweredExpr::GetLength(
+                            Box::new(self.lower_expr(object)?),
+                            Span::generated("get_length"),
+                        ))
+                    }
+                }
                 ResolvedExpr::PropertyAccess {
                     object: inner_object,
                     key: builtin_name,
@@ -127,6 +137,9 @@ impl super::super::Resolver {
                 span: Span::generated("call"),
             });
         }
+        if let Some(function) = self.object_function_property(object, key, span) {
+            return Ok(function);
+        }
         if let ResolvedExpr::Ident(name) = object
             && self.resolve_func(name.as_str()).is_ok()
         {
@@ -137,6 +150,12 @@ impl super::super::Resolver {
             if matches!(key, "name" | "length" | "prototype") {
                 return self.lower_function_metadata_property(name.as_str(), key, span);
             }
+        }
+        if key == "length"
+            && let ResolvedExpr::Ident(name) = object
+            && let Some(length) = self.local_arrow_function_length(name)
+        {
+            return Ok(LoweredExpr::Number(length as i32, Span::generated("num")));
         }
         if let ResolvedExpr::Ident(name) = object
             && is_global_builtin_function_name(name)
@@ -188,6 +207,54 @@ impl super::super::Resolver {
             .and_then(|(_, value)| {
                 matches!(value, LoweredExpr::ArrowFn { .. }).then(|| value.clone())
             })
+    }
+
+    fn object_function_property(
+        &self,
+        object: &ResolvedExpr,
+        key: &str,
+        span: Span,
+    ) -> Option<LoweredExpr> {
+        let ResolvedExpr::Ident(name) = object else {
+            return None;
+        };
+        let obj_local = self.resolve_local(name).ok()?;
+        let func_id = self
+            .ctx
+            .classes
+            .object_function_props
+            .get(&obj_local)
+            .and_then(|props| props.get(&ObjectAccessorKey::Property(key.to_owned())))
+            .copied()?;
+        let captures = self
+            .ctx
+            .functions
+            .function_captures
+            .get(&func_id)
+            .map(|captures| {
+                captures
+                    .iter()
+                    .map(|capture| self.resolve_local(capture))
+                    .collect::<Result<Vec<_>, _>>()
+                    .ok()
+            })
+            .unwrap_or_else(|| Some(Vec::new()))?;
+        Some(LoweredExpr::ArrowFn {
+            func_id,
+            captures,
+            representation: ClosureRepresentation::DirectLocalToken,
+            span,
+        })
+    }
+
+    fn local_arrow_function_length(&self, name: &str) -> Option<usize> {
+        let local = self.resolve_local(name).ok()?;
+        let closure = self.ctx.facts.arrow_locals.get(&local)?;
+        self.ctx
+            .symbols
+            .function_signatures
+            .get(&closure.func_id)
+            .and_then(|signature| signature.metadata_length)
     }
 
     pub(super) fn lower_optional_property_access_expr(

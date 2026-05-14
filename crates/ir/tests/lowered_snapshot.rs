@@ -779,6 +779,27 @@ fn lowered_object_generator_return_next_uses_completion_value() {
 }
 
 #[test]
+fn lowered_extracted_object_method_length_uses_function_metadata() {
+    let program = parse_resolve_lower(
+        "let obj = { method(a, b,) { return a; }, *gen(a, b,) { return b; } };\n\
+         let method = obj.method;\n\
+         let gen = obj.gen;\n\
+         let methodLength = method.length;\n\
+         let genLength = gen.length;",
+    );
+
+    validate_lowered(&program).expect("extracted object method length should validate");
+    assert!(matches!(
+        program.top_level_statements.get(3),
+        Some(LoweredStmt::Let(_, LoweredExpr::Number(2, _), _))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(4),
+        Some(LoweredStmt::Let(_, LoweredExpr::Number(2, _), _))
+    ));
+}
+
+#[test]
 fn lowered_generator_function_captures_top_level_assignment() {
     let program = parse_resolve_lower(
         "var obj;\n\
