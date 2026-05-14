@@ -25,6 +25,18 @@ assert.sameValue = function(actual, expected) {
     throw new Test262Error(" expected same value");
   }
 };
+
+assert.compareArray = function(actual, expected) {
+  if (actual.length !== expected.length) {
+    throw new Test262Error(" expected same array length");
+  }
+  for (var i = 0; i < expected.length; i = i + 1) {
+    if (actual[i] !== expected[i]) {
+      throw new Test262Error(" expected same array values");
+    }
+  }
+  return true;
+};
 """
 
 HARNESS_SOURCES = {

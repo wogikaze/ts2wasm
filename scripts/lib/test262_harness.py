@@ -130,6 +130,18 @@ assert.notSameValue = function(actual, unexpected) {
   }
 };
 
+assert.compareArray = function(actual, expected) {
+  if (actual.length !== expected.length) {
+    throw new Test262Error("Expected arrays to have the same length");
+  }
+  for (var i = 0; i < expected.length; i = i + 1) {
+    if (actual[i] !== expected[i]) {
+      throw new Test262Error("Expected arrays to have the same values");
+    }
+  }
+  return true;
+};
+
 assert.throws = function(expectedErrorConstructor, func) {
   if (typeof func !== "function") {
     throw new Test262Error("assert.throws requires a callback");
