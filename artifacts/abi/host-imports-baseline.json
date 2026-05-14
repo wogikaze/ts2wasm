@@ -1,0 +1,350 @@
+{
+  "schema_version": 1,
+  "comment": "Host import baseline. Do not edit by hand. Sorted by module then name.",
+  "imports": [
+    {
+      "module": "host",
+      "name": "crypto.randomBytes",
+      "wat_symbol": "$host_crypto_random_bytes",
+      "abi": "NodeShim",
+      "capability": "host.crypto.randomBytes",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "dateGetLocalTimeField",
+      "wat_symbol": "$host_date_get_local_time_field",
+      "abi": "NodeShim",
+      "capability": "host.dateGetLocalTimeField",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "dateGetTimezoneOffset",
+      "wat_symbol": "$host_date_get_timezone_offset",
+      "abi": "NodeShim",
+      "capability": "host.dateGetTimezoneOffset",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "dateParse",
+      "wat_symbol": "$host_date_parse",
+      "abi": "NodeShim",
+      "capability": "host.dateParse",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "dateToDateString",
+      "wat_symbol": "$host_date_to_date_string",
+      "abi": "NodeShim",
+      "capability": "host.dateToDateString",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "dateToISOString",
+      "wat_symbol": "$host_date_to_iso_string",
+      "abi": "NodeShim",
+      "capability": "host.dateToISOString",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "dateToString",
+      "wat_symbol": "$host_date_to_string",
+      "abi": "NodeShim",
+      "capability": "host.dateToString",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "dateToTimeString",
+      "wat_symbol": "$host_date_to_time_string",
+      "abi": "NodeShim",
+      "capability": "host.dateToTimeString",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "dateUTC",
+      "wat_symbol": "$host_date_utc",
+      "abi": "NodeShim",
+      "capability": "host.dateUTC",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "decodeURI",
+      "wat_symbol": "$host_decode_uri",
+      "abi": "NodeShim",
+      "capability": "host.decodeURI",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "encodeURI",
+      "wat_symbol": "$host_encode_uri",
+      "abi": "NodeShim",
+      "capability": "host.encodeURI",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "escape",
+      "wat_symbol": "$host_escape",
+      "abi": "NodeShim",
+      "capability": "host.escape",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "fs.appendFileSync",
+      "wat_symbol": "$host_fs_append_file_sync",
+      "abi": "NodeShim",
+      "capability": "host.fs.appendFileSync",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "fs.readFileSync",
+      "wat_symbol": "$host_fs_read_file_sync",
+      "abi": "NodeShim",
+      "capability": "host.fs.readFileSync",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "fs.writeFileSync",
+      "wat_symbol": "$host_fs_write_file_sync",
+      "abi": "NodeShim",
+      "capability": "host.fs.writeFileSync",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "path.basename",
+      "wat_symbol": "$host_path_basename",
+      "abi": "NodeShim",
+      "capability": "host.path.basename",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "path.dirname",
+      "wat_symbol": "$host_path_dirname",
+      "abi": "NodeShim",
+      "capability": "host.path.dirname",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "path.join",
+      "wat_symbol": "$host_path_join",
+      "abi": "NodeShim",
+      "capability": "host.path.join",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "path.resolve",
+      "wat_symbol": "$host_path_resolve",
+      "abi": "NodeShim",
+      "capability": "host.path.resolve",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "process.exit",
+      "wat_symbol": "$host_process_exit",
+      "abi": "NodeShim",
+      "capability": "host.process.exit",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "unescape",
+      "wat_symbol": "$host_unescape",
+      "abi": "NodeShim",
+      "capability": "host.unescape",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "args_get",
+      "wat_symbol": "$args_get",
+      "abi": "WasiPreview1",
+      "capability": "wasi.args",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "args_sizes_get",
+      "wat_symbol": "$args_sizes_get",
+      "abi": "WasiPreview1",
+      "capability": "wasi.args",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "clock_res_get",
+      "wat_symbol": "$clock_res_get",
+      "abi": "WasiPreview1",
+      "capability": "wasi.clock",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "clock_time_get",
+      "wat_symbol": "$clock_time_get",
+      "abi": "WasiPreview1",
+      "capability": "wasi.clock",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "environ_get",
+      "wat_symbol": "$environ_get",
+      "abi": "WasiPreview1",
+      "capability": "wasi.env",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "environ_sizes_get",
+      "wat_symbol": "$environ_sizes_get",
+      "abi": "WasiPreview1",
+      "capability": "wasi.env",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "fd_close",
+      "wat_symbol": "$fd_close",
+      "abi": "WasiPreview1",
+      "capability": "wasi.fd",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "fd_prestat_dir_name",
+      "wat_symbol": "$fd_prestat_dir_name",
+      "abi": "WasiPreview1",
+      "capability": "wasi.fd",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "fd_prestat_get",
+      "wat_symbol": "$fd_prestat_get",
+      "abi": "WasiPreview1",
+      "capability": "wasi.fd",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "fd_read",
+      "wat_symbol": "$fd_read",
+      "abi": "WasiPreview1",
+      "capability": "wasi.fd",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "fd_seek",
+      "wat_symbol": "$fd_seek",
+      "abi": "WasiPreview1",
+      "capability": "wasi.fd",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "fd_write",
+      "wat_symbol": "$fd_write",
+      "abi": "WasiPreview1",
+      "capability": "wasi.fd",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "path_create_directory",
+      "wat_symbol": "$path_create_directory",
+      "abi": "WasiPreview1",
+      "capability": "wasi.filesystem",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "path_filestat_get",
+      "wat_symbol": "$path_filestat_get",
+      "abi": "WasiPreview1",
+      "capability": "wasi.filesystem",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "path_open",
+      "wat_symbol": "$path_open",
+      "abi": "WasiPreview1",
+      "capability": "wasi.filesystem",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "path_readlink",
+      "wat_symbol": "$path_readlink",
+      "abi": "WasiPreview1",
+      "capability": "wasi.filesystem",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "path_remove_directory",
+      "wat_symbol": "$path_remove_directory",
+      "abi": "WasiPreview1",
+      "capability": "wasi.filesystem",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "path_rename",
+      "wat_symbol": "$path_rename",
+      "abi": "WasiPreview1",
+      "capability": "wasi.filesystem",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "path_symlink",
+      "wat_symbol": "$path_symlink",
+      "abi": "WasiPreview1",
+      "capability": "wasi.filesystem",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "path_unlink_file",
+      "wat_symbol": "$path_unlink_file",
+      "abi": "WasiPreview1",
+      "capability": "wasi.filesystem",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "proc_exit",
+      "wat_symbol": "$wasi_proc_exit",
+      "abi": "WasiPreview1",
+      "capability": "wasi.proc_exit",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "wasi_snapshot_preview1",
+      "name": "random_get",
+      "wat_symbol": "$random_get",
+      "abi": "WasiPreview1",
+      "capability": "wasi.random",
+      "reason_owner": "runtime-catalog"
+    }
+  ]
+}
