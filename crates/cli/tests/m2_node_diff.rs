@@ -1511,6 +1511,11 @@ fn array_iterator_methods_match_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/array-entries.ts");
 }
 
+#[test]
+fn set_algebra_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/set-algebra.ts");
+}
+
 fn is_iwasm_stdin_fd_read_blocked(stdout: &[u8], stderrs: &[u8], fixture: &str) -> bool {
     // iwasm 2.4.4 returns `Exception: unreachable` for this path in environments
     // where stdin fd_read cannot be executed reliably. This keeps the rest of the
