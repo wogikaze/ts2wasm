@@ -90,6 +90,16 @@ fn build_smoke_math_pow_method() {
 }
 
 #[test]
+fn build_smoke_math_complete() {
+    let result = run_fixture("builtins-and-io/math-complete.ts");
+    assert!(
+        result.is_ok(),
+        "deterministic Math builtin family should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_bigint_arithmetic() {
     for fixture in [
         "core-semantics/bigint-runtime-mul-div-rem.ts",
