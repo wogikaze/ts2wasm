@@ -2346,6 +2346,16 @@ fn build_smoke_arraybuffer_dataview_uint32() {
     );
 }
 
+#[test]
+fn build_smoke_dataview_complete() {
+    let result = run_fixture("builtins-and-io/dataview-complete.ts");
+    assert!(
+        result.is_ok(),
+        "DataView complete should build successfully: {:?}",
+        result.err()
+    );
+}
+
 // Well-known symbol properties — ID 211 (W5, P2)
 #[test]
 fn build_smoke_well_known_symbol_runtime() {
