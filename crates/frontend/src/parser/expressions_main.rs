@@ -1919,6 +1919,47 @@ impl Parser {
                                 key: OBJECT_SPREAD_SENTINEL.to_owned(),
                                 value: val,
                             });
+                        } else if let Some(star_span) = self.consume_span(TokenKind::Star) {
+                            let parsed_key = self.parse_object_key()?;
+                            match parsed_key {
+                                ParsedObjectKey::Static { key, .. } => {
+                                    let value = self
+                                        .parse_object_literal_method_with_generator(
+                                            key.clone(),
+                                            star_span.start,
+                                            true,
+                                        )?
+                                        .ok_or_else(|| Diagnostic {
+                                            code: DiagCode::SyntaxError,
+                                            message:
+                                                "expected generator object method parameter list"
+                                                    .to_owned(),
+                                            span: self.peek_span(),
+                                            phase: None,
+                                        })?;
+                                    props.push(ObjectProp::MethodShorthand { key, value });
+                                }
+                                ParsedObjectKey::ComputedKey { key } => {
+                                    let value = self
+                                        .parse_object_literal_method_with_generator(
+                                            "[computed]".to_owned(),
+                                            star_span.start,
+                                            true,
+                                        )?
+                                        .ok_or_else(|| Diagnostic {
+                                            code: DiagCode::SyntaxError,
+                                            message:
+                                                "expected generator object method parameter list"
+                                                    .to_owned(),
+                                            span: self.peek_span(),
+                                            phase: None,
+                                        })?;
+                                    props.push(ObjectProp::ComputedKey {
+                                        key: Box::new(key),
+                                        value,
+                                    });
+                                }
+                            }
                         } else {
                             let parsed_key = self.parse_object_key()?;
                             let (key, key_span) = match parsed_key {
@@ -2180,6 +2221,7 @@ impl Parser {
                     name: format!("{accessor_kind} {key}"),
                     params,
                     body,
+                    is_generator: false,
                     span: Span {
                         start: accessor_start,
                         end,
@@ -2192,6 +2234,7 @@ impl Parser {
                     name: format!("{accessor_kind} [computed]"),
                     params,
                     body,
+                    is_generator: false,
                     span: Span {
                         start: accessor_start,
                         end,
@@ -2209,6 +2252,15 @@ impl Parser {
         &mut self,
         name: String,
         method_start: usize,
+    ) -> Result<Option<Expr>, Diagnostic> {
+        self.parse_object_literal_method_with_generator(name, method_start, false)
+    }
+
+    fn parse_object_literal_method_with_generator(
+        &mut self,
+        name: String,
+        method_start: usize,
+        is_generator: bool,
     ) -> Result<Option<Expr>, Diagnostic> {
         let checkpoint = self.cursor;
         let has_generic_params = match self.consume_typescript_generic_parameter_list() {
@@ -2250,7 +2302,10 @@ impl Parser {
             self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
         }
 
+        let prev_in_generator_fn = self.in_generator_fn;
+        self.in_generator_fn = is_generator;
         let body = self.block()?;
+        self.in_generator_fn = prev_in_generator_fn;
         let end = body
             .last()
             .map(|stmt| stmt.span().end)
@@ -2260,6 +2315,7 @@ impl Parser {
             name,
             params,
             body,
+            is_generator,
             span: Span {
                 start: method_start,
                 end,
@@ -2310,6 +2366,7 @@ impl Parser {
                 name,
                 params,
                 body: Vec::new(),
+                is_generator,
                 span: Span {
                     start: start.start,
                     end,
@@ -2322,6 +2379,7 @@ impl Parser {
             name,
             params,
             body,
+            is_generator,
             span: Span {
                 start: start.start,
                 end,

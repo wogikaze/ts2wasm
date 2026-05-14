@@ -53,7 +53,12 @@ impl super::Resolver {
         value: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
         if let ResolvedObjectProp::MethodShorthand { value, .. } = prop
-            && let ResolvedExpr::FunctionExpr { name, params, body } = value
+            && let ResolvedExpr::FunctionExpr {
+                name,
+                params,
+                body,
+                is_generator,
+            } = value
         {
             if is_object_literal_accessor_function_name(name) {
                 return Err(Diagnostic {
@@ -65,7 +70,7 @@ impl super::Resolver {
                     phase: None,
                 });
             }
-            return self.lower_object_method_function_expr(name, params, body);
+            return self.lower_object_method_function_expr(name, params, body, *is_generator);
         }
         self.lower_expr(value)
     }
@@ -74,8 +79,14 @@ impl super::Resolver {
         &mut self,
         value: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
-        if let ResolvedExpr::FunctionExpr { name, params, body } = value {
-            return self.lower_object_method_function_expr(name, params, body);
+        if let ResolvedExpr::FunctionExpr {
+            name,
+            params,
+            body,
+            is_generator,
+        } = value
+        {
+            return self.lower_object_method_function_expr(name, params, body, *is_generator);
         }
         self.lower_expr(value)
     }
@@ -409,10 +420,16 @@ impl super::Resolver {
         kind: ObjectLiteralAccessorKind,
     ) -> Result<LoweredExpr, Diagnostic> {
         let value = prop.value();
-        let ResolvedExpr::FunctionExpr { name, params, body } = value else {
+        let ResolvedExpr::FunctionExpr {
+            name,
+            params,
+            body,
+            is_generator,
+        } = value
+        else {
             unreachable!("object literal accessor kind only matches function values");
         };
-        let function = self.lower_object_method_function_expr(name, params, body)?;
+        let function = self.lower_object_method_function_expr(name, params, body, *is_generator)?;
         Ok(LoweredExpr::ObjectNew {
             props: vec![
                 (kind.descriptor_key().to_owned(), function),

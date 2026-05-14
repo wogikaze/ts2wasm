@@ -321,8 +321,9 @@ impl super::Resolver {
         name: &str,
         params: &[ResolvedParam],
         body: &[ResolvedStmt],
+        is_generator: bool,
     ) -> Result<LoweredExpr, Diagnostic> {
-        self.lower_nested_function_with_receiver(name, params, body, false)
+        self.lower_nested_function_with_receiver(name, params, body, false, is_generator)
     }
 
     pub(super) fn lower_object_method_function_expr(
@@ -330,8 +331,9 @@ impl super::Resolver {
         name: &str,
         params: &[ResolvedParam],
         body: &[ResolvedStmt],
+        is_generator: bool,
     ) -> Result<LoweredExpr, Diagnostic> {
-        self.lower_nested_function_with_receiver(name, params, body, true)
+        self.lower_nested_function_with_receiver(name, params, body, true, is_generator)
     }
 
     pub(super) fn arrow_capture_names_with_excluded(
@@ -376,6 +378,7 @@ impl super::Resolver {
         params: &[ResolvedParam],
         body: &[ResolvedStmt],
         force_receiver: bool,
+        is_generator: bool,
     ) -> Result<LoweredExpr, Diagnostic> {
         if params
             .iter()
@@ -506,7 +509,7 @@ impl super::Resolver {
             func_id,
             &lowered_params,
             body,
-            false,
+            is_generator,
             false,
             &self.ctx.symbols.function_ids,
             &function_signatures,

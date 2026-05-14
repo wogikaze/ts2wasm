@@ -17,8 +17,14 @@ impl super::super::Resolver {
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
-        if let ResolvedExpr::FunctionExpr { name, params, body } = callee {
-            return self.lower_function_expr_call(name, params, body, args, span);
+        if let ResolvedExpr::FunctionExpr {
+            name,
+            params,
+            body,
+            is_generator,
+        } = callee
+        {
+            return self.lower_function_expr_call(name, params, body, *is_generator, args, span);
         }
 
         if let ResolvedExpr::ArrowFn {
@@ -557,6 +563,7 @@ impl super::super::Resolver {
         name: &str,
         params: &[ResolvedParam],
         body: &[ResolvedStmt],
+        is_generator: bool,
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
@@ -584,7 +591,7 @@ impl super::super::Resolver {
                 phase: None,});
         }
 
-        let lowered = self.lower_named_function_expr(name, params, body)?;
+        let lowered = self.lower_named_function_expr(name, params, body, is_generator)?;
         let LoweredExpr::ArrowFn {
             func_id, captures, ..
         } = lowered

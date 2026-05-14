@@ -1943,7 +1943,10 @@ fn collect_preindexed_function_properties(
         let ResolvedExpr::Ident(receiver) = object.as_ref() else {
             continue;
         };
-        let ResolvedExpr::FunctionExpr { name, params, body } = value.as_ref() else {
+        let ResolvedExpr::FunctionExpr {
+            name, params, body, ..
+        } = value.as_ref()
+        else {
             continue;
         };
         let func_id = FuncId(*next_func_id);

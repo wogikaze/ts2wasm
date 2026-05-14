@@ -933,6 +933,7 @@ impl NameResolver {
                 name,
                 params,
                 body,
+                is_generator,
                 span,
             } => {
                 self.enter_scope();
@@ -965,6 +966,7 @@ impl NameResolver {
                     name: name.clone(),
                     params: params.clone(),
                     body: resolved_body,
+                    is_generator: *is_generator,
                     span: *span,
                 })
             }

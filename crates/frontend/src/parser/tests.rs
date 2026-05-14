@@ -2400,6 +2400,48 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_object_generator_methods() {
+        let program = parse_program("let object = { *g() { yield 1; }, *['a']() { yield 2; } };")
+            .unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 2);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value:
+                            Expr::FunctionExpr {
+                                name,
+                                is_generator: true,
+                                body,
+                                ..
+                            },
+                    } if key == "g" && name == "g" && matches!(body.as_slice(), [Stmt::Expr { .. }])
+                ));
+                assert!(matches!(
+                    &props[1],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value:
+                            Expr::FunctionExpr {
+                                name,
+                                is_generator: true,
+                                body,
+                                ..
+                            },
+                    } if key == "a" && name == "a" && matches!(body.as_slice(), [Stmt::Expr { .. }])
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_computed_accessor_key_expression() {
         let program = parse_program(
             "let key = 'value'; let object = { get [\"a\"]() { return 1; }, set [1](v) { this.v = v; }, get [key]() { return 2; } };",

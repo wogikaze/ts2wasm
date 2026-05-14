@@ -356,10 +356,11 @@ impl super::Resolver {
                     span: Span::generated("call"),
                 })
             }
-            ResolvedExpr::FunctionExpr { name, params, body } => self
-                .lower_array_map_function_expr_callback_call(
-                    name, params, body, this_arg, element, index, array_expr, span,
-                ),
+            ResolvedExpr::FunctionExpr {
+                name, params, body, ..
+            } => self.lower_array_map_function_expr_callback_call(
+                name, params, body, this_arg, element, index, array_expr, span,
+            ),
             ResolvedExpr::Ident(name) => {
                 let func_id = self.resolve_func(name)?;
                 let receiver = match this_arg {

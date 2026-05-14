@@ -579,7 +579,9 @@ impl TypeScriptCallArityValidator {
                     self.validate_lexical_block(body_stmts)?;
                 }
             }
-            ResolvedExpr::FunctionExpr { name, params, body } => {
+            ResolvedExpr::FunctionExpr {
+                name, params, body, ..
+            } => {
                 let mut scope = HashMap::new();
                 if !name.is_empty() {
                     scope.insert(name.clone(), function_arity(params, body));

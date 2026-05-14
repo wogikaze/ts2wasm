@@ -281,6 +281,7 @@ pub enum ResolvedExpr {
         name: String,
         params: Vec<ResolvedParam>,
         body: Vec<ResolvedStmt>,
+        is_generator: bool,
     },
     ClassExpr {
         name: String,
