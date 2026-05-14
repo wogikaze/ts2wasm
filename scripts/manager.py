@@ -55,6 +55,7 @@ COMMANDS = {
     "abc451-runtime-costs": ("python", "scripts/run/abc451-runtime-costs.py"),
     "repo-metrics": ("python", "scripts/run/repo-metrics.py"),
     "benchmark-tracker": ("python", "scripts/perf/benchmark-tracker.py"),
+    "gate-perf": ("python", "scripts/gate/perf-regression.py"),
     "test-differential-reporter": ("python", "scripts/report/differential.py"),
     "development-report": ("python", "scripts/report/development-report.py"),
     "discord-report": ("python", "scripts/report/discord-report.py"),
@@ -128,6 +129,7 @@ def usage():
     cmd_list = [
         ("gate", "Standard gate: fmt + architecture + coverage matrix + nextest"),
         ("gate-fast", "Fast gate: standard gate without nextest"),
+        ("gate-perf", "Performance regression gate: compiler throughput + WASM size"),
         ("gate-all", "Full gate: harness/toolchain baseline plus project gates"),
         ("check", "Run check-repo-smoke, or run a part with `check <part>`"),
         ("install-hooks", "Install .githooks via git config core.hooksPath"),
@@ -243,6 +245,9 @@ def main():
 
     if target == "gate-all":
         run_command("python", "scripts/check/harness-installation.py", args)
+
+    if target == "gate-perf":
+        run_command("python", "scripts/gate/perf-regression.py", args)
 
     if target == "check":
         if not args:

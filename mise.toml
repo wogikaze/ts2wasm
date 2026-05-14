@@ -25,6 +25,10 @@ run = "python scripts/manager.py gate-fast"
 description = "Full gate: harness/toolchain baseline plus project gates"
 run = "python scripts/manager.py gate-all"
 
+[tasks."gate-perf"]
+description = "Performance regression gate: compiler throughput + WASM size"
+run = "python scripts/manager.py gate-perf"
+
 # Use Python manager for cross-platform support
 [tasks."check-scripts"]
 description = "Bash -n on scripts/**/*.sh (syntax only)"
