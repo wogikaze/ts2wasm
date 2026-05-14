@@ -74,10 +74,11 @@ impl super::Resolver {
         &mut self,
         props: &[ResolvedObjectProp],
     ) -> Result<LoweredExpr, Diagnostic> {
-        if props
-            .iter()
-            .any(|prop| prop.computed_key().is_some() || prop.static_key() == Some("__proto__"))
-        {
+        if props.iter().any(|prop| {
+            prop.computed_key().is_some()
+                || prop.static_key() == Some("__proto__")
+                || object_literal_accessor_kind(prop).is_some()
+        }) {
             return self.lower_object_literal_expr_with_computed_keys(props);
         }
 
@@ -204,6 +205,33 @@ impl super::Resolver {
                         continue;
                     };
                     let value = prop.value();
+                    if let Some(kind) = object_literal_accessor_kind(prop) {
+                        if !initialized {
+                            stmts.push(LoweredStmt::Let(
+                                object_local,
+                                LoweredExpr::ObjectNew {
+                                    props: std::mem::take(&mut pending),
+                                    non_enumerable: 0,
+                                    span: Span::generated("object_new"),
+                                },
+                                Span::generated("object_literal"),
+                            ));
+                            initialized = true;
+                        }
+                        let descriptor =
+                            self.lower_object_literal_accessor_descriptor(prop, kind)?;
+                        let define_expr = object_kernel::ordinary_define_own_property(
+                            LoweredExpr::Local(object_local, Span::generated("local")),
+                            LoweredExpr::String(key.to_owned(), Span::generated("str")),
+                            descriptor,
+                            Span::generated("object_accessor_define"),
+                        );
+                        stmts.push(LoweredStmt::Expr(
+                            define_expr,
+                            Span::generated("object_accessor_define"),
+                        ));
+                        continue;
+                    }
                     if key == "__proto__" {
                         if !initialized {
                             stmts.push(LoweredStmt::Let(
@@ -303,6 +331,35 @@ impl super::Resolver {
         })
     }
 
+    fn lower_object_literal_accessor_descriptor(
+        &mut self,
+        prop: &ResolvedObjectProp,
+        kind: ObjectLiteralAccessorKind,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let ResolvedObjectProp::MethodShorthand { value, .. } = prop else {
+            unreachable!("object literal accessor kind only matches method shorthand props");
+        };
+        let ResolvedExpr::FunctionExpr { name, params, body } = value else {
+            unreachable!("object literal accessor kind only matches function values");
+        };
+        let function = self.lower_object_method_function_expr(name, params, body)?;
+        Ok(LoweredExpr::ObjectNew {
+            props: vec![
+                (kind.descriptor_key().to_owned(), function),
+                (
+                    "enumerable".to_owned(),
+                    LoweredExpr::Bool(true, Span::generated("bool")),
+                ),
+                (
+                    "configurable".to_owned(),
+                    LoweredExpr::Bool(true, Span::generated("bool")),
+                ),
+            ],
+            non_enumerable: 0,
+            span: Span::generated("object_accessor_descriptor"),
+        })
+    }
+
     pub(super) fn static_object_literal_spread_props(
         &self,
         value: &ResolvedExpr,
@@ -342,4 +399,31 @@ impl super::Resolver {
 
 fn is_object_literal_accessor_function_name(name: &str) -> bool {
     name.starts_with("get ") || name.starts_with("set ")
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum ObjectLiteralAccessorKind {
+    Get,
+}
+
+impl ObjectLiteralAccessorKind {
+    fn descriptor_key(self) -> &'static str {
+        match self {
+            Self::Get => "get",
+        }
+    }
+}
+
+fn object_literal_accessor_kind(prop: &ResolvedObjectProp) -> Option<ObjectLiteralAccessorKind> {
+    let ResolvedObjectProp::MethodShorthand { value, .. } = prop else {
+        return None;
+    };
+    let ResolvedExpr::FunctionExpr { name, .. } = value else {
+        return None;
+    };
+    if name.starts_with("get ") {
+        Some(ObjectLiteralAccessorKind::Get)
+    } else {
+        None
+    }
 }

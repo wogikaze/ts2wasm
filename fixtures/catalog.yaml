@@ -569,6 +569,7 @@ directories:
     - object-literal-computed-keys.ts
     - object-literal-proto.ts
     - object-literal-method.ts
+    - object-literal-getter-descriptor.ts
     - object-shorthand-computed-method.ts
     - optional-call.ts
     - optional-index.ts

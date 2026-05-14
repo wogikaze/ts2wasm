@@ -183,6 +183,16 @@ fn build_smoke_object_literal_method() {
 }
 
 #[test]
+fn build_smoke_object_literal_getter_descriptor() {
+    let result = run_fixture("core-expressions/object-literal-getter-descriptor.ts");
+    assert!(
+        result.is_ok(),
+        "object literal getter descriptor should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_entries_method() {
     let result = run_fixture("builtins-and-io/object-entries.ts");
     assert!(
