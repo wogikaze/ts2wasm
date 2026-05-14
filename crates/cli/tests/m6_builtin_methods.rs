@@ -1102,6 +1102,16 @@ fn build_smoke_global_parseint() {
 }
 
 #[test]
+fn build_smoke_global_parseint_i32_boundary() {
+    let result = run_fixture("builtins-and-io/global-parseint-i32-boundary.ts");
+    assert!(
+        result.is_ok(),
+        "parseInt i32 boundary fixture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_global_parsefloat() {
     let result = run_fixture("builtins-and-io/global-parsefloat.ts");
     assert!(
@@ -3391,4 +3401,10 @@ fn build_smoke_string_static_complete() {
         "String static methods should build: {:?}",
         result.err()
     );
+}
+
+#[test]
+fn build_smoke_native_error_types_complete() {
+    run_fixture("builtins-and-io/native-error-types.ts")
+        .expect("NativeError types complete fixture should build");
 }

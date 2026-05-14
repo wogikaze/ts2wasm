@@ -3050,6 +3050,11 @@ fn rest_parameter_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn rest_arguments_object_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/rest-arguments-object.ts");
+}
+
+#[test]
 fn spread_operator_literal_call_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/spread-call-literal-array.ts");
 }
@@ -3937,6 +3942,12 @@ fn for_of_array_fixture_matches_node_output_under_iwasm() {
 fn global_zero_args_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/global-0-args.ts");
 }
+
+#[test]
+fn global_parseint_i32_boundary_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-parseint-i32-boundary.ts");
+}
+
 #[test]
 fn object_prevent_extensions_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-prevent-extensions.ts");
@@ -4236,4 +4247,16 @@ fn number_methods_matches_node_output() {
 #[test]
 fn string_static_basic_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/string-static.ts");
+}
+
+// Symbol.for / Symbol.keyFor global registry
+#[test]
+fn symbol_registry_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/symbol-registry.ts");
+}
+
+// Error subclasses with stack and cause support
+#[test]
+fn error_stack_cause_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/error-subclasses.ts");
 }

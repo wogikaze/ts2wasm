@@ -392,11 +392,22 @@ impl super::Resolver {
                 if signature.needs_receiver {
                     call_args.push(receiver);
                 }
-                if signature.has_rest {
-                    call_args.extend(explicit_args);
+                if signature.has_rest && signature.needs_arguments {
+                    let fixed_count = signature.explicit_params.saturating_sub(1);
+                    call_args.extend(explicit_args.iter().take(fixed_count).cloned());
+                    for _ in explicit_args.len()..fixed_count {
+                        call_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                    }
+                } else if signature.has_rest {
+                    call_args.extend(explicit_args.clone());
                 } else {
                     let explicit_len = explicit_args.len();
-                    call_args.extend(explicit_args.into_iter().take(signature.explicit_params));
+                    call_args.extend(
+                        explicit_args
+                            .iter()
+                            .take(signature.explicit_params)
+                            .cloned(),
+                    );
                     for _ in explicit_len..signature.explicit_params {
                         call_args.push(LoweredExpr::Undefined(Span::generated("undef")));
                     }
@@ -408,6 +419,10 @@ impl super::Resolver {
 
                         span: Span::generated("object_new"),
                     });
+                }
+                if signature.has_rest && signature.needs_arguments {
+                    let fixed_count = signature.explicit_params.saturating_sub(1);
+                    call_args.extend(explicit_args.into_iter().skip(fixed_count));
                 }
                 self.append_function_captures(func_id, &mut call_args)?;
                 Ok(LoweredExpr::Call {

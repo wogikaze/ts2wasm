@@ -2912,7 +2912,14 @@ pub(super) fn lower_function(
             span: None,
         });
     }
-    lowered_params.extend(params.iter().cloned());
+    let mut rest_param = None;
+    for param in params {
+        if param.is_rest {
+            rest_param = Some(param.clone());
+        } else {
+            lowered_params.push(param.clone());
+        }
+    }
     if signature.needs_arguments {
         lowered_params.push(ResolvedParam {
             name: "arguments".to_owned(),
@@ -2920,6 +2927,10 @@ pub(super) fn lower_function(
             is_rest: false,
             span: None,
         });
+    }
+    let rest_param_index = rest_param.as_ref().map(|_| lowered_params.len());
+    if let Some(param) = rest_param {
+        lowered_params.push(param);
     }
 
     let (mut resolver, param_ids) = crate::lowered::resolver::Resolver::with_params(
@@ -2955,11 +2966,6 @@ pub(super) fn lower_function(
             self_closure.object_function_props,
         )?;
     }
-
-    let rest_param_index = params
-        .iter()
-        .position(|param| param.is_rest)
-        .map(|index| index + usize::from(signature.needs_receiver));
 
     // Insert default parameter assignments at the start of the body.
     let mut body_with_defaults = Vec::new();

@@ -803,6 +803,7 @@ fn dump_mir_error_new() {
             LoweredExpr::ErrorNew {
                 constructor: BuiltinErrorConstructor::TypeError,
                 message: Box::new(LoweredExpr::String("msg".to_string(), make_span())),
+                cause: None,
                 span: make_span(),
             },
             make_span(),

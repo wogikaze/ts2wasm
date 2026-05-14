@@ -1,5 +1,5 @@
 // @ts-nocheck
-// Test all 7 error subtypes with name, message, stack, and cause
+// Test all 7 error subtypes with name, message, stack, cause, and instanceof
 
 // 1. Generic Error with cause (string)
 let e1 = new Error("generic", { cause: "root cause" });
@@ -47,3 +47,27 @@ console.log(e7.stack.indexOf("URIError: uri error") === 0);
 // Cause with numeric value
 let e8 = new Error("with number cause", { cause: 42 });
 console.log(e8.cause === 42);
+
+// instanceof checks
+let generic = new Error("generic message");
+let eval_err = new EvalError("eval message", { cause: "eval cause" });
+let range = new RangeError("range message", { cause: 42 });
+let reference = new ReferenceError("reference message", { cause: null });
+let syntax = new SyntaxError("syntax message");
+let type_err = new TypeError("type message", { cause: true });
+let uri = new URIError("uri message", { cause: undefined });
+
+console.log(generic instanceof Error);
+console.log(eval_err instanceof EvalError);
+console.log(eval_err instanceof Error);
+console.log(range instanceof RangeError);
+console.log(reference instanceof ReferenceError);
+console.log(syntax instanceof SyntaxError);
+console.log(type_err instanceof TypeError);
+console.log(uri instanceof URIError);
+
+console.log(eval_err.cause);
+console.log(range.cause);
+console.log(reference.cause);
+console.log(type_err.cause);
+console.log(uri.cause);

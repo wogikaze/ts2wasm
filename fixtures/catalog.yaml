@@ -183,6 +183,7 @@ directories:
     - array-to-string.ts
     - array-values.ts
     - array-with.ts
+    - array-copying-methods.ts
     - arraybuffer-dataview-basic.ts
     - arraybuffer-dataview-byte-offset.ts
     - arraybuffer-dataview-byte-offset-endian.ts
@@ -224,6 +225,7 @@ directories:
     - error-instanceof.ts
     - error-message.ts
     - error-stack.ts
+    - error-subclasses.ts
     - es-module-live-binding-helper.ts
     - es-module-live-binding.ts
     - eval-unsupported.ts
@@ -252,6 +254,7 @@ directories:
     - global-names-remaining.ts
     - global-names-well-known-symbols.ts
     - global-parsefloat.ts
+    - global-parseint-i32-boundary.ts
     - global-parseint-radix.ts
     - global-parseint.ts
     - global-unescape-value.ts
@@ -332,6 +335,8 @@ directories:
     - math-round.ts
     - math-sqrt.ts
     - math-trunc-sign.ts
+    - native-error-types.ts
+    - number-complete.ts
     - number-is-finite.ts
     - number-is-integer.ts
     - number-is-integer-i32.ts
@@ -397,6 +402,7 @@ directories:
     - string-charcode-tostring-radix.ts
     - string-char-at.ts
     - string-char-code-at.ts
+    - string-charcode-tostring-radix.ts
     - string-concat.ts
     - string-constructor-call.ts
     - string-ends-with.ts
@@ -545,6 +551,7 @@ directories:
     - object-literal-inline-access.ts
     - object-literal-dup-keys.ts
     - object-literal-computed-keys.ts
+    - object-shorthand-computed-method.ts
     - optional-call.ts
     - optional-index.ts
     - optional-member.ts
@@ -856,6 +863,7 @@ directories:
     - regexp-literal.ts
     - regexp-test.ts
     - regexp-unsupported-flag.ts
+    - rest-arguments-object.ts
     - rest-params-multiple.ts
     - rest-params-one.ts
     - rest-params-zero.ts

@@ -8,7 +8,7 @@ use ts2wasm_runtime_abi::consts::RuntimeString;
 // Re-export catalog types so existing `super::runtime_link_plan::RuntimeLinkPlan`
 // import paths continue to work.
 use ts2wasm_runtime_catalog::{
-    GLOBALS_EXCEPTION_RUNTIME, HostImport, RuntimeFn, runtime_fn_from_name,
+    GLOBALS_EXCEPTION_RUNTIME, GLOBALS_MODULE_RUNTIME, HostImport, RuntimeFn, runtime_fn_from_name,
 };
 pub use ts2wasm_runtime_catalog::{
     LinkPlanSnapshot, RuntimeLinkPlan, ValidatedRuntimeLinkPlan, emit_link_plan_snapshot,
@@ -46,9 +46,13 @@ pub fn build_runtime_link_plan(program: &LoweredProgram) -> RuntimeLinkPlan {
     if program.functions.iter().any(|function| function.is_async) {
         plan.add_required_runtime(RuntimeFn::AllocHeap);
     }
-    // Module cache initialization requires AllocHeap.
     if !program.modules.is_empty() {
         plan.add_required_runtime(RuntimeFn::AllocHeap);
+        // Module initializer functions reference $current_module_id and
+        // $module_cache globals regardless of whether any module-related
+        // runtime function (ModuleRequire/ModuleExportsSet/ModuleExportsAssign)
+        // is selected. Declare them here to keep WAT emission valid.
+        plan.add_required_globals(GLOBALS_MODULE_RUNTIME);
     }
     plan.populate_derived_sets();
     plan
@@ -464,10 +468,13 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
                 collect_required_runtime_expr(plan, val);
             }
         }
-        LoweredExpr::ErrorNew { message, .. } => {
+        LoweredExpr::ErrorNew { message, cause, .. } => {
             plan.add_required_runtime(RuntimeFn::AllocHeap);
             plan.add_required_runtime(RuntimeFn::Concat);
             collect_required_runtime_expr(plan, message);
+            if let Some(cause) = cause {
+                collect_required_runtime_expr(plan, cause);
+            }
         }
         LoweredExpr::PropertyGet { obj, .. } => {
             plan.add_required_runtime(RuntimeFn::PropertyGet);

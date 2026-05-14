@@ -55,3 +55,13 @@ console.log(n.toExponential(2));
 let n2: any = 123.456;
 console.log(n2.toPrecision(4));
 console.log(n2.toPrecision(2));
+
+// Number static methods: isNaN, isFinite, isInteger, isSafeInteger (incoming)
+console.log(Number.isNaN(NaN));
+console.log(Number.isNaN(123));
+console.log(Number.isFinite(Infinity));
+console.log(Number.isFinite(123));
+console.log(Number.isInteger(123));
+console.log(Number.isInteger(123.456));
+console.log(Number.isSafeInteger(123));
+console.log(Number.isSafeInteger(123));

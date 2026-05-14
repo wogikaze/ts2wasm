@@ -164,6 +164,13 @@ impl<'a> WatEmitter<'a> {
             &mut class_name_to_ctor,
             &mut method_counts,
         );
+        for module in &program.modules {
+            Self::compute_class_decl_metadata(
+                &module.statements,
+                &mut class_name_to_ctor,
+                &mut method_counts,
+            );
+        }
         let mut emitter = Self {
             program,
             link_plan,
