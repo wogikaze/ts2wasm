@@ -60,6 +60,8 @@ pub struct FunctionSignature {
     pub returns_heap_closure: bool,
     /// Whether the function returns a dense array.
     pub returns_dense_array: bool,
+    /// Whether the function is exactly `function f(x) { return x; }`.
+    pub returns_first_param_identity: bool,
 }
 
 impl SymbolEnv {

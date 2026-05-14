@@ -177,6 +177,24 @@ impl super::Resolver {
         for prop in props {
             match prop {
                 ResolvedObjectProp::ComputedKey { key, value } => {
+                    if let Some(static_key) =
+                        super::string::resolved_expr_static_property_key_value(&self.ctx, key)
+                    {
+                        let lowered_value = self.lower_expr(value)?;
+                        if initialized {
+                            let set_expr = object_kernel::ordinary_set(
+                                LoweredExpr::Local(object_local, Span::generated("local")),
+                                &static_key,
+                                lowered_value,
+                                Span::generated("property_set"),
+                            );
+                            stmts
+                                .push(LoweredStmt::Expr(set_expr, Span::generated("property_set")));
+                        } else {
+                            pending.push((static_key, lowered_value));
+                        }
+                        continue;
+                    }
                     if !initialized {
                         stmts.push(LoweredStmt::Let(
                             object_local,

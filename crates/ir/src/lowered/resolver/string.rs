@@ -77,8 +77,28 @@ pub(super) fn resolved_expr_static_string_value(
             value.push_str(&resolved_expr_static_string_value(ctx, right)?);
             Some(value)
         }
+        ResolvedExpr::Call { callee, args, .. } => {
+            let ResolvedExpr::Ident(name) = callee.as_ref() else {
+                return None;
+            };
+            let func_id = ctx.resolve_func(name).ok()?;
+            let signature = ctx.symbols.function_signatures.get(&func_id)?;
+            if signature.returns_first_param_identity && args.len() == 1 {
+                resolved_expr_static_string_value(ctx, &args[0])
+            } else {
+                None
+            }
+        }
         _ => None,
     }
+}
+
+pub(super) fn resolved_expr_static_property_key_value(
+    ctx: &LoweringCtx,
+    expr: &ResolvedExpr,
+) -> Option<String> {
+    resolved_expr_static_string_value(ctx, expr)
+        .or_else(|| resolved_expr_static_number_literal_value(ctx, expr))
 }
 
 pub(super) fn resolved_expr_static_number_literal_value(

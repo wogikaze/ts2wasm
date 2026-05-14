@@ -1561,6 +1561,9 @@ fn collect_function_signatures(
                         metadata_length: fixed_arity_metadata_length(params),
                         returns_heap_closure: block_returns_declared_function(body),
                         returns_dense_array: block_returns_dense_array_local(body),
+                        returns_first_param_identity: body_returns_first_param_identity(
+                            params, body,
+                        ),
                     },
                 );
             }
@@ -1700,7 +1703,30 @@ fn function_signature_for_params_body(
         metadata_length: fixed_arity_metadata_length(params),
         returns_heap_closure: block_returns_declared_function(body),
         returns_dense_array: block_returns_dense_array_local(body),
+        returns_first_param_identity: body_returns_first_param_identity(params, body),
     }
+}
+
+fn body_returns_first_param_identity(params: &[ResolvedParam], body: &[ResolvedStmt]) -> bool {
+    let [param] = params else {
+        return false;
+    };
+    if param.is_rest || param.default.is_some() {
+        return false;
+    }
+
+    let mut first_body_stmt = 0;
+    while matches!(
+        body.get(first_body_stmt),
+        Some(ResolvedStmt::Expr(ResolvedExpr::String(_)))
+    ) {
+        first_body_stmt += 1;
+    }
+
+    matches!(
+        &body[first_body_stmt..],
+        [ResolvedStmt::Return(ResolvedExpr::Ident(name))] if name == &param.name
+    )
 }
 
 fn collect_class_method_captures(
