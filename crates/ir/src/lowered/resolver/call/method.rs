@@ -241,16 +241,36 @@ impl super::super::Resolver {
         expr: &ResolvedExpr,
     ) -> Option<LoweredExpr> {
         let method_id = self.generator_method_func_id(expr)?;
+        let ResolvedExpr::MethodCall { object, .. } = expr else {
+            return None;
+        };
+        let ResolvedExpr::Ident(receiver_name) = object.as_ref() else {
+            return None;
+        };
+        let receiver_local = self.resolve_local(receiver_name).ok()?;
         let function = self
             .ctx
             .functions
             .generated_functions
             .iter()
             .find(|function| function.id == method_id && function.is_generator)?;
+        let receiver_param = function.params.first().copied();
         let value = match function.body.as_slice() {
             [] => LoweredExpr::Undefined(Span::generated("undefined")),
+            [LoweredStmt::Yield(expr, _)] => {
+                let value =
+                    static_generator_bind_receiver(expr.clone(), receiver_param, receiver_local)?;
+                return Some(Self::generator_next_result(value, false));
+            }
             [LoweredStmt::Return(expr, _)] => static_generator_completion_value(expr)?,
-            body => static_generator_implicit_completion_value(body)?,
+            body => {
+                if let Some(value) = static_generator_first_yield_value(body) {
+                    let value =
+                        static_generator_bind_receiver(value, receiver_param, receiver_local)?;
+                    return Some(Self::generator_next_result(value, false));
+                }
+                static_generator_implicit_completion_value(body)?
+            }
         };
         Some(Self::generator_next_result(value, true))
     }
@@ -2832,6 +2852,44 @@ impl super::super::Resolver {
 
         // super.method
         if receiver_name == "super" {
+            if self.ctx.classes.current_class.is_none() {
+                if !args.is_empty() {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "object method super.method(...) with explicit arguments is not supported in this slice"
+                            .to_owned(),
+                        span: Some(span),
+                        phase: None,
+                    });
+                }
+                let this_local = self.resolve_local("this").map_err(|_| Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "super.method(...) requires class context or object method receiver"
+                        .to_owned(),
+                    span: Some(span),
+                    phase: None,
+                })?;
+                let this_expr = LoweredExpr::Local(this_local, Span::generated("local"));
+                let callee = object_kernel::ordinary_get(
+                    object_kernel::ordinary_get_prototype_of(
+                        this_expr.clone(),
+                        Span::generated("object_home_proto"),
+                    ),
+                    method,
+                    span,
+                );
+                let mut lowered_args = vec![callee, this_expr];
+                lowered_args.extend(
+                    args.iter()
+                        .map(|e| self.lower_expr(e))
+                        .collect::<Result<Vec<_>, _>>()?,
+                );
+                return Ok(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::HeapClosureCall,
+                    args: lowered_args,
+                    span: Span::generated("runtime_call"),
+                });
+            }
             let class_name = self
                 .ctx
                 .classes
@@ -3798,6 +3856,108 @@ fn static_generator_completion_value(expr: &LoweredExpr) -> Option<LoweredExpr> 
         | LoweredExpr::Bool(..)
         | LoweredExpr::Null(..)
         | LoweredExpr::Undefined(..) => Some(expr.clone()),
+        _ => None,
+    }
+}
+
+fn static_generator_first_yield_value(body: &[LoweredStmt]) -> Option<LoweredExpr> {
+    for stmt in body {
+        match stmt {
+            LoweredStmt::Yield(expr, _) => return Some(expr.clone()),
+            LoweredStmt::Block(stmts, _) => {
+                if let Some(expr) = static_generator_first_yield_value(stmts) {
+                    return Some(expr);
+                }
+            }
+            LoweredStmt::Let(_, expr, _)
+            | LoweredStmt::Assign(_, expr, _)
+            | LoweredStmt::Expr(expr, _)
+                if static_generator_implicit_completion_expr_is_local_only(expr) => {}
+            _ => return None,
+        }
+    }
+    None
+}
+
+fn static_generator_bind_receiver(
+    expr: LoweredExpr,
+    receiver_param: Option<LocalId>,
+    receiver_local: LocalId,
+) -> Option<LoweredExpr> {
+    match expr {
+        LoweredExpr::Local(local, span) if Some(local) == receiver_param => {
+            Some(LoweredExpr::Local(receiver_local, span))
+        }
+        LoweredExpr::Local(..) => None,
+        LoweredExpr::RuntimeCall {
+            intrinsic,
+            args,
+            span,
+        } => Some(LoweredExpr::RuntimeCall {
+            intrinsic,
+            args: args
+                .into_iter()
+                .map(|arg| static_generator_bind_receiver(arg, receiver_param, receiver_local))
+                .collect::<Option<Vec<_>>>()?,
+            span,
+        }),
+        LoweredExpr::PropertyGet { obj, key, span } => Some(LoweredExpr::PropertyGet {
+            obj: Box::new(static_generator_bind_receiver(
+                *obj,
+                receiver_param,
+                receiver_local,
+            )?),
+            key,
+            span,
+        }),
+        LoweredExpr::PropertyGetDynamic { obj, key, span } => {
+            Some(LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(static_generator_bind_receiver(
+                    *obj,
+                    receiver_param,
+                    receiver_local,
+                )?),
+                key: Box::new(static_generator_bind_receiver(
+                    *key,
+                    receiver_param,
+                    receiver_local,
+                )?),
+                span,
+            })
+        }
+        LoweredExpr::Call { kind, args, span } => Some(LoweredExpr::Call {
+            kind,
+            args: args
+                .into_iter()
+                .map(|arg| static_generator_bind_receiver(arg, receiver_param, receiver_local))
+                .collect::<Option<Vec<_>>>()?,
+            span,
+        }),
+        LoweredExpr::ObjectNew {
+            props,
+            non_enumerable,
+            span,
+        } => Some(LoweredExpr::ObjectNew {
+            props: props
+                .into_iter()
+                .map(|(key, value)| {
+                    Some((
+                        key,
+                        static_generator_bind_receiver(value, receiver_param, receiver_local)?,
+                    ))
+                })
+                .collect::<Option<Vec<_>>>()?,
+            non_enumerable,
+            span,
+        }),
+        LoweredExpr::Number(..)
+        | LoweredExpr::DecimalNumber(..)
+        | LoweredExpr::BigIntLiteral { .. }
+        | LoweredExpr::String(..)
+        | LoweredExpr::Bool(..)
+        | LoweredExpr::Null(..)
+        | LoweredExpr::Undefined(..)
+        | LoweredExpr::ArrowFn { .. } => Some(expr),
         _ => None,
     }
 }

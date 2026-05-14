@@ -508,15 +508,22 @@ impl WatEmitter<'_> {
         ));
         // Dispatch table for NUMBER-tagged direct-local function tokens.
         for function in &self.program.functions {
-            if function.params.is_empty() {
+            if function.params.len() == user_args.len() {
                 writer.push_str(&format!(
                     "{pad}      (if (i32.eq (local.get {payload}) (i32.const {}))\n",
                     DIRECT_LOCAL_TOKEN_PAYLOAD_BASE + function.id.0 as i32
                 ));
-                writer.push_str(&format!(
-                    "{pad}        (then (br $heap_closure_dispatch_done (call ${})))\n",
-                    function_symbol(function.id)
-                ));
+                if user_args.is_empty() {
+                    writer.push_str(&format!(
+                        "{pad}        (then (br $heap_closure_dispatch_done (call ${})))\n",
+                        function_symbol(function.id)
+                    ));
+                } else {
+                    writer.push_str(&format!(
+                        "{pad}        (then (br $heap_closure_dispatch_done (call ${} (local.get {arg_value}))))\n",
+                        function_symbol(function.id)
+                    ));
+                }
                 writer.push_str(&format!("{pad}      )\n"));
             }
         }

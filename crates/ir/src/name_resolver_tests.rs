@@ -657,9 +657,10 @@ mod tests {
     }
 
     #[test]
-    fn test_super_property_access_reports_unsupported() {
-        // super.x in a non-class function expression context should
-        // report issue-5255 instead of bare UnresolvedName.
+    fn test_super_property_access_is_preserved_for_lowering() {
+        // `super` is a special member receiver, not an ordinary binding.
+        // Context validation belongs to lowering, where object methods and
+        // class methods have different valid receiver rules.
         let program = vec![Stmt::Function {
             name: "f".to_string(),
             params: vec![],
@@ -681,15 +682,14 @@ mod tests {
             span: Span { start: 0, end: 20 },
         }];
 
-        let err = name_resolver::resolve_names(&program).unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-5255"));
+        assert!(name_resolver::resolve_names(&program).is_ok());
     }
 
     #[test]
-    fn test_super_index_access_reports_unsupported() {
-        // super['x'] in a non-class function expression context should
-        // report issue-5255 instead of bare UnresolvedName.
+    fn test_super_index_access_is_preserved_for_lowering() {
+        // `super` is a special member receiver, not an ordinary binding.
+        // Context validation belongs to lowering, where object methods and
+        // class methods have different valid receiver rules.
         let program = vec![Stmt::Function {
             name: "f".to_string(),
             params: vec![],
@@ -714,9 +714,7 @@ mod tests {
             span: Span { start: 0, end: 25 },
         }];
 
-        let err = name_resolver::resolve_names(&program).unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-5255"));
+        assert!(name_resolver::resolve_names(&program).is_ok());
     }
 
     #[test]

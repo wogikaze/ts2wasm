@@ -1284,7 +1284,7 @@ impl NameResolver {
                 index,
                 span,
             } => Ok(Expr::Index {
-                object: Box::new(self.resolve_expr(object)?),
+                object: Box::new(self.resolve_member_target(object)?),
                 index: Box::new(self.resolve_expr(index)?),
                 span: *span,
             }),
@@ -1462,14 +1462,9 @@ impl NameResolver {
                 // 'super' is a special keyword, not a regular identifier.
                 // Don't try to resolve it as a variable name.
                 if name == "super" {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message:
-                            "issue-5255: super property access is not supported in this milestone"
-                                .to_owned(),
-                        span: Some(*span),
-
-                        phase: None,
+                    return Ok(Expr::Ident {
+                        name: name.clone(),
+                        span: *span,
                     });
                 }
                 // Validate the identifier exists (function, class, variable, or allowed global)
