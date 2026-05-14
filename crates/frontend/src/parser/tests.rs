@@ -2301,6 +2301,45 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_compound_assignment_computed_property_key_expression() {
+        let program = parse_program("let x = 0; let object = { [x |= 1]: 2 };").unwrap();
+
+        match &program[1] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 1);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::ComputedKey {
+                        key,
+                        value: Expr::Number { value: 2, .. }
+                    } if matches!(
+                        key.as_ref(),
+                        Expr::Assign {
+                            name,
+                            expr,
+                            ..
+                        } if name == "x"
+                            && matches!(
+                                expr.as_ref(),
+                                Expr::Binary {
+                                    op: BinaryOp::BitwiseOr,
+                                    left,
+                                    right,
+                                    ..
+                                } if matches!(left.as_ref(), Expr::Ident { name, .. } if name == "x")
+                                    && matches!(right.as_ref(), Expr::Number { value: 1, .. })
+                            )
+                    )
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_method_shorthand() {
         let program = parse_program("let object = { method() { return 1; } };").unwrap();
 

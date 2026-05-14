@@ -177,31 +177,38 @@ impl Parser {
                 }
             }
         }
-        if matches!(self.peek(), Some(Token::PowerEqual))
-            && let Expr::Ident { name, span } = expr
-        {
-            self.advance();
-            let value = self.assignment()?;
-            let end = value.span().end;
-            let bin = Expr::Binary {
-                left: Box::new(Expr::Ident {
-                    name: name.clone(),
-                    span,
-                }),
-                op: BinaryOp::Power,
-                right: Box::new(value),
-                span: Span {
-                    start: span.start,
-                    end,
-                },
-            };
-            return Ok(Expr::Assign {
-                name,
-                span: Span {
-                    start: span.start,
-                    end,
-                },
-                expr: Box::new(bin),
+        if let Some(op) = self.compound_assignment_operator() {
+            if let Expr::Ident { name, span } = expr {
+                let value = self.assignment()?;
+                let end = value.span().end;
+                let bin = Expr::Binary {
+                    left: Box::new(Expr::Ident {
+                        name: name.clone(),
+                        span,
+                    }),
+                    op,
+                    right: Box::new(value),
+                    span: Span {
+                        start: span.start,
+                        end,
+                    },
+                };
+                return Ok(Expr::Assign {
+                    name,
+                    span: Span {
+                        start: span.start,
+                        end,
+                    },
+                    expr: Box::new(bin),
+                });
+            }
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-236: compound assignment expressions currently support only identifier targets"
+                    .to_owned(),
+                span: Some(expr.span()),
+
+                phase: None,
             });
         }
         if let Some(op) = self.logical_assignment_operator() {
