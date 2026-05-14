@@ -226,7 +226,6 @@ FUNCTION_LENGTH_ALLOWLIST = {
     ("crates/ir/src/lowered/mir_dump.rs", "dump_mir_stmt"): "P14: MIR dump variant coverage dispatch -- 239 lines",
     ("crates/ir/src/lowered/mir_dump.rs", "dump_mir_expr"): "P14: MIR dump variant coverage dispatch -- 298 lines",
     ("crates/ir/src/lowered/mir_dump.rs", "runtime_intrinsic_name"): "P4: dump intrinsic name match -- 332 lines",
-    ("crates/backend-wasm/src/wasm_encoder_backend.rs", "build_single_function"): "I-20260513-HGGTXF: encoder body is 201 lines pending section helper extraction",
     ("crates/ir/src/lowered/hir_to_mir.rs", "lower_hir_expr"): "P7: resolver decomposition -- 206 lines",
     ("crates/ir/src/lowered/resolver/array.rs", "lower_variable_array_callback_method"): "P7: resolver decomposition -- 200+ lines",
     ("crates/ir/src/lowered/resolver/call/method.rs", "lower_mcall_date_string"): "P7: resolver decomposition -- 200+ lines",
