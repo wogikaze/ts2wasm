@@ -6,6 +6,7 @@ mod mir_emit;
 mod runtime;
 mod runtime_arrays;
 mod runtime_async;
+mod runtime_atomics;
 mod runtime_builder;
 mod runtime_builtins_host;
 mod runtime_collections;

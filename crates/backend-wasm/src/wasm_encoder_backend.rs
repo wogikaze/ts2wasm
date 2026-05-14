@@ -221,7 +221,6 @@ fn build_single_function(
     }
 
     let mut func = wasm_encoder::Function::new(local_groups);
-
     for instr in &f.body {
         match instr {
             WasmInstr::LocalGet(i) => {

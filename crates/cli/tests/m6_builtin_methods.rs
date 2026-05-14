@@ -2079,6 +2079,16 @@ fn build_smoke_atomics_intl_stubs() {
 }
 
 #[test]
+fn build_smoke_atomics_complete() {
+    let result = run_fixture("builtins-and-io/atomics-complete.ts");
+    assert!(
+        result.is_ok(),
+        "Atomics complete fixture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_intl_numberformat() {
     let result = run_fixture("builtins-and-io/intl-numberformat.ts");
     assert!(

@@ -141,6 +141,20 @@ pub enum RuntimeFn {
     TypedArrayFromArray,
     /// TypedArray.prototype.set(source, offset?) for the array-backed TypedArray subset.
     TypedArraySet,
+    /// Atomics helpers for the array-backed Int32Array subset.
+    AtomicsElementPtr,
+    AtomicsLoad,
+    AtomicsStore,
+    AtomicsAdd,
+    AtomicsSub,
+    AtomicsAnd,
+    AtomicsOr,
+    AtomicsXor,
+    AtomicsExchange,
+    AtomicsCompareExchange,
+    AtomicsIsLockFree,
+    AtomicsWait,
+    AtomicsNotify,
     SetFromArray,
     SetValuesArray,
     SetPrototypeAddGet,
@@ -1147,6 +1161,8 @@ const MAP_ENTRIES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const MAP_ENTRY_PAIRS_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const TYPED_ARRAY_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Index];
 const TYPED_ARRAY_SET_DEPS: &[RuntimeFn] = &[RuntimeFn::GetLength, RuntimeFn::Index];
+const ATOMICS_VALUE_DEPS: &[RuntimeFn] = &[RuntimeFn::AtomicsElementPtr, RuntimeFn::NumberFromI32];
+const ATOMICS_NO_DEPS: &[RuntimeFn] = &[];
 const ARRAYBUFFER_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATAVIEW_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATE_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
@@ -1397,6 +1413,19 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MapEntryPairsArray" => Some(RuntimeFn::MapEntryPairsArray),
         "TypedArrayFromArray" => Some(RuntimeFn::TypedArrayFromArray),
         "TypedArraySet" => Some(RuntimeFn::TypedArraySet),
+        "AtomicsElementPtr" => Some(RuntimeFn::AtomicsElementPtr),
+        "AtomicsLoad" => Some(RuntimeFn::AtomicsLoad),
+        "AtomicsStore" => Some(RuntimeFn::AtomicsStore),
+        "AtomicsAdd" => Some(RuntimeFn::AtomicsAdd),
+        "AtomicsSub" => Some(RuntimeFn::AtomicsSub),
+        "AtomicsAnd" => Some(RuntimeFn::AtomicsAnd),
+        "AtomicsOr" => Some(RuntimeFn::AtomicsOr),
+        "AtomicsXor" => Some(RuntimeFn::AtomicsXor),
+        "AtomicsExchange" => Some(RuntimeFn::AtomicsExchange),
+        "AtomicsCompareExchange" => Some(RuntimeFn::AtomicsCompareExchange),
+        "AtomicsIsLockFree" => Some(RuntimeFn::AtomicsIsLockFree),
+        "AtomicsWait" => Some(RuntimeFn::AtomicsWait),
+        "AtomicsNotify" => Some(RuntimeFn::AtomicsNotify),
         "ArrayBufferNew" => Some(RuntimeFn::ArrayBufferNew),
         "ArrayBufferIsView" => Some(RuntimeFn::ArrayBufferIsView),
         "DataViewNew" => Some(RuntimeFn::DataViewNew),
@@ -1937,6 +1966,19 @@ impl RuntimeFn {
             | Self::NumberCoerce => RuntimeDomain::TypeCoercion,
             Self::TypedArrayFromArray
             | Self::TypedArraySet
+            | Self::AtomicsElementPtr
+            | Self::AtomicsLoad
+            | Self::AtomicsStore
+            | Self::AtomicsAdd
+            | Self::AtomicsSub
+            | Self::AtomicsAnd
+            | Self::AtomicsOr
+            | Self::AtomicsXor
+            | Self::AtomicsExchange
+            | Self::AtomicsCompareExchange
+            | Self::AtomicsIsLockFree
+            | Self::AtomicsWait
+            | Self::AtomicsNotify
             | Self::DataViewNew
             | Self::DataViewGetInt8
             | Self::DataViewSetInt8
@@ -2074,6 +2116,15 @@ impl RuntimeFn {
             Self::PropertyGet
             | Self::PropertyDelete
             | Self::PropertyHas
+            | Self::AtomicsElementPtr
+            | Self::AtomicsStore
+            | Self::AtomicsAdd
+            | Self::AtomicsSub
+            | Self::AtomicsAnd
+            | Self::AtomicsOr
+            | Self::AtomicsXor
+            | Self::AtomicsExchange
+            | Self::AtomicsNotify
             | Self::TypedArraySet
             | Self::StringRaw
             | Self::DataViewGetInt16
@@ -2096,6 +2147,11 @@ impl RuntimeFn {
 
             // 4 params, 1 result
             Self::PropertySet => RuntimeSignature {
+                params: 4,
+                results: 1,
+            },
+
+            Self::AtomicsCompareExchange | Self::AtomicsWait => RuntimeSignature {
                 params: 4,
                 results: 1,
             },
@@ -2240,6 +2296,19 @@ impl RuntimeFn {
             Self::MapEntryPairsArray,
             Self::TypedArrayFromArray,
             Self::TypedArraySet,
+            Self::AtomicsElementPtr,
+            Self::AtomicsLoad,
+            Self::AtomicsStore,
+            Self::AtomicsAdd,
+            Self::AtomicsSub,
+            Self::AtomicsAnd,
+            Self::AtomicsOr,
+            Self::AtomicsXor,
+            Self::AtomicsExchange,
+            Self::AtomicsCompareExchange,
+            Self::AtomicsIsLockFree,
+            Self::AtomicsWait,
+            Self::AtomicsNotify,
             Self::SetFromArray,
             Self::SetValuesArray,
             Self::SetPrototypeAddGet,
@@ -2633,6 +2702,19 @@ impl RuntimeFn {
             Self::MapEntryPairsArray,
             Self::TypedArrayFromArray,
             Self::TypedArraySet,
+            Self::AtomicsElementPtr,
+            Self::AtomicsLoad,
+            Self::AtomicsStore,
+            Self::AtomicsAdd,
+            Self::AtomicsSub,
+            Self::AtomicsAnd,
+            Self::AtomicsOr,
+            Self::AtomicsXor,
+            Self::AtomicsExchange,
+            Self::AtomicsCompareExchange,
+            Self::AtomicsIsLockFree,
+            Self::AtomicsWait,
+            Self::AtomicsNotify,
             Self::SetFromArray,
             Self::SetValuesArray,
             Self::SetPrototypeAddGet,
