@@ -1,0 +1,22 @@
+// Math trig/log with non-integer results — compare with Node output
+console.log(Math.sin(Math.PI / 2));
+console.log(Math.cos(Math.PI));
+console.log(Math.tan(Math.PI / 4));
+console.log(Math.asin(0.5));
+console.log(Math.acos(0.5));
+console.log(Math.atan(1));
+console.log(Math.atan2(1, 1));
+console.log(Math.log(Math.E));
+console.log(Math.log2(8));
+console.log(Math.log10(100));
+console.log(Math.exp(1));
+console.log(Math.expm1(1));
+console.log(Math.sinh(1));
+console.log(Math.cosh(1));
+console.log(Math.tanh(1));
+console.log(Math.asinh(1));
+console.log(Math.acosh(2));
+console.log(Math.atanh(0.5));
+console.log(Math.hypot(3, 4));
+console.log(Math.fround(1.5));
+console.log(Math.cbrt(2));

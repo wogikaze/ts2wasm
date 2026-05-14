@@ -11,6 +11,27 @@ fn console_log_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn console_supplementary_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/console-supplementary.ts");
+}
+
+#[test]
+fn console_unsupported_methods_report_console_diagnostics() {
+    for (fixture, method) in [(
+        "fixtures/builtins-and-io/console-unsupported-methods.ts",
+        "trace",
+    )] {
+        // First method in the fixture triggers the diagnostic
+        assert_build_fails_with_diagnostic(
+            fixture,
+            "[UnsupportedBuiltin]",
+            &format!("console.{} is not supported in this milestone", method),
+            true,
+        );
+    }
+}
+
+#[test]
 fn m2_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/primitives-control-flow/number.ts",
@@ -2304,6 +2325,28 @@ fn typedarray_constructors_matches_node_output() {
 }
 
 #[test]
+fn typedarray_index_of_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/typedarray-index-of.ts");
+}
+
+#[test]
+fn typedarray_mutating_methods_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/typedarray-mutating-methods.ts");
+}
+
+#[test]
+fn typedarray_unsupported_methods_report_unsupported_syntax() {
+    for fixture in ["fixtures/builtins-and-io/typedarray-unsupported-methods.ts"] {
+        assert_build_fails_with_diagnostic(
+            fixture,
+            "[UnsupportedSyntax",
+            "method `Uint8Array.join` not found",
+            true,
+        );
+    }
+}
+
+#[test]
 fn arraybuffer_dataview_basic_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/arraybuffer-dataview-basic.ts");
 }
@@ -2495,6 +2538,36 @@ fn date_epoch_constructor_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn date_set_time_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/date-set-time.ts");
+}
+
+#[test]
+fn date_set_utc_methods_report_unsupported_date() {
+    for (fixture, method) in [(
+        "fixtures/builtins-and-io/date-set-utc-methods.ts",
+        "setUTCFullYear",
+    )] {
+        assert_build_fails_with_diagnostic(
+            fixture,
+            "[UnsupportedDate",
+            &format!("method `Date.{}` not found", method),
+            true,
+        );
+    }
+}
+
+#[test]
+fn date_set_local_methods_report_unsupported_date() {
+    for (fixture, method) in [(
+        "fixtures/builtins-and-io/date-set-local-methods.ts",
+        "setFullYear",
+    )] {
+        assert_build_fails_with_diagnostic(
+            fixture,
+            "[UnsupportedDate",
+            &format!("method `Date.{}` not found", method),
+            true,
+        );
+    }
 }
 
 #[test]
@@ -3665,6 +3738,11 @@ fn math_sqrt_matches_node() {
 #[test]
 fn math_trunc_sign_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/math-trunc-sign.ts");
+}
+
+#[test]
+fn math_non_integer_trig_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/math-non-integer-trig.ts");
 }
 
 #[test]
