@@ -57,10 +57,31 @@ def usage():
     print("Exit 1 on first invalid line.")
 
 
-def validate_stream(lines):
+def validate_records(lines):
+    """Validate JSONL test record lines.
+
+    Supports both schema v1 (legacy) and schema v2 records.
+
+    Schema v1 validation: confirms ``suite``, ``case``, ``target``, ``status``
+    are present and status is one of the canonical legacy statuses.
+
+    Schema v2 validation (``schema_version`` == 2): additionally validates
+    ``outcome``, ``phase``, ``build_pass`` (bool), ``semantic_checked`` (bool),
+    and verifies the ``status``-``outcome`` mapping is correct.
+
+    Returns ``True`` if all lines pass, ``False`` otherwise.
+    """
     line_no = 0
-    valid_statuses = {"pass", "build_pass", "fail", "unsupported", "blocked", "skip-with-reason"}
+    valid_statuses = {"pass", "build_pass", "fail", "unsupported", "blocked", "skip-with-reason", "runtime_error", "oracle_skipped"}
     reason_required_statuses = {"unsupported", "blocked", "skip-with-reason"}
+
+    # Schema v2 outcome values (from CoverageOutcome enum)
+    valid_outcomes = {
+        "build_pass", "semantic_pass", "semantic_mismatch", "runtime_error",
+        "unsupported", "blocked", "internal_failure",
+        "verified_negative_compile", "unverified_negative_compile",
+        "oracle_skipped", "skip_with_reason",
+    }
 
     for line in lines:
         line_no += 1
@@ -87,6 +108,37 @@ def validate_stream(lines):
             print(f"check_test_records_schema: line {line_no}: invalid status: {status}",
                   file=sys.stderr)
             return False
+
+        # Schema v2 validation
+        schema_version = data.get("schema_version")
+        if schema_version == 2:
+            # outcome must be present and valid
+            outcome = data.get("outcome")
+            if not outcome:
+                print(f"check_test_records_schema: line {line_no}: schema v2 requires "
+                      f"non-empty 'outcome' field", file=sys.stderr)
+                return False
+            if outcome not in valid_outcomes:
+                print(f"check_test_records_schema: line {line_no}: invalid outcome: {outcome}",
+                      file=sys.stderr)
+                return False
+
+            # build_pass must be boolean
+            bp = data.get("build_pass")
+            if bp is None or not isinstance(bp, bool):
+                print(f"check_test_records_schema: line {line_no}: schema v2 requires "
+                      f"boolean 'build_pass'", file=sys.stderr)
+                return False
+
+            # semantic_checked must be boolean
+            sc = data.get("semantic_checked")
+            if sc is None or not isinstance(sc, bool):
+                print(f"check_test_records_schema: line {line_no}: schema v2 requires "
+                      f"boolean 'semantic_checked'", file=sys.stderr)
+                return False
+
+            # phase is recommended for v2
+            # (not strictly required, but noted for completeness)
 
         # status=pass requires strict fields
         if status == "pass":
@@ -175,9 +227,28 @@ def main():
             '{"suite":"self","case":"skip","target":"wasm32-wasi",'
             '"status":"skip-with-reason","expected":null,"actual":null,'
             '"reason":"skipped","tracking":"feature:skip"}',
+            # Schema v2: semantic_pass
+            '{"build_pass":true,"case":"v2-pass","expected":"ok","actual":"ok",'
+            '"outcome":"semantic_pass","schema_version":2,"semantic_checked":true,'
+            '"status":"pass","suite":"self","target":"wasm-iwasm"}',
+            # Schema v2: unsupported
+            '{"build_pass":false,"case":"v2-unsupported","outcome":"unsupported",'
+            '"reason":"unsupported syntax","schema_version":2,"semantic_checked":false,'
+            '"status":"unsupported","suite":"self","target":"wasm32-wasi",'
+            '"tracking":"feature:generator"}',
+            # Schema v2: runtime_error
+            '{"build_pass":true,"case":"v2-runtime","iwasm_exit_status":1,'
+            '"outcome":"runtime_error","schema_version":2,"semantic_checked":false,'
+            '"status":"runtime_error","suite":"self","target":"wasm-iwasm",'
+            '"reason":"iwasm trap"}',
+            # Schema v2: build_pass
+            '{"build_pass":true,"case":"v2-build_pass",'
+            '"outcome":"build_pass","schema_version":2,"semantic_checked":false,'
+            '"status":"build_pass","suite":"self","target":"wasm-iwasm",'
+            '"reason":"build succeeded, no oracle"}',
         ]
-        if validate_stream(test_data):
-            print("check_test_records_schema: self-test OK (canonical 5-status schema)", file=sys.stderr)
+        if validate_records(test_data):
+            print("check_test_records_schema: self-test OK (canonical 5-status schema + schema v2)", file=sys.stderr)
             sys.exit(0)
         else:
             sys.exit(1)
@@ -185,14 +256,14 @@ def main():
     input_source = args[0] if args else "-"
 
     if input_source == "-":
-        validate_stream(sys.stdin)
+        validate_records(sys.stdin)
     else:
         input_path = REPO_ROOT / input_source
         if not input_path.exists():
             print(f"check_test_records_schema: not a file: {input_source}", file=sys.stderr)
             sys.exit(1)
         with open(input_path) as f:
-            validate_stream(f)
+            validate_records(f)
 
 
 if __name__ == "__main__":

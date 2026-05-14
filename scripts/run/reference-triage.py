@@ -20,15 +20,23 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
-from ts2wasm_binary import resolve_ts2wasm_binary
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
-TS2WASM_BINARY = resolve_ts2wasm_binary()
-REFERENCE_ROOT = Path(os.environ.get("TS2WASM_REFERENCE_ROOT", REPO_ROOT / "reference")).resolve()
+sys.path.insert(0, str(REPO_ROOT / "scripts" / "lib"))
+
+# Lazy resolve: defer binary lookup until needed (--help should not require the binary)
+_TS2WASM_BINARY = None
+
+def _get_ts2wasm_binary():
+    global _TS2WASM_BINARY
+    if _TS2WASM_BINARY is None:
+        from ts2wasm_binary import resolve_ts2wasm_binary
+        _TS2WASM_BINARY = resolve_ts2wasm_binary()
+    return _TS2WASM_BINARY
 
 
-def load_reference_coverage_module() -> Any:
+def _get_reference_coverage():
+    """Lazy load the reference-coverage module (deferred until needed)."""
+    import importlib.util
     module_path = REPO_ROOT / "scripts" / "run" / "reference-coverage.py"
     spec = importlib.util.spec_from_file_location("reference_coverage", module_path)
     if spec is None or spec.loader is None:
@@ -38,8 +46,32 @@ def load_reference_coverage_module() -> Any:
     return module
 
 
-REFERENCE_COVERAGE = load_reference_coverage_module()
-REFERENCE_COVERAGE._ensure_test262_runner()  # lazy init for test262_runner
+REFERENCE_ROOT = Path(os.environ.get("TS2WASM_REFERENCE_ROOT", REPO_ROOT / "reference")).resolve()
+
+
+def _load_reference_coverage():
+    """Slim helper: return the lazily-loaded reference-coverage module."""
+    ref_cov = _get_reference_coverage()
+    ref_cov._ensure_test262_runner()
+    return ref_cov
+
+
+def _suite_metadata():
+    return _get_reference_coverage().SUITE_METADATA
+
+
+def _feature_label(code, stderr, path):
+    return _get_reference_coverage().feature_label(code, stderr, str(path))
+
+
+def _test262_runner():
+    ref_cov = _get_reference_coverage()
+    ref_cov._ensure_test262_runner()
+    return ref_cov.test262_runner
+
+
+def _test262_harness_dir_for(path):
+    return _get_reference_coverage().test262_harness_dir_for(path)
 
 
 @dataclass
@@ -124,7 +156,7 @@ def resolve_input(suite: str, raw_path: str) -> Path:
     else:
         candidates.append(REPO_ROOT / path)
         candidates.append(REFERENCE_ROOT / raw_path.removeprefix("reference/"))
-        suite_config = REFERENCE_COVERAGE.SUITE_METADATA.get(suite)
+        suite_config = _suite_metadata().get(suite)
         if suite_config:
             candidates.append(suite_config["path"] / raw_path)
 
@@ -206,7 +238,7 @@ def parse_diagnostic(returncode: int, stderr: str, source: str, path: Path) -> D
     span_start = int(span_match.group(1)) if span_match else None
     span_end = int(span_match.group(2)) if span_match else None
     line, column = offset_to_line_col(source, span_start)
-    feature_label = REFERENCE_COVERAGE.feature_label(code, stderr, str(path))
+    feature_label = _feature_label(code, stderr, str(path))
 
     if code == "UnsupportedSyntax":
         error_type = "parser-or-frontend-unsupported"
@@ -277,7 +309,7 @@ def extract_stack_trace(stderr: str) -> list[str]:
 
 def dump_phase(path: Path, phase: str, max_chars: int) -> dict[str, Any]:
     result = run_command(
-        [str(TS2WASM_BINARY), "dump", phase, str(path)],
+        [str(_get_ts2wasm_binary()), "dump", phase, str(path)],
         timeout_seconds=12,
     )
     output = result.stdout if result.returncode == 0 else result.stderr
@@ -446,14 +478,15 @@ def prepare_triage_input(
     if suite != "test262":
         return path, path, source, source
 
-    metadata = REFERENCE_COVERAGE.test262_runner.parse_test262_metadata(source)
-    REFERENCE_COVERAGE.test262_runner.HARNESS_DIR = REFERENCE_COVERAGE.test262_harness_dir_for(path)
+    runner = _test262_runner()
+    metadata = runner.parse_test262_metadata(source)
+    runner.HARNESS_DIR = _test262_harness_dir_for(path)
     build_input = tmp_dir / "test262-triage-wasm-input.js"
     node_input = tmp_dir / "test262-triage-node-input.js"
-    build_source = REFERENCE_COVERAGE.test262_runner.build_test262_source(
+    build_source = runner.build_test262_source(
         path, source, metadata, target="wasm"
     )
-    node_source = REFERENCE_COVERAGE.test262_runner.build_test262_source(
+    node_source = runner.build_test262_source(
         path, source, metadata, target="node"
     )
     build_input.write_text(build_source, encoding="utf-8")
@@ -472,7 +505,7 @@ def build_report(suite: str, path: Path, max_dump_chars: int) -> TriageReport:
         )
         out_wasm = Path(tmp_dir) / "out.wasm"
         build = run_command(
-            [str(TS2WASM_BINARY), "build", str(build_input), "-o", str(out_wasm)],
+            [str(_get_ts2wasm_binary()), "build", str(build_input), "-o", str(out_wasm)],
             timeout_seconds=12,
         )
         diagnostic = parse_diagnostic(build.returncode, build.stderr, diagnostic_source, build_input)
@@ -578,9 +611,14 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     parser.add_argument("--max-dump-chars", type=int, default=5000)
-    parser.add_argument("suite", choices=sorted(REFERENCE_COVERAGE.SUITE_METADATA.keys()))
-    parser.add_argument("path")
-    return parser.parse_args(argv)
+    parser.add_argument("suite", metavar="suite")
+    parser.add_argument("path", metavar="path")
+    known = parser.parse_args(argv)
+    # Validate suite against lazy-loaded metadata (not at module import time)
+    valid_suites = list(_suite_metadata().keys())
+    if known.suite not in valid_suites:
+        parser.error(f"invalid suite '{known.suite}'; choose from {sorted(valid_suites)}")
+    return known
 
 
 def main(argv: list[str]) -> int:
