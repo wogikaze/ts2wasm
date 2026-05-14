@@ -80,6 +80,20 @@ impl<'a> Lexer<'a> {
         let value = match self.number_value(&digits, radix, start) {
             Ok(v) => v,
             Err(_) => {
+                if radix == 10
+                    && self.source[start..self.cursor].contains(['e', 'E'])
+                    && let Some(value) = canonical_positive_exponent_literal(
+                        &self.source[start..self.cursor],
+                    )
+                {
+                    return Ok(SpannedToken {
+                        kind: Token::DecimalNumber(value),
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
+                }
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "number too large".to_owned(),
@@ -470,4 +484,13 @@ impl<'a> Lexer<'a> {
 
         Ok(())
     }
+}
+
+fn canonical_positive_exponent_literal(source: &str) -> Option<String> {
+    let (mantissa, exponent) = source.split_once(['e', 'E'])?;
+    let exponent = exponent.strip_prefix('+').unwrap_or(exponent);
+    if exponent.starts_with('-') || exponent.is_empty() {
+        return None;
+    }
+    Some(format!("{mantissa}e+{exponent}").replace('_', ""))
 }

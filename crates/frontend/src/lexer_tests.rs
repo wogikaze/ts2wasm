@@ -189,6 +189,20 @@ mod tests {
     }
 
     #[test]
+    fn recognizes_oversized_positive_decimal_exponent_as_decimal_token() {
+        let tokens = Lexer::new("let huge = 1e55;").tokenize().unwrap();
+        let decimals: Vec<&str> = tokens
+            .iter()
+            .filter_map(|token| match &token.kind {
+                Token::DecimalNumber(value) => Some(value.as_str()),
+                _ => None,
+            })
+            .collect();
+
+        assert_eq!(decimals, ["1e+55"]);
+    }
+
+    #[test]
     fn hex_literal_accepts_unsigned_32_bit_masks() {
         let tokens = Lexer::new("let mask = 0xefcdab89; let all = 0xffffffff;")
             .tokenize()

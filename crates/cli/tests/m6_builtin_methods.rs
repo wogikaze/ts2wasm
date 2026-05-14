@@ -303,6 +303,16 @@ fn build_smoke_object_literal_computed_number_method_call() {
 }
 
 #[test]
+fn build_smoke_object_literal_computed_large_exponent_key() {
+    let result = run_fixture("core-expressions/object-literal-computed-large-exponent-key.ts");
+    assert!(
+        result.is_ok(),
+        "object literal computed large exponent key should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_literal_symbol_method_call() {
     let result = run_fixture("core-expressions/object-literal-symbol-method-call.ts");
     assert!(

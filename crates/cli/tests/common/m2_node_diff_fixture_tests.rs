@@ -3709,6 +3709,7 @@ fn core_expression_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-expressions/object-literal-computed-method-call.ts",
         "fixtures/core-expressions/object-literal-computed-identity-method-call.ts",
         "fixtures/core-expressions/object-literal-computed-number-method-call.ts",
+        "fixtures/core-expressions/object-literal-computed-large-exponent-key.ts",
         "fixtures/core-expressions/object-literal-symbol-method-call.ts",
         "fixtures/core-expressions/object-literal-computed-spread.ts",
         "fixtures/core-expressions/object-literal-proto.ts",
