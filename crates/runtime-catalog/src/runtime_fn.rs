@@ -125,6 +125,13 @@ pub enum RuntimeFn {
     SetSize,
     SetClear,
     SetForEach,
+    SetIsDisjointFrom,
+    SetIsSubsetOf,
+    SetIsSupersetOf,
+    SetUnion,
+    SetIntersection,
+    SetDifference,
+    SetSymmetricDifference,
     MapClear,
     MapSize,
     MapForEach,
@@ -1122,29 +1129,16 @@ const SET_CLEAR_DEPS: &[RuntimeFn] = &[];
 const SET_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::SetNew, RuntimeFn::SetAdd];
 const SET_VALUES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const SET_FOR_EACH_DEPS: &[RuntimeFn] = &[];
-const SET_IS_DISJOINT_FROM_DEPS: &[RuntimeFn] = &[RuntimeFn::SetHas, RuntimeFn::StrictEqual];
-const SET_IS_SUBSET_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::SetHas, RuntimeFn::StrictEqual];
-const SET_IS_SUPERSET_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::SetHas, RuntimeFn::StrictEqual];
-const SET_UNION_DEPS: &[RuntimeFn] =
-    &[RuntimeFn::SetNew, RuntimeFn::SetAdd, RuntimeFn::StrictEqual];
-const SET_INTERSECTION_DEPS: &[RuntimeFn] = &[
-    RuntimeFn::SetNew,
-    RuntimeFn::SetAdd,
-    RuntimeFn::SetHas,
-    RuntimeFn::StrictEqual,
-];
-const SET_DIFFERENCE_DEPS: &[RuntimeFn] = &[
-    RuntimeFn::SetNew,
-    RuntimeFn::SetAdd,
-    RuntimeFn::SetHas,
-    RuntimeFn::StrictEqual,
-];
-const SET_SYMMETRIC_DIFFERENCE_DEPS: &[RuntimeFn] = &[
-    RuntimeFn::SetNew,
-    RuntimeFn::SetAdd,
-    RuntimeFn::SetHas,
-    RuntimeFn::StrictEqual,
-];
+const SET_IS_DISJOINT_FROM_DEPS: &[RuntimeFn] = &[RuntimeFn::SetHas];
+const SET_IS_SUBSET_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::SetHas];
+const SET_IS_SUPERSET_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::SetHas];
+const SET_UNION_DEPS: &[RuntimeFn] = &[RuntimeFn::SetNew, RuntimeFn::SetAdd, RuntimeFn::SetHas];
+const SET_INTERSECTION_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::SetNew, RuntimeFn::SetAdd, RuntimeFn::SetHas];
+const SET_DIFFERENCE_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::SetNew, RuntimeFn::SetAdd, RuntimeFn::SetHas];
+const SET_SYMMETRIC_DIFFERENCE_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::SetNew, RuntimeFn::SetAdd, RuntimeFn::SetHas];
 const MAP_VALUES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const MAP_CLEAR_DEPS: &[RuntimeFn] = &[];
 const MAP_SIZE_DEPS: &[RuntimeFn] = &[];
@@ -1389,6 +1383,13 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "SetSize" => Some(RuntimeFn::SetSize),
         "SetClear" => Some(RuntimeFn::SetClear),
         "SetForEach" => Some(RuntimeFn::SetForEach),
+        "SetIsDisjointFrom" => Some(RuntimeFn::SetIsDisjointFrom),
+        "SetIsSubsetOf" => Some(RuntimeFn::SetIsSubsetOf),
+        "SetIsSupersetOf" => Some(RuntimeFn::SetIsSupersetOf),
+        "SetUnion" => Some(RuntimeFn::SetUnion),
+        "SetIntersection" => Some(RuntimeFn::SetIntersection),
+        "SetDifference" => Some(RuntimeFn::SetDifference),
+        "SetSymmetricDifference" => Some(RuntimeFn::SetSymmetricDifference),
         "MapClear" => Some(RuntimeFn::MapClear),
         "MapSize" => Some(RuntimeFn::MapSize),
         "MapForEach" => Some(RuntimeFn::MapForEach),
@@ -1724,6 +1725,13 @@ impl RuntimeFn {
             | Self::SetSize
             | Self::SetClear
             | Self::SetForEach
+            | Self::SetIsDisjointFrom
+            | Self::SetIsSubsetOf
+            | Self::SetIsSupersetOf
+            | Self::SetUnion
+            | Self::SetIntersection
+            | Self::SetDifference
+            | Self::SetSymmetricDifference
             | Self::MapClear
             | Self::MapSize
             | Self::MapForEach
@@ -2218,6 +2226,13 @@ impl RuntimeFn {
             Self::SetSize,
             Self::SetClear,
             Self::SetForEach,
+            Self::SetIsDisjointFrom,
+            Self::SetIsSubsetOf,
+            Self::SetIsSupersetOf,
+            Self::SetUnion,
+            Self::SetIntersection,
+            Self::SetDifference,
+            Self::SetSymmetricDifference,
             Self::MapClear,
             Self::MapSize,
             Self::MapForEach,
@@ -2604,6 +2619,13 @@ impl RuntimeFn {
             Self::SetSize,
             Self::SetClear,
             Self::SetForEach,
+            Self::SetIsDisjointFrom,
+            Self::SetIsSubsetOf,
+            Self::SetIsSupersetOf,
+            Self::SetUnion,
+            Self::SetIntersection,
+            Self::SetDifference,
+            Self::SetSymmetricDifference,
             Self::MapClear,
             Self::MapSize,
             Self::MapForEach,

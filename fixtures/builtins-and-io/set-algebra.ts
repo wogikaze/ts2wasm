@@ -1,44 +1,39 @@
-let a = new Set();
-a.add(1);
-a.add(2);
-a.add(3);
+// Set algebraic methods: isDisjointFrom, isSubsetOf, isSupersetOf,
+// union, intersection, difference, symmetricDifference
 
-let b = new Set();
-b.add(2);
-b.add(3);
-b.add(4);
+let s1 = new Set<number>();
+s1.add(1);
+s1.add(2);
+s1.add(3);
 
-let empty = new Set();
+let s2 = new Set<number>();
+s2.add(3);
+s2.add(4);
+s2.add(5);
+
+let s3 = new Set<number>();
+s3.add(4);
+s3.add(5);
+s3.add(6);
 
 // isDisjointFrom
-console.log(a.isDisjointFrom(b));   // false (share 2, 3)
-console.log(a.isDisjointFrom(empty)); // true
+console.log(s1.isDisjointFrom(s2));
+console.log(s1.isDisjointFrom(s3));
+console.log(s1.isDisjointFrom(new Set()));
 
 // isSubsetOf
-console.log(a.isSubsetOf(b));   // false (1 not in b)
-console.log(empty.isSubsetOf(a)); // true
-let c = new Set();
-c.add(2);
-c.add(3);
-console.log(c.isSubsetOf(a));   // true (2,3 are in a)
+console.log(s1.isSubsetOf(s2));
+console.log(s1.isSubsetOf(s1));
+console.log(new Set().isSubsetOf(s1));
 
 // isSupersetOf
-console.log(a.isSupersetOf(c));   // true (a contains 2,3)
-console.log(a.isSupersetOf(b));   // false (4 not in a)
-console.log(a.isSupersetOf(empty)); // true
+console.log(s1.isSupersetOf(s2));
+console.log(s1.isSupersetOf(s1));
+console.log(s1.isSupersetOf(new Set()));
 
-// union — check results via iteration on original sets
-let u = a.union(b);
-console.log("union_done");
-
-// intersection
-let i = a.intersection(b);
-console.log("intersection_done");
-
-// difference
-let d = a.difference(b);
-console.log("difference_done");
-
-// symmetricDifference
-let sd = a.symmetricDifference(b);
-console.log("symdiff_done");
+// union, intersection, difference, symmetricDifference
+// (return Set — compile-time validation in build_smoke test)
+s1.union(s2);
+s1.intersection(s2);
+s1.difference(s2);
+s1.symmetricDifference(s2);

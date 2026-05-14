@@ -1826,6 +1826,25 @@ impl super::super::Resolver {
             }));
         }
 
+        // new C().method() — route through runtime_fn for Map/Set/Array collection methods
+        if let ResolvedExpr::New { class_name, .. } = object
+            && let Some(intrinsic) = collection_method_runtime_fn(class_name, method)
+        {
+            let lowered_receiver = self.lower_expr(object)?;
+            let mut lowered_args = vec![lowered_receiver];
+            lowered_args.extend(
+                args.iter()
+                    .map(|e| self.lower_expr(e))
+                    .collect::<Result<Vec<_>, _>>()?,
+            );
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic,
+                args: lowered_args,
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+
         // new C().method() — lower through class method dispatch
         if let ResolvedExpr::New { class_name, .. } = object
             && let Some(method_id) = self.resolve_class_method(class_name, method)
