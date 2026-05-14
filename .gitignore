@@ -1,6 +1,8 @@
 # project files
 reference/*
 !reference/README.md
+!reference/corpus-lock.json
+!reference/lock.json
 
 # whats this
 .codex

@@ -113,14 +113,13 @@ mod tests {
             Err(_) => {
                 // No compat archive yet: write it if BLESS env is set
                 if std::env::var("BLESS").is_ok() {
-                    std::fs::write(&compat_path, &json)
-                        .unwrap_or_else(|e| panic!("failed to write compat archive {compat_path}: {e}"));
+                    std::fs::write(&compat_path, &json).unwrap_or_else(|e| {
+                        panic!("failed to write compat archive {compat_path}: {e}")
+                    });
                     eprintln!("wrote compat archive: {compat_path}");
                 } else {
                     // First run without archive: just verify JSON structure
-                    eprintln!(
-                        "note: no compat archive at {compat_path}; run BLESS=1 to create it"
-                    );
+                    eprintln!("note: no compat archive at {compat_path}; run BLESS=1 to create it");
                 }
             }
         }

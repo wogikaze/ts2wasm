@@ -1,3 +1,6 @@
+# schema_version: 1
+# suite: test262
+# purpose: Gate E deterministic probing subset
 # Deterministic test262 subset for issue 022 Gate E probing.
 # Entries are repo-relative paths selected from official test262 language tests.
 # They were verified as build-pass and semantic-pass on 2026-04-28 with:

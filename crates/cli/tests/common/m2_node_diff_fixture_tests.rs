@@ -4326,3 +4326,19 @@ fn set_algebra_matches_node_output() {
 fn date_methods_comprehensive_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/date-methods-comprehensive.ts");
 }
+
+// URI encode/decode/conformance (encodeURI, decodeURI, encodeURIComponent, decodeURIComponent)
+#[test]
+fn global_encode_uri_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-encode-uri.ts");
+}
+
+#[test]
+fn global_decode_uri_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-decode-uri.ts");
+}
+
+#[test]
+fn global_uri_component_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-uri-component.ts");
+}

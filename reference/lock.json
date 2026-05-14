@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "suites": {
+    "test262": {
+      "repo_url": "https://github.com/tc39/test262.git",
+      "commit": "673e9bacbe28590f501e2dcd817aadcc31899191",
+      "root": "reference/test262/test",
+      "denominator": 53469,
+      "file_count": 53469,
+      "required_paths": ["test/language"]
+    },
+    "tsc": {
+      "repo_url": "https://github.com/microsoft/TypeScript.git",
+      "commit": "f350b52331494b68c90ab02e2b6d0828d2a22a74",
+      "root": "reference/typescript/tests/cases/compiler",
+      "denominator": 6419,
+      "file_count": 6419,
+      "required_paths": ["tests/cases/compiler"]
+    },
+    "tsgo": {
+      "repo_url": "https://github.com/microsoft/typescript-go.git",
+      "commit": "f549afa6cabd4c9c228b2b0c086fe31c4884e8d7",
+      "root": "reference/typescript-go/testdata/tests",
+      "denominator": 166,
+      "file_count": 166,
+      "required_paths": ["testdata/tests"]
+    }
+  }
+}

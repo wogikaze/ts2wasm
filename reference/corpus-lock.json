@@ -1,0 +1,32 @@
+{
+  "test262": {
+    "suite": "test262",
+    "root_relative_path": "reference/test262/test",
+    "remote_url": "https://github.com/tc39/test262.git",
+    "commit": "673e9bacbe28590f501e2dcd817aadcc31899191",
+    "content_hash": "49e0fd1c105c22393142bb634b760e90705ea7ff6145dbaa5fcec09fbb379e24",
+    "file_count": 53469,
+    "denominator": 53469,
+    "generated_at": "2026-05-15T00:00:00Z"
+  },
+  "tsc": {
+    "suite": "tsc",
+    "root_relative_path": "reference/typescript/tests/cases/compiler",
+    "remote_url": "https://github.com/microsoft/TypeScript.git",
+    "commit": "f350b52331494b68c90ab02e2b6d0828d2a22a74",
+    "content_hash": "837afc297d4a12410ed4c8f6b146d0e803ac7bdbb310c7ac76270c5476933e92",
+    "file_count": 6419,
+    "denominator": 6419,
+    "generated_at": "2026-05-15T00:00:00Z"
+  },
+  "tsgo": {
+    "suite": "tsgo",
+    "root_relative_path": "reference/typescript-go/testdata/tests",
+    "remote_url": "https://github.com/microsoft/typescript-go.git",
+    "commit": "f549afa6cabd4c9c228b2b0c086fe31c4884e8d7",
+    "content_hash": "f9ca2e2ee84479d42f1437afe3f52b8929e51362fd8d58b25f1d4ba69d99c0e5",
+    "file_count": 166,
+    "denominator": 166,
+    "generated_at": "2026-05-15T00:00:00Z"
+  }
+}
