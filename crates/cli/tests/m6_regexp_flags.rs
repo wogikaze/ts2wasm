@@ -41,17 +41,28 @@ fn run_fixture(path: &str) -> Result<String, String> {
 }
 
 #[test]
-fn regexp_flag_d_reports_issue_202() {
-    let result = run_fixture("builtins-and-io/regexp-flag-d.ts");
+fn regexp_flag_v_reports_issue_202() {
+    // Use the regexp-unsupported-flag.ts fixture which uses flag 'v'
+    let result = run_fixture("core-semantics/regexp-unsupported-flag.ts");
     assert!(
         result.is_err(),
-        "RegExp d flag should produce unsupported diagnostic"
+        "RegExp v flag should produce unsupported diagnostic"
     );
     let err_msg = result.err().unwrap();
     assert!(
-        err_msg.contains("issue-202") && err_msg.contains("unsupported RegExp flag `d`"),
-        "Diagnostic should mention issue-202 unsupported d flag: {}",
+        err_msg.contains("issue-202") && err_msg.contains("unsupported RegExp flag `v`"),
+        "Diagnostic should mention issue-202 unsupported v flag: {}",
         err_msg
+    );
+}
+
+#[test]
+fn regexp_flag_d_is_supported() {
+    let result = run_fixture("builtins-and-io/regexp-flag-d.ts");
+    assert!(
+        result.is_ok(),
+        "RegExp d flag should now be supported: {:?}",
+        result.err()
     );
 }
 
