@@ -150,7 +150,6 @@ FILE_SIZE_ALLOWLIST_1200 = {
     "crates/ir/src/lowered/program.rs": "P7: resolver decomposition",
     "crates/ir/src/lowered/resolver/array.rs": "P7: resolver decomposition",
     "crates/ir/src/lowered/resolver/call/method.rs": "P7: resolver decomposition",
-    "crates/ir/src/lowered/resolver/mod.rs": "I-20260513-HGGTXF: resolver facade pending domain export split",
     "crates/ir/src/lowered/resolver_expr.rs": "P7: resolver decomposition",
     "crates/ir/src/lowered/resolver_extra.rs": "P7: resolver decomposition",
     "crates/ir/src/builtin_resolver.rs": "P7: resolver decomposition",

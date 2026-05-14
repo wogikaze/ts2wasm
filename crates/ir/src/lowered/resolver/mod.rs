@@ -1145,7 +1145,7 @@ impl Resolver {
     }
 }
 
-pub(crate) fn class_maps(
+fn class_maps(
     function_ids: &HashMap<String, FuncId>,
 ) -> (ClassConstructorMap, ClassMethodMap, ClassMethodMap) {
     let mut ctor_ids = HashMap::new();
@@ -1259,7 +1259,7 @@ pub(crate) fn is_array_prototype_push_expr(expr: &ResolvedExpr) -> bool {
     is_array_prototype_push_property(object, key)
 }
 
-pub(crate) fn matches_array_prototype_object(expr: &ResolvedExpr) -> bool {
+fn matches_array_prototype_object(expr: &ResolvedExpr) -> bool {
     let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
         return false;
     };
@@ -1270,7 +1270,7 @@ pub(crate) fn matches_array_prototype_object(expr: &ResolvedExpr) -> bool {
         )
 }
 
-pub(crate) fn matches_set_prototype_object(expr: &ResolvedExpr) -> bool {
+fn matches_set_prototype_object(expr: &ResolvedExpr) -> bool {
     let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
         return false;
     };
