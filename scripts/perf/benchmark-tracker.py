@@ -25,6 +25,7 @@ Options:
                               (default: 20). Alert if new size exceeds
                               previous by this %.
   --skip-build                Skip cargo build step (use existing binary).
+  --json                      Print a stable machine-readable summary to stdout.
   -v, --verbose               Print detailed per-fixture output.
 
 The script always exits 0 (info-only reporting). Regression alerts are
@@ -208,6 +209,7 @@ def main():
     threshold_time_pct = DEFAULT_THRESHOLD_PCT
     threshold_size_pct = DEFAULT_THRESHOLD_PCT
     skip_build = False
+    json_mode = False
     verbose = False
 
     i = 0
@@ -244,6 +246,9 @@ def main():
                 sys.exit(0)
         elif a == "--skip-build":
             skip_build = True
+            i += 1
+        elif a == "--json":
+            json_mode = True
             i += 1
         elif a in ("-v", "--verbose"):
             verbose = True
@@ -335,6 +340,13 @@ def main():
         "total_fixtures_ok": ok_count,
         "total_fixtures_skipped": fail_count,
         "avg_compile_time_ms": total_compile_ms // ok_count if ok_count else 0,
+        "total_compile_time_ms": total_compile_ms,
+        "compiler_throughput_fixtures_per_sec": (
+            round(ok_count / (total_compile_ms / 1000), 3)
+            if total_compile_ms > 0
+            else 0
+        ),
+        "total_wasm_size_bytes": total_size_bytes,
         "max_compile_time_ms": max(r["compile_time_ms"] for r in results) if results else 0,
         "min_compile_time_ms": min(r["compile_time_ms"] for r in results) if results else 0,
         "avg_wasm_size_bytes": total_size_bytes // ok_count if ok_count else 0,
@@ -405,6 +417,7 @@ def main():
             )
 
     record["regressions"] = regressions
+    record["perf_regression"] = bool(regressions)
 
     # Save to output file
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -425,6 +438,10 @@ def main():
     eprint()
     eprint("  --- Averages ---")
     eprint(f"  Avg compile time:  {aggregates['avg_compile_time_ms']} ms")
+    eprint(
+        "  Compiler throughput:"
+        f"  {aggregates['compiler_throughput_fixtures_per_sec']} fixtures/sec"
+    )
     eprint(f"  Max compile time:  {aggregates['max_compile_time_ms']} ms")
     eprint(f"  Min compile time:  {aggregates['min_compile_time_ms']} ms")
     eprint(f"  Avg wasm size:     {aggregates['avg_wasm_size_bytes']} bytes")
@@ -452,10 +469,18 @@ def main():
         "fixtures_ok": ok_count,
         "fixtures_skipped": fail_count,
         "avg_compile_time_ms": aggregates["avg_compile_time_ms"],
+        "compiler_throughput_fixtures_per_sec": aggregates[
+            "compiler_throughput_fixtures_per_sec"
+        ],
         "avg_wasm_size_bytes": aggregates["avg_wasm_size_bytes"],
+        "total_wasm_size_bytes": aggregates["total_wasm_size_bytes"],
         "regression_count": len(regressions),
+        "perf_regression": bool(regressions),
     }
-    print(json.dumps(summary))
+    if json_mode:
+        print(json.dumps(summary, sort_keys=True))
+    else:
+        print(json.dumps(summary))
 
     eprint("benchmark-tracker: OK")
     sys.exit(0)
