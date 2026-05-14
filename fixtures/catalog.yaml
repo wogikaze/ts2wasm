@@ -581,6 +581,7 @@ directories:
     - object-literal-computed-number-method-call.ts
     - object-literal-computed-large-exponent-key.ts
     - object-literal-symbol-method-call.ts
+    - symbol-key-dynamic-property-identity.ts
     - object-literal-computed-spread.ts
     - object-literal-proto.ts
     - object-literal-method.ts

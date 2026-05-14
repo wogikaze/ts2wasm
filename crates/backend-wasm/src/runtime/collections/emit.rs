@@ -125,6 +125,18 @@ impl WatEmitter<'_> {
         (if (i32.ne (local.get $obj_tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
         (return (call $array_get (local.get $obj) (local.get $idx))))
         (else
+          (if
+            (i32.and
+              (i32.eq (local.get $idx_tag) (i32.const {object_tag}))
+              (i32.eq
+                (i32.load (i32.and (local.get $idx) (i32.const {heap_mask})))
+                (i32.const {symbol_sentinel})))
+            (then
+              (return
+                (call $property_get
+                  (local.get $obj)
+                  (local.get $idx)
+                  (i32.const -1)))))
           (local.set $key_len (call $value_to_string_into
             (local.get $idx)
             (i32.const {scratch_offset})))
@@ -144,6 +156,7 @@ impl WatEmitter<'_> {
             number_shift = ValueTag::NUMBER_SHIFT,
             zero = RuntimeConst::ZERO,
             undefined = ValueTag::UNDEFINED,
+            symbol_sentinel = Layout::SYMBOL_SENTINEL,
             string_header = Layout::STRING_HEADER_SIZE,
             scratch_offset = Layout::SCRATCH_OFFSET,
         ));
@@ -231,6 +244,19 @@ impl WatEmitter<'_> {
               (i32.add (i32.const {obj_header})
                 (i32.shl (local.get $i) (i32.const {entry_shift})))))
           (local.set $pk_raw (i32.load (local.get $entry_base)))
+          (if (i32.eq (local.get $key_len) (i32.const -1))
+            (then
+              (if (i32.eq (local.get $pk_raw) (local.get $key_ptr))
+                (then
+                  (return (i32.load (i32.add (local.get $entry_base) (i32.const {value_off}))))))
+              (br $scan_entries)))
+          (if
+            (i32.and
+              (i32.eq (i32.and (local.get $pk_raw) (i32.const {tag_mask})) (i32.const {object_tag}))
+              (i32.eq
+                (i32.load (i32.and (local.get $pk_raw) (i32.const {heap_mask})))
+                (i32.const {symbol_sentinel})))
+            (then (br $scan_entries)))
           (local.set $pk_ptr
             (i32.add (i32.and (local.get $pk_raw) (i32.const {heap_mask})) (i32.const {str_header})))
           (local.set $pk_len
@@ -261,6 +287,7 @@ impl WatEmitter<'_> {
             obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             str_header = Layout::STRING_HEADER_SIZE,
+            symbol_sentinel = Layout::SYMBOL_SENTINEL,
             value_off = Layout::OBJECT_VALUE_OFFSET,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
@@ -338,6 +365,26 @@ impl WatEmitter<'_> {
             (i32.add (i32.const {obj_header})
               (i32.shl (local.get $i) (i32.const {entry_shift})))))
         (local.set $pk_raw (i32.load (local.get $entry_base)))
+        (if (i32.eq (local.get $key_len) (i32.const -1))
+          (then
+            (if (i32.eq (local.get $pk_raw) (local.get $key_ptr))
+              (then
+                (if (i32.lt_u (local.get $i) (i32.const {tracked_attr_count}))
+                  (then
+                    (if (i32.and
+                          (local.get $flags)
+                          (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_writable_shift}))))
+                      (then (return (i32.const {undefined}))))))
+                (i32.store (i32.add (local.get $entry_base) (i32.const {value_off})) (local.get $value))
+                (return (local.get $value))))
+            (br $scan)))
+        (if
+          (i32.and
+            (i32.eq (i32.and (local.get $pk_raw) (i32.const {tag_mask})) (i32.const {object_tag}))
+            (i32.eq
+              (i32.load (i32.and (local.get $pk_raw) (i32.const {heap_mask})))
+              (i32.const {symbol_sentinel})))
+          (then (br $scan)))
         (local.set $pk_ptr
           (i32.add (i32.and (local.get $pk_raw) (i32.const {heap_mask})) (i32.const {str_header})))
         (local.set $pk_len
@@ -364,10 +411,14 @@ impl WatEmitter<'_> {
     (local.set $entry_base
       (i32.add (local.get $base)
         (i32.add (i32.const {obj_header}) (i32.shl (local.get $count) (i32.const {entry_shift})))))
-    (local.set $key_obj (call $alloc_heap (i32.add (i32.const 4) (local.get $key_len))))
-    (i32.store (local.get $key_obj) (local.get $key_len))
-    (call $copy (local.get $key_ptr) (i32.add (local.get $key_obj) (i32.const 4)) (local.get $key_len))
-    (i32.store (local.get $entry_base) (i32.or (local.get $key_obj) (i32.const 6)))
+    (if (i32.eq (local.get $key_len) (i32.const -1))
+      (then
+        (i32.store (local.get $entry_base) (local.get $key_ptr)))
+      (else
+        (local.set $key_obj (call $alloc_heap (i32.add (i32.const 4) (local.get $key_len))))
+        (i32.store (local.get $key_obj) (local.get $key_len))
+        (call $copy (local.get $key_ptr) (i32.add (local.get $key_obj) (i32.const 4)) (local.get $key_len))
+        (i32.store (local.get $entry_base) (i32.or (local.get $key_obj) (i32.const 6)))))
     (i32.store (i32.add (local.get $entry_base) (i32.const 4)) (local.get $value))
     (i32.store (local.get $base) (i32.add (local.get $count) (i32.const 1)))
     (local.get $value))
@@ -389,6 +440,7 @@ impl WatEmitter<'_> {
             non_writable_shift = Layout::OBJECT_NON_WRITABLE_SHIFT,
             tracked_attr_count = Layout::OBJECT_ACCESSOR_PROP_SHIFT
                 - Layout::OBJECT_NON_CONFIGURABLE_SHIFT,
+            symbol_sentinel = Layout::SYMBOL_SENTINEL,
         ));
     }
 

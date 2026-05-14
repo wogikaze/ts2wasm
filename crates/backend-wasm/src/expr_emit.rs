@@ -2213,6 +2213,9 @@ impl WatEmitter<'_> {
                 value,
                 ..
             } => {
+                let symbol_key_done = gen_expr_label("symbol_key_property_set_done");
+                let symbol_key_string = gen_expr_label("symbol_key_property_set_string");
+                let child_frame = frame.child_temp_frame();
                 self.emit_expr(writer, object, indent, frame);
                 writer.local_set(indent, frame.heap_base_tmp());
                 self.emit_gc_root_mirror_index(
@@ -2222,14 +2225,44 @@ impl WatEmitter<'_> {
                     frame,
                 );
                 self.emit_expr(writer, index, indent, frame);
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
                 writer.local_set(indent, frame.heap_value_tmp());
-                writer.local_get(indent, frame.heap_base_tmp());
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.local_get(indent, frame.heap_value_tmp());
-                self.emit_expr(writer, value, indent, frame);
-                writer.call(indent, RuntimeFn::PropertySet.symbol());
+                self.emit_expr(writer, value, indent, &child_frame);
+                writer.local_set(indent, child_frame.heap_value_tmp());
+                writer.block(indent, &symbol_key_done);
+                writer.block(indent + 2, &symbol_key_string);
+                writer.push_str(&format!(
+                    "{pad}    (br_if ${symbol_key_string}\n\
+{pad}      (i32.eqz\n\
+{pad}        (i32.and\n\
+{pad}          (i32.eq (i32.and (local.get {}) (i32.const {})) (i32.const {}))\n\
+{pad}          (i32.eq (i32.load (i32.and (local.get {}) (i32.const {}))) (i32.const {})))))\n",
+                    frame.heap_value_tmp(),
+                    ValueTag::TAG_MASK,
+                    ValueTag::OBJECT,
+                    frame.heap_value_tmp(),
+                    ValueTag::HEAP_MASK,
+                    Layout::SYMBOL_SENTINEL,
+                ));
+                writer.local_get(indent + 4, frame.heap_base_tmp());
+                writer.local_get(indent + 4, frame.heap_value_tmp());
+                writer.i32_const(indent + 4, -1);
+                writer.local_get(indent + 4, child_frame.heap_value_tmp());
+                writer.call(indent + 4, RuntimeFn::PropertySet.symbol());
+                writer.drop(indent + 4);
+                writer.push_str(&format!("{pad}    (br ${symbol_key_done})\n"));
+                writer.end(indent + 2);
+                writer.local_get(indent + 2, frame.heap_value_tmp());
+                writer.i32_const(indent + 2, Layout::SCRATCH_OFFSET as i32);
+                writer.call(indent + 2, RuntimeFn::ValueToStringInto.symbol());
+                writer.local_set(indent + 2, frame.heap_value_tmp());
+                writer.local_get(indent + 2, frame.heap_base_tmp());
+                writer.i32_const(indent + 2, Layout::SCRATCH_OFFSET as i32);
+                writer.local_get(indent + 2, frame.heap_value_tmp());
+                writer.local_get(indent + 2, child_frame.heap_value_tmp());
+                writer.call(indent + 2, RuntimeFn::PropertySet.symbol());
+                writer.drop(indent + 2);
+                writer.end(indent);
+                writer.local_get(indent, child_frame.heap_value_tmp());
             }
             _ => writer.unreachable(indent),
         }
