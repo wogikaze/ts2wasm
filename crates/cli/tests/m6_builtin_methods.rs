@@ -173,6 +173,16 @@ fn build_smoke_object_shorthand() {
 }
 
 #[test]
+fn build_smoke_object_literal_proto() {
+    let result = run_fixture("core-expressions/object-literal-proto.ts");
+    assert!(
+        result.is_ok(),
+        "object literal __proto__ should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_entries_method() {
     let result = run_fixture("builtins-and-io/object-entries.ts");
     assert!(
@@ -1280,6 +1290,46 @@ fn build_smoke_date_get_timezone_offset() {
     assert!(
         result.is_ok(),
         "Date.getTimezoneOffset should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_date_set_time() {
+    let result = run_fixture("builtins-and-io/date-set-time.ts");
+    assert!(
+        result.is_ok(),
+        "Date.setTime should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_date_complete() {
+    let result = run_fixture("builtins-and-io/date-complete.ts");
+    assert!(
+        result.is_ok(),
+        "Date complete prototype method fixture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_date_static_parse_utc() {
+    let result = run_fixture("builtins-and-io/date-static-parse-utc.ts");
+    assert!(
+        result.is_ok(),
+        "Date.parse and Date.UTC fixture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_date_methods_comprehensive() {
+    let result = run_fixture("builtins-and-io/date-methods-comprehensive.ts");
+    assert!(
+        result.is_ok(),
+        "Date comprehensive method fixture should build: {:?}",
         result.err()
     );
 }

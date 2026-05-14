@@ -705,6 +705,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::DateSetTime => RuntimeSpec {
+                symbol: "$date_set_time",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::DateParse => RuntimeSpec {
                 symbol: "$date_parse",
                 deps: NO_DEPS,

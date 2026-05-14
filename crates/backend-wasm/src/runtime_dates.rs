@@ -138,6 +138,30 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_date_set_time(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_set_time (param $date i32) (param $epoch_ms i32) (result i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $date) (i32.const {tag_mask}))
+        (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (i32.store
+      (i32.add
+        (i32.and (local.get $date) (i32.const {heap_mask}))
+        (i32.const {epoch_offset}))
+      (local.get $epoch_ms))
+    (local.get $epoch_ms))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+        ));
+    }
+
     pub(super) fn emit_date_parse(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

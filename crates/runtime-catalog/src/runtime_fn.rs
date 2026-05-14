@@ -206,6 +206,8 @@ pub enum RuntimeFn {
     DateNow,
     DateEpochMsNowNumber,
     DateGetTime,
+    /// Date.prototype.setTime.
+    DateSetTime,
     /// Date.parse via host shim.
     DateParse,
     /// Date.UTC via host shim.
@@ -1496,6 +1498,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DateNewLive" => Some(RuntimeFn::DateNewLive),
         "DateNow" => Some(RuntimeFn::DateNow),
         "DateGetTime" => Some(RuntimeFn::DateGetTime),
+        "DateSetTime" => Some(RuntimeFn::DateSetTime),
         "DateParse" => Some(RuntimeFn::DateParse),
         "DateUTC" => Some(RuntimeFn::DateUTC),
         "DateToString" => Some(RuntimeFn::DateToString),
@@ -1735,6 +1738,7 @@ impl RuntimeFn {
             | Self::DateNow
             | Self::DateEpochMsNowNumber
             | Self::DateGetTime
+            | Self::DateSetTime
             | Self::DateParse
             | Self::DateUTC
             | Self::DateToString
@@ -2389,6 +2393,7 @@ impl RuntimeFn {
             Self::DateNewLive,
             Self::DateNow,
             Self::DateGetTime,
+            Self::DateSetTime,
             Self::DateParse,
             Self::DateUTC,
             Self::DateToString,
@@ -2796,6 +2801,7 @@ impl RuntimeFn {
             Self::DateNewLive,
             Self::DateNow,
             Self::DateGetTime,
+            Self::DateSetTime,
             Self::DateParse,
             Self::DateUTC,
             Self::DateToString,
