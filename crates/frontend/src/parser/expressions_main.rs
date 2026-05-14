@@ -38,6 +38,16 @@ impl Parser {
         } else if matches!(self.peek(), Some(Token::Ident(_))) {
             self.advance();
             self.consume(TokenKind::Arrow)
+        } else if matches!(self.peek(), Some(Token::Async)) {
+            self.advance();
+            if matches!(self.peek(), Some(Token::LeftParen)) {
+                self.probe_parenthesized_arrow_params().unwrap_or(false)
+            } else if matches!(self.peek(), Some(Token::Ident(_))) {
+                self.advance();
+                self.consume(TokenKind::Arrow)
+            } else {
+                false
+            }
         } else if matches!(self.peek(), Some(Token::Less)) {
             // Speculative parse: <T>(params) => expr — generic arrow function
             let probe = self.cursor;
@@ -92,13 +102,17 @@ impl Parser {
         }
 
         if is_arrow {
+            let arrow_start = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+            if matches!(self.peek(), Some(Token::Async)) {
+                self.advance();
+            }
             // Consume generic type parameters before parsing the arrow
             if matches!(self.peek(), Some(Token::Less)) {
                 let _has_generic = self
                     .consume_typescript_generic_parameter_list()
                     .unwrap_or(false);
             }
-            return self.arrow_function();
+            return self.arrow_function(arrow_start);
         }
 
         if let Some(expr) = self.destructuring_assignment()? {
@@ -341,8 +355,7 @@ impl Parser {
         }
     }
 
-    fn arrow_function(&mut self) -> Result<Expr, Diagnostic> {
-        let start_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+    fn arrow_function(&mut self, start_span: Span) -> Result<Expr, Diagnostic> {
         let mut params = Vec::new();
 
         if self.consume(TokenKind::LeftParen) {

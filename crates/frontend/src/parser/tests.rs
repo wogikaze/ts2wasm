@@ -2442,6 +2442,35 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_async_arrow_computed_property_key_expression() {
+        let program = parse_program("let object = { [async () => {}]: 1 };").unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 1);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::ComputedKey {
+                        key,
+                        value: Expr::Number { value: 1, .. }
+                    } if matches!(
+                        key.as_ref(),
+                        Expr::ArrowFn {
+                            params,
+                            body_stmts,
+                            ..
+                        } if params.is_empty() && body_stmts.is_empty()
+                    )
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_computed_accessor_key_expression() {
         let program = parse_program(
             "let key = 'value'; let object = { get [\"a\"]() { return 1; }, set [1](v) { this.v = v; }, get [key]() { return 2; } };",
