@@ -157,8 +157,7 @@ impl WatEmitter<'_> {
         ));
     }
 
-    #[allow(dead_code)]
-    pub(super) fn emit_number_to_fixed(&self, wat: &mut String) {
+    pub(crate) fn emit_number_to_fixed(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
   (func $number_to_fixed (param $v i32) (param $digits i32) (result i32)
