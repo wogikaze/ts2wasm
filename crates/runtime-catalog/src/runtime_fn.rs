@@ -648,6 +648,11 @@ const READ_STDIN_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const WRITE_DEPS: &[RuntimeFn] = &[];
 const COPY_DEPS: &[RuntimeFn] = &[];
 const VTS_DEPS: &[RuntimeFn] = &[RuntimeFn::Copy];
+const NUMBER_FORMAT_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+    RuntimeFn::ValueToStringInto,
+];
 const NUMBER_FROM_I32_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const NUMBER_ARITH_DEPS: &[RuntimeFn] = &[RuntimeFn::NumberToI32, RuntimeFn::NumberFromI32];
 const ERROR_MESSAGE_DEPS: &[RuntimeFn] = &[

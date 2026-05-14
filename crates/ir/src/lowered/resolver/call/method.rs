@@ -1216,6 +1216,15 @@ impl super::super::Resolver {
                     .map(|e| self.lower_expr(e))
                     .collect::<Result<Vec<_>, _>>()?,
             );
+            if matches!(
+                intrinsic,
+                RuntimeFn::NumberToFixed
+                    | RuntimeFn::NumberToExponential
+                    | RuntimeFn::NumberToPrecision
+            ) && lowered_args.len() == 1
+            {
+                lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+            }
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic,
                 args: lowered_args,
@@ -1683,6 +1692,25 @@ impl super::super::Resolver {
         }
 
         // Fall through to runtime_fn_arg dispatch
+        if let Some(intrinsic) = number_format_method_runtime_fn(method) {
+            let mut lowered_args = vec![self.lower_expr(object)?];
+            lowered_args.extend(
+                args.iter()
+                    .take(1)
+                    .map(|e| self.lower_expr(e))
+                    .collect::<Result<Vec<_>, _>>()?,
+            );
+            if lowered_args.len() == 1 {
+                lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic,
+                args: lowered_args,
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+
         if let Some(intrinsic) = collection_method_runtime_fn_arg(method) {
             let receiver_expr = self.lower_expr(object)?;
             let mut lowered_args = vec![receiver_expr];
@@ -2009,6 +2037,26 @@ impl super::super::Resolver {
             }
         };
         let class_name = class_name_str.as_str();
+
+        if class_name == "Number"
+            && let Some(intrinsic) = number_format_method_runtime_fn(method)
+        {
+            let mut lowered_args = vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
+            lowered_args.extend(
+                args.iter()
+                    .take(1)
+                    .map(|e| self.lower_expr(e))
+                    .collect::<Result<Vec<_>, _>>()?,
+            );
+            if lowered_args.len() == 1 {
+                lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+            }
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic,
+                args: lowered_args,
+                span: Span::generated("runtime_call"),
+            });
+        }
 
         let method_id = self
             .resolve_class_method(class_name, method)
