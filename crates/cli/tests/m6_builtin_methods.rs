@@ -1286,6 +1286,16 @@ fn build_smoke_date_get_timezone_offset() {
 }
 
 #[test]
+fn build_smoke_date_set_time() {
+    let result = run_fixture("builtins-and-io/date-set-time.ts");
+    assert!(
+        result.is_ok(),
+        "Date.setTime should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_date_complete() {
     let result = run_fixture("builtins-and-io/date-complete.ts");
     assert!(

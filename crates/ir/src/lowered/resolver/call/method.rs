@@ -759,6 +759,26 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
+        if method == "setTime" && self.is_date_receiver(object) {
+            if args.len() != 1 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 argument, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetTime,
+                args: vec![self.lower_expr(object)?, self.lower_expr(&args[0])?],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
         if method == "getTimezoneOffset" && self.is_date_receiver(object) {
             if !args.is_empty() {
                 return Err(Diagnostic {

@@ -2483,6 +2483,11 @@ fn date_epoch_constructor_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn date_set_time_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-set-time.ts");
+}
+
+#[test]
 fn date_get_timezone_offset_fixture_builds() {
     // getTimezoneOffset uses a host shim that may not be linked in iwasm;
     // only verify compilation.
