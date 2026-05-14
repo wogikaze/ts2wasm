@@ -988,8 +988,31 @@ fn regexp_unsupported_flag_fixture_reports_issue_202() {
         "expected UnsupportedRegExp or SyntaxError diagnostic, got:\n{stderr}"
     );
     assert!(
-        stderr.contains("issue-202: unsupported RegExp flag `d`"),
+        stderr.contains("issue-202: unsupported RegExp flag `v`"),
         "expected issue-linked RegExp flag diagnostic, got:\n{stderr}"
+    );
+}
+
+#[test]
+fn regexp_flag_d_is_now_supported() {
+    let fixture = "fixtures/builtins-and-io/regexp-flag-d.ts";
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        build.status.success(),
+        "RegExp flag d fixture should now build successfully:\n{}",
+        String::from_utf8_lossy(&build.stderr)
     );
 }
 
