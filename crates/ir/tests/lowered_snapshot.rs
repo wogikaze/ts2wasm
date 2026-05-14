@@ -749,6 +749,18 @@ fn lowered_object_generator_method_next_on_direct_call_validates() {
 }
 
 #[test]
+fn lowered_extracted_generator_method_next_on_direct_call_validates() {
+    let program = parse_resolve_lower(
+        "let thisValue = null;\n\
+         let method = { *method() { thisValue = this; } }.method;\n\
+         method().next();",
+    );
+
+    validate_lowered(&program)
+        .expect("direct extracted generator method call next should validate");
+}
+
+#[test]
 fn lowered_snapshot_for_await_of_keeps_async_iterator_ir() {
     let program = parse_resolve_lower(
         "async function f(values) { for await (let value of values) { console.log(value); } }",

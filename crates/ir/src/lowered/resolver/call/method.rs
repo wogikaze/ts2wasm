@@ -67,7 +67,7 @@ impl super::super::Resolver {
         }
         if method == "next"
             && args.len() <= 1
-            && self.resolved_expr_is_direct_generator_method_call(object)
+            && self.resolved_expr_is_direct_generator_call(object)
         {
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::GeneratorNext,
@@ -153,7 +153,15 @@ impl super::super::Resolver {
         )?))
     }
 
-    fn resolved_expr_is_direct_generator_method_call(&self, expr: &ResolvedExpr) -> bool {
+    fn resolved_expr_is_direct_generator_call(&self, expr: &ResolvedExpr) -> bool {
+        match expr {
+            ResolvedExpr::MethodCall { .. } => self.resolved_expr_is_generator_method_call(expr),
+            ResolvedExpr::Call { callee, .. } => self.resolved_callee_is_generator(callee),
+            _ => false,
+        }
+    }
+
+    fn resolved_expr_is_generator_method_call(&self, expr: &ResolvedExpr) -> bool {
         let ResolvedExpr::MethodCall { object, method, .. } = expr else {
             return false;
         };
@@ -178,6 +186,26 @@ impl super::super::Resolver {
             .generated_functions
             .iter()
             .any(|function| function.id == method_id && function.is_generator)
+    }
+
+    fn resolved_callee_is_generator(&self, callee: &ResolvedExpr) -> bool {
+        let ResolvedExpr::Ident(name) = callee else {
+            return false;
+        };
+        if self.ctx.facts.generator_function_names.contains(name) {
+            return true;
+        }
+        let Ok(local) = self.resolve_local(name) else {
+            return false;
+        };
+        let Some(closure) = self.ctx.facts.arrow_locals.get(&local) else {
+            return false;
+        };
+        self.ctx
+            .functions
+            .generated_functions
+            .iter()
+            .any(|function| function.id == closure.func_id && function.is_generator)
     }
 
     fn lower_generator_resume_with_state(

@@ -171,7 +171,24 @@ impl super::super::Resolver {
         if let Ok(local_id) = self.resolve_local(func_name)
             && let Some(closure) = self.ctx.facts.arrow_locals.get(&local_id).cloned()
         {
-            let mut lowered_args = self.lower_call_args(args)?;
+            let signature = self
+                .ctx
+                .symbols
+                .function_signatures
+                .get(&closure.func_id)
+                .copied()
+                .unwrap_or_default();
+            let receiver = if signature.is_strict {
+                LoweredExpr::Undefined(Span::generated("undef"))
+            } else {
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::GlobalThis,
+                    args: Vec::new(),
+                    span: Span::generated("globalThis"),
+                }
+            };
+            let mut lowered_args =
+                self.lower_function_call_args(closure.func_id, receiver, args)?;
             lowered_args.extend(
                 closure
                     .captures

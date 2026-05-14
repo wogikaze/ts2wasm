@@ -166,11 +166,28 @@ impl super::super::Resolver {
                 span,
             );
         }
-        Ok(object_kernel::ordinary_get(
-            self.lower_expr(object)?,
-            key,
-            span,
-        ))
+        let lowered_object = self.lower_expr(object)?;
+        if let Some(function) = self.lowered_object_arrow_fn_property(&lowered_object, key) {
+            return Ok(function);
+        }
+        Ok(object_kernel::ordinary_get(lowered_object, key, span))
+    }
+
+    fn lowered_object_arrow_fn_property(
+        &self,
+        object: &LoweredExpr,
+        key: &str,
+    ) -> Option<LoweredExpr> {
+        let LoweredExpr::ObjectNew { props, .. } = object else {
+            return None;
+        };
+        props
+            .iter()
+            .rev()
+            .find(|(prop_key, _)| prop_key == key)
+            .and_then(|(_, value)| {
+                matches!(value, LoweredExpr::ArrowFn { .. }).then(|| value.clone())
+            })
     }
 
     pub(super) fn lower_optional_property_access_expr(
