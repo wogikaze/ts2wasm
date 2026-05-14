@@ -29,6 +29,7 @@
 | `docs/26-semantic-feature-matrix.md` | fixture catalog と coverage label をつなぐ semantic feature matrix | value/types、expressions、classes、builtins、modules、async の feature label | 新規追加 |
 | `docs/27-coverage-expansion-epics.md` | 2026-05-12 coverage expansion wave の 6 epic、issue 対応、focused gate、parent/child 実行手順 | test262/tsc/tsgo baseline、unsupported label burn-down、parallel worktree contract | 新規追加 |
 | `docs/27-ir-layer-completion.md` | IR layer の完成形、HIR→MIR→WasmIR phase boundary、migration gates、parallel issue plan | HIR/MIR/WasmIR current bridge state、native MIR completion criteria、P16 semantic gate、typed WasmIR migration | 新規追加 |
+| `docs/28-frontend-syntax-ownership.md` | Frontend syntax ownership contract: parse/erase/reject/lower categories, ownership boundaries, HIR/MIR default guard | TS-only syntax, TS transforms, JS runtime semantics, parser-only, boundary enforcement, HIR/MIR default-switch guard | 新規追加 |
 | `docs/current-state.md` | generated semantic coverage snapshot for docs-site/dashboard readers | test262 metric snapshot、semantic canary suite、test262 harness infrastructure | generated coverage state |
 | `docs/language-reference/javascript-features.md` | JavaScript 構文・機能の対応方針と実装状況 | ECMA-262 仕様に基づく機能一覧 | 新規追加 |
 | `docs/language-reference/typescript-features.md` | TypeScript 構文・機能の対応方針と実装状況 | TypeScript Handbook に基づく機能一覧 | 新規追加 |
