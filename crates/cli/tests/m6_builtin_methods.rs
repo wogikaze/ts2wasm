@@ -173,6 +173,16 @@ fn build_smoke_object_literal_proto() {
 }
 
 #[test]
+fn build_smoke_object_literal_method() {
+    let result = run_fixture("core-expressions/object-literal-method.ts");
+    assert!(
+        result.is_ok(),
+        "object literal method shorthand should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_entries_method() {
     let result = run_fixture("builtins-and-io/object-entries.ts");
     assert!(
@@ -2241,17 +2251,12 @@ fn custom_iterator_symbol_builds_successfully() {
 
 // Property descriptor with getter/setter — W5
 #[test]
-fn property_getter_setter_unsupported_diagnostic() {
+fn build_smoke_property_getter_setter_descriptor() {
     let result = run_fixture("core-semantics/property-getter-setter.ts");
     assert!(
-        result.is_err(),
-        "Property getter/setter should produce unsupported diagnostic"
-    );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("this") || err_msg.contains("Unsupported"),
-        "Diagnostic should mention this/Unsupported: {}",
-        err_msg
+        result.is_ok(),
+        "Property getter/setter descriptor should build: {:?}",
+        result.err()
     );
 }
 

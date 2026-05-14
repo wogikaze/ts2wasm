@@ -3678,6 +3678,7 @@ fn core_expression_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-expressions/object-literal-dup-keys.ts",
         "fixtures/core-expressions/object-literal-computed-keys.ts",
         "fixtures/core-expressions/object-literal-proto.ts",
+        "fixtures/core-expressions/object-literal-method.ts",
         "fixtures/core-expressions/index.ts",
         "fixtures/core-expressions/new.ts",
         "fixtures/core-expressions/typeof.ts",
@@ -3857,6 +3858,11 @@ fn object_define_property_data_matches_node() {
 #[test]
 fn object_define_property_getter_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-define-property-getter.ts");
+}
+
+#[test]
+fn property_getter_setter_descriptor_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/property-getter-setter.ts");
 }
 
 #[test]

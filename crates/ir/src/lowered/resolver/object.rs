@@ -41,9 +41,33 @@ impl super::Resolver {
             if self.is_function_identifier(value) {
                 continue;
             }
-            lowered.push((key.to_owned(), self.lower_expr(value)?));
+            let lowered_value = self.lower_object_method_shorthand_value(prop, value)?;
+            lowered.push((key.to_owned(), lowered_value));
         }
         Ok(lowered)
+    }
+
+    fn lower_object_method_shorthand_value(
+        &mut self,
+        prop: &ResolvedObjectProp,
+        value: &ResolvedExpr,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if let ResolvedObjectProp::MethodShorthand { value, .. } = prop
+            && let ResolvedExpr::FunctionExpr { name, params, body } = value
+        {
+            if is_object_literal_accessor_function_name(name) {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message:
+                        "issue-67ZV8S: object literal getter/setter accessors are not supported"
+                            .to_owned(),
+                    span: None,
+                    phase: None,
+                });
+            }
+            return self.lower_object_method_function_expr(name, params, body);
+        }
+        self.lower_expr(value)
     }
 
     pub(super) fn lower_object_literal_expr(
@@ -107,7 +131,8 @@ impl super::Resolver {
             if self.is_function_identifier(value) {
                 continue;
             }
-            pending.push((key.to_owned(), self.lower_expr(value)?));
+            let lowered_value = self.lower_object_method_shorthand_value(prop, value)?;
+            pending.push((key.to_owned(), lowered_value));
         }
 
         let target = result.unwrap_or_else(|| LoweredExpr::ObjectNew {
@@ -247,16 +272,17 @@ impl super::Resolver {
                     if self.is_function_identifier(value) {
                         continue;
                     }
+                    let lowered_value = self.lower_object_method_shorthand_value(prop, value)?;
                     if initialized {
                         let set_expr = object_kernel::ordinary_set(
                             LoweredExpr::Local(object_local, Span::generated("local")),
                             key,
-                            self.lower_expr(value)?,
+                            lowered_value,
                             Span::generated("property_set"),
                         );
                         stmts.push(LoweredStmt::Expr(set_expr, Span::generated("property_set")));
                     } else {
-                        pending.push((key.to_owned(), self.lower_expr(value)?));
+                        pending.push((key.to_owned(), lowered_value));
                     }
                 }
             }
@@ -312,4 +338,8 @@ impl super::Resolver {
         }
         self.lower_expr(value)
     }
+}
+
+fn is_object_literal_accessor_function_name(name: &str) -> bool {
+    name.starts_with("get ") || name.starts_with("set ")
 }

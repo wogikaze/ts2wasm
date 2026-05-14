@@ -321,7 +321,16 @@ impl super::Resolver {
         params: &[ResolvedParam],
         body: &[ResolvedStmt],
     ) -> Result<LoweredExpr, Diagnostic> {
-        self.lower_nested_function(name, params, body)
+        self.lower_nested_function_with_receiver(name, params, body, false)
+    }
+
+    pub(super) fn lower_object_method_function_expr(
+        &mut self,
+        name: &str,
+        params: &[ResolvedParam],
+        body: &[ResolvedStmt],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        self.lower_nested_function_with_receiver(name, params, body, true)
     }
 
     pub(super) fn arrow_capture_names_with_excluded(
@@ -358,6 +367,189 @@ impl super::Resolver {
             .into_iter()
             .filter(|capture| self.resolve_local(capture).is_ok())
             .collect())
+    }
+
+    fn lower_nested_function_with_receiver(
+        &mut self,
+        name: &str,
+        params: &[ResolvedParam],
+        body: &[ResolvedStmt],
+        force_receiver: bool,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if params
+            .iter()
+            .any(|param| param.default.is_some() || param.is_rest)
+        {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-062e: nested function `{name}` closure parameters with defaults or rest are not supported in this slice"
+                ),
+                span: None,
+
+                phase: None,
+            });
+        }
+        if block_contains_this(body) || block_contains_arguments(body) {
+            if force_receiver {
+                // Object literal method shorthand has an implicit receiver.
+            } else if block_contains_this(body) && params.iter().any(|p| p.name == "this") {
+                // Explicit `this` parameter: this is a receiver function, not a closure issue.
+            } else if block_contains_this(body)
+                && crate::lowered::program::function_body_is_strict(
+                    self.ctx.is_strict_context(),
+                    body,
+                )
+            {
+                // Strict functions do not substitute globalThis for direct calls;
+                // unresolved `this` lowers to undefined in this resolver scope.
+            } else if block_contains_this(body) {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-5179: 'this' implicitly has type 'any' because it does not have a type annotation in nested function `{name}`"
+                    ),
+                    span: None,
+
+                    phase: None,
+                });
+            } else {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-062e: nested function `{name}` closures with `this` or `arguments` are not supported in this slice"
+                    ),
+                    span: None,
+
+                    phase: None,
+                });
+            }
+        }
+
+        let capture_names = self.nested_function_capture_names(name, params, body)?;
+        let mutable_captures = capture_names
+            .iter()
+            .filter(|capture| block_assigns_any_name(body, std::slice::from_ref(capture)))
+            .cloned()
+            .collect::<Vec<_>>();
+        if mutable_captures
+            .iter()
+            .any(|capture| !self.ctx.facts.env_cell_names.contains(capture))
+        {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-062e: nested function `{name}` mutates a captured outer local; mutable closure environments require heap environment support"
+                ),
+                span: None,
+                phase: None,
+            });
+        }
+        let captures = capture_names
+            .iter()
+            .map(|capture| self.resolve_local(capture))
+            .collect::<Result<Vec<_>, _>>()?;
+        let mut lowered_params = params.to_vec();
+        lowered_params.extend(capture_names.iter().map(|capture| ResolvedParam {
+            name: capture.clone(),
+            default: None,
+            is_rest: false,
+            span: None,
+        }));
+
+        let func_id = FuncId(self.ctx.functions.next_func_id);
+        self.ctx.functions.next_func_id += 1;
+        let self_closure = (!name.is_empty())
+            .then_some(SelfClosureOptions {
+                name,
+                func_id,
+                capture_names: &capture_names,
+                object_function_props: None,
+            })
+            .filter(|_| !self.ctx.facts.env_cell_names.contains(name));
+
+        let needs_receiver = force_receiver || block_contains_super_ref(body);
+        self.ctx.symbols.function_signatures.insert(
+            func_id,
+            FunctionSignature {
+                explicit_params: params.len(),
+                needs_receiver,
+                is_strict: crate::lowered::program::function_body_is_strict(
+                    self.ctx.is_strict_context(),
+                    body,
+                ),
+                needs_arguments: block_contains_arguments(body)
+                    && !params.iter().any(|param| param.name == "arguments"),
+                has_rest: params.iter().any(|param| param.is_rest),
+                metadata_length: Some(params.len()),
+                ..FunctionSignature::default()
+            },
+        );
+        if !capture_names.is_empty() {
+            self.ctx
+                .functions
+                .function_captures
+                .insert(func_id, capture_names.clone());
+        }
+        if !mutable_captures.is_empty() {
+            self.ctx
+                .functions
+                .function_mutable_captures
+                .insert(func_id, mutable_captures);
+        }
+        let function_signatures = self.ctx.symbols.function_signatures.clone();
+        let function_captures = self.ctx.functions.function_captures.clone();
+        let function_mutable_captures = self.ctx.functions.function_mutable_captures.clone();
+
+        let lowered = lower_function(
+            func_id,
+            &lowered_params,
+            body,
+            false,
+            false,
+            &self.ctx.symbols.function_ids,
+            &function_signatures,
+            &function_captures,
+            &function_mutable_captures,
+            &self.ctx.functions.class_method_captures,
+            &self.ctx.functions.class_method_mutable_captures,
+            &self.ctx.facts.env_cell_names,
+            &self.ctx.facts.heap_closure_names,
+            self.ctx.classes.class_parents.clone(),
+            self.ctx.classes.class_private_fields.clone(),
+            self.ctx.classes.class_static_private_fields.clone(),
+            LowerFunctionOptions {
+                current_class: self.ctx.classes.current_class.as_deref(),
+                in_constructor: false,
+                next_func_id: self.ctx.functions.next_func_id,
+                self_closure,
+                recursion_depth: 0,
+                new_target_class: None,
+                module_url: self.ctx.current_module_url.as_str(),
+                strict_context: self.ctx.is_strict_context(),
+            },
+        )?;
+        self.ctx.functions.next_func_id = lowered.next_func_id;
+        self.ctx
+            .functions
+            .generated_functions
+            .push(lowered.function);
+        self.ctx
+            .functions
+            .generated_functions
+            .extend(lowered.generated_functions);
+
+        Ok(LoweredExpr::ArrowFn {
+            func_id,
+            captures,
+            representation: if self.ctx.facts.heap_closure_names.contains(name) {
+                ClosureRepresentation::HeapObject
+            } else {
+                ClosureRepresentation::DirectLocalToken
+            },
+
+            span: Span::generated("arrow_fn"),
+        })
     }
 
     pub(crate) fn declare_local(&mut self, name: &str) -> Result<LocalId, Diagnostic> {
