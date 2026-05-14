@@ -131,6 +131,12 @@ pub struct WatWriter {
     output: String,
 }
 
+impl Default for WatWriter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[allow(dead_code)]
 impl WatWriter {
     pub fn new() -> Self {
