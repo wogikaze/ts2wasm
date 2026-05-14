@@ -168,6 +168,24 @@ pub enum RuntimeFn {
     DataViewSetFloat32,
     DataViewGetFloat64,
     DataViewSetFloat64,
+    /// Atomics.load(typedArray, index) — load element from Int32Array
+    AtomicsLoad,
+    /// Atomics.store(typedArray, index, value) — store element into Int32Array
+    AtomicsStore,
+    /// Atomics.add(typedArray, index, value) — add and return old value
+    AtomicsAdd,
+    /// Atomics.sub(typedArray, index, value) — subtract and return old value
+    AtomicsSub,
+    /// Atomics.and(typedArray, index, value) — bitwise AND and return old value
+    AtomicsAnd,
+    /// Atomics.or(typedArray, index, value) — bitwise OR and return old value
+    AtomicsOr,
+    /// Atomics.xor(typedArray, index, value) — bitwise XOR and return old value
+    AtomicsXor,
+    /// Atomics.exchange(typedArray, index, value) — swap and return old value
+    AtomicsExchange,
+    /// Atomics.compareExchange(typedArray, index, expected, replacement) — CAS and return old value
+    AtomicsCompareExchange,
     /// Issue 050: Date epoch slices.
     DateNew,
     DateNewLive,
@@ -1378,6 +1396,15 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DataViewSetFloat32" => Some(RuntimeFn::DataViewSetFloat32),
         "DataViewGetFloat64" => Some(RuntimeFn::DataViewGetFloat64),
         "DataViewSetFloat64" => Some(RuntimeFn::DataViewSetFloat64),
+        "AtomicsLoad" => Some(RuntimeFn::AtomicsLoad),
+        "AtomicsStore" => Some(RuntimeFn::AtomicsStore),
+        "AtomicsAdd" => Some(RuntimeFn::AtomicsAdd),
+        "AtomicsSub" => Some(RuntimeFn::AtomicsSub),
+        "AtomicsAnd" => Some(RuntimeFn::AtomicsAnd),
+        "AtomicsOr" => Some(RuntimeFn::AtomicsOr),
+        "AtomicsXor" => Some(RuntimeFn::AtomicsXor),
+        "AtomicsExchange" => Some(RuntimeFn::AtomicsExchange),
+        "AtomicsCompareExchange" => Some(RuntimeFn::AtomicsCompareExchange),
         "SetFromArray" => Some(RuntimeFn::SetFromArray),
         "SetValuesArray" => Some(RuntimeFn::SetValuesArray),
         "SetPrototypeAddGet" => Some(RuntimeFn::SetPrototypeAddGet),
@@ -1894,7 +1921,16 @@ impl RuntimeFn {
             | Self::DataViewGetFloat32
             | Self::DataViewSetFloat32
             | Self::DataViewGetFloat64
-            | Self::DataViewSetFloat64 => RuntimeDomain::TypedArray,
+            | Self::DataViewSetFloat64
+            | Self::AtomicsLoad
+            | Self::AtomicsStore
+            | Self::AtomicsAdd
+            | Self::AtomicsSub
+            | Self::AtomicsAnd
+            | Self::AtomicsOr
+            | Self::AtomicsXor
+            | Self::AtomicsExchange
+            | Self::AtomicsCompareExchange => RuntimeDomain::TypedArray,
         }
     }
 
@@ -2002,7 +2038,8 @@ impl RuntimeFn {
             | Self::DataViewGetInt8
             | Self::DataViewGetUint8
             | Self::SymbolToPrimitive
-            | Self::SymbolHasInstance => RuntimeSignature {
+            | Self::SymbolHasInstance
+            | Self::AtomicsLoad => RuntimeSignature {
                 params: 2,
                 results: 1,
             },
@@ -2032,7 +2069,7 @@ impl RuntimeFn {
             }
 
             // 4 params, 1 result
-            Self::PropertySet => RuntimeSignature {
+            Self::PropertySet | Self::AtomicsCompareExchange => RuntimeSignature {
                 params: 4,
                 results: 1,
             },
@@ -2043,7 +2080,14 @@ impl RuntimeFn {
             | Self::DataViewSetInt32
             | Self::DataViewSetUint32
             | Self::DataViewSetFloat32
-            | Self::DataViewSetFloat64 => RuntimeSignature {
+            | Self::DataViewSetFloat64
+            | Self::AtomicsStore
+            | Self::AtomicsAdd
+            | Self::AtomicsSub
+            | Self::AtomicsAnd
+            | Self::AtomicsOr
+            | Self::AtomicsXor
+            | Self::AtomicsExchange => RuntimeSignature {
                 params: 4,
                 results: 0,
             },
@@ -2202,6 +2246,16 @@ impl RuntimeFn {
             Self::DataViewSetFloat32,
             Self::DataViewGetFloat64,
             Self::DataViewSetFloat64,
+            // Atomics operations
+            Self::AtomicsLoad,
+            Self::AtomicsStore,
+            Self::AtomicsAdd,
+            Self::AtomicsSub,
+            Self::AtomicsAnd,
+            Self::AtomicsOr,
+            Self::AtomicsXor,
+            Self::AtomicsExchange,
+            Self::AtomicsCompareExchange,
             Self::DateNew,
             Self::DateEpochMsNowNumber,
             Self::DateNewLive,
@@ -2581,6 +2635,16 @@ impl RuntimeFn {
             Self::DataViewSetFloat32,
             Self::DataViewGetFloat64,
             Self::DataViewSetFloat64,
+            // Atomics operations
+            Self::AtomicsLoad,
+            Self::AtomicsStore,
+            Self::AtomicsAdd,
+            Self::AtomicsSub,
+            Self::AtomicsAnd,
+            Self::AtomicsOr,
+            Self::AtomicsXor,
+            Self::AtomicsExchange,
+            Self::AtomicsCompareExchange,
             Self::DateNew,
             Self::DateEpochMsNowNumber,
             Self::DateNewLive,

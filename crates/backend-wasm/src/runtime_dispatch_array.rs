@@ -73,6 +73,15 @@ impl WatEmitter<'_> {
             RuntimeFn::DataViewSetFloat32 => self.emit_dataview_set_float32(wat),
             RuntimeFn::DataViewGetFloat64 => self.emit_dataview_get_float64(wat),
             RuntimeFn::DataViewSetFloat64 => self.emit_dataview_set_float64(wat),
+            RuntimeFn::AtomicsLoad => self.emit_atomics_load(wat),
+            RuntimeFn::AtomicsStore => self.emit_atomics_store(wat),
+            RuntimeFn::AtomicsAdd => self.emit_atomics_add(wat),
+            RuntimeFn::AtomicsSub => self.emit_atomics_sub(wat),
+            RuntimeFn::AtomicsAnd => self.emit_atomics_and(wat),
+            RuntimeFn::AtomicsOr => self.emit_atomics_or(wat),
+            RuntimeFn::AtomicsXor => self.emit_atomics_xor(wat),
+            RuntimeFn::AtomicsExchange => self.emit_atomics_exchange(wat),
+            RuntimeFn::AtomicsCompareExchange => self.emit_atomics_compare_exchange(wat),
             _ => unreachable!("non-array RuntimeFn routed to array dispatch"),
         }
     }

@@ -748,6 +748,7 @@ impl BigIntStaticBuiltinFolder {
                 params,
                 body,
                 span,
+                ..
             } => Expr::FunctionExpr {
                 name: name.clone(),
                 params: params.clone(),
