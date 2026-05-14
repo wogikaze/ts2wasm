@@ -30,7 +30,7 @@ mod stmt_emit;
 mod string_intern;
 mod wasm_binary;
 pub mod wasm_ir;
-mod wat_writer;
+pub mod wat_writer;
 
 pub use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_ir::lowered::{LoweredProgram, MirProgram, Validated};

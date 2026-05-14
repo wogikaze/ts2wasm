@@ -388,6 +388,9 @@ fn build_single_function(
         }
     }
 
+    // Every function body must end with End in binary wasm.
+    func.instruction(&I::End);
+
     func
 }
 

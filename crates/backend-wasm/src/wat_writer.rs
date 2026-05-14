@@ -605,7 +605,7 @@ impl WatWriter {
             self.line(
                 2,
                 &format!(
-                    "(import \"{}\" \"{}\" (func {} (param {}) (result {})))",
+                    "(import \"{}\" \"{}\" (func ${} (param {}) (result {})))",
                     imp.module,
                     imp.name,
                     imp.func_symbol,
