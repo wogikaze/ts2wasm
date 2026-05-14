@@ -326,6 +326,22 @@ pub enum WasmExportKind {
     Memory,
 }
 
+/// A custom section in the wasm module.
+#[derive(Debug, Clone)]
+pub struct WasmCustomSection {
+    pub name: String,
+    pub data: Vec<u8>,
+}
+
+impl WasmCustomSection {
+    pub fn new(name: impl Into<String>, data: Vec<u8>) -> Self {
+        Self {
+            name: name.into(),
+            data,
+        }
+    }
+}
+
 /// A structured representation of an entire wasm module.
 ///
 /// This is the highest-level typed IR for wasm modules.  Emitters can
@@ -340,6 +356,7 @@ pub struct WasmModule {
     pub data_segments: Vec<WasmDataSegment>,
     pub functions: Vec<WasmFunction>,
     pub exports: Vec<WasmExport>,
+    pub custom_sections: Vec<WasmCustomSection>,
 }
 
 impl WasmModule {
@@ -374,6 +391,11 @@ impl WasmModule {
 
     pub fn export(mut self, e: WasmExport) -> Self {
         self.exports.push(e);
+        self
+    }
+
+    pub fn custom_section(mut self, cs: WasmCustomSection) -> Self {
+        self.custom_sections.push(cs);
         self
     }
 }

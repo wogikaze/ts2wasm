@@ -679,6 +679,13 @@ impl WatWriter {
             }
         }
 
+        for cs in &module.custom_sections {
+            self.line(
+                2,
+                &format!(";; custom section \"{}\" ({} bytes)", cs.name, cs.data.len()),
+            );
+        }
+
         self.close_module();
     }
 }
