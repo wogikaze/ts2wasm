@@ -60,6 +60,34 @@ run = "python scripts/manager.py check-coverage-gate"
 description = "Refresh reference coverage table (see script for args)"
 run = "python scripts/manager.py update-coverage-matrix"
 
+[tasks."reference-corpus"]
+description = "Manage reference corpus lock (verify|write-lock|print-evidence)"
+run = "python scripts/manager.py reference-corpus"
+
+[tasks."next-coverage-gate"]
+description = "REQ-COV-001/002 gates (outcome schema + top-reasons)"
+run = "python scripts/manager.py next-coverage-gate"
+
+[tasks."next-capability-gate"]
+description = "REQ-CAP-001/002 gates (link-plan validation + manifest parity)"
+run = "python scripts/manager.py next-capability-gate"
+
+[tasks."next-rtgc-gate"]
+description = "REQ-RTGC-001-006 gates (typed alloc, scanner, roots, thresholds, layout, closures)"
+run = "python scripts/manager.py next-rtgc-gate"
+
+[tasks."next-reference-gate"]
+description = "REQ-REF-001/002 gates (lock manifest + lock identity validation)"
+run = "python scripts/manager.py next-reference-gate"
+
+[tasks."next-abi-gate"]
+description = "REQ-ABI-001/002 gates (ABI metadata export + TargetSpec)"
+run = "python scripts/manager.py next-abi-gate"
+
+[tasks."next-architecture-gate"]
+description = "Composite of all 5 next-architecture theme gates"
+run = "python scripts/manager.py next-architecture-gate"
+
 [tasks."reference-coverage"]
 description = "Run reference-based coverage (see script for args)"
 run = "python scripts/manager.py reference-coverage"

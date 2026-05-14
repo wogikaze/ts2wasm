@@ -235,6 +235,7 @@ def check_prerequisites():
 
     Checks:
     - Reference test suite directories exist and contain test files
+    - Corpus lock is valid (unless TS2WASM_REFERENCE_LOCK_MODE=off)
     - iwasm binary is reachable on PATH
     - Node.js binary is reachable on PATH
 
@@ -242,6 +243,25 @@ def check_prerequisites():
     Returns True if all prerequisites are satisfied, False otherwise.
     """
     all_ok = True
+
+    # Check corpus lock (skip if TS2WASM_REFERENCE_LOCK_MODE=off)
+    lock_mode = os.environ.get("TS2WASM_REFERENCE_LOCK_MODE", "").lower()
+    if lock_mode != "off":
+        corpus_script = REPO_ROOT / "scripts" / "run" / "reference-corpus.py"
+        if corpus_script.exists():
+            result = subprocess.run(
+                [sys.executable, str(corpus_script), "verify", "--allow-missing-corpora"],
+                capture_output=True, text=True, cwd=REPO_ROOT,
+            )
+            for line in result.stdout.splitlines():
+                print(f"  {line}", file=sys.stderr)
+            for line in result.stderr.splitlines():
+                print(f"  {line}", file=sys.stderr)
+            if result.returncode != 0:
+                all_ok = False
+        else:
+            print("WARNING: reference-corpus.py not found, skipping lock verification",
+                  file=sys.stderr)
 
     # Check reference suite directories
     for suite_key, config in SUITE_METADATA.items():
@@ -470,13 +490,19 @@ def apply_path_filters(files, path_filters):
 
 def evidence_command(suite, limit, paths_file, path_filters, sample=None,
                      category=None, semantic_check=None, server_mode=None,
-                     jsonl_output=None, metadata_cache_sig=None):
+                     jsonl_output=None, metadata_cache_sig=None,
+                     selected_files=None, sample_seed=None):
     """Build a reproducible evidence dict for reports and coverage artifacts.
 
     Returns a structured dict with argv, selection parameters, and
     environment context so that the exact conditions of a coverage run
     can be reproduced or audited.
+
+    When selected_files is provided, computes path_sha256 from the
+    canonical (sorted, repo-relative) path list.
     """
+    import hashlib
+
     argv = ["mise", "run", "reference-coverage", "--", suite]
     if limit is not None:
         argv.extend(["--limit", str(limit)])
@@ -503,6 +529,35 @@ def evidence_command(suite, limit, paths_file, path_filters, sample=None,
         )
     }
 
+    # Add corpus lock evidence if available
+    corpus_evidence = None
+    corpus_lock_path = REPO_ROOT / "reference" / "corpus-lock.json"
+    lock_path = REPO_ROOT / "reference" / "lock.json"
+    if corpus_lock_path.exists() and lock_path.exists():
+        try:
+            lock_data = json.loads(lock_path.read_text())
+            canonical = json.dumps(lock_data, sort_keys=True, separators=(",", ":"))
+            lock_digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+            corpus_data = json.loads(corpus_lock_path.read_text())
+            suites_info = {}
+            for sk, entry in corpus_data.items():
+                suites_info[sk] = {
+                    "commit": entry.get("commit"),
+                    "file_count": entry.get("file_count"),
+                    "denominator": entry.get("denominator"),
+                    "content_hash": entry.get("content_hash"),
+                }
+
+            corpus_evidence = {
+                "lock_path": "reference/lock.json",
+                "corpus_lock_path": "reference/corpus-lock.json",
+                "lock_digest": lock_digest,
+                "suites": suites_info,
+            }
+        except (OSError, json.JSONDecodeError):
+            pass
+
     selection_mode = "all"
     if sample is not None:
         selection_mode = "sample"
@@ -511,19 +566,38 @@ def evidence_command(suite, limit, paths_file, path_filters, sample=None,
     elif path_filters:
         selection_mode = "path-filter"
 
+    # Compute path_sha256 from canonical sorted repo-relative paths
+    path_sha256 = None
+    case_count = None
+    if selected_files is not None:
+        sorted_paths = sorted(repo_relative(f) for f in selected_files if f)
+        case_count = len(sorted_paths)
+        if case_count > 0:
+            data = "\n".join(sorted_paths).encode("utf-8")
+            path_sha256 = hashlib.sha256(data).hexdigest()
+
     evidence = {
         "argv": argv,
         "argv_str": " ".join(argv),
         "selection_mode": selection_mode,
+        "mode": selection_mode,
         "oracle_policy": os.environ.get("TS2WASM_TEST262_NODE_ORACLE", "auto"),
         "semantic_check": semantic_check if semantic_check is not None else True,
         "server_mode": server_mode if server_mode is not None else True,
         "sample": sample,
+        "sample_seed": sample_seed,
         "category": category,
+        "limit": limit,
+        "case_count": case_count,
+        "path_sha256": path_sha256,
+        "path_filters": path_filters,
+        "paths_file": paths_file,
         "env_whitelist": env_whitelist,
     }
     if metadata_cache_sig is not None:
         evidence["metadata_cache_signature"] = metadata_cache_sig
+    if corpus_evidence is not None:
+        evidence["corpus"] = corpus_evidence
     return evidence
 
 def _env_truthy(value):
@@ -712,6 +786,10 @@ def build_test262_jsonl_summary(
         "selection": {
             "paths_file": paths_file,
             "path_filters": path_filters,
+            "path_sha256": evidence.get("path_sha256") if isinstance(evidence, dict) else None,
+            "case_count": evidence.get("case_count") if isinstance(evidence, dict) else None,
+            "sample_seed": evidence.get("sample_seed") if isinstance(evidence, dict) else None,
+            "mode": evidence.get("mode") if isinstance(evidence, dict) else None,
         },
         "timestamp": datetime.now().isoformat(),
         "jsonl_file": str(jsonl_file),
@@ -986,6 +1064,42 @@ def feature_label(diag_code, err_file, file_path, phase=None):
         result += ":parser"
     return result
 
+
+def _canonicalize_jsonl(jsonl_path):
+    """Re-sort JSONL file by case path for reproducible ordering.
+
+    Reads all records, sorts by the 'case' field, and rewrites the file.
+    This ensures that parallel execution produces a deterministic JSONL output.
+    """
+    if not jsonl_path.is_file():
+        return
+    try:
+        records = []
+        with open(jsonl_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    records.append(json.loads(line))
+                except json.JSONDecodeError:
+                    records.append({"raw": line})
+
+        if not records:
+            return
+
+        records.sort(key=lambda r: r.get("case", r.get("raw", "")))
+
+        with open(jsonl_path, "w", encoding="utf-8") as f:
+            for rec in records:
+                if "raw" in rec and len(rec) == 1:
+                    f.write(rec["raw"] + "\n")
+                else:
+                    f.write(json.dumps(rec, sort_keys=True) + "\n")
+    except OSError:
+        pass
+
+
 def main():
     # Handle --check-prerequisites before suite parsing (works standalone or with a suite)
     if "--check-prerequisites" in sys.argv:
@@ -1019,7 +1133,9 @@ def main():
     server_mode = True
     suite_detail_rows = []
     suite_detail_counter = [0]
-    
+    triage_report_dir = None
+    top_failures = 10
+
     i = 0
     while i < len(args):
         if args[i] == "--limit":
@@ -1109,6 +1225,22 @@ def main():
         elif args[i] == "--delta-report":
             delta_report = True
             i += 1
+        elif args[i] == "--triage-report-dir":
+            if i + 1 >= len(args):
+                print("ERROR: --triage-report-dir requires a directory path", file=sys.stderr)
+                sys.exit(1)
+            triage_report_dir = args[i + 1]
+            i += 2
+        elif args[i] == "--top-failures":
+            if i + 1 >= len(args):
+                print("ERROR: --top-failures requires a positive integer", file=sys.stderr)
+                sys.exit(1)
+            try:
+                top_failures = int(args[i + 1])
+            except ValueError:
+                print("ERROR: --top-failures must be a positive integer", file=sys.stderr)
+                sys.exit(1)
+            i += 2
         else:
             print(f"unknown option: {args[i]}", file=sys.stderr)
             usage()
@@ -1143,15 +1275,18 @@ def main():
     suite_config, files = resolve_suite_paths(suite, path_filters)
     if files is None:
         sys.exit(1)
-    
+
     denominator = len(files)
+    sample_seed = os.environ.get("TS2WASM_SAMPLE_SEED")  # deterministic seed for sampling
+
     evidence = evidence_command(
         suite, limit, paths_file, path_filters,
         sample=sample, category=category_pattern,
         semantic_check=semantic_check, server_mode=server_mode,
         jsonl_output=jsonl_output,
+        sample_seed=sample_seed,
     )
-    
+
     if sample is not None and sample < 1:
         if jsonl_output:
             print(f"Sample mode: 0 files selected", file=sys.stderr)
@@ -1236,7 +1371,7 @@ def main():
         files = parse_paths_file(paths_file, suite_config, files)
 
     files = apply_path_filters(files, path_filters)
-    
+
     if limit:
         files = files[:limit]
 
@@ -1255,6 +1390,16 @@ def main():
             sampled.append(f)
         files = sampled
         print(f"Sample mode: {len(files)} files selected (max {sample} per category)", file=sys.stderr)
+
+    # Update evidence with selected files info (path_sha256, case_count)
+    evidence = evidence_command(
+        suite, limit, paths_file, path_filters,
+        sample=sample, category=category_pattern,
+        semantic_check=semantic_check, server_mode=server_mode,
+        jsonl_output=jsonl_output,
+        selected_files=files,
+        sample_seed=sample_seed,
+    )
 
     # JSONL output mode (test262 only) uses the full differential harness.
     # Keep it before the aggregate coverage path so `mise run test262` does
@@ -2184,6 +2329,10 @@ def main():
 
         save_metadata_cache()
 
+        # Canonicalize JSONL order by case path for reproducibility
+        if jsonl_file.is_file():
+            _canonicalize_jsonl(jsonl_file)
+
         print(f"Pass: {passed}  BuildOnly: {build_only}  OracleSkipped: {oracle_skipped}  Fail: {failed}  Unsupported: {unsupported}  Blocked: {blocked}", file=sys.stderr)
 
         print(f"\n=== {suite} Summary ===", file=sys.stderr)
@@ -2241,6 +2390,44 @@ def main():
             json.dump(evidence, handle, indent=2, sort_keys=True)
             handle.write("\n")
         print(f"evidence artifact: {evidence_path} (jsonl run)", file=sys.stderr)
+
+        # Generate triage report if --triage-report-dir is specified
+        if triage_report_dir and jsonl_file.is_file():
+            try:
+                from coverage_labels import build_top_failures, format_triage_markdown
+                records = []
+                with open(jsonl_file) as _f:
+                    for _line in _f:
+                        _line = _line.strip()
+                        if _line:
+                            try:
+                                records.append(json.loads(_line))
+                            except json.JSONDecodeError:
+                                pass
+                triage_out = Path(triage_report_dir)
+                triage_out.mkdir(parents=True, exist_ok=True)
+                top_buckets = build_top_failures(records, top_n=top_failures)
+                # Write triage.json
+                triage_json_path = triage_out / f"{suite}-triage.json"
+                triage_data = {
+                    "suite": suite,
+                    "top_failures": top_buckets,
+                    "total_records": len(records),
+                }
+                triage_json_path.write_text(
+                    json.dumps(triage_data, indent=2, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+                # Write triage.md
+                triage_md_path = triage_out / f"{suite}-triage.md"
+                triage_md_path.write_text(
+                    format_triage_markdown(suite, top_buckets),
+                    encoding="utf-8",
+                )
+                print(f"triage report: {triage_json_path}", file=sys.stderr)
+                print(f"triage report: {triage_md_path}", file=sys.stderr)
+            except Exception as exc:
+                print(f"WARNING: triage report generation failed: {exc}", file=sys.stderr)
 
         if web_ui:
             refresh_web_ui_data()
