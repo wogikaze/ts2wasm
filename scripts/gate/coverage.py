@@ -23,6 +23,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -52,6 +53,8 @@ def usage():
     print("  --schema-version N     Require schema version N (rejects on mismatch)")
     print("  --max-unknown-unsupported N  Reject if unknown-unsupported count exceeds N")
     print("  --require-evidence-key KEY   Require evidence key (repeatable)")
+    print("  --replay-set-seeds PATH      Replay-set seeds file to validate before coverage check")
+    print("  --skip-replay-set            Skip replay-set validation")
 
 
 # ---------------------------------------------------------------------------
@@ -534,6 +537,8 @@ def main():
     parser.add_argument("--schema-version", type=int, default=None, help="Require schema version (rejects if jsonl records have different schema_version)")
     parser.add_argument("--max-unknown-unsupported", type=int, default=None, help="Reject if unknown-unsupported count exceeds threshold")
     parser.add_argument("--require-evidence-key", type=str, action="append", default=[], help="Require evidence key (repeatable)")
+    parser.add_argument("--replay-set-seeds", type=str, default=None, help="Replay-set seeds file to validate before coverage check")
+    parser.add_argument("--skip-replay-set", action="store_true", help="Skip replay-set validation")
     parser.add_argument("args", nargs=argparse.REMAINDER, help="Base and current doc paths")
 
     parsed, unknown = parser.parse_known_args()
@@ -597,6 +602,38 @@ def main():
             for msg in missing_keys:
                 print(f"ERROR: {msg}", file=sys.stderr)
             return 1
+
+    # Replay-set validation: validate seeds files before using them for coverage.
+    # Skips when --skip-replay-set is set or when seeds are not the data source.
+    if not parsed.skip_replay_set:
+        replay_set_path = None
+        if parsed.replay_set_seeds:
+            replay_set_path = REPO_ROOT / parsed.replay_set_seeds
+        elif parsed.shards or parsed.check_regression:
+            # Default seeds file for test262
+            default_seeds = REPO_ROOT / "scripts" / "data" / "test262-semantic-core-seeds.txt"
+            if default_seeds.is_file():
+                replay_set_path = default_seeds
+        else:
+            # Suite-level delta gate does not use seeds — skip
+            pass
+
+        if replay_set_path and replay_set_path.is_file():
+            cmd = [
+                sys.executable,
+                str(REPO_ROOT / "scripts" / "run" / "reference-corpus.py"),
+                "replay-set",
+                "--check",
+                str(replay_set_path),
+                "--allow-missing-corpora",
+            ]
+            rp_result = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO_ROOT)
+            if rp_result.returncode != 0:
+                print(f"ERROR: replay-set validation failed for {replay_set_path}",
+                      file=sys.stderr)
+                print(rp_result.stderr[:500], file=sys.stderr)
+                return 1
+            print(f"replay-set validation OK: {replay_set_path}", file=sys.stderr)
 
     if parsed.shards:
         return run_shard_metrics(positional)

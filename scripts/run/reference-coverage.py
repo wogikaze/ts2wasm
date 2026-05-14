@@ -56,6 +56,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
 # tsc/tsgo suites use raw source directly.
 test262_runner = None
 
+# Schema v2 record support — provides make_record() for coverage JSONL.
+# Imported early so _canonicalize_jsonl can use it unconditionally.
+from coverage_outcome import make_record, CoverageOutcome, CoveragePhase
+
 def _ensure_test262_runner():
     global test262_runner
     if test262_runner is None:
@@ -1065,11 +1069,103 @@ def feature_label(diag_code, err_file, file_path, phase=None):
     return result
 
 
+def _infer_ts_boundary(rec: dict) -> str | None:
+    """Infer the TypeScript pipeline boundary from record context.
+
+    test262 tests are always ``ts-emit`` (JavaScript executed through full pipeline).
+    For TypeScript suites (tsc/tsgo), a ``diagnostic_code`` starting with
+    ``UnsupportedSyntax`` or ``SyntaxError`` suggests ``ts-parse``; otherwise
+    defaults to ``ts-emit``.
+    """
+    suite = rec.get("suite", "")
+    if suite == "test262":
+        return "ts-emit"
+    if suite in ("tsc", "tsgo"):
+        diag = rec.get("diagnostic_code") or ""
+        if diag.startswith(("UnsupportedSyntax", "SyntaxError", "UnsupportedTypeScriptSyntax")):
+            return "ts-parse"
+        reason = rec.get("reason") or ""
+        if "parse" in reason.lower() or "syntax" in reason.lower():
+            return "ts-parse"
+        return "ts-emit"
+    return None
+
+
+def _enrich_schema_v2(rec: dict) -> dict:
+    """Add schema v2 fields (schema_version, outcome, build_pass, semantic_checked,
+    ts_boundary) to a JSONL record that currently lacks them.
+
+    Uses the legacy ``status`` field to derive outcome and infers ``ts_boundary``
+    from suite context.  Records that already have ``schema_version`` are left
+    unchanged.
+    """
+    if rec.get("schema_version") is not None:
+        return rec
+
+    status = rec.get("status", "")
+    expected = rec.get("expected") or ""
+
+    # Map status to outcome
+    if status == "pass":
+        if isinstance(expected, str) and expected.startswith("negative"):
+            outcome = CoverageOutcome.VERIFIED_NEGATIVE_COMPILE
+        else:
+            outcome = CoverageOutcome.SEMANTIC_PASS
+    elif status == "mismatch":
+        outcome = CoverageOutcome.SEMANTIC_MISMATCH
+    elif status == "fail":
+        outcome = CoverageOutcome.INTERNAL_FAILURE
+    elif status == "build_pass":
+        outcome = CoverageOutcome.BUILD_PASS
+    elif status == "unsupported":
+        outcome = CoverageOutcome.UNSUPPORTED
+    elif status == "blocked":
+        outcome = CoverageOutcome.BLOCKED
+    elif status == "runtime_error":
+        outcome = CoverageOutcome.RUNTIME_ERROR
+    elif status == "oracle_skipped":
+        outcome = CoverageOutcome.ORACLE_SKIPPED
+    elif status == "skip-with-reason":
+        outcome = CoverageOutcome.SKIP_WITH_REASON
+    else:
+        return rec  # unknown status, leave unchanged
+
+    ts_boundary = rec.get("ts_boundary") or _infer_ts_boundary(rec)
+
+    # Rebuild the record using make_record so all derived fields are consistent
+    new_rec = json.loads(make_record(
+        suite=rec.get("suite", ""),
+        case=rec.get("case", ""),
+        outcome=outcome,
+        phase=None,
+        target=rec.get("target", "wasm-iwasm"),
+        expected=rec.get("expected"),
+        actual=rec.get("actual"),
+        reason=rec.get("reason"),
+        tracking=rec.get("tracking"),
+        diagnostic_code=rec.get("diagnostic_code"),
+        feature_label=rec.get("feature_label"),
+        unresolved_symbol=rec.get("unresolved_symbol"),
+        harness_includes=rec.get("harness_includes"),
+        source_code=rec.get("source_code"),
+        error_line=rec.get("error_line"),
+        stderr=rec.get("stderr"),
+        node_exit_status=rec.get("node_exit_status"),
+        iwasm_exit_status=rec.get("iwasm_exit_status"),
+        duration_ms=rec.get("duration_ms"),
+        ts_boundary=ts_boundary,
+    ))
+    return new_rec
+
+
 def _canonicalize_jsonl(jsonl_path):
     """Re-sort JSONL file by case path for reproducible ordering.
 
-    Reads all records, sorts by the 'case' field, and rewrites the file.
-    This ensures that parallel execution produces a deterministic JSONL output.
+    Reads all records, enriches them with schema v2 fields (schema_version,
+    outcome, build_pass, semantic_checked), sorts by the 'case' field,
+    and rewrites the file.
+    This ensures that parallel execution produces a deterministic JSONL output
+    with complete schema v2 coverage fields.
     """
     if not jsonl_path.is_file():
         return
@@ -1095,7 +1191,8 @@ def _canonicalize_jsonl(jsonl_path):
                 if "raw" in rec and len(rec) == 1:
                     f.write(rec["raw"] + "\n")
                 else:
-                    f.write(json.dumps(rec, sort_keys=True) + "\n")
+                    enriched = _enrich_schema_v2(rec)
+                    f.write(json.dumps(enriched, sort_keys=True) + "\n")
     except OSError:
         pass
 

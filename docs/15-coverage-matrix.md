@@ -34,6 +34,20 @@ workstream の進行度ではなく、外部参照スイートに対してどこ
 
 ## Metric Definitions
 
+### Schema Version
+
+Coverage-runner JSONL records use **schema version 2** (defined in `scripts/lib/coverage_outcome.py`). Each record includes `schema_version: 2`, a canonical `outcome` string from the `CoverageOutcome` enum, and boolean `build_pass` / `semantic_checked` fields. Legacy schema v1 records (without `schema_version`) are still accepted by the schema checker for backward compatibility.
+
+### Oracle Policy
+
+The test262 runner controls Node.js oracle invocation via the `OraclePolicy` enum:
+
+- **`auto`** (default): Oracle invoked when Node comparison completes within timeout.
+- **`always`**: Oracle always invoked; `oracle_skipped` records produced on failure.
+- **`never`**: Oracle never invoked; successful build records use `build_pass` outcome.
+
+Set via `TS2WASM_TEST262_NODE_ORACLE=always|never|auto` environment variable.
+
 Executed:
 
 - 実際に `mise run reference-coverage` で走らせた件数。
