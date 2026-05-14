@@ -204,6 +204,7 @@ directories:
     - boolean-symbol-prototype.ts
     - console-log.ts
     - console-complete.ts
+    - native-error-types.ts
     - date-annexb-get-year.ts
     - date-annexb-set-year-unsupported.ts
     - date-annexb-to-gmt-string-unsupported.ts

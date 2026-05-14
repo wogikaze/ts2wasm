@@ -36,20 +36,24 @@ pub enum ModuleLoadKind {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum BuiltinErrorConstructor {
     Error,
+    EvalError,
     RangeError,
-    TypeError,
     ReferenceError,
     SyntaxError,
+    TypeError,
+    URIError,
 }
 
 impl BuiltinErrorConstructor {
     pub fn from_name(name: &str) -> Option<Self> {
         match name {
             "Error" => Some(Self::Error),
+            "EvalError" => Some(Self::EvalError),
             "RangeError" => Some(Self::RangeError),
-            "TypeError" => Some(Self::TypeError),
             "ReferenceError" => Some(Self::ReferenceError),
             "SyntaxError" => Some(Self::SyntaxError),
+            "TypeError" => Some(Self::TypeError),
+            "URIError" => Some(Self::URIError),
             _ => None,
         }
     }
@@ -57,9 +61,12 @@ impl BuiltinErrorConstructor {
     pub fn parent(self) -> Option<Self> {
         match self {
             Self::Error => None,
-            Self::RangeError | Self::TypeError | Self::ReferenceError | Self::SyntaxError => {
-                Some(Self::Error)
-            }
+            Self::EvalError
+            | Self::RangeError
+            | Self::ReferenceError
+            | Self::SyntaxError
+            | Self::TypeError
+            | Self::URIError => Some(Self::Error),
         }
     }
 }

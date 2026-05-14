@@ -2419,6 +2419,16 @@ fn build_smoke_atomics_complete() {
 
 // Console API complete (log, info, debug, warn, error)
 #[test]
+fn build_smoke_native_error_types() {
+    let result = run_fixture("builtins-and-io/native-error-types.ts");
+    assert!(
+        result.is_ok(),
+        "EvalError/RangeError/ReferenceError/SyntaxError/TypeError/URIError should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_console_complete() {
     let result = run_fixture("builtins-and-io/console-complete.ts");
     assert!(
