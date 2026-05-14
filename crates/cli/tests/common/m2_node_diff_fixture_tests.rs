@@ -3010,6 +3010,11 @@ fn unsupported_function_prototype_metadata_reports_issue_062f() {
 }
 
 #[test]
+fn function_prototype_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/function-prototype-metadata.ts");
+}
+
+#[test]
 fn returned_ordinary_function_closure_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/core-semantics/ordinary-function-closure-escape-unsupported.ts",

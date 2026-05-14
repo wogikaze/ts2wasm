@@ -2379,10 +2379,10 @@ b /* parameter b */,
 
     #[test]
     fn rejects_unsupported_regexp_flag_with_issue_linked_diagnostic() {
-        let err = parse_program("let r = /abc/d;").unwrap_err();
+        let err = parse_program("let r = /abc/z;").unwrap_err();
         assert_eq!(err.code, DiagCode::SyntaxError);
         assert!(err.message.contains("issue-202"));
-        assert!(err.message.contains("unsupported RegExp flag `d`"));
+        assert!(err.message.contains("unsupported RegExp flag `z`"));
         assert!(err.span.is_some());
     }
 
