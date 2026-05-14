@@ -104,9 +104,8 @@ mod tests {
     use super::types::*;
     use crate::lowered::RuntimeFn;
     use crate::lowered::{
-        ClassPrototypeRef, FuncId, FunctionCallKind, LocalId,
-        LoweredBinaryOp, LoweredExpr, LoweredFunction, LoweredProgram, LoweredStmt, LoweredUnaryOp,
-        ModuleLoadKind,
+        ClassPrototypeRef, FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr,
+        LoweredFunction, LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleLoadKind,
     };
     use ts2wasm_source::Span;
 
