@@ -517,6 +517,53 @@ fn lowered_snapshot_object_generator_super_call_next_returns_yield_value() {
 }
 
 #[test]
+fn lowered_snapshot_object_method_super_call_with_arg_dispatches() {
+    let program = parse_resolve_lower(
+        r#"
+        let parent = { method(value) { return value; } };
+        let child = { read(value) { return super.method(value); } };
+        Object.setPrototypeOf(child, parent);
+        let result = child.read(42);
+        "#,
+    );
+
+    assert!(
+        program.functions.iter().any(|function| function
+            .body
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::HeapClosureCall))),
+        "expected object method super.method(arg) to dispatch the prototype function value"
+    );
+}
+
+#[test]
+fn lowered_snapshot_object_generator_super_call_with_arg_next_returns_yield_value() {
+    let program = parse_resolve_lower(
+        r#"
+        let parent = { method(value) { return value; } };
+        let child = { *g() { yield super.method(42); } };
+        Object.setPrototypeOf(child, parent);
+        let result = child.g().next().value;
+        "#,
+    );
+
+    assert!(
+        !program
+            .top_level_statements
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::GeneratorNext)),
+        "expected direct object generator .next() to use the static yield value path"
+    );
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::HeapClosureCall)),
+        "expected yielded super.method(arg) value to dispatch the prototype function"
+    );
+}
+
+#[test]
 fn lowered_snapshot_object_group_by_arrow_callback_builds_buckets() {
     let program = parse_resolve_lower(
         r#"

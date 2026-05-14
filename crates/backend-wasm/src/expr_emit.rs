@@ -48,7 +48,7 @@ pub(super) const CLOSURE_CAPTURE_SLOTS_OFFSET: u32 = 16;
 pub(super) const CLOSURE_CAPTURE_SLOT_SIZE: u32 = 4;
 const ENV_CELL_SLOT_COUNT: u32 = 1;
 const ENV_CELL_VALUE_OFFSET: u32 = Layout::ARRAY_HEADER_SIZE;
-const MAX_SUPPORTED_HEAP_CLOSURE_USER_ARGS: usize = 1;
+const MAX_SUPPORTED_HEAP_CLOSURE_USER_ARGS: usize = 3;
 const CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY: u32 = 16;
 const PRIVATE_FIELD_SLOT_SIZE: u32 = 4;
 const PRIVATE_FIELD_COUNT_MASK: u32 = 0xffff;
@@ -469,8 +469,14 @@ impl WatEmitter<'_> {
         let closure = &args[0];
         let user_args = &args[1..];
         let closure_value = frame.heap_base_tmp();
-        let arg_value = frame.heap_value_tmp();
         let payload = frame.switch_value_tmp();
+        let arg_frame = frame.child_temp_frame();
+        let arg_eval_frame = arg_frame.child_temp_frame();
+        let arg_values = [
+            arg_frame.heap_base_tmp(),
+            arg_frame.heap_value_tmp(),
+            arg_frame.switch_value_tmp(),
+        ];
 
         writer.line_fmt(
             indent,
@@ -484,13 +490,13 @@ impl WatEmitter<'_> {
             closure_value,
             frame,
         );
-        if let Some(user_arg) = user_args.first() {
-            self.emit_expr(writer, user_arg, indent + 2, frame);
+        for (user_arg, arg_value) in user_args.iter().zip(arg_values.iter()) {
+            self.emit_expr(writer, user_arg, indent + 2, &arg_eval_frame);
             writer.push_str(&format!("{pad}  (local.set {arg_value})\n"));
             self.emit_gc_root_mirror_index(
                 writer.output_mut(),
                 &format!("{pad}  "),
-                arg_value,
+                *arg_value,
                 frame,
             );
         }
@@ -508,24 +514,33 @@ impl WatEmitter<'_> {
         ));
         // Dispatch table for NUMBER-tagged direct-local function tokens.
         for function in &self.program.functions {
-            if function.params.len() == user_args.len() {
-                writer.push_str(&format!(
-                    "{pad}      (if (i32.eq (local.get {payload}) (i32.const {}))\n",
-                    DIRECT_LOCAL_TOKEN_PAYLOAD_BASE + function.id.0 as i32
-                ));
-                if user_args.is_empty() {
-                    writer.push_str(&format!(
-                        "{pad}        (then (br $heap_closure_dispatch_done (call ${})))\n",
-                        function_symbol(function.id)
-                    ));
+            writer.push_str(&format!(
+                "{pad}      (if (i32.eq (local.get {payload}) (i32.const {}))\n",
+                DIRECT_LOCAL_TOKEN_PAYLOAD_BASE + function.id.0 as i32
+            ));
+            writer.push_str(&format!("{pad}        (then\n"));
+            for param_index in 0..function.params.len() {
+                if let Some(arg_value) = arg_values
+                    .get(param_index)
+                    .filter(|_| param_index < user_args.len())
+                {
+                    writer.push_str(&format!("{pad}          (local.get {arg_value})\n"));
                 } else {
                     writer.push_str(&format!(
-                        "{pad}        (then (br $heap_closure_dispatch_done (call ${} (local.get {arg_value}))))\n",
-                        function_symbol(function.id)
+                        "{pad}          (i32.const {})\n",
+                        ValueTag::UNDEFINED
                     ));
                 }
-                writer.push_str(&format!("{pad}      )\n"));
             }
+            writer.push_str(&format!(
+                "{pad}          (call ${})\n",
+                function_symbol(function.id)
+            ));
+            writer.push_str(&format!(
+                "{pad}          (br $heap_closure_dispatch_done)\n"
+            ));
+            writer.push_str(&format!("{pad}        )\n"));
+            writer.push_str(&format!("{pad}      )\n"));
         }
         self.emit_not_callable_type_error(writer, indent + 6);
         writer.push_str(&format!("{pad}    ))\n"));
@@ -542,24 +557,32 @@ impl WatEmitter<'_> {
         writer.push_str(&format!("{pad}    ))\n"));
 
         for function in &self.program.functions {
-            let Some(capture_count) = function.params.len().checked_sub(user_args.len()) else {
-                continue;
-            };
-            writer.line_fmt(indent, format_args!("{pad}  (if (i32.and\n{pad}        (i32.eq (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_CODE_ID_OFFSET}))) (i32.const {}))\n{pad}        (i32.eq (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_CAPTURE_COUNT_OFFSET}))) (i32.const {capture_count})))\n", function.id.0));
-            writer.then(indent);
-            if !user_args.is_empty() {
-                writer.push_str(&format!("{pad}      (local.get {arg_value})\n"));
+            for capture_count in 0..=function.params.len() {
+                let user_param_count = function.params.len() - capture_count;
+                writer.line_fmt(indent, format_args!("{pad}  (if (i32.and\n{pad}        (i32.eq (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_CODE_ID_OFFSET}))) (i32.const {}))\n{pad}        (i32.eq (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_CAPTURE_COUNT_OFFSET}))) (i32.const {capture_count})))\n", function.id.0));
+                writer.then(indent);
+                for param_index in 0..user_param_count {
+                    if let Some(arg_value) = arg_values
+                        .get(param_index)
+                        .filter(|_| param_index < user_args.len())
+                    {
+                        writer.push_str(&format!("{pad}      (local.get {arg_value})\n"));
+                    } else {
+                        writer
+                            .push_str(&format!("{pad}      (i32.const {})\n", ValueTag::UNDEFINED));
+                    }
+                }
+                for capture_index in 0..capture_count {
+                    let offset = CLOSURE_CAPTURE_SLOTS_OFFSET
+                        + capture_index as u32 * CLOSURE_CAPTURE_SLOT_SIZE;
+                    writer.line_fmt(indent, format_args!("{pad}      (i32.load (i32.add (local.get {payload}) (i32.const {offset})))\n"));
+                }
+                writer.push_str(&format!(
+                    "{pad}      (call ${})\n",
+                    function_symbol(function.id)
+                ));
+                writer.push_str(&format!("{pad}      (br $heap_closure_dispatch_done)))\n"));
             }
-            for capture_index in 0..capture_count {
-                let offset =
-                    CLOSURE_CAPTURE_SLOTS_OFFSET + capture_index as u32 * CLOSURE_CAPTURE_SLOT_SIZE;
-                writer.line_fmt(indent, format_args!("{pad}      (i32.load (i32.add (local.get {payload}) (i32.const {offset})))\n"));
-            }
-            writer.push_str(&format!(
-                "{pad}      (call ${})\n",
-                function_symbol(function.id)
-            ));
-            writer.push_str(&format!("{pad}      (br $heap_closure_dispatch_done)))\n"));
         }
 
         self.emit_not_callable_type_error(writer, indent + 2);

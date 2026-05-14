@@ -2853,15 +2853,6 @@ impl super::super::Resolver {
         // super.method
         if receiver_name == "super" {
             if self.ctx.classes.current_class.is_none() {
-                if !args.is_empty() {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "object method super.method(...) with explicit arguments is not supported in this slice"
-                            .to_owned(),
-                        span: Some(span),
-                        phase: None,
-                    });
-                }
                 let this_local = self.resolve_local("this").map_err(|_| Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "super.method(...) requires class context or object method receiver"

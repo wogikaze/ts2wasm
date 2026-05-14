@@ -584,6 +584,7 @@ directories:
     - object-literal-computed-spread.ts
     - object-literal-proto.ts
     - object-literal-method.ts
+    - object-literal-super-method-args.ts
     - object-literal-method-mutable-capture.ts
     - object-literal-getter-descriptor.ts
     - object-literal-setter-descriptor.ts

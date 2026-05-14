@@ -3714,6 +3714,7 @@ fn core_expression_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-expressions/object-literal-computed-spread.ts",
         "fixtures/core-expressions/object-literal-proto.ts",
         "fixtures/core-expressions/object-literal-method.ts",
+        "fixtures/core-expressions/object-literal-super-method-args.ts",
         "fixtures/core-expressions/object-literal-method-mutable-capture.ts",
         "fixtures/core-expressions/object-literal-getter-descriptor.ts",
         "fixtures/core-expressions/object-literal-setter-descriptor.ts",
@@ -3736,6 +3737,11 @@ fn core_expression_fixtures_match_node_output_under_iwasm() {
     ] {
         assert_fixture_matches_node(fixture);
     }
+}
+
+#[test]
+fn object_literal_super_method_args_match_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-expressions/object-literal-super-method-args.ts");
 }
 
 #[test]
