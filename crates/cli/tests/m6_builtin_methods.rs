@@ -1316,6 +1316,16 @@ fn build_smoke_date_set_utc_full_year() {
 }
 
 #[test]
+fn build_smoke_date_set_utc_components() {
+    let result = run_fixture("builtins-and-io/date-set-utc-components.ts");
+    assert!(
+        result.is_ok(),
+        "Date UTC component setters should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_date_complete() {
     let result = run_fixture("builtins-and-io/date-complete.ts");
     assert!(

@@ -814,6 +814,172 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
+        if method == "setUTCMonth" && self.is_date_receiver(object) {
+            if args.is_empty() || args.len() > 2 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 to 2 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let day = args
+                .get(1)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetUTCMonth,
+                args: vec![self.lower_expr(object)?, self.lower_expr(&args[0])?, day],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setUTCDate" && self.is_date_receiver(object) {
+            if args.len() != 1 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 argument, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetUTCDate,
+                args: vec![self.lower_expr(object)?, self.lower_expr(&args[0])?],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setUTCHours" && self.is_date_receiver(object) {
+            if args.is_empty() || args.len() > 4 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 to 4 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let minutes = args
+                .get(1)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            let seconds = args
+                .get(2)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            let ms = args
+                .get(3)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetUTCHours,
+                args: vec![
+                    self.lower_expr(object)?,
+                    self.lower_expr(&args[0])?,
+                    minutes,
+                    seconds,
+                    ms,
+                ],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setUTCMinutes" && self.is_date_receiver(object) {
+            if args.is_empty() || args.len() > 3 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 to 3 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let seconds = args
+                .get(1)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            let ms = args
+                .get(2)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetUTCMinutes,
+                args: vec![
+                    self.lower_expr(object)?,
+                    self.lower_expr(&args[0])?,
+                    seconds,
+                    ms,
+                ],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setUTCSeconds" && self.is_date_receiver(object) {
+            if args.is_empty() || args.len() > 2 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 to 2 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let ms = args
+                .get(1)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetUTCSeconds,
+                args: vec![self.lower_expr(object)?, self.lower_expr(&args[0])?, ms],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setUTCMilliseconds" && self.is_date_receiver(object) {
+            if args.len() != 1 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 argument, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetUTCMilliseconds,
+                args: vec![self.lower_expr(object)?, self.lower_expr(&args[0])?],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
         if method == "getTimezoneOffset" && self.is_date_receiver(object) {
             if !args.is_empty() {
                 return Err(Diagnostic {
