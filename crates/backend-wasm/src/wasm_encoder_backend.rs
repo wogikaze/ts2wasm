@@ -207,8 +207,22 @@ fn build_single_function(
     }
 
     let mut func = wasm_encoder::Function::new(local_groups);
+    emit_single_function_body(&mut func, &f.body, global_indices, func_name_indices);
 
-    for instr in &f.body {
+    // Every function body must end with End in binary wasm.
+    func.instruction(&I::End);
+
+    func
+}
+
+fn emit_single_function_body(
+    func: &mut wasm_encoder::Function,
+    body: &[WasmInstr],
+    global_indices: &HashMap<String, u32>,
+    func_name_indices: &HashMap<String, u32>,
+) {
+    use wasm_encoder::Instruction as I;
+    for instr in body {
         match instr {
             WasmInstr::LocalGet(i) => {
                 func.instruction(&I::LocalGet(*i as u32));
@@ -387,11 +401,6 @@ fn build_single_function(
             WasmInstr::Raw(_raw) => {}
         }
     }
-
-    // Every function body must end with End in binary wasm.
-    func.instruction(&I::End);
-
-    func
 }
 
 fn global_init_expr(instr: &WasmInstr, global_indices: &HashMap<String, u32>) -> ConstExpr {
