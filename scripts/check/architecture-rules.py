@@ -114,7 +114,6 @@ EXCLUDED_FILENAMES = {
 FILE_SIZE_ALLOWLIST_1200 = {
     # P4: Decomposition — parser / lexer / runtime domain
     "fixtures/catalog.yaml": "P16: coverage matrix — 1697 lines",
-    "crates/backend-wasm/src/runtime/object/emit.rs": "P4: runtime domain split — 1290 lines",
     "crates/ir/src/lowered/resolver/mod.rs": "P14: resolver main mod — 1417 lines",
     "crates/backend-wasm/src/runtime/core/bigint.rs": "P4: runtime domain split",
     "crates/backend-wasm/src/expr_emit.rs": "P4: expression emitter — pending domain split",
@@ -142,7 +141,6 @@ FILE_SIZE_ALLOWLIST_1200 = {
     "crates/backend-wasm/src/runtime_objects.rs": "P4: runtime domain split",
     "crates/backend-wasm/src/runtime_strings.rs": "P4: runtime domain split",
     # P7: Resolver decomposition
-    "crates/backend-wasm/src/runtime/object/emit.rs": "I-20260513-HGGTXF: object runtime emitter pending domain split",
     "crates/ir/src/lowered/program.rs": "P7: resolver decomposition",
     "crates/ir/src/lowered/resolver/array.rs": "P7: resolver decomposition",
     "crates/ir/src/lowered/resolver/call/method.rs": "P7: resolver decomposition",
