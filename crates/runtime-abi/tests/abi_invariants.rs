@@ -489,3 +489,45 @@ fn wasm_tagged_wire_is_i32() {
     assert_eq!(v, (100 << 3) | 4);
     let _: WasmTaggedJsWire = 0i32; // type-level verification
 }
+
+// ---------------------------------------------------------------------------
+// ABI snapshot gate
+// ---------------------------------------------------------------------------
+
+#[test]
+fn runtime_abi_snapshot_includes_version() {
+    let snapshot = ts2wasm_runtime_abi::dump_runtime_abi_snapshot();
+    assert!(
+        snapshot.contains(&format!("ABI_VERSION={}", ts2wasm_runtime_abi::RuntimeConst::ABI_VERSION)),
+        "snapshot should include ABI_VERSION={}\n{snapshot}",
+        ts2wasm_runtime_abi::RuntimeConst::ABI_VERSION,
+    );
+    assert!(
+        snapshot.contains("GC_HEADER_SIZE="),
+        "snapshot should include GC constants"
+    );
+    assert!(
+        snapshot.contains("TAG_SHIFT="),
+        "snapshot should include ValueTag constants"
+    );
+    assert!(
+        snapshot.contains("OBJECT_HEADER_SIZE="),
+        "snapshot should include object layout constants"
+    );
+    assert!(
+        snapshot.contains("ARRAY_HEADER_SIZE="),
+        "snapshot should include array layout constants"
+    );
+}
+
+#[test]
+fn runtime_abi_snapshot_compat_check() {
+    match ts2wasm_runtime_abi::check_abi_snapshot_compat() {
+        Ok(snapshot) => {
+            assert!(!snapshot.is_empty(), "snapshot should not be empty");
+        }
+        Err(msg) => {
+            panic!("ABI compat check failed:\n{msg}");
+        }
+    }
+}
