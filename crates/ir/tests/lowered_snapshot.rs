@@ -847,6 +847,38 @@ fn lowered_object_generator_return_next_uses_completion_value() {
 }
 
 #[test]
+fn lowered_object_generator_implicit_completion_uses_undefined() {
+    for source in [
+        "let obj = { *g() { ({ yield: 1 }); } };\n\
+         let result = obj.g().next();",
+        "let obj = { *g() { ({ get yield() { return 1; } }); } };\n\
+         let result = obj.g().next();",
+        "let obj = { *g() { (function yield() {}); } };\n\
+         let result = obj.g().next();",
+    ] {
+        let program = parse_resolve_lower(source);
+
+        validate_lowered(&program).expect("implicit-completion generator method should validate");
+        let Some(LoweredStmt::Let(_, result_expr, _)) = program.top_level_statements.get(1) else {
+            panic!(
+                "expected result binding: {:?}",
+                program.top_level_statements
+            );
+        };
+        assert!(
+            !lowered_expr_contains_runtime_call(result_expr, RuntimeFn::GeneratorNext),
+            "static implicit generator completion should not call generic GeneratorNext: {result_expr:?}"
+        );
+        assert!(matches!(
+            result_expr,
+            LoweredExpr::ObjectNew { props, .. }
+                if props.iter().any(|(key, value)| key == "value" && matches!(value, LoweredExpr::Undefined(_)))
+                    && props.iter().any(|(key, value)| key == "done" && matches!(value, LoweredExpr::Bool(true, _)))
+        ));
+    }
+}
+
+#[test]
 fn lowered_extracted_object_method_length_uses_function_metadata() {
     let program = parse_resolve_lower(
         "let obj = { method(a, b,) { return a; }, *gen(a, b,) { return b; } };\n\

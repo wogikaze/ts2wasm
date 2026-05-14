@@ -205,7 +205,7 @@ impl super::super::Resolver {
         let value = match function.body.as_slice() {
             [] => LoweredExpr::Undefined(Span::generated("undefined")),
             [LoweredStmt::Return(expr, _)] => static_generator_completion_value(expr)?,
-            _ => return None,
+            body => static_generator_implicit_completion_value(body)?,
         };
         Some(Self::generator_next_result(value, true))
     }
@@ -3674,6 +3674,57 @@ fn static_generator_completion_value(expr: &LoweredExpr) -> Option<LoweredExpr> 
         | LoweredExpr::Null(..)
         | LoweredExpr::Undefined(..) => Some(expr.clone()),
         _ => None,
+    }
+}
+
+fn static_generator_implicit_completion_value(body: &[LoweredStmt]) -> Option<LoweredExpr> {
+    body.iter()
+        .all(static_generator_implicit_completion_stmt_is_local_only)
+        .then(|| LoweredExpr::Undefined(Span::generated("undefined")))
+}
+
+fn static_generator_implicit_completion_stmt_is_local_only(stmt: &LoweredStmt) -> bool {
+    match stmt {
+        LoweredStmt::Block(stmts, _) => stmts
+            .iter()
+            .all(static_generator_implicit_completion_stmt_is_local_only),
+        LoweredStmt::Let(_, expr, _)
+        | LoweredStmt::Assign(_, expr, _)
+        | LoweredStmt::Expr(expr, _) => {
+            static_generator_implicit_completion_expr_is_local_only(expr)
+        }
+        _ => false,
+    }
+}
+
+fn static_generator_implicit_completion_expr_is_local_only(expr: &LoweredExpr) -> bool {
+    match expr {
+        LoweredExpr::Number(..)
+        | LoweredExpr::DecimalNumber(..)
+        | LoweredExpr::BigIntLiteral { .. }
+        | LoweredExpr::String(..)
+        | LoweredExpr::Bool(..)
+        | LoweredExpr::Null(..)
+        | LoweredExpr::Undefined(..)
+        | LoweredExpr::Local(..)
+        | LoweredExpr::ArrowFn { .. } => true,
+        LoweredExpr::ObjectNew { props, .. } => props
+            .iter()
+            .all(|(_, value)| static_generator_implicit_completion_expr_is_local_only(value)),
+        LoweredExpr::Block { stmts, result, .. } => {
+            stmts
+                .iter()
+                .all(static_generator_implicit_completion_stmt_is_local_only)
+                && static_generator_implicit_completion_expr_is_local_only(result)
+        }
+        LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::ObjectDefineProperty,
+            args,
+            ..
+        } => args
+            .iter()
+            .all(static_generator_implicit_completion_expr_is_local_only),
+        _ => false,
     }
 }
 
