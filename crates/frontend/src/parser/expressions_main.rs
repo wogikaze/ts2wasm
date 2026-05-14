@@ -1953,74 +1953,22 @@ impl Parser {
                             };
                             let key_start = key_span.start;
 
-                            // Handle getter/setter accessor in object literals: { get foo() {} }
-                            if (key == "get" || key == "set")
-                                && matches!(self.peek(), Some(Token::Ident(_)))
+                            // Handle getter/setter accessors in object literals:
+                            // `{ get foo() {} }`, `{ get ["foo"]() {} }`.
+                            if let Some(prop) =
+                                self.parse_object_literal_accessor(&key, key_start)?
                             {
-                                let accessor_kind = key.clone();
-                                let (prop_name, _) = self.expect_ident()?;
-                                self.consume_typescript_generic_parameter_list().ok();
-                                if self.consume(TokenKind::LeftParen) {
-                                    let mut params = Vec::new();
-                                    if !self.consume(TokenKind::RightParen) {
-                                        loop {
-                                            let param =
-                                                self.parse_param(false, params.is_empty())?;
-                                            let is_rest = param.is_rest;
-                                            if !param.is_this_parameter {
-                                                params.push((param.name, param.default, is_rest));
-                                            }
-                                            if self.consume(TokenKind::RightParen) {
-                                                break;
-                                            }
-                                            if is_rest {
-                                                return Err(self
-                                                    .invalid_rest_binding_diagnostic(param.span));
-                                            }
-                                            self.expect(TokenKind::Comma)?;
-                                            if self.consume(TokenKind::RightParen) {
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    if self.consume(TokenKind::Colon) {
-                                        self.skip_type_annotation_until(&[TokenKind::LeftBrace])
-                                            .ok();
-                                    }
-                                    // Try to consume function body; if absent (ambient/getter without body),
-                                    // use an empty body
-                                    let body = if matches!(self.peek(), Some(Token::LeftBrace)) {
-                                        self.block()?
-                                    } else {
-                                        Vec::new()
-                                    };
-                                    let end = self.prev_span().map(|s| s.end).unwrap_or(key_start);
-                                    let expr = Expr::FunctionExpr {
-                                        name: format!("{accessor_kind} {prop_name}"),
-                                        params,
-                                        body,
-                                        span: Span {
-                                            start: key_start,
-                                            end,
-                                        },
-                                    };
-                                    props.push(ObjectProp::MethodShorthand {
-                                        key: prop_name,
-                                        value: expr,
-                                    });
+                                props.push(prop);
+                                if self.consume(TokenKind::RightBrace) {
+                                    break;
+                                }
+                                if self.consume(TokenKind::Comma) {
                                     if self.consume(TokenKind::RightBrace) {
                                         break;
                                     }
-                                    if self.consume(TokenKind::Comma) {
-                                        if self.consume(TokenKind::RightBrace) {
-                                            break;
-                                        }
-                                        continue;
-                                    }
-                                    self.expect(TokenKind::Comma)?;
-                                } else {
-                                    // Not an accessor, fall through to normal property handling
+                                    continue;
                                 }
+                                self.expect(TokenKind::Comma)?;
                             }
                             if let Some(val) =
                                 self.parse_object_literal_method(key.clone(), key_start)?
@@ -2167,6 +2115,94 @@ impl Parser {
 
                 phase: None,}),
         }
+    }
+
+    fn parse_object_literal_accessor(
+        &mut self,
+        accessor_kind: &str,
+        accessor_start: usize,
+    ) -> Result<Option<ObjectProp>, Diagnostic> {
+        if accessor_kind != "get" && accessor_kind != "set" {
+            return Ok(None);
+        }
+        if matches!(
+            self.peek(),
+            Some(Token::Colon | Token::LeftParen | Token::Comma | Token::RightBrace)
+        ) {
+            return Ok(None);
+        }
+
+        let checkpoint = self.cursor;
+        let parsed_key = self.parse_object_key()?;
+        self.consume_typescript_generic_parameter_list().ok();
+        if !self.consume(TokenKind::LeftParen) {
+            self.cursor = checkpoint;
+            return Ok(None);
+        }
+
+        let mut params = Vec::new();
+        if !self.consume(TokenKind::RightParen) {
+            loop {
+                let param = self.parse_param(false, params.is_empty())?;
+                let is_rest = param.is_rest;
+                if !param.is_this_parameter {
+                    params.push((param.name, param.default, is_rest));
+                }
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
+                if is_rest {
+                    return Err(self.invalid_rest_binding_diagnostic(param.span));
+                }
+                self.expect(TokenKind::Comma)?;
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
+            }
+        }
+        if self.consume(TokenKind::Colon) {
+            self.skip_type_annotation_until(&[TokenKind::LeftBrace])
+                .ok();
+        }
+        let body = if matches!(self.peek(), Some(Token::LeftBrace)) {
+            self.block()?
+        } else {
+            Vec::new()
+        };
+        let end = self
+            .prev_span()
+            .map(|span| span.end)
+            .unwrap_or(accessor_start);
+
+        Ok(Some(match parsed_key {
+            ParsedObjectKey::Static { key, .. } => {
+                let expr = Expr::FunctionExpr {
+                    name: format!("{accessor_kind} {key}"),
+                    params,
+                    body,
+                    span: Span {
+                        start: accessor_start,
+                        end,
+                    },
+                };
+                ObjectProp::MethodShorthand { key, value: expr }
+            }
+            ParsedObjectKey::ComputedKey { key } => {
+                let expr = Expr::FunctionExpr {
+                    name: format!("{accessor_kind} [computed]"),
+                    params,
+                    body,
+                    span: Span {
+                        start: accessor_start,
+                        end,
+                    },
+                };
+                ObjectProp::ComputedKey {
+                    key: Box::new(key),
+                    value: expr,
+                }
+            }
+        }))
     }
 
     fn parse_object_literal_method(

@@ -2400,6 +2400,47 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_computed_accessor_key_expression() {
+        let program = parse_program(
+            "let key = 'value'; let object = { get [\"a\"]() { return 1; }, set [1](v) { this.v = v; }, get [key]() { return 2; } };",
+        )
+        .unwrap();
+
+        match &program[1] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 3);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, params, .. }
+                    } if key == "a" && name == "get a" && params.is_empty()
+                ));
+                assert!(matches!(
+                    &props[1],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, params, .. }
+                    } if key == "1" && name == "set 1" && params.len() == 1
+                ));
+                assert!(matches!(
+                    &props[2],
+                    ObjectProp::ComputedKey {
+                        key,
+                        value: Expr::FunctionExpr { name, params, .. }
+                    } if matches!(key.as_ref(), Expr::Ident { name, .. } if name == "key")
+                        && name == "get [computed]"
+                        && params.is_empty()
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_optional_chaining_expression_forms() {
         let program =
             parse_program("let a = obj?.x; let b = obj?.[key]; let c = fn?.(1);").unwrap();
