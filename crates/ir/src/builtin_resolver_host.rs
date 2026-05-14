@@ -123,7 +123,7 @@ pub(super) fn resolve_builtin_call(
                 phase: None,});
         }
         if object_name == "console" {
-            return if property == "log" {
+            return if is_supported_console_method(property) {
                 Ok(Some(BuiltinId::ConsoleLog))
             } else {
                 Err(Diagnostic {
@@ -161,6 +161,25 @@ pub(super) fn resolve_builtin_call(
     }
 
     Ok(None)
+}
+
+fn is_supported_console_method(property: &str) -> bool {
+    matches!(
+        property,
+        "log"
+            | "warn"
+            | "error"
+            | "info"
+            | "debug"
+            | "table"
+            | "group"
+            | "groupEnd"
+            | "time"
+            | "timeEnd"
+            | "count"
+            | "countReset"
+            | "assert"
+    )
 }
 
 pub(super) fn resolve_bun_file_text_builtin(

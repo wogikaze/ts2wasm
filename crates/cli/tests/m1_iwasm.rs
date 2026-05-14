@@ -52,10 +52,10 @@ fn console_output_runs_under_iwasm() {
     let temp = std::env::temp_dir().join(format!("ts2wasm-m1-console-{}", std::process::id()));
     fs::create_dir_all(&temp).unwrap();
 
-    let output = temp.join("console-complete.wasm");
     let input = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join("fixtures/builtins-and-io/console-complete.ts");
+    let output = temp.join("console_complete.wasm");
 
     let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
         .arg("build")
@@ -73,6 +73,7 @@ fn console_output_runs_under_iwasm() {
     );
 
     let run = run_iwasm_with_timeout(Command::new("iwasm").arg(&output)).unwrap();
+
     assert!(
         !run.timed_out,
         "iwasm timed out\nstdout:\n{}\nstderr:\n{}",
@@ -87,7 +88,7 @@ fn console_output_runs_under_iwasm() {
     );
     assert_eq!(
         String::from_utf8_lossy(&run.output.stdout),
-        "log\ninfo 1\ndebug\nwarn\nerror\ntable\ngroup\ncollapsed\ncount\ntimer\nassert\n"
+        "log 1\ninfo true\ndebug false\nwarn message\nerror message\ntable 2\ngroup\ngroup\ntimer\ntimer\ncounter\ncounter\ntrue assertion checked\n"
     );
 }
 
