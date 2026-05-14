@@ -16,11 +16,16 @@ Options:
                               (default: fixtures/).
   --output FILE               Output JSON file for historical results
                               (default: artifacts/benchmark-results.json).
-  --sample N                  Number of random fixtures to benchmark per
+  --sample N                  Number of fixtures to benchmark per
                               subdirectory (default: 2).
+  --seed N                    Random seed for deterministic fixture sampling
+                              (default: 0).
   --threshold-time PCT        Compilation time regression threshold as
                               percentage (default: 20). Alert if new time
                               exceeds previous by this %.
+  --threshold-time-min-delta-ms N
+                              Minimum absolute compile-time increase before
+                              reporting a time regression (default: 25).
   --threshold-size PCT        Wasm size regression threshold as percentage
                               (default: 20). Alert if new size exceeds
                               previous by this %.
@@ -46,7 +51,9 @@ REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 DEFAULT_OUTPUT_FILE = "artifacts/benchmark-results.json"
 DEFAULT_FIXTURES_DIR = "fixtures"
 DEFAULT_SAMPLE = 2
+DEFAULT_SEED = 0
 DEFAULT_THRESHOLD_PCT = 20
+DEFAULT_THRESHOLD_TIME_MIN_DELTA_MS = 25
 
 # Subdirectories excluded from performance sampling.
 EXCLUDED_DIRS = {
@@ -69,12 +76,13 @@ def show_help(exit_code=0):
     sys.exit(exit_code)
 
 
-def collect_fixtures(fixtures_dir: Path, sample: int) -> list:
+def collect_fixtures(fixtures_dir: Path, sample: int, seed: int) -> list:
     """Collect fixture .ts files from subdirectories of fixtures_dir.
 
     Returns a list of (label, absolute_path) tuples. Samples up to `sample`
-    random files per subdirectory. Skips excluded directories and empty dirs.
+    deterministic files per subdirectory. Skips excluded directories and empty dirs.
     """
+    rng = random.Random(seed)
     entries = []
     if not fixtures_dir.is_dir():
         eprint(f"error: fixtures directory not found: {fixtures_dir}")
@@ -92,11 +100,11 @@ def collect_fixtures(fixtures_dir: Path, sample: int) -> list:
         )
         if not ts_files:
             continue
-        selected = random.sample(ts_files, min(sample, len(ts_files)))
+        selected = rng.sample(ts_files, min(sample, len(ts_files)))
         for sf in selected:
             entries.append((f"{d.name}/{sf.name}", sf))
 
-    random.shuffle(entries)
+    rng.shuffle(entries)
     return entries
 
 
@@ -181,12 +189,14 @@ def check_regression(
     metric_name: str,
     threshold_pct: int,
     regressions: list,
+    min_delta: int = 0,
 ):
     """Compare current vs previous metric and record regression if exceeded."""
     if previous <= 0:
         return
     threshold = compute_threshold(previous, threshold_pct)
-    if current > threshold:
+    delta = current - previous
+    if current > threshold and delta >= min_delta:
         pct_increase = ((current - previous) / previous) * 100
         regressions.append({
             "fixture": label,
@@ -194,9 +204,36 @@ def check_regression(
             "current": current,
             "previous": previous,
             "threshold": threshold,
+            "min_delta": min_delta,
             "pct_increase": round(pct_increase, 1),
             "threshold_pct": threshold_pct,
         })
+
+
+def benchmark_config(
+    fixtures_dir_str: str,
+    sample: int,
+    seed: int,
+    threshold_time_pct: int,
+    threshold_size_pct: int,
+    threshold_time_min_delta_ms: int,
+) -> dict:
+    """Return the config fields that define a comparable benchmark run."""
+    return {
+        "fixtures_dir": fixtures_dir_str,
+        "sample": sample,
+        "seed": seed,
+        "threshold_time_pct": threshold_time_pct,
+        "threshold_size_pct": threshold_size_pct,
+        "threshold_time_min_delta_ms": threshold_time_min_delta_ms,
+    }
+
+
+def comparable_previous_record(previous_record: dict | None, config: dict) -> bool:
+    """Return true when aggregate regression comparison is meaningful."""
+    if not previous_record:
+        return False
+    return previous_record.get("benchmark_config") == config
 
 
 def main():
@@ -206,8 +243,10 @@ def main():
     fixtures_dir_str = DEFAULT_FIXTURES_DIR
     output_file_str = DEFAULT_OUTPUT_FILE
     sample = DEFAULT_SAMPLE
+    seed = DEFAULT_SEED
     threshold_time_pct = DEFAULT_THRESHOLD_PCT
     threshold_size_pct = DEFAULT_THRESHOLD_PCT
+    threshold_time_min_delta_ms = DEFAULT_THRESHOLD_TIME_MIN_DELTA_MS
     skip_build = False
     json_mode = False
     verbose = False
@@ -230,12 +269,26 @@ def main():
             except ValueError:
                 eprint(f"error: --sample requires an integer, got '{raw_args[i + 1]}'")
                 sys.exit(0)
+        elif a == "--seed" and i + 1 < len(raw_args):
+            try:
+                seed = int(raw_args[i + 1])
+                i += 2
+            except ValueError:
+                eprint(f"error: --seed requires an integer, got '{raw_args[i + 1]}'")
+                sys.exit(0)
         elif a == "--threshold-time" and i + 1 < len(raw_args):
             try:
                 threshold_time_pct = int(raw_args[i + 1])
                 i += 2
             except ValueError:
                 eprint("error: --threshold-time requires an integer")
+                sys.exit(0)
+        elif a == "--threshold-time-min-delta-ms" and i + 1 < len(raw_args):
+            try:
+                threshold_time_min_delta_ms = int(raw_args[i + 1])
+                i += 2
+            except ValueError:
+                eprint("error: --threshold-time-min-delta-ms requires an integer")
                 sys.exit(0)
         elif a == "--threshold-size" and i + 1 < len(raw_args):
             try:
@@ -267,10 +320,20 @@ def main():
     eprint(f"fixtures directory: {fixtures_dir}")
     eprint(f"output file: {output_path}")
     eprint(f"sample per directory: {sample}")
+    eprint(f"sample seed: {seed}")
     eprint(f"time threshold: {threshold_time_pct}%")
+    eprint(f"time min delta: {threshold_time_min_delta_ms}ms")
     eprint(f"size threshold: {threshold_size_pct}%")
 
-    fixtures = collect_fixtures(fixtures_dir, sample)
+    config = benchmark_config(
+        fixtures_dir_str,
+        sample,
+        seed,
+        threshold_time_pct,
+        threshold_size_pct,
+        threshold_time_min_delta_ms,
+    )
+    fixtures = collect_fixtures(fixtures_dir, sample, seed)
     if not fixtures:
         eprint("warning: no fixtures found for benchmarking")
         eprint("benchmark-tracker: OK (no fixtures, nothing to do)")
@@ -381,18 +444,26 @@ def main():
         "fixtures_sampled": len(fixtures),
         "fixtures_ok": ok_count,
         "fixtures_skipped": fail_count,
+        "benchmark_config": config,
         "aggregates": aggregates,
         "fixtures": results,
     }
 
     # Regression detection against previous record
     regressions = []
-    if previous_record:
+    compared_previous = comparable_previous_record(previous_record, config)
+    if previous_record and not compared_previous:
+        eprint(
+            "note: skipping regression comparison; previous benchmark config "
+            "does not match current config"
+        )
+    if compared_previous:
         prev_agg = previous_record.get("aggregates", {})
         check_regression(
             "avg_compile_time", aggregates["avg_compile_time_ms"],
             prev_agg.get("avg_compile_time_ms", 0),
             "compile_time_ms", threshold_time_pct, regressions,
+            min_delta=threshold_time_min_delta_ms,
         )
         check_regression(
             "avg_wasm_size", aggregates["avg_wasm_size_bytes"],
@@ -409,6 +480,7 @@ def main():
                 r["fixture"], r["compile_time_ms"],
                 prev.get("compile_time_ms", 0),
                 "compile_time_ms", threshold_time_pct, regressions,
+                min_delta=threshold_time_min_delta_ms,
             )
             check_regression(
                 r["fixture"], r["wasm_size_bytes"],
@@ -418,6 +490,7 @@ def main():
 
     record["regressions"] = regressions
     record["perf_regression"] = bool(regressions)
+    record["compared_previous"] = compared_previous
 
     # Save to output file
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -455,7 +528,8 @@ def main():
             eprint(
                 f"  {rg['fixture']} ({rg['metric']}): "
                 f"{rg['current']} vs {rg['previous']} "
-                f"(+{rg['pct_increase']}%, threshold={rg['threshold_pct']}%)"
+                f"(+{rg['pct_increase']}%, threshold={rg['threshold_pct']}%, "
+                f"min_delta={rg['min_delta']})"
             )
 
     eprint()
@@ -468,6 +542,7 @@ def main():
         "branch": branch,
         "fixtures_ok": ok_count,
         "fixtures_skipped": fail_count,
+        "benchmark_config": config,
         "avg_compile_time_ms": aggregates["avg_compile_time_ms"],
         "compiler_throughput_fixtures_per_sec": aggregates[
             "compiler_throughput_fixtures_per_sec"
@@ -476,6 +551,7 @@ def main():
         "total_wasm_size_bytes": aggregates["total_wasm_size_bytes"],
         "regression_count": len(regressions),
         "perf_regression": bool(regressions),
+        "compared_previous": compared_previous,
     }
     if json_mode:
         print(json.dumps(summary, sort_keys=True))
