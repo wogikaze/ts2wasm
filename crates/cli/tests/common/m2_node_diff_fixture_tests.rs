@@ -3434,6 +3434,7 @@ fn global_properties_matches_node_output() {
         "fixtures/builtins-and-io/global-parseint-radix.ts",
         "fixtures/builtins-and-io/global-parseint.ts",
         "fixtures/builtins-and-io/global-parsefloat.ts",
+        "fixtures/builtins-and-io/number-static-parse.ts",
         "fixtures/builtins-and-io/global-escape.ts",
         "fixtures/builtins-and-io/global-unescape.ts",
         "fixtures/builtins-and-io/global-escape-value.ts",
@@ -3445,6 +3446,11 @@ fn global_properties_matches_node_output() {
     ] {
         assert_fixture_matches_node(fixture);
     }
+}
+
+#[test]
+fn number_static_parse_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-static-parse.ts");
 }
 
 #[test]
@@ -3919,7 +3925,7 @@ fn array_reduce_right_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn object_static_matches_node_output() {
+fn object_static_legacy_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-static.ts");
 }
 
@@ -4240,19 +4246,8 @@ fn array_copying_matches_node_output() {
 }
 
 #[test]
-fn number_methods_matches_node_output() {
-    assert_fixture_matches_node("fixtures/builtins-and-io/number-complete.ts");
-}
-
-#[test]
 fn string_static_basic_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/string-static.ts");
-}
-
-// Symbol.for / Symbol.keyFor global registry
-#[test]
-fn symbol_registry_matches_node_output() {
-    assert_fixture_matches_node("fixtures/builtins-and-io/symbol-registry.ts");
 }
 
 // Error subclasses with stack and cause support

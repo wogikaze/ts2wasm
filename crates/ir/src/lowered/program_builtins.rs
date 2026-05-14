@@ -79,7 +79,6 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "defineProperty" => Some(RuntimeFn::ObjectDefineProperty),
                 "assign" => Some(RuntimeFn::ObjectAssign),
                 "create" => Some(RuntimeFn::ObjectCreate),
-                "fromEntries" => Some(RuntimeFn::ObjectFromEntries),
                 "is" => Some(RuntimeFn::ObjectIs),
                 _ => None,
             };
@@ -181,7 +180,6 @@ pub(crate) fn resolve_method_to_runtime_fn(
         "propertyIsEnumerable" => Some(RuntimeFn::PropertyIsEnumerable),
         "isPrototypeOf" => Some(RuntimeFn::IsPrototypeOf),
         "toString" => Some(RuntimeFn::ObjectToString),
-        "toLocaleString" => Some(RuntimeFn::ObjectToLocaleString),
         "valueOf" => Some(RuntimeFn::ValueOf),
         "push" => Some(RuntimeFn::ArrayPush),
         "pop" => Some(RuntimeFn::ArrayPop),

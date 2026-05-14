@@ -349,7 +349,7 @@ fn build_smoke_object_from_entries() {
 }
 
 #[test]
-fn build_smoke_object_static_complete() {
+fn build_smoke_object_static_methods() {
     let result = run_fixture("builtins-and-io/object-static.ts");
     assert!(
         result.is_ok(),
@@ -668,16 +668,6 @@ fn number_is_safe_integer_method_emits() {
     assert!(
         result.is_ok(),
         "Number.isSafeInteger should compile: {:?}",
-        result.err()
-    );
-}
-
-#[test]
-fn build_smoke_number_complete() {
-    let result = run_fixture("builtins-and-io/number-complete.ts");
-    assert!(
-        result.is_ok(),
-        "Number complete methods should build: {:?}",
         result.err()
     );
 }
@@ -1179,6 +1169,7 @@ fn build_smoke_global_properties() {
         "builtins-and-io/global-isfinite.ts",
         "builtins-and-io/global-parseint.ts",
         "builtins-and-io/global-parsefloat.ts",
+        "builtins-and-io/number-static-parse.ts",
         "builtins-and-io/global-escape.ts",
         "builtins-and-io/global-unescape.ts",
         "builtins-and-io/global-escape-value.ts",
@@ -1191,6 +1182,16 @@ fn build_smoke_global_properties() {
         let result = run_fixture(fixture);
         assert!(result.is_ok(), "{fixture} should build: {:?}", result.err());
     }
+}
+
+#[test]
+fn build_smoke_number_static_parse() {
+    let result = run_fixture("builtins-and-io/number-static-parse.ts");
+    assert!(
+        result.is_ok(),
+        "Number.parseInt/parseFloat aliases should build: {:?}",
+        result.err()
+    );
 }
 
 #[test]

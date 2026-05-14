@@ -690,16 +690,6 @@ const READ_STDIN_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const WRITE_DEPS: &[RuntimeFn] = &[];
 const COPY_DEPS: &[RuntimeFn] = &[];
 const VTS_DEPS: &[RuntimeFn] = &[RuntimeFn::Copy];
-const NUMBER_TO_STRING_DEPS: &[RuntimeFn] = &[
-    RuntimeFn::AllocHeap,
-    RuntimeFn::Copy,
-    RuntimeFn::ValueToStringInto,
-];
-const NUMBER_FORMAT_DEPS: &[RuntimeFn] = &[
-    RuntimeFn::AllocHeap,
-    RuntimeFn::Copy,
-    RuntimeFn::ValueToStringInto,
-];
 const NUMBER_FROM_I32_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const NUMBER_ARITH_DEPS: &[RuntimeFn] = &[RuntimeFn::NumberToI32, RuntimeFn::NumberFromI32];
 const ERROR_MESSAGE_DEPS: &[RuntimeFn] = &[
@@ -1135,12 +1125,21 @@ const DATE_EPOCH_MS_NOW_NUMBER_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 
 // Math function dependencies
 const MATH_DEPS: &[RuntimeFn] = &[RuntimeFn::NumberToI32, RuntimeFn::NumberFromI32];
-const NUMBER_TO_FIXED_DEPS: &[RuntimeFn] =
-    &[RuntimeFn::ValueToStringInto, RuntimeFn::AllocHeap, RuntimeFn::Copy];
-const NUMBER_TO_EXPONENTIAL_DEPS: &[RuntimeFn] =
-    &[RuntimeFn::ValueToStringInto, RuntimeFn::AllocHeap, RuntimeFn::Copy];
-const NUMBER_TO_PRECISION_DEPS: &[RuntimeFn] =
-    &[RuntimeFn::ValueToStringInto, RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const NUMBER_TO_FIXED_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+];
+const NUMBER_TO_EXPONENTIAL_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+];
+const NUMBER_TO_PRECISION_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+];
 const MATH_RANDOM_DEPS: &[RuntimeFn] = &[];
 
 // JSON function dependencies
@@ -1990,6 +1989,7 @@ impl RuntimeFn {
             | Self::MathImul
             | Self::MathAtan2
             | Self::MathHypot
+            | Self::ParseInt
             | Self::AggregateError
             | Self::StrictEqual
             | Self::ValueToStringInto
@@ -2002,10 +2002,7 @@ impl RuntimeFn {
             | Self::DataViewGetInt8
             | Self::DataViewGetUint8
             | Self::SymbolToPrimitive
-            | Self::SymbolHasInstance
-            | Self::NumberToExponential
-            | Self::NumberToFixed
-            | Self::NumberToPrecision => RuntimeSignature {
+            | Self::SymbolHasInstance => RuntimeSignature {
                 params: 2,
                 results: 1,
             },

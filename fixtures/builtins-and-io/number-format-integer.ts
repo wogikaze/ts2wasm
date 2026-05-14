@@ -1,0 +1,11 @@
+console.log((42).toFixed(2));
+console.log((42).toFixed(0));
+console.log((42).toPrecision(4));
+console.log((42).toPrecision(2));
+console.log((42).toExponential());
+console.log((42).toExponential(0));
+console.log((42).toExponential(3));
+console.log((-42).toFixed(2));
+console.log((-42).toExponential(1));
+console.log((0).toExponential());
+console.log((0).toExponential(2));

@@ -1829,7 +1829,7 @@ impl WatEmitter<'_> {
     pub(crate) fn emit_parse_int(&self, wat: &mut String) {
         wat.push_str(&format!(
             r##"
-  (func $parse_int (param $s i32) (result i32)
+  (func $parse_int (param $s i32) (param $radix i32) (result i32)
     (local $tag i32)
     (local.set $tag (i32.and (local.get $s) (i32.const {tag_mask})))
     (if (i32.eq (local.get $tag) (i32.const {number_tag}))

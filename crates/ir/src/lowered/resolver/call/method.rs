@@ -34,15 +34,15 @@ impl super::super::Resolver {
             return Ok(result);
         }
         // Function.prototype.toString for user-defined functions
-        if method == "toString" && args.is_empty() {
-            if let ResolvedExpr::Ident(name) = object
-                && self.resolve_func(name.as_str()).is_ok()
-            {
-                return Ok(LoweredExpr::String(
-                    format!("function {}() {{ [native code] }}", name),
-                    span,
-                ));
-            }
+        if method == "toString"
+            && args.is_empty()
+            && let ResolvedExpr::Ident(name) = object
+            && self.resolve_func(name.as_str()).is_ok()
+        {
+            return Ok(LoweredExpr::String(
+                format!("function {}() {{ [native code] }}", name),
+                span,
+            ));
         }
         if let Some(result) = self.lower_mcall_date_string(object, method, args, span)? {
             return Ok(result);
@@ -1309,6 +1309,9 @@ impl super::super::Resolver {
             if is_number_format_runtime_fn(intrinsic) && args.is_empty() {
                 lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
             }
+            if intrinsic == RuntimeFn::ParseInt && args.len() == 1 {
+                lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
+            }
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic,
                 args: lowered_args,
@@ -2086,13 +2089,20 @@ impl super::super::Resolver {
             }
             None => {
                 // Object.prototype methods: route to RuntimeFn for untyped receivers
-                let obj_methods =
-                    ["hasOwnProperty", "propertyIsEnumerable", "isPrototypeOf", "toString", "toLocaleString", "valueOf"];
+                let obj_methods = [
+                    "hasOwnProperty",
+                    "propertyIsEnumerable",
+                    "isPrototypeOf",
+                    "toString",
+                    "toLocaleString",
+                    "valueOf",
+                ];
                 if obj_methods.contains(&method) {
                     let intrinsic = resolve_method_to_runtime_fn(
                         &ResolvedExpr::Ident(receiver_name.to_string()),
                         method,
-                    ).ok_or_else(|| Diagnostic {
+                    )
+                    .ok_or_else(|| Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: format!("method `{}` not found for untyped receiver", method),
                         span: Some(span),
@@ -2100,11 +2110,11 @@ impl super::super::Resolver {
                     })?;
                     let mut lowered_args =
                         vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
-                    lowered_args.extend(
-                        args.iter()
-                            .map(|e| self.lower_expr(e))
-                            .collect::<Result<Vec<_>, _>>()?,
-                    );
+                    lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<Result<
+                        Vec<_>,
+                        _,
+                    >>(
+                    )?);
                     return Ok(LoweredExpr::RuntimeCall {
                         intrinsic,
                         args: lowered_args,
@@ -2575,18 +2585,6 @@ fn is_object_prototype_method(method: &str) -> bool {
             | "valueOf"
             | "toLocaleString"
     )
-}
-
-fn object_prototype_runtime_fn(method: &str) -> Option<RuntimeFn> {
-    match method {
-        "hasOwnProperty" => Some(RuntimeFn::ObjectHasOwnProperty),
-        "propertyIsEnumerable" => Some(RuntimeFn::PropertyIsEnumerable),
-        "isPrototypeOf" => Some(RuntimeFn::IsPrototypeOf),
-        "toString" => Some(RuntimeFn::ObjectToString),
-        "toLocaleString" => Some(RuntimeFn::ObjectToLocaleString),
-        "valueOf" => Some(RuntimeFn::ValueOf),
-        _ => None,
-    }
 }
 
 fn is_intl_number_format_method(method: &str) -> bool {

@@ -200,6 +200,8 @@ directories:
     - async-generator-basic.ts
     - atomics-unsupported.ts
     - boolean-symbol-prototype.ts
+    - atomics-basic.ts
+    - atomics-complete.ts
     - bun-stdin-text.ts
     - console-complete.ts
     - console-log.ts
@@ -284,6 +286,7 @@ directories:
     - json-parse-nested-array.ts
     - json-parse-number-decimal-exponent.ts
     - json-parse-object-nested.ts
+    - json-parse-reviver.ts
     - json-parse-surrogate-pair-object-array.ts
     - json-parse-trailing-invalid.ts
     - json-parse-unicode-escape.ts
@@ -335,6 +338,8 @@ directories:
     - math-round.ts
     - math-sqrt.ts
     - math-trunc-sign.ts
+    - number-format-integer.ts
+    - number-format-no-args.ts
     - native-error-types.ts
     - number-complete.ts
     - number-is-finite.ts
@@ -345,6 +350,7 @@ directories:
     - number-is-safe-integer-i32.ts
     - number-formatting-decimal.ts
     - number-formatting.ts
+    - number-static-parse.ts
     - object-assign-descriptors.ts
     - object-assign.ts
     - object-create.ts

@@ -1874,8 +1874,7 @@ impl WatEmitter<'_> {
                 let cause_prop_count = if cause.is_some() { 1 } else { 0 };
                 let prop_count = base_prop_count + cause_prop_count;
                 let prop_capacity = prop_count + 8;
-                let size =
-                    Layout::OBJECT_HEADER_SIZE + (prop_capacity as u32) * Layout::OBJECT_ENTRY_SIZE;
+                let size = Layout::OBJECT_HEADER_SIZE + prop_capacity * Layout::OBJECT_ENTRY_SIZE;
                 writer.push_str(&format!(
                     "{pad}(local.set {} (call {} (i32.const {})))\n",
                     frame.heap_base_tmp(),
@@ -1954,8 +1953,8 @@ impl WatEmitter<'_> {
                     frame.heap_value_tmp(),
                 ));
                 if let Some(cause) = cause {
-                    let cause_entry_offset = Layout::OBJECT_ENTRIES_OFFSET
-                        + (base_prop_count as u32) * Layout::OBJECT_ENTRY_SIZE;
+                    let cause_entry_offset =
+                        Layout::OBJECT_ENTRIES_OFFSET + base_prop_count * Layout::OBJECT_ENTRY_SIZE;
                     let cause_key_raw = self.string_value("cause");
                     writer.push_str(&format!(
                         "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
