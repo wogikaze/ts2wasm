@@ -3391,6 +3391,7 @@ fn global_properties_matches_node_output() {
         "fixtures/builtins-and-io/global-0-args.ts",
         "fixtures/builtins-and-io/global-isnan.ts",
         "fixtures/builtins-and-io/global-isfinite.ts",
+        "fixtures/builtins-and-io/global-parseint-radix.ts",
         "fixtures/builtins-and-io/global-parseint.ts",
         "fixtures/builtins-and-io/global-parsefloat.ts",
         "fixtures/builtins-and-io/global-escape.ts",
