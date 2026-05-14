@@ -2028,6 +2028,65 @@ fn body_returns_first_param_identity(params: &[ResolvedParam], body: &[ResolvedS
     )
 }
 
+pub(crate) fn body_returns_static_string(body: &[ResolvedStmt]) -> Option<String> {
+    let mut first_body_stmt = 0;
+    while matches!(
+        body.get(first_body_stmt),
+        Some(ResolvedStmt::Expr(ResolvedExpr::String(_)))
+    ) {
+        first_body_stmt += 1;
+    }
+
+    let body = &body[first_body_stmt..];
+    let (last, prefix) = body.split_last()?;
+    if prefix.iter().any(stmt_contains_return) {
+        return None;
+    }
+    match last {
+        ResolvedStmt::Return(ResolvedExpr::String(value)) => Some(value.clone()),
+        _ => None,
+    }
+}
+
+fn stmt_contains_return(stmt: &ResolvedStmt) -> bool {
+    match stmt {
+        ResolvedStmt::Return(_) => true,
+        ResolvedStmt::If {
+            then_body,
+            else_body,
+            ..
+        } => {
+            then_body.iter().any(stmt_contains_return) || else_body.iter().any(stmt_contains_return)
+        }
+        ResolvedStmt::While { body, .. }
+        | ResolvedStmt::DoWhile { body, .. }
+        | ResolvedStmt::For { body, .. }
+        | ResolvedStmt::ForIn { body, .. }
+        | ResolvedStmt::ForOf { body, .. }
+        | ResolvedStmt::ForAwaitOf { body, .. } => body.iter().any(stmt_contains_return),
+        ResolvedStmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            try_block.iter().any(stmt_contains_return)
+                || catch_block
+                    .as_ref()
+                    .is_some_and(|block| block.iter().any(stmt_contains_return))
+                || finally_block
+                    .as_ref()
+                    .is_some_and(|block| block.iter().any(stmt_contains_return))
+        }
+        ResolvedStmt::Switch { cases, .. } => cases
+            .iter()
+            .any(|(_, stmts)| stmts.iter().any(stmt_contains_return)),
+        ResolvedStmt::Labeled { body, .. } => stmt_contains_return(body),
+        ResolvedStmt::Block { statements } => statements.iter().any(stmt_contains_return),
+        _ => false,
+    }
+}
+
 fn collect_class_method_captures(
     program: &[ResolvedStmt],
     function_ids: &HashMap<String, FuncId>,

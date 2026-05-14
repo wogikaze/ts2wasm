@@ -948,6 +948,9 @@ impl super::super::Resolver {
                 args,
                 ..
             } => {
+                if let Some(value) = self.ctx.functions.static_string_returns.get(func_id) {
+                    return Some(ObjectAccessorKey::Property(value.clone()));
+                }
                 let signature = self.ctx.symbols.function_signatures.get(func_id)?;
                 if signature.returns_first_param_identity && args.len() == 1 {
                     self.lowered_static_accessor_key(&args[0])

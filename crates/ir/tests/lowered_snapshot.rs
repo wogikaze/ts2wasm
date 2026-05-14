@@ -720,6 +720,24 @@ fn lowered_generator_function_captures_top_level_assignment() {
 }
 
 #[test]
+fn lowered_object_computed_method_key_uses_to_string_for_static_dispatch() {
+    let program = parse_resolve_lower(
+        "let assert = { sameValue(actual, expected, message) { return true; } };\n\
+         let counter = 0;\n\
+         let key1 = { toString: function() { assert.sameValue(counter++, 0, \"key1\"); return \"b\"; } };\n\
+         let key2 = { toString: function() { assert.sameValue(counter++, 1, \"key2\"); return \"d\"; } };\n\
+         let object = { a() { return \"A\"; }, [key1]() { return \"B\"; }, c() { return \"C\"; }, [key2]() { return \"D\"; } };\n\
+         object.a();\n\
+         object.b();\n\
+         object.c();\n\
+         object.d();",
+    );
+
+    validate_lowered(&program)
+        .expect("computed method key with toString should preserve method metadata");
+}
+
+#[test]
 fn lowered_snapshot_for_await_of_keeps_async_iterator_ir() {
     let program = parse_resolve_lower(
         "async function f(values) { for await (let value of values) { console.log(value); } }",

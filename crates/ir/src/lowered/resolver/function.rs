@@ -489,6 +489,12 @@ impl super::Resolver {
                 ..FunctionSignature::default()
             },
         );
+        if let Some(value) = crate::lowered::program::body_returns_static_string(body) {
+            self.ctx
+                .functions
+                .static_string_returns
+                .insert(func_id, value);
+        }
         if !capture_names.is_empty() {
             self.ctx
                 .functions

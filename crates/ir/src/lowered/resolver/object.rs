@@ -1,4 +1,5 @@
 use crate::builtin_resolved::{ResolvedExpr, ResolvedObjectProp};
+use crate::lowered::classes::ObjectAccessorKey;
 use crate::lowered::object_kernel;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -215,7 +216,7 @@ impl super::Resolver {
                             self.lower_object_literal_accessor_descriptor(prop, kind)?;
                         let define_expr = object_kernel::ordinary_define_own_property(
                             LoweredExpr::Local(object_local, Span::generated("local")),
-                            self.lower_expr(key)?,
+                            self.lower_computed_property_key_expr(key)?,
                             descriptor,
                             Span::generated("object_computed_accessor_define"),
                         );
@@ -257,7 +258,7 @@ impl super::Resolver {
                     }
                     let set_expr = object_kernel::ordinary_set_dynamic(
                         LoweredExpr::Local(object_local, Span::generated("local")),
-                        self.lower_expr(key)?,
+                        self.lower_computed_property_key_expr(key)?,
                         self.lower_object_computed_value(value)?,
                         Span::generated("property_set_dynamic"),
                     );
@@ -412,6 +413,46 @@ impl super::Resolver {
             result: Box::new(LoweredExpr::Local(object_local, Span::generated("local"))),
             span: Span::generated("object_literal"),
         })
+    }
+
+    fn lower_computed_property_key_expr(
+        &mut self,
+        key: &ResolvedExpr,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if let Some(expr) = self.lower_known_to_property_key_expr(key)? {
+            return Ok(expr);
+        }
+        self.lower_expr(key)
+    }
+
+    fn lower_known_to_property_key_expr(
+        &mut self,
+        key: &ResolvedExpr,
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        let ResolvedExpr::Ident(name) = key else {
+            return Ok(None);
+        };
+        let Ok(obj_local) = self.resolve_local(name) else {
+            return Ok(None);
+        };
+        let to_string_key = ObjectAccessorKey::Property("toString".to_owned());
+        let Some(method_id) = self
+            .ctx
+            .classes
+            .object_function_props
+            .get(&obj_local)
+            .and_then(|props| props.get(&to_string_key))
+            .copied()
+        else {
+            return Ok(None);
+        };
+        let receiver = LoweredExpr::Local(obj_local, Span::generated("local"));
+        let args = self.lower_function_call_args(method_id, receiver, &[])?;
+        Ok(Some(LoweredExpr::Call {
+            kind: FunctionCallKind::User(method_id),
+            args,
+            span: Span::generated("to_property_key"),
+        }))
     }
 
     fn lower_object_literal_accessor_descriptor(
