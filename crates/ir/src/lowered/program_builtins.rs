@@ -99,6 +99,13 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 _ => None,
             };
         }
+        if name == "Atomics" {
+            return match method {
+                "load" => Some(RuntimeFn::AtomicsLoad),
+                "store" => Some(RuntimeFn::AtomicsStore),
+                _ => None,
+            };
+        }
     }
     match method {
         "concat" => Some(RuntimeFn::Concat),

@@ -2394,3 +2394,14 @@ fn build_smoke_array_copying_methods() {
         result.err()
     );
 }
+
+// Atomics basic (load/store)
+#[test]
+fn build_smoke_atomics_basic() {
+    let result = run_fixture("builtins-and-io/atomics-basic.ts");
+    assert!(
+        result.is_ok(),
+        "Atomics.load/store should build: {:?}",
+        result.err()
+    );
+}

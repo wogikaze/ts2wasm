@@ -746,4 +746,57 @@ impl WatEmitter<'_> {
             undefined = ValueTag::UNDEFINED,
         ));
     }
+
+    pub(super) fn emit_atomics_load(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $atomics_load (param $arr i32) (param $idx_val i32) (result i32)
+    (local $base i32)
+    (local $idx i32)
+    (local.set $base (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $idx (i32.shr_s (local.get $idx_val) (i32.const {number_shift})))
+    (i32.load
+      (i32.add
+        (local.get $base)
+        (i32.add
+          (i32.const {array_header})
+          (i32.shl (local.get $idx) (i32.const {elem_shift}))))))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+        ));
+    }
+
+    pub(super) fn emit_atomics_store(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $atomics_store (param $arr i32) (param $idx_val i32) (param $val i32) (result i32)
+    (local $base i32)
+    (local $idx i32)
+    (local $addr i32)
+    (local.set $base (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $idx (i32.shr_s (local.get $idx_val) (i32.const {number_shift})))
+    (local.set $addr
+      (i32.add
+        (local.get $base)
+        (i32.add
+          (i32.const {array_header})
+          (i32.shl (local.get $idx) (i32.const {elem_shift})))))
+    (i32.store (local.get $addr) (local.get $val))
+    (i32.store
+      (i32.add (local.get $base) (i32.const {presence_words_offset}))
+      (i32.or
+        (i32.load (i32.add (local.get $base) (i32.const {presence_words_offset})))
+        (i32.shl (i32.const 1) (local.get $idx))))
+    (local.get $val))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+        ));
+    }
 }

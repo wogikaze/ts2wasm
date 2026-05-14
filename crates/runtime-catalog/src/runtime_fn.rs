@@ -137,6 +137,10 @@ pub enum RuntimeFn {
     TypedArrayFromArray,
     /// TypedArray.prototype.set(source, offset?) for the array-backed TypedArray subset.
     TypedArraySet,
+    /// Atomics.load(typedArray, index)
+    AtomicsLoad,
+    /// Atomics.store(typedArray, index, value)
+    AtomicsStore,
     SetFromArray,
     SetValuesArray,
     SetPrototypeAddGet,
@@ -1285,6 +1289,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MapEntryPairsArray" => Some(RuntimeFn::MapEntryPairsArray),
         "TypedArrayFromArray" => Some(RuntimeFn::TypedArrayFromArray),
         "TypedArraySet" => Some(RuntimeFn::TypedArraySet),
+        "AtomicsLoad" => Some(RuntimeFn::AtomicsLoad),
+        "AtomicsStore" => Some(RuntimeFn::AtomicsStore),
         "ArrayBufferNew" => Some(RuntimeFn::ArrayBufferNew),
         "DataViewNew" => Some(RuntimeFn::DataViewNew),
         "DataViewGetInt8" => Some(RuntimeFn::DataViewGetInt8),
@@ -1781,6 +1787,8 @@ impl RuntimeFn {
             | Self::NumberCoerce => RuntimeDomain::TypeCoercion,
             Self::TypedArrayFromArray
             | Self::TypedArraySet
+            | Self::AtomicsLoad
+            | Self::AtomicsStore
             | Self::DataViewNew
             | Self::DataViewGetInt8
             | Self::DataViewSetInt8
@@ -1902,6 +1910,7 @@ impl RuntimeFn {
             | Self::DataViewGetInt8
             | Self::DataViewGetUint8
             | Self::SymbolToPrimitive
+            | Self::AtomicsLoad
             | Self::SymbolHasInstance => RuntimeSignature {
                 params: 2,
                 results: 1,
@@ -1912,6 +1921,7 @@ impl RuntimeFn {
             | Self::PropertyDelete
             | Self::PropertyHas
             | Self::TypedArraySet
+            | Self::AtomicsStore
             | Self::StringRaw
             | Self::DataViewGetInt16
             | Self::DataViewGetUint16
@@ -2070,6 +2080,8 @@ impl RuntimeFn {
             Self::MapEntryPairsArray,
             Self::TypedArrayFromArray,
             Self::TypedArraySet,
+            Self::AtomicsLoad,
+            Self::AtomicsStore,
             Self::SetFromArray,
             Self::SetValuesArray,
             Self::SetPrototypeAddGet,
@@ -2427,6 +2439,8 @@ impl RuntimeFn {
             Self::MapEntryPairsArray,
             Self::TypedArrayFromArray,
             Self::TypedArraySet,
+            Self::AtomicsLoad,
+            Self::AtomicsStore,
             Self::SetFromArray,
             Self::SetValuesArray,
             Self::SetPrototypeAddGet,

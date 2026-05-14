@@ -55,6 +55,8 @@ impl WatEmitter<'_> {
             RuntimeFn::ArrayBufferNew => self.emit_arraybuffer_new(wat),
             RuntimeFn::TypedArrayFromArray => self.emit_typed_array_from_array(wat),
             RuntimeFn::TypedArraySet => self.emit_typed_array_set(wat),
+            RuntimeFn::AtomicsLoad => self.emit_atomics_load(wat),
+            RuntimeFn::AtomicsStore => self.emit_atomics_store(wat),
             RuntimeFn::DataViewNew => self.emit_dataview_new(wat),
             RuntimeFn::DataViewGetInt8 => self.emit_dataview_get_int8(wat),
             RuntimeFn::DataViewSetInt8 => self.emit_dataview_set_int8(wat),

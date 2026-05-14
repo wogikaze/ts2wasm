@@ -341,4 +341,6 @@ match self {
             Self::PrivateFieldGet => "pseudo_private_field_get",
             Self::PrivateFieldSet => "pseudo_private_field_set",
             Self::PrivateBrandCheck => "pseudo_private_brand_check",
+            Self::AtomicsLoad => "atomics_load",
+            Self::AtomicsStore => "atomics_store",
         }
