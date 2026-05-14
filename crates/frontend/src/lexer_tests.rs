@@ -123,6 +123,27 @@ mod tests {
     }
 
     #[test]
+    fn cooks_braced_unicode_string_escape() {
+        let tokens = Lexer::new(r#"let value = "\u{10D40}\u{10D41}";"#)
+            .tokenize()
+            .unwrap();
+
+        assert!(tokens.iter().any(
+            |token| matches!(&token.kind, Token::String(value) if value == "\u{10D40}\u{10D41}")
+        ));
+    }
+
+    #[test]
+    fn rejects_invalid_braced_unicode_string_escape() {
+        for source in [r#"let value = "\u{}";"#, r#"let value = "\u{110000}";"#] {
+            let err = Lexer::new(source).tokenize().unwrap_err();
+
+            assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+            assert!(err.message.contains("unicode"), "{source}: {err:?}");
+        }
+    }
+
+    #[test]
     fn cooks_unicode_identifier_escapes() {
         let tokens = Lexer::new(r"let a\u0062 = 1; let _\u0816\u{11080} = ab;")
             .tokenize()
@@ -170,6 +191,22 @@ mod tests {
             .collect();
 
         assert_eq!(literals, ["1n", "0b101n", "0o77n", "0xFFn"]);
+    }
+
+    #[test]
+    fn normalizes_bigint_literal_numeric_separators() {
+        let tokens = Lexer::new("let dec = 1_000n; let bin = 0b1010_0101n; let hex = 0xFF_FFn;")
+            .tokenize()
+            .unwrap();
+        let literals: Vec<&str> = tokens
+            .iter()
+            .filter_map(|token| match &token.kind {
+                Token::BigIntLiteral(raw) => Some(raw.as_str()),
+                _ => None,
+            })
+            .collect();
+
+        assert_eq!(literals, ["1000n", "0b10100101n", "0xFFFFn"]);
     }
 
     #[test]
@@ -312,6 +349,24 @@ mod tests {
 
             assert_eq!(err.code, DiagCode::UnsupportedSyntax);
             assert!(err.message.contains("issue-244"), "{source}: {err:?}");
+        }
+    }
+
+    #[test]
+    fn rejects_invalid_bigint_literal_numeric_separators() {
+        for source in [
+            "let value = 1__0n;",
+            "let value = 1_n;",
+            "let value = 0b_10n;",
+            "let value = 0b10_n;",
+        ] {
+            let err = Lexer::new(source).tokenize().unwrap_err();
+
+            assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+            assert!(
+                err.message.contains("numeric separator"),
+                "{source}: {err:?}"
+            );
         }
     }
 
