@@ -3475,6 +3475,11 @@ fn global_uri_component_matches_node_under_iwasm() {
 }
 
 #[test]
+fn global_uri_comprehensive_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-uri-comprehensive.ts");
+}
+
+#[test]
 fn global_this_matches_node_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/global-this.ts");
 }
