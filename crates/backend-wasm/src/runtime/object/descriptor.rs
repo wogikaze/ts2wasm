@@ -54,7 +54,7 @@ impl WatEmitter<'_> {
                 (if (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {accessor_shift}))))
                   (then
                     ;; Accessor descriptor: return get/set/enumerable/configurable
-                    ;; Write "get" with the stored getter value
+                    ;; Write "get" from the stored accessor descriptor.
                     (i32.store8 (local.get $prop_offset) (i32.const 103))
                     (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 101))
                     (i32.store8 (i32.add (local.get $prop_offset) (i32.const 2)) (i32.const 116))
@@ -63,8 +63,11 @@ impl WatEmitter<'_> {
                         (i32.or (local.get $desc) (i32.const {object_tag}))
                         (local.get $prop_offset)
                         (i32.const 3)
-                        (local.get $entry_value)))
-                    ;; Write "set": always undefined
+                        (call $property_get
+                          (local.get $entry_value)
+                          (local.get $prop_offset)
+                          (i32.const 3))))
+                    ;; Write "set" from the stored accessor descriptor.
                     (i32.store8 (local.get $prop_offset) (i32.const 115))
                     (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 101))
                     (i32.store8 (i32.add (local.get $prop_offset) (i32.const 2)) (i32.const 116))
@@ -73,10 +76,10 @@ impl WatEmitter<'_> {
                         (i32.or (local.get $desc) (i32.const {object_tag}))
                         (local.get $prop_offset)
                         (i32.const 3)
-                        (if (result i32)
-                          (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_writable_shift}))))
-                          (then (local.get $entry_value))
-                          (else (i32.const {undefined})))))
+                        (call $property_get
+                          (local.get $entry_value)
+                          (local.get $prop_offset)
+                          (i32.const 3))))
                     ;; Write "enumerable"
                     (i32.store8 (local.get $prop_offset) (i32.const 101))
                     (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 110))
@@ -317,10 +320,7 @@ impl WatEmitter<'_> {
             (local.get $obj)
             (i32.const {scratch_offset})
             (local.get $key_len)
-            (if (result i32)
-              (local.get $has_get)
-              (then (local.get $get))
-              (else (i32.const {undefined})))))
+            (local.get $desc)))
         (i32.store8 (local.get $desc_off) (i32.const 101))
         (i32.store8 (i32.add (local.get $desc_off) (i32.const 1)) (i32.const 110))
         (i32.store8 (i32.add (local.get $desc_off) (i32.const 2)) (i32.const 117))
