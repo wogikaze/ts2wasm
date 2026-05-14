@@ -190,6 +190,20 @@ pub enum RuntimeFn {
     DateSetUTCSeconds,
     /// Date.prototype.setUTCMilliseconds.
     DateSetUTCMilliseconds,
+    /// Date.prototype.setFullYear.
+    DateSetFullYear,
+    /// Date.prototype.setMonth.
+    DateSetMonth,
+    /// Date.prototype.setDate.
+    DateSetDate,
+    /// Date.prototype.setHours.
+    DateSetHours,
+    /// Date.prototype.setMinutes.
+    DateSetMinutes,
+    /// Date.prototype.setSeconds.
+    DateSetSeconds,
+    /// Date.prototype.setMilliseconds.
+    DateSetMilliseconds,
     /// Date.parse via host shim.
     DateParse,
     /// Date.UTC via host shim.
@@ -1446,6 +1460,13 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DateSetUTCMinutes" => Some(RuntimeFn::DateSetUTCMinutes),
         "DateSetUTCSeconds" => Some(RuntimeFn::DateSetUTCSeconds),
         "DateSetUTCMilliseconds" => Some(RuntimeFn::DateSetUTCMilliseconds),
+        "DateSetFullYear" => Some(RuntimeFn::DateSetFullYear),
+        "DateSetMonth" => Some(RuntimeFn::DateSetMonth),
+        "DateSetDate" => Some(RuntimeFn::DateSetDate),
+        "DateSetHours" => Some(RuntimeFn::DateSetHours),
+        "DateSetMinutes" => Some(RuntimeFn::DateSetMinutes),
+        "DateSetSeconds" => Some(RuntimeFn::DateSetSeconds),
+        "DateSetMilliseconds" => Some(RuntimeFn::DateSetMilliseconds),
         "DateParse" => Some(RuntimeFn::DateParse),
         "DateUTC" => Some(RuntimeFn::DateUTC),
         "DateToString" => Some(RuntimeFn::DateToString),
@@ -1693,6 +1714,13 @@ impl RuntimeFn {
             | Self::DateSetUTCMinutes
             | Self::DateSetUTCSeconds
             | Self::DateSetUTCMilliseconds
+            | Self::DateSetFullYear
+            | Self::DateSetMonth
+            | Self::DateSetDate
+            | Self::DateSetHours
+            | Self::DateSetMinutes
+            | Self::DateSetSeconds
+            | Self::DateSetMilliseconds
             | Self::DateParse
             | Self::DateUTC
             | Self::DateToString
@@ -2284,6 +2312,13 @@ impl RuntimeFn {
             Self::DateSetUTCMinutes,
             Self::DateSetUTCSeconds,
             Self::DateSetUTCMilliseconds,
+            Self::DateSetFullYear,
+            Self::DateSetMonth,
+            Self::DateSetDate,
+            Self::DateSetHours,
+            Self::DateSetMinutes,
+            Self::DateSetSeconds,
+            Self::DateSetMilliseconds,
             Self::DateParse,
             Self::DateUTC,
             Self::DateToString,
@@ -2675,6 +2710,13 @@ impl RuntimeFn {
             Self::DateSetUTCMinutes,
             Self::DateSetUTCSeconds,
             Self::DateSetUTCMilliseconds,
+            Self::DateSetFullYear,
+            Self::DateSetMonth,
+            Self::DateSetDate,
+            Self::DateSetHours,
+            Self::DateSetMinutes,
+            Self::DateSetSeconds,
+            Self::DateSetMilliseconds,
             Self::DateParse,
             Self::DateUTC,
             Self::DateToString,

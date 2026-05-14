@@ -1184,7 +1184,6 @@ pub(crate) fn unsupported_regexp_literal(context: &str, raw: &str, reason: &str)
         code: DiagCode::UnsupportedSyntax,
         message: format!("issue-051: {context} `{raw}` is not supported yet: {reason}"),
         span: None,
-
         phase: None,
     }
 }
