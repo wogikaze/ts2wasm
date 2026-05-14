@@ -552,7 +552,9 @@ impl super::Resolver {
         Ok(LoweredExpr::ArrowFn {
             func_id,
             captures,
-            representation: if self.ctx.facts.heap_closure_names.contains(name) {
+            representation: if !capture_names.is_empty()
+                || self.ctx.facts.heap_closure_names.contains(name)
+            {
                 ClosureRepresentation::HeapObject
             } else {
                 ClosureRepresentation::DirectLocalToken

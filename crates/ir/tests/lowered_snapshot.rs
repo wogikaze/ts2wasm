@@ -9,8 +9,8 @@ use ts2wasm_frontend::{Lexer, Parser};
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
 use ts2wasm_ir::lowered::validate::validate_lowered;
 use ts2wasm_ir::lowered::{
-    FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt,
-    ModuleLoadKind, RuntimeFn,
+    ClosureRepresentation, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredProgram,
+    LoweredStmt, ModuleLoadKind, RuntimeFn,
 };
 use ts2wasm_ir::lowered::{lower_program, lower_program_with_module_url};
 
@@ -73,6 +73,58 @@ fn lowered_expr_contains_class_prototype(expr: &LoweredExpr) -> bool {
         LoweredExpr::ObjectNew { props, .. } => props
             .iter()
             .any(|(_, value)| lowered_expr_contains_class_prototype(value)),
+        _ => false,
+    }
+}
+
+fn lowered_stmt_contains_captured_heap_closure(stmt: &LoweredStmt) -> bool {
+    match stmt {
+        LoweredStmt::Let(_, expr, _)
+        | LoweredStmt::Expr(expr, _)
+        | LoweredStmt::Return(expr, _)
+        | LoweredStmt::Throw(expr, _) => lowered_expr_contains_captured_heap_closure(expr),
+        LoweredStmt::Block(stmts, _) => stmts
+            .iter()
+            .any(lowered_stmt_contains_captured_heap_closure),
+        LoweredStmt::If {
+            condition,
+            then_body,
+            else_body,
+            ..
+        } => {
+            lowered_expr_contains_captured_heap_closure(condition)
+                || then_body
+                    .iter()
+                    .any(lowered_stmt_contains_captured_heap_closure)
+                || else_body
+                    .iter()
+                    .any(lowered_stmt_contains_captured_heap_closure)
+        }
+        _ => false,
+    }
+}
+
+fn lowered_expr_contains_captured_heap_closure(expr: &LoweredExpr) -> bool {
+    match expr {
+        LoweredExpr::ArrowFn {
+            captures,
+            representation: ClosureRepresentation::HeapObject,
+            ..
+        } => !captures.is_empty(),
+        LoweredExpr::Block { stmts, result, .. } => {
+            stmts
+                .iter()
+                .any(lowered_stmt_contains_captured_heap_closure)
+                || lowered_expr_contains_captured_heap_closure(result)
+        }
+        LoweredExpr::Call { args, .. }
+        | LoweredExpr::RuntimeCall { args, .. }
+        | LoweredExpr::ArrayNew { elements: args, .. } => {
+            args.iter().any(lowered_expr_contains_captured_heap_closure)
+        }
+        LoweredExpr::ObjectNew { props, .. } => props
+            .iter()
+            .any(|(_, value)| lowered_expr_contains_captured_heap_closure(value)),
         _ => false,
     }
 }
@@ -560,6 +612,27 @@ fn lowered_snapshot_nonident_receiver_method_call_preserves_receiver() {
             .iter()
             .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::HeapClosureCall)),
         "expected non-identifier receiver method call to dispatch through HeapClosureCall"
+    );
+}
+
+#[test]
+fn lowered_snapshot_object_method_with_capture_materializes_heap_closure() {
+    let program = parse_resolve_lower(
+        r#"
+        let captured;
+        let parent = { method(value) { captured = value; } };
+        let child = { set a(value) { super.method(value); } };
+        Object.setPrototypeOf(child, parent);
+        child.a = 42;
+        "#,
+    );
+
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(lowered_stmt_contains_captured_heap_closure),
+        "expected captured object method stored in a prototype object to materialize as a heap closure"
     );
 }
 
