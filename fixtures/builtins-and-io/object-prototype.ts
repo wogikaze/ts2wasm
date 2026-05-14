@@ -1,3 +1,4 @@
+// Object.prototype methods test
 let proto = { kind: "proto" };
 let obj = Object.create(proto);
 obj.visible = 1;
@@ -11,6 +12,7 @@ console.log(obj.propertyIsEnumerable("kind"));
 
 console.log(proto.isPrototypeOf(obj));
 console.log(obj.isPrototypeOf(proto));
+console.log(proto.isPrototypeOf(proto));
 
 console.log(obj.toString());
 console.log(obj.toLocaleString());

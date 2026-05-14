@@ -3374,7 +3374,7 @@ fn build_smoke_regexp_flag_d() {
 }
 
 #[test]
-fn build_smoke_function_prototype() {
+fn build_smoke_function_prototype_metadata() {
     let result = run_fixture("core-semantics/function-prototype-metadata.ts");
     assert!(
         result.is_ok(),
@@ -3382,3 +3382,4 @@ fn build_smoke_function_prototype() {
         result.err()
     );
 }
+
