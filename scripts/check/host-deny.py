@@ -3,15 +3,19 @@
 
 Reads fixtures/catalog.yaml, analyzes each fixture source file for Node host
 import patterns, compiles a representative subset, and reports an explicit
-allow/deny status per fixture. Exits with 0 after reporting (info-only gate).
+allow/deny status per fixture.
 
 Usage:
-  python scripts/check/host-deny.py
+  python scripts/check/host-deny.py                          # info-only report
+  python scripts/check/host-deny.py --compile                 # also fails on host import violations
+  python scripts/check/host-deny.py --compile --report-only   # info-only even with --compile
   python scripts/check/host-deny.py --update-catalog
 
 Options:
   --update-catalog   Add host_imports field to catalog.yaml entries.
   --compile          Force compilation-based check (slower but more accurate).
+                     Exits with 1 when a host-free fixture imports (import "host" ...).
+  --report-only      Report only, exit 0 even on violations (default with --compile off).
   -v, --verbose      Print per-fixture analysis details.
 
 Dependencies: cargo, wasm-tools (for --compile mode only).
@@ -182,6 +186,7 @@ def main():
     args = sys.argv[1:]
     update_catalog = "--update-catalog" in args
     force_compile = "--compile" in args
+    report_only = "--report-only" in args
     verbose = "-v" in args or "--verbose" in args
 
     if not CATALOG_PATH.exists():
@@ -295,6 +300,15 @@ def main():
         with open(CATALOG_PATH, "w") as f:
             yaml.dump(catalog, f, default_flow_style=False, sort_keys=False)
         print("host-deny: catalog.yaml updated", file=sys.stderr)
+
+    # --compile mode with hard gate (unless --report-only)
+    has_violations = any(
+        not v.get("allow") for v in compile_results.values()
+    ) if compile_results else False
+
+    if force_compile and has_violations and not report_only:
+        print("host-deny: FAIL (--compile mode, host import violations found)", file=sys.stderr)
+        sys.exit(1)
 
     print("host-deny: OK (exiting 0 -- info-only gate)", file=sys.stderr)
     sys.exit(0)

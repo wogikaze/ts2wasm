@@ -280,6 +280,21 @@ impl Parser {
                 .iter()
                 .any(|t| matches!(&t.kind, Token::Ident(name) if name == "private"));
 
+            // Check for async modifier (only for non-computed methods to avoid
+            // interfering with the computed property branch below).
+            let is_async = if !matches!(self.peek(), Some(Token::LeftBracket))
+                && matches!(self.peek(), Some(Token::Async))
+                && matches!(self.peek_n(1), Some(Token::Star | Token::Ident(_)))
+            {
+                self.advance();
+                true
+            } else {
+                false
+            };
+
+            // Check for * generator marker before method property name.
+            let is_generator = self.consume(TokenKind::Star);
+
             if matches!(self.peek(), Some(Token::LeftBracket)) {
                 self.skip_balanced_bracket_block()?;
                 // Computed method: `["method"]() { ... }`
@@ -516,8 +531,8 @@ impl Parser {
                     name: parsed_name,
                     params,
                     body: Vec::new(),
-                    is_generator: false,
-                    is_async: false,
+                    is_generator,
+                    is_async,
                     is_ambient: false,
                 overload_signature: false,
                     span: Span {
@@ -549,8 +564,8 @@ impl Parser {
                 name: parsed_name,
                 params,
                 body: method_body,
-                is_generator: false,
-                is_async: false,
+                is_generator,
+                is_async,
                 is_ambient: false,
                 overload_signature: false,
                 span: Span {

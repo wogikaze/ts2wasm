@@ -1,6 +1,8 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BuiltinId {
     ConsoleLog,
+    ConsoleWarn,
+    ConsoleError,
     ReadStdinUtf8,
     FsReadFileSync,
     FsWriteFileSync,
@@ -45,6 +47,8 @@ impl BuiltinId {
     pub const fn expected_arity(self) -> usize {
         match self {
             Self::ConsoleLog => 1,
+            Self::ConsoleWarn => 1,
+            Self::ConsoleError => 1,
             Self::ReadStdinUtf8 => 0,
             Self::FsReadFileSync => 2,
             Self::FsWriteFileSync => 2,
@@ -82,6 +86,8 @@ impl BuiltinId {
     pub const fn min_arity(self) -> usize {
         match self {
             Self::ConsoleLog => 1,
+            Self::ConsoleWarn => 1,
+            Self::ConsoleError => 1,
             Self::ReadStdinUtf8 => 0,
             Self::FsReadFileSync => 2,
             Self::FsWriteFileSync => 2,
@@ -114,6 +120,8 @@ impl BuiltinId {
     pub const fn result(self) -> BuiltinResult {
         match self {
             Self::ConsoleLog => BuiltinResult::EffectOnly,
+            Self::ConsoleWarn => BuiltinResult::EffectOnly,
+            Self::ConsoleError => BuiltinResult::EffectOnly,
             Self::ReadStdinUtf8 => BuiltinResult::Value,
             Self::FsReadFileSync => BuiltinResult::Value,
             Self::FsWriteFileSync => BuiltinResult::Value,

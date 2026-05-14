@@ -8,10 +8,10 @@ pub struct Layout;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HeapKind {
     Unknown = 0,
-    String = 4,   // 1 << 2
-    Array = 8,    // 2 << 2
-    Object = 12,  // 3 << 2
-    BigInt = 16,  // 4 << 2
+    String = 4,  // 1 << 2
+    Array = 8,   // 2 << 2
+    Object = 12, // 3 << 2
+    BigInt = 16, // 4 << 2
 }
 
 impl Layout {
