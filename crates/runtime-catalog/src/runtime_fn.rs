@@ -1893,6 +1893,9 @@ impl RuntimeFn {
             | Self::AggregateError
             | Self::StrictEqual
             | Self::ValueToStringInto
+            | Self::NumberToExponential
+            | Self::NumberToFixed
+            | Self::NumberToPrecision
             | Self::ArrayPush
             | Self::ArrayPushGrow
             | Self::DataViewNew

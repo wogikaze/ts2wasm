@@ -160,10 +160,34 @@ impl WatEmitter<'_> {
     pub(super) fn emit_number_to_fixed(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $number_to_fixed (param $v i32) (result i32)
+  (func $number_to_fixed (param $v i32) (param $fraction_digits i32) (result i32)
     (local $len i32)
     (local $ptr i32)
+    (local $digits i32)
+    (local $i i32)
+    (local.set $digits (i32.const {zero}))
+    (if (i32.eq
+          (i32.and (local.get $fraction_digits) (i32.const {tag_mask}))
+          (i32.const {number_tag}))
+      (then
+        (local.set $digits (i32.shr_s (local.get $fraction_digits) (i32.const {number_shift})))))
+    (if (i32.lt_s (local.get $digits) (i32.const {zero}))
+      (then (local.set $digits (i32.const {zero}))))
+    (if (i32.gt_s (local.get $digits) (i32.const 20))
+      (then (local.set $digits (i32.const 20))))
     (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
+    (if (i32.gt_s (local.get $digits) (i32.const {zero}))
+      (then
+        (i32.store8 (i32.add (i32.const {scratch}) (local.get $len)) (i32.const {ascii_dot}))
+        (local.set $len (i32.add (local.get $len) (i32.const {one})))
+        (local.set $i (i32.const {zero}))
+        (block $zeros_done
+          (loop $zeros
+            (br_if $zeros_done (i32.ge_s (local.get $i) (local.get $digits)))
+            (i32.store8 (i32.add (i32.const {scratch}) (local.get $len)) (i32.const {ascii_zero}))
+            (local.set $len (i32.add (local.get $len) (i32.const {one})))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $zeros)))))
     (local.set $ptr
       (call $alloc_heap
         (i32.add (i32.const {string_header_size}) (local.get $len))))
@@ -177,52 +201,215 @@ impl WatEmitter<'_> {
             string_tag = ValueTag::STRING,
             string_header_size = Layout::STRING_HEADER_SIZE,
             scratch = Layout::SCRATCH_OFFSET,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            ascii_dot = 46,
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            one = RuntimeConst::ONE,
+            zero = RuntimeConst::ZERO,
         ));
     }
 
     pub(super) fn emit_number_to_exponential(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $number_to_exponential (param $v i32) (result i32)
+  (func $number_to_exponential (param $v i32) (param $fraction_digits_arg i32) (result i32)
+    (local $out i32)
     (local $len i32)
     (local $ptr i32)
-    (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
-    (local.set $ptr
-      (call $alloc_heap
-        (i32.add (i32.const {string_header_size}) (local.get $len))))
+    (local $n i32)
+    (local $abs i32)
+    (local $tmp i32)
+    (local $digit_count i32)
+    (local $divisor i32)
+    (local $fraction_digits i32)
+    (local $i i32)
+    (local $digit i32)
+    (local $rem i32)
+    (local.set $out (i32.const {scratch}))
+    (local.set $n (i32.shr_s (local.get $v) (i32.const {number_shift})))
+    (if (i32.lt_s (local.get $n) (i32.const {zero}))
+      (then
+        (i32.store8 (local.get $out) (i32.const {ascii_minus}))
+        (local.set $out (i32.add (local.get $out) (i32.const {one})))
+        (local.set $len (i32.add (local.get $len) (i32.const {one})))
+        (local.set $abs (i32.sub (i32.const {zero}) (local.get $n))))
+      (else
+        (local.set $abs (local.get $n))))
+    (if (i32.eq (local.get $abs) (i32.const {zero}))
+      (then
+        (i32.store8 (local.get $out) (i32.const {ascii_zero}))
+        (local.set $out (i32.add (local.get $out) (i32.const {one})))
+        (local.set $len (i32.add (local.get $len) (i32.const {one})))
+        (local.set $fraction_digits (i32.const {zero}))
+        (if (i32.eq
+              (i32.and (local.get $fraction_digits_arg) (i32.const {tag_mask}))
+              (i32.const {number_tag}))
+          (then
+            (local.set $fraction_digits (i32.shr_s (local.get $fraction_digits_arg) (i32.const {number_shift})))))
+        (if (i32.lt_s (local.get $fraction_digits) (i32.const {zero}))
+          (then (local.set $fraction_digits (i32.const {zero}))))
+        (if (i32.gt_s (local.get $fraction_digits) (i32.const 20))
+          (then (local.set $fraction_digits (i32.const 20))))
+        (if (i32.gt_s (local.get $fraction_digits) (i32.const {zero}))
+          (then
+            (i32.store8 (local.get $out) (i32.const {ascii_dot}))
+            (local.set $out (i32.add (local.get $out) (i32.const {one})))
+            (local.set $len (i32.add (local.get $len) (i32.const {one})))
+            (local.set $i (i32.const {zero}))
+            (block $zero_frac_done
+              (loop $zero_frac
+                (br_if $zero_frac_done (i32.ge_s (local.get $i) (local.get $fraction_digits)))
+                (i32.store8 (local.get $out) (i32.const {ascii_zero}))
+                (local.set $out (i32.add (local.get $out) (i32.const {one})))
+                (local.set $len (i32.add (local.get $len) (i32.const {one})))
+                (local.set $i (i32.add (local.get $i) (i32.const {one})))
+                (br $zero_frac)))))
+        (i32.store8 (local.get $out) (i32.const {ascii_e}))
+        (i32.store8 (i32.add (local.get $out) (i32.const {one})) (i32.const {ascii_plus}))
+        (i32.store8 (i32.add (local.get $out) (i32.const 2)) (i32.const {ascii_zero}))
+        (local.set $len (i32.add (local.get $len) (i32.const 3)))
+        (local.set $ptr (call $alloc_heap (i32.add (i32.const {string_header_size}) (local.get $len))))
+        (i32.store (local.get $ptr) (local.get $len))
+        (call $copy (i32.const {scratch}) (i32.add (local.get $ptr) (i32.const {string_header_size})) (local.get $len))
+        (return (i32.or (local.get $ptr) (i32.const {string_tag})))))
+    (local.set $tmp (local.get $abs))
+    (local.set $digit_count (i32.const {zero}))
+    (block $count_done
+      (loop $count_digits
+        (local.set $digit_count (i32.add (local.get $digit_count) (i32.const {one})))
+        (local.set $tmp (i32.div_u (local.get $tmp) (i32.const {ten})))
+        (br_if $count_digits (i32.gt_u (local.get $tmp) (i32.const {zero})))))
+    (local.set $fraction_digits (i32.sub (local.get $digit_count) (i32.const {one})))
+    (if (i32.eq
+          (i32.and (local.get $fraction_digits_arg) (i32.const {tag_mask}))
+          (i32.const {number_tag}))
+      (then
+        (local.set $fraction_digits (i32.shr_s (local.get $fraction_digits_arg) (i32.const {number_shift})))))
+    (if (i32.lt_s (local.get $fraction_digits) (i32.const {zero}))
+      (then (local.set $fraction_digits (i32.const {zero}))))
+    (if (i32.gt_s (local.get $fraction_digits) (i32.const 20))
+      (then (local.set $fraction_digits (i32.const 20))))
+    (local.set $divisor (i32.const {one}))
+    (local.set $i (i32.const {one}))
+    (block $divisor_done
+      (loop $divisor_loop
+        (br_if $divisor_done (i32.ge_s (local.get $i) (local.get $digit_count)))
+        (local.set $divisor (i32.mul (local.get $divisor) (i32.const {ten})))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $divisor_loop)))
+    (local.set $digit (i32.div_u (local.get $abs) (local.get $divisor)))
+    (local.set $rem (i32.rem_u (local.get $abs) (local.get $divisor)))
+    (i32.store8 (local.get $out) (i32.add (local.get $digit) (i32.const {ascii_zero})))
+    (local.set $out (i32.add (local.get $out) (i32.const {one})))
+    (local.set $len (i32.add (local.get $len) (i32.const {one})))
+    (if (i32.gt_s (local.get $fraction_digits) (i32.const {zero}))
+      (then
+        (i32.store8 (local.get $out) (i32.const {ascii_dot}))
+        (local.set $out (i32.add (local.get $out) (i32.const {one})))
+        (local.set $len (i32.add (local.get $len) (i32.const {one})))
+        (local.set $i (i32.const {zero}))
+        (block $frac_done
+          (loop $frac_loop
+            (br_if $frac_done (i32.ge_s (local.get $i) (local.get $fraction_digits)))
+            (if (i32.gt_u (local.get $divisor) (i32.const {one}))
+              (then
+                (local.set $divisor (i32.div_u (local.get $divisor) (i32.const {ten}))
+                )
+                (local.set $digit (i32.div_u (local.get $rem) (local.get $divisor)))
+                (local.set $rem (i32.rem_u (local.get $rem) (local.get $divisor))))
+              (else
+                (local.set $digit (i32.const {zero}))))
+            (i32.store8 (local.get $out) (i32.add (local.get $digit) (i32.const {ascii_zero})))
+            (local.set $out (i32.add (local.get $out) (i32.const {one})))
+            (local.set $len (i32.add (local.get $len) (i32.const {one})))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $frac_loop)))))
+    (i32.store8 (local.get $out) (i32.const {ascii_e}))
+    (i32.store8 (i32.add (local.get $out) (i32.const {one})) (i32.const {ascii_plus}))
+    (i32.store8
+      (i32.add (local.get $out) (i32.const 2))
+      (i32.add (i32.sub (local.get $digit_count) (i32.const {one})) (i32.const {ascii_zero})))
+    (local.set $len (i32.add (local.get $len) (i32.const 3)))
+    (local.set $ptr (call $alloc_heap (i32.add (i32.const {string_header_size}) (local.get $len))))
     (i32.store (local.get $ptr) (local.get $len))
-    (call $copy
-      (i32.const {scratch})
-      (i32.add (local.get $ptr) (i32.const {string_header_size}))
-      (local.get $len))
+    (call $copy (i32.const {scratch}) (i32.add (local.get $ptr) (i32.const {string_header_size})) (local.get $len))
     (i32.or (local.get $ptr) (i32.const {string_tag})))
 "#,
             string_tag = ValueTag::STRING,
             string_header_size = Layout::STRING_HEADER_SIZE,
             scratch = Layout::SCRATCH_OFFSET,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            ascii_dot = 46,
+            ascii_e = 101,
+            ascii_plus = 43,
+            ascii_minus = RuntimeConst::ASCII_MINUS,
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            ten = RuntimeConst::TEN,
+            one = RuntimeConst::ONE,
+            zero = RuntimeConst::ZERO,
         ));
     }
 
     pub(super) fn emit_number_to_precision(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $number_to_precision (param $v i32) (result i32)
+  (func $number_to_precision (param $v i32) (param $precision_arg i32) (result i32)
     (local $len i32)
     (local $ptr i32)
+    (local $precision i32)
+    (local $digits_len i32)
+    (local $zeros i32)
+    (local $i i32)
     (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
-    (local.set $ptr
-      (call $alloc_heap
-        (i32.add (i32.const {string_header_size}) (local.get $len))))
+    (if (i32.ne
+          (i32.and (local.get $precision_arg) (i32.const {tag_mask}))
+          (i32.const {number_tag}))
+      (then
+        (local.set $ptr (call $alloc_heap (i32.add (i32.const {string_header_size}) (local.get $len))))
+        (i32.store (local.get $ptr) (local.get $len))
+        (call $copy (i32.const {scratch}) (i32.add (local.get $ptr) (i32.const {string_header_size})) (local.get $len))
+        (return (i32.or (local.get $ptr) (i32.const {string_tag})))))
+    (local.set $precision (i32.shr_s (local.get $precision_arg) (i32.const {number_shift})))
+    (if (i32.lt_s (local.get $precision) (i32.const {one}))
+      (then (local.set $precision (i32.const {one}))))
+    (if (i32.gt_s (local.get $precision) (i32.const 21))
+      (then (local.set $precision (i32.const 21))))
+    (local.set $digits_len (local.get $len))
+    (if (i32.eq (i32.load8_u (i32.const {scratch})) (i32.const {ascii_minus}))
+      (then (local.set $digits_len (i32.sub (local.get $digits_len) (i32.const {one})))))
+    (if (i32.gt_s (local.get $precision) (local.get $digits_len))
+      (then
+        (i32.store8 (i32.add (i32.const {scratch}) (local.get $len)) (i32.const {ascii_dot}))
+        (local.set $len (i32.add (local.get $len) (i32.const {one})))
+        (local.set $zeros (i32.sub (local.get $precision) (local.get $digits_len)))
+        (local.set $i (i32.const {zero}))
+        (block $zeros_done
+          (loop $zeros
+            (br_if $zeros_done (i32.ge_s (local.get $i) (local.get $zeros)))
+            (i32.store8 (i32.add (i32.const {scratch}) (local.get $len)) (i32.const {ascii_zero}))
+            (local.set $len (i32.add (local.get $len) (i32.const {one})))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $zeros)))))
+    (local.set $ptr (call $alloc_heap (i32.add (i32.const {string_header_size}) (local.get $len))))
     (i32.store (local.get $ptr) (local.get $len))
-    (call $copy
-      (i32.const {scratch})
-      (i32.add (local.get $ptr) (i32.const {string_header_size}))
-      (local.get $len))
+    (call $copy (i32.const {scratch}) (i32.add (local.get $ptr) (i32.const {string_header_size})) (local.get $len))
     (i32.or (local.get $ptr) (i32.const {string_tag})))
 "#,
             string_tag = ValueTag::STRING,
             string_header_size = Layout::STRING_HEADER_SIZE,
             scratch = Layout::SCRATCH_OFFSET,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            ascii_dot = 46,
+            ascii_minus = RuntimeConst::ASCII_MINUS,
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            one = RuntimeConst::ONE,
+            zero = RuntimeConst::ZERO,
         ));
     }
 }

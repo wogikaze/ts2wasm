@@ -2065,6 +2065,31 @@ impl WatEmitter<'_> {
             );
             return;
         }
+        if matches!(
+            intrinsic,
+            RuntimeFn::NumberToExponential
+                | RuntimeFn::NumberToFixed
+                | RuntimeFn::NumberToPrecision
+        ) {
+            if let Some(receiver) = args.first() {
+                self.emit_expr(writer, receiver, indent, frame);
+            } else {
+                writer.i32_const(indent, ValueTag::UNDEFINED);
+            }
+            if let Some(format_arg) = args.get(1) {
+                self.emit_expr(writer, format_arg, indent, frame);
+            } else {
+                writer.i32_const(indent, ValueTag::UNDEFINED);
+            }
+            for arg in args.iter().skip(2) {
+                self.emit_expr(writer, arg, indent, frame);
+                if self.expr_produces_value(arg) {
+                    writer.drop(indent);
+                }
+            }
+            writer.line_fmt(indent, format_args!("(call {})", intrinsic.symbol()));
+            return;
+        }
         if (*intrinsic == RuntimeFn::StringIncludes
             || *intrinsic == RuntimeFn::StringStartsWith
             || *intrinsic == RuntimeFn::StringEndsWith)

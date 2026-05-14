@@ -1057,6 +1057,11 @@ fn number_static_integer_and_safe_integer_match_node() {
 }
 
 #[test]
+fn number_format_integer_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-format-integer.ts");
+}
+
+#[test]
 fn extended_math_builtins_match_node() {
     for fixture in [
         "fixtures/builtins-and-io/math-cbrt.ts",
