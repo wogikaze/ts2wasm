@@ -710,7 +710,9 @@ impl super::super::Resolver {
             return None;
         };
         if !matches!(key.as_str(), "name" | "length") {
-            return None;
+            return self
+                .static_object_property_descriptor_matches(target, key, desc)
+                .then(|| LoweredExpr::Bool(true, Span::generated("test262_verify_property")));
         }
         if !self.static_function_descriptor_matches(target, key, desc) {
             return None;
@@ -764,6 +766,44 @@ impl super::super::Resolver {
             }
             _ => false,
         }
+    }
+
+    fn static_object_property_descriptor_matches(
+        &self,
+        target: &str,
+        key: &str,
+        desc: &[ResolvedObjectProp],
+    ) -> bool {
+        let Ok(local) = self.resolve_local(target) else {
+            return false;
+        };
+        let has_property = self
+            .ctx
+            .facts
+            .static_object_literal_locals
+            .get(&local)
+            .is_some_and(|props| props.iter().any(|prop| prop.static_key() == Some(key)))
+            || self
+                .ctx
+                .classes
+                .object_function_props
+                .get(&local)
+                .is_some_and(|props| {
+                    props.contains_key(&ObjectAccessorKey::Property(key.to_owned()))
+                })
+            || self
+                .ctx
+                .classes
+                .object_accessor_props
+                .get(&local)
+                .is_some_and(|props| {
+                    props.contains_key(&ObjectAccessorKey::Property(key.to_owned()))
+                });
+        has_property
+            && !resolved_object_has_prop(desc, "value")
+            && resolved_object_bool_prop(desc, "writable") == Some(true)
+            && resolved_object_bool_prop(desc, "enumerable") == Some(true)
+            && resolved_object_bool_prop(desc, "configurable") == Some(true)
     }
 
     pub(crate) fn function_props_for_lowered_object_expr(
@@ -1124,6 +1164,10 @@ fn resolved_object_bool_prop(props: &[ResolvedObjectProp], key: &str) -> Option<
         } if prop_key == key => Some(*value),
         _ => None,
     })
+}
+
+fn resolved_object_has_prop(props: &[ResolvedObjectProp], key: &str) -> bool {
+    props.iter().any(|prop| prop.static_key() == Some(key))
 }
 
 fn function_apply_explicit_args(
