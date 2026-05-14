@@ -537,6 +537,33 @@ fn lowered_snapshot_object_method_super_call_with_arg_dispatches() {
 }
 
 #[test]
+fn lowered_snapshot_nonident_receiver_method_call_preserves_receiver() {
+    let program = parse_resolve_lower(
+        r#"
+        let parent = { method(value) { return value; } };
+        let child = { read(value) { return super.method(value); } };
+        Object.setPrototypeOf(child, parent);
+        let result = Object.getPrototypeOf(child).method(42);
+        "#,
+    );
+
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::ObjectGetPrototypeOf)),
+        "expected non-identifier receiver to evaluate Object.getPrototypeOf(child)"
+    );
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::HeapClosureCall)),
+        "expected non-identifier receiver method call to dispatch through HeapClosureCall"
+    );
+}
+
+#[test]
 fn lowered_snapshot_object_generator_super_call_with_arg_next_returns_yield_value() {
     let program = parse_resolve_lower(
         r#"

@@ -2735,16 +2735,28 @@ impl super::super::Resolver {
             }));
         }
 
-        Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!(
-                "issue-211: method `{}` requires an identifier receiver",
-                method
-            ),
-            span: Some(span),
-
-            phase: None,
-        })
+        let receiver_temp = self.alloc_temp();
+        let receiver = LoweredExpr::Local(receiver_temp, Span::generated("local"));
+        let callee = object_kernel::ordinary_get(receiver.clone(), method, span);
+        let mut call_args = vec![callee, receiver];
+        call_args.extend(
+            args.iter()
+                .map(|arg| self.lower_expr(arg))
+                .collect::<Result<Vec<_>, _>>()?,
+        );
+        Ok(Some(LoweredExpr::Block {
+            stmts: vec![LoweredStmt::Let(
+                receiver_temp,
+                self.lower_expr(object)?,
+                Span::generated("let_stmt"),
+            )],
+            result: Box::new(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::HeapClosureCall,
+                args: call_args,
+                span: Span::generated("runtime_call"),
+            }),
+            span: Span::generated("block"),
+        }))
     }
 
     /// Helper for lower_method_call_expr: Ident receiver class method dispatch —
