@@ -1,5 +1,7 @@
 use super::*;
-use crate::wasm_ir::{WasmDataSegment, WasmExport, WasmImport, WasmMemory, WasmValType};
+use crate::wasm_ir::{
+    WasmCustomSection, WasmDataSegment, WasmExport, WasmImport, WasmMemory, WasmValType,
+};
 #[cfg(feature = "wasm-encoder-backend")]
 use crate::{emit_wasm_module_binary, wasm_ir::WasmGlobal};
 #[cfg(feature = "wasm-encoder-backend")]
@@ -537,4 +539,44 @@ fn wat_writer_push_str_and_as_str() {
     let mut w = WatWriter::new();
     w.push_str("  (func $f (param i32)");
     assert_eq!(w.as_str(), "  (func $f (param i32)");
+}
+
+#[test]
+fn wat_writer_custom_section_as_comment() {
+    let module = WasmModule::new()
+        .function(
+            WasmFunction::new("main")
+                .result(WasmValType::I32)
+                .body(vec![WasmInstr::I32Const(42), WasmInstr::Return]),
+        )
+        .export(WasmExport::func("main", "main"))
+        .custom_section(WasmCustomSection::new(
+            "ts2wasm.abi",
+            br#"{"version":1}"#.to_vec(),
+        ));
+
+    let mut w = WatWriter::new();
+    w.emit_module(&module);
+    let wat = w.into_string();
+
+    assert!(wat.contains(";; custom-section: ts2wasm.abi"));
+    assert!(wat.contains(";;   {\"version\":1}"));
+}
+
+#[cfg(feature = "wasm-encoder-backend")]
+#[test]
+fn wasm_encoder_abi_custom_section_emits_and_validates() {
+    let module = WasmModule::new()
+        .function(
+            WasmFunction::new("main")
+                .result(WasmValType::I32)
+                .body(vec![WasmInstr::I32Const(42), WasmInstr::Return]),
+        )
+        .export(WasmExport::func("main", "main"))
+        .custom_section(WasmCustomSection::new(
+            "ts2wasm.abi",
+            br#"{"schema_version":1,"runtime_abi_version":2,"target":"wasm32-wasi-p1","target_profile":"wasi-p1","generator":"ts2wasm"}"#.to_vec(),
+        ));
+
+    assert_module_emits_with_wat_and_wasm_encoder("abi_custom_section", &module);
 }

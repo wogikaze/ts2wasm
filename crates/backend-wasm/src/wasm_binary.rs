@@ -140,6 +140,8 @@ pub struct WasmBinaryWriter {
     data_segments: Vec<(u32, Vec<u8>)>,
     // Export entries (name, kind, index)
     exports: Vec<(String, u8, u32)>,
+    // Custom sections (name, payload)
+    custom_sections: Vec<(String, Vec<u8>)>,
 }
 
 impl Default for WasmBinaryWriter {
@@ -166,6 +168,7 @@ impl WasmBinaryWriter {
             code_bodies: Vec::new(),
             data_segments: Vec::new(),
             exports: Vec::new(),
+            custom_sections: Vec::new(),
         }
     }
 
@@ -176,7 +179,8 @@ impl WasmBinaryWriter {
 
     /// Finalize and return the complete WASM binary.
     /// Emits all sections in the correct WASM order:
-    /// 1=Type, 2=Import, 3=Function, 5=Memory, 7=Export, 10=Code, 11=Data
+    /// 1=Type, 2=Import, 3=Function, 5=Memory, 7=Export, 10=Code, 11=Data,
+    /// then 0=custom sections.
     pub fn into_bytes(mut self) -> Vec<u8> {
         self.emit_type_section();
         self.emit_import_section();
@@ -185,6 +189,10 @@ impl WasmBinaryWriter {
         self.emit_export_section();
         self.emit_code_section();
         self.emit_data_section();
+        let sections = self.custom_sections.clone();
+        for (name, payload) in &sections {
+            self.emit_custom_section(name, payload);
+        }
         self.bytes
     }
 
@@ -361,6 +369,19 @@ impl WasmBinaryWriter {
             content.extend_from_slice(data);
         }
         self.emit_section(SECTION_DATA, &content);
+    }
+
+    // ── Custom sections ────────────────────────────────────────────
+
+    /// Register a custom section for emission.
+    pub fn register_custom_section(&mut self, name: &str, payload: Vec<u8>) {
+        self.custom_sections.push((name.to_owned(), payload));
+    }
+
+    fn emit_custom_section(&mut self, name: &str, payload: &[u8]) {
+        let mut content = encode_name_raw(name);
+        content.extend_from_slice(payload);
+        self.emit_section(0, &content);
     }
 
     // ── Section framing ─────────────────────────────────────────────
@@ -683,6 +704,14 @@ pub fn encode_name(out: &mut Vec<u8>, value: &str) {
     out.extend_from_slice(value.as_bytes());
 }
 
+/// Encode a name and return the bytes (for use in custom section content).
+fn encode_name_raw(value: &str) -> Vec<u8> {
+    let mut out = Vec::new();
+    encode_u32(value.len() as u32, &mut out);
+    out.extend_from_slice(value.as_bytes());
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -733,5 +762,57 @@ mod tests {
         writer.register_function(t0);
         writer.register_function(t0);
         assert_eq!(writer.func_type_indices.len(), 2);
+    }
+
+    #[test]
+    fn binary_includes_abi_custom_section() {
+        let mut writer = WasmBinaryWriter::new();
+        writer.begin_module();
+        writer.register_custom_section("ts2wasm.abi", br#"{"version":1}"#.to_vec());
+        let wasm = writer.into_bytes();
+
+        // Verify it contains the custom section name
+        let wasm_str = String::from_utf8_lossy(&wasm);
+        assert!(
+            wasm_str.contains("ts2wasm.abi"),
+            "binary should contain the custom section name"
+        );
+
+        // Verify the module header
+        assert_eq!(&wasm[..8], b"\0asm\x01\0\0\0");
+
+        // Find custom section (id=0)
+        let mut offset = 8;
+        let mut found_custom = false;
+        while offset < wasm.len() {
+            let id = wasm[offset];
+            offset += 1;
+            let payload_len = leb128_u32(&wasm, &mut offset);
+            if id == 0 {
+                // Custom section: contains name length + name bytes + payload
+                found_custom = true;
+                // The first part of payload is the name
+                let name_len = leb128_u32(&wasm, &mut offset) as usize;
+                let name = String::from_utf8_lossy(&wasm[offset..offset + name_len]);
+                assert_eq!(name, "ts2wasm.abi");
+            } else {
+                offset += payload_len as usize;
+            }
+        }
+        assert!(found_custom, "should find custom section in binary");
+    }
+
+    fn leb128_u32(bytes: &[u8], offset: &mut usize) -> u32 {
+        let mut result = 0u32;
+        let mut shift = 0;
+        loop {
+            let byte = bytes[*offset];
+            *offset += 1;
+            result |= u32::from(byte & 0x7f) << shift;
+            if byte & 0x80 == 0 {
+                return result;
+            }
+            shift += 7;
+        }
     }
 }

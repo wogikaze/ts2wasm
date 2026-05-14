@@ -137,6 +137,12 @@ pub fn emit_wasm_module_binary(module: &WasmModule) -> Vec<u8> {
         wasm.section(&data_section);
     }
 
+    // Custom sections.
+    for section in &module.custom_sections {
+        let mut custom = CustomSection::new(&section.name, &section.payload);
+        wasm.section(&custom);
+    }
+
     wasm.finish()
 }
 

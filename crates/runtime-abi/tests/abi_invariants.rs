@@ -489,3 +489,193 @@ fn wasm_tagged_wire_is_i32() {
     assert_eq!(v, (100 << 3) | 4);
     let _: WasmTaggedJsWire = 0i32; // type-level verification
 }
+
+// ---------------------------------------------------------------------------
+// ABI snapshot dump and compat gate
+// ---------------------------------------------------------------------------
+
+/// Canonical snapshot of the runtime ABI constants.
+///
+/// The snapshot is formatted as `KEY=VALUE` lines. If the ABI layout
+/// constants change without bumping `RUNTIME_ABI_VERSION` AND updating
+/// the snapshot, this test will fail.
+///
+/// Run `BLESS=1 cargo test -p ts2wasm-runtime-abi dump_runtime_abi_snapshot`
+/// to update the snapshot.
+pub fn dump_runtime_abi_snapshot() -> String {
+    let mut out = String::new();
+    // ABI version
+    out.push_str(&format!("ABI_VERSION={}\n", RuntimeConst::ABI_VERSION));
+
+    // Memory layout
+    out.push_str(&format!("WASM_PAGE_SIZE={}\n", Layout::WASM_PAGE_SIZE));
+    out.push_str(&format!("MEMORY_MIN_PAGES={}\n", Layout::MEMORY_MIN_PAGES));
+    out.push_str(&format!("MEMORY_MAX_PAGES={}\n", Layout::MEMORY_MAX_PAGES));
+    out.push_str(&format!("DATA_START={}\n", Layout::DATA_START));
+    out.push_str(&format!("HEAP_START={}\n", Layout::HEAP_START));
+    out.push_str(&format!("SCRATCH_OFFSET={}\n", Layout::SCRATCH_OFFSET));
+    out.push_str(&format!("SCRATCH_SIZE={}\n", Layout::SCRATCH_SIZE));
+    out.push_str(&format!(
+        "STDIN_BUFFER_OFFSET={}\n",
+        Layout::STDIN_BUFFER_OFFSET
+    ));
+    out.push_str(&format!(
+        "STDIN_BUFFER_SIZE={}\n",
+        Layout::STDIN_BUFFER_SIZE
+    ));
+    out.push_str(&format!(
+        "STDIN_IOVEC_OFFSET={}\n",
+        Layout::STDIN_IOVEC_OFFSET
+    ));
+    out.push_str(&format!(
+        "STDIN_NREAD_OFFSET={}\n",
+        Layout::STDIN_NREAD_OFFSET
+    ));
+
+    // GC constants
+    out.push_str(&format!("GC_HEADER_SIZE={}\n", Layout::GC_HEADER_SIZE));
+    out.push_str(&format!("GC_THRESHOLD={}\n", Layout::GC_THRESHOLD));
+    out.push_str(&format!(
+        "GC_HEADROOM_PAGES={}\n",
+        Layout::GC_HEADROOM_PAGES
+    ));
+    out.push_str(&format!(
+        "HEAP_GROW_MIN_PAGES={}\n",
+        Layout::HEAP_GROW_MIN_PAGES
+    ));
+    out.push_str(&format!(
+        "GC_CALL_FRAME_ROOT_STACK_BYTES={}\n",
+        Layout::GC_CALL_FRAME_ROOT_STACK_BYTES
+    ));
+
+    // Array layout
+    out.push_str(&format!(
+        "ARRAY_HEADER_SIZE={}\n",
+        Layout::ARRAY_HEADER_SIZE
+    ));
+    out.push_str(&format!(
+        "ARRAY_CAPACITY_OFFSET={}\n",
+        Layout::ARRAY_CAPACITY_OFFSET
+    ));
+    out.push_str(&format!(
+        "ARRAY_PRESENCE_WORD_COUNT_OFFSET={}\n",
+        Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET
+    ));
+    out.push_str(&format!(
+        "ARRAY_ELEMENTS_OFFSET_OFFSET={}\n",
+        Layout::ARRAY_ELEMENTS_OFFSET_OFFSET
+    ));
+    out.push_str(&format!(
+        "ARRAY_PRESENCE_WORDS_OFFSET={}\n",
+        Layout::ARRAY_PRESENCE_WORDS_OFFSET
+    ));
+
+    // Object layout
+    out.push_str(&format!(
+        "OBJECT_HEADER_SIZE={}\n",
+        Layout::OBJECT_HEADER_SIZE
+    ));
+    out.push_str(&format!(
+        "OBJECT_FLAGS_OFFSET={}\n",
+        Layout::OBJECT_FLAGS_OFFSET
+    ));
+    out.push_str(&format!(
+        "OBJECT_PROTOTYPE_OFFSET={}\n",
+        Layout::OBJECT_PROTOTYPE_OFFSET
+    ));
+    out.push_str(&format!(
+        "OBJECT_ENTRIES_OFFSET={}\n",
+        Layout::OBJECT_ENTRIES_OFFSET
+    ));
+    out.push_str(&format!(
+        "OBJECT_ENTRY_SIZE={}\n",
+        Layout::OBJECT_ENTRY_SIZE
+    ));
+
+    // Alignment
+    out.push_str(&format!("ALIGN={}\n", Layout::ALIGN));
+
+    // ValueTag constants
+    out.push_str(&format!("TAG_SHIFT={}\n", ValueTag::NUMBER_SHIFT));
+    out.push_str(&format!("TAG_MASK={}\n", ValueTag::TAG_MASK));
+    out.push_str(&format!("HEAP_MASK={}\n", ValueTag::HEAP_MASK));
+    out.push_str(&format!("TAG_UNDEFINED={}\n", ValueTag::UNDEFINED));
+    out.push_str(&format!("TAG_NULL={}\n", ValueTag::NULL));
+    out.push_str(&format!("TAG_FALSE={}\n", ValueTag::FALSE));
+    out.push_str(&format!("TAG_TRUE={}\n", ValueTag::TRUE));
+    out.push_str(&format!("TAG_NUMBER={}\n", ValueTag::NUMBER));
+    out.push_str(&format!("TAG_ARRAY={}\n", ValueTag::ARRAY));
+    out.push_str(&format!("TAG_STRING={}\n", ValueTag::STRING));
+    out.push_str(&format!("TAG_OBJECT={}\n", ValueTag::OBJECT));
+
+    // Module cache
+    out.push_str(&format!("MODULE_CACHE_MAX={}\n", Layout::MODULE_CACHE_MAX));
+    out.push_str(&format!(
+        "MODULE_CACHE_ENTRY_SIZE={}\n",
+        Layout::MODULE_CACHE_ENTRY_SIZE
+    ));
+
+    // GC kind constants
+    out.push_str(&format!("GC_KIND_UNKNOWN={}\n", Layout::GC_KIND_UNKNOWN));
+    out.push_str(&format!("GC_KIND_STRING={}\n", Layout::GC_KIND_STRING));
+    out.push_str(&format!("GC_KIND_ARRAY={}\n", Layout::GC_KIND_ARRAY));
+    out.push_str(&format!("GC_KIND_OBJECT={}\n", Layout::GC_KIND_OBJECT));
+    out.push_str(&format!("GC_KIND_BIGINT={}\n", Layout::GC_KIND_BIGINT));
+
+    out
+}
+
+fn compat_snapshot_path() -> String {
+    format!(
+        "{}/compat/v{}-snapshot.txt",
+        env!("CARGO_MANIFEST_DIR"),
+        RuntimeConst::ABI_VERSION,
+    )
+}
+
+#[test]
+fn runtime_abi_snapshot_matches_compat() {
+    let snapshot = dump_runtime_abi_snapshot();
+    let path = compat_snapshot_path();
+
+    match std::fs::read_to_string(&path) {
+        Ok(existing) => {
+            assert_eq!(
+                snapshot, existing,
+                "ABI snapshot differs from compat archive at {path}.\n\
+                 If you intentionally changed ABI constants, update the archive AND bump ABI_VERSION.\n\
+                 Run: BLESS=1 cargo test -p ts2wasm-runtime-abi runtime_abi_snapshot_matches_compat"
+            );
+        }
+        Err(_) => {
+            if std::env::var("BLESS").is_ok() {
+                std::fs::write(&path, &snapshot)
+                    .unwrap_or_else(|e| panic!("failed to write compat snapshot {path}: {e}"));
+                eprintln!("wrote compat snapshot: {path}");
+            } else {
+                eprintln!("note: no compat snapshot at {path}; run BLESS=1 to create it");
+            }
+        }
+    }
+}
+
+#[test]
+fn runtime_abi_snapshot_includes_version() {
+    let snapshot = dump_runtime_abi_snapshot();
+    let version_line = format!("ABI_VERSION={}\n", RuntimeConst::ABI_VERSION);
+    assert!(
+        snapshot.contains(&version_line),
+        "ABI snapshot must contain ABI_VERSION={}",
+        RuntimeConst::ABI_VERSION
+    );
+}
+
+#[test]
+fn runtime_abi_snapshot_includes_tag_constants() {
+    let snapshot = dump_runtime_abi_snapshot();
+    assert!(snapshot.contains("TAG_SHIFT=3"));
+    assert!(snapshot.contains("TAG_MASK=7"));
+    assert!(snapshot.contains("TAG_UNDEFINED=0"));
+    assert!(snapshot.contains("TAG_NULL=1"));
+    assert!(snapshot.contains("TAG_OBJECT=7"));
+}

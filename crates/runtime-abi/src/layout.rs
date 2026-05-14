@@ -646,17 +646,50 @@ HEAP_MASK=-8 HEAP_TAG=7";
         let snapshot = format!(
             "ABI_VERSION={abi_version}\n\
              WASM_PAGE_SIZE={wasm_page}\n\
-             MEMORY_MIN_PAGES={min_pages} MEMORY_MAX_PAGES={max_pages}\n\
-             DATA_START={data_start} HEAP_START={heap_start}\n\
-             SCRATCH_OFFSET={scratch_off} SCRATCH_SIZE={scratch_sz}\n\
-             STDIN_BUFFER_OFFSET={stdin_buf_off} STDIN_BUFFER_SIZE={stdin_buf_sz}\n\
-             STDIN_IOVEC_OFFSET={iovec_off} STDIN_NREAD_OFFSET={nread_off}\n\
-             GC_HEADER_SIZE={gc_hdr} GC_THRESHOLD={gc_thresh}\n\
-             GC_HEADROOM_PAGES={gc_headroom} HEAP_GROW_MIN_PAGES={heap_grow}\n\
-             ARRAY_HEADER_SIZE={arr_hdr} OBJECT_HEADER_SIZE={obj_hdr}\n\
+             MEMORY_MIN_PAGES={min_pages}\n\
+             MEMORY_MAX_PAGES={max_pages}\n\
+             DATA_START={data_start}\n\
+             HEAP_START={heap_start}\n\
+             SCRATCH_OFFSET={scratch_off}\n\
+             SCRATCH_SIZE={scratch_sz}\n\
+             STDIN_BUFFER_OFFSET={stdin_buf_off}\n\
+             STDIN_BUFFER_SIZE={stdin_buf_sz}\n\
+             STDIN_IOVEC_OFFSET={iovec_off}\n\
+             STDIN_NREAD_OFFSET={nread_off}\n\
+             GC_HEADER_SIZE={gc_hdr}\n\
+             GC_THRESHOLD={gc_thresh}\n\
+             GC_HEADROOM_PAGES={gc_headroom}\n\
+             HEAP_GROW_MIN_PAGES={heap_grow}\n\
+             GC_CALL_FRAME_ROOT_STACK_BYTES={gcframe}\n\
+             ARRAY_HEADER_SIZE={arr_hdr}\n\
+             ARRAY_CAPACITY_OFFSET={arr_cap}\n\
+             ARRAY_PRESENCE_WORD_COUNT_OFFSET={arr_pwc}\n\
+             ARRAY_ELEMENTS_OFFSET_OFFSET={arr_eoo}\n\
+             ARRAY_PRESENCE_WORDS_OFFSET={arr_pwo}\n\
+             OBJECT_HEADER_SIZE={obj_hdr}\n\
+             OBJECT_FLAGS_OFFSET={obj_flags}\n\
+             OBJECT_PROTOTYPE_OFFSET={obj_proto}\n\
+             OBJECT_ENTRIES_OFFSET={obj_entries}\n\
+             OBJECT_ENTRY_SIZE={obj_entry}\n\
              ALIGN={align}\n\
-             TAG_SHIFT={tag_shift} TAG_MASK={tag_mask}\n\
-             HEAP_MASK={hm}",
+             TAG_SHIFT={tag_shift}\n\
+             TAG_MASK={tag_mask}\n\
+             HEAP_MASK={hm}\n\
+             TAG_UNDEFINED={tag_und}\n\
+             TAG_NULL={tag_null}\n\
+             TAG_FALSE={tag_false}\n\
+             TAG_TRUE={tag_true}\n\
+             TAG_NUMBER={tag_number}\n\
+             TAG_ARRAY={tag_array}\n\
+             TAG_STRING={tag_string}\n\
+             TAG_OBJECT={tag_object}\n\
+             MODULE_CACHE_MAX={mod_max}\n\
+             MODULE_CACHE_ENTRY_SIZE={mod_entry}\n\
+             GC_KIND_UNKNOWN={gck_unk}\n\
+             GC_KIND_STRING={gck_str}\n\
+             GC_KIND_ARRAY={gck_arr}\n\
+             GC_KIND_OBJECT={gck_obj}\n\
+             GC_KIND_BIGINT={gck_bigint}",
             abi_version = RuntimeConst::ABI_VERSION,
             wasm_page = Layout::WASM_PAGE_SIZE,
             min_pages = Layout::MEMORY_MIN_PAGES,
@@ -673,12 +706,36 @@ HEAP_MASK=-8 HEAP_TAG=7";
             gc_thresh = Layout::GC_THRESHOLD,
             gc_headroom = Layout::GC_HEADROOM_PAGES,
             heap_grow = Layout::HEAP_GROW_MIN_PAGES,
+            gcframe = Layout::GC_CALL_FRAME_ROOT_STACK_BYTES,
             arr_hdr = Layout::ARRAY_HEADER_SIZE,
+            arr_cap = Layout::ARRAY_CAPACITY_OFFSET,
+            arr_pwc = Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+            arr_eoo = Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
+            arr_pwo = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
             obj_hdr = Layout::OBJECT_HEADER_SIZE,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            obj_entries = Layout::OBJECT_ENTRIES_OFFSET,
+            obj_entry = Layout::OBJECT_ENTRY_SIZE,
             align = Layout::ALIGN,
             tag_shift = ValueTag::NUMBER_SHIFT,
             tag_mask = ValueTag::TAG_MASK,
             hm = ValueTag::HEAP_MASK,
+            tag_und = ValueTag::UNDEFINED,
+            tag_null = ValueTag::NULL,
+            tag_false = ValueTag::FALSE,
+            tag_true = ValueTag::TRUE,
+            tag_number = ValueTag::NUMBER,
+            tag_array = ValueTag::ARRAY,
+            tag_string = ValueTag::STRING,
+            tag_object = ValueTag::OBJECT,
+            mod_max = Layout::MODULE_CACHE_MAX,
+            mod_entry = Layout::MODULE_CACHE_ENTRY_SIZE,
+            gck_unk = Layout::GC_KIND_UNKNOWN,
+            gck_str = Layout::GC_KIND_STRING,
+            gck_arr = Layout::GC_KIND_ARRAY,
+            gck_obj = Layout::GC_KIND_OBJECT,
+            gck_bigint = Layout::GC_KIND_BIGINT,
         );
 
         let archive = match RuntimeConst::ABI_VERSION {

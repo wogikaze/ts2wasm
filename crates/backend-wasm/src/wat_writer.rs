@@ -679,6 +679,15 @@ impl WatWriter {
             }
         }
 
+        // Custom sections: emit as WAT comments
+        for section in &module.custom_sections {
+            let payload_str = String::from_utf8_lossy(&section.payload);
+            self.line(2, &format!(";; custom-section: {}", section.name));
+            for line in payload_str.lines() {
+                self.line(2, &format!(";;   {}", line));
+            }
+        }
+
         self.close_module();
     }
 }

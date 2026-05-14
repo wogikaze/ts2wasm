@@ -14,8 +14,8 @@
 use std::process::Command;
 
 use ts2wasm_backend_core::wasm_ir::{
-    WasmDataSegment, WasmExport, WasmFunction, WasmGlobal, WasmImport, WasmInstr, WasmMemory,
-    WasmModule, WasmValType,
+    WasmCustomSection, WasmDataSegment, WasmExport, WasmFunction, WasmGlobal, WasmImport,
+    WasmInstr, WasmMemory, WasmModule, WasmValType,
 };
 use ts2wasm_backend_wasm::wat_writer::WatWriter;
 
@@ -170,6 +170,22 @@ fn fixture_data_segment() -> WasmModule {
         .export(WasmExport::func("load_byte", "load_byte"))
 }
 
+/// Fixture: module with an ABI custom section.
+/// Covers: custom sections.
+fn fixture_abi_custom_section() -> WasmModule {
+    WasmModule::new()
+        .function(
+            WasmFunction::new("main")
+                .result(WasmValType::I32)
+                .body(vec![WasmInstr::I32Const(42), WasmInstr::Return]),
+        )
+        .export(WasmExport::func("main", "main"))
+        .custom_section(WasmCustomSection::new(
+            "ts2wasm.abi",
+            br#"{"schema_version":1,"runtime_abi_version":2,"target":"wasm32-wasi-p1","target_profile":"wasi-p1","features":["wasi-preview1","standalone"],"generator":"ts2wasm"}"#.to_vec(),
+        ))
+}
+
 /// Fixture: full-featured module covering imports, memory, globals, data, functions, exports.
 fn fixture_full_featured() -> WasmModule {
     WasmModule::new()
@@ -232,6 +248,20 @@ fn parity_data_segment_wat() {
 }
 
 #[test]
+fn parity_abi_custom_section_wat() {
+    let module = fixture_abi_custom_section();
+    let wat = emit_and_validate_wat(&module, "abi_custom_section");
+    assert!(
+        wat.contains("custom-section: ts2wasm.abi"),
+        "should contain ABI custom section comment"
+    );
+    assert!(
+        wat.contains("ts2wasm"),
+        "should contain generator identifier"
+    );
+}
+
+#[test]
 fn parity_full_featured_wat() {
     let module = fixture_full_featured();
     let wat = emit_and_validate_wat(&module, "full_featured");
@@ -278,6 +308,15 @@ fn parity_global_binary() {
 #[test]
 fn parity_data_segment_binary() {
     let module = fixture_data_segment();
+    let bytes = ts2wasm_backend_wasm::emit_wasm_module_binary(&module);
+    assert!(!bytes.is_empty(), "binary output should not be empty");
+    validate_binary(&bytes);
+}
+
+#[cfg(feature = "wasm-encoder-backend")]
+#[test]
+fn parity_abi_custom_section_binary() {
+    let module = fixture_abi_custom_section();
     let bytes = ts2wasm_backend_wasm::emit_wasm_module_binary(&module);
     assert!(!bytes.is_empty(), "binary output should not be empty");
     validate_binary(&bytes);

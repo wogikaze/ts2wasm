@@ -161,6 +161,123 @@ impl RuntimeAbi {
     }
 }
 
+/// WASM custom section name for ts2wasm ABI metadata.
+pub const ABI_CUSTOM_SECTION_NAME: &str = "ts2wasm.abi";
+
+/// Schema version for the ABI metadata custom section.
+pub const ABI_METADATA_SCHEMA_VERSION: u32 = 1;
+
+/// Generator identifier string for ABI metadata.
+pub const ABI_GENERATOR: &str = "ts2wasm";
+
+/// ABI metadata embedded in the generated WASM custom section `ts2wasm.abi`.
+///
+/// This metadata describes the runtime ABI version, target, and layout
+/// characteristics so consumers can validate compatibility.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AbiMetadata {
+    /// Schema version of this metadata structure.
+    pub schema_version: u32,
+    /// Runtime ABI version constant.
+    pub runtime_abi_version: u32,
+    /// Canonical target identifier (e.g. "wasm32-wasi-p1").
+    pub target: &'static str,
+    /// Execution profile name (e.g. "wasi-p1").
+    pub target_profile: &'static str,
+    /// Feature flags for the target environment.
+    pub features: &'static [&'static str],
+    /// Generator tool identifier.
+    pub generator: &'static str,
+}
+
+impl Default for AbiMetadata {
+    fn default() -> Self {
+        Self {
+            schema_version: ABI_METADATA_SCHEMA_VERSION,
+            runtime_abi_version: 2,
+            target: "wasm32-wasi-p1",
+            target_profile: "wasi-p1",
+            features: &["wasi-preview1", "standalone"],
+            generator: ABI_GENERATOR,
+        }
+    }
+}
+
+impl AbiMetadata {
+    pub fn to_json(&self) -> String {
+        let features_json = self
+            .features
+            .iter()
+            .map(|f| format!("\"{f}\""))
+            .collect::<Vec<_>>()
+            .join(",");
+        format!(
+            r#"{{"schema_version":{},"runtime_abi_version":{},"target":"{}","target_profile":"{}","features":[{}],"generator":"{}"}}"#,
+            self.schema_version,
+            self.runtime_abi_version,
+            self.target,
+            self.target_profile,
+            features_json,
+            self.generator,
+        )
+    }
+
+    /// Encode metadata as bytes for a WASM custom section payload.
+    /// The payload is the JSON string as UTF-8.
+    pub fn to_custom_section_payload(&self) -> Vec<u8> {
+        self.to_json().into_bytes()
+    }
+}
+
+// ---------------------------------------------------------------------------
+// TargetProfile — canonical profile descriptor
+// ---------------------------------------------------------------------------
+
+/// Canonical execution profile describing the target environment.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TargetProfile {
+    /// Profile name (e.g. "wasi-p1", "wasi-p1+node-shim").
+    pub name: &'static str,
+    /// Feature flags describing the execution environment.
+    pub features: &'static [&'static str],
+    /// Whether this profile is currently implemented by the backend.
+    pub is_implemented: bool,
+}
+
+impl TargetProfile {
+    /// Create a new TargetProfile.
+    pub const fn new(
+        name: &'static str,
+        features: &'static [&'static str],
+        is_implemented: bool,
+    ) -> Self {
+        Self {
+            name,
+            features,
+            is_implemented,
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// TargetSpec — full target specification
+// ---------------------------------------------------------------------------
+
+/// Full target specification for metadata emission and validation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TargetSpec {
+    /// Canonical target name (e.g. "wasm32-wasi-p1").
+    pub target: &'static str,
+    /// Execution profile.
+    pub profile: TargetProfile,
+}
+
+impl TargetSpec {
+    pub const fn new(target: &'static str, profile: TargetProfile) -> Self {
+        Self { target, profile }
+    }
+}
+
 // ---------------------------------------------------------------------------
 // ExecutionTarget — canonical target descriptor
 // ---------------------------------------------------------------------------
@@ -206,6 +323,29 @@ impl ExecutionTarget {
         }
     }
 
+    /// Return a `TargetProfile` for this execution target.
+    pub const fn profile(self) -> TargetProfile {
+        match self {
+            Self::Wasm32WasiP1 => {
+                TargetProfile::new("wasi-p1", &["wasi-preview1", "standalone"], true)
+            }
+            Self::Wasm32WasiP1NodeShim => TargetProfile::new(
+                "wasi-p1+node-shim",
+                &["wasi-preview1", "node-host-shim"],
+                true,
+            ),
+            Self::Wasm32WasiGc => {
+                TargetProfile::new("wasi-gc", &["wasi-preview1", "wasm-gc"], false)
+            }
+            Self::Wasm32Component => TargetProfile::new("component", &["component-model"], false),
+        }
+    }
+
+    /// Return a `TargetSpec` for this execution target.
+    pub const fn spec(self) -> TargetSpec {
+        TargetSpec::new(self.manifest_target(), self.profile())
+    }
+
     pub fn features(self) -> &'static [&'static str] {
         match self {
             Self::Wasm32WasiP1 => &["wasi-preview1", "standalone"],
@@ -236,6 +376,18 @@ impl ExecutionTarget {
             self,
             Self::Wasm32WasiP1 | Self::Wasm32WasiP1NodeShim | Self::Wasm32WasiGc
         )
+    }
+}
+
+/// Try to parse a target string, rejecting future/unimplemented targets.
+/// Returns `None` for unknown targets or unimplemented future targets
+/// (wasm32-wasi-gc, wasm32-component).
+pub fn parse_implemented_target(s: &str) -> Option<ExecutionTarget> {
+    let target = ExecutionTarget::from_string(s)?;
+    if target.is_implemented() {
+        Some(target)
+    } else {
+        None
     }
 }
 
@@ -362,5 +514,104 @@ mod tests_abi {
         ] {
             assert!(RuntimeAbi::V1.find(name).is_some(), "{name} is missing");
         }
+    }
+
+    // ---------------------------------------------------------------------------
+    // TargetProfile / parse_implemented_target tests
+    // ---------------------------------------------------------------------------
+
+    #[test]
+    fn target_profile_roundtrip() {
+        let p = ExecutionTarget::Wasm32WasiP1.profile();
+        assert_eq!(p.name, "wasi-p1");
+        assert!(p.is_implemented);
+        assert!(p.features.contains(&"standalone"));
+    }
+
+    #[test]
+    fn target_spec_roundtrip() {
+        let spec = ExecutionTarget::Wasm32WasiP1.spec();
+        assert_eq!(spec.target, "wasm32-wasi-p1");
+        assert_eq!(spec.profile.name, "wasi-p1");
+    }
+
+    #[test]
+    fn parse_implemented_target_accepts_implemented() {
+        assert_eq!(
+            parse_implemented_target("wasm32-wasi-p1"),
+            Some(ExecutionTarget::Wasm32WasiP1)
+        );
+        assert_eq!(
+            parse_implemented_target("wasm32-wasi-p1+node-shim"),
+            Some(ExecutionTarget::Wasm32WasiP1NodeShim)
+        );
+    }
+
+    #[test]
+    fn parse_implemented_target_rejects_future() {
+        assert_eq!(parse_implemented_target("wasm32-wasi-gc"), None);
+        assert_eq!(parse_implemented_target("wasm32-component"), None);
+    }
+
+    #[test]
+    fn parse_implemented_target_rejects_unknown() {
+        assert_eq!(parse_implemented_target("wasm32-unknown"), None);
+        assert_eq!(parse_implemented_target(""), None);
+    }
+
+    #[test]
+    fn parse_implemented_target_cannot_silently_mutate_standalone() {
+        // Parsing a standalone target must not produce a node-shim target
+        // and vice versa.
+        let standalone = parse_implemented_target("wasm32-wasi-p1").unwrap();
+        let node_shim = parse_implemented_target("wasm32-wasi-p1+node-shim").unwrap();
+        assert_ne!(standalone, node_shim);
+        assert_eq!(standalone, ExecutionTarget::Wasm32WasiP1);
+        assert_eq!(node_shim, ExecutionTarget::Wasm32WasiP1NodeShim);
+    }
+
+    #[test]
+    fn target_profile_future_targets_are_not_implemented() {
+        assert!(!ExecutionTarget::Wasm32WasiGc.profile().is_implemented);
+        assert!(!ExecutionTarget::Wasm32Component.profile().is_implemented);
+    }
+
+    // ---------------------------------------------------------------------------
+    // AbiMetadata tests
+    // ---------------------------------------------------------------------------
+
+    #[test]
+    fn abi_metadata_default() {
+        let meta = AbiMetadata::default();
+        assert_eq!(meta.schema_version, ABI_METADATA_SCHEMA_VERSION);
+        assert_eq!(meta.runtime_abi_version, 2);
+        assert_eq!(meta.target, "wasm32-wasi-p1");
+        assert_eq!(meta.target_profile, "wasi-p1");
+        assert!(meta.features.contains(&"standalone"));
+        assert_eq!(meta.generator, ABI_GENERATOR);
+    }
+
+    #[test]
+    fn abi_metadata_to_json() {
+        let meta = AbiMetadata::default();
+        let json = meta.to_json();
+        assert!(json.contains(r#""schema_version":1"#));
+        assert!(json.contains(r#""runtime_abi_version":2"#));
+        assert!(json.contains(r#""target":"wasm32-wasi-p1""#));
+        assert!(json.contains(r#""generator":"ts2wasm""#));
+    }
+
+    #[test]
+    fn abi_metadata_custom_section_payload() {
+        let meta = AbiMetadata::default();
+        let payload = meta.to_custom_section_payload();
+        assert!(!payload.is_empty());
+        let payload_str = String::from_utf8_lossy(&payload);
+        assert!(payload_str.contains("ts2wasm"));
+    }
+
+    #[test]
+    fn abi_custom_section_name() {
+        assert_eq!(ABI_CUSTOM_SECTION_NAME, "ts2wasm.abi");
     }
 }
