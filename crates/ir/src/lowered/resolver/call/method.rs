@@ -32,6 +32,17 @@ impl super::super::Resolver {
         if let Some(result) = self.lower_mcall_json_date_regexp(object, method, args, span)? {
             return Ok(result);
         }
+        // Function.prototype.toString for user-defined functions
+        if method == "toString" && args.is_empty() {
+            if let ResolvedExpr::Ident(name) = object
+                && self.resolve_func(name.as_str()).is_ok()
+            {
+                return Ok(LoweredExpr::String(
+                    format!("function {}() {{ [native code] }}", name),
+                    span,
+                ));
+            }
+        }
         if let Some(result) = self.lower_mcall_date_string(object, method, args, span)? {
             return Ok(result);
         }

@@ -3309,3 +3309,13 @@ fn build_smoke_regexp_flag_d() {
         result.err()
     );
 }
+
+#[test]
+fn build_smoke_function_prototype() {
+    let result = run_fixture("core-semantics/function-prototype-metadata.ts");
+    assert!(
+        result.is_ok(),
+        "function-prototype-metadata should build: {:?}",
+        result.err()
+    );
+}
