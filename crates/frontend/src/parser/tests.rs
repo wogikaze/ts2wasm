@@ -1721,6 +1721,19 @@ b /* parameter b */,
     }
 
     #[test]
+    fn function_expression_parameter_trailing_comma() {
+        let program = parse_program("let fn = function(a, b,) { return a + b; };").unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::FunctionExpr { params, .. },
+                ..
+            } => assert_eq!(params.len(), 2),
+            other => panic!("expected function expression let statement, got {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_constructor_parameter_properties_as_this_assignments() {
         let program = parse_program(
             "class Box { constructor(public x = 1, private readonly y?: number) {} }",
@@ -2272,6 +2285,51 @@ b /* parameter b */,
                         key,
                         value: Expr::FunctionExpr { name, .. }
                     } if key == "method" && name == "method"
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_object_method_parameter_trailing_comma() {
+        let program = parse_program("let object = { method(a, b,) { return a + b; } };").unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 1);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, params, .. }
+                    } if key == "method" && name == "method" && params.len() == 2
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_object_accessor_parameter_trailing_comma() {
+        let program = parse_program("let object = { set value(next,) { this.x = next; } };")
+            .unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 1);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, params, .. }
+                    } if key == "value" && name == "set value" && params.len() == 1
                 ));
             }
             other => panic!("unexpected statement: {other:?}"),

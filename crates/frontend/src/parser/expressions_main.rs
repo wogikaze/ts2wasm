@@ -1970,6 +1970,9 @@ impl Parser {
                                                     .invalid_rest_binding_diagnostic(param.span));
                                             }
                                             self.expect(TokenKind::Comma)?;
+                                            if self.consume(TokenKind::RightParen) {
+                                                break;
+                                            }
                                         }
                                     }
                                     if self.consume(TokenKind::Colon) {
@@ -2193,6 +2196,9 @@ impl Parser {
                     return Err(self.invalid_rest_binding_diagnostic(param.span));
                 }
                 self.expect(TokenKind::Comma)?;
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
             }
         }
 
@@ -2245,6 +2251,9 @@ impl Parser {
                     return Err(self.invalid_rest_binding_diagnostic(param.span));
                 }
                 self.expect(TokenKind::Comma)?;
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
             }
         }
         if self.consume(TokenKind::Colon) {
