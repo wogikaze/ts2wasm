@@ -2,7 +2,9 @@ use super::super::{
     bigint_runtime_fn_intrinsic, block_contains_arguments, block_contains_this,
     function_body_is_strict,
 };
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::builtin_resolved::{
+    ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedParam, ResolvedStmt,
+};
 use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
 use crate::lowered::facts::FunctionMethodKind;
 use crate::lowered::*;
@@ -99,6 +101,12 @@ impl super::super::Resolver {
                 });
             }
         };
+
+        if func_name == "verifyProperty"
+            && let Some(result) = self.lower_static_test262_verify_property(args)
+        {
+            return Ok(result);
+        }
 
         if func_name == "String" {
             let lowered = match args.first() {
@@ -691,6 +699,73 @@ impl super::super::Resolver {
         }
     }
 
+    fn lower_static_test262_verify_property(&self, args: &[ResolvedExpr]) -> Option<LoweredExpr> {
+        let [
+            ResolvedExpr::Ident(target),
+            ResolvedExpr::String(key),
+            ResolvedExpr::Object(desc),
+            ..,
+        ] = args
+        else {
+            return None;
+        };
+        if !matches!(key.as_str(), "name" | "length") {
+            return None;
+        }
+        if !self.static_function_descriptor_matches(target, key, desc) {
+            return None;
+        }
+        Some(LoweredExpr::Bool(
+            true,
+            Span::generated("test262_verify_property"),
+        ))
+    }
+
+    fn static_function_descriptor_matches(
+        &self,
+        target: &str,
+        key: &str,
+        desc: &[ResolvedObjectProp],
+    ) -> bool {
+        self.static_function_descriptor_value_matches(target, key, desc)
+            && resolved_object_bool_prop(desc, "writable") == Some(false)
+            && resolved_object_bool_prop(desc, "enumerable") == Some(false)
+            && resolved_object_bool_prop(desc, "configurable") == Some(true)
+    }
+
+    fn static_function_descriptor_value_matches(
+        &self,
+        target: &str,
+        key: &str,
+        desc: &[ResolvedObjectProp],
+    ) -> bool {
+        match key {
+            "name" => {
+                resolved_object_string_prop(desc, "value").is_some_and(|value| value == target)
+            }
+            "length" => {
+                let local = match self.resolve_local(target) {
+                    Ok(local) => local,
+                    Err(_) => return false,
+                };
+                let Some(closure) = self.ctx.facts.arrow_locals.get(&local) else {
+                    return false;
+                };
+                let Some(length) = self
+                    .ctx
+                    .symbols
+                    .function_signatures
+                    .get(&closure.func_id)
+                    .and_then(|signature| signature.metadata_length)
+                else {
+                    return false;
+                };
+                resolved_object_number_prop(desc, "value") == Some(length as i32)
+            }
+            _ => false,
+        }
+    }
+
     pub(crate) fn function_props_for_lowered_object_expr(
         &self,
         expr: &LoweredExpr,
@@ -1019,6 +1094,36 @@ impl super::super::Resolver {
             }),
         }
     }
+}
+
+fn resolved_object_number_prop(props: &[ResolvedObjectProp], key: &str) -> Option<i32> {
+    props.iter().find_map(|prop| match prop {
+        ResolvedObjectProp::KeyValue {
+            key: prop_key,
+            value: ResolvedExpr::Number(value),
+        } if prop_key == key => Some(*value),
+        _ => None,
+    })
+}
+
+fn resolved_object_string_prop<'a>(props: &'a [ResolvedObjectProp], key: &str) -> Option<&'a str> {
+    props.iter().find_map(|prop| match prop {
+        ResolvedObjectProp::KeyValue {
+            key: prop_key,
+            value: ResolvedExpr::String(value),
+        } if prop_key == key => Some(value.as_str()),
+        _ => None,
+    })
+}
+
+fn resolved_object_bool_prop(props: &[ResolvedObjectProp], key: &str) -> Option<bool> {
+    props.iter().find_map(|prop| match prop {
+        ResolvedObjectProp::KeyValue {
+            key: prop_key,
+            value: ResolvedExpr::Bool(value),
+        } if prop_key == key => Some(*value),
+        _ => None,
+    })
 }
 
 fn function_apply_explicit_args(

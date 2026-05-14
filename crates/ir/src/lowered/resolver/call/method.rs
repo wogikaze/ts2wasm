@@ -210,6 +210,43 @@ impl super::super::Resolver {
         Some(Self::generator_next_result(value, true))
     }
 
+    fn local_arrow_function_data_descriptor(&self, target: &str, key: &str) -> Option<LoweredExpr> {
+        let value = match key {
+            "name" => LoweredExpr::String(target.to_owned(), Span::generated("str")),
+            "length" => {
+                let local = self.resolve_local(target).ok()?;
+                let closure = self.ctx.facts.arrow_locals.get(&local)?;
+                let length = self
+                    .ctx
+                    .symbols
+                    .function_signatures
+                    .get(&closure.func_id)
+                    .and_then(|signature| signature.metadata_length)?;
+                LoweredExpr::Number(length as i32, Span::generated("num"))
+            }
+            _ => return None,
+        };
+        Some(LoweredExpr::ObjectNew {
+            props: vec![
+                ("value".to_owned(), value),
+                (
+                    "writable".to_owned(),
+                    LoweredExpr::Bool(false, Span::generated("bool")),
+                ),
+                (
+                    "enumerable".to_owned(),
+                    LoweredExpr::Bool(false, Span::generated("bool")),
+                ),
+                (
+                    "configurable".to_owned(),
+                    LoweredExpr::Bool(true, Span::generated("bool")),
+                ),
+            ],
+            non_enumerable: 0,
+            span: Span::generated("function_descriptor"),
+        })
+    }
+
     fn resolved_callee_is_generator(&self, callee: &ResolvedExpr) -> bool {
         let ResolvedExpr::Ident(name) = callee else {
             return false;
@@ -2041,6 +2078,13 @@ impl super::super::Resolver {
             && target == "Number"
             && let Some(desc) =
                 crate::lowered::program_builtins::builtin_function_data_descriptor(key, span)
+        {
+            return Ok(Some(desc));
+        }
+        if method == "getOwnPropertyDescriptor"
+            && let [ResolvedExpr::Ident(target), ResolvedExpr::String(key)] = args
+            && matches!(key.as_str(), "name" | "length")
+            && let Some(desc) = self.local_arrow_function_data_descriptor(target, key)
         {
             return Ok(Some(desc));
         }

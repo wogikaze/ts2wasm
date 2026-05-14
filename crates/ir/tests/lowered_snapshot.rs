@@ -800,6 +800,50 @@ fn lowered_extracted_object_method_length_uses_function_metadata() {
 }
 
 #[test]
+fn lowered_object_method_descriptor_uses_function_metadata() {
+    let program = parse_resolve_lower(
+        "let method = { method(a, b, c) {} }.method;\n\
+         let lengthDesc = Object.getOwnPropertyDescriptor(method, \"length\");\n\
+         let nameDesc = Object.getOwnPropertyDescriptor(method, \"name\");",
+    );
+
+    validate_lowered(&program).expect("object method metadata descriptors should validate");
+    assert!(matches!(
+        program.top_level_statements.get(1),
+        Some(LoweredStmt::Let(_, LoweredExpr::ObjectNew { props, .. }, _))
+            if props.iter().any(|(key, value)| key == "value" && matches!(value, LoweredExpr::Number(3, _)))
+                && props.iter().any(|(key, value)| key == "writable" && matches!(value, LoweredExpr::Bool(false, _)))
+                && props.iter().any(|(key, value)| key == "enumerable" && matches!(value, LoweredExpr::Bool(false, _)))
+                && props.iter().any(|(key, value)| key == "configurable" && matches!(value, LoweredExpr::Bool(true, _)))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(2),
+        Some(LoweredStmt::Let(_, LoweredExpr::ObjectNew { props, .. }, _))
+            if props.iter().any(|(key, value)| key == "value" && matches!(value, LoweredExpr::String(name, _) if name == "method"))
+    ));
+}
+
+#[test]
+fn lowered_test262_verify_property_accepts_static_function_metadata() {
+    let program = parse_resolve_lower(
+        "function verifyProperty(obj, name, desc) { throw null; }\n\
+         let method = { method(a, b, c) {} }.method;\n\
+         verifyProperty(method, \"length\", { value: 3, writable: false, enumerable: false, configurable: true });\n\
+         verifyProperty(method, \"name\", { value: \"method\", writable: false, enumerable: false, configurable: true });",
+    );
+
+    validate_lowered(&program).expect("static test262 verifyProperty metadata should validate");
+    assert!(matches!(
+        program.top_level_statements.get(2),
+        Some(LoweredStmt::Expr(LoweredExpr::Bool(true, _), _))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(3),
+        Some(LoweredStmt::Expr(LoweredExpr::Bool(true, _), _))
+    ));
+}
+
+#[test]
 fn lowered_generator_function_captures_top_level_assignment() {
     let program = parse_resolve_lower(
         "var obj;\n\

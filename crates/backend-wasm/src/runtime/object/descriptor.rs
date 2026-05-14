@@ -3,10 +3,99 @@ use ts2wasm_runtime_abi::{consts::RuntimeConst, layout::Layout, value::ValueTag}
 
 impl WatEmitter<'_> {
     pub(crate) fn emit_object_get_own_property_descriptor(&self, wat: &mut String) {
+        let direct_function_length_descriptors = self
+            .program
+            .functions
+            .iter()
+            .map(|function| {
+                let metadata_length = function.params.len() - usize::from(function.uses_receiver);
+                let payload = ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE + function.id.0 as i32;
+                let tagged_length = ValueTag::encode_number(metadata_length as i32);
+                format!(
+                    r#"
+              (if (i32.eq (local.get $payload) (i32.const {payload}))
+            (then
+              (local.set $entry_value (i32.const {tagged_length}))
+              (local.set $desc (call $alloc_heap (i32.const {collection_size})))
+              (i32.store (local.get $desc) (i32.const {zero}))
+              (i32.store (i32.add (local.get $desc) (i32.const {obj_proto})) (i32.const {zero}))
+              (local.set $prop_offset (i32.add (i32.const {scratch_offset}) (i32.const 64)))
+              (i32.store8 (local.get $prop_offset) (i32.const 118))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 97))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 2)) (i32.const 108))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 3)) (i32.const 117))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 4)) (i32.const 101))
+              (drop
+                (call $property_set
+                  (i32.or (local.get $desc) (i32.const {object_tag}))
+                  (local.get $prop_offset)
+                  (i32.const 5)
+                  (local.get $entry_value)))
+              (i32.store8 (local.get $prop_offset) (i32.const 119))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 114))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 2)) (i32.const 105))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 3)) (i32.const 116))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 4)) (i32.const 97))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 5)) (i32.const 98))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 6)) (i32.const 108))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 7)) (i32.const 101))
+              (drop
+                (call $property_set
+                  (i32.or (local.get $desc) (i32.const {object_tag}))
+                  (local.get $prop_offset)
+                  (i32.const 8)
+                  (i32.const {false_value})))
+              (i32.store8 (local.get $prop_offset) (i32.const 101))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 110))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 2)) (i32.const 117))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 3)) (i32.const 109))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 4)) (i32.const 101))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 5)) (i32.const 114))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 6)) (i32.const 97))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 7)) (i32.const 98))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 8)) (i32.const 108))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 9)) (i32.const 101))
+              (drop
+                (call $property_set
+                  (i32.or (local.get $desc) (i32.const {object_tag}))
+                  (local.get $prop_offset)
+                  (i32.const 10)
+                  (i32.const {false_value})))
+              (i32.store8 (local.get $prop_offset) (i32.const 99))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 111))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 2)) (i32.const 110))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 3)) (i32.const 102))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 4)) (i32.const 105))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 5)) (i32.const 103))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 6)) (i32.const 117))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 7)) (i32.const 114))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 8)) (i32.const 97))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 9)) (i32.const 98))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 10)) (i32.const 108))
+              (i32.store8 (i32.add (local.get $prop_offset) (i32.const 11)) (i32.const 101))
+              (drop
+                (call $property_set
+                  (i32.or (local.get $desc) (i32.const {object_tag}))
+                  (local.get $prop_offset)
+                  (i32.const 12)
+                  (i32.const {true_value})))
+              (return (i32.or (local.get $desc) (i32.const {object_tag})))))"#,
+                    collection_size =
+                        (Layout::OBJECT_HEADER_SIZE + (32 * Layout::OBJECT_ENTRY_SIZE)) as i32,
+                    obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+                    scratch_offset = Layout::SCRATCH_OFFSET,
+                    object_tag = ValueTag::OBJECT,
+                    zero = RuntimeConst::ZERO,
+                    true_value = ValueTag::TRUE,
+                    false_value = ValueTag::FALSE,
+                )
+            })
+            .collect::<String>();
         wat.push_str(&format!(
             r#"
   (func $object_get_own_property_descriptor (param $obj i32) (param $key i32) (result i32)
     (local $tag i32)
+    (local $payload i32)
     (local $base i32)
     (local $count i32)
     (local $i i32)
@@ -19,9 +108,28 @@ impl WatEmitter<'_> {
     (local $key_len i32)
     (local $flags i32)
     (local $prop_offset i32)
+    (local.set $key_len (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
+    (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    (if (i32.eq (local.get $tag) (i32.const {number_tag}))
+      (then
+        (local.set $payload (i32.shr_u (local.get $obj) (i32.const {number_shift})))
+        (if (i32.ge_u (local.get $payload) (i32.const {direct_local_token_payload_base}))
+          (then
+            (local.set $prop_offset (i32.add (i32.const {scratch_offset}) (i32.const 64)))
+            (i32.store8 (local.get $prop_offset) (i32.const 108))
+            (i32.store8 (i32.add (local.get $prop_offset) (i32.const 1)) (i32.const 101))
+            (i32.store8 (i32.add (local.get $prop_offset) (i32.const 2)) (i32.const 110))
+            (i32.store8 (i32.add (local.get $prop_offset) (i32.const 3)) (i32.const 103))
+            (i32.store8 (i32.add (local.get $prop_offset) (i32.const 4)) (i32.const 116))
+            (i32.store8 (i32.add (local.get $prop_offset) (i32.const 5)) (i32.const 104))
+            (if (i32.and
+                  (i32.eq (local.get $key_len) (i32.const 6))
+                  (call $mem_equal (i32.const {scratch_offset}) (local.get $prop_offset) (local.get $key_len)))
+              (then
+                {direct_function_length_descriptors}
+              ))))))
     (if (i32.ne (i32.and (local.get $obj) (i32.const {tag_mask})) (i32.const {object_tag}))
       (then (return (i32.const {undefined}))))
-    (local.set $key_len (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
     (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
     (local.set $count (i32.load (local.get $base)))
     (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
@@ -230,6 +338,9 @@ impl WatEmitter<'_> {
       (i32.const {undefined})))
             "#,
             tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            direct_local_token_payload_base = ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE,
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             obj_header = Layout::OBJECT_HEADER_SIZE,
