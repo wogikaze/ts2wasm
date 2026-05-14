@@ -2248,6 +2248,40 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_sloppy_let_and_await_binding_identifiers_for_object_shorthand() {
+        let program = parse_program("var let = 1; var await = 2; var object = { let, await };")
+            .unwrap();
+
+        match &program[0] {
+            Stmt::Let { name, .. } => assert_eq!(name, "let"),
+            other => panic!("unexpected first binding statement: {other:?}"),
+        }
+        match &program[1] {
+            Stmt::Let { name, .. } => assert_eq!(name, "await"),
+            other => panic!("unexpected second binding statement: {other:?}"),
+        }
+        match &program[2] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 2);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::Shorthand { key, value: Expr::Ident { name, .. } }
+                        if key == "let" && name == "let"
+                ));
+                assert!(matches!(
+                    &props[1],
+                    ObjectProp::Shorthand { key, value: Expr::Ident { name, .. } }
+                        if key == "await" && name == "await"
+                ));
+            }
+            other => panic!("unexpected object binding statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_computed_property_key() {
         let program = parse_program("let key = 'x'; let object = { [key]: 2 };").unwrap();
 
