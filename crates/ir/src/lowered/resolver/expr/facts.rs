@@ -570,7 +570,9 @@ pub(crate) fn is_known_array_expr(ctx: &LoweringCtx, expr: &ResolvedExpr) -> boo
                     .classes
                     .local_classes
                     .get(&local_id)
-                    .is_some_and(|class_name| is_typed_array_class(class_name))
+                    .is_some_and(|class_name| {
+                        class_name == "Array" || is_typed_array_class(class_name)
+                    })
         }),
         _ => false,
     }

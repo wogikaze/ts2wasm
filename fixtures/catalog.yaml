@@ -152,6 +152,7 @@ directories:
     - array-find.ts
     - array-flat-map.ts
     - array-flat.ts
+    - array-foreach-function-callback.ts
     - array-foreach-thisarg.ts
     - array-from.ts
     - array-includes.ts

@@ -795,6 +795,30 @@ impl super::Resolver {
                 };
                 (func_id, captures, params.len())
             }
+            ResolvedExpr::FunctionExpr {
+                name,
+                params,
+                body,
+                is_generator: false,
+            } => {
+                if params.len() > 4 {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message:
+                            "issue-270: array method callbacks with more than 4 parameters are not supported"
+                                .to_owned(),
+                        span: Some(span),
+
+                        phase: None,});
+                }
+                let LoweredExpr::ArrowFn {
+                    func_id, captures, ..
+                } = self.lower_named_function_expr(name, params, body, false)?
+                else {
+                    return Err(unsupported_array_map_diagnostic(Some(span)));
+                };
+                (func_id, captures, params.len())
+            }
             _ => {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,

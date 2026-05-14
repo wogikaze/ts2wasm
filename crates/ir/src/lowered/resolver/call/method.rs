@@ -2525,7 +2525,14 @@ impl super::super::Resolver {
             || method == "flatMap")
             && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
             && !args.is_empty()
-            && matches!(&args[0], ResolvedExpr::ArrowFn { .. })
+            && matches!(
+                &args[0],
+                ResolvedExpr::ArrowFn { .. }
+                    | ResolvedExpr::FunctionExpr {
+                        is_generator: false,
+                        ..
+                    }
+            )
         {
             let lowered_receiver = self.lower_expr(object)?;
             return Ok(Some(self.lower_array_callback_method(
@@ -3113,6 +3120,38 @@ impl super::super::Resolver {
             }
         };
         let class_name = class_name_str.as_str();
+
+        if class_name == "Array"
+            && (method == "forEach"
+                || method == "filter"
+                || method == "find"
+                || method == "findIndex"
+                || method == "findLast"
+                || method == "findLastIndex"
+                || method == "some"
+                || method == "every"
+                || method == "reduce"
+                || method == "reduceRight"
+                || method == "map"
+                || method == "flatMap")
+            && !args.is_empty()
+            && matches!(
+                &args[0],
+                ResolvedExpr::ArrowFn { .. }
+                    | ResolvedExpr::FunctionExpr {
+                        is_generator: false,
+                        ..
+                    }
+            )
+        {
+            return self.lower_array_callback_method(
+                method,
+                LoweredExpr::Local(obj_local, Span::generated("local")),
+                object,
+                args,
+                span,
+            );
+        }
 
         if class_name == "Number"
             && let Some(intrinsic) = number_format_method_runtime_fn(method)

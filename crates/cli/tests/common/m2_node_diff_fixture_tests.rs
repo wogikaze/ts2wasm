@@ -1623,6 +1623,7 @@ fn array_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/array-to-spliced.ts",
         "fixtures/builtins-and-io/array-to-sorted.ts",
         "fixtures/builtins-and-io/array-is-array.ts",
+        "fixtures/builtins-and-io/array-foreach-function-callback.ts",
         "fixtures/builtins-and-io/array-foreach-thisarg.ts",
         "fixtures/builtins-and-io/array-sparse-iteration.ts",
         "fixtures/builtins-and-io/array-to-string.ts",
@@ -1749,6 +1750,11 @@ fn array_find_thisarg_matches_node() {
 #[test]
 fn array_foreach_thisarg_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/array-foreach-thisarg.ts");
+}
+
+#[test]
+fn array_foreach_function_callback_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-foreach-function-callback.ts");
 }
 
 #[test]

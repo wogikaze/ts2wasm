@@ -2845,6 +2845,16 @@ fn build_smoke_array_foreach_thisarg() {
 }
 
 #[test]
+fn build_smoke_array_foreach_function_callback() {
+    let result = run_fixture("builtins-and-io/array-foreach-function-callback.ts");
+    assert!(
+        result.is_ok(),
+        "array-foreach-function-callback should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_async_generator_basic() {
     let result = run_fixture("builtins-and-io/async-generator-basic.ts");
     assert!(
