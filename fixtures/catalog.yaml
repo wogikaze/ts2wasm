@@ -198,9 +198,12 @@ directories:
     - arraybuffer-dataview-uint32.ts
     - async-generator-basic.ts
     - atomics-unsupported.ts
+    - atomics-basic.ts
+    - atomics-complete.ts
     - bun-stdin-text.ts
     - boolean-symbol-prototype.ts
     - console-log.ts
+    - console-complete.ts
     - date-annexb-get-year.ts
     - date-annexb-set-year-unsupported.ts
     - date-annexb-to-gmt-string-unsupported.ts

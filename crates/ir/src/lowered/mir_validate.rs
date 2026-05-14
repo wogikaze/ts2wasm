@@ -612,7 +612,14 @@ fn validate_call_kind(
             }
             if value_required
                 && matches!(builtin.result(), BuiltinResult::EffectOnly)
-                && !matches!(builtin, BuiltinId::ConsoleLog)
+                && !matches!(
+                    builtin,
+                    BuiltinId::ConsoleLog
+                        | BuiltinId::ConsoleInfo
+                        | BuiltinId::ConsoleDebug
+                        | BuiltinId::ConsoleWarn
+                        | BuiltinId::ConsoleError
+                )
             {
                 errors.push(invariant(format!(
                     "builtin {:?} is effect-only and cannot be used in a value context",

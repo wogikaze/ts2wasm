@@ -467,7 +467,14 @@ fn validate_expr(
                     }
                     if value_required
                         && matches!(builtin.result(), BuiltinResult::EffectOnly)
-                        && !matches!(builtin, BuiltinId::ConsoleLog)
+                        && !matches!(
+                            builtin,
+                            BuiltinId::ConsoleLog
+                                | BuiltinId::ConsoleInfo
+                                | BuiltinId::ConsoleDebug
+                                | BuiltinId::ConsoleWarn
+                                | BuiltinId::ConsoleError
+                        )
                     {
                         errors.push(Diagnostic {
                             code: DiagCode::InvariantViolation,

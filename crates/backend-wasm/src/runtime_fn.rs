@@ -9,6 +9,10 @@ use ts2wasm_ir::builtin::BuiltinId;
 pub(crate) const fn runtime_fn_from_builtin(builtin: BuiltinId) -> RuntimeFn {
     match builtin {
         BuiltinId::ConsoleLog => RuntimeFn::Log,
+        BuiltinId::ConsoleInfo => RuntimeFn::Log,
+        BuiltinId::ConsoleDebug => RuntimeFn::Log,
+        BuiltinId::ConsoleWarn => RuntimeFn::Log,
+        BuiltinId::ConsoleError => RuntimeFn::Log,
         BuiltinId::ReadStdinUtf8 => RuntimeFn::ReadStdinBytes,
         BuiltinId::FsReadFileSync => RuntimeFn::FsReadFileSync,
         BuiltinId::FsWriteFileSync => RuntimeFn::FsWriteFileSync,

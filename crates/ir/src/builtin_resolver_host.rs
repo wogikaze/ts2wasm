@@ -123,17 +123,22 @@ pub(super) fn resolve_builtin_call(
                 phase: None,});
         }
         if object_name == "console" {
-            return if property == "log" {
-                Ok(Some(BuiltinId::ConsoleLog))
-            } else {
-                Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!("console.{} is not supported in this milestone", property),
-                    span: span_of_expr(callee),
+            return Ok(Some(match property.as_str() {
+                "log" => BuiltinId::ConsoleLog,
+                "info" => BuiltinId::ConsoleInfo,
+                "debug" => BuiltinId::ConsoleDebug,
+                "warn" => BuiltinId::ConsoleWarn,
+                "error" => BuiltinId::ConsoleError,
+                _ => {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!("console.{} is not supported in this milestone", property),
+                        span: span_of_expr(callee),
 
-                    phase: None,
-                })
-            };
+                        phase: None,
+                    });
+                }
+            }));
         }
         if object_name == "Math" && property == "pow" {
             return Ok(Some(BuiltinId::MathPow));

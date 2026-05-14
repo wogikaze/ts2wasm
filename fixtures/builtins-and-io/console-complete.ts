@@ -1,0 +1,10 @@
+console.log("log");
+console.info("info");
+console.debug("debug");
+console.warn("warn");
+console.error("error");
+console.log("log", "multi", "args");
+console.info("info", 42);
+console.debug("debug", true);
+console.warn("warn", null);
+console.error("error", undefined);

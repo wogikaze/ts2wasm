@@ -14,7 +14,15 @@ impl super::super::Resolver {
             .iter()
             .map(|arg| self.lower_expr(arg))
             .collect::<Result<Vec<_>, _>>()?;
-        if builtin == BuiltinId::ConsoleLog && lowered_args.len() > 1 {
+        if matches!(
+            builtin,
+            BuiltinId::ConsoleLog
+                | BuiltinId::ConsoleInfo
+                | BuiltinId::ConsoleDebug
+                | BuiltinId::ConsoleWarn
+                | BuiltinId::ConsoleError
+        ) && lowered_args.len() > 1
+        {
             let mut joined = lowered_args.remove(0);
             for arg in lowered_args {
                 joined = LoweredExpr::RuntimeCall {

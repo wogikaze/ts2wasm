@@ -12,6 +12,10 @@ use ts2wasm_ir::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 fn all_builtin_ids() -> Vec<BuiltinId> {
     vec![
         BuiltinId::ConsoleLog,
+        BuiltinId::ConsoleInfo,
+        BuiltinId::ConsoleDebug,
+        BuiltinId::ConsoleWarn,
+        BuiltinId::ConsoleError,
         BuiltinId::ReadStdinUtf8,
         BuiltinId::FsReadFileSync,
         BuiltinId::FsWriteFileSync,

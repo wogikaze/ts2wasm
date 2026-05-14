@@ -2416,3 +2416,14 @@ fn build_smoke_atomics_complete() {
         result.err()
     );
 }
+
+// Console API complete (log, info, debug, warn, error)
+#[test]
+fn build_smoke_console_complete() {
+    let result = run_fixture("builtins-and-io/console-complete.ts");
+    assert!(
+        result.is_ok(),
+        "console.log/info/debug/warn/error should build: {:?}",
+        result.err()
+    );
+}
