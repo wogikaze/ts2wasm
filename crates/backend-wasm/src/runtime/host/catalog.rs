@@ -2,6 +2,22 @@
 //!
 //! Host domain includes: file system, process, path, crypto, module loading,
 //! encoding, URI, Symbol, and iterator operations.
+//!
+//! WASI preview1 filesystem imports (HostImport enum in runtime-catalog):
+//! - PathOpen: open a file or directory by path
+//! - FdRead: read from a file descriptor
+//! - FdWrite: write to a file descriptor
+//! - FdSeek: reposition a file descriptor cursor
+//! - FdClose: close a file descriptor
+//! - FdPrestatGet: query preopened directory info
+//! - FdPrestatDirName: get preopened directory name
+//! - PathCreateDirectory: create a directory
+//! - PathFilestatGet: get file metadata by path
+//! - PathReadlink: read symlink target
+//! - PathRemoveDirectory: remove a directory
+//! - PathRename: rename a file or directory
+//! - PathSymlink: create a symbolic link
+//! - PathUnlinkFile: unlink a file
 
 #![allow(dead_code)]
 

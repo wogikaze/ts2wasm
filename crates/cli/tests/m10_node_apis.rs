@@ -61,6 +61,35 @@ fn build_smoke_crypto_random_bytes() {
     assert_fixture_build_smoke("node-apis/crypto-random-bytes.ts");
 }
 
+// --- Node API acceptance tests ---
+
+#[test]
+fn build_smoke_node_basic() {
+    // Verify basic Node.js API host shim: process, path
+    assert_fixture_build_smoke("node-apis/process-argv.ts");
+    assert_fixture_build_smoke("node-apis/process-env.ts");
+    assert_fixture_build_smoke("node-apis/process-exit.ts");
+    assert_fixture_build_smoke("node-apis/path-join.ts");
+    assert_fixture_build_smoke("node-apis/path-resolve.ts");
+    assert_fixture_build_smoke("node-apis/path-basename.ts");
+    assert_fixture_build_smoke("node-apis/path-dirname.ts");
+}
+
+#[test]
+fn build_smoke_node_console() {
+    // Verify Node.js console host shim: console.log, etc.
+    assert_fixture_build_smoke("builtins-and-io/console-log.ts");
+    assert_fixture_build_smoke("builtins-and-io/console-complete.ts");
+}
+
+#[test]
+fn build_smoke_node_fs() {
+    // Verify Node.js fs host shim: fs.readFileSync, fs.writeFileSync, fs.appendFileSync
+    assert_fixture_build_smoke("node-apis/fs-read.ts");
+    assert_fixture_build_smoke("node-apis/fs-write.ts");
+    assert_fixture_build_smoke("node-apis/fs-append.ts");
+}
+
 // --- Builtin API build smoke tests (host shim imports) ---
 
 #[test]
