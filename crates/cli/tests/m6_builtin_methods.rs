@@ -273,6 +273,16 @@ fn build_smoke_object_entries_method() {
 }
 
 #[test]
+fn build_smoke_object_literal_method_mutable_capture() {
+    let result = run_fixture("core-expressions/object-literal-method-mutable-capture.ts");
+    assert!(
+        result.is_ok(),
+        "object literal method mutable capture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_value_of_method() {
     let result = run_fixture("builtins-and-io/value-of.ts");
     assert!(

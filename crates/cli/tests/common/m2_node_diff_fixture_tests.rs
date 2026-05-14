@@ -3694,6 +3694,7 @@ fn core_expression_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-expressions/object-literal-computed-spread.ts",
         "fixtures/core-expressions/object-literal-proto.ts",
         "fixtures/core-expressions/object-literal-method.ts",
+        "fixtures/core-expressions/object-literal-method-mutable-capture.ts",
         "fixtures/core-expressions/object-literal-getter-descriptor.ts",
         "fixtures/core-expressions/object-literal-setter-descriptor.ts",
         "fixtures/core-expressions/index.ts",
