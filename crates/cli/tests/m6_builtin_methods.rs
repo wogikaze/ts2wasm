@@ -2308,6 +2308,17 @@ fn build_smoke_math_sqrt() {
     assert!(result.is_ok(), "Math.sqrt should build: {:?}", result.err());
 }
 
+// Math static function smoke coverage
+#[test]
+fn build_smoke_math_complete() {
+    let result = run_fixture("builtins-and-io/math-complete.ts");
+    assert!(
+        result.is_ok(),
+        "Math complete fixture should build: {:?}",
+        result.err()
+    );
+}
+
 // String.trimLeft (alias for trimStart)
 #[test]
 fn build_smoke_string_trim_left() {

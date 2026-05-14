@@ -3475,6 +3475,7 @@ fn math_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/math-cbrt.ts",
         "fixtures/builtins-and-io/math-ceil.ts",
         "fixtures/builtins-and-io/math-clz32.ts",
+        "fixtures/builtins-and-io/math-complete.ts",
         "fixtures/builtins-and-io/math-floor.ts",
         "fixtures/builtins-and-io/math-imul.ts",
         "fixtures/builtins-and-io/math-max.ts",
@@ -3508,6 +3509,11 @@ fn math_ceil_matches_node() {
 #[test]
 fn math_clz32_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/math-clz32.ts");
+}
+
+#[test]
+fn math_functions_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/math-complete.ts");
 }
 
 #[test]

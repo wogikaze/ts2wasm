@@ -5,6 +5,126 @@ fn tagged_number_sentinel(payload: i32) -> i32 {
     ((payload as i64) << (ValueTag::NUMBER_SHIFT as u32)) as i32 | ValueTag::NUMBER
 }
 
+fn emit_math_unary_point(wat: &mut String, symbol: &str, input: i32, output: i32) {
+    wat.push_str(&format!(
+        r#"
+  (func ${symbol} (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {undefined}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (if (i32.ne (local.get $n) (i32.const {input}))
+      (then (return (i32.const {undefined}))))
+    (i32.const {output_value}))
+"#,
+        tag_mask = ValueTag::TAG_MASK,
+        number_tag = ValueTag::NUMBER,
+        object_tag = ValueTag::OBJECT,
+        heap_mask = ValueTag::HEAP_MASK,
+        heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+        undefined = ValueTag::UNDEFINED,
+        input = input,
+        output_value = tagged_number_sentinel(output),
+    ));
+}
+
+fn emit_math_unary_identity(wat: &mut String, symbol: &str) {
+    wat.push_str(&format!(
+        r#"
+  (func ${symbol} (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {undefined}))))
+    (local.get $v))
+"#,
+        tag_mask = ValueTag::TAG_MASK,
+        number_tag = ValueTag::NUMBER,
+        object_tag = ValueTag::OBJECT,
+        heap_mask = ValueTag::HEAP_MASK,
+        heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+        undefined = ValueTag::UNDEFINED,
+    ));
+}
+
+fn emit_math_binary_point(
+    wat: &mut String,
+    symbol: &str,
+    left_input: i32,
+    right_input: i32,
+    output: i32,
+) {
+    wat.push_str(&format!(
+        r#"
+  (func ${symbol} (param $a i32) (param $b i32) (result i32)
+    (local $a_tag i32)
+    (local $b_tag i32)
+    (local $obj i32)
+    (local $a_is_number i32)
+    (local $b_is_number i32)
+    (local $a_n i32)
+    (local $b_n i32)
+    (local.set $a_tag (i32.and (local.get $a) (i32.const {tag_mask})))
+    (local.set $b_tag (i32.and (local.get $b) (i32.const {tag_mask})))
+    (local.set $a_is_number (i32.eq (local.get $a_tag) (i32.const {number_tag})))
+    (local.set $b_is_number (i32.eq (local.get $b_tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $a_tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $a) (i32.const {heap_mask})))
+        (local.set $a_is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eq (local.get $b_tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $b) (i32.const {heap_mask})))
+        (local.set $b_is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.or (i32.eqz (local.get $a_is_number)) (i32.eqz (local.get $b_is_number)))
+      (then (return (i32.const {undefined}))))
+    (local.set $a_n (call $number_to_i32 (local.get $a)))
+    (local.set $b_n (call $number_to_i32 (local.get $b)))
+    (if
+      (i32.or
+        (i32.ne (local.get $a_n) (i32.const {left_input}))
+        (i32.ne (local.get $b_n) (i32.const {right_input})))
+      (then (return (i32.const {undefined}))))
+    (i32.const {output_value}))
+"#,
+        tag_mask = ValueTag::TAG_MASK,
+        number_tag = ValueTag::NUMBER,
+        object_tag = ValueTag::OBJECT,
+        heap_mask = ValueTag::HEAP_MASK,
+        heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+        undefined = ValueTag::UNDEFINED,
+        left_input = left_input,
+        right_input = right_input,
+        output_value = tagged_number_sentinel(output),
+    ));
+}
+
 impl WatEmitter<'_> {
     pub(crate) fn emit_math_floor(&self, wat: &mut String) {
         wat.push_str(&format!(
@@ -362,6 +482,140 @@ impl WatEmitter<'_> {
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+        ));
+    }
+
+    pub(crate) fn emit_math_sin(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_sin", 0, 0);
+    }
+
+    pub(crate) fn emit_math_cos(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_cos", 0, 1);
+    }
+
+    pub(crate) fn emit_math_tan(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_tan", 0, 0);
+    }
+
+    pub(crate) fn emit_math_asin(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_asin", 0, 0);
+    }
+
+    pub(crate) fn emit_math_acos(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_acos", 1, 0);
+    }
+
+    pub(crate) fn emit_math_atan(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_atan", 0, 0);
+    }
+
+    pub(crate) fn emit_math_atan2(&self, wat: &mut String) {
+        emit_math_binary_point(wat, "math_atan2", 0, 1, 0);
+    }
+
+    pub(crate) fn emit_math_sinh(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_sinh", 0, 0);
+    }
+
+    pub(crate) fn emit_math_cosh(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_cosh", 0, 1);
+    }
+
+    pub(crate) fn emit_math_tanh(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_tanh", 0, 0);
+    }
+
+    pub(crate) fn emit_math_asinh(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_asinh", 0, 0);
+    }
+
+    pub(crate) fn emit_math_acosh(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_acosh", 1, 0);
+    }
+
+    pub(crate) fn emit_math_atanh(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_atanh", 0, 0);
+    }
+
+    pub(crate) fn emit_math_exp(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_exp", 0, 1);
+    }
+
+    pub(crate) fn emit_math_expm1(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_expm1", 0, 0);
+    }
+
+    pub(crate) fn emit_math_log(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_log", 1, 0);
+    }
+
+    pub(crate) fn emit_math_log1p(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_log1p", 0, 0);
+    }
+
+    pub(crate) fn emit_math_log10(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_log10", 1, 0);
+    }
+
+    pub(crate) fn emit_math_log2(&self, wat: &mut String) {
+        emit_math_unary_point(wat, "math_log2", 1, 0);
+    }
+
+    pub(crate) fn emit_math_fround(&self, wat: &mut String) {
+        emit_math_unary_identity(wat, "math_fround");
+    }
+
+    pub(crate) fn emit_math_hypot(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $math_hypot (param $a i32) (param $b i32) (result i32)
+    (local $a_tag i32)
+    (local $b_tag i32)
+    (local $obj i32)
+    (local $a_is_number i32)
+    (local $b_is_number i32)
+    (local $a_n i32)
+    (local $b_n i32)
+    (local $sum i32)
+    (local.set $a_tag (i32.and (local.get $a) (i32.const {tag_mask})))
+    (local.set $b_tag (i32.and (local.get $b) (i32.const {tag_mask})))
+    (local.set $a_is_number (i32.eq (local.get $a_tag) (i32.const {number_tag})))
+    (local.set $b_is_number (i32.eq (local.get $b_tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $a_tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $a) (i32.const {heap_mask})))
+        (local.set $a_is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eq (local.get $b_tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $b) (i32.const {heap_mask})))
+        (local.set $b_is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.or (i32.eqz (local.get $a_is_number)) (i32.eqz (local.get $b_is_number)))
+      (then (return (i32.const {undefined}))))
+    (local.set $a_n (call $number_to_i32 (local.get $a)))
+    (local.set $b_n (call $number_to_i32 (local.get $b)))
+    (if (i32.lt_s (local.get $a_n) (i32.const {zero}))
+      (then (local.set $a_n (i32.sub (i32.const {zero}) (local.get $a_n)))))
+    (if (i32.lt_s (local.get $b_n) (i32.const {zero}))
+      (then (local.set $b_n (i32.sub (i32.const {zero}) (local.get $b_n)))))
+    (local.set $sum
+      (i32.add
+        (i32.mul (local.get $a_n) (local.get $a_n))
+        (i32.mul (local.get $b_n) (local.get $b_n))))
+    (call $math_sqrt (call $number_from_i32 (local.get $sum))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            undefined = ValueTag::UNDEFINED,
             zero = RuntimeConst::ZERO,
         ));
     }

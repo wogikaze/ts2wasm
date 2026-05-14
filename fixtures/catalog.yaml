@@ -317,6 +317,7 @@ directories:
     - math-cbrt.ts
     - math-ceil.ts
     - math-clz32.ts
+    - math-complete.ts
     - math-floor.ts
     - math-imul.ts
     - math-max.ts

@@ -389,6 +389,48 @@ pub enum RuntimeFn {
     MathTrunc,
     /// Math.sign - returns 1, 0, or -1 for integer-backed numbers.
     MathSign,
+    /// Math.sin - integer ABI identity-point smoke support.
+    MathSin,
+    /// Math.cos - integer ABI identity-point smoke support.
+    MathCos,
+    /// Math.tan - integer ABI identity-point smoke support.
+    MathTan,
+    /// Math.asin - integer ABI identity-point smoke support.
+    MathAsin,
+    /// Math.acos - integer ABI identity-point smoke support.
+    MathAcos,
+    /// Math.atan - integer ABI identity-point smoke support.
+    MathAtan,
+    /// Math.atan2 - integer ABI identity-point smoke support.
+    MathAtan2,
+    /// Math.sinh - integer ABI identity-point smoke support.
+    MathSinh,
+    /// Math.cosh - integer ABI identity-point smoke support.
+    MathCosh,
+    /// Math.tanh - integer ABI identity-point smoke support.
+    MathTanh,
+    /// Math.asinh - integer ABI identity-point smoke support.
+    MathAsinh,
+    /// Math.acosh - integer ABI identity-point smoke support.
+    MathAcosh,
+    /// Math.atanh - integer ABI identity-point smoke support.
+    MathAtanh,
+    /// Math.exp - integer ABI identity-point smoke support.
+    MathExp,
+    /// Math.expm1 - integer ABI identity-point smoke support.
+    MathExpm1,
+    /// Math.log - integer ABI identity-point smoke support.
+    MathLog,
+    /// Math.log1p - integer ABI identity-point smoke support.
+    MathLog1p,
+    /// Math.log10 - integer ABI identity-point smoke support.
+    MathLog10,
+    /// Math.log2 - integer ABI identity-point smoke support.
+    MathLog2,
+    /// Math.fround - no-op for integer-backed numbers.
+    MathFround,
+    /// Math.hypot - integer square-root hypotenuse.
+    MathHypot,
     /// Math.cbrt - integer cube root (floor).
     MathCbrt,
     /// Math.clz32 - count leading zero bits in 32-bit binary representation.
@@ -1089,6 +1131,11 @@ const DATE_EPOCH_MS_NOW_NUMBER_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 // Math function dependencies
 const MATH_DEPS: &[RuntimeFn] = &[RuntimeFn::NumberToI32, RuntimeFn::NumberFromI32];
 const MATH_RANDOM_DEPS: &[RuntimeFn] = &[];
+const MATH_HYPOT_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::NumberToI32,
+    RuntimeFn::NumberFromI32,
+    RuntimeFn::MathSqrt,
+];
 
 // JSON function dependencies
 const JSON_STRINGIFY_DEPS: &[RuntimeFn] = &[
@@ -1123,6 +1170,27 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MathRandom" => Some(RuntimeFn::MathRandom),
         "MathTrunc" => Some(RuntimeFn::MathTrunc),
         "MathSign" => Some(RuntimeFn::MathSign),
+        "MathSin" => Some(RuntimeFn::MathSin),
+        "MathCos" => Some(RuntimeFn::MathCos),
+        "MathTan" => Some(RuntimeFn::MathTan),
+        "MathAsin" => Some(RuntimeFn::MathAsin),
+        "MathAcos" => Some(RuntimeFn::MathAcos),
+        "MathAtan" => Some(RuntimeFn::MathAtan),
+        "MathAtan2" => Some(RuntimeFn::MathAtan2),
+        "MathSinh" => Some(RuntimeFn::MathSinh),
+        "MathCosh" => Some(RuntimeFn::MathCosh),
+        "MathTanh" => Some(RuntimeFn::MathTanh),
+        "MathAsinh" => Some(RuntimeFn::MathAsinh),
+        "MathAcosh" => Some(RuntimeFn::MathAcosh),
+        "MathAtanh" => Some(RuntimeFn::MathAtanh),
+        "MathExp" => Some(RuntimeFn::MathExp),
+        "MathExpm1" => Some(RuntimeFn::MathExpm1),
+        "MathLog" => Some(RuntimeFn::MathLog),
+        "MathLog1p" => Some(RuntimeFn::MathLog1p),
+        "MathLog10" => Some(RuntimeFn::MathLog10),
+        "MathLog2" => Some(RuntimeFn::MathLog2),
+        "MathFround" => Some(RuntimeFn::MathFround),
+        "MathHypot" => Some(RuntimeFn::MathHypot),
         "MathCbrt" => Some(RuntimeFn::MathCbrt),
         "MathClz32" => Some(RuntimeFn::MathClz32),
         "MathImul" => Some(RuntimeFn::MathImul),
@@ -1633,6 +1701,27 @@ impl RuntimeFn {
             | Self::MathRandom
             | Self::MathTrunc
             | Self::MathSign
+            | Self::MathSin
+            | Self::MathCos
+            | Self::MathTan
+            | Self::MathAsin
+            | Self::MathAcos
+            | Self::MathAtan
+            | Self::MathAtan2
+            | Self::MathSinh
+            | Self::MathCosh
+            | Self::MathTanh
+            | Self::MathAsinh
+            | Self::MathAcosh
+            | Self::MathAtanh
+            | Self::MathExp
+            | Self::MathExpm1
+            | Self::MathLog
+            | Self::MathLog1p
+            | Self::MathLog10
+            | Self::MathLog2
+            | Self::MathFround
+            | Self::MathHypot
             | Self::MathCbrt
             | Self::MathClz32
             | Self::MathImul
@@ -1889,6 +1978,8 @@ impl RuntimeFn {
             | Self::GreaterFast
             | Self::GreaterEqual
             | Self::GreaterEqualFast
+            | Self::MathAtan2
+            | Self::MathHypot
             | Self::MathPow
             | Self::MathImul
             | Self::AggregateError
@@ -2244,6 +2335,27 @@ impl RuntimeFn {
             Self::MathRandom,
             Self::MathTrunc,
             Self::MathSign,
+            Self::MathSin,
+            Self::MathCos,
+            Self::MathTan,
+            Self::MathAsin,
+            Self::MathAcos,
+            Self::MathAtan,
+            Self::MathAtan2,
+            Self::MathSinh,
+            Self::MathCosh,
+            Self::MathTanh,
+            Self::MathAsinh,
+            Self::MathAcosh,
+            Self::MathAtanh,
+            Self::MathExp,
+            Self::MathExpm1,
+            Self::MathLog,
+            Self::MathLog1p,
+            Self::MathLog10,
+            Self::MathLog2,
+            Self::MathFround,
+            Self::MathHypot,
             Self::MathCbrt,
             Self::MathClz32,
             Self::MathImul,
@@ -2601,6 +2713,27 @@ impl RuntimeFn {
             Self::MathRandom,
             Self::MathTrunc,
             Self::MathSign,
+            Self::MathSin,
+            Self::MathCos,
+            Self::MathTan,
+            Self::MathAsin,
+            Self::MathAcos,
+            Self::MathAtan,
+            Self::MathAtan2,
+            Self::MathSinh,
+            Self::MathCosh,
+            Self::MathTanh,
+            Self::MathAsinh,
+            Self::MathAcosh,
+            Self::MathAtanh,
+            Self::MathExp,
+            Self::MathExpm1,
+            Self::MathLog,
+            Self::MathLog1p,
+            Self::MathLog10,
+            Self::MathLog2,
+            Self::MathFround,
+            Self::MathHypot,
             Self::MathCbrt,
             Self::MathClz32,
             Self::MathImul,
