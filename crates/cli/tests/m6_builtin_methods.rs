@@ -1194,6 +1194,26 @@ fn build_smoke_date_get_timezone_offset() {
 }
 
 #[test]
+fn build_smoke_date_noarg_live_time() {
+    let result = run_fixture("builtins-and-io/date-noarg-live-time.ts");
+    assert!(
+        result.is_ok(),
+        "Date no-arg constructor live time should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_date_now_live_time() {
+    let result = run_fixture("builtins-and-io/date-now-live-time.ts");
+    assert!(
+        result.is_ok(),
+        "Date.now live time should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_string_match_method() {
     let result = run_fixture("builtins-and-io/string-match.ts");
     assert!(
@@ -2308,6 +2328,16 @@ fn build_smoke_math_sqrt() {
     assert!(result.is_ok(), "Math.sqrt should build: {:?}", result.err());
 }
 
+#[test]
+fn build_smoke_math_random() {
+    let result = run_fixture("builtins-and-io/math-random.ts");
+    assert!(
+        result.is_ok(),
+        "Math.random should build: {:?}",
+        result.err()
+    );
+}
+
 // String.trimLeft (alias for trimStart)
 #[test]
 fn build_smoke_string_trim_left() {
@@ -2400,6 +2430,16 @@ fn build_smoke_console_complete() {
     assert!(
         result.is_ok(),
         "complete console API smoke fixture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_console_log() {
+    let result = run_fixture("builtins-and-io/console-log.ts");
+    assert!(
+        result.is_ok(),
+        "console.log smoke fixture should build: {:?}",
         result.err()
     );
 }
