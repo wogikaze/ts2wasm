@@ -1172,6 +1172,16 @@ fn build_smoke_global_decode_uri() {
 }
 
 #[test]
+fn build_smoke_global_uri_comprehensive() {
+    let result = run_fixture("builtins-and-io/global-uri-comprehensive.ts");
+    assert!(
+        result.is_ok(),
+        "URI comprehensive should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_global_properties() {
     for fixture in [
         "builtins-and-io/global-0-args.ts",
