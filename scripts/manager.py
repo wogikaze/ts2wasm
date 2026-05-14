@@ -35,6 +35,8 @@ COMMANDS = {
     "check-runtimefn-invariants": ("python", "scripts/check/runtimefn-invariants.py"),
     "check-wasm-validation": ("python", "scripts/check/wasm-validation.py"),
     "check-tracking-consistency": ("python", "scripts/check/tracking-consistency.py"),
+    "check-host-import-baseline": ("python", "scripts/check/host-import-baseline.py"),
+    "check-host-import-boundary": ("python", "scripts/check/host-import-boundary.py"),
     "issue-create": ("python", "scripts/issue-create.py"),
     "issue-index": ("python", "scripts/issue-index.py"),
     "update-issue-index": ("python", "scripts/issue-index.py"),
@@ -53,6 +55,8 @@ COMMANDS = {
     "reference-coverage": ("python", "scripts/run/reference-coverage.py"),
     "reference-triage": ("python", "scripts/run/reference-triage.py"),
     "reference-corpus": ("python", "scripts/run/reference-corpus.py"),
+    "check-reference-coverage-triage": ("python", "scripts/check/reference-coverage-triage.py"),
+    "check-coverage-runner-parity": ("python", "scripts/check/coverage-runner-parity.py"),
     "abc451-runtime-costs": ("python", "scripts/run/abc451-runtime-costs.py"),
     "repo-metrics": ("python", "scripts/run/repo-metrics.py"),
     "benchmark-tracker": ("python", "scripts/perf/benchmark-tracker.py"),
@@ -80,6 +84,7 @@ CHECK_ALL_PARTS = [
     "toolchain", "ast-grep", "host",
     "runtimefn", "wasm", "assert-true",
     "tracking", "issues",
+    "host-baseline", "host-boundary",
 ]
 
 CHECK_PARTS = {
@@ -111,10 +116,18 @@ CHECK_PARTS = {
     "wasm-validation": "check-wasm-validation",
     "assert-true": "check-assert-true-detect",
     "assert-true-detect": "check-assert-true-detect",
+    "host-baseline": "check-host-import-baseline",
+    "host-import-baseline": "check-host-import-baseline",
+    "host-boundary": "check-host-import-boundary",
+    "host-import-boundary": "check-host-import-boundary",
     "tracking": "check-tracking-consistency",
     "tracking-consistency": "check-tracking-consistency",
     "issues": "issue-lint",
     "issue-lint": "issue-lint",
+    "triage": "check-reference-coverage-triage",
+    "reference-coverage-triage": "check-reference-coverage-triage",
+    "coverage-parity": "check-coverage-runner-parity",
+    "coverage-runner-parity": "check-coverage-runner-parity",
 }
 
 def usage():

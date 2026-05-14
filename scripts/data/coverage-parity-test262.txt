@@ -1,0 +1,27 @@
+# schema_version: 1
+# suite: test262
+# purpose: Coverage runner parity check — server vs legacy mode outcome comparison
+# Each path selected to exercise a distinct outcome classification path.
+#   Subcategory: semantic-match
+reference/test262/test/language/asi/S7.9_A6.1_T1.js
+reference/test262/test/language/asi/S7.9_A6.1_T2.js
+reference/test262/test/language/asi/S7.9_A6.1_T3.js
+#   Subcategory: unsupported-parser
+reference/test262/test/language/expressions/async-arrow-function/dflt-eval-async-arrow-err-eval-arguments.js
+reference/test262/test/language/expressions/async-generator/named-yield-star-next-call-done-get.js
+#   Subcategory: unsupported-builtin
+reference/test262/test/built-ins/Date/UTC/coercion-absolute.js
+reference/test262/test/built-ins/RegExp/prototype/exec/y-fail-lastindex-no-write.js
+#   Subcategory: build-only
+reference/test262/test/language/types/null/S8.2_A1_T1.js
+reference/test262/test/language/types/null/S8.2_A1_T2.js
+reference/test262/test/language/types/undefined/S8.1_A1_T1.js
+#   Subcategory: blocked-like-metadata
+reference/test262/test/language/import/import-assertion-json.js
+reference/test262/test/language/module-code/privatename-not-valid-earlystringermodule-A.js
+#   Subcategory: verified-negative-compile
+reference/test262/test/language/expressions/delete/11.4.1-4.a-1.js
+#   Subcategory: runtime-mismatch
+reference/test262/test/built-ins/Array/prototype/push/S15.4.4.7_A1_T1.js
+#   Subcategory: negative-compile-unverified
+reference/test262/test/language/expressions/delete/11.4.1-4.a-2.js

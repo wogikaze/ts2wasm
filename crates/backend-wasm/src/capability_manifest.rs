@@ -5,12 +5,11 @@ use super::runtime_link_plan::RuntimeLinkPlan;
 
 pub(crate) fn emit_canonical_manifest_json(plan: &RuntimeLinkPlan) -> String {
     let manifest = canonical_manifest_from_link_plan(plan);
-    // Validate before emission — invalid manifests should not be written.
+    // Hard validation before emission — invalid manifests must not be written.
+    // The link plan builder should have caught this earlier, but we enforce
+    // the invariant here as a final safety net.
     if let Err(e) = manifest.validate() {
-        // Log warning but still return the JSON for debugging
-        // In production, the backend should catch this earlier via
-        // build_validated_runtime_link_plan.
-        eprintln!("warning: capability manifest validation failed: {e}");
+        panic!("capability manifest validation failed: {e}");
     }
     manifest.to_json()
 }

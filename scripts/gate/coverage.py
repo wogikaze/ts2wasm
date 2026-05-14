@@ -49,6 +49,9 @@ def usage():
     print("  --shards               Print per-category shard metrics from JSONL results")
     print("  --check-regression     Compare current coverage against stored baseline")
     print("  --jsonl-file PATH      Path to JSONL results file (default: <suite>-results.jsonl)")
+    print("  --schema-version N     Require schema version N (rejects on mismatch)")
+    print("  --max-unknown-unsupported N  Reject if unknown-unsupported count exceeds N")
+    print("  --require-evidence-key KEY   Require evidence key (repeatable)")
 
 
 # ---------------------------------------------------------------------------
@@ -184,8 +187,14 @@ def read_jsonl_results(jsonl_path: Path) -> list[dict]:
 def compute_shard_metrics(jsonl_path: Path) -> dict:
     """Compute per-category shard metrics from JSONL results.
 
+    Uses schema v2 ``outcome`` field when available, with legacy ``status``
+    fallback. This ensures outcome-aware counting:
+      - build_pass, oracle_skipped, verified_negative_compile never increment
+        semantic_pass.
+      - build_only, oracle_skipped never increment pass.
+
     Returns a dict mapping category -> { total, pass, fail, unsupported, blocked,
-    build_pass, semantic_pass }
+    build_pass, semantic_pass, unknown_unsupported }
     """
     records = read_jsonl_results(jsonl_path)
     categories: dict[str, dict] = {}
@@ -202,26 +211,65 @@ def compute_shard_metrics(jsonl_path: Path) -> dict:
                 "fail": 0,
                 "unsupported": 0,
                 "blocked": 0,
+                "unknown_unsupported": 0,
             }
         categories[cat]["total"] += 1
-        status = rec.get("status", "unknown")
 
-        if status == "pass":
-            categories[cat]["pass"] += 1
-            categories[cat]["build_pass"] += 1
-            categories[cat]["semantic_pass"] += 1
-        elif status == "build_pass":
-            categories[cat]["build_pass"] += 1
-        elif status == "fail":
-            categories[cat]["fail"] += 1
-        elif status == "unsupported":
-            categories[cat]["unsupported"] += 1
-        elif status == "blocked":
-            categories[cat]["blocked"] += 1
-        elif status == "mismatch":
-            categories[cat]["build_pass"] += 1
-        elif status == "runtime_error":
-            categories[cat]["fail"] += 1
+        # Prefer outcome over status for schema v2 records
+        outcome = rec.get("outcome")
+        if outcome:
+            # Outcome-aware counting
+            if outcome == "semantic_pass":
+                categories[cat]["pass"] += 1
+                categories[cat]["build_pass"] += 1
+                categories[cat]["semantic_pass"] += 1
+            elif outcome == "semantic_mismatch":
+                categories[cat]["build_pass"] += 1
+                categories[cat]["fail"] += 1
+            elif outcome == "build_pass":
+                categories[cat]["build_pass"] += 1
+            elif outcome == "runtime_error":
+                categories[cat]["build_pass"] += 1
+                categories[cat]["fail"] += 1
+            elif outcome == "unsupported":
+                categories[cat]["unsupported"] += 1
+            elif outcome == "blocked":
+                categories[cat]["blocked"] += 1
+            elif outcome == "internal_failure":
+                categories[cat]["fail"] += 1
+            elif outcome == "verified_negative_compile":
+                categories[cat]["build_pass"] += 1
+                categories[cat]["semantic_pass"] += 1
+            elif outcome == "unverified_negative_compile":
+                categories[cat]["build_pass"] += 1
+            elif outcome == "oracle_skipped":
+                categories[cat]["build_pass"] += 1
+            elif outcome == "skip_with_reason":
+                categories[cat]["blocked"] += 1
+
+            # Track unknown-unsupported
+            feature = rec.get("feature_label") or ""
+            if outcome == "unsupported" and feature in ("unknown-unsupported", ""):
+                categories[cat]["unknown_unsupported"] += 1
+        else:
+            # Legacy status fallback
+            status = rec.get("status", "unknown")
+            if status == "pass":
+                categories[cat]["pass"] += 1
+                categories[cat]["build_pass"] += 1
+                categories[cat]["semantic_pass"] += 1
+            elif status == "build_pass":
+                categories[cat]["build_pass"] += 1
+            elif status == "fail":
+                categories[cat]["fail"] += 1
+            elif status == "unsupported":
+                categories[cat]["unsupported"] += 1
+            elif status == "blocked":
+                categories[cat]["blocked"] += 1
+            elif status == "mismatch":
+                categories[cat]["build_pass"] += 1
+            elif status == "runtime_error":
+                categories[cat]["fail"] += 1
 
     return dict(sorted(categories.items()))
 
@@ -483,12 +531,72 @@ def main():
     parser.add_argument("--shards", action="store_true", help="Print per-category shard metrics")
     parser.add_argument("--check-regression", action="store_true", help="Compare against stored baseline")
     parser.add_argument("--jsonl-file", type=str, default=None, help="Path to JSONL results file")
+    parser.add_argument("--schema-version", type=int, default=None, help="Require schema version (rejects if jsonl records have different schema_version)")
+    parser.add_argument("--max-unknown-unsupported", type=int, default=None, help="Reject if unknown-unsupported count exceeds threshold")
+    parser.add_argument("--require-evidence-key", type=str, action="append", default=[], help="Require evidence key (repeatable)")
     parser.add_argument("args", nargs=argparse.REMAINDER, help="Base and current doc paths")
 
     parsed, unknown = parser.parse_known_args()
 
     # Collect positional args
     positional = parsed.args + unknown
+
+    # Resolve JSONL file path
+    jsonl_path = None
+    if parsed.jsonl_file:
+        jsonl_path = REPO_ROOT / parsed.jsonl_file
+    elif parsed.shards or parsed.check_regression:
+        jsonl_path = RESULTS_DIR / "test262-results.jsonl"
+
+    # Schema version check
+    if parsed.schema_version is not None and jsonl_path and jsonl_path.exists():
+        records = read_jsonl_results(jsonl_path)
+        for rec in records:
+            sv = rec.get("schema_version")
+            if sv is not None and sv != parsed.schema_version:
+                case = rec.get("case", "?")
+                print(f"ERROR: schema_version mismatch: record {case} has schema_version={sv}, "
+                      f"expected {parsed.schema_version}", file=sys.stderr)
+                return 1
+
+    # Max unknown-unsupported check
+    if parsed.max_unknown_unsupported is not None and jsonl_path and jsonl_path.exists():
+        records = read_jsonl_results(jsonl_path)
+        unknown_count = sum(
+            1 for rec in records
+            if rec.get("outcome") == "unsupported"
+            and (rec.get("feature_label") or "") in ("unknown-unsupported", "")
+        )
+        if unknown_count > parsed.max_unknown_unsupported:
+            print(f"ERROR: unknown-unsupported count {unknown_count} exceeds threshold "
+                  f"{parsed.max_unknown_unsupported}", file=sys.stderr)
+            return 1
+        if unknown_count > 0:
+            print(f"OK: unknown-unsupported count {unknown_count} within threshold "
+                  f"{parsed.max_unknown_unsupported}", file=sys.stderr)
+
+    # Require evidence key check
+    if parsed.require_evidence_key:
+        evidence_dirs = [
+            REPO_ROOT / "reports" / "coverage" / suite_name
+            for suite_name in ["test262", "tsc", "tsgo"]
+        ]
+        missing_keys = []
+        for ev_dir in evidence_dirs:
+            ev_path = ev_dir / "evidence.json"
+            if not ev_path.exists():
+                continue
+            try:
+                evidence = json.loads(ev_path.read_text())
+                for key in parsed.require_evidence_key:
+                    if key not in evidence:
+                        missing_keys.append(f"{ev_path}: missing key '{key}'")
+            except (OSError, json.JSONDecodeError):
+                missing_keys.append(f"{ev_path}: could not parse evidence")
+        if missing_keys:
+            for msg in missing_keys:
+                print(f"ERROR: {msg}", file=sys.stderr)
+            return 1
 
     if parsed.shards:
         return run_shard_metrics(positional)

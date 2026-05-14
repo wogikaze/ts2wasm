@@ -166,3 +166,60 @@ fn manifest_snapshot_roundtrip_from_lowered_program() {
         "wasi.random reasons should include 'Math.random'; got: {reasons:?}"
     );
 }
+
+#[test]
+fn date_now_manifest_declares_wasi_realtime() {
+    let manifest = build_and_get_manifest("const d = Date.now();", "date-now");
+    let parsed: serde_json::Value =
+        serde_json::from_str(&manifest).expect("manifest should be valid JSON");
+
+    assert_eq!(parsed["standalone"], true, "standalone should be true");
+    assert_eq!(
+        parsed["wasi"]["clock"]["realtime"], true,
+        "wasi.clock.realtime should be true"
+    );
+
+    let reasons = parsed["capability_reasons"]["wasi.clock.realtime"]
+        .as_array()
+        .expect("wasi.clock.realtime should have capability reasons");
+    assert!(
+        reasons.iter().any(|r| r == "Date.now"),
+        "wasi.clock.realtime reasons should include 'Date.now'; got: {reasons:?}"
+    );
+}
+
+#[test]
+fn process_argv_manifest_declares_wasi_args() {
+    let manifest = build_and_get_manifest("const a = process.argv;", "process-argv");
+    let parsed: serde_json::Value =
+        serde_json::from_str(&manifest).expect("manifest should be valid JSON");
+
+    assert_eq!(parsed["standalone"], true, "standalone should be true");
+    assert_eq!(parsed["wasi"]["args"], true, "wasi.args should be true");
+
+    let reasons = parsed["capability_reasons"]["wasi.args"]
+        .as_array()
+        .expect("wasi.args should have capability reasons");
+    assert!(
+        reasons.iter().any(|r| r == "process.argv"),
+        "wasi.args reasons should include 'process.argv'; got: {reasons:?}"
+    );
+}
+
+#[test]
+fn process_env_manifest_declares_wasi_env() {
+    let manifest = build_and_get_manifest("const e = process.env;", "process-env");
+    let parsed: serde_json::Value =
+        serde_json::from_str(&manifest).expect("manifest should be valid JSON");
+
+    assert_eq!(parsed["standalone"], true, "standalone should be true");
+    assert_eq!(parsed["wasi"]["env"], true, "wasi.env should be true");
+
+    let reasons = parsed["capability_reasons"]["wasi.env"]
+        .as_array()
+        .expect("wasi.env should have capability reasons");
+    assert!(
+        reasons.iter().any(|r| r == "process.env"),
+        "wasi.env reasons should include 'process.env'; got: {reasons:?}"
+    );
+}

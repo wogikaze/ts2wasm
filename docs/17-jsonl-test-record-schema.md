@@ -2,7 +2,12 @@
 
 Differential test results (node-diff fixtures, test262, and other suites) are reported as JSONL (JSON Lines) — one JSON object per line.
 
-## Output Schema
+The schema has two layers:
+
+1. **Canonical TestRecord** — used by `cargo test` differential fixtures and schema validator
+2. **Coverage Runner Extension (Schema v2)** — used by `scripts/run/reference-coverage.py` for reference suite results
+
+## Layer 1: Canonical TestRecord
 
 Each line is a JSON object with the following fields:
 
@@ -17,7 +22,7 @@ Each line is a JSON object with the following fields:
 | `reason` | string or null | on unsupported/blocked | Human-readable explanation |
 | `tracking` | string or null | on unsupported/blocked | Tracking ID: `issue-NNN` (GitHub issue) or `feature:xxx` (feature label) |
 
-## Status Values
+### Status Values
 
 | Status | Meaning |
 |--------|---------|
@@ -27,20 +32,20 @@ Each line is a JSON object with the following fields:
 | `"blocked"` | I/O error, missing runtime, or command execution failure |
 | `"skip-with-reason"` | Skipped test with an explicit reason |
 
-## Tracking ID Format
+### Tracking ID Format
 
 Tracking IDs follow one of two formats:
 
 - `issue-NNN` — references GitHub issue number NNN
 - `feature:xxx` — references a feature label
 
-## Validation Rules
+### Validation Rules
 
 - `pass` / `fail`: reason and tracking are optional
 - `unsupported` / `blocked` / `skip-with-reason`: reason and tracking are required
 - `suite`, `case`, and `target` must be non-empty
 
-## Example Records
+### Example Records
 
 ```jsonl
 {"suite":"fixtures/arrays-objects","case":"array.ts","target":"wasm32-wasi","status":"pass","expected":null,"actual":null,"reason":null,"tracking":null}
@@ -48,6 +53,87 @@ Tracking IDs follow one of two formats:
 {"suite":"fixtures/core-semantics","case":"bigint-runtime-add-sub.ts","target":"wasm32-wasi","status":"fail","expected":"3\n","actual":"5\n","reason":"stdout mismatch: node=\"3\\n\", iwasm=\"5\\n\"","tracking":"feature:stdout-mismatch"}
 {"suite":"fixtures/module-system","case":"require-cache.ts","target":"wasm32-wasi","status":"blocked","expected":null,"actual":null,"reason":"I/O or command execution failure","tracking":"feature:backend-io"}
 ```
+
+## Layer 2: Coverage Runner Extension (Schema v2)
+
+The reference coverage runner (`scripts/run/reference-coverage.py`) extends the canonical
+TestRecord with schema v2 fields defined in `scripts/lib/coverage_outcome.py`.
+
+Every coverage-runner JSONL record includes `schema_version: 2` and the following
+additional fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `schema_version` | integer | Always `2` for coverage-runner records |
+| `outcome` | string | Canonical outcome from `CoverageOutcome` enum (see below) |
+| `build_pass` | boolean | Whether the compiler produced a valid wasm module |
+| `semantic_checked` | boolean | Whether semantic (Node oracle) comparison was performed |
+| `phase` | string or null | Pipeline phase: `metadata`, `prepare`, `parse`, `compile`, `link`, `runtime`, `oracle`, `triage` |
+| `diagnostic_code` | string or null | Compiler diagnostic code, e.g. `"UnsupportedSyntax"` |
+| `feature_label` | string or null | Feature label from `coverage_labels.py`, e.g. `"parser-syntax"` |
+| `oracle_policy` | string or null | Oracle policy: `"auto"`, `"always"`, or `"never"` |
+| `selection_hash` | string or null | SHA-256 of canonical sorted case path list |
+| `abi_version` | string or null | ABI version string |
+| `target_id` | string or null | Target identifier, e.g. `"wasm-iwasm"` |
+| `ts_boundary` | string or null | TS pipeline boundary: `ts-parse`, `ts-erase`, `ts-declaration-only`, `ts-emit`, `ts-runtime`, `unknown` |
+| `executable_source` | boolean or null | Whether source contains executable (non-declaration) code |
+| `declaration_only` | boolean or null | Whether source is declaration-only |
+| `duration_ms` | integer or null | Wall-clock duration in milliseconds |
+
+### Outcome Values
+
+The `outcome` field uses values from the `CoverageOutcome` enum:
+
+| Outcome | Meaning |
+|---------|---------|
+| `build_pass` | Compiler produced a wasm module; no semantic check attempted |
+| `semantic_pass` | Wasm output matched Node.js reference output |
+| `semantic_mismatch` | Wasm output differed from Node.js reference output |
+| `runtime_error` | Wasm module ran but iwasm exited with non-zero code or trap |
+| `unsupported` | Compiler diagnostic indicated unsupported syntax |
+| `blocked` | Runner infrastructure failure (I/O error, timeout, missing binary) |
+| `internal_failure` | Compiler panicked or hit an invariant violation |
+| `verified_negative_compile` | Negative compile test verified: compiler correctly rejected input |
+| `unverified_negative_compile` | Negative compile test rejected by compiler but error type not verified |
+| `oracle_skipped` | Node.js oracle was unavailable or skipped |
+| `skip_with_reason` | Test was skipped due to runner configuration or known blocker |
+
+### Phase Values
+
+The `phase` field uses values from the `CoveragePhase` enum:
+
+| Phase | Meaning |
+|-------|---------|
+| `metadata` | YAML front-matter parsing / filtering |
+| `prepare` | Source preparation (harness injection, stubs) |
+| `parse` | Lexing and parsing |
+| `compile` | IR lowering, type resolution, and wasm emission |
+| `link` | Module linking (import resolution, ABI validation) |
+| `runtime` | iwasm execution of the compiled module |
+| `oracle` | Node.js reference output comparison |
+| `triage` | Post-hoc classification / triage aggregation |
+
+### Example Schema v2 Records
+
+```jsonl
+{"build_pass":true,"case":"test/language/foo.js","expected":"ok","actual":"ok","outcome":"semantic_pass","schema_version":2,"semantic_checked":true,"status":"pass","suite":"test262","target":"wasm-iwasm"}
+{"build_pass":false,"case":"test/built-ins/bar.js","outcome":"unsupported","phase":"parse","reason":"Unsupported syntax","schema_version":2,"semantic_checked":false,"status":"unsupported","suite":"test262","target":"wasm32-wasi","tracking":"feature:async"}
+{"build_pass":true,"case":"test/language/baz.js","iwasm_exit_status":1,"outcome":"runtime_error","schema_version":2,"semantic_checked":false,"status":"runtime_error","suite":"test262","target":"wasm-iwasm","reason":"iwasm trap"}
+```
+
+## Schema Source of Truth
+
+The canonical schema is implemented in:
+
+- `scripts/lib/coverage_outcome.py` — `CoverageOutcome` and `CoveragePhase` enums, `make_record()` and `make_record_with_policy()`
+- `scripts/lib/coverage_labels.py` — feature labels, `classify_diagnostic()`, `build_top_failures()`, `format_triage_markdown()`
+- `scripts/check/test-records-schema.py` — validates both canonical 5-status and schema v2 records
+- `crates/shared/src/test_status.rs` — `TestRecord`, `TestStatus`, `TrackingId` types with `validate()` and `to_json_line()`
+- `crates/cli/tests/differential_jsonl.rs` — JSONL enumeration and differential runner
+
+Canonical validators (`TestRecord::validate()` and `scripts/check/test-records-schema.py --self-test`)
+check both the 5-status canonical schema and schema v2 extensions. Coverage-runner-specific fields
+are validated by `scripts/gate/coverage.py`.
 
 ## Consumer Usage
 
@@ -72,32 +158,18 @@ mise run check differential -- --jsonl
 
 This runs all fixtures through the differential test runner and outputs JSONL records.
 
-## Schema Source of Truth
+### Self-test validation
 
-The canonical schema is implemented in:
-
-- `crates/shared/src/test_status.rs` — `TestRecord`, `TestStatus`, `TrackingId` types with `validate()` and `to_json_line()`
-- `crates/cli/tests/differential_jsonl.rs` — JSONL enumeration and differential runner
-
-## Coverage Runner Extensions
-
-The reference coverage runner (`scripts/run/reference-coverage.py`) extends the canonical
-TestRecord for coverage-specific results. These extensions are **not** part of the canonical
-TestRecord schema — they are coverage-runner-only fields.
-
-| Field | Type | Present for | Description |
-|-------|------|-------------|-------------|
-| `build_pass` | string | (as `status`) | `status=build_pass` indicates the fixture compiled but was not run |
-| `node_exit_status` | integer | status=`pass` or `fail` | Node.js exit code |
-| `iwasm_exit_status` | integer | status=`pass` or `fail` | iwasm exit code |
-| `semantic_checked` | boolean | status=`pass` | Whether semantic comparison was performed |
-| `oracle` | string | status=`pass` | Expected output from oracle (Node.js) |
-
-Canonical validators (`TestRecord::validate()` and `scripts/check/test-records-schema.py --self-test`)
-only check the 5-status canonical schema. Coverage-runner-specific fields are validated
-by `scripts/gate/coverage.py`.
+```bash
+python scripts/lib/coverage_outcome.py --self-test
+python scripts/lib/coverage_labels.py --self-test
+python scripts/check/test-records-schema.py --self-test
+```
 
 ## Related
 
 - `docs/06-testing-and-coverage.md` — overall testing strategy
 - `docs/11-shared-definitions.md` — shared test definitions
+- `docs/15-coverage-matrix.md` — coverage matrix format
+- `scripts/lib/coverage_outcome.py` — `make_record()` and `make_record_with_policy()` for schema v2
+- `scripts/lib/coverage_labels.py` — feature labels, top-failure bucketing, triage markdown
