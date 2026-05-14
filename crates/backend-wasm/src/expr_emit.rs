@@ -219,7 +219,10 @@ impl WatEmitter<'_> {
                     writer.call(indent, runtime_fn.symbol());
                     // ConsoleLog is void in WAT but may appear in value context
                     // (e.g. arrow body). Push undefined so the stack is consistent.
-                    if matches!(runtime_fn, RuntimeFn::Log) {
+                    if matches!(
+                        runtime_fn,
+                        RuntimeFn::Log | RuntimeFn::LogWarn | RuntimeFn::LogError
+                    ) {
                         writer.i32_const(indent, 0);
                     }
                 }

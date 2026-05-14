@@ -35,7 +35,7 @@ pub(crate) const fn runtime_fn_from_builtin(builtin: BuiltinId) -> RuntimeFn {
         BuiltinId::DecodeURIComponent => RuntimeFn::DecodeURIComponent,
         BuiltinId::Escape => RuntimeFn::Escape,
         BuiltinId::Unescape => RuntimeFn::Unescape,
-        BuiltinId::ConsoleWarn => RuntimeFn::Log,
-        BuiltinId::ConsoleError => RuntimeFn::Log,
+        BuiltinId::ConsoleWarn => RuntimeFn::LogWarn,
+        BuiltinId::ConsoleError => RuntimeFn::LogError,
     }
 }

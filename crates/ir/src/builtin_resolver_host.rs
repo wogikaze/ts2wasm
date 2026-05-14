@@ -352,30 +352,38 @@ pub(super) fn resolve_console_call_expr(
         } else {
             args
         };
-        ResolvedExpr::BuiltinCall {
-            builtin,
-            args,
-        }
+        ResolvedExpr::BuiltinCall { builtin, args }
     };
 
     match property.as_str() {
-        "log" | "info" | "debug" | "table" | "group" | "groupCollapsed"
-        | "count" | "countReset" | "timeEnd" => Ok(Some(log_expr(resolved_args.to_vec(), BuiltinId::ConsoleLog))),
-        "warn" => Ok(Some(log_expr(resolved_args.to_vec(), BuiltinId::ConsoleWarn))),
-        "error" => Ok(Some(log_expr(resolved_args.to_vec(), BuiltinId::ConsoleError))),
+        "log" | "info" | "debug" | "table" | "group" | "groupCollapsed" | "count"
+        | "countReset" | "timeEnd" => Ok(Some(log_expr(
+            resolved_args.to_vec(),
+            BuiltinId::ConsoleLog,
+        ))),
+        "warn" => Ok(Some(log_expr(
+            resolved_args.to_vec(),
+            BuiltinId::ConsoleWarn,
+        ))),
+        "error" => Ok(Some(log_expr(
+            resolved_args.to_vec(),
+            BuiltinId::ConsoleError,
+        ))),
         "assert" => {
             let Some((condition, message_args)) = resolved_args.split_first() else {
-                return Ok(Some(log_expr(vec![ResolvedExpr::String(
-                    "Assertion failed".to_owned(),
-                )], BuiltinId::ConsoleLog)));
+                return Ok(Some(log_expr(
+                    vec![ResolvedExpr::String("Assertion failed".to_owned())],
+                    BuiltinId::ConsoleLog,
+                )));
             };
             if matches!(condition, ResolvedExpr::Bool(true)) {
                 return Ok(Some(ResolvedExpr::Undefined));
             }
             if message_args.is_empty() {
-                Ok(Some(log_expr(vec![ResolvedExpr::String(
-                    "Assertion failed".to_owned(),
-                )], BuiltinId::ConsoleLog)))
+                Ok(Some(log_expr(
+                    vec![ResolvedExpr::String("Assertion failed".to_owned())],
+                    BuiltinId::ConsoleLog,
+                )))
             } else {
                 Ok(Some(log_expr(message_args.to_vec(), BuiltinId::ConsoleLog)))
             }

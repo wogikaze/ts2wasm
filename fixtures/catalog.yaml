@@ -8,7 +8,8 @@ categories:
   parser: Fixtures testing parser acceptance or rejection
   test-infrastructure: Fixtures that test the test framework itself
 canary:
-  description: Semantic canary suite — fixtures that exercise all active semantic paths
+  description: "Semantic canary suite \u2014 fixtures that exercise all active semantic\
+    \ paths"
   source: scripts/data/semantic-canary.txt
   fixtures:
   - fixtures/basics-hello/hello.ts
@@ -50,12 +51,14 @@ directories:
     - object.ts
     - string-key-literal.ts
     - string-length.ts
+    host_imports: allow
   arrow-functions:
     category: semantic
     status: pass
     expected: arrow function syntax and semantics
     fixtures:
     - arrow-basic.ts
+    host_imports: allow
   async-await:
     category: semantic
     status: pass
@@ -67,18 +70,21 @@ directories:
     - async-void.ts
     - await-sequence.ts
     - basic-async-return.ts
+    host_imports: allow
   atcoder:
     category: semantic
     status: unknown
     expected: algorithmic stress tests from AtCoder problems
     fixtures:
     - abc451-d-concat-power2.ts
+    host_imports: deny
   basics-equality:
     category: semantic
     status: pass
     expected: equality operator semantics
     fixtures:
     - equality-operators.ts
+    host_imports: allow
   basics-hello:
     category: semantic
     status: pass
@@ -88,12 +94,14 @@ directories:
     - hello.ts
     - stdin-empty.ts
     - stdin-read.ts
+    host_imports: allow
   basics-oom:
     category: semantic
     status: unknown
     expected: out-of-memory stress test
     fixtures:
     - oom-test.ts
+    host_imports: allow
   basics-syntax:
     category: semantic
     status: pass
@@ -101,12 +109,14 @@ directories:
     fixtures:
     - comma-expression.ts
     - with-statement.ts
+    host_imports: allow
   basics-typeof:
     category: semantic
     status: pass
     expected: typeof operator semantics
     fixtures:
     - typeof-test.ts
+    host_imports: allow
   basics-types:
     category: type-erasure
     status: pass
@@ -125,12 +135,14 @@ directories:
     - type-annotation-erasure.ts
     - type-error.ts
     - types.ts
+    host_imports: allow
   basics-utf8:
     category: semantic
     status: pass
     expected: UTF-8 string handling
     fixtures:
     - utf8-string.ts
+    host_imports: allow
   builtins-and-io:
     category: semantic
     status: pass
@@ -464,6 +476,7 @@ directories:
     - typedarray-methods.ts
     - value-of.ts
     - weakmap-weakset-basic.ts
+    host_imports: allow
   classes:
     category: semantic
     status: pass
@@ -485,6 +498,7 @@ directories:
     - class-super-arrow.ts
     - class-super-constructor.ts
     - class-super-static.ts
+    host_imports: allow
   classes-and-inheritance:
     category: semantic
     status: pass
@@ -505,6 +519,7 @@ directories:
     - class-super-property-get.ts
     - class-super.ts
     - new-expression.ts
+    host_imports: allow
   control-flow-and-exceptions:
     category: semantic
     status: pass
@@ -534,6 +549,7 @@ directories:
     - utf8-string.ts
     - while-break.ts
     - while-continue.ts
+    host_imports: allow
   core-expressions:
     category: semantic
     status: pass
@@ -580,6 +596,7 @@ directories:
     - typeof.ts
     - unary.ts
     - undefined.ts
+    host_imports: allow
   core-semantics:
     category: semantic
     status: pass
@@ -936,6 +953,7 @@ directories:
     - typeof.ts
     - unary-void-operator.ts
     - with-statement-unsupported.ts
+    host_imports: allow
   core-statements:
     category: semantic
     status: pass
@@ -953,6 +971,7 @@ directories:
     - throw.ts
     - try-catch.ts
     - while.ts
+    host_imports: allow
   html-comments:
     category: parser
     status: pass
@@ -980,6 +999,7 @@ directories:
     - name: unsupported-ternary-expression.ts
       status: unsupported
       expected: HIR rejects ternary expressions with UnsupportedSyntax
+    host_imports: allow
   linker:
     category: build-smoke
     status: unknown
@@ -990,6 +1010,7 @@ directories:
     - for-loop.ts
     - number-add.ts
     - object-literal.ts
+    host_imports: allow
   module-system:
     category: semantic
     status: pass
@@ -1049,6 +1070,7 @@ directories:
     - static-star-re-export-entry.ts
     - static-star-re-export-import-entry.ts
     - static-star-re-export-source.ts
+    host_imports: allow
   modules-and-typed-optimizations:
     category: semantic
     status: unknown
@@ -1061,6 +1083,7 @@ directories:
     - require-cache.ts
     - require-relative.ts
     - typed-add.ts
+    host_imports: allow
   negative:
     category: negative
     status: pass
@@ -1100,6 +1123,7 @@ directories:
     - process-argv.ts
     - process-env.ts
     - process-exit.ts
+    host_imports: deny
   object-semantics-kernel:
     category: semantic
     status: pass
@@ -1117,6 +1141,7 @@ directories:
     - prototype-method-build.ts
     - seal-freeze-descriptor.ts
     - writable-false-enforcement.ts
+    host_imports: allow
   parser-errors:
     category: negative
     status: pass
@@ -1136,12 +1161,14 @@ directories:
     - test-recursive-function.ts
     - test-recursive-named-function.ts
     - while.ts
+    host_imports: allow
   rest-parameters:
     category: semantic
     status: pass
     expected: rest parameter syntax and semantics
     fixtures:
     - rest-basic.ts
+    host_imports: allow
   spread-args:
     category: semantic
     status: pass
@@ -1151,6 +1178,7 @@ directories:
     - test-spread-array-literal.ts
     - test-spread-object-literal.ts
     - test-spread-operator.ts
+    host_imports: allow
   stmt:
     category: semantic
     status: pass
@@ -1192,6 +1220,7 @@ directories:
     - throw.ts
     - try-catch.ts
     - while.ts
+    host_imports: allow
   test-infrastructure:
     category: test-infrastructure
     status: pass
@@ -1206,6 +1235,7 @@ directories:
     expected: this binding semantics
     fixtures:
     - this-basic.ts
+    host_imports: allow
   typescript-directives:
     category: parser
     status: unknown
