@@ -405,6 +405,7 @@ impl WatEmitter<'_> {
     (local $pk_ptr i32)
     (local $pk_len i32)
     (local $j i32)
+    (local $last_idx i32)
     (local $flags i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
@@ -440,13 +441,30 @@ impl WatEmitter<'_> {
                           (local.get $flags)
                           (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_configurable_shift}))))
                       (then (return (i32.const {false}))))))
-                ;; found: clear the entry and decrement count
-                (local.set $entry_base
-                  (i32.add (local.get $base)
-                    (i32.add (i32.const {obj_header})
-                      (i32.shl (local.get $i) (i32.const {entry_shift})))))
-                (i32.store (local.get $entry_base) (i32.const {zero}))
-                (i32.store (i32.add (local.get $entry_base) (i32.const {value_off})) (i32.const {zero}))
+                ;; found: compact — move last entry to hole, then decrement count
+                (local.set $last_idx (i32.sub (local.get $count) (i32.const {one})))
+                (if (i32.lt_u (local.get $i) (local.get $last_idx))
+                  (then
+                    (local.set $entry_base
+                      (i32.add (local.get $base)
+                        (i32.add (i32.const {obj_header})
+                          (i32.shl (local.get $i) (i32.const {entry_shift})))))
+                    (local.set $j
+                      (i32.add (local.get $base)
+                        (i32.add (i32.const {obj_header})
+                          (i32.shl (local.get $last_idx) (i32.const {entry_shift})))))
+                    ;; copy last entry key to hole
+                    (i32.store (local.get $entry_base) (i32.load (local.get $j)))
+                    ;; copy last entry value to hole
+                    (i32.store (i32.add (local.get $entry_base) (i32.const {value_off}))
+                      (i32.load (i32.add (local.get $j) (i32.const {value_off}))))
+                    ;; clear old last entry
+                    (i32.store (local.get $j) (i32.const {zero}))
+                    (i32.store (i32.add (local.get $j) (i32.const {value_off})) (i32.const {zero})))
+                  (else
+                    ;; deleting the last entry — just clear it
+                    (i32.store (local.get $entry_base) (i32.const {zero}))
+                    (i32.store (i32.add (local.get $entry_base) (i32.const {value_off})) (i32.const {zero}))))
                 ;; decrement count
                 (i32.store (local.get $base) (i32.sub (local.get $count) (i32.const {one})))
                 (return (i32.const {true}))))))

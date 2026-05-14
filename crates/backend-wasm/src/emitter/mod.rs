@@ -243,6 +243,10 @@ impl<'a> WatEmitter<'a> {
             .link_plan
             .required_runtime_functions()
             .contains(&RuntimeFn::JsonStringify)
+            || self
+                .link_plan
+                .required_runtime_functions()
+                .contains(&RuntimeFn::JsonParse)
         {
             self.emit_json_replacer_dispatcher(&mut writer);
         }
