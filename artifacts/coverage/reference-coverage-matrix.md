@@ -6,27 +6,27 @@ Do not edit manually.
 <!-- coverage-table:start -->
 | suite | denominator | executed | build_coverage% | semantic_coverage% | build_pass | semantic_pass | executable_build_pass | differential_pass | negative_compile_pass | conformance_pass | fail | unsupported | blocked | skip-with-reason | status | evidence |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|
-| test262 | 53469 | 53469 | 20.50 | 11.73 | 10959 | 6271 | 7094 | 6271 | 3865 | 10136 | 49 | 42185 | 1196 | 0 | in-progress | `mise run reference-coverage -- test262` |
-| tsc | 6419 | 1397 | 10.41 | 0.00 | 668 | 0 | 668 | 0 | 0 | 0 | 2 | 721 | 6 | 0 | in-progress | `mise run reference-coverage -- tsc --limit 1400 --no-semantic` |
-| tsgo | 166 | 20 | 5.42 | 0.00 | 9 | 0 | 9 | 0 | 0 | 0 | 0 | 11 | 0 | 0 | in-progress | `mise run reference-coverage -- tsgo --limit 20` |
+| test262 | 53469 | 6 | 0.00 | 0.00 | 2 | 0 | 2 | 0 | 0 | 0 | 0 | 4 | 0 | 0 | in-progress | `mise run reference-coverage -- test262 --sample 1 --no-semantic --jsonl` |
+| tsc | 6419 | 6412 | 48.59 | 0.00 | 3119 | 0 | 3119 | 0 | 0 | 0 | 14 | 3268 | 11 | 0 | in-progress | `mise run reference-coverage -- tsc` |
+| tsgo | 166 | 14 | 1.81 | 0.00 | 3 | 0 | 3 | 0 | 0 | 0 | 0 | 11 | 0 | 0 | in-progress | `mise run reference-coverage -- tsgo --path-filter declarationEmit` |
 <!-- coverage-table:end -->
 
 ## Unsupported Diagnostic Codes
 
 <!-- diagcode-table:start -->
-| suite | executed | unsupported | UnsupportedSyntax | UnresolvedName | SyntaxError | UnresolvedFunction | UnsupportedTest262Metadata | ArityMismatch | UnsupportedEval | UnsupportedModule | DuplicateLocal | Unknown | UnsupportedTypeScriptSyntax | NegativeCompileMismatch | DuplicateFunction | NegativeRuntimeUnverified | TypeScriptTypeCheck | InvalidTopLevelReturn | UnsupportedRuntimeSubset | evidence |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| test262 | 53469 | 42185 | 20033 | 8479 | 6447 | 3992 | 1251 | 1086 | 527 | 228 | 105 | 0 | 3 | 39 | 17 | 17 | 0 | 0 | 0 | `mise run reference-coverage -- test262` |
-| tsc | 1397 | 721 | 215 | 134 | 101 | 57 | 0 | 1 | 0 | 69 | 25 | 54 | 37 | 0 | 12 | 0 | 13 | 2 | 1 | `mise run reference-coverage -- tsc --limit 1400 --no-semantic` |
-| tsgo | 20 | 11 | 3 | 5 | 2 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | `mise run reference-coverage -- tsgo --limit 20` |
+| suite | executed | unsupported | UnsupportedSyntax | SyntaxError | UnsupportedModule | UnresolvedName | UnresolvedFunction | DuplicateLocal | Unknown | UnsupportedTypeScriptSyntax | TypeScriptTypeCheck | DuplicateFunction | UnsupportedRuntimeSubset | ArityMismatch | InvalidTopLevelReturn | UnsupportedBuiltin | evidence |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| test262 | 6 | 4 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | `mise run reference-coverage -- test262 --sample 1 --no-semantic --jsonl` |
+| tsc | 6412 | 3268 | 1104 | 583 | 549 | 443 | 224 | 115 | 79 | 62 | 48 | 38 | 9 | 6 | 6 | 2 | `mise run reference-coverage -- tsc` |
+| tsgo | 14 | 11 | 1 | 2 | 6 | 2 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | `mise run reference-coverage -- tsgo --path-filter declarationEmit` |
 <!-- diagcode-table:end -->
 
 ## Unsupported Features
 
 <!-- feature-table:start -->
-| suite | executed | unsupported | feature-unsupported | name-resolution | class | function-resolution | builtin-api | unknown-unsupported:parser | test262-metadata | parser-syntax | arity | import-export | eval | async | object-literal | unknown-unsupported | regexp-literal | array-builtin | duplicate-local | arguments-object | string-builtin | template-literal | class-accessor | function | object-builtin | scope-analysis | module-resolution | negative-compile-mismatch | date | duplicate-function | enum | negative-runtime-unverified | type-system | destructuring | declaration-emit | arrow-function | type-annotation | async-iteration | module-system-amd | ambient-declaration | break-continue | legacy-global-builtin | property-access | super | type-alias | jsx | method-call | top-level-return | type-assertion | runtime-subset | evidence |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| test262 | 53469 | 42185 | 11256 | 8479 | 4824 | 3992 | 3940 | 2344 | 1251 | 1101 | 1086 | 876 | 683 | 576 | 335 | 246 | 245 | 156 | 105 | 99 | 96 | 77 | 68 | 69 | 56 | 44 | 33 | 39 | 33 | 17 | 15 | 17 | 2 | 14 | 13 | 11 | 1 | 9 | 0 | 0 | 5 | 5 | 4 | 0 | 0 | 0 | 2 | 0 | 0 | 0 | `mise run reference-coverage -- test262` |
-| tsc | 1397 | 721 | 141 | 134 | 5 | 57 | 0 | 20 | 0 | 85 | 1 | 93 | 0 | 2 | 4 | 65 | 0 | 0 | 25 | 4 | 0 | 0 | 2 | 0 | 0 | 5 | 6 | 0 | 0 | 12 | 3 | 0 | 15 | 2 | 2 | 3 | 9 | 0 | 6 | 5 | 0 | 0 | 0 | 4 | 4 | 2 | 0 | 2 | 2 | 1 | `mise run reference-coverage -- tsc --limit 1400 --no-semantic` |
-| tsgo | 20 | 11 | 2 | 5 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `mise run reference-coverage -- tsgo --limit 20` |
+| suite | executed | unsupported | import-export | feature-unsupported | name-resolution | parser-syntax | function-resolution | unknown-unsupported | duplicate-local | type-system | unknown-unsupported:parser | module-resolution | declaration-emit | destructuring | type-annotation | duplicate-function | type-alias | class | object-literal | decorator | template-literal | jsx | ambient-declaration | enum | module-system-amd | arguments-object | runtime-subset | super | scope-analysis | type-assertion | arity | arrow-function | top-level-return | parameter-property | regexp-literal | class-accessor | default-parameter | async | builtin-api | jsdoc | rest-parameter | break-continue | property-access | evidence |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| test262 | 6 | 4 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | `mise run reference-coverage -- test262 --sample 1 --no-semantic --jsonl` |
+| tsc | 6412 | 3268 | 756 | 547 | 443 | 290 | 224 | 126 | 115 | 88 | 86 | 84 | 74 | 52 | 47 | 38 | 31 | 30 | 30 | 24 | 23 | 21 | 19 | 17 | 14 | 10 | 9 | 9 | 8 | 8 | 6 | 6 | 6 | 5 | 5 | 4 | 3 | 2 | 2 | 2 | 2 | 1 | 1 | `mise run reference-coverage -- tsc` |
+| tsgo | 14 | 11 | 6 | 1 | 2 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 2 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | `mise run reference-coverage -- tsgo --path-filter declarationEmit` |
 <!-- feature-table:end -->

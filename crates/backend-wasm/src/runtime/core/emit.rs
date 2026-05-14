@@ -179,6 +179,104 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(crate) fn emit_log_warn(&self, wat: &mut String) {
+        let newline = self.string_offset(RuntimeString::NEWLINE) + Layout::STRING_HEADER_SIZE;
+        wat.push_str(&format!(
+            r#"
+  (func $log_warn (param $v i32)
+    (local $obj i32)
+    (local $len i32)
+    (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
+    (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (if (i32.eq
+              (i32.and
+                (i32.load
+                  (i32.add
+                    (i32.sub (local.get $obj) (i32.const {gc_header_size}))
+                    (i32.const {gc_flags_offset})))
+                (i32.const {gc_kind_mask}))
+              (i32.const {gc_kind_bigint}))
+          (then
+            (i32.store8
+              (i32.add (i32.const {scratch}) (local.get $len))
+              (i32.const {ascii_n}))
+            (local.set $len (i32.add (local.get $len) (i32.const {one})))))))
+    (i32.store (i32.const {iovec_ptr}) (i32.const {scratch}))
+    (i32.store (i32.const {iovec_len}) (local.get $len))
+    (drop (call $fd_write (i32.const {stderr_fd}) (i32.const {iovec_ptr}) (i32.const {one}) (i32.const {zero})))
+    (i32.store (i32.const {iovec_ptr}) (i32.const {newline}))
+    (i32.store (i32.const {iovec_len}) (i32.const {one}))
+    (drop (call $fd_write (i32.const {stderr_fd}) (i32.const {iovec_ptr}) (i32.const {one}) (i32.const {zero}))))
+  "#,
+            scratch = Layout::SCRATCH_OFFSET,
+            newline = newline,
+            iovec_ptr = Layout::IOVEC_PTR,
+            iovec_len = Layout::IOVEC_LEN,
+            one = RuntimeConst::ONE,
+            zero = RuntimeConst::ZERO,
+            stderr_fd = 2,
+            ascii_n = b'n',
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            gc_header_size = Layout::GC_HEADER_SIZE,
+            gc_flags_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET,
+            gc_kind_mask = Layout::GC_KIND_MASK,
+            gc_kind_bigint = Layout::GC_KIND_BIGINT,
+        ));
+    }
+
+    pub(crate) fn emit_log_error(&self, wat: &mut String) {
+        let newline = self.string_offset(RuntimeString::NEWLINE) + Layout::STRING_HEADER_SIZE;
+        wat.push_str(&format!(
+            r#"
+  (func $log_error (param $v i32)
+    (local $obj i32)
+    (local $len i32)
+    (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
+    (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (if (i32.eq
+              (i32.and
+                (i32.load
+                  (i32.add
+                    (i32.sub (local.get $obj) (i32.const {gc_header_size}))
+                    (i32.const {gc_flags_offset})))
+                (i32.const {gc_kind_mask}))
+              (i32.const {gc_kind_bigint}))
+          (then
+            (i32.store8
+              (i32.add (i32.const {scratch}) (local.get $len))
+              (i32.const {ascii_n}))
+            (local.set $len (i32.add (local.get $len) (i32.const {one})))))))
+    (i32.store (i32.const {iovec_ptr}) (i32.const {scratch}))
+    (i32.store (i32.const {iovec_len}) (local.get $len))
+    (drop (call $fd_write (i32.const {stderr_fd}) (i32.const {iovec_ptr}) (i32.const {one}) (i32.const {zero})))
+    (i32.store (i32.const {iovec_ptr}) (i32.const {newline}))
+    (i32.store (i32.const {iovec_len}) (i32.const {one}))
+    (drop (call $fd_write (i32.const {stderr_fd}) (i32.const {iovec_ptr}) (i32.const {one}) (i32.const {zero}))))
+  "#,
+            scratch = Layout::SCRATCH_OFFSET,
+            newline = newline,
+            iovec_ptr = Layout::IOVEC_PTR,
+            iovec_len = Layout::IOVEC_LEN,
+            one = RuntimeConst::ONE,
+            zero = RuntimeConst::ZERO,
+            stderr_fd = 2,
+            ascii_n = b'n',
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            gc_header_size = Layout::GC_HEADER_SIZE,
+            gc_flags_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET,
+            gc_kind_mask = Layout::GC_KIND_MASK,
+            gc_kind_bigint = Layout::GC_KIND_BIGINT,
+        ));
+    }
+
     pub(crate) fn emit_private_brand_type_error(&self, wat: &mut String) {
         self.emit_runtime_catchable_error(
             wat,

@@ -88,7 +88,12 @@ fn console_output_runs_under_iwasm() {
     );
     assert_eq!(
         String::from_utf8_lossy(&run.output.stdout),
-        "log 1\ninfo true\ndebug false\nwarn message\nerror message\ntable 2\ngroup\ntimer\ncounter\ncounter\n"
+        "log 1\ninfo true\ndebug false\ntable 2\ngroup\ntimer\ncounter\ncounter\n"
+    );
+    // warn and error are routed to stderr
+    assert_eq!(
+        String::from_utf8_lossy(&run.output.stderr),
+        "warn message\nerror message\n"
     );
 }
 

@@ -355,18 +355,26 @@ pub(super) fn resolve_console_call_expr(
         ResolvedExpr::BuiltinCall { builtin, args }
     };
 
+    // The WAT $log / $log_warn / $log_error functions accept exactly 1 param.
+    let take_first = |args: &[ResolvedExpr]| -> Vec<ResolvedExpr> {
+        args.first()
+            .cloned()
+            .map(|a| vec![a])
+            .unwrap_or_else(|| vec![ResolvedExpr::String(String::new())])
+    };
+
     match property.as_str() {
         "log" | "info" | "debug" | "table" | "group" | "groupCollapsed" | "count"
         | "countReset" | "timeEnd" => Ok(Some(log_expr(
-            resolved_args.to_vec(),
+            take_first(resolved_args),
             BuiltinId::ConsoleLog,
         ))),
         "warn" => Ok(Some(log_expr(
-            resolved_args.to_vec(),
+            take_first(resolved_args),
             BuiltinId::ConsoleWarn,
         ))),
         "error" => Ok(Some(log_expr(
-            resolved_args.to_vec(),
+            take_first(resolved_args),
             BuiltinId::ConsoleError,
         ))),
         "assert" => {
