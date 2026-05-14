@@ -152,6 +152,8 @@ pub enum RuntimeFn {
     WeakSetDelete,
     /// Issue 206: ArrayBuffer/DataView runtime.
     ArrayBufferNew,
+    /// ArrayBuffer.isView(val) — returns 1 if val is a DataView or TypedArray, 0 otherwise
+    ArrayBufferIsView,
     DataViewNew,
     DataViewGetInt8,
     DataViewSetInt8,
@@ -1287,6 +1289,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "TypedArrayFromArray" => Some(RuntimeFn::TypedArrayFromArray),
         "TypedArraySet" => Some(RuntimeFn::TypedArraySet),
         "ArrayBufferNew" => Some(RuntimeFn::ArrayBufferNew),
+        "ArrayBufferIsView" => Some(RuntimeFn::ArrayBufferIsView),
         "DataViewNew" => Some(RuntimeFn::DataViewNew),
         "DataViewGetInt8" => Some(RuntimeFn::DataViewGetInt8),
         "DataViewSetInt8" => Some(RuntimeFn::DataViewSetInt8),
@@ -1466,6 +1469,7 @@ impl RuntimeFn {
             Self::ArrayGet
             | Self::ArrayIndexPresent
             | Self::ArrayBufferNew
+            | Self::ArrayBufferIsView
             | Self::ArrayPush
             | Self::ArrayPushGrow
             | Self::ArrayPop
@@ -2085,6 +2089,7 @@ impl RuntimeFn {
             Self::WeakSetHas,
             Self::WeakSetDelete,
             Self::ArrayBufferNew,
+            Self::ArrayBufferIsView,
             Self::DataViewNew,
             Self::DataViewGetInt8,
             Self::DataViewSetInt8,
@@ -2442,6 +2447,7 @@ impl RuntimeFn {
             Self::WeakSetHas,
             Self::WeakSetDelete,
             Self::ArrayBufferNew,
+            Self::ArrayBufferIsView,
             Self::DataViewNew,
             Self::DataViewGetInt8,
             Self::DataViewSetInt8,

@@ -25,6 +25,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ArrayBufferIsView => RuntimeSpec {
+                symbol: "$arraybuffer_is_view",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ArrayPush => RuntimeSpec {
                 symbol: "$array_push",
                 deps: ARRAY_PUSH_DEPS,

@@ -4,6 +4,7 @@ match self {
             Self::ArrayGet => "array_get",
             Self::ArrayIndexPresent => "array_index_present",
             Self::ArrayBufferNew => "arraybuffer_new",
+            Self::ArrayBufferIsView => "arraybuffer_is_view",
             Self::ArrayPush => "array_push",
             Self::ArrayPushGrow => "array_push_grow",
             Self::ArrayPop => "array_pop",
