@@ -8,6 +8,16 @@ type WasmFuncType = (Vec<WasmValType>, Vec<WasmValType>);
 type TypeIndexMap = HashMap<WasmFuncType, u32>;
 type SymbolIndexMap = HashMap<String, u32>;
 
+pub trait WasmEncoderBackendExt {
+    fn to_wasm_encoder(&self) -> Vec<u8>;
+}
+
+impl WasmEncoderBackendExt for WasmModule {
+    fn to_wasm_encoder(&self) -> Vec<u8> {
+        emit_wasm_module_binary(self)
+    }
+}
+
 pub fn emit_wasm_module_binary(module: &WasmModule) -> Vec<u8> {
     let mut wasm = wasm_encoder::Module::new();
 
@@ -419,5 +429,96 @@ fn parse_block_type(s: &str) -> BlockType {
         "i32" => BlockType::Result(ValType::I32),
         "i64" => BlockType::Result(ValType::I64),
         _ => BlockType::Empty,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn extension_method_emits_valid_binary_with_all_module_sections() {
+        let module = WasmModule::new()
+            .import(WasmImport::func(
+                "env",
+                "host_add",
+                "$host_add",
+                [WasmValType::I32, WasmValType::I32],
+                [WasmValType::I32],
+            ))
+            .memory(WasmMemory::exported(1, 2, "memory"))
+            .global(WasmGlobal::i32_mut("$counter", 0))
+            .function(
+                WasmFunction::new("$main")
+                    .result(WasmValType::I32)
+                    .local(WasmValType::I32)
+                    .body(vec![
+                        WasmInstr::I32Const(7),
+                        WasmInstr::I32Const(5),
+                        WasmInstr::Call("$host_add".to_owned()),
+                        WasmInstr::LocalSet(0),
+                        WasmInstr::LocalGet(0),
+                        WasmInstr::GlobalSet("$counter".to_owned()),
+                        WasmInstr::GlobalGet("$counter".to_owned()),
+                    ]),
+            )
+            .data_segment(WasmDataSegment::new(16, b"hello".to_vec()))
+            .export(WasmExport::func("main", "$main"))
+            .export(WasmExport::memory("memory"));
+
+        let bytes = module.to_wasm_encoder();
+
+        wasmparser::Validator::new()
+            .validate_all(&bytes)
+            .expect("wasm-encoder backend should emit a valid module");
+        assert_eq!(
+            section_ids(&bytes),
+            vec![1, 2, 3, 5, 6, 7, 10, 11],
+            "type/import/function/memory/global/export/code/data sections should be emitted"
+        );
+    }
+
+    #[test]
+    fn legacy_function_and_extension_method_share_encoder_path() {
+        let module = WasmModule::new()
+            .function(
+                WasmFunction::new("$main")
+                    .result(WasmValType::I32)
+                    .body(vec![WasmInstr::I32Const(42)]),
+            )
+            .export(WasmExport::func("main", "$main"));
+
+        assert_eq!(module.to_wasm_encoder(), emit_wasm_module_binary(&module));
+    }
+
+    fn section_ids(bytes: &[u8]) -> Vec<u8> {
+        assert_eq!(&bytes[..4], b"\0asm");
+        assert_eq!(&bytes[4..8], &[1, 0, 0, 0]);
+
+        let mut ids = Vec::new();
+        let mut offset = 8;
+        while offset < bytes.len() {
+            let id = bytes[offset];
+            offset += 1;
+            let payload_len = read_u32_leb(bytes, &mut offset) as usize;
+            ids.push(id);
+            offset += payload_len;
+        }
+        assert_eq!(offset, bytes.len());
+        ids
+    }
+
+    fn read_u32_leb(bytes: &[u8], offset: &mut usize) -> u32 {
+        let mut result = 0u32;
+        let mut shift = 0;
+        loop {
+            let byte = bytes[*offset];
+            *offset += 1;
+            result |= u32::from(byte & 0x7f) << shift;
+            if byte & 0x80 == 0 {
+                return result;
+            }
+            shift += 7;
+        }
     }
 }

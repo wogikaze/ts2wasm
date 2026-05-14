@@ -89,7 +89,7 @@ pub(crate) fn align_to(value: u32, alignment: u32) -> Option<u32> {
 mod wasm_encoder_backend;
 
 #[cfg(feature = "wasm-encoder-backend")]
-pub use wasm_encoder_backend::emit_wasm_module_binary;
+pub use wasm_encoder_backend::{WasmEncoderBackendExt, emit_wasm_module_binary};
 
 pub(crate) fn wat_bytes(bytes: &[u8]) -> String {
     let mut out = String::new();
