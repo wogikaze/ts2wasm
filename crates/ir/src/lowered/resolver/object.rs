@@ -50,7 +50,10 @@ impl super::Resolver {
         &mut self,
         props: &[ResolvedObjectProp],
     ) -> Result<LoweredExpr, Diagnostic> {
-        if props.iter().any(|prop| prop.computed_key().is_some()) {
+        if props
+            .iter()
+            .any(|prop| prop.computed_key().is_some() || prop.static_key() == Some("__proto__"))
+        {
             return self.lower_object_literal_expr_with_computed_keys(props);
         }
 
@@ -176,6 +179,30 @@ impl super::Resolver {
                         continue;
                     };
                     let value = prop.value();
+                    if key == "__proto__" {
+                        if !initialized {
+                            stmts.push(LoweredStmt::Let(
+                                object_local,
+                                LoweredExpr::ObjectNew {
+                                    props: std::mem::take(&mut pending),
+                                    non_enumerable: 0,
+                                    span: Span::generated("object_new"),
+                                },
+                                Span::generated("object_literal"),
+                            ));
+                            initialized = true;
+                        }
+                        let set_expr = object_kernel::ordinary_set_prototype_of(
+                            LoweredExpr::Local(object_local, Span::generated("local")),
+                            self.lower_expr(value)?,
+                            Span::generated("object_proto_set"),
+                        );
+                        stmts.push(LoweredStmt::Expr(
+                            set_expr,
+                            Span::generated("object_proto_set"),
+                        ));
+                        continue;
+                    }
                     if key == OBJECT_SPREAD_SENTINEL {
                         if let Some(spread_props) = self.static_object_literal_spread_props(value) {
                             for spread_prop in spread_props {
