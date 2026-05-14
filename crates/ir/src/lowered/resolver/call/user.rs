@@ -420,6 +420,11 @@ impl super::super::Resolver {
             .facts
             .generator_function_steps
             .contains_key(func_name)
+            || self
+                .ctx
+                .facts
+                .generator_function_object_resume_plans
+                .contains_key(func_name)
         {
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::GeneratorYield,

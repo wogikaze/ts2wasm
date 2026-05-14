@@ -63,6 +63,8 @@ pub struct StaticFacts {
     pub generator_function_steps: HashMap<String, Vec<GeneratorYieldStep>>,
     /// Statically collected statements that run when a generator resumes to completion.
     pub generator_function_completion_steps: HashMap<String, Vec<ResolvedStmt>>,
+    /// Specialized static plans for generator object literals whose computed keys resume from yields.
+    pub generator_function_object_resume_plans: HashMap<String, GeneratorObjectResumePlan>,
     /// Locals holding statically visible generator iterators with a runtime state local.
     pub generator_iterator_bindings: HashMap<LocalId, GeneratorIteratorBinding>,
     /// Static object literal contents: local → property records.
@@ -119,11 +121,21 @@ pub struct GeneratorYieldStep {
     pub value: ResolvedExpr,
 }
 
+/// A generator body of the form `target = { [yield]: ... }` whose object
+/// construction can resume with `.next(value)` arguments.
+#[derive(Debug, Clone)]
+pub struct GeneratorObjectResumePlan {
+    pub target: String,
+    pub props: Vec<ResolvedObjectProp>,
+    pub yield_values: Vec<ResolvedExpr>,
+}
+
 /// Compile-time state for a statically visible generator iterator local.
 #[derive(Debug, Clone)]
 pub struct GeneratorIteratorBinding {
     pub func_name: String,
     pub state_local: LocalId,
+    pub resume_args: Vec<ResolvedExpr>,
 }
 
 /// Tracks an arrow function closure that can be inlined or heap-allocated.
@@ -234,6 +246,7 @@ impl StaticFacts {
             generator_function_yields: HashMap::new(),
             generator_function_steps: HashMap::new(),
             generator_function_completion_steps: HashMap::new(),
+            generator_function_object_resume_plans: HashMap::new(),
             generator_iterator_bindings: HashMap::new(),
             static_object_literal_locals: HashMap::new(),
             static_object_literal_alias_sources: HashMap::new(),

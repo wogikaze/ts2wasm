@@ -98,6 +98,7 @@ pub(crate) fn update_generator_iterator_local(
                 GeneratorIteratorBinding {
                     func_name,
                     state_local,
+                    resume_args: Vec::new(),
                 },
             );
         } else {

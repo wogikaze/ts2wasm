@@ -8,10 +8,12 @@ use super::super::{
 };
 use super::builtin::{is_html_wrapper_string_method, lower_html_wrapper_string_method};
 use super::receiver::extract_prototype_method_name;
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
+use crate::builtin_resolved::{
+    ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedStmt,
+};
 use crate::lowered::classes::ObjectAccessorKey;
 use crate::lowered::ctx::LoweringCtx;
-use crate::lowered::facts::IntlNumberFormatOptions;
+use crate::lowered::facts::{GeneratorObjectResumePlan, IntlNumberFormatOptions};
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
@@ -54,9 +56,7 @@ impl super::super::Resolver {
                 &self.ctx, object,
             )
         {
-            if args.is_empty()
-                && let Some(result) = self.lower_static_generator_next(object)?
-            {
+            if let Some(result) = self.lower_static_generator_next(object, args)? {
                 return Ok(result);
             }
             return Ok(LoweredExpr::RuntimeCall {
@@ -113,17 +113,44 @@ impl super::super::Resolver {
     fn lower_static_generator_next(
         &mut self,
         object: &ResolvedExpr,
+        args: &[ResolvedExpr],
     ) -> Result<Option<LoweredExpr>, Diagnostic> {
-        let (func_name, state_local, prelude) = match object {
+        let (func_name, state_local, prelude, resume_args) = match object {
             ResolvedExpr::Ident(name) => {
                 let local_id = self.resolve_local(name)?;
-                let Some(binding) = self.ctx.facts.generator_iterator_bindings.get(&local_id)
+                let Some(binding) = self
+                    .ctx
+                    .facts
+                    .generator_iterator_bindings
+                    .get(&local_id)
+                    .cloned()
                 else {
                     return Ok(None);
                 };
-                (binding.func_name.clone(), binding.state_local, Vec::new())
+                let mut resume_args = binding.resume_args.clone();
+                if let Some(arg) = args.first() {
+                    resume_args.push(arg.clone());
+                }
+                if let Some(binding) = self
+                    .ctx
+                    .facts
+                    .generator_iterator_bindings
+                    .get_mut(&local_id)
+                    && let Some(arg) = args.first()
+                {
+                    binding.resume_args.push(arg.clone());
+                }
+                (
+                    binding.func_name,
+                    binding.state_local,
+                    Vec::new(),
+                    resume_args,
+                )
             }
             _ => {
+                if !args.is_empty() {
+                    return Ok(None);
+                }
                 let Some(func_name) =
                     crate::lowered::resolver::expr::facts::resolved_generator_function_call_name(
                         &self.ctx, object,
@@ -148,9 +175,27 @@ impl super::super::Resolver {
                         LoweredExpr::Number(0, Span::generated("num")),
                         Span::generated("let_stmt"),
                     )],
+                    Vec::new(),
                 )
             }
         };
+        if let Some(plan) = self
+            .ctx
+            .facts
+            .generator_function_object_resume_plans
+            .get(&func_name)
+            .cloned()
+        {
+            return Ok(Some(self.lower_generator_object_resume_with_state(
+                &plan,
+                state_local,
+                prelude,
+                &resume_args,
+            )?));
+        }
+        if !args.is_empty() {
+            return Ok(None);
+        }
         Ok(Some(self.lower_generator_resume_with_state(
             &func_name,
             state_local,
@@ -359,6 +404,81 @@ impl super::super::Resolver {
             else_body: vec![],
             span: Span::generated("if_stmt"),
         });
+        Ok(LoweredExpr::Block {
+            stmts,
+            result: Box::new(LoweredExpr::Local(result_local, Span::generated("local"))),
+            span: Span::generated("block"),
+        })
+    }
+
+    fn lower_generator_object_resume_with_state(
+        &mut self,
+        plan: &GeneratorObjectResumePlan,
+        state_local: LocalId,
+        prelude: Vec<LoweredStmt>,
+        resume_args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let result_local = self.alloc_temp();
+        let snapshot_local = self.alloc_temp();
+        let mut stmts = prelude;
+        stmts.push(LoweredStmt::Let(
+            result_local,
+            Self::generator_next_result(LoweredExpr::Undefined(Span::generated("undefined")), true),
+            Span::generated("let_stmt"),
+        ));
+        stmts.push(LoweredStmt::Let(
+            snapshot_local,
+            LoweredExpr::Local(state_local, Span::generated("local")),
+            Span::generated("let_stmt"),
+        ));
+
+        for (index, value) in plan.yield_values.iter().enumerate() {
+            let then_body = vec![
+                LoweredStmt::Assign(
+                    result_local,
+                    Self::generator_next_result(self.lower_expr(value)?, false),
+                    Span::generated("assign"),
+                ),
+                LoweredStmt::Assign(
+                    state_local,
+                    LoweredExpr::Number((index + 1) as i32, Span::generated("num")),
+                    Span::generated("assign"),
+                ),
+            ];
+            stmts.push(LoweredStmt::If {
+                condition: Self::state_equals(snapshot_local, index),
+                then_body,
+                else_body: vec![],
+                span: Span::generated("if_stmt"),
+            });
+        }
+
+        let completed_state = plan.yield_values.len() + 1;
+        let mut completion_body = Vec::new();
+        if resume_args.len() >= plan.yield_values.len() {
+            let resumed_props = replace_direct_computed_yield_keys(&plan.props, resume_args);
+            completion_body.push(self.lower_stmt(&ResolvedStmt::Assign(
+                plan.target.clone(),
+                ResolvedExpr::Object(resumed_props),
+            ))?);
+        }
+        completion_body.push(LoweredStmt::Assign(
+            result_local,
+            Self::generator_next_result(LoweredExpr::Undefined(Span::generated("undefined")), true),
+            Span::generated("assign"),
+        ));
+        completion_body.push(LoweredStmt::Assign(
+            state_local,
+            LoweredExpr::Number(completed_state as i32, Span::generated("num")),
+            Span::generated("assign"),
+        ));
+        stmts.push(LoweredStmt::If {
+            condition: Self::state_equals(snapshot_local, plan.yield_values.len()),
+            then_body: completion_body,
+            else_body: vec![],
+            span: Span::generated("if_stmt"),
+        });
+
         Ok(LoweredExpr::Block {
             stmts,
             result: Box::new(LoweredExpr::Local(result_local, Span::generated("local"))),
@@ -3680,6 +3800,38 @@ fn static_generator_completion_value(expr: &LoweredExpr) -> Option<LoweredExpr> 
         | LoweredExpr::Undefined(..) => Some(expr.clone()),
         _ => None,
     }
+}
+
+fn replace_direct_computed_yield_keys(
+    props: &[ResolvedObjectProp],
+    resume_args: &[ResolvedExpr],
+) -> Vec<ResolvedObjectProp> {
+    let mut resume_index = 0;
+    props
+        .iter()
+        .map(|prop| match prop {
+            ResolvedObjectProp::ComputedKey { key, value }
+                if matches!(
+                    key.as_ref(),
+                    ResolvedExpr::Yield {
+                        delegate: false,
+                        ..
+                    }
+                ) =>
+            {
+                let key = resume_args
+                    .get(resume_index)
+                    .cloned()
+                    .unwrap_or(ResolvedExpr::Undefined);
+                resume_index += 1;
+                ResolvedObjectProp::ComputedKey {
+                    key: Box::new(key),
+                    value: value.clone(),
+                }
+            }
+            _ => prop.clone(),
+        })
+        .collect()
 }
 
 fn static_generator_implicit_completion_value(body: &[LoweredStmt]) -> Option<LoweredExpr> {

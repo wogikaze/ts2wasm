@@ -5,7 +5,7 @@ use crate::builtin_resolved::{
     ResolvedStmt,
 };
 use crate::lowered::classes::ObjectAccessorKey;
-use crate::lowered::facts::GeneratorYieldStep;
+use crate::lowered::facts::{GeneratorObjectResumePlan, GeneratorYieldStep};
 use crate::lowered::symbols::FunctionSignature;
 use std::collections::{HashMap, HashSet};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -35,6 +35,7 @@ pub fn lower_program_with_module_url(
     let generator_function_yields = collect_generator_function_yields(program);
     let (generator_function_steps, generator_function_completion_steps) =
         collect_generator_function_steps(program);
+    let generator_function_object_resume_plans = collect_generator_object_resume_plans(program);
     let mut function_signatures =
         collect_function_signatures(program, &function_ids, program_is_strict);
     let top_level_local_names = collect_top_level_local_names(program)?;
@@ -357,6 +358,8 @@ pub fn lower_program_with_module_url(
     resolver.ctx.facts.generator_function_yields = generator_function_yields;
     resolver.ctx.facts.generator_function_steps = generator_function_steps;
     resolver.ctx.facts.generator_function_completion_steps = generator_function_completion_steps;
+    resolver.ctx.facts.generator_function_object_resume_plans =
+        generator_function_object_resume_plans;
     let mut top_level_statements = Vec::new();
     for stmt in program {
         match stmt {
@@ -650,6 +653,61 @@ fn collect_generator_function_steps(
         }
     }
     (steps, completion_steps)
+}
+
+fn collect_generator_object_resume_plans(
+    program: &[ResolvedStmt],
+) -> HashMap<String, GeneratorObjectResumePlan> {
+    let mut plans = HashMap::new();
+    for stmt in program {
+        if let ResolvedStmt::Function {
+            name,
+            body,
+            is_generator: true,
+            ..
+        } = stmt
+            && let Some(plan) = collect_generator_object_resume_plan(body)
+        {
+            plans.insert(name.clone(), plan);
+        }
+    }
+    plans
+}
+
+fn collect_generator_object_resume_plan(
+    stmts: &[ResolvedStmt],
+) -> Option<GeneratorObjectResumePlan> {
+    let [ResolvedStmt::Assign(target, ResolvedExpr::Object(props))] = stmts else {
+        return None;
+    };
+    let mut yield_values = Vec::new();
+    for prop in props {
+        match prop {
+            ResolvedObjectProp::ComputedKey { key, .. } => {
+                let ResolvedExpr::Yield { expr, delegate } = key.as_ref() else {
+                    if contains_generator_yield_expr(key.as_ref()) {
+                        return None;
+                    }
+                    continue;
+                };
+                if *delegate {
+                    return None;
+                }
+                yield_values.push(
+                    expr.as_ref()
+                        .map(|expr| expr.as_ref().clone())
+                        .unwrap_or(ResolvedExpr::Undefined),
+                );
+            }
+            _ if contains_generator_yield_expr(prop.value()) => return None,
+            _ => {}
+        }
+    }
+    (!yield_values.is_empty()).then(|| GeneratorObjectResumePlan {
+        target: target.clone(),
+        props: props.clone(),
+        yield_values,
+    })
 }
 
 fn collect_straight_line_generator_steps(stmts: &[ResolvedStmt]) -> Option<GeneratorStepPlan> {
