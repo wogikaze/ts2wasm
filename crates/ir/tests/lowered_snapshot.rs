@@ -655,6 +655,17 @@ fn lowered_snapshot_function_decl() {
 }
 
 #[test]
+fn lowered_top_level_function_captures_helper_locals() {
+    let program = parse_resolve_lower(
+        "var helper = Object.getOwnPropertyDescriptor;\n\
+         function verify(obj, name) { return helper(obj, name); }\n\
+         verify({ x: 1 }, \"x\");",
+    );
+
+    validate_lowered(&program).expect("top-level helper capture should validate");
+}
+
+#[test]
 fn lowered_snapshot_generator_function_metadata() {
     let program = parse_resolve_lower("function* gen() {}");
     assert_eq!(program.functions.len(), 1);

@@ -38,17 +38,8 @@ pub fn lower_program_with_module_url(
     let mut function_signatures =
         collect_function_signatures(program, &function_ids, program_is_strict);
     let top_level_local_names = collect_top_level_local_names(program)?;
-    let map_callback_function_names = collect_array_map_callback_function_names(program);
-    let capture_function_names = map_callback_function_names
-        .union(&generator_function_names)
-        .cloned()
-        .collect::<HashSet<_>>();
-    let function_captures = collect_callback_function_captures(
-        program,
-        &function_ids,
-        &top_level_local_names,
-        &capture_function_names,
-    )?;
+    let function_captures =
+        collect_top_level_function_captures(program, &function_ids, &top_level_local_names)?;
     let function_mutable_captures =
         collect_callback_function_mutable_captures(program, &function_captures);
     let class_method_captures = collect_class_method_captures(program, &function_ids);
@@ -1028,260 +1019,13 @@ fn top_level_function_body_references_name(
     Ok(captures.iter().any(|capture| capture == name))
 }
 
-fn collect_array_map_callback_function_names(program: &[ResolvedStmt]) -> HashSet<String> {
-    let mut names = HashSet::new();
-    for stmt in program {
-        collect_array_map_callback_function_names_in_stmt(stmt, &mut names);
-    }
-    names
-}
-
-fn collect_array_map_callback_function_names_in_stmt(
-    stmt: &ResolvedStmt,
-    names: &mut HashSet<String>,
-) {
-    match stmt {
-        ResolvedStmt::Let(_, expr)
-        | ResolvedStmt::DestructureLet { expr, .. }
-        | ResolvedStmt::Assign(_, expr)
-        | ResolvedStmt::Expr(expr)
-        | ResolvedStmt::Return(expr)
-        | ResolvedStmt::Throw(expr) => {
-            collect_array_map_callback_function_names_in_expr(expr, names);
-        }
-        ResolvedStmt::If {
-            condition,
-            then_body,
-            else_body,
-        } => {
-            collect_array_map_callback_function_names_in_expr(condition, names);
-            for stmt in then_body.iter().chain(else_body) {
-                collect_array_map_callback_function_names_in_stmt(stmt, names);
-            }
-        }
-        ResolvedStmt::While { condition, body } | ResolvedStmt::DoWhile { body, condition } => {
-            collect_array_map_callback_function_names_in_expr(condition, names);
-            for stmt in body {
-                collect_array_map_callback_function_names_in_stmt(stmt, names);
-            }
-        }
-        ResolvedStmt::For {
-            init,
-            condition,
-            update,
-            body,
-        } => {
-            if let Some(init) = init {
-                collect_array_map_callback_function_names_in_stmt(init, names);
-            }
-            if let Some(condition) = condition {
-                collect_array_map_callback_function_names_in_expr(condition, names);
-            }
-            if let Some(update) = update {
-                collect_array_map_callback_function_names_in_expr(update, names);
-            }
-            for stmt in body {
-                collect_array_map_callback_function_names_in_stmt(stmt, names);
-            }
-        }
-        ResolvedStmt::ForIn { iter, body, .. }
-        | ResolvedStmt::ForOf { iter, body, .. }
-        | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
-            collect_array_map_callback_function_names_in_expr(iter, names);
-            for stmt in body {
-                collect_array_map_callback_function_names_in_stmt(stmt, names);
-            }
-        }
-        ResolvedStmt::TryCatch {
-            try_block,
-            catch_block,
-            finally_block,
-            ..
-        } => {
-            for stmt in try_block {
-                collect_array_map_callback_function_names_in_stmt(stmt, names);
-            }
-            if let Some(block) = catch_block {
-                for stmt in block {
-                    collect_array_map_callback_function_names_in_stmt(stmt, names);
-                }
-            }
-            if let Some(block) = finally_block {
-                for stmt in block {
-                    collect_array_map_callback_function_names_in_stmt(stmt, names);
-                }
-            }
-        }
-        ResolvedStmt::Switch { expr, cases } => {
-            collect_array_map_callback_function_names_in_expr(expr, names);
-            for (case_expr, body) in cases {
-                if let Some(case_expr) = case_expr {
-                    collect_array_map_callback_function_names_in_expr(case_expr, names);
-                }
-                for stmt in body {
-                    collect_array_map_callback_function_names_in_stmt(stmt, names);
-                }
-            }
-        }
-        ResolvedStmt::Labeled { body, .. } => {
-            collect_array_map_callback_function_names_in_stmt(body, names);
-        }
-        ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
-            collect_array_map_callback_function_names_in_expr(expr, names);
-        }
-        ResolvedStmt::Block { statements, .. } => {
-            for stmt in statements {
-                collect_array_map_callback_function_names_in_stmt(stmt, names);
-            }
-        }
-        ResolvedStmt::AmbientValue(_)
-        | ResolvedStmt::Function { .. }
-        | ResolvedStmt::ClassDecl { .. }
-        | ResolvedStmt::Break { .. }
-        | ResolvedStmt::Continue { .. } => {}
-    }
-}
-
-fn collect_array_map_callback_function_names_in_expr(
-    expr: &ResolvedExpr,
-    names: &mut HashSet<String>,
-) {
-    match expr {
-        ResolvedExpr::Await { expr } => {
-            collect_array_map_callback_function_names_in_expr(expr, names);
-        }
-        ResolvedExpr::Yield { expr, .. } => {
-            if let Some(expr) = expr {
-                collect_array_map_callback_function_names_in_expr(expr, names);
-            }
-        }
-        ResolvedExpr::MethodCall {
-            object,
-            method,
-            args,
-            ..
-        } => {
-            collect_array_map_callback_function_names_in_expr(object, names);
-            if method == "map"
-                && let Some(ResolvedExpr::Ident(callback)) = args.first()
-            {
-                names.insert(callback.clone());
-            }
-            for arg in args {
-                collect_array_map_callback_function_names_in_expr(arg, names);
-            }
-        }
-        ResolvedExpr::Unary { expr, .. }
-        | ResolvedExpr::Spread(expr)
-        | ResolvedExpr::BuiltinProperty { object: expr, .. }
-        | ResolvedExpr::PropertyAccess { object: expr, .. }
-        | ResolvedExpr::OptionalPropertyAccess { object: expr, .. } => {
-            collect_array_map_callback_function_names_in_expr(expr, names);
-        }
-        ResolvedExpr::Binary { left, right, .. }
-        | ResolvedExpr::ComputedIndex {
-            object: left,
-            index: right,
-        } => {
-            collect_array_map_callback_function_names_in_expr(left, names);
-            collect_array_map_callback_function_names_in_expr(right, names);
-        }
-        ResolvedExpr::Ternary {
-            condition,
-            then_expr,
-            else_expr,
-            ..
-        } => {
-            collect_array_map_callback_function_names_in_expr(condition, names);
-            collect_array_map_callback_function_names_in_expr(then_expr, names);
-            collect_array_map_callback_function_names_in_expr(else_expr, names);
-        }
-        ResolvedExpr::Call { callee, args, .. }
-        | ResolvedExpr::OptionalCall { callee, args, .. } => {
-            collect_array_map_callback_function_names_in_expr(callee, names);
-            for arg in args {
-                collect_array_map_callback_function_names_in_expr(arg, names);
-            }
-        }
-        ResolvedExpr::Assign { expr, .. }
-        | ResolvedExpr::LogicalAssign { expr, .. }
-        | ResolvedExpr::LogicalPropertyAssign { expr, .. } => {
-            collect_array_map_callback_function_names_in_expr(expr, names);
-        }
-        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
-            collect_array_map_callback_function_names_in_expr(object, names);
-            collect_array_map_callback_function_names_in_expr(expr, names);
-        }
-        ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
-            collect_array_map_callback_function_names_in_expr(key, names);
-            collect_array_map_callback_function_names_in_expr(expr, names);
-        }
-        ResolvedExpr::LogicalComputedMemberAssign {
-            object, key, expr, ..
-        } => {
-            collect_array_map_callback_function_names_in_expr(object, names);
-            collect_array_map_callback_function_names_in_expr(key, names);
-            collect_array_map_callback_function_names_in_expr(expr, names);
-        }
-        ResolvedExpr::Array(elements) => {
-            for element in elements {
-                if let ResolvedArrayElement::Present(expr) = element {
-                    collect_array_map_callback_function_names_in_expr(expr, names);
-                }
-            }
-        }
-        ResolvedExpr::Object(props) => {
-            for prop in props {
-                if let Some(key) = prop.computed_key() {
-                    collect_array_map_callback_function_names_in_expr(key, names);
-                }
-                collect_array_map_callback_function_names_in_expr(prop.value(), names);
-            }
-        }
-        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
-            for arg in args {
-                collect_array_map_callback_function_names_in_expr(arg, names);
-            }
-        }
-        ResolvedExpr::OptionalComputedIndex { object, index, .. }
-        | ResolvedExpr::PropertyAssignDynamic {
-            object, key: index, ..
-        } => {
-            collect_array_map_callback_function_names_in_expr(object, names);
-            collect_array_map_callback_function_names_in_expr(index, names);
-        }
-        ResolvedExpr::PropertyAssign { object, value, .. } => {
-            collect_array_map_callback_function_names_in_expr(object, names);
-            collect_array_map_callback_function_names_in_expr(value, names);
-        }
-        ResolvedExpr::ArrowFn { body, .. } => {
-            collect_array_map_callback_function_names_in_expr(body, names);
-        }
-        ResolvedExpr::FunctionExpr { .. }
-        | ResolvedExpr::ClassExpr { .. }
-        | ResolvedExpr::Number(_)
-        | ResolvedExpr::DecimalNumber(_)
-        | ResolvedExpr::BigIntLiteral { .. }
-        | ResolvedExpr::String(_)
-        | ResolvedExpr::Bool(_)
-        | ResolvedExpr::Null
-        | ResolvedExpr::Undefined
-        | ResolvedExpr::This { .. }
-        | ResolvedExpr::NewTarget { .. }
-        | ResolvedExpr::ImportMeta { .. }
-        | ResolvedExpr::Ident(_)
-        | ResolvedExpr::ModuleLoad { .. } => {}
-    }
-}
-
-fn collect_callback_function_captures(
+fn collect_top_level_function_captures(
     program: &[ResolvedStmt],
     function_ids: &HashMap<String, FuncId>,
     top_level_local_names: &HashSet<String>,
-    callback_names: &HashSet<String>,
 ) -> Result<HashMap<FuncId, Vec<String>>, Diagnostic> {
     let mut captures = HashMap::new();
-    if callback_names.is_empty() || top_level_local_names.is_empty() {
+    if top_level_local_names.is_empty() {
         return Ok(captures);
     }
 
@@ -1292,10 +1036,6 @@ fn collect_callback_function_captures(
         else {
             continue;
         };
-        if !callback_names.contains(name) {
-            continue;
-        }
-
         let mut excluded = HashSet::new();
         excluded.insert(name.clone());
         for param in params {

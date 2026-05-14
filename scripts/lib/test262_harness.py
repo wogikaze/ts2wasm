@@ -74,11 +74,9 @@ COMPILE_NEGATIVE_PHASES = {"parse", "early", "resolution"}
 # method calls like assert.sameValue() dispatch correctly through
 # object_function_props.
 #
-# The inline stubs below use `var assert = {}; assert.sameValue = ...`
-# pattern which the compiler handles.  The real test262 harness files use
-# `function assert() { ... assert._toString(...) ... }` which requires
-# self-referencing named functions — a pattern the compiler does not yet
-# support (see self-closure capture needed for function hoisting).
+# The inline stubs below keep the real harness shape that `assert` is callable
+# and also has method properties, while avoiding the real self-referencing
+# `_toString` helper body that needs broader function-hoisting capture support.
 # ---------------------------------------------------------------------------
 
 # Known harness globals that the coverage runner injects.
@@ -102,7 +100,15 @@ function $DONOTEVALUATE() {
 """
 
 INLINE_ASSERT_JS = r"""
-var assert = {};
+function assert(mustBeTrue, message) {
+  if (mustBeTrue === true) {
+    return;
+  }
+  if (message === undefined) {
+    message = "Expected true";
+  }
+  throw new Test262Error(message);
+}
 
 assert.sameValue = function(actual, expected) {
   var same = actual === expected;

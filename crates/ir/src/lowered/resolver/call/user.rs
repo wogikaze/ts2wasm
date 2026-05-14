@@ -356,21 +356,6 @@ impl super::super::Resolver {
         let func_id = match self.resolve_func(func_name) {
             Ok(func_id) => func_id,
             Err(_) if self.resolve_local(func_name).is_ok() => {
-                // Check if this local is a function parameter (e.g., typed
-                // through a conditional type alias) for a more specific diagnostic.
-                if let Ok(local_id) = self.resolve_local(func_name)
-                    && self.ctx.symbols.param_locals.contains(&local_id)
-                {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-5196: callable parameter `{func_name}(...)` typed through a conditional type is not supported in this milestone"
-                        ),
-                        span: Some(span),
-
-                        phase: None,
-                    });
-                }
                 // Function-valued local: emit a HeapClosureCall to dispatch
                 // at runtime based on the value's tag. The HeapClosureCall
                 // runtime handles both DirectLocalToken and HeapObject
