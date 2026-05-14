@@ -78,6 +78,18 @@ FRONTEND_DEP_DENY = {
     "crates/ir",            # #legacy: pending P7 resolver decomposition
 }
 
+# Crates that frontend/syntax must NOT depend on (reverse dependency gate).
+# These ensure frontend ownership boundaries are not eroded by importing
+# backend/runtime/capability logic in parser-level code.
+FRONTEND_SYNTAX_BOUNDARY_DENY = {
+    "ts2wasm-backend-wasm",
+    "ts2wasm-runtime-catalog",
+    "ts2wasm-runtime-abi",
+    "ts2wasm-ir",
+    "ts2wasm-compiler",
+    "ts2wasm-cli",
+}
+
 LINE_COUNT_SUFFIXES = {
     ".md",
     ".py",
@@ -558,6 +570,41 @@ def check_backend_frontend_dependency() -> None:
     if found:
         # Legacy dependencies are WARN only — do not hard-fail.
         pass
+
+
+def check_frontend_syntax_boundary() -> None:
+    """Check that frontend/syntax crates do not depend on backend/runtime via Cargo.toml.
+
+    Frontend/syntax are parser-level crates that must not import backend,
+    runtime, IR, compiler, or CLI logic.  Only shared definitions (shared,
+    source, diagnostic, syntax) are permitted.
+    """
+    frontend_crates = ["crates/frontend", "crates/syntax"]
+    found_error = False
+    for crate_rel in frontend_crates:
+        cargo_path = REPO_ROOT / crate_rel / "Cargo.toml"
+        if not cargo_path.exists():
+            continue
+        text = cargo_path.read_text()
+        deps_match = re.search(
+            r"^\[dependencies\]\s*$(.+?)(?=^\s*\[|\Z)",
+            text,
+            re.MULTILINE | re.DOTALL,
+        )
+        if not deps_match:
+            continue
+        deps_section = deps_match.group(1)
+        for deny_crate in FRONTEND_SYNTAX_BOUNDARY_DENY:
+            if deny_crate in deps_section:
+                print(
+                    f"check_architecture_rules: ERROR {crate_rel}/Cargo.toml depends on "
+                    f"{deny_crate} which violates frontend/syntax ownership boundary; "
+                    f"frontend/syntax must not depend on backend/runtime/IR/compiler/CLI.",
+                    file=sys.stderr,
+                )
+                found_error = True
+    if found_error:
+        sys.exit(1)
 
 
 # --- #262: Strengthen checks ---
@@ -1620,6 +1667,11 @@ def main():
 
     try:
         check_backend_frontend_dependency()
+    except SystemExit:
+        errors += 1
+
+    try:
+        check_frontend_syntax_boundary()
     except SystemExit:
         errors += 1
 
