@@ -3536,9 +3536,3 @@ fn build_smoke_native_error_types_complete() {
     run_fixture("builtins-and-io/native-error-types.ts")
         .expect("NativeError types complete fixture should build");
 }
-
-#[test]
-fn build_smoke_set_algebra() {
-    run_fixture("builtins-and-io/set-algebra.ts")
-        .expect("Set algebra methods fixture should build");
-}

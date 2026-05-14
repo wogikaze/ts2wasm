@@ -2144,6 +2144,11 @@ fn json_replacer_reviver_matches_node_output() {
         "fixtures/builtins-and-io/json-stringify-space.ts",
         "fixtures/builtins-and-io/json-stringify-space-string.ts",
         "fixtures/builtins-and-io/json-parse-reviver.ts",
+        "fixtures/builtins-and-io/json-parse-reviver-noop.ts",
+        "fixtures/builtins-and-io/json-parse-reviver-transform.ts",
+        "fixtures/builtins-and-io/json-parse-reviver-drop.ts",
+        "fixtures/builtins-and-io/json-parse-reviver-nested.ts",
+        "fixtures/builtins-and-io/json-parse-reviver-array.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -2216,19 +2221,6 @@ fn json_stringify_replacer_unsupported_forms_report_issue_052() {
         "fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts",
         "issue-052: JSON.stringify array replacer property lists outside the supported static String/Number property-name and ignored-entry subset are not supported yet",
     );
-}
-
-#[test]
-fn json_replacer_reviver_matches_node_output() {
-    for fixture in [
-        "fixtures/builtins-and-io/json-parse-reviver-noop.ts",
-        "fixtures/builtins-and-io/json-parse-reviver-transform.ts",
-        "fixtures/builtins-and-io/json-parse-reviver-drop.ts",
-        "fixtures/builtins-and-io/json-parse-reviver-nested.ts",
-        "fixtures/builtins-and-io/json-parse-reviver-array.ts",
-    ] {
-        assert_fixture_matches_node(fixture);
-    }
 }
 
 #[test]
