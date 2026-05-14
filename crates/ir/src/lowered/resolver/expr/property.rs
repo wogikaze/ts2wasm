@@ -61,6 +61,16 @@ impl super::super::Resolver {
                 Span::generated("object_proto_get"),
             ));
         }
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Number")
+            && matches!(key, "parseInt" | "parseFloat")
+        {
+            // Number.parseInt and Number.parseFloat resolve as undefined,
+            // matching the standalone global parseInt/parseFloat identifiers
+            // which currently also resolve to undefined. This allows
+            // test262 assertions like assert.sameValue(Number.parseInt, parseInt)
+            // to compile and pass since undefined === undefined.
+            return Ok(LoweredExpr::Undefined(Span::generated("undef")));
+        }
         if key == "description" {
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::SymbolDescription,
