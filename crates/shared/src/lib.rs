@@ -7,7 +7,7 @@ pub mod diagnostic;
 pub mod test_helpers;
 pub mod test_status;
 
-pub use abi::{AbiFunction, AbiType, RuntimeAbi};
+pub use abi::{AbiFunction, AbiType, ExecutionTarget, RuntimeAbi};
 pub use ast::{
     ArrayLiteralElement, BinaryOp, ClassPrivateElement, ClassStaticBlock, ExportNamedSpecifier,
     Expr, ImportDefaultSpecifier, ImportNamedSpecifier, ImportNamespaceSpecifier, LogicalAssignOp,
