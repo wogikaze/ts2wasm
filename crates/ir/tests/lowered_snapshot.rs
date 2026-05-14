@@ -1049,6 +1049,29 @@ fn lowered_generator_function_captures_top_level_assignment() {
 }
 
 #[test]
+fn lowered_generator_object_accessor_captures_top_level_assignment() {
+    let program = parse_resolve_lower(
+        "var yieldSet, obj, iter;\n\
+         function* gen() {\n\
+           obj = {\n\
+             get [yield]() { return \"get yield\"; },\n\
+             set [yield](param) { yieldSet = param; }\n\
+           };\n\
+         }\n\
+         iter = gen();\n\
+         iter.next();\n\
+         iter.next(\"first\");\n\
+         iter.next(\"second\");\n\
+         obj.first;\n\
+         obj.second = \"set yield\";\n\
+         yieldSet;",
+    );
+
+    validate_lowered(&program)
+        .expect("generator object accessor assignment capture should validate");
+}
+
+#[test]
 fn lowered_object_computed_method_key_uses_to_string_for_static_dispatch() {
     let program = parse_resolve_lower(
         "let assert = { sameValue(actual, expected, message) { return true; } };\n\

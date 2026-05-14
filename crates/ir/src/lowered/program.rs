@@ -41,7 +41,7 @@ pub fn lower_program_with_module_url(
     let function_captures =
         collect_top_level_function_captures(program, &function_ids, &top_level_local_names)?;
     let function_mutable_captures =
-        collect_callback_function_mutable_captures(program, &function_captures);
+        collect_callback_function_mutable_captures(program, &function_captures)?;
     let class_method_captures = collect_class_method_captures(program, &function_ids);
     let class_method_mutable_captures =
         collect_class_method_mutable_captures(program, &function_ids);
@@ -1221,6 +1221,7 @@ fn collect_top_level_function_captures(
 
         let mut found = Vec::new();
         collect_stmt_captures(body, &excluded, &mut found);
+        collect_nested_function_captures_in_stmts(body, &excluded, &mut found)?;
 
         let mut direct_callees = found
             .iter()
@@ -1270,6 +1271,231 @@ fn collect_top_level_function_captures(
     }
 
     Ok(captures)
+}
+
+fn collect_nested_function_captures_in_stmts(
+    stmts: &[ResolvedStmt],
+    outer_excluded: &HashSet<String>,
+    captures: &mut Vec<String>,
+) -> Result<(), Diagnostic> {
+    for stmt in stmts {
+        match stmt {
+            ResolvedStmt::Let(_, expr)
+            | ResolvedStmt::DestructureLet { expr, .. }
+            | ResolvedStmt::Assign(_, expr)
+            | ResolvedStmt::Expr(expr)
+            | ResolvedStmt::Return(expr)
+            | ResolvedStmt::Throw(expr) => {
+                collect_nested_function_captures_in_expr(expr, outer_excluded, captures)?;
+            }
+            ResolvedStmt::If {
+                condition,
+                then_body,
+                else_body,
+            } => {
+                collect_nested_function_captures_in_expr(condition, outer_excluded, captures)?;
+                collect_nested_function_captures_in_stmts(then_body, outer_excluded, captures)?;
+                collect_nested_function_captures_in_stmts(else_body, outer_excluded, captures)?;
+            }
+            ResolvedStmt::While { condition, body } | ResolvedStmt::DoWhile { condition, body } => {
+                collect_nested_function_captures_in_expr(condition, outer_excluded, captures)?;
+                collect_nested_function_captures_in_stmts(body, outer_excluded, captures)?;
+            }
+            ResolvedStmt::For {
+                init,
+                condition,
+                update,
+                body,
+            } => {
+                if let Some(init) = init {
+                    collect_nested_function_captures_in_stmts(
+                        std::slice::from_ref(init.as_ref()),
+                        outer_excluded,
+                        captures,
+                    )?;
+                }
+                if let Some(condition) = condition {
+                    collect_nested_function_captures_in_expr(condition, outer_excluded, captures)?;
+                }
+                if let Some(update) = update {
+                    collect_nested_function_captures_in_expr(update, outer_excluded, captures)?;
+                }
+                collect_nested_function_captures_in_stmts(body, outer_excluded, captures)?;
+            }
+            ResolvedStmt::ForIn { iter, body, .. }
+            | ResolvedStmt::ForOf { iter, body, .. }
+            | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
+                collect_nested_function_captures_in_expr(iter, outer_excluded, captures)?;
+                collect_nested_function_captures_in_stmts(body, outer_excluded, captures)?;
+            }
+            ResolvedStmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                collect_nested_function_captures_in_stmts(try_block, outer_excluded, captures)?;
+                if let Some(block) = catch_block {
+                    collect_nested_function_captures_in_stmts(block, outer_excluded, captures)?;
+                }
+                if let Some(block) = finally_block {
+                    collect_nested_function_captures_in_stmts(block, outer_excluded, captures)?;
+                }
+            }
+            ResolvedStmt::Switch { expr, cases } => {
+                collect_nested_function_captures_in_expr(expr, outer_excluded, captures)?;
+                for (case_expr, body) in cases {
+                    if let Some(case_expr) = case_expr {
+                        collect_nested_function_captures_in_expr(
+                            case_expr,
+                            outer_excluded,
+                            captures,
+                        )?;
+                    }
+                    collect_nested_function_captures_in_stmts(body, outer_excluded, captures)?;
+                }
+            }
+            ResolvedStmt::Block { statements, .. } => {
+                collect_nested_function_captures_in_stmts(statements, outer_excluded, captures)?;
+            }
+            ResolvedStmt::Labeled { body, .. } => {
+                collect_nested_function_captures_in_stmts(
+                    std::slice::from_ref(body.as_ref()),
+                    outer_excluded,
+                    captures,
+                )?;
+            }
+            ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
+                collect_nested_function_captures_in_expr(expr, outer_excluded, captures)?;
+            }
+            ResolvedStmt::AmbientValue(_)
+            | ResolvedStmt::Function { .. }
+            | ResolvedStmt::ClassDecl { .. }
+            | ResolvedStmt::Break { .. }
+            | ResolvedStmt::Continue { .. } => {}
+        }
+    }
+    Ok(())
+}
+
+fn collect_nested_function_captures_in_expr(
+    expr: &ResolvedExpr,
+    outer_excluded: &HashSet<String>,
+    captures: &mut Vec<String>,
+) -> Result<(), Diagnostic> {
+    match expr {
+        ResolvedExpr::FunctionExpr { params, body, .. } => {
+            let mut nested_excluded = outer_excluded.clone();
+            nested_excluded.extend(resolved_param_names(params)?);
+            collect_declared_names_in_stmts(body, &mut nested_excluded);
+            collect_stmt_captures(body, &nested_excluded, captures);
+            collect_nested_function_captures_in_stmts(body, &nested_excluded, captures)?;
+        }
+        ResolvedExpr::Object(props) => {
+            for prop in props {
+                if let Some(key) = prop.computed_key() {
+                    collect_nested_function_captures_in_expr(key, outer_excluded, captures)?;
+                }
+                collect_nested_function_captures_in_expr(prop.value(), outer_excluded, captures)?;
+            }
+        }
+        ResolvedExpr::Await { expr }
+        | ResolvedExpr::Yield {
+            expr: Some(expr), ..
+        }
+        | ResolvedExpr::Unary { expr, .. }
+        | ResolvedExpr::Spread(expr) => {
+            collect_nested_function_captures_in_expr(expr, outer_excluded, captures)?;
+        }
+        ResolvedExpr::Yield { expr: None, .. } => {}
+        ResolvedExpr::Binary { left, right, .. } => {
+            collect_nested_function_captures_in_expr(left, outer_excluded, captures)?;
+            collect_nested_function_captures_in_expr(right, outer_excluded, captures)?;
+        }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            collect_nested_function_captures_in_expr(condition, outer_excluded, captures)?;
+            collect_nested_function_captures_in_expr(then_expr, outer_excluded, captures)?;
+            collect_nested_function_captures_in_expr(else_expr, outer_excluded, captures)?;
+        }
+        ResolvedExpr::Call { callee, args, .. }
+        | ResolvedExpr::OptionalCall { callee, args, .. } => {
+            collect_nested_function_captures_in_expr(callee, outer_excluded, captures)?;
+            for arg in args {
+                collect_nested_function_captures_in_expr(arg, outer_excluded, captures)?;
+            }
+        }
+        ResolvedExpr::Assign { expr, .. }
+        | ResolvedExpr::LogicalAssign { expr, .. }
+        | ResolvedExpr::LogicalPropertyAssign { expr, .. } => {
+            collect_nested_function_captures_in_expr(expr, outer_excluded, captures)?;
+        }
+        ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. }
+        | ResolvedExpr::LogicalComputedMemberAssign { key, expr, .. } => {
+            collect_nested_function_captures_in_expr(key, outer_excluded, captures)?;
+            collect_nested_function_captures_in_expr(expr, outer_excluded, captures)?;
+        }
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            collect_nested_function_captures_in_expr(object, outer_excluded, captures)?;
+            collect_nested_function_captures_in_expr(expr, outer_excluded, captures)?;
+        }
+        ResolvedExpr::Array(elements) => {
+            for element in elements {
+                if let ResolvedArrayElement::Present(expr) = element {
+                    collect_nested_function_captures_in_expr(expr, outer_excluded, captures)?;
+                }
+            }
+        }
+        ResolvedExpr::ComputedIndex { object, index }
+        | ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
+            collect_nested_function_captures_in_expr(object, outer_excluded, captures)?;
+            collect_nested_function_captures_in_expr(index, outer_excluded, captures)?;
+        }
+        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+            for arg in args {
+                collect_nested_function_captures_in_expr(arg, outer_excluded, captures)?;
+            }
+        }
+        ResolvedExpr::BuiltinProperty { object, .. }
+        | ResolvedExpr::PropertyAccess { object, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object, .. } => {
+            collect_nested_function_captures_in_expr(object, outer_excluded, captures)?;
+        }
+        ResolvedExpr::MethodCall { object, args, .. } => {
+            collect_nested_function_captures_in_expr(object, outer_excluded, captures)?;
+            for arg in args {
+                collect_nested_function_captures_in_expr(arg, outer_excluded, captures)?;
+            }
+        }
+        ResolvedExpr::PropertyAssign { object, value, .. } => {
+            collect_nested_function_captures_in_expr(object, outer_excluded, captures)?;
+            collect_nested_function_captures_in_expr(value, outer_excluded, captures)?;
+        }
+        ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+            collect_nested_function_captures_in_expr(object, outer_excluded, captures)?;
+            collect_nested_function_captures_in_expr(key, outer_excluded, captures)?;
+            collect_nested_function_captures_in_expr(value, outer_excluded, captures)?;
+        }
+        ResolvedExpr::ArrowFn { .. }
+        | ResolvedExpr::ClassExpr { .. }
+        | ResolvedExpr::This { .. }
+        | ResolvedExpr::NewTarget { .. }
+        | ResolvedExpr::ImportMeta { .. }
+        | ResolvedExpr::Ident(_)
+        | ResolvedExpr::ModuleLoad { .. }
+        | ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
+        | ResolvedExpr::BigIntLiteral { .. }
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined => {}
+    }
+    Ok(())
 }
 
 fn collect_direct_function_call_targets_in_stmts(
@@ -1493,10 +1719,10 @@ fn collect_direct_function_call_targets_in_expr(expr: &ResolvedExpr, targets: &m
 fn collect_callback_function_mutable_captures(
     program: &[ResolvedStmt],
     function_captures: &HashMap<FuncId, Vec<String>>,
-) -> HashMap<FuncId, Vec<String>> {
+) -> Result<HashMap<FuncId, Vec<String>>, Diagnostic> {
     let mut mutable_captures = HashMap::new();
     if function_captures.is_empty() {
-        return mutable_captures;
+        return Ok(mutable_captures);
     }
 
     let function_ids = collect_function_ids(program).unwrap_or_default();
@@ -1510,9 +1736,13 @@ fn collect_callback_function_mutable_captures(
         let Some(captures) = function_captures.get(&func_id) else {
             continue;
         };
+        let object_method_mutable_captures = collect_block_object_method_mutable_captures(body)?;
         let mutable = captures
             .iter()
-            .filter(|capture| block_assigns_any_name(body, std::slice::from_ref(capture)))
+            .filter(|capture| {
+                block_assigns_any_name(body, std::slice::from_ref(capture))
+                    || object_method_mutable_captures.contains(*capture)
+            })
             .cloned()
             .collect::<Vec<_>>();
         if !mutable.is_empty() {
@@ -1520,7 +1750,7 @@ fn collect_callback_function_mutable_captures(
         }
     }
 
-    mutable_captures
+    Ok(mutable_captures)
 }
 
 fn collect_mutable_function_capture_names(
