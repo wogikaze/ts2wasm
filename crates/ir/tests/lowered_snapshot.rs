@@ -859,6 +859,33 @@ fn lowered_test262_verify_property_accepts_static_object_method_descriptor() {
 }
 
 #[test]
+fn lowered_test262_verify_property_accepts_static_object_method_names() {
+    let program = parse_resolve_lower(
+        "function verifyProperty(obj, name, desc) { throw null; }\n\
+         let namedSym = Symbol(\"test262\");\n\
+         let anonSym = Symbol();\n\
+         let obj = { id() {}, [anonSym]() {}, [namedSym]() {} };\n\
+         verifyProperty(obj.id, \"name\", { value: \"id\", writable: false, enumerable: false, configurable: true });\n\
+         verifyProperty(obj[anonSym], \"name\", { value: \"\", writable: false, enumerable: false, configurable: true });\n\
+         verifyProperty(obj[namedSym], \"name\", { value: \"[test262]\", writable: false, enumerable: false, configurable: true });",
+    );
+
+    validate_lowered(&program).expect("static object method names should validate");
+    assert!(matches!(
+        program.top_level_statements.get(4),
+        Some(LoweredStmt::Expr(LoweredExpr::Bool(true, _), _))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(5),
+        Some(LoweredStmt::Expr(LoweredExpr::Bool(true, _), _))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(6),
+        Some(LoweredStmt::Expr(LoweredExpr::Bool(true, _), _))
+    ));
+}
+
+#[test]
 fn lowered_generator_function_captures_top_level_assignment() {
     let program = parse_resolve_lower(
         "var obj;\n\

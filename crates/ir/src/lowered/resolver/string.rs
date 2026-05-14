@@ -67,9 +67,27 @@ pub(super) fn update_symbol_value_local(
 ) {
     if resolved_expr_is_symbol_value(ctx, expr) {
         ctx.facts.symbol_value_locals.insert(local_id);
+        if let Some(description) = resolved_expr_static_symbol_description(ctx, expr) {
+            ctx.facts
+                .symbol_description_locals
+                .insert(local_id, description);
+        } else {
+            ctx.facts.symbol_description_locals.remove(&local_id);
+        }
     } else {
         ctx.facts.symbol_value_locals.remove(&local_id);
+        ctx.facts.symbol_description_locals.remove(&local_id);
     }
+}
+
+pub(super) fn symbol_local_name(ctx: &LoweringCtx, local_id: LocalId) -> Option<String> {
+    let description = ctx.facts.symbol_description_locals.get(&local_id)?;
+    Some(
+        description
+            .as_ref()
+            .map(|value| format!("[{value}]"))
+            .unwrap_or_default(),
+    )
 }
 
 pub(super) fn resolved_expr_static_string_value(
@@ -170,6 +188,45 @@ fn resolved_expr_is_symbol_value(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool
                 && matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Symbol")
         }
         _ => false,
+    }
+}
+
+fn resolved_expr_static_symbol_description(
+    ctx: &LoweringCtx,
+    expr: &ResolvedExpr,
+) -> Option<Option<String>> {
+    match expr {
+        ResolvedExpr::Ident(name) => {
+            let local_id = ctx.resolve_local(name).ok()?;
+            ctx.facts.symbol_description_locals.get(&local_id).cloned()
+        }
+        ResolvedExpr::Call { callee, args, .. } => {
+            let ResolvedExpr::Ident(name) = callee.as_ref() else {
+                return None;
+            };
+            if name != "Symbol" {
+                return None;
+            }
+            match args.as_slice() {
+                [] => Some(None),
+                [ResolvedExpr::String(description)] => Some(Some(description.clone())),
+                _ => None,
+            }
+        }
+        ResolvedExpr::MethodCall {
+            object,
+            method,
+            args,
+            ..
+        } if method == "for"
+            && matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Symbol") =>
+        {
+            match args.as_slice() {
+                [ResolvedExpr::String(description)] => Some(Some(description.clone())),
+                _ => None,
+            }
+        }
+        _ => None,
     }
 }
 

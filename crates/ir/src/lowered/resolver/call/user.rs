@@ -12,6 +12,11 @@ use std::collections::HashMap;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 
+struct StaticFunctionMetadataTarget {
+    func_id: FuncId,
+    name: String,
+}
+
 impl super::super::Resolver {
     pub(crate) fn lower_call_expr(
         &mut self,
@@ -701,7 +706,7 @@ impl super::super::Resolver {
 
     fn lower_static_test262_verify_property(&self, args: &[ResolvedExpr]) -> Option<LoweredExpr> {
         let [
-            ResolvedExpr::Ident(target),
+            target,
             ResolvedExpr::String(key),
             ResolvedExpr::Object(desc),
             ..,
@@ -710,8 +715,11 @@ impl super::super::Resolver {
             return None;
         };
         if !matches!(key.as_str(), "name" | "length") {
+            let ResolvedExpr::Ident(target_name) = target else {
+                return None;
+            };
             return self
-                .static_object_property_descriptor_matches(target, key, desc)
+                .static_object_property_descriptor_matches(target_name, key, desc)
                 .then(|| LoweredExpr::Bool(true, Span::generated("test262_verify_property")));
         }
         if !self.static_function_descriptor_matches(target, key, desc) {
@@ -725,7 +733,7 @@ impl super::super::Resolver {
 
     fn static_function_descriptor_matches(
         &self,
-        target: &str,
+        target: &ResolvedExpr,
         key: &str,
         desc: &[ResolvedObjectProp],
     ) -> bool {
@@ -737,27 +745,22 @@ impl super::super::Resolver {
 
     fn static_function_descriptor_value_matches(
         &self,
-        target: &str,
+        target: &ResolvedExpr,
         key: &str,
         desc: &[ResolvedObjectProp],
     ) -> bool {
+        let Some(metadata) = self.static_function_metadata_target(target) else {
+            return false;
+        };
         match key {
-            "name" => {
-                resolved_object_string_prop(desc, "value").is_some_and(|value| value == target)
-            }
+            "name" => resolved_object_string_prop(desc, "value")
+                .is_some_and(|value| value == metadata.name),
             "length" => {
-                let local = match self.resolve_local(target) {
-                    Ok(local) => local,
-                    Err(_) => return false,
-                };
-                let Some(closure) = self.ctx.facts.arrow_locals.get(&local) else {
-                    return false;
-                };
                 let Some(length) = self
                     .ctx
                     .symbols
                     .function_signatures
-                    .get(&closure.func_id)
+                    .get(&metadata.func_id)
                     .and_then(|signature| signature.metadata_length)
                 else {
                     return false;
@@ -765,6 +768,62 @@ impl super::super::Resolver {
                 resolved_object_number_prop(desc, "value") == Some(length as i32)
             }
             _ => false,
+        }
+    }
+
+    fn static_function_metadata_target(
+        &self,
+        target: &ResolvedExpr,
+    ) -> Option<StaticFunctionMetadataTarget> {
+        match target {
+            ResolvedExpr::Ident(name) => {
+                let local = self.resolve_local(name).ok()?;
+                let closure = self.ctx.facts.arrow_locals.get(&local)?;
+                Some(StaticFunctionMetadataTarget {
+                    func_id: closure.func_id,
+                    name: name.clone(),
+                })
+            }
+            ResolvedExpr::PropertyAccess { object, key, .. } => {
+                let ResolvedExpr::Ident(object_name) = object.as_ref() else {
+                    return None;
+                };
+                let object_local = self.resolve_local(object_name).ok()?;
+                let func_id = self
+                    .ctx
+                    .classes
+                    .object_function_props
+                    .get(&object_local)
+                    .and_then(|props| props.get(&ObjectAccessorKey::Property(key.clone())))
+                    .copied()?;
+                Some(StaticFunctionMetadataTarget {
+                    func_id,
+                    name: key.clone(),
+                })
+            }
+            ResolvedExpr::ComputedIndex { object, index } => {
+                let ResolvedExpr::Ident(object_name) = object.as_ref() else {
+                    return None;
+                };
+                let object_local = self.resolve_local(object_name).ok()?;
+                let accessor_key =
+                    super::super::string::resolved_expr_static_accessor_key(&self.ctx, index)?;
+                let func_id = self
+                    .ctx
+                    .classes
+                    .object_function_props
+                    .get(&object_local)
+                    .and_then(|props| props.get(&accessor_key))
+                    .copied()?;
+                let name = match accessor_key {
+                    ObjectAccessorKey::Property(name) => name,
+                    ObjectAccessorKey::SymbolLocal(local) => {
+                        super::super::string::symbol_local_name(&self.ctx, local)?
+                    }
+                };
+                Some(StaticFunctionMetadataTarget { func_id, name })
+            }
+            _ => None,
         }
     }
 
