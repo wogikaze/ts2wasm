@@ -563,7 +563,55 @@ impl super::super::Resolver {
                 self.lower_string_match_all_literal(object, args, span)?,
             ));
         }
-        if let Some(regexp_args) = regexp_test_runtime(object, method, args, span)? {
+        // Resolve Ident locals that hold regexp literals or new RegExp(...)
+        let regexp_object = match object {
+            ResolvedExpr::Ident(name) => {
+                if let Ok(local_id) = self.resolve_local(name) {
+                    if self.ctx.facts.regexp_literal_locals.contains(&local_id) {
+                        // Local holds a regexp literal (/pattern/flags). Route test/exec
+                        // directly, since regexp_test_runtime / regexp_exec_runtime only
+                        // match String (literal) or New (constructor) patterns.
+                        if method == "test" || method == "exec" {
+                            let arg = args
+                                .first()
+                                .cloned()
+                                .unwrap_or(ResolvedExpr::String("undefined".to_owned()));
+                            if args.len() > 1 {
+                                return Err(Diagnostic {
+                                    code: DiagCode::ArityMismatch,
+                                    message: format!(
+                                        "RegExp.prototype.{} expects at most 1 argument, got {}",
+                                        method,
+                                        args.len()
+                                    ),
+                                    span: Some(span),
+                                    phase: None,
+                                });
+                            }
+                            let intrinsic = if method == "test" {
+                                RuntimeFn::RegExpTest
+                            } else {
+                                RuntimeFn::RegExpMatch
+                            };
+                            let lowered_arg = self.lower_expr(&arg)?;
+                            return Ok(Some(LoweredExpr::RuntimeCall {
+                                intrinsic,
+                                args: vec![
+                                    LoweredExpr::Local(local_id, Span::generated("local")),
+                                    lowered_arg,
+                                ],
+                                span: Span::generated("runtime_call"),
+                            }));
+                        }
+                    }
+                    // For other methods, leave as Ident so the existing class-based
+                    // routing handles it below.
+                }
+                object
+            }
+            _ => object,
+        };
+        if let Some(regexp_args) = regexp_test_runtime(regexp_object, method, args, span)? {
             let lowered_args = regexp_args
                 .iter()
                 .map(|e| self.lower_expr(e))

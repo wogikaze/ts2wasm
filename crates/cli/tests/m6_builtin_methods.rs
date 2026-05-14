@@ -3289,3 +3289,23 @@ fn build_smoke_string_anchor_annexb() {
         result.err()
     );
 }
+
+#[test]
+fn build_smoke_regexp_0_args() {
+    let result = run_fixture("builtins-and-io/regexp-0-args.ts");
+    assert!(
+        result.is_ok(),
+        "regexp-0-args should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_regexp_flag_d() {
+    let result = run_fixture("builtins-and-io/regexp-flag-d.ts");
+    assert!(
+        result.is_ok(),
+        "regexp-flag-d should build: {:?}",
+        result.err()
+    );
+}
