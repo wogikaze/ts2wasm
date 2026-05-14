@@ -176,6 +176,8 @@ pub enum RuntimeFn {
     DateGetTime,
     /// Date.prototype.setTime.
     DateSetTime,
+    /// Date.prototype.setUTCFullYear.
+    DateSetUTCFullYear,
     /// Date.parse via host shim.
     DateParse,
     /// Date.UTC via host shim.
@@ -772,6 +774,15 @@ const BIGINT_TO_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::C
 const BIGINT_FROM_VALUE_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::IsString];
 const BIGINT_AS_INT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::IsString];
 const BIGINT_AS_UINT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::BigIntAsIntN];
+const DATE_SET_UTC_FULL_YEAR_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::DateUTC,
+    RuntimeFn::DateGetUtcMonth,
+    RuntimeFn::DateGetUtcDate,
+    RuntimeFn::DateGetUtcHours,
+    RuntimeFn::DateGetUtcMinutes,
+    RuntimeFn::DateGetUtcSeconds,
+    RuntimeFn::DateGetUtcMilliseconds,
+];
 
 const IMPORT_FD_READ: &[HostImport] = &[HostImport::FdRead];
 const IMPORT_FD_WRITE: &[HostImport] = &[HostImport::FdWrite];
@@ -1416,6 +1427,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DateNow" => Some(RuntimeFn::DateNow),
         "DateGetTime" => Some(RuntimeFn::DateGetTime),
         "DateSetTime" => Some(RuntimeFn::DateSetTime),
+        "DateSetUTCFullYear" => Some(RuntimeFn::DateSetUTCFullYear),
         "DateParse" => Some(RuntimeFn::DateParse),
         "DateUTC" => Some(RuntimeFn::DateUTC),
         "DateToString" => Some(RuntimeFn::DateToString),
@@ -1656,6 +1668,7 @@ impl RuntimeFn {
             | Self::DateEpochMsNowNumber
             | Self::DateGetTime
             | Self::DateSetTime
+            | Self::DateSetUTCFullYear
             | Self::DateParse
             | Self::DateUTC
             | Self::DateToString
@@ -2240,6 +2253,7 @@ impl RuntimeFn {
             Self::DateNow,
             Self::DateGetTime,
             Self::DateSetTime,
+            Self::DateSetUTCFullYear,
             Self::DateParse,
             Self::DateUTC,
             Self::DateToString,
@@ -2624,6 +2638,7 @@ impl RuntimeFn {
             Self::DateNow,
             Self::DateGetTime,
             Self::DateSetTime,
+            Self::DateSetUTCFullYear,
             Self::DateParse,
             Self::DateUTC,
             Self::DateToString,

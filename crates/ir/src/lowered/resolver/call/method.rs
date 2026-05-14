@@ -779,6 +779,41 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
+        if method == "setUTCFullYear" && self.is_date_receiver(object) {
+            if args.is_empty() || args.len() > 3 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 to 3 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let month = args
+                .get(1)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            let day = args
+                .get(2)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetUTCFullYear,
+                args: vec![
+                    self.lower_expr(object)?,
+                    self.lower_expr(&args[0])?,
+                    month,
+                    day,
+                ],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
         if method == "getTimezoneOffset" && self.is_date_receiver(object) {
             if !args.is_empty() {
                 return Err(Diagnostic {

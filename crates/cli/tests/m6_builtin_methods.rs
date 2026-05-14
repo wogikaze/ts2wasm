@@ -1296,6 +1296,16 @@ fn build_smoke_date_set_time() {
 }
 
 #[test]
+fn build_smoke_date_set_utc_full_year() {
+    let result = run_fixture("builtins-and-io/date-set-utc-full-year.ts");
+    assert!(
+        result.is_ok(),
+        "Date.setUTCFullYear should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_date_complete() {
     let result = run_fixture("builtins-and-io/date-complete.ts");
     assert!(

@@ -697,6 +697,22 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::DateSetUTCFullYear => RuntimeSpec {
+                symbol: "$date_set_utc_full_year",
+                deps: &[
+                    Self::DateUTC,
+                    Self::DateGetUtcMonth,
+                    Self::DateGetUtcDate,
+                    Self::DateGetUtcHours,
+                    Self::DateGetUtcMinutes,
+                    Self::DateGetUtcSeconds,
+                    Self::DateGetUtcMilliseconds,
+                ],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::DateParse => RuntimeSpec {
                 symbol: "$date_parse",
                 deps: NO_DEPS,
