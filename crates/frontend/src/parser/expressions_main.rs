@@ -1924,8 +1924,16 @@ impl Parser {
                             let (key, key_span) = match parsed_key {
                                 ParsedObjectKey::Static { key, span } => (key, span),
                                 ParsedObjectKey::ComputedKey { key } => {
-                                    self.expect(TokenKind::Colon)?;
-                                    let value = self.expression()?;
+                                    let value = if let Some(method) =
+                                        self.parse_object_literal_method(
+                                            "[computed]".to_owned(),
+                                            key.span().start,
+                                        )? {
+                                        method
+                                    } else {
+                                        self.expect(TokenKind::Colon)?;
+                                        self.expression()?
+                                    };
                                     props.push(ObjectProp::ComputedKey {
                                         key: Box::new(key),
                                         value,

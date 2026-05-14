@@ -2368,6 +2368,38 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_computed_method_key_expression() {
+        let program = parse_program("let key = 'run'; let object = { [key]() { return 1; } };")
+            .unwrap();
+
+        match &program[1] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 1);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::ComputedKey {
+                        key,
+                        value:
+                            Expr::FunctionExpr {
+                                name,
+                                params,
+                                body,
+                                ..
+                            },
+                    } if matches!(key.as_ref(), Expr::Ident { name, .. } if name == "key")
+                        && name == "[computed]"
+                        && params.is_empty()
+                        && matches!(body.as_slice(), [Stmt::Return { .. }])
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_optional_chaining_expression_forms() {
         let program =
             parse_program("let a = obj?.x; let b = obj?.[key]; let c = fn?.(1);").unwrap();

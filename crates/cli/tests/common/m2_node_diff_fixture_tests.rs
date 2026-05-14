@@ -3688,6 +3688,7 @@ fn core_expression_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-expressions/object-literal-dup-keys.ts",
         "fixtures/core-expressions/object-literal-computed-keys.ts",
         "fixtures/core-expressions/object-literal-computed-expression-key.ts",
+        "fixtures/core-expressions/object-literal-computed-method.ts",
         "fixtures/core-expressions/object-literal-computed-spread.ts",
         "fixtures/core-expressions/object-literal-proto.ts",
         "fixtures/core-expressions/object-literal-method.ts",

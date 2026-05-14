@@ -568,6 +568,7 @@ directories:
     - object-literal-dup-keys.ts
     - object-literal-computed-keys.ts
     - object-literal-computed-expression-key.ts
+    - object-literal-computed-method.ts
     - object-literal-computed-spread.ts
     - object-literal-proto.ts
     - object-literal-method.ts
