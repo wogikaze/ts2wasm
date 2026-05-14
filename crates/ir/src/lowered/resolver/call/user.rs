@@ -29,6 +29,31 @@ impl super::super::Resolver {
             return self.lower_arrow_fn_iife(params, body, body_stmts, args, span);
         }
 
+        if let ResolvedExpr::ComputedIndex { object, index } = callee
+            && let ResolvedExpr::Ident(receiver_name) = object.as_ref()
+            && let Ok(obj_local) = self.resolve_local(receiver_name)
+            && let Some(key) =
+                super::super::string::resolved_expr_static_property_key_value(&self.ctx, index)
+            && let Some(method_id) = self
+                .ctx
+                .classes
+                .object_function_props
+                .get(&obj_local)
+                .and_then(|props| props.get(&key))
+                .copied()
+        {
+            let lowered_args = self.lower_function_call_args(
+                method_id,
+                LoweredExpr::Local(obj_local, Span::generated("local")),
+                args,
+            )?;
+            return Ok(LoweredExpr::Call {
+                kind: FunctionCallKind::User(method_id),
+                args: lowered_args,
+                span: Span::generated("call"),
+            });
+        }
+
         if let ResolvedExpr::MethodCall {
             object,
             method,

@@ -121,6 +121,18 @@ pub(super) fn resolved_expr_static_number_literal_value(
             }
             ctx.facts.number_literal_locals.get(&local_id).cloned()
         }
+        ResolvedExpr::Call { callee, args, .. } => {
+            let ResolvedExpr::Ident(name) = callee.as_ref() else {
+                return None;
+            };
+            let func_id = ctx.resolve_func(name).ok()?;
+            let signature = ctx.symbols.function_signatures.get(&func_id)?;
+            if signature.returns_first_param_identity && args.len() == 1 {
+                resolved_expr_static_number_literal_value(ctx, &args[0])
+            } else {
+                None
+            }
+        }
         _ => None,
     }
 }
