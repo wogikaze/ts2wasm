@@ -1326,6 +1326,16 @@ fn build_smoke_date_set_utc_components() {
 }
 
 #[test]
+fn build_smoke_date_set_utc_methods_defaults() {
+    let result = run_fixture("builtins-and-io/date-set-utc-methods.ts");
+    assert!(
+        result.is_ok(),
+        "Date UTC setter default-preservation fixture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_date_complete() {
     let result = run_fixture("builtins-and-io/date-complete.ts");
     assert!(

@@ -223,6 +223,7 @@ directories:
     - date-set-time.ts
     - date-set-utc-components.ts
     - date-set-utc-full-year.ts
+    - date-set-utc-methods.ts
     - date-static-parse-utc.ts
     - date-to-date-string.ts
     - date-to-iso-string.ts
