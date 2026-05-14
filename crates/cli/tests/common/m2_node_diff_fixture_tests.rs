@@ -3880,6 +3880,12 @@ fn for_of_array_fixture_matches_node_output_under_iwasm() {
 fn global_zero_args_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/global-0-args.ts");
 }
+
+#[test]
+fn global_parseint_i32_boundary_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-parseint-i32-boundary.ts");
+}
+
 #[test]
 fn object_prevent_extensions_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-prevent-extensions.ts");

@@ -2493,7 +2493,7 @@ match self {
             },
             Self::ParseInt => RuntimeSpec {
                 symbol: "$parse_int",
-                deps: NO_DEPS,
+                deps: &[RuntimeFn::NumberFromI32],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,

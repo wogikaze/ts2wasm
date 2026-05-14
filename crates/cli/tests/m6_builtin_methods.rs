@@ -1052,6 +1052,16 @@ fn build_smoke_global_parseint() {
 }
 
 #[test]
+fn build_smoke_global_parseint_i32_boundary() {
+    let result = run_fixture("builtins-and-io/global-parseint-i32-boundary.ts");
+    assert!(
+        result.is_ok(),
+        "parseInt i32 boundary fixture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_global_parsefloat() {
     let result = run_fixture("builtins-and-io/global-parsefloat.ts");
     assert!(

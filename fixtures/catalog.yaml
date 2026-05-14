@@ -182,6 +182,7 @@ directories:
     - array-to-string.ts
     - array-values.ts
     - array-with.ts
+    - array-copying-methods.ts
     - arraybuffer-dataview-basic.ts
     - arraybuffer-dataview-byte-offset.ts
     - arraybuffer-dataview-byte-offset-endian.ts
@@ -197,6 +198,7 @@ directories:
     - arraybuffer-dataview-uint32.ts
     - async-generator-basic.ts
     - atomics-unsupported.ts
+    - boolean-symbol-prototype.ts
     - bun-stdin-text.ts
     - console-log.ts
     - date-annexb-get-year.ts
@@ -221,6 +223,7 @@ directories:
     - error-instanceof.ts
     - error-message.ts
     - error-stack.ts
+    - error-subclasses.ts
     - es-module-live-binding-helper.ts
     - es-module-live-binding.ts
     - eval-unsupported.ts
@@ -249,9 +252,11 @@ directories:
     - global-names-remaining.ts
     - global-names-well-known-symbols.ts
     - global-parsefloat.ts
+    - global-parseint-i32-boundary.ts
     - global-parseint.ts
     - global-unescape-value.ts
     - global-unescape.ts
+    - intl-numberformat.ts
     - intl-unsupported.ts
     - iterator-protocol.ts
     - json-parse-array-object-nested.ts
@@ -311,7 +316,9 @@ directories:
     - json-stringify.ts
     - map-forEach.ts
     - map-iteration.ts
+    - map-nan-minus0-key-equality.ts
     - map-set.ts
+    - map-supplementary.ts
     - math-abs.ts
     - math-cbrt.ts
     - math-ceil.ts
@@ -325,6 +332,8 @@ directories:
     - math-round.ts
     - math-sqrt.ts
     - math-trunc-sign.ts
+    - native-error-types.ts
+    - number-complete.ts
     - number-is-finite.ts
     - number-is-integer.ts
     - number-is-integer-i32.ts
@@ -351,7 +360,9 @@ directories:
     - object-keys-arguments.ts
     - object-keys.ts
     - object-prevent-extensions.ts
+    - object-prototype.ts
     - object-seal.ts
+    - object-static-complete.ts
     - object-string-keys.ts
     - object-values.ts
     - promise-basic.ts
@@ -385,7 +396,9 @@ directories:
     - string-at.ts
     - string-char-at.ts
     - string-char-code-at.ts
+    - string-charcode-tostring-radix.ts
     - string-concat.ts
+    - string-constructor-call.ts
     - string-ends-with.ts
     - string-from-char-code.ts
     - string-from-code-point.ts
@@ -408,6 +421,7 @@ directories:
     - string-slice.ts
     - string-split.ts
     - string-starts-with.ts
+    - string-static-methods.ts
     - string-substr.ts
     - string-substring.ts
     - string-to-lower-case.ts
@@ -420,6 +434,7 @@ directories:
     - string-trim-start.ts
     - string-trim.ts
     - symbol-constructor-basic.ts
+    - symbol-registry.ts
     - test-math-pow.ts
     - test-set-samevaluezero.ts
     - typedarray-basic.ts
@@ -528,6 +543,7 @@ directories:
     - object-literal-inline-access.ts
     - object-literal-dup-keys.ts
     - object-literal-computed-keys.ts
+    - object-shorthand-computed-method.ts
     - optional-call.ts
     - optional-index.ts
     - optional-member.ts

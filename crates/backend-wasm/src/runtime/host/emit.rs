@@ -1676,7 +1676,7 @@ impl WatEmitter<'_> {
       (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
     (if (i32.lt_s (local.get $sign) (i32.const {zero}))
       (then (local.set $n (i32.sub (i32.const {zero}) (local.get $n)))))
-    (i32.or (i32.shl (local.get $n) (i32.const {number_shift})) (i32.const {number_tag})))
+    (call $number_from_i32 (local.get $n)))
 "##,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
