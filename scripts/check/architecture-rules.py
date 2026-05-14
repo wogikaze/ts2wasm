@@ -115,7 +115,6 @@ FILE_SIZE_ALLOWLIST_1200 = {
     # P4: Decomposition — parser / lexer / runtime domain
     "fixtures/catalog.yaml": "P16: coverage matrix — 1697 lines",
     "crates/backend-wasm/src/runtime/object/emit.rs": "P4: runtime domain split — 1290 lines",
-    "crates/compiler/src/dump.rs": "P4: compiler dump — 1203 lines",
     "crates/ir/src/lowered/mir.rs": "P14: MIR lowering — 1791 lines",
     "crates/ir/src/lowered/resolver/mod.rs": "P14: resolver main mod — 1417 lines",
     "crates/backend-wasm/src/runtime/core/bigint.rs": "P4: runtime domain split",
@@ -145,7 +144,6 @@ FILE_SIZE_ALLOWLIST_1200 = {
     "crates/backend-wasm/src/runtime_strings.rs": "P4: runtime domain split",
     # P7: Resolver decomposition
     "crates/backend-wasm/src/runtime/object/emit.rs": "I-20260513-HGGTXF: object runtime emitter pending domain split",
-    "crates/compiler/src/dump.rs": "I-20260513-HGGTXF: dump dispatcher pending AST/HIR/MIR domain split",
     "crates/ir/src/lowered/mir.rs": "I-20260512-MRDATA/I-20260512-MRVADT: MIR bridge pending native model split",
     "crates/ir/src/lowered/program.rs": "P7: resolver decomposition",
     "crates/ir/src/lowered/resolver/array.rs": "P7: resolver decomposition",
@@ -259,8 +257,8 @@ FUNCTION_LENGTH_ALLOWLIST = {
     ("crates/compiler/src/lib.rs", "lower_static_named_import_bindings_for_build"): "compiler pipeline -- 616 lines",
     ("crates/compiler/src/lib.rs", "rewrite_static_module_body_for_build"): "compiler pipeline -- 308 lines",
     ("crates/compiler/src/stages/lower.rs", "rewrite_static_module_body_for_build"): "compiler pipeline -- 200+ lines",
-    ("crates/compiler/src/dump.rs", "unparse_expr"): "P4: dump expression dispatch -- 315 lines",
-    ("crates/compiler/src/dump.rs", "unparse_stmt"): "P14: dump statement dispatch -- 329 lines",
+    ("crates/compiler/src/dump/ast.rs", "unparse_expr"): "P4: dump expression dispatch -- 315 lines",
+    ("crates/compiler/src/dump/ast.rs", "unparse_stmt"): "P14: dump statement dispatch -- 329 lines",
     ("crates/compiler/src/test262_preprocessor.rs", "build_feature_stubs"): "P4: preprocessor stub builder -- 362 lines",
     # Runtime function registry — large match by design
     ("crates/runtime-catalog/src/runtime_fn.rs", "runtime_fn_from_name"): "runtime function registry -- 296 lines",
@@ -315,7 +313,7 @@ LARGE_MATCH_ALLOWLIST = {
     "crates/backend-wasm/src/runtime_link_plan.rs": "link plan covers many runtime fn deps",
     "crates/backend-wasm/src/wasm_encoder_backend.rs": "WASM instruction encoding dispatch",
     "crates/backend-wasm/src/wat_writer.rs": "WAT instruction rendering dispatch",
-    "crates/compiler/src/dump.rs": "AST/IR dump dispatches many node types",
+    "crates/compiler/src/dump/ast.rs": "AST unparse dispatches many node types",
     "crates/frontend/src/lexer_identifiers.rs": "lexer keyword/identifier matching",
     "crates/frontend/src/parser/tokens.rs": "token keyword/keyword context matching",
     "crates/ir/src/builtin_resolver.rs": "builtin resolution dispatches many expression/statement types",
