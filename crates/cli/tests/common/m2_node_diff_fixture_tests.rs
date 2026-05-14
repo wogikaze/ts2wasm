@@ -2203,6 +2203,11 @@ fn error_name_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn error_subclasses_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/error-subclasses.ts");
+}
+
+#[test]
 fn map_set_collection_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/map-set.ts");
 }
@@ -3489,6 +3494,7 @@ fn math_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/math-imul.ts",
         "fixtures/builtins-and-io/math-max.ts",
         "fixtures/builtins-and-io/math-min.ts",
+        "fixtures/builtins-and-io/math-complete.ts",
         "fixtures/builtins-and-io/math-pow.ts",
         "fixtures/builtins-and-io/test-math-pow.ts",
         // math-random.ts: skip — WASM i32 vs Node float mismatch

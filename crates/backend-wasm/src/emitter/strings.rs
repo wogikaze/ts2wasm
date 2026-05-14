@@ -329,5 +329,6 @@ impl WatEmitter<'_> {
             self.intern_string("name");
             self.intern_string(constructor.name());
         }
+        self.intern_string("cause");
     }
 }

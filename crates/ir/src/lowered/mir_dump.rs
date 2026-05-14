@@ -508,10 +508,15 @@ fn dump_mir_expr(expr: &LoweredExpr, out: &mut String, indent: usize) {
         LoweredExpr::ErrorNew {
             constructor,
             message,
+            cause,
             ..
         } => {
             out.push_str(&format!("{}ErrorNew({:?})\n", prefix, constructor));
             dump_mir_expr(message, out, indent + 2);
+            if let Some(cause) = cause {
+                out.push_str(&format!("{}cause:\n", prefix));
+                dump_mir_expr(cause, out, indent + 2);
+            }
         }
         LoweredExpr::PropertyGet { obj, key, .. } => {
             out.push_str(&format!("{}PropertyGet({:?})\n", prefix, key));
