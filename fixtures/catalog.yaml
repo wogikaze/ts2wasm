@@ -855,6 +855,7 @@ directories:
     - regexp-literal.ts
     - regexp-test.ts
     - regexp-unsupported-flag.ts
+    - rest-arguments-object.ts
     - rest-params-multiple.ts
     - rest-params-one.ts
     - rest-params-zero.ts

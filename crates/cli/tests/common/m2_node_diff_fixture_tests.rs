@@ -3015,6 +3015,11 @@ fn rest_parameter_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn rest_arguments_object_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/rest-arguments-object.ts");
+}
+
+#[test]
 fn spread_operator_literal_call_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/spread-call-literal-array.ts");
 }

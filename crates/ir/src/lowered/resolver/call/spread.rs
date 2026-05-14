@@ -54,7 +54,13 @@ impl super::super::Resolver {
             lowered_args.push(receiver);
         }
 
-        if signature.has_rest {
+        if signature.has_rest && signature.needs_arguments {
+            let fixed_count = signature.explicit_params.saturating_sub(1);
+            lowered_args.extend(explicit_args.iter().take(fixed_count).cloned());
+            for _ in explicit_args.len()..fixed_count {
+                lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+            }
+        } else if signature.has_rest {
             lowered_args.extend(explicit_args.iter().cloned());
         } else {
             lowered_args.extend(
@@ -71,7 +77,8 @@ impl super::super::Resolver {
         if signature.needs_arguments {
             let argument_count = explicit_args.len();
             let mut props = explicit_args
-                .into_iter()
+                .iter()
+                .cloned()
                 .enumerate()
                 .map(|(index, arg)| (index.to_string(), arg))
                 .collect::<Vec<_>>();
@@ -85,6 +92,11 @@ impl super::super::Resolver {
                 non_enumerable: 1 << length_index, // length is non-enumerable
                 span: Span::generated("object_new"),
             });
+        }
+
+        if signature.has_rest && signature.needs_arguments {
+            let fixed_count = signature.explicit_params.saturating_sub(1);
+            lowered_args.extend(explicit_args.into_iter().skip(fixed_count));
         }
 
         self.append_function_captures(func_id, &mut lowered_args)?;
