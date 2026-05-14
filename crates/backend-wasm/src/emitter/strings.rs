@@ -323,4 +323,11 @@ impl WatEmitter<'_> {
             }
         }
     }
+
+    pub(super) fn intern_builtin_error_prototype_strings(&mut self) {
+        for constructor in self.builtin_error_prototypes() {
+            self.intern_string("name");
+            self.intern_string(constructor.name());
+        }
+    }
 }

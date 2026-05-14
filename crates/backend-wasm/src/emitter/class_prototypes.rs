@@ -70,16 +70,16 @@ impl WatEmitter<'_> {
         let pad = " ".repeat(indent);
         for constructor in self.builtin_error_prototypes() {
             let global = emitter::builtin_error_prototype_global(constructor);
+            let size = Layout::OBJECT_HEADER_SIZE + Layout::OBJECT_ENTRY_SIZE;
             wat.push_str(&format!(
                 "{pad}(if (i32.eqz (global.get ${global}))\n{pad}  (then\n"
             ));
             wat.push_str(&format!(
-                "{pad}    (global.set ${global} (call {} (i32.const {})))\n",
+                "{pad}    (global.set ${global} (call {} (i32.const {size})))\n",
                 RuntimeFn::AllocHeap.symbol(),
-                Layout::OBJECT_HEADER_SIZE,
             ));
             wat.push_str(&format!(
-                "{pad}    (i32.store (global.get ${global}) (i32.const 0))\n"
+                "{pad}    (i32.store (global.get ${global}) (i32.const 1))\n"
             ));
             wat.push_str(&format!(
                 "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {})) (i32.const 0))\n",
@@ -97,6 +97,16 @@ impl WatEmitter<'_> {
             wat.push_str(&format!(
                 "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {})) ({parent_expr}))\n",
                 Layout::OBJECT_PROTOTYPE_OFFSET,
+            ));
+            let name_key = self.string_value("name");
+            let name_value = self.string_value(constructor.name());
+            wat.push_str(&format!(
+                "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {})) (i32.const {name_key}))\n",
+                Layout::OBJECT_ENTRIES_OFFSET,
+            ));
+            wat.push_str(&format!(
+                "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {})) (i32.const {name_value}))\n",
+                Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
             ));
             wat.push_str(&format!("{pad}  )\n{pad})\n"));
         }
