@@ -2985,6 +2985,11 @@ fn function_object_metadata_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn function_prototype_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/function-prototype.ts");
+}
+
+#[test]
 fn unsupported_function_prototype_metadata_reports_issue_062f() {
     assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/function-prototype-metadata-unsupported.ts",

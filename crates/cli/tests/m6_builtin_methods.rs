@@ -2403,3 +2403,9 @@ fn build_smoke_console_complete() {
         result.err()
     );
 }
+
+#[test]
+fn build_smoke_function_prototype() {
+    run_fixture("builtins-and-io/function-prototype.ts")
+        .expect("Function.prototype.name/length should build");
+}
