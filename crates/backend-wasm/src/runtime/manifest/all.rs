@@ -321,4 +321,8 @@ match self {
             Self::DataViewSetFloat32 => "dataview_set_float32",
             Self::DataViewGetFloat64 => "dataview_get_float64",
             Self::DataViewSetFloat64 => "dataview_set_float64",
+            Self::DataViewGetBigInt64 => "dataview_get_bigint64",
+            Self::DataViewSetBigInt64 => "dataview_set_bigint64",
+            Self::DataViewGetBigUint64 => "dataview_get_biguint64",
+            Self::DataViewSetBigUint64 => "dataview_set_biguint64",
         }

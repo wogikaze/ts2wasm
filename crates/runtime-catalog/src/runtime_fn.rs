@@ -169,6 +169,10 @@ pub enum RuntimeFn {
     DataViewSetFloat32,
     DataViewGetFloat64,
     DataViewSetFloat64,
+    DataViewGetBigInt64,
+    DataViewSetBigInt64,
+    DataViewGetBigUint64,
+    DataViewSetBigUint64,
     /// Issue 050: Date epoch slices.
     DateNew,
     DateNewLive,
@@ -1081,6 +1085,12 @@ const TYPED_ARRAY_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, Runtim
 const TYPED_ARRAY_SET_DEPS: &[RuntimeFn] = &[RuntimeFn::GetLength, RuntimeFn::Index];
 const ARRAYBUFFER_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATAVIEW_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const DATAVIEW_GET_BIGINT64_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
+const DATAVIEW_GET_BIGUINT64_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
+const DATAVIEW_SET_BIGINT64_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::BigIntFromValue, RuntimeFn::BigIntAdd];
+const DATAVIEW_SET_BIGUINT64_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::BigIntFromValue, RuntimeFn::BigIntAdd];
 const DATE_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATE_NOW_DEPS: &[RuntimeFn] = &[RuntimeFn::DateEpochMsNowNumber];
 const DATE_NEW_LIVE_DEPS: &[RuntimeFn] = &[RuntimeFn::DateEpochMsNowNumber, RuntimeFn::DateNew];
@@ -1304,6 +1314,10 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DataViewSetFloat32" => Some(RuntimeFn::DataViewSetFloat32),
         "DataViewGetFloat64" => Some(RuntimeFn::DataViewGetFloat64),
         "DataViewSetFloat64" => Some(RuntimeFn::DataViewSetFloat64),
+        "DataViewGetBigInt64" => Some(RuntimeFn::DataViewGetBigInt64),
+        "DataViewSetBigInt64" => Some(RuntimeFn::DataViewSetBigInt64),
+        "DataViewGetBigUint64" => Some(RuntimeFn::DataViewGetBigUint64),
+        "DataViewSetBigUint64" => Some(RuntimeFn::DataViewSetBigUint64),
         "SetFromArray" => Some(RuntimeFn::SetFromArray),
         "SetValuesArray" => Some(RuntimeFn::SetValuesArray),
         "SetPrototypeAddGet" => Some(RuntimeFn::SetPrototypeAddGet),
@@ -1798,7 +1812,11 @@ impl RuntimeFn {
             | Self::DataViewGetFloat32
             | Self::DataViewSetFloat32
             | Self::DataViewGetFloat64
-            | Self::DataViewSetFloat64 => RuntimeDomain::TypedArray,
+            | Self::DataViewSetFloat64
+            | Self::DataViewGetBigInt64
+            | Self::DataViewSetBigInt64
+            | Self::DataViewGetBigUint64
+            | Self::DataViewSetBigUint64 => RuntimeDomain::TypedArray,
         }
     }
 
@@ -1919,7 +1937,9 @@ impl RuntimeFn {
             | Self::DataViewGetInt32
             | Self::DataViewGetUint32
             | Self::DataViewGetFloat32
-            | Self::DataViewGetFloat64 => RuntimeSignature {
+            | Self::DataViewGetFloat64
+            | Self::DataViewGetBigInt64
+            | Self::DataViewGetBigUint64 => RuntimeSignature {
                 params: 3,
                 results: 1,
             },
@@ -1944,7 +1964,9 @@ impl RuntimeFn {
             | Self::DataViewSetInt32
             | Self::DataViewSetUint32
             | Self::DataViewSetFloat32
-            | Self::DataViewSetFloat64 => RuntimeSignature {
+            | Self::DataViewSetFloat64
+            | Self::DataViewSetBigInt64
+            | Self::DataViewSetBigUint64 => RuntimeSignature {
                 params: 4,
                 results: 0,
             },
@@ -2102,6 +2124,10 @@ impl RuntimeFn {
             Self::DataViewSetFloat32,
             Self::DataViewGetFloat64,
             Self::DataViewSetFloat64,
+            Self::DataViewGetBigInt64,
+            Self::DataViewSetBigInt64,
+            Self::DataViewGetBigUint64,
+            Self::DataViewSetBigUint64,
             Self::DateNew,
             Self::DateEpochMsNowNumber,
             Self::DateNewLive,
@@ -2459,6 +2485,10 @@ impl RuntimeFn {
             Self::DataViewSetFloat32,
             Self::DataViewGetFloat64,
             Self::DataViewSetFloat64,
+            Self::DataViewGetBigInt64,
+            Self::DataViewSetBigInt64,
+            Self::DataViewGetBigUint64,
+            Self::DataViewSetBigUint64,
             Self::DateNew,
             Self::DateEpochMsNowNumber,
             Self::DateNewLive,
