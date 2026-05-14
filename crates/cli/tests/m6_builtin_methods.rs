@@ -153,6 +153,16 @@ fn build_smoke_object_get_own_property_names_method() {
 }
 
 #[test]
+fn build_smoke_object_own_key_integer_order() {
+    let result = run_fixture("builtins-and-io/object-own-key-integer-order.ts");
+    assert!(
+        result.is_ok(),
+        "Object own-key integer ordering fixture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_values_method() {
     let result = run_fixture("builtins-and-io/object-values.ts");
     assert!(

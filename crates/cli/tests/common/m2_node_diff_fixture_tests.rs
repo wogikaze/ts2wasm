@@ -3945,6 +3945,11 @@ fn object_get_own_property_names_matches_node() {
 }
 
 #[test]
+fn object_own_key_integer_order_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-own-key-integer-order.ts");
+}
+
+#[test]
 fn object_keys_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-keys.ts");
 }

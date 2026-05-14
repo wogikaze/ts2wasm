@@ -381,6 +381,7 @@ directories:
     - object-is-frozen.ts
     - object-is-sealed.ts
     - object-is.ts
+    - object-own-key-integer-order.ts
     - object-keys-arguments.ts
     - object-keys.ts
     - object-prevent-extensions.ts
