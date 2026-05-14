@@ -314,6 +314,36 @@ INLINE_HARNESS_STUBS = {
     "assert.js": INLINE_ASSERT_JS,
 }
 
+
+def rewrite_property_helper_for_compiler(source):
+    """Replace bound primordial helpers with compiler-friendly wrappers."""
+    replacements = {
+        "var __join = Function.prototype.call.bind(Array.prototype.join);": (
+            "function __join(array, separator) {\n"
+            "  return Array.prototype.join.call(array, separator);\n"
+            "}"
+        ),
+        "var __push = Function.prototype.call.bind(Array.prototype.push);": (
+            "function __push(array, value) {\n"
+            "  return Array.prototype.push.call(array, value);\n"
+            "}"
+        ),
+        "var __hasOwnProperty = Function.prototype.call.bind(Object.prototype.hasOwnProperty);": (
+            "function __hasOwnProperty(object, key) {\n"
+            "  return Object.prototype.hasOwnProperty.call(object, key);\n"
+            "}"
+        ),
+        "var __propertyIsEnumerable = Function.prototype.call.bind(Object.prototype.propertyIsEnumerable);": (
+            "function __propertyIsEnumerable(object, key) {\n"
+            "  return Object.prototype.propertyIsEnumerable.call(object, key);\n"
+            "}"
+        ),
+    }
+    for before, after in replacements.items():
+        source = source.replace(before, after)
+    return source
+
+
 @functools.lru_cache(maxsize=None)
 def load_harness_file(name):
     """Load a test262 harness file.
@@ -342,6 +372,8 @@ def load_harness_file(name):
     source = path.read_text(encoding="utf-8")
     # Strip YAML frontmatter (/*--- ... ---*/) used by test262 metadata
     source = re.sub(r'/\*---.*?---\*/', '', source, count=1, flags=re.DOTALL)
+    if name == "propertyHelper.js":
+        source = rewrite_property_helper_for_compiler(source)
     return source
 
 
