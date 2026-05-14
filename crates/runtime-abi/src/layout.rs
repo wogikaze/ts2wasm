@@ -1,6 +1,19 @@
 /// Linear memory layout constants for the WASI runtime.
 pub struct Layout;
 
+/// Heap kind discriminants that match the GC_KIND_* constants in Layout.
+///
+/// These discriminants are used by `$alloc_heap_kind` and GC scanner dispatch.
+/// The numeric values must match `Layout::GC_KIND_*` constants.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HeapKind {
+    Unknown = 0,
+    String = 4,   // 1 << 2
+    Array = 8,    // 2 << 2
+    Object = 12,  // 3 << 2
+    BigInt = 16,  // 4 << 2
+}
+
 impl Layout {
     /// WebAssembly page size in bytes.
     pub const WASM_PAGE_SIZE: u32 = 64 * 1024;
@@ -215,6 +228,21 @@ mod tests {
 
     fn assert_lt(left: u32, right: u32) {
         assert!(left < right);
+    }
+
+    #[test]
+    fn gc_threshold_matches_abi_constant() {
+        assert_eq!(Layout::GC_THRESHOLD, 64 * 1024);
+    }
+
+    #[test]
+    fn heap_kind_discriminants_match_layout() {
+        use super::HeapKind;
+        assert_eq!(HeapKind::Unknown as u32, Layout::GC_KIND_UNKNOWN);
+        assert_eq!(HeapKind::String as u32, Layout::GC_KIND_STRING);
+        assert_eq!(HeapKind::Array as u32, Layout::GC_KIND_ARRAY);
+        assert_eq!(HeapKind::Object as u32, Layout::GC_KIND_OBJECT);
+        assert_eq!(HeapKind::BigInt as u32, Layout::GC_KIND_BIGINT);
     }
 
     #[test]
