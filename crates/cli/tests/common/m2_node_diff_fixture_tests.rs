@@ -3341,6 +3341,11 @@ fn global_parsefloat_matches_node_under_iwasm() {
 }
 
 #[test]
+fn number_static_parse_matches_node_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-static-parse.ts");
+}
+
+#[test]
 fn global_isfinite_matches_node_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/global-isfinite.ts");
 }

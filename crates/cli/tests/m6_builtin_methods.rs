@@ -1062,6 +1062,16 @@ fn build_smoke_global_parsefloat() {
 }
 
 #[test]
+fn build_smoke_number_static_parse() {
+    let result = run_fixture("builtins-and-io/number-static-parse.ts");
+    assert!(
+        result.is_ok(),
+        "Number static parse should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_global_isfinite() {
     let result = run_fixture("builtins-and-io/global-isfinite.ts");
     assert!(result.is_ok(), "isFinite should build: {:?}", result.err());
