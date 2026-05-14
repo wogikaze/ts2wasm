@@ -481,11 +481,8 @@ fn validate_expr(
                 validate_expr(val, local_count, num_funcs, program, errors, true);
             }
         }
-        MirExpr::ErrorNew { message, cause, .. } => {
+        MirExpr::ErrorNew { message, .. } => {
             validate_expr(message, local_count, num_funcs, program, errors, true);
-            if let Some(cause) = cause {
-                validate_expr(cause, local_count, num_funcs, program, errors, true);
-            }
         }
         MirExpr::PropertySet { object, value, .. } => {
             validate_expr(object, local_count, num_funcs, program, errors, true);

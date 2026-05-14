@@ -178,6 +178,7 @@ pub(super) fn mir_expr_to_lower(expr: &MirExpr) -> LoweredExpr {
         } => LoweredExpr::ErrorNew {
             constructor: *constructor,
             message: Box::new(mir_expr_to_lower(message)),
+            cause: None,
             span: *span,
         },
         MirExpr::PropertyGet { obj, key, span } => LoweredExpr::PropertyGet {
