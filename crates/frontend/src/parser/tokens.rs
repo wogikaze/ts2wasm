@@ -309,8 +309,11 @@ impl Parser {
 
                 phase: None,});
         }
-        // Handle string literal computed keys: ["key"]
-        if let Some(Token::String(s)) = self.peek() {
+        // Handle string literal computed keys: ["key"]. If another token follows
+        // before the closing bracket, parse the whole computed-key expression.
+        if let Some(Token::String(s)) = self.peek()
+            && matches!(self.peek_n(1), Some(Token::RightBracket))
+        {
             let key = s.clone();
             self.advance();
             let end = self.expect(TokenKind::RightBracket)?;
@@ -323,7 +326,9 @@ impl Parser {
             });
         }
         // Handle number literal computed keys: [42]
-        if let Some(Token::Number(value)) = self.peek() {
+        if let Some(Token::Number(value)) = self.peek()
+            && matches!(self.peek_n(1), Some(Token::RightBracket))
+        {
             let key = value.to_string();
             self.advance();
             let end = self.expect(TokenKind::RightBracket)?;
@@ -335,7 +340,9 @@ impl Parser {
                 },
             });
         }
-        if let Some(Token::DecimalNumber(value)) = self.peek() {
+        if let Some(Token::DecimalNumber(value)) = self.peek()
+            && matches!(self.peek_n(1), Some(Token::RightBracket))
+        {
             let key = value.clone();
             self.advance();
             let end = self.expect(TokenKind::RightBracket)?;

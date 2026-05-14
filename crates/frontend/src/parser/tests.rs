@@ -2270,6 +2270,37 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_computed_property_key_expression() {
+        let program = parse_program("let object = { [1 + 1]: 2 };").unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 1);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::ComputedKey {
+                        key,
+                        value: Expr::Number { value: 2, .. }
+                    } if matches!(
+                        key.as_ref(),
+                        Expr::Binary {
+                            op: BinaryOp::Add,
+                            left,
+                            right,
+                            ..
+                        } if matches!(left.as_ref(), Expr::Number { value: 1, .. })
+                            && matches!(right.as_ref(), Expr::Number { value: 1, .. })
+                    )
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_method_shorthand() {
         let program = parse_program("let object = { method() { return 1; } };").unwrap();
 
