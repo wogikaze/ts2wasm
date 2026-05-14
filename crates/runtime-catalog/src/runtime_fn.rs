@@ -200,24 +200,6 @@ pub enum RuntimeFn {
     DataViewSetBigInt64,
     DataViewGetBigUint64,
     DataViewSetBigUint64,
-    /// Atomics.load(typedArray, index) — load element from Int32Array
-    AtomicsLoad,
-    /// Atomics.store(typedArray, index, value) — store element into Int32Array
-    AtomicsStore,
-    /// Atomics.add(typedArray, index, value) — add and return old value
-    AtomicsAdd,
-    /// Atomics.sub(typedArray, index, value) — subtract and return old value
-    AtomicsSub,
-    /// Atomics.and(typedArray, index, value) — bitwise AND and return old value
-    AtomicsAnd,
-    /// Atomics.or(typedArray, index, value) — bitwise OR and return old value
-    AtomicsOr,
-    /// Atomics.xor(typedArray, index, value) — bitwise XOR and return old value
-    AtomicsXor,
-    /// Atomics.exchange(typedArray, index, value) — swap and return old value
-    AtomicsExchange,
-    /// Atomics.compareExchange(typedArray, index, expected, replacement) — CAS and return old value
-    AtomicsCompareExchange,
     /// Issue 050: Date epoch slices.
     DateNew,
     DateNewLive,
@@ -1499,15 +1481,6 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DataViewSetBigInt64" => Some(RuntimeFn::DataViewSetBigInt64),
         "DataViewGetBigUint64" => Some(RuntimeFn::DataViewGetBigUint64),
         "DataViewSetBigUint64" => Some(RuntimeFn::DataViewSetBigUint64),
-        "AtomicsLoad" => Some(RuntimeFn::AtomicsLoad),
-        "AtomicsStore" => Some(RuntimeFn::AtomicsStore),
-        "AtomicsAdd" => Some(RuntimeFn::AtomicsAdd),
-        "AtomicsSub" => Some(RuntimeFn::AtomicsSub),
-        "AtomicsAnd" => Some(RuntimeFn::AtomicsAnd),
-        "AtomicsOr" => Some(RuntimeFn::AtomicsOr),
-        "AtomicsXor" => Some(RuntimeFn::AtomicsXor),
-        "AtomicsExchange" => Some(RuntimeFn::AtomicsExchange),
-        "AtomicsCompareExchange" => Some(RuntimeFn::AtomicsCompareExchange),
         "SetFromArray" => Some(RuntimeFn::SetFromArray),
         "SetValuesArray" => Some(RuntimeFn::SetValuesArray),
         "SetPrototypeAddGet" => Some(RuntimeFn::SetPrototypeAddGet),
@@ -2058,16 +2031,7 @@ impl RuntimeFn {
             | Self::DataViewGetBigInt64
             | Self::DataViewSetBigInt64
             | Self::DataViewGetBigUint64
-            | Self::DataViewSetBigUint64
-            | Self::AtomicsLoad
-            | Self::AtomicsStore
-            | Self::AtomicsAdd
-            | Self::AtomicsSub
-            | Self::AtomicsAnd
-            | Self::AtomicsOr
-            | Self::AtomicsXor
-            | Self::AtomicsExchange
-            | Self::AtomicsCompareExchange => RuntimeDomain::TypedArray,
+            | Self::DataViewSetBigUint64 => RuntimeDomain::TypedArray,
         }
     }
 
@@ -2422,15 +2386,6 @@ impl RuntimeFn {
             Self::DataViewGetBigUint64,
             Self::DataViewSetBigUint64,
             // Atomics operations
-            Self::AtomicsLoad,
-            Self::AtomicsStore,
-            Self::AtomicsAdd,
-            Self::AtomicsSub,
-            Self::AtomicsAnd,
-            Self::AtomicsOr,
-            Self::AtomicsXor,
-            Self::AtomicsExchange,
-            Self::AtomicsCompareExchange,
             Self::DateNew,
             Self::DateEpochMsNowNumber,
             Self::DateNewLive,
@@ -2840,15 +2795,6 @@ impl RuntimeFn {
             Self::DataViewGetBigUint64,
             Self::DataViewSetBigUint64,
             // Atomics operations
-            Self::AtomicsLoad,
-            Self::AtomicsStore,
-            Self::AtomicsAdd,
-            Self::AtomicsSub,
-            Self::AtomicsAnd,
-            Self::AtomicsOr,
-            Self::AtomicsXor,
-            Self::AtomicsExchange,
-            Self::AtomicsCompareExchange,
             Self::DateNew,
             Self::DateEpochMsNowNumber,
             Self::DateNewLive,
