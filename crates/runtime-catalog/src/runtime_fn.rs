@@ -125,13 +125,6 @@ pub enum RuntimeFn {
     SetSize,
     SetClear,
     SetForEach,
-    SetIsDisjointFrom,
-    SetIsSubsetOf,
-    SetIsSupersetOf,
-    SetUnion,
-    SetIntersection,
-    SetDifference,
-    SetSymmetricDifference,
     MapClear,
     MapSize,
     MapForEach,
@@ -1449,13 +1442,6 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "SetValuesArray" => Some(RuntimeFn::SetValuesArray),
         "SetPrototypeAddGet" => Some(RuntimeFn::SetPrototypeAddGet),
         "SetPrototypeAddSet" => Some(RuntimeFn::SetPrototypeAddSet),
-        "SetIsDisjointFrom" => Some(RuntimeFn::SetIsDisjointFrom),
-        "SetIsSubsetOf" => Some(RuntimeFn::SetIsSubsetOf),
-        "SetIsSupersetOf" => Some(RuntimeFn::SetIsSupersetOf),
-        "SetUnion" => Some(RuntimeFn::SetUnion),
-        "SetIntersection" => Some(RuntimeFn::SetIntersection),
-        "SetDifference" => Some(RuntimeFn::SetDifference),
-        "SetSymmetricDifference" => Some(RuntimeFn::SetSymmetricDifference),
         "WeakMapNew" => Some(RuntimeFn::WeakMapNew),
         "WeakMapSet" => Some(RuntimeFn::WeakMapSet),
         "WeakMapGet" => Some(RuntimeFn::WeakMapGet),
@@ -1754,13 +1740,6 @@ impl RuntimeFn {
             | Self::SetSize
             | Self::SetClear
             | Self::SetForEach
-            | Self::SetIsDisjointFrom
-            | Self::SetIsSubsetOf
-            | Self::SetIsSupersetOf
-            | Self::SetUnion
-            | Self::SetIntersection
-            | Self::SetDifference
-            | Self::SetSymmetricDifference
             | Self::MapClear
             | Self::MapSize
             | Self::MapForEach
@@ -2282,13 +2261,6 @@ impl RuntimeFn {
             Self::SetSize,
             Self::SetClear,
             Self::SetForEach,
-            Self::SetIsDisjointFrom,
-            Self::SetIsSubsetOf,
-            Self::SetIsSupersetOf,
-            Self::SetUnion,
-            Self::SetIntersection,
-            Self::SetDifference,
-            Self::SetSymmetricDifference,
             Self::MapClear,
             Self::MapSize,
             Self::MapForEach,
@@ -2688,13 +2660,6 @@ impl RuntimeFn {
             Self::SetSize,
             Self::SetClear,
             Self::SetForEach,
-            Self::SetIsDisjointFrom,
-            Self::SetIsSubsetOf,
-            Self::SetIsSupersetOf,
-            Self::SetUnion,
-            Self::SetIntersection,
-            Self::SetDifference,
-            Self::SetSymmetricDifference,
             Self::MapClear,
             Self::MapSize,
             Self::MapForEach,
