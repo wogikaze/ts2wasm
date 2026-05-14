@@ -21,10 +21,10 @@ use super::emitter::{
 use super::stmt_emit::LoopContext;
 
 fn tagged_number_sentinel(payload: i32) -> i32 {
-    ((payload as i64) << (ValueTag::NUMBER_SHIFT as u32)) as i32 | ValueTag::NUMBER
+    ValueTag::encode_reserved_number_payload(payload)
 }
 
-const DIRECT_LOCAL_TOKEN_PAYLOAD_BASE: i32 = ValueTag::NAN_PAYLOAD + 16;
+const DIRECT_LOCAL_TOKEN_PAYLOAD_BASE: i32 = ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE;
 
 fn tagged_direct_local_token(func_id: i32) -> i32 {
     tagged_number_sentinel(DIRECT_LOCAL_TOKEN_PAYLOAD_BASE + func_id)
@@ -35,6 +35,8 @@ fn is_tagged_number_sentinel(value: i32) -> bool {
         || value == tagged_number_sentinel(ValueTag::INFINITY_PAYLOAD)
         || value == tagged_number_sentinel(ValueTag::NEG_INFINITY_PAYLOAD)
         || value == tagged_number_sentinel(ValueTag::NEG_ZERO_PAYLOAD)
+        || value == ValueTag::BUILTIN_PARSE_INT_VALUE
+        || value == ValueTag::BUILTIN_PARSE_FLOAT_VALUE
 }
 
 pub(super) const CLOSURE_SENTINEL: i32 = -2;

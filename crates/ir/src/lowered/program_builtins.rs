@@ -1,11 +1,37 @@
 use super::FunctionSignature;
 use crate::RuntimeFn;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
-use crate::lowered::types::FuncId;
+use crate::lowered::types::{FuncId, LoweredExpr};
 use std::collections::HashMap;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
+use ts2wasm_runtime_abi::ValueTag;
 use ts2wasm_source::Span;
 use ts2wasm_syntax::UnaryOp;
+
+pub(crate) fn builtin_function_token_value(name: &str) -> Option<i32> {
+    match name {
+        "parseInt" => Some(ValueTag::BUILTIN_PARSE_INT_VALUE),
+        "parseFloat" => Some(ValueTag::BUILTIN_PARSE_FLOAT_VALUE),
+        _ => None,
+    }
+}
+
+pub(crate) fn builtin_function_token_expr(name: &str, span: Span) -> Option<LoweredExpr> {
+    builtin_function_token_value(name).map(|value| LoweredExpr::Number(value, span))
+}
+
+pub(crate) fn builtin_function_data_descriptor(name: &str, span: Span) -> Option<LoweredExpr> {
+    Some(LoweredExpr::ObjectNew {
+        props: vec![
+            ("value".to_owned(), builtin_function_token_expr(name, span)?),
+            ("writable".to_owned(), LoweredExpr::Bool(true, span)),
+            ("enumerable".to_owned(), LoweredExpr::Bool(false, span)),
+            ("configurable".to_owned(), LoweredExpr::Bool(true, span)),
+        ],
+        non_enumerable: 0,
+        span,
+    })
+}
 
 pub(crate) fn resolve_method_to_runtime_fn(
     object: &ResolvedExpr,

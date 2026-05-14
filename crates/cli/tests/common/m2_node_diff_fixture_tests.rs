@@ -3454,6 +3454,11 @@ fn number_static_parse_matches_node_output() {
 }
 
 #[test]
+fn number_static_parse_properties_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-static-parse-properties.ts");
+}
+
+#[test]
 fn number_static_nan_and_finite_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/number-is-nan.ts",

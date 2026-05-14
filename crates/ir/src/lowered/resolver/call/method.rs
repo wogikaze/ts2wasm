@@ -1355,6 +1355,14 @@ impl super::super::Resolver {
         if !matches!(object, ResolvedExpr::Ident(name) if name == "Object") {
             return Ok(None);
         }
+        if method == "getOwnPropertyDescriptor"
+            && let [ResolvedExpr::Ident(target), ResolvedExpr::String(key)] = args
+            && target == "Number"
+            && let Some(desc) =
+                crate::lowered::program_builtins::builtin_function_data_descriptor(key, span)
+        {
+            return Ok(Some(desc));
+        }
         let Some(proxy) = args.first().and_then(|arg| {
             crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(&self.ctx, arg)
         }) else {

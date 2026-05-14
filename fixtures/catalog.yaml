@@ -351,6 +351,7 @@ directories:
     - number-formatting-decimal.ts
     - number-formatting.ts
     - number-static-parse.ts
+    - number-static-parse-properties.ts
     - object-assign-descriptors.ts
     - object-assign.ts
     - object-create.ts

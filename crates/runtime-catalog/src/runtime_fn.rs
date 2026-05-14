@@ -833,6 +833,7 @@ const TYPEOF_RUNTIME_STRINGS: &[&str] = &[
     "number",
     "string",
     "bigint",
+    "function",
 ];
 const BOOLEAN_TO_STRING_RUNTIME_STRINGS: &[&str] = &[RuntimeString::FALSE, RuntimeString::TRUE];
 const BIGINT_UNARY_MINUS_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];

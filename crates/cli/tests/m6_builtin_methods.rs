@@ -1195,6 +1195,16 @@ fn build_smoke_number_static_parse() {
 }
 
 #[test]
+fn build_smoke_number_static_parse_properties() {
+    let result = run_fixture("builtins-and-io/number-static-parse-properties.ts");
+    assert!(
+        result.is_ok(),
+        "Number.parseInt/parseFloat property metadata should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_date_to_string() {
     let result = run_fixture("builtins-and-io/date-to-string-timezone-unsupported.ts");
     assert!(
