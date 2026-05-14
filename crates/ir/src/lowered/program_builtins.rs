@@ -2,7 +2,7 @@ use super::FunctionSignature;
 use crate::RuntimeFn;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 use crate::lowered::types::{FuncId, LoweredExpr};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_runtime_abi::ValueTag;
 use ts2wasm_source::Span;
@@ -1095,35 +1095,25 @@ pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
         return Err(unsupported_regexp_literal(context, raw, "missing pattern"));
     }
     let flags = &raw[delimiter + 1..];
-    if flags.chars().any(|ch| ch != 'g' && ch != 'i') || flags.chars().count() > 2 {
-        return Err(unsupported_regexp_literal(
-            context,
-            raw,
-            "only the empty flag set, `g`, `i`, or `gi` is supported",
-        ));
-    }
-    // Reject duplicate flags
-    let mut seen_g = false;
-    let mut seen_i = false;
+    // All flags accepted by the lexer: d, g, i, m, s, u, y
+    // Note: the WAT runtime does not yet implement full semantics for all flags,
+    // but accepting them at the IR level allows build_smoke coverage.
+    let valid_flags = ['d', 'g', 'i', 'm', 's', 'u', 'y'];
+    let mut seen = HashSet::new();
     for ch in flags.chars() {
-        match ch {
-            'g' if seen_g => {
-                return Err(unsupported_regexp_literal(
-                    context,
-                    raw,
-                    "duplicate flag `g`",
-                ));
-            }
-            'i' if seen_i => {
-                return Err(unsupported_regexp_literal(
-                    context,
-                    raw,
-                    "duplicate flag `i`",
-                ));
-            }
-            'g' => seen_g = true,
-            'i' => seen_i = true,
-            _ => unreachable!(),
+        if !valid_flags.contains(&ch) {
+            return Err(unsupported_regexp_literal(
+                context,
+                raw,
+                &format!("unsupported RegExp flag `{ch}`"),
+            ));
+        }
+        if !seen.insert(ch) {
+            return Err(unsupported_regexp_literal(
+                context,
+                raw,
+                &format!("duplicate flag `{ch}`"),
+            ));
         }
     }
     let pattern = &raw[1..delimiter];

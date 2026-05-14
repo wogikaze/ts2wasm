@@ -1542,6 +1542,18 @@ fn build_smoke_regexp_flags_suy() {
     );
 }
 
+// RegExp advanced features: dotAll (s), unicode (u), sticky (y), multi-flag (gim)
+// Build-smoke test: accepts flags for literal route through method call path.
+#[test]
+fn build_smoke_regexp_advanced() {
+    let result = run_fixture("builtins-and-io/regexp-advanced.ts");
+    assert!(
+        result.is_ok(),
+        "RegExp advanced flags should build: {:?}",
+        result.err()
+    );
+}
+
 // Dynamic eval unsupported diagnostic (issue 111)
 #[test]
 fn dynamic_eval_unsupported_diagnostic() {
