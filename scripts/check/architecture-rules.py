@@ -232,7 +232,6 @@ FUNCTION_LENGTH_ALLOWLIST = {
     ("crates/ir/src/lowered/hir_to_mir.rs", "lower_hir_expr"): "P7: resolver decomposition -- 206 lines",
     ("crates/ir/src/lowered/resolver/array.rs", "lower_variable_array_callback_method"): "P7: resolver decomposition -- 200+ lines",
     ("crates/ir/src/lowered/resolver/call/method.rs", "lower_mcall_date_string"): "P7: resolver decomposition -- 200+ lines",
-    ("crates/ir/src/lowered/resolver/call/method.rs", "lower_mcall_array_runtime"): "I-20260513-HGGTXF: array method runtime dispatcher pending helper split -- 245 lines",
     ("crates/ir/src/lowered/resolver/call/method.rs", "lower_mcall_class_dispatch"): "P7: resolver decomposition -- 200+ lines",
     ("crates/resolve/src/name_resolver.rs", "resolve_stmt"): "P7: resolver decomposition -- 498 lines",
     ("crates/resolve/src/name_resolver.rs", "resolve_expr"): "P7: resolver decomposition -- 498 lines",

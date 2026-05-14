@@ -990,246 +990,344 @@ impl super::super::Resolver {
         if let Some(result) = self.lower_object_prototype_dispatch(object, method, args, span)? {
             return Ok(Some(result));
         }
-        if (method == "indexOf" || method == "includes")
-            && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
-            && !args.is_empty()
-        {
-            let mut lowered_args = vec![self.lower_expr(object)?, self.lower_expr(&args[0])?];
-            // Pass fromIndex if provided, otherwise default to 0
-            if args.len() > 1 {
-                lowered_args.push(self.lower_expr(&args[1])?);
-            } else {
-                lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
+        if let Some(result) = self.lower_mcall_array_index_of_includes(object, method, args)? {
+            return Ok(Some(result));
+        }
+        if let Some(result) = self.lower_mcall_array_concat(object, method, args)? {
+            return Ok(Some(result));
+        }
+        if let Some(result) = self.lower_mcall_array_at(object, method, args)? {
+            return Ok(Some(result));
+        }
+        if let Some(result) = self.lower_mcall_array_last_index_of(object, method, args)? {
+            return Ok(Some(result));
+        }
+        if let Some(result) = self.lower_mcall_array_slice_family(object, method, args)? {
+            return Ok(Some(result));
+        }
+        if let Some(result) = self.lower_mcall_identity_array_methods(object, method, args)? {
+            return Ok(Some(result));
+        }
+        if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
+            if let Some(result) = self.lower_mcall_multi_arg_push(object, intrinsic, args, span)? {
+                return Ok(Some(result));
             }
-            return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: if method == "indexOf" {
-                    RuntimeFn::ArrayIndexOf
-                } else {
-                    RuntimeFn::ArrayIncludes
-                },
-                args: lowered_args,
+            if let Some(result) = self.lower_mcall_math_min_max_multi(object, intrinsic, args)? {
+                return Ok(Some(result));
+            }
+            return self.lower_mcall_generic_runtime(object, intrinsic, args);
+        }
+        Ok(None)
+    }
 
-                span: Span::generated("runtime_call"),
-            }));
-        }
-        if method == "concat"
-            && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
+    fn lower_mcall_array_index_of_includes(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if !(method == "indexOf" || method == "includes")
+            || !crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
+            || args.is_empty()
         {
-            let mut lowered_args = vec![self.lower_expr(object)?];
-            lowered_args.extend(
-                args.iter()
-                    .map(|e| self.lower_expr(e))
-                    .collect::<Result<Vec<_>, _>>()?,
-            );
-            return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::ArrayConcat,
-                args: lowered_args,
+            return Ok(None);
+        }
+        let mut lowered_args = vec![self.lower_expr(object)?, self.lower_expr(&args[0])?];
+        if args.len() > 1 {
+            lowered_args.push(self.lower_expr(&args[1])?);
+        } else {
+            lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
+        }
+        Ok(Some(LoweredExpr::RuntimeCall {
+            intrinsic: if method == "indexOf" {
+                RuntimeFn::ArrayIndexOf
+            } else {
+                RuntimeFn::ArrayIncludes
+            },
+            args: lowered_args,
+            span: Span::generated("runtime_call"),
+        }))
+    }
 
-                span: Span::generated("runtime_call"),
-            }));
-        }
-        if method == "at"
-            && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
+    fn lower_mcall_array_concat(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if method != "concat"
+            || !crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
         {
-            let index = if let Some(arg) = args.first() {
-                self.lower_expr(arg)?
-            } else {
-                LoweredExpr::Undefined(Span::generated("undef"))
-            };
-            return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::ArrayAt,
-                args: vec![self.lower_expr(object)?, index],
-                span: Span::generated("runtime_call"),
-            }));
+            return Ok(None);
         }
-        if method == "lastIndexOf"
-            && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
+        let mut lowered_args = vec![self.lower_expr(object)?];
+        lowered_args.extend(
+            args.iter()
+                .map(|e| self.lower_expr(e))
+                .collect::<Result<Vec<_>, _>>()?,
+        );
+        Ok(Some(LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::ArrayConcat,
+            args: lowered_args,
+            span: Span::generated("runtime_call"),
+        }))
+    }
+
+    fn lower_mcall_array_at(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if method != "at"
+            || !crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
         {
-            let search = if let Some(arg) = args.first() {
-                self.lower_expr(arg)?
-            } else {
-                LoweredExpr::Undefined(Span::generated("undef"))
-            };
-            return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::ArrayLastIndexOf,
-                args: vec![self.lower_expr(object)?, search],
-                span: Span::generated("runtime_call"),
-            }));
+            return Ok(None);
         }
-        if crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
-            && matches!(method, "copyWithin" | "fill" | "slice" | "subarray")
+        let index = if let Some(arg) = args.first() {
+            self.lower_expr(arg)?
+        } else {
+            LoweredExpr::Undefined(Span::generated("undef"))
+        };
+        Ok(Some(LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::ArrayAt,
+            args: vec![self.lower_expr(object)?, index],
+            span: Span::generated("runtime_call"),
+        }))
+    }
+
+    fn lower_mcall_array_last_index_of(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if method != "lastIndexOf"
+            || !crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
         {
-            let receiver = self.lower_expr(object)?;
-            let intrinsic = if method == "subarray" {
-                RuntimeFn::ArraySlice
-            } else {
-                collection_method_runtime_fn_arg(method).expect("array method runtime")
-            };
-            let mut lowered_args = vec![receiver.clone()];
-            match method {
-                "copyWithin" => {
-                    for arg in args.iter().take(3) {
-                        lowered_args.push(self.lower_expr(arg)?);
-                    }
-                    while lowered_args.len() < 4 {
-                        lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
-                    }
+            return Ok(None);
+        }
+        let search = if let Some(arg) = args.first() {
+            self.lower_expr(arg)?
+        } else {
+            LoweredExpr::Undefined(Span::generated("undef"))
+        };
+        Ok(Some(LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::ArrayLastIndexOf,
+            args: vec![self.lower_expr(object)?, search],
+            span: Span::generated("runtime_call"),
+        }))
+    }
+
+    fn lower_mcall_array_slice_family(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if !crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
+            || !matches!(method, "copyWithin" | "fill" | "slice" | "subarray")
+        {
+            return Ok(None);
+        }
+        let receiver = self.lower_expr(object)?;
+        let intrinsic = if method == "subarray" {
+            RuntimeFn::ArraySlice
+        } else {
+            collection_method_runtime_fn_arg(method).expect("array method runtime")
+        };
+        let mut lowered_args = vec![receiver.clone()];
+        match method {
+            "copyWithin" => {
+                for arg in args.iter().take(3) {
+                    lowered_args.push(self.lower_expr(arg)?);
                 }
-                "slice" | "subarray" => {
-                    for arg in args.iter().take(2) {
-                        lowered_args.push(self.lower_expr(arg)?);
-                    }
-                    if lowered_args.len() == 2 {
-                        lowered_args.push(LoweredExpr::GetLength(
-                            Box::new(receiver),
-                            Span::generated("get_length"),
-                        ));
-                    }
-                }
-                _ => {
-                    lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<Result<
-                        Vec<_>,
-                        _,
-                    >>(
-                    )?);
+                while lowered_args.len() < 4 {
+                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
                 }
             }
-            return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic,
-                args: lowered_args,
-                span: Span::generated("runtime_call"),
-            }));
+            "slice" | "subarray" => {
+                for arg in args.iter().take(2) {
+                    lowered_args.push(self.lower_expr(arg)?);
+                }
+                if lowered_args.len() == 2 {
+                    lowered_args.push(LoweredExpr::GetLength(
+                        Box::new(receiver),
+                        Span::generated("get_length"),
+                    ));
+                }
+            }
+            _ => {
+                lowered_args.extend(
+                    args.iter()
+                        .map(|e| self.lower_expr(e))
+                        .collect::<Result<Vec<_>, _>>()?,
+                );
+            }
         }
-        if (method == "find"
+        Ok(Some(LoweredExpr::RuntimeCall {
+            intrinsic,
+            args: lowered_args,
+            span: Span::generated("runtime_call"),
+        }))
+    }
+
+    fn lower_mcall_identity_array_methods(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if !(method == "find"
             || method == "findIndex"
             || method == "findLast"
             || method == "findLastIndex"
             || method == "filter"
             || method == "every"
             || method == "some")
-            && is_identity_arrow_callback(args)
-            && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
+            || !is_identity_arrow_callback(args)
+            || !crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
         {
-            return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: match method {
-                    "find" => RuntimeFn::ArrayFind,
-                    "findIndex" => RuntimeFn::ArrayFindIndex,
-                    "findLast" => RuntimeFn::ArrayFindLast,
-                    "findLastIndex" => RuntimeFn::ArrayFindLastIndex,
-                    "filter" => RuntimeFn::ArrayFilter,
-                    "every" => RuntimeFn::ArrayEvery,
-                    "some" => RuntimeFn::ArraySome,
-                    _ => unreachable!(),
-                },
-                args: vec![self.lower_expr(object)?],
-
-                span: Span::generated("runtime_call"),
-            }));
+            return Ok(None);
         }
-        if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
-            if (intrinsic == RuntimeFn::ArrayPush || intrinsic == RuntimeFn::ArrayPushGrow)
-                && args.len() != 1
-            {
-                if !matches!(object, ResolvedExpr::Ident(_)) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "issue-271: multi-argument Array.prototype.push is currently supported only for identifier array receivers".to_owned(),
-                        span: Some(span),
+        Ok(Some(LoweredExpr::RuntimeCall {
+            intrinsic: match method {
+                "find" => RuntimeFn::ArrayFind,
+                "findIndex" => RuntimeFn::ArrayFindIndex,
+                "findLast" => RuntimeFn::ArrayFindLast,
+                "findLastIndex" => RuntimeFn::ArrayFindLastIndex,
+                "filter" => RuntimeFn::ArrayFilter,
+                "every" => RuntimeFn::ArrayEvery,
+                "some" => RuntimeFn::ArraySome,
+                _ => unreachable!(),
+            },
+            args: vec![self.lower_expr(object)?],
+            span: Span::generated("runtime_call"),
+        }))
+    }
 
-                        phase: None,
-                    });
-                }
-                let mut lowered_args = vec![self.lower_expr(object)?];
-                lowered_args.extend(
-                    args.iter()
-                        .map(|e| self.lower_expr(e))
-                        .collect::<Result<Vec<_>, _>>()?,
-                );
-                return Ok(Some(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeFn::ArrayPushMany,
-                    args: lowered_args,
+    fn lower_mcall_multi_arg_push(
+        &mut self,
+        object: &ResolvedExpr,
+        intrinsic: RuntimeFn,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if (intrinsic != RuntimeFn::ArrayPush && intrinsic != RuntimeFn::ArrayPushGrow)
+            || args.len() == 1
+        {
+            return Ok(None);
+        }
+        if !matches!(object, ResolvedExpr::Ident(_)) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-271: multi-argument Array.prototype.push is currently supported only for identifier array receivers".to_owned(),
+                span: Some(span),
+                phase: None,
+            });
+        }
+        let mut lowered_args = vec![self.lower_expr(object)?];
+        lowered_args.extend(
+            args.iter()
+                .map(|e| self.lower_expr(e))
+                .collect::<Result<Vec<_>, _>>()?,
+        );
+        Ok(Some(LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::ArrayPushMany,
+            args: lowered_args,
+            span: Span::generated("runtime_call"),
+        }))
+    }
 
-                    span: Span::generated("runtime_call"),
-                }));
-            }
-            if (intrinsic == RuntimeFn::MathMax || intrinsic == RuntimeFn::MathMin)
-                && args.len() > 2
-            {
-                let mut lowered_args = Vec::new();
-                if !matches!(
-                    object,
-                    ResolvedExpr::Ident(name)
-                        if name == "Math"
-                            || name == "JSON"
-                            || name == "Object"
-                            || name == "String"
-                ) {
-                    lowered_args.push(self.lower_expr(object)?);
-                }
-                for arg in args {
-                    lowered_args.push(self.lower_expr(arg)?);
-                }
-                let mut result = lowered_args[0].clone();
-                for arg in &lowered_args[1..] {
-                    result = LoweredExpr::RuntimeCall {
-                        intrinsic,
-                        args: vec![result, arg.clone()],
-
-                        span: Span::generated("runtime_call"),
-                    };
-                }
-                return Ok(Some(result));
-            }
-            // Handle zero-argument case for Math.max/min
-            if (intrinsic == RuntimeFn::MathMax || intrinsic == RuntimeFn::MathMin)
-                && args.is_empty()
-            {
-                use ts2wasm_runtime_abi::ValueTag;
-                let infinity_value = if intrinsic == RuntimeFn::MathMax {
-                    ValueTag::NUMBER_PAYLOAD_MIN
-                } else {
-                    ValueTag::NUMBER_PAYLOAD_MAX
-                };
-                return Ok(Some(LoweredExpr::Number(
-                    infinity_value,
-                    Span::generated("num"),
-                )));
-            }
-            let mut lowered_args = Vec::new();
-            let is_static_call = matches!(
-                object,
-                ResolvedExpr::Ident(name)
-                    if name == "Math"
-                        || name == "JSON"
-                        || name == "Object"
-                        || name == "String"
-                        || name == "Number"
-                        || name == "Boolean"
-                        || name == "Array"
-                        || name == "Promise"
-            );
-            if !is_static_call {
-                lowered_args.push(self.lower_expr(object)?);
-            }
-            lowered_args.extend(
-                args.iter()
-                    .map(|e| self.lower_expr(e))
-                    .collect::<Result<Vec<_>, _>>()?,
-            );
-            if intrinsic == RuntimeFn::ParseInt
-                && matches!(object, ResolvedExpr::Ident(name) if name == "Number")
-                && lowered_args.len() == 1
-            {
-                lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
-            }
-            return Ok(Some(LoweredExpr::RuntimeCall {
+    fn lower_mcall_math_min_max_multi(
+        &mut self,
+        object: &ResolvedExpr,
+        intrinsic: RuntimeFn,
+        args: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if intrinsic != RuntimeFn::MathMax && intrinsic != RuntimeFn::MathMin {
+            return Ok(None);
+        }
+        // Handle zero-argument case
+        if args.is_empty() {
+            use ts2wasm_runtime_abi::ValueTag;
+            let infinity_value = if intrinsic == RuntimeFn::MathMax {
+                ValueTag::NUMBER_PAYLOAD_MIN
+            } else {
+                ValueTag::NUMBER_PAYLOAD_MAX
+            };
+            return Ok(Some(LoweredExpr::Number(
+                infinity_value,
+                Span::generated("num"),
+            )));
+        }
+        // Handle multi-argument case (n > 2)
+        if args.len() <= 2 {
+            return Ok(None);
+        }
+        let mut lowered_args = Vec::new();
+        if !matches!(
+            object,
+            ResolvedExpr::Ident(name)
+                if name == "Math"
+                    || name == "JSON"
+                    || name == "Object"
+                    || name == "String"
+        ) {
+            lowered_args.push(self.lower_expr(object)?);
+        }
+        for arg in args {
+            lowered_args.push(self.lower_expr(arg)?);
+        }
+        let mut result = lowered_args[0].clone();
+        for arg in &lowered_args[1..] {
+            result = LoweredExpr::RuntimeCall {
                 intrinsic,
-                args: lowered_args,
-
+                args: vec![result, arg.clone()],
                 span: Span::generated("runtime_call"),
-            }));
+            };
         }
-        Ok(None)
+        Ok(Some(result))
+    }
+
+    fn lower_mcall_generic_runtime(
+        &mut self,
+        object: &ResolvedExpr,
+        intrinsic: RuntimeFn,
+        args: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        let mut lowered_args = Vec::new();
+        let is_static_call = matches!(
+            object,
+            ResolvedExpr::Ident(name)
+                if name == "Math"
+                    || name == "JSON"
+                    || name == "Object"
+                    || name == "String"
+                    || name == "Number"
+                    || name == "Boolean"
+                    || name == "Array"
+                    || name == "Promise"
+        );
+        if !is_static_call {
+            lowered_args.push(self.lower_expr(object)?);
+        }
+        lowered_args.extend(
+            args.iter()
+                .map(|e| self.lower_expr(e))
+                .collect::<Result<Vec<_>, _>>()?,
+        );
+        if intrinsic == RuntimeFn::ParseInt
+            && matches!(object, ResolvedExpr::Ident(name) if name == "Number")
+            && lowered_args.len() == 1
+        {
+            lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
+        }
+        Ok(Some(LoweredExpr::RuntimeCall {
+            intrinsic,
+            args: lowered_args,
+            span: Span::generated("runtime_call"),
+        }))
     }
 
     fn lower_static_proxy_object_call(
