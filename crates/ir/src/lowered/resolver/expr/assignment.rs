@@ -220,6 +220,27 @@ impl super::super::Resolver {
                 Span::generated("object_proto_set"),
             ));
         }
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(obj_local) = self.resolve_local(name)
+            && let Some(setter_id) = self
+                .ctx
+                .classes
+                .object_accessor_props
+                .get(&obj_local)
+                .and_then(|props| props.get(key))
+                .and_then(|prop| prop.set)
+        {
+            let lowered_args = self.lower_function_call_args(
+                setter_id,
+                LoweredExpr::Local(obj_local, Span::generated("local")),
+                std::slice::from_ref(value),
+            )?;
+            return Ok(LoweredExpr::Call {
+                kind: FunctionCallKind::User(setter_id),
+                args: lowered_args,
+                span: Span::generated("call"),
+            });
+        }
         let lowered_value = self.lower_expr(value)?;
         let lowered_object = self.lower_property_assignment_object(object)?;
         // Track function/arrow assignments on known locals so method calls
@@ -239,6 +260,20 @@ impl super::super::Resolver {
                     .entry(local_id)
                     .or_default()
                     .insert(key.to_owned(), fid);
+            }
+            if self
+                .ctx
+                .classes
+                .object_accessor_props
+                .get(&local_id)
+                .and_then(|props| props.get(key))
+                .is_none_or(|prop| prop.set.is_none())
+                && let Some(props) = self.ctx.classes.object_accessor_props.get_mut(&local_id)
+            {
+                props.remove(key);
+                if props.is_empty() {
+                    self.ctx.classes.object_accessor_props.remove(&local_id);
+                }
             }
         }
         Ok(object_kernel::ordinary_set(

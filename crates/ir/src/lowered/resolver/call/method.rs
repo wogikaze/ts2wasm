@@ -1717,6 +1717,41 @@ impl super::super::Resolver {
                 Span::generated("number_format"),
             )));
         }
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Object")
+            && method == "defineProperty"
+            && args.len() == 3
+        {
+            let lowered_target = self.lower_expr(&args[0])?;
+            let lowered_key = self.lower_expr(&args[1])?;
+            let lowered_desc = self.lower_expr(&args[2])?;
+            if let (ResolvedExpr::Ident(target_name), Some(static_key), Some(accessor)) = (
+                &args[0],
+                super::super::string::resolved_expr_static_property_key_value(&self.ctx, &args[1]),
+                self.accessor_prop_from_descriptor_expr(&lowered_desc),
+            ) && let Ok(target_local) = self.resolve_local(target_name)
+            {
+                self.ctx
+                    .classes
+                    .object_accessor_props
+                    .entry(target_local)
+                    .or_default()
+                    .entry(static_key)
+                    .and_modify(|existing| {
+                        if accessor.get.is_some() {
+                            existing.get = accessor.get;
+                        }
+                        if accessor.set.is_some() {
+                            existing.set = accessor.set;
+                        }
+                    })
+                    .or_insert(accessor);
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ObjectDefineProperty,
+                args: vec![lowered_target, lowered_key, lowered_desc],
+                span: Span::generated("runtime_call"),
+            }));
+        }
         if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
             if intrinsic == RuntimeFn::JsonParse {
                 if args.is_empty() || args.len() > 2 {

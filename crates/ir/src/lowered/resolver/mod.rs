@@ -410,6 +410,7 @@ impl Resolver {
                 } else {
                     lowered
                 };
+                let accessor_props = self.accessor_props_for_lowered_object_expr(&lowered);
                 if let Some(lowered_props) = self.function_props_for_lowered_object_expr(&lowered) {
                     function_props
                         .get_or_insert_with(HashMap::new)
@@ -539,6 +540,14 @@ impl Resolver {
                 } else {
                     self.ctx.classes.object_function_props.remove(&local_id);
                 }
+                if let Some(props) = accessor_props {
+                    self.ctx
+                        .classes
+                        .object_accessor_props
+                        .insert(local_id, props);
+                } else {
+                    self.ctx.classes.object_accessor_props.remove(&local_id);
+                }
                 crate::lowered::resolver::string::update_regexp_literal_local(
                     &mut self.ctx,
                     local_id,
@@ -601,6 +610,7 @@ impl Resolver {
                 } else {
                     self.lower_expr(expr)?
                 };
+                let accessor_props = self.accessor_props_for_lowered_object_expr(&lowered);
                 if let Some(lowered_props) = self.function_props_for_lowered_object_expr(&lowered) {
                     function_props
                         .get_or_insert_with(HashMap::new)
@@ -716,6 +726,14 @@ impl Resolver {
                         .insert(local_id, props);
                 } else {
                     self.ctx.classes.object_function_props.remove(&local_id);
+                }
+                if let Some(props) = accessor_props {
+                    self.ctx
+                        .classes
+                        .object_accessor_props
+                        .insert(local_id, props);
+                } else {
+                    self.ctx.classes.object_accessor_props.remove(&local_id);
                 }
                 crate::lowered::resolver::string::update_regexp_literal_local(
                     &mut self.ctx,

@@ -3,6 +3,7 @@ use super::super::{
     function_body_is_strict,
 };
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::lowered::classes::ObjectAccessorProp;
 use crate::lowered::facts::FunctionMethodKind;
 use crate::lowered::*;
 use std::collections::HashMap;
@@ -694,6 +695,53 @@ impl super::super::Resolver {
         }
     }
 
+    pub(crate) fn accessor_props_for_lowered_object_expr(
+        &self,
+        expr: &LoweredExpr,
+    ) -> Option<HashMap<String, ObjectAccessorProp>> {
+        let mut accessor_props = HashMap::new();
+        self.collect_lowered_object_accessor_props(expr, &mut accessor_props)?;
+        if accessor_props.is_empty() {
+            None
+        } else {
+            Some(accessor_props)
+        }
+    }
+
+    fn collect_lowered_object_accessor_props(
+        &self,
+        expr: &LoweredExpr,
+        accessor_props: &mut HashMap<String, ObjectAccessorProp>,
+    ) -> Option<()> {
+        match expr {
+            LoweredExpr::ObjectNew { .. } => Some(()),
+            LoweredExpr::Block { stmts, result, .. } => {
+                let LoweredExpr::Local(object_local, _) = result.as_ref() else {
+                    return None;
+                };
+                let mut saw_object_init = false;
+                for stmt in stmts {
+                    match stmt {
+                        LoweredStmt::Let(local, value, _) if local == object_local => {
+                            self.collect_lowered_object_accessor_props(value, accessor_props)?;
+                            saw_object_init = true;
+                        }
+                        LoweredStmt::Expr(expr, _) if saw_object_init => {
+                            self.apply_lowered_object_property_write_to_accessor_props(
+                                *object_local,
+                                expr,
+                                accessor_props,
+                            )?;
+                        }
+                        _ => {}
+                    }
+                }
+                saw_object_init.then_some(())
+            }
+            _ => None,
+        }
+    }
+
     fn collect_lowered_object_function_props(
         &self,
         expr: &LoweredExpr,
@@ -767,6 +815,85 @@ impl super::super::Resolver {
                 Some(())
             }
             _ => Some(()),
+        }
+    }
+
+    fn apply_lowered_object_property_write_to_accessor_props(
+        &self,
+        object_local: LocalId,
+        expr: &LoweredExpr,
+        accessor_props: &mut HashMap<String, ObjectAccessorProp>,
+    ) -> Option<()> {
+        match expr {
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ObjectDefineProperty,
+                args,
+                ..
+            } if args.len() == 3
+                && matches!(&args[0], LoweredExpr::Local(local, _) if *local == object_local) =>
+            {
+                let key = self.lowered_static_property_key(&args[1])?;
+                self.apply_accessor_descriptor_value(key, &args[2], accessor_props);
+                Some(())
+            }
+            LoweredExpr::PropertySet {
+                object, key, value, ..
+            } if matches!(object.as_ref(), LoweredExpr::Local(local, _) if *local == object_local) =>
+            {
+                if let Some(prop) = accessor_props.get(key)
+                    && prop.set.is_some()
+                {
+                    return Some(());
+                }
+                if !matches!(value.as_ref(), LoweredExpr::ArrowFn { .. }) {
+                    accessor_props.remove(key);
+                }
+                Some(())
+            }
+            _ => Some(()),
+        }
+    }
+
+    pub(crate) fn accessor_prop_from_descriptor_expr(
+        &self,
+        desc: &LoweredExpr,
+    ) -> Option<ObjectAccessorProp> {
+        let LoweredExpr::ObjectNew { props, .. } = desc else {
+            return None;
+        };
+        let mut accessor = ObjectAccessorProp::default();
+        for (key, value) in props {
+            match (key.as_str(), value) {
+                ("get", LoweredExpr::ArrowFn { func_id, .. }) => accessor.get = Some(*func_id),
+                ("set", LoweredExpr::ArrowFn { func_id, .. }) => accessor.set = Some(*func_id),
+                _ => {}
+            }
+        }
+        (accessor.get.is_some() || accessor.set.is_some()).then_some(accessor)
+    }
+
+    fn apply_accessor_descriptor_value(
+        &self,
+        key: String,
+        desc: &LoweredExpr,
+        accessor_props: &mut HashMap<String, ObjectAccessorProp>,
+    ) {
+        if let Some(accessor) = self.accessor_prop_from_descriptor_expr(desc) {
+            accessor_props
+                .entry(key)
+                .and_modify(|existing| {
+                    if accessor.get.is_some() {
+                        existing.get = accessor.get;
+                    }
+                    if accessor.set.is_some() {
+                        existing.set = accessor.set;
+                    }
+                })
+                .or_insert(accessor);
+            return;
+        }
+        if matches!(desc, LoweredExpr::ObjectNew { .. }) {
+            accessor_props.remove(&key);
         }
     }
 

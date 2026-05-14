@@ -106,6 +106,27 @@ impl super::super::Resolver {
             return self.lower_private_field_get(object, key, span);
         }
         if let ResolvedExpr::Ident(name) = object
+            && let Ok(obj_local) = self.resolve_local(name)
+            && let Some(getter_id) = self
+                .ctx
+                .classes
+                .object_accessor_props
+                .get(&obj_local)
+                .and_then(|props| props.get(key))
+                .and_then(|prop| prop.get)
+        {
+            let lowered_args = self.lower_function_call_args(
+                getter_id,
+                LoweredExpr::Local(obj_local, Span::generated("local")),
+                &[],
+            )?;
+            return Ok(LoweredExpr::Call {
+                kind: FunctionCallKind::User(getter_id),
+                args: lowered_args,
+                span: Span::generated("call"),
+            });
+        }
+        if let ResolvedExpr::Ident(name) = object
             && self.resolve_func(name.as_str()).is_ok()
         {
             // Function metadata properties (name, length, prototype) go directly
