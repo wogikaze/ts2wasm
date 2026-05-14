@@ -831,6 +831,7 @@ pub(crate) fn build_multi_section_file(
     host_deny: bool,
 ) -> Result<crate::CompileReport<()>, Diagnostic> {
     let mut modules = Vec::new();
+    let mut all_functions = Vec::new();
     for (i, (name, section_source)) in sections.iter().enumerate() {
         let section_path = Path::new(name);
         if !parse::is_typescript_virtual_section(section_path) {
@@ -841,10 +842,11 @@ pub(crate) fn build_multi_section_file(
         } else {
             input
         };
-        if let Some(module_info) =
+        if let Some((module_info, functions)) =
             lower_source_as_module_body(section_source, semantic_path, i + 1, name.clone())?
         {
             modules.push(module_info);
+            all_functions.extend(functions);
         }
     }
 
@@ -860,7 +862,7 @@ pub(crate) fn build_multi_section_file(
     let lowered = lowered::LoweredProgram {
         top_level_statements: vec![],
         top_level_locals: vec![],
-        functions: vec![],
+        functions: all_functions,
         modules,
     };
 
@@ -894,7 +896,7 @@ fn lower_source_as_module_body(
     semantic_path: &Path,
     module_id: usize,
     specifier: String,
-) -> Result<Option<lowered::ModuleInfo>, Diagnostic> {
+) -> Result<Option<(lowered::ModuleInfo, Vec<lowered::LoweredFunction>)>, Diagnostic> {
     validate_type_reference_directives(source).map_err(|d| d.with_phase("validator"))?;
     let program = parse_program(source).map_err(|d| d.with_phase("parser"))?;
     validate_ast(&program).map_err(|d| d.with_phase("ast-validator"))?;
@@ -927,12 +929,15 @@ fn lower_source_as_module_body(
         return Ok(None);
     }
 
-    Ok(Some(lowered::ModuleInfo {
-        id: module_id,
-        specifier,
-        statements,
-        locals_count: lowered_module.top_level_locals.len(),
-    }))
+    Ok(Some((
+        lowered::ModuleInfo {
+            id: module_id,
+            specifier,
+            statements,
+            locals_count: lowered_module.top_level_locals.len(),
+        },
+        lowered_module.functions,
+    )))
 }
 
 fn lower_static_module_body_for_build(
