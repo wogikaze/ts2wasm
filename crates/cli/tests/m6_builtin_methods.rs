@@ -143,6 +143,16 @@ fn build_smoke_object_keys_method() {
 }
 
 #[test]
+fn build_smoke_object_get_own_property_names_method() {
+    let result = run_fixture("builtins-and-io/object-get-own-property-names.ts");
+    assert!(
+        result.is_ok(),
+        "Object.getOwnPropertyNames should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_values_method() {
     let result = run_fixture("builtins-and-io/object-values.ts");
     assert!(

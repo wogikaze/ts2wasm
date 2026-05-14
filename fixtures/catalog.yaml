@@ -371,6 +371,7 @@ directories:
     - object-freeze.ts
     - object-get-own-property-descriptor-unsupported.ts
     - object-get-own-property-descriptor.ts
+    - object-get-own-property-names.ts
     - object-get-prototype-of.ts
     - object-has-own.ts
     - object-has-own-property.ts

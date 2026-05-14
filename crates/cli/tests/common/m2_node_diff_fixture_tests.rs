@@ -3923,6 +3923,11 @@ fn object_get_prototype_of_matches_node() {
 }
 
 #[test]
+fn object_get_own_property_names_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-get-own-property-names.ts");
+}
+
+#[test]
 fn object_keys_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-keys.ts");
 }
