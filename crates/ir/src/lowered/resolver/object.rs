@@ -287,15 +287,32 @@ impl super::Resolver {
                             }
                             continue;
                         }
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message:
-                                "issue-274: object literal spread is only supported for object literals and known static object-literal locals in this milestone"
-                                    .to_owned(),
-                            span: None,
-
-                            phase: None,
-                        });
+                        if !initialized {
+                            stmts.push(LoweredStmt::Let(
+                                object_local,
+                                LoweredExpr::ObjectNew {
+                                    props: std::mem::take(&mut pending),
+                                    non_enumerable: 0,
+                                    span: Span::generated("object_new"),
+                                },
+                                Span::generated("object_literal"),
+                            ));
+                            initialized = true;
+                        }
+                        let spread_expr = LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::ObjectSpread,
+                            args: vec![
+                                LoweredExpr::Local(object_local, Span::generated("local")),
+                                self.lower_expr(value)?,
+                            ],
+                            span: Span::generated("object_spread"),
+                        };
+                        stmts.push(LoweredStmt::Assign(
+                            object_local,
+                            spread_expr,
+                            Span::generated("object_spread"),
+                        ));
+                        continue;
                     }
                     if self.is_function_identifier(value) {
                         continue;

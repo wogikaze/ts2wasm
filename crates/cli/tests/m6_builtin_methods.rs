@@ -193,6 +193,16 @@ fn build_smoke_object_literal_getter_descriptor() {
 }
 
 #[test]
+fn build_smoke_object_literal_computed_spread() {
+    let result = run_fixture("core-expressions/object-literal-computed-spread.ts");
+    assert!(
+        result.is_ok(),
+        "object literal computed key plus spread should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_entries_method() {
     let result = run_fixture("builtins-and-io/object-entries.ts");
     assert!(
