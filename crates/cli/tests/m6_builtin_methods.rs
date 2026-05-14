@@ -1426,6 +1426,16 @@ fn build_smoke_date_set_utc_methods_defaults() {
 }
 
 #[test]
+fn build_smoke_date_set_local_components() {
+    let result = run_fixture("builtins-and-io/date-set-local-components.ts");
+    assert!(
+        result.is_ok(),
+        "Date local-time setter fixture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_date_complete() {
     let result = run_fixture("builtins-and-io/date-complete.ts");
     assert!(

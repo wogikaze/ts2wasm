@@ -221,6 +221,7 @@ directories:
     - date-now-live-time-unsupported.ts
     - date-now-live-time.ts
     - date-set-time.ts
+    - date-set-local-components.ts
     - date-set-utc-components.ts
     - date-set-utc-full-year.ts
     - date-set-utc-methods.ts

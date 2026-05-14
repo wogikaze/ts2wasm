@@ -2503,6 +2503,11 @@ fn date_set_utc_methods_defaults_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn date_set_local_components_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-set-local-components.ts");
+}
+
+#[test]
 fn date_get_timezone_offset_fixture_builds() {
     // getTimezoneOffset uses a host shim that may not be linked in iwasm;
     // only verify compilation.
