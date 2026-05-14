@@ -604,6 +604,7 @@ impl super::super::Resolver {
             }));
         }
         // RegExp.prototype.toString for literal-backed RegExp
+        // Function.prototype.toString for named function identifiers
         if method == "toString" {
             match object {
                 ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
@@ -613,6 +614,12 @@ impl super::super::Resolver {
                 ResolvedExpr::New { class_name, .. } if class_name == "RegExp" => {
                     // Lower the new RegExp to string representation, toString returns it
                     return Ok(Some(self.lower_expr(object)?));
+                }
+                ResolvedExpr::Ident(name) if self.is_function_identifier(object) => {
+                    return Ok(Some(LoweredExpr::String(
+                        format!("function {}() {{ [native code] }}", name),
+                        Span::generated("str"),
+                    )));
                 }
                 _ => {}
             }

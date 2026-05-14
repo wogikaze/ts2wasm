@@ -2404,3 +2404,9 @@ fn build_smoke_console_complete() {
 fn build_smoke_native_error_types() {
     run_fixture("builtins-and-io/error-name.ts").expect("NativeError types should build");
 }
+
+#[test]
+fn build_smoke_function_prototype() {
+    run_fixture("builtins-and-io/function-prototype.ts")
+        .expect("Function.prototype.name/length should build");
+}
