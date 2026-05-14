@@ -670,10 +670,10 @@ impl super::super::Resolver {
             return Some(LoweredExpr::Undefined(Span::generated("undef")));
         }
 
-        Some(LoweredExpr::ObjectNew {
-            props: Vec::new(),
-            non_enumerable: 0,
-            span: Span::generated("object_new"),
+        Some(LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::GlobalThis,
+            args: Vec::new(),
+            span: Span::generated("globalThis"),
         })
     }
 

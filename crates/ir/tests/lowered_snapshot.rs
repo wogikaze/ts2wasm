@@ -581,6 +581,29 @@ fn strict_function_expression_iife_return_this_lowers_to_undefined() {
 }
 
 #[test]
+fn sloppy_function_expression_iife_return_this_lowers_to_global_this() {
+    let program = parse_resolve_lower(
+        r#"
+        let value = (function() {
+          return this;
+        })();
+        "#,
+    );
+
+    assert!(matches!(
+        program.top_level_statements.as_slice(),
+        [LoweredStmt::Let(
+            _,
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::GlobalThis,
+                ..
+            },
+            _
+        )]
+    ));
+}
+
+#[test]
 fn strict_delete_identifier_reports_strict_delete_check() {
     let err = parse_resolve_lower_result(
         r#"
