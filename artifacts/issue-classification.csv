@@ -1,0 +1,332 @@
+id,status,priority,title,labels,category,directory,has_acceptance,has_evidence
+I-20260513-BQTVQV,open,P2,Runtime: WeakRef and FinalizationRegistry,type:feature area:runtime,implementation,issues,True,True
+I-20260513-DCRMZJ,open,P2,Runtime: full Unicode String.prototype.normalize,type:feature area:runtime feature:string-unicode,implementation,issues,False,True
+I-20260513-HDW7PQ,open,P2,Phase 4 (PR 4): Enable real test262 harness loading,type:feature area:ir area:compiler area:tooling,implementation,issues,True,True
+I-20260513-Q7B4E8,open,P2,"Runtime: RegExp advanced features (named groups, lookahead, lookbehind, Unicode, s/dotAll, u/unicode, y/sticky, flags)",type:feature area:runtime,implementation,issues,True,True
+I-20260513-WBEJBE,open,P2,Runtime: first-class Function object model,type:feature area:runtime area:ir,implementation,issues,True,True
+I-20260513-WHBN24,open,P2,Coverage: Add differential test infrastructure for Node.js oracle comparison on new features,type:tooling area:coverage,tooling,issues,True,True
+I-20260514-28R5VE,open,P2,Runtime: Function.prototype.toString source representation,type:feature area:runtime area:ir,implementation,issues,False,True
+I-20260514-9P5WP5,open,P2,Runtime: console API semantic parity,type:feature area:runtime,implementation,issues,False,True
+I-20260514-E2TCH8,open,P2,Runtime: full Intl.NumberFormat locale data and dynamic formatting parity,type:feature area:runtime feature:intl,implementation,issues,False,True
+I-20260514-SB757Q,open,P2,Runtime: full Intl.DateTimeFormat locale data and dynamic formatting parity,type:feature area:runtime feature:intl,implementation,issues,False,True
+I-20260515-7VB44K,open,P2,Explicit target CLI and future-target rejection,area:cli area:diagnostic type:feat,other,issues,True,True
+I-20260515-CWN7F3,open,P2,Architecture wave: runtime-subset unsupported diagnostics,type:architecture area:runtime area:coverage,architecture,issues,True,True
+I-20260515-FQT8DP,open,P0,Runtime ABI and Target Metadata in Artifacts,abi manifest backend,implementation,issues,True,True
+I-20260515-PMTJTQ,open,P1,Frontend gap: parse comma expression statement in Object.entries shard,area:frontend feature:test262 feature:object-literal,implementation,issues,False,True
+I-20260515-WPZXJA,open,P2,Runtime Object/GC Triage Labels and Trap Classes,runtime coverage,implementation,issues,True,True
+I-20260511-8MCC5W,done,P2,Add semantic coverage dashboard fields and current-state summary,docs coverage P11-semantic-coverage-unblock,docs,issues/done,True,True
+I-20260511-DP4579,done,P2,Add semantic coverage dashboard fields and current-state summary,docs coverage P11-semantic-coverage-unblock,docs,issues/done,True,True
+I-20260511-NY9MWE,done,P1,Implement assert.sameValue MVP and produce first positive test262 differential pass,feature coverage P11-semantic-coverage-unblock,implementation,issues/done,True,True
+I-20260511-P254BF,done,P1,Add final architecture completion gate,tooling cross P13-final-gate,tooling,issues/done,True,True
+I-20260511-XAJG2Y,done,P3,Reduce oversized functions to below 10 violations,refactor cross P11-llm-friendly-sizing,refactor,issues/done,True,True
+I-20260512-4HPWW7,done,P1,"Extract runtime-abi crate for RawValue tags, layout constants, and logical ABI definitions",refactor runtime P14-runtime-catalog-hardening,refactor,issues/done,True,True
+I-20260512-57AC7F,done,P3,Create differential fuzzing harness MVP,tooling cross P16-semantic-correctness,tooling,issues/done,True,True
+I-20260512-76JXWE,done,P2,Add host-import deny matrix and policy checker,tooling cross P15-test-hardening,tooling,issues/done,True,True
+I-20260512-779V5B,done,P2,Add runtime builtin semantic contracts,test runtime P16-semantic-correctness,test,issues/done,True,True
+I-20260512-94RA3P,done,P2,Add control-flow semantics differential suite,test cross P16-semantic-correctness,test,issues/done,True,True
+I-20260512-9S95AZ,done,P2,Harden backend-core WatWriter and raw WAT string usage,refactor backend P14-backend-encoder-hardening,refactor,issues/done,True,True
+I-20260512-9SPG37,done,P1,Add fixture assertion DSL for semantic expectations,tooling cross P16-semantic-correctness,tooling,issues/done,True,True
+I-20260512-A3KBHR,done,P1,"Add HIR and MIR variant dump, snapshot, and validator hard coverage",test ir P14-ir-contracts,test,issues/done,True,True
+I-20260512-AQS2RM,done,P2,Add RuntimeLinkPlan structural property tests,test runtime P15-test-hardening,test,issues/done,True,True
+I-20260512-ASYNC3,done,P2,Async await support coverage expansion,coverage async P16-semantic-correctness,implementation,issues/done,True,True
+I-20260512-B7XAPP,done,P1,Define semantic feature matrix for supported language subset,tooling cross P16-semantic-correctness,tooling,issues/done,True,True
+I-20260512-BTAP7K,done,P1,Builtin API coverage expansion,coverage builtin P16-semantic-correctness,other,issues/done,True,True
+I-20260512-CA5S2K,done,P1,Class implementation completion,coverage class P16-semantic-correctness,implementation,issues/done,True,True
+I-20260512-D8H29Y,done,P1,Final P15 test architecture completion gate,tooling cross P15-test-hardening,tooling,issues/done,True,True
+I-20260512-DTJWZG,done,P1,Add end-to-end smoke gate for differential test runner,tooling cross P15-test-hardening,tooling,issues/done,True,True
+I-20260512-E8CFVY,done,P2,Add parser property-based test suite,test frontend P15-test-hardening,test,issues/done,True,True
+I-20260512-F34FWD,done,P2,Add variant coverage tracking for parser and IR,tooling cross P15-test-hardening,tooling,issues/done,True,True
+I-20260512-FKP9TY,done,P2,Create property-based semantic generator MVP,tooling cross P16-semantic-correctness,tooling,issues/done,True,True
+I-20260512-FNCSEM,done,P1,Add function and method call semantic suite before MIR default path,P16 semantic call test ir,test,issues/done,True,True
+I-20260512-GACDQ7,done,P3,Add counterexample minimization and fixture promotion,tooling cross P16-semantic-correctness,tooling,issues/done,True,True
+I-20260512-GAKJG8,done,P2,Add wasm validation to the test pipeline,tooling cross P15-test-hardening,tooling,issues/done,True,True
+I-20260512-GJFQMJ,done,P3,Add semantic coverage dashboard and gate,tooling coverage P16-semantic-correctness,tooling,issues/done,True,True
+I-20260512-GQWP5X,done,P2,Add coverage regression detection gate,tooling coverage P15-test-hardening,tooling,issues/done,True,True
+I-20260512-H766NE,done,P2,Extract syntax crate from frontend parser implementation,refactor frontend P14-target-crate-layout,refactor,issues/done,True,True
+I-20260512-H7Q5TB,done,P1,"Canonicalize TestRecord JSONL schema across Rust, docs, and scripts",tooling shared P15-schema,tooling,issues/done,True,True
+I-20260512-HHTHV6,done,P2,"Add coupling hardening checks for fan-out, public API count, and match arm size",tooling cross P14-final-sizing,tooling,issues/done,True,True
+I-20260512-HMPATH,done,P1,Add feature-gated HIR to MIR to emit_mir pipeline and default switch rehearsal,compiler ir pipeline gate,implementation,issues/done,True,True
+I-20260512-HNYJK2,done,P1,Reconcile issue-number namespace and test plan bootstrap,tooling cross P15-test-hardening,tooling,issues/done,True,True
+I-20260512-HRSCVR,done,P2,Map HIR supported slice and UnsupportedSyntax boundary to semantic fixtures,P16 ir hir docs test,docs,issues/done,True,True
+I-20260512-JYE54F,done,P1,"Introduce CompletionRecord lowering for return, throw, break, continue, and try-finally",refactor ir P14-semantic-kernels,refactor,issues/done,True,True
+I-20260512-K6EYZF,done,P2,Add runtime ABI invariant tests,test runtime P15-test-hardening,test,issues/done,True,True
+I-20260512-K6MG3G,done,P2,"Extract runtime-abi crate for RawValue tags, layout constants, and logical ABI definitions",refactor runtime P14-target-crate-layout,refactor,issues/done,True,True
+I-20260512-K7925H,done,P3,Add flaky test detection tool,tooling cross P15-test-hardening,tooling,issues/done,True,True
+I-20260512-KD6EX9,done,P2,Add expression-level Node oracle differential generator,tooling cross P16-semantic-correctness,tooling,issues/done,True,True
+I-20260512-M2CDSE,done,P2,Add function/call semantics differential suite,test cross P16-semantic-correctness,test,issues/done,True,True
+I-20260512-MD7EX4,done,P2,Import export module system coverage expansion,coverage modules P16-semantic-correctness,other,issues/done,True,True
+I-20260512-MRDATA,done,P2,Introduce native MIR data model behind compatibility bridge,ir mir refactor model,refactor,issues/done,True,True
+I-20260512-MREWAT,done,P2,Replace MIR WAT bridge with native MIR emitter subset,backend mir emitter wat,implementation,issues/done,True,True
+I-20260512-MRVADT,done,P2,"Add native MIR validator, dump, and snapshot coverage",ir mir validator snapshot,implementation,issues/done,True,True
+I-20260512-MY2NAM,done,P2,Add numeric and coercion semantic property tests,test cross P16-semantic-correctness,test,issues/done,True,True
+I-20260512-NAM3R5,done,P1,Name resolution improvements,coverage resolver P16-semantic-correctness,other,issues/done,True,True
+I-20260512-P6GATE,done,P1,Establish P16 semantic correctness gate for default HIR to MIR pipeline,P16 semantic gate coverage ir,other,issues/done,True,True
+I-20260512-P8T2NS,done,P2,Add tracking integrity automation,tooling cross P15-test-hardening,tooling,issues/done,True,True
+I-20260512-PGTZGK,done,P2,Split coverage data into shards by category,refactor coverage P15-test-hardening,refactor,issues/done,True,True
+I-20260512-PVS8GZ,done,P1,Add semantic coverage and conformance regression gate,tooling coverage P14-final-coverage-gate,tooling,issues/done,True,True
+I-20260512-Q86HSF,done,P2,Move LLM-friendly hard gates to 1200-line files and 200-line functions,tooling cross P14-final-sizing,tooling,issues/done,True,True
+I-20260512-R7VG9N,done,P1,Harden RuntimeFn registry completeness and emission order checks,tooling runtime P14-runtime-catalog-hardening,tooling,issues/done,True,True
+I-20260512-RC694K,done,P2,Add semantic canary test suite,test coverage P15-test-hardening,test,issues/done,True,True
+I-20260512-RGPBN9,done,P2,Add negative diagnostic test suite,test frontend P15-test-hardening,test,issues/done,True,True
+I-20260512-RZ3SZJ,done,P3,Add performance smoke test,tooling cross P15-test-hardening,tooling,issues/done,True,True
+I-20260512-T2BVS5,done,P2,Add optional Validated<MirProgram> backend emission path,refactor backend P14-ir-contracts,refactor,issues/done,True,True
+I-20260512-TSG6R2,done,P1,TypeScript erased features and tsc tsgo ramp,coverage typescript P16-semantic-correctness,other,issues/done,True,True
+I-20260512-TZEJ9V,done,P1,Complete HIR to MIR lowering for the currently supported feature surface,refactor ir P14-ir-contracts,refactor,issues/done,True,True
+I-20260512-V3X7XM,done,P2,Add arrays/objects semantic vertical slice,test cross P16-semantic-correctness,test,issues/done,True,True
+I-20260512-WAENCD,done,P3,Add wasm-encoder parity fixtures for typed WasmModule output,backend wasmir encoder test,implementation,issues/done,True,True
+I-20260512-WASMDM,done,P2,Migrate one backend emitter domain to typed WasmIR module builders,backend wasmir refactor wat,refactor,issues/done,True,True
+I-20260512-WCBTTQ,done,P2,Add manifest snapshot equality tests,test runtime P15-test-hardening,test,issues/done,True,True
+I-20260512-WDPCAS,done,P1,Create fixture catalog for differential test infrastructure,test cross P15-test-hardening,test,issues/done,True,True
+I-20260512-WDTTTR,done,P1,P16 final semantic correctness gate,tooling cross P16-semantic-correctness,tooling,issues/done,True,True
+I-20260512-XAGDY9,done,P1,"Add boundary test layers for parser, resolver, builtin, HIR, MIR, link plan, manifest, and differential execution",test cross P14-final-test-strategy,test,issues/done,True,True
+I-20260512-XMNGJ8,done,P1,Complete Resolver state migration into LoweringCtx and domain envs,refactor ir P14-final-lowering-boundary,refactor,issues/done,True,True
+I-20260512-XWFZEN,done,P1,Unify differential test harness and JSONL record format,refactor cross P15-test-hardening,refactor,issues/done,True,True
+I-20260512-YTJXDQ,done,P2,Add runtime signature and stack-effect checks for emitted RuntimeFn calls,test backend P14-backend-encoder-hardening,test,issues/done,True,True
+I-20260512-ZBWT92,done,P1,"Route property get, set, has, delete, and Object.keys through object semantics kernel",refactor ir P14-semantic-kernels,refactor,issues/done,True,True
+I-20260512-ZCGZAJ,done,P1,Restore arrays-objects array semantic regression fixture,bug ir P16-semantic-correctness,other,issues/done,True,True
+I-20260512-ZG4Z8X,done,P2,"Extract semantics crate for builtin resolution, TypeScript erasure, and host API classification",refactor ir P14-target-crate-layout,refactor,issues/done,True,True
+I-20260512-ZKWBZT,done,P1,Final architecture decoupling completion gate,tooling cross P14-final-gate,tooling,issues/done,True,True
+I-20260512-ZR68NP,done,P2,Complete object semantics kernel for descriptors and prototype operations,refactor ir P14-semantic-kernels,refactor,issues/done,True,True
+I-20260512-ZTX3FX,done,P1,Convert resolver domain lowering APIs from &mut Resolver to LoweringCtx or narrow views,refactor ir P14-final-lowering-boundary,refactor,issues/done,True,True
+I-20260512-ZVJ8SH,done,P2,"Add final docs sync for architecture decoupling, current state, and feature-slice process",docs docs P14-final-docs,docs,issues/done,True,True
+I-20260512-ZY9CPM,done,P2,"Extract resolve crate for name resolution, scopes, symbols, and resolved IDs",refactor ir P14-target-crate-layout,refactor,issues/done,True,True
+I-20260513-2N86MN,done,P2,Template Literal Coverage Expansion,area:semantics type:coverage feature:template-literal,implementation,issues/done,True,True
+I-20260513-2T46FB,done,P2,Adopt manual Discord development report flow,area:workflow type:automation,other,issues/done,True,True
+I-20260513-3HPT27,done,P2,IR: for-await-of lowering to async iteration protocol,type:feature area:ir,implementation,issues/done,True,True
+I-20260513-3JH4K2,done,P2,Runtime: WeakMap and WeakSet complete implementation,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-42BCHF,done,P2,Frontend: Import assertions and module source phase imports,type:feature area:frontend,implementation,issues/done,True,True
+I-20260513-44ZS5Y,done,P2,Date Builtin Coverage Expansion,area:runtime type:coverage feature:date,implementation,issues/done,True,True
+I-20260513-47XE8P,done,P2,Arrow Function Coverage Expansion,area:semantics type:coverage feature:arrow-function,implementation,issues/done,False,True
+I-20260513-498Y7C,done,P2,"Runtime: Object static methods (fromEntries, hasOwn, groupBy, is, values, entries complete)",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-4CH3NF,done,P2,IR: strict mode this binding propagation and checks,type:feature area:ir,implementation,issues/done,True,True
+I-20260513-4D4T58,done,P2,"Runtime: Function.prototype toString, name, length, [Symbol.hasInstance]",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-4DKNG8,done,P2,"Runtime: Intl.NumberFormat complete (format, formatToParts, resolvedOptions, currency, compactDisplay, notation)",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-4E2BR9,done,P2,Phase 1 (PR 3): Method call dispatch for var-declared receivers,area:ir type:feature,implementation,issues/done,True,True
+I-20260513-4HFDDM,done,P1,Epic 5: TypeScript Erased Features + tsc/tsgo Ramp,area:frontend type:epic coverage:typescript,architecture,issues/done,False,True
+I-20260513-4YAEQY,done,P1,Runtime: Object.defineProperty descriptor defaults and accessors,type:bug area:runtime feature:object-descriptor,implementation,issues/done,True,True
+I-20260513-52CKHF,done,P2,"Runtime: String static methods (raw, fromCharCode, fromCodePoint) and prototype codePointAt, at, toLocaleString",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-538Q92,done,P2,Runtime: Iterator helpers and Iterator.prototype methods,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-5PGJNN,done,P2,"Host: WASI preview1 filesystem operations (path_open, fd_read, fd_write, fd_close, fd_seek, fd_prestat_get, fd_prestat_dir_name, path_create_directory, path_filestat_get, path_readlink, path_remove_directory, path_rename, path_symlink, path_unlink_file)",type:feature area:host,implementation,issues/done,True,True
+I-20260513-63PSDF,done,P2,Add scheduled Discord development reports,area:workflow type:automation,implementation,issues/done,True,True
+I-20260513-6CXJKX,done,P3,Promote Atomics from stub to minimal implementation,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-6QFZS7,done,P2,Runtime: Boolean.prototype and Symbol.prototype methods,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-7CWM4R,done,P1,"Runtime: BigInt arithmetic complete (add, sub, mul, div, mod, pow, unary minus, bitwise ops, shift, comparisons, toString with radix, valueOf, JSON)",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-7NNSH6,done,P1,Coverage: Add test262 negative test verified-pass classification ramp,type:tooling area:coverage,tooling,issues/done,True,True
+I-20260513-7XN478,done,P2,"Runtime: Number methods complete (isFinite, isNaN, isInteger, isSafeInteger, parseFloat, parseInt, toExponential, toFixed, toPrecision)",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-85ZGJE,done,P1,Runtime: RegExp.exec and RegExp.test basic implementation,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-8K66RZ,done,P2,Implement Proxy constructor and basic handler traps,type:feature area:runtime area:ir,implementation,issues/done,True,True
+I-20260513-96CWDH,done,P2,Runtime: Micro-task queue and Promise job integration,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-9MXNCK,done,P2,Epic 6: Name Resolution Improvements,area:ir type:epic coverage:name-resolution,architecture,issues/done,False,True
+I-20260513-9SQA5S,done,P1,Epic 2: Class Implementation Completion,area:semantics type:epic coverage:class,architecture,issues/done,False,True
+I-20260513-A5QDXM,done,P1,Runtime: Map iterator protocol and complete Map methods,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-ADSSF5,done,P1,"Runtime: Promise supplementary (Promise.any, Promise.withResolvers, AggregateError, Promise.allSettled complete)",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-ANDV3T,done,P1,"Runtime: TypedArray.prototype methods (map, filter, reduce, sort, forEach, every, some, find, fill, slice, subarray, set, copyWithin)",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-B49ZZE,done,P3,Implement eval: Function constructor and indirect eval,type:feature area:runtime area:ir,implementation,issues/done,True,True
+I-20260513-BAKAE9,done,P2,Function Call Semantics Coverage Expansion,area:semantics type:coverage feature:function,implementation,issues/done,False,True
+I-20260513-BBP8M7,done,P2,"Add object shorthand, computed property key, and method shorthand syntax",type:feature area:frontend area:ir,implementation,issues/done,True,True
+I-20260513-BM64RT,done,P1,"Runtime: RegExp @@match, @@replace, @@split, @@search and String.prototype methods integration",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-BRRFMC,done,P1,Epic 1: Builtin API Coverage Expansion,area:runtime type:epic coverage:builtin-api,architecture,issues/done,False,True
+I-20260513-C86NV6,done,P2,Coverage: Add performance regression gate for compiler throughput and WASM binary size,type:tooling area:coverage,tooling,issues/done,True,True
+I-20260513-CCBFJC,done,P1,"Implement generator functions: function*, yield, yield*, Generator.prototype",type:feature area:ir area:runtime area:backend,implementation,issues/done,True,True
+I-20260513-CY7M76,done,P2,Backend: Wasm-encoder backend parity with WAT emitter for runtime functions,type:feature area:backend,implementation,issues/done,True,True
+I-20260513-D3NPBP,done,P3,Promote Intl from stub to basic locale formatting,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-DXK94V,done,P2,IR: new.target metaproperty propagation in all function contexts,type:feature area:ir,implementation,issues/done,True,True
+I-20260513-E5SERG,done,P2,"Runtime: Atomics operations complete (add, sub, and, or, xor, exchange, compareExchange, load, store, isLockFree, wait, notify)",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-E7X3MQ,done,P2,Function Resolution Coverage Expansion,area:semantics type:coverage feature:function-resolution,implementation,issues/done,False,True
+I-20260513-EFHAQR,done,P1,Runtime: TypedArray constructors (all 11 types) and basic read/write operations,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-EFNBY5,done,P2,Frontend: Hashbang (#!...) grammar support,type:feature area:frontend,implementation,issues/done,True,True
+I-20260513-EGPKBA,done,P3,Implement for-await-of iteration protocol,type:feature area:ir area:runtime,implementation,issues/done,True,True
+I-20260513-EMRHSY,done,P2,String Builtin Coverage Expansion,area:runtime type:coverage feature:string-builtin,implementation,issues/done,False,True
+I-20260513-FGS4ZY,done,P3,Implement strict mode semantics for function scope and this binding,type:feature area:frontend area:ir area:runtime,implementation,issues/done,True,True
+I-20260513-FJVMB2,done,P2,Frontend: yield* delegation syntax and edge cases,type:feature area:frontend,implementation,issues/done,True,True
+I-20260513-FQ598J,done,P2,"Runtime: NativeError types (EvalError, RangeError, ReferenceError, SyntaxError, TypeError, URIError) with prototype methods",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-G4VZN4,done,P1,Runtime: TypedArray.prototype.set source-copy semantics,type:feature area:runtime,implementation,issues/done,False,True
+I-20260513-G84CR3,done,P1,Runtime: bound constructor function objects and new.target preservation,type:feature area:runtime area:ir,implementation,issues/done,True,True
+I-20260513-GHXE6E,done,P1,"Runtime: Global object properties (globalThis, Infinity, NaN, undefined, isNaN, isFinite, parseFloat, parseInt, encodeURI, decodeURI, encodeURIComponent, decodeURIComponent, escape, unescape)",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-GR96MN,done,P2,"Runtime: console API complete (log, warn, error, info, debug, table, group, time, count, assert)",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-GV9VC6,done,P2,Runtime: Math builtins complete (all 30+ functions),type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-GVBYCK,done,P2,Implement dynamic import() and module evaluation,type:feature area:ir area:runtime area:compiler,implementation,issues/done,True,True
+I-20260513-H5PZ9Z,done,P3,Implement async generator functions and yield*,type:feature area:ir area:runtime,implementation,issues/done,True,True
+I-20260513-HAY3Q2,done,P1,IR: generator runtime next state for visible iterators,type:feature area:ir area:runtime feature:generator,implementation,issues/done,True,True
+I-20260513-HD4K3Q,done,P2,"Runtime: eval global function and indirect eval via (0, eval)(src)",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-HGGTXF,done,P2,Architecture: split size-gate allowlisted modules,type:techdebt area:architecture gate,refactor,issues/done,True,True
+I-20260513-HHFZF6,done,P2,RegExp Literal Coverage Expansion,area:runtime type:coverage feature:regexp-literal,implementation,issues/done,True,True
+I-20260513-HRH6X9,done,P2,Array Builtin Coverage Expansion,area:runtime type:coverage feature:array-builtin,implementation,issues/done,False,True
+I-20260513-J2J94W,done,P1,Fix differential_jsonl nextest fixture discovery,test-hardening nextest,implementation,issues/done,False,True
+I-20260513-JMR4HH,done,P1,Architecture: retire current size gate baseline,type:techdebt area:architecture gate,refactor,issues/done,True,True
+I-20260513-JXXWGP,done,P2,IR: import.meta and import.meta.url/property access,type:feature area:ir,implementation,issues/done,True,True
+I-20260513-K2VDRP,done,P1,Implement async/await Promise integration for state-machine completion,type:feature area:runtime area:ir,implementation,issues/done,True,True
+I-20260513-K5CTR5,done,P1,Proxy remaining traps and revocable,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-KDBEXV,done,P2,"Runtime: Intl.DateTimeFormat complete (format, formatToParts, resolvedOptions, timeZone, localeMatcher)",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-KFPJWB,done,P1,Host: test262 $262 global and harness environment,type:feature area:host,implementation,issues/done,True,True
+I-20260513-KJ33TG,done,P2,Fix Discord webhook report sender user agent,area:workflow type:bug,implementation,issues/done,True,True
+I-20260513-KZ84SA,done,P2,Phase 3 (PR 1): Prototype property assignment,area:ir type:feature,implementation,issues/done,True,True
+I-20260513-M2JFFD,done,P1,"Coverage: Ramp test262 sampler to full 53,469 by removing sampler limit",type:tooling area:coverage,tooling,issues/done,True,True
+I-20260513-MWJWKV,done,P1,IR: generator branch and loop resume labels,type:feature area:ir area:runtime feature:generator,implementation,issues/done,True,True
+I-20260513-N2M4TX,done,P2,"Runtime: ArrayBuffer.isView, transfer, and SharedArrayBuffer basic",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-NA8JG2,done,P2,"Runtime: Object.prototype methods (hasOwnProperty, propertyIsEnumerable, isPrototypeOf, toString, valueOf, toLocaleString, __proto__ getter/setter)",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-NABQX3,done,P2,"Frontend: Object literal shorthand (property shorthand, method shorthand, computed property keys)",type:feature area:frontend,implementation,issues/done,True,True
+I-20260513-NF7ZSE,done,P1,IR: Preserve decimal numeric literals for runtime semantics,area:ir area:frontend type:bug coverage:builtin-api,implementation,issues/done,False,True
+I-20260513-NG7J7B,done,P1,"Wire well-known Symbol runtime behavior: iterator, hasInstance, toPrimitive, toStringTag",type:feature area:runtime area:ir,implementation,issues/done,True,True
+I-20260513-NHJK6T,done,P1,Runtime: Proxy handler traps complete (13 traps + Proxy.revocable),type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-P494YQ,done,P2,Runtime: Date prototype methods complete and Date.parse,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-P5PH9E,done,P1,IR: lazy generator resume side effects,type:feature area:ir area:runtime feature:generator,implementation,issues/done,True,True
+I-20260513-P6XFHF,done,P2,"Runtime: Set supplementary (Set.isDisjointFrom, isSubsetOf, isSupersetOf, union, intersection, difference, symmetricDifference)",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-P7TFAW,done,P2,Runtime: DataView complete get/set methods,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-PDC7BH,done,P1,Runtime: Array iterator methods return iterator objects,area:runtime type:bug coverage:builtin-api,implementation,issues/done,False,True
+I-20260513-PP836Q,done,P1,Runtime: Set iterator protocol and complete Set methods,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-PPAG7E,done,P2,Runtime: JSON.stringify replacer/space and JSON.parse reviver,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-PY42B3,done,P2,Epic 4: Import/Export Module System,area:frontend type:epic coverage:module,architecture,issues/done,False,True
+I-20260513-QN43RX,done,P2,Frontend: export * as ns from 'module' and import attributes,type:feature area:frontend,implementation,issues/done,True,True
+I-20260513-QP229Y,done,P1,Fix remaining workspace clippy warnings,clippy test-hardening ir frontend,implementation,issues/done,False,True
+I-20260513-R6HZCH,done,P2,"Runtime: Array.fromAsync, Array.prototype with/toSpliced/toSorted/toReversed, findLast, findLastIndex",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-RBAASM,done,P1,Coverage: Ramp test262 sampler from 9K to 53K with all features,type:tooling area:coverage,tooling,issues/done,True,True
+I-20260513-RETS8F,done,P2,IR: dynamic import() lowering to ModuleLoad with async evaluation,type:feature area:ir,implementation,issues/done,True,True
+I-20260513-RHVKZY,done,P2,Promote int32 typed stress to node differential,area:coverage type:test,test,issues/done,True,True
+I-20260513-STV458,done,P2,IR: Proxy operation insertion for property get/set/has/delete,type:feature area:ir,implementation,issues/done,True,True
+I-20260513-SVEAYX,done,P2,Runtime: dynamic non-callable local calls should report TypeError parity,area:runtime type:bug coverage:m2-node-diff,implementation,issues/done,False,True
+I-20260513-T27KTA,done,P1,"Runtime: Function.prototype bind, call, apply",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-V6T2AK,done,P2,Implement ES module live bindings and export mutation,type:feature area:ir area:runtime,implementation,issues/done,True,True
+I-20260513-V832BD,done,P1,"Runtime: String.prototype supplementary methods (normalize, localeCompare, matchAll, replaceAll advanced, isWellFormed, toWellFormed, trimStart, trimEnd, padStart, padEnd, repeat)",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-VSV8AF,done,P1,IR: generator state-machine lowering,type:feature area:ir,implementation,issues/done,True,True
+I-20260513-VT59SR,done,P2,Runtime: Error subclasses with stack and cause support,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-VWANM5,done,P2,Epic 3: Async/Await Support,area:semantics type:epic coverage:async,architecture,issues/done,False,True
+I-20260513-W9X2Z8,done,P2,"Host: Node.js host shim for console, fs, process, Buffer APIs",type:feature area:host,implementation,issues/done,True,True
+I-20260513-WCQRGY,done,P2,Runtime: Symbol.for/keyFor global registry and Symbol.description,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-WHZBPK,done,P2,Arguments Object Coverage Expansion,area:semantics type:coverage feature:arguments-object,implementation,issues/done,True,True
+I-20260513-WJJEPZ,done,P1,Coverage: Expand semantic canary to cover all implemented features,type:tooling area:coverage,tooling,issues/done,True,True
+I-20260513-WMVZE3,done,P2,IR: super.prop in object literal methods and super() in derived class constructors,type:feature area:ir,implementation,issues/done,True,True
+I-20260513-WRNQW8,done,P1,Fix runtime-abi clippy assertions-on-constants,runtime clippy test-hardening,implementation,issues/done,False,True
+I-20260513-X6TY2M,done,P2,Runtime: Atomics.waitAsync and Atomics.pause for WebAssembly threads,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-X9H3GT,done,P1,Runtime: array push recursive growth fixture times out under iwasm,area:runtime type:bug coverage:m2-node-diff,implementation,issues/done,False,True
+I-20260513-XAX975,done,P2,Complete BigInt runtime arithmetic and operations,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-XJSRR2,done,P2,"IR: Destructuring pattern lowering (array destructuring with defaults, nested patterns, rest, object destructuring with rename, computed keys, defaults)",type:feature area:ir,implementation,issues/done,True,True
+I-20260513-YHH93Y,done,P2,Support sparse array (holes) in Array operations,type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-YHYJN7,done,P2,"Runtime: Map supplementary (Map.groupBy, Map.prototype key types complete with NaN, -0, object identity)",type:feature area:runtime,implementation,issues/done,True,True
+I-20260513-ZGXFXW,done,P2,Runtime: Symbol() without description should match Node string output,area:runtime type:bug feature:symbol,implementation,issues/done,False,True
+I-20260513-ZQKKN7,done,P2,Object Literal Coverage Expansion,area:semantics type:coverage feature:object-literal,implementation,issues/done,True,True
+I-20260513-ZWBXQE,done,P2,Phase 2 (PR 2): Function self-reference in body,area:ir type:feature,implementation,issues/done,True,True
+I-20260514-2HPZ2K,done,P2,Runtime: Math trig/log/f64 semantic parity,type:feature area:runtime,implementation,issues/done,False,True
+I-20260514-5DDDNE,done,P0,fix: InvariantViolation in parseInt,area:backend area:builtins,implementation,issues/done,True,True
+I-20260514-67ZV8S,done,P0,Unsupported: object-literal edge case gaps in test262 (307 cases),area:semantics feature:object-literal,implementation,issues/done,True,True
+I-20260514-7NX8Z6,done,P2,Runtime: Date setter methods and remaining prototype completion,type:feature area:runtime,implementation,issues/done,False,True
+I-20260514-7QNEQX,done,P3,Coverage: investigate benchmark tracker compile-time regression alerts,type:bug area:coverage perf,implementation,issues/done,False,True
+I-20260514-8CFHJM,done,P1,Lower mutable closure captures in nested object methods,area:ir feature:functions feature:object-literal,implementation,issues/done,False,True
+I-20260514-A3PEKZ,done,P2,Fixture catalog check fails on uncataloged existing fixtures,type:bug area:fixtures,implementation,issues/done,False,True
+I-20260514-BV3EGA,done,P2,Runtime: Number.parseInt/parseFloat function property identity and descriptors,area:runtime feature:number-methods type:compat,implementation,issues/done,False,True
+I-20260514-D6YC6Z,done,P1,Runtime: Number formatting decimal rounding parity,area:runtime feature:number-formatting type:compat,implementation,issues/done,False,True
+I-20260514-DJTQ7K,done,P2,Preserve test262 root for triage inputs with includes,area:scripts feature:test262 feature:backend-io,implementation,issues/done,False,True
+I-20260514-E69T5X,done,P2,Runtime: Object.groupBy callback grouping,type:feature area:runtime,implementation,issues/done,False,True
+I-20260514-EBJFVB,done,P1,Runtime: i32 overflow in multi-digit parseInt radix parsing,area:runtime type:bug,implementation,issues/done,False,True
+I-20260514-F3MYS5,done,P0,Unsupported: async/await/generator gaps in test262 (561 cases),area:runtime area:ir feature:async,implementation,issues/done,True,True
+I-20260514-GNG3E5,done,P3,Runtime: ShadowRealm built-in API,type:feature area:runtime feature:shadowrealm,implementation,issues/done,False,True
+I-20260514-HGZJCJ,done,P0,"Unsupported: builtin-api gaps in test262 (3,873 cases)",area:runtime feature:builtin-api,implementation,issues/done,True,True
+I-20260514-HPAH9D,done,P3,Runtime: Math floating-point precision semantics,type:feature area:runtime,implementation,issues/done,False,True
+I-20260514-HY4EVD,done,P0,fix: InvariantViolation in String.prototype methods,area:backend area:builtins,implementation,issues/done,True,True
+I-20260514-J7RPXG,done,P2,"Runtime: Number.prototype formatting methods (toExponential, toFixed, toPrecision)",type:feature area:runtime,implementation,issues/done,False,True
+I-20260514-JAGP7X,done,P0,"Unsupported: import-export (module system) gaps in test262 and tsc (1,627 cases)",area:ir area:runtime feature:module,implementation,issues/done,True,True
+I-20260514-JPEJD5,done,P2,Runtime: DisposableStack and AsyncDisposableStack,type:feature area:runtime feature:disposable,implementation,issues/done,False,True
+I-20260514-KA2DFY,done,P2,Runtime: TypedArray test262 builtin completeness,type:feature area:runtime feature:typed-array,implementation,issues/done,False,True
+I-20260514-KMJWNX,done,P0,fix: InvariantViolation in tsc compiler cases (14 fails),area:backend area:semantics,implementation,issues/done,True,True
+I-20260514-MA8MS9,done,P2,Runtime: Temporal built-in API test262 coverage,type:feature area:runtime feature:temporal,implementation,issues/done,False,True
+I-20260514-MMZEDW,done,P2,Runtime: preserve Symbol registry identity semantics,type:feature area:runtime,implementation,issues/done,True,True
+I-20260514-P79458,done,P2,Runtime: URI encode/decode test262 conformance,type:feature area:runtime feature:uri,implementation,issues/done,False,True
+I-20260514-Q4X8SD,done,P2,Runtime: FuncId out of range for JS/@emitDeclarationOnly edge cases,area:runtime type:bug,implementation,issues/done,False,True
+I-20260514-XTZJGV,done,P1,Dispatch object literal methods after computed-key lowering,area:ir feature:object-literal feature:functions,implementation,issues/done,False,True
+I-20260514-YHDZJJ,done,P0,"Unsupported: class syntax gaps in test262 (4,814 cases)",area:semantics feature:class,implementation,issues/done,True,True
+I-20260514-ZTMEMK,done,P2,Runtime: Number.parseInt and Number.parseFloat static aliases,area:runtime feature:number-methods type:compat,implementation,issues/done,False,True
+I-20260514-ZW8H9D,done,P0,fix: InvariantViolation in staging SM String upper/lower mapping,area:backend area:builtins feature:string-unicode type:compat,implementation,issues/done,False,True
+I-20260515-2H5D4N,done,P1,Semantic pass: object method function metadata descriptors,test262 semantics object-literal,other,issues/done,False,True
+I-20260515-2QXP8P,done,P2,Object method super calls with explicit arguments need dynamic receiver dispatch,area:ir feature:object-literal,implementation,issues/done,False,True
+I-20260515-3574PN,done,P1,Deterministic Selection Hash and Sample Seed Evidence,coverage reference,other,issues/done,True,True
+I-20260515-39H6A4,done,P1,Semantic pass: object method property descriptors,test262 semantics object-literal,other,issues/done,False,True
+I-20260515-3YQ9ME,done,P1,Upgrade Coverage Gates and Matrix Consumers,coverage gate,other,issues/done,True,True
+I-20260515-45WCSE,done,P1,Node Host Import Baseline and Hard Host-Deny Gate,capability host,implementation,issues/done,True,True
+I-20260515-4AWCN5,done,P1,IR gap: resolve deepEqual compareEquality helper in IIFE,area:ir feature:functions feature:test262 feature:object-literal,implementation,issues/done,False,True
+I-20260515-4CTCCA,done,P1,Architecture wave: frontend reference-window smoke,type:architecture area:frontend area:coverage,architecture,issues/done,True,True
+I-20260515-4GJQJD,done,P1,IR gap: resolve assert._formatIdentityFreeValue function property call,area:ir feature:test262 feature:object-literal,implementation,issues/done,False,True
+I-20260515-5S844G,done,P1,Semantic pass: yield-named generator method bodies,test262 semantics object-literal generators,other,issues/done,False,True
+I-20260515-62DRQF,done,P1,RegExp empty noncapturing group literal gap,area:runtime feature:regexp feature:test262,implementation,issues/done,False,True
+I-20260515-66P4M5,done,P1,Architecture wave: semantic coverage accounting gates,type:architecture area:coverage area:gate,architecture,issues/done,True,True
+I-20260515-76GQ2R,done,P1,Architecture wave: gate orchestration aliases,type:architecture area:infrastructure,architecture,issues/done,True,True
+I-20260515-7K6296,done,P0,Manifest/import/reason completeness enforcement,area:backend-wasm area:shared area:scripts type:feat,implementation,issues/done,True,True
+I-20260515-85YHN2,done,P1,Semantic gap: Intl DateTimeFormat range and parts helpers missing,area:runtime feature:intl feature:object-literal,implementation,issues/done,False,True
+I-20260515-85ZMJA,done,P2,Preserve object method dispatch around unresolved computed keys,area:ir feature:object-literal feature:test262,implementation,issues/done,False,True
+I-20260515-88J6QD,done,P1,RegExp constructor pattern gap in Intl taint harness,area:runtime feature:regexp feature:test262,implementation,issues/done,False,True
+I-20260515-8D4F29,done,P1,Intl DateTimeFormat format helper gap,area:compiler feature:intl feature:test262,implementation,issues/done,False,True
+I-20260515-8D8XW7,done,P1,Semantic pass: extracted symbol method names,test262 semantics object-literal symbol,other,issues/done,False,True
+I-20260515-8JD3YA,done,P0,Architecture wave: manifest import parity gate,type:architecture area:capability area:backend,architecture,issues/done,True,True
+I-20260515-95D6A2,done,P0,Architecture wave: TypeScript erasure coverage boundary,type:architecture area:frontend area:coverage,architecture,issues/done,True,True
+I-20260515-98AC9G,done,P1,Intl ListFormat formatToParts helper gap,area:compiler feature:intl feature:test262,implementation,issues/done,False,True
+I-20260515-9PADYP,done,P1,Frontend gap: template interpolation ternary expressions,area:frontend feature:template-literal feature:object-literal,implementation,issues/done,False,True
+I-20260515-9S3XHA,done,P1,Architecture wave: TypeScript oracle boundary isolation,type:architecture area:frontend area:infrastructure,architecture,issues/done,True,True
+I-20260515-9YXEKZ,done,P1,Architecture wave: HIR/MIR ownership boundary validators,type:architecture area:ir,architecture,issues/done,True,True
+I-20260515-9ZGKJM,done,P0,Architecture wave: strict standalone host-deny compile gate,type:architecture area:capability area:gate,architecture,issues/done,True,True
+I-20260515-AG5KYF,done,P1,Semantic gap: extracted object generator iterators lose yield/resume values,area:semantics feature:object-literal feature:generator,implementation,issues/done,False,True
+I-20260515-BJ3JQ2,done,P1,Reference lock digest and replay set ownership,area:coverage area:reference area:scripts type:feat,other,issues/done,True,True
+I-20260515-BV8N4H,done,P1,Intl DurationFormat resolvedOptions helper receiver gap,area:compiler feature:intl feature:test262,implementation,issues/done,False,True
+I-20260515-BV9KK4,done,P1,Frontend ownership and HIR/MIR default guard,area:frontend area:ir area:scripts type:feat,implementation,issues/done,True,True
+I-20260515-BX2KBJ,done,P0,Architecture wave: RuntimeLinkPlan validation,type:architecture area:runtime area:capability,architecture,issues/done,True,True
+I-20260515-C35YBX,done,P1,Architecture wave: object and closure GC invariants,type:architecture area:runtime area:object,architecture,issues/done,True,True
+I-20260515-C4JD62,done,P0,Feature Labels and Deterministic Triage Artifacts,coverage scripting,other,issues/done,True,True
+I-20260515-CNRZXT,done,P0,Stable reference triage JSON and Markdown artifacts,area:coverage area:scripts type:feat,other,issues/done,True,True
+I-20260515-DSDV3G,done,P1,Intl Constructor supportedLocalesOf alias gap,area:compiler feature:intl feature:test262,implementation,issues/done,False,True
+I-20260515-E24P8A,done,P1,Architecture wave: canonical target profiles,type:architecture area:abi area:target,architecture,issues/done,True,True
+I-20260515-GBSCDJ,done,P1,Intl harness numberingSystemDigits global gap,area:compiler feature:intl feature:test262,implementation,issues/done,False,True
+I-20260515-GDKMCR,done,P1,Semantic pass: computed property-name yield in generator object literal,test262 semantics object-literal generators,other,issues/done,False,True
+I-20260515-GN2SJC,done,P1,Frontend gap: braceless for-in loop bodies,area:frontend feature:for-in feature:object-literal,implementation,issues/done,False,True
+I-20260515-GV2HX9,done,P1,Unsupported: super property access blocks object generator/accessor test262 cases,feature:object-literal,implementation,issues/done,False,True
+I-20260515-GZFX52,done,P1,Server/legacy coverage replay comparison,area:coverage area:scripts type:feat,other,issues/done,True,True
+I-20260515-H7H763,done,P1,Unsupported: escaped callback captures block propertyHelper method-definition cases,area:semantics feature:test262-harness feature:function-captures,implementation,issues/done,False,True
+I-20260515-J89946,done,P1,IR/backend gap: handle Object.getOwnPropertyDescriptor arity in staging shard,area:ir area:backend feature:test262 feature:object-literal,implementation,issues/done,False,True
+I-20260515-JJ3XJJ,done,P2,Resolve Object.getOwnPropertyNames in object method triage,area:runtime feature:object-builtin feature:test262,implementation,issues/done,False,True
+I-20260515-K3M485,done,P1,Call spread over array expression gap,area:compiler feature:test262 feature:spread,implementation,issues/done,False,True
+I-20260515-K3R3PX,done,P1,Semantic pass: generator method prototype metadata,test262 semantics object-literal generators,other,issues/done,False,True
+I-20260515-K8DZ67,done,P0,Reference corpus lock file and checker,area:reference area:scripts type:feat,other,issues/done,True,True
+I-20260515-KHTX9M,done,P1,Normalize target descriptors and raw target checker,area:shared area:runtime-catalog area:backend-wasm area:scripts type:refactor,refactor,issues/done,True,True
+I-20260515-KN2GH2,done,P0,RuntimeLinkPlan structural validation,area:runtime-catalog area:backend-wasm type:feat,implementation,issues/done,True,True
+I-20260515-KSGXVZ,done,P1,Semantic pass: method non-constructor assertions,test262 semantics object-literal constructors,other,issues/done,False,True
+I-20260515-MA5QEQ,done,P1,Semantic gap: dynamic Date constructor ToPrimitive input,area:runtime feature:date feature:object-literal,implementation,issues/done,False,True
+I-20260515-MBG86R,done,P1,Semantic gap: oversized decimal integer literals rejected,area:frontend feature:object-literal,implementation,issues/done,False,True
+I-20260515-MDTFN9,done,P1,Unsupported: propertyHelper bound built-in method helpers block object method-definition cases,area:semantics feature:test262-harness feature:function-bind,implementation,issues/done,False,True
+I-20260515-MMD7Y8,done,P0,ABI metadata in generated WASM,area:backend-wasm area:compiler area:scripts type:feat,implementation,issues/done,True,True
+I-20260515-MYWCB4,done,P1,Intl late RegExp constructor dynamic pattern gap,area:compiler feature:regexp feature:test262,implementation,issues/done,False,True
+I-20260515-PD44JN,done,P1,Intl taint helper callback arity mismatch,area:compiler feature:test262 feature:intl,implementation,issues/done,False,True
+I-20260515-PGZTVK,done,P1,Runtime gap: Array.forEach dispatch for Intl harness arrays,area:runtime feature:array feature:test262,implementation,issues/done,False,True
+I-20260515-PXBATS,done,P0,Runtime ABI layout snapshot and compatibility command,area:runtime-abi area:scripts type:feat,implementation,issues/done,True,True
+I-20260515-PXHHS6,done,P0,Coverage Outcome Taxonomy,area:coverage type:feat,other,issues/done,True,True
+I-20260515-QP69NK,done,P1,Object own-key ordering should place integer indices before string keys,area:runtime feature:object-literal,implementation,issues/done,False,True
+I-20260515-QZXYMQ,done,P1,Semantic pass: sloppy method receiver globalThis,test262 semantics object-literal this,other,issues/done,False,True
+I-20260515-RH7945,done,P1,Architecture wave: host import allowlist boundary,type:architecture area:capability area:host,architecture,issues/done,True,True
+I-20260515-RMQTJQ,done,P1,GC heap-kind survival and object kernel invariant coverage,area:fixtures area:cli-tests type:test,test,issues/done,True,True
+I-20260515-RNH99E,done,P1,IR gap: lower deepEqual lazyResult rest-parameter closure,area:ir feature:functions feature:test262 feature:object-literal,implementation,issues/done,False,True
+I-20260515-RPMVQN,done,P0,Architecture wave: reference corpus lockfile,type:architecture area:coverage area:reference,architecture,issues/done,True,True
+I-20260515-RTSHVA,done,P1,Intl captured NumberFormat format receiver gap,area:compiler feature:intl feature:test262,implementation,issues/done,False,True
+I-20260515-RTZ76J,done,P1,TypeScript Boundary and Erased-Only Reporting,frontend coverage,other,issues/done,True,True
+I-20260515-S29ZXS,done,P1,Semantic pass: object generator method completion values,area:semantics feature:object-literal test262,implementation,issues/done,True,True
+I-20260515-S3F2Q2,done,P0,TypeScript boundary manifest and checker,area:frontend area:scripts type:feat,implementation,issues/done,True,True
+I-20260515-SA2YJD,done,P1,IR gap: resolve untyped Array join receiver in deepEqual harness,area:ir feature:array-methods feature:test262 feature:object-literal,implementation,issues/done,False,True
+I-20260515-T8S7JT,done,P0,Capability Manifest / Import Closure,capability runtime,implementation,issues/done,True,True
+I-20260515-TWGRZQ,done,P2,Architecture wave: open design questions,type:architecture area:process,architecture,issues/done,True,True
+I-20260515-VC2Z7R,done,P1,Architecture wave: typed WasmIR/wasm-encoder parity fixtures,type:architecture area:backend area:abi,architecture,issues/done,True,True
+I-20260515-VDFX5Y,done,P1,Intl constructor resolvedOptions dispatch gap,area:runtime feature:intl feature:test262,implementation,issues/done,False,True
+I-20260515-VEGZXY,done,P0,Coverage Outcome Taxonomy and Schema v2,coverage scripting schema,other,issues/done,True,True
+I-20260515-VTJNBA,done,P0,Reference Corpus Lockfile and Verification,coverage reference,other,issues/done,True,True
+I-20260515-VVZG8F,done,P1,Semantic pass: extracted object method length metadata,area:semantics feature:object-literal test262,implementation,issues/done,True,True
+I-20260515-VWP4WJ,done,P1,Unsupported: nested computed accessor captures inside generator object literals,feature:generators,implementation,issues/done,False,True
+I-20260515-VZ9A6C,done,P1,Mutable closure environment gap in Intl taint harness,area:ir feature:closures feature:test262,implementation,issues/done,False,True
+I-20260515-W43AYJ,done,P1,Host import boundary checker,area:scripts area:runtime-catalog type:feat,implementation,issues/done,True,True
+I-20260515-WJASWA,done,P1,Parser/lowering gap: object destructuring for-of heads in Intl harness,area:frontend area:semantics feature:destructuring feature:for-of,implementation,issues/done,False,True
+I-20260515-X2ADBY,done,P0,Architecture wave: deterministic coverage triage reports,type:architecture area:coverage area:scripts,architecture,issues/done,True,True
+I-20260515-XE3F4M,done,P2,Object method test262 case needs non-identifier receiver method calls,area:ir feature:object-literal,implementation,issues/done,False,True
+I-20260515-Y3A98R,done,P0,Architecture wave: runtime heap and GC layout contract,type:architecture area:runtime area:abi,architecture,issues/done,True,True
+I-20260515-YFQP4W,done,P2,Runtime: JSON.parse reviver walk (follow-up from I-20260513-PPAG7E),type:feature area:runtime,implementation,issues/done,False,True
+I-20260515-YKACKF,done,P0,Architecture wave: frontend syntax ownership contract,type:architecture area:frontend area:syntax,architecture,issues/done,True,True
+I-20260515-YP3J2Q,done,P1,Runtime symbol-key object properties need identity semantics,area:runtime feature:symbol,implementation,issues/done,False,True
+I-20260515-YW9CY9,done,P0,Architecture wave: coverage outcome schema v2,type:architecture area:coverage area:scripts,architecture,issues/done,True,True
+I-20260515-Z8J3SW,done,P1,Fix wasm_encoder_parity import WAT names,area:backend-wasm area:test,implementation,issues/done,False,True
+I-20260515-ZA94X3,done,P1,Architecture wave: coverage reference selection evidence,type:architecture area:coverage area:reference,architecture,issues/done,True,True
+I-20260515-ZMKV6V,done,P0,Architecture wave: generated WASM ABI metadata,type:architecture area:abi area:backend,architecture,issues/done,True,True
+I-20260515-ZNHA2N,done,P2,Computed object accessor setter super calls fail semantic parity,area:ir feature:object-literal,implementation,issues/done,False,True
+I-20260515-ZQTE47,done,P1,Semantic pass: object method symbol names,test262 semantics object-literal symbol,other,issues/done,False,True
+I-20260515-ZQXCAC,done,P1,Semantic fail: computed-yield object accessors need generator resume values,"feature:generators,feature:object-literal,area:semantics",implementation,issues/done,False,True
