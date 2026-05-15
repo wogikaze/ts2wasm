@@ -246,6 +246,26 @@ fn lowering_applies_array_default_to_nested_object_binding_pattern() {
 }
 
 #[test]
+fn lowering_applies_call_default_to_object_binding_identifier() {
+    let program = parse_and_resolve(
+        r#"
+        function counter() {
+          return 4;
+        }
+        var obj = {
+          *method({ x = counter() }) {
+            console.log(x);
+          }
+        };
+        obj.method({}).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("binding defaults should lower no-argument function calls");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"

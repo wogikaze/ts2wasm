@@ -163,7 +163,7 @@ impl super::super::Resolver {
                 },
                 then_body: vec![LoweredStmt::Assign(
                     temp_id,
-                    lowered_binding_default(default),
+                    self.lower_binding_default_expr(default)?,
                     Span::generated("assign"),
                 )],
                 else_body: vec![],
@@ -257,12 +257,29 @@ impl super::super::Resolver {
                 },
                 then_body: vec![LoweredStmt::Assign(
                     local_id,
-                    lowered_binding_default(default),
+                    self.lower_binding_default_expr(default)?,
                     Span::generated("assign"),
                 )],
                 else_body: vec![],
                 span: Span::generated("If"),
             },
         ])
+    }
+
+    fn lower_binding_default_expr(
+        &mut self,
+        default: &BindingDefault,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if let Some(expr) = lowered_binding_default(default) {
+            return Ok(expr);
+        }
+        let BindingDefault::Call(callee) = default else {
+            unreachable!("lowered_binding_default covers all non-call defaults");
+        };
+        self.lower_expr(&ResolvedExpr::Call {
+            callee: Box::new(ResolvedExpr::Ident(callee.clone())),
+            args: Vec::new(),
+            span: Span::generated("call"),
+        })
     }
 }

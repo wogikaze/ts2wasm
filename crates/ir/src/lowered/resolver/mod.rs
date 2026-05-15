@@ -1270,29 +1270,32 @@ pub(crate) fn class_maps(
     (ctor_ids, method_ids, static_method_ids)
 }
 
-pub(crate) fn lowered_binding_default(default: &BindingDefault) -> LoweredExpr {
+pub(crate) fn lowered_binding_default(default: &BindingDefault) -> Option<LoweredExpr> {
     match default {
-        BindingDefault::Number(value) => LoweredExpr::Number(*value, Span::generated("num")),
-        BindingDefault::String(value) => LoweredExpr::String(value.clone(), Span::generated("str")),
-        BindingDefault::Bool(value) => LoweredExpr::Bool(*value, Span::generated("bool")),
-        BindingDefault::Null => LoweredExpr::Null(Span::generated("null")),
-        BindingDefault::Undefined => LoweredExpr::Undefined(Span::generated("undef")),
-        BindingDefault::Array(elements) => LoweredExpr::ArrayNew {
+        BindingDefault::Number(value) => Some(LoweredExpr::Number(*value, Span::generated("num"))),
+        BindingDefault::String(value) => {
+            Some(LoweredExpr::String(value.clone(), Span::generated("str")))
+        }
+        BindingDefault::Bool(value) => Some(LoweredExpr::Bool(*value, Span::generated("bool"))),
+        BindingDefault::Null => Some(LoweredExpr::Null(Span::generated("null"))),
+        BindingDefault::Undefined => Some(LoweredExpr::Undefined(Span::generated("undef"))),
+        BindingDefault::Array(elements) => Some(LoweredExpr::ArrayNew {
             elements: elements
                 .iter()
                 .map(|element| {
                     element
                         .as_ref()
-                        .map(lowered_binding_default)
+                        .and_then(lowered_binding_default)
                         .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")))
                 })
                 .collect(),
             span: Span::generated("array_new"),
-        },
+        }),
         BindingDefault::Object(props) => {
             let _ = props;
-            LoweredExpr::Undefined(Span::generated("undef"))
+            Some(LoweredExpr::Undefined(Span::generated("undef")))
         }
+        BindingDefault::Call(_) => None,
     }
 }
 

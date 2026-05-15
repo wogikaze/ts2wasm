@@ -28,6 +28,7 @@ pub enum BindingDefault {
     Undefined,
     Array(Vec<Option<BindingDefault>>),
     Object(Vec<(String, String)>),
+    Call(String),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -443,6 +444,11 @@ fn parse_binding_default(text: &str, span: Option<Span>) -> Result<BindingDefaul
     }
     if let Ok(value) = text.parse::<i32>() {
         return Ok(BindingDefault::Number(value));
+    }
+    if let Some(callee) = text.strip_suffix("()")
+        && is_identifier(callee)
+    {
+        return Ok(BindingDefault::Call(callee.to_owned()));
     }
     if text.starts_with('[') && text.ends_with(']') {
         let inner = &text[1..text.len() - 1];
