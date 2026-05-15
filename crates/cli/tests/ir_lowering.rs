@@ -1315,6 +1315,24 @@ fn lowering_accepts_intl_duration_format_methods() {
 }
 
 #[test]
+fn lowering_accepts_intl_list_format_methods() {
+    let program = parse_and_resolve(
+        r#"
+        let listFormat = new Intl.ListFormat("en", { type: "unit", style: "short" });
+        let text = listFormat.format(["1 second"]);
+        let parts = listFormat.formatToParts(["1 second"]);
+        let options = listFormat.resolvedOptions();
+        console.log(text);
+        console.log(parts.length);
+        console.log(options.style);
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("Intl.ListFormat constructor and methods should lower");
+}
+
+#[test]
 fn lowering_accepts_testintl_duration_format_resolved_options_helper() {
     let program = parse_and_resolve(
         r#"
@@ -1329,6 +1347,30 @@ fn lowering_accepts_testintl_duration_format_resolved_options_helper() {
 
     ts2wasm_ir::lowered::lower_program(&program)
         .expect("testIntl durationFormat.resolvedOptions helper should lower");
+}
+
+#[test]
+fn lowering_accepts_testintl_list_format_to_parts_helper() {
+    let program = parse_and_resolve(
+        r#"
+        function partitionDurationFormatPattern(strings) {
+          let listStyle = "short";
+          let lf = new Intl.ListFormat("en", { type: "unit", style: listStyle });
+          let flattened = [];
+          for (let {type, value} of lf.formatToParts(strings)) {
+            if (type === "element") {
+              flattened.push({type, value});
+            } else {
+              flattened.push({type, value});
+            }
+          }
+          return flattened;
+        }
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("testIntl ListFormat.formatToParts helper should lower");
 }
 
 #[test]

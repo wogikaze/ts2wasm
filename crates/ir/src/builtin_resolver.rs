@@ -2014,14 +2014,14 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 object, property, ..
             } = new_expr.as_ref()
                 && matches!(object.as_ref(), Expr::Ident { name, .. } if name == "Intl")
-                && property == "DurationFormat"
+                && matches!(property.as_str(), "DurationFormat" | "ListFormat")
             {
                 let resolved_args = args
                     .iter()
                     .map(resolve_expr)
                     .collect::<Result<Vec<_>, _>>()?;
                 return Ok(ResolvedExpr::New {
-                    class_name: "Intl.DurationFormat".to_owned(),
+                    class_name: format!("Intl.{property}"),
                     args: resolved_args,
                     span: *span,
                 });

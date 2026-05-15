@@ -33,6 +33,9 @@ impl super::super::Resolver {
         if let Some(result) = self.lower_mcall_intl_duration_format(object, method, args)? {
             return Ok(result);
         }
+        if let Some(result) = self.lower_mcall_intl_list_format(object, method, args)? {
+            return Ok(result);
+        }
         if let Some(result) = self.lower_mcall_intl_number_format(object, method, args)? {
             return Ok(result);
         }
@@ -812,6 +815,21 @@ impl super::super::Resolver {
         }
         if self.is_intl_duration_format_expr(object) && is_intl_duration_format_method(method) {
             return Ok(Some(self.lower_intl_duration_format_method(method, args)?));
+        }
+        Ok(None)
+    }
+
+    fn lower_mcall_intl_list_format(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Intl") && method == "ListFormat" {
+            return Ok(Some(self.lower_intl_list_format_constructor(args)?));
+        }
+        if self.is_intl_list_format_expr(object) && is_intl_list_format_method(method) {
+            return Ok(Some(self.lower_intl_list_format_method(method, args)?));
         }
         Ok(None)
     }
@@ -3318,6 +3336,13 @@ impl super::super::Resolver {
         Ok(intl_duration_format_options_object())
     }
 
+    pub(crate) fn lower_intl_list_format_constructor(
+        &mut self,
+        _args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        Ok(intl_list_format_options_object())
+    }
+
     pub(crate) fn intl_number_format_options_for_expr(
         &self,
         expr: &ResolvedExpr,
@@ -3394,6 +3419,13 @@ impl super::super::Resolver {
         matches!(
             self.infer_class_for_expr(expr).as_deref(),
             Some("Intl.DurationFormat" | "DurationFormat")
+        )
+    }
+
+    fn is_intl_list_format_expr(&self, expr: &ResolvedExpr) -> bool {
+        matches!(
+            self.infer_class_for_expr(expr).as_deref(),
+            Some("Intl.ListFormat" | "ListFormat")
         )
     }
 
@@ -3475,6 +3507,27 @@ impl super::super::Resolver {
             _ => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("Intl.DurationFormat.prototype.{method} is not supported"),
+                span: None,
+                phase: None,
+            }),
+        }
+    }
+
+    fn lower_intl_list_format_method(
+        &mut self,
+        method: &str,
+        _args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        match method {
+            "format" => Ok(string_lit("")),
+            "formatToParts" => Ok(LoweredExpr::ArrayNew {
+                elements: vec![intl_list_format_part_object()],
+                span: Span::generated("array_new"),
+            }),
+            "resolvedOptions" => Ok(intl_list_format_options_object()),
+            _ => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("Intl.ListFormat.prototype.{method} is not supported"),
                 span: None,
                 phase: None,
             }),
@@ -3701,6 +3754,10 @@ fn is_intl_duration_format_method(method: &str) -> bool {
     matches!(method, "format" | "formatToParts" | "resolvedOptions")
 }
 
+fn is_intl_list_format_method(method: &str) -> bool {
+    matches!(method, "format" | "formatToParts" | "resolvedOptions")
+}
+
 fn is_number_format_method(method: &str) -> bool {
     matches!(method, "toFixed" | "toExponential" | "toPrecision")
 }
@@ -3746,6 +3803,29 @@ fn intl_duration_format_options_object() -> LoweredExpr {
     }
     LoweredExpr::ObjectNew {
         props,
+        non_enumerable: 0,
+        span: Span::generated("object_new"),
+    }
+}
+
+fn intl_list_format_options_object() -> LoweredExpr {
+    LoweredExpr::ObjectNew {
+        props: vec![
+            ("locale".to_owned(), string_lit("en")),
+            ("type".to_owned(), string_lit("unit")),
+            ("style".to_owned(), string_lit("short")),
+        ],
+        non_enumerable: 0,
+        span: Span::generated("object_new"),
+    }
+}
+
+fn intl_list_format_part_object() -> LoweredExpr {
+    LoweredExpr::ObjectNew {
+        props: vec![
+            ("type".to_owned(), string_lit("element")),
+            ("value".to_owned(), string_lit("")),
+        ],
         non_enumerable: 0,
         span: Span::generated("object_new"),
     }

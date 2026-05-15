@@ -479,6 +479,12 @@ impl super::Resolver {
                 Some("Intl.DurationFormat".to_owned())
             }
             ResolvedExpr::MethodCall { object, method, .. }
+                if method == "ListFormat"
+                    && matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Intl") =>
+            {
+                Some("Intl.ListFormat".to_owned())
+            }
+            ResolvedExpr::MethodCall { object, method, .. }
                 if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Object")
                     && matches!(method.as_str(), "create" | "fromEntries" | "groupBy") =>
             {

@@ -56,6 +56,9 @@ impl super::super::Resolver {
         if matches!(class_name, "Intl.DurationFormat" | "DurationFormat") {
             return self.lower_intl_duration_format_constructor(args);
         }
+        if matches!(class_name, "Intl.ListFormat" | "ListFormat") {
+            return self.lower_intl_list_format_constructor(args);
+        }
         if class_name == "Date" {
             if args.is_empty() {
                 return Ok(LoweredExpr::RuntimeCall {
