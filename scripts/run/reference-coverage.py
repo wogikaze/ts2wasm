@@ -2636,7 +2636,15 @@ def main():
 
         # Write phase profile for performance analysis
         profile_path = results_dir / f"{suite}-profile.json"
-        profile_path.write_text(json.dumps(phase_timers, indent=2), encoding="utf-8")
+        profile_rec = dict(phase_timers)
+        # Add derived averages to prevent misreading cumulative vs wall
+        iwasm_procs = profile_rec.get("iwasm_processes", 0)
+        if iwasm_procs > 0:
+            profile_rec["iwasm_avg_ms"] = profile_rec["iwasm_wall_ms"] // iwasm_procs
+        node_procs = profile_rec.get("node_processes", 0)
+        if node_procs > 0:
+            profile_rec["node_avg_ms"] = profile_rec["node_wall_ms"] // node_procs
+        profile_path.write_text(json.dumps(profile_rec, indent=2), encoding="utf-8")
 
         legacy = dict(summary)
         legacy.pop("jsonl_file", None)
