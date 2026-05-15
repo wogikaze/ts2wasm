@@ -294,11 +294,16 @@ impl super::super::Resolver {
                         phase: None,
                     });
                 }
-                return Ok(LoweredExpr::ArrayNew {
+                let dense = LoweredExpr::ArrayNew {
                     elements: (0..*length)
                         .map(|_| LoweredExpr::Number(0, Span::generated("num")))
                         .collect(),
                     span: Span::generated("array_new"),
+                };
+                return Ok(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::TypedArrayFromArray,
+                    args: vec![dense],
+                    span: Span::generated("runtime_call"),
                 });
             }
             return Ok(LoweredExpr::RuntimeCall {
