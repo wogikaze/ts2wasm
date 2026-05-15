@@ -4622,3 +4622,14 @@ fn returned_closure_nested_object_gc_pressure_matches_node_output() {
         "fixtures/core-semantics/returned-closure-nested-object-gc-pressure.ts",
     );
 }
+
+// covers: I-20260515-PMTJTQ
+// Comma expression statement in statement position after assignment
+// is a parser gap — test it as an expected-fail (RED test excluded from default gate)
+#[test]
+fn comma_expression_statement_reports_unsupported_syntax() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/parser/comma-expression-statement.ts",
+        "expected Semicolon, got Some(Comma)",
+    );
+}
