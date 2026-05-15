@@ -196,6 +196,12 @@ impl super::super::Resolver {
         {
             return Ok(result);
         }
+        if let Some(result) = self.lower_typed_array_property(object, key, span)? {
+            return Ok(result);
+        }
+        if let Some(result) = self.lower_typed_array_constructor_property(object, key)? {
+            return Ok(result);
+        }
         if is_set_prototype_property(object, key, "add") {
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::SetPrototypeAddGet,
@@ -626,6 +632,76 @@ impl super::super::Resolver {
         }
     }
 
+    /// Handle `.byteLength`, `.buffer`, `.byteOffset` on TypedArray, ArrayBuffer, DataView instances.
+    fn lower_typed_array_property(
+        &mut self,
+        object: &ResolvedExpr,
+        key: &str,
+        span: Span,
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        let ResolvedExpr::Ident(name) = object else {
+            return Ok(None);
+        };
+        let Ok(obj_local) = self.resolve_local(name) else {
+            return Ok(None);
+        };
+        let Some(class_name) = self.ctx.classes.local_classes.get(&obj_local) else {
+            return Ok(None);
+        };
+        match (class_name.as_str(), key) {
+            ("ArrayBuffer" | "SharedArrayBuffer", "byteLength") => {
+                // ArrayBuffer layout has byte_length as the first field, same as GetLength reads.
+                Ok(Some(LoweredExpr::GetLength(
+                    Box::new(self.lower_expr(object)?),
+                    span,
+                )))
+            }
+            (cn, "byteLength") if crate::lowered::program_builtins::is_typed_array_class(cn) => {
+                // byteLength = element_count * BYTES_PER_ELEMENT
+                if let Some(elem_size) = typed_array_element_size(cn) {
+                    Ok(Some(LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::GetLength(
+                            Box::new(self.lower_expr(object)?),
+                            Span::generated("get_length"),
+                        )),
+                        op: crate::lowered::LoweredBinaryOp::Multiply,
+                        right: Box::new(LoweredExpr::Number(elem_size, Span::generated("num"))),
+                        span,
+                    }))
+                } else {
+                    Ok(None)
+                }
+            }
+            (cn, "byteOffset") if is_typed_array_or_dataview(cn) => {
+                // Non-buffer-backed typed arrays and DataViews have byteOffset = 0
+                Ok(Some(LoweredExpr::Number(0, Span::generated("num"))))
+            }
+            (cn, "buffer") if is_typed_array_or_dataview(cn) => {
+                // No proper ArrayBuffer backing yet; return undefined
+                Ok(Some(LoweredExpr::Undefined(span)))
+            }
+            _ => Ok(None),
+        }
+    }
+
+    /// Handle `BYTES_PER_ELEMENT` on TypedArray constructors (e.g. `Int8Array.BYTES_PER_ELEMENT`).
+    fn lower_typed_array_constructor_property(
+        &mut self,
+        object: &ResolvedExpr,
+        key: &str,
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        let ResolvedExpr::Ident(name) = object else {
+            return Ok(None);
+        };
+        if key == "BYTES_PER_ELEMENT"
+            && crate::lowered::program_builtins::is_typed_array_class(name)
+        {
+            return Ok(typed_array_element_size(name)
+                .map(|size| LoweredExpr::Number(size, Span::generated("num"))));
+        }
+        Ok(None)
+    }
+
     pub(crate) fn lower_proxy_trap_call(
         &mut self,
         proxy: crate::lowered::facts::ProxyBinding,
@@ -751,4 +827,20 @@ impl super::super::Resolver {
             span: Span::generated("runtime_call"),
         })
     }
+}
+
+/// Returns BYTES_PER_ELEMENT for a typed array class name.
+fn typed_array_element_size(class_name: &str) -> Option<i32> {
+    match class_name {
+        "Int8Array" | "Uint8Array" | "Uint8ClampedArray" => Some(1),
+        "Int16Array" | "Uint16Array" => Some(2),
+        "Int32Array" | "Uint32Array" | "Float32Array" => Some(4),
+        "Float64Array" | "BigInt64Array" | "BigUint64Array" => Some(8),
+        _ => None,
+    }
+}
+
+/// Returns true for TypedArray, DataView, or ArrayBuffer class names.
+fn is_typed_array_or_dataview(class_name: &str) -> bool {
+    crate::lowered::program_builtins::is_typed_array_class(class_name) || class_name == "DataView"
 }

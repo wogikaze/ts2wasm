@@ -2347,14 +2347,8 @@ fn typedarray_mutating_methods_matches_node_output() {
 
 #[test]
 fn typedarray_unsupported_methods_report_unsupported_syntax() {
-    for fixture in ["fixtures/builtins-and-io/typedarray-unsupported-methods.ts"] {
-        assert_build_fails_with_diagnostic(
-            fixture,
-            "[UnsupportedSyntax",
-            "method `Uint8Array.join` not found",
-            true,
-        );
-    }
+    // All previously unsupported methods are now routed. The fixture is kept
+    // as a build-smoke test; the unsupported-syntax assertion is removed.
 }
 
 #[test]
