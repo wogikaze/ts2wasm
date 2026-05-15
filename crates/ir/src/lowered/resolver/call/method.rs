@@ -2494,6 +2494,11 @@ impl super::super::Resolver {
             if intrinsic == RuntimeFn::ParseInt && args.len() == 1 {
                 lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
             }
+            if intrinsic == RuntimeFn::ObjectGetOwnPropertyDescriptor {
+                while lowered_args.len() < 2 {
+                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                }
+            }
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic,
                 args: lowered_args,
@@ -3375,6 +3380,7 @@ impl super::super::Resolver {
             "every",
             "reduce",
             "flatMap",
+            "join",
         ];
         let number_methods = ["toFixed", "toExponential", "toPrecision"];
         let promise_methods = ["then", "catch", "finally"];

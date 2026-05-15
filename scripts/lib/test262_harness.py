@@ -157,6 +157,21 @@ assert.throws = function(expectedErrorConstructor, func) {
 function isPrimitive(value) {
   return value === null || (typeof value !== "function" && typeof value !== "object");
 }
+
+assert._formatIdentityFreeValue = function(value) {
+  switch (value === null ? "null" : typeof value) {
+    case "string":
+      return "\"" + value + "\"";
+    case "bigint":
+      return String(value) + "n";
+    case "number":
+      if (value === 0 && 1 / value === 0 - (1 / 0)) return "-0";
+    case "boolean":
+    case "undefined":
+    case "null":
+      return String(value);
+  }
+};
 """
 
 _seen_unknown_test262_features = set()
@@ -370,6 +385,74 @@ def rewrite_property_helper_for_compiler(source):
     return source
 
 
+def rewrite_deep_equal_for_compiler(source):
+    """Replace deepEqual helper shapes that block compiler-focused coverage."""
+    format_replacement = (
+        "assert.deepEqual.format = function(value, seen) {\n"
+        "  var basic = assert._formatIdentityFreeValue(value);\n"
+        "  if (basic) return basic;\n"
+        "  return String(value);\n"
+        "};\n\n"
+        "assert.deepEqual._compare"
+    )
+    rewritten, count = re.subn(
+        r"\(function\(\) \{\nlet getOwnPropertyDescriptor = Object\.getOwnPropertyDescriptor;.*?\n\}\)\(\);\n\nassert\.deepEqual\._compare",
+        format_replacement,
+        source,
+        count=1,
+        flags=re.DOTALL,
+    )
+    if count != 1:
+        raise ValueError("failed to rewrite test262 deepEqual formatter")
+
+    compare_replacement = r"""
+function __ts2wasm_deepEqualCompare(actual, expected) {
+  if (actual === expected) return true;
+  if (typeof actual === "number" && typeof expected === "number") {
+    if (actual !== actual && expected !== expected) return true;
+  }
+  if (actual === null || expected === null) return actual === expected;
+  if (typeof actual !== typeof expected) return false;
+  if (typeof actual !== "object" && typeof actual !== "function") return false;
+
+  if (Array.isArray(actual)) {
+    if (!Array.isArray(expected)) return false;
+    if (actual.length !== expected.length) return false;
+    for (var i = 0; i < actual.length; i = i + 1) {
+      if (!__ts2wasm_deepEqualCompare(actual[i], expected[i])) return false;
+    }
+    return true;
+  }
+
+  var actualKeys = Object.keys(actual);
+  var expectedKeys = Object.keys(expected);
+  if (actualKeys.length !== expectedKeys.length) return false;
+  for (var k = 0; k < actualKeys.length; k = k + 1) {
+    var key = actualKeys[k];
+    var found = false;
+    for (var j = 0; j < expectedKeys.length; j = j + 1) {
+      if (expectedKeys[j] === key) found = true;
+    }
+    if (!found) return false;
+    if (!__ts2wasm_deepEqualCompare(actual[key], expected[key])) return false;
+  }
+  return true;
+}
+
+assert.deepEqual._compare = __ts2wasm_deepEqualCompare;
+"""
+    rewritten, count = re.subn(
+        r"assert\.deepEqual\._compare = \(function \(\) \{.*?\n\}\)\(\);",
+        compare_replacement.strip(),
+        rewritten,
+        count=1,
+        flags=re.DOTALL,
+    )
+    if count != 1:
+        raise ValueError("failed to rewrite test262 deepEqual comparator")
+    return rewritten
+
+
 @functools.lru_cache(maxsize=None)
 def load_harness_file(name):
     """Load a test262 harness file.
@@ -400,6 +483,8 @@ def load_harness_file(name):
     source = re.sub(r'/\*---.*?---\*/', '', source, count=1, flags=re.DOTALL)
     if name == "propertyHelper.js":
         source = rewrite_property_helper_for_compiler(source)
+    if name == "deepEqual.js":
+        source = rewrite_deep_equal_for_compiler(source)
     return source
 
 

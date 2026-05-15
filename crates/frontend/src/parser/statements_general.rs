@@ -1947,7 +1947,7 @@ impl Parser {
         self.expect(TokenKind::Of)?;
         let iter = self.expression()?;
         self.expect(TokenKind::RightParen)?;
-        let body = self.block()?;
+        let body = self.statement_body()?;
         let end = body.last().map(|s| s.span().end).unwrap_or(await_span.end);
         Ok(Stmt::ForAwaitOf {
             var: var_name,
@@ -2050,7 +2050,7 @@ impl Parser {
             if self.consume(TokenKind::In) {
                 let iter = self.expression()?;
                 self.expect(TokenKind::RightParen)?;
-                let mut body = self.block()?;
+                let mut body = self.statement_body()?;
                 if let Some(binding) = &destructuring_binding {
                     body.insert(0, for_head_destructuring_let(binding, &var_name));
                 }
@@ -2067,7 +2067,7 @@ impl Parser {
             } else if self.consume(TokenKind::Of) {
                 let iter = self.expression()?;
                 self.expect(TokenKind::RightParen)?;
-                let mut body = self.block()?;
+                let mut body = self.statement_body()?;
                 if let Some(binding) = &destructuring_binding {
                     body.insert(0, for_head_destructuring_let(binding, &var_name));
                 }
@@ -2140,7 +2140,7 @@ impl Parser {
                 Some(expr)
             };
 
-            let body = self.block()?;
+            let body = self.statement_body()?;
             let end = body.last().map(|s| s.span().end).unwrap_or(start.end);
 
             Ok(Stmt::For {
@@ -2359,7 +2359,9 @@ impl Parser {
     fn statement_body(&mut self) -> Result<Vec<Stmt>, Diagnostic> {
         if matches!(self.peek(), Some(Token::LeftBrace)) {
             self.block()
-        } else if self.consume_erasable_typescript_declaration()? {
+        } else if self.consume(TokenKind::Semicolon)
+            || self.consume_erasable_typescript_declaration()?
+        {
             Ok(Vec::new())
         } else {
             Ok(vec![self.statement()?])

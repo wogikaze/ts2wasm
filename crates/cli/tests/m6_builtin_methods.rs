@@ -959,6 +959,20 @@ fn build_smoke_array_join_method() {
 }
 
 #[test]
+fn build_smoke_untyped_array_join_receiver() {
+    let result = run_source(
+        "untyped-array-join",
+        r#"let join = arr => arr.join(", ");
+console.log(join(["a", "b"]));"#,
+    );
+    assert!(
+        result.is_ok(),
+        "untyped Array.join receiver should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_array_reverse_method() {
     let result = run_fixture("builtins-and-io/array-reverse.ts");
     assert!(
