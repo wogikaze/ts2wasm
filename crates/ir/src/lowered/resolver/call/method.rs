@@ -3715,7 +3715,11 @@ impl super::super::Resolver {
         _args: &[ResolvedExpr],
     ) -> Result<LoweredExpr, Diagnostic> {
         match method {
-            "format" => Ok(string_lit("")),
+            "format" | "formatRange" => Ok(string_lit("")),
+            "formatToParts" | "formatRangeToParts" => Ok(LoweredExpr::ArrayNew {
+                elements: vec![intl_date_time_format_part_object()],
+                span: Span::generated("array_new"),
+            }),
             "resolvedOptions" => Ok(intl_date_time_format_options_object()),
             _ => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -3985,7 +3989,10 @@ fn is_intl_number_format_method(method: &str) -> bool {
 }
 
 fn is_intl_date_time_format_method(method: &str) -> bool {
-    matches!(method, "format" | "resolvedOptions")
+    matches!(
+        method,
+        "format" | "formatRange" | "formatToParts" | "formatRangeToParts" | "resolvedOptions"
+    )
 }
 
 fn is_intl_duration_format_method(method: &str) -> bool {
@@ -4021,6 +4028,17 @@ fn intl_date_time_format_options_object() -> LoweredExpr {
             ("calendar".to_owned(), string_lit("gregory")),
             ("numberingSystem".to_owned(), string_lit("latn")),
             ("timeZone".to_owned(), string_lit("UTC")),
+        ],
+        non_enumerable: 0,
+        span: Span::generated("object_new"),
+    }
+}
+
+fn intl_date_time_format_part_object() -> LoweredExpr {
+    LoweredExpr::ObjectNew {
+        props: vec![
+            ("type".to_owned(), string_lit("literal")),
+            ("value".to_owned(), string_lit("")),
         ],
         non_enumerable: 0,
         span: Span::generated("object_new"),

@@ -1400,6 +1400,24 @@ fn lowering_accepts_intl_date_time_format_format_method() {
 }
 
 #[test]
+fn lowering_accepts_intl_date_time_format_range_and_parts_methods() {
+    let program = parse_and_resolve(
+        r#"
+        let dateTimeFormat = new Intl.DateTimeFormat();
+        let range = dateTimeFormat.formatRange(new Date(0), new Date(1));
+        let parts = dateTimeFormat.formatToParts(new Date(0));
+        let rangeParts = dateTimeFormat.formatRangeToParts(new Date(0), new Date(1));
+        console.log(range, parts.length, rangeParts.length);
+        "#,
+    );
+
+    let lowered = ts2wasm_ir::lowered::lower_program(&program)
+        .expect("Intl.DateTimeFormat range/parts methods should lower");
+    ts2wasm_ir::lowered::validate_lowered(&lowered)
+        .expect("Intl.DateTimeFormat range/parts methods should validate");
+}
+
+#[test]
 fn lowering_accepts_testintl_constructor_supported_locales_of_alias() {
     let program = parse_and_resolve(
         r#"
