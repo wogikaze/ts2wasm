@@ -366,6 +366,7 @@ impl super::Resolver {
 
         let mut captures = Vec::new();
         collect_stmt_captures(body, &excluded, &mut captures);
+        collect_nested_function_captures_in_stmts(body, &excluded, &mut captures)?;
         Ok(captures
             .into_iter()
             .filter(|capture| self.resolve_local(capture).is_ok())

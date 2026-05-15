@@ -1347,7 +1347,7 @@ fn collect_top_level_function_captures(
     Ok(captures)
 }
 
-fn collect_nested_function_captures_in_stmts(
+pub(crate) fn collect_nested_function_captures_in_stmts(
     stmts: &[ResolvedStmt],
     outer_excluded: &HashSet<String>,
     captures: &mut Vec<String>,
@@ -1452,7 +1452,7 @@ fn collect_nested_function_captures_in_stmts(
     Ok(())
 }
 
-fn collect_nested_function_captures_in_expr(
+pub(crate) fn collect_nested_function_captures_in_expr(
     expr: &ResolvedExpr,
     outer_excluded: &HashSet<String>,
     captures: &mut Vec<String>,

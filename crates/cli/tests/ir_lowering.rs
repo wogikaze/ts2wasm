@@ -171,6 +171,26 @@ fn lowering_passes_function_expression_mutable_outer_local_capture() {
 }
 
 #[test]
+fn lowering_passes_top_level_capture_through_double_nested_function_expr() {
+    let program = parse_and_resolve(
+        r#"
+        var digits = { latn: "0123456789" };
+        function readAll(locales, numberingSystems) {
+          locales.forEach(function(locale) {
+            numberingSystems.forEach(function(numbering) {
+              console.log(digits[numbering]);
+            });
+          });
+        }
+        readAll(["en"], ["latn"]);
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("double nested function expressions should capture top-level locals");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"
