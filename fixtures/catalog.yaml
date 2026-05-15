@@ -248,6 +248,7 @@ directories:
     - generator-basic.ts
     - generator-branch-yield.ts
     - generator-direct-next.ts
+    - generator-object-method-next.ts
     - generator-lazy-between-yields.ts
     - generator-lazy-creation.ts
     - generator-local-state.ts

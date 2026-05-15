@@ -14,6 +14,7 @@ use crate::builtin_resolved::{ResolvedExpr, ResolvedStmt};
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::{
     ArrowClosure, BoundConstructor, BoundFunction, FunctionMethodBinding, FunctionMethodKind,
+    GeneratorMethodIteratorBinding,
 };
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -27,6 +28,50 @@ pub(super) struct Resolver {
 }
 
 impl Resolver {
+    fn generator_method_iterator_binding_for_expr(
+        &mut self,
+        expr: &ResolvedExpr,
+    ) -> Option<GeneratorMethodIteratorBinding> {
+        let ResolvedExpr::MethodCall {
+            object,
+            method,
+            args,
+            ..
+        } = expr
+        else {
+            return None;
+        };
+        let ResolvedExpr::Ident(receiver_name) = object.as_ref() else {
+            return None;
+        };
+        let receiver_local = self.resolve_local(receiver_name).ok()?;
+        let func_id = self
+            .ctx
+            .classes
+            .object_function_props
+            .get(&receiver_local)
+            .and_then(|props| {
+                props.get(&crate::lowered::classes::ObjectAccessorKey::Property(
+                    method.clone(),
+                ))
+            })
+            .copied()?;
+        self.ctx
+            .functions
+            .generated_functions
+            .iter()
+            .any(|function| function.id == func_id && function.is_generator)
+            .then(|| {
+                let state_local = self.alloc_temp();
+                GeneratorMethodIteratorBinding {
+                    func_id,
+                    receiver_local,
+                    args: args.to_vec(),
+                    state_local,
+                }
+            })
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn new(
         function_ids: &HashMap<String, FuncId>,
@@ -377,6 +422,8 @@ impl Resolver {
                 let bound_function = self.bound_function_for_expr(expr)?;
                 let function_method = self.function_method_binding_for_expr(expr)?;
                 let bound_constructor = self.bound_constructor_for_expr(expr);
+                let generator_method_binding =
+                    self.generator_method_iterator_binding_for_expr(expr);
                 let generator_state_local =
                     crate::lowered::resolver::expr::facts::resolved_generator_function_call_name(
                         &self.ctx, expr,
@@ -406,6 +453,15 @@ impl Resolver {
                 } = expr
                 {
                     self.lower_arrow_fn_with_self(params, body, body_stmts, Some(name))?
+                } else if generator_method_binding.is_some() {
+                    LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::GeneratorYield,
+                        args: vec![LoweredExpr::ArrayNew {
+                            elements: Vec::new(),
+                            span: Span::generated("array"),
+                        }],
+                        span: Span::generated("runtime_call"),
+                    }
                 } else {
                     self.lower_expr(expr)?
                 };
@@ -515,6 +571,18 @@ impl Resolver {
                     expr,
                     generator_state_local,
                 );
+                if let Some(binding) = generator_method_binding {
+                    self.ctx.facts.generator_iterator_locals.insert(local_id);
+                    self.ctx
+                        .facts
+                        .generator_method_iterator_bindings
+                        .insert(local_id, binding);
+                } else {
+                    self.ctx
+                        .facts
+                        .generator_method_iterator_bindings
+                        .remove(&local_id);
+                }
                 crate::lowered::resolver::expr::facts::update_proxy_local(
                     &mut self.ctx,
                     local_id,
@@ -581,7 +649,14 @@ impl Resolver {
                     expr,
                 );
                 let local_stmt = LoweredStmt::Let(local_id, lowered, Span::generated("let_stmt"));
-                if let Some(state_local) = generator_state_local {
+                let state_local = generator_state_local.or_else(|| {
+                    self.ctx
+                        .facts
+                        .generator_method_iterator_bindings
+                        .get(&local_id)
+                        .map(|binding| binding.state_local)
+                });
+                if let Some(state_local) = state_local {
                     Ok(LoweredStmt::Block(
                         vec![
                             local_stmt,

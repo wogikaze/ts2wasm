@@ -13,8 +13,11 @@ use crate::builtin_resolved::{
 };
 use crate::lowered::classes::ObjectAccessorKey;
 use crate::lowered::ctx::LoweringCtx;
-use crate::lowered::facts::{GeneratorObjectResumePlan, IntlNumberFormatOptions};
+use crate::lowered::facts::{
+    GeneratorMethodIteratorBinding, GeneratorObjectResumePlan, IntlNumberFormatOptions,
+};
 use crate::lowered::*;
+use std::collections::HashMap;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 use ts2wasm_syntax::UnaryOp;
@@ -124,6 +127,19 @@ impl super::super::Resolver {
         object: &ResolvedExpr,
         args: &[ResolvedExpr],
     ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(local_id) = self.resolve_local(name)
+            && let Some(binding) = self
+                .ctx
+                .facts
+                .generator_method_iterator_bindings
+                .get(&local_id)
+                .cloned()
+        {
+            return Ok(Some(
+                self.lower_generator_method_resume_with_state(&binding, args)?,
+            ));
+        }
         let (func_name, state_local, prelude, resume_args) = match object {
             ResolvedExpr::Ident(name) => {
                 let local_id = self.resolve_local(name)?;
@@ -551,6 +567,101 @@ impl super::super::Resolver {
             span: Span::generated("if_stmt"),
         });
 
+        Ok(LoweredExpr::Block {
+            stmts,
+            result: Box::new(LoweredExpr::Local(result_local, Span::generated("local"))),
+            span: Span::generated("block"),
+        })
+    }
+
+    fn lower_generator_method_resume_with_state(
+        &mut self,
+        binding: &GeneratorMethodIteratorBinding,
+        _resume_args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let function = self
+            .ctx
+            .functions
+            .generated_functions
+            .iter()
+            .find(|function| function.id == binding.func_id && function.is_generator)
+            .cloned()
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "generator method iterator binding points at an unknown function"
+                    .to_owned(),
+                span: None,
+                phase: None,
+            })?;
+        let result_local = self.alloc_temp();
+        let snapshot_local = self.alloc_temp();
+        let mut substitutions = HashMap::new();
+        if let Some(receiver_param) = function.params.first().copied() {
+            substitutions.insert(
+                receiver_param,
+                LoweredExpr::Local(binding.receiver_local, Span::generated("local")),
+            );
+        }
+        for (param, arg) in function.params.iter().skip(1).copied().zip(&binding.args) {
+            substitutions.insert(param, self.lower_expr(arg)?);
+        }
+
+        let mut stmts = vec![
+            LoweredStmt::Let(
+                result_local,
+                Self::generator_next_result(
+                    LoweredExpr::Undefined(Span::generated("undefined")),
+                    true,
+                ),
+                Span::generated("let_stmt"),
+            ),
+            LoweredStmt::Let(
+                snapshot_local,
+                LoweredExpr::Local(binding.state_local, Span::generated("local")),
+                Span::generated("let_stmt"),
+            ),
+        ];
+        if let Some(value) = static_generator_first_yield_value(&function.body)
+            && let Some(value) = static_generator_bind_locals(value, &substitutions)
+        {
+            stmts.push(LoweredStmt::If {
+                condition: Self::state_equals(snapshot_local, 0),
+                then_body: vec![
+                    LoweredStmt::Assign(
+                        result_local,
+                        Self::generator_next_result(value, false),
+                        Span::generated("assign"),
+                    ),
+                    LoweredStmt::Assign(
+                        binding.state_local,
+                        LoweredExpr::Number(1, Span::generated("num")),
+                        Span::generated("assign"),
+                    ),
+                ],
+                else_body: vec![],
+                span: Span::generated("if_stmt"),
+            });
+        }
+        let completion_value = static_generator_implicit_completion_value(&function.body)
+            .and_then(|value| static_generator_bind_locals(value, &substitutions))
+            .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undefined")));
+        stmts.push(LoweredStmt::If {
+            condition: Self::state_equals(snapshot_local, 1),
+            then_body: vec![
+                LoweredStmt::Assign(
+                    result_local,
+                    Self::generator_next_result(completion_value, true),
+                    Span::generated("assign"),
+                ),
+                LoweredStmt::Assign(
+                    binding.state_local,
+                    LoweredExpr::Number(2, Span::generated("num")),
+                    Span::generated("assign"),
+                ),
+            ],
+            else_body: vec![],
+            span: Span::generated("if_stmt"),
+        });
         Ok(LoweredExpr::Block {
             stmts,
             result: Box::new(LoweredExpr::Local(result_local, Span::generated("local"))),
@@ -4319,11 +4430,40 @@ fn static_generator_bind_receiver(
     receiver_param: Option<LocalId>,
     receiver_local: LocalId,
 ) -> Option<LoweredExpr> {
+    let receiver_param = receiver_param?;
+    let mut substitutions = HashMap::new();
+    substitutions.insert(
+        receiver_param,
+        LoweredExpr::Local(receiver_local, Span::generated("local")),
+    );
+    static_generator_bind_locals(expr, &substitutions)
+}
+
+fn static_generator_bind_locals(
+    expr: LoweredExpr,
+    substitutions: &HashMap<LocalId, LoweredExpr>,
+) -> Option<LoweredExpr> {
     match expr {
-        LoweredExpr::Local(local, span) if Some(local) == receiver_param => {
-            Some(LoweredExpr::Local(receiver_local, span))
+        LoweredExpr::Local(local, _) if substitutions.contains_key(&local) => {
+            substitutions.get(&local).cloned()
         }
         LoweredExpr::Local(..) => None,
+        LoweredExpr::Unary { op, expr, span } => Some(LoweredExpr::Unary {
+            op,
+            expr: Box::new(static_generator_bind_locals(*expr, substitutions)?),
+            span,
+        }),
+        LoweredExpr::Binary {
+            left,
+            op,
+            right,
+            span,
+        } => Some(LoweredExpr::Binary {
+            left: Box::new(static_generator_bind_locals(*left, substitutions)?),
+            op,
+            right: Box::new(static_generator_bind_locals(*right, substitutions)?),
+            span,
+        }),
         LoweredExpr::RuntimeCall {
             intrinsic,
             args,
@@ -4332,31 +4472,19 @@ fn static_generator_bind_receiver(
             intrinsic,
             args: args
                 .into_iter()
-                .map(|arg| static_generator_bind_receiver(arg, receiver_param, receiver_local))
+                .map(|arg| static_generator_bind_locals(arg, substitutions))
                 .collect::<Option<Vec<_>>>()?,
             span,
         }),
         LoweredExpr::PropertyGet { obj, key, span } => Some(LoweredExpr::PropertyGet {
-            obj: Box::new(static_generator_bind_receiver(
-                *obj,
-                receiver_param,
-                receiver_local,
-            )?),
+            obj: Box::new(static_generator_bind_locals(*obj, substitutions)?),
             key,
             span,
         }),
         LoweredExpr::PropertyGetDynamic { obj, key, span } => {
             Some(LoweredExpr::PropertyGetDynamic {
-                obj: Box::new(static_generator_bind_receiver(
-                    *obj,
-                    receiver_param,
-                    receiver_local,
-                )?),
-                key: Box::new(static_generator_bind_receiver(
-                    *key,
-                    receiver_param,
-                    receiver_local,
-                )?),
+                obj: Box::new(static_generator_bind_locals(*obj, substitutions)?),
+                key: Box::new(static_generator_bind_locals(*key, substitutions)?),
                 span,
             })
         }
@@ -4364,7 +4492,7 @@ fn static_generator_bind_receiver(
             kind,
             args: args
                 .into_iter()
-                .map(|arg| static_generator_bind_receiver(arg, receiver_param, receiver_local))
+                .map(|arg| static_generator_bind_locals(arg, substitutions))
                 .collect::<Option<Vec<_>>>()?,
             span,
         }),
@@ -4376,13 +4504,17 @@ fn static_generator_bind_receiver(
             props: props
                 .into_iter()
                 .map(|(key, value)| {
-                    Some((
-                        key,
-                        static_generator_bind_receiver(value, receiver_param, receiver_local)?,
-                    ))
+                    Some((key, static_generator_bind_locals(value, substitutions)?))
                 })
                 .collect::<Option<Vec<_>>>()?,
             non_enumerable,
+            span,
+        }),
+        LoweredExpr::ArrayNew { elements, span } => Some(LoweredExpr::ArrayNew {
+            elements: elements
+                .into_iter()
+                .map(|element| static_generator_bind_locals(element, substitutions))
+                .collect::<Option<Vec<_>>>()?,
             span,
         }),
         LoweredExpr::Number(..)

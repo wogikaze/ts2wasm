@@ -1032,11 +1032,11 @@ fn lowered_object_generator_method_iterators_lower_next() {
 
     validate_lowered(&program).expect("object generator method iterator should validate");
     assert!(
-        program
+        !program
             .top_level_statements
             .iter()
             .any(|stmt| { lowered_stmt_contains_runtime_call(stmt, RuntimeFn::GeneratorNext) }),
-        "object generator method iterator should lower .next() through GeneratorNext: {program:?}"
+        "assigned object generator method iterator should use static state stepping: {program:?}"
     );
 }
 

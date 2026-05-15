@@ -3061,6 +3061,16 @@ fn build_smoke_generator_direct_next() {
 }
 
 #[test]
+fn build_smoke_generator_object_method_next() {
+    let result = run_fixture("builtins-and-io/generator-object-method-next.ts");
+    assert!(
+        result.is_ok(),
+        "generator-object-method-next should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_generator_lazy_between_yields() {
     let result = run_fixture("builtins-and-io/generator-lazy-between-yields.ts");
     assert!(

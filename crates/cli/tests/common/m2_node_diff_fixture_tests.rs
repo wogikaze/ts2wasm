@@ -1813,6 +1813,11 @@ fn generator_direct_next_matches_node_output() {
 }
 
 #[test]
+fn generator_object_method_next_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/generator-object-method-next.ts");
+}
+
+#[test]
 fn generator_trailing_completion_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/generator-trailing-completion.ts");
 }

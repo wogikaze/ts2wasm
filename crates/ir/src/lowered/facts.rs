@@ -67,6 +67,8 @@ pub struct StaticFacts {
     pub generator_function_object_resume_plans: HashMap<String, GeneratorObjectResumePlan>,
     /// Locals holding statically visible generator iterators with a runtime state local.
     pub generator_iterator_bindings: HashMap<LocalId, GeneratorIteratorBinding>,
+    /// Locals holding statically visible object generator method iterators.
+    pub generator_method_iterator_bindings: HashMap<LocalId, GeneratorMethodIteratorBinding>,
     /// Static object literal contents: local → property records.
     pub static_object_literal_locals: HashMap<LocalId, Vec<ResolvedObjectProp>>,
     /// Alias source tracking for static object literals: alias → source_ids.
@@ -136,6 +138,15 @@ pub struct GeneratorIteratorBinding {
     pub func_name: String,
     pub state_local: LocalId,
     pub resume_args: Vec<ResolvedExpr>,
+}
+
+/// Compile-time state for a statically visible object generator method iterator local.
+#[derive(Debug, Clone)]
+pub struct GeneratorMethodIteratorBinding {
+    pub func_id: FuncId,
+    pub receiver_local: LocalId,
+    pub args: Vec<ResolvedExpr>,
+    pub state_local: LocalId,
 }
 
 /// Tracks an arrow function closure that can be inlined or heap-allocated.
@@ -248,6 +259,7 @@ impl StaticFacts {
             generator_function_completion_steps: HashMap::new(),
             generator_function_object_resume_plans: HashMap::new(),
             generator_iterator_bindings: HashMap::new(),
+            generator_method_iterator_bindings: HashMap::new(),
             static_object_literal_locals: HashMap::new(),
             static_object_literal_alias_sources: HashMap::new(),
             static_function_array_like_locals: HashMap::new(),
