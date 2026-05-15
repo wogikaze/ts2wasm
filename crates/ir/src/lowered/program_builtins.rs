@@ -1,6 +1,7 @@
 use super::FunctionSignature;
 use crate::RuntimeFn;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
+use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::types::{FuncId, LoweredExpr};
 use std::collections::{HashMap, HashSet};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -93,6 +94,8 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "fromEntries" => Some(RuntimeFn::ObjectFromEntries),
                 "hasOwnProperty" => Some(RuntimeFn::ObjectHasOwnProperty),
                 "hasOwn" => Some(RuntimeFn::ObjectHasOwn),
+                "getOwnPropertyNames" => Some(RuntimeFn::ObjectKeys),
+                "getOwnPropertySymbols" => Some(RuntimeFn::ObjectGetOwnPropertySymbols),
                 "getOwnPropertyDescriptor" => Some(RuntimeFn::ObjectGetOwnPropertyDescriptor),
                 "getPrototypeOf" => Some(RuntimeFn::ObjectGetPrototypeOf),
                 "setPrototypeOf" => Some(RuntimeFn::ObjectSetPrototypeOf),
@@ -260,6 +263,7 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("DataView", "setBigInt64") => Some(RuntimeFn::DataViewSetBigInt64),
         ("DataView", "getBigUint64") => Some(RuntimeFn::DataViewGetBigUint64),
         ("DataView", "setBigUint64") => Some(RuntimeFn::DataViewSetBigUint64),
+        ("ArrayBuffer", "transfer") => Some(RuntimeFn::ArrayBufferTransfer),
         ("Map", "get") => Some(RuntimeFn::MapGet),
         ("Map", "set") => Some(RuntimeFn::MapSet),
         ("Map", "has") => Some(RuntimeFn::MapHas),
@@ -430,9 +434,12 @@ pub(crate) fn is_identity_array_method(method: &str) -> bool {
 
 pub(crate) fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {
     match arg {
-        ResolvedExpr::Number(_) => true,
+        ResolvedExpr::Number(_) | ResolvedExpr::DecimalNumber(_) => true,
         ResolvedExpr::Unary { op, expr } if *op == UnaryOp::Negate => {
-            matches!(expr.as_ref(), ResolvedExpr::Number(_))
+            matches!(
+                expr.as_ref(),
+                ResolvedExpr::Number(_) | ResolvedExpr::DecimalNumber(_)
+            )
         }
         ResolvedExpr::MethodCall {
             object,
@@ -891,20 +898,14 @@ pub(crate) fn is_local_tz_date_method(method: &str) -> bool {
     )
 }
 
-pub(crate) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String, Diagnostic> {
-    if !(1..=2).contains(&args.len()) {
-        return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!(
-                "issue-051: RegExp constructor supports 1 string literal pattern and optional string literal flags in this subset, got {}",
-                args.len()
-            ),
-            span: None,
-
-            phase: None,
-        });
-    }
-    let ResolvedExpr::String(pattern) = &args[0] else {
+pub(crate) fn regexp_constructor_literal(
+    ctx: &LoweringCtx,
+    args: &[ResolvedExpr],
+) -> Result<String, Diagnostic> {
+    validate_regexp_constructor_arity(args)?;
+    let Some(pattern) =
+        crate::lowered::resolver::string::resolved_expr_static_string_value(ctx, &args[0])
+    else {
         return Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message:
@@ -915,27 +916,91 @@ pub(crate) fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String
             phase: None,
         });
     };
-    let flags = match args.get(1) {
-        Some(ResolvedExpr::String(flags)) => flags.as_str(),
-        Some(_) => {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-051: RegExp constructor flags must be a string literal in this subset"
-                        .to_owned(),
-                span: None,
-
-                phase: None,
-            });
-        }
-        None => "",
-    };
+    let flags = regexp_constructor_static_flags(ctx, args)?;
     let raw = format!("/{pattern}/{flags}");
-    validate_regexp_plain_literal(&raw, "RegExp constructor")?;
-    Ok(raw)
+    validate_regexp_constructor_flags(&flags, &raw, "RegExp constructor")?;
+    Ok(canonical_regexp_runtime_literal(&raw).unwrap_or(raw))
+}
+
+pub(crate) fn regexp_constructor_static_flags(
+    ctx: &LoweringCtx,
+    args: &[ResolvedExpr],
+) -> Result<String, Diagnostic> {
+    validate_regexp_constructor_arity(args)?;
+    let flags = match args.get(1) {
+        Some(flags) => {
+            crate::lowered::resolver::string::resolved_expr_static_string_value(ctx, flags)
+                .ok_or_else(|| {
+                    Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "issue-051: RegExp constructor flags must be a string literal in this subset"
+                .to_owned(),
+            span: None,
+            phase: None,
+        }
+                })?
+        }
+        None => String::new(),
+    };
+    validate_regexp_constructor_flags(&flags, &format!("//{flags}"), "RegExp constructor")?;
+    Ok(flags)
+}
+
+fn validate_regexp_constructor_arity(args: &[ResolvedExpr]) -> Result<(), Diagnostic> {
+    if !(1..=2).contains(&args.len()) {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!(
+                "issue-051: RegExp constructor supports 1 pattern and optional string literal flags in this subset, got {}",
+                args.len()
+            ),
+            span: None,
+            phase: None,
+        });
+    }
+    Ok(())
+}
+
+fn validate_regexp_constructor_flags(
+    flags: &str,
+    raw: &str,
+    context: &str,
+) -> Result<(), Diagnostic> {
+    if flags.chars().any(|ch| ch != 'g' && ch != 'i') || flags.chars().count() > 2 {
+        return Err(unsupported_regexp_literal(
+            context,
+            raw,
+            "only the empty flag set, `g`, `i`, or `gi` is supported",
+        ));
+    }
+    let mut seen_g = false;
+    let mut seen_i = false;
+    for ch in flags.chars() {
+        match ch {
+            'g' if seen_g => {
+                return Err(unsupported_regexp_literal(
+                    context,
+                    raw,
+                    "duplicate flag `g`",
+                ));
+            }
+            'i' if seen_i => {
+                return Err(unsupported_regexp_literal(
+                    context,
+                    raw,
+                    "duplicate flag `i`",
+                ));
+            }
+            'g' => seen_g = true,
+            'i' => seen_i = true,
+            _ => unreachable!(),
+        }
+    }
+    Ok(())
 }
 
 pub(crate) fn regexp_test_runtime(
+    ctx: &LoweringCtx,
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
@@ -963,14 +1028,14 @@ pub(crate) fn regexp_test_runtime(
     match object {
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
             validate_regexp_plain_literal(raw, "RegExp.prototype.test literal")?;
-            Ok(Some(vec![object.clone(), test_arg]))
+            Ok(Some(vec![regexp_runtime_literal_expr(raw), test_arg]))
         }
         ResolvedExpr::New {
             class_name,
             args: ctor_args,
             ..
         } if class_name == "RegExp" => {
-            regexp_constructor_literal(ctor_args)?;
+            regexp_constructor_static_flags(ctx, ctor_args)?;
             Ok(Some(vec![object.clone(), test_arg]))
         }
         _ => Ok(None),
@@ -978,6 +1043,7 @@ pub(crate) fn regexp_test_runtime(
 }
 
 pub(crate) fn regexp_string_match_runtime(
+    ctx: &LoweringCtx,
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
@@ -1016,11 +1082,12 @@ pub(crate) fn regexp_string_match_runtime(
     match arg {
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
             validate_regexp_plain_literal(raw, &context)?;
+            return Ok(Some(vec![regexp_runtime_literal_expr(raw), object.clone()]));
         }
         ResolvedExpr::New {
             class_name, args, ..
         } if class_name == "RegExp" => {
-            regexp_constructor_literal(args)?;
+            regexp_constructor_static_flags(ctx, args)?;
         }
         _ => {
             return Err(Diagnostic {
@@ -1038,6 +1105,7 @@ pub(crate) fn regexp_string_match_runtime(
 }
 
 pub(crate) fn regexp_exec_runtime(
+    ctx: &LoweringCtx,
     object: &ResolvedExpr,
     method: &str,
     args: &[ResolvedExpr],
@@ -1065,14 +1133,14 @@ pub(crate) fn regexp_exec_runtime(
     match object {
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
             validate_regexp_plain_literal(raw, "RegExp.prototype.exec literal")?;
-            Ok(Some(vec![object.clone(), exec_arg]))
+            Ok(Some(vec![regexp_runtime_literal_expr(raw), exec_arg]))
         }
         ResolvedExpr::New {
             class_name,
             args: ctor_args,
             ..
         } if class_name == "RegExp" => {
-            regexp_constructor_literal(ctor_args)?;
+            regexp_constructor_static_flags(ctx, ctor_args)?;
             Ok(Some(vec![object.clone(), exec_arg]))
         }
         _ => Ok(None),
@@ -1081,6 +1149,20 @@ pub(crate) fn regexp_exec_runtime(
 
 pub(crate) fn looks_like_regexp_literal(raw: &str) -> bool {
     raw.starts_with('/') && raw[1..].contains('/')
+}
+
+fn regexp_runtime_literal_expr(raw: &str) -> ResolvedExpr {
+    ResolvedExpr::String(canonical_regexp_runtime_literal(raw).unwrap_or_else(|| raw.to_owned()))
+}
+
+fn canonical_regexp_runtime_literal(raw: &str) -> Option<String> {
+    let delimiter = raw.rfind('/')?;
+    let pattern = &raw[1..delimiter];
+    if pattern == "(?:)" {
+        Some(format!("/{}", &raw[delimiter..]))
+    } else {
+        None
+    }
 }
 
 pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<(), Diagnostic> {
@@ -1117,6 +1199,9 @@ pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
         }
     }
     let pattern = &raw[1..delimiter];
+    if pattern == "(?:)" {
+        return Ok(());
+    }
     let bytes = pattern.as_bytes();
     let mut i = 0;
     while i < bytes.len() {
@@ -1201,7 +1286,6 @@ pub(crate) fn unsupported_regexp_literal(context: &str, raw: &str, reason: &str)
         code: DiagCode::UnsupportedSyntax,
         message: format!("issue-051: {context} `{raw}` is not supported yet: {reason}"),
         span: None,
-
         phase: None,
     }
 }

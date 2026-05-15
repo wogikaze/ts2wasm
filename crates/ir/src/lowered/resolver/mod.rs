@@ -14,6 +14,7 @@ use crate::builtin_resolved::{ResolvedExpr, ResolvedStmt};
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::{
     ArrowClosure, BoundConstructor, BoundFunction, FunctionMethodBinding, FunctionMethodKind,
+    GeneratorMethodIteratorBinding,
 };
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -27,6 +28,50 @@ pub(super) struct Resolver {
 }
 
 impl Resolver {
+    fn generator_method_iterator_binding_for_expr(
+        &mut self,
+        expr: &ResolvedExpr,
+    ) -> Option<GeneratorMethodIteratorBinding> {
+        let ResolvedExpr::MethodCall {
+            object,
+            method,
+            args,
+            ..
+        } = expr
+        else {
+            return None;
+        };
+        let ResolvedExpr::Ident(receiver_name) = object.as_ref() else {
+            return None;
+        };
+        let receiver_local = self.resolve_local(receiver_name).ok()?;
+        let func_id = self
+            .ctx
+            .classes
+            .object_function_props
+            .get(&receiver_local)
+            .and_then(|props| {
+                props.get(&crate::lowered::classes::ObjectAccessorKey::Property(
+                    method.clone(),
+                ))
+            })
+            .copied()?;
+        self.ctx
+            .functions
+            .generated_functions
+            .iter()
+            .any(|function| function.id == func_id && function.is_generator)
+            .then(|| {
+                let state_local = self.alloc_temp();
+                GeneratorMethodIteratorBinding {
+                    func_id,
+                    receiver_local,
+                    args: args.to_vec(),
+                    state_local,
+                }
+            })
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn new(
         function_ids: &HashMap<String, FuncId>,
@@ -377,6 +422,8 @@ impl Resolver {
                 let bound_function = self.bound_function_for_expr(expr)?;
                 let function_method = self.function_method_binding_for_expr(expr)?;
                 let bound_constructor = self.bound_constructor_for_expr(expr);
+                let generator_method_binding =
+                    self.generator_method_iterator_binding_for_expr(expr);
                 let generator_state_local =
                     crate::lowered::resolver::expr::facts::resolved_generator_function_call_name(
                         &self.ctx, expr,
@@ -386,6 +433,11 @@ impl Resolver {
                             .facts
                             .generator_function_steps
                             .contains_key(func_name)
+                            || self
+                                .ctx
+                                .facts
+                                .generator_function_object_resume_plans
+                                .contains_key(func_name)
                     })
                     .map(|_| self.alloc_temp());
                 let lowered = if bound_function.is_some()
@@ -401,6 +453,15 @@ impl Resolver {
                 } = expr
                 {
                     self.lower_arrow_fn_with_self(params, body, body_stmts, Some(name))?
+                } else if generator_method_binding.is_some() {
+                    LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::GeneratorYield,
+                        args: vec![LoweredExpr::ArrayNew {
+                            elements: Vec::new(),
+                            span: Span::generated("array"),
+                        }],
+                        span: Span::generated("runtime_call"),
+                    }
                 } else {
                     self.lower_expr(expr)?
                 };
@@ -410,6 +471,7 @@ impl Resolver {
                 } else {
                     lowered
                 };
+                let accessor_props = self.accessor_props_for_lowered_object_expr(&lowered);
                 if let Some(lowered_props) = self.function_props_for_lowered_object_expr(&lowered) {
                     function_props
                         .get_or_insert_with(HashMap::new)
@@ -426,8 +488,25 @@ impl Resolver {
                             captures: captures.clone(),
                         },
                     );
+                    if let Some(metadata_name) =
+                        static_function_metadata_name_for_expr(&self.ctx, expr)
+                    {
+                        self.ctx
+                            .facts
+                            .function_metadata_name_locals
+                            .insert(local_id, metadata_name);
+                    } else {
+                        self.ctx
+                            .facts
+                            .function_metadata_name_locals
+                            .remove(&local_id);
+                    }
                 } else {
                     self.ctx.facts.arrow_locals.remove(&local_id);
+                    self.ctx
+                        .facts
+                        .function_metadata_name_locals
+                        .remove(&local_id);
                 }
                 if let Some(bound_function) = bound_function {
                     self.ctx
@@ -492,6 +571,18 @@ impl Resolver {
                     expr,
                     generator_state_local,
                 );
+                if let Some(binding) = generator_method_binding {
+                    self.ctx.facts.generator_iterator_locals.insert(local_id);
+                    self.ctx
+                        .facts
+                        .generator_method_iterator_bindings
+                        .insert(local_id, binding);
+                } else {
+                    self.ctx
+                        .facts
+                        .generator_method_iterator_bindings
+                        .remove(&local_id);
+                }
                 crate::lowered::resolver::expr::facts::update_proxy_local(
                     &mut self.ctx,
                     local_id,
@@ -509,6 +600,11 @@ impl Resolver {
                     expr,
                 );
                 crate::lowered::resolver::string::update_number_literal_local(
+                    &mut self.ctx,
+                    local_id,
+                    expr,
+                );
+                crate::lowered::resolver::string::update_symbol_value_local(
                     &mut self.ctx,
                     local_id,
                     expr,
@@ -550,13 +646,28 @@ impl Resolver {
                 } else {
                     self.ctx.classes.object_function_props.remove(&local_id);
                 }
+                if let Some(props) = accessor_props {
+                    self.ctx
+                        .classes
+                        .object_accessor_props
+                        .insert(local_id, props);
+                } else {
+                    self.ctx.classes.object_accessor_props.remove(&local_id);
+                }
                 crate::lowered::resolver::string::update_regexp_literal_local(
                     &mut self.ctx,
                     local_id,
                     expr,
                 );
                 let local_stmt = LoweredStmt::Let(local_id, lowered, Span::generated("let_stmt"));
-                if let Some(state_local) = generator_state_local {
+                let state_local = generator_state_local.or_else(|| {
+                    self.ctx
+                        .facts
+                        .generator_method_iterator_bindings
+                        .get(&local_id)
+                        .map(|binding| binding.state_local)
+                });
+                if let Some(state_local) = state_local {
                     Ok(LoweredStmt::Block(
                         vec![
                             local_stmt,
@@ -602,6 +713,11 @@ impl Resolver {
                             .facts
                             .generator_function_steps
                             .contains_key(func_name)
+                            || self
+                                .ctx
+                                .facts
+                                .generator_function_object_resume_plans
+                                .contains_key(func_name)
                     })
                     .map(|_| self.alloc_temp());
                 let lowered = if bound_function.is_some()
@@ -612,6 +728,7 @@ impl Resolver {
                 } else {
                     self.lower_expr(expr)?
                 };
+                let accessor_props = self.accessor_props_for_lowered_object_expr(&lowered);
                 if let Some(lowered_props) = self.function_props_for_lowered_object_expr(&lowered) {
                     function_props
                         .get_or_insert_with(HashMap::new)
@@ -628,8 +745,25 @@ impl Resolver {
                             captures: captures.clone(),
                         },
                     );
+                    if let Some(metadata_name) =
+                        static_function_metadata_name_for_expr(&self.ctx, expr)
+                    {
+                        self.ctx
+                            .facts
+                            .function_metadata_name_locals
+                            .insert(local_id, metadata_name);
+                    } else {
+                        self.ctx
+                            .facts
+                            .function_metadata_name_locals
+                            .remove(&local_id);
+                    }
                 } else {
                     self.ctx.facts.arrow_locals.remove(&local_id);
+                    self.ctx
+                        .facts
+                        .function_metadata_name_locals
+                        .remove(&local_id);
                 }
                 if let Some(bound_function) = bound_function {
                     self.ctx
@@ -710,6 +844,11 @@ impl Resolver {
                     local_id,
                     expr,
                 );
+                crate::lowered::resolver::string::update_symbol_value_local(
+                    &mut self.ctx,
+                    local_id,
+                    expr,
+                );
                 crate::lowered::resolver::expr::facts::update_native_set_add_local(
                     &mut self.ctx,
                     local_id,
@@ -727,6 +866,14 @@ impl Resolver {
                         .insert(local_id, props);
                 } else {
                     self.ctx.classes.object_function_props.remove(&local_id);
+                }
+                if let Some(props) = accessor_props {
+                    self.ctx
+                        .classes
+                        .object_accessor_props
+                        .insert(local_id, props);
+                } else {
+                    self.ctx.classes.object_accessor_props.remove(&local_id);
                 }
                 crate::lowered::resolver::string::update_regexp_literal_local(
                     &mut self.ctx,
@@ -782,6 +929,12 @@ impl Resolver {
                     && let Ok(local_id) = self.resolve_local(name)
                     && self.ctx.facts.array_locals.contains(&local_id)
                 {
+                    if let ResolvedExpr::Spread(spread_expr) = &args[0] {
+                        return Ok(LoweredStmt::Expr(
+                            self.lower_array_push_single_spread_arg(object, spread_expr.as_ref())?,
+                            Span::generated("expr_stmt"),
+                        ));
+                    }
                     return Ok(LoweredStmt::Assign(
                         local_id,
                         LoweredExpr::RuntimeCall {
@@ -1209,17 +1362,51 @@ pub(crate) fn class_maps(
     (ctor_ids, method_ids, static_method_ids)
 }
 
-pub(crate) fn lowered_binding_default(default: &BindingDefault) -> LoweredExpr {
+pub(crate) fn lowered_binding_default(default: &BindingDefault) -> Option<LoweredExpr> {
     match default {
-        BindingDefault::Number(value) => LoweredExpr::Number(*value, Span::generated("num")),
-        BindingDefault::String(value) => LoweredExpr::String(value.clone(), Span::generated("str")),
-        BindingDefault::Bool(value) => LoweredExpr::Bool(*value, Span::generated("bool")),
-        BindingDefault::Null => LoweredExpr::Null(Span::generated("null")),
-        BindingDefault::Undefined => LoweredExpr::Undefined(Span::generated("undef")),
-        BindingDefault::Object(props) => {
-            let _ = props;
-            LoweredExpr::Undefined(Span::generated("undef"))
+        BindingDefault::Number(value) => Some(LoweredExpr::Number(*value, Span::generated("num"))),
+        BindingDefault::String(value) => {
+            Some(LoweredExpr::String(value.clone(), Span::generated("str")))
         }
+        BindingDefault::Bool(value) => Some(LoweredExpr::Bool(*value, Span::generated("bool"))),
+        BindingDefault::Null => Some(LoweredExpr::Null(Span::generated("null"))),
+        BindingDefault::Undefined => Some(LoweredExpr::Undefined(Span::generated("undef"))),
+        BindingDefault::Array(elements) => {
+            let elements = elements
+                .iter()
+                .map(|element| {
+                    if let Some(element) = element.as_ref() {
+                        lowered_binding_default(element)
+                    } else {
+                        Some(LoweredExpr::Undefined(Span::generated("undef")))
+                    }
+                })
+                .collect::<Option<Vec<_>>>()?;
+            Some(LoweredExpr::ArrayNew {
+                elements,
+                span: Span::generated("array_new"),
+            })
+        }
+        BindingDefault::Object(props) => {
+            let props = props
+                .iter()
+                .map(|(key, value)| {
+                    lowered_binding_default(value).map(|value| (key.clone(), value))
+                })
+                .collect::<Option<Vec<_>>>()?;
+            Some(LoweredExpr::ObjectNew {
+                props,
+                non_enumerable: 0,
+                span: Span::generated("object_new"),
+            })
+        }
+        BindingDefault::Ident(_)
+        | BindingDefault::FunctionExpr { .. }
+        | BindingDefault::ArrowFn
+        | BindingDefault::ClassExpr { .. }
+        | BindingDefault::Call(_)
+        | BindingDefault::PreIncrement(_)
+        | BindingDefault::FunctionIife { .. } => None,
     }
 }
 
@@ -1240,6 +1427,24 @@ fn binding_param_names<'a>(
             names.extend(pattern.names().into_iter().map(ToOwned::to_owned));
         } else {
             names.push(param.to_owned());
+        }
+    }
+    Ok(names)
+}
+
+fn binding_param_default_ref_names<'a>(
+    params: impl Iterator<Item = (&'a str, Option<Span>)>,
+) -> Result<Vec<String>, Diagnostic> {
+    let mut names = Vec::new();
+    for (param, span) in params {
+        let binding = param.strip_prefix("...").unwrap_or(param);
+        if let Some(pattern) = parse_binding_pattern(binding, span)? {
+            names.extend(
+                pattern
+                    .default_ref_names()
+                    .into_iter()
+                    .map(ToOwned::to_owned),
+            );
         }
     }
     Ok(names)
@@ -1532,6 +1737,32 @@ pub(crate) fn function_prototype_method_name(expr: &ResolvedExpr) -> Option<&str
         return None;
     }
     Some(method_name)
+}
+
+pub(crate) fn static_function_metadata_name_for_expr(
+    ctx: &LoweringCtx,
+    expr: &ResolvedExpr,
+) -> Option<String> {
+    match expr {
+        ResolvedExpr::PropertyAccess { key, .. } => Some(key.clone()),
+        ResolvedExpr::ComputedIndex { index, .. } => {
+            let key = string::resolved_expr_static_accessor_key(ctx, index)?;
+            static_accessor_key_metadata_name(ctx, key)
+        }
+        _ => None,
+    }
+}
+
+fn static_accessor_key_metadata_name(
+    ctx: &LoweringCtx,
+    key: crate::lowered::classes::ObjectAccessorKey,
+) -> Option<String> {
+    match key {
+        crate::lowered::classes::ObjectAccessorKey::Property(name) => Some(name),
+        crate::lowered::classes::ObjectAccessorKey::SymbolLocal(local) => {
+            string::symbol_local_name(ctx, local)
+        }
+    }
 }
 
 /// Wrapper that converts bigint_runtime_fn_name string output to RuntimeFn.

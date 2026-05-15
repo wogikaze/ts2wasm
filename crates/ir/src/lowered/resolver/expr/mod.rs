@@ -173,9 +173,12 @@ impl super::Resolver {
                 body_stmts,
                 ..
             } => self.lower_arrow_fn(params, body, body_stmts),
-            ResolvedExpr::FunctionExpr { name, params, body } => {
-                self.lower_named_function_expr(name, params, body)
-            }
+            ResolvedExpr::FunctionExpr {
+                name,
+                params,
+                body,
+                is_generator,
+            } => self.lower_named_function_expr(name, params, body, *is_generator),
             ResolvedExpr::ClassExpr { .. } => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
         }
     }

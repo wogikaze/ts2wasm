@@ -1543,11 +1543,16 @@ impl Parser {
         self.expect(TokenKind::LeftParen)?;
         let condition = self.expression()?;
         self.expect(TokenKind::RightParen)?;
-        let body = self.while_statement_body()?;
-        let end = body
-            .last()
-            .map(|stmt| stmt.span().end)
-            .unwrap_or(condition.span().end);
+        let (body, end) = if let Some(semi) = self.consume_span(TokenKind::Semicolon) {
+            (Vec::new(), semi.end)
+        } else {
+            let body = self.while_statement_body()?;
+            let end = body
+                .last()
+                .map(|stmt| stmt.span().end)
+                .unwrap_or(condition.span().end);
+            (body, end)
+        };
         Ok(Stmt::While {
             condition,
             body,
@@ -1967,7 +1972,7 @@ impl Parser {
         let is_for_in_of = if matches!(self.peek(), Some(Token::Var | Token::Let | Token::Const)) {
             self.advance();
             match self.peek() {
-                Some(Token::Ident(_) | Token::LeftBracket) => {
+                Some(Token::Ident(_) | Token::LeftBracket | Token::LeftBrace) => {
                     if matches!(self.peek(), Some(Token::Ident(_))) {
                         self.advance();
                         // Cover initializer: `for (var x = expr in obj)` — skip `= expr`
@@ -1986,8 +1991,11 @@ impl Parser {
                                 }
                             }
                         }
-                    } else {
+                    } else if matches!(self.peek(), Some(Token::LeftBracket)) {
                         self.skip_balanced_bracket_block()?;
+                    } else {
+                        let span = self.peek_span().unwrap_or(start);
+                        self.skip_balanced_brace_block(span)?;
                     }
                     // Skip optional TypeScript type annotation (`: Type`) in for-in/of
                     if self.consume(TokenKind::Colon) {
@@ -2011,11 +2019,10 @@ impl Parser {
             if matches!(self.peek(), Some(Token::Var | Token::Let | Token::Const)) {
                 self.advance();
             }
-            let var_name = if matches!(self.peek(), Some(Token::LeftBracket)) {
-                // Array binding pattern in for-of head (issue 5298):
-                // for (const [key, value] of Object.entries(e))
-                // Use a synthesized name since the Parser has no source field
-                self.skip_balanced_bracket_block()?;
+            let mut destructuring_binding = None;
+            let var_name = if matches!(self.peek(), Some(Token::LeftBracket | Token::LeftBrace)) {
+                let pattern = self.parse_binding_pattern()?;
+                destructuring_binding = Some(pattern);
                 "_binding".to_owned()
             } else {
                 let (name, _) = self.expect_ident()?;
@@ -2043,7 +2050,10 @@ impl Parser {
             if self.consume(TokenKind::In) {
                 let iter = self.expression()?;
                 self.expect(TokenKind::RightParen)?;
-                let body = self.block()?;
+                let mut body = self.block()?;
+                if let Some(binding) = &destructuring_binding {
+                    body.insert(0, for_head_destructuring_let(binding, &var_name));
+                }
                 let end = body.last().map(|s| s.span().end).unwrap_or(start.end);
                 Ok(Stmt::ForIn {
                     var: var_name,
@@ -2057,7 +2067,10 @@ impl Parser {
             } else if self.consume(TokenKind::Of) {
                 let iter = self.expression()?;
                 self.expect(TokenKind::RightParen)?;
-                let body = self.block()?;
+                let mut body = self.block()?;
+                if let Some(binding) = &destructuring_binding {
+                    body.insert(0, for_head_destructuring_let(binding, &var_name));
+                }
                 let end = body.last().map(|s| s.span().end).unwrap_or(start.end);
                 Ok(Stmt::ForOf {
                     var: var_name,
@@ -2400,5 +2413,17 @@ impl Parser {
             }
         }
         Ok(())
+    }
+}
+
+fn for_head_destructuring_let(binding: &ParsedBindingPattern, temp_name: &str) -> Stmt {
+    Stmt::Let {
+        name: binding.text.clone(),
+        expr: Expr::Ident {
+            name: temp_name.to_owned(),
+            span: binding.span,
+        },
+        span: binding.span,
+        is_var: false,
     }
 }

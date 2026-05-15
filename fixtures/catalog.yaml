@@ -164,6 +164,7 @@ directories:
     - array-find.ts
     - array-flat-map.ts
     - array-flat.ts
+    - array-foreach-function-callback.ts
     - array-foreach-thisarg.ts
     - array-from.ts
     - array-includes.ts
@@ -210,6 +211,7 @@ directories:
     - arraybuffer-dataview-uint16.ts
     - arraybuffer-dataview-uint32.ts
     - dataview-complete.ts
+    - arraybuffer-transfer.ts
     - async-generator-basic.ts
     - atomics-unsupported.ts
     - boolean-symbol-prototype.ts
@@ -234,6 +236,10 @@ directories:
     - date-now-live-time-unsupported.ts
     - date-now-live-time.ts
     - date-set-time.ts
+    - date-set-local-components.ts
+    - date-set-utc-components.ts
+    - date-set-utc-full-year.ts
+    - date-set-utc-methods.ts
     - date-static-parse-utc.ts
     - date-to-date-string.ts
     - date-to-iso-string.ts
@@ -255,6 +261,7 @@ directories:
     - generator-basic.ts
     - generator-branch-yield.ts
     - generator-direct-next.ts
+    - generator-object-method-next.ts
     - generator-lazy-between-yields.ts
     - generator-lazy-creation.ts
     - generator-local-state.ts
@@ -381,6 +388,7 @@ directories:
     - object-freeze.ts
     - object-get-own-property-descriptor-unsupported.ts
     - object-get-own-property-descriptor.ts
+    - object-get-own-property-names.ts
     - object-get-prototype-of.ts
     - object-has-own.ts
     - object-has-own-property.ts
@@ -388,6 +396,7 @@ directories:
     - object-is-frozen.ts
     - object-is-sealed.ts
     - object-is.ts
+    - object-own-key-integer-order.ts
     - object-keys-arguments.ts
     - object-keys.ts
     - object-prevent-extensions.ts
@@ -423,6 +432,7 @@ directories:
     - set-iteration.ts
     - set-size-clear.ts
     - set-algebra.ts
+    - sharedarraybuffer-basic.ts
     - stdin.ts
     - string-anchor-annexb.ts
     - string-at.ts
@@ -581,8 +591,34 @@ directories:
     - object-literal-mixed-types.ts
     - object-literal-inline-access.ts
     - object-literal-dup-keys.ts
+    - object-literal-bigint-keys.ts
     - object-literal-computed-keys.ts
+    - object-literal-computed-expression-key.ts
+    - object-literal-computed-accessor-invocation.ts
+    - object-literal-symbol-accessor-invocation.ts
+    - object-literal-computed-await-key.ts
+    - object-literal-computed-method.ts
+    - object-literal-computed-method-call.ts
+    - object-literal-computed-identity-method-call.ts
+    - object-literal-computed-constant-number-expression-key.ts
+    - object-literal-computed-conditional-key.ts
+    - object-literal-computed-decimal-exponent-key.ts
+    - object-literal-computed-function-keys.ts
+    - object-literal-computed-fractional-math-key.ts
+    - object-literal-computed-number-method-call.ts
+    - object-literal-computed-large-exponent-key.ts
+    - object-literal-computed-number-sentinel-keys.ts
+    - object-literal-symbol-method-call.ts
+    - symbol-key-dynamic-property-identity.ts
+    - symbol-key-descriptor-identity.ts
+    - object-literal-computed-spread.ts
     - object-literal-proto.ts
+    - object-literal-proto-accessor-descriptor.ts
+    - object-literal-method.ts
+    - object-literal-super-method-args.ts
+    - object-literal-method-mutable-capture.ts
+    - object-literal-getter-descriptor.ts
+    - object-literal-setter-descriptor.ts
     - object-shorthand-computed-method.ts
     - optional-call.ts
     - optional-index.ts
@@ -849,7 +885,7 @@ directories:
     - ordinary-function-closure-escape-unsupported.ts
     - ordinary-function-closure-gc-pressure.ts
     - ordinary-function-closure-make-adder.ts
-    - ordinary-function-closure-mutation-unsupported.ts
+    - ordinary-function-closure-mutation.ts
     - ordinary-function-direct-call.ts
     - parameter-properties-defaults.ts
     - plus.ts

@@ -104,6 +104,421 @@ fn lowering_passes_mutable_class_method_outer_local_capture() {
 }
 
 #[test]
+fn lowering_passes_nested_function_mutable_outer_local_capture() {
+    use ts2wasm_ir::lowered::{FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        function outer() {
+          let count = 0;
+          function inc() {
+            count = count + 1;
+          }
+          inc();
+          console.log(count);
+        }
+        outer();
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+    let outer = &lowered.functions[0];
+
+    assert!(matches!(
+        outer.body.first(),
+        Some(LoweredStmt::Let(
+            LocalId(0),
+            LoweredExpr::EnvCellNew(initial, _),
+            _
+        )) if matches!(initial.as_ref(), LoweredExpr::Number(0, _))
+    ));
+    assert!(matches!(
+        outer.body.last(),
+        Some(LoweredStmt::Expr(LoweredExpr::Call {
+            kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
+            args, ..
+        }, _)) if matches!(args.as_slice(), [LoweredExpr::EnvCellGet(LocalId(0), _)])
+    ));
+}
+
+#[test]
+fn lowering_passes_function_expression_mutable_outer_local_capture() {
+    use ts2wasm_ir::lowered::{LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        function outer() {
+          let actual = 0;
+          call(function () {
+            actual = actual + 1;
+          });
+        }
+        function call(callback) {
+          callback();
+        }
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+    let outer = &lowered.functions[0];
+
+    assert!(matches!(
+        outer.body.first(),
+        Some(LoweredStmt::Let(
+            LocalId(0),
+            LoweredExpr::EnvCellNew(initial, _),
+            _
+        )) if matches!(initial.as_ref(), LoweredExpr::Number(0, _))
+    ));
+}
+
+#[test]
+fn lowering_passes_top_level_capture_through_double_nested_function_expr() {
+    let program = parse_and_resolve(
+        r#"
+        var digits = { latn: "0123456789" };
+        function readAll(locales, numberingSystems) {
+          locales.forEach(function(locale) {
+            numberingSystems.forEach(function(numbering) {
+              console.log(digits[numbering]);
+            });
+          });
+        }
+        readAll(["en"], ["latn"]);
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("double nested function expressions should capture top-level locals");
+}
+
+#[test]
+fn lowering_preserves_captured_object_method_facts_in_nested_function() {
+    let program = parse_and_resolve(
+        r#"
+        function outer() {
+          var obj = {
+            method() {
+              return 1;
+            }
+          };
+          function run() {
+            obj.method();
+          }
+          run();
+        }
+        outer();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("captured object-literal method metadata should remain available");
+}
+
+#[test]
+fn lowering_marks_direct_generator_function_expression_call_as_iterator() {
+    let program = parse_and_resolve(
+        r#"
+        var iter = function*() {}();
+        iter.next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("direct generator function expression calls should produce generator iterators");
+}
+
+#[test]
+fn lowering_applies_array_default_to_nested_object_binding_pattern() {
+    let program = parse_and_resolve(
+        r#"
+        var obj = {
+          *method({ w: [x, y, z] = [4, 5, 6] }) {
+            console.log(x);
+            console.log(y);
+            console.log(z);
+          }
+        };
+        obj.method({}).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("nested binding patterns should apply array literal defaults before recursion");
+}
+
+#[test]
+fn lowering_applies_call_default_to_object_binding_identifier() {
+    let program = parse_and_resolve(
+        r#"
+        function counter() {
+          return 4;
+        }
+        var obj = {
+          *method({ x = counter() }) {
+            console.log(x);
+          }
+        };
+        obj.method({}).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("binding defaults should lower no-argument function calls");
+}
+
+#[test]
+fn lowering_allows_object_generator_method_default_parameter() {
+    let program = parse_and_resolve(
+        r#"
+        var callCount = 0;
+        var obj = {
+          *method(value = 23) {
+            console.log(value);
+            callCount = callCount + 1;
+          }
+        };
+
+        obj.method(undefined).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("object generator method defaults should lower through function defaults");
+}
+
+#[test]
+fn lowering_allows_object_pattern_inside_array_binding() {
+    let program = parse_and_resolve(
+        r#"
+        var obj = {
+          *method([{ x }]) {
+            console.log(x);
+          }
+        };
+
+        obj.method([{ x: 23 }]).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("array binding elements should allow nested object patterns");
+}
+
+#[test]
+fn lowering_applies_object_default_to_nested_object_binding_pattern() {
+    let program = parse_and_resolve(
+        r#"
+        var obj = {
+          *method({ w: { x } = { x: 23 } }) {
+            console.log(x);
+          }
+        };
+
+        obj.method({ w: undefined }).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("nested object binding patterns should apply object literal defaults");
+}
+
+#[test]
+fn lowering_allows_array_pattern_rest_binding_target() {
+    let program = parse_and_resolve(
+        r#"
+        var obj = {
+          *method([...[x, y]]) {
+            console.log(x + y);
+          }
+        };
+
+        obj.method([1, 2]).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("array rest binding targets should allow nested array patterns");
+}
+
+#[test]
+fn lowering_applies_identifier_default_to_nested_array_binding_pattern() {
+    let program = parse_and_resolve(
+        r#"
+        var fallback = [23];
+        var obj = {
+          *method([x] = fallback) {
+            console.log(x);
+          }
+        };
+
+        obj.method(undefined).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("nested array binding patterns should apply identifier defaults");
+}
+
+#[test]
+fn lowering_applies_identifier_default_to_nested_array_binding_element() {
+    let program = parse_and_resolve(
+        r#"
+        var values = [2, 1, 3];
+        var obj = {
+          *method([[...x] = values]) {
+            console.log(x.length);
+          }
+        };
+
+        obj.method([]).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("binding element defaults should allow identifier values");
+}
+
+#[test]
+fn lowering_applies_function_expression_binding_defaults() {
+    let program = parse_and_resolve(
+        r#"
+        var obj = {
+          *method([fn = function () {}, gen = function* () {}]) {
+            console.log(fn.name);
+            console.log(gen.name);
+          }
+        };
+
+        obj.method([]).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("binding defaults should allow empty function expressions");
+}
+
+#[test]
+fn lowering_applies_arrow_and_class_expression_binding_defaults() {
+    let program = parse_and_resolve(
+        r#"
+        var obj = {
+          *method([arrow = () => {}, cls = class {}, xCls = class X {}]) {
+            console.log(arrow.name);
+            console.log(cls.name);
+            console.log(xCls.name);
+          }
+        };
+
+        obj.method([]).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("binding defaults should allow empty arrow and class expressions");
+}
+
+#[test]
+fn lowering_allows_unresolvable_reference_binding_default() {
+    let program = parse_and_resolve(
+        r#"
+        var obj = {
+          *method({ x = unresolvableReference }) {
+            console.log(x);
+          }
+        };
+
+        obj.method({}).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("unresolvable binding defaults should lower to runtime ReferenceError");
+}
+
+#[test]
+fn lowering_allows_call_computed_object_binding_property() {
+    let program = parse_and_resolve(
+        r#"
+        function thrower() {
+          throw new Error("boom");
+        }
+
+        var obj = {
+          *method({ [thrower()]: x } = {}) {
+            console.log(x);
+          }
+        };
+
+        obj.method().next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("computed binding property calls should lower as property-name evaluation");
+}
+
+#[test]
+fn lowering_allows_later_parameter_reference_default() {
+    let program = parse_and_resolve(
+        r#"
+        function assertThrows(callback) {
+          callback();
+        }
+
+        var obj = {
+          *method(x = y, y) {
+            y;
+          }
+        };
+
+        assertThrows(function() {
+          obj.method();
+        });
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("later parameter default references should lower to runtime ReferenceError");
+}
+
+#[test]
+fn lowering_applies_prefix_increment_binding_default() {
+    let program = parse_and_resolve(
+        r#"
+        var initEvalCount = 0;
+        var obj = {
+          *method({ poisoned: x = ++initEvalCount }) {
+            console.log(x);
+          }
+        };
+
+        obj.method({ poisoned: undefined }).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("prefix increment binding defaults should lower through assignment semantics");
+}
+
+#[test]
+fn lowering_applies_function_iife_binding_default() {
+    let program = parse_and_resolve(
+        r#"
+        var initCount = 0;
+        var obj = {
+          *method([[] = function() { initCount += 1; }()]) {
+            console.log(initCount);
+          }
+        };
+
+        obj.method([]).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("function IIFE binding defaults should lower through their body");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"
@@ -481,6 +896,32 @@ fn lowering_routes_regexp_literal_test_to_runtime_call() {
 }
 
 #[test]
+fn lowering_routes_empty_noncapturing_regexp_literal_to_empty_pattern() {
+    let program = parse_and_resolve("let ok = /(?:)/.test(\"zabcx\");");
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[0] {
+        ts2wasm_ir::lowered::LoweredStmt::Let(
+            _,
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                intrinsic, args, ..
+            },
+            _,
+        ) => {
+            assert_eq!(*intrinsic, RuntimeFn::RegExpTest);
+            assert!(matches!(
+                args.as_slice(),
+                [
+                    ts2wasm_ir::lowered::LoweredExpr::String(pattern, _),
+                    ts2wasm_ir::lowered::LoweredExpr::String(input, _)
+                ] if pattern == "//" && input == "zabcx"
+            ));
+        }
+        other => panic!("unexpected lowered statement: {other:?}"),
+    }
+}
+
+#[test]
 fn lowering_routes_new_regexp_test_to_runtime_call() {
     let program = parse_and_resolve("let r = new RegExp(\"abc\"); let ok = r.test(\"zabcx\");");
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
@@ -713,6 +1154,67 @@ fn lowering_routes_new_date_epoch_to_runtime_call() {
 }
 
 #[test]
+fn lowering_routes_new_date_decimal_epoch_to_runtime_call() {
+    let program = parse_and_resolve("let epoch = new Date(1726773817847);");
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[0] {
+        ts2wasm_ir::lowered::LoweredStmt::Let(
+            _,
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                intrinsic, args, ..
+            },
+            _,
+        ) => {
+            assert_eq!(*intrinsic, RuntimeFn::DateNew);
+            assert!(matches!(
+                args.as_slice(),
+                [ts2wasm_ir::lowered::LoweredExpr::DecimalNumber(value, _)]
+                    if value == "1726773817847"
+            ));
+        }
+        other => panic!("unexpected lowered Date decimal constructor statement: {other:?}"),
+    }
+}
+
+#[test]
+fn lowering_routes_new_date_decimal_epoch_local_to_runtime_call() {
+    let program = parse_and_resolve(
+        "let sampleEpochMs = 1726773817847; let epoch = new Date(sampleEpochMs);",
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[1] {
+        ts2wasm_ir::lowered::LoweredStmt::Let(
+            _,
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                intrinsic, args, ..
+            },
+            _,
+        ) => {
+            assert_eq!(*intrinsic, RuntimeFn::DateNew);
+            assert!(matches!(
+                args.as_slice(),
+                [ts2wasm_ir::lowered::LoweredExpr::Local(
+                    ts2wasm_ir::lowered::LocalId(0),
+                    _
+                )]
+            ));
+        }
+        other => panic!("unexpected lowered Date decimal local constructor statement: {other:?}"),
+    }
+}
+
+#[test]
+fn lowering_routes_dynamic_new_date_argument_to_runtime_call() {
+    let program = parse_and_resolve("function makeDate(value) { return new Date(value); }");
+    let lowered = ts2wasm_ir::lowered::lower_program(&program)
+        .expect("dynamic Date constructor argument should lower");
+    ts2wasm_ir::lowered::validate_lowered(&lowered)
+        .expect("dynamic Date constructor argument should validate");
+}
+
+#[test]
 fn lowering_routes_date_get_time_to_runtime_call() {
     let program = parse_and_resolve("let epoch = new Date(0); let ms = epoch.getTime();");
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
@@ -781,6 +1283,249 @@ fn lowering_accepts_regexp_i_flag_new_regexp() {
     assert!(
         ts2wasm_ir::lowered::lower_program(&parse_and_resolve(
             "let r = new RegExp(\"abc\", \"i\");"
+        ))
+        .is_ok()
+    );
+}
+
+#[test]
+fn lowering_accepts_static_string_regexp_constructor_pattern() {
+    assert!(
+        ts2wasm_ir::lowered::lower_program(&parse_and_resolve(
+            "let alpha = \"[a-z]\"; let r = new RegExp(\"^\" + alpha + \"$\", \"i\");"
+        ))
+        .is_ok()
+    );
+}
+
+#[test]
+fn lowering_accepts_intl_harness_static_regexp_constructor_pattern() {
+    let program = parse_and_resolve(
+        r#"
+        function isCanonicalizedStructurallyValidLanguageTag(locale) {
+          var alpha = "[a-z]",
+            digit = "[0-9]",
+            alphanum = "[a-z0-9]",
+            variant = "(" + alphanum + "{5,8}|(?:" + digit + alphanum + "{3}))",
+            region = "(" + alpha + "{2}|" + digit + "{3})",
+            script = "(" + alpha + "{4})",
+            language = "(" + alpha + "{2,3}|" + alpha + "{5,8})",
+            privateuse = "(x(-[a-z0-9]{1,8})+)",
+            singleton = "(" + digit + "|[a-wy-z])",
+            attribute= "(" + alphanum + "{3,8})",
+            keyword = "(" + alphanum + alpha + "(-" + alphanum + "{3,8})*)",
+            unicode_locale_extensions = "(u((-" + keyword + ")+|((-" + attribute + ")+(-" + keyword + ")*)))",
+            tlang = "(" + language + "(-" + script + ")?(-" + region + ")?(-" + variant + ")*)",
+            tfield = "(" + alpha + digit + "(-" + alphanum + "{3,8})+)",
+            transformed_extensions = "(t((-" + tlang + "(-" + tfield + ")*)|(-" + tfield + ")+))",
+            other_singleton = "(" + digit + "|[a-sv-wy-z])",
+            other_extensions = "(" + other_singleton + "(-" + alphanum + "{2,8})+)",
+            extension = "(" + unicode_locale_extensions + "|" + transformed_extensions + "|" + other_extensions + ")",
+            locale_id = language + "(-" + script + ")?(-" + region + ")?(-" + variant + ")*(-" + extension + ")*(-" + privateuse + ")?",
+            languageTag = "^(" + locale_id + ")$",
+            languageTagRE = new RegExp(languageTag, "i");
+          var duplicateSingleton = "-" + singleton + "-(.*-)?\\1(?!" + alphanum + ")",
+            duplicateSingletonRE = new RegExp(duplicateSingleton, "i"),
+            duplicateVariant = "(" + alphanum + "{2,8}-)+" + variant + "-(" + alphanum + "{2,8}-)*\\2(?!" + alphanum + ")",
+            duplicateVariantRE = new RegExp(duplicateVariant, "i");
+          var transformKeyRE = new RegExp("^" + alpha + digit + "$", "i");
+
+          return languageTagRE.test(locale)
+            && !duplicateSingletonRE.test(locale)
+            && !duplicateVariantRE.test(locale)
+            && transformKeyRE.test("a0");
+        }
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("Intl harness static RegExp constructor pattern should lower");
+}
+
+#[test]
+fn lowering_accepts_dynamic_new_regexp_pattern_for_string_match() {
+    let program = parse_and_resolve(
+        r#"
+        function getPatternParts(digits, formatted) {
+          var oneoneRE = "([^" + digits + "]*)[" + digits + "]+([^" + digits + "]+)[" + digits + "]+([^" + digits + "]*)";
+          return formatted.match(new RegExp(oneoneRE));
+        }
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("dynamic RegExp constructor pattern should lower for string match");
+}
+
+#[test]
+fn lowering_accepts_intl_duration_format_methods() {
+    let program = parse_and_resolve(
+        r#"
+        let durationFormat = new Intl.DurationFormat("en", { style: "short" });
+        let text = durationFormat.format({ seconds: 1 });
+        let parts = durationFormat.formatToParts({ seconds: 1 });
+        let options = durationFormat.resolvedOptions();
+        console.log(text);
+        console.log(parts.length);
+        console.log(options.style);
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("Intl.DurationFormat constructor and methods should lower");
+}
+
+#[test]
+fn lowering_accepts_intl_list_format_methods() {
+    let program = parse_and_resolve(
+        r#"
+        let listFormat = new Intl.ListFormat("en", { type: "unit", style: "short" });
+        let text = listFormat.format(["1 second"]);
+        let parts = listFormat.formatToParts(["1 second"]);
+        let options = listFormat.resolvedOptions();
+        console.log(text);
+        console.log(parts.length);
+        console.log(options.style);
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("Intl.ListFormat constructor and methods should lower");
+}
+
+#[test]
+fn lowering_accepts_intl_date_time_format_format_method() {
+    let program = parse_and_resolve(
+        r#"
+        let dateTimeFormat = new Intl.DateTimeFormat();
+        let text = dateTimeFormat.format();
+        "#,
+    );
+
+    let lowered = ts2wasm_ir::lowered::lower_program(&program)
+        .expect("Intl.DateTimeFormat format method should lower");
+    ts2wasm_ir::lowered::validate_lowered(&lowered)
+        .expect("Intl.DateTimeFormat format method should validate");
+}
+
+#[test]
+fn lowering_accepts_intl_date_time_format_range_and_parts_methods() {
+    let program = parse_and_resolve(
+        r#"
+        let dateTimeFormat = new Intl.DateTimeFormat();
+        let range = dateTimeFormat.formatRange(new Date(0), new Date(1));
+        let parts = dateTimeFormat.formatToParts(new Date(0));
+        let rangeParts = dateTimeFormat.formatRangeToParts(new Date(0), new Date(1));
+        console.log(range, parts.length, rangeParts.length);
+        "#,
+    );
+
+    let lowered = ts2wasm_ir::lowered::lower_program(&program)
+        .expect("Intl.DateTimeFormat range/parts methods should lower");
+    ts2wasm_ir::lowered::validate_lowered(&lowered)
+        .expect("Intl.DateTimeFormat range/parts methods should validate");
+}
+
+#[test]
+fn lowering_accepts_testintl_constructor_supported_locales_of_alias() {
+    let program = parse_and_resolve(
+        r#"
+        function check(Constructor) {
+          let supported = Constructor.supportedLocalesOf([]);
+          return supported.length;
+        }
+        "#,
+    );
+
+    let lowered = ts2wasm_ir::lowered::lower_program(&program)
+        .expect("testIntl Constructor.supportedLocalesOf alias should lower");
+    ts2wasm_ir::lowered::validate_lowered(&lowered)
+        .expect("testIntl Constructor.supportedLocalesOf alias should validate");
+}
+
+#[test]
+fn lowering_accepts_testintl_duration_format_resolved_options_helper() {
+    let program = parse_and_resolve(
+        r#"
+        function partitionDurationFormatPattern(durationFormat, duration) {
+          let options = durationFormat.resolvedOptions();
+          let style = options.seconds;
+          let display = options.secondsDisplay;
+          return style + display;
+        }
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("testIntl durationFormat.resolvedOptions helper should lower");
+}
+
+#[test]
+fn lowering_accepts_testintl_list_format_to_parts_helper() {
+    let program = parse_and_resolve(
+        r#"
+        function partitionDurationFormatPattern(strings) {
+          let listStyle = "short";
+          let lf = new Intl.ListFormat("en", { type: "unit", style: listStyle });
+          let flattened = [];
+          for (let {type, value} of lf.formatToParts(strings)) {
+            if (type === "element") {
+              flattened.push({type, value});
+            } else {
+              flattened.push({type, value});
+            }
+          }
+          return flattened;
+        }
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("testIntl ListFormat.formatToParts helper should lower");
+}
+
+#[test]
+fn lowering_accepts_array_push_spread_from_shift_result() {
+    let program = parse_and_resolve(
+        r#"
+        function flatten() {
+          let result = [[{ type: "element", value: "1 second" }]];
+          let flattened = [];
+          flattened.push(...result.shift());
+          return flattened;
+        }
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("Array.prototype.push should lower spread over shift result");
+}
+
+#[test]
+fn lowering_validates_direct_call_to_captured_nested_function() {
+    let program = parse_and_resolve(
+        r#"
+        function outer(locale) {
+          let suffix = "";
+          function inner(locale) {
+            return locale + suffix;
+          }
+          return inner(locale);
+        }
+        "#,
+    );
+
+    let lowered = ts2wasm_ir::lowered::lower_program(&program)
+        .expect("captured nested function direct call should lower");
+    ts2wasm_ir::lowered::validate_lowered(&lowered)
+        .expect("direct call should pass explicit args and captures");
+}
+
+#[test]
+fn lowering_accepts_captured_static_regexp_constructor_test() {
+    assert!(
+        ts2wasm_ir::lowered::lower_program(&parse_and_resolve(
+            "function outer() { let alpha = \"[a-z]\"; let r = new RegExp(\"^\" + alpha + \"$\", \"i\"); function inner(value) { return r.test(value); } }"
         ))
         .is_ok()
     );

@@ -1,7 +1,8 @@
 use std::collections::{HashMap, HashSet};
 
-use super::binding_param_names;
+use super::{binding_param_default_ref_names, binding_param_names};
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
 use crate::lowered::facts::ArrowClosure;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -59,6 +60,7 @@ impl super::Resolver {
             .iter()
             .map(|name| self.resolve_local(name))
             .collect::<Result<Vec<_>, _>>()?;
+        let capture_facts = self.capture_facts_for_names(&capture_names);
         // Split explicit params into non-rest + rest (rest must be the final parameter
         // when captures are appended, so the WAT emitter and validator handle it correctly).
         let mut lowered_params: Vec<ResolvedParam> = Vec::new();
@@ -119,6 +121,7 @@ impl super::Resolver {
                     capture_names: &capture_names,
                     object_function_props: None,
                 }),
+                capture_facts,
                 recursion_depth: 0,
                 // NewTargetArrow: arrow functions inherit the enclosing new.target.
                 new_target_class: self.ctx.classes.new_target_class.as_deref(),
@@ -151,14 +154,11 @@ impl super::Resolver {
         params: &[ResolvedParam],
         body: &[ResolvedStmt],
     ) -> Result<LoweredExpr, Diagnostic> {
-        if params
-            .iter()
-            .any(|param| param.default.is_some() || param.is_rest)
-        {
+        if params.iter().any(|param| param.is_rest) {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!(
-                    "issue-062e: nested function `{name}` closure parameters with defaults or rest are not supported in this slice"
+                    "issue-062e: nested function `{name}` closure rest parameters are not supported in this slice"
                 ),
                 span: None,
 
@@ -206,7 +206,14 @@ impl super::Resolver {
         let capture_names = self.nested_function_capture_names(name, params, body)?;
         let mutable_captures = capture_names
             .iter()
-            .filter(|capture| block_assigns_any_name(body, std::slice::from_ref(capture)))
+            .filter(|capture| {
+                let names = std::slice::from_ref(*capture);
+                block_assigns_any_name(body, names)
+                    || params
+                        .iter()
+                        .filter_map(|param| param.default.as_ref())
+                        .any(|default| expr_assigns_any_name(default, names))
+            })
             .cloned()
             .collect::<Vec<_>>();
         if mutable_captures
@@ -227,6 +234,7 @@ impl super::Resolver {
             .iter()
             .map(|capture| self.resolve_local(capture))
             .collect::<Result<Vec<_>, _>>()?;
+        let capture_facts = self.capture_facts_for_names(&capture_names);
         let mut lowered_params = params.to_vec();
         lowered_params.extend(capture_names.iter().map(|capture| ResolvedParam {
             name: capture.clone(),
@@ -286,6 +294,7 @@ impl super::Resolver {
                 in_constructor: false,
                 next_func_id: self.ctx.functions.next_func_id,
                 self_closure,
+                capture_facts,
                 recursion_depth: 0,
                 new_target_class: None,
                 module_url: self.ctx.current_module_url.as_str(),
@@ -320,8 +329,19 @@ impl super::Resolver {
         name: &str,
         params: &[ResolvedParam],
         body: &[ResolvedStmt],
+        is_generator: bool,
     ) -> Result<LoweredExpr, Diagnostic> {
-        self.lower_nested_function(name, params, body)
+        self.lower_nested_function_with_receiver(name, params, body, false, is_generator)
+    }
+
+    pub(super) fn lower_object_method_function_expr(
+        &mut self,
+        name: &str,
+        params: &[ResolvedParam],
+        body: &[ResolvedStmt],
+        is_generator: bool,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        self.lower_nested_function_with_receiver(name, params, body, true, is_generator)
     }
 
     pub(super) fn arrow_capture_names_with_excluded(
@@ -353,11 +373,248 @@ impl super::Resolver {
         collect_declared_names_in_stmts(body, &mut excluded);
 
         let mut captures = Vec::new();
+        let excluded_names = excluded.iter().cloned().collect::<Vec<_>>();
+        for name in binding_param_default_ref_names(
+            params.iter().map(|param| (param.name.as_str(), param.span)),
+        )? {
+            push_capture(&name, &excluded_names, &mut captures);
+        }
+        for default in params.iter().filter_map(|param| param.default.as_ref()) {
+            collect_expr_captures(default, &excluded, &mut captures);
+            collect_nested_function_captures_in_expr(default, &excluded, &mut captures)?;
+        }
         collect_stmt_captures(body, &excluded, &mut captures);
+        collect_nested_function_captures_in_stmts(body, &excluded, &mut captures)?;
         Ok(captures
             .into_iter()
             .filter(|capture| self.resolve_local(capture).is_ok())
             .collect())
+    }
+
+    fn capture_facts_for_names(&self, capture_names: &[String]) -> FunctionCaptureFacts {
+        let mut facts = FunctionCaptureFacts::default();
+        for name in capture_names {
+            let Ok(local_id) = self.resolve_local(name) else {
+                continue;
+            };
+            if let Some(class_name) = self.ctx.classes.local_classes.get(&local_id) {
+                facts.local_classes.insert(name.clone(), class_name.clone());
+            }
+            if let Some(options) = self.ctx.facts.intl_number_format_locals.get(&local_id) {
+                facts
+                    .intl_number_format_options
+                    .insert(name.clone(), options.clone());
+            }
+            if let Some(props) = self.ctx.classes.object_function_props.get(&local_id)
+                && let Some(props) = property_keyed_object_function_props(props)
+            {
+                facts.object_function_props.insert(name.clone(), props);
+            }
+            if let Some(props) = self.ctx.classes.object_accessor_props.get(&local_id)
+                && let Some(props) = property_keyed_object_accessor_props(props)
+            {
+                facts.object_accessor_props.insert(name.clone(), props);
+            }
+        }
+        facts
+    }
+
+    fn lower_nested_function_with_receiver(
+        &mut self,
+        name: &str,
+        params: &[ResolvedParam],
+        body: &[ResolvedStmt],
+        force_receiver: bool,
+        is_generator: bool,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if params.iter().any(|param| param.is_rest) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-062e: nested function `{name}` closure rest parameters are not supported in this slice"
+                ),
+                span: None,
+
+                phase: None,
+            });
+        }
+        if block_contains_this(body) || block_contains_arguments(body) {
+            if force_receiver {
+                // Object literal method shorthand has an implicit receiver.
+            } else if block_contains_this(body) && params.iter().any(|p| p.name == "this") {
+                // Explicit `this` parameter: this is a receiver function, not a closure issue.
+            } else if block_contains_this(body)
+                && crate::lowered::program::function_body_is_strict(
+                    self.ctx.is_strict_context(),
+                    body,
+                )
+            {
+                // Strict functions do not substitute globalThis for direct calls;
+                // unresolved `this` lowers to undefined in this resolver scope.
+            } else if block_contains_this(body) {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-5179: 'this' implicitly has type 'any' because it does not have a type annotation in nested function `{name}`"
+                    ),
+                    span: None,
+
+                    phase: None,
+                });
+            } else {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-062e: nested function `{name}` closures with `this` or `arguments` are not supported in this slice"
+                    ),
+                    span: None,
+
+                    phase: None,
+                });
+            }
+        }
+
+        let capture_names = self.nested_function_capture_names(name, params, body)?;
+        let mutable_captures = capture_names
+            .iter()
+            .filter(|capture| {
+                let names = std::slice::from_ref(*capture);
+                block_assigns_any_name(body, names)
+                    || params
+                        .iter()
+                        .filter_map(|param| param.default.as_ref())
+                        .any(|default| expr_assigns_any_name(default, names))
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        if mutable_captures
+            .iter()
+            .any(|capture| !self.ctx.facts.env_cell_names.contains(capture))
+        {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-062e: nested function `{name}` mutates a captured outer local; mutable closure environments require heap environment support"
+                ),
+                span: None,
+                phase: None,
+            });
+        }
+        let captures = capture_names
+            .iter()
+            .map(|capture| self.resolve_local(capture))
+            .collect::<Result<Vec<_>, _>>()?;
+        let capture_facts = self.capture_facts_for_names(&capture_names);
+        let mut lowered_params = params.to_vec();
+        lowered_params.extend(capture_names.iter().map(|capture| ResolvedParam {
+            name: capture.clone(),
+            default: None,
+            is_rest: false,
+            span: None,
+        }));
+
+        let func_id = FuncId(self.ctx.functions.next_func_id);
+        self.ctx.functions.next_func_id += 1;
+        let self_closure = (!name.is_empty())
+            .then_some(SelfClosureOptions {
+                name,
+                func_id,
+                capture_names: &capture_names,
+                object_function_props: None,
+            })
+            .filter(|_| !self.ctx.facts.env_cell_names.contains(name));
+
+        let needs_receiver = force_receiver || block_contains_super_ref(body);
+        self.ctx.symbols.function_signatures.insert(
+            func_id,
+            FunctionSignature {
+                explicit_params: params.len(),
+                needs_receiver,
+                is_strict: crate::lowered::program::function_body_is_strict(
+                    self.ctx.is_strict_context(),
+                    body,
+                ),
+                needs_arguments: block_contains_arguments(body)
+                    && !params.iter().any(|param| param.name == "arguments"),
+                has_rest: params.iter().any(|param| param.is_rest),
+                metadata_length: Some(params.len()),
+                ..FunctionSignature::default()
+            },
+        );
+        if let Some(value) = crate::lowered::program::body_returns_static_string(body) {
+            self.ctx
+                .functions
+                .static_string_returns
+                .insert(func_id, value);
+        }
+        if !capture_names.is_empty() {
+            self.ctx
+                .functions
+                .function_captures
+                .insert(func_id, capture_names.clone());
+        }
+        if !mutable_captures.is_empty() {
+            self.ctx
+                .functions
+                .function_mutable_captures
+                .insert(func_id, mutable_captures);
+        }
+        let function_signatures = self.ctx.symbols.function_signatures.clone();
+        let function_captures = self.ctx.functions.function_captures.clone();
+        let function_mutable_captures = self.ctx.functions.function_mutable_captures.clone();
+
+        let lowered = lower_function(
+            func_id,
+            &lowered_params,
+            body,
+            is_generator,
+            false,
+            &self.ctx.symbols.function_ids,
+            &function_signatures,
+            &function_captures,
+            &function_mutable_captures,
+            &self.ctx.functions.class_method_captures,
+            &self.ctx.functions.class_method_mutable_captures,
+            &self.ctx.facts.env_cell_names,
+            &self.ctx.facts.heap_closure_names,
+            self.ctx.classes.class_parents.clone(),
+            self.ctx.classes.class_private_fields.clone(),
+            self.ctx.classes.class_static_private_fields.clone(),
+            LowerFunctionOptions {
+                current_class: self.ctx.classes.current_class.as_deref(),
+                in_constructor: false,
+                next_func_id: self.ctx.functions.next_func_id,
+                self_closure,
+                capture_facts,
+                recursion_depth: 0,
+                new_target_class: None,
+                module_url: self.ctx.current_module_url.as_str(),
+                strict_context: self.ctx.is_strict_context(),
+            },
+        )?;
+        self.ctx.functions.next_func_id = lowered.next_func_id;
+        self.ctx
+            .functions
+            .generated_functions
+            .push(lowered.function);
+        self.ctx
+            .functions
+            .generated_functions
+            .extend(lowered.generated_functions);
+
+        Ok(LoweredExpr::ArrowFn {
+            func_id,
+            captures,
+            representation: if !capture_names.is_empty()
+                || self.ctx.facts.heap_closure_names.contains(name)
+            {
+                ClosureRepresentation::HeapObject
+            } else {
+                ClosureRepresentation::DirectLocalToken
+            },
+
+            span: Span::generated("arrow_fn"),
+        })
     }
 
     pub(crate) fn declare_local(&mut self, name: &str) -> Result<LocalId, Diagnostic> {
@@ -393,7 +650,7 @@ impl super::Resolver {
         name: &str,
         func_id: FuncId,
         capture_names: &[String],
-        object_function_props: Option<&HashMap<String, FuncId>>,
+        object_function_props: Option<&HashMap<ObjectAccessorKey, FuncId>>,
     ) -> Result<(), Diagnostic> {
         let local_id = self.declare_local(name)?;
         let captures = capture_names
@@ -471,6 +728,36 @@ impl super::Resolver {
             self.ctx.facts.heap_closure_locals.remove(&local_id);
         }
     }
+}
+
+fn property_keyed_object_function_props(
+    props: &HashMap<ObjectAccessorKey, FuncId>,
+) -> Option<HashMap<ObjectAccessorKey, FuncId>> {
+    let props = props
+        .iter()
+        .filter_map(|(key, func_id)| match key {
+            ObjectAccessorKey::Property(property) => {
+                Some((ObjectAccessorKey::Property(property.clone()), *func_id))
+            }
+            ObjectAccessorKey::SymbolLocal(_) => None,
+        })
+        .collect::<HashMap<_, _>>();
+    (!props.is_empty()).then_some(props)
+}
+
+fn property_keyed_object_accessor_props(
+    props: &HashMap<ObjectAccessorKey, ObjectAccessorProp>,
+) -> Option<HashMap<ObjectAccessorKey, ObjectAccessorProp>> {
+    let props = props
+        .iter()
+        .filter_map(|(key, accessor)| match key {
+            ObjectAccessorKey::Property(property) => {
+                Some((ObjectAccessorKey::Property(property.clone()), *accessor))
+            }
+            ObjectAccessorKey::SymbolLocal(_) => None,
+        })
+        .collect::<HashMap<_, _>>();
+    (!props.is_empty()).then_some(props)
 }
 
 /// Returns true when `expr` contains a `super.method()` call or a `super.property`

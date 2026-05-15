@@ -26,7 +26,24 @@ pub enum BindingDefault {
     Bool(bool),
     Null,
     Undefined,
-    Object(Vec<(String, String)>),
+    Array(Vec<Option<BindingDefault>>),
+    Object(Vec<(String, BindingDefault)>),
+    Ident(String),
+    FunctionExpr {
+        name: String,
+        is_generator: bool,
+    },
+    ArrowFn,
+    ClassExpr {
+        name: String,
+    },
+    Call(String),
+    PreIncrement(String),
+    FunctionIife {
+        increment: Option<String>,
+        return_ident: Option<String>,
+        throw_error: Option<String>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -48,6 +65,12 @@ impl BindingPattern {
         names
     }
 
+    pub fn default_ref_names(&self) -> Vec<&str> {
+        let mut names = Vec::new();
+        self.collect_default_ref_names(&mut names);
+        names
+    }
+
     fn collect_names<'a>(&'a self, names: &mut Vec<&'a str>) {
         match self {
             Self::Array(bindings) => {
@@ -58,6 +81,27 @@ impl BindingPattern {
             Self::Object(bindings) => {
                 for binding in bindings {
                     binding.target.collect_names(names);
+                }
+            }
+        }
+    }
+
+    fn collect_default_ref_names<'a>(&'a self, names: &mut Vec<&'a str>) {
+        match self {
+            Self::Array(bindings) => {
+                for binding in bindings {
+                    if let Some(default) = binding.default.as_ref() {
+                        default.collect_ref_names(names);
+                    }
+                    binding.target.collect_default_ref_names(names);
+                }
+            }
+            Self::Object(bindings) => {
+                for binding in bindings {
+                    if let Some(default) = binding.default.as_ref() {
+                        default.collect_ref_names(names);
+                    }
+                    binding.target.collect_default_ref_names(names);
                 }
             }
         }
@@ -83,6 +127,47 @@ impl BindingTarget {
         match self {
             Self::Identifier(name) => names.push(name.as_str()),
             Self::Pattern(pattern) => pattern.collect_names(names),
+        }
+    }
+
+    fn collect_default_ref_names<'a>(&'a self, names: &mut Vec<&'a str>) {
+        match self {
+            Self::Identifier(_) => {}
+            Self::Pattern(pattern) => pattern.collect_default_ref_names(names),
+        }
+    }
+}
+
+impl BindingDefault {
+    fn collect_ref_names<'a>(&'a self, names: &mut Vec<&'a str>) {
+        match self {
+            Self::Ident(name) => names.push(name.as_str()),
+            Self::FunctionExpr { .. } | Self::ArrowFn | Self::ClassExpr { .. } => {}
+            Self::Call(_) => {}
+            Self::PreIncrement(name) => names.push(name.as_str()),
+            Self::FunctionIife {
+                increment,
+                return_ident,
+                ..
+            } => {
+                if let Some(name) = increment {
+                    names.push(name.as_str());
+                }
+                if let Some(name) = return_ident {
+                    names.push(name.as_str());
+                }
+            }
+            Self::Array(elements) => {
+                for element in elements.iter().flatten() {
+                    element.collect_ref_names(names);
+                }
+            }
+            Self::Object(props) => {
+                for (_, value) in props {
+                    value.collect_ref_names(names);
+                }
+            }
+            Self::Number(_) | Self::String(_) | Self::Bool(_) | Self::Null | Self::Undefined => {}
         }
     }
 }
@@ -126,18 +211,6 @@ fn parse_array_binding_pattern(
         }
         let (target, default, is_rest) = split_array_binding_target(part, span)?;
         let target = parse_array_binding_target(target, span)?;
-        if is_rest && !matches!(target, BindingTarget::Identifier(_)) {
-            return Err(issue_251(
-                "rest binding targets must be identifiers in this runtime slice",
-                span,
-            ));
-        }
-        if default.is_some() && matches!(target, BindingTarget::Pattern(_)) {
-            return Err(issue_251(
-                "nested binding defaults are not supported in this runtime slice",
-                span,
-            ));
-        }
         bindings.push(ArrayBinding {
             index,
             target,
@@ -199,25 +272,29 @@ fn parse_object_binding_pattern(
         let (key, target) = if let Some((key, target)) = split_top_level_once(target_part, ':') {
             let key = key.trim();
             let target = target.trim();
-            let nested_target = target.starts_with('{');
+            let nested_object_target = target.starts_with('{');
+            let nested_array_target = target.starts_with('[');
             reject_unsupported_target(target, span)?;
             is_computed = key.starts_with('[') && key.ends_with(']');
-            if !is_identifier(key) && !is_computed {
+            let key = if is_computed {
+                key.to_owned()
+            } else if let Some(static_key) = static_object_binding_key(key) {
+                static_key
+            } else {
                 return Err(issue_251(
                     "object binding aliases must use identifier keys in this runtime slice",
                     span,
                 ));
-            }
-            if nested_target {
-                if default.is_some() {
-                    return Err(issue_251(
-                        "nested binding defaults are not supported in this runtime slice",
-                        span,
-                    ));
-                }
+            };
+            if nested_object_target {
                 (
-                    key.to_owned(),
+                    key,
                     BindingTarget::Pattern(Box::new(parse_object_binding_pattern(target, span)?)),
+                )
+            } else if nested_array_target {
+                (
+                    key,
+                    BindingTarget::Pattern(Box::new(parse_array_binding_pattern(target, span)?)),
                 )
             } else if !is_identifier(target) {
                 return Err(issue_251(
@@ -225,7 +302,7 @@ fn parse_object_binding_pattern(
                     span,
                 ));
             } else {
-                (key.to_owned(), BindingTarget::Identifier(target.to_owned()))
+                (key, BindingTarget::Identifier(target.to_owned()))
             }
         } else {
             reject_unsupported_target(target_part, span)?;
@@ -263,10 +340,9 @@ fn parse_array_binding_target(
         )));
     }
     if target.starts_with('{') {
-        return Err(issue_251(
-            "nested object binding patterns are not supported in this runtime slice",
-            span,
-        ));
+        return Ok(BindingTarget::Pattern(Box::new(
+            parse_object_binding_pattern(target, span)?,
+        )));
     }
     if !is_identifier(target) {
         return Err(issue_251(
@@ -275,6 +351,30 @@ fn parse_array_binding_target(
         ));
     }
     Ok(BindingTarget::Identifier(target.to_owned()))
+}
+
+fn static_object_binding_key(key: &str) -> Option<String> {
+    if is_identifier(key) {
+        return Some(key.to_owned());
+    }
+    if let Some(value) = parse_string_literal(key) {
+        return Some(value);
+    }
+    if is_numeric_property_key_text(key) {
+        return Some(key.to_owned());
+    }
+    None
+}
+
+fn is_numeric_property_key_text(key: &str) -> bool {
+    let mut chars = key.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    if !first.is_ascii_digit() {
+        return false;
+    }
+    chars.all(|ch| ch.is_ascii_digit() || ch == '.')
 }
 
 fn split_binding_default(
@@ -415,22 +515,80 @@ fn parse_binding_default(text: &str, span: Option<Span>) -> Result<BindingDefaul
     if let Ok(value) = text.parse::<i32>() {
         return Ok(BindingDefault::Number(value));
     }
+    if let Some(callee) = text.strip_suffix("()")
+        && is_identifier(callee)
+    {
+        return Ok(BindingDefault::Call(callee.to_owned()));
+    }
+    if let Some(name) = text.strip_prefix("++")
+        && is_identifier(name)
+    {
+        return Ok(BindingDefault::PreIncrement(name.to_owned()));
+    }
+    if let Some(name) = parse_debug_prefix_increment_default(text) {
+        return Ok(BindingDefault::PreIncrement(name));
+    }
+    if let Some((increment, return_ident, throw_error)) = parse_debug_function_iife_default(text) {
+        return Ok(BindingDefault::FunctionIife {
+            increment,
+            return_ident,
+            throw_error,
+        });
+    }
+    if text.starts_with('[') && text.ends_with(']') {
+        let inner = &text[1..text.len() - 1];
+        if inner.trim().is_empty() {
+            return Ok(BindingDefault::Array(Vec::new()));
+        }
+        let elements = split_top_level_commas(inner)
+            .into_iter()
+            .map(|element| {
+                let element = element.trim();
+                if element.is_empty() {
+                    Ok(None)
+                } else {
+                    parse_binding_default(element, span).map(Some)
+                }
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        return Ok(BindingDefault::Array(elements));
+    }
     if text.starts_with('{') && text.ends_with('}') {
         let inner = &text[1..text.len() - 1];
-        let props: Vec<(String, String)> = inner
-            .split(',')
-            .filter(|s| !s.is_empty())
-            .filter_map(|prop| {
-                let mut parts = prop.splitn(2, ':');
-                let key = parts.next()?.trim().to_string();
-                let value = parts.next()?.trim().to_string();
-                Some((key, value))
+        let props = split_top_level_commas(inner)
+            .into_iter()
+            .filter(|s| !s.trim().is_empty())
+            .map(|prop| {
+                let Some((key, value)) = split_top_level_once(prop, ':') else {
+                    return Err(issue_251(
+                        "object default properties must use key/value pairs in this runtime slice",
+                        span,
+                    ));
+                };
+                Ok((
+                    key.trim().to_owned(),
+                    parse_binding_default(value.trim(), span)?,
+                ))
             })
-            .collect();
+            .collect::<Result<Vec<_>, _>>()?;
         return Ok(BindingDefault::Object(props));
     }
     if let Some(value) = parse_string_literal(text) {
         return Ok(BindingDefault::String(value));
+    }
+    if is_identifier(text) {
+        return Ok(BindingDefault::Ident(text.to_owned()));
+    }
+    if let Some((name, is_generator)) = parse_empty_function_expression_default(text)
+        .or_else(|| parse_debug_empty_function_expression_default(text))
+    {
+        return Ok(BindingDefault::FunctionExpr { name, is_generator });
+    }
+    if is_debug_empty_arrow_function_default(text) {
+        return Ok(BindingDefault::ArrowFn);
+    }
+    if let Some(name) = parse_debug_class_expression_default(text) {
+        return Ok(BindingDefault::ClassExpr { name });
     }
     Err(issue_251(
         "only literal default binding initializers are supported in this runtime slice",
@@ -438,8 +596,120 @@ fn parse_binding_default(text: &str, span: Option<Span>) -> Result<BindingDefaul
     ))
 }
 
+fn parse_empty_function_expression_default(text: &str) -> Option<(String, bool)> {
+    let (rest, is_generator) = if let Some(rest) = text.strip_prefix("function*") {
+        (rest, true)
+    } else if let Some(rest) = text.strip_prefix("function") {
+        (rest, false)
+    } else {
+        return None;
+    };
+    let rest = rest.trim_start();
+    let params_start = rest.find('(')?;
+    let name = rest[..params_start].trim();
+    if !name.is_empty() && !is_identifier(name) {
+        return None;
+    }
+    let rest = &rest[params_start..];
+    let after_params = rest.strip_prefix("()")?.trim();
+    if !is_empty_block_text(after_params) {
+        return None;
+    }
+    Some((name.to_owned(), is_generator))
+}
+
+fn is_empty_block_text(text: &str) -> bool {
+    text.strip_prefix('{')
+        .and_then(|inner| inner.strip_suffix('}'))
+        .is_some_and(|inner| inner.trim().is_empty())
+}
+
+fn parse_debug_empty_function_expression_default(text: &str) -> Option<(String, bool)> {
+    if !text.starts_with("FunctionExpr {")
+        || !text.contains("params: []")
+        || !text.contains("body: []")
+    {
+        return None;
+    }
+    let name = extract_debug_string_field(text, "name")?;
+    let is_generator = extract_debug_bool_field(text, "is_generator")?;
+    Some((name, is_generator))
+}
+
+fn is_debug_empty_arrow_function_default(text: &str) -> bool {
+    text.starts_with("ArrowFn {")
+        && text.contains("params: []")
+        && text.contains("body: Undefined")
+        && text.contains("body_stmts: []")
+}
+
+fn parse_debug_class_expression_default(text: &str) -> Option<String> {
+    if !text.starts_with("ClassExpr {") {
+        return None;
+    }
+    extract_debug_string_field(text, "name")
+}
+
+fn parse_debug_prefix_increment_default(text: &str) -> Option<String> {
+    if !text.starts_with("Unary {") || !text.contains("op: PreIncrement") {
+        return None;
+    }
+    extract_debug_string_field(text, "name")
+}
+
+fn parse_debug_function_iife_default(
+    text: &str,
+) -> Option<(Option<String>, Option<String>, Option<String>)> {
+    if !text.starts_with("FunctionExpr {")
+        || !text.contains("params: []")
+        || !text.contains("is_generator: false")
+        || !text.ends_with("()")
+    {
+        return None;
+    }
+    let increment = extract_debug_string_after(text, "Assign { name: \"");
+    let return_ident = extract_debug_string_after(text, "Return { expr: Ident { name: \"");
+    let throw_error =
+        extract_debug_string_after(text, "Throw { expr: New { expr: Ident { name: \"");
+    if increment.is_none() && return_ident.is_none() && throw_error.is_none() {
+        return None;
+    }
+    Some((increment, return_ident, throw_error))
+}
+
+fn extract_debug_string_field(text: &str, field: &str) -> Option<String> {
+    let needle = format!("{field}: \"");
+    extract_debug_string_after(text, &needle)
+}
+
+fn extract_debug_string_after(text: &str, needle: &str) -> Option<String> {
+    let start = text.find(needle)? + needle.len();
+    let rest = &text[start..];
+    let end = rest.find('"')?;
+    Some(rest[..end].to_owned())
+}
+
+fn extract_debug_bool_field(text: &str, field: &str) -> Option<bool> {
+    let needle = format!("{field}: ");
+    let start = text.find(&needle)? + needle.len();
+    let rest = &text[start..];
+    if rest.starts_with("true") {
+        Some(true)
+    } else if rest.starts_with("false") {
+        Some(false)
+    } else {
+        None
+    }
+}
+
 fn parse_string_literal(text: &str) -> Option<String> {
-    let inner = text.strip_prefix('"')?.strip_suffix('"')?;
+    let inner = text
+        .strip_prefix('"')
+        .and_then(|value| value.strip_suffix('"'))
+        .or_else(|| {
+            text.strip_prefix('\'')
+                .and_then(|value| value.strip_suffix('\''))
+        })?;
     if inner.contains('\\') {
         return None;
     }

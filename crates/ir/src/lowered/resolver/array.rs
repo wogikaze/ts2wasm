@@ -356,10 +356,11 @@ impl super::Resolver {
                     span: Span::generated("call"),
                 })
             }
-            ResolvedExpr::FunctionExpr { name, params, body } => self
-                .lower_array_map_function_expr_callback_call(
-                    name, params, body, this_arg, element, index, array_expr, span,
-                ),
+            ResolvedExpr::FunctionExpr {
+                name, params, body, ..
+            } => self.lower_array_map_function_expr_callback_call(
+                name, params, body, this_arg, element, index, array_expr, span,
+            ),
             ResolvedExpr::Ident(name) => {
                 let func_id = self.resolve_func(name)?;
                 let receiver = match this_arg {
@@ -543,6 +544,7 @@ impl super::Resolver {
                 in_constructor: false,
                 next_func_id: self.ctx.functions.next_func_id,
                 self_closure,
+                capture_facts: FunctionCaptureFacts::default(),
                 recursion_depth: 0,
                 new_target_class: None,
                 module_url: self.ctx.current_module_url.as_str(),
@@ -789,6 +791,30 @@ impl super::Resolver {
                 let LoweredExpr::ArrowFn {
                     func_id, captures, ..
                 } = self.lower_arrow_fn(params, body, body_stmts)?
+                else {
+                    return Err(unsupported_array_map_diagnostic(Some(span)));
+                };
+                (func_id, captures, params.len())
+            }
+            ResolvedExpr::FunctionExpr {
+                name,
+                params,
+                body,
+                is_generator: false,
+            } => {
+                if params.len() > 4 {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message:
+                            "issue-270: array method callbacks with more than 4 parameters are not supported"
+                                .to_owned(),
+                        span: Some(span),
+
+                        phase: None,});
+                }
+                let LoweredExpr::ArrowFn {
+                    func_id, captures, ..
+                } = self.lower_named_function_expr(name, params, body, false)?
                 else {
                     return Err(unsupported_array_map_diagnostic(Some(span)));
                 };

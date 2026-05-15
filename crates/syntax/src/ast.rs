@@ -552,6 +552,7 @@ pub enum Expr {
         name: String,
         params: Vec<(String, Option<Expr>, bool)>,
         body: Vec<Stmt>,
+        is_generator: bool,
         span: Span,
     },
     Spread {

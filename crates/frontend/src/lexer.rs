@@ -206,33 +206,96 @@ impl<'a> Lexer<'a> {
     }
 
     fn template_literal(&mut self, start: usize) -> Result<SpannedToken, Diagnostic> {
+        enum Mode {
+            Template,
+            Expr { depth: usize },
+            String(char),
+        }
+
         // Skip the opening backtick
         self.advance_char();
 
         let mut literal = String::new();
+        let mut stack = vec![Mode::Template];
         let mut escaped = false;
 
         while let Some(ch) = self.peek_char() {
-            if escaped {
-                literal.push(ch);
-                escaped = false;
-            } else if ch == '\\' {
-                literal.push(ch);
-                escaped = true;
-            } else if ch == '`' {
-                // End of template literal
-                self.advance_char();
-                return Ok(SpannedToken {
-                    kind: Token::TemplateLiteral(literal),
-                    span: Span {
-                        start,
-                        end: self.cursor,
-                    },
-                });
-            } else {
-                literal.push(ch);
+            let cursor_before = self.cursor;
+            let Some(mode) = stack.last_mut() else {
+                break;
+            };
+
+            match mode {
+                Mode::String(quote) => {
+                    literal.push(ch);
+                    self.advance_char();
+                    if escaped {
+                        escaped = false;
+                    } else if ch == '\\' {
+                        escaped = true;
+                    } else if ch == *quote {
+                        stack.pop();
+                    }
+                }
+                Mode::Template => {
+                    if escaped {
+                        literal.push(ch);
+                        self.advance_char();
+                        escaped = false;
+                    } else if ch == '\\' {
+                        literal.push(ch);
+                        self.advance_char();
+                        escaped = true;
+                    } else if ch == '`' {
+                        if stack.len() == 1 {
+                            self.advance_char();
+                            return Ok(SpannedToken {
+                                kind: Token::TemplateLiteral(literal),
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            });
+                        }
+                        literal.push(ch);
+                        self.advance_char();
+                        stack.pop();
+                    } else if ch == '$'
+                        && self.source[self.cursor + ch.len_utf8()..].starts_with('{')
+                    {
+                        literal.push(ch);
+                        self.advance_char();
+                        if let Some(open) = self.peek_char() {
+                            literal.push(open);
+                            self.advance_char();
+                        }
+                        stack.push(Mode::Expr { depth: 1 });
+                    } else {
+                        literal.push(ch);
+                        self.advance_char();
+                    }
+                }
+                Mode::Expr { depth } => {
+                    literal.push(ch);
+                    self.advance_char();
+                    match ch {
+                        '\'' | '"' => stack.push(Mode::String(ch)),
+                        '`' => stack.push(Mode::Template),
+                        '{' => *depth += 1,
+                        '}' => {
+                            *depth -= 1;
+                            if *depth == 0 {
+                                stack.pop();
+                            }
+                        }
+                        _ => {}
+                    }
+                }
             }
-            self.advance_char();
+
+            if self.cursor == cursor_before {
+                self.advance_char();
+            }
         }
 
         Err(Diagnostic {

@@ -114,9 +114,15 @@ class TriageReport:
     rough_rust: str | None
 
 
-def run_command(command: list[str], timeout_seconds: int = 12) -> CommandResult:
+def run_command(
+    command: list[str],
+    timeout_seconds: int = 12,
+    extra_env: dict[str, str] | None = None,
+) -> CommandResult:
     env = dict(os.environ)
     env.setdefault("RUST_BACKTRACE", "1")
+    if extra_env:
+        env.update(extra_env)
     try:
         result = subprocess.run(
             command,
@@ -307,10 +313,16 @@ def extract_stack_trace(stderr: str) -> list[str]:
     return stack[:40]
 
 
-def dump_phase(path: Path, phase: str, max_chars: int) -> dict[str, Any]:
+def dump_phase(
+    path: Path,
+    phase: str,
+    max_chars: int,
+    extra_env: dict[str, str] | None = None,
+) -> dict[str, Any]:
     result = run_command(
         [str(_get_ts2wasm_binary()), "dump", phase, str(path)],
         timeout_seconds=12,
+        extra_env=extra_env,
     )
     output = result.stdout if result.returncode == 0 else result.stderr
     return {
@@ -494,6 +506,13 @@ def prepare_triage_input(
     return build_input, node_input, source, build_source
 
 
+def compiler_env_for_input(suite: str, path: Path) -> dict[str, str]:
+    if suite != "test262":
+        return {}
+    harness_dir = REFERENCE_COVERAGE.test262_harness_dir_for(path)
+    return {"TS2WASM_TEST262_ROOT": str(harness_dir.parent.resolve())}
+
+
 def build_report(suite: str, path: Path, max_dump_chars: int) -> TriageReport:
     rel_path = repo_relative(path)
     reproduction_command = f"mise run reference-triage -- {suite} {rel_path}"
@@ -503,20 +522,24 @@ def build_report(suite: str, path: Path, max_dump_chars: int) -> TriageReport:
         build_input, oracle_input, source, diagnostic_source = prepare_triage_input(
             suite, path, tmp_path
         )
+        compiler_env = compiler_env_for_input(suite, path)
         out_wasm = Path(tmp_dir) / "out.wasm"
         build = run_command(
             [str(_get_ts2wasm_binary()), "build", str(build_input), "-o", str(out_wasm)],
             timeout_seconds=12,
+            extra_env=compiler_env,
         )
         diagnostic = parse_diagnostic(build.returncode, build.stderr, diagnostic_source, build_input)
         title = title_for(path, diagnostic)
         dumps = {
-            "tokens": dump_phase(build_input, "--tokens", max_dump_chars),
-            "ast": dump_phase(build_input, "--ast", max_dump_chars),
-            "resolved": dump_phase(build_input, "--resolved", max_dump_chars),
+            "tokens": dump_phase(build_input, "--tokens", max_dump_chars, extra_env=compiler_env),
+            "ast": dump_phase(build_input, "--ast", max_dump_chars, extra_env=compiler_env),
+            "resolved": dump_phase(
+                build_input, "--resolved", max_dump_chars, extra_env=compiler_env
+            ),
         }
         if build.returncode != 0 and diagnostic.error_type in {"backend-io", "compiler-invariant"}:
-            dumps["wat"] = dump_phase(build_input, "--wat", max_dump_chars)
+            dumps["wat"] = dump_phase(build_input, "--wat", max_dump_chars, extra_env=compiler_env)
 
         return TriageReport(
             suite=suite,

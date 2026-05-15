@@ -4,7 +4,8 @@
 //! and inserts directive-generated snippets before compilation.
 
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use std::{env, ffi::OsString};
 
 use ts2wasm_frontend::Diagnostic;
 
@@ -575,7 +576,18 @@ fn extract_function_stubs(_helper_source: &str, full_source: &str) -> String {
 }
 
 /// Resolve test262 harness directory from input file path
-fn resolve_harness_directory(input: &Path) -> Result<std::path::PathBuf, Diagnostic> {
+fn resolve_harness_directory(input: &Path) -> Result<PathBuf, Diagnostic> {
+    resolve_harness_directory_with_env(input, env::var_os("TS2WASM_TEST262_ROOT"))
+}
+
+fn resolve_harness_directory_with_env(
+    input: &Path,
+    explicit_test262_root: Option<OsString>,
+) -> Result<PathBuf, Diagnostic> {
+    if let Some(test262_root) = explicit_test262_root.filter(|root| !root.is_empty()) {
+        return harness_directory_for_test262_root(Path::new(&test262_root));
+    }
+
     // Navigate from input file to test262 harness directory
     // Expected structure: reference/test262/test/.../test.js
     // Harness directory: reference/test262/harness/
@@ -618,6 +630,10 @@ fn resolve_harness_directory(input: &Path) -> Result<std::path::PathBuf, Diagnos
         phase: None,
     })?;
 
+    harness_directory_for_test262_root(&test262_root)
+}
+
+fn harness_directory_for_test262_root(test262_root: &Path) -> Result<PathBuf, Diagnostic> {
     let harness_dir = test262_root.join("harness");
     if !harness_dir.is_dir() {
         return Err(Diagnostic {
@@ -694,6 +710,18 @@ var IsHTMLDDA = $262.IsHTMLDDA;"#;
         assert!(processed.contains("$262.IsHTMLDDA = {};"));
         assert!(processed.contains("function assert() {}"));
         assert!(processed.contains("if (typeof Symbol === 'object'"));
+    }
+
+    #[test]
+    fn test_process_includes_resolves_harness_from_explicit_root_for_tmp_input() {
+        let input = Path::new("/tmp/test262-triage-wasm-input.js");
+        let test262_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../reference/test262");
+        let harness_dir =
+            resolve_harness_directory_with_env(input, Some(test262_root.into_os_string()))
+                .expect("explicit test262 root should resolve harness for tmp input");
+
+        assert!(harness_dir.ends_with("harness"));
+        assert!(harness_dir.join("assert.js").is_file());
     }
 
     #[test]

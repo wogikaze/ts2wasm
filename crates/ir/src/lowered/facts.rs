@@ -49,6 +49,10 @@ pub struct StaticFacts {
     pub static_array_slots: HashMap<LocalId, Vec<ResolvedArrayElement>>,
     /// Locals with Symbol.iterator property (for custom iteration).
     pub symbol_iterator_object_locals: HashSet<LocalId>,
+    /// Locals known to hold symbol values.
+    pub symbol_value_locals: HashSet<LocalId>,
+    /// Static Symbol descriptions for symbol locals; `None` means Symbol().
+    pub symbol_description_locals: HashMap<LocalId, Option<String>>,
     /// Locals holding Array iterator objects returned by values/keys/entries.
     pub array_iterator_locals: HashSet<LocalId>,
     /// Locals holding generator iterator objects returned by generator calls.
@@ -59,8 +63,12 @@ pub struct StaticFacts {
     pub generator_function_steps: HashMap<String, Vec<GeneratorYieldStep>>,
     /// Statically collected statements that run when a generator resumes to completion.
     pub generator_function_completion_steps: HashMap<String, Vec<ResolvedStmt>>,
+    /// Specialized static plans for generator object literals whose computed keys resume from yields.
+    pub generator_function_object_resume_plans: HashMap<String, GeneratorObjectResumePlan>,
     /// Locals holding statically visible generator iterators with a runtime state local.
     pub generator_iterator_bindings: HashMap<LocalId, GeneratorIteratorBinding>,
+    /// Locals holding statically visible object generator method iterators.
+    pub generator_method_iterator_bindings: HashMap<LocalId, GeneratorMethodIteratorBinding>,
     /// Static object literal contents: local → property records.
     pub static_object_literal_locals: HashMap<LocalId, Vec<ResolvedObjectProp>>,
     /// Alias source tracking for static object literals: alias → source_ids.
@@ -87,6 +95,8 @@ pub struct StaticFacts {
     pub heap_closure_names: HashSet<String>,
     /// Arrow closure locals: local_id → ArrowClosure (for inline arrow fn expansion).
     pub arrow_locals: HashMap<LocalId, ArrowClosure>,
+    /// Static ECMAScript `name` metadata for function-token locals when it differs from the binding.
+    pub function_metadata_name_locals: HashMap<LocalId, String>,
     /// Static `Function.prototype.bind` locals that can be expanded at call sites.
     pub bound_function_locals: HashMap<LocalId, BoundFunction>,
     /// Static `Function.prototype.call/apply.bind(fn)` locals expanded at call sites.
@@ -115,10 +125,29 @@ pub struct GeneratorYieldStep {
     pub value: ResolvedExpr,
 }
 
+/// A generator body of the form `target = { [yield]: ... }` whose object
+/// construction can resume with `.next(value)` arguments.
+#[derive(Debug, Clone)]
+pub struct GeneratorObjectResumePlan {
+    pub target: String,
+    pub props: Vec<ResolvedObjectProp>,
+    pub yield_values: Vec<ResolvedExpr>,
+}
+
 /// Compile-time state for a statically visible generator iterator local.
 #[derive(Debug, Clone)]
 pub struct GeneratorIteratorBinding {
     pub func_name: String,
+    pub state_local: LocalId,
+    pub resume_args: Vec<ResolvedExpr>,
+}
+
+/// Compile-time state for a statically visible object generator method iterator local.
+#[derive(Debug, Clone)]
+pub struct GeneratorMethodIteratorBinding {
+    pub func_id: FuncId,
+    pub receiver_local: LocalId,
+    pub args: Vec<ResolvedExpr>,
     pub state_local: LocalId,
 }
 
@@ -231,12 +260,16 @@ impl StaticFacts {
             array_locals: HashSet::new(),
             static_array_slots: HashMap::new(),
             symbol_iterator_object_locals: HashSet::new(),
+            symbol_value_locals: HashSet::new(),
+            symbol_description_locals: HashMap::new(),
             array_iterator_locals: HashSet::new(),
             generator_iterator_locals: HashSet::new(),
             generator_function_yields: HashMap::new(),
             generator_function_steps: HashMap::new(),
             generator_function_completion_steps: HashMap::new(),
+            generator_function_object_resume_plans: HashMap::new(),
             generator_iterator_bindings: HashMap::new(),
+            generator_method_iterator_bindings: HashMap::new(),
             static_object_literal_locals: HashMap::new(),
             static_object_literal_alias_sources: HashMap::new(),
             static_function_array_like_locals: HashMap::new(),
@@ -248,6 +281,7 @@ impl StaticFacts {
             env_cell_locals: HashSet::new(),
             heap_closure_names: HashSet::new(),
             arrow_locals: HashMap::new(),
+            function_metadata_name_locals: HashMap::new(),
             bound_function_locals: HashMap::new(),
             function_method_locals: HashMap::new(),
             bound_constructor_locals: HashMap::new(),

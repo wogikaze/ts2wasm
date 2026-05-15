@@ -48,7 +48,7 @@ pub(super) const CLOSURE_CAPTURE_SLOTS_OFFSET: u32 = 16;
 pub(super) const CLOSURE_CAPTURE_SLOT_SIZE: u32 = 4;
 const ENV_CELL_SLOT_COUNT: u32 = 1;
 const ENV_CELL_VALUE_OFFSET: u32 = Layout::ARRAY_HEADER_SIZE;
-const MAX_SUPPORTED_HEAP_CLOSURE_USER_ARGS: usize = 1;
+const MAX_SUPPORTED_HEAP_CLOSURE_USER_ARGS: usize = 3;
 const CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY: u32 = 16;
 const PRIVATE_FIELD_SLOT_SIZE: u32 = 4;
 const PRIVATE_FIELD_COUNT_MASK: u32 = 0xffff;
@@ -472,8 +472,14 @@ impl WatEmitter<'_> {
         let closure = &args[0];
         let user_args = &args[1..];
         let closure_value = frame.heap_base_tmp();
-        let arg_value = frame.heap_value_tmp();
         let payload = frame.switch_value_tmp();
+        let arg_frame = frame.child_temp_frame();
+        let arg_eval_frame = arg_frame.child_temp_frame();
+        let arg_values = [
+            arg_frame.heap_base_tmp(),
+            arg_frame.heap_value_tmp(),
+            arg_frame.switch_value_tmp(),
+        ];
 
         writer.line_fmt(
             indent,
@@ -487,13 +493,13 @@ impl WatEmitter<'_> {
             closure_value,
             frame,
         );
-        if let Some(user_arg) = user_args.first() {
-            self.emit_expr(writer, user_arg, indent + 2, frame);
+        for (user_arg, arg_value) in user_args.iter().zip(arg_values.iter()) {
+            self.emit_expr(writer, user_arg, indent + 2, &arg_eval_frame);
             writer.push_str(&format!("{pad}  (local.set {arg_value})\n"));
             self.emit_gc_root_mirror_index(
                 writer.output_mut(),
                 &format!("{pad}  "),
-                arg_value,
+                *arg_value,
                 frame,
             );
         }
@@ -511,17 +517,33 @@ impl WatEmitter<'_> {
         ));
         // Dispatch table for NUMBER-tagged direct-local function tokens.
         for function in &self.program.functions {
-            if function.params.is_empty() {
-                writer.push_str(&format!(
-                    "{pad}      (if (i32.eq (local.get {payload}) (i32.const {}))\n",
-                    DIRECT_LOCAL_TOKEN_PAYLOAD_BASE + function.id.0 as i32
-                ));
-                writer.push_str(&format!(
-                    "{pad}        (then (br $heap_closure_dispatch_done (call ${})))\n",
-                    function_symbol(function.id)
-                ));
-                writer.push_str(&format!("{pad}      )\n"));
+            writer.push_str(&format!(
+                "{pad}      (if (i32.eq (local.get {payload}) (i32.const {}))\n",
+                DIRECT_LOCAL_TOKEN_PAYLOAD_BASE + function.id.0 as i32
+            ));
+            writer.push_str(&format!("{pad}        (then\n"));
+            for param_index in 0..function.params.len() {
+                if let Some(arg_value) = arg_values
+                    .get(param_index)
+                    .filter(|_| param_index < user_args.len())
+                {
+                    writer.push_str(&format!("{pad}          (local.get {arg_value})\n"));
+                } else {
+                    writer.push_str(&format!(
+                        "{pad}          (i32.const {})\n",
+                        ValueTag::UNDEFINED
+                    ));
+                }
             }
+            writer.push_str(&format!(
+                "{pad}          (call ${})\n",
+                function_symbol(function.id)
+            ));
+            writer.push_str(&format!(
+                "{pad}          (br $heap_closure_dispatch_done)\n"
+            ));
+            writer.push_str(&format!("{pad}        )\n"));
+            writer.push_str(&format!("{pad}      )\n"));
         }
         self.emit_not_callable_type_error(writer, indent + 6);
         writer.push_str(&format!("{pad}    ))\n"));
@@ -538,24 +560,32 @@ impl WatEmitter<'_> {
         writer.push_str(&format!("{pad}    ))\n"));
 
         for function in &self.program.functions {
-            let Some(capture_count) = function.params.len().checked_sub(user_args.len()) else {
-                continue;
-            };
-            writer.line_fmt(indent, format_args!("{pad}  (if (i32.and\n{pad}        (i32.eq (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_CODE_ID_OFFSET}))) (i32.const {}))\n{pad}        (i32.eq (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_CAPTURE_COUNT_OFFSET}))) (i32.const {capture_count})))\n", function.id.0));
-            writer.then(indent);
-            if !user_args.is_empty() {
-                writer.push_str(&format!("{pad}      (local.get {arg_value})\n"));
+            for capture_count in 0..=function.params.len() {
+                let user_param_count = function.params.len() - capture_count;
+                writer.line_fmt(indent, format_args!("{pad}  (if (i32.and\n{pad}        (i32.eq (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_CODE_ID_OFFSET}))) (i32.const {}))\n{pad}        (i32.eq (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_CAPTURE_COUNT_OFFSET}))) (i32.const {capture_count})))\n", function.id.0));
+                writer.then(indent);
+                for param_index in 0..user_param_count {
+                    if let Some(arg_value) = arg_values
+                        .get(param_index)
+                        .filter(|_| param_index < user_args.len())
+                    {
+                        writer.push_str(&format!("{pad}      (local.get {arg_value})\n"));
+                    } else {
+                        writer
+                            .push_str(&format!("{pad}      (i32.const {})\n", ValueTag::UNDEFINED));
+                    }
+                }
+                for capture_index in 0..capture_count {
+                    let offset = CLOSURE_CAPTURE_SLOTS_OFFSET
+                        + capture_index as u32 * CLOSURE_CAPTURE_SLOT_SIZE;
+                    writer.line_fmt(indent, format_args!("{pad}      (i32.load (i32.add (local.get {payload}) (i32.const {offset})))\n"));
+                }
+                writer.push_str(&format!(
+                    "{pad}      (call ${})\n",
+                    function_symbol(function.id)
+                ));
+                writer.push_str(&format!("{pad}      (br $heap_closure_dispatch_done)))\n"));
             }
-            for capture_index in 0..capture_count {
-                let offset =
-                    CLOSURE_CAPTURE_SLOTS_OFFSET + capture_index as u32 * CLOSURE_CAPTURE_SLOT_SIZE;
-                writer.line_fmt(indent, format_args!("{pad}      (i32.load (i32.add (local.get {payload}) (i32.const {offset})))\n"));
-            }
-            writer.push_str(&format!(
-                "{pad}      (call ${})\n",
-                function_symbol(function.id)
-            ));
-            writer.push_str(&format!("{pad}      (br $heap_closure_dispatch_done)))\n"));
         }
 
         self.emit_not_callable_type_error(writer, indent + 2);
@@ -1478,13 +1508,41 @@ impl WatEmitter<'_> {
                     frame,
                 );
                 self.emit_expr(writer, key, indent, frame);
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
                 writer.local_set(indent, frame.heap_value_tmp());
-                writer.local_get(indent, frame.heap_base_tmp());
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.local_get(indent, frame.heap_value_tmp());
-                writer.call(indent, RuntimeFn::PropertyDelete.symbol());
+                writer.push_str(&format!(
+                    "{pad}(if (result i32)\n\
+{pad}  (i32.and\n\
+{pad}    (i32.eq (i32.and (local.get {}) (i32.const {})) (i32.const {}))\n\
+{pad}    (i32.eq (i32.load (i32.and (local.get {}) (i32.const {}))) (i32.const {})))\n\
+{pad}  (then\n\
+{pad}    (call {}\n\
+{pad}      (local.get {})\n\
+{pad}      (local.get {})\n\
+{pad}      (i32.const -1)))\n\
+{pad}  (else\n\
+{pad}    (local.set {} (call {} (local.get {}) (i32.const {})))\n\
+{pad}    (call {}\n\
+{pad}      (local.get {})\n\
+{pad}      (i32.const {})\n\
+{pad}      (local.get {}))))\n",
+                    frame.heap_value_tmp(),
+                    ValueTag::TAG_MASK,
+                    ValueTag::OBJECT,
+                    frame.heap_value_tmp(),
+                    ValueTag::HEAP_MASK,
+                    Layout::SYMBOL_SENTINEL,
+                    RuntimeFn::PropertyDelete.symbol(),
+                    frame.heap_base_tmp(),
+                    frame.heap_value_tmp(),
+                    frame.heap_value_tmp(),
+                    RuntimeFn::ValueToStringInto.symbol(),
+                    frame.heap_value_tmp(),
+                    Layout::SCRATCH_OFFSET,
+                    RuntimeFn::PropertyDelete.symbol(),
+                    frame.heap_base_tmp(),
+                    Layout::SCRATCH_OFFSET,
+                    frame.heap_value_tmp(),
+                ));
             }
             _ => writer.unreachable(indent),
         }
@@ -1517,13 +1575,41 @@ impl WatEmitter<'_> {
                     frame,
                 );
                 self.emit_expr(writer, key, indent, frame);
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
                 writer.local_set(indent, frame.heap_value_tmp());
-                writer.local_get(indent, frame.heap_base_tmp());
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.local_get(indent, frame.heap_value_tmp());
-                writer.call(indent, RuntimeFn::PropertyHas.symbol());
+                writer.push_str(&format!(
+                    "{pad}(if (result i32)\n\
+{pad}  (i32.and\n\
+{pad}    (i32.eq (i32.and (local.get {}) (i32.const {})) (i32.const {}))\n\
+{pad}    (i32.eq (i32.load (i32.and (local.get {}) (i32.const {}))) (i32.const {})))\n\
+{pad}  (then\n\
+{pad}    (call {}\n\
+{pad}      (local.get {})\n\
+{pad}      (local.get {})\n\
+{pad}      (i32.const -1)))\n\
+{pad}  (else\n\
+{pad}    (local.set {} (call {} (local.get {}) (i32.const {})))\n\
+{pad}    (call {}\n\
+{pad}      (local.get {})\n\
+{pad}      (i32.const {})\n\
+{pad}      (local.get {}))))\n",
+                    frame.heap_value_tmp(),
+                    ValueTag::TAG_MASK,
+                    ValueTag::OBJECT,
+                    frame.heap_value_tmp(),
+                    ValueTag::HEAP_MASK,
+                    Layout::SYMBOL_SENTINEL,
+                    RuntimeFn::PropertyHas.symbol(),
+                    frame.heap_base_tmp(),
+                    frame.heap_value_tmp(),
+                    frame.heap_value_tmp(),
+                    RuntimeFn::ValueToStringInto.symbol(),
+                    frame.heap_value_tmp(),
+                    Layout::SCRATCH_OFFSET,
+                    RuntimeFn::PropertyHas.symbol(),
+                    frame.heap_base_tmp(),
+                    Layout::SCRATCH_OFFSET,
+                    frame.heap_value_tmp(),
+                ));
             }
             _ => writer.unreachable(indent),
         }
@@ -2186,6 +2272,9 @@ impl WatEmitter<'_> {
                 value,
                 ..
             } => {
+                let symbol_key_done = gen_expr_label("symbol_key_property_set_done");
+                let symbol_key_string = gen_expr_label("symbol_key_property_set_string");
+                let child_frame = frame.child_temp_frame();
                 self.emit_expr(writer, object, indent, frame);
                 writer.local_set(indent, frame.heap_base_tmp());
                 self.emit_gc_root_mirror_index(
@@ -2195,14 +2284,43 @@ impl WatEmitter<'_> {
                     frame,
                 );
                 self.emit_expr(writer, index, indent, frame);
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.call(indent, RuntimeFn::ValueToStringInto.symbol());
                 writer.local_set(indent, frame.heap_value_tmp());
-                writer.local_get(indent, frame.heap_base_tmp());
-                writer.i32_const(indent, Layout::SCRATCH_OFFSET as i32);
-                writer.local_get(indent, frame.heap_value_tmp());
-                self.emit_expr(writer, value, indent, frame);
-                writer.call(indent, RuntimeFn::PropertySet.symbol());
+                self.emit_expr(writer, value, indent, &child_frame);
+                writer.local_set(indent, child_frame.heap_value_tmp());
+                writer.block(indent, &symbol_key_done);
+                writer.block(indent + 2, &symbol_key_string);
+                writer.push_str(&format!(
+                    "{pad}    (br_if ${symbol_key_string}\n\
+{pad}      (i32.ne (i32.and (local.get {}) (i32.const {})) (i32.const {})))\n\
+{pad}    (br_if ${symbol_key_string}\n\
+{pad}      (i32.ne (i32.load (i32.and (local.get {}) (i32.const {}))) (i32.const {})))\n",
+                    frame.heap_value_tmp(),
+                    ValueTag::TAG_MASK,
+                    ValueTag::OBJECT,
+                    frame.heap_value_tmp(),
+                    ValueTag::HEAP_MASK,
+                    Layout::SYMBOL_SENTINEL,
+                ));
+                writer.local_get(indent + 4, frame.heap_base_tmp());
+                writer.local_get(indent + 4, frame.heap_value_tmp());
+                writer.i32_const(indent + 4, -1);
+                writer.local_get(indent + 4, child_frame.heap_value_tmp());
+                writer.call(indent + 4, RuntimeFn::PropertySet.symbol());
+                writer.drop(indent + 4);
+                writer.push_str(&format!("{pad}    (br ${symbol_key_done})\n"));
+                writer.end(indent + 2);
+                writer.local_get(indent + 2, frame.heap_value_tmp());
+                writer.i32_const(indent + 2, Layout::SCRATCH_OFFSET as i32);
+                writer.call(indent + 2, RuntimeFn::ValueToStringInto.symbol());
+                writer.local_set(indent + 2, frame.heap_value_tmp());
+                writer.local_get(indent + 2, frame.heap_base_tmp());
+                writer.i32_const(indent + 2, Layout::SCRATCH_OFFSET as i32);
+                writer.local_get(indent + 2, frame.heap_value_tmp());
+                writer.local_get(indent + 2, child_frame.heap_value_tmp());
+                writer.call(indent + 2, RuntimeFn::PropertySet.symbol());
+                writer.drop(indent + 2);
+                writer.end(indent);
+                writer.local_get(indent, child_frame.heap_value_tmp());
             }
             _ => writer.unreachable(indent),
         }

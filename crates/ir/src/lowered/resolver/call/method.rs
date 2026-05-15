@@ -8,10 +8,17 @@ use super::super::{
 };
 use super::builtin::{is_html_wrapper_string_method, lower_html_wrapper_string_method};
 use super::receiver::extract_prototype_method_name;
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
+use crate::builtin_resolved::{
+    ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedStmt,
+};
+use crate::lowered::classes::ObjectAccessorKey;
 use crate::lowered::ctx::LoweringCtx;
-use crate::lowered::facts::{IntlDateTimeFormatOptions, IntlNumberFormatOptions};
+use crate::lowered::facts::{
+    GeneratorMethodIteratorBinding, GeneratorObjectResumePlan, IntlDateTimeFormatOptions,
+    IntlNumberFormatOptions,
+};
 use crate::lowered::*;
+use std::collections::HashMap;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 use ts2wasm_syntax::UnaryOp;
@@ -30,10 +37,16 @@ impl super::super::Resolver {
         if let Some(result) = self.lower_mcall_arraybuffer(object, method, args)? {
             return Ok(result);
         }
-        if let Some(result) = self.lower_mcall_intl_number_format(object, method, args)? {
+        if let Some(result) = self.lower_mcall_intl_date_time_format(object, method, args)? {
             return Ok(result);
         }
-        if let Some(result) = self.lower_mcall_intl_date_time_format(object, method, args)? {
+        if let Some(result) = self.lower_mcall_intl_duration_format(object, method, args)? {
+            return Ok(result);
+        }
+        if let Some(result) = self.lower_mcall_intl_list_format(object, method, args)? {
+            return Ok(result);
+        }
+        if let Some(result) = self.lower_mcall_intl_number_format(object, method, args)? {
             return Ok(result);
         }
         if let Some(result) = self.lower_mcall_json_date_regexp(object, method, args, span)? {
@@ -54,12 +67,27 @@ impl super::super::Resolver {
             return Ok(result);
         }
         if method == "next"
-            && args.is_empty()
+            && args.len() <= 1
+            && self.resolved_expr_is_direct_generator_call(object)
+        {
+            if args.is_empty()
+                && let Some(result) = self.lower_static_object_generator_return_next(object)
+            {
+                return Ok(result);
+            }
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::GeneratorNext,
+                args: vec![self.lower_expr(object)?],
+                span: Span::generated("runtime_call"),
+            });
+        }
+        if method == "next"
+            && args.len() <= 1
             && crate::lowered::resolver::expr::facts::resolved_expr_is_generator_iterator(
                 &self.ctx, object,
             )
         {
-            if let Some(result) = self.lower_static_generator_next(object)? {
+            if let Some(result) = self.lower_static_generator_next(object, args)? {
                 return Ok(result);
             }
             return Ok(LoweredExpr::RuntimeCall {
@@ -101,17 +129,57 @@ impl super::super::Resolver {
     fn lower_static_generator_next(
         &mut self,
         object: &ResolvedExpr,
+        args: &[ResolvedExpr],
     ) -> Result<Option<LoweredExpr>, Diagnostic> {
-        let (func_name, state_local, prelude) = match object {
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(local_id) = self.resolve_local(name)
+            && let Some(binding) = self
+                .ctx
+                .facts
+                .generator_method_iterator_bindings
+                .get(&local_id)
+                .cloned()
+        {
+            return Ok(Some(
+                self.lower_generator_method_resume_with_state(&binding, args)?,
+            ));
+        }
+        let (func_name, state_local, prelude, resume_args) = match object {
             ResolvedExpr::Ident(name) => {
                 let local_id = self.resolve_local(name)?;
-                let Some(binding) = self.ctx.facts.generator_iterator_bindings.get(&local_id)
+                let Some(binding) = self
+                    .ctx
+                    .facts
+                    .generator_iterator_bindings
+                    .get(&local_id)
+                    .cloned()
                 else {
                     return Ok(None);
                 };
-                (binding.func_name.clone(), binding.state_local, Vec::new())
+                let mut resume_args = binding.resume_args.clone();
+                if let Some(arg) = args.first() {
+                    resume_args.push(arg.clone());
+                }
+                if let Some(binding) = self
+                    .ctx
+                    .facts
+                    .generator_iterator_bindings
+                    .get_mut(&local_id)
+                    && let Some(arg) = args.first()
+                {
+                    binding.resume_args.push(arg.clone());
+                }
+                (
+                    binding.func_name,
+                    binding.state_local,
+                    Vec::new(),
+                    resume_args,
+                )
             }
             _ => {
+                if !args.is_empty() {
+                    return Ok(None);
+                }
                 let Some(func_name) =
                     crate::lowered::resolver::expr::facts::resolved_generator_function_call_name(
                         &self.ctx, object,
@@ -136,14 +204,215 @@ impl super::super::Resolver {
                         LoweredExpr::Number(0, Span::generated("num")),
                         Span::generated("let_stmt"),
                     )],
+                    Vec::new(),
                 )
             }
         };
+        if let Some(plan) = self
+            .ctx
+            .facts
+            .generator_function_object_resume_plans
+            .get(&func_name)
+            .cloned()
+        {
+            return Ok(Some(self.lower_generator_object_resume_with_state(
+                &plan,
+                state_local,
+                prelude,
+                &resume_args,
+            )?));
+        }
+        if !args.is_empty() {
+            return Ok(None);
+        }
         Ok(Some(self.lower_generator_resume_with_state(
             &func_name,
             state_local,
             prelude,
         )?))
+    }
+
+    fn resolved_expr_is_direct_generator_call(&self, expr: &ResolvedExpr) -> bool {
+        match expr {
+            ResolvedExpr::MethodCall { .. } => self.generator_method_func_id(expr).is_some(),
+            ResolvedExpr::Call { callee, .. } => self.resolved_callee_is_generator(callee),
+            _ => false,
+        }
+    }
+
+    fn generator_method_func_id(&self, expr: &ResolvedExpr) -> Option<FuncId> {
+        let ResolvedExpr::MethodCall { object, method, .. } = expr else {
+            return None;
+        };
+        let ResolvedExpr::Ident(receiver_name) = object.as_ref() else {
+            return None;
+        };
+        let Ok(receiver_local) = self.resolve_local(receiver_name) else {
+            return None;
+        };
+        let method_id = self
+            .ctx
+            .classes
+            .object_function_props
+            .get(&receiver_local)
+            .and_then(|props| props.get(&ObjectAccessorKey::Property(method.clone())))
+            .copied()?;
+        self.ctx
+            .functions
+            .generated_functions
+            .iter()
+            .any(|function| function.id == method_id && function.is_generator)
+            .then_some(method_id)
+    }
+
+    fn lower_static_object_generator_return_next(
+        &self,
+        expr: &ResolvedExpr,
+    ) -> Option<LoweredExpr> {
+        let method_id = self.generator_method_func_id(expr)?;
+        let ResolvedExpr::MethodCall { object, .. } = expr else {
+            return None;
+        };
+        let ResolvedExpr::Ident(receiver_name) = object.as_ref() else {
+            return None;
+        };
+        let receiver_local = self.resolve_local(receiver_name).ok()?;
+        let function = self
+            .ctx
+            .functions
+            .generated_functions
+            .iter()
+            .find(|function| function.id == method_id && function.is_generator)?;
+        let receiver_param = function.params.first().copied();
+        let value = match function.body.as_slice() {
+            [] => LoweredExpr::Undefined(Span::generated("undefined")),
+            [LoweredStmt::Yield(expr, _)] => {
+                let value =
+                    static_generator_bind_receiver(expr.clone(), receiver_param, receiver_local)?;
+                return Some(Self::generator_next_result(value, false));
+            }
+            [LoweredStmt::Return(expr, _)] => static_generator_completion_value(expr)?,
+            body => {
+                if let Some(value) = static_generator_first_yield_value(body) {
+                    let value =
+                        static_generator_bind_receiver(value, receiver_param, receiver_local)?;
+                    return Some(Self::generator_next_result(value, false));
+                }
+                static_generator_implicit_completion_value(body)?
+            }
+        };
+        Some(Self::generator_next_result(value, true))
+    }
+
+    fn local_arrow_function_data_descriptor(&self, target: &str, key: &str) -> Option<LoweredExpr> {
+        let value = match key {
+            "name" => {
+                let local = self.resolve_local(target).ok()?;
+                LoweredExpr::String(
+                    self.ctx
+                        .facts
+                        .function_metadata_name_locals
+                        .get(&local)
+                        .cloned()
+                        .unwrap_or_else(|| target.to_owned()),
+                    Span::generated("str"),
+                )
+            }
+            "length" => {
+                let local = self.resolve_local(target).ok()?;
+                let closure = self.ctx.facts.arrow_locals.get(&local)?;
+                let length = self
+                    .ctx
+                    .symbols
+                    .function_signatures
+                    .get(&closure.func_id)
+                    .and_then(|signature| signature.metadata_length)?;
+                LoweredExpr::Number(length as i32, Span::generated("num"))
+            }
+            _ => return None,
+        };
+        Some(LoweredExpr::ObjectNew {
+            props: vec![
+                ("value".to_owned(), value),
+                (
+                    "writable".to_owned(),
+                    LoweredExpr::Bool(false, Span::generated("bool")),
+                ),
+                (
+                    "enumerable".to_owned(),
+                    LoweredExpr::Bool(false, Span::generated("bool")),
+                ),
+                (
+                    "configurable".to_owned(),
+                    LoweredExpr::Bool(true, Span::generated("bool")),
+                ),
+            ],
+            non_enumerable: 0,
+            span: Span::generated("function_descriptor"),
+        })
+    }
+
+    fn static_object_accessor_descriptor(
+        &self,
+        target: &str,
+        key: &str,
+        span: Span,
+    ) -> Option<LoweredExpr> {
+        let local = self.resolve_local(target).ok()?;
+        let accessor = self
+            .ctx
+            .classes
+            .object_accessor_props
+            .get(&local)?
+            .get(&ObjectAccessorKey::Property(key.to_owned()))?;
+        let mut props = Vec::new();
+        if let Some(func_id) = accessor.get {
+            props.push((
+                "get".to_owned(),
+                self.function_token_for_object_method(func_id, span)?,
+            ));
+        }
+        if let Some(func_id) = accessor.set {
+            props.push((
+                "set".to_owned(),
+                self.function_token_for_object_method(func_id, span)?,
+            ));
+        }
+        props.extend([
+            (
+                "enumerable".to_owned(),
+                LoweredExpr::Bool(true, Span::generated("bool")),
+            ),
+            (
+                "configurable".to_owned(),
+                LoweredExpr::Bool(true, Span::generated("bool")),
+            ),
+        ]);
+        Some(LoweredExpr::ObjectNew {
+            props,
+            non_enumerable: 0,
+            span: Span::generated("object_accessor_descriptor"),
+        })
+    }
+
+    fn resolved_callee_is_generator(&self, callee: &ResolvedExpr) -> bool {
+        let ResolvedExpr::Ident(name) = callee else {
+            return false;
+        };
+        if self.ctx.facts.generator_function_names.contains(name) {
+            return true;
+        }
+        let Ok(local) = self.resolve_local(name) else {
+            return false;
+        };
+        let Some(closure) = self.ctx.facts.arrow_locals.get(&local) else {
+            return false;
+        };
+        self.ctx
+            .functions
+            .generated_functions
+            .iter()
+            .any(|function| function.id == closure.func_id && function.is_generator)
     }
 
     fn lower_generator_resume_with_state(
@@ -203,8 +472,87 @@ impl super::super::Resolver {
         }
         let completed_state = steps.len() + 1;
         let mut completion_body = Vec::new();
+        let mut completion_value = LoweredExpr::Undefined(Span::generated("undefined"));
         for stmt in &completion {
-            completion_body.push(self.lower_stmt(stmt)?);
+            if let ResolvedStmt::Return(expr) = stmt {
+                completion_value = self.lower_expr(expr)?;
+            } else {
+                completion_body.push(self.lower_stmt(stmt)?);
+            }
+        }
+        completion_body.push(LoweredStmt::Assign(
+            result_local,
+            Self::generator_next_result(completion_value, true),
+            Span::generated("assign"),
+        ));
+        completion_body.push(LoweredStmt::Assign(
+            state_local,
+            LoweredExpr::Number(completed_state as i32, Span::generated("num")),
+            Span::generated("assign"),
+        ));
+        stmts.push(LoweredStmt::If {
+            condition: Self::state_equals(snapshot_local, steps.len()),
+            then_body: completion_body,
+            else_body: vec![],
+            span: Span::generated("if_stmt"),
+        });
+        Ok(LoweredExpr::Block {
+            stmts,
+            result: Box::new(LoweredExpr::Local(result_local, Span::generated("local"))),
+            span: Span::generated("block"),
+        })
+    }
+
+    fn lower_generator_object_resume_with_state(
+        &mut self,
+        plan: &GeneratorObjectResumePlan,
+        state_local: LocalId,
+        prelude: Vec<LoweredStmt>,
+        resume_args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let result_local = self.alloc_temp();
+        let snapshot_local = self.alloc_temp();
+        let mut stmts = prelude;
+        stmts.push(LoweredStmt::Let(
+            result_local,
+            Self::generator_next_result(LoweredExpr::Undefined(Span::generated("undefined")), true),
+            Span::generated("let_stmt"),
+        ));
+        stmts.push(LoweredStmt::Let(
+            snapshot_local,
+            LoweredExpr::Local(state_local, Span::generated("local")),
+            Span::generated("let_stmt"),
+        ));
+
+        for (index, value) in plan.yield_values.iter().enumerate() {
+            let then_body = vec![
+                LoweredStmt::Assign(
+                    result_local,
+                    Self::generator_next_result(self.lower_expr(value)?, false),
+                    Span::generated("assign"),
+                ),
+                LoweredStmt::Assign(
+                    state_local,
+                    LoweredExpr::Number((index + 1) as i32, Span::generated("num")),
+                    Span::generated("assign"),
+                ),
+            ];
+            stmts.push(LoweredStmt::If {
+                condition: Self::state_equals(snapshot_local, index),
+                then_body,
+                else_body: vec![],
+                span: Span::generated("if_stmt"),
+            });
+        }
+
+        let completed_state = plan.yield_values.len() + 1;
+        let mut completion_body = Vec::new();
+        if resume_args.len() >= plan.yield_values.len() {
+            let resumed_props = replace_direct_computed_yield_keys(&plan.props, resume_args);
+            completion_body.push(self.lower_stmt(&ResolvedStmt::Assign(
+                plan.target.clone(),
+                ResolvedExpr::Object(resumed_props),
+            ))?);
         }
         completion_body.push(LoweredStmt::Assign(
             result_local,
@@ -217,8 +565,104 @@ impl super::super::Resolver {
             Span::generated("assign"),
         ));
         stmts.push(LoweredStmt::If {
-            condition: Self::state_equals(snapshot_local, steps.len()),
+            condition: Self::state_equals(snapshot_local, plan.yield_values.len()),
             then_body: completion_body,
+            else_body: vec![],
+            span: Span::generated("if_stmt"),
+        });
+
+        Ok(LoweredExpr::Block {
+            stmts,
+            result: Box::new(LoweredExpr::Local(result_local, Span::generated("local"))),
+            span: Span::generated("block"),
+        })
+    }
+
+    fn lower_generator_method_resume_with_state(
+        &mut self,
+        binding: &GeneratorMethodIteratorBinding,
+        _resume_args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let function = self
+            .ctx
+            .functions
+            .generated_functions
+            .iter()
+            .find(|function| function.id == binding.func_id && function.is_generator)
+            .cloned()
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "generator method iterator binding points at an unknown function"
+                    .to_owned(),
+                span: None,
+                phase: None,
+            })?;
+        let result_local = self.alloc_temp();
+        let snapshot_local = self.alloc_temp();
+        let mut substitutions = HashMap::new();
+        if let Some(receiver_param) = function.params.first().copied() {
+            substitutions.insert(
+                receiver_param,
+                LoweredExpr::Local(binding.receiver_local, Span::generated("local")),
+            );
+        }
+        for (param, arg) in function.params.iter().skip(1).copied().zip(&binding.args) {
+            substitutions.insert(param, self.lower_expr(arg)?);
+        }
+
+        let mut stmts = vec![
+            LoweredStmt::Let(
+                result_local,
+                Self::generator_next_result(
+                    LoweredExpr::Undefined(Span::generated("undefined")),
+                    true,
+                ),
+                Span::generated("let_stmt"),
+            ),
+            LoweredStmt::Let(
+                snapshot_local,
+                LoweredExpr::Local(binding.state_local, Span::generated("local")),
+                Span::generated("let_stmt"),
+            ),
+        ];
+        if let Some(value) = static_generator_first_yield_value(&function.body)
+            && let Some(value) = static_generator_bind_locals(value, &substitutions)
+        {
+            stmts.push(LoweredStmt::If {
+                condition: Self::state_equals(snapshot_local, 0),
+                then_body: vec![
+                    LoweredStmt::Assign(
+                        result_local,
+                        Self::generator_next_result(value, false),
+                        Span::generated("assign"),
+                    ),
+                    LoweredStmt::Assign(
+                        binding.state_local,
+                        LoweredExpr::Number(1, Span::generated("num")),
+                        Span::generated("assign"),
+                    ),
+                ],
+                else_body: vec![],
+                span: Span::generated("if_stmt"),
+            });
+        }
+        let completion_value = static_generator_implicit_completion_value(&function.body)
+            .and_then(|value| static_generator_bind_locals(value, &substitutions))
+            .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undefined")));
+        stmts.push(LoweredStmt::If {
+            condition: Self::state_equals(snapshot_local, 1),
+            then_body: vec![
+                LoweredStmt::Assign(
+                    result_local,
+                    Self::generator_next_result(completion_value, true),
+                    Span::generated("assign"),
+                ),
+                LoweredStmt::Assign(
+                    binding.state_local,
+                    LoweredExpr::Number(2, Span::generated("num")),
+                    Span::generated("assign"),
+                ),
+            ],
             else_body: vec![],
             span: Span::generated("if_stmt"),
         });
@@ -472,6 +916,38 @@ impl super::super::Resolver {
                 args,
                 options.as_ref(),
             )?));
+        }
+        Ok(None)
+    }
+
+    fn lower_mcall_intl_duration_format(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Intl")
+            && method == "DurationFormat"
+        {
+            return Ok(Some(self.lower_intl_duration_format_constructor(args)?));
+        }
+        if self.is_intl_duration_format_expr(object) && is_intl_duration_format_method(method) {
+            return Ok(Some(self.lower_intl_duration_format_method(method, args)?));
+        }
+        Ok(None)
+    }
+
+    fn lower_mcall_intl_list_format(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Intl") && method == "ListFormat" {
+            return Ok(Some(self.lower_intl_list_format_constructor(args)?));
+        }
+        if self.is_intl_list_format_expr(object) && is_intl_list_format_method(method) {
+            return Ok(Some(self.lower_intl_list_format_method(method, args)?));
         }
         Ok(None)
     }
@@ -773,7 +1249,7 @@ impl super::super::Resolver {
         if let Some(result) = self.try_lower_regexp_ident_local(object, method, args, span)? {
             return Ok(Some(result));
         }
-        if let Some(regexp_args) = regexp_test_runtime(object, method, args, span)? {
+        if let Some(regexp_args) = regexp_test_runtime(&self.ctx, object, method, args, span)? {
             let lowered_args = regexp_args
                 .iter()
                 .map(|e| self.lower_expr(e))
@@ -785,7 +1261,7 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
-        if let Some(regexp_args) = regexp_exec_runtime(object, method, args, span)? {
+        if let Some(regexp_args) = regexp_exec_runtime(&self.ctx, object, method, args, span)? {
             let lowered_args = regexp_args
                 .iter()
                 .map(|e| self.lower_expr(e))
@@ -797,7 +1273,9 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
-        if let Some(regexp_args) = regexp_string_match_runtime(object, method, args, span)? {
+        if let Some(regexp_args) =
+            regexp_string_match_runtime(&self.ctx, object, method, args, span)?
+        {
             let lowered_args = regexp_args
                 .iter()
                 .map(|e| self.lower_expr(e))
@@ -871,6 +1349,402 @@ impl super::super::Resolver {
                 intrinsic: RuntimeFn::DateSetTime,
                 args: vec![self.lower_expr(object)?, self.lower_expr(&args[0])?],
 
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setUTCFullYear" && self.is_date_receiver(object) {
+            if args.is_empty() || args.len() > 3 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 to 3 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let month = args
+                .get(1)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            let day = args
+                .get(2)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetUTCFullYear,
+                args: vec![
+                    self.lower_expr(object)?,
+                    self.lower_expr(&args[0])?,
+                    month,
+                    day,
+                ],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setUTCMonth" && self.is_date_receiver(object) {
+            if args.is_empty() || args.len() > 2 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 to 2 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let day = args
+                .get(1)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetUTCMonth,
+                args: vec![self.lower_expr(object)?, self.lower_expr(&args[0])?, day],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setUTCDate" && self.is_date_receiver(object) {
+            if args.len() != 1 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 argument, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetUTCDate,
+                args: vec![self.lower_expr(object)?, self.lower_expr(&args[0])?],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setUTCHours" && self.is_date_receiver(object) {
+            if args.is_empty() || args.len() > 4 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 to 4 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let minutes = args
+                .get(1)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            let seconds = args
+                .get(2)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            let ms = args
+                .get(3)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetUTCHours,
+                args: vec![
+                    self.lower_expr(object)?,
+                    self.lower_expr(&args[0])?,
+                    minutes,
+                    seconds,
+                    ms,
+                ],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setUTCMinutes" && self.is_date_receiver(object) {
+            if args.is_empty() || args.len() > 3 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 to 3 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let seconds = args
+                .get(1)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            let ms = args
+                .get(2)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetUTCMinutes,
+                args: vec![
+                    self.lower_expr(object)?,
+                    self.lower_expr(&args[0])?,
+                    seconds,
+                    ms,
+                ],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setUTCSeconds" && self.is_date_receiver(object) {
+            if args.is_empty() || args.len() > 2 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 to 2 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let ms = args
+                .get(1)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetUTCSeconds,
+                args: vec![self.lower_expr(object)?, self.lower_expr(&args[0])?, ms],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setUTCMilliseconds" && self.is_date_receiver(object) {
+            if args.len() != 1 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 argument, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetUTCMilliseconds,
+                args: vec![self.lower_expr(object)?, self.lower_expr(&args[0])?],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        // --- Local-time setters ---
+        if method == "setFullYear" && self.is_date_receiver(object) {
+            if args.is_empty() || args.len() > 3 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 to 3 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let month = args
+                .get(1)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            let day = args
+                .get(2)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetFullYear,
+                args: vec![
+                    self.lower_expr(object)?,
+                    self.lower_expr(&args[0])?,
+                    month,
+                    day,
+                ],
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setMonth" && self.is_date_receiver(object) {
+            if args.is_empty() || args.len() > 2 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 to 2 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let day = args
+                .get(1)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetMonth,
+                args: vec![self.lower_expr(object)?, self.lower_expr(&args[0])?, day],
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setDate" && self.is_date_receiver(object) {
+            if args.len() != 1 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 argument, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetDate,
+                args: vec![self.lower_expr(object)?, self.lower_expr(&args[0])?],
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setHours" && self.is_date_receiver(object) {
+            if args.is_empty() || args.len() > 4 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 to 4 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let minutes = args
+                .get(1)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            let seconds = args
+                .get(2)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            let ms = args
+                .get(3)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetHours,
+                args: vec![
+                    self.lower_expr(object)?,
+                    self.lower_expr(&args[0])?,
+                    minutes,
+                    seconds,
+                    ms,
+                ],
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setMinutes" && self.is_date_receiver(object) {
+            if args.is_empty() || args.len() > 3 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 to 3 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let seconds = args
+                .get(1)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            let ms = args
+                .get(2)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetMinutes,
+                args: vec![
+                    self.lower_expr(object)?,
+                    self.lower_expr(&args[0])?,
+                    seconds,
+                    ms,
+                ],
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setSeconds" && self.is_date_receiver(object) {
+            if args.is_empty() || args.len() > 2 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 to 2 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let ms = args
+                .get(1)
+                .map(|arg| self.lower_expr(arg))
+                .transpose()?
+                .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")));
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetSeconds,
+                args: vec![self.lower_expr(object)?, self.lower_expr(&args[0])?, ms],
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if method == "setMilliseconds" && self.is_date_receiver(object) {
+            if args.len() != 1 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 argument, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetMilliseconds,
+                args: vec![self.lower_expr(object)?, self.lower_expr(&args[0])?],
                 span: Span::generated("runtime_call"),
             }));
         }
@@ -1312,6 +2186,15 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
+        if method == "push"
+            && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
+            && let [ResolvedExpr::Spread(spread_expr)] = args
+        {
+            return Ok(Some(self.lower_array_push_single_spread_arg(
+                object,
+                spread_expr.as_ref(),
+            )?));
+        }
         if method == "at"
             && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
         {
@@ -1416,6 +2299,41 @@ impl super::super::Resolver {
                 Span::generated("number_format"),
             )));
         }
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Object")
+            && method == "defineProperty"
+            && args.len() == 3
+        {
+            let lowered_target = self.lower_expr(&args[0])?;
+            let lowered_key = self.lower_expr(&args[1])?;
+            let lowered_desc = self.lower_expr(&args[2])?;
+            if let (ResolvedExpr::Ident(target_name), Some(static_key), Some(accessor)) = (
+                &args[0],
+                super::super::string::resolved_expr_static_accessor_key(&self.ctx, &args[1]),
+                self.accessor_prop_from_descriptor_expr(&lowered_desc),
+            ) && let Ok(target_local) = self.resolve_local(target_name)
+            {
+                self.ctx
+                    .classes
+                    .object_accessor_props
+                    .entry(target_local)
+                    .or_default()
+                    .entry(static_key)
+                    .and_modify(|existing| {
+                        if accessor.get.is_some() {
+                            existing.get = accessor.get;
+                        }
+                        if accessor.set.is_some() {
+                            existing.set = accessor.set;
+                        }
+                    })
+                    .or_insert(accessor);
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ObjectDefineProperty,
+                args: vec![lowered_target, lowered_key, lowered_desc],
+                span: Span::generated("runtime_call"),
+            }));
+        }
         if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
             if intrinsic == RuntimeFn::JsonParse {
                 if args.is_empty() || args.len() > 2 {
@@ -1470,6 +2388,14 @@ impl super::super::Resolver {
                     args: lowered_args,
                     span: Span::generated("runtime_call"),
                 }));
+            }
+            if (intrinsic == RuntimeFn::ArrayPush || intrinsic == RuntimeFn::ArrayPushGrow)
+                && let [ResolvedExpr::Spread(spread_expr)] = args
+            {
+                return Ok(Some(self.lower_array_push_single_spread_arg(
+                    object,
+                    spread_expr.as_ref(),
+                )?));
             }
             if (intrinsic == RuntimeFn::ArrayPush || intrinsic == RuntimeFn::ArrayPushGrow)
                 && args.len() != 1
@@ -1619,6 +2545,19 @@ impl super::super::Resolver {
         {
             return Ok(Some(desc));
         }
+        if method == "getOwnPropertyDescriptor"
+            && let [ResolvedExpr::Ident(target), ResolvedExpr::String(key)] = args
+            && matches!(key.as_str(), "name" | "length")
+            && let Some(desc) = self.local_arrow_function_data_descriptor(target, key)
+        {
+            return Ok(Some(desc));
+        }
+        if method == "getOwnPropertyDescriptor"
+            && let [ResolvedExpr::Ident(target), ResolvedExpr::String(key)] = args
+            && let Some(desc) = self.static_object_accessor_descriptor(target, key, span)
+        {
+            return Ok(Some(desc));
+        }
         let Some(proxy) = args.first().and_then(|arg| {
             crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(&self.ctx, arg)
         }) else {
@@ -1683,6 +2622,36 @@ impl super::super::Resolver {
         )?))
     }
 
+    pub(crate) fn lower_array_push_single_spread_arg(
+        &mut self,
+        object: &ResolvedExpr,
+        spread_expr: &ResolvedExpr,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let span = Span::generated("array_push_spread");
+        let receiver = self.alloc_temp();
+        Ok(LoweredExpr::Block {
+            stmts: vec![
+                LoweredStmt::Let(receiver, self.lower_expr(object)?, span),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::ArrayPushOrSpread,
+                        args: vec![
+                            LoweredExpr::Local(receiver, Span::generated("local")),
+                            self.lower_expr(spread_expr)?,
+                        ],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            result: Box::new(LoweredExpr::GetLength(
+                Box::new(LoweredExpr::Local(receiver, Span::generated("local"))),
+                Span::generated("get_length"),
+            )),
+            span,
+        })
+    }
+
     fn lower_static_group_by_dispatch(
         &mut self,
         object: &ResolvedExpr,
@@ -1731,7 +2700,7 @@ impl super::super::Resolver {
                 .classes
                 .object_function_props
                 .get(&obj_local)
-                .and_then(|props| props.get(method))
+                .and_then(|props| props.get(&ObjectAccessorKey::Property(method.to_owned())))
                 .copied()
         {
             let lowered_args = self.lower_function_call_args(
@@ -1851,7 +2820,14 @@ impl super::super::Resolver {
             || method == "flatMap")
             && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
             && !args.is_empty()
-            && matches!(&args[0], ResolvedExpr::ArrowFn { .. })
+            && matches!(
+                &args[0],
+                ResolvedExpr::ArrowFn { .. }
+                    | ResolvedExpr::FunctionExpr {
+                        is_generator: false,
+                        ..
+                    }
+            )
         {
             let lowered_receiver = self.lower_expr(object)?;
             return Ok(Some(self.lower_array_callback_method(
@@ -2129,16 +3105,28 @@ impl super::super::Resolver {
             }));
         }
 
-        Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!(
-                "issue-211: method `{}` requires an identifier receiver",
-                method
-            ),
-            span: Some(span),
-
-            phase: None,
-        })
+        let receiver_temp = self.alloc_temp();
+        let receiver = LoweredExpr::Local(receiver_temp, Span::generated("local"));
+        let callee = object_kernel::ordinary_get(receiver.clone(), method, span);
+        let mut call_args = vec![callee, receiver];
+        call_args.extend(
+            args.iter()
+                .map(|arg| self.lower_expr(arg))
+                .collect::<Result<Vec<_>, _>>()?,
+        );
+        Ok(Some(LoweredExpr::Block {
+            stmts: vec![LoweredStmt::Let(
+                receiver_temp,
+                self.lower_expr(object)?,
+                Span::generated("let_stmt"),
+            )],
+            result: Box::new(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::HeapClosureCall,
+                args: call_args,
+                span: Span::generated("runtime_call"),
+            }),
+            span: Span::generated("block"),
+        }))
     }
 
     /// Helper for lower_method_call_expr: Ident receiver class method dispatch —
@@ -2212,6 +3200,12 @@ impl super::super::Resolver {
             let class_name = class_name.clone();
             let class_name = class_name.as_str();
             let is_array_like_class = class_name == "Array" || is_typed_array_class(class_name);
+            if class_name == "Array"
+                && method == "push"
+                && let [ResolvedExpr::Spread(spread_expr)] = args
+            {
+                return self.lower_array_push_single_spread_arg(object, spread_expr.as_ref());
+            }
             if class_name == "RegExp" && args.len() > 1 {
                 return Err(Diagnostic {
                     code: DiagCode::ArityMismatch,
@@ -2263,6 +3257,35 @@ impl super::super::Resolver {
 
         // super.method
         if receiver_name == "super" {
+            if self.ctx.classes.current_class.is_none() {
+                let this_local = self.resolve_local("this").map_err(|_| Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "super.method(...) requires class context or object method receiver"
+                        .to_owned(),
+                    span: Some(span),
+                    phase: None,
+                })?;
+                let this_expr = LoweredExpr::Local(this_local, Span::generated("local"));
+                let callee = object_kernel::ordinary_get(
+                    object_kernel::ordinary_get_prototype_of(
+                        this_expr.clone(),
+                        Span::generated("object_home_proto"),
+                    ),
+                    method,
+                    span,
+                );
+                let mut lowered_args = vec![callee, this_expr];
+                lowered_args.extend(
+                    args.iter()
+                        .map(|e| self.lower_expr(e))
+                        .collect::<Result<Vec<_>, _>>()?,
+                );
+                return Ok(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::HeapClosureCall,
+                    args: lowered_args,
+                    span: Span::generated("runtime_call"),
+                });
+            }
             let class_name = self
                 .ctx
                 .classes
@@ -2355,10 +3378,12 @@ impl super::super::Resolver {
         ];
         let number_methods = ["toFixed", "toExponential", "toPrecision"];
         let promise_methods = ["then", "catch", "finally"];
+        let regexp_methods = ["test", "exec"];
         let class_name_str = match self.ctx.classes.local_classes.get(&obj_local) {
             Some(c) => c.clone(),
             None if array_like_methods.contains(&method) => "Array".to_owned(),
             None if number_methods.contains(&method) => "Number".to_owned(),
+            None if regexp_methods.contains(&method) => "RegExp".to_owned(),
             None if promise_methods.contains(&method) => {
                 let intrinsic = match method {
                     "then" => RuntimeFn::PromiseThen,
@@ -2388,6 +3413,15 @@ impl super::super::Resolver {
                 });
             }
             None => {
+                if receiver_name == "Constructor" && method == "supportedLocalesOf" {
+                    return Ok(LoweredExpr::ArrayNew {
+                        elements: Vec::new(),
+                        span: Span::generated("array_new"),
+                    });
+                }
+                if receiver_name == "durationFormat" && is_intl_duration_format_method(method) {
+                    return self.lower_intl_duration_format_method(method, args);
+                }
                 // Object.prototype methods: route to RuntimeFn for untyped receivers
                 let obj_methods = [
                     "hasOwnProperty",
@@ -2434,6 +3468,74 @@ impl super::super::Resolver {
             }
         };
         let class_name = class_name_str.as_str();
+
+        if class_name == "Array"
+            && (method == "forEach"
+                || method == "filter"
+                || method == "find"
+                || method == "findIndex"
+                || method == "findLast"
+                || method == "findLastIndex"
+                || method == "some"
+                || method == "every"
+                || method == "reduce"
+                || method == "reduceRight"
+                || method == "map"
+                || method == "flatMap")
+            && !args.is_empty()
+            && matches!(
+                &args[0],
+                ResolvedExpr::ArrowFn { .. }
+                    | ResolvedExpr::FunctionExpr {
+                        is_generator: false,
+                        ..
+                    }
+            )
+        {
+            return self.lower_array_callback_method(
+                method,
+                LoweredExpr::Local(obj_local, Span::generated("local")),
+                object,
+                args,
+                span,
+            );
+        }
+
+        if let Some(intrinsic) = collection_method_runtime_fn(class_name, method) {
+            if class_name == "Array"
+                && method == "push"
+                && let [ResolvedExpr::Spread(spread_expr)] = args
+            {
+                return self.lower_array_push_single_spread_arg(object, spread_expr.as_ref());
+            }
+            if class_name == "RegExp" && args.len() > 1 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "RegExp.prototype.{method} expects at most 1 argument, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let receiver = LoweredExpr::Local(obj_local, Span::generated("local"));
+            let lowered_args =
+                self.lower_collection_method_args(receiver, class_name, method, args)?;
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic,
+                args: lowered_args,
+                span: Span::generated("runtime_call"),
+            });
+        }
+
+        if class_name == "Array"
+            && method == "push"
+            && let [ResolvedExpr::Spread(spread_expr)] = args
+        {
+            return self.lower_array_push_single_spread_arg(object, spread_expr.as_ref());
+        }
 
         if class_name == "Number"
             && let Some(intrinsic) = number_format_method_runtime_fn(method)
@@ -2510,7 +3612,10 @@ impl super::super::Resolver {
                 }
                 _ => {}
             }
-        } else if class_name == "Number" && is_number_format_method(method) && args.is_empty() {
+        } else if args.is_empty()
+            && ((class_name == "ArrayBuffer" && method == "transfer")
+                || (class_name == "Number" && is_number_format_method(method)))
+        {
             lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
         }
         Ok(lowered_args)
@@ -2540,6 +3645,20 @@ impl super::super::Resolver {
         })
     }
 
+    pub(crate) fn lower_intl_duration_format_constructor(
+        &mut self,
+        _args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        Ok(intl_duration_format_options_object())
+    }
+
+    pub(crate) fn lower_intl_list_format_constructor(
+        &mut self,
+        _args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        Ok(intl_list_format_options_object())
+    }
+
     pub(crate) fn intl_number_format_options_for_expr(
         &self,
         expr: &ResolvedExpr,
@@ -2547,7 +3666,7 @@ impl super::super::Resolver {
         match expr {
             ResolvedExpr::New {
                 class_name, args, ..
-            } if matches!(class_name.as_str(), "Intl.NumberFormat" | "NumberFormat") => {
+            } if is_intl_number_format_class(class_name.as_str()) => {
                 self.intl_number_format_options_from_args(args)
             }
             ResolvedExpr::MethodCall {
@@ -2616,6 +3735,20 @@ impl super::super::Resolver {
         matches!(
             self.infer_class_for_expr(expr).as_deref(),
             Some("Intl.DateTimeFormat" | "DateTimeFormat")
+        )
+    }
+
+    fn is_intl_duration_format_expr(&self, expr: &ResolvedExpr) -> bool {
+        matches!(
+            self.infer_class_for_expr(expr).as_deref(),
+            Some("Intl.DurationFormat" | "DurationFormat")
+        )
+    }
+
+    fn is_intl_list_format_expr(&self, expr: &ResolvedExpr) -> bool {
+        matches!(
+            self.infer_class_for_expr(expr).as_deref(),
+            Some("Intl.ListFormat" | "ListFormat")
         )
     }
 
@@ -2811,6 +3944,48 @@ impl super::super::Resolver {
             _ => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("Intl.DateTimeFormat.prototype.{method} is not supported"),
+                span: None,
+                phase: None,
+            }),
+        }
+    }
+
+    fn lower_intl_duration_format_method(
+        &mut self,
+        method: &str,
+        _args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        match method {
+            "format" => Ok(string_lit("")),
+            "formatToParts" => Ok(LoweredExpr::ArrayNew {
+                elements: Vec::new(),
+                span: Span::generated("array_new"),
+            }),
+            "resolvedOptions" => Ok(intl_duration_format_options_object()),
+            _ => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("Intl.DurationFormat.prototype.{method} is not supported"),
+                span: None,
+                phase: None,
+            }),
+        }
+    }
+
+    fn lower_intl_list_format_method(
+        &mut self,
+        method: &str,
+        _args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        match method {
+            "format" => Ok(string_lit("")),
+            "formatToParts" => Ok(LoweredExpr::ArrayNew {
+                elements: vec![intl_list_format_part_object()],
+                span: Span::generated("array_new"),
+            }),
+            "resolvedOptions" => Ok(intl_list_format_options_object()),
+            _ => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("Intl.ListFormat.prototype.{method} is not supported"),
                 span: None,
                 phase: None,
             }),
@@ -3033,6 +4208,21 @@ fn is_intl_number_format_method(method: &str) -> bool {
     matches!(method, "format" | "formatToParts" | "resolvedOptions")
 }
 
+fn is_intl_date_time_format_method(method: &str) -> bool {
+    matches!(
+        method,
+        "format" | "formatRange" | "formatToParts" | "formatRangeToParts" | "resolvedOptions"
+    )
+}
+
+fn is_intl_duration_format_method(method: &str) -> bool {
+    matches!(method, "format" | "formatToParts" | "resolvedOptions")
+}
+
+fn is_intl_list_format_method(method: &str) -> bool {
+    matches!(method, "format" | "formatToParts" | "resolvedOptions")
+}
+
 fn is_number_format_method(method: &str) -> bool {
     matches!(method, "toFixed" | "toExponential" | "toPrecision")
 }
@@ -3045,11 +4235,89 @@ fn is_number_format_runtime_fn(intrinsic: RuntimeFn) -> bool {
 }
 
 fn is_intl_number_format_class(class_name: &str) -> bool {
-    matches!(class_name, "Intl.NumberFormat" | "NumberFormat")
+    matches!(
+        class_name,
+        "Intl.NumberFormat" | "NumberFormat" | "Constructor"
+    )
 }
 
-fn is_intl_date_time_format_method(method: &str) -> bool {
-    matches!(method, "format" | "formatToParts" | "resolvedOptions")
+fn intl_date_time_format_options_object() -> LoweredExpr {
+    LoweredExpr::ObjectNew {
+        props: vec![
+            ("locale".to_owned(), string_lit("en")),
+            ("calendar".to_owned(), string_lit("gregory")),
+            ("numberingSystem".to_owned(), string_lit("latn")),
+            ("timeZone".to_owned(), string_lit("UTC")),
+        ],
+        non_enumerable: 0,
+        span: Span::generated("object_new"),
+    }
+}
+
+fn intl_date_time_format_part_object() -> LoweredExpr {
+    LoweredExpr::ObjectNew {
+        props: vec![
+            ("type".to_owned(), string_lit("literal")),
+            ("value".to_owned(), string_lit("")),
+        ],
+        non_enumerable: 0,
+        span: Span::generated("object_new"),
+    }
+}
+
+fn intl_duration_format_options_object() -> LoweredExpr {
+    let mut props = vec![
+        ("locale".to_owned(), string_lit("en")),
+        ("numberingSystem".to_owned(), string_lit("latn")),
+        ("style".to_owned(), string_lit("short")),
+        (
+            "fractionalDigits".to_owned(),
+            LoweredExpr::Number(0, Span::generated("num")),
+        ),
+    ];
+    for unit in [
+        "years",
+        "months",
+        "weeks",
+        "days",
+        "hours",
+        "minutes",
+        "seconds",
+        "milliseconds",
+        "microseconds",
+        "nanoseconds",
+    ] {
+        props.push((unit.to_owned(), string_lit("numeric")));
+        props.push((format!("{unit}Display"), string_lit("auto")));
+    }
+    LoweredExpr::ObjectNew {
+        props,
+        non_enumerable: 0,
+        span: Span::generated("object_new"),
+    }
+}
+
+fn intl_list_format_options_object() -> LoweredExpr {
+    LoweredExpr::ObjectNew {
+        props: vec![
+            ("locale".to_owned(), string_lit("en")),
+            ("type".to_owned(), string_lit("unit")),
+            ("style".to_owned(), string_lit("short")),
+        ],
+        non_enumerable: 0,
+        span: Span::generated("object_new"),
+    }
+}
+
+fn intl_list_format_part_object() -> LoweredExpr {
+    LoweredExpr::ObjectNew {
+        props: vec![
+            ("type".to_owned(), string_lit("element")),
+            ("value".to_owned(), string_lit("")),
+        ],
+        non_enumerable: 0,
+        span: Span::generated("object_new"),
+    }
 }
 
 fn is_intl_date_time_format_class(class_name: &String) -> bool {
@@ -3440,6 +4708,225 @@ fn static_i64_number_expr(expr: &ResolvedExpr) -> Option<i64> {
             static_i64_number_expr(expr).map(|value| -value)
         }
         _ => None,
+    }
+}
+
+fn static_generator_completion_value(expr: &LoweredExpr) -> Option<LoweredExpr> {
+    match expr {
+        LoweredExpr::Number(..)
+        | LoweredExpr::DecimalNumber(..)
+        | LoweredExpr::BigIntLiteral { .. }
+        | LoweredExpr::String(..)
+        | LoweredExpr::Bool(..)
+        | LoweredExpr::Null(..)
+        | LoweredExpr::Undefined(..) => Some(expr.clone()),
+        _ => None,
+    }
+}
+
+fn static_generator_first_yield_value(body: &[LoweredStmt]) -> Option<LoweredExpr> {
+    for stmt in body {
+        match stmt {
+            LoweredStmt::Yield(expr, _) => return Some(expr.clone()),
+            LoweredStmt::Block(stmts, _) => {
+                if let Some(expr) = static_generator_first_yield_value(stmts) {
+                    return Some(expr);
+                }
+            }
+            LoweredStmt::Let(_, expr, _)
+            | LoweredStmt::Assign(_, expr, _)
+            | LoweredStmt::Expr(expr, _)
+                if static_generator_implicit_completion_expr_is_local_only(expr) => {}
+            _ => return None,
+        }
+    }
+    None
+}
+
+fn static_generator_bind_receiver(
+    expr: LoweredExpr,
+    receiver_param: Option<LocalId>,
+    receiver_local: LocalId,
+) -> Option<LoweredExpr> {
+    let receiver_param = receiver_param?;
+    let mut substitutions = HashMap::new();
+    substitutions.insert(
+        receiver_param,
+        LoweredExpr::Local(receiver_local, Span::generated("local")),
+    );
+    static_generator_bind_locals(expr, &substitutions)
+}
+
+fn static_generator_bind_locals(
+    expr: LoweredExpr,
+    substitutions: &HashMap<LocalId, LoweredExpr>,
+) -> Option<LoweredExpr> {
+    match expr {
+        LoweredExpr::Local(local, _) if substitutions.contains_key(&local) => {
+            substitutions.get(&local).cloned()
+        }
+        LoweredExpr::Local(..) => None,
+        LoweredExpr::Unary { op, expr, span } => Some(LoweredExpr::Unary {
+            op,
+            expr: Box::new(static_generator_bind_locals(*expr, substitutions)?),
+            span,
+        }),
+        LoweredExpr::Binary {
+            left,
+            op,
+            right,
+            span,
+        } => Some(LoweredExpr::Binary {
+            left: Box::new(static_generator_bind_locals(*left, substitutions)?),
+            op,
+            right: Box::new(static_generator_bind_locals(*right, substitutions)?),
+            span,
+        }),
+        LoweredExpr::RuntimeCall {
+            intrinsic,
+            args,
+            span,
+        } => Some(LoweredExpr::RuntimeCall {
+            intrinsic,
+            args: args
+                .into_iter()
+                .map(|arg| static_generator_bind_locals(arg, substitutions))
+                .collect::<Option<Vec<_>>>()?,
+            span,
+        }),
+        LoweredExpr::PropertyGet { obj, key, span } => Some(LoweredExpr::PropertyGet {
+            obj: Box::new(static_generator_bind_locals(*obj, substitutions)?),
+            key,
+            span,
+        }),
+        LoweredExpr::PropertyGetDynamic { obj, key, span } => {
+            Some(LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(static_generator_bind_locals(*obj, substitutions)?),
+                key: Box::new(static_generator_bind_locals(*key, substitutions)?),
+                span,
+            })
+        }
+        LoweredExpr::Call { kind, args, span } => Some(LoweredExpr::Call {
+            kind,
+            args: args
+                .into_iter()
+                .map(|arg| static_generator_bind_locals(arg, substitutions))
+                .collect::<Option<Vec<_>>>()?,
+            span,
+        }),
+        LoweredExpr::ObjectNew {
+            props,
+            non_enumerable,
+            span,
+        } => Some(LoweredExpr::ObjectNew {
+            props: props
+                .into_iter()
+                .map(|(key, value)| {
+                    Some((key, static_generator_bind_locals(value, substitutions)?))
+                })
+                .collect::<Option<Vec<_>>>()?,
+            non_enumerable,
+            span,
+        }),
+        LoweredExpr::ArrayNew { elements, span } => Some(LoweredExpr::ArrayNew {
+            elements: elements
+                .into_iter()
+                .map(|element| static_generator_bind_locals(element, substitutions))
+                .collect::<Option<Vec<_>>>()?,
+            span,
+        }),
+        LoweredExpr::Number(..)
+        | LoweredExpr::DecimalNumber(..)
+        | LoweredExpr::BigIntLiteral { .. }
+        | LoweredExpr::String(..)
+        | LoweredExpr::Bool(..)
+        | LoweredExpr::Null(..)
+        | LoweredExpr::Undefined(..)
+        | LoweredExpr::ArrowFn { .. } => Some(expr),
+        _ => None,
+    }
+}
+
+fn replace_direct_computed_yield_keys(
+    props: &[ResolvedObjectProp],
+    resume_args: &[ResolvedExpr],
+) -> Vec<ResolvedObjectProp> {
+    let mut resume_index = 0;
+    props
+        .iter()
+        .map(|prop| match prop {
+            ResolvedObjectProp::ComputedKey { key, value }
+                if matches!(
+                    key.as_ref(),
+                    ResolvedExpr::Yield {
+                        delegate: false,
+                        ..
+                    }
+                ) =>
+            {
+                let key = resume_args
+                    .get(resume_index)
+                    .cloned()
+                    .unwrap_or(ResolvedExpr::Undefined);
+                resume_index += 1;
+                ResolvedObjectProp::ComputedKey {
+                    key: Box::new(key),
+                    value: value.clone(),
+                }
+            }
+            _ => prop.clone(),
+        })
+        .collect()
+}
+
+fn static_generator_implicit_completion_value(body: &[LoweredStmt]) -> Option<LoweredExpr> {
+    body.iter()
+        .all(static_generator_implicit_completion_stmt_is_local_only)
+        .then(|| LoweredExpr::Undefined(Span::generated("undefined")))
+}
+
+fn static_generator_implicit_completion_stmt_is_local_only(stmt: &LoweredStmt) -> bool {
+    match stmt {
+        LoweredStmt::Block(stmts, _) => stmts
+            .iter()
+            .all(static_generator_implicit_completion_stmt_is_local_only),
+        LoweredStmt::Let(_, expr, _)
+        | LoweredStmt::Assign(_, expr, _)
+        | LoweredStmt::Expr(expr, _) => {
+            static_generator_implicit_completion_expr_is_local_only(expr)
+        }
+        _ => false,
+    }
+}
+
+fn static_generator_implicit_completion_expr_is_local_only(expr: &LoweredExpr) -> bool {
+    match expr {
+        LoweredExpr::Number(..)
+        | LoweredExpr::DecimalNumber(..)
+        | LoweredExpr::BigIntLiteral { .. }
+        | LoweredExpr::String(..)
+        | LoweredExpr::Bool(..)
+        | LoweredExpr::Null(..)
+        | LoweredExpr::Undefined(..)
+        | LoweredExpr::Local(..)
+        | LoweredExpr::ArrowFn { .. } => true,
+        LoweredExpr::ObjectNew { props, .. } => props
+            .iter()
+            .all(|(_, value)| static_generator_implicit_completion_expr_is_local_only(value)),
+        LoweredExpr::Block { stmts, result, .. } => {
+            stmts
+                .iter()
+                .all(static_generator_implicit_completion_stmt_is_local_only)
+                && static_generator_implicit_completion_expr_is_local_only(result)
+        }
+        LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::ObjectDefineProperty,
+            args,
+            ..
+        } => args
+            .iter()
+            .all(static_generator_implicit_completion_expr_is_local_only),
+        _ => false,
     }
 }
 

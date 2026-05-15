@@ -17,7 +17,8 @@
     "less",
     "strict_equal",
     "equal_equal",
-    "alloc_heap"
+    "alloc_heap",
+    "mem_equal"
   ],
   "globals": [
     "$alloc_bytes_since_last_gc",

@@ -162,6 +162,57 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_date_set_utc_full_year(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_set_utc_full_year
+    (param $date i32)
+    (param $year i32)
+    (param $month i32)
+    (param $day i32)
+    (result i32)
+    (local $month_arg i32)
+    (local $day_arg i32)
+    (local $epoch_ms i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $date) (i32.const {tag_mask}))
+        (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $month_arg
+      (select
+        (call $date_get_utc_month (local.get $date))
+        (local.get $month)
+        (i32.eq (local.get $month) (i32.const {undefined}))))
+    (local.set $day_arg
+      (select
+        (call $date_get_utc_date (local.get $date))
+        (local.get $day)
+        (i32.eq (local.get $day) (i32.const {undefined}))))
+    (local.set $epoch_ms
+      (call $date_utc
+        (local.get $year)
+        (local.get $month_arg)
+        (local.get $day_arg)
+        (call $date_get_utc_hours (local.get $date))
+        (call $date_get_utc_minutes (local.get $date))
+        (call $date_get_utc_seconds (local.get $date))
+        (call $date_get_utc_milliseconds (local.get $date))))
+    (i32.store
+      (i32.add
+        (i32.and (local.get $date) (i32.const {heap_mask}))
+        (i32.const {epoch_offset}))
+      (local.get $epoch_ms))
+    (local.get $epoch_ms))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+        ));
+    }
+
     pub(super) fn emit_date_parse(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -803,6 +854,728 @@ impl WatEmitter<'_> {
             heap_mask = ValueTag::HEAP_MASK,
             epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
             number_shift = ValueTag::NUMBER_SHIFT,
+        ));
+    }
+
+    pub(super) fn emit_date_set_utc_month(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_set_utc_month
+    (param $date i32)
+    (param $month i32)
+    (param $day i32)
+    (result i32)
+    (local $day_arg i32)
+    (local $epoch_ms i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $date) (i32.const {tag_mask}))
+        (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $day_arg
+      (select
+        (call $date_get_utc_date (local.get $date))
+        (local.get $day)
+        (i32.eq (local.get $day) (i32.const {undefined}))))
+    (local.set $epoch_ms
+      (call $date_utc
+        (call $date_get_utc_full_year (local.get $date))
+        (local.get $month)
+        (local.get $day_arg)
+        (call $date_get_utc_hours (local.get $date))
+        (call $date_get_utc_minutes (local.get $date))
+        (call $date_get_utc_seconds (local.get $date))
+        (call $date_get_utc_milliseconds (local.get $date))))
+    (i32.store
+      (i32.add
+        (i32.and (local.get $date) (i32.const {heap_mask}))
+        (i32.const {epoch_offset}))
+      (local.get $epoch_ms))
+    (local.get $epoch_ms))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_date_set_utc_date(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_set_utc_date
+    (param $date i32)
+    (param $day i32)
+    (result i32)
+    (local $epoch_ms i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $date) (i32.const {tag_mask}))
+        (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $epoch_ms
+      (call $date_utc
+        (call $date_get_utc_full_year (local.get $date))
+        (call $date_get_utc_month (local.get $date))
+        (local.get $day)
+        (call $date_get_utc_hours (local.get $date))
+        (call $date_get_utc_minutes (local.get $date))
+        (call $date_get_utc_seconds (local.get $date))
+        (call $date_get_utc_milliseconds (local.get $date))))
+    (i32.store
+      (i32.add
+        (i32.and (local.get $date) (i32.const {heap_mask}))
+        (i32.const {epoch_offset}))
+      (local.get $epoch_ms))
+    (local.get $epoch_ms))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_date_set_utc_hours(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_set_utc_hours
+    (param $date i32)
+    (param $hours i32)
+    (param $minutes i32)
+    (param $seconds i32)
+    (param $ms i32)
+    (result i32)
+    (local $minutes_arg i32)
+    (local $seconds_arg i32)
+    (local $ms_arg i32)
+    (local $epoch_ms i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $date) (i32.const {tag_mask}))
+        (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $minutes_arg
+      (select
+        (call $date_get_utc_minutes (local.get $date))
+        (local.get $minutes)
+        (i32.eq (local.get $minutes) (i32.const {undefined}))))
+    (local.set $seconds_arg
+      (select
+        (call $date_get_utc_seconds (local.get $date))
+        (local.get $seconds)
+        (i32.eq (local.get $seconds) (i32.const {undefined}))))
+    (local.set $ms_arg
+      (select
+        (call $date_get_utc_milliseconds (local.get $date))
+        (local.get $ms)
+        (i32.eq (local.get $ms) (i32.const {undefined}))))
+    (local.set $epoch_ms
+      (call $date_utc
+        (call $date_get_utc_full_year (local.get $date))
+        (call $date_get_utc_month (local.get $date))
+        (call $date_get_utc_date (local.get $date))
+        (local.get $hours)
+        (local.get $minutes_arg)
+        (local.get $seconds_arg)
+        (local.get $ms_arg)))
+    (i32.store
+      (i32.add
+        (i32.and (local.get $date) (i32.const {heap_mask}))
+        (i32.const {epoch_offset}))
+      (local.get $epoch_ms))
+    (local.get $epoch_ms))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_date_set_utc_minutes(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_set_utc_minutes
+    (param $date i32)
+    (param $minutes i32)
+    (param $seconds i32)
+    (param $ms i32)
+    (result i32)
+    (local $seconds_arg i32)
+    (local $ms_arg i32)
+    (local $epoch_ms i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $date) (i32.const {tag_mask}))
+        (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $seconds_arg
+      (select
+        (call $date_get_utc_seconds (local.get $date))
+        (local.get $seconds)
+        (i32.eq (local.get $seconds) (i32.const {undefined}))))
+    (local.set $ms_arg
+      (select
+        (call $date_get_utc_milliseconds (local.get $date))
+        (local.get $ms)
+        (i32.eq (local.get $ms) (i32.const {undefined}))))
+    (local.set $epoch_ms
+      (call $date_utc
+        (call $date_get_utc_full_year (local.get $date))
+        (call $date_get_utc_month (local.get $date))
+        (call $date_get_utc_date (local.get $date))
+        (call $date_get_utc_hours (local.get $date))
+        (local.get $minutes)
+        (local.get $seconds_arg)
+        (local.get $ms_arg)))
+    (i32.store
+      (i32.add
+        (i32.and (local.get $date) (i32.const {heap_mask}))
+        (i32.const {epoch_offset}))
+      (local.get $epoch_ms))
+    (local.get $epoch_ms))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_date_set_utc_seconds(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_set_utc_seconds
+    (param $date i32)
+    (param $seconds i32)
+    (param $ms i32)
+    (result i32)
+    (local $ms_arg i32)
+    (local $epoch_ms i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $date) (i32.const {tag_mask}))
+        (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $ms_arg
+      (select
+        (call $date_get_utc_milliseconds (local.get $date))
+        (local.get $ms)
+        (i32.eq (local.get $ms) (i32.const {undefined}))))
+    (local.set $epoch_ms
+      (call $date_utc
+        (call $date_get_utc_full_year (local.get $date))
+        (call $date_get_utc_month (local.get $date))
+        (call $date_get_utc_date (local.get $date))
+        (call $date_get_utc_hours (local.get $date))
+        (call $date_get_utc_minutes (local.get $date))
+        (local.get $seconds)
+        (local.get $ms_arg)))
+    (i32.store
+      (i32.add
+        (i32.and (local.get $date) (i32.const {heap_mask}))
+        (i32.const {epoch_offset}))
+      (local.get $epoch_ms))
+    (local.get $epoch_ms))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_date_set_utc_milliseconds(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_set_utc_milliseconds
+    (param $date i32)
+    (param $ms i32)
+    (result i32)
+    (local $epoch_ms i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $date) (i32.const {tag_mask}))
+        (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $epoch_ms
+      (call $date_utc
+        (call $date_get_utc_full_year (local.get $date))
+        (call $date_get_utc_month (local.get $date))
+        (call $date_get_utc_date (local.get $date))
+        (call $date_get_utc_hours (local.get $date))
+        (call $date_get_utc_minutes (local.get $date))
+        (call $date_get_utc_seconds (local.get $date))
+        (local.get $ms)))
+    (i32.store
+      (i32.add
+        (i32.and (local.get $date) (i32.const {heap_mask}))
+        (i32.const {epoch_offset}))
+      (local.get $epoch_ms))
+    (local.get $epoch_ms))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_date_set_full_year(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_set_full_year
+    (param $date i32) (param $year i32) (param $month i32) (param $day i32) (result i32)
+    (local $epoch_ms_raw i32) (local $tz_offset_raw i32)
+    (local $old_month i32) (local $old_day i32)
+    (local $old_hours i32) (local $old_minutes i32) (local $old_seconds i32) (local $old_ms i32)
+    (local $month_arg i32) (local $day_arg i32)
+    (local $utc_epoch_tagged i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $date) (i32.const {tag_mask}))
+        (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $epoch_ms_raw
+      (i32.shr_s
+        (i32.load (i32.add (i32.and (local.get $date) (i32.const {heap_mask})) (i32.const {epoch_offset})))
+        (i32.const {number_shift})))
+    (local.set $tz_offset_raw
+      (i32.shr_s (call $date_get_timezone_offset (local.get $date)) (i32.const {number_shift})))
+    (local.set $old_month
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 1)) (i32.const {number_shift})))
+    (local.set $old_day
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 2)) (i32.const {number_shift})))
+    (local.set $old_hours
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 3)) (i32.const {number_shift})))
+    (local.set $old_minutes
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 4)) (i32.const {number_shift})))
+    (local.set $old_seconds
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 5)) (i32.const {number_shift})))
+    (local.set $old_ms
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 6)) (i32.const {number_shift})))
+    (local.set $month_arg
+      (select (local.get $old_month) (i32.shr_s (local.get $month) (i32.const {number_shift}))
+        (i32.eq (local.get $month) (i32.const {undefined}))))
+    (local.set $day_arg
+      (select (local.get $old_day) (i32.shr_s (local.get $day) (i32.const {number_shift}))
+        (i32.eq (local.get $day) (i32.const {undefined}))))
+    (local.set $utc_epoch_tagged
+      (call $date_utc
+        (local.get $year)
+        (i32.or (i32.shl (local.get $month_arg) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $day_arg) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_hours) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_minutes) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_seconds) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_ms) (i32.const {number_shift})) (i32.const {number_tag}))))
+    (local.set $epoch_ms_raw
+      (i32.add
+        (i32.shr_s (local.get $utc_epoch_tagged) (i32.const {number_shift}))
+        (i32.mul (local.get $tz_offset_raw) (i32.const 60000))))
+    (i32.store
+      (i32.add (i32.and (local.get $date) (i32.const {heap_mask})) (i32.const {epoch_offset}))
+      (i32.or (i32.shl (local.get $epoch_ms_raw) (i32.const {number_shift})) (i32.const {number_tag})))
+    (i32.or (i32.shl (local.get $epoch_ms_raw) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+        ));
+    }
+
+    pub(super) fn emit_date_set_month(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_set_month
+    (param $date i32) (param $month i32) (param $day i32) (result i32)
+    (local $epoch_ms_raw i32) (local $tz_offset_raw i32)
+    (local $old_year i32) (local $old_day i32)
+    (local $old_hours i32) (local $old_minutes i32) (local $old_seconds i32) (local $old_ms i32)
+    (local $day_arg i32)
+    (local $utc_epoch_tagged i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $date) (i32.const {tag_mask}))
+        (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $epoch_ms_raw
+      (i32.shr_s
+        (i32.load (i32.add (i32.and (local.get $date) (i32.const {heap_mask})) (i32.const {epoch_offset})))
+        (i32.const {number_shift})))
+    (local.set $tz_offset_raw
+      (i32.shr_s (call $date_get_timezone_offset (local.get $date)) (i32.const {number_shift})))
+    (local.set $old_year
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 0)) (i32.const {number_shift})))
+    (local.set $old_day
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 2)) (i32.const {number_shift})))
+    (local.set $old_hours
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 3)) (i32.const {number_shift})))
+    (local.set $old_minutes
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 4)) (i32.const {number_shift})))
+    (local.set $old_seconds
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 5)) (i32.const {number_shift})))
+    (local.set $old_ms
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 6)) (i32.const {number_shift})))
+    (local.set $day_arg
+      (select (local.get $old_day) (i32.shr_s (local.get $day) (i32.const {number_shift}))
+        (i32.eq (local.get $day) (i32.const {undefined}))))
+    (local.set $utc_epoch_tagged
+      (call $date_utc
+        (i32.or (i32.shl (local.get $old_year) (i32.const {number_shift})) (i32.const {number_tag}))
+        (local.get $month)
+        (i32.or (i32.shl (local.get $day_arg) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_hours) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_minutes) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_seconds) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_ms) (i32.const {number_shift})) (i32.const {number_tag}))))
+    (local.set $epoch_ms_raw
+      (i32.add
+        (i32.shr_s (local.get $utc_epoch_tagged) (i32.const {number_shift}))
+        (i32.mul (local.get $tz_offset_raw) (i32.const 60000))))
+    (i32.store
+      (i32.add (i32.and (local.get $date) (i32.const {heap_mask})) (i32.const {epoch_offset}))
+      (i32.or (i32.shl (local.get $epoch_ms_raw) (i32.const {number_shift})) (i32.const {number_tag})))
+    (i32.or (i32.shl (local.get $epoch_ms_raw) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+        ));
+    }
+
+    pub(super) fn emit_date_set_date(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_set_date (param $date i32) (param $day i32) (result i32)
+    (local $epoch_ms_raw i32) (local $tz_offset_raw i32)
+    (local $old_year i32) (local $old_month i32)
+    (local $old_hours i32) (local $old_minutes i32) (local $old_seconds i32) (local $old_ms i32)
+    (local $utc_epoch_tagged i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $date) (i32.const {tag_mask}))
+        (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $epoch_ms_raw
+      (i32.shr_s
+        (i32.load (i32.add (i32.and (local.get $date) (i32.const {heap_mask})) (i32.const {epoch_offset})))
+        (i32.const {number_shift})))
+    (local.set $tz_offset_raw
+      (i32.shr_s (call $date_get_timezone_offset (local.get $date)) (i32.const {number_shift})))
+    (local.set $old_year
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 0)) (i32.const {number_shift})))
+    (local.set $old_month
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 1)) (i32.const {number_shift})))
+    (local.set $old_hours
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 3)) (i32.const {number_shift})))
+    (local.set $old_minutes
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 4)) (i32.const {number_shift})))
+    (local.set $old_seconds
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 5)) (i32.const {number_shift})))
+    (local.set $old_ms
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 6)) (i32.const {number_shift})))
+    (local.set $utc_epoch_tagged
+      (call $date_utc
+        (i32.or (i32.shl (local.get $old_year) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_month) (i32.const {number_shift})) (i32.const {number_tag}))
+        (local.get $day)
+        (i32.or (i32.shl (local.get $old_hours) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_minutes) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_seconds) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_ms) (i32.const {number_shift})) (i32.const {number_tag}))))
+    (local.set $epoch_ms_raw
+      (i32.add
+        (i32.shr_s (local.get $utc_epoch_tagged) (i32.const {number_shift}))
+        (i32.mul (local.get $tz_offset_raw) (i32.const 60000))))
+    (i32.store
+      (i32.add (i32.and (local.get $date) (i32.const {heap_mask})) (i32.const {epoch_offset}))
+      (i32.or (i32.shl (local.get $epoch_ms_raw) (i32.const {number_shift})) (i32.const {number_tag})))
+    (i32.or (i32.shl (local.get $epoch_ms_raw) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+        ));
+    }
+
+    pub(super) fn emit_date_set_hours(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_set_hours
+    (param $date i32) (param $hours i32) (param $minutes i32) (param $seconds i32) (param $ms i32)
+    (result i32)
+    (local $epoch_ms_raw i32) (local $tz_offset_raw i32)
+    (local $old_year i32) (local $old_month i32) (local $old_day i32)
+    (local $old_minutes i32) (local $old_seconds i32) (local $old_ms i32)
+    (local $minutes_arg i32) (local $seconds_arg i32) (local $ms_arg i32)
+    (local $utc_epoch_tagged i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $date) (i32.const {tag_mask}))
+        (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $epoch_ms_raw
+      (i32.shr_s
+        (i32.load (i32.add (i32.and (local.get $date) (i32.const {heap_mask})) (i32.const {epoch_offset})))
+        (i32.const {number_shift})))
+    (local.set $tz_offset_raw
+      (i32.shr_s (call $date_get_timezone_offset (local.get $date)) (i32.const {number_shift})))
+    (local.set $old_year
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 0)) (i32.const {number_shift})))
+    (local.set $old_month
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 1)) (i32.const {number_shift})))
+    (local.set $old_day
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 2)) (i32.const {number_shift})))
+    (local.set $old_minutes
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 4)) (i32.const {number_shift})))
+    (local.set $old_seconds
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 5)) (i32.const {number_shift})))
+    (local.set $old_ms
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 6)) (i32.const {number_shift})))
+    (local.set $minutes_arg
+      (select (local.get $old_minutes) (i32.shr_s (local.get $minutes) (i32.const {number_shift}))
+        (i32.eq (local.get $minutes) (i32.const {undefined}))))
+    (local.set $seconds_arg
+      (select (local.get $old_seconds) (i32.shr_s (local.get $seconds) (i32.const {number_shift}))
+        (i32.eq (local.get $seconds) (i32.const {undefined}))))
+    (local.set $ms_arg
+      (select (local.get $old_ms) (i32.shr_s (local.get $ms) (i32.const {number_shift}))
+        (i32.eq (local.get $ms) (i32.const {undefined}))))
+    (local.set $utc_epoch_tagged
+      (call $date_utc
+        (i32.or (i32.shl (local.get $old_year) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_month) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_day) (i32.const {number_shift})) (i32.const {number_tag}))
+        (local.get $hours)
+        (i32.or (i32.shl (local.get $minutes_arg) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $seconds_arg) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $ms_arg) (i32.const {number_shift})) (i32.const {number_tag}))))
+    (local.set $epoch_ms_raw
+      (i32.add
+        (i32.shr_s (local.get $utc_epoch_tagged) (i32.const {number_shift}))
+        (i32.mul (local.get $tz_offset_raw) (i32.const 60000))))
+    (i32.store
+      (i32.add (i32.and (local.get $date) (i32.const {heap_mask})) (i32.const {epoch_offset}))
+      (i32.or (i32.shl (local.get $epoch_ms_raw) (i32.const {number_shift})) (i32.const {number_tag})))
+    (i32.or (i32.shl (local.get $epoch_ms_raw) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+        ));
+    }
+
+    pub(super) fn emit_date_set_minutes(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_set_minutes
+    (param $date i32) (param $minutes i32) (param $seconds i32) (param $ms i32) (result i32)
+    (local $epoch_ms_raw i32) (local $tz_offset_raw i32)
+    (local $old_year i32) (local $old_month i32) (local $old_day i32) (local $old_hours i32)
+    (local $old_seconds i32) (local $old_ms i32)
+    (local $seconds_arg i32) (local $ms_arg i32)
+    (local $utc_epoch_tagged i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $date) (i32.const {tag_mask}))
+        (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $epoch_ms_raw
+      (i32.shr_s
+        (i32.load (i32.add (i32.and (local.get $date) (i32.const {heap_mask})) (i32.const {epoch_offset})))
+        (i32.const {number_shift})))
+    (local.set $tz_offset_raw
+      (i32.shr_s (call $date_get_timezone_offset (local.get $date)) (i32.const {number_shift})))
+    (local.set $old_year
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 0)) (i32.const {number_shift})))
+    (local.set $old_month
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 1)) (i32.const {number_shift})))
+    (local.set $old_day
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 2)) (i32.const {number_shift})))
+    (local.set $old_hours
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 3)) (i32.const {number_shift})))
+    (local.set $old_seconds
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 5)) (i32.const {number_shift})))
+    (local.set $old_ms
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 6)) (i32.const {number_shift})))
+    (local.set $seconds_arg
+      (select (local.get $old_seconds) (i32.shr_s (local.get $seconds) (i32.const {number_shift}))
+        (i32.eq (local.get $seconds) (i32.const {undefined}))))
+    (local.set $ms_arg
+      (select (local.get $old_ms) (i32.shr_s (local.get $ms) (i32.const {number_shift}))
+        (i32.eq (local.get $ms) (i32.const {undefined}))))
+    (local.set $utc_epoch_tagged
+      (call $date_utc
+        (i32.or (i32.shl (local.get $old_year) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_month) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_day) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_hours) (i32.const {number_shift})) (i32.const {number_tag}))
+        (local.get $minutes)
+        (i32.or (i32.shl (local.get $seconds_arg) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $ms_arg) (i32.const {number_shift})) (i32.const {number_tag}))))
+    (local.set $epoch_ms_raw
+      (i32.add
+        (i32.shr_s (local.get $utc_epoch_tagged) (i32.const {number_shift}))
+        (i32.mul (local.get $tz_offset_raw) (i32.const 60000))))
+    (i32.store
+      (i32.add (i32.and (local.get $date) (i32.const {heap_mask})) (i32.const {epoch_offset}))
+      (i32.or (i32.shl (local.get $epoch_ms_raw) (i32.const {number_shift})) (i32.const {number_tag})))
+    (i32.or (i32.shl (local.get $epoch_ms_raw) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+        ));
+    }
+
+    pub(super) fn emit_date_set_seconds(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_set_seconds
+    (param $date i32) (param $seconds i32) (param $ms i32) (result i32)
+    (local $epoch_ms_raw i32) (local $tz_offset_raw i32)
+    (local $old_year i32) (local $old_month i32) (local $old_day i32)
+    (local $old_hours i32) (local $old_minutes i32) (local $old_ms i32)
+    (local $ms_arg i32)
+    (local $utc_epoch_tagged i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $date) (i32.const {tag_mask}))
+        (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $epoch_ms_raw
+      (i32.shr_s
+        (i32.load (i32.add (i32.and (local.get $date) (i32.const {heap_mask})) (i32.const {epoch_offset})))
+        (i32.const {number_shift})))
+    (local.set $tz_offset_raw
+      (i32.shr_s (call $date_get_timezone_offset (local.get $date)) (i32.const {number_shift})))
+    (local.set $old_year
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 0)) (i32.const {number_shift})))
+    (local.set $old_month
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 1)) (i32.const {number_shift})))
+    (local.set $old_day
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 2)) (i32.const {number_shift})))
+    (local.set $old_hours
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 3)) (i32.const {number_shift})))
+    (local.set $old_minutes
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 4)) (i32.const {number_shift})))
+    (local.set $old_ms
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 6)) (i32.const {number_shift})))
+    (local.set $ms_arg
+      (select (local.get $old_ms) (i32.shr_s (local.get $ms) (i32.const {number_shift}))
+        (i32.eq (local.get $ms) (i32.const {undefined}))))
+    (local.set $utc_epoch_tagged
+      (call $date_utc
+        (i32.or (i32.shl (local.get $old_year) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_month) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_day) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_hours) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_minutes) (i32.const {number_shift})) (i32.const {number_tag}))
+        (local.get $seconds)
+        (i32.or (i32.shl (local.get $ms_arg) (i32.const {number_shift})) (i32.const {number_tag}))))
+    (local.set $epoch_ms_raw
+      (i32.add
+        (i32.shr_s (local.get $utc_epoch_tagged) (i32.const {number_shift}))
+        (i32.mul (local.get $tz_offset_raw) (i32.const 60000))))
+    (i32.store
+      (i32.add (i32.and (local.get $date) (i32.const {heap_mask})) (i32.const {epoch_offset}))
+      (i32.or (i32.shl (local.get $epoch_ms_raw) (i32.const {number_shift})) (i32.const {number_tag})))
+    (i32.or (i32.shl (local.get $epoch_ms_raw) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+        ));
+    }
+
+    pub(super) fn emit_date_set_milliseconds(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_set_milliseconds (param $date i32) (param $ms i32) (result i32)
+    (local $epoch_ms_raw i32) (local $tz_offset_raw i32)
+    (local $old_year i32) (local $old_month i32) (local $old_day i32)
+    (local $old_hours i32) (local $old_minutes i32) (local $old_seconds i32)
+    (local $utc_epoch_tagged i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $date) (i32.const {tag_mask}))
+        (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $epoch_ms_raw
+      (i32.shr_s
+        (i32.load (i32.add (i32.and (local.get $date) (i32.const {heap_mask})) (i32.const {epoch_offset})))
+        (i32.const {number_shift})))
+    (local.set $tz_offset_raw
+      (i32.shr_s (call $date_get_timezone_offset (local.get $date)) (i32.const {number_shift})))
+    (local.set $old_year
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 0)) (i32.const {number_shift})))
+    (local.set $old_month
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 1)) (i32.const {number_shift})))
+    (local.set $old_day
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 2)) (i32.const {number_shift})))
+    (local.set $old_hours
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 3)) (i32.const {number_shift})))
+    (local.set $old_minutes
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 4)) (i32.const {number_shift})))
+    (local.set $old_seconds
+      (i32.shr_s (call $date_get_local_time_field (local.get $date) (i32.const 5)) (i32.const {number_shift})))
+    (local.set $utc_epoch_tagged
+      (call $date_utc
+        (i32.or (i32.shl (local.get $old_year) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_month) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_day) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_hours) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_minutes) (i32.const {number_shift})) (i32.const {number_tag}))
+        (i32.or (i32.shl (local.get $old_seconds) (i32.const {number_shift})) (i32.const {number_tag}))
+        (local.get $ms)))
+    (local.set $epoch_ms_raw
+      (i32.add
+        (i32.shr_s (local.get $utc_epoch_tagged) (i32.const {number_shift}))
+        (i32.mul (local.get $tz_offset_raw) (i32.const 60000))))
+    (i32.store
+      (i32.add (i32.and (local.get $date) (i32.const {heap_mask})) (i32.const {epoch_offset}))
+      (i32.or (i32.shl (local.get $epoch_ms_raw) (i32.const {number_shift})) (i32.const {number_tag})))
+    (i32.or (i32.shl (local.get $epoch_ms_raw) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
         ));
     }
 }

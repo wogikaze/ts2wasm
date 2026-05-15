@@ -27,10 +27,7 @@ impl super::super::Resolver {
             return self.lower_new_with_prototype(&bound.class_name, &combined_args, span);
         }
         if class_name == "RegExp" {
-            return Ok(LoweredExpr::String(
-                regexp_constructor_literal(args)?,
-                Span::generated("str"),
-            ));
+            return self.lower_regexp_constructor(args);
         }
         if class_name == "Proxy" {
             let [target, _handler] = args else {
@@ -58,6 +55,12 @@ impl super::super::Resolver {
         }
         if matches!(class_name, "Intl.DateTimeFormat" | "DateTimeFormat") {
             return self.lower_intl_date_time_format_constructor(args);
+        }
+        if matches!(class_name, "Intl.DurationFormat" | "DurationFormat") {
+            return self.lower_intl_duration_format_constructor(args);
+        }
+        if matches!(class_name, "Intl.ListFormat" | "ListFormat") {
+            return self.lower_intl_list_format_constructor(args);
         }
         if class_name == "Date" {
             if args.is_empty() {
@@ -101,15 +104,13 @@ impl super::super::Resolver {
                     span: Span::generated("runtime_call"),
                 });
             }
-            if !is_date_constructor_epoch_arg(epoch_ms) {
-                let msg = if matches!(epoch_ms, ResolvedExpr::String(_)) {
-                    "issue-5243: string-based Date parsing like new Date(\"2024-01-01\") is not supported in this slice"
-                } else {
-                    "issue-5243: Date constructor requires an epoch-millisecond number argument"
-                };
+            if !is_date_constructor_epoch_arg(epoch_ms)
+                && !self.is_static_number_literal_epoch_arg(epoch_ms)
+                && matches!(epoch_ms, ResolvedExpr::String(_))
+            {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: msg.to_owned(),
+                    message: "issue-5243: string-based Date parsing like new Date(\"2024-01-01\") is not supported in this slice".to_owned(),
                     span: None,
 
                     phase: None,
@@ -247,6 +248,9 @@ impl super::super::Resolver {
                     span: Span::generated("array_new"),
                 });
             let message = match args.get(1) {
+                Some(ResolvedExpr::Undefined) => {
+                    LoweredExpr::String(String::new(), Span::generated("str"))
+                }
                 Some(message) => LoweredExpr::RuntimeCall {
                     intrinsic: RuntimeFn::ErrorMessage,
                     args: vec![self.lower_expr(message)?],
@@ -314,6 +318,22 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             });
         }
+        if class_name == "SharedArrayBuffer" {
+            if args.is_empty() {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: "SharedArrayBuffer constructor requires a byteLength argument"
+                        .to_owned(),
+                    span: Some(span),
+                    phase: None,
+                });
+            }
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::SharedArrayBufferNew,
+                args: vec![self.lower_expr(&args[0])?],
+                span: Span::generated("runtime_call"),
+            });
+        }
         if class_name == "DataView" {
             if args.is_empty() {
                 return Err(Diagnostic {
@@ -346,6 +366,9 @@ impl super::super::Resolver {
         }
         if let Some(constructor) = BuiltinErrorConstructor::from_name(class_name) {
             let message = match args.first() {
+                Some(ResolvedExpr::Undefined) => {
+                    LoweredExpr::String(String::new(), Span::generated("str"))
+                }
                 Some(message) => LoweredExpr::RuntimeCall {
                     intrinsic: RuntimeFn::ErrorMessage,
                     args: vec![self.lower_expr(message)?],
@@ -382,6 +405,46 @@ impl super::super::Resolver {
         }
 
         self.lower_new_with_prototype(class_name, args, span)
+    }
+
+    fn lower_regexp_constructor(
+        &mut self,
+        args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if let Ok(raw) = regexp_constructor_literal(&self.ctx, args) {
+            return Ok(LoweredExpr::String(raw, Span::generated("str")));
+        }
+        let flags = regexp_constructor_static_flags(&self.ctx, args)?;
+        let pattern = args.first().expect("regexp arity was validated");
+        Ok(LoweredExpr::Binary {
+            left: Box::new(LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::String(
+                    "/".to_owned(),
+                    Span::generated("regexp_prefix"),
+                )),
+                op: LoweredBinaryOp::Add,
+                right: Box::new(self.lower_expr(pattern)?),
+                span: Span::generated("regexp_pattern_concat"),
+            }),
+            op: LoweredBinaryOp::Add,
+            right: Box::new(LoweredExpr::String(
+                format!("/{flags}"),
+                Span::generated("regexp_suffix"),
+            )),
+            span: Span::generated("regexp_constructor"),
+        })
+    }
+
+    fn is_static_number_literal_epoch_arg(&self, expr: &ResolvedExpr) -> bool {
+        match expr {
+            ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local_id| {
+                self.ctx.facts.number_literal_locals.contains_key(&local_id)
+            }),
+            ResolvedExpr::Unary { op, expr } if *op == ts2wasm_syntax::UnaryOp::Negate => {
+                self.is_static_number_literal_epoch_arg(expr)
+            }
+            _ => false,
+        }
     }
 
     /// Helper for lower_new_expr: construct the New expression with

@@ -1991,13 +1991,13 @@ def main():
             node_source = t262.build_test262_source(
                 item["file_path"], item["source_code"], item["metadata"], target="node"
             )
-            tmp_source = thread_tmp / "node-source.js"
-            tmp_source.write_text(node_source, encoding="utf-8")
-            result = subprocess.run(
-                ["timeout", "5s", "node", str(tmp_source)],
-                capture_output=True,
-                text=True,
+            result = t262.run_node_reference_source(
+                node_source,
+                item["metadata"],
+                thread_tmp,
+                timeout_seconds=5,
                 cwd=REPO_ROOT,
+                text=True,
             )
             node_ok = result.returncode == 0
             if item["metadata"].expects_negative:
@@ -2645,13 +2645,13 @@ def main():
         node_source = t262.build_test262_source(
             file_path, source_code, metadata, target="node"
         )
-        node_input = thread_tmp / "node.js"
-        node_input.write_text(node_source, encoding="utf-8")
-        
-        node_result = subprocess.run(
-            ["timeout", "8s", "node", str(node_input)],
-            capture_output=True,
+        node_result = t262.run_node_reference_source(
+            node_source,
+            metadata,
+            thread_tmp,
+            timeout_seconds=8,
             cwd=REPO_ROOT,
+            text=False,
         )
         wasm_result = subprocess.run(
             ["timeout", "8s", "iwasm", str(out_wasm)],

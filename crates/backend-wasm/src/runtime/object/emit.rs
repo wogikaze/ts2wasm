@@ -6,6 +6,47 @@ impl WatEmitter<'_> {
     pub(crate) fn emit_object_keys(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
+  (func $object_key_array_index_or_minus1 (param $key i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $ptr i32)
+    (local $len i32)
+    (local $i i32)
+    (local $ch i32)
+    (local $value i32)
+    (local.set $tag (i32.and (local.get $key) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {string_tag}))
+      (then (return (i32.const -1))))
+    (local.set $base (i32.and (local.get $key) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $base)))
+    (if (i32.eqz (local.get $len))
+      (then (return (i32.const -1))))
+    (local.set $ptr (i32.add (local.get $base) (i32.const {str_header})))
+    ;; Canonical array-index strings do not have leading zeros except "0".
+    (if (i32.and
+          (i32.gt_u (local.get $len) (i32.const 1))
+          (i32.eq (i32.load8_u (local.get $ptr)) (i32.const 48)))
+      (then (return (i32.const -1))))
+    (local.set $i (i32.const 0))
+    (local.set $value (i32.const 0))
+    (block $parse_done
+      (loop $parse
+        (br_if $parse_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $ch (i32.load8_u (i32.add (local.get $ptr) (local.get $i))))
+        (if (i32.or
+              (i32.lt_u (local.get $ch) (i32.const 48))
+              (i32.gt_u (local.get $ch) (i32.const 57)))
+          (then (return (i32.const -1))))
+        (local.set $value
+          (i32.add
+            (i32.mul (local.get $value) (i32.const 10))
+            (i32.sub (local.get $ch) (i32.const 48))))
+        (if (i32.lt_s (local.get $value) (i32.const 0))
+          (then (return (i32.const -1))))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $parse)))
+    (local.get $value))
+
   (func $object_keys (param $obj i32) (result i32)
     (local $tag i32)
     (local $base i32)
@@ -16,6 +57,11 @@ impl WatEmitter<'_> {
     (local $entry_base i32)
     (local $key i32)
     (local $result_ptr i32)
+    (local $candidate_index i32)
+    (local $last_index i32)
+    (local $best_index i32)
+    (local $best_i i32)
+    (local $found i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
     (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
@@ -29,24 +75,77 @@ impl WatEmitter<'_> {
     (i32.store (i32.add (local.get $result_ptr) (i32.const {array_elements_offset_offset})) (i32.const {array_header}))
     (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const 0))
     (local.set $write_i (i32.const {zero}))
+    ;; OrdinaryOwnPropertyKeys orders array-index keys first, ascending.
+    (local.set $last_index (i32.const -1))
+    (block $numeric_done
+      (loop $numeric_outer
+        (local.set $found (i32.const 0))
+        (local.set $best_index (i32.const 0))
+        (local.set $best_i (i32.const 0))
+        (local.set $i (i32.const {zero}))
+        (block $numeric_scan_done
+          (loop $numeric_scan
+            (br_if $numeric_scan_done (i32.ge_u (local.get $i) (local.get $count)))
+            (if (i32.eqz (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_enum_shift})))))
+              (then
+                (local.set $entry_base
+                  (i32.add (local.get $base)
+                    (i32.add (i32.const {obj_header})
+                      (i32.shl (local.get $i) (i32.const {entry_shift})))))
+                (local.set $key (i32.load (local.get $entry_base)))
+                (local.set $candidate_index (call $object_key_array_index_or_minus1 (local.get $key)))
+                (if (i32.and
+                      (i32.ge_s (local.get $candidate_index) (i32.const 0))
+                      (i32.gt_s (local.get $candidate_index) (local.get $last_index)))
+                  (then
+                    (if (i32.or
+                          (i32.eqz (local.get $found))
+                          (i32.lt_s (local.get $candidate_index) (local.get $best_index)))
+                      (then
+                        (local.set $found (i32.const 1))
+                        (local.set $best_index (local.get $candidate_index))
+                        (local.set $best_i (local.get $i))))))))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $numeric_scan)))
+        (if (i32.eqz (local.get $found))
+          (then (br $numeric_done)))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $best_i) (i32.const {entry_shift})))))
+        (local.set $key (i32.load (local.get $entry_base)))
+        (i32.store (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header}) (i32.shl (local.get $write_i) (i32.const {elem_shift})))) (local.get $key))
+        (local.set $write_i (i32.add (local.get $write_i) (i32.const {one})))
+        (local.set $last_index (local.get $best_index))
+        (br $numeric_outer)))
+    ;; Then emit ordinary string keys in insertion order.
     (local.set $i (i32.const {zero}))
-    (block $keys_done
-      (loop $keys_loop
-        (br_if $keys_done (i32.ge_u (local.get $i) (local.get $count)))
-        ;; Check if property i is non-enumerable (bit (non_enum_shift + i) in flags)
+    (block $string_keys_done
+      (loop $string_keys_loop
+        (br_if $string_keys_done (i32.ge_u (local.get $i) (local.get $count)))
         (if (i32.eqz (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_enum_shift})))))
           (then
-            ;; Enumerable: copy key to result array
             (local.set $entry_base
               (i32.add (local.get $base)
                 (i32.add (i32.const {obj_header})
                   (i32.shl (local.get $i) (i32.const {entry_shift})))))
             (local.set $key (i32.load (local.get $entry_base)))
-            (i32.store (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header}) (i32.shl (local.get $write_i) (i32.const {elem_shift})))) (local.get $key))
-            (local.set $write_i (i32.add (local.get $write_i) (i32.const {one}))))
-        )
+            (local.set $candidate_index (call $object_key_array_index_or_minus1 (local.get $key)))
+            (if (i32.lt_s (local.get $candidate_index) (i32.const 0))
+              (then
+                (if
+                  (i32.eqz
+                    (i32.and
+                      (i32.eq (i32.and (local.get $key) (i32.const {tag_mask})) (i32.const {object_tag}))
+                      (i32.eq
+                        (i32.load (i32.and (local.get $key) (i32.const {heap_mask})))
+                        (i32.const {symbol_sentinel}))))
+                  (then
+                    (i32.store (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header}) (i32.shl (local.get $write_i) (i32.const {elem_shift})))) (local.get $key))
+                    (local.set $write_i (i32.add (local.get $write_i) (i32.const {one})))))))
+          ))
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
-        (br $keys_loop)))
+        (br $string_keys_loop)))
     ;; Compute presence mask = (1 << write_i) - 1 (or -1 if write_i >= 32)
     (if (i32.ge_u (local.get $write_i) (i32.const 32))
       (then
@@ -75,8 +174,10 @@ impl WatEmitter<'_> {
     (i32.or (local.get $result_ptr) (i32.const {array_tag})))
 "#,
             tag_mask = ValueTag::TAG_MASK,
+            string_tag = ValueTag::STRING,
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
+            str_header = Layout::STRING_HEADER_SIZE,
             obj_flags = Layout::OBJECT_FLAGS_OFFSET,
             non_enum_shift = Layout::OBJECT_NON_ENUM_SHIFT,
             array_header = Layout::ARRAY_HEADER_SIZE,
@@ -90,6 +191,92 @@ impl WatEmitter<'_> {
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             array_tag = ValueTag::ARRAY,
+            undefined = ValueTag::UNDEFINED,
+            symbol_sentinel = Layout::SYMBOL_SENTINEL,
+        ));
+    }
+
+    pub(crate) fn emit_object_get_own_property_symbols(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_get_own_property_symbols (param $obj i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $write_i i32)
+    (local $entry_base i32)
+    (local $key i32)
+    (local $result_ptr i32)
+    (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.shl (local.get $count) (i32.const {elem_shift})))))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {array_capacity_offset})) (local.get $count))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_word_count_offset})) (i32.const {one}))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {array_elements_offset_offset})) (i32.const {array_header}))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const 0))
+    (local.set $write_i (i32.const {zero}))
+    (local.set $i (i32.const {zero}))
+    (block $symbols_done
+      (loop $symbols_loop
+        (br_if $symbols_done (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (local.set $key (i32.load (local.get $entry_base)))
+        (if
+          (i32.and
+            (i32.eq (i32.and (local.get $key) (i32.const {tag_mask})) (i32.const {object_tag}))
+            (i32.eq
+              (i32.load (i32.and (local.get $key) (i32.const {heap_mask})))
+              (i32.const {symbol_sentinel})))
+          (then
+            (i32.store
+              (i32.add
+                (local.get $result_ptr)
+                (i32.add
+                  (i32.const {array_header})
+                  (i32.shl (local.get $write_i) (i32.const {elem_shift}))))
+              (local.get $key))
+            (local.set $write_i (i32.add (local.get $write_i) (i32.const {one})))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $symbols_loop)))
+    (i32.store (local.get $result_ptr) (local.get $write_i))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {array_capacity_offset})) (local.get $count))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_word_count_offset})) (i32.const {one}))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {array_elements_offset_offset})) (i32.const {array_header}))
+    (block $presence
+      (if (i32.eqz (local.get $write_i))
+        (then
+          (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const 0))
+          (br $presence)))
+      (if (i32.gt_u (local.get $write_i) (i32.const 31))
+        (then
+          (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const -1))
+          (br $presence)))
+      (i32.store
+        (i32.add (local.get $result_ptr) (i32.const {presence_words_offset}))
+        (i32.sub (i32.shl (i32.const 1) (local.get $write_i)) (i32.const 1))))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            array_capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
+            presence_word_count_offset = Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+            array_elements_offset_offset = Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+            array_tag = ValueTag::ARRAY,
+            symbol_sentinel = Layout::SYMBOL_SENTINEL,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,
         ));
     }
@@ -309,6 +496,7 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $object_has_own_property (param $obj i32) (param $key i32) (result i32)
+    (local $key_arg i32)
     (local $key_len i32)
     (local $tag i32)
     (local $base i32)
@@ -318,8 +506,18 @@ impl WatEmitter<'_> {
     (local $pk_raw i32)
     (local $pk_ptr i32)
     (local $pk_len i32)
-    (local.set $key_len
-      (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
+    (if
+      (i32.and
+        (i32.eq (i32.and (local.get $key) (i32.const {tag_mask})) (i32.const {object_tag}))
+        (i32.eq
+          (i32.load (i32.and (local.get $key) (i32.const {heap_mask})))
+          (i32.const {symbol_sentinel})))
+      (then
+        (local.set $key_arg (local.get $key))
+        (local.set $key_len (i32.const -1)))
+      (else
+        (local.set $key_arg (i32.const {scratch_offset}))
+        (local.set $key_len (call $value_to_string_into (local.get $key) (local.get $key_arg)))))
     ;; own-property-only scan (no prototype walk)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
@@ -335,6 +533,18 @@ impl WatEmitter<'_> {
             (i32.add (i32.const {obj_header})
               (i32.shl (local.get $i) (i32.const {entry_shift})))))
         (local.set $pk_raw (i32.load (local.get $entry_base)))
+        (if (i32.eq (local.get $key_len) (i32.const -1))
+          (then
+            (if (i32.eq (local.get $pk_raw) (local.get $key_arg))
+              (then (return (i32.const {true}))))
+            (br $scan)))
+        (if
+          (i32.and
+            (i32.eq (i32.and (local.get $pk_raw) (i32.const {tag_mask})) (i32.const {object_tag}))
+            (i32.eq
+              (i32.load (i32.and (local.get $pk_raw) (i32.const {heap_mask})))
+              (i32.const {symbol_sentinel})))
+          (then (br $scan)))
         (local.set $pk_ptr
           (i32.add (i32.and (local.get $pk_raw) (i32.const {heap_mask})) (i32.const {str_header})))
         (local.set $pk_len
@@ -354,6 +564,7 @@ impl WatEmitter<'_> {
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             str_header = Layout::STRING_HEADER_SIZE,
             scratch_offset = Layout::SCRATCH_OFFSET,
+            symbol_sentinel = Layout::SYMBOL_SENTINEL,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             false = ValueTag::FALSE,

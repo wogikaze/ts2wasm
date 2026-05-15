@@ -5,6 +5,21 @@ use ts2wasm_runtime_abi::{
     value::ValueTag,
 };
 
+fn tagged_number_sentinel(payload: i32) -> i32 {
+    ValueTag::encode_reserved_number_payload(payload)
+}
+
+fn wat_store_literal_to_ptr(value: &str, indent: &str) -> String {
+    let mut wat = String::new();
+    for (index, byte) in value.bytes().enumerate() {
+        wat.push_str(&format!(
+            "{indent}(i32.store8 (i32.add (local.get $ptr) (i32.const {index})) (i32.const {byte}))\n"
+        ));
+    }
+    wat.push_str(&format!("{indent}(return (i32.const {}))\n", value.len()));
+    wat
+}
+
 impl WatEmitter<'_> {
     pub(crate) fn emit_bitwise_to_i32(&self, wat: &mut String) {
         wat.push_str(&format!(
@@ -322,6 +337,32 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_value_to_string_into(&self, wat: &mut String) {
+        let direct_function_to_string_branches = self
+            .program
+            .functions
+            .iter()
+            .map(|function| {
+                let payload = ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE + function.id.0 as i32;
+                let spelling = if function.is_async {
+                    "async () => {}"
+                } else if function.is_generator {
+                    "function* () {}"
+                } else {
+                    "function () {}"
+                };
+                format!(
+                    r#"
+        (if (i32.eq (local.get $payload) (i32.const {payload}))
+          (then
+{stores}          ))
+"#,
+                    payload = payload,
+                    stores = wat_store_literal_to_ptr(spelling, "            "),
+                )
+            })
+            .collect::<String>();
+        let object_fallback_to_string = wat_store_literal_to_ptr("[object Object]", "            ");
+
         let undefined = self.string_offset(RuntimeString::UNDEFINED);
 
         let null = self.string_offset(RuntimeString::NULL);
@@ -356,6 +397,8 @@ impl WatEmitter<'_> {
 
     (local $desc i32)
 
+    (local $payload i32)
+
     (if (i32.eq (local.get $v) (i32.const {undefined_tag}))
 
       (then
@@ -387,6 +430,115 @@ impl WatEmitter<'_> {
         (call $copy (i32.const {true_str}) (local.get $ptr) (i32.const {true_len}))
 
         (return (i32.const {true_len}))))
+
+    (if (i32.eq (local.get $v) (i32.const {neg_zero_value}))
+
+      (then
+
+        (i32.store8 (local.get $ptr) (i32.const {ascii_zero}))
+
+        (return (i32.const {one}))))
+
+    (if (i32.eq (local.get $v) (i32.const {infinity_value}))
+
+      (then
+
+        (i32.store8 (local.get $ptr) (i32.const {ascii_upper_i}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 1))
+          (i32.const {ascii_n}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 2))
+          (i32.const {ascii_f}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 3))
+          (i32.const {ascii_i}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 4))
+          (i32.const {ascii_n}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 5))
+          (i32.const {ascii_i}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 6))
+          (i32.const {ascii_t}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 7))
+          (i32.const {ascii_y}))
+
+        (return (i32.const {infinity_len}))))
+
+    (if (i32.eq (local.get $v) (i32.const {neg_infinity_value}))
+
+      (then
+
+        (i32.store8 (local.get $ptr) (i32.const {ascii_minus}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 1))
+          (i32.const {ascii_upper_i}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 2))
+          (i32.const {ascii_n}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 3))
+          (i32.const {ascii_f}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 4))
+          (i32.const {ascii_i}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 5))
+          (i32.const {ascii_n}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 6))
+          (i32.const {ascii_i}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 7))
+          (i32.const {ascii_t}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 8))
+          (i32.const {ascii_y}))
+
+        (return (i32.const {neg_infinity_len}))))
+
+    (if (i32.eq (local.get $v) (i32.const {nan_value}))
+
+      (then
+
+        (i32.store8 (local.get $ptr) (i32.const {ascii_upper_n}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 1))
+          (i32.const {ascii_a}))
+
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 2))
+          (i32.const {ascii_upper_n}))
+
+        (return (i32.const {nan_len}))))
+
+    (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {number_tag}))
+
+      (then
+
+        (local.set $payload (i32.shr_u (local.get $v) (i32.const {number_shift})))
+
+{direct_function_to_string_branches}
+      ))
 
     (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {string_tag}))
 
@@ -506,7 +658,12 @@ impl WatEmitter<'_> {
 
               (local.get $len))
 
-            (return (local.get $len))))))
+            (return (local.get $len))))
+
+        ;; Ordinary objects stringify through the object default. This includes
+        ;; generator iterator objects in the current runtime subset.
+{object_fallback_to_string}
+      ))
 
     (local.set $n (i32.shr_s (local.get $v) (i32.const {number_shift})))
 
@@ -588,6 +745,14 @@ impl WatEmitter<'_> {
 
             true_tag = ValueTag::TRUE,
 
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+
+            infinity_value = tagged_number_sentinel(ValueTag::INFINITY_PAYLOAD),
+
+            neg_infinity_value = tagged_number_sentinel(ValueTag::NEG_INFINITY_PAYLOAD),
+
+            neg_zero_value = tagged_number_sentinel(ValueTag::NEG_ZERO_PAYLOAD),
+
             string_tag = ValueTag::STRING,
 
             object_tag = ValueTag::OBJECT,
@@ -610,6 +775,8 @@ impl WatEmitter<'_> {
 
             number_shift = ValueTag::NUMBER_SHIFT,
 
+            number_tag = ValueTag::NUMBER,
+
             heap_number_sentinel = -1,
 
             heap_number_len_offset = 8,
@@ -625,6 +792,20 @@ impl WatEmitter<'_> {
             symbol_close_len = ")".len() as i32,
 
             ascii_upper_s = 'S' as i32,
+
+            ascii_upper_i = 'I' as i32,
+
+            ascii_upper_n = 'N' as i32,
+
+            ascii_a = 'a' as i32,
+
+            ascii_n = 'n' as i32,
+
+            ascii_f = 'f' as i32,
+
+            ascii_i = 'i' as i32,
+
+            ascii_t = 't' as i32,
 
             ascii_y = 'y' as i32,
 
@@ -648,6 +829,12 @@ impl WatEmitter<'_> {
 
             true_len = RuntimeString::TRUE.len() as i32,
 
+            infinity_len = "Infinity".len() as i32,
+
+            neg_infinity_len = "-Infinity".len() as i32,
+
+            nan_len = "NaN".len() as i32,
+
             ascii_zero = RuntimeConst::ASCII_ZERO,
 
             ascii_minus = RuntimeConst::ASCII_MINUS,
@@ -659,6 +846,10 @@ impl WatEmitter<'_> {
             zero = RuntimeConst::ZERO,
 
             string_header_size = Layout::STRING_HEADER_SIZE,
+
+            direct_function_to_string_branches = direct_function_to_string_branches,
+
+            object_fallback_to_string = object_fallback_to_string,
 
         ));
     }

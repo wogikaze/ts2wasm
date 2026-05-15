@@ -1,4 +1,5 @@
 use crate::builtin_resolved::{ResolvedExpr, ResolvedObjectProp};
+use crate::lowered::classes::ObjectAccessorKey;
 use crate::lowered::object_kernel;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -41,19 +42,65 @@ impl super::Resolver {
             if self.is_function_identifier(value) {
                 continue;
             }
-            lowered.push((key.to_owned(), self.lower_expr(value)?));
+            let lowered_value = self.lower_object_method_shorthand_value(prop, value)?;
+            lowered.push((key.to_owned(), lowered_value));
         }
         Ok(lowered)
+    }
+
+    fn lower_object_method_shorthand_value(
+        &mut self,
+        prop: &ResolvedObjectProp,
+        value: &ResolvedExpr,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if let ResolvedObjectProp::MethodShorthand { value, .. } = prop
+            && let ResolvedExpr::FunctionExpr {
+                name,
+                params,
+                body,
+                is_generator,
+            } = value
+        {
+            if is_object_literal_accessor_function_name(name) {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message:
+                        "issue-67ZV8S: object literal getter/setter accessors are not supported"
+                            .to_owned(),
+                    span: None,
+                    phase: None,
+                });
+            }
+            return self.lower_object_method_function_expr(name, params, body, *is_generator);
+        }
+        self.lower_expr(value)
+    }
+
+    fn lower_object_computed_value(
+        &mut self,
+        value: &ResolvedExpr,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if let ResolvedExpr::FunctionExpr {
+            name,
+            params,
+            body,
+            is_generator,
+        } = value
+        {
+            return self.lower_object_method_function_expr(name, params, body, *is_generator);
+        }
+        self.lower_expr(value)
     }
 
     pub(super) fn lower_object_literal_expr(
         &mut self,
         props: &[ResolvedObjectProp],
     ) -> Result<LoweredExpr, Diagnostic> {
-        if props
-            .iter()
-            .any(|prop| prop.computed_key().is_some() || prop.static_key() == Some("__proto__"))
-        {
+        if props.iter().any(|prop| {
+            prop.computed_key().is_some()
+                || prop.static_key() == Some("__proto__")
+                || object_literal_accessor_kind(prop).is_some()
+        }) {
             return self.lower_object_literal_expr_with_computed_keys(props);
         }
 
@@ -107,7 +154,8 @@ impl super::Resolver {
             if self.is_function_identifier(value) {
                 continue;
             }
-            pending.push((key.to_owned(), self.lower_expr(value)?));
+            let lowered_value = self.lower_object_method_shorthand_value(prop, value)?;
+            pending.push((key.to_owned(), lowered_value));
         }
 
         let target = result.unwrap_or_else(|| LoweredExpr::ObjectNew {
@@ -151,6 +199,51 @@ impl super::Resolver {
         for prop in props {
             match prop {
                 ResolvedObjectProp::ComputedKey { key, value } => {
+                    if let Some(kind) = object_literal_accessor_kind(prop) {
+                        if !initialized {
+                            stmts.push(LoweredStmt::Let(
+                                object_local,
+                                LoweredExpr::ObjectNew {
+                                    props: std::mem::take(&mut pending),
+                                    non_enumerable: 0,
+                                    span: Span::generated("object_new"),
+                                },
+                                Span::generated("object_literal"),
+                            ));
+                            initialized = true;
+                        }
+                        let descriptor =
+                            self.lower_object_literal_accessor_descriptor(prop, kind)?;
+                        let define_expr = object_kernel::ordinary_define_own_property(
+                            LoweredExpr::Local(object_local, Span::generated("local")),
+                            self.lower_computed_property_key_expr(key)?,
+                            descriptor,
+                            Span::generated("object_computed_accessor_define"),
+                        );
+                        stmts.push(LoweredStmt::Expr(
+                            define_expr,
+                            Span::generated("object_computed_accessor_define"),
+                        ));
+                        continue;
+                    }
+                    if let Some(static_key) =
+                        super::string::resolved_expr_static_property_key_value(&self.ctx, key)
+                    {
+                        let lowered_value = self.lower_object_computed_value(value)?;
+                        if initialized {
+                            let set_expr = object_kernel::ordinary_set(
+                                LoweredExpr::Local(object_local, Span::generated("local")),
+                                &static_key,
+                                lowered_value,
+                                Span::generated("property_set"),
+                            );
+                            stmts
+                                .push(LoweredStmt::Expr(set_expr, Span::generated("property_set")));
+                        } else {
+                            pending.push((static_key, lowered_value));
+                        }
+                        continue;
+                    }
                     if !initialized {
                         stmts.push(LoweredStmt::Let(
                             object_local,
@@ -165,8 +258,8 @@ impl super::Resolver {
                     }
                     let set_expr = object_kernel::ordinary_set_dynamic(
                         LoweredExpr::Local(object_local, Span::generated("local")),
-                        self.lower_expr(key)?,
-                        self.lower_expr(value)?,
+                        self.lower_computed_property_key_expr(key)?,
+                        self.lower_object_computed_value(value)?,
                         Span::generated("property_set_dynamic"),
                     );
                     stmts.push(LoweredStmt::Expr(
@@ -179,6 +272,33 @@ impl super::Resolver {
                         continue;
                     };
                     let value = prop.value();
+                    if let Some(kind) = object_literal_accessor_kind(prop) {
+                        if !initialized {
+                            stmts.push(LoweredStmt::Let(
+                                object_local,
+                                LoweredExpr::ObjectNew {
+                                    props: std::mem::take(&mut pending),
+                                    non_enumerable: 0,
+                                    span: Span::generated("object_new"),
+                                },
+                                Span::generated("object_literal"),
+                            ));
+                            initialized = true;
+                        }
+                        let descriptor =
+                            self.lower_object_literal_accessor_descriptor(prop, kind)?;
+                        let define_expr = object_kernel::ordinary_define_own_property(
+                            LoweredExpr::Local(object_local, Span::generated("local")),
+                            LoweredExpr::String(key.to_owned(), Span::generated("str")),
+                            descriptor,
+                            Span::generated("object_accessor_define"),
+                        );
+                        stmts.push(LoweredStmt::Expr(
+                            define_expr,
+                            Span::generated("object_accessor_define"),
+                        ));
+                        continue;
+                    }
                     if key == "__proto__" {
                         if !initialized {
                             stmts.push(LoweredStmt::Let(
@@ -234,29 +354,47 @@ impl super::Resolver {
                             }
                             continue;
                         }
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message:
-                                "issue-274: object literal spread is only supported for object literals and known static object-literal locals in this milestone"
-                                    .to_owned(),
-                            span: None,
-
-                            phase: None,
-                        });
+                        if !initialized {
+                            stmts.push(LoweredStmt::Let(
+                                object_local,
+                                LoweredExpr::ObjectNew {
+                                    props: std::mem::take(&mut pending),
+                                    non_enumerable: 0,
+                                    span: Span::generated("object_new"),
+                                },
+                                Span::generated("object_literal"),
+                            ));
+                            initialized = true;
+                        }
+                        let spread_expr = LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::ObjectSpread,
+                            args: vec![
+                                LoweredExpr::Local(object_local, Span::generated("local")),
+                                self.lower_expr(value)?,
+                            ],
+                            span: Span::generated("object_spread"),
+                        };
+                        stmts.push(LoweredStmt::Assign(
+                            object_local,
+                            spread_expr,
+                            Span::generated("object_spread"),
+                        ));
+                        continue;
                     }
                     if self.is_function_identifier(value) {
                         continue;
                     }
+                    let lowered_value = self.lower_object_method_shorthand_value(prop, value)?;
                     if initialized {
                         let set_expr = object_kernel::ordinary_set(
                             LoweredExpr::Local(object_local, Span::generated("local")),
                             key,
-                            self.lower_expr(value)?,
+                            lowered_value,
                             Span::generated("property_set"),
                         );
                         stmts.push(LoweredStmt::Expr(set_expr, Span::generated("property_set")));
                     } else {
-                        pending.push((key.to_owned(), self.lower_expr(value)?));
+                        pending.push((key.to_owned(), lowered_value));
                     }
                 }
             }
@@ -274,6 +412,79 @@ impl super::Resolver {
             stmts,
             result: Box::new(LoweredExpr::Local(object_local, Span::generated("local"))),
             span: Span::generated("object_literal"),
+        })
+    }
+
+    fn lower_computed_property_key_expr(
+        &mut self,
+        key: &ResolvedExpr,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if let Some(expr) = self.lower_known_to_property_key_expr(key)? {
+            return Ok(expr);
+        }
+        self.lower_expr(key)
+    }
+
+    fn lower_known_to_property_key_expr(
+        &mut self,
+        key: &ResolvedExpr,
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        let ResolvedExpr::Ident(name) = key else {
+            return Ok(None);
+        };
+        let Ok(obj_local) = self.resolve_local(name) else {
+            return Ok(None);
+        };
+        let to_string_key = ObjectAccessorKey::Property("toString".to_owned());
+        let Some(method_id) = self
+            .ctx
+            .classes
+            .object_function_props
+            .get(&obj_local)
+            .and_then(|props| props.get(&to_string_key))
+            .copied()
+        else {
+            return Ok(None);
+        };
+        let receiver = LoweredExpr::Local(obj_local, Span::generated("local"));
+        let args = self.lower_function_call_args(method_id, receiver, &[])?;
+        Ok(Some(LoweredExpr::Call {
+            kind: FunctionCallKind::User(method_id),
+            args,
+            span: Span::generated("to_property_key"),
+        }))
+    }
+
+    fn lower_object_literal_accessor_descriptor(
+        &mut self,
+        prop: &ResolvedObjectProp,
+        kind: ObjectLiteralAccessorKind,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let value = prop.value();
+        let ResolvedExpr::FunctionExpr {
+            name,
+            params,
+            body,
+            is_generator,
+        } = value
+        else {
+            unreachable!("object literal accessor kind only matches function values");
+        };
+        let function = self.lower_object_method_function_expr(name, params, body, *is_generator)?;
+        Ok(LoweredExpr::ObjectNew {
+            props: vec![
+                (kind.descriptor_key().to_owned(), function),
+                (
+                    "enumerable".to_owned(),
+                    LoweredExpr::Bool(true, Span::generated("bool")),
+                ),
+                (
+                    "configurable".to_owned(),
+                    LoweredExpr::Bool(true, Span::generated("bool")),
+                ),
+            ],
+            non_enumerable: 0,
+            span: Span::generated("object_accessor_descriptor"),
         })
     }
 
@@ -311,5 +522,42 @@ impl super::Resolver {
             ));
         }
         self.lower_expr(value)
+    }
+}
+
+fn is_object_literal_accessor_function_name(name: &str) -> bool {
+    name.starts_with("get ") || name.starts_with("set ")
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum ObjectLiteralAccessorKind {
+    Get,
+    Set,
+}
+
+impl ObjectLiteralAccessorKind {
+    fn descriptor_key(self) -> &'static str {
+        match self {
+            Self::Get => "get",
+            Self::Set => "set",
+        }
+    }
+}
+
+fn object_literal_accessor_kind(prop: &ResolvedObjectProp) -> Option<ObjectLiteralAccessorKind> {
+    let value = match prop {
+        ResolvedObjectProp::MethodShorthand { value, .. }
+        | ResolvedObjectProp::ComputedKey { value, .. } => value,
+        _ => return None,
+    };
+    let ResolvedExpr::FunctionExpr { name, .. } = value else {
+        return None;
+    };
+    if name.starts_with("get ") {
+        Some(ObjectLiteralAccessorKind::Get)
+    } else if name.starts_with("set ") {
+        Some(ObjectLiteralAccessorKind::Set)
+    } else {
+        None
     }
 }

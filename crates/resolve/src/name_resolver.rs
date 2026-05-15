@@ -315,7 +315,7 @@ impl NameResolver {
                 ..
             } = stmt
             {
-                self.predeclare_name(name, Some(*span))?;
+                self.predeclare_binding(name, Some(*span))?;
             }
         }
 
@@ -471,7 +471,7 @@ impl NameResolver {
                 // Now resolve the function body with its own scope
                 self.enter_scope();
                 self.function_depth += 1;
-                for (param_name, default, is_rest) in params {
+                for (param_name, _default, is_rest) in params {
                     self.declare_binding(param_name, Some(*span), false)?;
                     if *is_rest {
                         // For rest params with binding patterns like (...[value]),
@@ -484,11 +484,11 @@ impl NameResolver {
                             }
                         }
                     }
+                }
+                for (_, default, _) in params {
                     if let Some(default_expr) = default {
                         self.resolve_expr(default_expr)?;
                     }
-                    // Rest parameters don't need special handling in name resolution
-                    let _ = is_rest;
                 }
                 let resolved_body = self.resolve_block(body)?;
                 self.function_depth -= 1;
@@ -933,6 +933,7 @@ impl NameResolver {
                 name,
                 params,
                 body,
+                is_generator,
                 span,
             } => {
                 self.enter_scope();
@@ -940,7 +941,7 @@ impl NameResolver {
                 if !name.is_empty() {
                     self.declare_binding(name, Some(*span), false)?;
                 }
-                for (param_name, default, is_rest) in params {
+                for (param_name, _default, is_rest) in params {
                     self.declare_binding(param_name, Some(*span), false)?;
                     if *is_rest {
                         // For rest params with binding patterns like (...[value]),
@@ -953,10 +954,11 @@ impl NameResolver {
                             }
                         }
                     }
+                }
+                for (_, default, _) in params {
                     if let Some(default_expr) = default {
                         self.resolve_expr(default_expr)?;
                     }
-                    let _ = is_rest;
                 }
                 let resolved_body = self.resolve_block(body)?;
                 self.function_depth -= 1;
@@ -965,6 +967,7 @@ impl NameResolver {
                     name: name.clone(),
                     params: params.clone(),
                     body: resolved_body,
+                    is_generator: *is_generator,
                     span: *span,
                 })
             }
@@ -1282,7 +1285,7 @@ impl NameResolver {
                 index,
                 span,
             } => Ok(Expr::Index {
-                object: Box::new(self.resolve_expr(object)?),
+                object: Box::new(self.resolve_member_target(object)?),
                 index: Box::new(self.resolve_expr(index)?),
                 span: *span,
             }),
@@ -1460,14 +1463,9 @@ impl NameResolver {
                 // 'super' is a special keyword, not a regular identifier.
                 // Don't try to resolve it as a variable name.
                 if name == "super" {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message:
-                            "issue-5255: super property access is not supported in this milestone"
-                                .to_owned(),
-                        span: Some(*span),
-
-                        phase: None,
+                    return Ok(Expr::Ident {
+                        name: name.clone(),
+                        span: *span,
                     });
                 }
                 // Validate the identifier exists (function, class, variable, or allowed global)
@@ -1521,7 +1519,7 @@ impl NameResolver {
                 if *is_var {
                     self.declare_binding(name, None, true)?;
                 } else {
-                    self.predeclare_name(name, Some(*span))?;
+                    self.predeclare_binding(name, Some(*span))?;
                 }
             }
         }
@@ -1740,7 +1738,7 @@ impl NameResolver {
     }
 
     fn is_test262_assert_reference_error_probe(&self, callee: &Expr, args: &[Expr]) -> bool {
-        if !self.functions.contains_key("assert") || !self.classes.contains_key("Test262Assert") {
+        if self.is_user_declared("assert") && !self.functions.contains_key("assert") {
             return false;
         }
         let Expr::Member {
@@ -1877,6 +1875,17 @@ impl NameResolver {
             .expect("predeclared scope should exist")
             .insert(name.to_string());
         Ok(())
+    }
+
+    fn predeclare_binding(&mut self, binding: &str, span: Option<Span>) -> Result<(), Diagnostic> {
+        if let Some(pattern) = parse_binding_pattern(binding, span)? {
+            for name in pattern.names() {
+                self.predeclare_name(name, span)?;
+            }
+            Ok(())
+        } else {
+            self.predeclare_name(binding, span)
+        }
     }
 }
 

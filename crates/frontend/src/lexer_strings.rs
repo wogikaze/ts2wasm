@@ -32,7 +32,7 @@ impl<'a> Lexer<'a> {
                     'r' => '\r',
                     't' => '\t',
                     'x' => self.hex_escape_value(2, start, "hex")?,
-                    'u' => self.hex_escape_value(4, start, "unicode")?,
+                    'u' => self.unicode_escape_value(start)?,
                     '0'..='7' => self.legacy_octal_escape_value(ch, start)?,
                     '8' | '9' if self.strict_mode => {
                         return Err(Diagnostic {
@@ -194,6 +194,71 @@ impl<'a> Lexer<'a> {
         char::from_u32(value).ok_or(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!("invalid {label} escape scalar value"),
+            span: Some(Span {
+                start: escape_start,
+                end: self.cursor,
+            }),
+
+            phase: None,})
+    }
+
+    fn unicode_escape_value(&mut self, string_start: usize) -> Result<char, Diagnostic> {
+        if self.peek_char() == Some('{') {
+            return self.braced_unicode_escape_value(string_start);
+        }
+        self.hex_escape_value(4, string_start, "unicode")
+    }
+
+    fn braced_unicode_escape_value(&mut self, string_start: usize) -> Result<char, Diagnostic> {
+        let escape_start = self.cursor.saturating_sub(2);
+        self.advance_char();
+        let mut value = 0u32;
+        let mut digit_count = 0usize;
+
+        loop {
+            let Some(ch) = self.advance_char() else {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "unterminated unicode escape sequence".to_owned(),
+                    span: Some(Span {
+                        start: string_start,
+                        end: self.cursor,
+                    }),
+
+                    phase: None,});
+            };
+            if ch == '}' {
+                if digit_count == 0 {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "invalid unicode escape sequence".to_owned(),
+                        span: Some(Span {
+                            start: escape_start,
+                            end: self.cursor,
+                        }),
+
+                        phase: None,});
+                }
+                break;
+            }
+            let Some(digit) = ch.to_digit(16) else {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "invalid unicode escape sequence".to_owned(),
+                    span: Some(Span {
+                        start: escape_start,
+                        end: self.cursor,
+                    }),
+
+                    phase: None,});
+            };
+            digit_count += 1;
+            value = value.saturating_mul(16).saturating_add(digit);
+        }
+
+        char::from_u32(value).ok_or(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "invalid unicode escape scalar value".to_owned(),
             span: Some(Span {
                 start: escape_start,
                 end: self.cursor,

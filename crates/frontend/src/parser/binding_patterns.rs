@@ -155,32 +155,23 @@ let binding = self.parse_binding_pattern()?;
                     is_identifier: true,
                 })
             }
-            // `undefined` is not a reserved word in ECMA-262; it can be used
-            // as a binding identifier (e.g. `var undefined = void 0;` in the
-            // test262 WASM globals shim).
-            Some(Token::Undefined) => {
-                let span = self
+            // These tokens are accepted as contextual binding identifiers in
+            // the sloppy-script slices covered by test262 object shorthand
+            // cases and existing TypeScript-erased syntax support.
+            Some(Token::Let | Token::Await | Token::Undefined | Token::Abstract | Token::Static) => {
+                let token = self
                     .advance()
-                    .expect("peek() returned Some(Token::Undefined) so advance() must succeed")
-                    .span;
+                    .expect("peek returned contextual binding token but advance failed");
+                let text = match token.kind {
+                    Token::Let => "let",
+                    Token::Await => "await",
+                    Token::Undefined => "undefined",
+                    Token::Abstract => "abstract",
+                    Token::Static => "static",
+                    _ => unreachable!("only contextual binding tokens are matched"),
+                };
                 Ok(ParsedBindingPattern {
-                    text: "undefined".to_owned(),
-                    span,
-                    is_identifier: true,
-                })
-            }
-                        Some(Token::Abstract) => {
-                let token = self.advance().expect("peek returned Abstract but advance failed");
-                Ok(ParsedBindingPattern {
-                    text: "abstract".to_owned(),
-                    span: token.span,
-                    is_identifier: true,
-                })
-            }
-            Some(Token::Static) => {
-                let token = self.advance().expect("peek returned Static but advance failed");
-                Ok(ParsedBindingPattern {
-                    text: "static".to_owned(),
+                    text: text.to_owned(),
                     span: token.span,
                     is_identifier: true,
                 })
@@ -357,6 +348,10 @@ let binding = self.parse_binding_pattern()?;
                 kind: Token::DecimalNumber(value),
                 ..
             }) => Ok((value, false)),
+            Some(SpannedToken {
+                kind: Token::BigIntLiteral(raw),
+                ..
+            }) => Ok((bigint_literal_property_key(&raw), false)),
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("issue-247: expected object binding property key, got {other:?}"),

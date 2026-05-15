@@ -13,6 +13,7 @@ pub const OBJECT_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::PropertyDelete,
     RuntimeFn::PropertyHas,
     RuntimeFn::ObjectKeys,
+    RuntimeFn::ObjectGetOwnPropertySymbols,
     RuntimeFn::ObjectSpread,
     RuntimeFn::SpreadViaIterator,
     RuntimeFn::ObjectValues,

@@ -1644,6 +1644,7 @@ fn array_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/array-to-spliced.ts",
         "fixtures/builtins-and-io/array-to-sorted.ts",
         "fixtures/builtins-and-io/array-is-array.ts",
+        "fixtures/builtins-and-io/array-foreach-function-callback.ts",
         "fixtures/builtins-and-io/array-foreach-thisarg.ts",
         "fixtures/builtins-and-io/array-sparse-iteration.ts",
         "fixtures/builtins-and-io/array-to-string.ts",
@@ -1773,6 +1774,11 @@ fn array_foreach_thisarg_matches_node() {
 }
 
 #[test]
+fn array_foreach_function_callback_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-foreach-function-callback.ts");
+}
+
+#[test]
 fn array_sparse_iteration_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/array-sparse-iteration.ts");
 }
@@ -1825,6 +1831,11 @@ fn generator_alias_state_matches_node_output() {
 #[test]
 fn generator_direct_next_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/generator-direct-next.ts");
+}
+
+#[test]
+fn generator_object_method_next_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/generator-object-method-next.ts");
 }
 
 #[test]
@@ -2352,6 +2363,16 @@ fn arraybuffer_dataview_basic_matches_node_output() {
 }
 
 #[test]
+fn arraybuffer_transfer_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/arraybuffer-transfer.ts");
+}
+
+#[test]
+fn sharedarraybuffer_basic_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/sharedarraybuffer-basic.ts");
+}
+
+#[test]
 fn arraybuffer_dataview_byte_offset_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/arraybuffer-dataview-byte-offset.ts");
 }
@@ -2541,33 +2562,23 @@ fn date_set_time_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn date_set_utc_methods_report_unsupported_date() {
-    for (fixture, method) in [(
-        "fixtures/builtins-and-io/date-set-utc-methods.ts",
-        "setUTCFullYear",
-    )] {
-        assert_build_fails_with_diagnostic(
-            fixture,
-            "[UnsupportedDate",
-            &format!("method `Date.{}` not found", method),
-            true,
-        );
-    }
+fn date_set_utc_full_year_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-set-utc-full-year.ts");
 }
 
 #[test]
-fn date_set_local_methods_report_unsupported_date() {
-    for (fixture, method) in [(
-        "fixtures/builtins-and-io/date-set-local-methods.ts",
-        "setFullYear",
-    )] {
-        assert_build_fails_with_diagnostic(
-            fixture,
-            "[UnsupportedDate",
-            &format!("method `Date.{}` not found", method),
-            true,
-        );
-    }
+fn date_set_utc_components_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-set-utc-components.ts");
+}
+
+#[test]
+fn date_set_utc_methods_defaults_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-set-utc-methods.ts");
+}
+
+#[test]
+fn date_set_local_components_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-set-local-components.ts");
 }
 
 #[test]
@@ -3152,17 +3163,10 @@ fn returned_ordinary_function_closure_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-semantics/ordinary-function-closure-escape-unsupported.ts",
         "fixtures/core-semantics/ordinary-function-closure-gc-pressure.ts",
         "fixtures/core-semantics/ordinary-function-closure-make-adder.ts",
+        "fixtures/core-semantics/ordinary-function-closure-mutation.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
-}
-
-#[test]
-fn unsupported_mutable_ordinary_function_closure_reports_issue_062e() {
-    assert_build_fails_with_unsupported_syntax_without_span(
-        "fixtures/core-semantics/ordinary-function-closure-mutation-unsupported.ts",
-        "issue-062e:",
-    );
 }
 
 #[test]
@@ -3764,8 +3768,31 @@ fn core_expression_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-expressions/object-literal-mixed-types.ts",
         "fixtures/core-expressions/object-literal-inline-access.ts",
         "fixtures/core-expressions/object-literal-dup-keys.ts",
+        "fixtures/core-expressions/object-literal-bigint-keys.ts",
         "fixtures/core-expressions/object-literal-computed-keys.ts",
+        "fixtures/core-expressions/object-literal-computed-expression-key.ts",
+        "fixtures/core-expressions/object-literal-computed-accessor-invocation.ts",
+        "fixtures/core-expressions/object-literal-symbol-accessor-invocation.ts",
+        "fixtures/core-expressions/object-literal-computed-method.ts",
+        "fixtures/core-expressions/object-literal-computed-method-call.ts",
+        "fixtures/core-expressions/object-literal-computed-identity-method-call.ts",
+        "fixtures/core-expressions/object-literal-computed-constant-number-expression-key.ts",
+        "fixtures/core-expressions/object-literal-computed-conditional-key.ts",
+        "fixtures/core-expressions/object-literal-computed-decimal-exponent-key.ts",
+        "fixtures/core-expressions/object-literal-computed-number-method-call.ts",
+        "fixtures/core-expressions/object-literal-computed-large-exponent-key.ts",
+        "fixtures/core-expressions/object-literal-computed-number-sentinel-keys.ts",
+        "fixtures/core-expressions/object-literal-symbol-method-call.ts",
+        "fixtures/core-expressions/symbol-key-dynamic-property-identity.ts",
+        "fixtures/core-expressions/symbol-key-descriptor-identity.ts",
+        "fixtures/core-expressions/object-literal-computed-spread.ts",
         "fixtures/core-expressions/object-literal-proto.ts",
+        "fixtures/core-expressions/object-literal-proto-accessor-descriptor.ts",
+        "fixtures/core-expressions/object-literal-method.ts",
+        "fixtures/core-expressions/object-literal-super-method-args.ts",
+        "fixtures/core-expressions/object-literal-method-mutable-capture.ts",
+        "fixtures/core-expressions/object-literal-getter-descriptor.ts",
+        "fixtures/core-expressions/object-literal-setter-descriptor.ts",
         "fixtures/core-expressions/index.ts",
         "fixtures/core-expressions/new.ts",
         "fixtures/core-expressions/typeof.ts",
@@ -3785,6 +3812,83 @@ fn core_expression_fixtures_match_node_output_under_iwasm() {
     ] {
         assert_fixture_matches_node(fixture);
     }
+}
+
+#[test]
+fn object_literal_super_method_args_match_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-expressions/object-literal-super-method-args.ts");
+}
+
+#[test]
+fn object_literal_proto_accessor_descriptor_match_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-expressions/object-literal-proto-accessor-descriptor.ts",
+    );
+}
+
+#[test]
+fn object_literal_computed_number_sentinel_keys_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-expressions/object-literal-computed-number-sentinel-keys.ts",
+    );
+}
+
+#[test]
+fn object_literal_bigint_keys_match_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-expressions/object-literal-bigint-keys.ts");
+}
+
+#[test]
+fn object_literal_computed_await_key_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-expressions/object-literal-computed-await-key.ts");
+}
+
+#[test]
+fn object_literal_computed_constant_number_expression_key_fixture_matches_node_output_under_iwasm()
+{
+    assert_fixture_matches_node(
+        "fixtures/core-expressions/object-literal-computed-constant-number-expression-key.ts",
+    );
+}
+
+#[test]
+fn object_literal_computed_conditional_key_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-expressions/object-literal-computed-conditional-key.ts",
+    );
+}
+
+#[test]
+fn object_literal_computed_decimal_exponent_key_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-expressions/object-literal-computed-decimal-exponent-key.ts",
+    );
+}
+
+#[test]
+fn object_literal_computed_function_keys_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-expressions/object-literal-computed-function-keys.ts",
+    );
+}
+
+#[test]
+fn object_literal_computed_fractional_math_key_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-expressions/object-literal-computed-fractional-math-key.ts",
+    );
+}
+
+#[test]
+fn symbol_key_dynamic_property_identity_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-expressions/symbol-key-dynamic-property-identity.ts",
+    );
+}
+
+#[test]
+fn symbol_key_descriptor_identity_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-expressions/symbol-key-descriptor-identity.ts");
 }
 
 #[test]
@@ -3948,6 +4052,11 @@ fn object_define_property_getter_matches_node() {
 }
 
 #[test]
+fn property_getter_setter_descriptor_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/property-getter-setter.ts");
+}
+
+#[test]
 fn object_define_property_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-define-property.ts");
 }
@@ -3985,6 +4094,16 @@ fn object_string_keys_matches_node() {
 #[test]
 fn object_get_prototype_of_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/object-get-prototype-of.ts");
+}
+
+#[test]
+fn object_get_own_property_names_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-get-own-property-names.ts");
+}
+
+#[test]
+fn object_own_key_integer_order_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-own-key-integer-order.ts");
 }
 
 #[test]

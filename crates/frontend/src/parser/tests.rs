@@ -1266,6 +1266,73 @@ mod tests {
     }
 
     #[test]
+    fn parses_nested_template_literal_inside_interpolation() {
+        let program =
+            parse_program("let message = `${name ? ` ${String(name)}` : ''}`;").unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Binary { right, .. },
+                ..
+            } => assert!(matches!(right.as_ref(), Expr::Ternary { .. })),
+            other => panic!("unexpected nested template statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_tagged_template_as_call_with_template_segments() {
+        let program = parse_program("let out = tag`a${b}c`;").unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Call { callee, args, .. },
+                ..
+            } => {
+                assert!(matches!(callee.as_ref(), Expr::Ident { name, .. } if name == "tag"));
+                assert_eq!(args.len(), 2);
+                match &args[0] {
+                    Expr::Array { elements, .. } => {
+                        assert_eq!(elements.len(), 2);
+                        assert!(matches!(
+                            &elements[0],
+                            ArrayLiteralElement::Present(Expr::String { value, .. }) if value == "a"
+                        ));
+                        assert!(matches!(
+                            &elements[1],
+                            ArrayLiteralElement::Present(Expr::String { value, .. }) if value == "c"
+                        ));
+                    }
+                    other => panic!("unexpected tagged template first argument: {other:?}"),
+                }
+                assert!(matches!(&args[1], Expr::Ident { name, .. } if name == "b"));
+            }
+            other => panic!("unexpected tagged template statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_tagged_template_with_nested_template_conditional() {
+        let program =
+            parse_program("let out = lazyResult`function${value.name ? ` ${String(value.name)}` : ''}`;")
+                .unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Call { callee, args, .. },
+                ..
+            } => {
+                assert!(matches!(
+                    callee.as_ref(),
+                    Expr::Ident { name, .. } if name == "lazyResult"
+                ));
+                assert_eq!(args.len(), 2);
+                assert!(matches!(&args[1], Expr::Ternary { .. }));
+            }
+            other => panic!("unexpected tagged template conditional statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn cooks_escaped_template_literal_segments() {
         let program = parse_program("let message = `tick \\` and \\${name}`;").unwrap();
         match &program[0] {
@@ -1386,6 +1453,49 @@ mod tests {
             panic!("expected ForOf statement, got {:?}", stmts[1]);
         };
         assert_eq!(var, "x");
+    }
+
+    #[test]
+    fn parses_for_of_with_object_binding_pattern() {
+        let stmts =
+            parse_program("var parts: any[];\nfor (let {value, type} of parts) { value; }")
+                .unwrap();
+
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForOf { var, body, .. } = &stmts[1] else {
+            panic!("expected ForOf statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "_binding");
+        assert!(matches!(
+            body.as_slice(),
+            [
+                Stmt::Let {
+                    name,
+                    expr: Expr::Ident { name: source, .. },
+                    ..
+                },
+                ..
+            ] if name == "{value, type}" && source == "_binding"
+        ));
+    }
+
+    #[test]
+    fn parses_for_in_with_object_binding_pattern() {
+        let stmts = parse_program("var entries: any;\nfor (const {key} in entries) {}").unwrap();
+
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForIn { var, body, .. } = &stmts[1] else {
+            panic!("expected ForIn statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "_binding");
+        assert!(matches!(
+            body.first(),
+            Some(Stmt::Let {
+                name,
+                expr: Expr::Ident { name: source, .. },
+                ..
+            }) if name == "{key}" && source == "_binding"
+        ));
     }
 
     #[test]
@@ -1718,6 +1828,19 @@ b /* parameter b */,
             panic!("expected Function");
         };
         assert_eq!(params.len(), 2);
+    }
+
+    #[test]
+    fn function_expression_parameter_trailing_comma() {
+        let program = parse_program("let fn = function(a, b,) { return a + b; };").unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::FunctionExpr { params, .. },
+                ..
+            } => assert_eq!(params.len(), 2),
+            other => panic!("expected function expression let statement, got {other:?}"),
+        }
     }
 
     #[test]
@@ -2235,6 +2358,40 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_sloppy_let_and_await_binding_identifiers_for_object_shorthand() {
+        let program = parse_program("var let = 1; var await = 2; var object = { let, await };")
+            .unwrap();
+
+        match &program[0] {
+            Stmt::Let { name, .. } => assert_eq!(name, "let"),
+            other => panic!("unexpected first binding statement: {other:?}"),
+        }
+        match &program[1] {
+            Stmt::Let { name, .. } => assert_eq!(name, "await"),
+            other => panic!("unexpected second binding statement: {other:?}"),
+        }
+        match &program[2] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 2);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::Shorthand { key, value: Expr::Ident { name, .. } }
+                        if key == "let" && name == "let"
+                ));
+                assert!(matches!(
+                    &props[1],
+                    ObjectProp::Shorthand { key, value: Expr::Ident { name, .. } }
+                        if key == "await" && name == "await"
+                ));
+            }
+            other => panic!("unexpected object binding statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_computed_property_key() {
         let program = parse_program("let key = 'x'; let object = { [key]: 2 };").unwrap();
 
@@ -2257,6 +2414,115 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_computed_property_key_expression() {
+        let program = parse_program("let object = { [1 + 1]: 2 };").unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 1);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::ComputedKey {
+                        key,
+                        value: Expr::Number { value: 2, .. }
+                    } if matches!(
+                        key.as_ref(),
+                        Expr::Binary {
+                            op: BinaryOp::Add,
+                            left,
+                            right,
+                            ..
+                        } if matches!(left.as_ref(), Expr::Number { value: 1, .. })
+                            && matches!(right.as_ref(), Expr::Number { value: 1, .. })
+                    )
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_bigint_literal_object_property_names() {
+        let program = parse_program(
+            "let object = { 999999999999999999n: true, 0xfn() { return 15; }, 0b101n: 'five' };",
+        )
+        .unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 3);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::KeyValue {
+                        key,
+                        value: Expr::Bool { value: true, .. }
+                    } if key == "999999999999999999"
+                ));
+                assert!(matches!(
+                    &props[1],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, .. }
+                    } if key == "15" && name == "15"
+                ));
+                assert!(matches!(
+                    &props[2],
+                    ObjectProp::KeyValue {
+                        key,
+                        value: Expr::String { value, .. }
+                    } if key == "5" && value == "five"
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_compound_assignment_computed_property_key_expression() {
+        let program = parse_program("let x = 0; let object = { [x |= 1]: 2 };").unwrap();
+
+        match &program[1] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 1);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::ComputedKey {
+                        key,
+                        value: Expr::Number { value: 2, .. }
+                    } if matches!(
+                        key.as_ref(),
+                        Expr::Assign {
+                            name,
+                            expr,
+                            ..
+                        } if name == "x"
+                            && matches!(
+                                expr.as_ref(),
+                                Expr::Binary {
+                                    op: BinaryOp::BitwiseOr,
+                                    left,
+                                    right,
+                                    ..
+                                } if matches!(left.as_ref(), Expr::Ident { name, .. } if name == "x")
+                                    && matches!(right.as_ref(), Expr::Number { value: 1, .. })
+                            )
+                    )
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_method_shorthand() {
         let program = parse_program("let object = { method() { return 1; } };").unwrap();
 
@@ -2272,6 +2538,234 @@ b /* parameter b */,
                         key,
                         value: Expr::FunctionExpr { name, .. }
                     } if key == "method" && name == "method"
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_object_method_parameter_trailing_comma() {
+        let program = parse_program("let object = { method(a, b,) { return a + b; } };").unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 1);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, params, .. }
+                    } if key == "method" && name == "method" && params.len() == 2
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_object_accessor_parameter_trailing_comma() {
+        let program = parse_program("let object = { set value(next,) { this.x = next; } };")
+            .unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 1);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, params, .. }
+                    } if key == "value" && name == "set value" && params.len() == 1
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_computed_method_key_expression() {
+        let program = parse_program("let key = 'run'; let object = { [key]() { return 1; } };")
+            .unwrap();
+
+        match &program[1] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 1);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::ComputedKey {
+                        key,
+                        value:
+                            Expr::FunctionExpr {
+                                name,
+                                params,
+                                body,
+                                ..
+                            },
+                    } if matches!(key.as_ref(), Expr::Ident { name, .. } if name == "key")
+                        && name == "[computed]"
+                        && params.is_empty()
+                        && matches!(body.as_slice(), [Stmt::Return { .. }])
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_object_generator_methods() {
+        let program = parse_program("let object = { *g() { yield 1; }, *['a']() { yield 2; } };")
+            .unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 2);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value:
+                            Expr::FunctionExpr {
+                                name,
+                                is_generator: true,
+                                body,
+                                ..
+                            },
+                    } if key == "g" && name == "g" && matches!(body.as_slice(), [Stmt::Expr { .. }])
+                ));
+                assert!(matches!(
+                    &props[1],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value:
+                            Expr::FunctionExpr {
+                                name,
+                                is_generator: true,
+                                body,
+                                ..
+                            },
+                    } if key == "a" && name == "a" && matches!(body.as_slice(), [Stmt::Expr { .. }])
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_async_object_methods() {
+        let program = parse_program(
+            "let object = { async method() { return 1; }, async *gen() { yield 2; }, async() { return 3; } };",
+        )
+        .unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 3);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, is_generator: false, .. }
+                    } if key == "method" && name == "method"
+                ));
+                assert!(matches!(
+                    &props[1],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, is_generator: true, .. }
+                    } if key == "gen" && name == "gen"
+                ));
+                assert!(matches!(
+                    &props[2],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, is_generator: false, .. }
+                    } if key == "async" && name == "async"
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_async_arrow_computed_property_key_expression() {
+        let program = parse_program("let object = { [async () => {}]: 1 };").unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 1);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::ComputedKey {
+                        key,
+                        value: Expr::Number { value: 1, .. }
+                    } if matches!(
+                        key.as_ref(),
+                        Expr::ArrowFn {
+                            params,
+                            body_stmts,
+                            ..
+                        } if params.is_empty() && body_stmts.is_empty()
+                    )
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_computed_accessor_key_expression() {
+        let program = parse_program(
+            "let key = 'value'; let object = { get [\"a\"]() { return 1; }, set [1](v) { this.v = v; }, get [key]() { return 2; } };",
+        )
+        .unwrap();
+
+        match &program[1] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 3);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, params, .. }
+                    } if key == "a" && name == "get a" && params.is_empty()
+                ));
+                assert!(matches!(
+                    &props[1],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, params, .. }
+                    } if key == "1" && name == "set 1" && params.len() == 1
+                ));
+                assert!(matches!(
+                    &props[2],
+                    ObjectProp::ComputedKey {
+                        key,
+                        value: Expr::FunctionExpr { name, params, .. }
+                    } if matches!(key.as_ref(), Expr::Ident { name, .. } if name == "key")
+                        && name == "get [computed]"
+                        && params.is_empty()
                 ));
             }
             other => panic!("unexpected statement: {other:?}"),
@@ -3353,6 +3847,28 @@ b /* parameter b */,
                     }
                 ));
                 assert_eq!(body.len(), 1);
+            }
+            other => panic!("expected While statement, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_while_empty_statement_body() {
+        let program = parse_program("let done = false; while (done === false) ;").unwrap();
+        assert_eq!(program.len(), 2);
+
+        match &program[1] {
+            Stmt::While {
+                condition, body, ..
+            } => {
+                assert!(matches!(
+                    condition,
+                    Expr::Binary {
+                        op: BinaryOp::StrictEqual,
+                        ..
+                    }
+                ));
+                assert!(body.is_empty());
             }
             other => panic!("expected While statement, got {other:?}"),
         }

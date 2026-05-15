@@ -3,6 +3,7 @@ use super::super::{
     private_storage_observable_access_diagnostic,
 };
 use crate::builtin_resolved::ResolvedExpr;
+use crate::lowered::classes::ObjectAccessorKey;
 use crate::lowered::object_kernel;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -220,6 +221,27 @@ impl super::super::Resolver {
                 Span::generated("object_proto_set"),
             ));
         }
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(obj_local) = self.resolve_local(name)
+            && let Some(setter_id) = self
+                .ctx
+                .classes
+                .object_accessor_props
+                .get(&obj_local)
+                .and_then(|props| props.get(&ObjectAccessorKey::Property(key.to_owned())))
+                .and_then(|prop| prop.set)
+        {
+            let lowered_args = self.lower_function_call_args(
+                setter_id,
+                LoweredExpr::Local(obj_local, Span::generated("local")),
+                std::slice::from_ref(value),
+            )?;
+            return Ok(LoweredExpr::Call {
+                kind: FunctionCallKind::User(setter_id),
+                args: lowered_args,
+                span: Span::generated("call"),
+            });
+        }
         let lowered_value = self.lower_expr(value)?;
         let lowered_object = self.lower_property_assignment_object(object)?;
         // Track function/arrow assignments on known locals so method calls
@@ -238,7 +260,21 @@ impl super::super::Resolver {
                     .object_function_props
                     .entry(local_id)
                     .or_default()
-                    .insert(key.to_owned(), fid);
+                    .insert(ObjectAccessorKey::Property(key.to_owned()), fid);
+            }
+            if self
+                .ctx
+                .classes
+                .object_accessor_props
+                .get(&local_id)
+                .and_then(|props| props.get(&ObjectAccessorKey::Property(key.to_owned())))
+                .is_none_or(|prop| prop.set.is_none())
+                && let Some(props) = self.ctx.classes.object_accessor_props.get_mut(&local_id)
+            {
+                props.remove(&ObjectAccessorKey::Property(key.to_owned()));
+                if props.is_empty() {
+                    self.ctx.classes.object_accessor_props.remove(&local_id);
+                }
             }
         }
         Ok(object_kernel::ordinary_set(
@@ -284,6 +320,29 @@ impl super::super::Resolver {
         }
         if matches!(object, ResolvedExpr::Ident(name) if name == "super") {
             return self.lower_super_property_assign_dynamic(object, key, value);
+        }
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(obj_local) = self.resolve_local(name)
+            && let Some(static_key) =
+                super::super::string::resolved_expr_static_accessor_key(&self.ctx, key)
+            && let Some(setter_id) = self
+                .ctx
+                .classes
+                .object_accessor_props
+                .get(&obj_local)
+                .and_then(|props| props.get(&static_key))
+                .and_then(|prop| prop.set)
+        {
+            let lowered_args = self.lower_function_call_args(
+                setter_id,
+                LoweredExpr::Local(obj_local, Span::generated("local")),
+                std::slice::from_ref(value),
+            )?;
+            return Ok(LoweredExpr::Call {
+                kind: FunctionCallKind::User(setter_id),
+                args: lowered_args,
+                span: Span::generated("call"),
+            });
         }
         Ok(object_kernel::ordinary_set_dynamic(
             self.lower_property_assignment_object(object)?,

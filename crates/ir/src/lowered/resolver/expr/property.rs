@@ -5,6 +5,7 @@ use super::super::{
 use super::{is_global_builtin_function_name, lower_global_builtin_function_metadata_property};
 use crate::builtin::BuiltinPropertyId;
 use crate::builtin_resolved::ResolvedExpr;
+use crate::lowered::classes::ObjectAccessorKey;
 use crate::lowered::object_kernel;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -24,6 +25,16 @@ impl super::super::Resolver {
                 }
                 ResolvedExpr::Ident(name) if is_global_builtin_function_name(name) => {
                     lower_global_builtin_function_metadata_property(name, "length")
+                }
+                ResolvedExpr::Ident(name) => {
+                    if let Some(length) = self.local_arrow_function_length(name) {
+                        Ok(LoweredExpr::Number(length as i32, Span::generated("num")))
+                    } else {
+                        Ok(LoweredExpr::GetLength(
+                            Box::new(self.lower_expr(object)?),
+                            Span::generated("get_length"),
+                        ))
+                    }
                 }
                 ResolvedExpr::PropertyAccess {
                     object: inner_object,
@@ -95,12 +106,30 @@ impl super::super::Resolver {
         if matches!(object, ResolvedExpr::Ident(name) if name == "Number")
             && matches!(key, "parseInt" | "parseFloat")
         {
-            // Number.parseInt and Number.parseFloat resolve as undefined,
-            // matching the standalone global parseInt/parseFloat identifiers
-            // which currently also resolve to undefined. This allows
-            // test262 assertions like assert.sameValue(Number.parseInt, parseInt)
-            // to compile and pass since undefined === undefined.
             return Ok(LoweredExpr::Undefined(Span::generated("undef")));
+        }
+        if key == "prototype"
+            && let ResolvedExpr::MethodCall {
+                object: callee_object,
+                method,
+                args,
+                ..
+            } = object
+            && matches!(callee_object.as_ref(), ResolvedExpr::Ident(name) if name == "Object")
+            && method == "getPrototypeOf"
+            && matches!(
+                args.as_slice(),
+                [ResolvedExpr::FunctionExpr {
+                    is_generator: true,
+                    ..
+                }]
+            )
+        {
+            return Ok(LoweredExpr::ObjectNew {
+                props: Vec::new(),
+                non_enumerable: 0,
+                span: Span::generated("generator_prototype"),
+            });
         }
         if key == "description" {
             return Ok(LoweredExpr::RuntimeCall {
@@ -116,6 +145,30 @@ impl super::super::Resolver {
             return self.lower_private_field_get(object, key, span);
         }
         if let ResolvedExpr::Ident(name) = object
+            && let Ok(obj_local) = self.resolve_local(name)
+            && let Some(getter_id) = self
+                .ctx
+                .classes
+                .object_accessor_props
+                .get(&obj_local)
+                .and_then(|props| props.get(&ObjectAccessorKey::Property(key.to_owned())))
+                .and_then(|prop| prop.get)
+        {
+            let lowered_args = self.lower_function_call_args(
+                getter_id,
+                LoweredExpr::Local(obj_local, Span::generated("local")),
+                &[],
+            )?;
+            return Ok(LoweredExpr::Call {
+                kind: FunctionCallKind::User(getter_id),
+                args: lowered_args,
+                span: Span::generated("call"),
+            });
+        }
+        if let Some(function) = self.object_function_property(object, key, span) {
+            return Ok(function);
+        }
+        if let ResolvedExpr::Ident(name) = object
             && self.resolve_func(name.as_str()).is_ok()
         {
             // Function metadata properties (name, length, prototype) go directly
@@ -125,6 +178,12 @@ impl super::super::Resolver {
             if matches!(key, "name" | "length" | "prototype") {
                 return self.lower_function_metadata_property(name.as_str(), key, span);
             }
+        }
+        if key == "length"
+            && let ResolvedExpr::Ident(name) = object
+            && let Some(length) = self.local_arrow_function_length(name)
+        {
+            return Ok(LoweredExpr::Number(length as i32, Span::generated("num")));
         }
         if let ResolvedExpr::Ident(name) = object
             && is_global_builtin_function_name(name)
@@ -154,11 +213,156 @@ impl super::super::Resolver {
                 span,
             );
         }
-        Ok(object_kernel::ordinary_get(
-            self.lower_expr(object)?,
-            key,
+        let lowered_object = self.lower_expr(object)?;
+        if let Some(function) = self.lowered_object_arrow_fn_property(&lowered_object, key) {
+            return Ok(function);
+        }
+        Ok(object_kernel::ordinary_get(lowered_object, key, span))
+    }
+
+    fn lowered_object_arrow_fn_property(
+        &self,
+        object: &LoweredExpr,
+        key: &str,
+    ) -> Option<LoweredExpr> {
+        let LoweredExpr::ObjectNew { props, .. } = object else {
+            return None;
+        };
+        props
+            .iter()
+            .rev()
+            .find(|(prop_key, _)| prop_key == key)
+            .and_then(|(_, value)| {
+                matches!(value, LoweredExpr::ArrowFn { .. }).then(|| value.clone())
+            })
+    }
+
+    fn object_function_property(
+        &self,
+        object: &ResolvedExpr,
+        key: &str,
+        span: Span,
+    ) -> Option<LoweredExpr> {
+        let ResolvedExpr::Ident(name) = object else {
+            return None;
+        };
+        let obj_local = self.resolve_local(name).ok()?;
+        let func_id = self
+            .ctx
+            .classes
+            .object_function_props
+            .get(&obj_local)
+            .and_then(|props| props.get(&ObjectAccessorKey::Property(key.to_owned())))
+            .copied()?;
+        self.function_token_for_object_method(func_id, span)
+    }
+
+    fn computed_object_function_property(
+        &self,
+        object: &ResolvedExpr,
+        index: &ResolvedExpr,
+        span: Span,
+    ) -> Option<LoweredExpr> {
+        let ResolvedExpr::Ident(name) = object else {
+            return None;
+        };
+        let obj_local = self.resolve_local(name).ok()?;
+        let key = super::super::string::resolved_expr_static_accessor_key(&self.ctx, index)?;
+        let func_id = self
+            .ctx
+            .classes
+            .object_function_props
+            .get(&obj_local)
+            .and_then(|props| props.get(&key))
+            .copied()?;
+        self.function_token_for_object_method(func_id, span)
+    }
+
+    fn lowered_object_function_dynamic_property(
+        &self,
+        object: &LoweredExpr,
+        index: &LoweredExpr,
+        span: Span,
+    ) -> Option<LoweredExpr> {
+        let key = self.property_lowered_static_accessor_key(index)?;
+        let props = self.function_props_for_lowered_object_expr(object)?;
+        let func_id = props.get(&key).copied()?;
+        self.function_token_for_object_method(func_id, span)
+    }
+
+    fn property_lowered_static_accessor_key(
+        &self,
+        expr: &LoweredExpr,
+    ) -> Option<ObjectAccessorKey> {
+        match expr {
+            LoweredExpr::String(value, _) => Some(ObjectAccessorKey::Property(value.clone())),
+            LoweredExpr::Number(value, _) => Some(ObjectAccessorKey::Property(value.to_string())),
+            LoweredExpr::Local(local, _) => self
+                .ctx
+                .facts
+                .string_value(*local)
+                .cloned()
+                .map(ObjectAccessorKey::Property)
+                .or_else(|| {
+                    self.ctx
+                        .facts
+                        .symbol_value_locals
+                        .contains(local)
+                        .then_some(ObjectAccessorKey::SymbolLocal(*local))
+                }),
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(func_id),
+                args,
+                ..
+            } => {
+                if let Some(value) = self.ctx.functions.static_string_returns.get(func_id) {
+                    return Some(ObjectAccessorKey::Property(value.clone()));
+                }
+                let signature = self.ctx.symbols.function_signatures.get(func_id)?;
+                if signature.returns_first_param_identity && args.len() == 1 {
+                    self.property_lowered_static_accessor_key(&args[0])
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    }
+
+    pub(crate) fn function_token_for_object_method(
+        &self,
+        func_id: FuncId,
+        span: Span,
+    ) -> Option<LoweredExpr> {
+        let captures = self
+            .ctx
+            .functions
+            .function_captures
+            .get(&func_id)
+            .map(|captures| {
+                captures
+                    .iter()
+                    .map(|capture| self.resolve_local(capture))
+                    .collect::<Result<Vec<_>, _>>()
+                    .ok()
+            })
+            .unwrap_or_else(|| Some(Vec::new()))?;
+        Some(LoweredExpr::ArrowFn {
+            func_id,
+            captures,
+            representation: ClosureRepresentation::DirectLocalToken,
             span,
-        ))
+        })
+    }
+
+    fn local_arrow_function_length(&self, name: &str) -> Option<usize> {
+        let local = self.resolve_local(name).ok()?;
+        let closure = self.ctx.facts.arrow_locals.get(&local)?;
+        self.ctx
+            .symbols
+            .function_signatures
+            .get(&closure.func_id)
+            .and_then(|signature| signature.metadata_length)
     }
 
     pub(super) fn lower_optional_property_access_expr(
@@ -202,6 +406,44 @@ impl super::super::Resolver {
         if matches!(object, ResolvedExpr::Ident(name) if name == "super") {
             return self.lower_super_computed_index(object, index);
         }
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(obj_local) = self.resolve_local(name)
+            && let Some(static_key) =
+                super::super::string::resolved_expr_static_accessor_key(&self.ctx, index)
+            && let Some(getter_id) = self
+                .ctx
+                .classes
+                .object_accessor_props
+                .get(&obj_local)
+                .and_then(|props| props.get(&static_key))
+                .and_then(|prop| prop.get)
+        {
+            let lowered_args = self.lower_function_call_args(
+                getter_id,
+                LoweredExpr::Local(obj_local, Span::generated("local")),
+                &[],
+            )?;
+            return Ok(LoweredExpr::Call {
+                kind: FunctionCallKind::User(getter_id),
+                args: lowered_args,
+                span: Span::generated("call"),
+            });
+        }
+        if let Some(function) =
+            self.computed_object_function_property(object, index, Span::generated("index"))
+        {
+            return Ok(function);
+        }
+        if self.should_lower_static_index_as_property(object, index)
+            && let Some(static_key) =
+                super::super::string::resolved_expr_static_property_key_value(&self.ctx, index)
+        {
+            return Ok(object_kernel::ordinary_get(
+                self.lower_expr(object)?,
+                &static_key,
+                Span::generated("index"),
+            ));
+        }
         if let Some(proxy) =
             crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(&self.ctx, object)
         {
@@ -214,6 +456,13 @@ impl super::super::Resolver {
         }
         let lowered_object = self.lower_expr(object)?;
         let lowered_index = self.lower_expr(index)?;
+        if let Some(function) = self.lowered_object_function_dynamic_property(
+            &lowered_object,
+            &lowered_index,
+            Span::generated("index"),
+        ) {
+            return Ok(function);
+        }
 
         if matches!(object, ResolvedExpr::String(_)) {
             Ok(object_kernel::ordinary_get_dynamic(
@@ -239,6 +488,31 @@ impl super::super::Resolver {
                 Span::generated("index"),
             ))
         }
+    }
+
+    fn should_lower_static_index_as_property(
+        &self,
+        object: &ResolvedExpr,
+        index: &ResolvedExpr,
+    ) -> bool {
+        if super::super::string::resolved_expr_static_property_key_value(&self.ctx, index).is_none()
+        {
+            return false;
+        }
+        if crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(&self.ctx, object)
+            .is_some()
+        {
+            return false;
+        }
+        if matches!(object, ResolvedExpr::Array(_)) {
+            return false;
+        }
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(local) = self.resolve_local(name)
+        {
+            return !self.ctx.facts.array_locals.contains(&local);
+        }
+        true
     }
 
     fn lower_super_property_get(

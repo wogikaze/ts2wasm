@@ -15,6 +15,18 @@ use crate::lowered::types::{
 };
 use crate::lowered::{FuncId, LocalId};
 
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum ObjectAccessorKey {
+    Property(String),
+    SymbolLocal(LocalId),
+}
+
+#[derive(Clone, Copy, Debug, Default)]
+pub struct ObjectAccessorProp {
+    pub get: Option<FuncId>,
+    pub set: Option<FuncId>,
+}
+
 /// Class hierarchy context for the lowering pass.
 ///
 /// Tracks all class-related state during lowering: constructor and method
@@ -36,7 +48,9 @@ pub struct ClassEnv {
     /// Map from local ID to the class name it was inferred to be (e.g., for `any`-typed vars initialized with class instances).
     pub local_classes: HashMap<LocalId, String>,
     /// Map from local ID to function-valued properties on object literals.
-    pub object_function_props: HashMap<LocalId, HashMap<String, FuncId>>,
+    pub object_function_props: HashMap<LocalId, HashMap<ObjectAccessorKey, FuncId>>,
+    /// Map from local ID to statically known accessor properties.
+    pub object_accessor_props: HashMap<LocalId, HashMap<ObjectAccessorKey, ObjectAccessorProp>>,
     /// The name of the class currently being lowered (for super/new.target/method resolution).
     pub current_class: Option<String>,
     /// Whether the current position is inside a class constructor.
@@ -57,6 +71,7 @@ impl ClassEnv {
             class_static_private_fields: HashMap::new(),
             local_classes: HashMap::new(),
             object_function_props: HashMap::new(),
+            object_accessor_props: HashMap::new(),
             current_class: None,
             in_constructor: false,
             new_target_class: None,
@@ -81,6 +96,7 @@ impl ClassEnv {
             class_static_private_fields,
             local_classes: HashMap::new(),
             object_function_props: HashMap::new(),
+            object_accessor_props: HashMap::new(),
             current_class: None,
             in_constructor: false,
             new_target_class: None,

@@ -38,6 +38,16 @@ impl Parser {
         } else if matches!(self.peek(), Some(Token::Ident(_))) {
             self.advance();
             self.consume(TokenKind::Arrow)
+        } else if matches!(self.peek(), Some(Token::Async)) {
+            self.advance();
+            if matches!(self.peek(), Some(Token::LeftParen)) {
+                self.probe_parenthesized_arrow_params().unwrap_or(false)
+            } else if matches!(self.peek(), Some(Token::Ident(_))) {
+                self.advance();
+                self.consume(TokenKind::Arrow)
+            } else {
+                false
+            }
         } else if matches!(self.peek(), Some(Token::Less)) {
             // Speculative parse: <T>(params) => expr — generic arrow function
             let probe = self.cursor;
@@ -92,13 +102,17 @@ impl Parser {
         }
 
         if is_arrow {
+            let arrow_start = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+            if matches!(self.peek(), Some(Token::Async)) {
+                self.advance();
+            }
             // Consume generic type parameters before parsing the arrow
             if matches!(self.peek(), Some(Token::Less)) {
                 let _has_generic = self
                     .consume_typescript_generic_parameter_list()
                     .unwrap_or(false);
             }
-            return self.arrow_function();
+            return self.arrow_function(arrow_start);
         }
 
         if let Some(expr) = self.destructuring_assignment()? {
@@ -163,31 +177,102 @@ impl Parser {
                 }
             }
         }
-        if matches!(self.peek(), Some(Token::PowerEqual))
-            && let Expr::Ident { name, span } = expr
-        {
-            self.advance();
-            let value = self.assignment()?;
-            let end = value.span().end;
-            let bin = Expr::Binary {
-                left: Box::new(Expr::Ident {
-                    name: name.clone(),
+        if let Some(op) = self.compound_assignment_operator() {
+            let target_span = expr.span();
+            match expr {
+                Expr::Ident { name, span } => {
+                    let value = self.assignment()?;
+                    let end = value.span().end;
+                    let bin = Expr::Binary {
+                        left: Box::new(Expr::Ident {
+                            name: name.clone(),
+                            span,
+                        }),
+                        op,
+                        right: Box::new(value),
+                        span: Span {
+                            start: span.start,
+                            end,
+                        },
+                    };
+                    return Ok(Expr::Assign {
+                        name,
+                        span: Span {
+                            start: span.start,
+                            end,
+                        },
+                        expr: Box::new(bin),
+                    });
+                }
+                Expr::Member {
+                    object,
+                    property,
                     span,
-                }),
-                op: BinaryOp::Power,
-                right: Box::new(value),
-                span: Span {
-                    start: span.start,
-                    end,
-                },
-            };
-            return Ok(Expr::Assign {
-                name,
-                span: Span {
-                    start: span.start,
-                    end,
-                },
-                expr: Box::new(bin),
+                } if !property.is_empty() => {
+                    let value = self.assignment()?;
+                    let end = value.span().end;
+                    let bin = Expr::Binary {
+                        left: Box::new(Expr::Member {
+                            object: object.clone(),
+                            property: property.clone(),
+                            span,
+                        }),
+                        op,
+                        right: Box::new(value),
+                        span: Span {
+                            start: span.start,
+                            end,
+                        },
+                    };
+                    return Ok(Expr::PropertyAssign {
+                        object,
+                        property,
+                        value: Box::new(bin),
+                        span: Span {
+                            start: span.start,
+                            end,
+                        },
+                    });
+                }
+                Expr::Index {
+                    object,
+                    index,
+                    span,
+                } => {
+                    let value = self.assignment()?;
+                    let end = value.span().end;
+                    let bin = Expr::Binary {
+                        left: Box::new(Expr::Index {
+                            object: object.clone(),
+                            index: index.clone(),
+                            span,
+                        }),
+                        op,
+                        right: Box::new(value),
+                        span: Span {
+                            start: span.start,
+                            end,
+                        },
+                    };
+                    return Ok(Expr::IndexAssign {
+                        object,
+                        index,
+                        value: Box::new(bin),
+                        span: Span {
+                            start: span.start,
+                            end,
+                        },
+                    });
+                }
+                _ => {}
+            }
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-236: compound assignment expressions currently support only identifier, member, and computed member targets"
+                    .to_owned(),
+                span: Some(target_span),
+
+                phase: None,
             });
         }
         if let Some(op) = self.logical_assignment_operator() {
@@ -341,8 +426,7 @@ impl Parser {
         }
     }
 
-    fn arrow_function(&mut self) -> Result<Expr, Diagnostic> {
-        let start_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+    fn arrow_function(&mut self, start_span: Span) -> Result<Expr, Diagnostic> {
         let mut params = Vec::new();
 
         if self.consume(TokenKind::LeftParen) {
@@ -1419,6 +1503,19 @@ impl Parser {
                 };
                 continue;
             }
+            if allow_call
+                && let Some(SpannedToken {
+                    kind: Token::TemplateLiteral(raw),
+                    span: template_span,
+                }) = self
+                    .tokens
+                    .get(self.cursor)
+                    .cloned()
+            {
+                self.cursor += 1;
+                expr = self.tagged_template_call_expr(expr, &raw, template_span)?;
+                continue;
+            }
             break;
         }
         Ok(expr)
@@ -1919,113 +2016,59 @@ impl Parser {
                                 key: OBJECT_SPREAD_SENTINEL.to_owned(),
                                 value: val,
                             });
-                        } else {
+                        } else if let Some(star_span) = self.consume_span(TokenKind::Star) {
                             let parsed_key = self.parse_object_key()?;
-                            let (key, key_span) = match parsed_key {
-                                ParsedObjectKey::Static { key, span } => (key, span),
+                            match parsed_key {
+                                ParsedObjectKey::Static { key, .. } => {
+                                    let value = self
+                                        .parse_object_literal_method_with_generator(
+                                            key.clone(),
+                                            star_span.start,
+                                            true,
+                                        )?
+                                        .ok_or_else(|| Diagnostic {
+                                            code: DiagCode::SyntaxError,
+                                            message:
+                                                "expected generator object method parameter list"
+                                                    .to_owned(),
+                                            span: self.peek_span(),
+                                            phase: None,
+                                        })?;
+                                    props.push(ObjectProp::MethodShorthand { key, value });
+                                }
                                 ParsedObjectKey::ComputedKey { key } => {
-                                    self.expect(TokenKind::Colon)?;
-                                    let value = self.expression()?;
+                                    let value = self
+                                        .parse_object_literal_method_with_generator(
+                                            "[computed]".to_owned(),
+                                            star_span.start,
+                                            true,
+                                        )?
+                                        .ok_or_else(|| Diagnostic {
+                                            code: DiagCode::SyntaxError,
+                                            message:
+                                                "expected generator object method parameter list"
+                                                    .to_owned(),
+                                            span: self.peek_span(),
+                                            phase: None,
+                                        })?;
                                     props.push(ObjectProp::ComputedKey {
                                         key: Box::new(key),
                                         value,
                                     });
-                                    if self.consume(TokenKind::RightBrace) {
-                                        break;
-                                    }
-                                    if self.consume(TokenKind::Comma) {
-                                        if self.consume(TokenKind::RightBrace) {
-                                            break;
-                                        }
-                                        continue;
-                                    }
-                                    self.expect(TokenKind::Comma)?;
-                                    continue;
-                                }
-                            };
-                            let key_start = key_span.start;
-
-                            // Handle getter/setter accessor in object literals: { get foo() {} }
-                            if (key == "get" || key == "set")
-                                && matches!(self.peek(), Some(Token::Ident(_)))
-                            {
-                                let accessor_kind = key.clone();
-                                let (prop_name, _) = self.expect_ident()?;
-                                self.consume_typescript_generic_parameter_list().ok();
-                                if self.consume(TokenKind::LeftParen) {
-                                    let mut params = Vec::new();
-                                    if !self.consume(TokenKind::RightParen) {
-                                        loop {
-                                            let param =
-                                                self.parse_param(false, params.is_empty())?;
-                                            let is_rest = param.is_rest;
-                                            if !param.is_this_parameter {
-                                                params.push((param.name, param.default, is_rest));
-                                            }
-                                            if self.consume(TokenKind::RightParen) {
-                                                break;
-                                            }
-                                            if is_rest {
-                                                return Err(self
-                                                    .invalid_rest_binding_diagnostic(param.span));
-                                            }
-                                            self.expect(TokenKind::Comma)?;
-                                        }
-                                    }
-                                    if self.consume(TokenKind::Colon) {
-                                        self.skip_type_annotation_until(&[TokenKind::LeftBrace])
-                                            .ok();
-                                    }
-                                    // Try to consume function body; if absent (ambient/getter without body),
-                                    // use an empty body
-                                    let body = if matches!(self.peek(), Some(Token::LeftBrace)) {
-                                        self.block()?
-                                    } else {
-                                        Vec::new()
-                                    };
-                                    let end = self.prev_span().map(|s| s.end).unwrap_or(key_start);
-                                    let expr = Expr::FunctionExpr {
-                                        name: format!("{accessor_kind} {prop_name}"),
-                                        params,
-                                        body,
-                                        span: Span {
-                                            start: key_start,
-                                            end,
-                                        },
-                                    };
-                                    props.push(ObjectProp::MethodShorthand {
-                                        key: prop_name,
-                                        value: expr,
-                                    });
-                                    if self.consume(TokenKind::RightBrace) {
-                                        break;
-                                    }
-                                    if self.consume(TokenKind::Comma) {
-                                        if self.consume(TokenKind::RightBrace) {
-                                            break;
-                                        }
-                                        continue;
-                                    }
-                                    self.expect(TokenKind::Comma)?;
-                                } else {
-                                    // Not an accessor, fall through to normal property handling
                                 }
                             }
-                            if let Some(val) =
-                                self.parse_object_literal_method(key.clone(), key_start)?
-                            {
-                                props.push(ObjectProp::MethodShorthand { key, value: val });
-                            } else if matches!(self.peek(), Some(Token::Colon)) {
-                                self.expect(TokenKind::Colon)?;
-                                let val = self.expression()?;
-                                props.push(ObjectProp::KeyValue { key, value: val });
+                        } else if matches!(self.peek(), Some(Token::Async)) {
+                            if let Some(prop) = self.parse_object_literal_async_method()? {
+                                props.push(prop);
                             } else {
-                                let val = Expr::Ident {
-                                    name: key.clone(),
-                                    span: key_span,
-                                };
-                                props.push(ObjectProp::Shorthand { key, value: val });
+                                let parsed_key = self.parse_object_key()?;
+                                self.parse_object_literal_property_after_key(
+                                    parsed_key, &mut props,
+                                )?;
                             }
+                        } else {
+                            let parsed_key = self.parse_object_key()?;
+                            self.parse_object_literal_property_after_key(parsed_key, &mut props)?;
                         }
                         if self.consume(TokenKind::RightBrace) {
                             break;
@@ -2158,10 +2201,188 @@ impl Parser {
         }
     }
 
+    fn parse_object_literal_property_after_key(
+        &mut self,
+        parsed_key: ParsedObjectKey,
+        props: &mut Vec<ObjectProp>,
+    ) -> Result<(), Diagnostic> {
+        let (key, key_span) = match parsed_key {
+            ParsedObjectKey::Static { key, span } => (key, span),
+            ParsedObjectKey::ComputedKey { key } => {
+                let value = if let Some(method) =
+                    self.parse_object_literal_method("[computed]".to_owned(), key.span().start)?
+                {
+                    method
+                } else {
+                    self.expect(TokenKind::Colon)?;
+                    self.expression()?
+                };
+                props.push(ObjectProp::ComputedKey {
+                    key: Box::new(key),
+                    value,
+                });
+                return Ok(());
+            }
+        };
+        let key_start = key_span.start;
+
+        // Handle getter/setter accessors in object literals:
+        // `{ get foo() {} }`, `{ get ["foo"]() {} }`.
+        if let Some(prop) = self.parse_object_literal_accessor(&key, key_start)? {
+            props.push(prop);
+            return Ok(());
+        }
+        if let Some(val) = self.parse_object_literal_method(key.clone(), key_start)? {
+            props.push(ObjectProp::MethodShorthand { key, value: val });
+        } else if matches!(self.peek(), Some(Token::Colon)) {
+            self.expect(TokenKind::Colon)?;
+            let val = self.expression()?;
+            props.push(ObjectProp::KeyValue { key, value: val });
+        } else {
+            let val = Expr::Ident {
+                name: key.clone(),
+                span: key_span,
+            };
+            props.push(ObjectProp::Shorthand { key, value: val });
+        }
+        Ok(())
+    }
+
+    fn parse_object_literal_async_method(&mut self) -> Result<Option<ObjectProp>, Diagnostic> {
+        let checkpoint = self.cursor;
+        let Some(async_span) = self.consume_span(TokenKind::Async) else {
+            return Ok(None);
+        };
+        let is_generator = self.consume(TokenKind::Star);
+        let parsed_key = match self.parse_object_key() {
+            Ok(key) => key,
+            Err(_) => {
+                self.cursor = checkpoint;
+                return Ok(None);
+            }
+        };
+        let method_name = match &parsed_key {
+            ParsedObjectKey::Static { key, .. } => key.clone(),
+            ParsedObjectKey::ComputedKey { .. } => "[computed]".to_owned(),
+        };
+        let Some(value) =
+            self.parse_object_literal_method_with_generator(method_name, async_span.start, is_generator)?
+        else {
+            self.cursor = checkpoint;
+            return Ok(None);
+        };
+        Ok(Some(match parsed_key {
+            ParsedObjectKey::Static { key, .. } => ObjectProp::MethodShorthand { key, value },
+            ParsedObjectKey::ComputedKey { key } => ObjectProp::ComputedKey {
+                key: Box::new(key),
+                value,
+            },
+        }))
+    }
+
+    fn parse_object_literal_accessor(
+        &mut self,
+        accessor_kind: &str,
+        accessor_start: usize,
+    ) -> Result<Option<ObjectProp>, Diagnostic> {
+        if accessor_kind != "get" && accessor_kind != "set" {
+            return Ok(None);
+        }
+        if matches!(
+            self.peek(),
+            Some(Token::Colon | Token::LeftParen | Token::Comma | Token::RightBrace)
+        ) {
+            return Ok(None);
+        }
+
+        let checkpoint = self.cursor;
+        let parsed_key = self.parse_object_key()?;
+        self.consume_typescript_generic_parameter_list().ok();
+        if !self.consume(TokenKind::LeftParen) {
+            self.cursor = checkpoint;
+            return Ok(None);
+        }
+
+        let mut params = Vec::new();
+        if !self.consume(TokenKind::RightParen) {
+            loop {
+                let param = self.parse_param(false, params.is_empty())?;
+                let is_rest = param.is_rest;
+                if !param.is_this_parameter {
+                    params.push((param.name, param.default, is_rest));
+                }
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
+                if is_rest {
+                    return Err(self.invalid_rest_binding_diagnostic(param.span));
+                }
+                self.expect(TokenKind::Comma)?;
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
+            }
+        }
+        if self.consume(TokenKind::Colon) {
+            self.skip_type_annotation_until(&[TokenKind::LeftBrace])
+                .ok();
+        }
+        let body = if matches!(self.peek(), Some(Token::LeftBrace)) {
+            self.block()?
+        } else {
+            Vec::new()
+        };
+        let end = self
+            .prev_span()
+            .map(|span| span.end)
+            .unwrap_or(accessor_start);
+
+        Ok(Some(match parsed_key {
+            ParsedObjectKey::Static { key, .. } => {
+                let expr = Expr::FunctionExpr {
+                    name: format!("{accessor_kind} {key}"),
+                    params,
+                    body,
+                    is_generator: false,
+                    span: Span {
+                        start: accessor_start,
+                        end,
+                    },
+                };
+                ObjectProp::MethodShorthand { key, value: expr }
+            }
+            ParsedObjectKey::ComputedKey { key } => {
+                let expr = Expr::FunctionExpr {
+                    name: format!("{accessor_kind} [computed]"),
+                    params,
+                    body,
+                    is_generator: false,
+                    span: Span {
+                        start: accessor_start,
+                        end,
+                    },
+                };
+                ObjectProp::ComputedKey {
+                    key: Box::new(key),
+                    value: expr,
+                }
+            }
+        }))
+    }
+
     fn parse_object_literal_method(
         &mut self,
         name: String,
         method_start: usize,
+    ) -> Result<Option<Expr>, Diagnostic> {
+        self.parse_object_literal_method_with_generator(name, method_start, false)
+    }
+
+    fn parse_object_literal_method_with_generator(
+        &mut self,
+        name: String,
+        method_start: usize,
+        is_generator: bool,
     ) -> Result<Option<Expr>, Diagnostic> {
         let checkpoint = self.cursor;
         let has_generic_params = match self.consume_typescript_generic_parameter_list() {
@@ -2193,6 +2414,9 @@ impl Parser {
                     return Err(self.invalid_rest_binding_diagnostic(param.span));
                 }
                 self.expect(TokenKind::Comma)?;
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
             }
         }
 
@@ -2200,7 +2424,10 @@ impl Parser {
             self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
         }
 
+        let prev_in_generator_fn = self.in_generator_fn;
+        self.in_generator_fn = is_generator;
         let body = self.block()?;
+        self.in_generator_fn = prev_in_generator_fn;
         let end = body
             .last()
             .map(|stmt| stmt.span().end)
@@ -2210,6 +2437,7 @@ impl Parser {
             name,
             params,
             body,
+            is_generator,
             span: Span {
                 start: method_start,
                 end,
@@ -2245,6 +2473,9 @@ impl Parser {
                     return Err(self.invalid_rest_binding_diagnostic(param.span));
                 }
                 self.expect(TokenKind::Comma)?;
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
             }
         }
         if self.consume(TokenKind::Colon) {
@@ -2257,6 +2488,7 @@ impl Parser {
                 name,
                 params,
                 body: Vec::new(),
+                is_generator,
                 span: Span {
                     start: start.start,
                     end,
@@ -2269,6 +2501,7 @@ impl Parser {
             name,
             params,
             body,
+            is_generator,
             span: Span {
                 start: start.start,
                 end,
@@ -2323,6 +2556,39 @@ impl Parser {
                 span,
             })
         }
+    }
+
+    fn tagged_template_call_expr(
+        &self,
+        callee: Expr,
+        raw: &str,
+        template_span: Span,
+    ) -> Result<Expr, Diagnostic> {
+        let start = callee.span().start;
+        let parsed = parse_template_literal(raw, template_span, self.strict_mode)?;
+        let mut args = vec![Expr::Array {
+            elements: parsed
+                .segments
+                .into_iter()
+                .map(|value| {
+                    crate::ArrayLiteralElement::Present(Expr::String {
+                        value,
+                        span: template_span,
+                    })
+                })
+                .collect(),
+            span: template_span,
+        }];
+        args.extend(parsed.exprs);
+
+        Ok(Expr::Call {
+            callee: Box::new(callee),
+            args,
+            span: Span {
+                start,
+                end: template_span.end,
+            },
+        })
     }
 }
 

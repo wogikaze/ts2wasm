@@ -3,3 +3,4 @@ console.log(/abc/i);
 console.log(/a*/g);
 console.log(/a\/b/);
 console.log(/[a/]/);
+console.log(/(?:)/.test("anything"));

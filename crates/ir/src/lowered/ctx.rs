@@ -88,6 +88,8 @@ pub struct FunctionsContext {
     pub next_func_id: usize,
     /// Functions generated during lowering (closures, arrow functions, etc.).
     pub generated_functions: Vec<LoweredFunction>,
+    /// Functions whose return value is a statically known string.
+    pub static_string_returns: HashMap<FuncId, String>,
 }
 
 /// Module environment for the lowering pass.
@@ -267,6 +269,7 @@ impl FunctionsContext {
             class_method_mutable_captures: HashMap::new(),
             next_func_id: 0,
             generated_functions: Vec::new(),
+            static_string_returns: HashMap::new(),
         }
     }
 
@@ -284,6 +287,7 @@ impl FunctionsContext {
             class_method_mutable_captures,
             next_func_id,
             generated_functions: Vec::new(),
+            static_string_returns: HashMap::new(),
         }
     }
 

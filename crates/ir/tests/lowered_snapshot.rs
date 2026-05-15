@@ -9,8 +9,8 @@ use ts2wasm_frontend::{Lexer, Parser};
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
 use ts2wasm_ir::lowered::validate::validate_lowered;
 use ts2wasm_ir::lowered::{
-    FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt,
-    ModuleLoadKind, RuntimeFn,
+    ClosureRepresentation, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredProgram,
+    LoweredStmt, ModuleLoadKind, RuntimeFn,
 };
 use ts2wasm_ir::lowered::{lower_program, lower_program_with_module_url};
 
@@ -73,6 +73,58 @@ fn lowered_expr_contains_class_prototype(expr: &LoweredExpr) -> bool {
         LoweredExpr::ObjectNew { props, .. } => props
             .iter()
             .any(|(_, value)| lowered_expr_contains_class_prototype(value)),
+        _ => false,
+    }
+}
+
+fn lowered_stmt_contains_captured_heap_closure(stmt: &LoweredStmt) -> bool {
+    match stmt {
+        LoweredStmt::Let(_, expr, _)
+        | LoweredStmt::Expr(expr, _)
+        | LoweredStmt::Return(expr, _)
+        | LoweredStmt::Throw(expr, _) => lowered_expr_contains_captured_heap_closure(expr),
+        LoweredStmt::Block(stmts, _) => stmts
+            .iter()
+            .any(lowered_stmt_contains_captured_heap_closure),
+        LoweredStmt::If {
+            condition,
+            then_body,
+            else_body,
+            ..
+        } => {
+            lowered_expr_contains_captured_heap_closure(condition)
+                || then_body
+                    .iter()
+                    .any(lowered_stmt_contains_captured_heap_closure)
+                || else_body
+                    .iter()
+                    .any(lowered_stmt_contains_captured_heap_closure)
+        }
+        _ => false,
+    }
+}
+
+fn lowered_expr_contains_captured_heap_closure(expr: &LoweredExpr) -> bool {
+    match expr {
+        LoweredExpr::ArrowFn {
+            captures,
+            representation: ClosureRepresentation::HeapObject,
+            ..
+        } => !captures.is_empty(),
+        LoweredExpr::Block { stmts, result, .. } => {
+            stmts
+                .iter()
+                .any(lowered_stmt_contains_captured_heap_closure)
+                || lowered_expr_contains_captured_heap_closure(result)
+        }
+        LoweredExpr::Call { args, .. }
+        | LoweredExpr::RuntimeCall { args, .. }
+        | LoweredExpr::ArrayNew { elements: args, .. } => {
+            args.iter().any(lowered_expr_contains_captured_heap_closure)
+        }
+        LoweredExpr::ObjectNew { props, .. } => props
+            .iter()
+            .any(|(_, value)| lowered_expr_contains_captured_heap_closure(value)),
         _ => false,
     }
 }
@@ -463,6 +515,155 @@ fn lowered_snapshot_object_method_super_property_uses_object_prototype() {
 }
 
 #[test]
+fn lowered_snapshot_object_method_super_call_uses_object_prototype() {
+    let program = parse_resolve_lower(
+        r#"
+        let parent = { method() { return 42; } };
+        let child = { read() { return super.method(); } };
+        Object.setPrototypeOf(child, parent);
+        let result = child.read();
+        "#,
+    );
+
+    assert!(
+        program.functions.iter().any(|function| function
+            .body
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::ObjectGetPrototypeOf))),
+        "expected object method super.method() to read from Object.getPrototypeOf(this)"
+    );
+    assert!(
+        program.functions.iter().any(|function| function
+            .body
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::HeapClosureCall))),
+        "expected object method super.method() to dispatch the prototype function value"
+    );
+}
+
+#[test]
+fn lowered_snapshot_object_generator_super_call_next_returns_yield_value() {
+    let program = parse_resolve_lower(
+        r#"
+        let parent = { method() { return 42; } };
+        let child = { *g() { yield super.method(); } };
+        Object.setPrototypeOf(child, parent);
+        let result = child.g().next().value;
+        "#,
+    );
+
+    assert!(
+        !program
+            .top_level_statements
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::GeneratorNext)),
+        "expected direct object generator .next() to use the static yield value path"
+    );
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::HeapClosureCall)),
+        "expected yielded super.method() value to dispatch the prototype function"
+    );
+}
+
+#[test]
+fn lowered_snapshot_object_method_super_call_with_arg_dispatches() {
+    let program = parse_resolve_lower(
+        r#"
+        let parent = { method(value) { return value; } };
+        let child = { read(value) { return super.method(value); } };
+        Object.setPrototypeOf(child, parent);
+        let result = child.read(42);
+        "#,
+    );
+
+    assert!(
+        program.functions.iter().any(|function| function
+            .body
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::HeapClosureCall))),
+        "expected object method super.method(arg) to dispatch the prototype function value"
+    );
+}
+
+#[test]
+fn lowered_snapshot_nonident_receiver_method_call_preserves_receiver() {
+    let program = parse_resolve_lower(
+        r#"
+        let parent = { method(value) { return value; } };
+        let child = { read(value) { return super.method(value); } };
+        Object.setPrototypeOf(child, parent);
+        let result = Object.getPrototypeOf(child).method(42);
+        "#,
+    );
+
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::ObjectGetPrototypeOf)),
+        "expected non-identifier receiver to evaluate Object.getPrototypeOf(child)"
+    );
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::HeapClosureCall)),
+        "expected non-identifier receiver method call to dispatch through HeapClosureCall"
+    );
+}
+
+#[test]
+fn lowered_snapshot_object_method_with_capture_materializes_heap_closure() {
+    let program = parse_resolve_lower(
+        r#"
+        let captured;
+        let parent = { method(value) { captured = value; } };
+        let child = { set a(value) { super.method(value); } };
+        Object.setPrototypeOf(child, parent);
+        child.a = 42;
+        "#,
+    );
+
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(lowered_stmt_contains_captured_heap_closure),
+        "expected captured object method stored in a prototype object to materialize as a heap closure"
+    );
+}
+
+#[test]
+fn lowered_snapshot_object_generator_super_call_with_arg_next_returns_yield_value() {
+    let program = parse_resolve_lower(
+        r#"
+        let parent = { method(value) { return value; } };
+        let child = { *g() { yield super.method(42); } };
+        Object.setPrototypeOf(child, parent);
+        let result = child.g().next().value;
+        "#,
+    );
+
+    assert!(
+        !program
+            .top_level_statements
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::GeneratorNext)),
+        "expected direct object generator .next() to use the static yield value path"
+    );
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::HeapClosureCall)),
+        "expected yielded super.method(arg) value to dispatch the prototype function"
+    );
+}
+
+#[test]
 fn lowered_snapshot_object_group_by_arrow_callback_builds_buckets() {
     let program = parse_resolve_lower(
         r#"
@@ -581,6 +782,74 @@ fn strict_function_expression_iife_return_this_lowers_to_undefined() {
 }
 
 #[test]
+fn sloppy_function_expression_iife_return_this_lowers_to_global_this() {
+    let program = parse_resolve_lower(
+        r#"
+        let value = (function() {
+          return this;
+        })();
+        "#,
+    );
+
+    assert!(matches!(
+        program.top_level_statements.as_slice(),
+        [LoweredStmt::Let(
+            _,
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::GlobalThis,
+                ..
+            },
+            _
+        )]
+    ));
+}
+
+#[test]
+fn lowered_test262_assert_throws_accepts_method_non_constructor_probes() {
+    let program = parse_resolve_lower(
+        "let obj = { method() {} };\n\
+         assert.throws(TypeError, function() { new obj.method(); });\n\
+         let method = { *method() {} }.method;\n\
+         assert.throws(TypeError, function() { var instance = new method(); });",
+    );
+
+    validate_lowered(&program).expect("static assert.throws constructor probes should validate");
+    assert!(matches!(
+        program.top_level_statements.get(1),
+        Some(LoweredStmt::Expr(LoweredExpr::Undefined(_), _))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(3),
+        Some(LoweredStmt::Expr(LoweredExpr::Undefined(_), _))
+    ));
+}
+
+#[test]
+fn lowered_test262_accepts_generator_method_prototype_metadata() {
+    let program = parse_resolve_lower(
+        "function verifyProperty(obj, name, desc) { throw null; }\n\
+         var GeneratorPrototype = Object.getPrototypeOf(function* () {}).prototype;\n\
+         var method = { *method() {} }.method;\n\
+         assert.sameValue(Object.getPrototypeOf(method.prototype), GeneratorPrototype);\n\
+         verifyProperty(method, \"prototype\", { writable: true, enumerable: false, configurable: false });",
+    );
+
+    validate_lowered(&program).expect("generator method prototype metadata should validate");
+    assert!(matches!(
+        program.top_level_statements.get(1),
+        Some(LoweredStmt::Let(_, LoweredExpr::ObjectNew { .. }, _))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(3),
+        Some(LoweredStmt::Expr(LoweredExpr::Undefined(_), _))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(4),
+        Some(LoweredStmt::Expr(LoweredExpr::Bool(true, _), _))
+    ));
+}
+
+#[test]
 fn strict_delete_identifier_reports_strict_delete_check() {
     let err = parse_resolve_lower_result(
         r#"
@@ -655,6 +924,53 @@ fn lowered_snapshot_function_decl() {
 }
 
 #[test]
+fn lowered_top_level_function_captures_helper_locals() {
+    let program = parse_resolve_lower(
+        "var helper = Object.getOwnPropertyDescriptor;\n\
+         function verify(obj, name) { return helper(obj, name); }\n\
+         verify({ x: 1 }, \"x\");",
+    );
+
+    validate_lowered(&program).expect("top-level helper capture should validate");
+}
+
+#[test]
+fn lowered_top_level_function_forwards_callee_helper_captures() {
+    let program = parse_resolve_lower(
+        "var helper = Object.getOwnPropertyDescriptor;\n\
+         function hasDesc(obj, name) { return helper(obj, name) !== undefined; }\n\
+         function verify(obj, name) { return hasDesc(obj, name); }\n\
+         verify({ x: 1 }, \"x\");",
+    );
+
+    validate_lowered(&program).expect("transitive helper capture should validate");
+}
+
+#[test]
+fn lowered_top_level_function_alias_captures_helper_locals() {
+    let program = parse_resolve_lower(
+        "var helper = Object.getOwnPropertyDescriptor;\n\
+         function verify(obj, name) { return helper(obj, name); }\n\
+         var alias = verify;\n\
+         alias({ x: 1 }, \"x\");",
+    );
+
+    validate_lowered(&program).expect("function alias helper capture should validate");
+}
+
+#[test]
+fn lowered_function_body_can_reference_top_level_function_as_value() {
+    let program = parse_resolve_lower(
+        "var helper = Object.getOwnPropertyDescriptor;\n\
+         function verify(obj, name) { return helper(obj, name); }\n\
+         function wrapper(obj, name) { var alias = verify; return alias(obj, name); }\n\
+         wrapper({ x: 1 }, \"x\");",
+    );
+
+    validate_lowered(&program).expect("function-valued declaration reference should validate");
+}
+
+#[test]
 fn lowered_snapshot_generator_function_metadata() {
     let program = parse_resolve_lower("function* gen() {}");
     assert_eq!(program.functions.len(), 1);
@@ -686,6 +1002,380 @@ fn lowered_snapshot_generator_yields_suspend_points() {
     assert_eq!(generator_state.suspend_points[1].index, 1);
     assert_eq!(generator_state.suspend_points[1].resume_state, 2);
     assert_eq!(generator_state.completed_state, 3);
+}
+
+#[test]
+fn lowered_generator_iterator_without_static_steps_still_lowers_next() {
+    let program = parse_resolve_lower(
+        "function key(value) { return value; }\n\
+         function* gen() { let obj = { [key(yield 9)]: 9 }; }\n\
+         let iter = gen();\n\
+         while (iter.next().done === false) ;",
+    );
+
+    validate_lowered(&program).expect("generator iterator fallback should validate");
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(|stmt| { lowered_stmt_contains_runtime_call(stmt, RuntimeFn::GeneratorNext) })
+    );
+}
+
+#[test]
+fn lowered_object_generator_method_iterators_lower_next() {
+    let program = parse_resolve_lower(
+        "let obj = { *method() { yield 1; } };\n\
+         let iter = obj.method();\n\
+         iter.next();",
+    );
+
+    validate_lowered(&program).expect("object generator method iterator should validate");
+    assert!(
+        !program
+            .top_level_statements
+            .iter()
+            .any(|stmt| { lowered_stmt_contains_runtime_call(stmt, RuntimeFn::GeneratorNext) }),
+        "assigned object generator method iterator should use static state stepping: {program:?}"
+    );
+}
+
+#[test]
+fn lowered_extracted_object_generator_method_iterators_lower_next() {
+    let program = parse_resolve_lower(
+        "let gen = { *method() { yield 1; } }.method;\n\
+         let iter = gen();\n\
+         iter.next();",
+    );
+
+    validate_lowered(&program).expect("extracted object generator method iterator should validate");
+    assert!(
+        program
+            .top_level_statements
+            .iter()
+            .any(|stmt| { lowered_stmt_contains_runtime_call(stmt, RuntimeFn::GeneratorNext) }),
+        "extracted object generator method iterator should lower .next() through GeneratorNext: {program:?}"
+    );
+}
+
+#[test]
+fn lowered_generator_computed_property_yield_splits_static_steps() {
+    let program = parse_resolve_lower(
+        "function * gen() {\n\
+           let obj = { [yield 10]: 1, a: \"a\" };\n\
+           yield 20;\n\
+           return obj;\n\
+         }\n\
+         let iter = gen();\n\
+         let first = iter.next().value;\n\
+         let second = iter.next().value;\n\
+         let outcome = iter.next().value;\n\
+         outcome[undefined];\n\
+         outcome.a;",
+    );
+
+    validate_lowered(&program).expect("computed property yield should split generator steps");
+    assert!(
+        !program
+            .top_level_statements
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::GeneratorNext)),
+        "computed-property yield should use static generator stepping: {program:?}"
+    );
+}
+
+#[test]
+fn lowered_object_generator_return_next_uses_completion_value() {
+    let program = parse_resolve_lower(
+        "let obj = { *g() { return 1; } };\n\
+         let result = obj.g().next();",
+    );
+
+    validate_lowered(&program).expect("object generator return lowering should validate");
+    let Some(LoweredStmt::Let(_, result_expr, _)) = program.top_level_statements.get(1) else {
+        panic!(
+            "expected result binding: {:?}",
+            program.top_level_statements
+        );
+    };
+    assert!(
+        !lowered_expr_contains_runtime_call(result_expr, RuntimeFn::GeneratorNext),
+        "static object generator return should not call generic GeneratorNext: {result_expr:?}"
+    );
+    assert!(matches!(
+        result_expr,
+        LoweredExpr::ObjectNew { props, .. }
+            if props.iter().any(|(key, value)| key == "value" && matches!(value, LoweredExpr::Number(1, _)))
+                && props.iter().any(|(key, value)| key == "done" && matches!(value, LoweredExpr::Bool(true, _)))
+    ));
+}
+
+#[test]
+fn lowered_object_generator_implicit_completion_uses_undefined() {
+    for source in [
+        "let obj = { *g() { ({ yield: 1 }); } };\n\
+         let result = obj.g().next();",
+        "let obj = { *g() { ({ get yield() { return 1; } }); } };\n\
+         let result = obj.g().next();",
+        "let obj = { *g() { (function yield() {}); } };\n\
+         let result = obj.g().next();",
+    ] {
+        let program = parse_resolve_lower(source);
+
+        validate_lowered(&program).expect("implicit-completion generator method should validate");
+        let Some(LoweredStmt::Let(_, result_expr, _)) = program.top_level_statements.get(1) else {
+            panic!(
+                "expected result binding: {:?}",
+                program.top_level_statements
+            );
+        };
+        assert!(
+            !lowered_expr_contains_runtime_call(result_expr, RuntimeFn::GeneratorNext),
+            "static implicit generator completion should not call generic GeneratorNext: {result_expr:?}"
+        );
+        assert!(matches!(
+            result_expr,
+            LoweredExpr::ObjectNew { props, .. }
+                if props.iter().any(|(key, value)| key == "value" && matches!(value, LoweredExpr::Undefined(_)))
+                    && props.iter().any(|(key, value)| key == "done" && matches!(value, LoweredExpr::Bool(true, _)))
+        ));
+    }
+}
+
+#[test]
+fn lowered_extracted_object_method_length_uses_function_metadata() {
+    let program = parse_resolve_lower(
+        "let obj = { method(a, b,) { return a; }, *gen(a, b,) { return b; } };\n\
+         let method = obj.method;\n\
+         let gen = obj.gen;\n\
+         let methodLength = method.length;\n\
+         let genLength = gen.length;",
+    );
+
+    validate_lowered(&program).expect("extracted object method length should validate");
+    assert!(matches!(
+        program.top_level_statements.get(3),
+        Some(LoweredStmt::Let(_, LoweredExpr::Number(2, _), _))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(4),
+        Some(LoweredStmt::Let(_, LoweredExpr::Number(2, _), _))
+    ));
+}
+
+#[test]
+fn lowered_object_method_descriptor_uses_function_metadata() {
+    let program = parse_resolve_lower(
+        "let method = { method(a, b, c) {} }.method;\n\
+         let lengthDesc = Object.getOwnPropertyDescriptor(method, \"length\");\n\
+         let nameDesc = Object.getOwnPropertyDescriptor(method, \"name\");",
+    );
+
+    validate_lowered(&program).expect("object method metadata descriptors should validate");
+    assert!(matches!(
+        program.top_level_statements.get(1),
+        Some(LoweredStmt::Let(_, LoweredExpr::ObjectNew { props, .. }, _))
+            if props.iter().any(|(key, value)| key == "value" && matches!(value, LoweredExpr::Number(3, _)))
+                && props.iter().any(|(key, value)| key == "writable" && matches!(value, LoweredExpr::Bool(false, _)))
+                && props.iter().any(|(key, value)| key == "enumerable" && matches!(value, LoweredExpr::Bool(false, _)))
+                && props.iter().any(|(key, value)| key == "configurable" && matches!(value, LoweredExpr::Bool(true, _)))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(2),
+        Some(LoweredStmt::Let(_, LoweredExpr::ObjectNew { props, .. }, _))
+            if props.iter().any(|(key, value)| key == "value" && matches!(value, LoweredExpr::String(name, _) if name == "method"))
+    ));
+}
+
+#[test]
+fn lowered_test262_verify_property_accepts_static_function_metadata() {
+    let program = parse_resolve_lower(
+        "function verifyProperty(obj, name, desc) { throw null; }\n\
+         let method = { method(a, b, c) {} }.method;\n\
+         verifyProperty(method, \"length\", { value: 3, writable: false, enumerable: false, configurable: true });\n\
+         verifyProperty(method, \"name\", { value: \"method\", writable: false, enumerable: false, configurable: true });",
+    );
+
+    validate_lowered(&program).expect("static test262 verifyProperty metadata should validate");
+    assert!(matches!(
+        program.top_level_statements.get(2),
+        Some(LoweredStmt::Expr(LoweredExpr::Bool(true, _), _))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(3),
+        Some(LoweredStmt::Expr(LoweredExpr::Bool(true, _), _))
+    ));
+}
+
+#[test]
+fn lowered_test262_verify_property_accepts_static_object_method_descriptor() {
+    let program = parse_resolve_lower(
+        "function verifyProperty(obj, name, desc) { throw null; }\n\
+         let obj = { method() {} };\n\
+         verifyProperty(obj, \"method\", { writable: true, enumerable: true, configurable: true });",
+    );
+
+    validate_lowered(&program).expect("static object method descriptor should validate");
+    assert!(matches!(
+        program.top_level_statements.get(2),
+        Some(LoweredStmt::Expr(LoweredExpr::Bool(true, _), _))
+    ));
+}
+
+#[test]
+fn lowered_test262_verify_property_accepts_static_object_method_names() {
+    let program = parse_resolve_lower(
+        "function verifyProperty(obj, name, desc) { throw null; }\n\
+         let namedSym = Symbol(\"test262\");\n\
+         let anonSym = Symbol();\n\
+         let obj = { id() {}, [anonSym]() {}, [namedSym]() {} };\n\
+         verifyProperty(obj.id, \"name\", { value: \"id\", writable: false, enumerable: false, configurable: true });\n\
+         verifyProperty(obj[anonSym], \"name\", { value: \"\", writable: false, enumerable: false, configurable: true });\n\
+         verifyProperty(obj[namedSym], \"name\", { value: \"[test262]\", writable: false, enumerable: false, configurable: true });",
+    );
+
+    validate_lowered(&program).expect("static object method names should validate");
+    assert!(matches!(
+        program.top_level_statements.get(4),
+        Some(LoweredStmt::Expr(LoweredExpr::Bool(true, _), _))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(5),
+        Some(LoweredStmt::Expr(LoweredExpr::Bool(true, _), _))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(6),
+        Some(LoweredStmt::Expr(LoweredExpr::Bool(true, _), _))
+    ));
+}
+
+#[test]
+fn lowered_test262_verify_property_accepts_extracted_symbol_method_names() {
+    let program = parse_resolve_lower(
+        "function verifyProperty(obj, name, desc) { throw null; }\n\
+         let m = Symbol(\"method\");\n\
+         let method = { [m]() {} }[m];\n\
+         let gen = { *[m]() {} }[m];\n\
+         verifyProperty(method, \"name\", { value: \"[method]\", writable: false, enumerable: false, configurable: true });\n\
+         verifyProperty(gen, \"name\", { value: \"[method]\", writable: false, enumerable: false, configurable: true });",
+    );
+
+    validate_lowered(&program).expect("extracted symbol method names should validate");
+    assert!(matches!(
+        program.top_level_statements.get(4),
+        Some(LoweredStmt::Expr(LoweredExpr::Bool(true, _), _))
+    ));
+    assert!(matches!(
+        program.top_level_statements.get(5),
+        Some(LoweredStmt::Expr(LoweredExpr::Bool(true, _), _))
+    ));
+}
+
+#[test]
+fn lowered_generator_function_captures_top_level_assignment() {
+    let program = parse_resolve_lower(
+        "var obj;\n\
+         function* gen() { obj = { get [yield]() { return 1; } }; }\n\
+         let iter = gen();\n\
+         iter.next();\n\
+         iter.next(\"key\");\n\
+         obj.key;",
+    );
+
+    validate_lowered(&program).expect("generator top-level assignment capture should validate");
+}
+
+#[test]
+fn lowered_generator_object_accessor_captures_top_level_assignment() {
+    let program = parse_resolve_lower(
+        "var yieldSet, obj, iter;\n\
+         function* gen() {\n\
+           obj = {\n\
+             get [yield]() { return \"get yield\"; },\n\
+             set [yield](param) { yieldSet = param; }\n\
+           };\n\
+         }\n\
+         iter = gen();\n\
+         iter.next();\n\
+         iter.next(\"first\");\n\
+         iter.next(\"second\");\n\
+         obj.first;\n\
+         obj.second = \"set yield\";\n\
+         yieldSet;",
+    );
+
+    validate_lowered(&program)
+        .expect("generator object accessor assignment capture should validate");
+}
+
+#[test]
+fn lowered_generator_computed_accessor_yield_resume_values_use_static_steps() {
+    let program = parse_resolve_lower(
+        "var yieldSet, obj, iter;\n\
+         function* gen() {\n\
+           obj = {\n\
+             get [yield]() { return \"get yield\"; },\n\
+             set [yield](param) { yieldSet = param; }\n\
+           };\n\
+         }\n\
+         iter = gen();\n\
+         iter.next();\n\
+         iter.next(\"first\");\n\
+         iter.next(\"second\");\n\
+         obj.first;\n\
+         obj.second = \"set yield\";\n\
+         yieldSet;",
+    );
+
+    validate_lowered(&program).expect("generator object accessor resume values should validate");
+    assert!(
+        !program
+            .top_level_statements
+            .iter()
+            .any(|stmt| lowered_stmt_contains_runtime_call(stmt, RuntimeFn::GeneratorNext)),
+        "computed accessor yield resume values should use static generator stepping: {program:?}"
+    );
+}
+
+#[test]
+fn lowered_object_computed_method_key_uses_to_string_for_static_dispatch() {
+    let program = parse_resolve_lower(
+        "let assert = { sameValue(actual, expected, message) { return true; } };\n\
+         let counter = 0;\n\
+         let key1 = { toString: function() { assert.sameValue(counter++, 0, \"key1\"); return \"b\"; } };\n\
+         let key2 = { toString: function() { assert.sameValue(counter++, 1, \"key2\"); return \"d\"; } };\n\
+         let object = { a() { return \"A\"; }, [key1]() { return \"B\"; }, c() { return \"C\"; }, [key2]() { return \"D\"; } };\n\
+         object.a();\n\
+         object.b();\n\
+         object.c();\n\
+         object.d();",
+    );
+
+    validate_lowered(&program)
+        .expect("computed method key with toString should preserve method metadata");
+}
+
+#[test]
+fn lowered_object_generator_method_next_on_direct_call_validates() {
+    let program = parse_resolve_lower(
+        "let obj = { *foo(a) {} };\n\
+         let result = obj.foo(3).next();\n\
+         result.done;",
+    );
+
+    validate_lowered(&program).expect("direct generator object-method call next should validate");
+}
+
+#[test]
+fn lowered_extracted_generator_method_next_on_direct_call_validates() {
+    let program = parse_resolve_lower(
+        "let thisValue = null;\n\
+         let method = { *method() { thisValue = this; } }.method;\n\
+         method().next();",
+    );
+
+    validate_lowered(&program)
+        .expect("direct extracted generator method call next should validate");
 }
 
 #[test]

@@ -54,6 +54,8 @@ impl WatEmitter<'_> {
             RuntimeFn::ArraySplice => self.emit_array_splice(wat),
             RuntimeFn::ArrayBufferNew => self.emit_arraybuffer_new(wat),
             RuntimeFn::ArrayBufferIsView => self.emit_arraybuffer_is_view(wat),
+            RuntimeFn::ArrayBufferTransfer => self.emit_arraybuffer_transfer(wat),
+            RuntimeFn::SharedArrayBufferNew => self.emit_shared_array_buffer_new(wat),
             RuntimeFn::TypedArrayFromArray => self.emit_typed_array_from_array(wat),
             RuntimeFn::TypedArraySet => self.emit_typed_array_set(wat),
             RuntimeFn::AtomicsElementPtr => self.emit_atomics_element_ptr(wat),

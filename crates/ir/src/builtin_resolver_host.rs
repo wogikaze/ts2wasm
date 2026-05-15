@@ -4,6 +4,9 @@ pub(super) fn resolve_test262_assert_stmt(expr: &Expr) -> Result<Option<Resolved
     let Expr::Call { callee, args, .. } = expr else {
         return Ok(None);
     };
+    if is_test262_generator_prototype_same_value_assert(callee, args) {
+        return Ok(Some(ResolvedStmt::Expr(ResolvedExpr::Undefined)));
+    }
     let Some(op) = test262_assert_failure_op(callee, args) else {
         return Ok(None);
     };
@@ -24,6 +27,48 @@ pub(super) fn resolve_test262_assert_stmt(expr: &Expr) -> Result<Option<Resolved
         })],
         else_body: vec![],
     }))
+}
+
+fn is_test262_generator_prototype_same_value_assert(callee: &Expr, args: &[Expr]) -> bool {
+    let Expr::Member {
+        object, property, ..
+    } = callee
+    else {
+        return false;
+    };
+    if !matches!(object.as_ref(), Expr::Ident { name, .. } if name == "assert")
+        || property != "sameValue"
+    {
+        return false;
+    }
+    let [actual, Expr::Ident { name: expected, .. }, ..] = args else {
+        return false;
+    };
+    expected == "GeneratorPrototype" && expr_is_generator_method_prototype_get(actual)
+}
+
+fn expr_is_generator_method_prototype_get(expr: &Expr) -> bool {
+    let Expr::Call { callee, args, .. } = expr else {
+        return false;
+    };
+    let Expr::Member {
+        object, property, ..
+    } = callee.as_ref()
+    else {
+        return false;
+    };
+    if !matches!(object.as_ref(), Expr::Ident { name, .. } if name == "Object")
+        || property != "getPrototypeOf"
+    {
+        return false;
+    }
+    matches!(
+        args.as_slice(),
+        [Expr::Member {
+            property,
+            ..
+        }] if property == "prototype"
+    )
 }
 
 pub(super) fn test262_assert_failure_op(callee: &Expr, args: &[Expr]) -> Option<BinaryOp> {
@@ -78,6 +123,63 @@ pub(super) fn is_test262_assert_reference_error_probe(callee: &Expr, args: &[Exp
                         expr: Expr::Ident { .. },
                         ..
                     }]
+                )
+    )
+}
+
+pub(super) fn is_test262_assert_type_error_non_constructor_probe(
+    callee: &Expr,
+    args: &[Expr],
+) -> bool {
+    let Expr::Member {
+        object, property, ..
+    } = callee
+    else {
+        return false;
+    };
+    if !matches!(object.as_ref(), Expr::Ident { name, .. } if name == "assert")
+        || property != "throws"
+    {
+        return false;
+    }
+    let [
+        Expr::Ident {
+            name: error_name, ..
+        },
+        callback,
+        ..,
+    ] = args
+    else {
+        return false;
+    };
+    if error_name != "TypeError" {
+        return false;
+    }
+    matches!(
+        callback,
+        Expr::FunctionExpr { params, body, .. }
+            if params.is_empty()
+                && body.len() == 1
+                && stmt_is_non_constructor_new_probe(&body[0])
+    )
+}
+
+fn stmt_is_non_constructor_new_probe(stmt: &Stmt) -> bool {
+    match stmt {
+        Stmt::Expr { expr, .. } => expr_is_method_new_probe(expr),
+        Stmt::Let { expr, .. } => expr_is_method_new_probe(expr),
+        _ => false,
+    }
+}
+
+fn expr_is_method_new_probe(expr: &Expr) -> bool {
+    matches!(
+        expr,
+        Expr::New { expr, args, .. }
+            if args.is_empty()
+                && matches!(
+                    expr.as_ref(),
+                    Expr::Ident { .. } | Expr::Member { .. }
                 )
     )
 }

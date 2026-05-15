@@ -8,6 +8,18 @@ impl super::super::Resolver {
         &mut self,
         expr: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
+        if matches!(
+            expr,
+            ResolvedExpr::Number(_)
+                | ResolvedExpr::DecimalNumber(_)
+                | ResolvedExpr::BigIntLiteral { .. }
+                | ResolvedExpr::String(_)
+                | ResolvedExpr::Bool(_)
+                | ResolvedExpr::Null
+                | ResolvedExpr::Undefined
+        ) {
+            return self.lower_expr(expr);
+        }
         Ok(LoweredExpr::PromiseGetValue {
             promise: Box::new(self.lower_expr(expr)?),
             span: Span::generated("promise_get_value"),
@@ -95,6 +107,7 @@ impl super::super::Resolver {
             || name == "Atomics"
             || name == "Intl"
             || name == "ArrayBuffer"
+            || name == "SharedArrayBuffer"
             || name == "DataView"
             || name == "Int8Array"
             || name == "Uint8Array"
@@ -146,7 +159,27 @@ impl super::super::Resolver {
                     Span::generated("class_proto"),
                 ))
             }
-            Err(err) => Err(err),
+            Err(err) => {
+                let Ok(func_id) = self.resolve_func(name) else {
+                    return Err(err);
+                };
+                let captures = self
+                    .ctx
+                    .functions
+                    .function_captures
+                    .get(&func_id)
+                    .map(Vec::as_slice)
+                    .unwrap_or(&[])
+                    .iter()
+                    .map(|capture| self.resolve_local(capture))
+                    .collect::<Result<Vec<_>, _>>()?;
+                Ok(LoweredExpr::ArrowFn {
+                    func_id,
+                    captures,
+                    representation: ClosureRepresentation::DirectLocalToken,
+                    span: Span::generated("arrow_fn"),
+                })
+            }
         }
     }
 

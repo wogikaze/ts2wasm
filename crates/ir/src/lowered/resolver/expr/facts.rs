@@ -91,17 +91,17 @@ pub(crate) fn update_generator_iterator_local(
     state_local: Option<LocalId>,
 ) {
     if let Some(func_name) = resolved_generator_function_call_name(ctx, expr) {
+        ctx.facts.generator_iterator_locals.insert(local_id);
         if let Some(state_local) = state_local {
-            ctx.facts.generator_iterator_locals.insert(local_id);
             ctx.facts.generator_iterator_bindings.insert(
                 local_id,
                 GeneratorIteratorBinding {
                     func_name,
                     state_local,
+                    resume_args: Vec::new(),
                 },
             );
         } else {
-            ctx.facts.generator_iterator_locals.remove(&local_id);
             ctx.facts.generator_iterator_bindings.remove(&local_id);
         }
     } else if let ResolvedExpr::Ident(name) = expr
@@ -182,9 +182,67 @@ pub(crate) fn resolved_expr_is_generator_iterator(ctx: &LoweringCtx, expr: &Reso
             .resolve_local(name)
             .ok()
             .is_some_and(|local_id| ctx.facts.generator_iterator_locals.contains(&local_id)),
-        ResolvedExpr::Call { .. } => resolved_generator_function_call_name(ctx, expr).is_some(),
+        ResolvedExpr::Call { callee, .. } => {
+            resolved_generator_function_call_name(ctx, expr).is_some()
+                || resolved_callee_is_local_generator_function(ctx, callee)
+                || matches!(
+                    callee.as_ref(),
+                    ResolvedExpr::FunctionExpr {
+                        is_generator: true,
+                        ..
+                    }
+                )
+        }
+        ResolvedExpr::MethodCall { object, method, .. } => {
+            resolved_object_method_is_generator(ctx, object, method)
+        }
         _ => false,
     }
+}
+
+fn resolved_callee_is_local_generator_function(ctx: &LoweringCtx, callee: &ResolvedExpr) -> bool {
+    let ResolvedExpr::Ident(name) = callee else {
+        return false;
+    };
+    let Ok(local_id) = ctx.resolve_local(name) else {
+        return false;
+    };
+    let Some(closure) = ctx.facts.arrow_locals.get(&local_id) else {
+        return false;
+    };
+    ctx.functions
+        .generated_functions
+        .iter()
+        .any(|function| function.id == closure.func_id && function.is_generator)
+}
+
+fn resolved_object_method_is_generator(
+    ctx: &LoweringCtx,
+    object: &ResolvedExpr,
+    method: &str,
+) -> bool {
+    let ResolvedExpr::Ident(receiver_name) = object else {
+        return false;
+    };
+    let Ok(receiver_local) = ctx.resolve_local(receiver_name) else {
+        return false;
+    };
+    let Some(method_id) = ctx
+        .classes
+        .object_function_props
+        .get(&receiver_local)
+        .and_then(|props| {
+            props.get(&crate::lowered::classes::ObjectAccessorKey::Property(
+                method.to_owned(),
+            ))
+        })
+    else {
+        return false;
+    };
+    ctx.functions
+        .generated_functions
+        .iter()
+        .any(|function| function.id == *method_id && function.is_generator)
 }
 
 pub(crate) fn resolved_generator_function_call_name(
@@ -519,7 +577,9 @@ pub(crate) fn is_known_array_expr(ctx: &LoweringCtx, expr: &ResolvedExpr) -> boo
                     .classes
                     .local_classes
                     .get(&local_id)
-                    .is_some_and(|class_name| is_typed_array_class(class_name))
+                    .is_some_and(|class_name| {
+                        class_name == "Array" || is_typed_array_class(class_name)
+                    })
         }),
         _ => false,
     }

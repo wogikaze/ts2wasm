@@ -10,6 +10,9 @@ impl WatEmitter<'_> {
             RuntimeFn::PropertyDelete => self.emit_property_delete(wat),
             RuntimeFn::PropertyHas => self.emit_property_has(wat),
             RuntimeFn::ObjectKeys => self.emit_object_keys(wat),
+            RuntimeFn::ObjectGetOwnPropertySymbols => {
+                self.emit_object_get_own_property_symbols(wat)
+            }
             RuntimeFn::ObjectSpread => self.emit_object_spread(wat),
             RuntimeFn::SpreadViaIterator => self.emit_spread_via_iterator(wat),
             RuntimeFn::ObjectValues => self.emit_object_values(wat),

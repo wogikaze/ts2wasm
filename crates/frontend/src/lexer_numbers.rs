@@ -43,21 +43,8 @@ impl<'a> Lexer<'a> {
                     phase: None,
                 });
             }
-            if self.source[start..self.cursor - 1].contains('_') {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-244: BigInt literal numeric separators are not supported yet"
-                        .to_owned(),
-                    span: Some(Span {
-                        start,
-                        end: self.cursor,
-                    }),
-
-                    phase: None,
-                });
-            }
             return Ok(SpannedToken {
-                kind: Token::BigIntLiteral(self.source[start..self.cursor].to_owned()),
+                kind: Token::BigIntLiteral(format!("{digits}n")),
                 span: Span {
                     start,
                     end: self.cursor,
@@ -80,6 +67,21 @@ impl<'a> Lexer<'a> {
         let value = match self.number_value(&digits, radix, start) {
             Ok(v) => v,
             Err(_) => {
+                if radix == 10 {
+                    let value = if self.source[start..self.cursor].contains(['e', 'E']) {
+                        canonical_positive_exponent_literal(&self.source[start..self.cursor])
+                            .unwrap_or_else(|| digits.replace('_', ""))
+                    } else {
+                        digits.replace('_', "")
+                    };
+                    return Ok(SpannedToken {
+                        kind: Token::DecimalNumber(value),
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
+                }
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "number too large".to_owned(),
@@ -158,6 +160,7 @@ impl<'a> Lexer<'a> {
             ));
         }
 
+        let mut positive_exponent_shift = 0;
         if matches!(self.peek_char(), Some('e' | 'E')) {
             self.advance_char();
             let negative_exponent = if matches!(self.peek_char(), Some('+' | '-')) {
@@ -208,7 +211,13 @@ impl<'a> Lexer<'a> {
 
                 phase: None,
             })?;
-            digits.extend(std::iter::repeat_n('0', zeros));
+            positive_exponent_shift = zeros;
+        }
+
+        if has_fraction {
+            digits = canonical_decimal_fraction_literal(digits, positive_exponent_shift);
+        } else {
+            digits.extend(std::iter::repeat_n('0', positive_exponent_shift));
         }
 
         Ok((digits, 10))
@@ -335,14 +344,37 @@ impl<'a> Lexer<'a> {
         };
         let digit_start = start + prefix_len;
         let mut cursor = digit_start;
+        let mut digits = String::new();
+        let mut previous_was_separator = false;
+        let mut saw_digit = false;
         while let Some(ch) = self.char_at(cursor) {
+            if ch == '_' {
+                if !saw_digit {
+                    return Err(self.invalid_numeric_separator(
+                        start,
+                        "numeric separators are not allowed after numeric literal prefixes",
+                    ));
+                }
+                if previous_was_separator {
+                    return Err(self.invalid_numeric_separator(
+                        start,
+                        "only one underscore is allowed as numeric separator",
+                    ));
+                }
+                previous_was_separator = true;
+                cursor += ch.len_utf8();
+                continue;
+            }
             if !is_digit_for_radix(ch, radix_name) {
                 break;
             }
+            digits.push(ch);
+            saw_digit = true;
+            previous_was_separator = false;
             cursor += ch.len_utf8();
         }
 
-        if cursor == digit_start {
+        if !saw_digit {
             if self.char_at(cursor) == Some('n') {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
@@ -367,6 +399,13 @@ impl<'a> Lexer<'a> {
             return Ok(None);
         }
 
+        if previous_was_separator && self.char_at(cursor) == Some('n') {
+            return Err(self.invalid_numeric_separator(
+                start,
+                "numeric separators are not allowed at the end of numeric literals",
+            ));
+        }
+
         if self.char_at(cursor) != Some('n') {
             if let Some(end) = self.invalid_prefixed_bigint_end(cursor) {
                 return Err(Diagnostic {
@@ -382,7 +421,11 @@ impl<'a> Lexer<'a> {
 
         self.cursor = cursor + 1;
         Ok(Some(SpannedToken {
-            kind: Token::BigIntLiteral(self.source[start..self.cursor].to_owned()),
+            kind: Token::BigIntLiteral(format!(
+                "{}{}n",
+                &self.source[start..digit_start],
+                digits
+            )),
             span: Span {
                 start,
                 end: self.cursor,
@@ -470,4 +513,44 @@ impl<'a> Lexer<'a> {
 
         Ok(())
     }
+}
+
+fn canonical_positive_exponent_literal(source: &str) -> Option<String> {
+    let (mantissa, exponent) = source.split_once(['e', 'E'])?;
+    let exponent = exponent.strip_prefix('+').unwrap_or(exponent);
+    if exponent.starts_with('-') || exponent.is_empty() {
+        return None;
+    }
+    Some(format!("{mantissa}e+{exponent}").replace('_', ""))
+}
+
+fn canonical_decimal_fraction_literal(mut digits: String, exponent_shift: usize) -> String {
+    let Some(point) = digits.find('.') else {
+        return digits;
+    };
+    digits.remove(point);
+
+    if exponent_shift > 0 {
+        let new_point = point + exponent_shift;
+        if new_point >= digits.len() {
+            digits.extend(std::iter::repeat_n('0', new_point - digits.len()));
+        } else {
+            digits.insert(new_point, '.');
+        }
+    } else {
+        digits.insert(point, '.');
+    }
+
+    if let Some(point) = digits.find('.') {
+        while digits.ends_with('0') {
+            digits.pop();
+        }
+        if digits.len() == point + 1 {
+            digits.pop();
+        }
+    }
+    if digits.is_empty() {
+        digits.push('0');
+    }
+    digits
 }

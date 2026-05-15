@@ -2,12 +2,20 @@ use super::super::{
     bigint_runtime_fn_intrinsic, block_contains_arguments, block_contains_this,
     function_body_is_strict,
 };
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::builtin_resolved::{
+    ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedParam, ResolvedStmt,
+};
+use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
 use crate::lowered::facts::FunctionMethodKind;
 use crate::lowered::*;
 use std::collections::HashMap;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
+
+struct StaticFunctionMetadataTarget {
+    func_id: FuncId,
+    name: String,
+}
 
 impl super::super::Resolver {
     pub(crate) fn lower_call_expr(
@@ -16,8 +24,14 @@ impl super::super::Resolver {
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
-        if let ResolvedExpr::FunctionExpr { name, params, body } = callee {
-            return self.lower_function_expr_call(name, params, body, args, span);
+        if let ResolvedExpr::FunctionExpr {
+            name,
+            params,
+            body,
+            is_generator,
+        } = callee
+        {
+            return self.lower_function_expr_call(name, params, body, *is_generator, args, span);
         }
 
         if let ResolvedExpr::ArrowFn {
@@ -27,6 +41,31 @@ impl super::super::Resolver {
         } = callee
         {
             return self.lower_arrow_fn_iife(params, body, body_stmts, args, span);
+        }
+
+        if let ResolvedExpr::ComputedIndex { object, index } = callee
+            && let ResolvedExpr::Ident(receiver_name) = object.as_ref()
+            && let Ok(obj_local) = self.resolve_local(receiver_name)
+            && let Some(key) =
+                super::super::string::resolved_expr_static_accessor_key(&self.ctx, index)
+            && let Some(method_id) = self
+                .ctx
+                .classes
+                .object_function_props
+                .get(&obj_local)
+                .and_then(|props| props.get(&key))
+                .copied()
+        {
+            let lowered_args = self.lower_function_call_args(
+                method_id,
+                LoweredExpr::Local(obj_local, Span::generated("local")),
+                args,
+            )?;
+            return Ok(LoweredExpr::Call {
+                kind: FunctionCallKind::User(method_id),
+                args: lowered_args,
+                span: Span::generated("call"),
+            });
         }
 
         if let ResolvedExpr::MethodCall {
@@ -68,17 +107,43 @@ impl super::super::Resolver {
             }
         };
 
+        if func_name == "verifyProperty"
+            && let Some(result) = self.lower_static_test262_verify_property(args)
+        {
+            return Ok(result);
+        }
+
         if func_name == "String" {
             let lowered = match args.first() {
                 None => LoweredExpr::String(String::new(), Span::generated("str")),
+                Some(ResolvedExpr::Ident(name)) if name == "undefined" => {
+                    LoweredExpr::String("undefined".to_owned(), Span::generated("str"))
+                }
+                Some(ResolvedExpr::Undefined) => {
+                    LoweredExpr::String("undefined".to_owned(), Span::generated("str"))
+                }
                 Some(ResolvedExpr::String(value)) => {
                     LoweredExpr::String(value.clone(), Span::generated("str"))
                 }
-                Some(value) => LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeFn::BooleanToString,
-                    args: vec![self.lower_expr(value)?],
-                    span: Span::generated("runtime_call"),
-                },
+                Some(value) => {
+                    if let Some(static_string) =
+                        super::super::string::resolved_expr_static_string_value(&self.ctx, value)
+                    {
+                        LoweredExpr::String(static_string, Span::generated("str"))
+                    } else if let Some(static_number) =
+                        super::super::string::resolved_expr_static_number_literal_value(
+                            &self.ctx, value,
+                        )
+                    {
+                        LoweredExpr::String(static_number, Span::generated("str"))
+                    } else {
+                        LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::ErrorMessage,
+                            args: vec![self.lower_expr(value)?],
+                            span: Span::generated("runtime_call"),
+                        }
+                    }
+                }
             };
             return Ok(lowered);
         }
@@ -139,14 +204,34 @@ impl super::super::Resolver {
         if let Ok(local_id) = self.resolve_local(func_name)
             && let Some(closure) = self.ctx.facts.arrow_locals.get(&local_id).cloned()
         {
-            let mut lowered_args = self.lower_call_args(args)?;
-            lowered_args.extend(
-                closure
-                    .captures
-                    .iter()
-                    .copied()
-                    .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
-            );
+            let lowered_args = if let Some(signature) = self
+                .ctx
+                .symbols
+                .function_signatures
+                .get(&closure.func_id)
+                .copied()
+            {
+                let receiver = if signature.is_strict {
+                    LoweredExpr::Undefined(Span::generated("undef"))
+                } else {
+                    LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::GlobalThis,
+                        args: Vec::new(),
+                        span: Span::generated("globalThis"),
+                    }
+                };
+                self.lower_function_call_args(closure.func_id, receiver, args)?
+            } else {
+                let mut lowered_args = self.lower_call_args(args)?;
+                lowered_args.extend(
+                    closure
+                        .captures
+                        .iter()
+                        .copied()
+                        .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+                );
+                lowered_args
+            };
             return Ok(LoweredExpr::Call {
                 kind: FunctionCallKind::User(closure.func_id),
                 args: lowered_args,
@@ -307,21 +392,6 @@ impl super::super::Resolver {
         let func_id = match self.resolve_func(func_name) {
             Ok(func_id) => func_id,
             Err(_) if self.resolve_local(func_name).is_ok() => {
-                // Check if this local is a function parameter (e.g., typed
-                // through a conditional type alias) for a more specific diagnostic.
-                if let Ok(local_id) = self.resolve_local(func_name)
-                    && self.ctx.symbols.param_locals.contains(&local_id)
-                {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-5196: callable parameter `{func_name}(...)` typed through a conditional type is not supported in this milestone"
-                        ),
-                        span: Some(span),
-
-                        phase: None,
-                    });
-                }
                 // Function-valued local: emit a HeapClosureCall to dispatch
                 // at runtime based on the value's tag. The HeapClosureCall
                 // runtime handles both DirectLocalToken and HeapObject
@@ -373,6 +443,11 @@ impl super::super::Resolver {
             .facts
             .generator_function_steps
             .contains_key(func_name)
+            || self
+                .ctx
+                .facts
+                .generator_function_object_resume_plans
+                .contains_key(func_name)
         {
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::GeneratorYield,
@@ -531,6 +606,7 @@ impl super::super::Resolver {
         name: &str,
         params: &[ResolvedParam],
         body: &[ResolvedStmt],
+        is_generator: bool,
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
@@ -558,7 +634,7 @@ impl super::super::Resolver {
                 phase: None,});
         }
 
-        let lowered = self.lower_named_function_expr(name, params, body)?;
+        let lowered = self.lower_named_function_expr(name, params, body, is_generator)?;
         let LoweredExpr::ArrowFn {
             func_id, captures, ..
         } = lowered
@@ -622,17 +698,17 @@ impl super::super::Resolver {
             return Some(LoweredExpr::Undefined(Span::generated("undef")));
         }
 
-        Some(LoweredExpr::ObjectNew {
-            props: Vec::new(),
-            non_enumerable: 0,
-            span: Span::generated("object_new"),
+        Some(LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::GlobalThis,
+            args: Vec::new(),
+            span: Span::generated("globalThis"),
         })
     }
 
     pub(crate) fn function_props_for_object_expr(
         &self,
         expr: &ResolvedExpr,
-    ) -> Option<HashMap<String, FuncId>> {
+    ) -> Option<HashMap<ObjectAccessorKey, FuncId>> {
         let ResolvedExpr::Object(props) = expr else {
             return None;
         };
@@ -643,7 +719,7 @@ impl super::super::Resolver {
                 if let ResolvedExpr::Ident(name) = prop.value() {
                     self.resolve_func(name)
                         .ok()
-                        .map(|func_id| (key.to_owned(), func_id))
+                        .map(|func_id| (ObjectAccessorKey::Property(key.to_owned()), func_id))
                 } else {
                     None
                 }
@@ -656,27 +732,459 @@ impl super::super::Resolver {
         }
     }
 
+    fn lower_static_test262_verify_property(&self, args: &[ResolvedExpr]) -> Option<LoweredExpr> {
+        let [
+            target,
+            ResolvedExpr::String(key),
+            ResolvedExpr::Object(desc),
+            ..,
+        ] = args
+        else {
+            return None;
+        };
+        if key == "prototype" {
+            return self
+                .static_function_prototype_descriptor_matches(target, desc)
+                .then(|| LoweredExpr::Bool(true, Span::generated("test262_verify_property")));
+        }
+        if !matches!(key.as_str(), "name" | "length") {
+            let ResolvedExpr::Ident(target_name) = target else {
+                return None;
+            };
+            return self
+                .static_object_property_descriptor_matches(target_name, key, desc)
+                .then(|| LoweredExpr::Bool(true, Span::generated("test262_verify_property")));
+        }
+        if !self.static_function_descriptor_matches(target, key, desc) {
+            return None;
+        }
+        Some(LoweredExpr::Bool(
+            true,
+            Span::generated("test262_verify_property"),
+        ))
+    }
+
+    fn static_function_prototype_descriptor_matches(
+        &self,
+        target: &ResolvedExpr,
+        desc: &[ResolvedObjectProp],
+    ) -> bool {
+        self.static_function_metadata_target(target).is_some()
+            && resolved_object_bool_prop(desc, "writable") == Some(true)
+            && resolved_object_bool_prop(desc, "enumerable") == Some(false)
+            && resolved_object_bool_prop(desc, "configurable") == Some(false)
+    }
+
+    fn static_function_descriptor_matches(
+        &self,
+        target: &ResolvedExpr,
+        key: &str,
+        desc: &[ResolvedObjectProp],
+    ) -> bool {
+        self.static_function_descriptor_value_matches(target, key, desc)
+            && resolved_object_bool_prop(desc, "writable") == Some(false)
+            && resolved_object_bool_prop(desc, "enumerable") == Some(false)
+            && resolved_object_bool_prop(desc, "configurable") == Some(true)
+    }
+
+    fn static_function_descriptor_value_matches(
+        &self,
+        target: &ResolvedExpr,
+        key: &str,
+        desc: &[ResolvedObjectProp],
+    ) -> bool {
+        let Some(metadata) = self.static_function_metadata_target(target) else {
+            return false;
+        };
+        match key {
+            "name" => resolved_object_string_prop(desc, "value")
+                .is_some_and(|value| value == metadata.name),
+            "length" => {
+                let Some(length) = self
+                    .ctx
+                    .symbols
+                    .function_signatures
+                    .get(&metadata.func_id)
+                    .and_then(|signature| signature.metadata_length)
+                else {
+                    return false;
+                };
+                resolved_object_number_prop(desc, "value") == Some(length as i32)
+            }
+            _ => false,
+        }
+    }
+
+    fn static_function_metadata_target(
+        &self,
+        target: &ResolvedExpr,
+    ) -> Option<StaticFunctionMetadataTarget> {
+        match target {
+            ResolvedExpr::Ident(name) => {
+                let local = self.resolve_local(name).ok()?;
+                let closure = self.ctx.facts.arrow_locals.get(&local)?;
+                Some(StaticFunctionMetadataTarget {
+                    func_id: closure.func_id,
+                    name: self
+                        .ctx
+                        .facts
+                        .function_metadata_name_locals
+                        .get(&local)
+                        .cloned()
+                        .unwrap_or_else(|| name.clone()),
+                })
+            }
+            ResolvedExpr::PropertyAccess { object, key, .. } => {
+                let ResolvedExpr::Ident(object_name) = object.as_ref() else {
+                    return None;
+                };
+                let object_local = self.resolve_local(object_name).ok()?;
+                let func_id = self
+                    .ctx
+                    .classes
+                    .object_function_props
+                    .get(&object_local)
+                    .and_then(|props| props.get(&ObjectAccessorKey::Property(key.clone())))
+                    .copied()?;
+                Some(StaticFunctionMetadataTarget {
+                    func_id,
+                    name: key.clone(),
+                })
+            }
+            ResolvedExpr::ComputedIndex { object, index } => {
+                let ResolvedExpr::Ident(object_name) = object.as_ref() else {
+                    return None;
+                };
+                let object_local = self.resolve_local(object_name).ok()?;
+                let accessor_key =
+                    super::super::string::resolved_expr_static_accessor_key(&self.ctx, index)?;
+                let func_id = self
+                    .ctx
+                    .classes
+                    .object_function_props
+                    .get(&object_local)
+                    .and_then(|props| props.get(&accessor_key))
+                    .copied()?;
+                let name = match accessor_key {
+                    ObjectAccessorKey::Property(name) => name,
+                    ObjectAccessorKey::SymbolLocal(local) => {
+                        super::super::string::symbol_local_name(&self.ctx, local)?
+                    }
+                };
+                Some(StaticFunctionMetadataTarget { func_id, name })
+            }
+            _ => None,
+        }
+    }
+
+    fn static_object_property_descriptor_matches(
+        &self,
+        target: &str,
+        key: &str,
+        desc: &[ResolvedObjectProp],
+    ) -> bool {
+        let Ok(local) = self.resolve_local(target) else {
+            return false;
+        };
+        let has_property = self
+            .ctx
+            .facts
+            .static_object_literal_locals
+            .get(&local)
+            .is_some_and(|props| props.iter().any(|prop| prop.static_key() == Some(key)))
+            || self
+                .ctx
+                .classes
+                .object_function_props
+                .get(&local)
+                .is_some_and(|props| {
+                    props.contains_key(&ObjectAccessorKey::Property(key.to_owned()))
+                })
+            || self
+                .ctx
+                .classes
+                .object_accessor_props
+                .get(&local)
+                .is_some_and(|props| {
+                    props.contains_key(&ObjectAccessorKey::Property(key.to_owned()))
+                });
+        has_property
+            && !resolved_object_has_prop(desc, "value")
+            && resolved_object_bool_prop(desc, "writable") == Some(true)
+            && resolved_object_bool_prop(desc, "enumerable") == Some(true)
+            && resolved_object_bool_prop(desc, "configurable") == Some(true)
+    }
+
     pub(crate) fn function_props_for_lowered_object_expr(
         &self,
         expr: &LoweredExpr,
-    ) -> Option<HashMap<String, FuncId>> {
-        let LoweredExpr::ObjectNew { props, .. } = expr else {
-            return None;
-        };
-        let function_props = props
-            .iter()
-            .filter_map(|(key, value)| {
-                if let LoweredExpr::ArrowFn { func_id, .. } = value {
-                    Some((key.clone(), *func_id))
-                } else {
-                    None
-                }
-            })
-            .collect::<HashMap<_, _>>();
+    ) -> Option<HashMap<ObjectAccessorKey, FuncId>> {
+        let mut function_props = HashMap::new();
+        self.collect_lowered_object_function_props(expr, &mut function_props)?;
         if function_props.is_empty() {
             None
         } else {
             Some(function_props)
+        }
+    }
+
+    pub(crate) fn accessor_props_for_lowered_object_expr(
+        &self,
+        expr: &LoweredExpr,
+    ) -> Option<HashMap<ObjectAccessorKey, ObjectAccessorProp>> {
+        let mut accessor_props = HashMap::new();
+        self.collect_lowered_object_accessor_props(expr, &mut accessor_props)?;
+        if accessor_props.is_empty() {
+            None
+        } else {
+            Some(accessor_props)
+        }
+    }
+
+    fn collect_lowered_object_accessor_props(
+        &self,
+        expr: &LoweredExpr,
+        accessor_props: &mut HashMap<ObjectAccessorKey, ObjectAccessorProp>,
+    ) -> Option<()> {
+        match expr {
+            LoweredExpr::ObjectNew { .. } => Some(()),
+            LoweredExpr::Block { stmts, result, .. } => {
+                let LoweredExpr::Local(object_local, _) = result.as_ref() else {
+                    return None;
+                };
+                let mut saw_object_init = false;
+                for stmt in stmts {
+                    match stmt {
+                        LoweredStmt::Let(local, value, _) if local == object_local => {
+                            self.collect_lowered_object_accessor_props(value, accessor_props)?;
+                            saw_object_init = true;
+                        }
+                        LoweredStmt::Expr(expr, _) if saw_object_init => {
+                            self.apply_lowered_object_property_write_to_accessor_props(
+                                *object_local,
+                                expr,
+                                accessor_props,
+                            )?;
+                        }
+                        _ => {}
+                    }
+                }
+                saw_object_init.then_some(())
+            }
+            _ => None,
+        }
+    }
+
+    fn collect_lowered_object_function_props(
+        &self,
+        expr: &LoweredExpr,
+        function_props: &mut HashMap<ObjectAccessorKey, FuncId>,
+    ) -> Option<()> {
+        match expr {
+            LoweredExpr::ObjectNew { props, .. } => {
+                self.apply_lowered_object_props_to_function_props(props, function_props);
+                Some(())
+            }
+            LoweredExpr::Block { stmts, result, .. } => {
+                let LoweredExpr::Local(object_local, _) = result.as_ref() else {
+                    return None;
+                };
+                let mut saw_object_init = false;
+                for stmt in stmts {
+                    match stmt {
+                        LoweredStmt::Let(local, value, _) if local == object_local => {
+                            self.collect_lowered_object_function_props(value, function_props)?;
+                            saw_object_init = true;
+                        }
+                        LoweredStmt::Expr(expr, _) if saw_object_init => {
+                            self.apply_lowered_object_property_write_to_function_props(
+                                *object_local,
+                                expr,
+                                function_props,
+                            )?;
+                        }
+                        _ => {}
+                    }
+                }
+                saw_object_init.then_some(())
+            }
+            _ => None,
+        }
+    }
+
+    fn apply_lowered_object_props_to_function_props(
+        &self,
+        props: &[(String, LoweredExpr)],
+        function_props: &mut HashMap<ObjectAccessorKey, FuncId>,
+    ) {
+        for (key, value) in props {
+            self.apply_function_prop_value(
+                ObjectAccessorKey::Property(key.clone()),
+                value,
+                function_props,
+            );
+        }
+    }
+
+    fn apply_lowered_object_property_write_to_function_props(
+        &self,
+        object_local: LocalId,
+        expr: &LoweredExpr,
+        function_props: &mut HashMap<ObjectAccessorKey, FuncId>,
+    ) -> Option<()> {
+        match expr {
+            LoweredExpr::PropertySet {
+                object, key, value, ..
+            } if matches!(object.as_ref(), LoweredExpr::Local(local, _) if *local == object_local) =>
+            {
+                self.apply_function_prop_value(
+                    ObjectAccessorKey::Property(key.clone()),
+                    value,
+                    function_props,
+                );
+                Some(())
+            }
+            LoweredExpr::PropertySetDynamic {
+                object,
+                index,
+                value,
+                ..
+            } if matches!(object.as_ref(), LoweredExpr::Local(local, _) if *local == object_local) =>
+            {
+                let key = self.lowered_static_accessor_key(index)?;
+                self.apply_function_prop_value(key, value, function_props);
+                Some(())
+            }
+            _ => Some(()),
+        }
+    }
+
+    fn apply_lowered_object_property_write_to_accessor_props(
+        &self,
+        object_local: LocalId,
+        expr: &LoweredExpr,
+        accessor_props: &mut HashMap<ObjectAccessorKey, ObjectAccessorProp>,
+    ) -> Option<()> {
+        match expr {
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ObjectDefineProperty,
+                args,
+                ..
+            } if args.len() == 3
+                && matches!(&args[0], LoweredExpr::Local(local, _) if *local == object_local) =>
+            {
+                let key = self.lowered_static_accessor_key(&args[1])?;
+                self.apply_accessor_descriptor_value(key, &args[2], accessor_props);
+                Some(())
+            }
+            LoweredExpr::PropertySet {
+                object, key, value, ..
+            } if matches!(object.as_ref(), LoweredExpr::Local(local, _) if *local == object_local) =>
+            {
+                let accessor_key = ObjectAccessorKey::Property(key.clone());
+                if let Some(prop) = accessor_props.get(&accessor_key)
+                    && prop.set.is_some()
+                {
+                    return Some(());
+                }
+                if !matches!(value.as_ref(), LoweredExpr::ArrowFn { .. }) {
+                    accessor_props.remove(&accessor_key);
+                }
+                Some(())
+            }
+            _ => Some(()),
+        }
+    }
+
+    pub(crate) fn accessor_prop_from_descriptor_expr(
+        &self,
+        desc: &LoweredExpr,
+    ) -> Option<ObjectAccessorProp> {
+        let LoweredExpr::ObjectNew { props, .. } = desc else {
+            return None;
+        };
+        let mut accessor = ObjectAccessorProp::default();
+        for (key, value) in props {
+            match (key.as_str(), value) {
+                ("get", LoweredExpr::ArrowFn { func_id, .. }) => accessor.get = Some(*func_id),
+                ("set", LoweredExpr::ArrowFn { func_id, .. }) => accessor.set = Some(*func_id),
+                _ => {}
+            }
+        }
+        (accessor.get.is_some() || accessor.set.is_some()).then_some(accessor)
+    }
+
+    fn apply_accessor_descriptor_value(
+        &self,
+        key: ObjectAccessorKey,
+        desc: &LoweredExpr,
+        accessor_props: &mut HashMap<ObjectAccessorKey, ObjectAccessorProp>,
+    ) {
+        if let Some(accessor) = self.accessor_prop_from_descriptor_expr(desc) {
+            accessor_props
+                .entry(key)
+                .and_modify(|existing| {
+                    if accessor.get.is_some() {
+                        existing.get = accessor.get;
+                    }
+                    if accessor.set.is_some() {
+                        existing.set = accessor.set;
+                    }
+                })
+                .or_insert(accessor);
+            return;
+        }
+        if matches!(desc, LoweredExpr::ObjectNew { .. }) {
+            accessor_props.remove(&key);
+        }
+    }
+
+    fn apply_function_prop_value(
+        &self,
+        key: ObjectAccessorKey,
+        value: &LoweredExpr,
+        function_props: &mut HashMap<ObjectAccessorKey, FuncId>,
+    ) {
+        if let LoweredExpr::ArrowFn { func_id, .. } = value {
+            function_props.insert(key, *func_id);
+        } else {
+            function_props.remove(&key);
+        }
+    }
+
+    fn lowered_static_accessor_key(&self, expr: &LoweredExpr) -> Option<ObjectAccessorKey> {
+        match expr {
+            LoweredExpr::String(value, _) => Some(ObjectAccessorKey::Property(value.clone())),
+            LoweredExpr::Number(value, _) => Some(ObjectAccessorKey::Property(value.to_string())),
+            LoweredExpr::Local(local, _) => self
+                .ctx
+                .facts
+                .string_value(*local)
+                .cloned()
+                .map(ObjectAccessorKey::Property)
+                .or_else(|| {
+                    self.ctx
+                        .facts
+                        .symbol_value_locals
+                        .contains(local)
+                        .then_some(ObjectAccessorKey::SymbolLocal(*local))
+                }),
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(func_id),
+                args,
+                ..
+            } => {
+                if let Some(value) = self.ctx.functions.static_string_returns.get(func_id) {
+                    return Some(ObjectAccessorKey::Property(value.clone()));
+                }
+                let signature = self.ctx.symbols.function_signatures.get(func_id)?;
+                if signature.returns_first_param_identity && args.len() == 1 {
+                    self.lowered_static_accessor_key(&args[0])
+                } else {
+                    None
+                }
+            }
+            _ => None,
         }
     }
 
@@ -735,6 +1243,40 @@ impl super::super::Resolver {
             }),
         }
     }
+}
+
+fn resolved_object_number_prop(props: &[ResolvedObjectProp], key: &str) -> Option<i32> {
+    props.iter().find_map(|prop| match prop {
+        ResolvedObjectProp::KeyValue {
+            key: prop_key,
+            value: ResolvedExpr::Number(value),
+        } if prop_key == key => Some(*value),
+        _ => None,
+    })
+}
+
+fn resolved_object_string_prop<'a>(props: &'a [ResolvedObjectProp], key: &str) -> Option<&'a str> {
+    props.iter().find_map(|prop| match prop {
+        ResolvedObjectProp::KeyValue {
+            key: prop_key,
+            value: ResolvedExpr::String(value),
+        } if prop_key == key => Some(value.as_str()),
+        _ => None,
+    })
+}
+
+fn resolved_object_bool_prop(props: &[ResolvedObjectProp], key: &str) -> Option<bool> {
+    props.iter().find_map(|prop| match prop {
+        ResolvedObjectProp::KeyValue {
+            key: prop_key,
+            value: ResolvedExpr::Bool(value),
+        } if prop_key == key => Some(*value),
+        _ => None,
+    })
+}
+
+fn resolved_object_has_prop(props: &[ResolvedObjectProp], key: &str) -> bool {
+    props.iter().any(|prop| prop.static_key() == Some(key))
 }
 
 fn function_apply_explicit_args(

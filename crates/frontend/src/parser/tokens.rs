@@ -106,6 +106,10 @@ impl Parser {
                 span,
             }) => Ok((n, span)),
             Some(SpannedToken {
+                kind: Token::BigIntLiteral(raw),
+                span,
+            }) => Ok((bigint_literal_property_key(&raw), span)),
+            Some(SpannedToken {
                 kind: Token::String(s),
                 span,
             }) => Ok((s, span)),
@@ -266,10 +270,16 @@ impl Parser {
                 self.advance();
                 Ok(ParsedObjectKey::Static { key, span })
             }
-            Some(Token::BigIntLiteral(_)) | Some(Token::PrivateIdentifier(_)) => Err(Diagnostic {
+            Some(Token::BigIntLiteral(raw)) => {
+                let key = bigint_literal_property_key(raw);
+                let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+                self.advance();
+                Ok(ParsedObjectKey::Static { key, span })
+            }
+            Some(Token::PrivateIdentifier(_)) => Err(Diagnostic {
                 code: DiagCode::SyntaxError,
                 message: format!(
-                    "issue-5168: a 'bigint' literal cannot be used as a property name, got {:?}",
+                    "issue-5168: a private identifier cannot be used as an object literal property name, got {:?}",
                     self.peek()
                 ),
                 span: self.peek_span(),
@@ -309,8 +319,11 @@ impl Parser {
 
                 phase: None,});
         }
-        // Handle string literal computed keys: ["key"]
-        if let Some(Token::String(s)) = self.peek() {
+        // Handle string literal computed keys: ["key"]. If another token follows
+        // before the closing bracket, parse the whole computed-key expression.
+        if let Some(Token::String(s)) = self.peek()
+            && matches!(self.peek_n(1), Some(Token::RightBracket))
+        {
             let key = s.clone();
             self.advance();
             let end = self.expect(TokenKind::RightBracket)?;
@@ -323,7 +336,9 @@ impl Parser {
             });
         }
         // Handle number literal computed keys: [42]
-        if let Some(Token::Number(value)) = self.peek() {
+        if let Some(Token::Number(value)) = self.peek()
+            && matches!(self.peek_n(1), Some(Token::RightBracket))
+        {
             let key = value.to_string();
             self.advance();
             let end = self.expect(TokenKind::RightBracket)?;
@@ -335,7 +350,9 @@ impl Parser {
                 },
             });
         }
-        if let Some(Token::DecimalNumber(value)) = self.peek() {
+        if let Some(Token::DecimalNumber(value)) = self.peek()
+            && matches!(self.peek_n(1), Some(Token::RightBracket))
+        {
             let key = value.clone();
             self.advance();
             let end = self.expect(TokenKind::RightBracket)?;
@@ -616,5 +633,54 @@ impl Parser {
             .and_then(|_| self.has_preceding_newline.get(self.cursor))
             .copied()
             .unwrap_or(false)
+    }
+}
+
+fn bigint_literal_property_key(raw: &str) -> String {
+    let Some(digits) = raw.strip_suffix('n') else {
+        return raw.to_owned();
+    };
+    if let Some(hex) = digits.strip_prefix("0x").or_else(|| digits.strip_prefix("0X")) {
+        return radix_digits_to_decimal_string(hex, 16);
+    }
+    if let Some(binary) = digits
+        .strip_prefix("0b")
+        .or_else(|| digits.strip_prefix("0B"))
+    {
+        return radix_digits_to_decimal_string(binary, 2);
+    }
+    if let Some(octal) = digits
+        .strip_prefix("0o")
+        .or_else(|| digits.strip_prefix("0O"))
+    {
+        return radix_digits_to_decimal_string(octal, 8);
+    }
+    digits.to_owned()
+}
+
+fn radix_digits_to_decimal_string(digits: &str, radix: u32) -> String {
+    let mut decimal = vec![0u8];
+    for ch in digits.chars() {
+        let value = ch.to_digit(radix).unwrap_or(0);
+        let mut carry = value;
+        for digit in decimal.iter_mut().rev() {
+            let next = u32::from(*digit) * radix + carry;
+            *digit = (next % 10) as u8;
+            carry = next / 10;
+        }
+        while carry > 0 {
+            decimal.insert(0, (carry % 10) as u8);
+            carry /= 10;
+        }
+    }
+    let result = decimal
+        .into_iter()
+        .skip_while(|digit| *digit == 0)
+        .map(|digit| char::from(b'0' + digit))
+        .collect::<String>();
+    if result.is_empty() {
+        "0".to_owned()
+    } else {
+        result
     }
 }

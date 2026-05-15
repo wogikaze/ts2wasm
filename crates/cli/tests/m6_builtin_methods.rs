@@ -3,7 +3,7 @@
 /// Category: build_smoke.
 /// These tests confirm the compiler can emit Wasm for builtin invocations.
 /// Runtime semantics are validated in `m2_node_diff.rs` where supported.
-use std::path::Path;
+use std::{fs, path::Path};
 
 /// Build a fixture with the compiler and return stdout on success.
 fn run_fixture(path: &str) -> Result<String, String> {
@@ -29,6 +29,29 @@ fn run_fixture(path: &str) -> Result<String, String> {
         .arg(&output_wasm)
         .output()
         .map_err(|e| format!("Failed to execute ts2wasm: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(stderr.to_string());
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    Ok(stdout.to_string())
+}
+
+fn run_source(name: &str, source: &str) -> Result<String, String> {
+    let input = std::env::temp_dir().join(format!("ts2wasm-m6-{name}-{}.ts", std::process::id()));
+    fs::write(&input, source).map_err(|e| format!("Failed to write source: {e}"))?;
+    let output_wasm =
+        std::env::temp_dir().join(format!("ts2wasm-m6-{name}-{}.wasm", std::process::id()));
+
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output_wasm)
+        .output()
+        .map_err(|e| format!("Failed to execute ts2wasm: {e}"))?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
@@ -143,6 +166,26 @@ fn build_smoke_object_keys_method() {
 }
 
 #[test]
+fn build_smoke_object_get_own_property_names_method() {
+    let result = run_fixture("builtins-and-io/object-get-own-property-names.ts");
+    assert!(
+        result.is_ok(),
+        "Object.getOwnPropertyNames should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_own_key_integer_order() {
+    let result = run_fixture("builtins-and-io/object-own-key-integer-order.ts");
+    assert!(
+        result.is_ok(),
+        "Object own-key integer ordering fixture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_values_method() {
     let result = run_fixture("builtins-and-io/object-values.ts");
     assert!(
@@ -173,11 +216,161 @@ fn build_smoke_object_literal_proto() {
 }
 
 #[test]
+fn build_smoke_object_literal_method() {
+    let result = run_fixture("core-expressions/object-literal-method.ts");
+    assert!(
+        result.is_ok(),
+        "object literal method shorthand should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_literal_getter_descriptor() {
+    let result = run_fixture("core-expressions/object-literal-getter-descriptor.ts");
+    assert!(
+        result.is_ok(),
+        "object literal getter descriptor should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_literal_setter_descriptor() {
+    let result = run_fixture("core-expressions/object-literal-setter-descriptor.ts");
+    assert!(
+        result.is_ok(),
+        "object literal setter descriptor should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_literal_computed_accessor_invocation() {
+    let result = run_fixture("core-expressions/object-literal-computed-accessor-invocation.ts");
+    assert!(
+        result.is_ok(),
+        "object literal computed accessor invocation should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_literal_symbol_accessor_invocation() {
+    let result = run_fixture("core-expressions/object-literal-symbol-accessor-invocation.ts");
+    assert!(
+        result.is_ok(),
+        "object literal symbol accessor invocation should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_literal_computed_spread() {
+    let result = run_fixture("core-expressions/object-literal-computed-spread.ts");
+    assert!(
+        result.is_ok(),
+        "object literal computed key plus spread should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_literal_bigint_keys() {
+    let result = run_fixture("core-expressions/object-literal-bigint-keys.ts");
+    assert!(
+        result.is_ok(),
+        "object literal BigInt property names should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_literal_computed_expression_key() {
+    let result = run_fixture("core-expressions/object-literal-computed-expression-key.ts");
+    assert!(
+        result.is_ok(),
+        "object literal computed expression key should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_literal_computed_method() {
+    let result = run_fixture("core-expressions/object-literal-computed-method.ts");
+    assert!(
+        result.is_ok(),
+        "object literal computed method should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_literal_computed_method_call() {
+    let result = run_fixture("core-expressions/object-literal-computed-method-call.ts");
+    assert!(
+        result.is_ok(),
+        "object literal computed method direct call should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_literal_computed_identity_method_call() {
+    let result = run_fixture("core-expressions/object-literal-computed-identity-method-call.ts");
+    assert!(
+        result.is_ok(),
+        "object literal computed identity method direct call should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_literal_computed_number_method_call() {
+    let result = run_fixture("core-expressions/object-literal-computed-number-method-call.ts");
+    assert!(
+        result.is_ok(),
+        "object literal computed numeric method direct call should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_literal_computed_large_exponent_key() {
+    let result = run_fixture("core-expressions/object-literal-computed-large-exponent-key.ts");
+    assert!(
+        result.is_ok(),
+        "object literal computed large exponent key should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_literal_symbol_method_call() {
+    let result = run_fixture("core-expressions/object-literal-symbol-method-call.ts");
+    assert!(
+        result.is_ok(),
+        "object literal symbol method direct call should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_entries_method() {
     let result = run_fixture("builtins-and-io/object-entries.ts");
     assert!(
         result.is_ok(),
         "Object.entries should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_literal_method_mutable_capture() {
+    let result = run_fixture("core-expressions/object-literal-method-mutable-capture.ts");
+    assert!(
+        result.is_ok(),
+        "object literal method mutable capture should build: {:?}",
         result.err()
     );
 }
@@ -1275,6 +1468,46 @@ fn build_smoke_date_set_time() {
 }
 
 #[test]
+fn build_smoke_date_set_utc_full_year() {
+    let result = run_fixture("builtins-and-io/date-set-utc-full-year.ts");
+    assert!(
+        result.is_ok(),
+        "Date.setUTCFullYear should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_date_set_utc_components() {
+    let result = run_fixture("builtins-and-io/date-set-utc-components.ts");
+    assert!(
+        result.is_ok(),
+        "Date UTC component setters should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_date_set_utc_methods_defaults() {
+    let result = run_fixture("builtins-and-io/date-set-utc-methods.ts");
+    assert!(
+        result.is_ok(),
+        "Date UTC setter default-preservation fixture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_date_set_local_components() {
+    let result = run_fixture("builtins-and-io/date-set-local-components.ts");
+    assert!(
+        result.is_ok(),
+        "Date local-time setter fixture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_date_complete() {
     let result = run_fixture("builtins-and-io/date-complete.ts");
     assert!(
@@ -2201,6 +2434,49 @@ fn build_smoke_intl_datetimeformat() {
     );
 }
 
+#[test]
+fn build_smoke_intl_constructor_alias_resolved_options() {
+    let result = run_source(
+        "intl-constructor-alias-resolved-options",
+        r#"
+        function check(Constructor: any) {
+          let obj = new Constructor(undefined, { style: "currency", currency: "USD" });
+          console.log(obj.resolvedOptions().currency);
+        }
+
+        check(Intl.NumberFormat);
+        "#,
+    );
+    assert!(
+        result.is_ok(),
+        "Intl constructor alias resolvedOptions should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_intl_numberformat_captured_format_method() {
+    let result = run_source(
+        "intl-numberformat-captured-format-method",
+        r#"
+        function check() {
+          var format = new Intl.NumberFormat(["en"], { useGrouping: false });
+          function read() {
+            return format.format(1);
+          }
+          console.log(read());
+        }
+
+        check();
+        "#,
+    );
+    assert!(
+        result.is_ok(),
+        "captured Intl.NumberFormat format method should build: {:?}",
+        result.err()
+    );
+}
+
 // === W5: Language runtime semantics — new fixtures ===
 
 // for...of on array (iterator protocol)
@@ -2273,17 +2549,12 @@ fn custom_iterator_symbol_builds_successfully() {
 
 // Property descriptor with getter/setter — W5
 #[test]
-fn property_getter_setter_unsupported_diagnostic() {
+fn build_smoke_property_getter_setter_descriptor() {
     let result = run_fixture("core-semantics/property-getter-setter.ts");
     assert!(
-        result.is_err(),
-        "Property getter/setter should produce unsupported diagnostic"
-    );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("this") || err_msg.contains("Unsupported"),
-        "Diagnostic should mention this/Unsupported: {}",
-        err_msg
+        result.is_ok(),
+        "Property getter/setter descriptor should build: {:?}",
+        result.err()
     );
 }
 
@@ -2345,6 +2616,16 @@ fn build_smoke_arraybuffer_is_view() {
     assert!(
         result.is_ok(),
         "ArrayBuffer.isView should build successfully: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_sharedarraybuffer_basic() {
+    let result = run_fixture("builtins-and-io/sharedarraybuffer-basic.ts");
+    assert!(
+        result.is_ok(),
+        "SharedArrayBuffer should build successfully: {:?}",
         result.err()
     );
 }
@@ -2688,6 +2969,16 @@ fn build_smoke_array_foreach_thisarg() {
 }
 
 #[test]
+fn build_smoke_array_foreach_function_callback() {
+    let result = run_fixture("builtins-and-io/array-foreach-function-callback.ts");
+    assert!(
+        result.is_ok(),
+        "array-foreach-function-callback should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_async_generator_basic() {
     let result = run_fixture("builtins-and-io/async-generator-basic.ts");
     assert!(
@@ -2813,6 +3104,16 @@ fn build_smoke_generator_direct_next() {
     assert!(
         result.is_ok(),
         "generator-direct-next should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_generator_object_method_next() {
+    let result = run_fixture("builtins-and-io/generator-object-method-next.ts");
+    assert!(
+        result.is_ok(),
+        "generator-object-method-next should build: {:?}",
         result.err()
     );
 }
@@ -3691,7 +3992,6 @@ fn build_smoke_typedarray_complete() {
         "builtins-and-io/typedarray-methods.ts",
         "builtins-and-io/typedarray-index-of.ts",
         "builtins-and-io/typedarray-mutating-methods.ts",
-        "builtins-and-io/typedarray-unsupported-methods.ts",
     ] {
         let result = run_fixture(fixture);
         assert!(

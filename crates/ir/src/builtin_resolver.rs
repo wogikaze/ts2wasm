@@ -747,12 +747,14 @@ impl BigIntStaticBuiltinFolder {
                 name,
                 params,
                 body,
+                is_generator,
                 span,
                 ..
             } => Expr::FunctionExpr {
                 name: name.clone(),
                 params: params.clone(),
                 body: BigIntStaticBuiltinFolder::default().fold_stmts(body),
+                is_generator: *is_generator,
                 span: *span,
             },
             Expr::ClassExpr {
@@ -1768,6 +1770,9 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             })
         }
         Expr::Call { callee, args, span } => {
+            if is_test262_assert_type_error_non_constructor_probe(callee, args) {
+                return Ok(ResolvedExpr::Undefined);
+            }
             if is_test262_assert_reference_error_probe(callee, args) {
                 return Ok(ResolvedExpr::Undefined);
             }
@@ -1814,6 +1819,15 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 Ok(ResolvedExpr::MethodCall {
                     object: Box::new(resolve_expr(object)?),
                     method: property.clone(),
+                    args: resolved_args,
+                    span: *span,
+                })
+            } else if let Expr::Index { object, index, .. } = callee.as_ref()
+                && let Expr::String { value, .. } = index.as_ref()
+            {
+                Ok(ResolvedExpr::MethodCall {
+                    object: Box::new(resolve_expr(object)?),
+                    method: value.clone(),
                     args: resolved_args,
                     span: *span,
                 })
@@ -2001,14 +2015,17 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 object, property, ..
             } = new_expr.as_ref()
                 && matches!(object.as_ref(), Expr::Ident { name, .. } if name == "Intl")
-                && property == "DateTimeFormat"
+                && matches!(
+                    property.as_str(),
+                    "DateTimeFormat" | "DurationFormat" | "ListFormat"
+                )
             {
                 let resolved_args = args
                     .iter()
                     .map(resolve_expr)
                     .collect::<Result<Vec<_>, _>>()?;
                 return Ok(ResolvedExpr::New {
-                    class_name: "Intl.DateTimeFormat".to_owned(),
+                    class_name: format!("Intl.{property}"),
                     args: resolved_args,
                     span: *span,
                 });
@@ -2097,9 +2114,14 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             })
         }
         Expr::FunctionExpr {
-            name, params, body, ..
+            name,
+            params,
+            body,
+            is_generator,
+            ..
         } => Ok(ResolvedExpr::FunctionExpr {
             name: name.clone(),
+            is_generator: *is_generator,
             params: params
                 .iter()
                 .map(|(param_name, default, is_rest)| {

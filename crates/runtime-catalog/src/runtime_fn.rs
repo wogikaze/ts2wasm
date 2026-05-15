@@ -181,6 +181,10 @@ pub enum RuntimeFn {
     ArrayBufferNew,
     /// ArrayBuffer.isView(val) — returns 1 if val is a DataView or TypedArray, 0 otherwise
     ArrayBufferIsView,
+    /// ArrayBuffer.prototype.transfer(newLength) — creates a new buffer, copies data, detaches old.
+    ArrayBufferTransfer,
+    /// new SharedArrayBuffer(byteLength) — shared memory allocation.
+    SharedArrayBufferNew,
     DataViewNew,
     DataViewGetInt8,
     DataViewSetInt8,
@@ -210,6 +214,34 @@ pub enum RuntimeFn {
     DateGetTime,
     /// Date.prototype.setTime.
     DateSetTime,
+    /// Date.prototype.setUTCFullYear.
+    DateSetUTCFullYear,
+    /// Date.prototype.setUTCMonth.
+    DateSetUTCMonth,
+    /// Date.prototype.setUTCDate.
+    DateSetUTCDate,
+    /// Date.prototype.setUTCHours.
+    DateSetUTCHours,
+    /// Date.prototype.setUTCMinutes.
+    DateSetUTCMinutes,
+    /// Date.prototype.setUTCSeconds.
+    DateSetUTCSeconds,
+    /// Date.prototype.setUTCMilliseconds.
+    DateSetUTCMilliseconds,
+    /// Date.prototype.setFullYear.
+    DateSetFullYear,
+    /// Date.prototype.setMonth.
+    DateSetMonth,
+    /// Date.prototype.setDate.
+    DateSetDate,
+    /// Date.prototype.setHours.
+    DateSetHours,
+    /// Date.prototype.setMinutes.
+    DateSetMinutes,
+    /// Date.prototype.setSeconds.
+    DateSetSeconds,
+    /// Date.prototype.setMilliseconds.
+    DateSetMilliseconds,
     /// Date.parse via host shim.
     DateParse,
     /// Date.UTC via host shim.
@@ -373,6 +405,7 @@ pub enum RuntimeFn {
     ArrayIsArray,
     /// M10: Object statics
     ObjectKeys,
+    ObjectGetOwnPropertySymbols,
     ObjectSpread,
     SpreadViaIterator,
     ObjectValues,
@@ -792,6 +825,7 @@ const STRICT_EQUAL_DEPS: &[RuntimeFn] = &[
     RuntimeFn::IsString,
     RuntimeFn::StringEqual,
     RuntimeFn::BigIntCompare,
+    RuntimeFn::MemEqual,
     RuntimeFn::NumberToI32,
 ];
 const EQUAL_EQUAL_DEPS: &[RuntimeFn] = &[
@@ -808,6 +842,15 @@ const BIGINT_TO_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::C
 const BIGINT_FROM_VALUE_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::IsString];
 const BIGINT_AS_INT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::IsString];
 const BIGINT_AS_UINT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::BigIntAsIntN];
+const DATE_SET_UTC_FULL_YEAR_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::DateUTC,
+    RuntimeFn::DateGetUtcMonth,
+    RuntimeFn::DateGetUtcDate,
+    RuntimeFn::DateGetUtcHours,
+    RuntimeFn::DateGetUtcMinutes,
+    RuntimeFn::DateGetUtcSeconds,
+    RuntimeFn::DateGetUtcMilliseconds,
+];
 
 const IMPORT_FD_READ: &[HostImport] = &[HostImport::FdRead];
 const IMPORT_FD_WRITE: &[HostImport] = &[HostImport::FdWrite];
@@ -1097,6 +1140,7 @@ const ARRAY_SPLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy]
 
 // Object method dependencies
 const OBJECT_KEYS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const OBJECT_GET_OWN_PROPERTY_SYMBOLS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const OBJECT_SPREAD_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ObjectKeys,
     RuntimeFn::PropertyGet,
@@ -1118,6 +1162,7 @@ const OBJECT_HAS_OWN_PROPERTY_DEPS: &[RuntimeFn] =
 const OBJECT_GET_OWN_PROPERTY_DESCRIPTOR_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::ValueToStringInto,
+    RuntimeFn::PropertyGet,
     RuntimeFn::PropertySet,
 ];
 const OBJECT_PROTOTYPE_DEPS: &[RuntimeFn] = &[];
@@ -1126,6 +1171,7 @@ const OBJECT_SEAL_DEPS: &[RuntimeFn] = &[];
 const OBJECT_DEFINE_PROPERTY_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::ValueToStringInto,
+    RuntimeFn::PropertyGet,
     RuntimeFn::PropertySet,
 ];
 const OBJECT_ASSIGN_DEPS: &[RuntimeFn] = &[
@@ -1184,6 +1230,8 @@ const TYPED_ARRAY_SET_DEPS: &[RuntimeFn] = &[RuntimeFn::GetLength, RuntimeFn::In
 const ATOMICS_VALUE_DEPS: &[RuntimeFn] = &[RuntimeFn::AtomicsElementPtr, RuntimeFn::NumberFromI32];
 const ATOMICS_NO_DEPS: &[RuntimeFn] = &[];
 const ARRAYBUFFER_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const ARRAYBUFFER_TRANSFER_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const SHARED_ARRAY_BUFFER_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATAVIEW_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATAVIEW_GET_BIGINT64_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const DATAVIEW_GET_BIGUINT64_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
@@ -1312,6 +1360,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "BigIntLeftShift" => Some(RuntimeFn::BigIntLeftShift),
         "BigIntRightShift" => Some(RuntimeFn::BigIntRightShift),
         "ObjectKeys" => Some(RuntimeFn::ObjectKeys),
+        "ObjectGetOwnPropertySymbols" => Some(RuntimeFn::ObjectGetOwnPropertySymbols),
         "ObjectSpread" => Some(RuntimeFn::ObjectSpread),
         "SpreadViaIterator" => Some(RuntimeFn::SpreadViaIterator),
         "ObjectValues" => Some(RuntimeFn::ObjectValues),
@@ -1457,6 +1506,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "AtomicsNotify" => Some(RuntimeFn::AtomicsNotify),
         "ArrayBufferNew" => Some(RuntimeFn::ArrayBufferNew),
         "ArrayBufferIsView" => Some(RuntimeFn::ArrayBufferIsView),
+        "ArrayBufferTransfer" => Some(RuntimeFn::ArrayBufferTransfer),
+        "SharedArrayBufferNew" => Some(RuntimeFn::SharedArrayBufferNew),
         "DataViewNew" => Some(RuntimeFn::DataViewNew),
         "DataViewGetInt8" => Some(RuntimeFn::DataViewGetInt8),
         "DataViewSetInt8" => Some(RuntimeFn::DataViewSetInt8),
@@ -1503,6 +1554,20 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DateNow" => Some(RuntimeFn::DateNow),
         "DateGetTime" => Some(RuntimeFn::DateGetTime),
         "DateSetTime" => Some(RuntimeFn::DateSetTime),
+        "DateSetUTCFullYear" => Some(RuntimeFn::DateSetUTCFullYear),
+        "DateSetUTCMonth" => Some(RuntimeFn::DateSetUTCMonth),
+        "DateSetUTCDate" => Some(RuntimeFn::DateSetUTCDate),
+        "DateSetUTCHours" => Some(RuntimeFn::DateSetUTCHours),
+        "DateSetUTCMinutes" => Some(RuntimeFn::DateSetUTCMinutes),
+        "DateSetUTCSeconds" => Some(RuntimeFn::DateSetUTCSeconds),
+        "DateSetUTCMilliseconds" => Some(RuntimeFn::DateSetUTCMilliseconds),
+        "DateSetFullYear" => Some(RuntimeFn::DateSetFullYear),
+        "DateSetMonth" => Some(RuntimeFn::DateSetMonth),
+        "DateSetDate" => Some(RuntimeFn::DateSetDate),
+        "DateSetHours" => Some(RuntimeFn::DateSetHours),
+        "DateSetMinutes" => Some(RuntimeFn::DateSetMinutes),
+        "DateSetSeconds" => Some(RuntimeFn::DateSetSeconds),
+        "DateSetMilliseconds" => Some(RuntimeFn::DateSetMilliseconds),
         "DateParse" => Some(RuntimeFn::DateParse),
         "DateUTC" => Some(RuntimeFn::DateUTC),
         "DateToString" => Some(RuntimeFn::DateToString),
@@ -1655,6 +1720,8 @@ impl RuntimeFn {
             | Self::ArrayIndexPresent
             | Self::ArrayBufferNew
             | Self::ArrayBufferIsView
+            | Self::ArrayBufferTransfer
+            | Self::SharedArrayBufferNew
             | Self::ArrayPush
             | Self::ArrayPushGrow
             | Self::ArrayPop
@@ -1747,6 +1814,20 @@ impl RuntimeFn {
             | Self::DateEpochMsNowNumber
             | Self::DateGetTime
             | Self::DateSetTime
+            | Self::DateSetUTCFullYear
+            | Self::DateSetUTCMonth
+            | Self::DateSetUTCDate
+            | Self::DateSetUTCHours
+            | Self::DateSetUTCMinutes
+            | Self::DateSetUTCSeconds
+            | Self::DateSetUTCMilliseconds
+            | Self::DateSetFullYear
+            | Self::DateSetMonth
+            | Self::DateSetDate
+            | Self::DateSetHours
+            | Self::DateSetMinutes
+            | Self::DateSetSeconds
+            | Self::DateSetMilliseconds
             | Self::DateParse
             | Self::DateUTC
             | Self::DateToString
@@ -1878,6 +1959,7 @@ impl RuntimeFn {
             | Self::PropertyDelete
             | Self::PropertyHas
             | Self::ObjectKeys
+            | Self::ObjectGetOwnPropertySymbols
             | Self::ObjectSpread
             | Self::SpreadViaIterator
             | Self::ObjectValues
@@ -2109,6 +2191,7 @@ impl RuntimeFn {
             | Self::TypeOf
             | Self::NumberFromI32
             | Self::ObjectKeys
+            | Self::ObjectGetOwnPropertySymbols
             | Self::BooleanToString
             | Self::SymbolToString
             | Self::SymbolDescription => RuntimeSignature {
@@ -2148,6 +2231,7 @@ impl RuntimeFn {
             | Self::NumberToPrecision
             | Self::ArrayPush
             | Self::ArrayPushGrow
+            | Self::ArrayBufferTransfer
             | Self::DataViewNew
             | Self::DataViewGetInt8
             | Self::DataViewGetUint8
@@ -2374,6 +2458,8 @@ impl RuntimeFn {
             Self::WeakSetDelete,
             Self::ArrayBufferNew,
             Self::ArrayBufferIsView,
+            Self::ArrayBufferTransfer,
+            Self::SharedArrayBufferNew,
             Self::DataViewNew,
             Self::DataViewGetInt8,
             Self::DataViewSetInt8,
@@ -2402,6 +2488,20 @@ impl RuntimeFn {
             Self::DateNow,
             Self::DateGetTime,
             Self::DateSetTime,
+            Self::DateSetUTCFullYear,
+            Self::DateSetUTCMonth,
+            Self::DateSetUTCDate,
+            Self::DateSetUTCHours,
+            Self::DateSetUTCMinutes,
+            Self::DateSetUTCSeconds,
+            Self::DateSetUTCMilliseconds,
+            Self::DateSetFullYear,
+            Self::DateSetMonth,
+            Self::DateSetDate,
+            Self::DateSetHours,
+            Self::DateSetMinutes,
+            Self::DateSetSeconds,
+            Self::DateSetMilliseconds,
             Self::DateParse,
             Self::DateUTC,
             Self::DateToString,
@@ -2503,6 +2603,7 @@ impl RuntimeFn {
             Self::ArrayIsArray,
             // Object statics
             Self::ObjectKeys,
+            Self::ObjectGetOwnPropertySymbols,
             Self::ObjectSpread,
             Self::SpreadViaIterator,
             Self::ObjectValues,
@@ -2785,6 +2886,8 @@ impl RuntimeFn {
             Self::WeakSetDelete,
             Self::ArrayBufferNew,
             Self::ArrayBufferIsView,
+            Self::ArrayBufferTransfer,
+            Self::SharedArrayBufferNew,
             Self::DataViewNew,
             Self::DataViewGetInt8,
             Self::DataViewSetInt8,
@@ -2813,6 +2916,20 @@ impl RuntimeFn {
             Self::DateNow,
             Self::DateGetTime,
             Self::DateSetTime,
+            Self::DateSetUTCFullYear,
+            Self::DateSetUTCMonth,
+            Self::DateSetUTCDate,
+            Self::DateSetUTCHours,
+            Self::DateSetUTCMinutes,
+            Self::DateSetUTCSeconds,
+            Self::DateSetUTCMilliseconds,
+            Self::DateSetFullYear,
+            Self::DateSetMonth,
+            Self::DateSetDate,
+            Self::DateSetHours,
+            Self::DateSetMinutes,
+            Self::DateSetSeconds,
+            Self::DateSetMilliseconds,
             Self::DateParse,
             Self::DateUTC,
             Self::DateToString,
@@ -2914,6 +3031,7 @@ impl RuntimeFn {
             Self::ArrayIsArray,
             // Object statics
             Self::ObjectKeys,
+            Self::ObjectGetOwnPropertySymbols,
             Self::ObjectSpread,
             Self::SpreadViaIterator,
             Self::ObjectValues,
