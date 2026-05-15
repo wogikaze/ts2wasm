@@ -280,11 +280,15 @@ fn is_supported_console_method(property: &str) -> bool {
             | "table"
             | "group"
             | "groupEnd"
+            | "groupCollapsed"
             | "time"
+            | "timeLog"
             | "timeEnd"
             | "count"
             | "countReset"
             | "assert"
+            | "trace"
+            | "clear"
     )
 }
 
@@ -434,6 +438,131 @@ pub(super) fn resolve_require_module_builtin(
     Ok(Some(builtin))
 }
 
+/// Try to convert a resolved expression to a static string value.
+fn resolved_expr_to_string(expr: &ResolvedExpr) -> Option<String> {
+    match expr {
+        ResolvedExpr::String(s) => Some(s.clone()),
+        ResolvedExpr::Number(n) => Some(n.to_string()),
+        ResolvedExpr::DecimalNumber(s) => Some(s.clone()),
+        ResolvedExpr::Bool(b) => Some(if *b { "true" } else { "false" }.to_string()),
+        ResolvedExpr::Undefined => Some("undefined".to_string()),
+        ResolvedExpr::Null => Some("null".to_string()),
+        _ => None,
+    }
+}
+
+/// Apply format substitution (%s, %d, %i, %f, %o, %O) on a static format string
+/// using subsequent static argument values. Returns the formatted string and the
+/// number of arguments consumed, or None if format substitution cannot be applied.
+fn apply_format_substitution(fmt: &str, args: &[ResolvedExpr]) -> Option<(String, usize)> {
+    let mut result = String::new();
+    let mut rest = fmt;
+    let mut arg_idx: usize = 0;
+    let mut consumed: usize = 0;
+
+    while let Some(pos) = rest.find('%') {
+        result.push_str(&rest[..pos]);
+        let after_pct = &rest[pos + 1..];
+        if after_pct.is_empty() {
+            result.push('%');
+            break;
+        }
+        let spec = after_pct.chars().next().unwrap();
+        match spec {
+            '%' => {
+                result.push('%');
+                rest = &after_pct[1..];
+            }
+            's' | 'd' | 'i' | 'f' | 'o' | 'O' => {
+                if arg_idx >= args.len() {
+                    // Not enough args: leave as-is
+                    result.push('%');
+                    result.push(spec);
+                    rest = &after_pct[1..];
+                    continue;
+                }
+                match resolved_expr_to_string(&args[arg_idx]) {
+                    Some(val) => {
+                        // Apply specifier-specific formatting
+                        let formatted = match spec {
+                            'd' | 'i' => {
+                                // Integer: parse as i64 and format
+                                val.parse::<f64>()
+                                    .ok()
+                                    .map(|v| format!("{}", v as i64))
+                                    .unwrap_or(val.clone())
+                            }
+                            'f' => {
+                                // Float: parse as f64 and format
+                                val.parse::<f64>()
+                                    .ok()
+                                    .map(|v| {
+                                        if v == v.floor() && v.is_finite() {
+                                            format!("{}.0", v as i64)
+                                        } else {
+                                            v.to_string()
+                                        }
+                                    })
+                                    .unwrap_or(val.clone())
+                            }
+                            _ => val.clone(), // %s, %o, %O
+                        };
+                        result.push_str(&formatted);
+                        arg_idx += 1;
+                        consumed = arg_idx;
+                    }
+                    None => {
+                        // Dynamic arg: cannot format at compile time — abort substitution
+                        return None;
+                    }
+                }
+                rest = &after_pct[1..];
+            }
+            _ => {
+                result.push('%');
+                result.push(spec);
+                rest = &after_pct[1..];
+            }
+        }
+    }
+    result.push_str(rest);
+    Some((result, consumed))
+}
+
+/// Format console arguments: apply format substitution if the first arg is a
+/// format string, otherwise join all static args with spaces.
+/// Returns a single string to pass to the log function.
+fn format_console_args(args: &[ResolvedExpr]) -> Vec<ResolvedExpr> {
+    if args.is_empty() {
+        return vec![ResolvedExpr::String(String::new())];
+    }
+    if args.len() == 1 {
+        return args.to_vec();
+    }
+
+    // Try format substitution on the first arg if it's a static string
+    if let ResolvedExpr::String(fmt) = &args[0] {
+        if fmt.contains('%') {
+            if let Some((formatted, _consumed)) = apply_format_substitution(fmt, &args[1..]) {
+                return vec![ResolvedExpr::String(formatted)];
+            }
+        }
+    }
+
+    // No format substitution applied: join all static args with spaces
+    let mut parts = Vec::new();
+    for arg in args {
+        match resolved_expr_to_string(arg) {
+            Some(s) => parts.push(s),
+            None => {
+                // Has dynamic arg: fall back to first arg only
+                return vec![args[0].clone()];
+            }
+        }
+    }
+    vec![ResolvedExpr::String(parts.join(" "))]
+}
+
 pub(super) fn resolve_console_call_expr(
     callee: &Expr,
     resolved_args: &[ResolvedExpr],
@@ -457,27 +586,47 @@ pub(super) fn resolve_console_call_expr(
         ResolvedExpr::BuiltinCall { builtin, args }
     };
 
-    // The WAT $log / $log_warn / $log_error functions accept exactly 1 param.
-    let take_first = |args: &[ResolvedExpr]| -> Vec<ResolvedExpr> {
-        args.first()
-            .cloned()
-            .map(|a| vec![a])
-            .unwrap_or_else(|| vec![ResolvedExpr::String(String::new())])
-    };
-
     match property.as_str() {
-        "log" | "info" | "debug" | "table" | "group" | "groupCollapsed" | "count"
-        | "countReset" | "timeEnd" => Ok(Some(log_expr(
-            take_first(resolved_args),
+        "log" | "info" | "debug" | "table" => Ok(Some(log_expr(
+            format_console_args(resolved_args),
             BuiltinId::ConsoleLog,
         ))),
         "warn" => Ok(Some(log_expr(
-            take_first(resolved_args),
+            format_console_args(resolved_args),
             BuiltinId::ConsoleWarn,
         ))),
         "error" => Ok(Some(log_expr(
-            take_first(resolved_args),
+            format_console_args(resolved_args),
             BuiltinId::ConsoleError,
+        ))),
+        "group" | "groupCollapsed" => {
+            // group/groupCollapsed with label outputs the label and increases indent.
+            Ok(Some(log_expr(
+                format_console_args(resolved_args),
+                BuiltinId::ConsoleGroup,
+            )))
+        }
+        "groupEnd" => Ok(Some(ResolvedExpr::Undefined)),
+        "count" => Ok(Some(log_expr(
+            format_console_args(resolved_args),
+            BuiltinId::ConsoleCount,
+        ))),
+        "countReset" => Ok(Some(ResolvedExpr::Undefined)),
+        "time" => {
+            // time starts a timer but does not log anything in Node.js
+            Ok(Some(ResolvedExpr::Undefined))
+        }
+        "timeLog" => Ok(Some(log_expr(
+            format_console_args(resolved_args),
+            BuiltinId::ConsoleLog,
+        ))),
+        "timeEnd" => Ok(Some(log_expr(
+            format_console_args(resolved_args),
+            BuiltinId::ConsoleLog,
+        ))),
+        "trace" => Ok(Some(log_expr(
+            format_console_args(resolved_args),
+            BuiltinId::ConsoleTrace,
         ))),
         "assert" => {
             let Some((condition, message_args)) = resolved_args.split_first() else {
@@ -489,16 +638,26 @@ pub(super) fn resolve_console_call_expr(
             if matches!(condition, ResolvedExpr::Bool(true)) {
                 return Ok(Some(ResolvedExpr::Undefined));
             }
+            // Node.js routes console.assert output to stderr with "Assertion failed: " prefix
+            let prefix = "Assertion failed";
             if message_args.is_empty() {
                 Ok(Some(log_expr(
-                    vec![ResolvedExpr::String("Assertion failed".to_owned())],
-                    BuiltinId::ConsoleLog,
+                    vec![ResolvedExpr::String(prefix.to_owned())],
+                    BuiltinId::ConsoleError,
                 )))
             } else {
-                Ok(Some(log_expr(message_args.to_vec(), BuiltinId::ConsoleLog)))
+                let formatted = format_console_args(message_args);
+                if let ResolvedExpr::String(msg) = &formatted[0] {
+                    Ok(Some(log_expr(
+                        vec![ResolvedExpr::String(format!("{}: {}", prefix, msg))],
+                        BuiltinId::ConsoleError,
+                    )))
+                } else {
+                    Ok(Some(log_expr(formatted, BuiltinId::ConsoleError)))
+                }
             }
         }
-        "time" | "groupEnd" | "clear" => Ok(Some(ResolvedExpr::Undefined)),
+        "clear" => Ok(Some(ResolvedExpr::Undefined)),
         unsupported => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!("console.{unsupported} is not supported in this milestone"),
