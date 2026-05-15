@@ -1667,25 +1667,28 @@ def main():
         last_progress = 0
 
         jsonl_started_at = time.perf_counter()
-        # Phase profiler: track wall-clock durations for key stages
+        # Phase profiler: track wall-clock durations for key stages.
+        # These are written to artifacts/coverage/results/*-profile.json.
         phase_timers = {
             "discover_ms": 0,           # file discovery + filtering
             "prepare_ms": 0,            # metadata parse + build_source
-            "server_build_ms": 0,       # server compile wall time
-            "semantic_iwasm_ms_wall": 0, # iwasm execution wall time
-            "semantic_node_ms_wall": 0,  # node oracle wall time
+            "server_check_ms": 0,       # server check-mode compile (no wasm emit)
+            "server_wasm_emit_ms": 0,   # server wasm-emit+wat2wasm wall time
+            "iwasm_wall_ms": 0,         # cumulative iwasm execution wall time
+            "node_wall_ms": 0,          # cumulative node oracle wall time
+            "iwasm_processes": 0,       # number of iwasm invocations
+            "node_processes": 0,        # number of node invocations
+            "wat2wasm_processes": 0,    # number of wat2wasm invocations
             "jsonl_canonicalize_ms": 0,
             "dashboard_ms": 0,
             "server_fallback_batches": 0,
-            "node_processes": 0,
-            "iwasm_processes": 0,
         }
         include_jsonl_source = os.environ.get("TS2WASM_JSONL_SOURCE", "0") not in ("0", "false", "False", "no", "NO")
         # P4: semantic_mode controls oracle policy
         if semantic_mode == "strict":
             node_oracle_policy = "always"
         elif semantic_mode == "fast":
-            node_oracle_policy = os.environ.get("TS2WASM_TEST262_NODE_ORACLE", "auto").strip().lower()
+            node_oracle_policy = "auto"
         else:
             node_oracle_policy = "never"
         try:
@@ -2143,6 +2146,7 @@ def main():
             node_source = t262.build_test262_source(
                 item["file_path"], item["source_code"], item["metadata"], target="node"
             )
+            _node_t0 = time.perf_counter()
             result = t262.run_node_reference_source(
                 node_source,
                 item["metadata"],
@@ -2151,6 +2155,7 @@ def main():
                 cwd=REPO_ROOT,
                 text=True,
             )
+            phase_timers["node_wall_ms"] += int(round((time.perf_counter() - _node_t0) * 1000))
             node_ok = result.returncode == 0
             if item["metadata"].expects_negative:
                 node_ok = result.returncode != 0
@@ -2269,12 +2274,14 @@ def main():
                     )
                     return record, "build_pass"
 
+                _iwasm_t0 = time.perf_counter()
                 wasm_result = subprocess.run(
                     ["timeout", "5s", "iwasm", str(wasm_path)],
                     capture_output=True,
                     text=True,
                     cwd=REPO_ROOT,
                 )
+                phase_timers["iwasm_wall_ms"] += int(round((time.perf_counter() - _iwasm_t0) * 1000))
 
                 if wasm_result.returncode == 0:
                     actual = wasm_result.stdout
@@ -2576,7 +2583,8 @@ def main():
                             drain_semantic(block=False)
 
                         # Record server build wall time (includes semantic drain overlap)
-                        phase_timers["server_build_ms"] = int(round((time.perf_counter() - _server_build_start) * 1000))
+                        _server_key = "server_wasm_emit_ms" if emit_mode == "wasm" else "server_check_ms"
+                        phase_timers[_server_key] = int(round((time.perf_counter() - _server_build_start) * 1000))
 
                         drain_semantic(block=True)
                     finally:

@@ -251,6 +251,10 @@ def configure_reference_coverage_defaults(target, args):
         return
     if "--no-semantic" in args:
         return
+    if "--semantic" in args:
+        idx = args.index("--semantic")
+        if idx + 1 < len(args) and args[idx + 1] == "fast":
+            return
 
     os.environ.setdefault("TS2WASM_TEST262_NODE_ORACLE", "always")
     os.environ.setdefault("TS2WASM_DISABLE_TEST262_PREPROCESSOR_STUBS", "1")
