@@ -328,6 +328,9 @@ pub enum RuntimeFn {
     RegExpSearch,
     /// Issue 066: Shared helper for character-level pattern matching (dot, \d, \w, \s, literals).
     RegexpMatchInner,
+    /// Issue 441: Parse regexp flags from trailing chars after closing `/` delimiter.
+    /// Returns a bitmask: bit0=s(dotAll), bit1=m(multiline), bit2=y(sticky), bit3=u(unicode).
+    RegexpParseFlags,
     /// M10: Array methods
     ArrayPush,
     ArrayPushGrow,
@@ -1049,6 +1052,7 @@ const STRING_REPLACE_DEPS: &[RuntimeFn] = &[
     RuntimeFn::MemEqual,
     RuntimeFn::StringSubstring,
     RuntimeFn::RegexpMatchInner,
+    RuntimeFn::RegexpParseFlags,
 ];
 
 const STRING_REPLACE_ALL_DEPS: &[RuntimeFn] = &[
@@ -1059,18 +1063,28 @@ const STRING_REPLACE_ALL_DEPS: &[RuntimeFn] = &[
     RuntimeFn::StringReplace,
     RuntimeFn::StringSubstring,
     RuntimeFn::RegexpMatchInner,
+    RuntimeFn::RegexpParseFlags,
 ];
 
 const STRING_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
 
-const REGEXP_TEST_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::RegexpMatchInner];
+const REGEXP_TEST_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::IsString,
+    RuntimeFn::RegexpMatchInner,
+    RuntimeFn::RegexpParseFlags,
+];
 const REGEXP_MATCH_DEPS: &[RuntimeFn] = &[
     RuntimeFn::IsString,
     RuntimeFn::StringSubstring,
     RuntimeFn::RegexpMatchInner,
+    RuntimeFn::RegexpParseFlags,
 ];
 
-const REGEXP_SEARCH_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::RegexpMatchInner];
+const REGEXP_SEARCH_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::IsString,
+    RuntimeFn::RegexpMatchInner,
+    RuntimeFn::RegexpParseFlags,
+];
 const STRING_MATCH_DEPS: &[RuntimeFn] = &[RuntimeFn::RegExpMatch];
 const STRING_SEARCH_DEPS: &[RuntimeFn] = &[RuntimeFn::RegExpSearch];
 
@@ -1452,6 +1466,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "RegExpTest" => Some(RuntimeFn::RegExpTest),
         "RegExpMatch" => Some(RuntimeFn::RegExpMatch),
         "RegExpSearch" => Some(RuntimeFn::RegExpSearch),
+        "RegexpParseFlags" => Some(RuntimeFn::RegexpParseFlags),
         "ArrayPush" => Some(RuntimeFn::ArrayPush),
         "ArrayPushGrow" => Some(RuntimeFn::ArrayPushGrow),
         "ArrayIndexPresent" => Some(RuntimeFn::ArrayIndexPresent),
@@ -2066,9 +2081,11 @@ impl RuntimeFn {
             | Self::PromiseRace
             | Self::PromiseWithResolvers
             | Self::AggregateError => RuntimeDomain::Promise,
-            Self::RegExpTest | Self::RegExpMatch | Self::RegExpSearch | Self::RegexpMatchInner => {
-                RuntimeDomain::RegExp
-            }
+            Self::RegExpTest
+            | Self::RegExpMatch
+            | Self::RegExpSearch
+            | Self::RegexpMatchInner
+            | Self::RegexpParseFlags => RuntimeDomain::RegExp,
             Self::StringEqual
             | Self::Concat
             | Self::StringCharAt
@@ -2599,6 +2616,7 @@ impl RuntimeFn {
             Self::StringToWellFormed,
             Self::StringNormalize,
             Self::RegexpMatchInner,
+            Self::RegexpParseFlags,
             Self::StringReplace,
             Self::StringReplaceAll,
             Self::StringRaw,
@@ -3034,6 +3052,7 @@ impl RuntimeFn {
             Self::StringToWellFormed,
             Self::StringNormalize,
             Self::RegexpMatchInner,
+            Self::RegexpParseFlags,
             Self::StringReplace,
             Self::StringReplaceAll,
             Self::StringRaw,

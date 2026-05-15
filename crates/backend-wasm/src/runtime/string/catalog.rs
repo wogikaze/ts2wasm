@@ -44,6 +44,7 @@ pub const STRING_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::StringNormalize,
     RuntimeFn::StringToLocaleString,
     RuntimeFn::RegexpMatchInner,
+    RuntimeFn::RegexpParseFlags,
     RuntimeFn::RegExpTest,
     RuntimeFn::RegExpMatch,
     RuntimeFn::RegExpSearch,

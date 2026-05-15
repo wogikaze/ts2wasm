@@ -8,11 +8,14 @@ impl WatEmitter<'_> {
     pub(crate) fn emit_regexp_match_inner(&self, wat: &mut String) {
         wat.push_str(
             r#"
-  (func $regexp_match_inner (param $kind i32) (param $lit_val i32) (param $byte i32) (result i32)
+  (func $regexp_match_inner (param $kind i32) (param $lit_val i32) (param $byte i32) (param $dot_all i32) (result i32)
     (if (i32.eq (local.get $kind) (i32.const 0))
       (then (return (i32.eq (local.get $lit_val) (local.get $byte)))))
     (if (i32.eq (local.get $kind) (i32.const 1))
-      (then (return (i32.ne (local.get $byte) (i32.const 0x0A)))))
+      (then
+        (if (local.get $dot_all)
+          (then (return (i32.const 1))))
+        (return (i32.ne (local.get $byte) (i32.const 0x0A)))))
     (if (i32.eq (local.get $kind) (i32.const 2))
       (then (return
         (i32.and
@@ -47,6 +50,32 @@ impl WatEmitter<'_> {
         );
     }
 
+    /// Parse regexp flags from trailing chars after closing `/` delimiter.
+    /// Returns a bitmask: bit0=s(dotAll), bit1=m(multiline), bit2=y(sticky), bit3=u(unicode)
+    pub(crate) fn emit_regexp_parse_flags(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $regexp_parse_flags (param $delimiter i32) (param $p_len i32) (param $p_header i32) (result i32)
+    (local $flags i32)
+    (local $i i32)
+    (local $ch i32)
+    (local.set $i (i32.add (local.get $delimiter) (i32.const {one})))
+    (block $done
+      (loop $flag_loop
+        (br_if $done (i32.ge_u (local.get $i) (local.get $p_len)))
+        (local.set $ch (i32.load8_u (i32.add (local.get $p_header) (local.get $i))))
+        (if (i32.eq (local.get $ch) (i32.const 0x73)) (then (local.set $flags (i32.or (local.get $flags) (i32.const 1)))))
+        (if (i32.eq (local.get $ch) (i32.const 0x6D)) (then (local.set $flags (i32.or (local.get $flags) (i32.const 2)))))
+        (if (i32.eq (local.get $ch) (i32.const 0x79)) (then (local.set $flags (i32.or (local.get $flags) (i32.const 4)))))
+        (if (i32.eq (local.get $ch) (i32.const 0x75)) (then (local.set $flags (i32.or (local.get $flags) (i32.const 8)))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $flag_loop)))
+    (local.get $flags))
+"#,
+            one = RuntimeConst::ONE,
+        ));
+    }
+
     pub(crate) fn emit_regexp_test(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -65,6 +94,12 @@ impl WatEmitter<'_> {
     (local $quant i32)
     (local $p_header i32)
     (local $i_header i32)
+    (local $flags i32)
+    (local $flag_s i32)
+    (local $flag_m i32)
+    (local $flag_y i32)
+    (local $flag_u i32)
+    (local $p_anchor_start i32)
     (if (i32.eqz (call $is_string (local.get $pattern))) (then (return (i32.const {false_tag}))))
     (if (i32.eqz (call $is_string (local.get $input))) (then (return (i32.const {false_tag}))))
     (local.set $p_obj (i32.and (local.get $pattern) (i32.const {heap_mask})))
@@ -96,6 +131,11 @@ impl WatEmitter<'_> {
       (loop $search
         (br_if $not_found
           (i32.gt_u (local.get $pos) (local.get $i_len)))
+                ;; Sticky flag: only try matching at pos=0
+        (if (local.get $flag_y)
+          (then
+            (if (i32.gt_u (local.get $pos) (i32.const 0))
+              (then (br $not_found)))))
         (local.set $p (i32.const {one}))
         (local.set $i (local.get $pos))
         (block $match_fail
@@ -164,7 +204,7 @@ impl WatEmitter<'_> {
                     (i32.add (local.get $i_header) (local.get $i))))
                 (local.set $ch
                   (call $regexp_match_inner
-                    (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                    (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                 (if (i32.eqz (local.get $ch))
                   (then (br $match_fail)))
                 (local.set $i (i32.add (local.get $i) (i32.const {one}))))
@@ -178,7 +218,7 @@ impl WatEmitter<'_> {
                             (i32.add (local.get $i_header) (local.get $i))))
                         (local.set $ch
                           (call $regexp_match_inner
-                            (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                            (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                         (if (i32.ne (local.get $ch) (i32.const 0))
                           (then
                             (local.set $i (i32.add (local.get $i) (i32.const {one}))))))))
@@ -190,7 +230,7 @@ impl WatEmitter<'_> {
                             (i32.add (local.get $i_header) (local.get $i))))
                         (local.set $ch
                           (call $regexp_match_inner
-                            (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                            (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                         (if (i32.eqz (local.get $ch))
                           (then (br $match_fail)))
                         (local.set $i (i32.add (local.get $i) (i32.const {one})))
@@ -203,7 +243,7 @@ impl WatEmitter<'_> {
                                 (i32.add (local.get $i_header) (local.get $i))))
                             (local.set $ch
                               (call $regexp_match_inner
-                                (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                                (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                             (if (i32.eqz (local.get $ch))
                               (then (br $plus_loop_exit)))
                             (local.set $i (i32.add (local.get $i) (i32.const {one})))
@@ -218,7 +258,7 @@ impl WatEmitter<'_> {
                                 (i32.add (local.get $i_header) (local.get $i))))
                             (local.set $ch
                               (call $regexp_match_inner
-                                (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                                (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                             (if (i32.eqz (local.get $ch))
                               (then (br $star_loop_exit)))
                             (local.set $i (i32.add (local.get $i) (i32.const {one})))
@@ -255,6 +295,12 @@ impl WatEmitter<'_> {
     (local $quant i32)
     (local $p_header i32)
     (local $i_header i32)
+    (local $flags i32)
+    (local $flag_s i32)
+    (local $flag_m i32)
+    (local $flag_y i32)
+    (local $flag_u i32)
+    (local $p_anchor_start i32)
     (if (i32.eqz (call $is_string (local.get $pattern))) (then (return (i32.const {null_tag}))))
     (if (i32.eqz (call $is_string (local.get $input))) (then (return (i32.const {null_tag}))))
     (local.set $p_obj (i32.and (local.get $pattern) (i32.const {heap_mask})))
@@ -284,6 +330,11 @@ impl WatEmitter<'_> {
       (loop $search
         (br_if $not_found
           (i32.gt_u (local.get $pos) (local.get $i_len)))
+                ;; Sticky flag: only try matching at pos=0
+        (if (local.get $flag_y)
+          (then
+            (if (i32.gt_u (local.get $pos) (i32.const 0))
+              (then (br $not_found)))))
         (local.set $p (i32.const {one}))
         (local.set $i (local.get $pos))
         (block $match_fail
@@ -370,7 +421,7 @@ impl WatEmitter<'_> {
                     (i32.add (local.get $i_header) (local.get $i))))
                 (local.set $ch
                   (call $regexp_match_inner
-                    (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                    (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                 (if (i32.eqz (local.get $ch))
                   (then (br $match_fail)))
                 (local.set $i (i32.add (local.get $i) (i32.const {one}))))
@@ -384,7 +435,7 @@ impl WatEmitter<'_> {
                             (i32.add (local.get $i_header) (local.get $i))))
                         (local.set $ch
                           (call $regexp_match_inner
-                            (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                            (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                         (if (i32.ne (local.get $ch) (i32.const 0))
                           (then
                             (local.set $i (i32.add (local.get $i) (i32.const {one}))))))))
@@ -396,7 +447,7 @@ impl WatEmitter<'_> {
                             (i32.add (local.get $i_header) (local.get $i))))
                         (local.set $ch
                           (call $regexp_match_inner
-                            (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                            (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                         (if (i32.eqz (local.get $ch))
                           (then (br $match_fail)))
                         (local.set $i (i32.add (local.get $i) (i32.const {one})))
@@ -409,7 +460,7 @@ impl WatEmitter<'_> {
                                 (i32.add (local.get $i_header) (local.get $i))))
                             (local.set $ch
                               (call $regexp_match_inner
-                                (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                                (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                             (if (i32.eqz (local.get $ch))
                               (then (br $plus_loop_exit)))
                             (local.set $i (i32.add (local.get $i) (i32.const {one})))
@@ -424,7 +475,7 @@ impl WatEmitter<'_> {
                                 (i32.add (local.get $i_header) (local.get $i))))
                             (local.set $ch
                               (call $regexp_match_inner
-                                (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                                (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                             (if (i32.eqz (local.get $ch))
                               (then (br $star_loop_exit)))
                             (local.set $i (i32.add (local.get $i) (i32.const {one})))
@@ -462,6 +513,12 @@ impl WatEmitter<'_> {
     (local $quant i32)
     (local $p_header i32)
     (local $i_header i32)
+    (local $flags i32)
+    (local $flag_s i32)
+    (local $flag_m i32)
+    (local $flag_y i32)
+    (local $flag_u i32)
+    (local $p_anchor_start i32)
     (if (i32.eqz (call $is_string (local.get $pattern))) (then (return (i32.const {null_tag}))))
     (if (i32.eqz (call $is_string (local.get $input))) (then (return (i32.const {null_tag}))))
     (local.set $p_obj (i32.and (local.get $pattern) (i32.const {heap_mask})))
@@ -492,6 +549,11 @@ impl WatEmitter<'_> {
       (loop $search
         (br_if $not_found
           (i32.gt_u (local.get $pos) (local.get $i_len)))
+                ;; Sticky flag: only try matching at pos=0
+        (if (local.get $flag_y)
+          (then
+            (if (i32.gt_u (local.get $pos) (i32.const 0))
+              (then (br $not_found)))))
         (local.set $p (i32.const {one}))
         (local.set $i (local.get $pos))
         (block $match_fail
@@ -582,7 +644,7 @@ impl WatEmitter<'_> {
                     (i32.add (local.get $i_header) (local.get $i))))
                 (local.set $ch
                   (call $regexp_match_inner
-                    (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                    (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                 (if (i32.eqz (local.get $ch))
                   (then (br $match_fail)))
                 (local.set $i (i32.add (local.get $i) (i32.const {one}))))
@@ -596,7 +658,7 @@ impl WatEmitter<'_> {
                             (i32.add (local.get $i_header) (local.get $i))))
                         (local.set $ch
                           (call $regexp_match_inner
-                            (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                            (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                         (if (i32.ne (local.get $ch) (i32.const 0))
                           (then
                             (local.set $i (i32.add (local.get $i) (i32.const {one}))))))))
@@ -608,7 +670,7 @@ impl WatEmitter<'_> {
                             (i32.add (local.get $i_header) (local.get $i))))
                         (local.set $ch
                           (call $regexp_match_inner
-                            (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                            (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                         (if (i32.eqz (local.get $ch))
                           (then (br $match_fail)))
                         (local.set $i (i32.add (local.get $i) (i32.const {one})))
@@ -621,7 +683,7 @@ impl WatEmitter<'_> {
                                 (i32.add (local.get $i_header) (local.get $i))))
                             (local.set $ch
                               (call $regexp_match_inner
-                                (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                                (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                             (if (i32.eqz (local.get $ch))
                               (then (br $plus_loop_exit)))
                             (local.set $i (i32.add (local.get $i) (i32.const {one})))
@@ -636,7 +698,7 @@ impl WatEmitter<'_> {
                                 (i32.add (local.get $i_header) (local.get $i))))
                             (local.set $ch
                               (call $regexp_match_inner
-                                (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                                (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                             (if (i32.eqz (local.get $ch))
                               (then (br $star_loop_exit)))
                             (local.set $i (i32.add (local.get $i) (i32.const {one})))
@@ -676,6 +738,12 @@ impl WatEmitter<'_> {
     (local $p_header i32)
     (local $i_header i32)
     (local $neg_one i32)
+    (local $flags i32)
+    (local $flag_s i32)
+    (local $flag_m i32)
+    (local $flag_y i32)
+    (local $flag_u i32)
+    (local $p_anchor_start i32)
     (if (i32.eqz (call $is_string (local.get $pattern))) (then (return (i32.or (i32.shl (i32.const {neg_one}) (i32.const {number_shift})) (i32.const {number_tag})))))
     (if (i32.eqz (call $is_string (local.get $input))) (then (return (i32.or (i32.shl (i32.const {neg_one}) (i32.const {number_shift})) (i32.const {number_tag})))))
     (local.set $p_obj (i32.and (local.get $pattern) (i32.const {heap_mask})))
@@ -706,6 +774,11 @@ impl WatEmitter<'_> {
       (loop $search
         (br_if $not_found
           (i32.gt_u (local.get $pos) (local.get $i_len)))
+                ;; Sticky flag: only try matching at pos=0
+        (if (local.get $flag_y)
+          (then
+            (if (i32.gt_u (local.get $pos) (i32.const 0))
+              (then (br $not_found)))))
         (local.set $p (i32.const {one}))
         (local.set $i (local.get $pos))
         (block $match_fail
@@ -782,7 +855,7 @@ impl WatEmitter<'_> {
                     (i32.add (local.get $i_header) (local.get $i))))
                 (local.set $ch
                   (call $regexp_match_inner
-                    (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                    (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                 (if (i32.eqz (local.get $ch))
                   (then (br $match_fail)))
                 (local.set $i (i32.add (local.get $i) (i32.const {one}))))
@@ -796,7 +869,7 @@ impl WatEmitter<'_> {
                             (i32.add (local.get $i_header) (local.get $i))))
                         (local.set $ch
                           (call $regexp_match_inner
-                            (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                            (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                         (if (i32.ne (local.get $ch) (i32.const 0))
                           (then
                             (local.set $i (i32.add (local.get $i) (i32.const {one}))))))))
@@ -808,7 +881,7 @@ impl WatEmitter<'_> {
                             (i32.add (local.get $i_header) (local.get $i))))
                         (local.set $ch
                           (call $regexp_match_inner
-                            (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                            (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                         (if (i32.eqz (local.get $ch))
                           (then (br $match_fail)))
                         (local.set $i (i32.add (local.get $i) (i32.const {one})))
@@ -821,7 +894,7 @@ impl WatEmitter<'_> {
                                 (i32.add (local.get $i_header) (local.get $i))))
                             (local.set $ch
                               (call $regexp_match_inner
-                                (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                                (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                             (if (i32.eqz (local.get $ch))
                               (then (br $plus_loop_exit)))
                             (local.set $i (i32.add (local.get $i) (i32.const {one})))
@@ -836,7 +909,7 @@ impl WatEmitter<'_> {
                                 (i32.add (local.get $i_header) (local.get $i))))
                             (local.set $ch
                               (call $regexp_match_inner
-                                (local.get $kind) (local.get $lit_val) (local.get $ch)))
+                                (local.get $kind) (local.get $lit_val) (local.get $ch) (local.get $flag_s)))
                             (if (i32.eqz (local.get $ch))
                               (then (br $star_loop_exit)))
                             (local.set $i (i32.add (local.get $i) (i32.const {one})))
