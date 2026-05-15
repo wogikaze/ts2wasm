@@ -104,6 +104,73 @@ fn lowering_passes_mutable_class_method_outer_local_capture() {
 }
 
 #[test]
+fn lowering_passes_nested_function_mutable_outer_local_capture() {
+    use ts2wasm_ir::lowered::{FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        function outer() {
+          let count = 0;
+          function inc() {
+            count = count + 1;
+          }
+          inc();
+          console.log(count);
+        }
+        outer();
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+    let outer = &lowered.functions[0];
+
+    assert!(matches!(
+        outer.body.first(),
+        Some(LoweredStmt::Let(
+            LocalId(0),
+            LoweredExpr::EnvCellNew(initial, _),
+            _
+        )) if matches!(initial.as_ref(), LoweredExpr::Number(0, _))
+    ));
+    assert!(matches!(
+        outer.body.last(),
+        Some(LoweredStmt::Expr(LoweredExpr::Call {
+            kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
+            args, ..
+        }, _)) if matches!(args.as_slice(), [LoweredExpr::EnvCellGet(LocalId(0), _)])
+    ));
+}
+
+#[test]
+fn lowering_passes_function_expression_mutable_outer_local_capture() {
+    use ts2wasm_ir::lowered::{LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        function outer() {
+          let actual = 0;
+          call(function () {
+            actual = actual + 1;
+          });
+        }
+        function call(callback) {
+          callback();
+        }
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+    let outer = &lowered.functions[0];
+
+    assert!(matches!(
+        outer.body.first(),
+        Some(LoweredStmt::Let(
+            LocalId(0),
+            LoweredExpr::EnvCellNew(initial, _),
+            _
+        )) if matches!(initial.as_ref(), LoweredExpr::Number(0, _))
+    ));
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"

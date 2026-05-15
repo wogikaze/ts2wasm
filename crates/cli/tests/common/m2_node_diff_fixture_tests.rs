@@ -3105,17 +3105,10 @@ fn returned_ordinary_function_closure_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-semantics/ordinary-function-closure-escape-unsupported.ts",
         "fixtures/core-semantics/ordinary-function-closure-gc-pressure.ts",
         "fixtures/core-semantics/ordinary-function-closure-make-adder.ts",
+        "fixtures/core-semantics/ordinary-function-closure-mutation.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
-}
-
-#[test]
-fn unsupported_mutable_ordinary_function_closure_reports_issue_062e() {
-    assert_build_fails_with_unsupported_syntax_without_span(
-        "fixtures/core-semantics/ordinary-function-closure-mutation-unsupported.ts",
-        "issue-062e:",
-    );
 }
 
 #[test]

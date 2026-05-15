@@ -107,11 +107,16 @@ pub fn lower_program_with_module_url(
                 let arrow_mutable_captures = collect_block_arrow_fn_mutable_captures(body);
                 let object_method_mutable_captures =
                     collect_block_object_method_mutable_captures(body)?;
+                let nested_function_mutable_captures =
+                    collect_block_nested_function_mutable_captures(body)?;
                 let function_env_cell_names = function_env_cell_names
                     .union(&arrow_mutable_captures)
                     .cloned()
                     .collect::<HashSet<_>>()
                     .union(&object_method_mutable_captures)
+                    .cloned()
+                    .collect::<HashSet<_>>()
+                    .union(&nested_function_mutable_captures)
                     .cloned()
                     .collect::<HashSet<_>>();
                 let self_closure = top_level_function_body_references_name(params, body, name)?
@@ -193,6 +198,12 @@ pub fn lower_program_with_module_url(
 
                 let constructor_object_method_mutable_captures =
                     collect_block_object_method_mutable_captures(&ctor_body)?;
+                let constructor_nested_function_mutable_captures =
+                    collect_block_nested_function_mutable_captures(&ctor_body)?;
+                let constructor_env_cell_names = constructor_object_method_mutable_captures
+                    .union(&constructor_nested_function_mutable_captures)
+                    .cloned()
+                    .collect::<HashSet<_>>();
                 let lowered = lower_function(
                     ctor_id,
                     &ctor_params_with_this,
@@ -205,7 +216,7 @@ pub fn lower_program_with_module_url(
                     &function_mutable_captures,
                     &class_method_captures,
                     &class_method_mutable_captures,
-                    &constructor_object_method_mutable_captures,
+                    &constructor_env_cell_names,
                     &HashSet::new(),
                     class_parents.clone(),
                     class_private_fields.clone(),
@@ -255,8 +266,13 @@ pub fn lower_program_with_module_url(
                         .unwrap_or_default();
                     let method_object_method_mutable_captures =
                         collect_block_object_method_mutable_captures(&method.body)?;
+                    let method_nested_function_mutable_captures =
+                        collect_block_nested_function_mutable_captures(&method.body)?;
                     let method_env_cell_names = method_env_cell_names
                         .union(&method_object_method_mutable_captures)
+                        .cloned()
+                        .collect::<HashSet<_>>()
+                        .union(&method_nested_function_mutable_captures)
                         .cloned()
                         .collect::<HashSet<_>>();
                     let lowered = lower_function(
@@ -1958,6 +1974,240 @@ fn collect_block_arrow_fn_mutable_captures(stmts: &[ResolvedStmt]) -> HashSet<St
         }
     }
     mutable_captures
+}
+
+fn collect_block_nested_function_mutable_captures(
+    stmts: &[ResolvedStmt],
+) -> Result<HashSet<String>, Diagnostic> {
+    let mut mutable_captures = HashSet::new();
+    for stmt in stmts {
+        collect_stmt_nested_function_mutable_captures(stmt, &mut mutable_captures)?;
+    }
+    Ok(mutable_captures)
+}
+
+fn collect_stmt_nested_function_mutable_captures(
+    stmt: &ResolvedStmt,
+    mutable_captures: &mut HashSet<String>,
+) -> Result<(), Diagnostic> {
+    match stmt {
+        ResolvedStmt::Function { params, body, .. } => {
+            mutable_captures.extend(collect_function_expr_mutable_captures(params, body)?);
+            collect_block_nested_function_mutable_captures_into(body, mutable_captures)?;
+        }
+        ResolvedStmt::Let(_, expr)
+        | ResolvedStmt::DestructureLet { expr, .. }
+        | ResolvedStmt::Expr(expr)
+        | ResolvedStmt::Return(expr)
+        | ResolvedStmt::Throw(expr)
+        | ResolvedStmt::Assign(_, expr) => {
+            collect_expr_nested_function_mutable_captures(expr, mutable_captures)?;
+        }
+        ResolvedStmt::If {
+            condition,
+            then_body,
+            else_body,
+        } => {
+            collect_expr_nested_function_mutable_captures(condition, mutable_captures)?;
+            collect_block_nested_function_mutable_captures_into(then_body, mutable_captures)?;
+            collect_block_nested_function_mutable_captures_into(else_body, mutable_captures)?;
+        }
+        ResolvedStmt::While { condition, body } | ResolvedStmt::DoWhile { body, condition } => {
+            collect_expr_nested_function_mutable_captures(condition, mutable_captures)?;
+            collect_block_nested_function_mutable_captures_into(body, mutable_captures)?;
+        }
+        ResolvedStmt::For {
+            init,
+            condition,
+            update,
+            body,
+        } => {
+            if let Some(init) = init {
+                collect_stmt_nested_function_mutable_captures(init, mutable_captures)?;
+            }
+            if let Some(condition) = condition {
+                collect_expr_nested_function_mutable_captures(condition, mutable_captures)?;
+            }
+            if let Some(update) = update {
+                collect_expr_nested_function_mutable_captures(update, mutable_captures)?;
+            }
+            collect_block_nested_function_mutable_captures_into(body, mutable_captures)?;
+        }
+        ResolvedStmt::ForIn { iter, body, .. }
+        | ResolvedStmt::ForOf { iter, body, .. }
+        | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
+            collect_expr_nested_function_mutable_captures(iter, mutable_captures)?;
+            collect_block_nested_function_mutable_captures_into(body, mutable_captures)?;
+        }
+        ResolvedStmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            collect_block_nested_function_mutable_captures_into(try_block, mutable_captures)?;
+            if let Some(block) = catch_block {
+                collect_block_nested_function_mutable_captures_into(block, mutable_captures)?;
+            }
+            if let Some(block) = finally_block {
+                collect_block_nested_function_mutable_captures_into(block, mutable_captures)?;
+            }
+        }
+        ResolvedStmt::Switch { expr, cases } => {
+            collect_expr_nested_function_mutable_captures(expr, mutable_captures)?;
+            for (case_expr, body) in cases {
+                if let Some(case_expr) = case_expr {
+                    collect_expr_nested_function_mutable_captures(case_expr, mutable_captures)?;
+                }
+                collect_block_nested_function_mutable_captures_into(body, mutable_captures)?;
+            }
+        }
+        ResolvedStmt::Block { statements, .. } => {
+            collect_block_nested_function_mutable_captures_into(statements, mutable_captures)?;
+        }
+        ResolvedStmt::Labeled { body, .. } => {
+            collect_stmt_nested_function_mutable_captures(body, mutable_captures)?;
+        }
+        ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
+            collect_expr_nested_function_mutable_captures(expr, mutable_captures)?;
+        }
+        ResolvedStmt::AmbientValue(_)
+        | ResolvedStmt::ClassDecl { .. }
+        | ResolvedStmt::Break { .. }
+        | ResolvedStmt::Continue { .. } => {}
+    }
+    Ok(())
+}
+
+fn collect_block_nested_function_mutable_captures_into(
+    stmts: &[ResolvedStmt],
+    mutable_captures: &mut HashSet<String>,
+) -> Result<(), Diagnostic> {
+    for stmt in stmts {
+        collect_stmt_nested_function_mutable_captures(stmt, mutable_captures)?;
+    }
+    Ok(())
+}
+
+fn collect_expr_nested_function_mutable_captures(
+    expr: &ResolvedExpr,
+    mutable_captures: &mut HashSet<String>,
+) -> Result<(), Diagnostic> {
+    match expr {
+        ResolvedExpr::FunctionExpr { params, body, .. } => {
+            mutable_captures.extend(collect_function_expr_mutable_captures(params, body)?);
+            collect_block_nested_function_mutable_captures_into(body, mutable_captures)?;
+        }
+        ResolvedExpr::Object(props) => {
+            for prop in props {
+                if let Some(key) = prop.computed_key() {
+                    collect_expr_nested_function_mutable_captures(key, mutable_captures)?;
+                }
+                collect_expr_nested_function_mutable_captures(prop.value(), mutable_captures)?;
+            }
+        }
+        ResolvedExpr::Await { expr }
+        | ResolvedExpr::Yield {
+            expr: Some(expr), ..
+        }
+        | ResolvedExpr::Unary { expr, .. }
+        | ResolvedExpr::Spread(expr) => {
+            collect_expr_nested_function_mutable_captures(expr, mutable_captures)?;
+        }
+        ResolvedExpr::Yield { expr: None, .. } => {}
+        ResolvedExpr::Binary { left, right, .. } => {
+            collect_expr_nested_function_mutable_captures(left, mutable_captures)?;
+            collect_expr_nested_function_mutable_captures(right, mutable_captures)?;
+        }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            collect_expr_nested_function_mutable_captures(condition, mutable_captures)?;
+            collect_expr_nested_function_mutable_captures(then_expr, mutable_captures)?;
+            collect_expr_nested_function_mutable_captures(else_expr, mutable_captures)?;
+        }
+        ResolvedExpr::Call { callee, args, .. }
+        | ResolvedExpr::OptionalCall { callee, args, .. } => {
+            collect_expr_nested_function_mutable_captures(callee, mutable_captures)?;
+            for arg in args {
+                collect_expr_nested_function_mutable_captures(arg, mutable_captures)?;
+            }
+        }
+        ResolvedExpr::Assign { expr, .. }
+        | ResolvedExpr::LogicalAssign { expr, .. }
+        | ResolvedExpr::LogicalPropertyAssign { expr, .. } => {
+            collect_expr_nested_function_mutable_captures(expr, mutable_captures)?;
+        }
+        ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. }
+        | ResolvedExpr::LogicalComputedMemberAssign { key, expr, .. } => {
+            collect_expr_nested_function_mutable_captures(key, mutable_captures)?;
+            collect_expr_nested_function_mutable_captures(expr, mutable_captures)?;
+        }
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            collect_expr_nested_function_mutable_captures(object, mutable_captures)?;
+            collect_expr_nested_function_mutable_captures(expr, mutable_captures)?;
+        }
+        ResolvedExpr::Array(elements) => {
+            for element in elements {
+                if let ResolvedArrayElement::Present(expr) = element {
+                    collect_expr_nested_function_mutable_captures(expr, mutable_captures)?;
+                }
+            }
+        }
+        ResolvedExpr::ComputedIndex { object, index }
+        | ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
+            collect_expr_nested_function_mutable_captures(object, mutable_captures)?;
+            collect_expr_nested_function_mutable_captures(index, mutable_captures)?;
+        }
+        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+            for arg in args {
+                collect_expr_nested_function_mutable_captures(arg, mutable_captures)?;
+            }
+        }
+        ResolvedExpr::BuiltinProperty { object, .. }
+        | ResolvedExpr::PropertyAccess { object, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object, .. } => {
+            collect_expr_nested_function_mutable_captures(object, mutable_captures)?;
+        }
+        ResolvedExpr::MethodCall { object, args, .. } => {
+            collect_expr_nested_function_mutable_captures(object, mutable_captures)?;
+            for arg in args {
+                collect_expr_nested_function_mutable_captures(arg, mutable_captures)?;
+            }
+        }
+        ResolvedExpr::PropertyAssign { object, value, .. } => {
+            collect_expr_nested_function_mutable_captures(object, mutable_captures)?;
+            collect_expr_nested_function_mutable_captures(value, mutable_captures)?;
+        }
+        ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+            collect_expr_nested_function_mutable_captures(object, mutable_captures)?;
+            collect_expr_nested_function_mutable_captures(key, mutable_captures)?;
+            collect_expr_nested_function_mutable_captures(value, mutable_captures)?;
+        }
+        ResolvedExpr::ArrowFn {
+            body, body_stmts, ..
+        } => {
+            collect_expr_nested_function_mutable_captures(body, mutable_captures)?;
+            collect_block_nested_function_mutable_captures_into(body_stmts, mutable_captures)?;
+        }
+        ResolvedExpr::ClassExpr { .. }
+        | ResolvedExpr::This { .. }
+        | ResolvedExpr::NewTarget { .. }
+        | ResolvedExpr::ImportMeta { .. }
+        | ResolvedExpr::Ident(_)
+        | ResolvedExpr::ModuleLoad { .. }
+        | ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
+        | ResolvedExpr::BigIntLiteral { .. }
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined => {}
+    }
+    Ok(())
 }
 
 fn collect_block_object_method_mutable_captures(

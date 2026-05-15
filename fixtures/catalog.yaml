@@ -864,7 +864,7 @@ directories:
     - ordinary-function-closure-escape-unsupported.ts
     - ordinary-function-closure-gc-pressure.ts
     - ordinary-function-closure-make-adder.ts
-    - ordinary-function-closure-mutation-unsupported.ts
+    - ordinary-function-closure-mutation.ts
     - ordinary-function-direct-call.ts
     - parameter-properties-defaults.ts
     - plus.ts
