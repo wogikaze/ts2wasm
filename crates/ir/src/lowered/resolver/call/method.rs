@@ -3262,6 +3262,7 @@ impl super::super::Resolver {
             "every",
             "reduce",
             "flatMap",
+            "join",
         ];
         let number_methods = ["toFixed", "toExponential", "toPrecision"];
         let promise_methods = ["then", "catch", "finally"];
