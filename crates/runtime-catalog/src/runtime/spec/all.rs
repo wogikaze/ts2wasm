@@ -2652,6 +2652,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::StringNormalize => RuntimeSpec {
+                symbol: "$string_normalize",
+                deps: NO_DEPS,
+                imports: IMPORT_STRING_NORMALIZE,
+                capability: CAP_STRING_NORMALIZE,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::StringFromCharCode => RuntimeSpec {
                 symbol: "$string_from_char_code",
                 deps: STRING_FROM_CHAR_CODE_DEPS,

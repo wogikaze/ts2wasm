@@ -2086,13 +2086,8 @@ impl super::super::Resolver {
                     &self.ctx, form,
                 )
             else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-460: String.prototype.normalize currently requires a static normalization form".to_owned(),
-                    span: Some(span),
-
-                    phase: None,
-                });
+                // Dynamic form — delegate to runtime
+                return self.emit_normalize_runtime_call(object, args, span);
             };
             if !matches!(form_value.as_str(), "NFC" | "NFD" | "NFKC" | "NFKD") {
                 return Err(Diagnostic {
@@ -2109,28 +2104,35 @@ impl super::super::Resolver {
         let Some(value) =
             crate::lowered::resolver::string::resolved_expr_static_string_value(&self.ctx, object)
         else {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-460: String.prototype.normalize currently requires a static receiver"
-                        .to_owned(),
-                span: Some(span),
-
-                phase: None,
-            });
+            // Dynamic receiver — delegate to runtime
+            return self.emit_normalize_runtime_call(object, args, span);
         };
         if !value.is_ascii() {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-460: String.prototype.normalize currently supports ASCII strings only"
-                        .to_owned(),
-                span: Some(span),
-
-                phase: None,
-            });
+            // Non-ASCII receiver — delegate to runtime
+            return self.emit_normalize_runtime_call(object, args, span);
         }
         self.lower_expr(object)
+    }
+
+    /// Emit a RuntimeCall to `StringNormalize` for dynamic or non-ASCII cases.
+    fn emit_normalize_runtime_call(
+        &mut self,
+        object: &ResolvedExpr,
+        args: &[ResolvedExpr],
+        _span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let mut lowered_args = vec![self.lower_expr(object)?];
+        if let Some(form) = args.first() {
+            lowered_args.push(self.lower_expr(form)?);
+        } else {
+            lowered_args.push(LoweredExpr::Undefined(Span::generated("undefined")));
+        }
+        Ok(LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::StringNormalize,
+            args: lowered_args,
+
+            span: Span::generated("runtime_call"),
+        })
     }
 
     /// Helper for lower_method_call_expr: array method dispatch (indexOf, includes,

@@ -363,4 +363,13 @@ impl WatEmitter<'_> {
             scratch = Layout::SCRATCH_OFFSET,
         ));
     }
+
+    pub(super) fn emit_string_normalize(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_normalize (param $receiver i32) (param $form i32) (result i32)
+    (call $host_string_normalize (local.get $receiver) (local.get $form)))
+"#,
+        ));
+    }
 }

@@ -140,8 +140,9 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
             | Capability::HostDateToDateString
             | Capability::HostDateToTimeString
             | Capability::HostDateParse
-            | Capability::HostDateUTC => {
-                // Node host capabilities for URI encoding/decoding and Date
+            | Capability::HostDateUTC
+            | Capability::HostStringNormalize => {
+                // Node host capabilities for URI encoding/decoding, Date, and String
             }
         }
     }
