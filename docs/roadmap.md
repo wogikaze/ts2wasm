@@ -4,32 +4,30 @@
 
 このファイルは **epic 一覧**であり、個別の実装作業は `issues/` で管理する。
 
-## Current State (2026-05-13)
+## Current State (2026-05-15)
 
 ```
-issues/ total: 147 (Open: 50, Done: 92, Doing: 5)
-test262 coverage:
-  total: 53,469 | executed: 9,359 | semantic_pass: 773 | negative_compile_pass: 640
-  semantic coverage: ~1.45% | target: >90%
+issues/ open: 29 (done: 316, total: 345)
+  P0: 4 | P1: 3 | P2: 20 | P3: 2
+  ready to work: 27
+test262 coverage (parity baseline, server mode):
+  total: 53,469 | executed: 16 | semantic_pass: 13 | differential_pass: 11
+  unsupported: 4 | fail: 1 | negative_compile_pass: 2
+  build coverage: 0.02%
 ```
 
-**Completed phases:** P13 (architecture decoupling), P14 (architecture hardening), P15 (test hardening)
-**Current phase:** P16 (semantic correctness — 79 open feature issues across all layers)
-**Target:** test262 >90% semantic coverage
+Migration from legacy issue tracker (#419-#483, 50 open) to new issues/ format (29 open) completed.
+Coverage baseline reset after server-mode migration — parity file with 18 cases now the checkpoint.
 
-## Issue structure
-
-- issues are **single-layer**: each covers one of Frontend / IR / Runtime / Backend / Host / Coverage
-- each issue is **substantial**: completing it significantly advances the project
-- all 79 open issues resolved → test262 >90%
-- see `issues/README.md` for format and commands
+**Current waves:** W4 (builtins, 20 runtime open), W5 (runtime semantics, 3 IR open), W6 (coverage infra, 7 open)
+**Target:** parity file all-pass → scale to 500+ cases → >90% semantic coverage
 
 ## Roadmap model
 
 W0-W8 は厳密な直列フェーズではない。現在の主要な作業は W4/W5 (builtin semantics + language runtime)。
 
 ```txt
-issues/        = 作業台帳（147件, 50 open）
+issues/        = 作業台帳（29 open）
 docs/roadmap.md = 大きな未実装領域の分類
 ```
 
@@ -43,16 +41,17 @@ docs/roadmap.md = 大きな未実装領域の分類
 
 | Layer | Issues | P1 | P2 | P3 | Description |
 |-------|--------|----|----|----|-------------|
-| runtime | 31 | 4 | 21 | 6 | WAT runtime functions for builtins and language features |
-| ir | 14 | 2 | 8 | 4 | IR lowering, name resolution, state machines |
-| coverage | 7 | 4 | 3 | 0 | test262 ramp, canary, negative verification, differential, perf |
-| frontend | 5 | 0 | 4 | 1 | Syntax parsing for remaining constructs |
-| semantics | 3 | 0 | 3 | 0 | Resolution and dispatch |
-| backend | 2 | 1 | 1 | 0 | wasm-encoder parity |
-| host | 2 | 1 | 1 | 0 | $262 harness, Node.js shim |
-| compiler | 1 | 0 | 1 | 0 | Pipeline integration |
+| runtime | 20 | 2 | 17 | 1 | WAT runtime functions for builtins and language features |
+| coverage | 7 | 0 | 6 | 1 | test262 ramp, parity, negative verification, diagnostics |
+| ir | 3 | 0 | 3 | 0 | IR lowering, name resolution, state machines |
+| frontend | 1 | 1 | 0 | 0 | Syntax parsing for remaining constructs |
+| backend | 1 | 0 | 1 | 0 | ABI metadata, manifest output |
+| compiler | 1 | 0 | 1 | 0 | Pipeline integration (harness loading) |
+| cli | 1 | 0 | 1 | 0 | Target selection, diagnostics |
+| abi | 1 | 0 | 1 | 0 | Runtime ABI constants |
 
-**Ready to work: 45 items** | **P1 open: 13 items**
+**Ready to work: 27 items** | **P1 open: 3 items** (Map/Set, Promise/async, frontend comma expr)
+**P0 epics:** 4 (ABI metadata, parity unsupported elimination, semantic enablement, coverage scale)
 
 ## Gate overview
 
@@ -62,8 +61,8 @@ docs/roadmap.md = 大きな未実装領域の分類
 | Gate B | Standalone WASI execution | ✅ W1 done |
 | Gate C | Parser does not block common fixtures | ✅ W2 done |
 | Gate D | Known names and builtin dispatch are explicit | ✅ W3 done |
-| Gate E | Core runtime builtins are implemented or precisely rejected | 🔄 W4 in progress (31 open runtime issues) |
-| Gate F | JS/TS runtime semantics become coherent | 🔄 W5 in progress (14 open IR issues) |
+| Gate E | Core runtime builtins are implemented or precisely rejected | 🔄 W4 in progress (20 open runtime issues) |
+| Gate F | JS/TS runtime semantics become coherent | 🔄 W5 in progress (3 open IR issues) |
 | Gate G | test262 ramp is measurable and regression-safe | 🔄 W6 in progress (7 open coverage issues) |
 | Gate H | Host capability boundary is auditable | ✅ W7 done |
 | Post-Gate H | Optimization and large backend replacement | ⏳ W8 deferred |
@@ -89,7 +88,7 @@ docs/roadmap.md = 大きな未実装領域の分類
 - [X] All common JS/TS syntax accepted or precisely rejected
 - [X] JSX, decorators, module augmentation → precise diagnostics
 - [X] TypeScript erasure (enum, namespace, type-only imports, etc.)
-- [X] Remaining parser gaps tracked: hashbang (#474), import assertions (#475), shorthand (#443)
+- [X] Remaining parser gaps tracked (hashbang, import assertions, shorthand)
 
 ## W3: Name/call resolution and builtin dispatch ✅ COMPLETE
 
@@ -97,80 +96,64 @@ docs/roadmap.md = 大きな未実装領域の分類
 - [X] TypedArray constructor names (11 types)
 - [X] Well-known symbols (iterator, toStringTag, hasInstance, toPrimitive, for, keyFor)
 - [X] Builtin method dispatch table (program_builtins.rs)
-- [ ] **Remaining:** test262 harness globals (#457, ~13,426 tests)
+- [ ] **Remaining:** test262 harness globals (I-20260513-HDW7PQ, ~13,426 tests)
 
 ## W4: Builtin API semantics 🔄 IN PROGRESS
 
 Goal: implement selected builtins after names and dispatch paths are explicit.
 
-**Runtime issues (31 open):**
+**Runtime issues (20 open):**
 
-| Issue | Feature | test262 impact |
-|-------|---------|----------------|
-| #419-#420 | TypedArray constructors + methods | ~5,000 |
-| #421-#422 | Map/Set iterator protocol + Set algebra | ~1,300 |
-| #423 | WeakMap/WeakSet complete | ~300 |
-| #424 | DataView complete | ~500 |
-| #425 | ArrayBuffer/SharedArrayBuffer | ~500 |
-| #426 | Object static methods | ~300 |
-| #427 | Math builtins complete | ~500 |
-| #428 | Number methods complete | ~300 |
-| #429 | Date methods complete | ~500 |
-| #430 | Error subclasses | ~500 |
-| #431 | console API complete | ~200 |
-| #432 | JSON replacer/reviver | ~200 |
-| #433 | BigInt arithmetic complete | ~2,000 |
-| #434 | Symbol.for/keyFor registry | ~300 |
-| #435 | Atomics complete | ~1,500 |
-| #436-#437 | Intl.DateTimeFormat + NumberFormat | ~3,500 |
-| #438 | Proxy complete (13 traps) | ~3,000 |
-| #439-#441 | RegExp exec/test + advanced | ~3,000 |
-| #442 | eval/Function constructor | ~300 |
-| #458-#459 | Function.prototype bind/call/apply/toString | ~500 |
-| #460-#461 | String supplementary + static methods | ~800 |
-| #462 | Object.prototype methods | ~500 |
-| #463 | Boolean/Symbol.prototype | ~100 |
-| #464 | Promise supplementary (any, withResolvers) | ~500 |
-| #465-#466 | Iterator helpers + Array copying | ~500 |
-| #467 | WeakRef/FinalizationRegistry | ~200 |
-| #468 | Atomics.waitAsync | ~300 |
-| #469-#470 | Map/Set supplementary | ~300 |
-| #480 | Micro-task queue | ~500 |
-| #481 | NativeError types | ~300 |
-| #482 | Global object properties | ~500 |
+| Issue | Feature | Priority | test262 impact |
+|-------|---------|----------|----------------|
+| I-20260515-SB83JG | Map, Set, WeakMap | P1 | ~1,600 |
+| I-20260515-V28WKG | Promise and async function support | P1 | ~1,800 |
+| I-20260513-Q7B4E8 | RegExp advanced (named groups, lookaround, flags) | P2 | ~3,000 |
+| I-20260513-BQTVQV | WeakRef and FinalizationRegistry | P2 | ~200 |
+| I-20260513-DCRMZJ | String.prototype.normalize (full Unicode) | P2 | ~300 |
+| I-20260513-WBEJBE | First-class Function object model | P2 | ~500 |
+| I-20260514-E2TCH8 | Intl.NumberFormat full locale data | P2 | ~1,500 |
+| I-20260514-28R5VE | Function.prototype.toString source | P2 | ~300 |
+| I-20260514-9P5WP5 | console API full parity | P2 | ~200 |
+| I-20260514-SB757Q | Intl.DateTimeFormat full locale data | P2 | ~2,000 |
+| I-20260515-WPZXJA | Object/GC triage labels and trap classes | P2 | infra |
+| I-20260515-7M5QEV | Symbol and well-known symbols | P2 | ~300 |
+| I-20260515-J2X65E | TypedArray, ArrayBuffer, DataView | P2 | ~6,000 |
+| I-20260515-RRWK59 | BigInt arithmetic + BigInt typed arrays | P2 | ~2,000 |
+| I-20260515-73QE5A | Date UTC coercion gap | P2 | ~500 |
+| I-20260515-EWCSK9 | Array.prototype.push mismatch fix | P2 | ~100 |
+| I-20260515-7HM9PK | Unicode normalize strategy decision | P2 | arch |
+| I-20260515-M2MQS8 | console WAT runtime (group, timer, counter) | P2 | ~100 |
+| I-20260515-CWN7F3 | Runtime-subset unsupported diagnostics | P2 | infra |
+| I-20260515-8NP365 | WeakSet | P3 | ~100 |
 
 ## W5: Language runtime semantics 🔄 IN PROGRESS
 
 Goal: runtime behavior should match the supported JS/TS subset.
 
-**IR issues (14 open):**
+**IR issues (3 open):**
 
-| Issue | Feature | test262 impact |
-|-------|---------|----------------|
-| #404 | async/await Promise integration | ~1,300 |
-| #405 | Generator functions (function*/yield) | ~800 |
-| #406 | Well-known Symbol runtime wiring | ~500 |
-| #407 | Proxy handler traps (basic) | ~3,000 |
-| #408 | Dynamic import() | ~500 |
-| #409 | Live module bindings | ~300 |
-| #410 | Object shorthand/computed/method | ~200 |
-| #411 | BigInt arithmetic complete | ~2,000 |
-| #412 | Sparse array holes | ~200 |
-| #415 | for-await-of | ~300 |
-| #416 | Async generators | ~300 |
-| #417 | Strict mode semantics | ~500 |
-| #446 | Generator state-machine lowering | ~800 |
-| #471-#473 | super.prop, import.meta, new.target | ~500 |
-| #483 | Destructuring patterns | ~500 |
+| Issue | Feature | Priority | test262 impact |
+|-------|---------|----------|----------------|
+| I-20260515-PMTJTQ | Frontend: parse comma expression in Object.entries shard | P1 | ~50 |
+| I-20260513-HDW7PQ | Enable real test262 harness loading | P2 | ~13,426 |
+
+Covered by W4 runtime issues:
+- async/await Promise lowering (I-20260515-V28WKG)
+- Symbol runtime wiring (I-20260515-7M5QEV)
+- BigInt lowering (I-20260515-RRWK59)
 
 ## W6: Coverage and regression infrastructure 🔄 IN PROGRESS
 
-- [X] Ramp 500 → 2,000 → 10,000 → 30,000 → 53,445 with stable parallel execution
+- [X] Server-mode test262 harness (JSONL batch, parallel compile + semantic)
+- [X] Parity check: 18-case paths-file exercising all outcome classifications
+- [X] Semantic checking enabled (default on, `--no-semantic` disables)
 - [X] Regression detection: fail on build_pass / semantic_pass decrease
-- [X] Delta reporting: feature-level and diagnostic-class pass/fail deltas
-- [X] Coverage dashboard: trend graph, feature-level burn-down, diagnostic burn-down
-- [X] Gate progress visualization
-- [ ] **Remaining:** Full sampler ramp (#477), canary expansion (#455), negative classification (#456), differential infra (#478), perf gate (#479)
+- [X] Coverage dashboard data pipeline
+- [ ] **Eliminate all unsupported outcomes in parity file** (I-20260515-ENB7EJ, P0 epic, 5 child issues)
+- [ ] Scale coverage from 18 to 500+ cases (I-20260515-YV65RX, P0)
+- [ ] Negative compile verification (I-20260515-HFPCFC, P3)
+- [ ] Differential test infrastructure (I-20260513-WHBN24, P2)
 
 ## W7: Host capability boundary ✅ COMPLETE
 
@@ -179,7 +162,6 @@ Goal: runtime behavior should match the supported JS/TS subset.
 - [X] Host-deny test matrix expansion
 - [X] Standalone assurance for Promise, Proxy, Reflect, TypedArray, WASI
 - [X] CI gate for unexpected host imports
-- [ ] **Remaining:** $262 harness (#451), Node.js shim (#452), WASI filesystem (#476)
 
 ## W8: Optimization and backend replacement ⏳ DEFERRED
 
@@ -191,4 +173,4 @@ Goal: runtime behavior should match the supported JS/TS subset.
 - [ ] Full binary WASM emitter replacing WAT text dependency
 - [ ] Replace giant WAT templates with typed writers
 - [ ] ABI bridge cleanup after logical/wire contract is stable
-- [ ] wasm-encoder backend parity (#453)
+- [ ] wasm-encoder backend parity
