@@ -417,6 +417,24 @@ fn lowering_applies_arrow_and_class_expression_binding_defaults() {
 }
 
 #[test]
+fn lowering_allows_unresolvable_reference_binding_default() {
+    let program = parse_and_resolve(
+        r#"
+        var obj = {
+          *method({ x = unresolvableReference }) {
+            console.log(x);
+          }
+        };
+
+        obj.method({}).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("unresolvable binding defaults should lower to runtime ReferenceError");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"

@@ -274,7 +274,7 @@ impl super::super::Resolver {
             return Ok(expr);
         }
         match default {
-            BindingDefault::Ident(name) => self.lower_expr(&ResolvedExpr::Ident(name.clone())),
+            BindingDefault::Ident(name) => self.lower_identifier_binding_default_expr(name),
             BindingDefault::FunctionExpr { name, is_generator } => {
                 self.lower_expr(&ResolvedExpr::FunctionExpr {
                     name: name.clone(),
@@ -328,6 +328,32 @@ impl super::super::Resolver {
             | BindingDefault::Undefined => {
                 unreachable!("lowered_binding_default covers literal defaults")
             }
+        }
+    }
+
+    fn lower_identifier_binding_default_expr(
+        &mut self,
+        name: &str,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        match self.lower_expr(&ResolvedExpr::Ident(name.to_owned())) {
+            Ok(expr) => Ok(expr),
+            Err(err) if err.code == DiagCode::UnresolvedName => Ok(LoweredExpr::Block {
+                stmts: vec![LoweredStmt::Throw(
+                    LoweredExpr::ErrorNew {
+                        constructor: BuiltinErrorConstructor::ReferenceError,
+                        message: Box::new(LoweredExpr::String(
+                            format!("{name} is not defined"),
+                            Span::generated("str"),
+                        )),
+                        cause: None,
+                        span: Span::generated("error_new"),
+                    },
+                    Span::generated("throw"),
+                )],
+                result: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+                span: Span::generated("block"),
+            }),
+            Err(err) => Err(err),
         }
     }
 }
