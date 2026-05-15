@@ -39,4 +39,12 @@ pub const OBJECT_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::IsPrototypeOf,
     RuntimeFn::ObjectToString,
     RuntimeFn::ObjectToLocaleString,
+    RuntimeFn::ReflectDefineProperty,
+    RuntimeFn::ReflectDeleteProperty,
+    RuntimeFn::ReflectGet,
+    RuntimeFn::ReflectHas,
+    RuntimeFn::ReflectOwnKeys,
+    RuntimeFn::ReflectPreventExtensions,
+    RuntimeFn::ReflectSet,
+    RuntimeFn::ReflectSetPrototypeOf,
 ];
