@@ -61,6 +61,7 @@ pub const HOST_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::SymbolToPrimitive,
     RuntimeFn::SymbolToStringTag,
     RuntimeFn::SymbolHasInstance,
+    RuntimeFn::SymbolWellKnown,
     // Iterator
     RuntimeFn::GetIterator,
     RuntimeFn::IteratorNext,

@@ -35,6 +35,7 @@ impl WatEmitter<'_> {
             RuntimeFn::SymbolHasInstance => self.emit_symbol_has_instance(wat),
             RuntimeFn::SymbolToString => self.emit_symbol_to_string(wat),
             RuntimeFn::SymbolDescription => self.emit_symbol_description(wat),
+            RuntimeFn::SymbolWellKnown => self.emit_symbol_well_known(wat),
             RuntimeFn::GetIterator => self.emit_get_iterator(wat),
             RuntimeFn::IteratorNext => self.emit_iterator_next(wat),
             RuntimeFn::GeneratorYield => self.emit_generator_yield(wat),

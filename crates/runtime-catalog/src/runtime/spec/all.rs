@@ -2772,6 +2772,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::SymbolWellKnown => RuntimeSpec {
+                symbol: "$symbol_well_known",
+                deps: &[Self::SymbolNew],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::TaskPoll => RuntimeSpec {
                 symbol: "$task_poll",
                 deps: NO_DEPS,
