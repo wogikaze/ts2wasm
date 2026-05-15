@@ -164,6 +164,14 @@
     },
     {
       "module": "host",
+      "name": "stringNormalize",
+      "wat_symbol": "$host_string_normalize",
+      "abi": "NodeShim",
+      "capability": "host.stringNormalize",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
       "name": "unescape",
       "wat_symbol": "$host_unescape",
       "abi": "NodeShim",
