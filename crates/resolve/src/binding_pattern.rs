@@ -30,6 +30,8 @@ pub enum BindingDefault {
     Object(Vec<(String, BindingDefault)>),
     Ident(String),
     FunctionExpr { name: String, is_generator: bool },
+    ArrowFn,
+    ClassExpr { name: String },
     Call(String),
 }
 
@@ -129,7 +131,7 @@ impl BindingDefault {
     fn collect_ref_names<'a>(&'a self, names: &mut Vec<&'a str>) {
         match self {
             Self::Ident(name) => names.push(name.as_str()),
-            Self::FunctionExpr { .. } => {}
+            Self::FunctionExpr { .. } | Self::ArrowFn | Self::ClassExpr { .. } => {}
             Self::Call(_) => {}
             Self::Array(elements) => {
                 for element in elements.iter().flatten() {
@@ -543,6 +545,12 @@ fn parse_binding_default(text: &str, span: Option<Span>) -> Result<BindingDefaul
     {
         return Ok(BindingDefault::FunctionExpr { name, is_generator });
     }
+    if is_debug_empty_arrow_function_default(text) {
+        return Ok(BindingDefault::ArrowFn);
+    }
+    if let Some(name) = parse_debug_class_expression_default(text) {
+        return Ok(BindingDefault::ClassExpr { name });
+    }
     Err(issue_251(
         "only literal default binding initializers are supported in this runtime slice",
         span,
@@ -587,6 +595,20 @@ fn parse_debug_empty_function_expression_default(text: &str) -> Option<(String, 
     let name = extract_debug_string_field(text, "name")?;
     let is_generator = extract_debug_bool_field(text, "is_generator")?;
     Some((name, is_generator))
+}
+
+fn is_debug_empty_arrow_function_default(text: &str) -> bool {
+    text.starts_with("ArrowFn {")
+        && text.contains("params: []")
+        && text.contains("body: Undefined")
+        && text.contains("body_stmts: []")
+}
+
+fn parse_debug_class_expression_default(text: &str) -> Option<String> {
+    if !text.starts_with("ClassExpr {") {
+        return None;
+    }
+    extract_debug_string_field(text, "name")
 }
 
 fn extract_debug_string_field(text: &str, field: &str) -> Option<String> {

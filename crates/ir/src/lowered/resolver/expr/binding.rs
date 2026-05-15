@@ -283,6 +283,15 @@ impl super::super::Resolver {
                     is_generator: *is_generator,
                 })
             }
+            BindingDefault::ArrowFn => self.lower_expr(&ResolvedExpr::ArrowFn {
+                params: Vec::new(),
+                body: Box::new(ResolvedExpr::Undefined),
+                body_stmts: Vec::new(),
+            }),
+            BindingDefault::ClassExpr { name } => self.lower_expr(&ResolvedExpr::ClassExpr {
+                name: name.clone(),
+                body: Vec::new(),
+            }),
             BindingDefault::Call(callee) => self.lower_expr(&ResolvedExpr::Call {
                 callee: Box::new(ResolvedExpr::Ident(callee.clone())),
                 args: Vec::new(),

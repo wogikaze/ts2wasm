@@ -397,6 +397,26 @@ fn lowering_applies_function_expression_binding_defaults() {
 }
 
 #[test]
+fn lowering_applies_arrow_and_class_expression_binding_defaults() {
+    let program = parse_and_resolve(
+        r#"
+        var obj = {
+          *method([arrow = () => {}, cls = class {}, xCls = class X {}]) {
+            console.log(arrow.name);
+            console.log(cls.name);
+            console.log(xCls.name);
+          }
+        };
+
+        obj.method([]).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("binding defaults should allow empty arrow and class expressions");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"
