@@ -339,8 +339,10 @@ def usage():
     print("  --jsonl      Output results as JSONL (test262 only, server batch mode by default)")
     print("  --output-jsonl PATH  Override JSONL output path (requires --jsonl)")
     print("  --jobs N     Number of parallel jobs (default: CPU count)")
-    print("  --no-semantic disable semantic check (skip Node/iwasm execution after build)")
-    print("  --sample N   Max files per category (test262 only, uses category-based sampling)")
+    print("  --no-semantic    Disable semantic check (skip Node/iwasm execution after build)")
+    print("  --semantic MODE  Semantic mode: 'strict' (Node/iwasm exact diff, default) or")
+    print("                   'fast' (oracle_skip for silent positive tests)")
+    print("  --sample N       Max files per category (test262 only, uses category-based sampling)")
     print("  --category PATTERN  Regex filter for test categories (test262 only, used with --sample)")
     print("  --check-prerequisites  Validate prerequisites and exit (no coverage run)")
 
@@ -1323,7 +1325,7 @@ def main():
     jsonl_output = False
     output_jsonl_path = None
     jobs = None
-    semantic_check = True
+    semantic_mode = "strict"  # "strict" | "fast" | "none"
     sample = None
     category_pattern = None
     server_mode = True
@@ -1375,8 +1377,18 @@ def main():
             jsonl_output = True
             i += 1
         elif args[i] == "--no-semantic":
-            semantic_check = False
+            semantic_mode = "none"
             i += 1
+        elif args[i] == "--semantic":
+            if i + 1 >= len(args):
+                print("ERROR: --semantic requires 'strict' or 'fast'", file=sys.stderr)
+                sys.exit(1)
+            val = args[i + 1].lower()
+            if val not in ("strict", "fast"):
+                print(f"ERROR: --semantic must be 'strict' or 'fast', got '{args[i + 1]}'", file=sys.stderr)
+                sys.exit(1)
+            semantic_mode = val
+            i += 2
         elif args[i] == "--jobs":
             if i + 1 >= len(args):
                 print("ERROR: --jobs requires a value", file=sys.stderr)
@@ -1464,18 +1476,22 @@ def main():
     if force_jsonl:
         jsonl_output = True
 
-    if _test262_semantic_requires_strict_oracle(suite, semantic_check):
+    # Derive boolean semantic_check from tri-state semantic_mode
+    semantic_check = (semantic_mode != "none")
+
+    if suite == "test262" and semantic_mode == "strict":
         node_oracle_policy = os.environ.get("TS2WASM_TEST262_NODE_ORACLE", "auto").strip().lower()
         if node_oracle_policy not in ("always", "1", "true", "yes"):
             print(
-                "ERROR: test262 semantic coverage requires "
-                "TS2WASM_TEST262_NODE_ORACLE=always; use --no-semantic for build-only runs",
+                "ERROR: test262 strict semantic coverage requires "
+                "TS2WASM_TEST262_NODE_ORACLE=always; use --semantic fast for oracle_skip mode, "
+                "or --no-semantic for build-only runs",
                 file=sys.stderr,
             )
             sys.exit(1)
         if not _env_truthy(os.environ.get("TS2WASM_DISABLE_TEST262_PREPROCESSOR_STUBS", "0")):
             print(
-                "ERROR: test262 semantic coverage requires "
+                "ERROR: test262 strict semantic coverage requires "
                 "TS2WASM_DISABLE_TEST262_PREPROCESSOR_STUBS=1 to avoid compiler-side assert stubs",
                 file=sys.stderr,
             )
@@ -1664,7 +1680,13 @@ def main():
             "iwasm_processes": 0,
         }
         include_jsonl_source = os.environ.get("TS2WASM_JSONL_SOURCE", "0") not in ("0", "false", "False", "no", "NO")
-        node_oracle_policy = os.environ.get("TS2WASM_TEST262_NODE_ORACLE", "auto").strip().lower()
+        # P4: semantic_mode controls oracle policy
+        if semantic_mode == "strict":
+            node_oracle_policy = "always"
+        elif semantic_mode == "fast":
+            node_oracle_policy = os.environ.get("TS2WASM_TEST262_NODE_ORACLE", "auto").strip().lower()
+        else:
+            node_oracle_policy = "never"
         try:
             metadata_prefix_bytes = int(os.environ.get("TS2WASM_TEST262_METADATA_PREFIX_BYTES", "8192") or "8192")
         except ValueError:
