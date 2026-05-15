@@ -80,6 +80,7 @@ pub enum HostImport {
     DateToTimeString,
     DateParse,
     DateUTC,
+    StringNormalize,
 }
 
 impl HostImport {
@@ -430,6 +431,14 @@ impl HostImport {
                 params: "param i32 i32 i32 i32 i32 i32 i32",
                 result: "result i32",
             },
+            Self::StringNormalize => HostImportSpec {
+                module: "host",
+                name: "stringNormalize",
+                wat_symbol: "$host_string_normalize",
+                abi: HostAbi::NodeShim,
+                params: "param i32 i32",
+                result: "result i32",
+            },
         }
     }
 
@@ -481,6 +490,7 @@ impl HostImport {
             Self::DateToTimeString => "host.dateToTimeString",
             Self::DateParse => "host.dateParse",
             Self::DateUTC => "host.dateUTC",
+            Self::StringNormalize => "host.stringNormalize",
         }
     }
 }

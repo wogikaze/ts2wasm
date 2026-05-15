@@ -34,6 +34,7 @@ pub enum Capability {
     HostDateToTimeString,
     HostDateParse,
     HostDateUTC,
+    HostStringNormalize,
 }
 
 impl Capability {
@@ -71,6 +72,7 @@ impl Capability {
             Self::HostDateToTimeString => "host.dateToTimeString",
             Self::HostDateParse => "host.dateParse",
             Self::HostDateUTC => "host.dateUTC",
+            Self::HostStringNormalize => "host.stringNormalize",
         }
     }
 }

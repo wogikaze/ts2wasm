@@ -298,6 +298,8 @@ pub enum RuntimeFn {
     StringFromCodePoint,
     StringIsWellFormed,
     StringToWellFormed,
+    /// String.prototype.normalize (via host shim)
+    StringNormalize,
     /// String.prototype.replace
     StringReplace,
     /// String.prototype.replaceAll
@@ -885,6 +887,7 @@ const IMPORT_DATE_TO_DATE_STRING: &[HostImport] = &[HostImport::DateToDateString
 const IMPORT_DATE_TO_TIME_STRING: &[HostImport] = &[HostImport::DateToTimeString];
 const IMPORT_DATE_PARSE: &[HostImport] = &[HostImport::DateParse];
 const IMPORT_DATE_UTC: &[HostImport] = &[HostImport::DateUTC];
+const IMPORT_STRING_NORMALIZE: &[HostImport] = &[HostImport::StringNormalize];
 const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
 const CAP_STDOUT_WRITE: &[Capability] = &[Capability::StdoutWrite];
 const CAP_WASI_CLOCK_REALTIME: &[Capability] = &[Capability::WasiClockRealtime];
@@ -915,6 +918,7 @@ const CAP_HOST_DATE_TO_DATE_STRING: &[Capability] = &[Capability::HostDateToDate
 const CAP_HOST_DATE_TO_TIME_STRING: &[Capability] = &[Capability::HostDateToTimeString];
 const CAP_HOST_DATE_PARSE: &[Capability] = &[Capability::HostDateParse];
 const CAP_HOST_DATE_UTC: &[Capability] = &[Capability::HostDateUTC];
+const CAP_STRING_NORMALIZE: &[Capability] = &[Capability::HostStringNormalize];
 const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::UNDEFINED,
     RuntimeString::NULL,
@@ -1412,6 +1416,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringFromCodePoint" => Some(RuntimeFn::StringFromCodePoint),
         "StringIsWellFormed" => Some(RuntimeFn::StringIsWellFormed),
         "StringToWellFormed" => Some(RuntimeFn::StringToWellFormed),
+        "StringNormalize" => Some(RuntimeFn::StringNormalize),
         "StringReplace" => Some(RuntimeFn::StringReplace),
         "StringReplaceAll" => Some(RuntimeFn::StringReplaceAll),
         "StringRaw" => Some(RuntimeFn::StringRaw),
@@ -2058,6 +2063,7 @@ impl RuntimeFn {
             | Self::StringCodePointAt
             | Self::StringIsWellFormed
             | Self::StringToWellFormed
+            | Self::StringNormalize
             | Self::StringFromCharCode
             | Self::StringFromCodePoint
             | Self::StringReplace
@@ -2547,6 +2553,7 @@ impl RuntimeFn {
             Self::StringFromCodePoint,
             Self::StringIsWellFormed,
             Self::StringToWellFormed,
+            Self::StringNormalize,
             Self::RegexpMatchInner,
             Self::StringReplace,
             Self::StringReplaceAll,
@@ -2975,6 +2982,7 @@ impl RuntimeFn {
             Self::StringFromCodePoint,
             Self::StringIsWellFormed,
             Self::StringToWellFormed,
+            Self::StringNormalize,
             Self::RegexpMatchInner,
             Self::StringReplace,
             Self::StringReplaceAll,
