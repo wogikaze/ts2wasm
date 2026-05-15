@@ -152,8 +152,21 @@ pub fn run_server() -> Result<(), String> {
         if !req.items.is_empty() {
             // Batch mode: process all items in parallel using a thread pool
             let results = process_batch(&tmpdir, &req.items, request_emit_mode(&req), req.jobs);
-            let json =
-                serde_json::to_string(&results).map_err(|e| format!("serialization error: {e}"))?;
+            #[derive(Serialize)]
+            struct BatchResponse {
+                items: Vec<ServerResponse>,
+                meta: serde_json::Value,
+            }
+            let meta = serde_json::json!({
+                "wat2wasm_fallback_count": crate::io::write_output::WAT2WASM_FALLBACK_COUNT
+                    .load(std::sync::atomic::Ordering::Relaxed),
+            });
+            let batch_resp = BatchResponse {
+                items: results,
+                meta,
+            };
+            let json = serde_json::to_string(&batch_resp)
+                .map_err(|e| format!("serialization error: {e}"))?;
             let mut out = stdout.lock();
             writeln!(out, "{json}").map_err(|e| format!("stdout write error: {e}"))?;
             out.flush()

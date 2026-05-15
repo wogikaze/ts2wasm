@@ -1678,7 +1678,8 @@ def main():
             "node_wall_ms": 0,          # cumulative node oracle wall time
             "iwasm_processes": 0,       # number of iwasm invocations
             "node_processes": 0,        # number of node invocations
-            "wat2wasm_processes": 0,    # number of wat2wasm invocations
+            "wasm_emit_count": 0,       # successful wasm emissions (via wat crate)
+            "wat2wasm_fallback_count": 0,  # actual wat2wasm CLI fallback invocations
             "jsonl_canonicalize_ms": 0,
             "dashboard_ms": 0,
             "server_fallback_batches": 0,
@@ -2527,7 +2528,7 @@ def main():
                                 continue
 
                             try:
-                                build_results = json.loads(resp_line.decode("utf-8"))
+                                build_resp_raw = json.loads(resp_line.decode("utf-8"))
                             except json.JSONDecodeError:
                                 try:
                                     server_proc.kill()
@@ -2536,6 +2537,16 @@ def main():
                                 server_proc = None
                                 run_legacy_jsonl_batch(jsonl_out, batch)
                                 continue
+
+                            # Support both new format {items, meta} and legacy array
+                            if isinstance(build_resp_raw, dict):
+                                build_results = build_resp_raw.get("items", [])
+                                meta = build_resp_raw.get("meta", {})
+                                fb = meta.get("wat2wasm_fallback_count", 0)
+                                if fb:
+                                    phase_timers["wat2wasm_fallback_count"] = fb
+                            else:
+                                build_results = build_resp_raw
 
                             results_by_id = {result["id"]: result for result in build_results}
 
@@ -2566,7 +2577,7 @@ def main():
                                     return record, "build_pass"
                                 wasm_path = build_resp.get("wasm_path")
                                 if wasm_path:
-                                    phase_timers["wat2wasm_processes"] += 1
+                                    phase_timers["wasm_emit_count"] += 1
                                 if not wasm_path:
                                     # Older or failed server-side emit path. Re-run the item through
                                     # the legacy harness to preserve JSONL semantics instead of
@@ -3438,7 +3449,7 @@ def main():
                     continue
                 resp_line = _read_result[0]
                 try:
-                    build_results = json.loads(resp_line.decode("utf-8"))
+                    build_resp_raw = json.loads(resp_line.decode("utf-8"))
                 except json.JSONDecodeError:
                     if server_proc is not None:
                         try:
@@ -3448,6 +3459,12 @@ def main():
                         server_proc = None
                     _parallel_subprocess_batch(batch, semantic_enabled, tmp_dir)
                     continue
+
+                # Support both {items, meta} and legacy array format
+                if isinstance(build_resp_raw, dict):
+                    build_results = build_resp_raw.get("items", [])
+                else:
+                    build_results = build_resp_raw
                 results_by_id = {r["id"]: r for r in build_results}
                 
                 classified_results = []
