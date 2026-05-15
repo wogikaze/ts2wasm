@@ -1279,33 +1279,36 @@ pub(crate) fn lowered_binding_default(default: &BindingDefault) -> Option<Lowere
         BindingDefault::Bool(value) => Some(LoweredExpr::Bool(*value, Span::generated("bool"))),
         BindingDefault::Null => Some(LoweredExpr::Null(Span::generated("null"))),
         BindingDefault::Undefined => Some(LoweredExpr::Undefined(Span::generated("undef"))),
-        BindingDefault::Array(elements) => Some(LoweredExpr::ArrayNew {
-            elements: elements
+        BindingDefault::Array(elements) => {
+            let elements = elements
                 .iter()
                 .map(|element| {
-                    element
-                        .as_ref()
-                        .and_then(lowered_binding_default)
-                        .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef")))
+                    if let Some(element) = element.as_ref() {
+                        lowered_binding_default(element)
+                    } else {
+                        Some(LoweredExpr::Undefined(Span::generated("undef")))
+                    }
                 })
-                .collect(),
-            span: Span::generated("array_new"),
-        }),
-        BindingDefault::Object(props) => Some(LoweredExpr::ObjectNew {
-            props: props
+                .collect::<Option<Vec<_>>>()?;
+            Some(LoweredExpr::ArrayNew {
+                elements,
+                span: Span::generated("array_new"),
+            })
+        }
+        BindingDefault::Object(props) => {
+            let props = props
                 .iter()
                 .map(|(key, value)| {
-                    (
-                        key.clone(),
-                        lowered_binding_default(value)
-                            .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef"))),
-                    )
+                    lowered_binding_default(value).map(|value| (key.clone(), value))
                 })
-                .collect(),
-            non_enumerable: 0,
-            span: Span::generated("object_new"),
-        }),
-        BindingDefault::Call(_) => None,
+                .collect::<Option<Vec<_>>>()?;
+            Some(LoweredExpr::ObjectNew {
+                props,
+                non_enumerable: 0,
+                span: Span::generated("object_new"),
+            })
+        }
+        BindingDefault::Ident(_) | BindingDefault::Call(_) => None,
     }
 }
 
@@ -1326,6 +1329,24 @@ fn binding_param_names<'a>(
             names.extend(pattern.names().into_iter().map(ToOwned::to_owned));
         } else {
             names.push(param.to_owned());
+        }
+    }
+    Ok(names)
+}
+
+fn binding_param_default_ref_names<'a>(
+    params: impl Iterator<Item = (&'a str, Option<Span>)>,
+) -> Result<Vec<String>, Diagnostic> {
+    let mut names = Vec::new();
+    for (param, span) in params {
+        let binding = param.strip_prefix("...").unwrap_or(param);
+        if let Some(pattern) = parse_binding_pattern(binding, span)? {
+            names.extend(
+                pattern
+                    .default_ref_names()
+                    .into_iter()
+                    .map(ToOwned::to_owned),
+            );
         }
     }
     Ok(names)

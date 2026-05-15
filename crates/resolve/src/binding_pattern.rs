@@ -28,6 +28,7 @@ pub enum BindingDefault {
     Undefined,
     Array(Vec<Option<BindingDefault>>),
     Object(Vec<(String, BindingDefault)>),
+    Ident(String),
     Call(String),
 }
 
@@ -50,6 +51,12 @@ impl BindingPattern {
         names
     }
 
+    pub fn default_ref_names(&self) -> Vec<&str> {
+        let mut names = Vec::new();
+        self.collect_default_ref_names(&mut names);
+        names
+    }
+
     fn collect_names<'a>(&'a self, names: &mut Vec<&'a str>) {
         match self {
             Self::Array(bindings) => {
@@ -60,6 +67,27 @@ impl BindingPattern {
             Self::Object(bindings) => {
                 for binding in bindings {
                     binding.target.collect_names(names);
+                }
+            }
+        }
+    }
+
+    fn collect_default_ref_names<'a>(&'a self, names: &mut Vec<&'a str>) {
+        match self {
+            Self::Array(bindings) => {
+                for binding in bindings {
+                    if let Some(default) = binding.default.as_ref() {
+                        default.collect_ref_names(names);
+                    }
+                    binding.target.collect_default_ref_names(names);
+                }
+            }
+            Self::Object(bindings) => {
+                for binding in bindings {
+                    if let Some(default) = binding.default.as_ref() {
+                        default.collect_ref_names(names);
+                    }
+                    binding.target.collect_default_ref_names(names);
                 }
             }
         }
@@ -85,6 +113,33 @@ impl BindingTarget {
         match self {
             Self::Identifier(name) => names.push(name.as_str()),
             Self::Pattern(pattern) => pattern.collect_names(names),
+        }
+    }
+
+    fn collect_default_ref_names<'a>(&'a self, names: &mut Vec<&'a str>) {
+        match self {
+            Self::Identifier(_) => {}
+            Self::Pattern(pattern) => pattern.collect_default_ref_names(names),
+        }
+    }
+}
+
+impl BindingDefault {
+    fn collect_ref_names<'a>(&'a self, names: &mut Vec<&'a str>) {
+        match self {
+            Self::Ident(name) => names.push(name.as_str()),
+            Self::Call(_) => {}
+            Self::Array(elements) => {
+                for element in elements.iter().flatten() {
+                    element.collect_ref_names(names);
+                }
+            }
+            Self::Object(props) => {
+                for (_, value) in props {
+                    value.collect_ref_names(names);
+                }
+            }
+            Self::Number(_) | Self::String(_) | Self::Bool(_) | Self::Null | Self::Undefined => {}
         }
     }
 }
@@ -477,6 +532,9 @@ fn parse_binding_default(text: &str, span: Option<Span>) -> Result<BindingDefaul
     }
     if let Some(value) = parse_string_literal(text) {
         return Ok(BindingDefault::String(value));
+    }
+    if is_identifier(text) {
+        return Ok(BindingDefault::Ident(text.to_owned()));
     }
     Err(issue_251(
         "only literal default binding initializers are supported in this runtime slice",

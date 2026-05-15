@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use super::binding_param_names;
+use super::{binding_param_default_ref_names, binding_param_names};
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
 use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
 use crate::lowered::facts::ArrowClosure;
@@ -373,6 +373,12 @@ impl super::Resolver {
         collect_declared_names_in_stmts(body, &mut excluded);
 
         let mut captures = Vec::new();
+        let excluded_names = excluded.iter().cloned().collect::<Vec<_>>();
+        for name in binding_param_default_ref_names(
+            params.iter().map(|param| (param.name.as_str(), param.span)),
+        )? {
+            push_capture(&name, &excluded_names, &mut captures);
+        }
         for default in params.iter().filter_map(|param| param.default.as_ref()) {
             collect_expr_captures(default, &excluded, &mut captures);
             collect_nested_function_captures_in_expr(default, &excluded, &mut captures)?;

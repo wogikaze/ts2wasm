@@ -359,6 +359,25 @@ fn lowering_applies_identifier_default_to_nested_array_binding_pattern() {
 }
 
 #[test]
+fn lowering_applies_identifier_default_to_nested_array_binding_element() {
+    let program = parse_and_resolve(
+        r#"
+        var values = [2, 1, 3];
+        var obj = {
+          *method([[...x] = values]) {
+            console.log(x.length);
+          }
+        };
+
+        obj.method([]).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("binding element defaults should allow identifier values");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"

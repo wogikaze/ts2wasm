@@ -273,13 +273,44 @@ impl super::super::Resolver {
         if let Some(expr) = lowered_binding_default(default) {
             return Ok(expr);
         }
-        let BindingDefault::Call(callee) = default else {
-            unreachable!("lowered_binding_default covers all non-call defaults");
-        };
-        self.lower_expr(&ResolvedExpr::Call {
-            callee: Box::new(ResolvedExpr::Ident(callee.clone())),
-            args: Vec::new(),
-            span: Span::generated("call"),
-        })
+        match default {
+            BindingDefault::Ident(name) => self.lower_expr(&ResolvedExpr::Ident(name.clone())),
+            BindingDefault::Call(callee) => self.lower_expr(&ResolvedExpr::Call {
+                callee: Box::new(ResolvedExpr::Ident(callee.clone())),
+                args: Vec::new(),
+                span: Span::generated("call"),
+            }),
+            BindingDefault::Array(elements) => Ok(LoweredExpr::ArrayNew {
+                elements: elements
+                    .iter()
+                    .map(|element| {
+                        if let Some(element) = element.as_ref() {
+                            self.lower_binding_default_expr(element)
+                        } else {
+                            Ok(LoweredExpr::Undefined(Span::generated("undef")))
+                        }
+                    })
+                    .collect::<Result<Vec<_>, _>>()?,
+                span: Span::generated("array_new"),
+            }),
+            BindingDefault::Object(props) => Ok(LoweredExpr::ObjectNew {
+                props: props
+                    .iter()
+                    .map(|(key, value)| {
+                        self.lower_binding_default_expr(value)
+                            .map(|value| (key.clone(), value))
+                    })
+                    .collect::<Result<Vec<_>, _>>()?,
+                non_enumerable: 0,
+                span: Span::generated("object_new"),
+            }),
+            BindingDefault::Number(_)
+            | BindingDefault::String(_)
+            | BindingDefault::Bool(_)
+            | BindingDefault::Null
+            | BindingDefault::Undefined => {
+                unreachable!("lowered_binding_default covers literal defaults")
+            }
+        }
     }
 }
