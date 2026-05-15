@@ -3793,6 +3793,11 @@ fn core_expression_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-expressions/object-literal-method-mutable-capture.ts",
         "fixtures/core-expressions/object-literal-getter-descriptor.ts",
         "fixtures/core-expressions/object-literal-setter-descriptor.ts",
+        "fixtures/core-expressions/object-literal-computed-variable-key.ts",
+        "fixtures/core-expressions/object-literal-getter-setter.ts",
+        "fixtures/core-expressions/object-literal-method-shorthand.ts",
+        "fixtures/core-expressions/object-literal-shorthand-properties.ts",
+        "fixtures/core-expressions/object-shorthand-computed-method.ts",
         "fixtures/core-expressions/index.ts",
         "fixtures/core-expressions/new.ts",
         "fixtures/core-expressions/typeof.ts",
@@ -4333,6 +4338,21 @@ fn async_arrow_matches_node_output() {
 }
 
 #[test]
+fn async_error_handling_matches_node_output() {
+    assert_fixture_matches_node("fixtures/async-await/async-error-handling.ts");
+}
+
+#[test]
+fn async_chain_matches_node_output() {
+    assert_fixture_matches_node("fixtures/async-await/async-chain.ts");
+}
+
+#[test]
+fn async_parallel_matches_node_output() {
+    assert_fixture_matches_node("fixtures/async-await/async-parallel.ts");
+}
+
+#[test]
 fn upgraded_builtin_fixture_matches_node_output() {
     for fixture in [
         // Promoted from build_smoke to semantic_diff (ID 210)
@@ -4416,6 +4436,32 @@ fn class_private_members_fixture_matches_node_output() {
 #[test]
 fn class_extends_builtin_fixture_matches_node_output() {
     assert_fixture_matches_node("fixtures/classes/class-extends-builtin.ts");
+}
+
+// Class coverage expansion (issue I-20260514-YHDZJJ)
+#[test]
+fn class_constructor_return_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes/class-constructor-return.ts");
+}
+
+#[test]
+fn class_getter_setter_inherited_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes/class-getter-setter-inherited.ts");
+}
+
+#[test]
+fn class_instanceof_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes/class-instanceof.ts");
+}
+
+#[test]
+fn class_method_override_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes/class-method-override.ts");
+}
+
+#[test]
+fn class_private_fields_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/classes/class-private-fields.ts");
 }
 
 // FNCSEM: function and method call semantic suite (issue I-20260512-FNCSEM)
@@ -4543,6 +4589,23 @@ fn global_decode_uri_fixture_matches_node_output() {
 #[test]
 fn global_uri_component_fixture_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/global-uri-component.ts");
+}
+
+// Common builtin API coverage (issue I-20260514-HGZJCJ)
+#[test]
+fn common_builtin_api_fixtures_match_node_output() {
+    for fixture in [
+        "fixtures/builtins-and-io/boolean-symbol-prototype.ts",
+        "fixtures/builtins-and-io/native-error-types.ts",
+        "fixtures/builtins-and-io/strict-mode-basic.ts",
+        "fixtures/builtins-and-io/number-format-integer.ts",
+        "fixtures/builtins-and-io/number-format-no-args.ts",
+        "fixtures/builtins-and-io/number-format-precision.ts",
+        "fixtures/builtins-and-io/string-constructor-call.ts",
+        "fixtures/builtins-and-io/array-every-some-complex.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
 }
 
 // GC pressure: private fields surviving allocation pressure

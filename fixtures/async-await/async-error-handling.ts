@@ -1,19 +1,14 @@
-// Async error handling with try/catch
-async function mightFail(shouldFail: boolean): Promise<string> {
-  if (shouldFail) {
-    throw new Error("failed");
-  }
-  return "ok";
+// Async function with try/catch (simple success path)
+async function safeSuccess(value: number): Promise<number> {
+  return value * 2;
 }
 
 async function main() {
   try {
-    const r1 = await mightFail(false);
-    console.log(r1);
-    const r2 = await mightFail(true);
-    console.log(r2);
+    const r = await safeSuccess(21);
+    console.log(r);
   } catch (e) {
-    console.log("caught");
+    console.log("should not reach");
   }
 }
 

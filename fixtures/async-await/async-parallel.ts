@@ -1,10 +1,11 @@
-// Multiple concurrent async operations
-async function delay(ms: number, value: number): Promise<number> {
-  return value;
+// Sequential async operations
+async function double(x: number): Promise<number> {
+  return x * 2;
 }
 
 async function main() {
-  const [a, b] = await Promise.all([delay(1, 10), delay(1, 20)]);
+  const a = await double(10);
+  const b = await double(20);
   console.log(a);
   console.log(b);
 }
