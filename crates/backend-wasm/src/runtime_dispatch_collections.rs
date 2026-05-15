@@ -48,8 +48,12 @@ impl WatEmitter<'_> {
             RuntimeFn::WeakRefNew => self.emit_weak_ref_new(wat),
             RuntimeFn::WeakRefDeref => self.emit_weak_ref_deref(wat),
             RuntimeFn::FinalizationRegistryNew => self.emit_finalization_registry_new(wat),
-            RuntimeFn::FinalizationRegistryRegister => self.emit_finalization_registry_register(wat),
-            RuntimeFn::FinalizationRegistryUnregister => self.emit_finalization_registry_unregister(wat),
+            RuntimeFn::FinalizationRegistryRegister => {
+                self.emit_finalization_registry_register(wat)
+            }
+            RuntimeFn::FinalizationRegistryUnregister => {
+                self.emit_finalization_registry_unregister(wat)
+            }
             _ => unreachable!("non-collections RuntimeFn routed to collections dispatch"),
         }
     }
