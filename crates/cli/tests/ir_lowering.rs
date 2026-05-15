@@ -191,6 +191,29 @@ fn lowering_passes_top_level_capture_through_double_nested_function_expr() {
 }
 
 #[test]
+fn lowering_preserves_captured_object_method_facts_in_nested_function() {
+    let program = parse_and_resolve(
+        r#"
+        function outer() {
+          var obj = {
+            method() {
+              return 1;
+            }
+          };
+          function run() {
+            obj.method();
+          }
+          run();
+        }
+        outer();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("captured object-literal method metadata should remain available");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"

@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use super::binding_param_names;
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
-use crate::lowered::classes::ObjectAccessorKey;
+use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
 use crate::lowered::facts::ArrowClosure;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -391,6 +391,16 @@ impl super::Resolver {
                     .intl_number_format_options
                     .insert(name.clone(), options.clone());
             }
+            if let Some(props) = self.ctx.classes.object_function_props.get(&local_id)
+                && let Some(props) = property_keyed_object_function_props(props)
+            {
+                facts.object_function_props.insert(name.clone(), props);
+            }
+            if let Some(props) = self.ctx.classes.object_accessor_props.get(&local_id)
+                && let Some(props) = property_keyed_object_accessor_props(props)
+            {
+                facts.object_accessor_props.insert(name.clone(), props);
+            }
         }
         facts
     }
@@ -700,6 +710,36 @@ impl super::Resolver {
             self.ctx.facts.heap_closure_locals.remove(&local_id);
         }
     }
+}
+
+fn property_keyed_object_function_props(
+    props: &HashMap<ObjectAccessorKey, FuncId>,
+) -> Option<HashMap<ObjectAccessorKey, FuncId>> {
+    let props = props
+        .iter()
+        .filter_map(|(key, func_id)| match key {
+            ObjectAccessorKey::Property(property) => {
+                Some((ObjectAccessorKey::Property(property.clone()), *func_id))
+            }
+            ObjectAccessorKey::SymbolLocal(_) => None,
+        })
+        .collect::<HashMap<_, _>>();
+    (!props.is_empty()).then_some(props)
+}
+
+fn property_keyed_object_accessor_props(
+    props: &HashMap<ObjectAccessorKey, ObjectAccessorProp>,
+) -> Option<HashMap<ObjectAccessorKey, ObjectAccessorProp>> {
+    let props = props
+        .iter()
+        .filter_map(|(key, accessor)| match key {
+            ObjectAccessorKey::Property(property) => {
+                Some((ObjectAccessorKey::Property(property.clone()), *accessor))
+            }
+            ObjectAccessorKey::SymbolLocal(_) => None,
+        })
+        .collect::<HashMap<_, _>>();
+    (!props.is_empty()).then_some(props)
 }
 
 /// Returns true when `expr` contains a `super.method()` call or a `super.property`

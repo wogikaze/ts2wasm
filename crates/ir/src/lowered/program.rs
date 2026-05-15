@@ -4,7 +4,7 @@ use crate::builtin_resolved::{
     ClassMethodKind, ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedParam,
     ResolvedStmt,
 };
-use crate::lowered::classes::ObjectAccessorKey;
+use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
 use crate::lowered::facts::{
     GeneratorObjectResumePlan, GeneratorYieldStep, IntlNumberFormatOptions,
 };
@@ -3983,6 +3983,9 @@ pub(crate) struct SelfClosureOptions<'a> {
 pub(crate) struct FunctionCaptureFacts {
     pub(crate) local_classes: HashMap<String, String>,
     pub(crate) intl_number_format_options: HashMap<String, IntlNumberFormatOptions>,
+    pub(crate) object_function_props: HashMap<String, HashMap<ObjectAccessorKey, FuncId>>,
+    pub(crate) object_accessor_props:
+        HashMap<String, HashMap<ObjectAccessorKey, ObjectAccessorProp>>,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -4087,6 +4090,24 @@ pub(super) fn lower_function(
                 .facts
                 .intl_number_format_locals
                 .insert(local_id, options.clone());
+        }
+    }
+    for (name, props) in &options.capture_facts.object_function_props {
+        if let Ok(local_id) = resolver.resolve_local(name) {
+            resolver
+                .ctx
+                .classes
+                .object_function_props
+                .insert(local_id, props.clone());
+        }
+    }
+    for (name, props) in &options.capture_facts.object_accessor_props {
+        if let Ok(local_id) = resolver.resolve_local(name) {
+            resolver
+                .ctx
+                .classes
+                .object_accessor_props
+                .insert(local_id, props.clone());
         }
     }
 
