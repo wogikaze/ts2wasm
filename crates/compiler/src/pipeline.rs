@@ -4,6 +4,7 @@ use ts2wasm_backend_wasm as backend;
 use ts2wasm_frontend::{Diagnostic, Lexer, Parser, validate_type_reference_directives};
 use ts2wasm_ir::lowered;
 use ts2wasm_ir::lowered::Validated;
+use ts2wasm_shared::abi::ExecutionTarget;
 
 use crate::CompileReport;
 use crate::ModuleGraph;
@@ -48,6 +49,7 @@ impl HirMirBuildMode {
 pub struct BuildPipelineOptions {
     pub host_deny: bool,
     pub hir_mir_mode: HirMirBuildMode,
+    pub target: ExecutionTarget,
 }
 
 impl Default for BuildPipelineOptions {
@@ -55,6 +57,7 @@ impl Default for BuildPipelineOptions {
         Self {
             host_deny: false,
             hir_mir_mode: HirMirBuildMode::Disabled,
+            target: ExecutionTarget::Wasm32WasiP1,
         }
     }
 }
@@ -81,6 +84,7 @@ pub fn build_file_with_host_deny(
         BuildPipelineOptions {
             host_deny,
             hir_mir_mode: HirMirBuildMode::Disabled,
+            target: ExecutionTarget::Wasm32WasiP1,
         },
     )
 }

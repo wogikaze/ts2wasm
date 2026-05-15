@@ -1392,7 +1392,10 @@ impl NameResolver {
                 span: *span,
             }),
             Expr::Sequence { exprs, span } => Ok(Expr::Sequence {
-                exprs: exprs.iter().map(|e| self.resolve_expr(e)).collect::<Result<_, _>>()?,
+                exprs: exprs
+                    .iter()
+                    .map(|e| self.resolve_expr(e))
+                    .collect::<Result<_, _>>()?,
                 span: *span,
             }),
         }

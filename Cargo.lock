@@ -314,6 +314,7 @@ dependencies = [
  "ts2wasm-frontend",
  "ts2wasm-ir",
  "ts2wasm-runtime-abi",
+ "ts2wasm-shared",
  "ts2wasm-source",
  "ts2wasm-syntax",
  "wat",

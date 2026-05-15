@@ -271,6 +271,8 @@ pub enum DiagCode {
     BackendIo,
     /// TypeScript compiler API reported a type-checking diagnostic.
     TypeScriptTypeCheck,
+    /// Target execution environment is not supported by the current backend.
+    UnsupportedTarget,
 }
 
 #[cfg(test)]

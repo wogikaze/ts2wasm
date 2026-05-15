@@ -465,3 +465,161 @@ fn unknown_subcommand_exits_failure() {
         "stderr should contain error for unknown subcommand"
     );
 }
+
+// ---------------------------------------------------------------------------
+// --target contract tests
+// ---------------------------------------------------------------------------
+
+#[test]
+fn build_target_default_is_wasm32_wasi() {
+    let input = write_temp_source("contract-target-default", "console.log(42);");
+    let output = std::env::temp_dir().join(format!(
+        "contract-target-default-out-{}.wasm",
+        unique_suffix()
+    ));
+
+    let result = Command::new(cli_binary())
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .expect("ts2wasm build should execute");
+
+    assert!(
+        result.status.success(),
+        "build with default target should succeed\nstderr:\n{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+}
+
+#[test]
+fn build_target_wasm32_wasi_explicit() {
+    let input = write_temp_source("contract-target-wasi", "console.log(42);");
+    let output =
+        std::env::temp_dir().join(format!("contract-target-wasi-out-{}.wasm", unique_suffix()));
+
+    let result = Command::new(cli_binary())
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .arg("--target")
+        .arg("wasm32-wasi")
+        .output()
+        .expect("ts2wasm build should execute");
+
+    assert!(
+        result.status.success(),
+        "build with wasm32-wasi target should succeed\nstderr:\n{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+}
+
+#[test]
+fn build_target_wasm32_wasi_plus_node_host() {
+    let input = write_temp_source("contract-target-node", "console.log(42);");
+    let output =
+        std::env::temp_dir().join(format!("contract-target-node-out-{}.wasm", unique_suffix()));
+
+    let result = Command::new(cli_binary())
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .arg("--target")
+        .arg("wasm32-wasi+node-host")
+        .output()
+        .expect("ts2wasm build should execute");
+
+    assert!(
+        result.status.success(),
+        "build with wasm32-wasi+node-host target should succeed\nstderr:\n{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+}
+
+#[test]
+fn build_target_wasm32_wasi_gc_rejected() {
+    let input = write_temp_source("contract-target-gc", "console.log(42);");
+    let output =
+        std::env::temp_dir().join(format!("contract-target-gc-out-{}.wasm", unique_suffix()));
+
+    let result = Command::new(cli_binary())
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .arg("--target")
+        .arg("wasm32-wasi-gc")
+        .output()
+        .expect("ts2wasm build should execute");
+
+    assert!(
+        !result.status.success(),
+        "build with wasm32-wasi-gc target should be rejected"
+    );
+    let stderr = String::from_utf8_lossy(&result.stderr);
+    assert!(
+        stderr.contains("UnsupportedTarget"),
+        "stderr should contain UnsupportedTarget:\n{stderr}"
+    );
+}
+
+#[test]
+fn build_target_wasm32_component_rejected() {
+    let input = write_temp_source("contract-target-component", "console.log(42);");
+    let output = std::env::temp_dir().join(format!(
+        "contract-target-component-out-{}.wasm",
+        unique_suffix()
+    ));
+
+    let result = Command::new(cli_binary())
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .arg("--target")
+        .arg("wasm32-component")
+        .output()
+        .expect("ts2wasm build should execute");
+
+    assert!(
+        !result.status.success(),
+        "build with wasm32-component target should be rejected"
+    );
+    let stderr = String::from_utf8_lossy(&result.stderr);
+    assert!(
+        stderr.contains("UnsupportedTarget"),
+        "stderr should contain UnsupportedTarget:\n{stderr}"
+    );
+}
+
+#[test]
+fn build_target_invalid_string_rejected() {
+    let input = write_temp_source("contract-target-invalid", "console.log(42);");
+    let output = std::env::temp_dir().join(format!(
+        "contract-target-invalid-out-{}.wasm",
+        unique_suffix()
+    ));
+
+    let result = Command::new(cli_binary())
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .arg("--target")
+        .arg("wasm32-unknown")
+        .output()
+        .expect("ts2wasm build should execute");
+
+    assert!(
+        !result.status.success(),
+        "build with invalid target should be rejected"
+    );
+    let stderr = String::from_utf8_lossy(&result.stderr);
+    assert!(
+        stderr.contains("invalid target"),
+        "stderr should mention invalid target:\n{stderr}"
+    );
+}

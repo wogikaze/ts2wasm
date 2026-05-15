@@ -14,6 +14,7 @@ ts2wasm-frontend = { path = "../frontend" }
 ts2wasm-source = { path = "../source" }
 ts2wasm-diagnostic = { path = "../diagnostic" }
 ts2wasm-syntax = { path = "../syntax" }
+ts2wasm-shared = { path = "../shared" }
 ts2wasm-ir = { path = "../ir" }
 ts2wasm-backend-wasm = { path = "../backend-wasm" }
 serde = { version = "1", features = ["derive"] }

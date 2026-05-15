@@ -3,6 +3,7 @@ use std::process::ExitCode;
 
 use clap::Parser;
 use ts2wasm_frontend::{DiagCode, Diagnostic};
+use ts2wasm_shared::ExecutionTarget;
 
 #[derive(Parser)]
 #[command(name = "ts2wasm")]
@@ -28,6 +29,9 @@ enum Command {
         /// Build through HIR -> MIR when supported, otherwise fall back to the legacy pipeline.
         #[arg(long = "experimental-hir-mir-compat-fallback")]
         experimental_hir_mir_compat_fallback: bool,
+        /// Target execution environment (default: wasm32-wasi)
+        #[arg(long = "target", default_value = "wasm32-wasi")]
+        target: String,
     },
     /// Check a TypeScript source file for parse errors
     Check { input: PathBuf },
@@ -87,12 +91,26 @@ fn run() -> Result<(), String> {
             explain_unsupported,
             experimental_hir_mir,
             experimental_hir_mir_compat_fallback,
+            target,
         } => {
             if experimental_hir_mir && experimental_hir_mir_compat_fallback {
                 return Err(
                     "--experimental-hir-mir and --experimental-hir-mir-compat-fallback are mutually exclusive"
                         .to_owned(),
                 );
+            }
+
+            let target = ExecutionTarget::from_string(&target).ok_or_else(|| {
+                format!(
+                    "invalid target '{target}': expected one of: wasm32-wasi, wasm32-wasi+node-host, wasm32-wasi-gc, wasm32-component"
+                )
+            })?;
+
+            if !target.is_implemented() {
+                return Err(format!(
+                    "[UnsupportedTarget] target '{}' is not implemented by this backend",
+                    target.manifest_target()
+                ));
             }
 
             let hir_mir_mode = if experimental_hir_mir {
@@ -110,6 +128,7 @@ fn run() -> Result<(), String> {
                 ts2wasm_cli::BuildPipelineOptions {
                     host_deny: host_deny.is_some(),
                     hir_mir_mode,
+                    target,
                 },
             );
             match result {

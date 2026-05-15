@@ -2155,7 +2155,8 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             })
         }
         Expr::Sequence { exprs, .. } => {
-            let resolved: Vec<ResolvedExpr> = exprs.iter().map(resolve_expr).collect::<Result<_, _>>()?;
+            let resolved: Vec<ResolvedExpr> =
+                exprs.iter().map(resolve_expr).collect::<Result<_, _>>()?;
             Ok(ResolvedExpr::Sequence(resolved))
         }
     }
