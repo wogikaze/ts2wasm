@@ -3939,8 +3939,18 @@ fn build_smoke_iterator_helpers() {
 }
 
 #[test]
+fn build_smoke_iterator_helpers_dedicated() {
+    let result = run_fixture("builtins-and-io/iterator-helpers.ts");
+    assert!(
+        result.is_ok(),
+        "Iterator helpers dedicated fixture should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_weakref_finalization() {
-    let result = run_fixture("builtins-and-io/weakmap-weakset-basic.ts");
+    let result = run_fixture("builtins-and-io/weakref-finalization.ts");
     assert!(
         result.is_ok(),
         "WeakRef/FinalizationRegistry should build: {:?}",
@@ -3950,10 +3960,10 @@ fn build_smoke_weakref_finalization() {
 
 #[test]
 fn build_smoke_atomics_wait_async() {
-    let result = run_fixture("builtins-and-io/atomics-complete.ts");
+    let result = run_fixture("builtins-and-io/atomics-wait-async.ts");
     assert!(
         result.is_ok(),
-        "Atomics complete should build: {:?}",
+        "Atomics wait async should build: {:?}",
         result.err()
     );
 }
@@ -4051,4 +4061,39 @@ fn build_smoke_intl_locale_formatting() {
             result.err()
         );
     }
+}
+
+#[test]
+fn build_smoke_promise_job_order() {
+    let result = run_fixture("builtins-and-io/promise-job-order.ts");
+    assert!(
+        result.is_ok(),
+        "Promise job order should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_function_constructor() {
+    let result = run_fixture("builtins-and-io/function-constructor.ts");
+    assert!(
+        result.is_err(),
+        "Function constructor should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("UnsupportedEval") || err_msg.contains("eval"),
+        "Diagnostic should mention UnsupportedEval/eval: {}",
+        err_msg
+    );
+}
+
+#[test]
+fn build_smoke_for_in_braceless() {
+    let result = run_fixture("builtins-and-io/for-in-braceless.ts");
+    assert!(
+        result.is_ok(),
+        "Braceless for-in should build: {:?}",
+        result.err()
+    );
 }

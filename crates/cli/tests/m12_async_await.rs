@@ -197,3 +197,14 @@ fn build_smoke_async_generator() {
         result.err()
     );
 }
+
+// for-await-of iteration protocol — ID 216 (P3)
+#[test]
+fn build_smoke_for_await_of() {
+    let result = build_fixture("fixtures/builtins-and-io/for-await-of.ts");
+    assert!(
+        result.is_ok(),
+        "for-await-of should build: {:?}",
+        result.err()
+    );
+}
