@@ -1348,6 +1348,23 @@ fn lowering_accepts_intl_date_time_format_format_method() {
 }
 
 #[test]
+fn lowering_accepts_testintl_constructor_supported_locales_of_alias() {
+    let program = parse_and_resolve(
+        r#"
+        function check(Constructor) {
+          let supported = Constructor.supportedLocalesOf([]);
+          return supported.length;
+        }
+        "#,
+    );
+
+    let lowered = ts2wasm_ir::lowered::lower_program(&program)
+        .expect("testIntl Constructor.supportedLocalesOf alias should lower");
+    ts2wasm_ir::lowered::validate_lowered(&lowered)
+        .expect("testIntl Constructor.supportedLocalesOf alias should validate");
+}
+
+#[test]
 fn lowering_accepts_testintl_duration_format_resolved_options_helper() {
     let program = parse_and_resolve(
         r#"

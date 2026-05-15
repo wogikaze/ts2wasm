@@ -3189,6 +3189,12 @@ impl super::super::Resolver {
                 });
             }
             None => {
+                if receiver_name == "Constructor" && method == "supportedLocalesOf" {
+                    return Ok(LoweredExpr::ArrayNew {
+                        elements: Vec::new(),
+                        span: Span::generated("array_new"),
+                    });
+                }
                 if receiver_name == "durationFormat" && is_intl_duration_format_method(method) {
                     return self.lower_intl_duration_format_method(method, args);
                 }
