@@ -154,14 +154,11 @@ impl super::Resolver {
         params: &[ResolvedParam],
         body: &[ResolvedStmt],
     ) -> Result<LoweredExpr, Diagnostic> {
-        if params
-            .iter()
-            .any(|param| param.default.is_some() || param.is_rest)
-        {
+        if params.iter().any(|param| param.is_rest) {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!(
-                    "issue-062e: nested function `{name}` closure parameters with defaults or rest are not supported in this slice"
+                    "issue-062e: nested function `{name}` closure rest parameters are not supported in this slice"
                 ),
                 span: None,
 
@@ -413,14 +410,11 @@ impl super::Resolver {
         force_receiver: bool,
         is_generator: bool,
     ) -> Result<LoweredExpr, Diagnostic> {
-        if params
-            .iter()
-            .any(|param| param.default.is_some() || param.is_rest)
-        {
+        if params.iter().any(|param| param.is_rest) {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!(
-                    "issue-062e: nested function `{name}` closure parameters with defaults or rest are not supported in this slice"
+                    "issue-062e: nested function `{name}` closure rest parameters are not supported in this slice"
                 ),
                 span: None,
 

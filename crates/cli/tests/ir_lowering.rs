@@ -266,6 +266,26 @@ fn lowering_applies_call_default_to_object_binding_identifier() {
 }
 
 #[test]
+fn lowering_allows_object_generator_method_default_parameter() {
+    let program = parse_and_resolve(
+        r#"
+        var callCount = 0;
+        var obj = {
+          *method(value = 23) {
+            console.log(value);
+            callCount = callCount + 1;
+          }
+        };
+
+        obj.method(undefined).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("object generator method defaults should lower through function defaults");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"
