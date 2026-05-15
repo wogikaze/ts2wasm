@@ -226,12 +226,39 @@ enum TemplatePart {
     Expr(Expr),
 }
 
+struct ParsedTemplateLiteral {
+    segments: Vec<String>,
+    exprs: Vec<Expr>,
+}
+
 fn parse_template_parts(
     raw: &str,
     span: Span,
     strict_mode: bool,
 ) -> Result<Vec<TemplatePart>, Diagnostic> {
+    let parsed = parse_template_literal(raw, span, strict_mode)?;
     let mut parts = Vec::new();
+
+    let mut exprs = parsed.exprs.into_iter();
+    for segment in parsed.segments {
+        if !segment.is_empty() {
+            parts.push(TemplatePart::String(segment));
+        }
+        if let Some(expr) = exprs.next() {
+            parts.push(TemplatePart::Expr(expr));
+        }
+    }
+
+    Ok(parts)
+}
+
+fn parse_template_literal(
+    raw: &str,
+    span: Span,
+    strict_mode: bool,
+) -> Result<ParsedTemplateLiteral, Diagnostic> {
+    let mut segments = Vec::new();
+    let mut exprs = Vec::new();
     let mut segment_start = 0;
     let mut cursor = 0;
 
@@ -249,9 +276,7 @@ fn parse_template_parts(
 
         if ch == '$' && raw[offset + ch.len_utf8()..].starts_with('{') {
             let cooked = cook_template_segment(&raw[segment_start..offset], span)?;
-            if !cooked.is_empty() {
-                parts.push(TemplatePart::String(cooked));
-            }
+            segments.push(cooked);
 
             let expr_start = offset + ch.len_utf8() + 1;
             let expr_end = find_template_expr_end(raw, expr_start, span)?;
@@ -264,11 +289,11 @@ fn parse_template_parts(
 
                     phase: None,});
             }
-            parts.push(TemplatePart::Expr(parse_template_expression(
+            exprs.push(parse_template_expression(
                 source,
                 span,
                 strict_mode,
-            )?));
+            )?);
             cursor = expr_end + 1;
             segment_start = cursor;
             continue;
@@ -278,11 +303,9 @@ fn parse_template_parts(
     }
 
     let cooked = cook_template_segment(&raw[segment_start..], span)?;
-    if !cooked.is_empty() {
-        parts.push(TemplatePart::String(cooked));
-    }
+    segments.push(cooked);
 
-    Ok(parts)
+    Ok(ParsedTemplateLiteral { segments, exprs })
 }
 
 fn parse_template_expression(
@@ -305,9 +328,14 @@ fn parse_template_expression(
 }
 
 fn find_template_expr_end(raw: &str, start: usize, span: Span) -> Result<usize, Diagnostic> {
-    let mut depth = 1usize;
+    enum Mode {
+        Expr { depth: usize },
+        Template,
+        String(char),
+    }
+
+    let mut stack = vec![Mode::Expr { depth: 1 }];
     let mut cursor = start;
-    let mut string_quote = None;
     let mut escaped = false;
 
     while cursor < raw.len() {
@@ -316,35 +344,47 @@ fn find_template_expr_end(raw: &str, start: usize, span: Span) -> Result<usize, 
         };
         cursor = offset + ch.len_utf8();
 
-        if let Some(quote) = string_quote {
-            if escaped {
-                escaped = false;
-            } else if ch == '\\' {
-                escaped = true;
-            } else if ch == quote {
-                string_quote = None;
-            }
-            continue;
-        }
+        let Some(mode) = stack.last_mut() else {
+            break;
+        };
 
-        match ch {
-            '\'' | '"' => string_quote = Some(ch),
-            '`' => {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-213: nested template literals are not yet supported".to_owned(),
-                    span: Some(span),
-
-                    phase: None,});
-            }
-            '{' => depth += 1,
-            '}' => {
-                depth -= 1;
-                if depth == 0 {
-                    return Ok(offset);
+        match mode {
+            Mode::String(quote) => {
+                if escaped {
+                    escaped = false;
+                } else if ch == '\\' {
+                    escaped = true;
+                } else if ch == *quote {
+                    stack.pop();
                 }
             }
-            _ => {}
+            Mode::Template => {
+                if escaped {
+                    escaped = false;
+                } else if ch == '\\' {
+                    escaped = true;
+                } else if ch == '`' {
+                    stack.pop();
+                } else if ch == '$' && raw[offset + ch.len_utf8()..].starts_with('{') {
+                    cursor = offset + ch.len_utf8() + 1;
+                    stack.push(Mode::Expr { depth: 1 });
+                }
+            }
+            Mode::Expr { depth } => match ch {
+                '\'' | '"' => stack.push(Mode::String(ch)),
+                '`' => stack.push(Mode::Template),
+                '{' => *depth += 1,
+                '}' => {
+                    *depth -= 1;
+                    if *depth == 0 {
+                        stack.pop();
+                        if stack.is_empty() {
+                            return Ok(offset);
+                        }
+                    }
+                }
+                _ => {}
+            },
         }
     }
 

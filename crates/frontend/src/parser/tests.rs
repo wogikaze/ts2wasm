@@ -1266,6 +1266,73 @@ mod tests {
     }
 
     #[test]
+    fn parses_nested_template_literal_inside_interpolation() {
+        let program =
+            parse_program("let message = `${name ? ` ${String(name)}` : ''}`;").unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Binary { right, .. },
+                ..
+            } => assert!(matches!(right.as_ref(), Expr::Ternary { .. })),
+            other => panic!("unexpected nested template statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_tagged_template_as_call_with_template_segments() {
+        let program = parse_program("let out = tag`a${b}c`;").unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Call { callee, args, .. },
+                ..
+            } => {
+                assert!(matches!(callee.as_ref(), Expr::Ident { name, .. } if name == "tag"));
+                assert_eq!(args.len(), 2);
+                match &args[0] {
+                    Expr::Array { elements, .. } => {
+                        assert_eq!(elements.len(), 2);
+                        assert!(matches!(
+                            &elements[0],
+                            ArrayLiteralElement::Present(Expr::String { value, .. }) if value == "a"
+                        ));
+                        assert!(matches!(
+                            &elements[1],
+                            ArrayLiteralElement::Present(Expr::String { value, .. }) if value == "c"
+                        ));
+                    }
+                    other => panic!("unexpected tagged template first argument: {other:?}"),
+                }
+                assert!(matches!(&args[1], Expr::Ident { name, .. } if name == "b"));
+            }
+            other => panic!("unexpected tagged template statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_tagged_template_with_nested_template_conditional() {
+        let program =
+            parse_program("let out = lazyResult`function${value.name ? ` ${String(value.name)}` : ''}`;")
+                .unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Call { callee, args, .. },
+                ..
+            } => {
+                assert!(matches!(
+                    callee.as_ref(),
+                    Expr::Ident { name, .. } if name == "lazyResult"
+                ));
+                assert_eq!(args.len(), 2);
+                assert!(matches!(&args[1], Expr::Ternary { .. }));
+            }
+            other => panic!("unexpected tagged template conditional statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn cooks_escaped_template_literal_segments() {
         let program = parse_program("let message = `tick \\` and \\${name}`;").unwrap();
         match &program[0] {

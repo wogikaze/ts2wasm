@@ -1503,6 +1503,19 @@ impl Parser {
                 };
                 continue;
             }
+            if allow_call
+                && let Some(SpannedToken {
+                    kind: Token::TemplateLiteral(raw),
+                    span: template_span,
+                }) = self
+                    .tokens
+                    .get(self.cursor)
+                    .cloned()
+            {
+                self.cursor += 1;
+                expr = self.tagged_template_call_expr(expr, &raw, template_span)?;
+                continue;
+            }
             break;
         }
         Ok(expr)
@@ -2543,6 +2556,39 @@ impl Parser {
                 span,
             })
         }
+    }
+
+    fn tagged_template_call_expr(
+        &self,
+        callee: Expr,
+        raw: &str,
+        template_span: Span,
+    ) -> Result<Expr, Diagnostic> {
+        let start = callee.span().start;
+        let parsed = parse_template_literal(raw, template_span, self.strict_mode)?;
+        let mut args = vec![Expr::Array {
+            elements: parsed
+                .segments
+                .into_iter()
+                .map(|value| {
+                    crate::ArrayLiteralElement::Present(Expr::String {
+                        value,
+                        span: template_span,
+                    })
+                })
+                .collect(),
+            span: template_span,
+        }];
+        args.extend(parsed.exprs);
+
+        Ok(Expr::Call {
+            callee: Box::new(callee),
+            args,
+            span: Span {
+                start,
+                end: template_span.end,
+            },
+        })
     }
 }
 
