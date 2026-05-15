@@ -138,6 +138,20 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             });
         }
+        // Well-known symbols: Symbol.iterator, Symbol.species, etc.
+        if let ResolvedExpr::Ident(name) = object
+            && name == "Symbol"
+            && let Some(wk_index) = well_known_symbol_index(key)
+        {
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::SymbolWellKnown,
+                args: vec![
+                    LoweredExpr::Number(wk_index as i32, Span::generated("wk_idx")),
+                    LoweredExpr::String(well_known_symbol_description(key), Span::generated("wk_desc")),
+                ],
+                span: Span::generated("runtime_call"),
+            });
+        }
         if is_array_prototype_push_property(object, key) {
             return Ok(LoweredExpr::Number(0, Span::generated("num")));
         }
@@ -751,4 +765,41 @@ impl super::super::Resolver {
             span: Span::generated("runtime_call"),
         })
     }
+}
+
+/// Returns the well-known symbol cache index for a given property key.
+fn well_known_symbol_index(key: &str) -> Option<u32> {
+    match key {
+        "iterator" => Some(0),
+        "species" => Some(1),
+        "toPrimitive" => Some(2),
+        "toStringTag" => Some(3),
+        "hasInstance" => Some(4),
+        "isConcatSpreadable" => Some(5),
+        "match" => Some(6),
+        "replace" => Some(7),
+        "search" => Some(8),
+        "split" => Some(9),
+        "unscopables" => Some(10),
+        _ => None,
+    }
+}
+
+/// Returns the ECMAScript description string for a well-known symbol.
+fn well_known_symbol_description(key: &str) -> String {
+    match key {
+        "iterator" => "Symbol.iterator",
+        "species" => "Symbol.species",
+        "toPrimitive" => "Symbol.toPrimitive",
+        "toStringTag" => "Symbol.toStringTag",
+        "hasInstance" => "Symbol.hasInstance",
+        "isConcatSpreadable" => "Symbol.isConcatSpreadable",
+        "match" => "Symbol.match",
+        "replace" => "Symbol.replace",
+        "search" => "Symbol.search",
+        "split" => "Symbol.split",
+        "unscopables" => "Symbol.unscopables",
+        _ => key,
+    }
+    .to_owned()
 }

@@ -635,6 +635,29 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(crate) fn emit_symbol_well_known(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $symbol_well_known (param $index i32) (param $desc i32) (result i32)
+    (local $cache_ptr i32)
+    (local $cached i32)
+    (local $symbol i32)
+    (local.set $cache_ptr
+      (i32.add
+        (i32.const {cache_offset})
+        (i32.mul (local.get $index) (i32.const 4))))
+    (local.set $cached (i32.load (local.get $cache_ptr)))
+    (if (i32.eqz (local.get $cached))
+      (then
+        (local.set $symbol (call $symbol_new (local.get $desc)))
+        (i32.store (local.get $cache_ptr) (local.get $symbol))
+        (return (local.get $symbol))))
+    (local.get $cached))
+"#,
+            cache_offset = Layout::WELL_KNOWN_SYMBOL_CACHE_OFFSET,
+        ));
+    }
+
     // ---------------------------------------------------------------------------
     // Console runtime functions
     // ---------------------------------------------------------------------------

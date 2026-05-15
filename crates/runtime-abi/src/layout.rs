@@ -216,6 +216,37 @@ impl Layout {
     pub const SYMBOL_OBJECT_SIZE: u32 = 12;
     pub const SYMBOL_REGISTRY_FLAG_OFFSET: u32 = 4;
     pub const SYMBOL_DESCRIPTION_OFFSET: u32 = 8;
+
+    // ---- Well-known symbol cache layout ------------------------------------
+    /// Number of well-known symbols that can be cached.
+    pub const WELL_KNOWN_SYMBOL_COUNT: u32 = 11;
+    /// Cache entries start after the symbol registry table.
+    /// Each entry is 4 bytes (i32 symbol_value or 0 if not yet created).
+    pub const WELL_KNOWN_SYMBOL_CACHE_OFFSET: u32 = 192;
+    /// Total bytes reserved for well-known symbol cache.
+    pub const WELL_KNOWN_SYMBOL_CACHE_SIZE: u32 = 44; // 11 * 4
+    /// Well-known symbol index for Symbol.iterator
+    pub const WK_SYMBOL_ITERATOR: u32 = 0;
+    /// Well-known symbol index for Symbol.species
+    pub const WK_SYMBOL_SPECIES: u32 = 1;
+    /// Well-known symbol index for Symbol.toPrimitive
+    pub const WK_SYMBOL_TO_PRIMITIVE: u32 = 2;
+    /// Well-known symbol index for Symbol.toStringTag
+    pub const WK_SYMBOL_TO_STRING_TAG: u32 = 3;
+    /// Well-known symbol index for Symbol.hasInstance
+    pub const WK_SYMBOL_HAS_INSTANCE: u32 = 4;
+    /// Well-known symbol index for Symbol.isConcatSpreadable
+    pub const WK_SYMBOL_IS_CONCAT_SPREADABLE: u32 = 5;
+    /// Well-known symbol index for Symbol.match
+    pub const WK_SYMBOL_MATCH: u32 = 6;
+    /// Well-known symbol index for Symbol.replace
+    pub const WK_SYMBOL_REPLACE: u32 = 7;
+    /// Well-known symbol index for Symbol.search
+    pub const WK_SYMBOL_SEARCH: u32 = 8;
+    /// Well-known symbol index for Symbol.split
+    pub const WK_SYMBOL_SPLIT: u32 = 9;
+    /// Well-known symbol index for Symbol.unscopables
+    pub const WK_SYMBOL_UNSCOPABLES: u32 = 10;
 }
 
 #[cfg(test)]

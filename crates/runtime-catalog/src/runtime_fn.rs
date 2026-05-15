@@ -641,6 +641,10 @@ pub enum RuntimeFn {
     SymbolToString,
     /// Symbol.prototype.description getter — extracts description from "Symbol(desc)" format
     SymbolDescription,
+    /// SymbolWellKnown(index) — returns a cached well-known symbol by index.
+    /// Indices: 0=iterator, 1=species, 2=toPrimitive, 3=toStringTag, 4=hasInstance,
+    /// 5=isConcatSpreadable, 6=match, 7=replace, 8=search, 9=split, 10=unscopables.
+    SymbolWellKnown,
     /// Console.group / console.groupCollapsed — output label with indentation, then increment indent.
     ConsoleGroupStart,
     /// console.groupEnd — decrement indent level.
@@ -1655,6 +1659,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "SymbolHasInstance" => Some(RuntimeFn::SymbolHasInstance),
         "SymbolToString" => Some(RuntimeFn::SymbolToString),
         "SymbolDescription" => Some(RuntimeFn::SymbolDescription),
+        "SymbolWellKnown" => Some(RuntimeFn::SymbolWellKnown),
         "Add" => Some(RuntimeFn::Add),
         "AddFast" => Some(RuntimeFn::AddFast),
         "AllocHeap" => Some(RuntimeFn::AllocHeap),
@@ -2111,7 +2116,8 @@ impl RuntimeFn {
             | Self::SymbolToStringTag
             | Self::SymbolHasInstance
             | Self::SymbolToString
-            | Self::SymbolDescription => RuntimeDomain::Symbol,
+            | Self::SymbolDescription
+            | Self::SymbolWellKnown => RuntimeDomain::Symbol,
             Self::TaskPoll | Self::TaskResult | Self::TaskDrop => RuntimeDomain::Task,
             Self::TruthyBool
             | Self::Not
@@ -2788,6 +2794,7 @@ impl RuntimeFn {
             Self::SymbolHasInstance,
             Self::SymbolToString,
             Self::SymbolDescription,
+            Self::SymbolWellKnown,
             Self::Escape,
             Self::Unescape,
             Self::ArrayPushMany,
@@ -3221,6 +3228,7 @@ impl RuntimeFn {
             Self::SymbolHasInstance,
             Self::SymbolToString,
             Self::SymbolDescription,
+            Self::SymbolWellKnown,
             Self::DecodeURI,
             Self::DecodeURIComponent,
             Self::Escape,

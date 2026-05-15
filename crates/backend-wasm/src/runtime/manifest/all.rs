@@ -341,6 +341,7 @@ match self {
             Self::SymbolHasInstance => "symbol_has_instance",
             Self::SymbolToString => "symbol_to_string",
             Self::SymbolDescription => "symbol_description",
+            Self::SymbolWellKnown => "symbol_well_known",
             Self::TaskPoll => "task_poll",
             Self::TaskResult => "task_result",
             Self::TaskDrop => "task_drop",
