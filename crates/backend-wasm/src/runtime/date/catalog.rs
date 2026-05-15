@@ -45,6 +45,7 @@ pub const DATE_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::DateGetUtcDate,
     RuntimeFn::DateGetUtcMonth,
     RuntimeFn::DateGetUtcFullYear,
+    RuntimeFn::IntlDateTimeFormatFormat,
     // Math
     RuntimeFn::MathFloor,
     RuntimeFn::MathCeil,

@@ -2805,6 +2805,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::IntlDateTimeFormatFormat => RuntimeSpec {
+                symbol: "$intl_date_time_format_format",
+                deps: NO_DEPS,
+                imports: IMPORT_INTL_DATE_TIME_FORMAT_FORMAT,
+                capability: CAP_INTL_DATE_TIME_FORMAT_FORMAT,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::StringFromCharCode => RuntimeSpec {
                 symbol: "$string_from_char_code",
                 deps: STRING_FROM_CHAR_CODE_DEPS,

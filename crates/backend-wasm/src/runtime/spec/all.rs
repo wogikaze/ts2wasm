@@ -2660,6 +2660,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::IntlDateTimeFormatFormat => RuntimeSpec {
+                symbol: "$intl_date_time_format_format",
+                deps: NO_DEPS,
+                imports: IMPORT_INTL_DATE_TIME_FORMAT_FORMAT,
+                capability: CAP_INTL_DATE_TIME_FORMAT_FORMAT,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::StringToLocaleString => RuntimeSpec {
                 symbol: "$string_to_locale_string",
                 deps: &[Self::IsString],

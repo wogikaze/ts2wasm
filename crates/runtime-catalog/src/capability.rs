@@ -36,6 +36,7 @@ pub enum Capability {
     HostDateUTC,
     HostStringNormalize,
     HostIntlNumberFormatFormat,
+    HostIntlDateTimeFormatFormat,
 }
 
 impl Capability {
@@ -75,6 +76,7 @@ impl Capability {
             Self::HostDateUTC => "host.dateUTC",
             Self::HostStringNormalize => "host.stringNormalize",
             Self::HostIntlNumberFormatFormat => "host.intlNumberFormatFormat",
+            Self::HostIntlDateTimeFormatFormat => "host.intlDateTimeFormatFormat",
         }
     }
 }

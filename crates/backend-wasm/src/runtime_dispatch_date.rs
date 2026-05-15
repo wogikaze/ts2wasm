@@ -41,6 +41,7 @@ impl WatEmitter<'_> {
             RuntimeFn::DateGetUtcDate => self.emit_date_get_utc_date(wat),
             RuntimeFn::DateGetUtcMonth => self.emit_date_get_utc_month(wat),
             RuntimeFn::DateGetUtcFullYear => self.emit_date_get_utc_full_year(wat),
+            RuntimeFn::IntlDateTimeFormatFormat => self.emit_intl_date_time_format_format(wat),
             RuntimeFn::MathFloor => self.emit_math_floor(wat),
             RuntimeFn::MathCeil => self.emit_math_ceil(wat),
             RuntimeFn::MathRound => self.emit_math_round(wat),

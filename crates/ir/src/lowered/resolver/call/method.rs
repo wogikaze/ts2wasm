@@ -4024,7 +4024,24 @@ impl super::super::Resolver {
         let defaults = default_intl_date_time_format_options();
         let options = options.unwrap_or(&defaults);
         match method {
-            "format" => Ok(string_lit(format_intl_datetime_arg(args.first(), options))),
+            "format" => {
+                if static_epoch_ms_date(args.first()).is_some() {
+                    return Ok(string_lit(format_intl_datetime_arg(args.first(), options)));
+                }
+                // Dynamic arg: emit RuntimeCall to host shim
+                let lowered_arg = self.lower_expr(args.first().ok_or_else(|| Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "Intl.DateTimeFormat.format requires an argument".to_owned(),
+                    span: None,
+                    phase: None,
+                })?)?;
+                let options_json = serialize_intl_date_time_options(options);
+                Ok(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::IntlDateTimeFormatFormat,
+                    args: vec![lowered_arg, string_lit(options_json)],
+                    span: Span::generated("runtime_call"),
+                })
+            }
             "formatToParts" => {
                 let parts = format_intl_datetime_parts(args.first(), options);
                 Ok(LoweredExpr::ArrayNew {
@@ -4801,6 +4818,13 @@ fn serialize_intl_options(options: &IntlNumberFormatOptions) -> String {
         options.notation,
         options.compact_display,
         options.sign_display,
+    )
+}
+
+fn serialize_intl_date_time_options(options: &IntlDateTimeFormatOptions) -> String {
+    format!(
+        r#"{{"locale":"{}","timeZone":"{}","localeMatcher":"{}"}}"#,
+        options.locale, options.time_zone, options.locale_matcher,
     )
 }
 

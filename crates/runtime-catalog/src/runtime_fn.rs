@@ -310,6 +310,8 @@ pub enum RuntimeFn {
     StringNormalize,
     /// Intl.NumberFormat.prototype.format (via host shim)
     IntlNumberFormatFormat,
+    /// Intl.DateTimeFormat.prototype.format (via host shim)
+    IntlDateTimeFormatFormat,
     /// String.prototype.replace
     StringReplace,
     /// String.prototype.replaceAll
@@ -947,7 +949,9 @@ const IMPORT_DATE_PARSE: &[HostImport] = &[HostImport::DateParse];
 const IMPORT_DATE_UTC: &[HostImport] = &[HostImport::DateUTC];
 const IMPORT_STRING_NORMALIZE: &[HostImport] = &[HostImport::StringNormalize];
 const IMPORT_INTL_NUMBER_FORMAT_FORMAT: &[HostImport] = &[HostImport::IntlNumberFormatFormat];
+const IMPORT_INTL_DATE_TIME_FORMAT_FORMAT: &[HostImport] = &[HostImport::IntlDateTimeFormatFormat];
 const CAP_INTL_NUMBER_FORMAT_FORMAT: &[Capability] = &[Capability::HostIntlNumberFormatFormat];
+const CAP_INTL_DATE_TIME_FORMAT_FORMAT: &[Capability] = &[Capability::HostIntlDateTimeFormatFormat];
 const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
 const CAP_STDOUT_WRITE: &[Capability] = &[Capability::StdoutWrite];
 const CAP_WASI_CLOCK_REALTIME: &[Capability] = &[Capability::WasiClockRealtime];
@@ -1498,6 +1502,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringToWellFormed" => Some(RuntimeFn::StringToWellFormed),
         "StringNormalize" => Some(RuntimeFn::StringNormalize),
         "IntlNumberFormatFormat" => Some(RuntimeFn::IntlNumberFormatFormat),
+        "IntlDateTimeFormatFormat" => Some(RuntimeFn::IntlDateTimeFormatFormat),
         "StringReplace" => Some(RuntimeFn::StringReplace),
         "StringReplaceAll" => Some(RuntimeFn::StringReplaceAll),
         "StringRaw" => Some(RuntimeFn::StringRaw),
@@ -1950,7 +1955,8 @@ impl RuntimeFn {
             | Self::DateGetUtcDay
             | Self::DateGetUtcDate
             | Self::DateGetUtcMonth
-            | Self::DateGetUtcFullYear => RuntimeDomain::Date,
+            | Self::DateGetUtcFullYear
+            | Self::IntlDateTimeFormatFormat => RuntimeDomain::Date,
             Self::EncodeURI
             | Self::EncodeURIComponent
             | Self::DecodeURI
@@ -2663,6 +2669,7 @@ impl RuntimeFn {
             Self::DateGetUtcDate,
             Self::DateGetUtcMonth,
             Self::DateGetUtcFullYear,
+            Self::IntlDateTimeFormatFormat,
             // String methods
             Self::StringCharAt,
             Self::StringAt,
@@ -3118,6 +3125,7 @@ impl RuntimeFn {
             Self::DateGetUtcDate,
             Self::DateGetUtcMonth,
             Self::DateGetUtcFullYear,
+            Self::IntlDateTimeFormatFormat,
             // String methods
             Self::StringCharAt,
             Self::StringAt,

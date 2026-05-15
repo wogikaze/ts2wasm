@@ -82,6 +82,7 @@ pub enum HostImport {
     DateUTC,
     StringNormalize,
     IntlNumberFormatFormat,
+    IntlDateTimeFormatFormat,
 }
 
 impl HostImport {
@@ -448,6 +449,14 @@ impl HostImport {
                 params: "param i32 i32",
                 result: "result i32",
             },
+            Self::IntlDateTimeFormatFormat => HostImportSpec {
+                module: "host",
+                name: "intlDateTimeFormatFormat",
+                wat_symbol: "$host_intl_date_time_format_format",
+                abi: HostAbi::NodeShim,
+                params: "param i32 i32",
+                result: "result i32",
+            },
         }
     }
 
@@ -501,6 +510,7 @@ impl HostImport {
             Self::DateUTC => "host.dateUTC",
             Self::StringNormalize => "host.stringNormalize",
             Self::IntlNumberFormatFormat => "host.intlNumberFormatFormat",
+            Self::IntlDateTimeFormatFormat => "host.intlDateTimeFormatFormat",
         }
     }
 }
