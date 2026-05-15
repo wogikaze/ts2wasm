@@ -2258,4 +2258,96 @@ impl WatEmitter<'_> {
             false = ValueTag::FALSE,
         ));
     }
+
+    pub(crate) fn emit_weak_ref_new(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $weak_ref_new (param $target i32) (result i32)
+    (local $base i32)
+    (local.set $base (call $alloc_heap (i32.const {obj_size})))
+    (i32.store (local.get $base) (i32.const {zero}))
+    (i32.store (i32.add (local.get $base) (i32.const {obj_flags})) (i32.const {zero}))
+    (i32.store (i32.add (local.get $base) (i32.const {obj_proto})) (i32.const {zero}))
+    (i32.store (i32.add (local.get $base) (i32.const {obj_value})) (local.get $target))
+    (i32.or (local.get $base) (i32.const {object_tag})))
+"#,
+            obj_size = Layout::OBJECT_HEADER_SIZE + Layout::OBJECT_ENTRY_SIZE,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            obj_value = Layout::OBJECT_VALUE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            object_tag = ValueTag::OBJECT,
+        ));
+    }
+
+    pub(crate) fn emit_weak_ref_deref(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $weak_ref_deref (param $wr i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local.set $tag (i32.and (local.get $wr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $base (i32.and (local.get $wr) (i32.const {heap_mask})))
+    (i32.load (i32.add (local.get $base) (i32.const {obj_value}))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_value = Layout::OBJECT_VALUE_OFFSET,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(crate) fn emit_finalization_registry_new(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $finalization_registry_new (param $callback i32) (result i32)
+    (local $base i32)
+    (local.set $base (call $alloc_heap (i32.const {obj_size})))
+    (i32.store (local.get $base) (i32.const {zero}))
+    (i32.store (i32.add (local.get $base) (i32.const {obj_flags})) (i32.const {zero}))
+    (i32.store (i32.add (local.get $base) (i32.const {obj_proto})) (i32.const {zero}))
+    (i32.store (i32.add (local.get $base) (i32.const {obj_value})) (local.get $callback))
+    (i32.or (local.get $base) (i32.const {object_tag})))
+"#,
+            obj_size = Layout::OBJECT_HEADER_SIZE + Layout::OBJECT_ENTRY_SIZE,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            obj_value = Layout::OBJECT_VALUE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            object_tag = ValueTag::OBJECT,
+        ));
+    }
+
+    pub(crate) fn emit_finalization_registry_register(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $finalization_registry_register (param $fr i32) (param $target i32) (param $held i32) (param $token i32) (result i32)
+    (local $tag i32)
+    (local.set $tag (i32.and (local.get $fr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.get $fr))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(crate) fn emit_finalization_registry_unregister(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $finalization_registry_unregister (param $fr i32) (param $token i32) (result i32)
+    (local $tag i32)
+    (local.set $tag (i32.and (local.get $fr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
+    (i32.const {true}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            true = ValueTag::TRUE,
+            false = ValueTag::FALSE,
+        ));
+    }
 }

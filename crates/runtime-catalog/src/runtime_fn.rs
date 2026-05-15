@@ -179,6 +179,12 @@ pub enum RuntimeFn {
     WeakSetAdd,
     WeakSetHas,
     WeakSetDelete,
+    /// WeakRef and FinalizationRegistry (issue I-20260513-BQTVQV).
+    WeakRefNew,
+    WeakRefDeref,
+    FinalizationRegistryNew,
+    FinalizationRegistryRegister,
+    FinalizationRegistryUnregister,
     /// Issue 206: ArrayBuffer/DataView runtime.
     ArrayBufferNew,
     /// ArrayBuffer.isView(val) — returns 1 if val is a DataView or TypedArray, 0 otherwise
@@ -1627,6 +1633,11 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "WeakSetAdd" => Some(RuntimeFn::WeakSetAdd),
         "WeakSetHas" => Some(RuntimeFn::WeakSetHas),
         "WeakSetDelete" => Some(RuntimeFn::WeakSetDelete),
+        "WeakRefNew" => Some(RuntimeFn::WeakRefNew),
+        "WeakRefDeref" => Some(RuntimeFn::WeakRefDeref),
+        "FinalizationRegistryNew" => Some(RuntimeFn::FinalizationRegistryNew),
+        "FinalizationRegistryRegister" => Some(RuntimeFn::FinalizationRegistryRegister),
+        "FinalizationRegistryUnregister" => Some(RuntimeFn::FinalizationRegistryUnregister),
         "DateNew" => Some(RuntimeFn::DateNew),
         "DateNewLive" => Some(RuntimeFn::DateNewLive),
         "DateNow" => Some(RuntimeFn::DateNow),
@@ -1999,7 +2010,12 @@ impl RuntimeFn {
             | Self::WeakSetNew
             | Self::WeakSetAdd
             | Self::WeakSetHas
-            | Self::WeakSetDelete => RuntimeDomain::MapSet,
+            | Self::WeakSetDelete
+            | Self::WeakRefNew
+            | Self::WeakRefDeref
+            | Self::FinalizationRegistryNew
+            | Self::FinalizationRegistryRegister
+            | Self::FinalizationRegistryUnregister => RuntimeDomain::MapSet,
             Self::MathFloor
             | Self::MathCeil
             | Self::MathRound
@@ -2574,6 +2590,11 @@ impl RuntimeFn {
             Self::WeakSetAdd,
             Self::WeakSetHas,
             Self::WeakSetDelete,
+            Self::WeakRefNew,
+            Self::WeakRefDeref,
+            Self::FinalizationRegistryNew,
+            Self::FinalizationRegistryRegister,
+            Self::FinalizationRegistryUnregister,
             Self::ArrayBufferNew,
             Self::ArrayBufferIsView,
             Self::ArrayBufferTransfer,
@@ -3023,6 +3044,11 @@ impl RuntimeFn {
             Self::WeakSetAdd,
             Self::WeakSetHas,
             Self::WeakSetDelete,
+            Self::WeakRefNew,
+            Self::WeakRefDeref,
+            Self::FinalizationRegistryNew,
+            Self::FinalizationRegistryRegister,
+            Self::FinalizationRegistryUnregister,
             Self::ArrayBufferNew,
             Self::ArrayBufferIsView,
             Self::ArrayBufferTransfer,

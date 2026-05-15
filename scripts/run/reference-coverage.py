@@ -1707,7 +1707,9 @@ def main():
         except ValueError:
             prepare_jobs = 0
         if prepare_jobs < 1:
-            prepare_jobs = min(max(jobs * 4, jobs), 64)
+            # Prepare phase is CPU-bound (Python metadata parsing, string ops).
+            # GIL serializes threads; 1 worker is fastest. Use 1-2 for file I/O overlap.
+            prepare_jobs = 1
 
         metadata_cache_enabled = os.environ.get("TS2WASM_TEST262_METADATA_CACHE", "1") not in (
             "0", "false", "False", "no", "NO"
@@ -2303,7 +2305,25 @@ def main():
                             wasm_result = type("obj", (), {
                                 "returncode": -1, "stdout": "", "stderr": "WAMR disconnected",
                             })()
+                    except OSError:
+                        # Runner process died; restart it
+                        phase_timers["server_fallback_batches"] += 1
+                        wasm_result = subprocess.run(
+                            ["timeout", "5s", "iwasm", str(wasm_path)],
+                            capture_output=True, text=True, cwd=REPO_ROOT,
+                        )
                     finally:
+                        # Restart dead runners before returning to pool
+                        if runner.poll() is not None:
+                            phase_timers["server_fallback_batches"] += 1
+                            try:
+                                runner = subprocess.Popen(
+                                    [str(REPO_ROOT / "crates" / "iwasm-runner" / "ts2wasm-iwasm-runner")],
+                                    stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                    stderr=subprocess.DEVNULL, text=True,
+                                )
+                            except OSError:
+                                pass  # Queue gets dead runner, next call will handle
                         _wamr_queue.put(runner)
                 else:
                     wasm_result = subprocess.run(

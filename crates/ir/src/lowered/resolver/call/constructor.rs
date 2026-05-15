@@ -216,6 +216,39 @@ impl super::super::Resolver {
                 phase: None,
             });
         }
+        if class_name == "WeakRef" {
+            if args.is_empty() {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: "WeakRef constructor requires a target argument".to_owned(),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::WeakRefNew,
+                args: vec![self.lower_expr(&args[0])?],
+                span: Span::generated("runtime_call"),
+            });
+        }
+        if class_name == "FinalizationRegistry" {
+            if args.is_empty() {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: "FinalizationRegistry constructor requires a callback argument"
+                        .to_owned(),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::FinalizationRegistryNew,
+                args: vec![self.lower_expr(&args[0])?],
+                span: Span::generated("runtime_call"),
+            });
+        }
         if class_name == "Promise" {
             if args.is_empty() {
                 return Err(Diagnostic {
