@@ -500,6 +500,7 @@ impl Parser {
                 start: start_span.start,
                 end,
             },
+            source_text: self.source[start_span.start..end].to_owned(),
         })
     }
 
@@ -588,7 +589,7 @@ impl Parser {
     /// Parse arrow function without consuming return type `:`, to avoid
     /// conflicting with the ternary's else-branch separator.
     fn parse_arrow_function_without_return_type(&mut self) -> Result<Expr, Diagnostic> {
-        let _start_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+        let start_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
         let mut params = Vec::new();
         self.expect(TokenKind::LeftParen)?;
         if !self.consume(TokenKind::RightParen) {
@@ -663,11 +664,13 @@ impl Parser {
         } else {
             self.expression()?
         };
+        let end = body.span().end;
         Ok(Expr::ArrowFn {
             params,
             body: Box::new(body),
             body_stmts,
             span: Span::generated("arrow"),
+            source_text: self.source[start_span.start..end].to_owned(),
         })
     }
 
@@ -2372,6 +2375,7 @@ impl Parser {
                         start: accessor_start,
                         end,
                     },
+                    source_text: self.source[accessor_start..end].to_owned(),
                 };
                 ObjectProp::MethodShorthand { key, value: expr }
             }
@@ -2385,6 +2389,7 @@ impl Parser {
                         start: accessor_start,
                         end,
                     },
+                    source_text: self.source[accessor_start..end].to_owned(),
                 };
                 ObjectProp::ComputedKey {
                     key: Box::new(key),
@@ -2466,6 +2471,7 @@ impl Parser {
                 start: method_start,
                 end,
             },
+            source_text: self.source[method_start..end].to_owned(),
         }))
     }
 
@@ -2517,10 +2523,12 @@ impl Parser {
                     start: start.start,
                     end,
                 },
+                source_text: self.source[start.start..end].to_owned(),
             });
         }
         let body = self.block()?;
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
+        let source_end = self.prev_span().map(|s| s.end).unwrap_or(end);
         Ok(Expr::FunctionExpr {
             name,
             params,
@@ -2530,6 +2538,7 @@ impl Parser {
                 start: start.start,
                 end,
             },
+            source_text: self.source[start.start..source_end].to_owned(),
         })
     }
 

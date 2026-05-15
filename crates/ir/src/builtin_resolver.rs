@@ -175,6 +175,7 @@ impl BigIntStaticBuiltinFolder {
                 is_ambient,
                 overload_signature,
                 span,
+                source_text,
             } => Stmt::Function {
                 name: name.clone(),
                 params: params.clone(),
@@ -184,6 +185,7 @@ impl BigIntStaticBuiltinFolder {
                 is_ambient: *is_ambient,
                 overload_signature: *overload_signature,
                 span: *span,
+                source_text: source_text.clone(),
             },
             Stmt::Return { expr, span } => Stmt::Return {
                 expr: self.fold_expr(expr),
@@ -737,11 +739,13 @@ impl BigIntStaticBuiltinFolder {
                 body,
                 body_stmts,
                 span,
+                source_text,
             } => Expr::ArrowFn {
                 params: params.clone(),
                 body: Box::new(BigIntStaticBuiltinFolder::default().fold_expr(body)),
                 body_stmts: BigIntStaticBuiltinFolder::default().fold_stmts(body_stmts),
                 span: *span,
+                source_text: source_text.clone(),
             },
             Expr::FunctionExpr {
                 name,
@@ -749,13 +753,14 @@ impl BigIntStaticBuiltinFolder {
                 body,
                 is_generator,
                 span,
-                ..
+                source_text,
             } => Expr::FunctionExpr {
                 name: name.clone(),
                 params: params.clone(),
                 body: BigIntStaticBuiltinFolder::default().fold_stmts(body),
                 is_generator: *is_generator,
                 span: *span,
+                source_text: source_text.clone(),
             },
             Expr::ClassExpr {
                 name,
@@ -1117,6 +1122,7 @@ fn resolve_stmt_with_outer_bindings(
             is_generator,
             is_async,
             is_ambient,
+            source_text,
             span,
             ..
         } => {
@@ -1141,6 +1147,7 @@ fn resolve_stmt_with_outer_bindings(
                 is_generator: *is_generator,
                 is_async: *is_async,
                 is_ambient: *is_ambient,
+                source_text: source_text.clone(),
             })
         }
         Stmt::EnumDecl { name, .. } => Ok(ResolvedStmt::AmbientValue(name.clone())),
@@ -2104,6 +2111,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             params,
             body,
             body_stmts,
+            source_text,
             ..
         } => {
             let resolved_body = resolve_expr(body)?;
@@ -2115,6 +2123,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 params: params.clone(),
                 body: Box::new(resolved_body),
                 body_stmts: resolved_stmts,
+                source_text: source_text.clone(),
             })
         }
         Expr::FunctionExpr {
@@ -2122,6 +2131,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             params,
             body,
             is_generator,
+            source_text,
             ..
         } => Ok(ResolvedExpr::FunctionExpr {
             name: name.clone(),
@@ -2141,6 +2151,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 .iter()
                 .map(resolve_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
+            source_text: source_text.clone(),
         }),
         Expr::ClassExpr { name, body, .. } => resolve_class_expr(name, body),
         Expr::Spread { expr, .. } => Ok(ResolvedExpr::Spread(Box::new(resolve_expr(expr)?))),

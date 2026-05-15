@@ -25,6 +25,8 @@ pub struct Parser {
     /// Maps class names to their TypeScript-`private` field names (erased at runtime).
     class_private_fields: HashMap<String, Vec<String>>,
     namespace_names_encountered: HashSet<String>,
+    /// The original source text (used for Function.prototype.toString etc.).
+    source: String,
 }
 
 /// For each token, check if there is a line terminator between the previous

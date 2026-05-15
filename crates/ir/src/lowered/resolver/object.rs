@@ -59,6 +59,7 @@ impl super::Resolver {
                 params,
                 body,
                 is_generator,
+                ..
             } = value
         {
             if is_object_literal_accessor_function_name(name) {
@@ -85,6 +86,7 @@ impl super::Resolver {
             params,
             body,
             is_generator,
+            ..
         } = value
         {
             return self.lower_object_method_function_expr(name, params, body, *is_generator);
@@ -466,6 +468,7 @@ impl super::Resolver {
             params,
             body,
             is_generator,
+            ..
         } = value
         else {
             unreachable!("object literal accessor kind only matches function values");

@@ -539,6 +539,7 @@ impl Parser {
                         start: method_span.start,
                         end: method_span.end,
                     },
+                    source_text: self.source[method_span.start..method_span.end].to_owned(),
                 });
                 continue;
             }
@@ -572,6 +573,7 @@ impl Parser {
                     start: method_span.start,
                     end: method_end,
                 },
+                source_text: self.source[method_span.start..method_end].to_owned(),
             });
         }
 
@@ -624,6 +626,7 @@ impl Parser {
                             start: span_start,
                             end: span_start,
                         },
+                        source_text: String::new(),
                     },
                 );
             }

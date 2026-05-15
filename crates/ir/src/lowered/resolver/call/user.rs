@@ -29,6 +29,7 @@ impl super::super::Resolver {
             params,
             body,
             is_generator,
+            ..
         } = callee
         {
             return self.lower_function_expr_call(name, params, body, *is_generator, args, span);
@@ -38,6 +39,7 @@ impl super::super::Resolver {
             params,
             body,
             body_stmts,
+            ..
         } = callee
         {
             return self.lower_arrow_fn_iife(params, body, body_stmts, args, span);

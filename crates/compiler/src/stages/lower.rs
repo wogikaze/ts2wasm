@@ -180,6 +180,7 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                     is_ambient: false,
                     overload_signature: false,
                     span,
+                    ..
                 } = declaration.as_ref()
                 {
                     rewritten.push(Stmt::Let {
@@ -190,6 +191,7 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                             body: body.clone(),
                             is_generator: false,
                             span: *span,
+                            source_text: String::new(),
                         },
                         span: *span,
                         is_var: false,
@@ -1242,6 +1244,7 @@ fn rewrite_static_module_body_for_build(
                     is_ambient: false,
                     overload_signature: false,
                     span,
+                    ..
                 } = declaration.as_ref()
                 {
                     rewritten.push(Stmt::Let {
@@ -1252,6 +1255,7 @@ fn rewrite_static_module_body_for_build(
                             body: body.clone(),
                             is_generator: false,
                             span: *span,
+                            source_text: String::new(),
                         },
                         span: *span,
                         is_var: false,
@@ -1562,6 +1566,7 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
                     body: body.clone(),
                     is_generator: false,
                     span: *span,
+                    source_text: String::new(),
                 };
                 exports.insert(specifier.exported.clone(), func_expr.clone());
                 literal_locals.insert(name.clone(), func_expr);
@@ -1625,6 +1630,7 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
                     body: body.clone(),
                     is_generator: false,
                     span: *span,
+                    source_text: String::new(),
                 },
             );
         } else if let Stmt::ClassDecl {

@@ -266,6 +266,7 @@ mod tests {
                 is_async: false,
                 is_ambient: false,
                 overload_signature: false,
+                source_text: String::new(),
                 span: Span { start: 10, end: 25 },
             },
         ];
@@ -284,6 +285,7 @@ mod tests {
                 is_async: false,
                 is_ambient: true,
                 overload_signature: true,
+                source_text: String::new(),
                 span: Span { start: 0, end: 3 },
             },
             Stmt::Let {
@@ -354,6 +356,7 @@ mod tests {
                 is_async: false,
                 is_ambient: false,
                 overload_signature: false,
+                source_text: String::new(),
                 span: Span { start: 0, end: 20 },
             },
             Stmt::Function {
@@ -364,6 +367,7 @@ mod tests {
                 is_async: false,
                 is_ambient: false,
                 overload_signature: false,
+                source_text: String::new(),
                 span: Span { start: 21, end: 41 },
             },
             Stmt::Expr {
@@ -469,6 +473,7 @@ mod tests {
                 is_async: false,
                 is_ambient: false,
                 overload_signature: false,
+                source_text: String::new(),
                 span: Span { start: 10, end: 40 },
             },
         ];
@@ -511,6 +516,7 @@ mod tests {
                 is_async: false,
                 is_ambient: false,
                 overload_signature: false,
+                source_text: String::new(),
                 span: Span { start: 19, end: 56 },
             },
         ];
@@ -679,6 +685,7 @@ mod tests {
             is_async: false,
             is_ambient: false,
             overload_signature: false,
+            source_text: String::new(),
             span: Span { start: 0, end: 20 },
         }];
 
@@ -711,6 +718,7 @@ mod tests {
             is_async: false,
             is_ambient: false,
             overload_signature: false,
+            source_text: String::new(),
             span: Span { start: 0, end: 25 },
         }];
 
@@ -744,6 +752,7 @@ mod tests {
                     is_async: false,
                     is_ambient: false,
                     overload_signature: false,
+                    source_text: String::new(),
                     span: Span { start: 20, end: 60 },
                 }],
                 static_blocks: vec![],
@@ -802,6 +811,7 @@ mod tests {
                     is_async: false,
                     is_ambient: false,
                     overload_signature: false,
+                    source_text: String::new(),
                     span: Span { start: 20, end: 35 },
                 }],
                 static_blocks: vec![],

@@ -57,12 +57,20 @@ impl super::super::Resolver {
         if method == "toString"
             && args.is_empty()
             && let ResolvedExpr::Ident(name) = object
-            && self.resolve_func(name.as_str()).is_ok()
+            && let Ok(func_id) = self.resolve_func(name.as_str())
         {
-            return Ok(LoweredExpr::String(
-                format!("function {}() {{ [native code] }}", name),
-                span,
-            ));
+            let source = self
+                .ctx
+                .function_sources
+                .get(&func_id)
+                .map(|s| s.as_str())
+                .unwrap_or("");
+            let body = if source.is_empty() {
+                format!("function {}() {{ [native code] }}", name)
+            } else {
+                source.to_owned()
+            };
+            return Ok(LoweredExpr::String(body, span));
         }
         if let Some(result) = self.lower_mcall_date_string(object, method, args, span)? {
             return Ok(result);
@@ -1316,26 +1324,51 @@ impl super::super::Resolver {
                     return Ok(Some(self.lower_expr(object)?));
                 }
                 ResolvedExpr::Ident(name) if self.is_function_identifier(object) => {
-                    return Ok(Some(LoweredExpr::String(
-                        format!("function {}() {{ [native code] }}", name),
-                        Span::generated("str"),
-                    )));
-                }
-                ResolvedExpr::ArrowFn { params, .. } => {
-                    let params_str = params.join(", ");
-                    return Ok(Some(LoweredExpr::String(
-                        format!("({}) => {{ [native code] }}", params_str),
-                        Span::generated("str"),
-                    )));
-                }
-                ResolvedExpr::FunctionExpr { name, .. } => {
-                    let name_part = if name.is_empty() {
-                        String::new()
+                    let body = if let Ok(func_id) = self.resolve_func(name) {
+                        self.ctx
+                            .function_sources
+                            .get(&func_id)
+                            .filter(|s| !s.is_empty())
+                            .cloned()
+                            .unwrap_or_else(|| format!("function {}() {{ [native code] }}", name))
                     } else {
-                        format!("{} ", name)
+                        format!("function {}() {{ [native code] }}", name)
                     };
+                    return Ok(Some(LoweredExpr::String(body, Span::generated("str"))));
+                }
+                ResolvedExpr::ArrowFn {
+                    params,
+                    source_text,
+                    ..
+                } => {
+                    if source_text.is_empty() {
+                        let params_str = params.join(", ");
+                        return Ok(Some(LoweredExpr::String(
+                            format!("({}) => {{ [native code] }}", params_str),
+                            Span::generated("str"),
+                        )));
+                    }
                     return Ok(Some(LoweredExpr::String(
-                        format!("function {}() {{ [native code] }}", name_part),
+                        source_text.clone(),
+                        Span::generated("str"),
+                    )));
+                }
+                ResolvedExpr::FunctionExpr {
+                    name, source_text, ..
+                } => {
+                    if source_text.is_empty() {
+                        let name_part = if name.is_empty() {
+                            String::new()
+                        } else {
+                            format!("{} ", name)
+                        };
+                        return Ok(Some(LoweredExpr::String(
+                            format!("function {}() {{ [native code] }}", name_part),
+                            Span::generated("str"),
+                        )));
+                    }
+                    return Ok(Some(LoweredExpr::String(
+                        source_text.clone(),
                         Span::generated("str"),
                     )));
                 }

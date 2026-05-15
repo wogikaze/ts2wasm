@@ -831,6 +831,7 @@ impl super::Resolver {
                 params,
                 body,
                 is_generator: false,
+                ..
             } => {
                 if params.len() > 4 {
                     return Err(Diagnostic {

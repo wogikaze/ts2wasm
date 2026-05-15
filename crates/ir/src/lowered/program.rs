@@ -40,6 +40,7 @@ pub fn lower_program_with_module_url(
     let generator_function_object_resume_plans = collect_generator_object_resume_plans(program);
     let mut function_signatures =
         collect_function_signatures(program, &function_ids, program_is_strict);
+    let function_sources = collect_function_sources(program, &function_ids);
     let top_level_local_names = collect_top_level_local_names(program)?;
     let function_captures =
         collect_top_level_function_captures(program, &function_ids, &top_level_local_names)?;
@@ -363,6 +364,7 @@ pub fn lower_program_with_module_url(
     let mut resolver = crate::lowered::resolver::Resolver::new(
         &function_ids,
         &function_signatures,
+        function_sources,
         &function_captures,
         &function_mutable_captures,
         &class_method_captures,
@@ -2653,6 +2655,24 @@ fn collect_function_signatures(
     signatures
 }
 
+fn collect_function_sources(
+    program: &[ResolvedStmt],
+    function_ids: &HashMap<String, FuncId>,
+) -> HashMap<FuncId, String> {
+    let mut sources = HashMap::new();
+    for stmt in program {
+        if let ResolvedStmt::Function {
+            name, source_text, ..
+        } = stmt
+        {
+            if !source_text.is_empty() {
+                sources.insert(function_ids[name], source_text.clone());
+            }
+        }
+    }
+    sources
+}
+
 #[derive(Debug, Clone)]
 struct PreindexedFunctionProperty {
     receiver: String,
@@ -4070,6 +4090,7 @@ pub(super) fn lower_function(
     let (mut resolver, param_ids) = crate::lowered::resolver::Resolver::with_params(
         function_ids,
         function_signatures,
+        HashMap::new(),
         function_captures,
         function_mutable_captures,
         class_method_captures,

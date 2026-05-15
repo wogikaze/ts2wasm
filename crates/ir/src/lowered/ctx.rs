@@ -56,6 +56,8 @@ pub struct LoweringCtx {
     pub current_module_url: String,
     /// ECMAScript strict-mode state for the currently lowered scope.
     pub strict_mode: StrictModeContext,
+    /// Function source text map (FuncId → source) for Function.prototype.toString.
+    pub function_sources: HashMap<FuncId, String>,
 }
 
 /// Strict-mode state and checks that affect lowering decisions.
@@ -114,6 +116,7 @@ impl LoweringCtx {
             modules: ModuleEnv::new(),
             current_module_url: "<entry>".to_owned(),
             strict_mode: StrictModeContext::default(),
+            function_sources: HashMap::new(),
         }
     }
 
@@ -121,6 +124,7 @@ impl LoweringCtx {
     pub(crate) fn with_resolver_state(
         function_ids: &HashMap<String, FuncId>,
         function_signatures: &HashMap<FuncId, FunctionSignature>,
+        function_sources: HashMap<FuncId, String>,
         function_captures: &HashMap<FuncId, Vec<String>>,
         function_mutable_captures: &HashMap<FuncId, Vec<String>>,
         class_method_captures: &HashMap<FuncId, Vec<String>>,
@@ -169,6 +173,7 @@ impl LoweringCtx {
             modules: ModuleEnv::new(),
             current_module_url: current_module_url.to_owned(),
             strict_mode: StrictModeContext { is_strict_context },
+            function_sources,
         }
     }
 

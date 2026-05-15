@@ -286,12 +286,14 @@ impl super::super::Resolver {
                     params: Vec::new(),
                     body: Vec::new(),
                     is_generator: *is_generator,
+                    source_text: String::new(),
                 })
             }
             BindingDefault::ArrowFn => self.lower_expr(&ResolvedExpr::ArrowFn {
                 params: Vec::new(),
                 body: Box::new(ResolvedExpr::Undefined),
                 body_stmts: Vec::new(),
+                source_text: String::new(),
             }),
             BindingDefault::ClassExpr { name } => self.lower_expr(&ResolvedExpr::ClassExpr {
                 name: name.clone(),

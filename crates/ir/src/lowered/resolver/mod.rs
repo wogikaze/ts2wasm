@@ -76,6 +76,7 @@ impl Resolver {
     pub(crate) fn new(
         function_ids: &HashMap<String, FuncId>,
         function_signatures: &HashMap<FuncId, FunctionSignature>,
+        function_sources: HashMap<FuncId, String>,
         function_captures: &HashMap<FuncId, Vec<String>>,
         function_mutable_captures: &HashMap<FuncId, Vec<String>>,
         class_method_captures: &HashMap<FuncId, Vec<String>>,
@@ -96,6 +97,7 @@ impl Resolver {
             ctx: LoweringCtx::with_resolver_state(
                 function_ids,
                 function_signatures,
+                function_sources,
                 function_captures,
                 function_mutable_captures,
                 class_method_captures,
@@ -120,6 +122,7 @@ impl Resolver {
     pub(crate) fn with_params(
         function_ids: &HashMap<String, FuncId>,
         function_signatures: &HashMap<FuncId, FunctionSignature>,
+        function_sources: HashMap<FuncId, String>,
         function_captures: &HashMap<FuncId, Vec<String>>,
         function_mutable_captures: &HashMap<FuncId, Vec<String>>,
         class_method_captures: &HashMap<FuncId, Vec<String>>,
@@ -143,6 +146,7 @@ impl Resolver {
             ctx: LoweringCtx::with_resolver_state(
                 function_ids,
                 function_signatures,
+                function_sources,
                 function_captures,
                 function_mutable_captures,
                 class_method_captures,

@@ -465,7 +465,7 @@ impl NameResolver {
                 is_ambient,
                 overload_signature,
                 span,
-                ..
+                source_text,
             } => {
                 // Function declarations are already collected in first pass
                 // Now resolve the function body with its own scope
@@ -502,6 +502,7 @@ impl NameResolver {
                     is_ambient: *is_ambient,
                     overload_signature: *overload_signature,
                     span: *span,
+                    source_text: source_text.clone(),
                 })
             }
             Stmt::ClassDecl {
@@ -935,6 +936,7 @@ impl NameResolver {
                 body,
                 is_generator,
                 span,
+                source_text,
             } => {
                 self.enter_scope();
                 self.function_depth += 1;
@@ -969,6 +971,7 @@ impl NameResolver {
                     body: resolved_body,
                     is_generator: *is_generator,
                     span: *span,
+                    source_text: source_text.clone(),
                 })
             }
             Expr::ArrowFn {
@@ -976,6 +979,7 @@ impl NameResolver {
                 body,
                 body_stmts,
                 span,
+                source_text,
             } => {
                 self.enter_scope();
                 self.function_depth += 1;
@@ -1006,6 +1010,7 @@ impl NameResolver {
                     body: resolved_body,
                     body_stmts: resolved_stmts,
                     span: *span,
+                    source_text: source_text.clone(),
                 })
             }
             Expr::Ident { name, span } => {

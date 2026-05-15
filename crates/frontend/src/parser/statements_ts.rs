@@ -567,6 +567,7 @@ impl Parser {
             is_ambient: true,
             overload_signature: true,
             span: name_span,
+            source_text: String::new(),
         });
         Ok(())
     }

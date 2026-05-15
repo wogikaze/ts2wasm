@@ -41,6 +41,7 @@ pub enum ResolvedStmt {
         is_generator: bool,
         is_async: bool,
         is_ambient: bool,
+        source_text: String,
     },
     TryCatch {
         try_block: Vec<ResolvedStmt>,
@@ -276,12 +277,14 @@ pub enum ResolvedExpr {
         params: Vec<String>,
         body: Box<ResolvedExpr>,
         body_stmts: Vec<ResolvedStmt>,
+        source_text: String,
     },
     FunctionExpr {
         name: String,
         params: Vec<ResolvedParam>,
         body: Vec<ResolvedStmt>,
         is_generator: bool,
+        source_text: String,
     },
     ClassExpr {
         name: String,

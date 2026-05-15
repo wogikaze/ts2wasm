@@ -277,6 +277,7 @@ pub enum Stmt {
         is_ambient: bool,
         overload_signature: bool,
         span: Span,
+        source_text: String,
     },
     Return {
         expr: Expr,
@@ -547,6 +548,7 @@ pub enum Expr {
         body: Box<Expr>,
         body_stmts: Vec<Stmt>,
         span: Span,
+        source_text: String,
     },
     FunctionExpr {
         name: String,
@@ -554,6 +556,7 @@ pub enum Expr {
         body: Vec<Stmt>,
         is_generator: bool,
         span: Span,
+        source_text: String,
     },
     Spread {
         expr: Box<Expr>,

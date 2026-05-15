@@ -1202,6 +1202,7 @@ impl Parser {
                 is_ambient: false,
                 overload_signature: false,
                 span: eval_span,
+                source_text: self.source[eval_span.start..eval_span.end].to_owned(),
             })),
             _ => Ok(None),
         }
@@ -1639,10 +1640,12 @@ impl Parser {
                     start: start.start,
                     end: start.end,
                 },
+                source_text: self.source[start.start..start.end].to_owned(),
             });
         }
         let body = self.block()?;
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
+        let source_end = self.prev_span().map(|s| s.end).unwrap_or(end);
         Ok(Stmt::Function {
             name,
             params,
@@ -1655,6 +1658,7 @@ impl Parser {
                 start: start.start,
                 end,
             },
+            source_text: self.source[start.start..source_end].to_owned(),
         })
     }
 
@@ -1689,6 +1693,7 @@ impl Parser {
         let body = self.block()?;
         self.in_generator_fn = prev_in_generator_fn;
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
+        let source_end = self.prev_span().map(|s| s.end).unwrap_or(end);
         Ok(Stmt::Function {
             name,
             params,
@@ -1701,6 +1706,7 @@ impl Parser {
                 start: start.start,
                 end,
             },
+            source_text: self.source[start.start..source_end].to_owned(),
         })
     }
 
@@ -1748,6 +1754,7 @@ impl Parser {
                     start: async_span.start,
                     end,
                 },
+                source_text: self.source[async_span.start..end].to_owned(),
             });
         }
         let (name, _) = self.expect_ident()?;
@@ -1783,6 +1790,7 @@ impl Parser {
         let body = self.block()?;
         self.in_async_fn = prev_in_async_fn;
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(async_span.end);
+        let source_end = self.prev_span().map(|s| s.end).unwrap_or(end);
         Ok(Stmt::Function {
             name,
             params,
@@ -1795,6 +1803,7 @@ impl Parser {
                 start: async_span.start,
                 end,
             },
+            source_text: self.source[async_span.start..source_end].to_owned(),
         })
     }
 

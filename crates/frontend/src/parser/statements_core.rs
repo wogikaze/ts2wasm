@@ -29,6 +29,7 @@ impl Parser {
             fn_depth: 0,
             class_private_fields: HashMap::new(),
             namespace_names_encountered: HashSet::new(),
+            source: source.to_owned(),
         }
     }
 
