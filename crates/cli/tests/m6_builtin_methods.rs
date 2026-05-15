@@ -2402,6 +2402,29 @@ fn build_smoke_intl_constructor_alias_resolved_options() {
     );
 }
 
+#[test]
+fn build_smoke_intl_numberformat_captured_format_method() {
+    let result = run_source(
+        "intl-numberformat-captured-format-method",
+        r#"
+        function check() {
+          var format = new Intl.NumberFormat(["en"], { useGrouping: false });
+          function read() {
+            return format.format(1);
+          }
+          console.log(read());
+        }
+
+        check();
+        "#,
+    );
+    assert!(
+        result.is_ok(),
+        "captured Intl.NumberFormat format method should build: {:?}",
+        result.err()
+    );
+}
+
 // === W5: Language runtime semantics — new fixtures ===
 
 // for...of on array (iterator protocol)

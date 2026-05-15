@@ -5,7 +5,9 @@ use crate::builtin_resolved::{
     ResolvedStmt,
 };
 use crate::lowered::classes::ObjectAccessorKey;
-use crate::lowered::facts::{GeneratorObjectResumePlan, GeneratorYieldStep};
+use crate::lowered::facts::{
+    GeneratorObjectResumePlan, GeneratorYieldStep, IntlNumberFormatOptions,
+};
 use crate::lowered::symbols::FunctionSignature;
 use std::collections::{HashMap, HashSet};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -148,6 +150,7 @@ pub fn lower_program_with_module_url(
                         in_constructor: false,
                         next_func_id,
                         self_closure,
+                        capture_facts: FunctionCaptureFacts::default(),
                         recursion_depth: *function_recursion_depths.get(&func_id).unwrap_or(&0),
                         new_target_class: None,
                         module_url: module_url.as_str(),
@@ -226,6 +229,7 @@ pub fn lower_program_with_module_url(
                         in_constructor: true,
                         next_func_id,
                         self_closure: None,
+                        capture_facts: FunctionCaptureFacts::default(),
                         recursion_depth: *function_recursion_depths.get(&ctor_id).unwrap_or(&0),
                         new_target_class: Some(name),
                         module_url: module_url.as_str(),
@@ -297,6 +301,7 @@ pub fn lower_program_with_module_url(
                             in_constructor: false,
                             next_func_id,
                             self_closure: None,
+                            capture_facts: FunctionCaptureFacts::default(),
                             recursion_depth: *function_recursion_depths
                                 .get(&method_id)
                                 .unwrap_or(&0),
@@ -343,6 +348,7 @@ pub fn lower_program_with_module_url(
                 in_constructor: false,
                 next_func_id,
                 self_closure,
+                capture_facts: FunctionCaptureFacts::default(),
                 recursion_depth: 0,
                 new_target_class: None,
                 module_url: module_url.as_str(),
@@ -3958,6 +3964,7 @@ pub(crate) struct LowerFunctionOptions<'a> {
     pub(crate) in_constructor: bool,
     pub(crate) next_func_id: usize,
     pub(crate) self_closure: Option<SelfClosureOptions<'a>>,
+    pub(crate) capture_facts: FunctionCaptureFacts,
     /// Recursion depth for this function (0 = not recursive, 1+ = recursive).
     pub(crate) recursion_depth: usize,
     pub(crate) new_target_class: Option<&'a str>,
@@ -3970,6 +3977,12 @@ pub(crate) struct SelfClosureOptions<'a> {
     pub(crate) func_id: FuncId,
     pub(crate) capture_names: &'a [String],
     pub(crate) object_function_props: Option<&'a HashMap<ObjectAccessorKey, FuncId>>,
+}
+
+#[derive(Clone, Debug, Default)]
+pub(crate) struct FunctionCaptureFacts {
+    pub(crate) local_classes: HashMap<String, String>,
+    pub(crate) intl_number_format_options: HashMap<String, IntlNumberFormatOptions>,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -4056,6 +4069,25 @@ pub(super) fn lower_function(
             self_closure.capture_names,
             self_closure.object_function_props,
         )?;
+    }
+
+    for (name, class_name) in &options.capture_facts.local_classes {
+        if let Ok(local_id) = resolver.resolve_local(name) {
+            resolver
+                .ctx
+                .classes
+                .local_classes
+                .insert(local_id, class_name.clone());
+        }
+    }
+    for (name, options) in &options.capture_facts.intl_number_format_options {
+        if let Ok(local_id) = resolver.resolve_local(name) {
+            resolver
+                .ctx
+                .facts
+                .intl_number_format_locals
+                .insert(local_id, options.clone());
+        }
     }
 
     // Insert default parameter assignments at the start of the body.

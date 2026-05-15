@@ -60,6 +60,7 @@ impl super::Resolver {
             .iter()
             .map(|name| self.resolve_local(name))
             .collect::<Result<Vec<_>, _>>()?;
+        let capture_facts = self.capture_facts_for_names(&capture_names);
         // Split explicit params into non-rest + rest (rest must be the final parameter
         // when captures are appended, so the WAT emitter and validator handle it correctly).
         let mut lowered_params: Vec<ResolvedParam> = Vec::new();
@@ -120,6 +121,7 @@ impl super::Resolver {
                     capture_names: &capture_names,
                     object_function_props: None,
                 }),
+                capture_facts,
                 recursion_depth: 0,
                 // NewTargetArrow: arrow functions inherit the enclosing new.target.
                 new_target_class: self.ctx.classes.new_target_class.as_deref(),
@@ -228,6 +230,7 @@ impl super::Resolver {
             .iter()
             .map(|capture| self.resolve_local(capture))
             .collect::<Result<Vec<_>, _>>()?;
+        let capture_facts = self.capture_facts_for_names(&capture_names);
         let mut lowered_params = params.to_vec();
         lowered_params.extend(capture_names.iter().map(|capture| ResolvedParam {
             name: capture.clone(),
@@ -287,6 +290,7 @@ impl super::Resolver {
                 in_constructor: false,
                 next_func_id: self.ctx.functions.next_func_id,
                 self_closure,
+                capture_facts,
                 recursion_depth: 0,
                 new_target_class: None,
                 module_url: self.ctx.current_module_url.as_str(),
@@ -373,6 +377,24 @@ impl super::Resolver {
             .collect())
     }
 
+    fn capture_facts_for_names(&self, capture_names: &[String]) -> FunctionCaptureFacts {
+        let mut facts = FunctionCaptureFacts::default();
+        for name in capture_names {
+            let Ok(local_id) = self.resolve_local(name) else {
+                continue;
+            };
+            if let Some(class_name) = self.ctx.classes.local_classes.get(&local_id) {
+                facts.local_classes.insert(name.clone(), class_name.clone());
+            }
+            if let Some(options) = self.ctx.facts.intl_number_format_locals.get(&local_id) {
+                facts
+                    .intl_number_format_options
+                    .insert(name.clone(), options.clone());
+            }
+        }
+        facts
+    }
+
     fn lower_nested_function_with_receiver(
         &mut self,
         name: &str,
@@ -454,6 +476,7 @@ impl super::Resolver {
             .iter()
             .map(|capture| self.resolve_local(capture))
             .collect::<Result<Vec<_>, _>>()?;
+        let capture_facts = self.capture_facts_for_names(&capture_names);
         let mut lowered_params = params.to_vec();
         lowered_params.extend(capture_names.iter().map(|capture| ResolvedParam {
             name: capture.clone(),
@@ -534,6 +557,7 @@ impl super::Resolver {
                 in_constructor: false,
                 next_func_id: self.ctx.functions.next_func_id,
                 self_closure,
+                capture_facts,
                 recursion_depth: 0,
                 new_target_class: None,
                 module_url: self.ctx.current_module_url.as_str(),

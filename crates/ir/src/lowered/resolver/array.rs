@@ -544,6 +544,7 @@ impl super::Resolver {
                 in_constructor: false,
                 next_func_id: self.ctx.functions.next_func_id,
                 self_closure,
+                capture_facts: FunctionCaptureFacts::default(),
                 recursion_depth: 0,
                 new_target_class: None,
                 module_url: self.ctx.current_module_url.as_str(),
