@@ -106,15 +106,11 @@ impl super::super::Resolver {
             }
             if !is_date_constructor_epoch_arg(epoch_ms)
                 && !self.is_static_number_literal_epoch_arg(epoch_ms)
+                && matches!(epoch_ms, ResolvedExpr::String(_))
             {
-                let msg = if matches!(epoch_ms, ResolvedExpr::String(_)) {
-                    "issue-5243: string-based Date parsing like new Date(\"2024-01-01\") is not supported in this slice"
-                } else {
-                    "issue-5243: Date constructor requires an epoch-millisecond number argument"
-                };
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: msg.to_owned(),
+                    message: "issue-5243: string-based Date parsing like new Date(\"2024-01-01\") is not supported in this slice".to_owned(),
                     span: None,
 
                     phase: None,

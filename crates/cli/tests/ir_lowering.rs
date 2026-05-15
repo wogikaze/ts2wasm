@@ -1206,6 +1206,15 @@ fn lowering_routes_new_date_decimal_epoch_local_to_runtime_call() {
 }
 
 #[test]
+fn lowering_routes_dynamic_new_date_argument_to_runtime_call() {
+    let program = parse_and_resolve("function makeDate(value) { return new Date(value); }");
+    let lowered = ts2wasm_ir::lowered::lower_program(&program)
+        .expect("dynamic Date constructor argument should lower");
+    ts2wasm_ir::lowered::validate_lowered(&lowered)
+        .expect("dynamic Date constructor argument should validate");
+}
+
+#[test]
 fn lowering_routes_date_get_time_to_runtime_call() {
     let program = parse_and_resolve("let epoch = new Date(0); let ms = epoch.getTime();");
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
