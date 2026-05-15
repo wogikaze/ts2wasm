@@ -340,6 +340,25 @@ fn lowering_allows_array_pattern_rest_binding_target() {
 }
 
 #[test]
+fn lowering_applies_identifier_default_to_nested_array_binding_pattern() {
+    let program = parse_and_resolve(
+        r#"
+        var fallback = [23];
+        var obj = {
+          *method([x] = fallback) {
+            console.log(x);
+          }
+        };
+
+        obj.method(undefined).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("nested array binding patterns should apply identifier defaults");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"

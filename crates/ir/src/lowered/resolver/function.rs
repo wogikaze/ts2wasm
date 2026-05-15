@@ -206,7 +206,14 @@ impl super::Resolver {
         let capture_names = self.nested_function_capture_names(name, params, body)?;
         let mutable_captures = capture_names
             .iter()
-            .filter(|capture| block_assigns_any_name(body, std::slice::from_ref(capture)))
+            .filter(|capture| {
+                let names = std::slice::from_ref(*capture);
+                block_assigns_any_name(body, names)
+                    || params
+                        .iter()
+                        .filter_map(|param| param.default.as_ref())
+                        .any(|default| expr_assigns_any_name(default, names))
+            })
             .cloned()
             .collect::<Vec<_>>();
         if mutable_captures
@@ -366,6 +373,10 @@ impl super::Resolver {
         collect_declared_names_in_stmts(body, &mut excluded);
 
         let mut captures = Vec::new();
+        for default in params.iter().filter_map(|param| param.default.as_ref()) {
+            collect_expr_captures(default, &excluded, &mut captures);
+            collect_nested_function_captures_in_expr(default, &excluded, &mut captures)?;
+        }
         collect_stmt_captures(body, &excluded, &mut captures);
         collect_nested_function_captures_in_stmts(body, &excluded, &mut captures)?;
         Ok(captures
@@ -460,7 +471,14 @@ impl super::Resolver {
         let capture_names = self.nested_function_capture_names(name, params, body)?;
         let mutable_captures = capture_names
             .iter()
-            .filter(|capture| block_assigns_any_name(body, std::slice::from_ref(capture)))
+            .filter(|capture| {
+                let names = std::slice::from_ref(*capture);
+                block_assigns_any_name(body, names)
+                    || params
+                        .iter()
+                        .filter_map(|param| param.default.as_ref())
+                        .any(|default| expr_assigns_any_name(default, names))
+            })
             .cloned()
             .collect::<Vec<_>>();
         if mutable_captures
