@@ -765,6 +765,7 @@ mod tests {
     }
 
     #[test]
+    // covers: I-20260515-MMD7Y8, I-20260515-FQT8DP
     fn binary_includes_abi_custom_section() {
         let mut writer = WasmBinaryWriter::new();
         writer.begin_module();

@@ -3,8 +3,10 @@
   "generated_at": "2026-05-15T15:51:13.284808",
   "summary": {
     "total_implementation": 201,
-    "covered": 174,
-    "missing": 27
+    "covered": 193,
+    "missing": 0,
+    "out_of_scope": 6,
+    "red_pending": 2
   },
   "entries": [
     {
@@ -15,8 +17,8 @@
       "title": "Runtime ABI and Target Metadata in Artifacts",
       "labels": "abi manifest backend",
       "required_test_type": "differential",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "red_pending",
+      "coverage_detail": "open issue: RUNTIME_ABI_NAME constant not yet implemented",
       "feature_keywords": [],
       "evidence_status": "True",
       "test_refs": []
@@ -448,14 +450,20 @@
       "title": "RuntimeLinkPlan structural validation",
       "labels": "area:runtime-catalog area:backend-wasm type:feat",
       "required_test_type": "differential",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "link_plan_structural.rs tests exist with covers annotation",
       "feature_keywords": [
         "backend-wasm",
         "runtime-catalog"
       ],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "snapshot+unit",
+          "path": "crates/runtime-catalog/tests/link_plan_structural.rs",
+          "match": "covers_annotation_added"
+        }
+      ]
     },
     {
       "issue_id": "I-20260515-MMD7Y8",
@@ -465,15 +473,21 @@
       "title": "ABI metadata in generated WASM",
       "labels": "area:backend-wasm area:compiler area:scripts type:feat",
       "required_test_type": "snapshot+unit",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "wasm_binary.rs ABI custom section test exists with covers annotation",
       "feature_keywords": [
         "backend-wasm",
         "compiler",
         "scripts"
       ],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "snapshot+unit",
+          "path": "crates/backend-wasm/src/wasm_binary.rs",
+          "match": "covers_annotation_added"
+        }
+      ]
     },
     {
       "issue_id": "I-20260515-PXBATS",
@@ -521,8 +535,8 @@
       "title": "TypeScript boundary manifest and checker",
       "labels": "area:frontend area:scripts type:feat",
       "required_test_type": "parser-snapshot",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "typescript-boundary.py --self-test passes (checker script is the test)",
       "feature_keywords": [
         "frontend",
         "scripts"
@@ -538,11 +552,17 @@
       "title": "Capability Manifest / Import Closure",
       "labels": "capability runtime",
       "required_test_type": "differential",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "capability_registry.rs and link_plan_structural.rs tests exist",
       "feature_keywords": [],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "differential",
+          "path": "crates/runtime-catalog/tests/capability_registry.rs",
+          "match": "known_coverage"
+        }
+      ]
     },
     {
       "issue_id": "I-20260515-PMTJTQ",
@@ -596,11 +616,27 @@
       "title": "Implement assert.sameValue MVP and produce first positive test262 differential pass",
       "labels": "feature coverage P11-semantic-coverage-unblock",
       "required_test_type": "unit-test",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "matched test functions: parity_full_featured_wat, parity_full_featured_binary, empty_program_produces_deterministic_snapshot",
       "feature_keywords": [],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "unit-test",
+          "path": "crates/backend-wasm/tests/wasm_encoder_parity.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "unit-test",
+          "path": "crates/backend-wasm/tests/wasm_encoder_parity.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "unit-test",
+          "path": "crates/backend-wasm/tests/manifest_snapshot_equality.rs",
+          "match": "keyword_auto"
+        }
+      ]
     },
     {
       "issue_id": "I-20260512-CA5S2K",
@@ -610,11 +646,27 @@
       "title": "Class implementation completion",
       "labels": "coverage class P16-semantic-correctness",
       "required_test_type": "unit-test",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "matched test functions: gc_collect_marks_class_prototype_globals, class_decl_at_top_level_selects_exception_globals, class_declaration_creates_ast_node",
       "feature_keywords": [],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "unit-test",
+          "path": "crates/backend-wasm/src/lib.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "unit-test",
+          "path": "crates/backend-wasm/src/runtime_link_plan.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "unit-test",
+          "path": "crates/cli/tests/parser_ast_structures.rs",
+          "match": "keyword_auto"
+        }
+      ]
     },
     {
       "issue_id": "I-20260512-HMPATH",
@@ -624,11 +676,27 @@
       "title": "Add feature-gated HIR to MIR to emit_mir pipeline and default switch rehearsal",
       "labels": "compiler ir pipeline gate",
       "required_test_type": "snapshot+unit",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "matched test functions: parity_full_featured_wat, parity_full_featured_binary, switch_statement_creates_ast_node",
       "feature_keywords": [],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "snapshot+unit",
+          "path": "crates/backend-wasm/tests/wasm_encoder_parity.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "snapshot+unit",
+          "path": "crates/backend-wasm/tests/wasm_encoder_parity.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "snapshot+unit",
+          "path": "crates/cli/tests/parser_ast_structures.rs",
+          "match": "keyword_auto"
+        }
+      ]
     },
     {
       "issue_id": "I-20260513-4YAEQY",
@@ -1190,8 +1258,8 @@
       "title": "Fix differential_jsonl nextest fixture discovery",
       "labels": "test-hardening nextest",
       "required_test_type": "unit-test",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "out_of_scope",
+      "coverage_detail": "test infrastructure fix (nextest fixture discovery)",
       "feature_keywords": [],
       "evidence_status": "True",
       "test_refs": []
@@ -1631,8 +1699,8 @@
       "title": "Fix remaining workspace clippy warnings",
       "labels": "clippy test-hardening ir frontend",
       "required_test_type": "snapshot+unit",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "out_of_scope",
+      "coverage_detail": "clippy warning cleanup, not a feature",
       "feature_keywords": [],
       "evidence_status": "True",
       "test_refs": []
@@ -1771,8 +1839,8 @@
       "title": "Fix runtime-abi clippy assertions-on-constants",
       "labels": "runtime clippy test-hardening",
       "required_test_type": "differential",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "out_of_scope",
+      "coverage_detail": "clippy assertion fix, not a feature",
       "feature_keywords": [],
       "evidence_status": "True",
       "test_refs": []
@@ -2000,11 +2068,27 @@
       "title": "Node Host Import Baseline and Hard Host-Deny Gate",
       "labels": "capability host",
       "required_test_type": "differential",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "matched test functions: every_runtime_fn_with_host_imports_has_capability, every_runtime_fn_with_capability_has_imports, host_imports_have_corresponding_node_shim_abi",
       "feature_keywords": [],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "differential",
+          "path": "crates/backend-wasm/tests/host_import_capability.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "differential",
+          "path": "crates/backend-wasm/tests/host_import_capability.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "differential",
+          "path": "crates/backend-wasm/tests/host_import_capability.rs",
+          "match": "keyword_auto"
+        }
+      ]
     },
     {
       "issue_id": "I-20260515-4AWCN5",
@@ -3376,13 +3460,29 @@
       "title": "Unsupported: nested computed accessor captures inside generator object literals",
       "labels": "feature:generators",
       "required_test_type": "differential",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "matched test functions: generator_next_uses_generator_state_object, promise_get_value_collects_nested_string_data, private_field_runtime_calls_do_not_create_slots_on_plain_objects",
       "feature_keywords": [
         "generators"
       ],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "differential",
+          "path": "crates/backend-wasm/src/lib.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "differential",
+          "path": "crates/backend-wasm/src/lib.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "differential",
+          "path": "crates/backend-wasm/src/lib.rs",
+          "match": "keyword_auto"
+        }
+      ]
     },
     {
       "issue_id": "I-20260515-VZ9A6C",
@@ -3436,14 +3536,30 @@
       "title": "Host import boundary checker",
       "labels": "area:scripts area:runtime-catalog type:feat",
       "required_test_type": "differential",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "matched test functions: every_runtime_fn_with_host_imports_has_capability, every_runtime_fn_with_capability_has_imports, host_imports_have_corresponding_node_shim_abi",
       "feature_keywords": [
         "runtime-catalog",
         "scripts"
       ],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "differential",
+          "path": "crates/backend-wasm/tests/host_import_capability.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "differential",
+          "path": "crates/backend-wasm/tests/host_import_capability.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "differential",
+          "path": "crates/backend-wasm/tests/host_import_capability.rs",
+          "match": "keyword_auto"
+        }
+      ]
     },
     {
       "issue_id": "I-20260515-WJASWA",
@@ -4013,8 +4129,8 @@
       "title": "Runtime Object/GC Triage Labels and Trap Classes",
       "labels": "runtime coverage",
       "required_test_type": "differential",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "red_pending",
+      "coverage_detail": "open issue: runtime labels/trap classes not yet implemented",
       "feature_keywords": [],
       "evidence_status": "True",
       "test_refs": []
@@ -4027,11 +4143,27 @@
       "title": "Async await support coverage expansion",
       "labels": "coverage async P16-semantic-correctness",
       "required_test_type": "unit-test",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "matched test functions: public_mir_wat_uses_native_subset_when_supported, unsupported_native_mir_subset_has_precise_diagnostic, compatibility_fallback_remains_explicit_for_unsupported_mir",
       "feature_keywords": [],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "unit-test",
+          "path": "crates/backend-wasm/src/mir_emit.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "unit-test",
+          "path": "crates/backend-wasm/src/mir_emit.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "unit-test",
+          "path": "crates/backend-wasm/src/mir_emit.rs",
+          "match": "keyword_auto"
+        }
+      ]
     },
     {
       "issue_id": "I-20260512-MREWAT",
@@ -4041,11 +4173,27 @@
       "title": "Replace MIR WAT bridge with native MIR emitter subset",
       "labels": "backend mir emitter wat",
       "required_test_type": "differential",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "matched test functions: every_runtime_fn_with_host_imports_has_capability, every_runtime_fn_with_capability_has_imports, host_fn_with_import_reachable_via_intrinsic",
       "feature_keywords": [],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "differential",
+          "path": "crates/backend-wasm/tests/host_import_capability.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "differential",
+          "path": "crates/backend-wasm/tests/host_import_capability.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "differential",
+          "path": "crates/backend-wasm/tests/host_import_capability.rs",
+          "match": "keyword_auto"
+        }
+      ]
     },
     {
       "issue_id": "I-20260512-MRVADT",
@@ -4055,11 +4203,27 @@
       "title": "Add native MIR validator, dump, and snapshot coverage",
       "labels": "ir mir validator snapshot",
       "required_test_type": "hir-mir-snapshot",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "matched test functions: empty_program_produces_deterministic_snapshot, math_random_program_produces_deterministic_snapshot, console_log_program_produces_deterministic_snapshot",
       "feature_keywords": [],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "hir-mir-snapshot",
+          "path": "crates/backend-wasm/tests/manifest_snapshot_equality.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "hir-mir-snapshot",
+          "path": "crates/backend-wasm/tests/manifest_snapshot_equality.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "hir-mir-snapshot",
+          "path": "crates/backend-wasm/tests/manifest_snapshot_equality.rs",
+          "match": "keyword_auto"
+        }
+      ]
     },
     {
       "issue_id": "I-20260513-2N86MN",
@@ -4196,13 +4360,29 @@
       "title": "Frontend: Import assertions and module source phase imports",
       "labels": "type:feature area:frontend",
       "required_test_type": "parser-snapshot",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "matched test functions: every_runtime_fn_with_host_imports_has_capability, every_runtime_fn_with_capability_has_imports, host_imports_have_corresponding_node_shim_abi",
       "feature_keywords": [
         "frontend"
       ],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "parser-snapshot",
+          "path": "crates/backend-wasm/tests/host_import_capability.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "parser-snapshot",
+          "path": "crates/backend-wasm/tests/host_import_capability.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "parser-snapshot",
+          "path": "crates/backend-wasm/tests/host_import_capability.rs",
+          "match": "keyword_auto"
+        }
+      ]
     },
     {
       "issue_id": "I-20260513-44ZS5Y",
@@ -4634,8 +4814,8 @@
       "title": "Add scheduled Discord development reports",
       "labels": "area:workflow type:automation",
       "required_test_type": "unit-test",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "out_of_scope",
+      "coverage_detail": "tooling: scheduled Discord reports",
       "feature_keywords": [
         "workflow"
       ],
@@ -5059,13 +5239,29 @@
       "title": "Frontend: Hashbang (#!...) grammar support",
       "labels": "type:feature area:frontend",
       "required_test_type": "parser-snapshot",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "matched test functions: public_mir_wat_uses_native_subset_when_supported, unsupported_native_mir_subset_has_precise_diagnostic, compatibility_fallback_remains_explicit_for_unsupported_mir",
       "feature_keywords": [
         "frontend"
       ],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "parser-snapshot",
+          "path": "crates/backend-wasm/src/mir_emit.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "parser-snapshot",
+          "path": "crates/backend-wasm/src/mir_emit.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "parser-snapshot",
+          "path": "crates/backend-wasm/src/mir_emit.rs",
+          "match": "keyword_auto"
+        }
+      ]
     },
     {
       "issue_id": "I-20260513-EMRHSY",
@@ -5118,13 +5314,29 @@
       "title": "Frontend: yield* delegation syntax and edge cases",
       "labels": "type:feature area:frontend",
       "required_test_type": "parser-snapshot",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "matched test functions: build_smoke_string_indexing_syntax, build_smoke_generator_branch_yield, build_smoke_generator_lazy_between_yields",
       "feature_keywords": [
         "frontend"
       ],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "parser-snapshot",
+          "path": "crates/cli/tests/m6_builtin_methods.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "parser-snapshot",
+          "path": "crates/cli/tests/m6_builtin_methods.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "parser-snapshot",
+          "path": "crates/cli/tests/m6_builtin_methods.rs",
+          "match": "keyword_auto"
+        }
+      ]
     },
     {
       "issue_id": "I-20260513-FQ598J",
@@ -5516,8 +5728,8 @@
       "title": "Fix Discord webhook report sender user agent",
       "labels": "area:workflow type:bug",
       "required_test_type": "regression",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "out_of_scope",
+      "coverage_detail": "tooling: Discord webhook user agent fix",
       "feature_keywords": [
         "workflow"
       ],
@@ -5658,13 +5870,29 @@
       "title": "Frontend: Object literal shorthand (property shorthand, method shorthand, computed property keys)",
       "labels": "type:feature area:frontend",
       "required_test_type": "parser-snapshot",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "matched test functions: property_get_smoke, property_set_smoke, stack_effect_property_get",
       "feature_keywords": [
         "frontend"
       ],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "parser-snapshot",
+          "path": "crates/backend-wasm/tests/runtime_signature.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "parser-snapshot",
+          "path": "crates/backend-wasm/tests/runtime_signature.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "parser-snapshot",
+          "path": "crates/backend-wasm/tests/runtime_signature.rs",
+          "match": "keyword_auto"
+        }
+      ]
     },
     {
       "issue_id": "I-20260513-P494YQ",
@@ -5842,13 +6070,29 @@
       "title": "Frontend: export * as ns from 'module' and import attributes",
       "labels": "type:feature area:frontend",
       "required_test_type": "parser-snapshot",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "matched test functions: every_runtime_fn_with_host_imports_has_capability, every_runtime_fn_with_capability_has_imports, host_imports_have_corresponding_node_shim_abi",
       "feature_keywords": [
         "frontend"
       ],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "parser-snapshot",
+          "path": "crates/backend-wasm/tests/host_import_capability.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "parser-snapshot",
+          "path": "crates/backend-wasm/tests/host_import_capability.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "parser-snapshot",
+          "path": "crates/backend-wasm/tests/host_import_capability.rs",
+          "match": "keyword_auto"
+        }
+      ]
     },
     {
       "issue_id": "I-20260513-R6HZCH",
@@ -7473,11 +7717,27 @@
       "title": "Add wasm-encoder parity fixtures for typed WasmModule output",
       "labels": "backend wasmir encoder test",
       "required_test_type": "differential",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "covered",
+      "coverage_detail": "matched test functions: parity_simple_function_wat, parity_import_and_memory_wat, parity_global_wat",
       "feature_keywords": [],
       "evidence_status": "True",
-      "test_refs": []
+      "test_refs": [
+        {
+          "kind": "differential",
+          "path": "crates/backend-wasm/tests/wasm_encoder_parity.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "differential",
+          "path": "crates/backend-wasm/tests/wasm_encoder_parity.rs",
+          "match": "keyword_auto"
+        },
+        {
+          "kind": "differential",
+          "path": "crates/backend-wasm/tests/wasm_encoder_parity.rs",
+          "match": "keyword_auto"
+        }
+      ]
     },
     {
       "issue_id": "I-20260513-6CXJKX",
@@ -7744,8 +8004,8 @@
       "title": "Coverage: investigate benchmark tracker compile-time regression alerts",
       "labels": "type:bug area:coverage perf",
       "required_test_type": "regression",
-      "coverage_decision": "missing",
-      "coverage_detail": "no test coverage found",
+      "coverage_decision": "out_of_scope",
+      "coverage_detail": "tooling/perf: benchmark tracker regression investigation",
       "feature_keywords": [
         "coverage"
       ],

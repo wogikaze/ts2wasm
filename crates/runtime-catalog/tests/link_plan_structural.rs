@@ -1,4 +1,5 @@
 /// RuntimeLinkPlan structural property tests (#379).
+/// covers: I-20260515-KN2GH2
 ///
 /// Verifies that:
 /// - All RuntimeFn variants produce a valid link plan
