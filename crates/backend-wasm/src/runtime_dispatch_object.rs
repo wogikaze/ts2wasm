@@ -41,6 +41,14 @@ impl WatEmitter<'_> {
             RuntimeFn::IsPrototypeOf => self.emit_object_is_prototype_of(wat),
             RuntimeFn::ObjectToString => self.emit_object_to_string(wat),
             RuntimeFn::ObjectToLocaleString => self.emit_object_to_locale_string(wat),
+            RuntimeFn::ReflectDefineProperty => self.emit_reflect_define_property(wat),
+            RuntimeFn::ReflectDeleteProperty => self.emit_reflect_delete_property(wat),
+            RuntimeFn::ReflectGet => self.emit_reflect_get(wat),
+            RuntimeFn::ReflectHas => self.emit_reflect_has(wat),
+            RuntimeFn::ReflectOwnKeys => self.emit_reflect_own_keys(wat),
+            RuntimeFn::ReflectPreventExtensions => self.emit_reflect_prevent_extensions(wat),
+            RuntimeFn::ReflectSet => self.emit_reflect_set(wat),
+            RuntimeFn::ReflectSetPrototypeOf => self.emit_reflect_set_prototype_of(wat),
             _ => unreachable!("non-object RuntimeFn routed to object dispatch"),
         }
     }

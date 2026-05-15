@@ -455,6 +455,25 @@ pub enum RuntimeFn {
     ValueOf,
     /// Instanceof operator
     InstanceOf,
+    /// M10: Reflect methods
+    /// Reflect.defineProperty(target, key, desc) — returns Boolean (true on success)
+    ReflectDefineProperty,
+    /// Reflect.deleteProperty(target, key) — returns Boolean (true on success)
+    ReflectDeleteProperty,
+    /// Reflect.get(target, key, receiver) — returns property value
+    ReflectGet,
+    /// Reflect.has(target, key) — returns Boolean (true if property exists)
+    ReflectHas,
+    /// Reflect.ownKeys(target) — returns array of own property keys
+    ReflectOwnKeys,
+    /// Reflect.preventExtensions(target) — returns Boolean (true on success)
+    ReflectPreventExtensions,
+    /// Reflect.set(target, key, value, receiver) — returns Boolean (true on success)
+    ReflectSet,
+    /// Reflect.setPrototypeOf(target, prototype) — returns Boolean (true on success)
+    ReflectSetPrototypeOf,
+    /// Reflect.apply(target, thisArg, args) — calls target with thisArg and args
+    ReflectApply,
     /// M10: Math functions
     MathFloor,
     MathCeil,
@@ -1408,6 +1427,15 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ObjectIsSealed" => Some(RuntimeFn::ObjectIsSealed),
         "ObjectIsFrozen" => Some(RuntimeFn::ObjectIsFrozen),
         "ObjectDefineProperty" => Some(RuntimeFn::ObjectDefineProperty),
+        "ReflectDefineProperty" => Some(RuntimeFn::ReflectDefineProperty),
+        "ReflectDeleteProperty" => Some(RuntimeFn::ReflectDeleteProperty),
+        "ReflectGet" => Some(RuntimeFn::ReflectGet),
+        "ReflectHas" => Some(RuntimeFn::ReflectHas),
+        "ReflectOwnKeys" => Some(RuntimeFn::ReflectOwnKeys),
+        "ReflectPreventExtensions" => Some(RuntimeFn::ReflectPreventExtensions),
+        "ReflectSet" => Some(RuntimeFn::ReflectSet),
+        "ReflectSetPrototypeOf" => Some(RuntimeFn::ReflectSetPrototypeOf),
+        "ReflectApply" => Some(RuntimeFn::ReflectApply),
         "ObjectAssign" => Some(RuntimeFn::ObjectAssign),
         "ObjectCreate" => Some(RuntimeFn::ObjectCreate),
         "ObjectPrototype" => Some(RuntimeFn::ObjectPrototype),
@@ -2029,7 +2057,16 @@ impl RuntimeFn {
             | Self::PropertyIsEnumerable
             | Self::IsPrototypeOf
             | Self::ObjectToString
-            | Self::ObjectToLocaleString => RuntimeDomain::Object,
+            | Self::ObjectToLocaleString
+            | Self::ReflectDefineProperty
+            | Self::ReflectDeleteProperty
+            | Self::ReflectGet
+            | Self::ReflectHas
+            | Self::ReflectOwnKeys
+            | Self::ReflectPreventExtensions
+            | Self::ReflectSet
+            | Self::ReflectSetPrototypeOf
+            | Self::ReflectApply => RuntimeDomain::Object,
             Self::Add
             | Self::AddFast
             | Self::Sub
@@ -2687,6 +2724,16 @@ impl RuntimeFn {
             Self::IsPrototypeOf,
             Self::ObjectToString,
             Self::ObjectToLocaleString,
+            // Reflect methods
+            Self::ReflectDefineProperty,
+            Self::ReflectDeleteProperty,
+            Self::ReflectGet,
+            Self::ReflectHas,
+            Self::ReflectOwnKeys,
+            Self::ReflectPreventExtensions,
+            Self::ReflectSet,
+            Self::ReflectSetPrototypeOf,
+            Self::ReflectApply,
             Self::ValueOf,
             // Instanceof operator
             Self::InstanceOf,
@@ -3123,6 +3170,16 @@ impl RuntimeFn {
             Self::IsPrototypeOf,
             Self::ObjectToString,
             Self::ObjectToLocaleString,
+            // Reflect methods
+            Self::ReflectDefineProperty,
+            Self::ReflectDeleteProperty,
+            Self::ReflectGet,
+            Self::ReflectHas,
+            Self::ReflectOwnKeys,
+            Self::ReflectPreventExtensions,
+            Self::ReflectSet,
+            Self::ReflectSetPrototypeOf,
+            Self::ReflectApply,
             Self::ValueOf,
             // Instanceof operator
             Self::InstanceOf,

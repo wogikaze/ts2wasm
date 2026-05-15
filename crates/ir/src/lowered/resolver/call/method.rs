@@ -2336,6 +2336,9 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
+        if let ResolvedExpr::Ident(obj_name) = object {
+            eprintln!("DBG mcall_early_rtr: name={} method={}", obj_name, method);
+        }
         if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
             if intrinsic == RuntimeFn::JsonParse {
                 if args.is_empty() || args.len() > 2 {
@@ -2481,6 +2484,7 @@ impl super::super::Resolver {
                         || name == "Array"
                         || name == "Promise"
                         || name == "Atomics"
+                        || name == "Reflect"
             );
             if !is_static_call {
                 lowered_args.push(self.lower_expr(object)?);
@@ -2497,6 +2501,24 @@ impl super::super::Resolver {
                 lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
             }
             if intrinsic == RuntimeFn::ObjectGetOwnPropertyDescriptor {
+                while lowered_args.len() < 2 {
+                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                }
+            }
+            // Reflect.get(target, key, receiver) — pad receiver to undefined
+            if intrinsic == RuntimeFn::ReflectGet && lowered_args.len() < 3 {
+                while lowered_args.len() < 3 {
+                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                }
+            }
+            // Reflect.set(target, key, value, receiver) — pad receiver to undefined
+            if intrinsic == RuntimeFn::ReflectSet && lowered_args.len() < 4 {
+                while lowered_args.len() < 4 {
+                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                }
+            }
+            // Reflect.deleteProperty(target, key) — ensure 2 args
+            if intrinsic == RuntimeFn::ReflectDeleteProperty && lowered_args.len() < 2 {
                 while lowered_args.len() < 2 {
                     lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
                 }

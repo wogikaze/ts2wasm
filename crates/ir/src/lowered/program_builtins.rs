@@ -86,6 +86,24 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 _ => None,
             };
         }
+        if name == "Reflect" {
+            return match method {
+                "defineProperty" => Some(RuntimeFn::ReflectDefineProperty),
+                "deleteProperty" => Some(RuntimeFn::ReflectDeleteProperty),
+                "get" => Some(RuntimeFn::ReflectGet),
+                "getOwnPropertyDescriptor" => {
+                    Some(RuntimeFn::ObjectGetOwnPropertyDescriptor)
+                }
+                "getPrototypeOf" => Some(RuntimeFn::ObjectGetPrototypeOf),
+                "has" => Some(RuntimeFn::ReflectHas),
+                "isExtensible" => Some(RuntimeFn::ObjectIsExtensible),
+                "ownKeys" => Some(RuntimeFn::ReflectOwnKeys),
+                "preventExtensions" => Some(RuntimeFn::ReflectPreventExtensions),
+                "set" => Some(RuntimeFn::ReflectSet),
+                "setPrototypeOf" => Some(RuntimeFn::ReflectSetPrototypeOf),
+                _ => None,
+            };
+        }
         if name == "Object" {
             return match method {
                 "keys" => Some(RuntimeFn::ObjectKeys),
