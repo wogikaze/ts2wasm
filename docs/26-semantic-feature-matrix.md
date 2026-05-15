@@ -324,6 +324,25 @@ Last updated: 2026-05-13
 | `linker:number-add` | linker with arithmetic | 実装済み | linker |
 | `linker:object-literal` | linker with objects | 実装済み | linker |
 
+### ランタイムサブセット (RuntimeSubset)
+
+Features that are outside the current runtime/link-plan subset. Syntax and lowering
+succeed, but runtime support is absent. Classified under the `UnsupportedRuntimeSubset`
+diagnostic code. These are "closed" labels representing known gaps where runtime
+implementation is needed.
+
+| Label | 説明 | オーナー | 診断コード |
+|---|---|---|---|
+| `runtime-subset:date` | Date operations beyond current deterministic subset | runtime | `UnsupportedRuntimeSubset` |
+| `runtime-subset:regexp-literal` | RegExp literal compilation/evaluation | runtime | `UnsupportedRuntimeSubset` |
+| `runtime-subset:async` | Async/await execution environment (event loop, microtask) | runtime | `UnsupportedRuntimeSubset` |
+| `runtime-subset:module-cache` | Module cache and hot reload | ir | `UnsupportedRuntimeSubset` |
+| `runtime-subset:node-host` | Node.js host API (fs, process, crypto) requiring host runtime | host | `UnsupportedRuntimeSubset` |
+| `runtime-subset:gc-pressure` | GC pressure / memory management controls | runtime | `UnsupportedRuntimeSubset` |
+| `runtime-subset:object-descriptor` | Object property descriptor operations not in current subset | runtime | `UnsupportedRuntimeSubset` |
+| `runtime-subset:array-builtin` | Array built-in methods not in current subset | runtime | `UnsupportedRuntimeSubset` |
+| `runtime-subset:string-builtin` | String built-in methods not in current subset | runtime | `UnsupportedRuntimeSubset` |
+
 ### テスト基盤 (TestInfrastructure)
 
 | Label | 説明 | 実装状況 | 主な fixture 群 |
