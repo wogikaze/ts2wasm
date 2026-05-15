@@ -120,6 +120,7 @@ pub enum RuntimeFn {
     MapHas,
     MapDelete,
     MapValuesArray,
+    MapKeysArray,
     SetNew,
     SetAdd,
     SetHas,
@@ -152,6 +153,7 @@ pub enum RuntimeFn {
     AtomicsNotify,
     SetFromArray,
     SetValuesArray,
+    SetEntriesArray,
     SetPrototypeAddGet,
     SetPrototypeAddSet,
     /// Set.prototype.isDisjointFrom(other) — returns true if sets have no common elements.
@@ -1504,6 +1506,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MapHas" => Some(RuntimeFn::MapHas),
         "MapDelete" => Some(RuntimeFn::MapDelete),
         "MapValuesArray" => Some(RuntimeFn::MapValuesArray),
+        "MapKeysArray" => Some(RuntimeFn::MapKeysArray),
         "SetNew" => Some(RuntimeFn::SetNew),
         "SetAdd" => Some(RuntimeFn::SetAdd),
         "SetHas" => Some(RuntimeFn::SetHas),
@@ -1558,6 +1561,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DataViewSetBigUint64" => Some(RuntimeFn::DataViewSetBigUint64),
         "SetFromArray" => Some(RuntimeFn::SetFromArray),
         "SetValuesArray" => Some(RuntimeFn::SetValuesArray),
+        "SetEntriesArray" => Some(RuntimeFn::SetEntriesArray),
         "SetPrototypeAddGet" => Some(RuntimeFn::SetPrototypeAddGet),
         "SetPrototypeAddSet" => Some(RuntimeFn::SetPrototypeAddSet),
         "SetIsDisjointFrom" => Some(RuntimeFn::SetIsDisjointFrom),
@@ -1914,6 +1918,7 @@ impl RuntimeFn {
             | Self::MapHas
             | Self::MapDelete
             | Self::MapValuesArray
+            | Self::MapKeysArray
             | Self::SetNew
             | Self::SetAdd
             | Self::SetHas
@@ -1928,6 +1933,7 @@ impl RuntimeFn {
             | Self::MapEntryPairsArray
             | Self::SetFromArray
             | Self::SetValuesArray
+            | Self::SetEntriesArray
             | Self::SetPrototypeAddGet
             | Self::SetPrototypeAddSet
             | Self::SetIsDisjointFrom
@@ -2459,6 +2465,7 @@ impl RuntimeFn {
             Self::MapHas,
             Self::MapDelete,
             Self::MapValuesArray,
+            Self::MapKeysArray,
             Self::SetNew,
             Self::SetAdd,
             Self::SetHas,
@@ -2488,6 +2495,7 @@ impl RuntimeFn {
             Self::AtomicsNotify,
             Self::SetFromArray,
             Self::SetValuesArray,
+            Self::SetEntriesArray,
             Self::SetPrototypeAddGet,
             Self::SetPrototypeAddSet,
             Self::SetIsDisjointFrom,
@@ -2894,6 +2902,7 @@ impl RuntimeFn {
             Self::MapHas,
             Self::MapDelete,
             Self::MapValuesArray,
+            Self::MapKeysArray,
             Self::SetNew,
             Self::SetAdd,
             Self::SetHas,
@@ -2923,6 +2932,7 @@ impl RuntimeFn {
             Self::AtomicsNotify,
             Self::SetFromArray,
             Self::SetValuesArray,
+            Self::SetEntriesArray,
             Self::SetPrototypeAddGet,
             Self::SetPrototypeAddSet,
             Self::SetIsDisjointFrom,

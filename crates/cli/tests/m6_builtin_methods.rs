@@ -2332,6 +2332,66 @@ fn build_smoke_weakmap_complete() {
     );
 }
 
+#[test]
+fn build_smoke_map_entries() {
+    let result = run_fixture("builtins-and-io/map-entries.ts");
+    assert!(
+        result.is_ok(),
+        "Map.prototype.entries should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_map_keys() {
+    let result = run_fixture("builtins-and-io/map-keys.ts");
+    assert!(
+        result.is_ok(),
+        "Map.prototype.keys should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_map_values() {
+    let result = run_fixture("builtins-and-io/map-values.ts");
+    assert!(
+        result.is_ok(),
+        "Map.prototype.values should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_set_entries() {
+    let result = run_fixture("builtins-and-io/set-entries.ts");
+    assert!(
+        result.is_ok(),
+        "Set.prototype.entries should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_set_keys() {
+    let result = run_fixture("builtins-and-io/set-keys.ts");
+    assert!(
+        result.is_ok(),
+        "Set.prototype.keys should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_set_values() {
+    let result = run_fixture("builtins-and-io/set-values.ts");
+    assert!(
+        result.is_ok(),
+        "Set.prototype.values should build: {:?}",
+        result.err()
+    );
+}
+
 // Global this / this binding — top-level this resolves to undefined in WASM
 #[test]
 fn build_smoke_this_binding() {
