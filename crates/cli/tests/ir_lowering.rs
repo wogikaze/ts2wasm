@@ -1154,6 +1154,58 @@ fn lowering_routes_new_date_epoch_to_runtime_call() {
 }
 
 #[test]
+fn lowering_routes_new_date_decimal_epoch_to_runtime_call() {
+    let program = parse_and_resolve("let epoch = new Date(1726773817847);");
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[0] {
+        ts2wasm_ir::lowered::LoweredStmt::Let(
+            _,
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                intrinsic, args, ..
+            },
+            _,
+        ) => {
+            assert_eq!(*intrinsic, RuntimeFn::DateNew);
+            assert!(matches!(
+                args.as_slice(),
+                [ts2wasm_ir::lowered::LoweredExpr::DecimalNumber(value, _)]
+                    if value == "1726773817847"
+            ));
+        }
+        other => panic!("unexpected lowered Date decimal constructor statement: {other:?}"),
+    }
+}
+
+#[test]
+fn lowering_routes_new_date_decimal_epoch_local_to_runtime_call() {
+    let program = parse_and_resolve(
+        "let sampleEpochMs = 1726773817847; let epoch = new Date(sampleEpochMs);",
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[1] {
+        ts2wasm_ir::lowered::LoweredStmt::Let(
+            _,
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                intrinsic, args, ..
+            },
+            _,
+        ) => {
+            assert_eq!(*intrinsic, RuntimeFn::DateNew);
+            assert!(matches!(
+                args.as_slice(),
+                [ts2wasm_ir::lowered::LoweredExpr::Local(
+                    ts2wasm_ir::lowered::LocalId(0),
+                    _
+                )]
+            ));
+        }
+        other => panic!("unexpected lowered Date decimal local constructor statement: {other:?}"),
+    }
+}
+
+#[test]
 fn lowering_routes_date_get_time_to_runtime_call() {
     let program = parse_and_resolve("let epoch = new Date(0); let ms = epoch.getTime();");
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();

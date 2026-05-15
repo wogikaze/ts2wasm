@@ -406,9 +406,12 @@ pub(crate) fn is_identity_array_method(method: &str) -> bool {
 
 pub(crate) fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {
     match arg {
-        ResolvedExpr::Number(_) => true,
+        ResolvedExpr::Number(_) | ResolvedExpr::DecimalNumber(_) => true,
         ResolvedExpr::Unary { op, expr } if *op == UnaryOp::Negate => {
-            matches!(expr.as_ref(), ResolvedExpr::Number(_))
+            matches!(
+                expr.as_ref(),
+                ResolvedExpr::Number(_) | ResolvedExpr::DecimalNumber(_)
+            )
         }
         ResolvedExpr::MethodCall {
             object,

@@ -67,12 +67,13 @@ impl<'a> Lexer<'a> {
         let value = match self.number_value(&digits, radix, start) {
             Ok(v) => v,
             Err(_) => {
-                if radix == 10
-                    && self.source[start..self.cursor].contains(['e', 'E'])
-                    && let Some(value) = canonical_positive_exponent_literal(
-                        &self.source[start..self.cursor],
-                    )
-                {
+                if radix == 10 {
+                    let value = if self.source[start..self.cursor].contains(['e', 'E']) {
+                        canonical_positive_exponent_literal(&self.source[start..self.cursor])
+                            .unwrap_or_else(|| digits.replace('_', ""))
+                    } else {
+                        digits.replace('_', "")
+                    };
                     return Ok(SpannedToken {
                         kind: Token::DecimalNumber(value),
                         span: Span {

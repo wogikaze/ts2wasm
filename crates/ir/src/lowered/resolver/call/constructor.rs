@@ -104,7 +104,9 @@ impl super::super::Resolver {
                     span: Span::generated("runtime_call"),
                 });
             }
-            if !is_date_constructor_epoch_arg(epoch_ms) {
+            if !is_date_constructor_epoch_arg(epoch_ms)
+                && !self.is_static_number_literal_epoch_arg(epoch_ms)
+            {
                 let msg = if matches!(epoch_ms, ResolvedExpr::String(_)) {
                     "issue-5243: string-based Date parsing like new Date(\"2024-01-01\") is not supported in this slice"
                 } else {
@@ -435,6 +437,18 @@ impl super::super::Resolver {
             )),
             span: Span::generated("regexp_constructor"),
         })
+    }
+
+    fn is_static_number_literal_epoch_arg(&self, expr: &ResolvedExpr) -> bool {
+        match expr {
+            ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local_id| {
+                self.ctx.facts.number_literal_locals.contains_key(&local_id)
+            }),
+            ResolvedExpr::Unary { op, expr } if *op == ts2wasm_syntax::UnaryOp::Negate => {
+                self.is_static_number_literal_epoch_arg(expr)
+            }
+            _ => false,
+        }
     }
 
     /// Helper for lower_new_expr: construct the New expression with

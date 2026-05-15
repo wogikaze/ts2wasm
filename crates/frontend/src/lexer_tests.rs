@@ -264,6 +264,22 @@ mod tests {
     }
 
     #[test]
+    fn recognizes_oversized_decimal_integer_as_decimal_token() {
+        let tokens = Lexer::new("let epoch = 1726773817847; let mask = 2_147_483_648;")
+            .tokenize()
+            .unwrap();
+        let decimals: Vec<&str> = tokens
+            .iter()
+            .filter_map(|token| match &token.kind {
+                Token::DecimalNumber(value) => Some(value.as_str()),
+                _ => None,
+            })
+            .collect();
+
+        assert_eq!(decimals, ["1726773817847", "2147483648"]);
+    }
+
+    #[test]
     fn hex_literal_accepts_unsigned_32_bit_masks() {
         let tokens = Lexer::new("let mask = 0xefcdab89; let all = 0xffffffff;")
             .tokenize()
@@ -294,23 +310,17 @@ mod tests {
     }
 
     #[test]
-    fn hex_literal_preserves_non_hex_range_diagnostics() {
-        for source in [
-            "let mask = 2147483648;",
-            "let mask = 0b10000000000000000000000000000000;",
-        ] {
-            let err = Lexer::new(source).tokenize().unwrap_err();
+    fn non_decimal_literal_preserves_range_diagnostics() {
+        let err = Lexer::new("let mask = 0b10000000000000000000000000000000;")
+            .tokenize()
+            .unwrap_err();
 
-            assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-            assert!(
-                err.message.contains("number too large"),
-                "unexpected diagnostic for {source}: {err:?}"
-            );
-            assert!(
-                err.span.is_some(),
-                "diagnostic should preserve source span for {source}"
-            );
-        }
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(
+            err.message.contains("number too large"),
+            "unexpected diagnostic: {err:?}"
+        );
+        assert!(err.span.is_some(), "diagnostic should preserve source span");
     }
 
     #[test]
