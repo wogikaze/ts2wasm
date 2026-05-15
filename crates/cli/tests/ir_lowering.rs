@@ -435,6 +435,28 @@ fn lowering_allows_unresolvable_reference_binding_default() {
 }
 
 #[test]
+fn lowering_allows_call_computed_object_binding_property() {
+    let program = parse_and_resolve(
+        r#"
+        function thrower() {
+          throw new Error("boom");
+        }
+
+        var obj = {
+          *method({ [thrower()]: x } = {}) {
+            console.log(x);
+          }
+        };
+
+        obj.method().next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("computed binding property calls should lower as property-name evaluation");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"

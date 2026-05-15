@@ -92,20 +92,9 @@ impl super::super::Resolver {
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
         let property_value = if binding.computed {
             let key_raw = binding.key.trim_start_matches('[').trim_end_matches(']');
-            let key_name = if let Some(start) = key_raw.find("name: \"") {
-                let after_start = &key_raw[start + 7..];
-                if let Some(end) = after_start.find('\"') {
-                    &after_start[..end]
-                } else {
-                    key_raw
-                }
-            } else {
-                key_raw
-            };
-            let key_local = self.resolve_local(key_name)?;
             LoweredExpr::PropertyGetDynamic {
                 obj: Box::new(value.clone()),
-                key: Box::new(LoweredExpr::Local(key_local, Span::generated("local"))),
+                key: Box::new(self.lower_computed_object_binding_key_expr(key_raw)?),
                 span: Span::generated("prop_get_dynamic"),
             }
         } else {
@@ -140,6 +129,21 @@ impl super::super::Resolver {
             property_value,
             binding.default.as_ref(),
         )
+    }
+
+    fn lower_computed_object_binding_key_expr(
+        &mut self,
+        key_raw: &str,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if let Some(callee) = computed_key_call_name(key_raw) {
+            return self.lower_expr(&ResolvedExpr::Call {
+                callee: Box::new(ResolvedExpr::Ident(callee.to_owned())),
+                args: Vec::new(),
+                span: Span::generated("call"),
+            });
+        }
+        let key_name = computed_key_identifier_name(key_raw).unwrap_or(key_raw);
+        self.lower_expr(&ResolvedExpr::Ident(key_name.to_owned()))
     }
 
     fn lower_nested_binding_pattern_declaration(
@@ -356,4 +360,32 @@ impl super::super::Resolver {
             Err(err) => Err(err),
         }
     }
+}
+
+fn computed_key_call_name(key_raw: &str) -> Option<&str> {
+    if let Some(callee) = key_raw.strip_suffix("()")
+        && is_binding_key_identifier(callee)
+    {
+        return Some(callee);
+    }
+    if key_raw.contains("Call") {
+        return computed_key_identifier_name(key_raw);
+    }
+    None
+}
+
+fn computed_key_identifier_name(key_raw: &str) -> Option<&str> {
+    let start = key_raw.find("name: \"")?;
+    let after_start = &key_raw[start + 7..];
+    let end = after_start.find('"')?;
+    Some(&after_start[..end])
+}
+
+fn is_binding_key_identifier(text: &str) -> bool {
+    let mut chars = text.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    (first == '_' || first == '$' || first.is_ascii_alphabetic())
+        && chars.all(|ch| ch == '_' || ch == '$' || ch.is_ascii_alphanumeric())
 }
