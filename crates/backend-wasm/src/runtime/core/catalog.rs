@@ -24,6 +24,13 @@ pub const CORE_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::Log,
     RuntimeFn::LogWarn,
     RuntimeFn::LogError,
+    // Console functions
+    RuntimeFn::ConsoleGroupStart,
+    RuntimeFn::ConsoleGroupEndFn,
+    RuntimeFn::ConsoleTimeStart,
+    RuntimeFn::ConsoleTimeEndFn,
+    RuntimeFn::ConsoleCountImpl,
+    RuntimeFn::ConsoleCountResetImpl,
     RuntimeFn::PrivateBrandTypeError,
     // Comparison
     RuntimeFn::MemEqual,

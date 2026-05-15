@@ -138,6 +138,18 @@ impl RuntimeLinkPlan {
                             "new Date()".to_owned(),
                         ));
                     }
+                    (Capability::WasiClockRealtime, RuntimeFn::ConsoleTimeStart) => {
+                        capability_reasons_to_add.push((
+                            capability.manifest_name().to_owned(),
+                            "console.time".to_owned(),
+                        ));
+                    }
+                    (Capability::WasiClockRealtime, RuntimeFn::ConsoleTimeEndFn) => {
+                        capability_reasons_to_add.push((
+                            capability.manifest_name().to_owned(),
+                            "console.timeEnd".to_owned(),
+                        ));
+                    }
                     (Capability::WasiClockRealtime, _) => {}
                     _ => {
                         let reason = format!(

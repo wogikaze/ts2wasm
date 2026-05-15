@@ -634,4 +634,104 @@ impl WatEmitter<'_> {
             symbol_description_offset = Layout::SYMBOL_DESCRIPTION_OFFSET,
         ));
     }
+
+    // ---------------------------------------------------------------------------
+    // Console runtime functions
+    // ---------------------------------------------------------------------------
+
+    pub(crate) fn emit_console_group_start(&self, wat: &mut String) {
+        let newline = self.string_offset(RuntimeString::NEWLINE) + Layout::STRING_HEADER_SIZE;
+        wat.push_str(&format!(
+            r#"
+  (func $console_group_start (param $v i32) (result i32)
+    (local $len i32)
+    (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
+    (call $write (i32.const {scratch}) (local.get $len))
+    (call $write (i32.const {newline}) (i32.const {one}))
+    (global.set $console_indent_level (i32.add (global.get $console_indent_level) (i32.const {one})))
+    (i32.const {undefined}))
+  "#,
+            scratch = Layout::SCRATCH_OFFSET,
+            newline = newline,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(crate) fn emit_console_group_end(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $console_group_end (param $v i32) (result i32)
+    (global.set $console_indent_level
+      (select
+        (i32.sub (global.get $console_indent_level) (i32.const {one}))
+        (i32.const {zero})
+        (i32.gt_u (global.get $console_indent_level) (i32.const {zero}))))
+    (i32.const {undefined}))
+  "#,
+            one = RuntimeConst::ONE,
+            zero = RuntimeConst::ZERO,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(crate) fn emit_console_time_start(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $console_time_start (param $v i32) (result i32)
+    ;; Store current timestamp at fixed memory location for later retrieval
+    (drop (call $clock_time_get (i32.const {realtime_clock}) (i64.const 0) (i32.const {timer_offset})))
+    (i32.const {undefined}))
+  "#,
+            realtime_clock = 0,
+            timer_offset = Layout::SCRATCH_OFFSET + 1024,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(crate) fn emit_console_time_end(&self, wat: &mut String) {
+        let newline = self.string_offset(RuntimeString::NEWLINE) + Layout::STRING_HEADER_SIZE;
+        wat.push_str(&format!(
+            r#"
+  (func $console_time_end (param $v i32) (result i32)
+    (local $len i32)
+    (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
+    (call $write (i32.const {scratch}) (local.get $len))
+    (call $write (i32.const {newline}) (i32.const {one}))
+    (i32.const {undefined}))
+  "#,
+            scratch = Layout::SCRATCH_OFFSET,
+            newline = newline,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(crate) fn emit_console_count(&self, wat: &mut String) {
+        let newline = self.string_offset(RuntimeString::NEWLINE) + Layout::STRING_HEADER_SIZE;
+        wat.push_str(&format!(
+            r#"
+  (func $console_count (param $v i32) (result i32)
+    (local $len i32)
+    (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
+    (call $write (i32.const {scratch}) (local.get $len))
+    (call $write (i32.const {newline}) (i32.const {one}))
+    (i32.const {undefined}))
+  "#,
+            scratch = Layout::SCRATCH_OFFSET,
+            newline = newline,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(crate) fn emit_console_count_reset(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $console_count_reset (param $v i32) (result i32)
+    (i32.const {undefined}))
+  "#,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
 }
