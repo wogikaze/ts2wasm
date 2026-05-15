@@ -225,6 +225,36 @@ impl super::Resolver {
         }
     }
 
+    pub(super) fn lower_array_prototype_every_some_call(
+        &mut self,
+        args: &[ResolvedExpr],
+        object: &ResolvedExpr,
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let Some((receiver, _)) = args.split_first() else {
+            return Err(Diagnostic {
+                code: DiagCode::ArityMismatch,
+                message: "Array.prototype.every/some.call expects a receiver argument".to_owned(),
+                span: Some(span),
+                phase: None,
+            });
+        };
+        let is_every = matches!(
+            object,
+            ResolvedExpr::PropertyAccess { key, .. } if key == "every"
+        );
+        let intrinsic = if is_every {
+            RuntimeFn::ArrayEvery
+        } else {
+            RuntimeFn::ArraySome
+        };
+        Ok(LoweredExpr::RuntimeCall {
+            intrinsic,
+            args: vec![self.lower_expr(receiver)?],
+            span: Span::generated("runtime_call"),
+        })
+    }
+
     pub(super) fn lower_array_from_call(
         &mut self,
         args: &[ResolvedExpr],

@@ -1,5 +1,6 @@
 use super::super::{
-    bigint_runtime_fn_intrinsic, is_array_from_call_receiver, is_array_prototype_map_call_receiver,
+    bigint_runtime_fn_intrinsic, is_array_from_call_receiver,
+    is_array_prototype_every_some_call_receiver, is_array_prototype_map_call_receiver,
     is_array_prototype_push_expr, is_identity_arrow_callback, is_set_prototype_property_expr,
     is_static_date_constructor_expr, is_string_split_result_expr, is_typed_array_class,
     numeric_ascending_sort_arrow_callback, private_storage_observable_access_diagnostic,
@@ -789,6 +790,10 @@ impl super::super::Resolver {
         }
         if is_array_prototype_map_call_receiver(object, method) {
             return Some(self.lower_array_prototype_map_call(args, span)).transpose();
+        }
+        if is_array_prototype_every_some_call_receiver(object, method) {
+            return Some(self.lower_array_prototype_every_some_call(args, object, span))
+                .transpose();
         }
         if method == "call" && is_set_prototype_property_expr(object, "originalAdd") {
             return Some(self.lower_native_set_add_call(args, span)).transpose();
@@ -2344,7 +2349,7 @@ impl super::super::Resolver {
             }));
         }
         if let ResolvedExpr::Ident(obj_name) = object {
-            eprintln!("DBG mcall_early_rtr: name={} method={}", obj_name, method);
+            // eprintln!("DBG mcall_early_rtr: name={} method={}", obj_name, method);
         }
         if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
             if intrinsic == RuntimeFn::JsonParse {

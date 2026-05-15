@@ -1570,6 +1570,13 @@ pub(crate) fn is_array_prototype_map_call_receiver(object: &ResolvedExpr, method
     method == "call" && matches_array_prototype_map_property(object)
 }
 
+pub(crate) fn is_array_prototype_every_some_call_receiver(
+    object: &ResolvedExpr,
+    method: &str,
+) -> bool {
+    method == "call" && matches_array_prototype_every_some_property(object)
+}
+
 pub(crate) fn is_array_from_call_receiver(object: &ResolvedExpr, method: &str) -> bool {
     method == "from" && matches!(object, ResolvedExpr::Ident(name) if name == "Array")
 }
@@ -1579,6 +1586,13 @@ pub(crate) fn matches_array_prototype_map_property(expr: &ResolvedExpr) -> bool 
         return false;
     };
     key == "map" && matches_array_prototype_property(object)
+}
+
+pub(crate) fn matches_array_prototype_every_some_property(expr: &ResolvedExpr) -> bool {
+    let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
+        return false;
+    };
+    (key == "every" || key == "some") && matches_array_prototype_property(object)
 }
 
 pub(crate) fn matches_array_prototype_property(expr: &ResolvedExpr) -> bool {
