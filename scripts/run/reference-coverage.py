@@ -1254,6 +1254,7 @@ def _render_legacy_summary(summary, detail_jsonl_path=None):
     print(f"fail={legacy_fail}")
     print(f"unsupported={s.get('unsupported', 0)}")
     print(f"blocked={s.get('blocked', 0)}")
+    print(f"oracle_skipped={s.get('oracle_skipped', 0)}")
     print(f"verified_negative={neg_compile_pass}")
     print(f"build_only={s.get('build_only', 0)}")
     print(f"skip_with_reason={s.get('skip_with_reason', 0)}")
@@ -1325,7 +1326,7 @@ def main():
     jsonl_output = False
     output_jsonl_path = None
     jobs = None
-    semantic_mode = "strict"  # "strict" | "fast" | "none"
+    semantic_mode = "fast"  # "strict" | "fast" | "none"
     sample = None
     category_pattern = None
     server_mode = True
