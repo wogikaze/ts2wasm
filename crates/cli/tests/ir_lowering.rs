@@ -286,6 +286,24 @@ fn lowering_allows_object_generator_method_default_parameter() {
 }
 
 #[test]
+fn lowering_allows_object_pattern_inside_array_binding() {
+    let program = parse_and_resolve(
+        r#"
+        var obj = {
+          *method([{ x }]) {
+            console.log(x);
+          }
+        };
+
+        obj.method([{ x: 23 }]).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("array binding elements should allow nested object patterns");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"

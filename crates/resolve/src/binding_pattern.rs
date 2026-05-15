@@ -269,10 +269,9 @@ fn parse_array_binding_target(
         )));
     }
     if target.starts_with('{') {
-        return Err(issue_251(
-            "nested object binding patterns are not supported in this runtime slice",
-            span,
-        ));
+        return Ok(BindingTarget::Pattern(Box::new(
+            parse_object_binding_pattern(target, span)?,
+        )));
     }
     if !is_identifier(target) {
         return Err(issue_251(
