@@ -644,6 +644,32 @@ def feature_label(diag_code, stderr, test_file, phase=None):
             label += ":parser"
         elif diag_code == "UnsupportedSyntax":
             label = "feature-unsupported"
+    # Message-based refinement for UnsupportedRuntimeSubset: try to extract
+    # a specific runtime-subset sub-label from the diagnostic message.
+    if diag_code == "UnsupportedRuntimeSubset":
+        stderr_lower = stderr.lower() if stderr else ""
+        runtime_subset_labels = [
+            ("date", "runtime-subset:date"),
+            ("regexp", "runtime-subset:regexp-literal"),
+            ("regular expression", "runtime-subset:regexp-literal"),
+            ("async", "runtime-subset:async"),
+            ("await", "runtime-subset:async"),
+            ("module.cache", "runtime-subset:module-cache"),
+            ("module.resolve", "runtime-subset:module-cache"),
+            ("node.host", "runtime-subset:node-host"),
+            ("gc.pressure", "runtime-subset:gc-pressure"),
+            ("gc.", "runtime-subset:gc-pressure"),
+            ("object.descriptor", "runtime-subset:object-descriptor"),
+            ("define.property", "runtime-subset:object-descriptor"),
+            ("array.prototype", "runtime-subset:array-builtin"),
+            ("array.", "runtime-subset:array-builtin"),
+            ("string.prototype", "runtime-subset:string-builtin"),
+            ("string.", "runtime-subset:string-builtin"),
+        ]
+        for keyword, sub_label in runtime_subset_labels:
+            if keyword in stderr_lower:
+                label = sub_label
+                break
     return label
 
 
