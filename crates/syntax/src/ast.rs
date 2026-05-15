@@ -590,6 +590,10 @@ pub enum Expr {
     This {
         span: Span,
     },
+    Sequence {
+        exprs: Vec<Expr>,
+        span: Span,
+    },
 }
 
 impl Stmt {
@@ -693,7 +697,8 @@ impl Expr {
             | Self::ClassExpr { span, .. }
             | Self::NewTarget { span }
             | Self::ImportMeta { span }
-            | Self::This { span } => *span,
+            | Self::This { span }
+            | Self::Sequence { span, .. } => *span,
         }
     }
 }

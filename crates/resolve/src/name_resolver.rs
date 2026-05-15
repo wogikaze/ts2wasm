@@ -1391,6 +1391,10 @@ impl NameResolver {
                 expr: Box::new(self.resolve_expr(expr)?),
                 span: *span,
             }),
+            Expr::Sequence { exprs, span } => Ok(Expr::Sequence {
+                exprs: exprs.iter().map(|e| self.resolve_expr(e)).collect::<Result<_, _>>()?,
+                span: *span,
+            }),
         }
     }
 
@@ -2064,6 +2068,7 @@ fn expr_contains_bigint_literal(expr: &Expr) -> bool {
         | Expr::ImportMeta { .. }
         | Expr::Ident { .. } => false,
         Expr::NewTarget { .. } => false,
+        Expr::Sequence { exprs, .. } => exprs.iter().any(expr_contains_bigint_literal),
     }
 }
 

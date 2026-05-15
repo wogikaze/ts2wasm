@@ -409,6 +409,11 @@ pub(super) fn collect_assigned_names_in_expr(expr: &Expr, names: &mut HashSet<St
             collect_assigned_names_in_expr(index, names);
             collect_assigned_names_in_expr(value, names);
         }
+        Expr::Sequence { exprs, .. } => {
+            for e in exprs {
+                collect_assigned_names_in_expr(e, names);
+            }
+        }
         Expr::ArrowFn { .. }
         | Expr::FunctionExpr { .. }
         | Expr::Number { .. }
@@ -889,6 +894,7 @@ pub(super) fn expr_contains_bigint(expr: &Expr) -> bool {
                 || expr_contains_bigint(index)
                 || expr_contains_bigint(value)
         }
+        Expr::Sequence { exprs, .. } => exprs.iter().any(|e| expr_contains_bigint(e)),
         Expr::Number { .. }
         | Expr::DecimalNumber { .. }
         | Expr::String { .. }

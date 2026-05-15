@@ -801,6 +801,10 @@ impl BigIntStaticBuiltinFolder {
                 value: Box::new(self.fold_expr(value)),
                 span: *span,
             },
+            Expr::Sequence { exprs, span } => Expr::Sequence {
+                exprs: exprs.iter().map(|e| self.fold_expr(e)).collect(),
+                span: *span,
+            },
             Expr::Number { .. }
             | Expr::DecimalNumber { .. }
             | Expr::BigInt { .. }
@@ -2149,6 +2153,10 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 op: UnaryOp::TypeOf,
                 expr: Box::new(resolve_expr(expr)?),
             })
+        }
+        Expr::Sequence { exprs, .. } => {
+            let resolved: Vec<ResolvedExpr> = exprs.iter().map(resolve_expr).collect::<Result<_, _>>()?;
+            Ok(ResolvedExpr::Sequence(resolved))
         }
     }
 }

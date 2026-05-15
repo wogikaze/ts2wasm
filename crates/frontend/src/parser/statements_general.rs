@@ -830,7 +830,22 @@ impl Parser {
     }
 
     fn expression_statement(&mut self) -> Result<Stmt, Diagnostic> {
-        let expr = self.expression()?;
+        let mut expr = self.expression()?;
+        // Comma operator at statement level: a, b, c;
+        if self.consume(TokenKind::Comma) {
+            let mut exprs = vec![expr];
+            loop {
+                exprs.push(self.assignment()?);
+                if !self.consume(TokenKind::Comma) {
+                    break;
+                }
+            }
+            let span = Span {
+                start: exprs.first().unwrap().span().start,
+                end: exprs.last().unwrap().span().end,
+            };
+            expr = Expr::Sequence { exprs, span };
+        }
         if self.consume(TokenKind::Equal) {
             match &expr {
                 Expr::OptionalMember { .. }

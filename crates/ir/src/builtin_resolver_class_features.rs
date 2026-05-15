@@ -611,6 +611,12 @@ pub(super) fn validate_static_block_expr(expr: &Expr) -> Result<(), Diagnostic> 
         Expr::ArrowFn { body, .. } => validate_static_block_expr(body),
         Expr::FunctionExpr { body, .. } => validate_static_block_stmts(body),
         Expr::ClassExpr { body, .. } => validate_static_block_stmts(body),
+        Expr::Sequence { exprs, .. } => {
+            for e in exprs {
+                validate_static_block_expr(e)?;
+            }
+            Ok(())
+        }
         Expr::Number { .. }
         | Expr::DecimalNumber { .. }
         | Expr::BigInt { .. }

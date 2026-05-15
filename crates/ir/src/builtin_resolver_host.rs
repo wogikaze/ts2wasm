@@ -760,6 +760,7 @@ pub(super) fn span_of_expr(expr: &Expr) -> Option<Span> {
         | Expr::ClassExpr { span, .. }
         | Expr::Spread { span, .. }
         | Expr::PropertyAssign { span, .. }
-        | Expr::IndexAssign { span, .. } => Some(*span),
+        | Expr::IndexAssign { span, .. }
+        | Expr::Sequence { span, .. } => Some(*span),
     }
 }

@@ -645,6 +645,9 @@ pub(super) fn first_outer_local_reference_in_expr(
                     )
                 })
         }
+        Expr::Sequence { exprs, .. } => exprs.iter().find_map(|e| {
+            first_outer_local_reference_in_expr(e, outer_bindings, method_locals, class_names)
+        }),
         Expr::ArrowFn { .. } | Expr::FunctionExpr { .. } | Expr::ClassExpr { .. } => None,
         Expr::Number { .. }
         | Expr::DecimalNumber { .. }

@@ -287,6 +287,7 @@ pub enum ResolvedExpr {
         name: String,
         body: Vec<ResolvedStmt>,
     },
+    Sequence(Vec<ResolvedExpr>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

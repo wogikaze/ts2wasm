@@ -2670,6 +2670,7 @@ fn parser_expr_is_bigint_literal_operand(expr: &Expr) -> bool {
         | Expr::TypeOf { .. }
         | Expr::Await { .. }
         | Expr::Yield { .. }
-        | Expr::Spread { .. } => false,
+        | Expr::Spread { .. }
+        | Expr::Sequence { .. } => false,
     }
 }

@@ -339,6 +339,11 @@ pub(crate) fn collect_direct_eval_function_assignment_expr(
             collect_direct_eval_function_assignment_expr(function_name, key, env);
             collect_direct_eval_function_assignment_expr(function_name, expr, env);
         }
+        ResolvedExpr::Sequence(exprs) => {
+            for e in exprs {
+                collect_direct_eval_function_assignment_expr(function_name, e, env);
+            }
+        }
         ResolvedExpr::ArrowFn { .. }
         | ResolvedExpr::FunctionExpr { .. }
         | ResolvedExpr::ClassExpr { .. }

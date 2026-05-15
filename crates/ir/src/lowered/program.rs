@@ -1560,6 +1560,11 @@ pub(crate) fn collect_nested_function_captures_in_expr(
             collect_nested_function_captures_in_expr(key, outer_excluded, captures)?;
             collect_nested_function_captures_in_expr(value, outer_excluded, captures)?;
         }
+        ResolvedExpr::Sequence(exprs) => {
+            for e in exprs {
+                collect_nested_function_captures_in_expr(e, outer_excluded, captures)?;
+            }
+        }
         ResolvedExpr::ArrowFn { .. }
         | ResolvedExpr::ClassExpr { .. }
         | ResolvedExpr::This { .. }
@@ -1777,6 +1782,11 @@ fn collect_direct_function_call_targets_in_expr(expr: &ResolvedExpr, targets: &m
         ResolvedExpr::PropertyAssign { object, value, .. } => {
             collect_direct_function_call_targets_in_expr(object, targets);
             collect_direct_function_call_targets_in_expr(value, targets);
+        }
+        ResolvedExpr::Sequence(exprs) => {
+            for e in exprs {
+                collect_direct_function_call_targets_in_expr(e, targets);
+            }
         }
         ResolvedExpr::ArrowFn { .. }
         | ResolvedExpr::FunctionExpr { .. }
@@ -2199,6 +2209,11 @@ fn collect_expr_nested_function_mutable_captures(
             collect_expr_nested_function_mutable_captures(body, mutable_captures)?;
             collect_block_nested_function_mutable_captures_into(body_stmts, mutable_captures)?;
         }
+        ResolvedExpr::Sequence(exprs) => {
+            for e in exprs {
+                collect_expr_nested_function_mutable_captures(e, mutable_captures)?;
+            }
+        }
         ResolvedExpr::ClassExpr { .. }
         | ResolvedExpr::This { .. }
         | ResolvedExpr::NewTarget { .. }
@@ -2423,6 +2438,11 @@ fn collect_expr_object_method_mutable_captures(
             collect_expr_object_method_mutable_captures(object, mutable_captures)?;
             collect_expr_object_method_mutable_captures(key, mutable_captures)?;
             collect_expr_object_method_mutable_captures(value, mutable_captures)?;
+        }
+        ResolvedExpr::Sequence(exprs) => {
+            for e in exprs {
+                collect_expr_object_method_mutable_captures(e, mutable_captures)?;
+            }
         }
         ResolvedExpr::ArrowFn { .. }
         | ResolvedExpr::FunctionExpr { .. }
@@ -3432,6 +3452,11 @@ fn collect_call_targets_in_expr(expr: &ResolvedExpr, targets: &mut HashSet<Strin
         ResolvedExpr::Spread(expr) => {
             collect_call_targets_in_expr(expr, targets);
         }
+        ResolvedExpr::Sequence(exprs) => {
+            for e in exprs {
+                collect_call_targets_in_expr(e, targets);
+            }
+        }
         ResolvedExpr::This { .. }
         | ResolvedExpr::NewTarget { .. }
         | ResolvedExpr::ImportMeta { .. }
@@ -3710,6 +3735,7 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::ArrowFn { body, .. } => expr_contains_this(body),
         ResolvedExpr::FunctionExpr { .. } => false,
         ResolvedExpr::ClassExpr { .. } => false,
+        ResolvedExpr::Sequence(exprs) => exprs.iter().any(|e| expr_contains_this(e)),
         ResolvedExpr::Number(_)
         | ResolvedExpr::DecimalNumber(_)
         | ResolvedExpr::BigIntLiteral { .. }
@@ -3945,6 +3971,7 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         }
         ResolvedExpr::ArrowFn { body, .. } => expr_contains_arguments(body),
         ResolvedExpr::FunctionExpr { .. } | ResolvedExpr::ClassExpr { .. } => false,
+        ResolvedExpr::Sequence(exprs) => exprs.iter().any(|e| expr_contains_arguments(e)),
         ResolvedExpr::This { .. }
         | ResolvedExpr::NewTarget { .. }
         | ResolvedExpr::ImportMeta { .. }

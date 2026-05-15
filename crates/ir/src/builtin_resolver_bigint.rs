@@ -1468,6 +1468,12 @@ impl BigIntRuntimeGuard {
                 BigIntRuntimeGuard::default().visit_stmts(body)?;
                 Ok(None)
             }
+            Expr::Sequence { exprs, .. } => {
+                for e in exprs {
+                    self.expr_bigint_info(e)?;
+                }
+                Ok(None)
+            }
             Expr::Number { .. }
             | Expr::DecimalNumber { .. }
             | Expr::String { .. }

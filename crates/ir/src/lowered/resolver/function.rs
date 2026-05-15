@@ -842,6 +842,7 @@ pub(super) fn expr_contains_super_ref(expr: &ResolvedExpr) -> bool {
                 || expr_contains_super_ref(value)
         }
         ResolvedExpr::ArrowFn { body, .. } => expr_contains_super_ref(body),
+        ResolvedExpr::Sequence(exprs) => exprs.iter().any(|e| expr_contains_super_ref(e)),
         ResolvedExpr::FunctionExpr { .. }
         | ResolvedExpr::ClassExpr { .. }
         | ResolvedExpr::ModuleLoad { .. }

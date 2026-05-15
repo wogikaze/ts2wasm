@@ -180,6 +180,7 @@ impl super::Resolver {
                 is_generator,
             } => self.lower_named_function_expr(name, params, body, *is_generator),
             ResolvedExpr::ClassExpr { .. } => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
+            ResolvedExpr::Sequence(exprs) => self.lower_sequence_expr(exprs),
         }
     }
 
@@ -194,6 +195,25 @@ impl super::Resolver {
     pub(super) fn lower_module_meta_url(&self, span: Span) -> LoweredExpr {
         // ModuleMetaUrl: import.meta.url resolves to the active module URL/specifier.
         LoweredExpr::String(self.ctx.current_module_url.clone(), span)
+    }
+
+    fn lower_sequence_expr(&mut self, exprs: &[ResolvedExpr]) -> Result<LoweredExpr, Diagnostic> {
+        let mut stmts = Vec::new();
+        let len = exprs.len();
+        for (i, expr) in exprs.iter().enumerate() {
+            let lowered = self.lower_expr(expr)?;
+            if i < len - 1 {
+                stmts.push(LoweredStmt::Expr(lowered, Span::generated("seq")));
+            } else {
+                return Ok(LoweredExpr::Block {
+                    stmts,
+                    result: Box::new(lowered),
+                    span: Span::generated("seq"),
+                });
+            }
+        }
+        // Single-element sequence (shouldn't happen but handle gracefully)
+        unreachable!("sequence with zero elements")
     }
 }
 
