@@ -385,6 +385,28 @@ def rewrite_property_helper_for_compiler(source):
     return source
 
 
+def rewrite_deep_equal_format_for_compiler(source):
+    """Replace deepEqual's deferred formatter with a compiler-friendly formatter."""
+    replacement = (
+        "assert.deepEqual.format = function(value, seen) {\n"
+        "  var basic = assert._formatIdentityFreeValue(value);\n"
+        "  if (basic) return basic;\n"
+        "  return String(value);\n"
+        "};\n\n"
+        "assert.deepEqual._compare"
+    )
+    rewritten, count = re.subn(
+        r"\(function\(\) \{\nlet getOwnPropertyDescriptor = Object\.getOwnPropertyDescriptor;.*?\n\}\)\(\);\n\nassert\.deepEqual\._compare",
+        replacement,
+        source,
+        count=1,
+        flags=re.DOTALL,
+    )
+    if count != 1:
+        raise ValueError("failed to rewrite test262 deepEqual formatter")
+    return rewritten
+
+
 @functools.lru_cache(maxsize=None)
 def load_harness_file(name):
     """Load a test262 harness file.
@@ -415,6 +437,8 @@ def load_harness_file(name):
     source = re.sub(r'/\*---.*?---\*/', '', source, count=1, flags=re.DOTALL)
     if name == "propertyHelper.js":
         source = rewrite_property_helper_for_compiler(source)
+    if name == "deepEqual.js":
+        source = rewrite_deep_equal_format_for_compiler(source)
     return source
 
 
