@@ -1274,6 +1274,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::MapKeysArray => RuntimeSpec {
+                symbol: "$map_keys_array",
+                deps: MAP_VALUES_ARRAY_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::SetNew => RuntimeSpec {
                 symbol: "$set_new",
                 deps: SET_NEW_DEPS,
