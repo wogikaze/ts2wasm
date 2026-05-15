@@ -1391,6 +1391,26 @@ fn lowering_accepts_array_push_spread_from_shift_result() {
 }
 
 #[test]
+fn lowering_validates_direct_call_to_captured_nested_function() {
+    let program = parse_and_resolve(
+        r#"
+        function outer(locale) {
+          let suffix = "";
+          function inner(locale) {
+            return locale + suffix;
+          }
+          return inner(locale);
+        }
+        "#,
+    );
+
+    let lowered = ts2wasm_ir::lowered::lower_program(&program)
+        .expect("captured nested function direct call should lower");
+    ts2wasm_ir::lowered::validate_lowered(&lowered)
+        .expect("direct call should pass explicit args and captures");
+}
+
+#[test]
 fn lowering_accepts_captured_static_regexp_constructor_test() {
     assert!(
         ts2wasm_ir::lowered::lower_program(&parse_and_resolve(

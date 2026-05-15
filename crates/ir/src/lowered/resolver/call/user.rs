@@ -204,31 +204,34 @@ impl super::super::Resolver {
         if let Ok(local_id) = self.resolve_local(func_name)
             && let Some(closure) = self.ctx.facts.arrow_locals.get(&local_id).cloned()
         {
-            let signature = self
+            let lowered_args = if let Some(signature) = self
                 .ctx
                 .symbols
                 .function_signatures
                 .get(&closure.func_id)
                 .copied()
-                .unwrap_or_default();
-            let receiver = if signature.is_strict {
-                LoweredExpr::Undefined(Span::generated("undef"))
+            {
+                let receiver = if signature.is_strict {
+                    LoweredExpr::Undefined(Span::generated("undef"))
+                } else {
+                    LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::GlobalThis,
+                        args: Vec::new(),
+                        span: Span::generated("globalThis"),
+                    }
+                };
+                self.lower_function_call_args(closure.func_id, receiver, args)?
             } else {
-                LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeFn::GlobalThis,
-                    args: Vec::new(),
-                    span: Span::generated("globalThis"),
-                }
+                let mut lowered_args = self.lower_call_args(args)?;
+                lowered_args.extend(
+                    closure
+                        .captures
+                        .iter()
+                        .copied()
+                        .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+                );
+                lowered_args
             };
-            let mut lowered_args =
-                self.lower_function_call_args(closure.func_id, receiver, args)?;
-            lowered_args.extend(
-                closure
-                    .captures
-                    .iter()
-                    .copied()
-                    .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
-            );
             return Ok(LoweredExpr::Call {
                 kind: FunctionCallKind::User(closure.func_id),
                 args: lowered_args,
