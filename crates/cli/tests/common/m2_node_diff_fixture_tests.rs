@@ -2959,6 +2959,11 @@ fn function_arguments_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn nested_function_arguments_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/nested-function-arguments.ts");
+}
+
+#[test]
 fn function_this_arguments_unsupported_forms_report_issue_062d() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/function-this-direct-call-unsupported.ts",
