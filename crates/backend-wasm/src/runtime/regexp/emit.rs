@@ -127,6 +127,11 @@ impl WatEmitter<'_> {
         (br $find_delimiter)))
     (if (i32.eq (local.get $delimiter) (i32.const {one}))
       (then (return (i32.const {true_tag}))))
+    (local.set $flags (call $regexp_parse_flags (local.get $delimiter) (local.get $p_len) (local.get $p_header)))
+    (local.set $flag_s (i32.and (local.get $flags) (i32.const 1)))
+    (local.set $flag_m (i32.and (local.get $flags) (i32.const 2)))
+    (local.set $flag_y (i32.and (local.get $flags) (i32.const 4)))
+    (local.set $flag_u (i32.and (local.get $flags) (i32.const 8)))
     (block $not_found
       (loop $search
         (br_if $not_found
@@ -326,6 +331,11 @@ impl WatEmitter<'_> {
         (if (i32.eqz (local.get $delimiter)) (then (return (i32.const {null_tag}))))
         (local.set $delimiter (i32.sub (local.get $delimiter) (i32.const {one})))
         (br $find_delimiter)))
+    (local.set $flags (call $regexp_parse_flags (local.get $delimiter) (local.get $p_len) (local.get $p_header)))
+    (local.set $flag_s (i32.and (local.get $flags) (i32.const 1)))
+    (local.set $flag_m (i32.and (local.get $flags) (i32.const 2)))
+    (local.set $flag_y (i32.and (local.get $flags) (i32.const 4)))
+    (local.set $flag_u (i32.and (local.get $flags) (i32.const 8)))
     (block $not_found
       (loop $search
         (br_if $not_found
@@ -544,6 +554,11 @@ impl WatEmitter<'_> {
         (if (i32.eqz (local.get $delimiter)) (then (return (i32.const {null_tag}))))
         (local.set $delimiter (i32.sub (local.get $delimiter) (i32.const {one})))
         (br $find_delimiter)))
+    (local.set $flags (call $regexp_parse_flags (local.get $delimiter) (local.get $p_len) (local.get $p_header)))
+    (local.set $flag_s (i32.and (local.get $flags) (i32.const 1)))
+    (local.set $flag_m (i32.and (local.get $flags) (i32.const 2)))
+    (local.set $flag_y (i32.and (local.get $flags) (i32.const 4)))
+    (local.set $flag_u (i32.and (local.get $flags) (i32.const 8)))
     (local.set $pos (local.get $start_pos))
     (block $not_found
       (loop $search
@@ -770,6 +785,11 @@ impl WatEmitter<'_> {
         (if (i32.eqz (local.get $delimiter)) (then (return (local.get $neg_one))))
         (local.set $delimiter (i32.sub (local.get $delimiter) (i32.const {one})))
         (br $find_delimiter)))
+    (local.set $flags (call $regexp_parse_flags (local.get $delimiter) (local.get $p_len) (local.get $p_header)))
+    (local.set $flag_s (i32.and (local.get $flags) (i32.const 1)))
+    (local.set $flag_m (i32.and (local.get $flags) (i32.const 2)))
+    (local.set $flag_y (i32.and (local.get $flags) (i32.const 4)))
+    (local.set $flag_u (i32.and (local.get $flags) (i32.const 8)))
     (block $not_found
       (loop $search
         (br_if $not_found
