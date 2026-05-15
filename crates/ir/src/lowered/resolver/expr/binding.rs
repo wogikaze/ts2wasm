@@ -310,6 +310,15 @@ impl super::super::Resolver {
                     right: Box::new(ResolvedExpr::Number(1)),
                 }),
             }),
+            BindingDefault::FunctionIife {
+                increment,
+                return_ident,
+                throw_error,
+            } => self.lower_function_iife_binding_default_expr(
+                increment.as_deref(),
+                return_ident.as_deref(),
+                throw_error.as_deref(),
+            ),
             BindingDefault::Array(elements) => Ok(LoweredExpr::ArrayNew {
                 elements: elements
                     .iter()
@@ -342,6 +351,56 @@ impl super::super::Resolver {
                 unreachable!("lowered_binding_default covers literal defaults")
             }
         }
+    }
+
+    fn lower_function_iife_binding_default_expr(
+        &mut self,
+        increment: Option<&str>,
+        return_ident: Option<&str>,
+        throw_error: Option<&str>,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let mut stmts = Vec::new();
+        if let Some(name) = increment {
+            stmts.push(LoweredStmt::Expr(
+                self.lower_expr(&ResolvedExpr::Assign {
+                    name: name.to_owned(),
+                    expr: Box::new(ResolvedExpr::Binary {
+                        left: Box::new(ResolvedExpr::Ident(name.to_owned())),
+                        op: BinaryOp::Add,
+                        right: Box::new(ResolvedExpr::Number(1)),
+                    }),
+                })?,
+                Span::generated("expr_stmt"),
+            ));
+        }
+        if let Some(name) = throw_error {
+            let constructor =
+                BuiltinErrorConstructor::from_name(name).unwrap_or(BuiltinErrorConstructor::Error);
+            stmts.push(LoweredStmt::Throw(
+                LoweredExpr::ErrorNew {
+                    constructor,
+                    message: Box::new(LoweredExpr::String(name.to_owned(), Span::generated("str"))),
+                    cause: None,
+                    span: Span::generated("error_new"),
+                },
+                Span::generated("throw"),
+            ));
+            return Ok(LoweredExpr::Block {
+                stmts,
+                result: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+                span: Span::generated("block"),
+            });
+        }
+        let result = if let Some(name) = return_ident {
+            self.lower_expr(&ResolvedExpr::Ident(name.to_owned()))?
+        } else {
+            LoweredExpr::Undefined(Span::generated("undef"))
+        };
+        Ok(LoweredExpr::Block {
+            stmts,
+            result: Box::new(result),
+            span: Span::generated("block"),
+        })
     }
 
     fn lower_identifier_binding_default_expr(

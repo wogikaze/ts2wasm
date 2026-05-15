@@ -500,6 +500,25 @@ fn lowering_applies_prefix_increment_binding_default() {
 }
 
 #[test]
+fn lowering_applies_function_iife_binding_default() {
+    let program = parse_and_resolve(
+        r#"
+        var initCount = 0;
+        var obj = {
+          *method([[] = function() { initCount += 1; }()]) {
+            console.log(initCount);
+          }
+        };
+
+        obj.method([]).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("function IIFE binding defaults should lower through their body");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"

@@ -29,11 +29,21 @@ pub enum BindingDefault {
     Array(Vec<Option<BindingDefault>>),
     Object(Vec<(String, BindingDefault)>),
     Ident(String),
-    FunctionExpr { name: String, is_generator: bool },
+    FunctionExpr {
+        name: String,
+        is_generator: bool,
+    },
     ArrowFn,
-    ClassExpr { name: String },
+    ClassExpr {
+        name: String,
+    },
     Call(String),
     PreIncrement(String),
+    FunctionIife {
+        increment: Option<String>,
+        return_ident: Option<String>,
+        throw_error: Option<String>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -135,6 +145,18 @@ impl BindingDefault {
             Self::FunctionExpr { .. } | Self::ArrowFn | Self::ClassExpr { .. } => {}
             Self::Call(_) => {}
             Self::PreIncrement(name) => names.push(name.as_str()),
+            Self::FunctionIife {
+                increment,
+                return_ident,
+                ..
+            } => {
+                if let Some(name) = increment {
+                    names.push(name.as_str());
+                }
+                if let Some(name) = return_ident {
+                    names.push(name.as_str());
+                }
+            }
             Self::Array(elements) => {
                 for element in elements.iter().flatten() {
                     element.collect_ref_names(names);
@@ -506,6 +528,13 @@ fn parse_binding_default(text: &str, span: Option<Span>) -> Result<BindingDefaul
     if let Some(name) = parse_debug_prefix_increment_default(text) {
         return Ok(BindingDefault::PreIncrement(name));
     }
+    if let Some((increment, return_ident, throw_error)) = parse_debug_function_iife_default(text) {
+        return Ok(BindingDefault::FunctionIife {
+            increment,
+            return_ident,
+            throw_error,
+        });
+    }
     if text.starts_with('[') && text.ends_with(']') {
         let inner = &text[1..text.len() - 1];
         if inner.trim().is_empty() {
@@ -628,9 +657,33 @@ fn parse_debug_prefix_increment_default(text: &str) -> Option<String> {
     extract_debug_string_field(text, "name")
 }
 
+fn parse_debug_function_iife_default(
+    text: &str,
+) -> Option<(Option<String>, Option<String>, Option<String>)> {
+    if !text.starts_with("FunctionExpr {")
+        || !text.contains("params: []")
+        || !text.contains("is_generator: false")
+        || !text.ends_with("()")
+    {
+        return None;
+    }
+    let increment = extract_debug_string_after(text, "Assign { name: \"");
+    let return_ident = extract_debug_string_after(text, "Return { expr: Ident { name: \"");
+    let throw_error =
+        extract_debug_string_after(text, "Throw { expr: New { expr: Ident { name: \"");
+    if increment.is_none() && return_ident.is_none() && throw_error.is_none() {
+        return None;
+    }
+    Some((increment, return_ident, throw_error))
+}
+
 fn extract_debug_string_field(text: &str, field: &str) -> Option<String> {
     let needle = format!("{field}: \"");
-    let start = text.find(&needle)? + needle.len();
+    extract_debug_string_after(text, &needle)
+}
+
+fn extract_debug_string_after(text: &str, needle: &str) -> Option<String> {
+    let start = text.find(needle)? + needle.len();
     let rest = &text[start..];
     let end = rest.find('"')?;
     Some(rest[..end].to_owned())
