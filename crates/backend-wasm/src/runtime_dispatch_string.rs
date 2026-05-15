@@ -41,6 +41,7 @@ impl WatEmitter<'_> {
             RuntimeFn::StringRaw => self.emit_string_raw(wat),
             RuntimeFn::StringToLocaleString => self.emit_string_to_locale_string(wat),
             RuntimeFn::RegexpMatchInner => self.emit_regexp_match_inner(wat),
+            RuntimeFn::RegexpParseFlags => self.emit_regexp_parse_flags(wat),
             RuntimeFn::RegExpTest => self.emit_regexp_test(wat),
             RuntimeFn::RegExpMatch => self.emit_regexp_match(wat),
             RuntimeFn::RegExpSearch => self.emit_regexp_search(wat),

@@ -298,6 +298,7 @@ match self {
             Self::RegExpMatch => "regexp_match",
             Self::RegExpSearch => "regexp_search",
             Self::RegexpMatchInner => "regexp_match_inner",
+            Self::RegexpParseFlags => "regexp_parse_flags",
             Self::StringEqual => "string_equal",
             Self::Concat => "concat",
             Self::StringCharAt => "string_char_at",

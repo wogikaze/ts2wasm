@@ -2324,6 +2324,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::RegexpParseFlags => RuntimeSpec {
+                symbol: "$regexp_parse_flags",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::StringEqual => RuntimeSpec {
                 symbol: "$string_equal",
                 deps: STRING_EQUAL_DEPS,
