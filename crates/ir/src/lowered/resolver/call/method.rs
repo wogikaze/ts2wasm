@@ -3452,6 +3452,28 @@ impl super::super::Resolver {
                 if receiver_name == "durationFormat" && is_intl_duration_format_method(method) {
                     return self.lower_intl_duration_format_method(method, args);
                 }
+                        // BigInt.prototype.toString/valueOf handling
+                if self.ctx.facts.bigint_locals.contains(&obj_local) {
+                    match method {
+                        "toString" | "toLocaleString" => {
+                            return Ok(LoweredExpr::RuntimeCall {
+                                intrinsic: RuntimeFn::BigIntToString,
+                                args: vec![LoweredExpr::Local(
+                                    obj_local,
+                                    Span::generated("local"),
+                                )],
+                                span: Span::generated("runtime_call"),
+                            });
+                        }
+                        "valueOf" => {
+                            return Ok(LoweredExpr::Local(
+                                obj_local,
+                                Span::generated("local"),
+                            ));
+                        }
+                        _ => {}
+                    }
+                }
                 // Object.prototype methods: route to RuntimeFn for untyped receivers
                 let obj_methods = [
                     "hasOwnProperty",
