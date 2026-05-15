@@ -1219,7 +1219,14 @@ impl super::super::Resolver {
                 if idx == 7 {
                     break;
                 }
-                lowered_args.push(self.lower_expr(arg)?);
+                let lowered_arg = self.lower_expr(arg)?;
+                // Apply ToNumber coercion per spec: year → ToNumber(year), month → ToNumber(month), etc.
+                // Wrap each arg with unary plus (+arg) which emits $primitive_to_number_for_equality.
+                lowered_args.push(LoweredExpr::Unary {
+                    op: LoweredUnaryOp::Plus,
+                    expr: Box::new(lowered_arg),
+                    span: Span::generated("date_utc_coerce"),
+                });
             }
             while lowered_args.len() < 7 {
                 let default = if lowered_args.len() == 2 { 1 } else { 0 };
