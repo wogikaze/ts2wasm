@@ -6,6 +6,9 @@
 reference/test262/test/language/asi/S7.9_A6.1_T1.js
 reference/test262/test/language/asi/S7.9_A6.1_T2.js
 reference/test262/test/language/asi/S7.9_A6.1_T3.js
+reference/test262/test/language/expressions/delete/11.4.1-4.a-1.js
+reference/test262/test/language/expressions/delete/11.4.1-4.a-2.js
+reference/test262/test/language/expressions/delete/11.4.1-4.a-3.js
 #   Subcategory: unsupported-parser
 reference/test262/test/language/expressions/async-arrow-function/arrow-returns-promise.js
 reference/test262/test/language/expressions/async-generator/await-as-binding-identifier.js
@@ -21,10 +24,5 @@ reference/test262/test/language/types/null/S8.2_A2.js
 #   Subcategory: blocked-like-metadata
 reference/test262/test/language/import/dup-bound-names.js
 reference/test262/test/language/module-code/comment-multi-line-html-close.js
-#   Subcategory: verified-negative-compile
-reference/test262/test/language/expressions/delete/11.4.1-4.a-1.js
-reference/test262/test/language/expressions/delete/11.4.1-4.a-3.js
 #   Subcategory: runtime-mismatch
 reference/test262/test/built-ins/Array/prototype/push/S15.4.4.7_A1_T1.js
-#   Subcategory: negative-compile-unverified
-reference/test262/test/language/expressions/delete/11.4.1-4.a-2.js
