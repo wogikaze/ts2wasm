@@ -10,17 +10,19 @@
 issues/ open: 29 (done: 316, total: 345)
   P0: 4 | P1: 3 | P2: 20 | P3: 2
   ready to work: 27
-test262 coverage (parity baseline, server mode):
-  total: 53,469 | executed: 16 | semantic_pass: 13 | differential_pass: 11
-  unsupported: 4 | fail: 1 | negative_compile_pass: 2
-  build coverage: 0.02%
+test262 coverage (full run, server mode):
+  total: 53,469 | executed: 49,811 | build_pass: 9,481 | semantic_pass: 9,481
+  differential_pass: 5,823 | negative_compile_pass: 3,658 | negative_mismatch: 39
+  unsupported: 30,375 | fail: 12,734 | blocked: 879
+  build coverage: 17.73% | semantic coverage: 17.73%
+  duration: ~28 min (1,693s)
 ```
 
 Migration from legacy issue tracker (#419-#483, 50 open) to new issues/ format (29 open) completed.
-Coverage baseline reset after server-mode migration — parity file with 18 cases now the checkpoint.
+First full test262 run completed: 49,811/53,469 cases executed, 9,481 semantic pass.
 
 **Current waves:** W4 (builtins, 20 runtime open), W5 (runtime semantics, 3 IR open), W6 (coverage infra, 7 open)
-**Target:** parity file all-pass → scale to 500+ cases → >90% semantic coverage
+**Target:** unsupported (30,375) → 0, fail (12,734) → 0, blocked (879) → 0, semantic coverage >90%
 
 ## Roadmap model
 
@@ -145,15 +147,16 @@ Covered by W4 runtime issues:
 
 ## W6: Coverage and regression infrastructure 🔄 IN PROGRESS
 
+- [X] Full test262 suite run: 49,811/53,469 executed, ~28 min
 - [X] Server-mode test262 harness (JSONL batch, parallel compile + semantic)
-- [X] Parity check: 18-case paths-file exercising all outcome classifications
-- [X] Semantic checking enabled (default on, `--no-semantic` disables)
+- [X] Semantic checking enabled (semantic_pass=9,481)
 - [X] Regression detection: fail on build_pass / semantic_pass decrease
 - [X] Coverage dashboard data pipeline
-- [ ] **Eliminate all unsupported outcomes in parity file** (I-20260515-ENB7EJ, P0 epic, 5 child issues)
-- [ ] Scale coverage from 18 to 500+ cases (I-20260515-YV65RX, P0)
-- [ ] Negative compile verification (I-20260515-HFPCFC, P3)
+- [ ] **Reduce unsupported (30,375) and fail (12,734):** I-20260515-ENB7EJ (P0 epic), W4 builtins, W5 runtime semantics
+- [ ] Resolve blocked (879): cross-realm, SharedArrayBuffer, module import, evalScript
+- [ ] Resolve negative_compile_mismatch (39)
 - [ ] Differential test infrastructure (I-20260513-WHBN24, P2)
+- [ ] Negative compile verification for unverified cases (I-20260515-HFPCFC, P3)
 
 ## W7: Host capability boundary ✅ COMPLETE
 
