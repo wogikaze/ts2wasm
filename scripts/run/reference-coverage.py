@@ -2276,12 +2276,37 @@ def main():
                     return record, "build_pass"
 
                 _iwasm_t0 = time.perf_counter()
-                wasm_result = subprocess.run(
-                    ["timeout", "5s", "iwasm", str(wasm_path)],
-                    capture_output=True,
-                    text=True,
-                    cwd=REPO_ROOT,
-                )
+                # Use persistent WAMR runner when available, fall back to iwasm CLI
+                if wamr_runner is not None:
+                    job = json.dumps({"id": 0, "wasm_path": str(wasm_path)})
+                    with wamr_lock:
+                        wamr_runner.stdin.write(job + "\n")
+                        wamr_runner.stdin.flush()
+                        resp_line = wamr_runner.stdout.readline()
+                    if resp_line:
+                        try:
+                            wr = json.loads(resp_line)
+                            wasm_ok = wr.get("status") == "ok"
+                            actual = wr.get("stdout") or ""
+                            stderr_text = wr.get("stderr") or ""
+                            wasm_result = type("obj", (), {
+                                "returncode": 0 if wasm_ok else 1,
+                                "stdout": actual,
+                                "stderr": stderr_text,
+                            })()
+                        except json.JSONDecodeError:
+                            wasm_result = type("obj", (), {
+                                "returncode": -1, "stdout": "", "stderr": resp_line,
+                            })()
+                    else:
+                        wasm_result = type("obj", (), {
+                            "returncode": -1, "stdout": "", "stderr": "WAMR runner disconnected",
+                        })()
+                else:
+                    wasm_result = subprocess.run(
+                        ["timeout", "5s", "iwasm", str(wasm_path)],
+                        capture_output=True, text=True, cwd=REPO_ROOT,
+                    )
                 phase_timers["iwasm_wall_ms"] += int(round((time.perf_counter() - _iwasm_t0) * 1000))
 
                 if wasm_result.returncode == 0:
@@ -2447,6 +2472,8 @@ def main():
                             build_items.append(result["item"])
 
                     server_proc = None
+                    wamr_runner = None
+                    wamr_lock = threading.Lock()
                     semantic_executor = None
                     pending_semantic = set()
                     max_pending_semantic = max(semantic_jobs * 4, 1)
@@ -2471,6 +2498,20 @@ def main():
                             server_proc = start_jsonl_server()
                             if semantic_check:
                                 semantic_executor = ThreadPoolExecutor(max_workers=semantic_jobs)
+                                # Start persistent WAMR runner (native VMcore, not CLI)
+                                wamr_bin = REPO_ROOT / "crates" / "iwasm-runner" / "ts2wasm-iwasm-runner"
+                                if wamr_bin.is_file():
+                                    try:
+                                        wamr_runner = subprocess.Popen(
+                                            [str(wamr_bin)],
+                                            stdin=subprocess.PIPE,
+                                            stdout=subprocess.PIPE,
+                                            stderr=subprocess.DEVNULL,
+                                            text=True,
+                                        )
+                                        print(f"  WAMR runner started: {wamr_bin}", file=sys.stderr)
+                                    except OSError:
+                                        wamr_runner = None
 
                         try:
                             batch_size = int(os.environ.get("TS2WASM_REFERENCE_COVERAGE_BATCH", "1000") or "1000")
@@ -2604,6 +2645,16 @@ def main():
                         if semantic_executor is not None:
                             semantic_executor.shutdown(wait=True)
                         stop_jsonl_server(server_proc)
+                        if wamr_runner is not None:
+                            try:
+                                wamr_runner.stdin.write("exit\n")
+                                wamr_runner.stdin.flush()
+                            except OSError:
+                                pass
+                            try:
+                                wamr_runner.wait(timeout=3)
+                            except subprocess.TimeoutExpired:
+                                wamr_runner.kill()
 
         save_metadata_cache()
 
