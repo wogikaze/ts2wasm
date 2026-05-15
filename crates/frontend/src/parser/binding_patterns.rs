@@ -348,6 +348,10 @@ let binding = self.parse_binding_pattern()?;
                 kind: Token::DecimalNumber(value),
                 ..
             }) => Ok((value, false)),
+            Some(SpannedToken {
+                kind: Token::BigIntLiteral(raw),
+                ..
+            }) => Ok((bigint_literal_property_key(&raw), false)),
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("issue-247: expected object binding property key, got {other:?}"),

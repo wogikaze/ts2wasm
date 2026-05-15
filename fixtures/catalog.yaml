@@ -572,6 +572,7 @@ directories:
     - object-literal-mixed-types.ts
     - object-literal-inline-access.ts
     - object-literal-dup-keys.ts
+    - object-literal-bigint-keys.ts
     - object-literal-computed-keys.ts
     - object-literal-computed-expression-key.ts
     - object-literal-computed-accessor-invocation.ts

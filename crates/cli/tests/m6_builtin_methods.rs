@@ -276,6 +276,16 @@ fn build_smoke_object_literal_computed_spread() {
 }
 
 #[test]
+fn build_smoke_object_literal_bigint_keys() {
+    let result = run_fixture("core-expressions/object-literal-bigint-keys.ts");
+    assert!(
+        result.is_ok(),
+        "object literal BigInt property names should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_literal_computed_expression_key() {
     let result = run_fixture("core-expressions/object-literal-computed-expression-key.ts");
     assert!(

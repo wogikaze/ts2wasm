@@ -3700,6 +3700,7 @@ fn core_expression_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-expressions/object-literal-mixed-types.ts",
         "fixtures/core-expressions/object-literal-inline-access.ts",
         "fixtures/core-expressions/object-literal-dup-keys.ts",
+        "fixtures/core-expressions/object-literal-bigint-keys.ts",
         "fixtures/core-expressions/object-literal-computed-keys.ts",
         "fixtures/core-expressions/object-literal-computed-expression-key.ts",
         "fixtures/core-expressions/object-literal-computed-accessor-invocation.ts",
@@ -3762,6 +3763,11 @@ fn object_literal_computed_number_sentinel_keys_fixture_matches_node_output_unde
     assert_fixture_matches_node(
         "fixtures/core-expressions/object-literal-computed-number-sentinel-keys.ts",
     );
+}
+
+#[test]
+fn object_literal_bigint_keys_match_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-expressions/object-literal-bigint-keys.ts");
 }
 
 #[test]

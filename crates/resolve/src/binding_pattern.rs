@@ -202,12 +202,16 @@ fn parse_object_binding_pattern(
             let nested_target = target.starts_with('{');
             reject_unsupported_target(target, span)?;
             is_computed = key.starts_with('[') && key.ends_with(']');
-            if !is_identifier(key) && !is_computed {
+            let key = if is_computed {
+                key.to_owned()
+            } else if let Some(static_key) = static_object_binding_key(key) {
+                static_key
+            } else {
                 return Err(issue_251(
                     "object binding aliases must use identifier keys in this runtime slice",
                     span,
                 ));
-            }
+            };
             if nested_target {
                 if default.is_some() {
                     return Err(issue_251(
@@ -216,7 +220,7 @@ fn parse_object_binding_pattern(
                     ));
                 }
                 (
-                    key.to_owned(),
+                    key,
                     BindingTarget::Pattern(Box::new(parse_object_binding_pattern(target, span)?)),
                 )
             } else if !is_identifier(target) {
@@ -225,7 +229,7 @@ fn parse_object_binding_pattern(
                     span,
                 ));
             } else {
-                (key.to_owned(), BindingTarget::Identifier(target.to_owned()))
+                (key, BindingTarget::Identifier(target.to_owned()))
             }
         } else {
             reject_unsupported_target(target_part, span)?;
@@ -275,6 +279,30 @@ fn parse_array_binding_target(
         ));
     }
     Ok(BindingTarget::Identifier(target.to_owned()))
+}
+
+fn static_object_binding_key(key: &str) -> Option<String> {
+    if is_identifier(key) {
+        return Some(key.to_owned());
+    }
+    if let Some(value) = parse_string_literal(key) {
+        return Some(value);
+    }
+    if is_numeric_property_key_text(key) {
+        return Some(key.to_owned());
+    }
+    None
+}
+
+fn is_numeric_property_key_text(key: &str) -> bool {
+    let mut chars = key.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    if !first.is_ascii_digit() {
+        return false;
+    }
+    chars.all(|ch| ch.is_ascii_digit() || ch == '.')
 }
 
 fn split_binding_default(

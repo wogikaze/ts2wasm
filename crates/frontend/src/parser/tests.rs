@@ -2378,6 +2378,45 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_bigint_literal_object_property_names() {
+        let program = parse_program(
+            "let object = { 999999999999999999n: true, 0xfn() { return 15; }, 0b101n: 'five' };",
+        )
+        .unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 3);
+                assert!(matches!(
+                    &props[0],
+                    ObjectProp::KeyValue {
+                        key,
+                        value: Expr::Bool { value: true, .. }
+                    } if key == "999999999999999999"
+                ));
+                assert!(matches!(
+                    &props[1],
+                    ObjectProp::MethodShorthand {
+                        key,
+                        value: Expr::FunctionExpr { name, .. }
+                    } if key == "15" && name == "15"
+                ));
+                assert!(matches!(
+                    &props[2],
+                    ObjectProp::KeyValue {
+                        key,
+                        value: Expr::String { value, .. }
+                    } if key == "5" && value == "five"
+                ));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_compound_assignment_computed_property_key_expression() {
         let program = parse_program("let x = 0; let object = { [x |= 1]: 2 };").unwrap();
 

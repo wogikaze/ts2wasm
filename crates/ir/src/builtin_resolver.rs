@@ -1821,6 +1821,15 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     args: resolved_args,
                     span: *span,
                 })
+            } else if let Expr::Index { object, index, .. } = callee.as_ref()
+                && let Expr::String { value, .. } = index.as_ref()
+            {
+                Ok(ResolvedExpr::MethodCall {
+                    object: Box::new(resolve_expr(object)?),
+                    method: value.clone(),
+                    args: resolved_args,
+                    span: *span,
+                })
             } else {
                 Ok(ResolvedExpr::Call {
                     callee: Box::new(resolve_expr(callee)?),
