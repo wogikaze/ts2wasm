@@ -3459,6 +3459,8 @@ fn empty_export_module_marker_matches_node_baseline_under_iwasm() {
 
 #[test]
 fn instanceof_unsupported_rhs_fixture_reports_issue_207() {
+    // Dynamic instanceof with non-class-callable RHS: now builds successfully
+    // via SymbolHasInstance runtime fallback (issue I-20260515-GAX7YV).
     let fixture = "fixtures/core-semantics/instanceof-unsupported-rhs.ts";
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
@@ -3474,19 +3476,9 @@ fn instanceof_unsupported_rhs_fixture_reports_issue_207() {
         .unwrap();
 
     assert!(
-        !build.status.success(),
-        "unsupported instanceof RHS fixture should not build successfully"
-    );
-    let stderr = String::from_utf8_lossy(&build.stderr);
-    assert!(
-        super::stderr_contains_diag_code(&stderr, "UnsupportedSyntax"),
-        "expected UnsupportedSyntax diagnostic, got:\n{stderr}"
-    );
-    assert!(
-        stderr.contains(
-            "issue-207: instanceof right-hand side must be a supported class constructor"
-        ),
-        "expected issue-207 diagnostic, got:\n{stderr}"
+        build.status.success(),
+        "dynamic instanceof RHS fixture should build successfully, got:\n{}",
+        String::from_utf8_lossy(&build.stderr)
     );
 }
 

@@ -35,32 +35,38 @@ impl super::super::Resolver {
         left: &ResolvedExpr,
         right: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
-        let prototype = match right {
-            ResolvedExpr::Ident(name) => {
-                if let Some(constructor) = BuiltinErrorConstructor::from_name(name) {
-                    LoweredExpr::BuiltinErrorPrototype(
-                        constructor,
-                        Span::generated("builtin_error_proto"),
-                    )
-                } else {
-                    self.class_prototype_ref(name)
-                        .map(|p| LoweredExpr::ClassPrototype(p, Span::generated("class_proto")))?
-                }
-            }
-            _ => {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "issue-207: instanceof right-hand side must be a supported class constructor"
-                            .to_owned(),
-                    span: None,
-                    phase: None,
+        // Try static path: RHS is a known class constructor.
+        if let ResolvedExpr::Ident(name) = right {
+            if let Some(constructor) = BuiltinErrorConstructor::from_name(name) {
+                return Ok(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::InstanceOf,
+                    args: vec![
+                        self.lower_expr(left)?,
+                        LoweredExpr::BuiltinErrorPrototype(
+                            constructor,
+                            Span::generated("builtin_error_proto"),
+                        ),
+                    ],
+                    span: Span::generated("runtime_call"),
                 });
             }
-        };
+            if let Ok(prototype) = self.class_prototype_ref(name) {
+                return Ok(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::InstanceOf,
+                    args: vec![
+                        self.lower_expr(left)?,
+                        LoweredExpr::ClassPrototype(prototype, Span::generated("class_proto")),
+                    ],
+                    span: Span::generated("runtime_call"),
+                });
+            }
+        }
+        // Dynamic path: RHS is not statically known.
+        // Evaluate RHS at runtime and use SymbolHasInstance which checks
+        // constructor[Symbol.hasInstance] or falls back to OrdinaryHasInstance.
         Ok(LoweredExpr::RuntimeCall {
-            intrinsic: RuntimeFn::InstanceOf,
-            args: vec![self.lower_expr(left)?, prototype],
+            intrinsic: RuntimeFn::SymbolHasInstance,
+            args: vec![self.lower_expr(right)?, self.lower_expr(left)?],
             span: Span::generated("runtime_call"),
         })
     }

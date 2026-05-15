@@ -2662,10 +2662,10 @@ match self {
             },
             Self::SymbolHasInstance => RuntimeSpec {
                 symbol: "$symbol_has_instance",
-                deps: NO_DEPS,
+                deps: &[Self::PropertyGet],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
-                runtime_strings: NO_RUNTIME_STRINGS,
+                runtime_strings: &["prototype"],
                 result: RuntimeResult::Value,
             },
             Self::SymbolToString => RuntimeSpec {
