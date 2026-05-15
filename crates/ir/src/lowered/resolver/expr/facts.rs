@@ -185,6 +185,13 @@ pub(crate) fn resolved_expr_is_generator_iterator(ctx: &LoweringCtx, expr: &Reso
         ResolvedExpr::Call { callee, .. } => {
             resolved_generator_function_call_name(ctx, expr).is_some()
                 || resolved_callee_is_local_generator_function(ctx, callee)
+                || matches!(
+                    callee.as_ref(),
+                    ResolvedExpr::FunctionExpr {
+                        is_generator: true,
+                        ..
+                    }
+                )
         }
         ResolvedExpr::MethodCall { object, method, .. } => {
             resolved_object_method_is_generator(ctx, object, method)

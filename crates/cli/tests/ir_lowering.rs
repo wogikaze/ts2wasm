@@ -214,6 +214,19 @@ fn lowering_preserves_captured_object_method_facts_in_nested_function() {
 }
 
 #[test]
+fn lowering_marks_direct_generator_function_expression_call_as_iterator() {
+    let program = parse_and_resolve(
+        r#"
+        var iter = function*() {}();
+        iter.next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("direct generator function expression calls should produce generator iterators");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"
