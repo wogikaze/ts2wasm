@@ -3558,3 +3558,183 @@ fn build_smoke_native_error_types_complete() {
     run_fixture("builtins-and-io/native-error-types.ts")
         .expect("NativeError types complete fixture should build");
 }
+
+// ============================================================
+// P2/P3 runtime features — build_smoke coverage
+// ============================================================
+
+#[test]
+fn build_smoke_disposable_stack() {
+    let result = run_fixture("builtins-and-io/disposable-stack.ts");
+    assert!(
+        result.is_ok(),
+        "DisposableStack should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_temporal_unsupported_diagnostic() {
+    let result = run_fixture("builtins-and-io/temporal-now.ts");
+    assert!(
+        result.is_err(),
+        "Temporal should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("unresolved name"),
+        "Diagnostic should mention unresolved name: {}",
+        err_msg
+    );
+}
+
+#[test]
+fn build_smoke_shadowrealm_unsupported_diagnostic() {
+    let result = run_fixture("builtins-and-io/shadowrealm-basic.ts");
+    assert!(
+        result.is_err(),
+        "ShadowRealm should produce unsupported diagnostic"
+    );
+    let err_msg = result.err().unwrap();
+    assert!(
+        err_msg.contains("unresolved name"),
+        "Diagnostic should mention unresolved name: {}",
+        err_msg
+    );
+}
+
+#[test]
+fn build_smoke_strict_mode_basic() {
+    let result = run_fixture("builtins-and-io/strict-mode-basic.ts");
+    assert!(
+        result.is_ok(),
+        "Strict mode basic should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_iterator_helpers() {
+    let result = run_fixture("builtins-and-io/iterator-protocol.ts");
+    assert!(
+        result.is_ok(),
+        "Iterator helpers should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_weakref_finalization() {
+    let result = run_fixture("builtins-and-io/weakmap-weakset-basic.ts");
+    assert!(
+        result.is_ok(),
+        "WeakRef/FinalizationRegistry should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_atomics_wait_async() {
+    let result = run_fixture("builtins-and-io/atomics-complete.ts");
+    assert!(
+        result.is_ok(),
+        "Atomics complete should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_date_set_utc_methods() {
+    let result = run_fixture("builtins-and-io/date-set-utc-methods.ts");
+    assert!(
+        result.is_ok(),
+        "Date setUTC methods should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_date_set_local_methods() {
+    let result = run_fixture("builtins-and-io/date-set-local-methods.ts");
+    assert!(
+        result.is_ok(),
+        "Date set local methods should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_math_trig_log() {
+    let result = run_fixture("builtins-and-io/math-non-integer-trig.ts");
+    assert!(
+        result.is_ok(),
+        "Math trig/log should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_math_precision() {
+    let result = run_fixture("builtins-and-io/math-complete.ts");
+    assert!(
+        result.is_ok(),
+        "Math precision should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_typedarray_complete() {
+    for fixture in [
+        "builtins-and-io/typedarray-basic.ts",
+        "builtins-and-io/typedarray-constructors.ts",
+        "builtins-and-io/typedarray-methods.ts",
+        "builtins-and-io/typedarray-index-of.ts",
+        "builtins-and-io/typedarray-mutating-methods.ts",
+        "builtins-and-io/typedarray-unsupported-methods.ts",
+    ] {
+        let result = run_fixture(fixture);
+        assert!(
+            result.is_ok(),
+            "TypedArray fixture {} should build: {:?}",
+            fixture,
+            result.err()
+        );
+    }
+}
+
+#[test]
+fn build_smoke_function_to_string() {
+    let result = run_fixture("builtins-and-io/function-prototype.ts");
+    assert!(
+        result.is_ok(),
+        "Function.prototype.toString should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_function_object_model() {
+    let result = run_fixture("builtins-and-io/function-declaration-value.ts");
+    assert!(
+        result.is_ok(),
+        "Function object model should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_intl_locale_formatting() {
+    for fixture in [
+        "builtins-and-io/intl-numberformat.ts",
+        "builtins-and-io/intl-datetimeformat.ts",
+    ] {
+        let result = run_fixture(fixture);
+        assert!(
+            result.is_ok(),
+            "Intl fixture {} should build: {:?}",
+            fixture,
+            result.err()
+        );
+    }
+}
