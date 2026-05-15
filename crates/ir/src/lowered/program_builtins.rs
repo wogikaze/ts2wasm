@@ -388,7 +388,9 @@ pub(crate) fn is_typed_array_class(class_name: &str) -> bool {
 
 fn typed_array_method_runtime_fn(method: &str) -> Option<RuntimeFn> {
     match method {
+        "at" => Some(RuntimeFn::ArrayAt),
         "copyWithin" => Some(RuntimeFn::ArrayCopyWithin),
+        "entries" => Some(RuntimeFn::ArrayEntries),
         "every" => Some(RuntimeFn::ArrayEvery),
         "fill" => Some(RuntimeFn::ArrayFill),
         "filter" => Some(RuntimeFn::ArrayFilter),
@@ -396,14 +398,26 @@ fn typed_array_method_runtime_fn(method: &str) -> Option<RuntimeFn> {
         "findIndex" => Some(RuntimeFn::ArrayFindIndex),
         "findLast" => Some(RuntimeFn::ArrayFindLast),
         "findLastIndex" => Some(RuntimeFn::ArrayFindLastIndex),
+        "flat" => Some(RuntimeFn::ArrayFlat),
         "forEach" => Some(RuntimeFn::ArrayForEach),
+        "includes" => Some(RuntimeFn::ArrayIncludes),
+        "indexOf" => Some(RuntimeFn::ArrayIndexOf),
+        "join" => Some(RuntimeFn::ArrayJoin),
+        "keys" => Some(RuntimeFn::ArrayKeys),
+        "lastIndexOf" => Some(RuntimeFn::ArrayLastIndexOf),
         "map" => Some(RuntimeFn::ArrayMap),
         "reduce" => Some(RuntimeFn::ArrayReduce),
         "reduceRight" => Some(RuntimeFn::ArrayReduceRight),
+        "reverse" => Some(RuntimeFn::ArrayReverse),
         "set" => Some(RuntimeFn::TypedArraySet),
         "slice" | "subarray" => Some(RuntimeFn::ArraySlice),
         "some" => Some(RuntimeFn::ArraySome),
         "sort" => Some(RuntimeFn::ArraySortNumeric),
+        "toReversed" => Some(RuntimeFn::ArrayToReversed),
+        "toSorted" => Some(RuntimeFn::ArrayToSorted),
+        "toString" => Some(RuntimeFn::ArrayJoin),
+        "values" => Some(RuntimeFn::ArrayValues),
+        "with" => Some(RuntimeFn::ArrayWith),
         _ => None,
     }
 }

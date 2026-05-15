@@ -4076,6 +4076,7 @@ fn build_smoke_typedarray_complete() {
         "builtins-and-io/typedarray-methods.ts",
         "builtins-and-io/typedarray-index-of.ts",
         "builtins-and-io/typedarray-mutating-methods.ts",
+        "builtins-and-io/typedarray-unsupported-methods.ts",
     ] {
         let result = run_fixture(fixture);
         assert!(
@@ -4085,6 +4086,16 @@ fn build_smoke_typedarray_complete() {
             result.err()
         );
     }
+}
+
+#[test]
+fn build_smoke_typedarray_byte_length_buffer() {
+    let result = run_fixture("builtins-and-io/typedarray-byte-length-buffer.ts");
+    assert!(
+        result.is_ok(),
+        "TypedArray byteLength/buffer should build: {:?}",
+        result.err()
+    );
 }
 
 #[test]

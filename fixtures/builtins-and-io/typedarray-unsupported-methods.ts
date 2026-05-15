@@ -1,4 +1,4 @@
-// TypedArray methods not yet implemented — each triggers UnsupportedSyntax diagnostic
+// TypedArray methods now supported — join, entries, keys, values, toReversed, toSorted, with
 const a = new Uint8Array([1, 2, 3]);
 console.log(a.join(","));
 console.log(a.entries());
