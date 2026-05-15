@@ -30,6 +30,9 @@ impl super::super::Resolver {
         if let Some(result) = self.lower_mcall_early(object, method, args, span)? {
             return Ok(result);
         }
+        if let Some(result) = self.lower_mcall_intl_duration_format(object, method, args)? {
+            return Ok(result);
+        }
         if let Some(result) = self.lower_mcall_intl_number_format(object, method, args)? {
             return Ok(result);
         }
@@ -792,6 +795,23 @@ impl super::super::Resolver {
                 args,
                 options.as_ref(),
             )?));
+        }
+        Ok(None)
+    }
+
+    fn lower_mcall_intl_duration_format(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Intl")
+            && method == "DurationFormat"
+        {
+            return Ok(Some(self.lower_intl_duration_format_constructor(args)?));
+        }
+        if self.is_intl_duration_format_expr(object) && is_intl_duration_format_method(method) {
+            return Ok(Some(self.lower_intl_duration_format_method(method, args)?));
         }
         Ok(None)
     }
@@ -3078,6 +3098,9 @@ impl super::super::Resolver {
                 });
             }
             None => {
+                if receiver_name == "durationFormat" && is_intl_duration_format_method(method) {
+                    return self.lower_intl_duration_format_method(method, args);
+                }
                 // Object.prototype methods: route to RuntimeFn for untyped receivers
                 let obj_methods = [
                     "hasOwnProperty",
@@ -3288,6 +3311,13 @@ impl super::super::Resolver {
         })
     }
 
+    pub(crate) fn lower_intl_duration_format_constructor(
+        &mut self,
+        _args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        Ok(intl_duration_format_options_object())
+    }
+
     pub(crate) fn intl_number_format_options_for_expr(
         &self,
         expr: &ResolvedExpr,
@@ -3360,6 +3390,13 @@ impl super::super::Resolver {
         )
     }
 
+    fn is_intl_duration_format_expr(&self, expr: &ResolvedExpr) -> bool {
+        matches!(
+            self.infer_class_for_expr(expr).as_deref(),
+            Some("Intl.DurationFormat" | "DurationFormat")
+        )
+    }
+
     fn lower_intl_number_format_method(
         &mut self,
         method: &str,
@@ -3417,6 +3454,27 @@ impl super::super::Resolver {
             _ => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("Intl.NumberFormat.prototype.{method} is not supported"),
+                span: None,
+                phase: None,
+            }),
+        }
+    }
+
+    fn lower_intl_duration_format_method(
+        &mut self,
+        method: &str,
+        _args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        match method {
+            "format" => Ok(string_lit("")),
+            "formatToParts" => Ok(LoweredExpr::ArrayNew {
+                elements: Vec::new(),
+                span: Span::generated("array_new"),
+            }),
+            "resolvedOptions" => Ok(intl_duration_format_options_object()),
+            _ => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("Intl.DurationFormat.prototype.{method} is not supported"),
                 span: None,
                 phase: None,
             }),
@@ -3639,6 +3697,10 @@ fn is_intl_number_format_method(method: &str) -> bool {
     matches!(method, "format" | "formatToParts" | "resolvedOptions")
 }
 
+fn is_intl_duration_format_method(method: &str) -> bool {
+    matches!(method, "format" | "formatToParts" | "resolvedOptions")
+}
+
 fn is_number_format_method(method: &str) -> bool {
     matches!(method, "toFixed" | "toExponential" | "toPrecision")
 }
@@ -3655,6 +3717,38 @@ fn is_intl_number_format_class(class_name: &str) -> bool {
         class_name,
         "Intl.NumberFormat" | "NumberFormat" | "Constructor"
     )
+}
+
+fn intl_duration_format_options_object() -> LoweredExpr {
+    let mut props = vec![
+        ("locale".to_owned(), string_lit("en")),
+        ("numberingSystem".to_owned(), string_lit("latn")),
+        ("style".to_owned(), string_lit("short")),
+        (
+            "fractionalDigits".to_owned(),
+            LoweredExpr::Number(0, Span::generated("num")),
+        ),
+    ];
+    for unit in [
+        "years",
+        "months",
+        "weeks",
+        "days",
+        "hours",
+        "minutes",
+        "seconds",
+        "milliseconds",
+        "microseconds",
+        "nanoseconds",
+    ] {
+        props.push((unit.to_owned(), string_lit("numeric")));
+        props.push((format!("{unit}Display"), string_lit("auto")));
+    }
+    LoweredExpr::ObjectNew {
+        props,
+        non_enumerable: 0,
+        span: Span::generated("object_new"),
+    }
 }
 
 fn static_string_expr(expr: &ResolvedExpr) -> Option<&str> {

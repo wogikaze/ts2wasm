@@ -1297,6 +1297,41 @@ fn lowering_accepts_dynamic_new_regexp_pattern_for_string_match() {
 }
 
 #[test]
+fn lowering_accepts_intl_duration_format_methods() {
+    let program = parse_and_resolve(
+        r#"
+        let durationFormat = new Intl.DurationFormat("en", { style: "short" });
+        let text = durationFormat.format({ seconds: 1 });
+        let parts = durationFormat.formatToParts({ seconds: 1 });
+        let options = durationFormat.resolvedOptions();
+        console.log(text);
+        console.log(parts.length);
+        console.log(options.style);
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("Intl.DurationFormat constructor and methods should lower");
+}
+
+#[test]
+fn lowering_accepts_testintl_duration_format_resolved_options_helper() {
+    let program = parse_and_resolve(
+        r#"
+        function partitionDurationFormatPattern(durationFormat, duration) {
+          let options = durationFormat.resolvedOptions();
+          let style = options.seconds;
+          let display = options.secondsDisplay;
+          return style + display;
+        }
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("testIntl durationFormat.resolvedOptions helper should lower");
+}
+
+#[test]
 fn lowering_accepts_captured_static_regexp_constructor_test() {
     assert!(
         ts2wasm_ir::lowered::lower_program(&parse_and_resolve(
