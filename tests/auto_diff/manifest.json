@@ -1,0 +1,8 @@
+{
+  "generated_by": "scripts/gen/generate-differential-tests.py",
+  "auto_diff": true,
+  "generated_differential": true,
+  "description": "Auto-generated differential test manifest for Node.js oracle comparison",
+  "fixture_source": "fixtures/catalog.yaml",
+  "generated_test_target": "crates/cli/tests/auto_differential_tests.rs"
+}

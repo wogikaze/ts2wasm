@@ -66,6 +66,7 @@ COMMANDS = {
     "discord-report": ("python", "scripts/report/discord-report.py"),
     "gen-site": ("python", "scripts/gen-site.py"),
     "create-run-dir": ("python", "scripts/gen/create-run-dir.py"),
+    "generate-differential-tests": ("python", "scripts/gen/generate-differential-tests.py"),
     # Next-architecture gate aliases
     "next-coverage-gate": ("python", "scripts/gate/coverage.py"),
     "next-capability-gate": ("python", "scripts/check/manifest-imports.py"),
@@ -184,6 +185,7 @@ def usage():
         ("development-report", "Generate a concise Japanese development report"),
         ("discord-report", "Send a report markdown/json file to Discord webhook"),
         ("create-run-dir", "Create reports/runs/<run_id>/ directory"),
+        ("generate-differential-tests", "Generate Rust differential test code from fixture catalog"),
         ("next-coverage-gate", "REQ-COV-001/002 gates (outcome schema + top-reasons)"),
         ("next-capability-gate", "REQ-CAP-001/002 gates (link-plan validation + manifest parity)"),
         ("next-rtgc-gate", "REQ-RTGC-001/002/003/004/005/006 gates (typed alloc, scanner, roots, thresholds, layout, closures)"),
