@@ -1737,7 +1737,7 @@ impl NameResolver {
     }
 
     fn is_test262_assert_reference_error_probe(&self, callee: &Expr, args: &[Expr]) -> bool {
-        if !self.functions.contains_key("assert") || !self.classes.contains_key("Test262Assert") {
+        if self.is_user_declared("assert") && !self.functions.contains_key("assert") {
             return false;
         }
         let Expr::Member {

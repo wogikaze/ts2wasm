@@ -80,6 +80,16 @@ fn resolver_predeclares_destructuring_binding_names() {
 }
 
 #[test]
+fn resolver_allows_test262_ambient_reference_error_probe() {
+    let stmts = resolve_names(&parse(
+        "assert.throws(ReferenceError, function() { missing; });",
+    ))
+    .unwrap();
+
+    assert_eq!(stmts.len(), 1);
+}
+
+#[test]
 fn resolver_snapshot_null_undefined() {
     let stmts = resolve_names(&parse("let n = null; let u = undefined;")).unwrap();
     assert_eq!(stmts.len(), 2);
