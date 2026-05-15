@@ -227,6 +227,25 @@ fn lowering_marks_direct_generator_function_expression_call_as_iterator() {
 }
 
 #[test]
+fn lowering_applies_array_default_to_nested_object_binding_pattern() {
+    let program = parse_and_resolve(
+        r#"
+        var obj = {
+          *method({ w: [x, y, z] = [4, 5, 6] }) {
+            console.log(x);
+            console.log(y);
+            console.log(z);
+          }
+        };
+        obj.method({}).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("nested binding patterns should apply array literal defaults before recursion");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"

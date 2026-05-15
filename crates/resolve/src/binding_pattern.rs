@@ -26,6 +26,7 @@ pub enum BindingDefault {
     Bool(bool),
     Null,
     Undefined,
+    Array(Vec<Option<BindingDefault>>),
     Object(Vec<(String, String)>),
 }
 
@@ -132,12 +133,6 @@ fn parse_array_binding_pattern(
                 span,
             ));
         }
-        if default.is_some() && matches!(target, BindingTarget::Pattern(_)) {
-            return Err(issue_251(
-                "nested binding defaults are not supported in this runtime slice",
-                span,
-            ));
-        }
         bindings.push(ArrayBinding {
             index,
             target,
@@ -225,12 +220,6 @@ fn parse_object_binding_pattern(
                     BindingTarget::Pattern(Box::new(parse_object_binding_pattern(target, span)?)),
                 )
             } else if nested_array_target {
-                if default.is_some() {
-                    return Err(issue_251(
-                        "nested binding defaults are not supported in this runtime slice",
-                        span,
-                    ));
-                }
                 (
                     key,
                     BindingTarget::Pattern(Box::new(parse_array_binding_pattern(target, span)?)),
@@ -455,6 +444,24 @@ fn parse_binding_default(text: &str, span: Option<Span>) -> Result<BindingDefaul
     if let Ok(value) = text.parse::<i32>() {
         return Ok(BindingDefault::Number(value));
     }
+    if text.starts_with('[') && text.ends_with(']') {
+        let inner = &text[1..text.len() - 1];
+        if inner.trim().is_empty() {
+            return Ok(BindingDefault::Array(Vec::new()));
+        }
+        let elements = split_top_level_commas(inner)
+            .into_iter()
+            .map(|element| {
+                let element = element.trim();
+                if element.is_empty() {
+                    Ok(None)
+                } else {
+                    parse_binding_default(element, span).map(Some)
+                }
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        return Ok(BindingDefault::Array(elements));
+    }
     if text.starts_with('{') && text.ends_with('}') {
         let inner = &text[1..text.len() - 1];
         let props: Vec<(String, String)> = inner
@@ -479,7 +486,13 @@ fn parse_binding_default(text: &str, span: Option<Span>) -> Result<BindingDefaul
 }
 
 fn parse_string_literal(text: &str) -> Option<String> {
-    let inner = text.strip_prefix('"')?.strip_suffix('"')?;
+    let inner = text
+        .strip_prefix('"')
+        .and_then(|value| value.strip_suffix('"'))
+        .or_else(|| {
+            text.strip_prefix('\'')
+                .and_then(|value| value.strip_suffix('\''))
+        })?;
     if inner.contains('\\') {
         return None;
     }

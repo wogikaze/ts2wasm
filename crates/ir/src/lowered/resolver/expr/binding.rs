@@ -60,7 +60,11 @@ impl super::super::Resolver {
         };
         let Some(name) = binding.target.identifier() else {
             if let Some(pattern) = binding.target.pattern() {
-                return self.lower_binding_pattern_declarations(pattern, element_value, None);
+                return self.lower_nested_binding_pattern_declaration(
+                    pattern,
+                    element_value,
+                    binding.default.as_ref(),
+                );
             }
             unreachable!("binding target must be identifier or pattern");
         };
@@ -113,7 +117,11 @@ impl super::super::Resolver {
         };
         let Some(name) = binding.target.identifier() else {
             if let Some(pattern) = binding.target.pattern() {
-                return self.lower_binding_pattern_declarations(pattern, property_value, None);
+                return self.lower_nested_binding_pattern_declaration(
+                    pattern,
+                    property_value,
+                    binding.default.as_ref(),
+                );
             }
             unreachable!("binding target must be identifier or pattern");
         };
@@ -132,6 +140,42 @@ impl super::super::Resolver {
             property_value,
             binding.default.as_ref(),
         )
+    }
+
+    fn lower_nested_binding_pattern_declaration(
+        &mut self,
+        pattern: &BindingPattern,
+        value: LoweredExpr,
+        default: Option<&BindingDefault>,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        let Some(default) = default else {
+            return self.lower_binding_pattern_declarations(pattern, value, None);
+        };
+        let temp_id = self.alloc_temp();
+        let mut statements = vec![
+            LoweredStmt::Let(temp_id, value, Span::generated("let_stmt")),
+            LoweredStmt::If {
+                condition: LoweredExpr::Binary {
+                    left: Box::new(LoweredExpr::Local(temp_id, Span::generated("local"))),
+                    op: LoweredBinaryOp::StrictEqual,
+                    right: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+                    span: Span::generated("binary"),
+                },
+                then_body: vec![LoweredStmt::Assign(
+                    temp_id,
+                    lowered_binding_default(default),
+                    Span::generated("assign"),
+                )],
+                else_body: vec![],
+                span: Span::generated("If"),
+            },
+        ];
+        statements.extend(self.lower_binding_pattern_declarations(
+            pattern,
+            LoweredExpr::Local(temp_id, Span::generated("local")),
+            None,
+        )?);
+        Ok(statements)
     }
 
     pub(crate) fn lower_object_rest_binding_declaration(
