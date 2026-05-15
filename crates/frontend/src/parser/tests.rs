@@ -1445,6 +1445,18 @@ mod tests {
     }
 
     #[test]
+    fn parses_for_in_with_single_statement_body() {
+        let stmts = parse_program("for (var key in obj) keys.push(key);").unwrap();
+
+        assert_eq!(stmts.len(), 1);
+        let Stmt::ForIn { var, body, .. } = &stmts[0] else {
+            panic!("expected ForIn statement, got {:?}", stmts[0]);
+        };
+        assert_eq!(var, "key");
+        assert!(matches!(body.as_slice(), [Stmt::Expr { expr: Expr::Call { .. }, .. }]));
+    }
+
+    #[test]
     fn parses_for_of_with_type_annotation_on_variable() {
         let stmts = parse_program("var items: any[];\nfor (var x: string of items) {}").unwrap();
 
@@ -1453,6 +1465,18 @@ mod tests {
             panic!("expected ForOf statement, got {:?}", stmts[1]);
         };
         assert_eq!(var, "x");
+    }
+
+    #[test]
+    fn parses_for_of_with_single_statement_body() {
+        let stmts = parse_program("for (var item of items) consume(item);").unwrap();
+
+        assert_eq!(stmts.len(), 1);
+        let Stmt::ForOf { var, body, .. } = &stmts[0] else {
+            panic!("expected ForOf statement, got {:?}", stmts[0]);
+        };
+        assert_eq!(var, "item");
+        assert!(matches!(body.as_slice(), [Stmt::Expr { expr: Expr::Call { .. }, .. }]));
     }
 
     #[test]
@@ -4035,6 +4059,25 @@ b /* parameter b */,
                 ));
                 assert!(update.is_some());
                 assert!(body.is_empty());
+            }
+            other => panic!("expected For statement, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_for_loop_with_single_statement_body() {
+        let program = parse_program("for (let i = 0; i < 3; i++) tick(i);").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::For { body, .. } => {
+                assert!(matches!(
+                    body.as_slice(),
+                    [Stmt::Expr {
+                        expr: Expr::Call { .. },
+                        ..
+                    }]
+                ));
             }
             other => panic!("expected For statement, got {other:?}"),
         }
