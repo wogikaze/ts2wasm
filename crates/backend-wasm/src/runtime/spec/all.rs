@@ -2588,6 +2588,14 @@ match self {
                 runtime_strings: STRING_RAW_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::StringNormalize => RuntimeSpec {
+                symbol: "$string_normalize",
+                deps: NO_DEPS,
+                imports: IMPORT_STRING_NORMALIZE,
+                capability: CAP_STRING_NORMALIZE,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::StringToLocaleString => RuntimeSpec {
                 symbol: "$string_to_locale_string",
                 deps: &[Self::IsString],

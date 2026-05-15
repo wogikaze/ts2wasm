@@ -41,6 +41,7 @@ pub const STRING_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::StringReplace,
     RuntimeFn::StringReplaceAll,
     RuntimeFn::StringRaw,
+    RuntimeFn::StringNormalize,
     RuntimeFn::StringToLocaleString,
     RuntimeFn::RegexpMatchInner,
     RuntimeFn::RegExpTest,
