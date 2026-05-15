@@ -2565,6 +2565,8 @@ def main():
                                     )
                                     return record, "build_pass"
                                 wasm_path = build_resp.get("wasm_path")
+                                if wasm_path:
+                                    phase_timers["wat2wasm_processes"] += 1
                                 if not wasm_path:
                                     # Older or failed server-side emit path. Re-run the item through
                                     # the legacy harness to preserve JSONL semantics instead of
