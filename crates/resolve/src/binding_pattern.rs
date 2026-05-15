@@ -199,7 +199,8 @@ fn parse_object_binding_pattern(
         let (key, target) = if let Some((key, target)) = split_top_level_once(target_part, ':') {
             let key = key.trim();
             let target = target.trim();
-            let nested_target = target.starts_with('{');
+            let nested_object_target = target.starts_with('{');
+            let nested_array_target = target.starts_with('[');
             reject_unsupported_target(target, span)?;
             is_computed = key.starts_with('[') && key.ends_with(']');
             let key = if is_computed {
@@ -212,7 +213,7 @@ fn parse_object_binding_pattern(
                     span,
                 ));
             };
-            if nested_target {
+            if nested_object_target {
                 if default.is_some() {
                     return Err(issue_251(
                         "nested binding defaults are not supported in this runtime slice",
@@ -222,6 +223,17 @@ fn parse_object_binding_pattern(
                 (
                     key,
                     BindingTarget::Pattern(Box::new(parse_object_binding_pattern(target, span)?)),
+                )
+            } else if nested_array_target {
+                if default.is_some() {
+                    return Err(issue_251(
+                        "nested binding defaults are not supported in this runtime slice",
+                        span,
+                    ));
+                }
+                (
+                    key,
+                    BindingTarget::Pattern(Box::new(parse_array_binding_pattern(target, span)?)),
                 )
             } else if !is_identifier(target) {
                 return Err(issue_251(

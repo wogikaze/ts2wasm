@@ -80,6 +80,13 @@ fn resolver_predeclares_destructuring_binding_names() {
 }
 
 #[test]
+fn resolver_predeclares_object_alias_array_pattern_names() {
+    let stmts = resolve_names(&parse("function f({ x: [y], }) { return y; }")).unwrap();
+
+    assert_eq!(stmts.len(), 1);
+}
+
+#[test]
 fn resolver_allows_test262_ambient_reference_error_probe() {
     let stmts = resolve_names(&parse(
         "assert.throws(ReferenceError, function() { missing; });",
