@@ -322,6 +322,24 @@ fn lowering_applies_object_default_to_nested_object_binding_pattern() {
 }
 
 #[test]
+fn lowering_allows_array_pattern_rest_binding_target() {
+    let program = parse_and_resolve(
+        r#"
+        var obj = {
+          *method([...[x, y]]) {
+            console.log(x + y);
+          }
+        };
+
+        obj.method([1, 2]).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("array rest binding targets should allow nested array patterns");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"

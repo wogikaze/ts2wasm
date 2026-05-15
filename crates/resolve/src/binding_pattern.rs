@@ -128,12 +128,6 @@ fn parse_array_binding_pattern(
         }
         let (target, default, is_rest) = split_array_binding_target(part, span)?;
         let target = parse_array_binding_target(target, span)?;
-        if is_rest && !matches!(target, BindingTarget::Identifier(_)) {
-            return Err(issue_251(
-                "rest binding targets must be identifiers in this runtime slice",
-                span,
-            ));
-        }
         bindings.push(ArrayBinding {
             index,
             target,
