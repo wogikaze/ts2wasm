@@ -130,3 +130,15 @@ The smoke gate (`--smoke`) selects a fixed set of known-passing and known-unsupp
 | WeakMap / WeakSet | GC semantics が必要 |
 | Atomics / SharedArrayBuffer | threading model が必要 |
 | eval / Function constructor | AOT compiler と相性が悪い |
+
+## Issue-test mapping
+
+Every implementation issue must have a test referenced in its `## Test-Requirements`
+section. The mapping is recorded bidirectionally:
+
+- Issue file: `## Test-Requirements` lists test commands and fixture paths.
+- Fixture catalog: `issue_ids: [I-XXXXX]` field on fixture entries.
+- Test file: `// covers: I-XXXXX` comment above the test function.
+
+The `artifacts/test-gap-analysis.json` file tracks the current coverage for every
+implementation issue. Run `scripts/check/issue-test-map.py` to regenerate.

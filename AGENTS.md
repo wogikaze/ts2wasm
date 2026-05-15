@@ -115,8 +115,13 @@ git status --short
 ### 作業終了（done）
 
 - acceptance の全コマンドを実行する。
-- `mise run issue-status <id> done --evidence "mise run gate: exit 0"`
+- implementation issue の場合: `## Test-Requirements` の全てのテストコマンドが pass していること。
+- `mise run issue-status <id> done --evidence "mise run <command>: exit 0"`
 - 必要なら Evidence セクションを追記する (commit hash は任意)。
+- implementation issue の場合、以下いずれかが必須:
+  - passing test (differential or snapshot) が Test-Requirements に記載されている
+  - expected-fail test で default gate から除外されている (fixture catalog に status=fail + issue_id)
+  - architecture rules により no-test-exception が承認されている
 - 残作業がある場合は、`mise run issue-create` で新規 issue に分離する。
 
 ### 途中終了

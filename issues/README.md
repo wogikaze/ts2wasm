@@ -40,6 +40,13 @@ Next: <次のアクション>         # open/doing は必須
 
 ## Notes
 - ...
+
+## Test-Requirements (implementation issues only)
+- Test type: [differential|snapshot|unit|command-contract|no-test]
+- Fixture path(s):
+- Test command(s):
+- Expected result: [pass|fail-then-fix]
+- Default gate: [yes|no]
 ```
 
 **パース規則:**
@@ -56,6 +63,7 @@ Next: <次のアクション>         # open/doing は必須
 | doing | Owner, Next | — |
 | blocked | DependsOn または BlockedReason | — |
 | done | Evidence (本文) | Next, Owner |
+| done (implementation) | Evidence (本文), Test-Requirements | Next, Owner |
 | dropped | BlockedReason または Notes | Next, Owner |
 
 ## Commands
