@@ -1,4 +1,5 @@
 // @ts-nocheck
-const obj = {};
-const constructorLike = { prototype: {} };
-console.log(obj instanceof constructorLike);
+// Dynamic instanceof with a function (not a class) as RHS
+function MyClass() {}
+const obj = new MyClass();
+console.log(obj instanceof MyClass);

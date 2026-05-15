@@ -583,12 +583,59 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_symbol_has_instance(&self, wat: &mut String) {
+        let prototype_ptr = self.string_offset("prototype");
+        let prototype_len = self.string_len("prototype");
         wat.push_str(&format!(
             r#"
   (func $symbol_has_instance (param $constructor i32) (param $value i32) (result i32)
+    (local $tag i32)
+    (local $proto i32)
+    (local $target_proto i32)
+    (local $current_proto i32)
+    ;; Step 1: Type(constructor) must be Object
+    (local.set $tag (i32.and (local.get $constructor) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag}))
+      (then (return (i32.const {false}))))
+    ;; Step 2: Type(value) must be Object, otherwise return false
+    (local.set $tag (i32.and (local.get $value) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag}))
+      (then (return (i32.const {false}))))
+    ;; Step 3: Get constructor["prototype"]
+    (local.set $proto
+      (call $property_get
+        (local.get $constructor)
+        (i32.const {prototype_ptr})
+        (i32.const {prototype_len})))
+    ;; Step 4: Type(proto) must be Object
+    (local.set $tag (i32.and (local.get $proto) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag}))
+      (then (return (i32.const {false}))))
+    ;; Step 5: Walk value's prototype chain
+    (local.set $target_proto (i32.and (local.get $proto) (i32.const {heap_mask})))
+    (local.set $current_proto
+      (i32.load
+        (i32.add
+          (i32.and (local.get $value) (i32.const {heap_mask}))
+          (i32.const {obj_proto}))))
+    (block $instanceof_done
+      (loop $instanceof_loop
+        (br_if $instanceof_done (i32.eqz (local.get $current_proto)))
+        (if (i32.eq (local.get $current_proto) (local.get $target_proto))
+          (then (return (i32.const {true}))))
+        (local.set $current_proto
+          (i32.load
+            (i32.add (local.get $current_proto) (i32.const {obj_proto}))))
+        (br $instanceof_loop)))
     (i32.const {false}))
 "#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            true = ValueTag::TRUE,
             false = ValueTag::FALSE,
+            prototype_ptr = prototype_ptr,
+            prototype_len = prototype_len,
         ));
     }
 
