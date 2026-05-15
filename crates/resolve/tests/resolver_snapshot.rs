@@ -97,6 +97,13 @@ fn resolver_allows_test262_ambient_reference_error_probe() {
 }
 
 #[test]
+fn resolver_allows_later_parameter_reference_in_default() {
+    let stmts = resolve_names(&parse("var obj = { *method(x = y, y) { y; } };")).unwrap();
+
+    assert_eq!(stmts.len(), 1);
+}
+
+#[test]
 fn resolver_snapshot_null_undefined() {
     let stmts = resolve_names(&parse("let n = null; let u = undefined;")).unwrap();
     assert_eq!(stmts.len(), 2);

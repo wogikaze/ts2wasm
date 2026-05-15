@@ -471,7 +471,7 @@ impl NameResolver {
                 // Now resolve the function body with its own scope
                 self.enter_scope();
                 self.function_depth += 1;
-                for (param_name, default, is_rest) in params {
+                for (param_name, _default, is_rest) in params {
                     self.declare_binding(param_name, Some(*span), false)?;
                     if *is_rest {
                         // For rest params with binding patterns like (...[value]),
@@ -484,11 +484,11 @@ impl NameResolver {
                             }
                         }
                     }
+                }
+                for (_, default, _) in params {
                     if let Some(default_expr) = default {
                         self.resolve_expr(default_expr)?;
                     }
-                    // Rest parameters don't need special handling in name resolution
-                    let _ = is_rest;
                 }
                 let resolved_body = self.resolve_block(body)?;
                 self.function_depth -= 1;
@@ -941,7 +941,7 @@ impl NameResolver {
                 if !name.is_empty() {
                     self.declare_binding(name, Some(*span), false)?;
                 }
-                for (param_name, default, is_rest) in params {
+                for (param_name, _default, is_rest) in params {
                     self.declare_binding(param_name, Some(*span), false)?;
                     if *is_rest {
                         // For rest params with binding patterns like (...[value]),
@@ -954,10 +954,11 @@ impl NameResolver {
                             }
                         }
                     }
+                }
+                for (_, default, _) in params {
                     if let Some(default_expr) = default {
                         self.resolve_expr(default_expr)?;
                     }
-                    let _ = is_rest;
                 }
                 let resolved_body = self.resolve_block(body)?;
                 self.function_depth -= 1;

@@ -457,6 +457,30 @@ fn lowering_allows_call_computed_object_binding_property() {
 }
 
 #[test]
+fn lowering_allows_later_parameter_reference_default() {
+    let program = parse_and_resolve(
+        r#"
+        function assertThrows(callback) {
+          callback();
+        }
+
+        var obj = {
+          *method(x = y, y) {
+            y;
+          }
+        };
+
+        assertThrows(function() {
+          obj.method();
+        });
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("later parameter default references should lower to runtime ReferenceError");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"
