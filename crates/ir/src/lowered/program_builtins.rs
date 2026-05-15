@@ -91,9 +91,7 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "defineProperty" => Some(RuntimeFn::ReflectDefineProperty),
                 "deleteProperty" => Some(RuntimeFn::ReflectDeleteProperty),
                 "get" => Some(RuntimeFn::ReflectGet),
-                "getOwnPropertyDescriptor" => {
-                    Some(RuntimeFn::ObjectGetOwnPropertyDescriptor)
-                }
+                "getOwnPropertyDescriptor" => Some(RuntimeFn::ObjectGetOwnPropertyDescriptor),
                 "getPrototypeOf" => Some(RuntimeFn::ObjectGetPrototypeOf),
                 "has" => Some(RuntimeFn::ReflectHas),
                 "isExtensible" => Some(RuntimeFn::ObjectIsExtensible),

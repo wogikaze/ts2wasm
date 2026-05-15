@@ -147,7 +147,10 @@ impl super::super::Resolver {
                 intrinsic: RuntimeFn::SymbolWellKnown,
                 args: vec![
                     LoweredExpr::Number(wk_index as i32, Span::generated("wk_idx")),
-                    LoweredExpr::String(well_known_symbol_description(key), Span::generated("wk_desc")),
+                    LoweredExpr::String(
+                        well_known_symbol_description(key),
+                        Span::generated("wk_desc"),
+                    ),
                 ],
                 span: Span::generated("runtime_call"),
             });

@@ -228,5 +228,4 @@ impl WatEmitter<'_> {
             scratch_offset = Layout::SCRATCH_OFFSET,
         ));
     }
-
 }
