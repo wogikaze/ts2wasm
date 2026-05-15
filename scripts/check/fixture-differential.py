@@ -84,6 +84,18 @@ def usage() -> argparse.Namespace:
         help="Limit number of fixtures to run (0 = unlimited)",
     )
     parser.add_argument(
+        "--sample",
+        type=int,
+        default=0,
+        help="Alias for --limit: sample N fixtures (0 = unlimited)",
+    )
+    parser.add_argument(
+        "--jsonl",
+        action="store_true",
+        default=False,
+        help="No-op: output is already JSONL (present for compatibility)",
+    )
+    parser.add_argument(
         "--iwasm-timeout",
         type=int,
         default=IWASM_TIMEOUT_SECONDS,
@@ -92,14 +104,40 @@ def usage() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def get_cargo_target_dir() -> Path:
+    """Get the cargo target directory via cargo metadata."""
+    try:
+        result = subprocess.run(
+            ["cargo", "metadata", "--format-version", "1", "--no-deps"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if result.returncode == 0:
+            import json
+            metadata = json.loads(result.stdout)
+            return Path(metadata.get("target_directory", ""))
+    except Exception:
+        pass
+    return REPO_ROOT / "target"
+
+
 def find_ts2wasm_binary(custom_path: str | None = None) -> str:
     """Locate the ts2wasm binary via explicit path, target dir, cargo build, or PATH."""
     if custom_path:
         p = Path(custom_path)
         if p.exists():
             return str(p.resolve())
+    # Try default target dir first
     if TS2WASM_BIN.exists():
         return str(TS2WASM_BIN)
+    # Try detecting actual cargo target directory (handles worktrees with shared target dir)
+    cargo_target = get_cargo_target_dir()
+    if cargo_target != REPO_ROOT / "target":
+        alt_bin = cargo_target / "debug" / "ts2wasm"
+        if alt_bin.exists():
+            return str(alt_bin.resolve())
     print("fixture-differential: building ts2wasm...", file=sys.stderr)
     result = subprocess.run(
         ["cargo", "build", "-p", "ts2wasm-cli"],
@@ -109,6 +147,11 @@ def find_ts2wasm_binary(custom_path: str | None = None) -> str:
     )
     if result.returncode == 0 and TS2WASM_BIN.exists():
         return str(TS2WASM_BIN)
+    # Check cargo target dir after build
+    cargo_target = get_cargo_target_dir()
+    alt_bin = cargo_target / "debug" / "ts2wasm"
+    if alt_bin.exists():
+        return str(alt_bin.resolve())
     which = subprocess.run(["which", "ts2wasm"], capture_output=True, text=True)
     if which.returncode == 0:
         return which.stdout.strip()
@@ -483,7 +526,7 @@ def main():
             print(f"fixture-differential: catalog error: {e}", file=sys.stderr)
             sys.exit(1)
 
-        limit = args.limit
+        limit = args.limit or args.sample
         if limit > 0:
             fixtures = fixtures[:limit]
         print(
