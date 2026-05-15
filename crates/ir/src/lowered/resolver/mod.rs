@@ -1061,13 +1061,17 @@ impl Resolver {
                 ))
             }
             ResolvedStmt::Function {
-                name, params, body, ..
+                name,
+                params,
+                body,
+                is_async,
+                ..
             } => {
                 let local_id = self.declare_local(name)?;
                 if self.ctx.facts.env_cell_names.contains(name) {
                     self.ctx.facts.env_cell_locals.insert(local_id);
                 }
-                let closure = self.lower_nested_function(name, params, body)?;
+                let closure = self.lower_nested_function(name, params, body, *is_async)?;
                 if let LoweredExpr::ArrowFn {
                     func_id,
                     captures,
