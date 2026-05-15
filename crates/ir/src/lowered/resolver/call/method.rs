@@ -3295,7 +3295,7 @@ impl super::super::Resolver {
         match expr {
             ResolvedExpr::New {
                 class_name, args, ..
-            } if matches!(class_name.as_str(), "Intl.NumberFormat" | "NumberFormat") => {
+            } if is_intl_number_format_class(class_name.as_str()) => {
                 self.intl_number_format_options_from_args(args)
             }
             ResolvedExpr::MethodCall {
@@ -3651,7 +3651,10 @@ fn is_number_format_runtime_fn(intrinsic: RuntimeFn) -> bool {
 }
 
 fn is_intl_number_format_class(class_name: &str) -> bool {
-    matches!(class_name, "Intl.NumberFormat" | "NumberFormat")
+    matches!(
+        class_name,
+        "Intl.NumberFormat" | "NumberFormat" | "Constructor"
+    )
 }
 
 fn static_string_expr(expr: &ResolvedExpr) -> Option<&str> {

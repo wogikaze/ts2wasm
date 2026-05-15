@@ -3,7 +3,7 @@
 /// Category: build_smoke.
 /// These tests confirm the compiler can emit Wasm for builtin invocations.
 /// Runtime semantics are validated in `m2_node_diff.rs` where supported.
-use std::path::Path;
+use std::{fs, path::Path};
 
 /// Build a fixture with the compiler and return stdout on success.
 fn run_fixture(path: &str) -> Result<String, String> {
@@ -29,6 +29,29 @@ fn run_fixture(path: &str) -> Result<String, String> {
         .arg(&output_wasm)
         .output()
         .map_err(|e| format!("Failed to execute ts2wasm: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(stderr.to_string());
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    Ok(stdout.to_string())
+}
+
+fn run_source(name: &str, source: &str) -> Result<String, String> {
+    let input = std::env::temp_dir().join(format!("ts2wasm-m6-{name}-{}.ts", std::process::id()));
+    fs::write(&input, source).map_err(|e| format!("Failed to write source: {e}"))?;
+    let output_wasm =
+        std::env::temp_dir().join(format!("ts2wasm-m6-{name}-{}.wasm", std::process::id()));
+
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output_wasm)
+        .output()
+        .map_err(|e| format!("Failed to execute ts2wasm: {e}"))?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
@@ -2355,6 +2378,26 @@ fn build_smoke_intl_numberformat() {
     assert!(
         result.is_ok(),
         "Intl.NumberFormat should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_intl_constructor_alias_resolved_options() {
+    let result = run_source(
+        "intl-constructor-alias-resolved-options",
+        r#"
+        function check(Constructor: any) {
+          let obj = new Constructor(undefined, { style: "currency", currency: "USD" });
+          console.log(obj.resolvedOptions().currency);
+        }
+
+        check(Intl.NumberFormat);
+        "#,
+    );
+    assert!(
+        result.is_ok(),
+        "Intl constructor alias resolvedOptions should build: {:?}",
         result.err()
     );
 }
