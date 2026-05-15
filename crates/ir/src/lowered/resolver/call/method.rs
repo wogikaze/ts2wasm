@@ -1321,6 +1321,24 @@ impl super::super::Resolver {
                         Span::generated("str"),
                     )));
                 }
+                ResolvedExpr::ArrowFn { params, .. } => {
+                    let params_str = params.join(", ");
+                    return Ok(Some(LoweredExpr::String(
+                        format!("({}) => {{ [native code] }}", params_str),
+                        Span::generated("str"),
+                    )));
+                }
+                ResolvedExpr::FunctionExpr { name, .. } => {
+                    let name_part = if name.is_empty() {
+                        String::new()
+                    } else {
+                        format!("{} ", name)
+                    };
+                    return Ok(Some(LoweredExpr::String(
+                        format!("function {}() {{ [native code] }}", name_part),
+                        Span::generated("str"),
+                    )));
+                }
                 _ => {}
             }
         }

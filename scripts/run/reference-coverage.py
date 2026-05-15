@@ -2280,7 +2280,52 @@ def main():
                 _iwasm_t0 = time.perf_counter()
                 # Use persistent WAMR runner pool when available, fall back to iwasm CLI
                 if wamr_pool:
-                    runner = _wamr_queue.get()
+                    try:
+                        runner = _wamr_queue.get(timeout=30)
+                    except Exception:
+                        # Queue empty or get() failed; fall back to iwasm CLI
+                        phase_timers["server_fallback_batches"] += 1
+                        wasm_result = subprocess.run(
+                            ["timeout", "5s", "iwasm", str(wasm_path)],
+                            capture_output=True, text=True, cwd=REPO_ROOT,
+                        )
+                        phase_timers["iwasm_wall_ms"] += int(round((time.perf_counter() - _iwasm_t0) * 1000))
+                        if wasm_result.returncode == 0:
+                            actual = wasm_result.stdout
+                            if t262.ASSERT_FAILURE_SENTINEL in actual:
+                                return make_fail_record(
+                                    item,
+                                    "Test262AssertionFailure",
+                                    "test262 assertion failed",
+                                    actual=actual,
+                                    stderr=wasm_result.stderr,
+                                )
+                            if metadata.expects_negative:
+                                return classify_completed_negative_for_jsonl(item)
+                            if not should_run_node_oracle(item, actual):
+                                return make_fast_oracle_pass_record(item, actual)
+                            expected, node_ok = get_node_reference_for_item(item, thread_tmp)
+                            if node_ok and actual == expected:
+                                return make_pass_record(item, expected, actual)
+                            if node_ok:
+                                return make_mismatch_record(item, expected, actual, wasm_result.stderr)
+                            return make_blocked_record_for_node(item, expected, actual)
+                        if metadata.expects_negative:
+                            return make_unsupported_record(
+                                item,
+                                "NegativeRuntimeUnverified",
+                                "negative-runtime-unverified",
+                                "negative test rejected during execution but error type was not verified",
+                                stderr=wasm_result.stderr,
+                            )
+                        item["error_line"] = extract_error_line(wasm_result.stderr, item.get("source_code", ""))
+                        return make_fail_record(
+                            item,
+                            f"RuntimeError:{wasm_result.returncode}",
+                            wasm_result.stderr[:200] if wasm_result.stderr else "runtime execution failed",
+                            actual=wasm_result.stdout,
+                            stderr=wasm_result.stderr,
+                        )
                     try:
                         job = json.dumps({"id": 0, "wasm_path": str(wasm_path)})
                         runner.stdin.write(job + "\n")
@@ -2496,6 +2541,8 @@ def main():
 
                     server_proc = None
                     wamr_pool = []
+                    import queue as _wamr_qmod
+                    _wamr_queue = _wamr_qmod.Queue()
                     semantic_executor = None
                     pending_semantic = set()
                     max_pending_semantic = max(semantic_jobs * 4, 1)
@@ -2538,10 +2585,8 @@ def main():
                                             pass
                                     if wamr_pool:
                                         print(f"  WAMR runner pool: {len(wamr_pool)} processes", file=sys.stderr)
-                                import queue as _queue
-                                _wamr_queue = _queue.Queue()
-                                for p in wamr_pool:
-                                    _wamr_queue.put(p)
+                                        for p in wamr_pool:
+                                            _wamr_queue.put(p)
 
                         try:
                             batch_size = int(os.environ.get("TS2WASM_REFERENCE_COVERAGE_BATCH", "1000") or "1000")

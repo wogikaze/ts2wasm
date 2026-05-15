@@ -22,3 +22,15 @@ console.log(empty.name);
 console.log(empty.length);
 console.log(single.name);
 console.log(single.length);
+
+// toString
+console.log(add.toString());
+console.log(greet.toString());
+
+// arrow function toString
+var arrowFn = (x: number) => x * 2;
+console.log(arrowFn.toString());
+
+// anonymous function expression toString
+var anonExpr = function(x: number) { return x + 1; };
+console.log(anonExpr.toString());
