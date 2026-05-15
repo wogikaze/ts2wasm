@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-05-12
+Last updated: 2026-05-15
 
 **Primary goal: feature-specific vertical compatibility slices after P14 architecture closure**
 
@@ -28,6 +28,29 @@ checks, target crate existence checks, tracking consistency, and `git diff
 Future work should be cut as feature-specific vertical slices. New slices should
 use `docs/templates/feature-slice.md`, keep final-state contracts in `docs/`,
 and record live implementation status in this file plus `issues/`.
+
+## Issue test audit (2026-05-15)
+
+All implementation issues were audited for test coverage. Gate hardening applied:
+- `mise run issue-status done` requires --evidence and ## Test-Requirements
+- `mise run issue-lint` treats done-without-evidence as error
+- AGENTS.md done definition requires test evidence for implementation issues
+
+Results:
+- Total issues: 331 (316 done + 15 open)
+- Implementation issues: 201
+- Covered by existing tests: 193
+- RED tests written for open issues: 2 (FQT8DP, WPZXJA)
+- Out of scope (tooling/clippy): 6
+- False-done discovered and reopened (pre-existing): 15 issues moved from issues/done/ back to issues/
+- New false-done found during audit: 0 (done issues in issues/done/ had existing test coverage)
+- RED tests written for 2 open false-done issues (FQT8DP, WPZXJA) to track remaining implementation
+
+Artifacts:
+- `artifacts/issue-classification.json` — per-issue stable JSON
+- `artifacts/test-gap-analysis.json` — per-issue test coverage decision
+- `artifacts/issue-inventory-report.md` — inventory report
+- `docs/superpowers/plans/2026-05-15-issue-test-addition.md` — full plan
 
 ## Last verified commands（代表）
 
