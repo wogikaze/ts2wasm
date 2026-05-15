@@ -9,6 +9,17 @@ use ts2wasm_ir::builtin::BuiltinId;
 pub(crate) const fn runtime_fn_from_builtin(builtin: BuiltinId) -> RuntimeFn {
     match builtin {
         BuiltinId::ConsoleLog => RuntimeFn::Log,
+        BuiltinId::ConsoleWarn => RuntimeFn::LogWarn,
+        BuiltinId::ConsoleError => RuntimeFn::LogError,
+        BuiltinId::ConsoleGroup => RuntimeFn::Log,
+        BuiltinId::ConsoleGroupEnd => RuntimeFn::Log,
+        BuiltinId::ConsoleGroupCollapsed => RuntimeFn::Log,
+        BuiltinId::ConsoleTime => RuntimeFn::Log,
+        BuiltinId::ConsoleTimeLog => RuntimeFn::Log,
+        BuiltinId::ConsoleTimeEnd => RuntimeFn::Log,
+        BuiltinId::ConsoleCount => RuntimeFn::Log,
+        BuiltinId::ConsoleCountReset => RuntimeFn::Log,
+        BuiltinId::ConsoleTrace => RuntimeFn::Log,
         BuiltinId::ReadStdinUtf8 => RuntimeFn::ReadStdinBytes,
         BuiltinId::FsReadFileSync => RuntimeFn::FsReadFileSync,
         BuiltinId::FsWriteFileSync => RuntimeFn::FsWriteFileSync,
@@ -35,7 +46,5 @@ pub(crate) const fn runtime_fn_from_builtin(builtin: BuiltinId) -> RuntimeFn {
         BuiltinId::DecodeURIComponent => RuntimeFn::DecodeURIComponent,
         BuiltinId::Escape => RuntimeFn::Escape,
         BuiltinId::Unescape => RuntimeFn::Unescape,
-        BuiltinId::ConsoleWarn => RuntimeFn::LogWarn,
-        BuiltinId::ConsoleError => RuntimeFn::LogError,
     }
 }

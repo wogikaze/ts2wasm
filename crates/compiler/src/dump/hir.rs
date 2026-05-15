@@ -184,5 +184,14 @@ fn hir_builtin_name(builtin: BuiltinId) -> &'static str {
         BuiltinId::Unescape => "unescape",
         BuiltinId::ConsoleWarn => "console.warn",
         BuiltinId::ConsoleError => "console.error",
+        BuiltinId::ConsoleGroup => "console.group",
+        BuiltinId::ConsoleGroupEnd => "console.groupEnd",
+        BuiltinId::ConsoleGroupCollapsed => "console.groupCollapsed",
+        BuiltinId::ConsoleTime => "console.time",
+        BuiltinId::ConsoleTimeLog => "console.timeLog",
+        BuiltinId::ConsoleTimeEnd => "console.timeEnd",
+        BuiltinId::ConsoleCount => "console.count",
+        BuiltinId::ConsoleCountReset => "console.countReset",
+        BuiltinId::ConsoleTrace => "console.trace",
     }
 }

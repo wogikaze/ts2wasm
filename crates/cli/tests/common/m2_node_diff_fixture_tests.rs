@@ -19,12 +19,12 @@ fn console_supplementary_matches_node_output() {
 fn console_unsupported_methods_report_console_diagnostics() {
     for (fixture, method) in [(
         "fixtures/builtins-and-io/console-unsupported-methods.ts",
-        "trace",
+        "dir",
     )] {
         // First method in the fixture triggers the diagnostic
         assert_build_fails_with_diagnostic(
             fixture,
-            "[UnsupportedBuiltin]",
+            "UnsupportedBuiltin",
             &format!("console.{} is not supported in this milestone", method),
             true,
         );
