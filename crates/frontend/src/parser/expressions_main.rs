@@ -1247,7 +1247,19 @@ impl Parser {
                 let mut args = Vec::new();
                 if !self.consume(TokenKind::RightParen) {
                     loop {
-                        args.push(self.expression()?);
+                        if let Some(spread_span) = self.consume_span(TokenKind::DotDotDot) {
+                            let spread_expr = self.unary()?;
+                            let end = spread_expr.span().end;
+                            args.push(Expr::Spread {
+                                expr: Box::new(spread_expr),
+                                span: Span {
+                                    start: spread_span.start,
+                                    end,
+                                },
+                            });
+                        } else {
+                            args.push(self.expression()?);
+                        }
                         if self.consume(TokenKind::RightParen) {
                             break;
                         }
@@ -1311,7 +1323,19 @@ impl Parser {
             let mut args = Vec::new();
             if self.consume(TokenKind::LeftParen) && !self.consume(TokenKind::RightParen) {
                 loop {
-                    args.push(self.expression()?);
+                    if let Some(spread_span) = self.consume_span(TokenKind::DotDotDot) {
+                        let spread_expr = self.unary()?;
+                        let end = spread_expr.span().end;
+                        args.push(Expr::Spread {
+                            expr: Box::new(spread_expr),
+                            span: Span {
+                                start: spread_span.start,
+                                end,
+                            },
+                        });
+                    } else {
+                        args.push(self.expression()?);
+                    }
                     if self.consume(TokenKind::RightParen) {
                         break;
                     }

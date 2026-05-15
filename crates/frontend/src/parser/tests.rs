@@ -878,6 +878,49 @@ mod tests {
     }
 
     #[test]
+    fn parses_new_expression_with_spread() {
+        let program = parse_program("let x = new Foo(...args);").unwrap();
+        let Stmt::Let {
+            expr: Expr::New { args, .. },
+            ..
+        } = &program[0]
+        else {
+            panic!("expected new expression let statement");
+        };
+        assert!(matches!(args[0], Expr::Spread { .. }));
+    }
+
+    #[test]
+    fn parses_new_expression_with_multiple_spread() {
+        let program =
+            parse_program("let x = new Foo(...a, ...b, c);").unwrap();
+        let Stmt::Let {
+            expr: Expr::New { args, .. },
+            ..
+        } = &program[0]
+        else {
+            panic!("expected new expression let statement");
+        };
+        assert!(matches!(args[0], Expr::Spread { .. }));
+        assert!(matches!(args[1], Expr::Spread { .. }));
+        assert!(!matches!(args[2], Expr::Spread { .. }));
+    }
+
+    #[test]
+    fn parses_new_expression_with_empty_args() {
+        // Regression: ensure empty new args still work
+        let program = parse_program("let x = new Foo();").unwrap();
+        let Stmt::Let {
+            expr: Expr::New { args, .. },
+            ..
+        } = &program[0]
+        else {
+            panic!("expected new expression let statement");
+        };
+        assert!(args.is_empty());
+    }
+
+    #[test]
     fn marks_syntactic_direct_eval_calls() {
         let program = parse_program("let result = eval(\"x\");").unwrap();
         let Stmt::Let { expr, .. } = &program[0] else {
