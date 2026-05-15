@@ -639,6 +639,18 @@ pub enum RuntimeFn {
     SymbolToString,
     /// Symbol.prototype.description getter — extracts description from "Symbol(desc)" format
     SymbolDescription,
+    /// Console.group / console.groupCollapsed — output label with indentation, then increment indent.
+    ConsoleGroupStart,
+    /// console.groupEnd — decrement indent level.
+    ConsoleGroupEndFn,
+    /// console.time — store start timestamp for the given label.
+    ConsoleTimeStart,
+    /// console.timeEnd — output label with elapsed time in ms.
+    ConsoleTimeEndFn,
+    /// console.count — increment counter for label and output count.
+    ConsoleCountImpl,
+    /// console.countReset — reset counter for label to zero.
+    ConsoleCountResetImpl,
     /// Pseudo-intrinsic: expanded into ArrayPushGrow + ArrayPush during IR lowering.
     /// Not a real runtime function.
     ArrayPushMany,
@@ -681,6 +693,7 @@ pub enum RuntimeGlobal {
     ExceptionHandlerDepth,
     GlobalThisObject,
     ObjectPrototypeObject,
+    ConsoleIndentLevel,
 }
 
 impl RuntimeGlobal {
@@ -703,6 +716,7 @@ impl RuntimeGlobal {
             Self::ExceptionHandlerDepth => "$exception_handler_depth",
             Self::GlobalThisObject => "$global_this_object",
             Self::ObjectPrototypeObject => "$object_prototype_object",
+            Self::ConsoleIndentLevel => "$console_indent_level",
         }
     }
 
@@ -722,6 +736,7 @@ impl RuntimeGlobal {
             Self::SetPrototypeAdd => NATIVE_SET_ADD_SENTINEL,
             Self::ExceptionPending | Self::ExceptionHandlerDepth => 0,
             Self::GlobalThisObject | Self::ObjectPrototypeObject => 0,
+            Self::ConsoleIndentLevel => 0,
         }
     }
 }
@@ -762,6 +777,7 @@ pub const GLOBALS_EXCEPTION_RUNTIME: &[RuntimeGlobal] = &[
     RuntimeGlobal::ExceptionPending,
     RuntimeGlobal::ExceptionHandlerDepth,
 ];
+const GLOBALS_CONSOLE_INDENT: &[RuntimeGlobal] = &[RuntimeGlobal::ConsoleIndentLevel];
 
 const READ_STDIN_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const WRITE_DEPS: &[RuntimeFn] = &[];
@@ -777,6 +793,12 @@ const ERROR_MESSAGE_DEPS: &[RuntimeFn] = &[
 const LOG_DEPS: &[RuntimeFn] = &[RuntimeFn::Write, RuntimeFn::ValueToStringInto];
 const LOG_WARN_DEPS: &[RuntimeFn] = &[RuntimeFn::Write, RuntimeFn::ValueToStringInto];
 const LOG_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write, RuntimeFn::ValueToStringInto];
+const CONSOLE_GROUP_START_DEPS: &[RuntimeFn] = &[RuntimeFn::Write, RuntimeFn::ValueToStringInto];
+const CONSOLE_GROUP_END_DEPS: &[RuntimeFn] = &[];
+const CONSOLE_TIME_START_DEPS: &[RuntimeFn] = &[];
+const CONSOLE_TIME_END_DEPS: &[RuntimeFn] = &[RuntimeFn::Write, RuntimeFn::ValueToStringInto];
+const CONSOLE_COUNT_DEPS: &[RuntimeFn] = &[RuntimeFn::Write, RuntimeFn::ValueToStringInto];
+const CONSOLE_COUNT_RESET_DEPS: &[RuntimeFn] = &[];
 const STRING_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const CONCAT_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
@@ -1687,6 +1709,12 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ProcessArgv" => Some(RuntimeFn::ProcessArgv),
         "ProcessEnv" => Some(RuntimeFn::ProcessEnv),
         "ProcessExit" => Some(RuntimeFn::ProcessExit),
+        "ConsoleCountImpl" => Some(RuntimeFn::ConsoleCountImpl),
+        "ConsoleCountResetImpl" => Some(RuntimeFn::ConsoleCountResetImpl),
+        "ConsoleGroupEndFn" => Some(RuntimeFn::ConsoleGroupEndFn),
+        "ConsoleGroupStart" => Some(RuntimeFn::ConsoleGroupStart),
+        "ConsoleTimeEndFn" => Some(RuntimeFn::ConsoleTimeEndFn),
+        "ConsoleTimeStart" => Some(RuntimeFn::ConsoleTimeStart),
         "PropertyDelete" => Some(RuntimeFn::PropertyDelete),
         "PropertyGet" => Some(RuntimeFn::PropertyGet),
         "PropertyHas" => Some(RuntimeFn::PropertyHas),
@@ -1798,6 +1826,12 @@ impl RuntimeFn {
             | Self::Log
             | Self::LogWarn
             | Self::LogError
+            | Self::ConsoleGroupStart
+            | Self::ConsoleGroupEndFn
+            | Self::ConsoleTimeStart
+            | Self::ConsoleTimeEndFn
+            | Self::ConsoleCountImpl
+            | Self::ConsoleCountResetImpl
             | Self::PrivateBrandTypeError
             | Self::AllocHeap
             | Self::MemEqual
@@ -2147,6 +2181,9 @@ impl RuntimeFn {
             | Self::SetSymmetricDifference => GLOBALS_SET_PROTOTYPE_ADD,
             Self::ObjectPrototype => GLOBALS_OBJECT_PROTOTYPE,
             Self::GlobalThis => GLOBALS_GLOBAL_THIS,
+            Self::ConsoleGroupStart | Self::ConsoleGroupEndFn => GLOBALS_CONSOLE_INDENT,
+            Self::ConsoleTimeStart | Self::ConsoleTimeEndFn => GLOBALS_CONSOLE_INDENT,
+            Self::ConsoleCountImpl | Self::ConsoleCountResetImpl => GLOBALS_CONSOLE_INDENT,
             _ => NO_GLOBALS,
         }
     }
@@ -2329,6 +2366,13 @@ impl RuntimeFn {
             Self::Log,
             Self::LogWarn,
             Self::LogError,
+            // Console runtime functions
+            Self::ConsoleGroupStart,
+            Self::ConsoleGroupEndFn,
+            Self::ConsoleTimeStart,
+            Self::ConsoleTimeEndFn,
+            Self::ConsoleCountImpl,
+            Self::ConsoleCountResetImpl,
             Self::TruthyBool,
             Self::Not,
             Self::TypeOf,
@@ -2757,6 +2801,12 @@ impl RuntimeFn {
             Self::Log,
             Self::LogWarn,
             Self::LogError,
+            Self::ConsoleGroupStart,
+            Self::ConsoleGroupEndFn,
+            Self::ConsoleTimeStart,
+            Self::ConsoleTimeEndFn,
+            Self::ConsoleCountImpl,
+            Self::ConsoleCountResetImpl,
             Self::TruthyBool,
             Self::Not,
             Self::TypeOf,

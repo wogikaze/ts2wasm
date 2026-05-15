@@ -606,15 +606,24 @@ pub(super) fn resolve_console_call_expr(
                 BuiltinId::ConsoleGroup,
             )))
         }
-        "groupEnd" => Ok(Some(ResolvedExpr::Undefined)),
+        "groupEnd" => Ok(Some(log_expr(
+            vec![ResolvedExpr::String(String::new())],
+            BuiltinId::ConsoleGroupEnd,
+        ))),
         "count" => Ok(Some(log_expr(
             format_console_args(resolved_args),
             BuiltinId::ConsoleCount,
         ))),
-        "countReset" => Ok(Some(ResolvedExpr::Undefined)),
+        "countReset" => Ok(Some(log_expr(
+            format_console_args(resolved_args),
+            BuiltinId::ConsoleCountReset,
+        ))),
         "time" => {
-            // time starts a timer but does not log anything in Node.js
-            Ok(Some(ResolvedExpr::Undefined))
+            // time starts a timer; pass the label as argument
+            Ok(Some(log_expr(
+                format_console_args(resolved_args),
+                BuiltinId::ConsoleTime,
+            )))
         }
         "timeLog" => Ok(Some(log_expr(
             format_console_args(resolved_args),
