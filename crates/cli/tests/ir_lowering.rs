@@ -1333,6 +1333,21 @@ fn lowering_accepts_intl_list_format_methods() {
 }
 
 #[test]
+fn lowering_accepts_intl_date_time_format_format_method() {
+    let program = parse_and_resolve(
+        r#"
+        let dateTimeFormat = new Intl.DateTimeFormat();
+        let text = dateTimeFormat.format();
+        "#,
+    );
+
+    let lowered = ts2wasm_ir::lowered::lower_program(&program)
+        .expect("Intl.DateTimeFormat format method should lower");
+    ts2wasm_ir::lowered::validate_lowered(&lowered)
+        .expect("Intl.DateTimeFormat format method should validate");
+}
+
+#[test]
 fn lowering_accepts_testintl_duration_format_resolved_options_helper() {
     let program = parse_and_resolve(
         r#"

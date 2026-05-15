@@ -53,6 +53,9 @@ impl super::super::Resolver {
         if matches!(class_name, "Intl.NumberFormat" | "NumberFormat") {
             return self.lower_intl_number_format_constructor(args);
         }
+        if matches!(class_name, "Intl.DateTimeFormat" | "DateTimeFormat") {
+            return self.lower_intl_date_time_format_constructor(args);
+        }
         if matches!(class_name, "Intl.DurationFormat" | "DurationFormat") {
             return self.lower_intl_duration_format_constructor(args);
         }

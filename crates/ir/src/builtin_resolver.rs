@@ -2014,7 +2014,10 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 object, property, ..
             } = new_expr.as_ref()
                 && matches!(object.as_ref(), Expr::Ident { name, .. } if name == "Intl")
-                && matches!(property.as_str(), "DurationFormat" | "ListFormat")
+                && matches!(
+                    property.as_str(),
+                    "DateTimeFormat" | "DurationFormat" | "ListFormat"
+                )
             {
                 let resolved_args = args
                     .iter()

@@ -30,6 +30,9 @@ impl super::super::Resolver {
         if let Some(result) = self.lower_mcall_early(object, method, args, span)? {
             return Ok(result);
         }
+        if let Some(result) = self.lower_mcall_intl_date_time_format(object, method, args)? {
+            return Ok(result);
+        }
         if let Some(result) = self.lower_mcall_intl_duration_format(object, method, args)? {
             return Ok(result);
         }
@@ -798,6 +801,23 @@ impl super::super::Resolver {
                 args,
                 options.as_ref(),
             )?));
+        }
+        Ok(None)
+    }
+
+    fn lower_mcall_intl_date_time_format(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Intl")
+            && method == "DateTimeFormat"
+        {
+            return Ok(Some(self.lower_intl_date_time_format_constructor(args)?));
+        }
+        if self.is_intl_date_time_format_expr(object) && is_intl_date_time_format_method(method) {
+            return Ok(Some(self.lower_intl_date_time_format_method(method, args)?));
         }
         Ok(None)
     }
@@ -3395,6 +3415,13 @@ impl super::super::Resolver {
         })
     }
 
+    pub(crate) fn lower_intl_date_time_format_constructor(
+        &mut self,
+        _args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        Ok(intl_date_time_format_options_object())
+    }
+
     pub(crate) fn lower_intl_duration_format_constructor(
         &mut self,
         _args: &[ResolvedExpr],
@@ -3481,6 +3508,13 @@ impl super::super::Resolver {
         )
     }
 
+    fn is_intl_date_time_format_expr(&self, expr: &ResolvedExpr) -> bool {
+        matches!(
+            self.infer_class_for_expr(expr).as_deref(),
+            Some("Intl.DateTimeFormat" | "DateTimeFormat")
+        )
+    }
+
     fn is_intl_duration_format_expr(&self, expr: &ResolvedExpr) -> bool {
         matches!(
             self.infer_class_for_expr(expr).as_deref(),
@@ -3552,6 +3586,23 @@ impl super::super::Resolver {
             _ => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("Intl.NumberFormat.prototype.{method} is not supported"),
+                span: None,
+                phase: None,
+            }),
+        }
+    }
+
+    fn lower_intl_date_time_format_method(
+        &mut self,
+        method: &str,
+        _args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        match method {
+            "format" => Ok(string_lit("")),
+            "resolvedOptions" => Ok(intl_date_time_format_options_object()),
+            _ => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("Intl.DateTimeFormat.prototype.{method} is not supported"),
                 span: None,
                 phase: None,
             }),
@@ -3816,6 +3867,10 @@ fn is_intl_number_format_method(method: &str) -> bool {
     matches!(method, "format" | "formatToParts" | "resolvedOptions")
 }
 
+fn is_intl_date_time_format_method(method: &str) -> bool {
+    matches!(method, "format" | "resolvedOptions")
+}
+
 fn is_intl_duration_format_method(method: &str) -> bool {
     matches!(method, "format" | "formatToParts" | "resolvedOptions")
 }
@@ -3840,6 +3895,19 @@ fn is_intl_number_format_class(class_name: &str) -> bool {
         class_name,
         "Intl.NumberFormat" | "NumberFormat" | "Constructor"
     )
+}
+
+fn intl_date_time_format_options_object() -> LoweredExpr {
+    LoweredExpr::ObjectNew {
+        props: vec![
+            ("locale".to_owned(), string_lit("en")),
+            ("calendar".to_owned(), string_lit("gregory")),
+            ("numberingSystem".to_owned(), string_lit("latn")),
+            ("timeZone".to_owned(), string_lit("UTC")),
+        ],
+        non_enumerable: 0,
+        span: Span::generated("object_new"),
+    }
 }
 
 fn intl_duration_format_options_object() -> LoweredExpr {
