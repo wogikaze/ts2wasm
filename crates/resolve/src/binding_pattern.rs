@@ -27,7 +27,7 @@ pub enum BindingDefault {
     Null,
     Undefined,
     Array(Vec<Option<BindingDefault>>),
-    Object(Vec<(String, String)>),
+    Object(Vec<(String, BindingDefault)>),
     Call(String),
 }
 
@@ -210,12 +210,6 @@ fn parse_object_binding_pattern(
                 ));
             };
             if nested_object_target {
-                if default.is_some() {
-                    return Err(issue_251(
-                        "nested binding defaults are not supported in this runtime slice",
-                        span,
-                    ));
-                }
                 (
                     key,
                     BindingTarget::Pattern(Box::new(parse_object_binding_pattern(target, span)?)),
@@ -469,16 +463,22 @@ fn parse_binding_default(text: &str, span: Option<Span>) -> Result<BindingDefaul
     }
     if text.starts_with('{') && text.ends_with('}') {
         let inner = &text[1..text.len() - 1];
-        let props: Vec<(String, String)> = inner
-            .split(',')
-            .filter(|s| !s.is_empty())
-            .filter_map(|prop| {
-                let mut parts = prop.splitn(2, ':');
-                let key = parts.next()?.trim().to_string();
-                let value = parts.next()?.trim().to_string();
-                Some((key, value))
+        let props = split_top_level_commas(inner)
+            .into_iter()
+            .filter(|s| !s.trim().is_empty())
+            .map(|prop| {
+                let Some((key, value)) = split_top_level_once(prop, ':') else {
+                    return Err(issue_251(
+                        "object default properties must use key/value pairs in this runtime slice",
+                        span,
+                    ));
+                };
+                Ok((
+                    key.trim().to_owned(),
+                    parse_binding_default(value.trim(), span)?,
+                ))
             })
-            .collect();
+            .collect::<Result<Vec<_>, _>>()?;
         return Ok(BindingDefault::Object(props));
     }
     if let Some(value) = parse_string_literal(text) {

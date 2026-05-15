@@ -304,6 +304,24 @@ fn lowering_allows_object_pattern_inside_array_binding() {
 }
 
 #[test]
+fn lowering_applies_object_default_to_nested_object_binding_pattern() {
+    let program = parse_and_resolve(
+        r#"
+        var obj = {
+          *method({ w: { x } = { x: 23 } }) {
+            console.log(x);
+          }
+        };
+
+        obj.method({ w: undefined }).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("nested object binding patterns should apply object literal defaults");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"

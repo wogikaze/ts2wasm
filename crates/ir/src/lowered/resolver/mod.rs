@@ -1291,10 +1291,20 @@ pub(crate) fn lowered_binding_default(default: &BindingDefault) -> Option<Lowere
                 .collect(),
             span: Span::generated("array_new"),
         }),
-        BindingDefault::Object(props) => {
-            let _ = props;
-            Some(LoweredExpr::Undefined(Span::generated("undef")))
-        }
+        BindingDefault::Object(props) => Some(LoweredExpr::ObjectNew {
+            props: props
+                .iter()
+                .map(|(key, value)| {
+                    (
+                        key.clone(),
+                        lowered_binding_default(value)
+                            .unwrap_or_else(|| LoweredExpr::Undefined(Span::generated("undef"))),
+                    )
+                })
+                .collect(),
+            non_enumerable: 0,
+            span: Span::generated("object_new"),
+        }),
         BindingDefault::Call(_) => None,
     }
 }
