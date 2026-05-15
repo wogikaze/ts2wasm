@@ -3846,32 +3846,62 @@ impl super::super::Resolver {
         let defaults = default_intl_number_format_options();
         let options = options.unwrap_or(&defaults);
         match method {
-            "format" => Ok(string_lit(
-                args.first()
+            "format" => {
+                if let Some(static_val) = args
+                    .first()
                     .and_then(|arg| static_number_format_arg(arg, options))
-                    .unwrap_or_else(|| "NaN".to_owned()),
-            )),
-            "formatToParts" => Ok(LoweredExpr::ArrayNew {
-                elements: vec![LoweredExpr::ObjectNew {
-                    props: vec![
-                        (
-                            "type".to_owned(),
-                            string_lit(number_format_part_type(options)),
-                        ),
-                        (
-                            "value".to_owned(),
-                            string_lit(
-                                args.first()
-                                    .and_then(|arg| static_number_format_arg(arg, options))
-                                    .unwrap_or_else(|| "NaN".to_owned()),
-                            ),
-                        ),
-                    ],
-                    non_enumerable: 0,
-                    span: Span::generated("object_new"),
-                }],
-                span: Span::generated("array_new"),
-            }),
+                {
+                    return Ok(string_lit(static_val));
+                }
+                // Dynamic arg: emit RuntimeCall to host shim
+                let lowered_arg = self.lower_expr(args.first().ok_or_else(|| Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "Intl.NumberFormat.format requires an argument".to_owned(),
+                    span: None,
+                    phase: None,
+                })?)?;
+                let options_json = serialize_intl_options(options);
+                Ok(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::IntlNumberFormatFormat,
+                    args: vec![lowered_arg, string_lit(options_json)],
+                    span: Span::generated("runtime_call"),
+                })
+            }
+            "formatToParts" => {
+                if let Some(static_val) = args
+                    .first()
+                    .and_then(|arg| static_number_format_arg(arg, options))
+                {
+                    return Ok(LoweredExpr::ArrayNew {
+                        elements: vec![LoweredExpr::ObjectNew {
+                            props: vec![
+                                (
+                                    "type".to_owned(),
+                                    string_lit(number_format_part_type(options)),
+                                ),
+                                ("value".to_owned(), string_lit(static_val)),
+                            ],
+                            non_enumerable: 0,
+                            span: Span::generated("object_new"),
+                        }],
+                        span: Span::generated("array_new"),
+                    });
+                }
+                // Dynamic arg: emit RuntimeCall to host shim
+                let lowered_arg = self.lower_expr(args.first().ok_or_else(|| Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "Intl.NumberFormat.formatToParts requires an argument".to_owned(),
+                    span: None,
+                    phase: None,
+                })?)?;
+                let options_json = serialize_intl_options(options);
+                // At runtime formatToParts returns a JSON string that the caller must parse
+                Ok(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::IntlNumberFormatFormat,
+                    args: vec![lowered_arg, string_lit(options_json)],
+                    span: Span::generated("runtime_call"),
+                })
+            }
             "resolvedOptions" => Ok(LoweredExpr::ObjectNew {
                 props: vec![
                     ("locale".to_owned(), string_lit(options.locale.clone())),
@@ -4759,6 +4789,19 @@ fn civil_from_days(days_since_epoch: i64) -> (i32, u32, u32) {
     let m = mp + if mp < 10 { 3 } else { -9 };
     let year = y + if m <= 2 { 1 } else { 0 };
     (year as i32, m as u32, d as u32)
+}
+
+/// Serialize IntlNumberFormatOptions to a JSON string for the host shim.
+fn serialize_intl_options(options: &IntlNumberFormatOptions) -> String {
+    format!(
+        r#"{{"locale":"{}","style":"{}","currency":"{}","notation":"{}","compactDisplay":"{}","signDisplay":"{}"}}"#,
+        options.locale,
+        options.style,
+        options.currency,
+        options.notation,
+        options.compact_display,
+        options.sign_display,
+    )
 }
 
 fn string_lit(value: impl Into<String>) -> LoweredExpr {

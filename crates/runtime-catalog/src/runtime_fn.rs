@@ -308,6 +308,8 @@ pub enum RuntimeFn {
     StringToWellFormed,
     /// String.prototype.normalize (via host shim)
     StringNormalize,
+    /// Intl.NumberFormat.prototype.format (via host shim)
+    IntlNumberFormatFormat,
     /// String.prototype.replace
     StringReplace,
     /// String.prototype.replaceAll
@@ -944,6 +946,8 @@ const IMPORT_DATE_TO_TIME_STRING: &[HostImport] = &[HostImport::DateToTimeString
 const IMPORT_DATE_PARSE: &[HostImport] = &[HostImport::DateParse];
 const IMPORT_DATE_UTC: &[HostImport] = &[HostImport::DateUTC];
 const IMPORT_STRING_NORMALIZE: &[HostImport] = &[HostImport::StringNormalize];
+const IMPORT_INTL_NUMBER_FORMAT_FORMAT: &[HostImport] = &[HostImport::IntlNumberFormatFormat];
+const CAP_INTL_NUMBER_FORMAT_FORMAT: &[Capability] = &[Capability::HostIntlNumberFormatFormat];
 const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
 const CAP_STDOUT_WRITE: &[Capability] = &[Capability::StdoutWrite];
 const CAP_WASI_CLOCK_REALTIME: &[Capability] = &[Capability::WasiClockRealtime];
@@ -1493,6 +1497,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringIsWellFormed" => Some(RuntimeFn::StringIsWellFormed),
         "StringToWellFormed" => Some(RuntimeFn::StringToWellFormed),
         "StringNormalize" => Some(RuntimeFn::StringNormalize),
+        "IntlNumberFormatFormat" => Some(RuntimeFn::IntlNumberFormatFormat),
         "StringReplace" => Some(RuntimeFn::StringReplace),
         "StringReplaceAll" => Some(RuntimeFn::StringReplaceAll),
         "StringRaw" => Some(RuntimeFn::StringRaw),
@@ -2179,6 +2184,7 @@ impl RuntimeFn {
             | Self::StringIsWellFormed
             | Self::StringToWellFormed
             | Self::StringNormalize
+            | Self::IntlNumberFormatFormat
             | Self::StringFromCharCode
             | Self::StringFromCodePoint
             | Self::StringReplace
@@ -2687,6 +2693,7 @@ impl RuntimeFn {
             Self::StringIsWellFormed,
             Self::StringToWellFormed,
             Self::StringNormalize,
+            Self::IntlNumberFormatFormat,
             Self::RegexpMatchInner,
             Self::RegexpParseFlags,
             Self::StringReplace,
@@ -3141,6 +3148,7 @@ impl RuntimeFn {
             Self::StringIsWellFormed,
             Self::StringToWellFormed,
             Self::StringNormalize,
+            Self::IntlNumberFormatFormat,
             Self::RegexpMatchInner,
             Self::RegexpParseFlags,
             Self::StringReplace,

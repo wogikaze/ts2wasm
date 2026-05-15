@@ -2652,6 +2652,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::IntlNumberFormatFormat => RuntimeSpec {
+                symbol: "$intl_number_format_format",
+                deps: NO_DEPS,
+                imports: IMPORT_INTL_NUMBER_FORMAT_FORMAT,
+                capability: CAP_INTL_NUMBER_FORMAT_FORMAT,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::StringToLocaleString => RuntimeSpec {
                 symbol: "$string_to_locale_string",
                 deps: &[Self::IsString],

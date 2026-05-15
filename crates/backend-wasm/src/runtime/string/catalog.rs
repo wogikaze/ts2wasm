@@ -42,6 +42,7 @@ pub const STRING_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::StringReplaceAll,
     RuntimeFn::StringRaw,
     RuntimeFn::StringNormalize,
+    RuntimeFn::IntlNumberFormatFormat,
     RuntimeFn::StringToLocaleString,
     RuntimeFn::RegexpMatchInner,
     RuntimeFn::RegexpParseFlags,

@@ -366,6 +366,7 @@ fn node_shim_import_to_capability(import: &HostImport) -> Option<Capability> {
         HostImport::DateToTimeString => Some(Capability::HostDateToTimeString),
         HostImport::DateParse => Some(Capability::HostDateParse),
         HostImport::DateUTC => Some(Capability::HostDateUTC),
+        HostImport::IntlNumberFormatFormat => Some(Capability::HostIntlNumberFormatFormat),
         _ => None,
     }
 }
@@ -395,6 +396,7 @@ fn cap_is_host(cap: &Capability) -> bool {
             | Capability::HostDateToTimeString
             | Capability::HostDateParse
             | Capability::HostDateUTC
+            | Capability::HostIntlNumberFormatFormat
     )
 }
 

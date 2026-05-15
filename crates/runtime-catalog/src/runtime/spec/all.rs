@@ -2797,6 +2797,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::IntlNumberFormatFormat => RuntimeSpec {
+                symbol: "$intl_number_format_format",
+                deps: NO_DEPS,
+                imports: IMPORT_INTL_NUMBER_FORMAT_FORMAT,
+                capability: CAP_INTL_NUMBER_FORMAT_FORMAT,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::StringFromCharCode => RuntimeSpec {
                 symbol: "$string_from_char_code",
                 deps: STRING_FROM_CHAR_CODE_DEPS,

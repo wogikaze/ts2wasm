@@ -335,6 +335,7 @@ match self {
             Self::StringIsWellFormed => "string_is_well_formed",
             Self::StringToWellFormed => "string_to_well_formed",
             Self::StringNormalize => "string_normalize",
+            Self::IntlNumberFormatFormat => "intl_number_format_format",
             Self::StringFromCharCode => "string_from_char_code",
             Self::StringFromCodePoint => "string_from_code_point",
             Self::StringReplace => "string_replace",

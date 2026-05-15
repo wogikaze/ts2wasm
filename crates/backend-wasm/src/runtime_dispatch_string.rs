@@ -34,6 +34,7 @@ impl WatEmitter<'_> {
             RuntimeFn::StringIsWellFormed => self.emit_string_is_well_formed(wat),
             RuntimeFn::StringToWellFormed => self.emit_string_to_well_formed(wat),
             RuntimeFn::StringNormalize => self.emit_string_normalize(wat),
+            RuntimeFn::IntlNumberFormatFormat => self.emit_intl_number_format_format(wat),
             RuntimeFn::StringFromCharCode => self.emit_string_from_char_code(wat),
             RuntimeFn::StringFromCodePoint => self.emit_string_from_code_point(wat),
             RuntimeFn::StringReplace => self.emit_string_replace(wat),
