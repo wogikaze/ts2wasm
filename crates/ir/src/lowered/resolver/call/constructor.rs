@@ -27,10 +27,7 @@ impl super::super::Resolver {
             return self.lower_new_with_prototype(&bound.class_name, &combined_args, span);
         }
         if class_name == "RegExp" {
-            return Ok(LoweredExpr::String(
-                regexp_constructor_literal(&self.ctx, args)?,
-                Span::generated("str"),
-            ));
+            return self.lower_regexp_constructor(args);
         }
         if class_name == "Proxy" {
             let [target, _handler] = args else {
@@ -401,6 +398,34 @@ impl super::super::Resolver {
         }
 
         self.lower_new_with_prototype(class_name, args, span)
+    }
+
+    fn lower_regexp_constructor(
+        &mut self,
+        args: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if let Ok(raw) = regexp_constructor_literal(&self.ctx, args) {
+            return Ok(LoweredExpr::String(raw, Span::generated("str")));
+        }
+        let flags = regexp_constructor_static_flags(&self.ctx, args)?;
+        let pattern = args.first().expect("regexp arity was validated");
+        Ok(LoweredExpr::Binary {
+            left: Box::new(LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::String(
+                    "/".to_owned(),
+                    Span::generated("regexp_prefix"),
+                )),
+                op: LoweredBinaryOp::Add,
+                right: Box::new(self.lower_expr(pattern)?),
+                span: Span::generated("regexp_pattern_concat"),
+            }),
+            op: LoweredBinaryOp::Add,
+            right: Box::new(LoweredExpr::String(
+                format!("/{flags}"),
+                Span::generated("regexp_suffix"),
+            )),
+            span: Span::generated("regexp_constructor"),
+        })
     }
 
     /// Helper for lower_new_expr: construct the New expression with

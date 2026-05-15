@@ -34,7 +34,7 @@ pub(super) fn update_regexp_literal_local(
         ResolvedExpr::New {
             class_name, args, ..
         } if class_name == "RegExp" => {
-            crate::lowered::program_builtins::regexp_constructor_literal(ctx, args).is_ok()
+            crate::lowered::program_builtins::regexp_constructor_static_flags(ctx, args).is_ok()
         }
         _ => false,
     };

@@ -871,18 +871,7 @@ pub(crate) fn regexp_constructor_literal(
     ctx: &LoweringCtx,
     args: &[ResolvedExpr],
 ) -> Result<String, Diagnostic> {
-    if !(1..=2).contains(&args.len()) {
-        return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!(
-                "issue-051: RegExp constructor supports 1 string literal pattern and optional string literal flags in this subset, got {}",
-                args.len()
-            ),
-            span: None,
-
-            phase: None,
-        });
-    }
+    validate_regexp_constructor_arity(args)?;
     let Some(pattern) =
         crate::lowered::resolver::string::resolved_expr_static_string_value(ctx, &args[0])
     else {
@@ -896,6 +885,17 @@ pub(crate) fn regexp_constructor_literal(
             phase: None,
         });
     };
+    let flags = regexp_constructor_static_flags(ctx, args)?;
+    let raw = format!("/{pattern}/{flags}");
+    validate_regexp_constructor_flags(&flags, &raw, "RegExp constructor")?;
+    Ok(canonical_regexp_runtime_literal(&raw).unwrap_or(raw))
+}
+
+pub(crate) fn regexp_constructor_static_flags(
+    ctx: &LoweringCtx,
+    args: &[ResolvedExpr],
+) -> Result<String, Diagnostic> {
+    validate_regexp_constructor_arity(args)?;
     let flags = match args.get(1) {
         Some(flags) => {
             crate::lowered::resolver::string::resolved_expr_static_string_value(ctx, flags)
@@ -911,9 +911,23 @@ pub(crate) fn regexp_constructor_literal(
         }
         None => String::new(),
     };
-    let raw = format!("/{pattern}/{flags}");
-    validate_regexp_constructor_flags(&flags, &raw, "RegExp constructor")?;
-    Ok(canonical_regexp_runtime_literal(&raw).unwrap_or(raw))
+    validate_regexp_constructor_flags(&flags, &format!("//{flags}"), "RegExp constructor")?;
+    Ok(flags)
+}
+
+fn validate_regexp_constructor_arity(args: &[ResolvedExpr]) -> Result<(), Diagnostic> {
+    if !(1..=2).contains(&args.len()) {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!(
+                "issue-051: RegExp constructor supports 1 pattern and optional string literal flags in this subset, got {}",
+                args.len()
+            ),
+            span: None,
+            phase: None,
+        });
+    }
+    Ok(())
 }
 
 fn validate_regexp_constructor_flags(
@@ -990,7 +1004,7 @@ pub(crate) fn regexp_test_runtime(
             args: ctor_args,
             ..
         } if class_name == "RegExp" => {
-            regexp_constructor_literal(ctx, ctor_args)?;
+            regexp_constructor_static_flags(ctx, ctor_args)?;
             Ok(Some(vec![object.clone(), test_arg]))
         }
         _ => Ok(None),
@@ -1042,7 +1056,7 @@ pub(crate) fn regexp_string_match_runtime(
         ResolvedExpr::New {
             class_name, args, ..
         } if class_name == "RegExp" => {
-            regexp_constructor_literal(ctx, args)?;
+            regexp_constructor_static_flags(ctx, args)?;
         }
         _ => {
             return Err(Diagnostic {
@@ -1095,7 +1109,7 @@ pub(crate) fn regexp_exec_runtime(
             args: ctor_args,
             ..
         } if class_name == "RegExp" => {
-            regexp_constructor_literal(ctx, ctor_args)?;
+            regexp_constructor_static_flags(ctx, ctor_args)?;
             Ok(Some(vec![object.clone(), exec_arg]))
         }
         _ => Ok(None),

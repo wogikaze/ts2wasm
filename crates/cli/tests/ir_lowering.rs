@@ -1238,6 +1238,65 @@ fn lowering_accepts_static_string_regexp_constructor_pattern() {
 }
 
 #[test]
+fn lowering_accepts_intl_harness_static_regexp_constructor_pattern() {
+    let program = parse_and_resolve(
+        r#"
+        function isCanonicalizedStructurallyValidLanguageTag(locale) {
+          var alpha = "[a-z]",
+            digit = "[0-9]",
+            alphanum = "[a-z0-9]",
+            variant = "(" + alphanum + "{5,8}|(?:" + digit + alphanum + "{3}))",
+            region = "(" + alpha + "{2}|" + digit + "{3})",
+            script = "(" + alpha + "{4})",
+            language = "(" + alpha + "{2,3}|" + alpha + "{5,8})",
+            privateuse = "(x(-[a-z0-9]{1,8})+)",
+            singleton = "(" + digit + "|[a-wy-z])",
+            attribute= "(" + alphanum + "{3,8})",
+            keyword = "(" + alphanum + alpha + "(-" + alphanum + "{3,8})*)",
+            unicode_locale_extensions = "(u((-" + keyword + ")+|((-" + attribute + ")+(-" + keyword + ")*)))",
+            tlang = "(" + language + "(-" + script + ")?(-" + region + ")?(-" + variant + ")*)",
+            tfield = "(" + alpha + digit + "(-" + alphanum + "{3,8})+)",
+            transformed_extensions = "(t((-" + tlang + "(-" + tfield + ")*)|(-" + tfield + ")+))",
+            other_singleton = "(" + digit + "|[a-sv-wy-z])",
+            other_extensions = "(" + other_singleton + "(-" + alphanum + "{2,8})+)",
+            extension = "(" + unicode_locale_extensions + "|" + transformed_extensions + "|" + other_extensions + ")",
+            locale_id = language + "(-" + script + ")?(-" + region + ")?(-" + variant + ")*(-" + extension + ")*(-" + privateuse + ")?",
+            languageTag = "^(" + locale_id + ")$",
+            languageTagRE = new RegExp(languageTag, "i");
+          var duplicateSingleton = "-" + singleton + "-(.*-)?\\1(?!" + alphanum + ")",
+            duplicateSingletonRE = new RegExp(duplicateSingleton, "i"),
+            duplicateVariant = "(" + alphanum + "{2,8}-)+" + variant + "-(" + alphanum + "{2,8}-)*\\2(?!" + alphanum + ")",
+            duplicateVariantRE = new RegExp(duplicateVariant, "i");
+          var transformKeyRE = new RegExp("^" + alpha + digit + "$", "i");
+
+          return languageTagRE.test(locale)
+            && !duplicateSingletonRE.test(locale)
+            && !duplicateVariantRE.test(locale)
+            && transformKeyRE.test("a0");
+        }
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("Intl harness static RegExp constructor pattern should lower");
+}
+
+#[test]
+fn lowering_accepts_dynamic_new_regexp_pattern_for_string_match() {
+    let program = parse_and_resolve(
+        r#"
+        function getPatternParts(digits, formatted) {
+          var oneoneRE = "([^" + digits + "]*)[" + digits + "]+([^" + digits + "]+)[" + digits + "]+([^" + digits + "]*)";
+          return formatted.match(new RegExp(oneoneRE));
+        }
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("dynamic RegExp constructor pattern should lower for string match");
+}
+
+#[test]
 fn lowering_accepts_captured_static_regexp_constructor_test() {
     assert!(
         ts2wasm_ir::lowered::lower_program(&parse_and_resolve(
