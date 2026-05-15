@@ -843,6 +843,12 @@ impl Resolver {
                     && let Ok(local_id) = self.resolve_local(name)
                     && self.ctx.facts.array_locals.contains(&local_id)
                 {
+                    if let ResolvedExpr::Spread(spread_expr) = &args[0] {
+                        return Ok(LoweredStmt::Expr(
+                            self.lower_array_push_single_spread_arg(object, spread_expr.as_ref())?,
+                            Span::generated("expr_stmt"),
+                        ));
+                    }
                     return Ok(LoweredStmt::Assign(
                         local_id,
                         LoweredExpr::RuntimeCall {

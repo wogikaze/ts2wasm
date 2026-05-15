@@ -1979,6 +1979,15 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
+        if method == "push"
+            && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
+            && let [ResolvedExpr::Spread(spread_expr)] = args
+        {
+            return Ok(Some(self.lower_array_push_single_spread_arg(
+                object,
+                spread_expr.as_ref(),
+            )?));
+        }
         if method == "at"
             && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
         {
@@ -2172,6 +2181,14 @@ impl super::super::Resolver {
                     args: lowered_args,
                     span: Span::generated("runtime_call"),
                 }));
+            }
+            if (intrinsic == RuntimeFn::ArrayPush || intrinsic == RuntimeFn::ArrayPushGrow)
+                && let [ResolvedExpr::Spread(spread_expr)] = args
+            {
+                return Ok(Some(self.lower_array_push_single_spread_arg(
+                    object,
+                    spread_expr.as_ref(),
+                )?));
             }
             if (intrinsic == RuntimeFn::ArrayPush || intrinsic == RuntimeFn::ArrayPushGrow)
                 && args.len() != 1
@@ -2395,6 +2412,36 @@ impl super::super::Resolver {
             trap_args,
             span,
         )?))
+    }
+
+    pub(crate) fn lower_array_push_single_spread_arg(
+        &mut self,
+        object: &ResolvedExpr,
+        spread_expr: &ResolvedExpr,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let span = Span::generated("array_push_spread");
+        let receiver = self.alloc_temp();
+        Ok(LoweredExpr::Block {
+            stmts: vec![
+                LoweredStmt::Let(receiver, self.lower_expr(object)?, span),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::ArrayPushOrSpread,
+                        args: vec![
+                            LoweredExpr::Local(receiver, Span::generated("local")),
+                            self.lower_expr(spread_expr)?,
+                        ],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            result: Box::new(LoweredExpr::GetLength(
+                Box::new(LoweredExpr::Local(receiver, Span::generated("local"))),
+                Span::generated("get_length"),
+            )),
+            span,
+        })
     }
 
     fn lower_static_group_by_dispatch(
@@ -2909,6 +2956,12 @@ impl super::super::Resolver {
             let class_name = class_name.clone();
             let class_name = class_name.as_str();
             let is_array_like_class = class_name == "Array" || is_typed_array_class(class_name);
+            if class_name == "Array"
+                && method == "push"
+                && let [ResolvedExpr::Spread(spread_expr)] = args
+            {
+                return self.lower_array_push_single_spread_arg(object, spread_expr.as_ref());
+            }
             if class_name == "RegExp" && args.len() > 1 {
                 return Err(Diagnostic {
                     code: DiagCode::ArityMismatch,
@@ -3199,6 +3252,12 @@ impl super::super::Resolver {
         }
 
         if let Some(intrinsic) = collection_method_runtime_fn(class_name, method) {
+            if class_name == "Array"
+                && method == "push"
+                && let [ResolvedExpr::Spread(spread_expr)] = args
+            {
+                return self.lower_array_push_single_spread_arg(object, spread_expr.as_ref());
+            }
             if class_name == "RegExp" && args.len() > 1 {
                 return Err(Diagnostic {
                     code: DiagCode::ArityMismatch,
@@ -3219,6 +3278,13 @@ impl super::super::Resolver {
                 args: lowered_args,
                 span: Span::generated("runtime_call"),
             });
+        }
+
+        if class_name == "Array"
+            && method == "push"
+            && let [ResolvedExpr::Spread(spread_expr)] = args
+        {
+            return self.lower_array_push_single_spread_arg(object, spread_expr.as_ref());
         }
 
         if class_name == "Number"

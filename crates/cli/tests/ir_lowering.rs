@@ -1374,6 +1374,23 @@ fn lowering_accepts_testintl_list_format_to_parts_helper() {
 }
 
 #[test]
+fn lowering_accepts_array_push_spread_from_shift_result() {
+    let program = parse_and_resolve(
+        r#"
+        function flatten() {
+          let result = [[{ type: "element", value: "1 second" }]];
+          let flattened = [];
+          flattened.push(...result.shift());
+          return flattened;
+        }
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("Array.prototype.push should lower spread over shift result");
+}
+
+#[test]
 fn lowering_accepts_captured_static_regexp_constructor_test() {
     assert!(
         ts2wasm_ir::lowered::lower_program(&parse_and_resolve(
