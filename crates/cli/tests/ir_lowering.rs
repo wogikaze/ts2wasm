@@ -481,6 +481,25 @@ fn lowering_allows_later_parameter_reference_default() {
 }
 
 #[test]
+fn lowering_applies_prefix_increment_binding_default() {
+    let program = parse_and_resolve(
+        r#"
+        var initEvalCount = 0;
+        var obj = {
+          *method({ poisoned: x = ++initEvalCount }) {
+            console.log(x);
+          }
+        };
+
+        obj.method({ poisoned: undefined }).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("prefix increment binding defaults should lower through assignment semantics");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"

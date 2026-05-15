@@ -5,6 +5,7 @@ use crate::lowered::*;
 use std::collections::HashSet;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
+use ts2wasm_syntax::BinaryOp;
 
 impl super::super::Resolver {
     pub(crate) fn lower_binding_pattern_declarations(
@@ -300,6 +301,14 @@ impl super::super::Resolver {
                 callee: Box::new(ResolvedExpr::Ident(callee.clone())),
                 args: Vec::new(),
                 span: Span::generated("call"),
+            }),
+            BindingDefault::PreIncrement(name) => self.lower_expr(&ResolvedExpr::Assign {
+                name: name.clone(),
+                expr: Box::new(ResolvedExpr::Binary {
+                    left: Box::new(ResolvedExpr::Ident(name.clone())),
+                    op: BinaryOp::Add,
+                    right: Box::new(ResolvedExpr::Number(1)),
+                }),
             }),
             BindingDefault::Array(elements) => Ok(LoweredExpr::ArrayNew {
                 elements: elements

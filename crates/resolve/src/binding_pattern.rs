@@ -33,6 +33,7 @@ pub enum BindingDefault {
     ArrowFn,
     ClassExpr { name: String },
     Call(String),
+    PreIncrement(String),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -133,6 +134,7 @@ impl BindingDefault {
             Self::Ident(name) => names.push(name.as_str()),
             Self::FunctionExpr { .. } | Self::ArrowFn | Self::ClassExpr { .. } => {}
             Self::Call(_) => {}
+            Self::PreIncrement(name) => names.push(name.as_str()),
             Self::Array(elements) => {
                 for element in elements.iter().flatten() {
                     element.collect_ref_names(names);
@@ -496,6 +498,14 @@ fn parse_binding_default(text: &str, span: Option<Span>) -> Result<BindingDefaul
     {
         return Ok(BindingDefault::Call(callee.to_owned()));
     }
+    if let Some(name) = text.strip_prefix("++")
+        && is_identifier(name)
+    {
+        return Ok(BindingDefault::PreIncrement(name.to_owned()));
+    }
+    if let Some(name) = parse_debug_prefix_increment_default(text) {
+        return Ok(BindingDefault::PreIncrement(name));
+    }
     if text.starts_with('[') && text.ends_with(']') {
         let inner = &text[1..text.len() - 1];
         if inner.trim().is_empty() {
@@ -606,6 +616,13 @@ fn is_debug_empty_arrow_function_default(text: &str) -> bool {
 
 fn parse_debug_class_expression_default(text: &str) -> Option<String> {
     if !text.starts_with("ClassExpr {") {
+        return None;
+    }
+    extract_debug_string_field(text, "name")
+}
+
+fn parse_debug_prefix_increment_default(text: &str) -> Option<String> {
+    if !text.starts_with("Unary {") || !text.contains("op: PreIncrement") {
         return None;
     }
     extract_debug_string_field(text, "name")

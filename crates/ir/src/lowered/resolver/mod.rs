@@ -1312,7 +1312,8 @@ pub(crate) fn lowered_binding_default(default: &BindingDefault) -> Option<Lowere
         | BindingDefault::FunctionExpr { .. }
         | BindingDefault::ArrowFn
         | BindingDefault::ClassExpr { .. }
-        | BindingDefault::Call(_) => None,
+        | BindingDefault::Call(_)
+        | BindingDefault::PreIncrement(_) => None,
     }
 }
 
