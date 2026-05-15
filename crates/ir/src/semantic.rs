@@ -913,10 +913,45 @@ fn validate_stmts(stmts: &[HirStmt], context: ValidationContext<'_>, errors: &mu
     }
 }
 
+// Forbidden patterns in HIR that indicate backend/capability leakage.
+const HIR_FORBIDDEN_BUILTIN_PREFIXES: &[&str] =
+    &["RuntimeFn", "runtime_fn", "HostImport", "host_import"];
+const HIR_FORBIDDEN_STRING_PATTERNS: &[&str] = &[
+    "i32.load",
+    "i32.store",
+    "i32.add",
+    "i32.const",
+    "i64.load",
+    "i64.store",
+    "wasi_snapshot_preview1",
+    "host.",
+    "RuntimeFn::",
+    "Capability::",
+];
+
 fn validate_expr(expr: &HirExpr, context: ValidationContext<'_>, errors: &mut Vec<Diagnostic>) {
     match expr {
         HirExpr::LoadLocal(local) => validate_local(*local, context, errors),
-        HirExpr::LoadBuiltin(_) => {}
+        HirExpr::LoadBuiltin(name) => {
+            for prefix in HIR_FORBIDDEN_BUILTIN_PREFIXES {
+                if name.contains(prefix) {
+                    errors.push(invariant(format!(
+                        "HIR LoadBuiltin contains forbidden backend pattern '{}': '{}'",
+                        prefix, name
+                    )));
+                }
+            }
+        }
+        HirExpr::ConstString(s) => {
+            for pat in HIR_FORBIDDEN_STRING_PATTERNS {
+                if s.contains(pat) {
+                    errors.push(invariant(format!(
+                        "HIR string constant contains forbidden backend pattern '{}': '{}'",
+                        pat, s
+                    )));
+                }
+            }
+        }
         HirExpr::ToBoolean(expr) | HirExpr::JsUnaryNot(expr) | HirExpr::ArrayLength(expr) => {
             validate_expr(expr, context, errors);
         }
@@ -956,8 +991,7 @@ fn validate_expr(expr: &HirExpr, context: ValidationContext<'_>, errors: &mut Ve
         | HirExpr::ConstBool(_)
         | HirExpr::ConstNumber(_)
         | HirExpr::ConstDecimalNumber(_)
-        | HirExpr::ConstBigInt(_)
-        | HirExpr::ConstString(_) => {}
+        | HirExpr::ConstBigInt(_) => {}
     }
 }
 

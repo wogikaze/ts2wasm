@@ -1098,3 +1098,72 @@ console.log(\"max: \" + max(3, 7));
     assert!(mir_dump.contains("If"), "MIR dump:\n{mir_dump}");
     assert!(mir_dump.contains("Binary"), "MIR dump:\n{mir_dump}");
 }
+
+// ===========================================================================
+// Backend-leakage rejection tests — HIR must not contain backend details
+// ===========================================================================
+
+#[test]
+fn validate_hir_rejects_runtime_fn_symbol_in_load_builtin() {
+    use ts2wasm_diagnostic::DiagCode;
+    use ts2wasm_ir::semantic::{HirExpr, HirLocalId, HirProgram, HirStmt, validate_hir};
+
+    let hir = HirProgram {
+        body: vec![HirStmt::Expr(HirExpr::LoadBuiltin(
+            "RuntimeFn::MathRandom".to_owned(),
+        ))],
+        locals: vec![HirLocalId(0)],
+        functions: vec![],
+    };
+    let errors = validate_hir(&hir).unwrap_err();
+    assert!(
+        errors.iter().any(|e| {
+            e.code == DiagCode::InvariantViolation
+                && e.message.contains("RuntimeFn")
+                && e.message.contains("LoadBuiltin")
+        }),
+        "expected InvariantViolation for RuntimeFn in LoadBuiltin, got: {errors:?}"
+    );
+}
+
+#[test]
+fn validate_hir_rejects_host_import_string() {
+    use ts2wasm_diagnostic::DiagCode;
+    use ts2wasm_ir::semantic::{HirExpr, HirProgram, HirStmt, validate_hir};
+
+    let hir = HirProgram {
+        body: vec![HirStmt::Expr(HirExpr::ConstString(
+            "wasi_snapshot_preview1.fd_read".to_owned(),
+        ))],
+        locals: vec![],
+        functions: vec![],
+    };
+    let errors = validate_hir(&hir).unwrap_err();
+    assert!(
+        errors.iter().any(|e| {
+            e.code == DiagCode::InvariantViolation && e.message.contains("wasi_snapshot_preview1")
+        }),
+        "expected InvariantViolation for host import string in HIR, got: {errors:?}"
+    );
+}
+
+#[test]
+fn validate_hir_rejects_wat_snippet_in_string() {
+    use ts2wasm_diagnostic::DiagCode;
+    use ts2wasm_ir::semantic::{HirExpr, HirProgram, HirStmt, validate_hir};
+
+    let hir = HirProgram {
+        body: vec![HirStmt::Expr(HirExpr::ConstString(
+            "i32.load offset=4".to_owned(),
+        ))],
+        locals: vec![],
+        functions: vec![],
+    };
+    let errors = validate_hir(&hir).unwrap_err();
+    assert!(
+        errors
+            .iter()
+            .any(|e| { e.code == DiagCode::InvariantViolation && e.message.contains("i32.load") }),
+        "expected InvariantViolation for WAT snippet in HIR, got: {errors:?}"
+    );
+}

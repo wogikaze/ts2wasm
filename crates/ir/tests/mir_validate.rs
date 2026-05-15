@@ -183,3 +183,31 @@ fn native_mir_validate_rejects_try_without_catch_or_finally() {
         "try-catch must have at least a catch or finally block",
     );
 }
+
+#[test]
+fn mir_rejects_host_import_strings() {
+    let program = MirProgram {
+        top_level_statements: vec![MirStmt::Expr(
+            MirExpr::String("wasi_snapshot_preview1.fd_write".to_owned(), span()),
+            span(),
+        )],
+        ..empty_mir()
+    };
+
+    assert_invariant(validate_mir(&program), "wasi_snapshot_preview1");
+}
+
+#[test]
+fn mir_rejects_host_import_string_in_local() {
+    let program = MirProgram {
+        top_level_statements: vec![MirStmt::Let(
+            LocalId(0),
+            MirExpr::String("host.fs.readFileSync".to_owned(), span()),
+            span(),
+        )],
+        top_level_locals: vec![LocalId(0)],
+        ..empty_mir()
+    };
+
+    assert_invariant(validate_mir(&program), "host.");
+}

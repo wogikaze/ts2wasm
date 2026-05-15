@@ -4,7 +4,7 @@
 Usage:
   python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]
       [--paths-file PATH] [--path-filter TEXT] [--dashboard-data]
-      [--jsonl] [--jobs N] [--sample N] [--category PATTERN] [--no-server] [--no-semantic]
+      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--category PATTERN] [--no-server] [--no-semantic]
 
 Suites:
   test262   -> reference/test262/test/**/*.js
@@ -327,7 +327,7 @@ def usage():
     print("Usage:")
     print("  python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]")
     print("      [--paths-file PATH] [--path-filter TEXT] [--dashboard-data] [--no-dashboard-data]")
-    print("      [--jsonl] [--jobs N] [--sample N] [--category PATTERN] [--no-server] [--no-semantic]")
+    print("      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--category PATTERN] [--no-server] [--no-semantic]")
     print("      [--check-prerequisites]")
     print()
     print("Suites:")
@@ -337,6 +337,7 @@ def usage():
     print()
     print("Flags:")
     print("  --jsonl      Output results as JSONL (test262 only, server batch mode by default)")
+    print("  --output-jsonl PATH  Override JSONL output path (requires --jsonl)")
     print("  --jobs N     Number of parallel jobs (default: CPU count)")
     print("  --no-semantic disable semantic check (skip Node/iwasm execution after build)")
     print("  --sample N   Max files per category (test262 only, uses category-based sampling)")
@@ -1223,6 +1224,7 @@ def main():
     path_filters = []
     web_ui = True
     jsonl_output = False
+    output_jsonl_path = None
     jobs = None
     semantic_check = True
     sample = None
@@ -1322,6 +1324,12 @@ def main():
         elif args[i] == "--delta-report":
             delta_report = True
             i += 1
+        elif args[i] == "--output-jsonl":
+            if i + 1 >= len(args):
+                print("ERROR: --output-jsonl requires a file path", file=sys.stderr)
+                sys.exit(1)
+            output_jsonl_path = args[i + 1]
+            i += 2
         elif args[i] == "--triage-report-dir":
             if i + 1 >= len(args):
                 print("ERROR: --triage-report-dir requires a directory path", file=sys.stderr)
@@ -1517,7 +1525,10 @@ def main():
 
         results_dir = REPO_ROOT / "artifacts" / "coverage" / "results"
         results_dir.mkdir(parents=True, exist_ok=True)
-        jsonl_file = results_dir / f"{suite}-results.jsonl"
+        if output_jsonl_path:
+            jsonl_file = Path(output_jsonl_path)
+        else:
+            jsonl_file = results_dir / f"{suite}-results.jsonl"
 
         passed = 0
         failed = 0

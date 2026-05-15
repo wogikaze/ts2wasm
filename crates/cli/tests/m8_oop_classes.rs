@@ -131,3 +131,8 @@ fn build_smoke_class_getter_setter() {
 fn build_smoke_class_prototype_getter_setter() {
     assert_fixture_build_smoke("classes/class-prototype-getter-setter.ts");
 }
+
+#[test]
+fn semantic_diff_closure_gc_survival() {
+    assert_fixture_build_smoke("core-semantics/closure-gc-survival.ts");
+}

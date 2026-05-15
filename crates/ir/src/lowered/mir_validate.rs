@@ -347,6 +347,10 @@ fn validate_stmt(
     }
 }
 
+// Forbidden patterns in MIR string constants that indicate host import leakage.
+const MIR_FORBIDDEN_HOST_IMPORT_STRINGS: &[&str] =
+    &["wasi_snapshot_preview1.", "host.", "wasi_snapshot_preview1"];
+
 fn validate_expr(
     expr: &MirExpr,
     local_count: usize,
@@ -359,11 +363,20 @@ fn validate_expr(
         MirExpr::Number(_, _)
         | MirExpr::DecimalNumber(_, _)
         | MirExpr::BigIntLiteral { .. }
-        | MirExpr::String(_, _)
         | MirExpr::Bool(_, _)
         | MirExpr::Null(_)
         | MirExpr::Undefined(_)
         | MirExpr::BuiltinErrorPrototype(_, _) => {}
+        MirExpr::String(s, _) => {
+            for pat in MIR_FORBIDDEN_HOST_IMPORT_STRINGS {
+                if s.contains(pat) {
+                    errors.push(invariant(format!(
+                        "MIR string constant contains host import pattern '{}': '{}'",
+                        pat, s
+                    )));
+                }
+            }
+        }
         MirExpr::Local(id, _) => check_local_id(*id, local_count, errors),
         MirExpr::EnvCellNew(expr, _) => {
             validate_expr(expr, local_count, num_funcs, program, errors, true)

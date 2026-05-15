@@ -1,0 +1,76 @@
+# Frontend Reference Window
+# 50 reference paths grouped by frontend feature area for regression detection.
+# Generated from TypeScript test262 coverage corpus.
+#
+# Groups:
+#   source text/comments (1-8)
+#   identifiers/literals (9-16)
+#   ASI/statements (17-25)
+#   functions/arrows/classes (26-34)
+#   modules (35-42)
+#   TypeScript erased syntax (43-50)
+
+# --- source text/comments ---
+test262/test/language/comments/hashbang/escaped-hash.js
+test262/test/language/comments/hashbang/only.js
+test262/test/language/comments/multi-line.js
+test262/test/language/comments/single-line.js
+test262/test/language/comments/unicode.js
+test262/test/language/source-text/6.1.js
+test262/test/language/source-text/6.2.js
+test262/test/language/source-text/6.3.js
+
+# --- identifiers/literals ---
+test262/test/language/identifiers/start-unicode-escape.js
+test262/test/language/identifiers/part-unicode-escape.js
+test262/test/language/identifiers/identifier-unescape.js
+test262/test/language/literals/numeric/7.8.3-1gs.js
+test262/test/language/literals/numeric/octal-in-strict.js
+test262/test/language/literals/string/7.8.4-1gs.js
+test262/test/language/literals/regexp/S7.8.5_A3.1_T1.js
+test262/test/language/literals/regexp/S7.8.5_A4.1.js
+
+# --- ASI/statements ---
+test262/test/language/asi/S7.9_A11_T1.js
+test262/test/language/asi/S7.9_A5.1_T1.js
+test262/test/language/asi/S7.9_A6.1_T1.js
+test262/test/language/statements/block/S12.1_A1.js
+test262/test/language/statements/break/S12.8_A1_T1.js
+test262/test/language/statements/continue/S12.7_A1_T1.js
+test262/test/language/statements/if/if-let-const.js
+test262/test/language/statements/switch/S12.11_A1_T1.js
+test262/test/language/statements/while/S12.6_A1.js
+
+# --- functions/arrows/classes ---
+test262/test/language/statements/function/S13_A1.js
+test262/test/language/statements/function/params-trailing-comma.js
+test262/test/language/expressions/arrow-function/arrow.js
+test262/test/language/expressions/arrow-function/empty-body.js
+test262/test/language/expressions/arrow-function/params-trailing-comma.js
+test262/test/language/statements/class/class-definition.js
+test262/test/language/statements/class/constructor.js
+test262/test/language/statements/class/methods.js
+test262/test/language/statements/class/static-methods.js
+
+# --- modules ---
+test262/test/language/module-code/comment-single-line.js
+test262/test/language/module-code/comment-multi-line.js
+test262/test/language/module-code/export-default-function.js
+test262/test/language/module-code/export-named.js
+test262/test/language/module-code/import-named.js
+test262/test/language/module-code/import-star-as.js
+test262/test/language/module-code/instn-resolve-empty-import.js
+test262/test/language/module-code/instn-star-props.js
+
+# --- TypeScript erased syntax ---
+# These tests exercise TypeScript-specific syntax that is erased during
+# parsing. Results are expected to be `verified_negative_compile` or
+# `unsupported` (frontend-tracked).
+test262/test/language/typescript/interface-simple.js
+test262/test/language/typescript/type-alias-simple.js
+test262/test/language/typescript/enum-simple.js
+test262/test/language/typescript/namespace-simple.js
+test262/test/language/typescript/parameter-property.js
+test262/test/language/typescript/decorator-simple.js
+test262/test/language/typescript/abstract-class.js
+test262/test/language/typescript/readonly-property.js

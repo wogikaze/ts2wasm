@@ -52,6 +52,8 @@ Run `python scripts/manager.py issue-lint` and `python scripts/manager.py issue-
 
 ### P16 HIR to MIR Default Gate Snapshot
 
+HIR/MIR default: no-go
+
 Last audited: 2026-05-13T22:09:00+09:00.
 
 Gate result: no-go for making HIR -> MIR -> emit the default path. The HIR support

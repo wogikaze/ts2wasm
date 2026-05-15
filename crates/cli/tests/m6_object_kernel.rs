@@ -159,3 +159,25 @@ fn build_smoke_define_property_edge_cases() {
         result.err()
     );
 }
+
+// GC heap-kind survival fixture (build_smoke)
+#[test]
+fn semantic_diff_gc_heap_kind_survival() {
+    let result = run_fixture("object-semantics-kernel/gc-heap-kind-survival.ts");
+    assert!(
+        result.is_ok(),
+        "gc-heap-kind-survival should build: {:?}",
+        result.err()
+    );
+}
+
+// Object ABI kernel fixture (build_smoke)
+#[test]
+fn semantic_diff_object_abi_kernel() {
+    let result = run_fixture("object-semantics-kernel/object-abi-kernel.ts");
+    assert!(
+        result.is_ok(),
+        "object-abi-kernel should build: {:?}",
+        result.err()
+    );
+}
