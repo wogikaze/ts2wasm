@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Change issue status via script (safer than manual edit)."""
 
-import os, sys
+import os, re, sys
 from datetime import datetime, timezone, timedelta
 
 ISSUES_DIR = "issues"
@@ -20,6 +20,22 @@ def find_file(query):
         if query in fn:
             return os.path.join(ISSUES_DIR, fn)
     return None
+
+def has_test_requirements(body):
+    """Check if body contains ## Test-Requirements with non-empty content."""
+    m = re.search(r"## Test-Requirements\s*\n(.*?)(?:\n##|\Z)", body, re.DOTALL)
+    if not m:
+        return False
+    content = m.group(1).strip()
+    return bool(content) and content != "-"
+
+def is_implementation_issue(content):
+    """Heuristic: labels or title suggest implementation."""
+    return any(tag in content for tag in (
+        "type:feature", "type:bug", "area:runtime", "area:backend",
+        "area:frontend", "area:compiler", "area:semantics", "area:ir",
+        "area:host", "feature:"
+    ))
 
 if __name__ == "__main__":
     import argparse
@@ -44,6 +60,18 @@ if __name__ == "__main__":
     body = parts[1] if len(parts) > 1 else ""
 
     new_status = args.status
+
+    # Gate: done requires evidence
+    if new_status == "done" and not args.evidence:
+        print("ERROR: --evidence is required for status=done", file=sys.stderr)
+        sys.exit(1)
+
+    # Gate: implementation issues require Test-Requirements
+    if new_status == "done" and is_implementation_issue(content):
+        if not has_test_requirements(body):
+            print("ERROR: Implementation issues need ## Test-Requirements section for status=done", file=sys.stderr)
+            sys.exit(1)
+
     now = datetime.now(JST).strftime("%Y-%m-%dT%H:%M:%S+09:00")
 
     new_lines = []

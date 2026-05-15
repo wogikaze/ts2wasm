@@ -41,6 +41,7 @@ site/docs/coverage/web-ui/public/data/*.json
 
 # git worktrees
 _worktrees/
+.worktrees/
 
 # instant-grep index
 .ig/

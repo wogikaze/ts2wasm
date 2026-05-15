@@ -33,6 +33,7 @@ ID_RE = re.compile(r"^I-\d{8}-[A-HJ-NP-Z2-9]{6}$")
 seen_ids = set()
 seen_legacy = set()
 all_parsed = []
+check_test_refs = []
 
 for fn in sorted(os.listdir(ISSUES_DIR)):
     if fn in ("README.md",):
@@ -105,11 +106,23 @@ for fn in sorted(os.listdir(ISSUES_DIR)):
                 error("Blocked needs DependsOn or BlockedReason", fn)
         if status in ("done",):
             if header.get("Next", ""):
-                warn("Done should not have Next", fn)
+                error("Done should not have Next", fn)
             if header.get("Owner", "").strip():
-                warn("Done should not have Owner", fn)
-            if "Evidence" not in body and "# Evidence" not in body:
-                warn("Done without Evidence", fn)
+                error("Done should not have Owner", fn)
+            if "## Evidence" not in body and "# Evidence" not in body:
+                error("Done without Evidence section", fn)
+            # Verify evidence references test files
+            ev_m = re.search(r"## Evidence\s*\n(.*?)(?:\n##|\Z)", body, re.DOTALL)
+            if ev_m:
+                ev_text = ev_m.group(1)
+                for line in ev_text.split("\n"):
+                    line = line.strip().lstrip("- ").strip()
+                    # Check cargo test commands reference real tests
+                    m2 = re.match(r"cargo (nextest )?run.*?\s(build_smoke_\w+)", line)
+                    if m2:
+                        test_name = m2.group(2)
+                        cmd = f"cargo nextest run -p ts2wasm-cli --test m6_builtin_methods {test_name} --no-fail-fast"
+                        check_test_refs.append({"test": test_name, "cmd": cmd, "fn": fn})
         if status == "dropped":
             if not header.get("BlockedReason", "") and "## Notes" not in body:
                 error("Dropped needs BlockedReason or Notes", fn)
@@ -156,6 +169,31 @@ for fn in sorted(os.listdir(ISSUES_DIR)):
         error(f"Depends on self", fn)
 
     all_parsed.append({"id": iid, "status": status, "deps": deps.split(), "fn": fn})
+
+# Verify evidence test references are runnable
+for ref in check_test_refs:
+    test = ref["test"]
+    fn = ref["fn"]
+    # Check that test file exists via grep for the test fn name
+    test_files = ["crates/cli/tests/m6_builtin_methods.rs",
+                  "crates/cli/tests/m7_control_flow.rs",
+                  "crates/cli/tests/m8_oop_classes.rs",
+                  "crates/cli/tests/m9_modules.rs",
+                  "crates/cli/tests/m10_node_apis.rs",
+                  "crates/cli/tests/m11_host_deny.rs",
+                  "crates/cli/tests/m12_async_await.rs",
+                  "crates/cli/tests/m2_node_diff.rs",
+                  "crates/cli/tests/m2_node_diff_fixture_tests.rs",
+                  "crates/cli/tests/parser_ast_structures.rs"]
+    found = False
+    for tf in test_files:
+        if os.path.exists(tf):
+            with open(tf) as f:
+                if f"fn {test}" in f.read():
+                    found = True
+                    break
+    if not found:
+        warn(f"Evidence references test '{test}' but no test function found in crate tests", fn)
 
 # Cross-file checks
 id_map = {d["id"]: d for d in all_parsed if d["id"]}
