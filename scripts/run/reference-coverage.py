@@ -1198,6 +1198,103 @@ def _canonicalize_jsonl(jsonl_path):
         pass
 
 
+def _render_legacy_summary(summary, detail_jsonl_path=None):
+    """Render legacy key=value summary from a JSONL-format summary dict.
+
+    Called when test262 was routed through the JSONL path internally but the
+    user did not pass ``--jsonl``, so the old key=value stdout contract is
+    preserved.
+
+    When *detail_jsonl_path* is provided (``--detail`` set), the last N
+    records from the JSONL file are printed as per-file detail lines.
+    """
+    s = summary
+    denominator = s.get("denominator", 0)
+    build_pass = s.get("build_pass", 0)
+    semantic_pass = s.get("conformance_pass", s.get("semantic_pass", 0))
+    executed = s.get("executed", 0)
+
+    build_coverage = "0.00"
+    semantic_coverage = "0.00"
+    if denominator > 0:
+        build_coverage = f"{(build_pass / denominator) * 100:.2f}"
+        semantic_coverage = f"{(semantic_pass / denominator) * 100:.2f}"
+
+    # Map JSONL summary fields to legacy key=value names
+    unsupported_diagcodes = ",".join(
+        f"{code}:{count}" for code, count in
+        sorted(s.get("unsupported_diagcodes", {}).items(),
+               key=lambda x: (-x[1], x[0]))
+    )
+    unsupported_features = ",".join(
+        f"{feat}:{count}" for feat, count in
+        sorted(s.get("unsupported_features", {}).items(),
+               key=lambda x: (-x[1], x[0]))
+    )
+
+    differential_pass = s.get('differential_pass', s.get('passed', 0))
+    neg_compile_pass = s.get('negative_compile_pass', 0)
+    conformance_pass = s.get('conformance_pass', semantic_pass)
+    legacy_fail = s.get('fail', 0) + s.get('failed', 0)
+
+    print(f"suite={s.get('suite', 'test262')}")
+    print(f"denominator={denominator}")
+    print(f"executed={executed}")
+    print(f"coverage_percent={build_coverage}")
+    print(f"semantic_coverage_percent={semantic_coverage}")
+    print(f"build_pass={build_pass}")
+    print(f"semantic_pass={semantic_pass}")
+    print(f"differential_pass={differential_pass}")
+    print(f"negative_compile_pass={neg_compile_pass}")
+    print(f"conformance_pass={conformance_pass}")
+    print(f"mismatch={s.get('mismatch', 0)}")
+    print(f"runtime_error={s.get('runtime_error', 0)}")
+    print(f"fail={legacy_fail}")
+    print(f"unsupported={s.get('unsupported', 0)}")
+    print(f"blocked={s.get('blocked', 0)}")
+    print(f"verified_negative={neg_compile_pass}")
+    print(f"build_only={s.get('build_only', 0)}")
+    print(f"skip_with_reason={s.get('skip_with_reason', 0)}")
+    print(f"executable_build_pass={s.get('executable_build_pass', build_pass)}")
+    print(f"negative_compile_unverified={s.get('negative_compile_unverified', 0)}")
+    print(f"negative_compile_mismatch={s.get('negative_compile_mismatch', 0)}")
+    print(f"unsupported_diagcodes={unsupported_diagcodes}")
+    print(f"unsupported_features={unsupported_features}")
+    print(f"semantic_enabled={1 if s.get('semantic_enabled', True) else 0}")
+
+    # P1: --detail is a JSONL post-render, not a re-execution.
+    if detail_jsonl_path and detail_jsonl_path.is_file():
+        _render_detail_from_jsonl(detail_jsonl_path)
+
+
+def _render_detail_from_jsonl(jsonl_path):
+    """Print per-file detail lines from a JSONL file."""
+    print("\n# Per-file details")
+    try:
+        with jsonl_path.open("r", encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rec = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                case = rec.get("case", rec.get("file_path", ""))
+                # Normalize to repo-relative path for human-friendly output
+                if case:
+                    path_obj = Path(case)
+                    rp = repo_relative(path_obj)
+                    if rp:
+                        case = rp
+                status = rec.get("status", "?")
+                reason = rec.get("reason", status)
+                if case:
+                    print(f"  {case}: {status}: {reason}")
+    except OSError:
+        pass
+
+
 def main():
     # Handle --check-prerequisites before suite parsing (works standalone or with a suite)
     if "--check-prerequisites" in sys.argv:
@@ -1359,6 +1456,13 @@ def main():
     if jsonl_output and suite != "test262":
         print("ERROR: --jsonl is only supported for suite=test262", file=sys.stderr)
         sys.exit(1)
+
+    # P0: Route test262 through JSONL path always (even without --jsonl flag).
+    # The JSONL path has metadata cache, parallel prepare, and semantic worker
+    # isolation that are absent from the legacy aggregate path.
+    force_jsonl = (suite == "test262" and not jsonl_output)
+    if force_jsonl:
+        jsonl_output = True
 
     if _test262_semantic_requires_strict_oracle(suite, semantic_check):
         node_oracle_policy = os.environ.get("TS2WASM_TEST262_NODE_ORACLE", "auto").strip().lower()
@@ -1546,6 +1650,19 @@ def main():
         last_progress = 0
 
         jsonl_started_at = time.perf_counter()
+        # Phase profiler: track wall-clock durations for key stages
+        phase_timers = {
+            "discover_ms": 0,           # file discovery + filtering
+            "prepare_ms": 0,            # metadata parse + build_source
+            "server_build_ms": 0,       # server compile wall time
+            "semantic_iwasm_ms_wall": 0, # iwasm execution wall time
+            "semantic_node_ms_wall": 0,  # node oracle wall time
+            "jsonl_canonicalize_ms": 0,
+            "dashboard_ms": 0,
+            "server_fallback_batches": 0,
+            "node_processes": 0,
+            "iwasm_processes": 0,
+        }
         include_jsonl_source = os.environ.get("TS2WASM_JSONL_SOURCE", "0") not in ("0", "false", "False", "no", "NO")
         node_oracle_policy = os.environ.get("TS2WASM_TEST262_NODE_ORACLE", "auto").strip().lower()
         try:
@@ -1999,6 +2116,7 @@ def main():
             return {"type": "build_item", "index": index, "item": item}
 
         def get_node_reference_for_item(item, thread_tmp):
+            phase_timers["node_processes"] += 1
             node_source = t262.build_test262_source(
                 item["file_path"], item["source_code"], item["metadata"], target="node"
             )
@@ -2109,6 +2227,7 @@ def main():
             return make_fail_record(item, diag_code or "ExpectedNegativeFailure", reason)
 
         def run_wasm_oracle_for_item(item, wasm_path):
+            phase_timers["iwasm_processes"] += 1
             metadata = item["metadata"]
             thread_tmp = Path(tempfile.mkdtemp(dir=tmp_dir))
             try:
@@ -2277,6 +2396,7 @@ def main():
                     )
                 else:
                     prepared = [None] * len(files)
+                    _prepare_start = time.perf_counter()
                     with ThreadPoolExecutor(max_workers=prepare_jobs) as executor:
                         futures = {
                             executor.submit(prepare_jsonl_item, pair): pair[0]
@@ -2285,6 +2405,7 @@ def main():
                         for future in as_completed(futures):
                             result = future.result()
                             prepared[result["index"]] = result
+                    phase_timers["prepare_ms"] = int(round((time.perf_counter() - _prepare_start) * 1000))
 
                     build_items = []
                     for result in prepared:
@@ -2333,12 +2454,14 @@ def main():
                                 f"{prepare_jobs} prepare workers)...",
                                 file=sys.stderr,
                             )
+                        _server_build_start = time.perf_counter()
                         for start in range(0, len(build_items), batch_size):
                             batch = build_items[start:start + batch_size]
                             for item in batch:
                                 item["started_at"] = time.perf_counter()
 
                             if server_proc is None:
+                                phase_timers["server_fallback_batches"] += 1
                                 run_legacy_jsonl_batch(jsonl_out, batch)
                                 continue
 
@@ -2429,6 +2552,9 @@ def main():
                                         drain_semantic(block=True)
                             drain_semantic(block=False)
 
+                        # Record server build wall time (includes semantic drain overlap)
+                        phase_timers["server_build_ms"] = int(round((time.perf_counter() - _server_build_start) * 1000))
+
                         drain_semantic(block=True)
                     finally:
                         if semantic_executor is not None:
@@ -2474,6 +2600,10 @@ def main():
         summary_file = results_dir / f"{suite}-summary.json"
         summary_file.write_text(json.dumps(summary, indent=2), encoding="utf-8")
         write_latest_coverage_jsonl(summary)
+
+        # Write phase profile for performance analysis
+        profile_path = results_dir / f"{suite}-profile.json"
+        profile_path.write_text(json.dumps(phase_timers, indent=2), encoding="utf-8")
 
         legacy = dict(summary)
         legacy.pop("jsonl_file", None)
@@ -2539,6 +2669,14 @@ def main():
 
         if web_ui:
             refresh_web_ui_data()
+
+        # P0: When test262 was routed through JSONL path internally, render
+        # the legacy key=value summary for backward compatibility.
+        # Also render --detail if explicitly requested alongside --jsonl.
+        if force_jsonl:
+            _render_legacy_summary(summary, jsonl_file if detail_output else None)
+        elif detail_output:
+            _render_detail_from_jsonl(jsonl_file)
 
         return
 
