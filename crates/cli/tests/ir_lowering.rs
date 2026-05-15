@@ -7,6 +7,37 @@ fn parse_and_resolve(source: &str) -> Vec<ts2wasm_ir::builtin_resolved::Resolved
 }
 
 #[test]
+fn lowering_pads_object_get_own_property_descriptor_static_call_arity() {
+    use ts2wasm_ir::lowered::{LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        let noArgs = Object.getOwnPropertyDescriptor();
+        let oneArg = Object.getOwnPropertyDescriptor(1);
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program)
+        .expect("getOwnPropertyDescriptor arity padding should lower");
+    ts2wasm_ir::lowered::validate_lowered(&lowered)
+        .expect("padded getOwnPropertyDescriptor calls should validate");
+
+    for stmt in lowered.top_level_statements.iter().take(2) {
+        let LoweredStmt::Let(
+            _,
+            LoweredExpr::RuntimeCall {
+                intrinsic, args, ..
+            },
+            _,
+        ) = stmt
+        else {
+            panic!("expected top-level descriptor call let, got {stmt:?}");
+        };
+        assert_eq!(*intrinsic, RuntimeFn::ObjectGetOwnPropertyDescriptor);
+        assert_eq!(args.len(), 2);
+    }
+}
+
+#[test]
 fn lowering_routes_computed_proxy_get_through_proxy_get_trap() {
     use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
