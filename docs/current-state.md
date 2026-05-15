@@ -323,10 +323,39 @@ Compiler gaps blocking real harness usage:
 | Function self-reference in body | `unresolved name: X` | `crates/ir/src/semantic.rs` |
 | Prototype property as metadata | `prototype metadata is not supported` | `crates/ir/src/lowered/resolver/call/user.rs` |
 
-Tracking: `I-20260513-HDW7PQ`, `I-20260513-4E2BR9`
+Tracking: `I-20260513-HDW7PQ` (reopened — false-done audit), `I-20260513-4E2BR9`
 Plan: `plans/457-harness-compiler-gaps.md`
 
 ### tsc / tsgo
 
 No harness involved. Raw `.ts` files compiled directly via `reference-coverage`.
 tsc build_pass=668/6537 (10.4%), tsgo build_pass=50/166 (30.1%).
+
+## Issue Audit Outcome (2026-05-15)
+
+A full done audit of all 331 issue files was conducted in Phases 0-3:
+
+### Phase 0: Classification
+- 331 total issues (316 done, 15 open)
+- 214 implementation issues, 20 refactor, 9 architecture, 6 tooling, 2 test, 80 other (coverage meta)
+- 5 borderline coverage meta-issues remain without formal Evidence
+
+### Phase 0.5: Gate Hardening
+- `scripts/issue-status.py`: done transition now requires `--evidence`
+- Implementation issues additionally require `## Test-Requirements`
+- `scripts/issue-lint.py`: done-without-evidence is now ERROR (not warning)
+- AGENTS.md: added implementation issue completion definition
+
+### Phase 3a: False-Done Detection
+- 15 issues reopened from batch wave (all had "Closed in architecture batch wave" with no implementation)
+- Each tagged with False-done audit section documenting the gap
+- RED test added for P1 comma expression parser gap (I-20260515-PMTJTQ)
+
+### Coverage state
+| Category | Count |
+|---|---|
+| Implementation issues | 214 |
+| Covered (passing test) | 140 |
+| RED (test exists, excluded from gate) | 55 |
+| Missing (no test) | 11 (all reopened false-done) |
+| Done without evidence | 5 (coverage meta-issues) |
