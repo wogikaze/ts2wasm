@@ -165,20 +165,18 @@ impl super::Resolver {
                 phase: None,
             });
         }
-        if block_contains_this(body) || block_contains_arguments(body) {
+        if block_contains_this(body) {
             // If the function has an explicit `this` parameter (TypeScript syntax),
             // the `this` references are valid receiver accesses, not closure captures.
-            if block_contains_this(body) && params.iter().any(|p| p.name == "this") {
+            if params.iter().any(|p| p.name == "this") {
                 // Explicit `this` parameter: this is a receiver function, not a closure issue.
-            } else if block_contains_this(body)
-                && crate::lowered::program::function_body_is_strict(
-                    self.ctx.is_strict_context(),
-                    body,
-                )
-            {
+            } else if crate::lowered::program::function_body_is_strict(
+                self.ctx.is_strict_context(),
+                body,
+            ) {
                 // Strict functions do not substitute globalThis for direct calls;
                 // unresolved `this` lowers to undefined in this resolver scope.
-            } else if block_contains_this(body) {
+            } else {
                 // No explicit `this` parameter — this usage will have implicit `any` type.
                 // Report a more specific TS2683-compatible diagnostic.
                 return Err(Diagnostic {
@@ -190,18 +188,10 @@ impl super::Resolver {
 
                     phase: None,
                 });
-            } else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-062e: nested function `{name}` closures with `this` or `arguments` are not supported in this slice"
-                    ),
-                    span: None,
-
-                    phase: None,
-                });
             }
         }
+        // `arguments` in nested functions is handled by needs_arguments in the function
+        // signature, which injects `arguments` as a parameter via lower_function.
 
         let capture_names = self.nested_function_capture_names(name, params, body)?;
         let mutable_captures = capture_names
@@ -254,22 +244,20 @@ impl super::Resolver {
             })
             .filter(|_| !self.ctx.facts.env_cell_names.contains(name));
 
-        if block_contains_super_ref(body) {
-            self.ctx.symbols.function_signatures.insert(
-                func_id,
-                FunctionSignature {
-                    explicit_params: lowered_params.len(),
-                    needs_receiver: true,
-                    is_strict: crate::lowered::program::function_body_is_strict(
-                        self.ctx.is_strict_context(),
-                        body,
-                    ),
-                    needs_arguments: block_contains_arguments(body)
-                        && !params.iter().any(|param| param.name == "arguments"),
-                    ..FunctionSignature::default()
-                },
-            );
-        }
+        self.ctx.symbols.function_signatures.insert(
+            func_id,
+            FunctionSignature {
+                explicit_params: lowered_params.len(),
+                needs_receiver: block_contains_super_ref(body),
+                is_strict: crate::lowered::program::function_body_is_strict(
+                    self.ctx.is_strict_context(),
+                    body,
+                ),
+                needs_arguments: block_contains_arguments(body)
+                    && !params.iter().any(|param| param.name == "arguments"),
+                ..FunctionSignature::default()
+            },
+        );
         let function_signatures = self.ctx.symbols.function_signatures.clone();
 
         let lowered = lower_function(
@@ -439,7 +427,10 @@ impl super::Resolver {
             });
         }
         if block_contains_this(body) || block_contains_arguments(body) {
-            if force_receiver {
+            if block_contains_arguments(body) && !block_contains_this(body) {
+                // `arguments` is handled by needs_arguments in the function signature;
+                // the function already inserts the signature unconditionally below.
+            } else if force_receiver {
                 // Object literal method shorthand has an implicit receiver.
             } else if block_contains_this(body) && params.iter().any(|p| p.name == "this") {
                 // Explicit `this` parameter: this is a receiver function, not a closure issue.
