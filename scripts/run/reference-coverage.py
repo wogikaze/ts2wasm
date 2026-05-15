@@ -2279,68 +2279,26 @@ def main():
 
                 _iwasm_t0 = time.perf_counter()
                 # Use persistent WAMR runner pool when available, fall back to iwasm CLI
+                _wamr_runner = None
                 if wamr_pool:
                     try:
-                        runner = _wamr_queue.get(timeout=30)
+                        _wamr_runner = _wamr_queue.get(timeout=30)
                     except Exception:
-                        # Queue empty or get() failed; fall back to iwasm CLI
                         phase_timers["server_fallback_batches"] += 1
-                        wasm_result = subprocess.run(
-                            ["timeout", "5s", "iwasm", str(wasm_path)],
-                            capture_output=True, text=True, cwd=REPO_ROOT,
-                        )
-                        phase_timers["iwasm_wall_ms"] += int(round((time.perf_counter() - _iwasm_t0) * 1000))
-                        if wasm_result.returncode == 0:
-                            actual = wasm_result.stdout
-                            if t262.ASSERT_FAILURE_SENTINEL in actual:
-                                return make_fail_record(
-                                    item,
-                                    "Test262AssertionFailure",
-                                    "test262 assertion failed",
-                                    actual=actual,
-                                    stderr=wasm_result.stderr,
-                                )
-                            if metadata.expects_negative:
-                                return classify_completed_negative_for_jsonl(item)
-                            if not should_run_node_oracle(item, actual):
-                                return make_fast_oracle_pass_record(item, actual)
-                            expected, node_ok = get_node_reference_for_item(item, thread_tmp)
-                            if node_ok and actual == expected:
-                                return make_pass_record(item, expected, actual)
-                            if node_ok:
-                                return make_mismatch_record(item, expected, actual, wasm_result.stderr)
-                            return make_blocked_record_for_node(item, expected, actual)
-                        if metadata.expects_negative:
-                            return make_unsupported_record(
-                                item,
-                                "NegativeRuntimeUnverified",
-                                "negative-runtime-unverified",
-                                "negative test rejected during execution but error type was not verified",
-                                stderr=wasm_result.stderr,
-                            )
-                        item["error_line"] = extract_error_line(wasm_result.stderr, item.get("source_code", ""))
-                        return make_fail_record(
-                            item,
-                            f"RuntimeError:{wasm_result.returncode}",
-                            wasm_result.stderr[:200] if wasm_result.stderr else "runtime execution failed",
-                            actual=wasm_result.stdout,
-                            stderr=wasm_result.stderr,
-                        )
+                if _wamr_runner is not None:
                     try:
                         job = json.dumps({"id": 0, "wasm_path": str(wasm_path)})
-                        runner.stdin.write(job + "\n")
-                        runner.stdin.flush()
-                        resp_line = runner.stdout.readline()
+                        _wamr_runner.stdin.write(job + "\n")
+                        _wamr_runner.stdin.flush()
+                        resp_line = _wamr_runner.stdout.readline()
                         if resp_line:
                             try:
                                 wr = json.loads(resp_line)
                                 wasm_ok = wr.get("status") == "ok"
-                                actual = wr.get("stdout") or ""
-                                stderr_text = wr.get("stderr") or ""
                                 wasm_result = type("obj", (), {
                                     "returncode": 0 if wasm_ok else 1,
-                                    "stdout": actual,
-                                    "stderr": stderr_text,
+                                    "stdout": wr.get("stdout") or "",
+                                    "stderr": wr.get("stderr") or "",
                                 })()
                             except json.JSONDecodeError:
                                 wasm_result = type("obj", (), {
@@ -2351,25 +2309,23 @@ def main():
                                 "returncode": -1, "stdout": "", "stderr": "WAMR disconnected",
                             })()
                     except OSError:
-                        # Runner process died; restart it
                         phase_timers["server_fallback_batches"] += 1
                         wasm_result = subprocess.run(
                             ["timeout", "5s", "iwasm", str(wasm_path)],
                             capture_output=True, text=True, cwd=REPO_ROOT,
                         )
                     finally:
-                        # Restart dead runners before returning to pool
-                        if runner.poll() is not None:
+                        if _wamr_runner.poll() is not None:
                             phase_timers["server_fallback_batches"] += 1
                             try:
-                                runner = subprocess.Popen(
+                                _wamr_runner = subprocess.Popen(
                                     [str(REPO_ROOT / "crates" / "iwasm-runner" / "ts2wasm-iwasm-runner")],
                                     stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                     stderr=subprocess.DEVNULL, text=True,
                                 )
                             except OSError:
-                                pass  # Queue gets dead runner, next call will handle
-                        _wamr_queue.put(runner)
+                                pass
+                        _wamr_queue.put(_wamr_runner)
                 else:
                     wasm_result = subprocess.run(
                         ["timeout", "5s", "iwasm", str(wasm_path)],
