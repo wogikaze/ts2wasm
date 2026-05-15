@@ -29,6 +29,7 @@ pub enum BindingDefault {
     Array(Vec<Option<BindingDefault>>),
     Object(Vec<(String, BindingDefault)>),
     Ident(String),
+    FunctionExpr { name: String, is_generator: bool },
     Call(String),
 }
 
@@ -128,6 +129,7 @@ impl BindingDefault {
     fn collect_ref_names<'a>(&'a self, names: &mut Vec<&'a str>) {
         match self {
             Self::Ident(name) => names.push(name.as_str()),
+            Self::FunctionExpr { .. } => {}
             Self::Call(_) => {}
             Self::Array(elements) => {
                 for element in elements.iter().flatten() {
@@ -536,10 +538,76 @@ fn parse_binding_default(text: &str, span: Option<Span>) -> Result<BindingDefaul
     if is_identifier(text) {
         return Ok(BindingDefault::Ident(text.to_owned()));
     }
+    if let Some((name, is_generator)) = parse_empty_function_expression_default(text)
+        .or_else(|| parse_debug_empty_function_expression_default(text))
+    {
+        return Ok(BindingDefault::FunctionExpr { name, is_generator });
+    }
     Err(issue_251(
         "only literal default binding initializers are supported in this runtime slice",
         span,
     ))
+}
+
+fn parse_empty_function_expression_default(text: &str) -> Option<(String, bool)> {
+    let (rest, is_generator) = if let Some(rest) = text.strip_prefix("function*") {
+        (rest, true)
+    } else if let Some(rest) = text.strip_prefix("function") {
+        (rest, false)
+    } else {
+        return None;
+    };
+    let rest = rest.trim_start();
+    let params_start = rest.find('(')?;
+    let name = rest[..params_start].trim();
+    if !name.is_empty() && !is_identifier(name) {
+        return None;
+    }
+    let rest = &rest[params_start..];
+    let after_params = rest.strip_prefix("()")?.trim();
+    if !is_empty_block_text(after_params) {
+        return None;
+    }
+    Some((name.to_owned(), is_generator))
+}
+
+fn is_empty_block_text(text: &str) -> bool {
+    text.strip_prefix('{')
+        .and_then(|inner| inner.strip_suffix('}'))
+        .is_some_and(|inner| inner.trim().is_empty())
+}
+
+fn parse_debug_empty_function_expression_default(text: &str) -> Option<(String, bool)> {
+    if !text.starts_with("FunctionExpr {")
+        || !text.contains("params: []")
+        || !text.contains("body: []")
+    {
+        return None;
+    }
+    let name = extract_debug_string_field(text, "name")?;
+    let is_generator = extract_debug_bool_field(text, "is_generator")?;
+    Some((name, is_generator))
+}
+
+fn extract_debug_string_field(text: &str, field: &str) -> Option<String> {
+    let needle = format!("{field}: \"");
+    let start = text.find(&needle)? + needle.len();
+    let rest = &text[start..];
+    let end = rest.find('"')?;
+    Some(rest[..end].to_owned())
+}
+
+fn extract_debug_bool_field(text: &str, field: &str) -> Option<bool> {
+    let needle = format!("{field}: ");
+    let start = text.find(&needle)? + needle.len();
+    let rest = &text[start..];
+    if rest.starts_with("true") {
+        Some(true)
+    } else if rest.starts_with("false") {
+        Some(false)
+    } else {
+        None
+    }
 }
 
 fn parse_string_literal(text: &str) -> Option<String> {

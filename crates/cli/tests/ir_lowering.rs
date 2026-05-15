@@ -378,6 +378,25 @@ fn lowering_applies_identifier_default_to_nested_array_binding_element() {
 }
 
 #[test]
+fn lowering_applies_function_expression_binding_defaults() {
+    let program = parse_and_resolve(
+        r#"
+        var obj = {
+          *method([fn = function () {}, gen = function* () {}]) {
+            console.log(fn.name);
+            console.log(gen.name);
+          }
+        };
+
+        obj.method([]).next();
+        "#,
+    );
+
+    ts2wasm_ir::lowered::lower_program(&program)
+        .expect("binding defaults should allow empty function expressions");
+}
+
+#[test]
 fn class_method_declaring_class_reference_is_not_issue_289_capture() {
     parse_and_resolve(
         r#"

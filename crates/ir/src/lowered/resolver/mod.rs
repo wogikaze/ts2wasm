@@ -1308,7 +1308,9 @@ pub(crate) fn lowered_binding_default(default: &BindingDefault) -> Option<Lowere
                 span: Span::generated("object_new"),
             })
         }
-        BindingDefault::Ident(_) | BindingDefault::Call(_) => None,
+        BindingDefault::Ident(_)
+        | BindingDefault::FunctionExpr { .. }
+        | BindingDefault::Call(_) => None,
     }
 }
 

@@ -275,6 +275,14 @@ impl super::super::Resolver {
         }
         match default {
             BindingDefault::Ident(name) => self.lower_expr(&ResolvedExpr::Ident(name.clone())),
+            BindingDefault::FunctionExpr { name, is_generator } => {
+                self.lower_expr(&ResolvedExpr::FunctionExpr {
+                    name: name.clone(),
+                    params: Vec::new(),
+                    body: Vec::new(),
+                    is_generator: *is_generator,
+                })
+            }
             BindingDefault::Call(callee) => self.lower_expr(&ResolvedExpr::Call {
                 callee: Box::new(ResolvedExpr::Ident(callee.clone())),
                 args: Vec::new(),
