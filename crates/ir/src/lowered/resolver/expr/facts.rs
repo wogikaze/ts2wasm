@@ -487,6 +487,9 @@ pub(crate) fn update_static_object_literal_alias_sources(
 pub(crate) fn resolved_expr_produces_dense_array(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
     match expr {
         ResolvedExpr::Array(_) => true,
+        ResolvedExpr::New {
+            class_name, args, ..
+        } if class_name == "Array" && args.is_empty() => true,
         ResolvedExpr::Ident(name) => ctx.resolve_local(name).ok().is_some_and(|local_id| {
             ctx.facts.array_locals.contains(&local_id)
                 && !ctx.facts.env_cell_locals.contains(&local_id)

@@ -125,10 +125,10 @@ impl super::super::Resolver {
         }
         if class_name == "Array" {
             if args.is_empty() {
-                return Ok(LoweredExpr::ArrayNewSparse {
-                    slots: Vec::new(),
+                return Ok(LoweredExpr::ArrayNew {
+                    elements: Vec::new(),
 
-                    span: Span::generated("array_new_sparse"),
+                    span: Span::generated("array_new"),
                 });
             }
             let [length] = args else {
