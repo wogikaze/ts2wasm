@@ -548,6 +548,32 @@ fn lowering_routes_regexp_literal_test_to_runtime_call() {
 }
 
 #[test]
+fn lowering_routes_empty_noncapturing_regexp_literal_to_empty_pattern() {
+    let program = parse_and_resolve("let ok = /(?:)/.test(\"zabcx\");");
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[0] {
+        ts2wasm_ir::lowered::LoweredStmt::Let(
+            _,
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall {
+                intrinsic, args, ..
+            },
+            _,
+        ) => {
+            assert_eq!(*intrinsic, RuntimeFn::RegExpTest);
+            assert!(matches!(
+                args.as_slice(),
+                [
+                    ts2wasm_ir::lowered::LoweredExpr::String(pattern, _),
+                    ts2wasm_ir::lowered::LoweredExpr::String(input, _)
+                ] if pattern == "//" && input == "zabcx"
+            ));
+        }
+        other => panic!("unexpected lowered statement: {other:?}"),
+    }
+}
+
+#[test]
 fn lowering_routes_new_regexp_test_to_runtime_call() {
     let program = parse_and_resolve("let r = new RegExp(\"abc\"); let ok = r.test(\"zabcx\");");
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();

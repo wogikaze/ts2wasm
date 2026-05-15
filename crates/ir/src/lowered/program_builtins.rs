@@ -913,7 +913,7 @@ pub(crate) fn regexp_constructor_literal(
     };
     let raw = format!("/{pattern}/{flags}");
     validate_regexp_constructor_flags(&flags, &raw, "RegExp constructor")?;
-    Ok(raw)
+    Ok(canonical_regexp_runtime_literal(&raw).unwrap_or(raw))
 }
 
 fn validate_regexp_constructor_flags(
@@ -983,7 +983,7 @@ pub(crate) fn regexp_test_runtime(
     match object {
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
             validate_regexp_plain_literal(raw, "RegExp.prototype.test literal")?;
-            Ok(Some(vec![object.clone(), test_arg]))
+            Ok(Some(vec![regexp_runtime_literal_expr(raw), test_arg]))
         }
         ResolvedExpr::New {
             class_name,
@@ -1037,6 +1037,7 @@ pub(crate) fn regexp_string_match_runtime(
     match arg {
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
             validate_regexp_plain_literal(raw, &context)?;
+            return Ok(Some(vec![regexp_runtime_literal_expr(raw), object.clone()]));
         }
         ResolvedExpr::New {
             class_name, args, ..
@@ -1087,7 +1088,7 @@ pub(crate) fn regexp_exec_runtime(
     match object {
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
             validate_regexp_plain_literal(raw, "RegExp.prototype.exec literal")?;
-            Ok(Some(vec![object.clone(), exec_arg]))
+            Ok(Some(vec![regexp_runtime_literal_expr(raw), exec_arg]))
         }
         ResolvedExpr::New {
             class_name,
@@ -1103,6 +1104,20 @@ pub(crate) fn regexp_exec_runtime(
 
 pub(crate) fn looks_like_regexp_literal(raw: &str) -> bool {
     raw.starts_with('/') && raw[1..].contains('/')
+}
+
+fn regexp_runtime_literal_expr(raw: &str) -> ResolvedExpr {
+    ResolvedExpr::String(canonical_regexp_runtime_literal(raw).unwrap_or_else(|| raw.to_owned()))
+}
+
+fn canonical_regexp_runtime_literal(raw: &str) -> Option<String> {
+    let delimiter = raw.rfind('/')?;
+    let pattern = &raw[1..delimiter];
+    if pattern == "(?:)" {
+        Some(format!("/{}", &raw[delimiter..]))
+    } else {
+        None
+    }
 }
 
 pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<(), Diagnostic> {
@@ -1149,6 +1164,9 @@ pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
         }
     }
     let pattern = &raw[1..delimiter];
+    if pattern == "(?:)" {
+        return Ok(());
+    }
     let bytes = pattern.as_bytes();
     let mut i = 0;
     while i < bytes.len() {
