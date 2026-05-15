@@ -157,6 +157,21 @@ assert.throws = function(expectedErrorConstructor, func) {
 function isPrimitive(value) {
   return value === null || (typeof value !== "function" && typeof value !== "object");
 }
+
+assert._formatIdentityFreeValue = function(value) {
+  switch (value === null ? "null" : typeof value) {
+    case "string":
+      return "\"" + value + "\"";
+    case "bigint":
+      return String(value) + "n";
+    case "number":
+      if (value === 0 && 1 / value === 0 - (1 / 0)) return "-0";
+    case "boolean":
+    case "undefined":
+    case "null":
+      return String(value);
+  }
+};
 """
 
 _seen_unknown_test262_features = set()
