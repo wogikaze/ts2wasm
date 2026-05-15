@@ -19,6 +19,16 @@ agent の最終応答は、次のいずれかを満たす必要がある。
    - 実行した検証コマンドと結果を記載。
    - 残タスクがあれば、次に切れる小さな作業単位として記載。
 
+2. **Implementation issue の完了 (追加要件)**
+   implementation issue (`type:feature`, `type:bug`, `area:runtime` 等) を done にする場合は、
+   次のいずれかを満たす必要がある:
+   - 通過するテスト (differential/snapshot/unit) が ## Test-Requirements に記載され、
+     ## Evidence で PASS 結果が示されている。
+   - Expected-fail テストが default gate から除外され、RED ルールに従って記録されている。
+   - `fixtures/catalog.yaml` に status `fail`/`unsupported` + issue_id が記載されている。
+   - Architecture ルールで承認された no-test-exception が文書化されている。
+   - `mise run issue-status done` は `--evidence` なしでは rejected される。
+
 2. **統合前の並列完了**
    - child worktree ごとの commit hash、担当範囲、検証結果を記載。
    - parent が統合できなかった理由と、統合順序を記載。

@@ -130,3 +130,55 @@ The smoke gate (`--smoke`) selects a fixed set of known-passing and known-unsupp
 | WeakMap / WeakSet | GC semantics が必要 |
 | Atomics / SharedArrayBuffer | threading model が必要 |
 | eval / Function constructor | AOT compiler と相性が悪い |
+
+## Issue-Test Mapping
+
+Implementation issues (`type:feature`, `type:bug`, `area:runtime` etc.) require
+bidirectional links between issues and their test coverage.
+
+### Done transition gate
+
+- `mise run issue-status done` rejects `--evidence`なしの遷移.
+- Implementation issues additionally require a `## Test-Requirements` section in
+  the issue body before the done transition is accepted.
+- For done issues: `## Evidence` must reference actual test commands with
+  PASS results, not placeholder text.
+
+### Test-Requirements section format
+
+```markdown
+## Test-Requirements
+- Test type: [differential|snapshot|unit|command-contract|no-test]
+- Fixture path(s):
+- Test command(s):
+- Expected test result:
+- Default gate: [yes|no]
+```
+
+### Bidirectional links
+
+When a test is added for an issue, record the link in both directions:
+
+1. **`fixtures/catalog.yaml`**: add `issue_ids: [I-XXXXX]` field on the
+   fixture entry.
+2. **Test file**: add a comment `// covers: I-XXXXX` above the test function.
+
+### Coverage categories
+
+Per-issue coverage decisions (recorded in `artifacts/test-gap-analysis.json`):
+
+| Decision | Meaning |
+|---|---|
+| `covered` | At least one passing test exists |
+| `missing` | No test exists for this feature |
+| `red_pending` | Test exists but fails (RED, excluded from default gate) |
+| `unsupported` | Feature not supported; catalog entry with issue_id |
+| `out_of_scope` | Architecture-approved no-test-exception |
+
+### RED test rules
+
+RED tests (expected fails) must NOT be included in `cargo nextest run` default
+suite or `mise run gate`. Record them in one of:
+- `fixtures/catalog.yaml` with status `fail` or `unsupported` and `issue_id`
+- A dedicated expected-fail test module with `#[ignore]` or gated by env var
+- `artifacts/test-gap-analysis.json` as `coverage_decision: red_pending`
