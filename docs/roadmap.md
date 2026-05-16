@@ -145,6 +145,12 @@ Goal: runtime behavior should match the supported JS/TS subset.
 - [ ] **Reduce unsupported (30,375) + fail (12,734) + blocked (879) to zero:**
       I-20260515-7N7MWQ (P0 epic, 7 workstreams, wave1a/wave1b/wave2/wave3 in parallel)
       Priority order: Wave1a (builtins+parser) → Wave1b (name resolution) → Wave2 (compiler features) → Wave3 (backend+correctness)
+- [ ] **Server-mode executor pipeline optimization (performance bottleneck)**
+      - WAMR VMcore persistent runner is 819x faster than iwasm CLI per-call (10ms vs 582ms)
+      - `_wamr_queue` + `semantic_executor` interaction under-optimized in current server mode
+      - `--no-server` (legacy subprocess mode) is still faster in practice due to executor overhead
+      - `process_one_test` fallback is slow (per-file subprocess spawn)
+      - Required: executor pipeline rewrite to match legacy mode throughput, then apply WAMR runner gain
 - [ ] Resolve negative_compile_mismatch (39)
 - [ ] Differential test infrastructure (I-20260513-WHBN24, P2)
 
