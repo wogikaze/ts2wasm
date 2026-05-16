@@ -2216,10 +2216,9 @@ impl super::super::Resolver {
         // ProxyDispatch: compile-time proxy trap dispatch for Reflect.* and Object.*
         if matches!(object, ResolvedExpr::Ident(name) if name == "Reflect" || name == "Object")
             && !args.is_empty()
-            && let Some(proxy) =
-                crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(
-                    &self.ctx, &args[0],
-                )
+            && let Some(proxy) = crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(
+                &self.ctx, &args[0],
+            )
             && let Some(trap) = Self::reflect_or_object_method_to_proxy_trap(method)
         {
             let rest_args = args[1..].to_vec();
