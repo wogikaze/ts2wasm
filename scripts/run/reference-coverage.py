@@ -2343,7 +2343,11 @@ def main():
                 _wamr_runner = None
                 if _wamr_queue is not None:
                     try:
+                        _q_t0 = time.perf_counter()
                         _wamr_runner = _wamr_queue.get(timeout=30)
+                        _q_t = time.perf_counter() - _q_t0
+                        if _q_t > 0.001:
+                            print(f"    QUEUE WAIT: {_q_t*1000:.0f}ms", file=sys.stderr)
                     except Exception:
                         phase_timers["server_fallback_batches"] += 1
                 if _wamr_runner is not None:
@@ -2351,7 +2355,11 @@ def main():
                         job = json.dumps({"id": 0, "wasm_path": str(wasm_path), "timeout_ms": 5000})
                         _wamr_runner.stdin.write(job + "\n")
                         _wamr_runner.stdin.flush()
+                        _wamr_t0 = time.perf_counter()
                         resp_line = _wamr_runner.stdout.readline()
+                        _wamr_t = time.perf_counter() - _wamr_t0
+                        if _wamr_t > 0.5:
+                            print(f"    SLOW WAMR ({_wamr_t*1000:.0f}ms): {_wamr_runner.pid}", file=sys.stderr)
                         if resp_line:
                             try:
                                 wr = json.loads(resp_line)
@@ -2604,12 +2612,17 @@ def main():
                                 file=sys.stderr,
                             )
                         _server_build_start = time.perf_counter()
+                        _batch_loop_t0 = time.perf_counter()
+                        _batch_count = [0]
                         for start in range(0, len(build_items), batch_size):
+                            _batch_count[0] += 1
                             batch = build_items[start:start + batch_size]
                             for item in batch:
                                 item["started_at"] = time.perf_counter()
+                            print(f"  batch {_batch_count[0]}: {len(batch)} items, elapsed={time.perf_counter()-_batch_loop_t0:.1f}s", file=sys.stderr)
 
                             if server_proc is None:
+                                print(f"  batch {_batch_count[0]}: SERVER DEAD, fallback", file=sys.stderr)
                                 phase_timers["server_fallback_batches"] += 1
                                 run_legacy_jsonl_batch(jsonl_out, batch)
                                 continue
