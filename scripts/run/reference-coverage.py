@@ -1932,7 +1932,7 @@ def main():
                     try:
                         rec_data = json.loads(record)
                         reason = rec_data.get("reason", "")
-                        if reason.startswith("RuntimeError"):
+                        if reason.startswith(("RuntimeError", "Test262AssertionFailure", "output mismatch")):
                             pass  # runtime failure, counted in failed
                         else:
                             build_error_count += 1
