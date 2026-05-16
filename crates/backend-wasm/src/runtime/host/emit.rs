@@ -2060,7 +2060,7 @@ impl WatEmitter<'_> {
             (local.set $seen (i32.const {one}))
             (local.set $i (i32.add (local.get $i) (i32.const {one})))
             (br $int_loop))
-          (br $int_done))))
+          (else (br $int_done)))))
     (if (i32.eqz (local.get $seen))
       (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
     (if (i32.lt_s (local.get $sign) (i32.const {zero}))
