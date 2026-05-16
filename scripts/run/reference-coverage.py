@@ -2644,9 +2644,15 @@ def main():
 
                             if semantic_check:
                                 _sem_futs = [semantic_executor.submit(finish_item, item) for item in batch]
+                                _t00 = time.perf_counter()
+                                _consumed = 0
                                 for _fut in as_completed(_sem_futs):
                                     record, status = _fut.result()
                                     consume_record(jsonl_out, record, status)
+                                    _consumed += 1
+                                    if _consumed % 200 == 0:
+                                        _elapsed = time.perf_counter() - _t00
+                                        print(f"    executor: {_consumed}/{len(batch)} consumed, {_elapsed/_consumed*1000:.1f}ms/rec", file=sys.stderr)
                             else:
                                 for item in batch:
                                     record, status = finish_item(item)
