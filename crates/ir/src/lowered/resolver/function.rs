@@ -171,24 +171,11 @@ impl super::Resolver {
             // the `this` references are valid receiver accesses, not closure captures.
             if params.iter().any(|p| p.name == "this") {
                 // Explicit `this` parameter: this is a receiver function, not a closure issue.
-            } else if crate::lowered::program::function_body_is_strict(
-                self.ctx.is_strict_context(),
-                body,
-            ) {
-                // Strict functions do not substitute globalThis for direct calls;
-                // unresolved `this` lowers to undefined in this resolver scope.
             } else {
-                // No explicit `this` parameter — this usage will have implicit `any` type.
-                // Report a more specific TS2683-compatible diagnostic.
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-5179: 'this' implicitly has type 'any' because it does not have a type annotation in nested function `{name}`"
-                    ),
-                    span: None,
-
-                    phase: None,
-                });
+                // No explicit `this` parameter — unresolved `this` lowers to `undefined`
+                // via lower_this_expr (both strict and non-strict). This matches the spec:
+                // in strict mode, this is undefined; in non-strict mode the runtime would
+                // substitute globalThis, but we use undefined for simplicity.
             }
         }
         // `arguments` in nested functions is handled by needs_arguments in the function
@@ -445,15 +432,8 @@ impl super::Resolver {
                 // Strict functions do not substitute globalThis for direct calls;
                 // unresolved `this` lowers to undefined in this resolver scope.
             } else if block_contains_this(body) {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-5179: 'this' implicitly has type 'any' because it does not have a type annotation in nested function `{name}`"
-                    ),
-                    span: None,
-
-                    phase: None,
-                });
+                // No explicit `this` parameter — unresolved `this` lowers to `undefined`
+                // via lower_this_expr (both strict and non-strict).
             } else {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
