@@ -526,18 +526,28 @@ def history_snapshot(item, coverage_dir, durations=None):
         if durations is None:
             durations = jsonl_durations_by_suite(coverage_dir)
         duration_ms = durations.get(suite)
+    denominator = metrics["denominator"]
     executed = metrics["executed"]
+    build_pass = metrics["build_pass"]
+    fail = metrics["fail"]
+    blocked = metrics["blocked"]
+    unsupported = metrics["unsupported"]
+    build_error = metrics.get("build_error", 0)
+    runtime_error = metrics.get("runtime_error", 0)
+    skip_with_reason = metrics.get("skip_with_reason", 0)
+    # Use the sum of accounted categories as the authoritative total
+    accounted = build_pass + fail + blocked + unsupported + skip_with_reason
     return {
-        "run_id": f"{suite}-{executed}",
+        "run_id": f"{suite}-{accounted}",
         "suite": suite,
         "executed": executed,
-        "denominator": metrics["denominator"],
+        "denominator": accounted,
         "timestamp": item["_source_mtime"],
-        "passed": metrics["semantic_pass"],
-        "failed": metrics["fail"] + metrics["blocked"],
-        "skipped": metrics["unsupported"] + metrics["skip_with_reason"],
-        "build_error": metrics.get("build_error", 0),
-        "runtime_error": metrics.get("runtime_error", 0),
+        "passed": build_pass,
+        "failed": fail + blocked,
+        "skipped": unsupported + skip_with_reason,
+        "build_error": build_error,
+        "runtime_error": runtime_error,
         "duration_ms": duration_ms,
     }
 
