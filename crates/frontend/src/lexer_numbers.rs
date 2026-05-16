@@ -16,6 +16,17 @@ impl<'a> Lexer<'a> {
             self.decimal_number_digits(start)?
         };
 
+        if self.strict_mode && radix == 10 && digits.starts_with('0') && digits.len() > 1
+            && digits.chars().all(|c| c.is_ascii_digit())
+        {
+            return Err(Diagnostic {
+                code: DiagCode::SyntaxError,
+                message: "legacy octal literal not allowed in strict mode".to_owned(),
+                span: Some(Span { start, end: self.cursor }),
+                phase: Some("lexer"),
+            });
+        }
+
         if radix == 10 && self.peek_char() == Some('n') {
             if self.source[start..self.cursor].contains(['.', 'e', 'E']) {
                 let end = self.cursor + 1;

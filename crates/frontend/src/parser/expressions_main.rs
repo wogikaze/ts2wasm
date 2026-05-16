@@ -458,7 +458,7 @@ impl Parser {
                 }
             }
         } else {
-            let (param, _) = self.expect_ident()?;
+            let (param, _) = self.expect_binding_ident()?;
             params.push(param);
         }
 
@@ -2482,7 +2482,7 @@ impl Parser {
     fn function_expression(&mut self, start: Span) -> Result<Expr, Diagnostic> {
         let is_generator = self.consume(TokenKind::Star);
         let name = if matches!(self.peek(), Some(Token::Ident(_))) {
-            let (name, _) = self.expect_ident()?;
+            let (name, _) = self.expect_binding_ident()?;
             let has_generic_params = self.consume_typescript_generic_parameter_list()?;
             if has_generic_params {
                 self.typescript_generic_functions.insert(name.clone());
@@ -2530,7 +2530,12 @@ impl Parser {
                 source_text: self.source[start.start..end].to_owned(),
             });
         }
+        let prev_strict_mode = self.strict_mode;
+        if self.peek_function_body_use_strict() {
+            self.strict_mode = true;
+        }
         let body = self.block()?;
+        self.strict_mode = prev_strict_mode;
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
         let source_end = self.prev_span().map(|s| s.end).unwrap_or(end);
         Ok(Expr::FunctionExpr {

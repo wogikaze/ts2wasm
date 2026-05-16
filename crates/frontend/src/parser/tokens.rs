@@ -50,6 +50,14 @@ enum ParsedObjectKey {
     ComputedKey { key: Expr },
 }
 
+/// Per ES2015 §11.6.2.1, these identifiers are reserved words in strict mode code.
+pub(super) fn is_strict_reserved_word(name: &str) -> bool {
+    matches!(
+        name,
+        "implements" | "interface" | "package" | "private" | "protected" | "public" | "yield"
+    )
+}
+
 impl Parser {
     fn expect_ident(&mut self) -> Result<(String, Span), Diagnostic> {
         match self.advance() {
@@ -64,6 +72,34 @@ impl Parser {
 
                 phase: None,}),
         }
+    }
+
+    /// Like `expect_ident`, but rejects identifiers that are reserved words in strict mode.
+    fn expect_binding_ident(&mut self) -> Result<(String, Span), Diagnostic> {
+        let (name, span) = self.expect_ident()?;
+        if self.strict_mode && is_strict_reserved_word(&name) {
+            return Err(Diagnostic {
+                code: DiagCode::SyntaxError,
+                message: format!("`{name}` is a reserved word in strict mode"),
+                span: Some(span),
+                phase: Some("parser"),
+            });
+        }
+        Ok((name, span))
+    }
+
+    /// Peek ahead to check if the function body at the current cursor starts
+    /// with `"use strict"` as its first directive.
+    fn peek_function_body_use_strict(&self) -> bool {
+        let mut cursor = self.cursor;
+        if !matches!(self.tokens.get(cursor).map(|t| &t.kind), Some(Token::LeftBrace)) {
+            return false;
+        }
+        cursor += 1;
+        while matches!(self.tokens.get(cursor).map(|t| &t.kind), Some(Token::Semicolon)) {
+            cursor += 1;
+        }
+        matches!(self.tokens.get(cursor).map(|t| &t.kind), Some(Token::String(v)) if v == "use strict")
     }
 
     /// Expect a module specifier name: identifier or string literal.

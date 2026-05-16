@@ -217,7 +217,7 @@ impl Parser {
 
     fn source_phase_import_statement(&mut self, import_span: Span) -> Result<Stmt, Diagnostic> {
         self.expect_contextual_keyword("source")?;
-        let (local, local_span) = self.expect_ident()?;
+        let (local, local_span) = self.expect_binding_ident()?;
         let specifier = ImportDefaultSpecifier {
             local,
             local_span,
@@ -518,7 +518,7 @@ impl Parser {
     }
 
     fn default_import_statement(&mut self, import_span: Span) -> Result<Stmt, Diagnostic> {
-        let (local, local_span) = self.expect_ident()?;
+        let (local, local_span) = self.expect_binding_ident()?;
         let default = ImportDefaultSpecifier {
             local,
             local_span,
@@ -687,7 +687,7 @@ impl Parser {
     fn parse_import_namespace_specifier(&mut self) -> Result<ImportNamespaceSpecifier, Diagnostic> {
         let star_span = self.expect(TokenKind::Star)?;
         self.expect_contextual_keyword("as")?;
-        let (local, local_span) = self.expect_ident()?;
+        let (local, local_span) = self.expect_binding_ident()?;
         Ok(ImportNamespaceSpecifier {
             local,
             local_span,
@@ -1467,7 +1467,7 @@ impl Parser {
     }
 
     fn assign_statement(&mut self) -> Result<Stmt, Diagnostic> {
-        let (name, start) = self.expect_ident()?;
+        let (name, start) = self.expect_binding_ident()?;
         let expr = if self.consume(TokenKind::Equal) {
             self.expression()?
         } else {
@@ -1597,7 +1597,7 @@ impl Parser {
         if self.consume(TokenKind::Star) {
             return self.finish_generator_function_statement(start);
         }
-        let (name, _) = self.expect_ident()?;
+        let (name, _) = self.expect_binding_ident()?;
         let has_generic_params = self.consume_typescript_generic_parameter_list()?;
         if has_generic_params {
             self.typescript_generic_functions.insert(name.clone());
@@ -1643,7 +1643,12 @@ impl Parser {
                 source_text: self.source[start.start..start.end].to_owned(),
             });
         }
+        let prev_strict_mode = self.strict_mode;
+        if self.peek_function_body_use_strict() {
+            self.strict_mode = true;
+        }
         let body = self.block()?;
+        self.strict_mode = prev_strict_mode;
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
         let source_end = self.prev_span().map(|s| s.end).unwrap_or(end);
         Ok(Stmt::Function {
@@ -1663,7 +1668,7 @@ impl Parser {
     }
 
     fn finish_generator_function_statement(&mut self, start: Span) -> Result<Stmt, Diagnostic> {
-        let (name, _) = self.expect_ident()?;
+        let (name, _) = self.expect_binding_ident()?;
         self.expect(TokenKind::LeftParen)?;
         let mut params = Vec::new();
         if !self.consume(TokenKind::RightParen) {
@@ -1690,7 +1695,12 @@ impl Parser {
         }
         let prev_in_generator_fn = self.in_generator_fn;
         self.in_generator_fn = true;
+        let prev_strict_mode = self.strict_mode;
+        if self.peek_function_body_use_strict() {
+            self.strict_mode = true;
+        }
         let body = self.block()?;
+        self.strict_mode = prev_strict_mode;
         self.in_generator_fn = prev_in_generator_fn;
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
         let source_end = self.prev_span().map(|s| s.end).unwrap_or(end);
@@ -1714,7 +1724,7 @@ impl Parser {
         let async_span = self.expect(TokenKind::Async)?;
         self.expect(TokenKind::Function)?;
         if self.consume(TokenKind::Star) {
-            let (name, _) = self.expect_ident()?;
+            let (name, _) = self.expect_binding_ident()?;
             let _ = self.consume_typescript_generic_parameter_list()?;
             self.expect(TokenKind::LeftParen)?;
             let mut params = Vec::new();
@@ -1757,7 +1767,7 @@ impl Parser {
                 source_text: self.source[async_span.start..end].to_owned(),
             });
         }
-        let (name, _) = self.expect_ident()?;
+        let (name, _) = self.expect_binding_ident()?;
         let _ = self.consume_typescript_generic_parameter_list()?;
         self.expect(TokenKind::LeftParen)?;
         let mut params = Vec::new();
@@ -1787,7 +1797,12 @@ impl Parser {
         // are recognized as Expr::Await rather than identifier references
         let prev_in_async_fn = self.in_async_fn;
         self.in_async_fn = true;
+        let prev_strict_mode = self.strict_mode;
+        if self.peek_function_body_use_strict() {
+            self.strict_mode = true;
+        }
         let body = self.block()?;
+        self.strict_mode = prev_strict_mode;
         self.in_async_fn = prev_in_async_fn;
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(async_span.end);
         let source_end = self.prev_span().map(|s| s.end).unwrap_or(end);
@@ -1874,7 +1889,7 @@ impl Parser {
     fn break_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let start = self.expect(TokenKind::Break)?;
         let (label, fallback_end) = if matches!(self.peek(), Some(Token::Ident(_))) {
-            let (label, label_span) = self.expect_ident()?;
+            let (label, label_span) = self.expect_binding_ident()?;
             (Some(label), label_span.end)
         } else {
             (None, start.end)
@@ -1892,7 +1907,7 @@ impl Parser {
     fn continue_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let start = self.expect(TokenKind::Continue)?;
         let (label, fallback_end) = if matches!(self.peek(), Some(Token::Ident(_))) {
-            let (label, label_span) = self.expect_ident()?;
+            let (label, label_span) = self.expect_binding_ident()?;
             (Some(label), label_span.end)
         } else {
             (None, start.end)
@@ -1908,7 +1923,7 @@ impl Parser {
     }
 
     fn labeled_statement(&mut self) -> Result<Stmt, Diagnostic> {
-        let (label, label_span) = self.expect_ident()?;
+        let (label, label_span) = self.expect_binding_ident()?;
         self.expect(TokenKind::Colon)?;
         let body = self.statement()?;
         let end = body.span().end;
@@ -1962,7 +1977,7 @@ impl Parser {
             self.skip_balanced_bracket_block()?;
             "_binding".to_owned()
         } else {
-            let (name, _) = self.expect_ident()?;
+            let (name, _) = self.expect_binding_ident()?;
             name
         };
         if self.consume(TokenKind::Colon) {
@@ -2049,7 +2064,7 @@ impl Parser {
                 destructuring_binding = Some(pattern);
                 "_binding".to_owned()
             } else {
-                let (name, _) = self.expect_ident()?;
+                let (name, _) = self.expect_binding_ident()?;
                 // Cover initializer: `for (var x = expr in obj)` — skip `= expr`
                 if self.consume(TokenKind::Equal) {
                     let mut depth_paren: usize = 0;
@@ -2122,7 +2137,7 @@ impl Parser {
                     self.let_statement()?
                 } else if matches!(self.peek(), Some(Token::Ident(_))) {
                     // Assignment
-                    let (name, _) = self.expect_ident()?;
+                    let (name, _) = self.expect_binding_ident()?;
                     self.expect(TokenKind::Equal)?;
                     let expr = self.expression()?;
                     self.expect(TokenKind::Semicolon)?;
@@ -2241,7 +2256,7 @@ impl Parser {
 
         let (catch_param, catch_block) = if self.consume(TokenKind::Catch) {
             let param = if self.consume(TokenKind::LeftParen) {
-                let (name, _) = self.expect_ident()?;
+                let (name, _) = self.expect_binding_ident()?;
                 if self.consume(TokenKind::Colon) {
                     self.skip_type_annotation_until(&[TokenKind::RightParen])?;
                 }

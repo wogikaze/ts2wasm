@@ -148,7 +148,7 @@ let binding = self.parse_binding_pattern()?;
     fn parse_binding_pattern(&mut self) -> Result<ParsedBindingPattern, Diagnostic> {
         match self.peek() {
             Some(Token::Ident(_)) => {
-                let (name, span) = self.expect_ident()?;
+                let (name, span) = self.expect_binding_ident()?;
                 Ok(ParsedBindingPattern {
                     text: name,
                     span,
@@ -170,6 +170,15 @@ let binding = self.parse_binding_pattern()?;
                     Token::Static => "static",
                     _ => unreachable!("only contextual binding tokens are matched"),
                 };
+                // reject let/static as binding identifiers in strict mode
+                if self.strict_mode && matches!(token.kind, Token::Let | Token::Static) {
+                    return Err(Diagnostic {
+                        code: DiagCode::SyntaxError,
+                        message: format!("`{text}` is a reserved word in strict mode"),
+                        span: Some(token.span),
+                        phase: Some("parser"),
+                    });
+                }
                 Ok(ParsedBindingPattern {
                     text: text.to_owned(),
                     span: token.span,
@@ -263,12 +272,20 @@ let binding = self.parse_binding_pattern()?;
             }
 
             if let Some(rest_span) = self.consume_span(TokenKind::DotDotDot) {
-                let (name, _) = self.expect_ident().map_err(|_| Diagnostic {
+                let (name, name_span) = self.expect_ident().map_err(|_| Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-247: object rest binding requires an identifier".to_owned(),
                     span: self.peek_span(),
 
                     phase: None,})?;
+                if self.strict_mode && is_strict_reserved_word(&name) {
+                    return Err(Diagnostic {
+                        code: DiagCode::SyntaxError,
+                        message: format!("`{name}` is a reserved word in strict mode"),
+                        span: Some(name_span),
+                        phase: Some("parser"),
+                    });
+                }
                 if matches!(self.peek(), Some(Token::Comma)) {
                     return Err(self.invalid_rest_binding_diagnostic(rest_span));
                 }

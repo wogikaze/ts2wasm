@@ -4,7 +4,7 @@ impl Parser {
     fn class_statement(&mut self) -> Result<Stmt, Diagnostic> {
         self.consume(TokenKind::Abstract); // TypeScript abstract modifier — erased at runtime
         let start = self.expect(TokenKind::Class)?;
-        let (name, _) = self.expect_ident()?;
+        let (name, _) = self.expect_binding_ident()?;
         if self.namespace_names_encountered.contains(&name) {
             let span = self.prev_span().unwrap_or(Span { start: 0, end: 0 });
             return Err(Diagnostic {
@@ -26,7 +26,7 @@ impl Parser {
         let name = if matches!(self.peek(), Some(Token::Ident(_)))
             && !self.peek_contextual_keyword("implements")
         {
-            let (name, _) = self.expect_ident()?;
+            let (name, _) = self.expect_binding_ident()?;
             name
         } else {
             String::new()
@@ -101,7 +101,7 @@ impl Parser {
                     Some(Token::Less | Token::Dot)
                 )
             {
-                let (name, name_span) = self.expect_ident()?;
+                let (name, name_span) = self.expect_binding_ident()?;
                 let mut expr: Expr = Expr::Ident {
                     name,
                     span: name_span,
