@@ -2400,16 +2400,21 @@ impl super::super::Resolver {
             }));
         }
         // Skip ObjectToString catch-all for BigInt locals — let class dispatch handle it
-        if matches!(method, "toString" | "valueOf")
-            && let ResolvedExpr::Ident(name) = object
-            && let Ok(local) = self.resolve_local(name)
-            && self
-                .ctx
-                .classes
-                .local_classes
-                .get(&local)
-                .is_some_and(|c| c == "BigInt")
-        {
+        let is_bigint_receiver = matches!(method, "toString" | "valueOf")
+            && match object {
+                ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local| {
+                    self.ctx
+                        .classes
+                        .local_classes
+                        .get(&local)
+                        .is_some_and(|c| c == "BigInt")
+                        || self.ctx.facts.bigint_locals.contains(&local)
+                }),
+                _ => crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(
+                    &self.ctx, object,
+                ),
+            };
+        if is_bigint_receiver {
             // fall through to class dispatch
         } else if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
             if intrinsic == RuntimeFn::JsonParse {
@@ -3142,6 +3147,21 @@ impl super::super::Resolver {
                 intrinsic,
                 args: lowered_args,
 
+                span: Span::generated("runtime_call"),
+            }));
+        }
+
+        // BigInt non-ident receiver (e.g. (a + b).toString()) — skip ArrayJoin catch-all
+        if matches!(method, "toString" | "toLocaleString" | "valueOf")
+            && crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, object)
+        {
+            let receiver = self.lower_expr(object)?;
+            if method == "valueOf" {
+                return Ok(Some(receiver));
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::BigIntToString,
+                args: vec![receiver],
                 span: Span::generated("runtime_call"),
             }));
         }
