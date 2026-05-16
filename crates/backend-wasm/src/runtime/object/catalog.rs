@@ -47,4 +47,6 @@ pub const OBJECT_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::ReflectPreventExtensions,
     RuntimeFn::ReflectSet,
     RuntimeFn::ReflectSetPrototypeOf,
+    RuntimeFn::ReflectApply,
+    RuntimeFn::ReflectConstruct,
 ];

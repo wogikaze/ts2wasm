@@ -244,4 +244,26 @@ impl WatEmitter<'_> {
             scratch_offset = Layout::SCRATCH_OFFSET,
         ));
     }
+
+    /// Reflect.apply(target, thisArgument, argumentsList) — calls target with thisArg and args
+    /// Delegates to host import $host_reflect_apply which performs the dynamic call.
+    pub(crate) fn emit_reflect_apply(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $reflect_apply (param $target i32) (param $this_arg i32) (param $args i32) (result i32)
+    (call $host_reflect_apply (local.get $target) (local.get $this_arg) (local.get $args)))
+"#,
+        ));
+    }
+
+    /// Reflect.construct(target, argumentsList, newTarget) — calls target as constructor
+    /// Delegates to host import $host_reflect_construct which performs the dynamic construction.
+    pub(crate) fn emit_reflect_construct(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $reflect_construct (param $target i32) (param $args i32) (result i32)
+    (call $host_reflect_construct (local.get $target) (local.get $args)))
+"#,
+        ));
+    }
 }

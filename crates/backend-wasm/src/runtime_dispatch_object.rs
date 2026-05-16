@@ -49,6 +49,8 @@ impl WatEmitter<'_> {
             RuntimeFn::ReflectPreventExtensions => self.emit_reflect_prevent_extensions(wat),
             RuntimeFn::ReflectSet => self.emit_reflect_set(wat),
             RuntimeFn::ReflectSetPrototypeOf => self.emit_reflect_set_prototype_of(wat),
+            RuntimeFn::ReflectApply => self.emit_reflect_apply(wat),
+            RuntimeFn::ReflectConstruct => self.emit_reflect_construct(wat),
             _ => unreachable!("non-object RuntimeFn routed to object dispatch"),
         }
     }

@@ -531,6 +531,15 @@ pub(crate) fn resolved_expr_produces_dense_array(ctx: &LoweringCtx, expr: &Resol
         {
             true
         }
+        ResolvedExpr::MethodCall { object, method, .. }
+            if matches!(object.as_ref(), ResolvedExpr::Ident(n) if n == "Object")
+                && matches!(
+                    method.as_str(),
+                    "keys" | "values" | "entries" | "getOwnPropertyNames"
+                ) =>
+        {
+            true
+        }
         ResolvedExpr::Call { callee, .. } => match callee.as_ref() {
             ResolvedExpr::Ident(name) => ctx
                 .resolve_func(name)

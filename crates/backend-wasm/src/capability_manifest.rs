@@ -149,8 +149,10 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
             | Capability::HostDateUTC
             | Capability::HostStringNormalize
             | Capability::HostIntlNumberFormatFormat
-            | Capability::HostIntlDateTimeFormatFormat => {
-                // Node host capabilities for URI encoding/decoding, Date, and String
+            | Capability::HostIntlDateTimeFormatFormat
+            | Capability::HostReflectApply
+            | Capability::HostReflectConstruct => {
+                // Node host capabilities for URI encoding/decoding, Date, String, and Reflect
             }
         }
     }

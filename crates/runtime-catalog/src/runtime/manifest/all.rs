@@ -274,6 +274,7 @@ match self {
             Self::ReflectSet => "reflect_set",
             Self::ReflectSetPrototypeOf => "reflect_set_prototype_of",
             Self::ReflectApply => "reflect_apply",
+            Self::ReflectConstruct => "reflect_construct",
             Self::ObjectAssign => "object_assign",
             Self::ObjectCreate => "object_create",
             Self::ObjectPrototype => "object_prototype",

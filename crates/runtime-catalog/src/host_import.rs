@@ -83,6 +83,8 @@ pub enum HostImport {
     StringNormalize,
     IntlNumberFormatFormat,
     IntlDateTimeFormatFormat,
+    ReflectApply,
+    ReflectConstruct,
 }
 
 impl HostImport {
@@ -457,6 +459,22 @@ impl HostImport {
                 params: "param i32 i32",
                 result: "result i32",
             },
+            Self::ReflectApply => HostImportSpec {
+                module: "host",
+                name: "reflectApply",
+                wat_symbol: "$host_reflect_apply",
+                abi: HostAbi::NodeShim,
+                params: "param i32 i32 i32",
+                result: "result i32",
+            },
+            Self::ReflectConstruct => HostImportSpec {
+                module: "host",
+                name: "reflectConstruct",
+                wat_symbol: "$host_reflect_construct",
+                abi: HostAbi::NodeShim,
+                params: "param i32 i32",
+                result: "result i32",
+            },
         }
     }
 
@@ -511,6 +529,8 @@ impl HostImport {
             Self::StringNormalize => "host.stringNormalize",
             Self::IntlNumberFormatFormat => "host.intlNumberFormatFormat",
             Self::IntlDateTimeFormatFormat => "host.intlDateTimeFormatFormat",
+            Self::ReflectApply => "host.reflectApply",
+            Self::ReflectConstruct => "host.reflectConstruct",
         }
     }
 }

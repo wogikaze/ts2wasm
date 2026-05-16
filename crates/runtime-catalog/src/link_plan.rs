@@ -367,6 +367,8 @@ fn node_shim_import_to_capability(import: &HostImport) -> Option<Capability> {
         HostImport::DateParse => Some(Capability::HostDateParse),
         HostImport::DateUTC => Some(Capability::HostDateUTC),
         HostImport::IntlNumberFormatFormat => Some(Capability::HostIntlNumberFormatFormat),
+        HostImport::ReflectApply => Some(Capability::HostReflectApply),
+        HostImport::ReflectConstruct => Some(Capability::HostReflectConstruct),
         HostImport::IntlDateTimeFormatFormat => Some(Capability::HostIntlDateTimeFormatFormat),
         _ => None,
     }

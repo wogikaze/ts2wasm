@@ -100,6 +100,7 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "set" => Some(RuntimeFn::ReflectSet),
                 "setPrototypeOf" => Some(RuntimeFn::ReflectSetPrototypeOf),
                 "apply" => Some(RuntimeFn::ReflectApply),
+                "construct" => Some(RuntimeFn::ReflectConstruct),
                 _ => None,
             };
         }

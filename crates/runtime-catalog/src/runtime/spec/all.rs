@@ -2192,8 +2192,16 @@ match self {
             Self::ReflectApply => RuntimeSpec {
                 symbol: "$reflect_apply",
                 deps: &[RuntimeFn::AllocHeap, RuntimeFn::Copy],
-                imports: NO_IMPORTS,
-                capability: NO_CAPS,
+                imports: IMPORT_REFLECT_APPLY,
+                capability: CAP_HOST_REFLECT_APPLY,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ReflectConstruct => RuntimeSpec {
+                symbol: "$reflect_construct",
+                deps: &[RuntimeFn::AllocHeap, RuntimeFn::Copy],
+                imports: IMPORT_REFLECT_CONSTRUCT,
+                capability: CAP_HOST_REFLECT_CONSTRUCT,
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },

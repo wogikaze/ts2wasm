@@ -37,6 +37,8 @@ pub enum Capability {
     HostStringNormalize,
     HostIntlNumberFormatFormat,
     HostIntlDateTimeFormatFormat,
+    HostReflectApply,
+    HostReflectConstruct,
 }
 
 impl Capability {
@@ -77,6 +79,8 @@ impl Capability {
             Self::HostStringNormalize => "host.stringNormalize",
             Self::HostIntlNumberFormatFormat => "host.intlNumberFormatFormat",
             Self::HostIntlDateTimeFormatFormat => "host.intlDateTimeFormatFormat",
+            Self::HostReflectApply => "host.reflectApply",
+            Self::HostReflectConstruct => "host.reflectConstruct",
         }
     }
 }

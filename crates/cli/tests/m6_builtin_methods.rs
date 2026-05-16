@@ -1859,19 +1859,25 @@ fn build_smoke_reflect_basic() {
     );
 }
 
-// Proxy/Reflect unsupported diagnostic (issue 106)
+// Reflect.construct now supported via host shim
 #[test]
-fn proxy_reflect_unsupported_diagnostic() {
+fn build_smoke_reflect_apply_construct() {
     let result = run_fixture("builtins-and-io/proxy-reflect-unsupported-diagnostic.ts");
     assert!(
-        result.is_err(),
-        "Reflect should produce unsupported diagnostic"
+        result.is_ok(),
+        "Reflect.apply/construct should build: {:?}",
+        result.err()
     );
-    let err_msg = result.err().unwrap();
+}
+
+// Reflect.apply and Reflect.construct fixture
+#[test]
+fn build_smoke_reflect_apply_construct_new() {
+    let result = run_fixture("builtins-and-io/reflect-apply-construct.ts");
     assert!(
-        err_msg.contains("Reflect"),
-        "Diagnostic should mention Reflect: {}",
-        err_msg
+        result.is_ok(),
+        "Reflect.apply/construct fixture should build: {:?}",
+        result.err()
     );
 }
 

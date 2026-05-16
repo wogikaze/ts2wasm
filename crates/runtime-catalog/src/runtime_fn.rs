@@ -489,6 +489,8 @@ pub enum RuntimeFn {
     ReflectSetPrototypeOf,
     /// Reflect.apply(target, thisArg, args) — calls target with thisArg and args
     ReflectApply,
+    /// Reflect.construct(target, args, newTarget) — calls target as constructor with args and optional newTarget
+    ReflectConstruct,
     /// M10: Math functions
     MathFloor,
     MathCeil,
@@ -950,6 +952,8 @@ const IMPORT_DATE_UTC: &[HostImport] = &[HostImport::DateUTC];
 const IMPORT_STRING_NORMALIZE: &[HostImport] = &[HostImport::StringNormalize];
 const IMPORT_INTL_NUMBER_FORMAT_FORMAT: &[HostImport] = &[HostImport::IntlNumberFormatFormat];
 const IMPORT_INTL_DATE_TIME_FORMAT_FORMAT: &[HostImport] = &[HostImport::IntlDateTimeFormatFormat];
+const IMPORT_REFLECT_APPLY: &[HostImport] = &[HostImport::ReflectApply];
+const IMPORT_REFLECT_CONSTRUCT: &[HostImport] = &[HostImport::ReflectConstruct];
 const CAP_INTL_NUMBER_FORMAT_FORMAT: &[Capability] = &[Capability::HostIntlNumberFormatFormat];
 const CAP_INTL_DATE_TIME_FORMAT_FORMAT: &[Capability] = &[Capability::HostIntlDateTimeFormatFormat];
 const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
@@ -982,6 +986,8 @@ const CAP_HOST_DATE_TO_DATE_STRING: &[Capability] = &[Capability::HostDateToDate
 const CAP_HOST_DATE_TO_TIME_STRING: &[Capability] = &[Capability::HostDateToTimeString];
 const CAP_HOST_DATE_PARSE: &[Capability] = &[Capability::HostDateParse];
 const CAP_HOST_DATE_UTC: &[Capability] = &[Capability::HostDateUTC];
+const CAP_HOST_REFLECT_APPLY: &[Capability] = &[Capability::HostReflectApply];
+const CAP_HOST_REFLECT_CONSTRUCT: &[Capability] = &[Capability::HostReflectConstruct];
 const CAP_STRING_NORMALIZE: &[Capability] = &[Capability::HostStringNormalize];
 const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::UNDEFINED,
@@ -1466,6 +1472,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ReflectSet" => Some(RuntimeFn::ReflectSet),
         "ReflectSetPrototypeOf" => Some(RuntimeFn::ReflectSetPrototypeOf),
         "ReflectApply" => Some(RuntimeFn::ReflectApply),
+        "ReflectConstruct" => Some(RuntimeFn::ReflectConstruct),
         "ObjectAssign" => Some(RuntimeFn::ObjectAssign),
         "ObjectCreate" => Some(RuntimeFn::ObjectCreate),
         "ObjectPrototype" => Some(RuntimeFn::ObjectPrototype),
@@ -2114,7 +2121,8 @@ impl RuntimeFn {
             | Self::ReflectPreventExtensions
             | Self::ReflectSet
             | Self::ReflectSetPrototypeOf
-            | Self::ReflectApply => RuntimeDomain::Object,
+            | Self::ReflectApply
+            | Self::ReflectConstruct => RuntimeDomain::Object,
             Self::Add
             | Self::AddFast
             | Self::Sub
@@ -2795,6 +2803,7 @@ impl RuntimeFn {
             Self::ReflectSet,
             Self::ReflectSetPrototypeOf,
             Self::ReflectApply,
+            Self::ReflectConstruct,
             Self::ValueOf,
             // Instanceof operator
             Self::InstanceOf,
@@ -3251,6 +3260,7 @@ impl RuntimeFn {
             Self::ReflectSet,
             Self::ReflectSetPrototypeOf,
             Self::ReflectApply,
+            Self::ReflectConstruct,
             Self::ValueOf,
             // Instanceof operator
             Self::InstanceOf,
