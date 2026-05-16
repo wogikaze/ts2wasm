@@ -563,6 +563,11 @@ fn regexp_flags_suy_d_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn regexp_advanced_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/regexp-advanced.ts");
+}
+
+#[test]
 fn bigint_literal_runtime_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/bigint-literal-runtime.ts");
 }
