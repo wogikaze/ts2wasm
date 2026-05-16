@@ -4,7 +4,9 @@ use ts2wasm_backend_wasm as backend;
 use ts2wasm_frontend::{Diagnostic, Lexer, Parser, validate_type_reference_directives};
 use ts2wasm_ir::lowered;
 use ts2wasm_ir::lowered::Validated;
-use ts2wasm_shared::abi::ExecutionTarget;
+use ts2wasm_shared::abi::{
+    ABI_GENERATOR, ABI_METADATA_SCHEMA_VERSION, AbiMetadata, ExecutionTarget,
+};
 
 use crate::CompileReport;
 use crate::ModuleGraph;
@@ -190,11 +192,25 @@ fn build_file_impl(
             }
         }
     };
-    io::write_output::write_wasm_from_wat(&wat, output).map_err(|d| d.with_phase("backend"))?;
+    let abi_meta = abi_metadata_for_target(options.target);
+    io::write_output::write_wasm_from_wat_with_abi(&wat, output, Some(&abi_meta))
+        .map_err(|d| d.with_phase("backend"))?;
     Ok(CompileReport {
         value: (),
         diagnostics: pipeline_diagnostics,
     })
+}
+
+/// Build `AbiMetadata` from an `ExecutionTarget`.
+fn abi_metadata_for_target(target: ExecutionTarget) -> AbiMetadata {
+    AbiMetadata {
+        schema_version: ABI_METADATA_SCHEMA_VERSION,
+        runtime_abi_version: ts2wasm_shared::capability::RUNTIME_ABI_VERSION,
+        target: target.manifest_target(),
+        target_profile: target.target_profile(),
+        features: target.features(),
+        generator: ABI_GENERATOR,
+    }
 }
 
 struct LegacyWat {

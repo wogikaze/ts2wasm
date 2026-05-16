@@ -705,11 +705,26 @@ pub fn encode_name(out: &mut Vec<u8>, value: &str) {
 }
 
 /// Encode a name and return the bytes (for use in custom section content).
-fn encode_name_raw(value: &str) -> Vec<u8> {
+pub fn encode_name_raw(value: &str) -> Vec<u8> {
     let mut out = Vec::new();
     encode_u32(value.len() as u32, &mut out);
     out.extend_from_slice(value.as_bytes());
     out
+}
+
+/// Append a custom section to an existing WASM binary.
+///
+/// Custom sections have section id 0. The section content is the
+/// name (length-prefixed UTF-8) followed by the payload bytes.
+/// This function appends the section to the end of the binary.
+pub fn append_custom_section(wasm_bytes: &[u8], name: &str, payload: &[u8]) -> Vec<u8> {
+    let mut result = wasm_bytes.to_vec();
+    let mut content = encode_name_raw(name);
+    content.extend_from_slice(payload);
+    result.push(0); // section id 0 = custom
+    encode_u32(content.len() as u32, &mut result);
+    result.extend_from_slice(&content);
+    result
 }
 
 #[cfg(test)]

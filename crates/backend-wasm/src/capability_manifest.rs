@@ -23,6 +23,12 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
         let mut m = CapabilityManifest::new_wasi();
         m.standalone = false;
         m.target = "wasm32-wasi+node-host".to_owned();
+        m.target_id = "wasm32-wasi-p1+node-shim".to_owned();
+        m.target_aliases = vec![
+            "wasm32-wasi+node-host".to_owned(),
+            "wasm32-wasi-p1+node-host".to_owned(),
+            "wasm32-wasi-p1+node-shim".to_owned(),
+        ];
         m.node_host.required = true;
         m
     } else {

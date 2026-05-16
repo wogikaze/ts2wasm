@@ -7,10 +7,24 @@ use std::collections::BTreeMap;
 /// See `docs/11-shared-definitions.md` for the migration policy.
 pub const SCHEMA_VERSION: u32 = 1;
 
+/// Canonical runtime ABI name for the ts2wasm runtime.
+pub const RUNTIME_ABI_NAME: &str = "ts2wasm-runtime-abi";
+
+/// Current runtime ABI version (must match `RuntimeConst::ABI_VERSION`).
+pub const RUNTIME_ABI_VERSION: u32 = 2;
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct CapabilityManifest {
     pub schema_version: u32,
     pub target: String,
+    /// Canonical target identifier (e.g. "wasm32-wasi-p1").
+    pub target_id: String,
+    /// Legacy target string aliases for this target.
+    pub target_aliases: Vec<String>,
+    /// Runtime ABI name (constant).
+    pub runtime_abi_name: String,
+    /// Runtime ABI version (constant).
+    pub runtime_abi_version: u32,
     pub standalone: bool,
     pub wasi: WasiCapabilities,
     pub node_host: NodeHostCapabilities,
@@ -22,6 +36,10 @@ impl CapabilityManifest {
         Self {
             schema_version: SCHEMA_VERSION,
             target: "wasm32-wasi".to_owned(),
+            target_id: "wasm32-wasi-p1".to_owned(),
+            target_aliases: vec!["wasm32-wasi".to_owned(), "wasm32-wasi-p1".to_owned()],
+            runtime_abi_name: RUNTIME_ABI_NAME.to_owned(),
+            runtime_abi_version: RUNTIME_ABI_VERSION,
             standalone: true,
             wasi: WasiCapabilities::default(),
             node_host: NodeHostCapabilities::default(),
@@ -140,6 +158,12 @@ impl CapabilityManifest {
         let import = import.into();
         self.standalone = false;
         self.target = "wasm32-wasi+node-host".to_owned();
+        self.target_id = "wasm32-wasi-p1+node-shim".to_owned();
+        self.target_aliases = vec![
+            "wasm32-wasi+node-host".to_owned(),
+            "wasm32-wasi-p1+node-host".to_owned(),
+            "wasm32-wasi-p1+node-shim".to_owned(),
+        ];
         self.node_host.required = true;
         self.node_host.imports.push(import.clone());
         self.capability_reasons

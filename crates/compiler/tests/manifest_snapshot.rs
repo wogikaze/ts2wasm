@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use ts2wasm_backend_wasm::{build_validated_runtime_link_plan, emit_canonical_manifest_json};
 use ts2wasm_ir::lowered::{LoweredExpr, LoweredProgram, LoweredStmt, RuntimeFn};
+use ts2wasm_shared::abi::ABI_CUSTOM_SECTION_NAME;
 use ts2wasm_source::Span;
 
 /// Build a ts2wasm program from source and return the capability manifest JSON.
@@ -21,12 +22,78 @@ fn build_and_get_manifest(source: &str, fixture_label: &str) -> String {
     std::fs::read_to_string(&manifest_path).expect("manifest should be readable")
 }
 
+/// Build a fixture and return both manifest JSON and WASM binary bytes.
+fn build_and_get_manifest_and_wasm(source: &str, fixture_label: &str) -> (String, Vec<u8>) {
+    let dir = unique_temp_dir(fixture_label);
+    std::fs::create_dir_all(&dir).expect("temp dir should be created");
+
+    let input = dir.join("input.ts");
+    let output = dir.join("output.wasm");
+    let manifest_path = dir.join("manifest.json");
+
+    std::fs::write(&input, source).expect("fixture source should be written");
+
+    ts2wasm_compiler::build_file_with_options(&input, &output, Some(&manifest_path))
+        .expect("build should succeed");
+
+    let manifest = std::fs::read_to_string(&manifest_path).expect("manifest should be readable");
+    let wasm = std::fs::read(&output).expect("WASM output should be readable");
+    (manifest, wasm)
+}
+
 fn unique_temp_dir(label: &str) -> PathBuf {
     let unique = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .expect("system time should be after epoch")
         .as_nanos();
     std::env::temp_dir().join(format!("ts2wasm-manifest-{label}-{unique}"))
+}
+
+/// Extract a custom section payload from WASM binary, if present.
+fn extract_custom_section<'a>(wasm_bytes: &'a [u8], section_name: &str) -> Option<&'a [u8]> {
+    let mut offset = 8; // skip magic + version
+    while offset < wasm_bytes.len() {
+        let section_id = wasm_bytes[offset];
+        offset += 1;
+        let (payload_len, len_size) = read_leb128_u32(&wasm_bytes[offset..]);
+        offset += len_size;
+        let section_end = offset + payload_len as usize;
+        if section_end > wasm_bytes.len() {
+            return None;
+        }
+        if section_id == 0 {
+            // Custom section: payload starts with name length + name bytes
+            let (name_len, name_len_size) = read_leb128_u32(&wasm_bytes[offset..]);
+            let name_start = offset + name_len_size;
+            let name_end = name_start + name_len as usize;
+            if name_end <= section_end {
+                let name = &wasm_bytes[name_start..name_end];
+                if name == section_name.as_bytes() {
+                    let payload_start = name_end;
+                    return Some(&wasm_bytes[payload_start..section_end]);
+                }
+            }
+        }
+        offset = section_end;
+    }
+    None
+}
+
+/// Read an unsigned LEB128 u32 at the start of `bytes`.
+/// Returns (value, bytes_consumed).
+fn read_leb128_u32(bytes: &[u8]) -> (u32, usize) {
+    let mut result = 0u32;
+    let mut shift = 0;
+    let mut consumed = 0;
+    for &byte in bytes {
+        consumed += 1;
+        result |= u32::from(byte & 0x7f) << shift;
+        if byte & 0x80 == 0 {
+            return (result, consumed);
+        }
+        shift += 7;
+    }
+    (result, consumed)
 }
 
 #[test]
@@ -221,5 +288,104 @@ fn process_env_manifest_declares_wasi_env() {
     assert!(
         reasons.iter().any(|r| r == "process.env"),
         "wasi.env reasons should include 'process.env'; got: {reasons:?}"
+    );
+}
+
+#[test]
+fn wasm_binary_has_ts2wasm_abi_custom_section() {
+    let (_, wasm) = build_and_get_manifest_and_wasm("const x = Math.random();", "abi-section");
+    let section = extract_custom_section(&wasm, ABI_CUSTOM_SECTION_NAME);
+    assert!(
+        section.is_some(),
+        "WASM binary should contain the '{ABI_CUSTOM_SECTION_NAME}' custom section"
+    );
+    let payload = String::from_utf8_lossy(section.unwrap());
+    assert!(
+        payload.contains("ts2wasm"),
+        "custom section payload should contain 'ts2wasm'; got: {payload}"
+    );
+    assert!(
+        payload.contains("wasm32-wasi-p1"),
+        "custom section payload should contain target; got: {payload}"
+    );
+}
+
+#[test]
+fn abi_custom_section_matches_manifest() {
+    let (manifest, wasm) = build_and_get_manifest_and_wasm("const x = Math.random();", "abi-match");
+    let section = extract_custom_section(&wasm, ABI_CUSTOM_SECTION_NAME)
+        .expect("WASM binary should have ABI custom section");
+    let abi_json: serde_json::Value =
+        serde_json::from_slice(section).expect("custom section payload should be valid JSON");
+    let manifest_json: serde_json::Value =
+        serde_json::from_str(&manifest).expect("manifest should be valid JSON");
+
+    // The manifest runtime_abi_version should match the custom section
+    assert_eq!(
+        manifest_json["runtime_abi_version"], abi_json["runtime_abi_version"],
+        "manifest and WASM ABI custom section should have matching runtime_abi_version"
+    );
+
+    assert_eq!(
+        abi_json["runtime_abi_version"], 2,
+        "runtime_abi_version should be 2"
+    );
+
+    assert_eq!(
+        abi_json["target"], "wasm32-wasi-p1",
+        "target should be canonical"
+    );
+
+    assert_eq!(
+        abi_json["generator"], "ts2wasm",
+        "generator should be ts2wasm"
+    );
+}
+
+#[test]
+fn manifest_has_abi_fields() {
+    let manifest = build_and_get_manifest("const x = Math.random();", "manifest-abi-fields");
+    let parsed: serde_json::Value =
+        serde_json::from_str(&manifest).expect("manifest should be valid JSON");
+
+    assert_eq!(
+        parsed["runtime_abi_name"], "ts2wasm-runtime-abi",
+        "manifest should include runtime_abi_name"
+    );
+    assert_eq!(
+        parsed["runtime_abi_version"], 2,
+        "manifest should include runtime_abi_version"
+    );
+    assert_eq!(
+        parsed["target_id"], "wasm32-wasi-p1",
+        "manifest should include canonical target_id"
+    );
+    let aliases = parsed["target_aliases"]
+        .as_array()
+        .expect("target_aliases should be an array");
+    assert!(
+        aliases.contains(&serde_json::Value::String("wasm32-wasi".to_owned())),
+        "target_aliases should include 'wasm32-wasi'; got: {aliases:?}"
+    );
+    assert!(
+        aliases.contains(&serde_json::Value::String("wasm32-wasi-p1".to_owned())),
+        "target_aliases should include 'wasm32-wasi-p1'; got: {aliases:?}"
+    );
+}
+
+#[test]
+fn manifest_target_field_unchanged_for_backward_compat() {
+    // The existing `target` field must remain unchanged for backward compatibility.
+    let manifest = build_and_get_manifest("console.log(\"hi\");", "target-bc");
+    let parsed: serde_json::Value =
+        serde_json::from_str(&manifest).expect("manifest should be valid JSON");
+
+    assert_eq!(
+        parsed["target"], "wasm32-wasi",
+        "existing `target` field must remain 'wasm32-wasi' for backward compat"
+    );
+    assert_eq!(
+        parsed["target_id"], "wasm32-wasi-p1",
+        "new `target_id` field should use canonical target"
     );
 }

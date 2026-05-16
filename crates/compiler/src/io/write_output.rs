@@ -1,9 +1,11 @@
 use std::fs;
 use std::path::Path;
 use std::process::Command;
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::AtomicUsize;
 
+use ts2wasm_backend_wasm::append_custom_section;
 use ts2wasm_frontend::{DiagCode, Diagnostic};
+use ts2wasm_shared::abi::{ABI_CUSTOM_SECTION_NAME, AbiMetadata};
 
 /// Tracks how many times the wat2wasm CLI fallback was used.
 pub static WAT2WASM_FALLBACK_COUNT: AtomicUsize = AtomicUsize::new(0);
@@ -70,8 +72,22 @@ fn wat_to_binary(wat: &str) -> Result<Vec<u8>, Diagnostic> {
 }
 
 pub fn write_wasm_from_wat(wat: &str, output: &Path) -> Result<(), Diagnostic> {
+    write_wasm_from_wat_with_abi(wat, output, None)
+}
+
+pub fn write_wasm_from_wat_with_abi(
+    wat: &str,
+    output: &Path,
+    abi_metadata: Option<&AbiMetadata>,
+) -> Result<(), Diagnostic> {
     let wasm_bytes = wat_to_binary(wat)?;
-    fs::write(output, &wasm_bytes).map_err(|error| Diagnostic {
+    let final_bytes = if let Some(meta) = abi_metadata {
+        let payload = meta.to_custom_section_payload();
+        append_custom_section(&wasm_bytes, ABI_CUSTOM_SECTION_NAME, &payload)
+    } else {
+        wasm_bytes
+    };
+    fs::write(output, &final_bytes).map_err(|error| Diagnostic {
         code: DiagCode::BackendIo,
         message: format!("failed to write wasm {}: {error}", output.display()),
         span: None,
