@@ -4487,30 +4487,6 @@ fn is_intl_number_format_class(class_name: &str) -> bool {
     )
 }
 
-fn intl_date_time_format_options_object() -> LoweredExpr {
-    LoweredExpr::ObjectNew {
-        props: vec![
-            ("locale".to_owned(), string_lit("en")),
-            ("calendar".to_owned(), string_lit("gregory")),
-            ("numberingSystem".to_owned(), string_lit("latn")),
-            ("timeZone".to_owned(), string_lit("UTC")),
-        ],
-        non_enumerable: 0,
-        span: Span::generated("object_new"),
-    }
-}
-
-fn intl_date_time_format_part_object() -> LoweredExpr {
-    LoweredExpr::ObjectNew {
-        props: vec![
-            ("type".to_owned(), string_lit("literal")),
-            ("value".to_owned(), string_lit("")),
-        ],
-        non_enumerable: 0,
-        span: Span::generated("object_new"),
-    }
-}
-
 fn intl_duration_format_options_object() -> LoweredExpr {
     let mut props = vec![
         ("locale".to_owned(), string_lit("en")),
