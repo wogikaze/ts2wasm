@@ -374,7 +374,6 @@ fn wat_writer_imports_prefix_symbols_and_omit_empty_results() {
     assert!(!w.as_str().contains("(result )"));
 }
 
-
 fn validate_wat_if_available(test_name: &str, wat: &str) {
     if Command::new("wat2wasm").arg("--version").output().is_err() {
         eprintln!("skipping WAT validation for {test_name}: wat2wasm unavailable");
@@ -400,7 +399,6 @@ fn validate_wat_if_available(test_name: &str, wat: &str) {
         wat
     );
 }
-
 
 fn validate_wasm_if_available(test_name: &str, wasm: &[u8]) {
     let wasm_path = temp_path(test_name, "wasm");
@@ -441,7 +439,6 @@ fn validate_wasm_if_available(test_name: &str, wasm: &[u8]) {
     }
 }
 
-
 fn temp_path(test_name: &str, extension: &str) -> std::path::PathBuf {
     let sanitized = test_name.replace(|c: char| !c.is_ascii_alphanumeric(), "_");
     std::env::temp_dir().join(format!(
@@ -450,7 +447,6 @@ fn temp_path(test_name: &str, extension: &str) -> std::path::PathBuf {
         std::thread::current().name().unwrap_or("test")
     ))
 }
-
 
 fn assert_module_emits_with_wat_and_wasm_encoder(test_name: &str, module: &WasmModule) {
     let mut writer = WatWriter::new();
@@ -466,7 +462,6 @@ fn assert_module_emits_with_wat_and_wasm_encoder(test_name: &str, module: &WasmM
     validate_wasm_if_available(test_name, &wasm);
 }
 
-
 fn parity_fixture_function_export() -> WasmModule {
     WasmModule::new()
         .function(
@@ -476,7 +471,6 @@ fn parity_fixture_function_export() -> WasmModule {
         )
         .export(WasmExport::func("main", "main"))
 }
-
 
 fn parity_fixture_import_memory_global_data() -> WasmModule {
     WasmModule::new()
@@ -562,7 +556,6 @@ fn wat_writer_custom_section_as_comment() {
     assert!(wat.contains(";; custom-section: ts2wasm.abi"));
     assert!(wat.contains(";;   {\"version\":1}"));
 }
-
 
 #[test]
 fn wasm_encoder_abi_custom_section_emits_and_validates() {

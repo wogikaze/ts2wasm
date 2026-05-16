@@ -2399,10 +2399,19 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
-        if let ResolvedExpr::Ident(obj_name) = object {
-            // eprintln!("DBG mcall_early_rtr: name={} method={}", obj_name, method);
-        }
-        if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
+        // Skip ObjectToString catch-all for BigInt locals — let class dispatch handle it
+        if matches!(method, "toString" | "valueOf")
+            && let ResolvedExpr::Ident(name) = object
+            && let Ok(local) = self.resolve_local(name)
+            && self
+                .ctx
+                .classes
+                .local_classes
+                .get(&local)
+                .is_some_and(|c| c == "BigInt")
+        {
+            // fall through to class dispatch
+        } else if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
             if intrinsic == RuntimeFn::JsonParse {
                 if args.is_empty() || args.len() > 2 {
                     return Err(Diagnostic {
@@ -3577,6 +3586,23 @@ impl super::super::Resolver {
             }
         };
         let class_name = class_name_str.as_str();
+
+        // BigInt.prototype.toString / valueOf
+        if class_name == "BigInt" {
+            match method {
+                "toString" | "toLocaleString" => {
+                    return Ok(LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::BigIntToString,
+                        args: vec![LoweredExpr::Local(obj_local, Span::generated("local"))],
+                        span: Span::generated("runtime_call"),
+                    });
+                }
+                "valueOf" => {
+                    return Ok(LoweredExpr::Local(obj_local, Span::generated("local")));
+                }
+                _ => {}
+            }
+        }
 
         if class_name == "Array"
             && (method == "forEach"

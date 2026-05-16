@@ -277,7 +277,6 @@ fn parity_full_featured_wat() {
 // Parity tests — wasm-encoder binary path
 // ---------------------------------------------------------------------------
 
-
 #[test]
 fn parity_simple_function_binary() {
     let module = fixture_simple_function();
@@ -285,7 +284,6 @@ fn parity_simple_function_binary() {
     assert!(!bytes.is_empty(), "binary output should not be empty");
     validate_binary(&bytes);
 }
-
 
 #[test]
 fn parity_import_and_memory_binary() {
@@ -295,7 +293,6 @@ fn parity_import_and_memory_binary() {
     validate_binary(&bytes);
 }
 
-
 #[test]
 fn parity_global_binary() {
     let module = fixture_global();
@@ -303,7 +300,6 @@ fn parity_global_binary() {
     assert!(!bytes.is_empty(), "binary output should not be empty");
     validate_binary(&bytes);
 }
-
 
 #[test]
 fn parity_data_segment_binary() {
@@ -313,7 +309,6 @@ fn parity_data_segment_binary() {
     validate_binary(&bytes);
 }
 
-
 #[test]
 fn parity_abi_custom_section_binary() {
     let module = fixture_abi_custom_section();
@@ -321,7 +316,6 @@ fn parity_abi_custom_section_binary() {
     assert!(!bytes.is_empty(), "binary output should not be empty");
     validate_binary(&bytes);
 }
-
 
 #[test]
 fn parity_full_featured_binary() {

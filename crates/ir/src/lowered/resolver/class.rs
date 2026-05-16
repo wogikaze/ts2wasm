@@ -497,6 +497,7 @@ impl super::Resolver {
                 Some("Object".to_owned())
             }
             ResolvedExpr::Array(_) => Some("Array".to_owned()),
+            ResolvedExpr::BigIntLiteral { .. } => Some("BigInt".to_owned()),
             ResolvedExpr::Ident(name) => self
                 .resolve_local(name)
                 .ok()
