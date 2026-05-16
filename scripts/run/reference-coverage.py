@@ -4,7 +4,7 @@
 Usage:
   python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]
       [--paths-file PATH] [--path-filter TEXT] [--dashboard-data]
-      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--category PATTERN] [--no-server] [--no-semantic]
+      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--sample-seed SEED] [--category PATTERN] [--no-server] [--no-semantic]
 
 Suites:
   test262   -> reference/test262/test/**/*.js
@@ -327,7 +327,7 @@ def usage():
     print("Usage:")
     print("  python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]")
     print("      [--paths-file PATH] [--path-filter TEXT] [--dashboard-data] [--no-dashboard-data]")
-    print("      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--category PATTERN] [--no-server] [--no-semantic]")
+    print("      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--sample-seed SEED] [--category PATTERN] [--no-server] [--no-semantic]")
     print("      [--check-prerequisites]")
     print()
     print("Suites:")
@@ -343,6 +343,7 @@ def usage():
     print("  --semantic MODE  Semantic mode: 'strict' (Node/iwasm exact diff, default) or")
     print("                   'fast' (oracle_skip for silent positive tests)")
     print("  --sample N       Max files per category (test262 only, uses category-based sampling)")
+    print("  --sample-seed SEED  Deterministic seed for sample selection (default: $TS2WASM_SAMPLE_SEED or empty)")
     print("  --category PATTERN  Regex filter for test categories (test262 only, used with --sample)")
     print("  --check-prerequisites  Validate prerequisites and exit (no coverage run)")
 
@@ -1332,6 +1333,7 @@ def main():
     semantic_mode = "fast"  # "strict" | "fast" | "none"
     sample = None
     category_pattern = None
+    sample_seed = os.environ.get("TS2WASM_SAMPLE_SEED")  # deterministic seed for sampling
     server_mode = True
     suite_detail_rows = []
     suite_detail_counter = [0]
@@ -1418,6 +1420,12 @@ def main():
                 print("ERROR: --category requires a value", file=sys.stderr)
                 sys.exit(1)
             category_pattern = args[i + 1]
+            i += 2
+        elif args[i] == "--sample-seed":
+            if i + 1 >= len(args):
+                print("ERROR: --sample-seed requires a value", file=sys.stderr)
+                sys.exit(1)
+            sample_seed = args[i + 1]
             i += 2
         elif args[i] == "--no-server":
             server_mode = False
@@ -1605,20 +1613,29 @@ def main():
         files = files[:limit]
 
     if sample and suite == "test262":
-        category_seen = {}
-        sampled = []
+        # Sort for deterministic base order across runs and systems.
+        files = sorted(files, key=lambda f: str(f))
+        seed = sample_seed or ""
+        # Build per-category file lists from the full sorted file set.
+        cat_files = {}
         for f in files:
             cat_match = re.search(r'test/([^/]+)/', str(f))
             cat = cat_match.group(1) if cat_match else "default"
             if category_pattern and not re.search(category_pattern, cat):
                 continue
-            seen = category_seen.get(cat, 0)
-            if seen >= sample:
-                continue
-            category_seen[cat] = seen + 1
-            sampled.append(f)
+            cat_files.setdefault(cat, []).append(f)
+        # Within each category, optionally shuffle by hash(file_path + seed)
+        # then take the first `sample` files per category.
+        sampled = []
+        for cat, fs in cat_files.items():
+            if seed:
+                def _sample_sort_key(f, _s=seed):
+                    import hashlib
+                    return hashlib.sha256((str(f) + _s).encode()).hexdigest()
+                fs.sort(key=_sample_sort_key)
+            sampled.extend(fs[:sample])
         files = sampled
-        print(f"Sample mode: {len(files)} files selected (max {sample} per category)", file=sys.stderr)
+        print(f"Sample mode: {len(files)} files selected (max {sample} per category, seed={seed or 'none'})", file=sys.stderr)
 
     # Update evidence with selected files info (path_sha256, case_count)
     evidence = evidence_command(
