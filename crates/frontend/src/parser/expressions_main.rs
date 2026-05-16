@@ -491,7 +491,11 @@ impl Parser {
             self.ternary()?
         };
 
-        let end = body.span().end;
+        let end = if body.span().end < start_span.start {
+            start_span.start
+        } else {
+            body.span().end
+        };
         Ok(Expr::ArrowFn {
             params,
             body: Box::new(body),

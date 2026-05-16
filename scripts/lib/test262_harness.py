@@ -6,6 +6,7 @@ import os
 import re
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -23,6 +24,52 @@ HARNESS_DIR = TEST262_ROOT / "harness"
 TS2WASM_BINARY = resolve_ts2wasm_binary()
 
 CORE_HARNESS_FILES = ("sta.js", "assert.js")
+
+WAMR_BIN = REPO_ROOT / "crates" / "iwasm-runner" / "ts2wasm-iwasm-runner"
+WAMR_AVAILABLE = WAMR_BIN.is_file()
+_wamr_local = threading.local()
+
+def _get_wamr_runner():
+    if not WAMR_AVAILABLE:
+        return None
+    r = getattr(_wamr_local, 'runner', None)
+    if r is not None and r.poll() is None:
+        return r
+    try:
+        r = subprocess.Popen(
+            [str(WAMR_BIN)],
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL, text=True,
+        )
+        _wamr_local.runner = r
+        return r
+    except OSError:
+        return None
+
+def _run_with_wamr(wasm_path):
+    runner = _get_wamr_runner()
+    if runner is None:
+        result = subprocess.run(
+            ["timeout", "5s", "iwasm", str(wasm_path)],
+            capture_output=True, text=True, cwd=REPO_ROOT,
+        )
+        return result.returncode, result.stdout, result.stderr
+    try:
+        job = json.dumps({"id": 0, "wasm_path": str(wasm_path)})
+        runner.stdin.write(job + "\n")
+        runner.stdin.flush()
+        resp_line = runner.stdout.readline()
+        if resp_line:
+            wr = json.loads(resp_line)
+            ok = wr.get("status") == "ok"
+            return (0 if ok else 1), wr.get("stdout", ""), wr.get("stderr", "")
+        return -1, "", "WAMR disconnected"
+    except (OSError, json.JSONDecodeError):
+        result = subprocess.run(
+            ["timeout", "5s", "iwasm", str(wasm_path)],
+            capture_output=True, text=True, cwd=REPO_ROOT,
+        )
+        return result.returncode, result.stdout, result.stderr
 UNSUPPORTED_FLAGS = ("IsHTMLDDA",)
 NON_BLOCKING_METADATA_FEATURES = (
     "class",
@@ -867,47 +914,35 @@ def compile_and_run_test(test_file, tmp_dir):
 
         return result_status, result_diag, result_feature, result_reason, result_actual, source_code, result_error_line, result_stderr_full
 
-    # Run with iwasm
-    result = subprocess.run(
-        ["timeout", "5s", "iwasm", str(tmp_wasm)],
-        capture_output=True,
-        text=True,
-        cwd=REPO_ROOT
-    )
+    # Run with WAMR runner (or iwasm fallback)
+    rc, stdout, stderr = _run_with_wamr(str(tmp_wasm))
+    result_actual = stdout
+    result_stderr_full = stderr
 
-    if result.returncode == 0:
-        with open(tmp_stdout, 'w') as f:
-            f.write(result.stdout)
-        result_actual = result.stdout
-        if ASSERT_FAILURE_SENTINEL in result.stdout:
+    if rc == 0:
+        if ASSERT_FAILURE_SENTINEL in stdout:
             result_status = "fail"
             result_diag = "Test262AssertionFailure"
             result_reason = "test262 assertion failed"
         else:
-            # If result.returncode == 0 but it was expected to fail:
             result_status = "fail" if metadata.expects_negative else "pass"
         
         if metadata.expects_negative and result_status == "fail":
              result_status, result_diag, result_feature, result_reason = classify_completed_negative(metadata)
     else:
         # Runtime failure (non-zero return code)
-        result_stderr_full = result.stderr
-        result_actual = result.stdout if result.stdout else ""
-
         if metadata.expects_negative:
-            # We don't verify the error type yet (TypeError vs others), so mark as unverified
             result_status = "unsupported"
             result_diag = "NegativeRuntimeUnverified"
             result_feature = "negative-runtime-unverified"
             result_reason = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} rejected during execution (unverified error type)"
         else:
             result_status = "runtime_error"
-            result_diag = f"RuntimeError:{result.returncode}"
-            result_feature = feature_label("RuntimeError", result.stderr, str(test_file))
-            result_reason = result.stderr[:200] if result.stderr else ""
+            result_diag = f"RuntimeError:{rc}"
+            result_feature = feature_label("RuntimeError", stderr, str(test_file))
+            result_reason = stderr[:200] if stderr else ""
 
-        # Try to extract line number from runtime error
-        line_match = re.search(r'(?:at line |:)(\d+)(?::|$)', result.stderr)
+        line_match = re.search(r'(?:at line |:)(\d+)(?::|$)', stderr)
         result_error_line = int(line_match.group(1)) if line_match else None
 
     return result_status, result_diag, result_feature, result_reason, result_actual, source_code, result_error_line, result_stderr_full
