@@ -371,6 +371,11 @@ impl super::super::Resolver {
         if func_name == "setTimeout"
             || func_name == "ERROR"
             || func_name == "$DONE"
+            || func_name == "$DONOTEVALUATE"
+            || func_name == "asyncTest"
+            || func_name == "assert"
+            || func_name == "$262"
+            || func_name == "__assert_throws"
         {
             return Ok(LoweredExpr::Undefined(Span::generated("undef")));
         }

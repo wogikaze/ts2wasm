@@ -161,6 +161,10 @@ pub fn default_allowed_globals() -> std::collections::HashSet<String> {
         "isPrimitive",
         // Test262 fnGlobalObject.js harness
         "fnGlobalObject",
+        // Additional test262 harness globals
+        "asyncTest",
+        "$MAX_ITERATIONS",
+        "__assert_throws",
     ]
     .iter()
     .map(|s| s.to_string())
@@ -308,7 +312,6 @@ impl NameResolver {
                 name, is_var: true, ..
             } = stmt
             {
-                eprintln!("DBG_RESOLVE: pre-declaring var `{name}`");
                 self.declare_binding(name, None, true)?;
             }
             if let Stmt::Let {

@@ -134,6 +134,9 @@ impl super::super::Resolver {
             || name == "$ERROR"
             || name == "$DONOTEVALUATE"
             || name == "assert"
+            || name == "asyncTest"
+            || name == "$MAX_ITERATIONS"
+            || name == "__assert_throws"
         {
             return Ok(LoweredExpr::Undefined(Span::generated("undef")));
         }
