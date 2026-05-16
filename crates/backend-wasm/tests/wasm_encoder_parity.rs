@@ -54,7 +54,7 @@ fn validate_wat(wat: &str) {
 
 /// Validate that the given binary wasm bytes decode correctly via wasm2wat.
 /// Uses `wasm2wat` to convert binary to WAT; success means the binary is valid.
-#[cfg(feature = "wasm-encoder-backend")]
+
 fn validate_binary(wasm_bytes: &[u8]) {
     let mut child = Command::new("wasm2wat")
         .arg("-o")
@@ -274,10 +274,10 @@ fn parity_full_featured_wat() {
 }
 
 // ---------------------------------------------------------------------------
-// Parity tests — wasm-encoder binary path (feature-gated)
+// Parity tests — wasm-encoder binary path
 // ---------------------------------------------------------------------------
 
-#[cfg(feature = "wasm-encoder-backend")]
+
 #[test]
 fn parity_simple_function_binary() {
     let module = fixture_simple_function();
@@ -286,7 +286,7 @@ fn parity_simple_function_binary() {
     validate_binary(&bytes);
 }
 
-#[cfg(feature = "wasm-encoder-backend")]
+
 #[test]
 fn parity_import_and_memory_binary() {
     let module = fixture_import_and_memory();
@@ -295,7 +295,7 @@ fn parity_import_and_memory_binary() {
     validate_binary(&bytes);
 }
 
-#[cfg(feature = "wasm-encoder-backend")]
+
 #[test]
 fn parity_global_binary() {
     let module = fixture_global();
@@ -304,7 +304,7 @@ fn parity_global_binary() {
     validate_binary(&bytes);
 }
 
-#[cfg(feature = "wasm-encoder-backend")]
+
 #[test]
 fn parity_data_segment_binary() {
     let module = fixture_data_segment();
@@ -313,7 +313,7 @@ fn parity_data_segment_binary() {
     validate_binary(&bytes);
 }
 
-#[cfg(feature = "wasm-encoder-backend")]
+
 #[test]
 fn parity_abi_custom_section_binary() {
     let module = fixture_abi_custom_section();
@@ -322,7 +322,7 @@ fn parity_abi_custom_section_binary() {
     validate_binary(&bytes);
 }
 
-#[cfg(feature = "wasm-encoder-backend")]
+
 #[test]
 fn parity_full_featured_binary() {
     let module = fixture_full_featured();

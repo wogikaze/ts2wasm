@@ -2,9 +2,9 @@ use super::*;
 use crate::wasm_ir::{
     WasmCustomSection, WasmDataSegment, WasmExport, WasmImport, WasmMemory, WasmValType,
 };
-#[cfg(feature = "wasm-encoder-backend")]
+
 use crate::{emit_wasm_module_binary, wasm_ir::WasmGlobal};
-#[cfg(feature = "wasm-encoder-backend")]
+
 use std::{fs, process::Command};
 
 #[test]
@@ -374,7 +374,7 @@ fn wat_writer_imports_prefix_symbols_and_omit_empty_results() {
     assert!(!w.as_str().contains("(result )"));
 }
 
-#[cfg(feature = "wasm-encoder-backend")]
+
 fn validate_wat_if_available(test_name: &str, wat: &str) {
     if Command::new("wat2wasm").arg("--version").output().is_err() {
         eprintln!("skipping WAT validation for {test_name}: wat2wasm unavailable");
@@ -401,7 +401,7 @@ fn validate_wat_if_available(test_name: &str, wat: &str) {
     );
 }
 
-#[cfg(feature = "wasm-encoder-backend")]
+
 fn validate_wasm_if_available(test_name: &str, wasm: &[u8]) {
     let wasm_path = temp_path(test_name, "wasm");
     fs::write(&wasm_path, wasm).expect("write temp wasm fixture");
@@ -441,7 +441,7 @@ fn validate_wasm_if_available(test_name: &str, wasm: &[u8]) {
     }
 }
 
-#[cfg(feature = "wasm-encoder-backend")]
+
 fn temp_path(test_name: &str, extension: &str) -> std::path::PathBuf {
     let sanitized = test_name.replace(|c: char| !c.is_ascii_alphanumeric(), "_");
     std::env::temp_dir().join(format!(
@@ -451,7 +451,7 @@ fn temp_path(test_name: &str, extension: &str) -> std::path::PathBuf {
     ))
 }
 
-#[cfg(feature = "wasm-encoder-backend")]
+
 fn assert_module_emits_with_wat_and_wasm_encoder(test_name: &str, module: &WasmModule) {
     let mut writer = WatWriter::new();
     writer.emit_module(module);
@@ -466,7 +466,7 @@ fn assert_module_emits_with_wat_and_wasm_encoder(test_name: &str, module: &WasmM
     validate_wasm_if_available(test_name, &wasm);
 }
 
-#[cfg(feature = "wasm-encoder-backend")]
+
 fn parity_fixture_function_export() -> WasmModule {
     WasmModule::new()
         .function(
@@ -477,7 +477,7 @@ fn parity_fixture_function_export() -> WasmModule {
         .export(WasmExport::func("main", "main"))
 }
 
-#[cfg(feature = "wasm-encoder-backend")]
+
 fn parity_fixture_import_memory_global_data() -> WasmModule {
     WasmModule::new()
         .import(WasmImport::func(
@@ -508,7 +508,7 @@ fn parity_fixture_import_memory_global_data() -> WasmModule {
 }
 
 #[test]
-#[cfg(feature = "wasm-encoder-backend")]
+
 fn wasm_encoder_parity_fixtures_emit_and_validate() {
     let fixtures = [
         ("function_export", parity_fixture_function_export()),
@@ -563,7 +563,7 @@ fn wat_writer_custom_section_as_comment() {
     assert!(wat.contains(";;   {\"version\":1}"));
 }
 
-#[cfg(feature = "wasm-encoder-backend")]
+
 #[test]
 fn wasm_encoder_abi_custom_section_emits_and_validates() {
     let module = WasmModule::new()

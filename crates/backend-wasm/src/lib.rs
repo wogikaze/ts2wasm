@@ -74,6 +74,20 @@ pub fn emit_wasm_binary_mvp(program: &Validated<LoweredProgram>) -> Result<Vec<u
     binary_mvp::emit_wasm_binary_mvp(program.as_ref())
 }
 
+/// Emit a validated lowered program to WASM binary.
+///
+/// This is the high-level entry point: emits WAT text, then converts to binary
+/// using the pure-Rust `wat` crate (no subprocess, no wat2wasm dependency).
+pub fn emit_wasm_binary(program: &Validated<LoweredProgram>) -> Result<Vec<u8>, Diagnostic> {
+    let wat = emit_wat(program)?;
+    wat::parse_str(&wat).map_err(|err| Diagnostic {
+        code: DiagCode::BackendIo,
+        message: format!("WAT-to-binary conversion failed: {err}"),
+        span: None,
+        phase: None,
+    })
+}
+
 pub fn program_requires_read_stdin_bytes_runtime(program: &LoweredProgram) -> bool {
     runtime_link_plan::build_runtime_link_plan(program)
         .required_runtime_functions()
@@ -89,10 +103,8 @@ pub(crate) fn align_to(value: u32, alignment: u32) -> Option<u32> {
         .map(|aligned| aligned & !(alignment - 1))
 }
 
-#[cfg(feature = "wasm-encoder-backend")]
 mod wasm_encoder_backend;
 
-#[cfg(feature = "wasm-encoder-backend")]
 pub use wasm_encoder_backend::{WasmEncoderBackendExt, emit_wasm_module_binary};
 
 pub(crate) fn wat_bytes(bytes: &[u8]) -> String {
