@@ -83,7 +83,6 @@ BUILD_FAIL_FIXTURES = [
     "fixtures/typescript-directives/reference-types-missing.ts",
     "fixtures/typescript-directives/reference-types-skip-lib-check.ts",
     "fixtures/typescript-directives/reference-types-ts-ignore.ts",
-    "fixtures/typescript-directives/module-augmentation-unsupported.ts",
     "fixtures/typescript-directives/type-only-import-unsupported.ts",
 ]
 

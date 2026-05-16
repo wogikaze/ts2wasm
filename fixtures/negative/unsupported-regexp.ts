@@ -1,1 +1,0 @@
-RegExp.prototype.exec("hello");

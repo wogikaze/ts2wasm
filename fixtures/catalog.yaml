@@ -70,6 +70,10 @@ directories:
     - async-void.ts
     - await-sequence.ts
     - basic-async-return.ts
+    - async-await-unsupported.ts
+    - async-chain.ts
+    - async-error-handling.ts
+    - async-parallel.ts
     host_imports: allow
   atcoder:
     category: semantic
@@ -486,6 +490,58 @@ directories:
     - typedarray-methods.ts
     - value-of.ts
     - weakmap-weakset-basic.ts
+    - array-every-some-complex.ts
+    - array-find-findindex-complex.ts
+    - arraybuffer-is-view.ts
+    - atomics-wait-async.ts
+    - console-supplementary.ts
+    - console-unsupported-methods.ts
+    - date-set-local-methods.ts
+    - date-to-string-methods.ts
+    - disposable-stack.ts
+    - error-name.ts
+    - for-await-of.ts
+    - for-in-braceless.ts
+    - function-constructor.ts
+    - function-prototype.ts
+    - global-uri-comprehensive.ts
+    - intl-datetimeformat.ts
+    - iterator-helpers.ts
+    - json-parse-reviver-array.ts
+    - json-parse-reviver-drop.ts
+    - json-parse-reviver-nested.ts
+    - json-parse-reviver-noop.ts
+    - json-parse-reviver-transform.ts
+    - map-entries.ts
+    - map-keys.ts
+    - map-values.ts
+    - math-complete.ts
+    - math-non-integer-trig.ts
+    - number-format-precision.ts
+    - object-from-entries.ts
+    - object-static.ts
+    - object-super-bracket-access-unsupported.ts
+    - object-super-method-call-unsupported.ts
+    - object-super-property-get-unsupported.ts
+    - object-super-property-set-unsupported.ts
+    - promise-job-order.ts
+    - proxy-traps-comprehensive.ts
+    - reflect-apply-construct.ts
+    - reflect-basic.ts
+    - regexp-advanced.ts
+    - set-entries.ts
+    - set-keys.ts
+    - set-values.ts
+    - shadowrealm-basic.ts
+    - strict-mode-basic.ts
+    - string-code-point-at.ts
+    - string-static.ts
+    - temporal-now.ts
+    - typedarray-byte-length-buffer.ts
+    - typedarray-index-of.ts
+    - typedarray-mutating-methods.ts
+    - typedarray-unsupported-methods.ts
+    - weakref-finalization.ts
     host_imports: allow
   classes:
     category: semantic
@@ -508,6 +564,11 @@ directories:
     - class-super-arrow.ts
     - class-super-constructor.ts
     - class-super-static.ts
+    - class-constructor-return.ts
+    - class-getter-setter-inherited.ts
+    - class-instanceof.ts
+    - class-method-override.ts
+    - class-private-fields.ts
     host_imports: allow
   classes-and-inheritance:
     category: semantic
@@ -529,6 +590,10 @@ directories:
     - class-super-property-get.ts
     - class-super.ts
     - new-expression.ts
+    - class-constructor-default.ts
+    - class-getter-setter-inherited.ts
+    - class-instanceof-check.ts
+    - class-method-override.ts
     host_imports: allow
   control-flow-and-exceptions:
     category: semantic
@@ -632,6 +697,10 @@ directories:
     - typeof.ts
     - unary.ts
     - undefined.ts
+    - object-literal-computed-variable-key.ts
+    - object-literal-getter-setter.ts
+    - object-literal-method-shorthand.ts
+    - object-literal-shorthand-properties.ts
     host_imports: allow
   core-semantics:
     category: semantic
@@ -989,6 +1058,15 @@ directories:
     - typeof.ts
     - unary-void-operator.ts
     - with-statement-unsupported.ts
+    - class-constructor-return.ts
+    - class-getter-setter-inherited.ts
+    - class-instanceof.ts
+    - class-method-override.ts
+    - closure-gc-survival.ts
+    - eval-basic.ts
+    - function-prototype-metadata.ts
+    - nested-function-arguments.ts
+    - returned-closure-nested-object-gc-pressure.ts
     host_imports: allow
   core-statements:
     category: semantic
@@ -1106,6 +1184,10 @@ directories:
     - static-star-re-export-entry.ts
     - static-star-re-export-import-entry.ts
     - static-star-re-export-source.ts
+    - static-multiple-star-reexport-entry.ts
+    - static-multiple-star-reexport-mid.ts
+    - static-multiple-star-reexport-src1.ts
+    - static-multiple-star-reexport-src2.ts
     host_imports: allow
   modules-and-typed-optimizations:
     category: semantic
@@ -1131,7 +1213,6 @@ directories:
     - duplicate-parameter.ts
     - invalid-top-level-return.ts
     - number-out-of-range.ts
-    - syntax-error.ts
     - typescript-type-check.ts
     - unresolved-function.ts
     - unresolved-name.ts
@@ -1139,9 +1220,6 @@ directories:
     - unsupported-date.ts
     - unsupported-eval.ts
     - unsupported-module.ts
-    - unsupported-regexp.ts
-    - unsupported-runtime-subset.ts
-    - unsupported-syntax.ts
     - unsupported-typescript-syntax.ts
   node-apis:
     category: semantic
@@ -1160,6 +1238,7 @@ directories:
     - process-argv.ts
     - process-env.ts
     - process-exit.ts
+    - wasi-fs-read-write.ts
     host_imports: deny
   object-semantics-kernel:
     category: semantic
@@ -1178,7 +1257,16 @@ directories:
     - prototype-method-build.ts
     - seal-freeze-descriptor.ts
     - writable-false-enforcement.ts
+    - gc-heap-kind-survival.ts
+    - object-abi-kernel.ts
+    - private-field-gc-pressure.ts
     host_imports: allow
+  parser:
+    category: parser
+    status: unknown
+    expected: parser acceptance tests
+    fixtures:
+    - comma-expression-statement.ts
   parser-errors:
     category: negative
     status: pass

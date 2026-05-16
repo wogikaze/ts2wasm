@@ -38,16 +38,12 @@ FIXTURE_DIAG_MAP: dict[str, str] = {
     "duplicate-parameter": "DuplicateLocal",  # DuplicateLocal is the actual compiler output
     "arity-mismatch": "ArityMismatch",
     "invalid-top-level-return": "InvalidTopLevelReturn",
-    "syntax-error": "SyntaxError",
     "number-out-of-range": "UnsupportedSyntax",
-    "unsupported-syntax": "UnsupportedSyntax",
     "unsupported-builtin": "UnsupportedBuiltin",
     "unsupported-date": "UnsupportedDate",
-    "unsupported-regexp": "UnsupportedSyntax",  # maps via display_code()
     "unsupported-module": "UnsupportedModule",
     "unsupported-eval": "UnsupportedEval",
     "unsupported-typescript-syntax": "UnsupportedTypeScriptSyntax",
-    "unsupported-runtime-subset": "UnsupportedSyntax",  # maps via display_code()
     "typescript-type-check": "TypeScriptTypeCheck",
 }
 
