@@ -35,7 +35,6 @@ FIXTURE_DIAG_MAP: dict[str, str] = {
     "unresolved-function": "UnresolvedName",  # Name resolver catches block-scoped fns
     "duplicate-function": "DuplicateFunction",
     "duplicate-local": "DuplicateLocal",
-    "duplicate-parameter": "DuplicateLocal",  # DuplicateLocal is the actual compiler output
     "arity-mismatch": "ArityMismatch",
     "invalid-top-level-return": "InvalidTopLevelReturn",
     "unsupported-builtin": "UnsupportedBuiltin",
@@ -49,6 +48,7 @@ FIXTURE_DIAG_MAP: dict[str, str] = {
 # Fixtures corresponding to diagnostic codes that cannot be triggered from source input.
 UNTRIGGERABLE_FIXTURES: set[str] = {
     "number-out-of-range",  # Number literals > i32 range are now supported as heap numbers
+    "duplicate-parameter",  # Non-strict mode allows duplicate parameter names per ES spec
 }
 
 # Diagnostic codes that can only be triggered via `ts2wasm check` (TypeScript oracle).

@@ -186,12 +186,19 @@ impl Resolver {
                 });
             }
             if seen_params.contains_key(clean_name) {
-                return Err(Diagnostic {
-                    code: DiagCode::DuplicateParameter,
-                    message: format!("duplicate parameter name: `{clean_name}`"),
-                    span: None,
-                    phase: None,
-                });
+                // Non-strict mode allows duplicate parameter names (per ES spec).
+                // In non-strict mode, the second declaration shadows the first.
+                if resolver.ctx.is_strict_context() {
+                    return Err(Diagnostic {
+                        code: DiagCode::DuplicateParameter,
+                        message: format!("duplicate parameter name: `{clean_name}`"),
+                        span: None,
+                        phase: None,
+                    });
+                }
+                // Skip seen_params re-insert so the second declare_parameter creates a
+                // distinct local that shadows the first during name resolution.
+                seen_params.remove(clean_name);
             }
             seen_params.insert(clean_name.to_owned(), ());
             let local_id = resolver.ctx.declare_parameter(clean_name);

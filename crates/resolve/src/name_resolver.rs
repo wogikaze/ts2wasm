@@ -478,7 +478,8 @@ impl NameResolver {
                 self.enter_scope();
                 self.function_depth += 1;
                 for (param_name, _default, is_rest) in params {
-                    self.declare_binding(param_name, Some(*span), false)?;
+                    // Non-strict mode allows duplicate parameter names (per ES spec).
+                    self.declare_binding(param_name, Some(*span), true)?;
                     if *is_rest {
                         // For rest params with binding patterns like (...[value]),
                         // also declare the inner names from the pattern
@@ -950,7 +951,8 @@ impl NameResolver {
                     self.declare_binding(name, Some(*span), false)?;
                 }
                 for (param_name, _default, is_rest) in params {
-                    self.declare_binding(param_name, Some(*span), false)?;
+                    // Non-strict mode allows duplicate parameter names (per ES spec).
+                    self.declare_binding(param_name, Some(*span), true)?;
                     if *is_rest {
                         // For rest params with binding patterns like (...[value]),
                         // also declare the inner names from the pattern

@@ -879,10 +879,18 @@ fn lowering_rejects_duplicate_function() {
 }
 
 #[test]
-fn lowering_rejects_duplicate_parameter() {
-    let program = parse_and_resolve("function f(a, a) { return a; }");
+fn lowering_rejects_duplicate_parameter_in_strict_mode() {
+    // "use strict" creates a strict context — duplicate params rejected in all functions.
+    let program = parse_and_resolve("\"use strict\"; let f = (a, a) => a;");
     let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
     assert_eq!(err.code, DiagCode::DuplicateParameter);
+}
+
+#[test]
+fn lowering_accepts_duplicate_parameter_in_non_strict_mode() {
+    // Non-strict function declarations allow duplicate parameter names per ES spec.
+    let program = parse_and_resolve("function f(a, a) { return a; }");
+    ts2wasm_ir::lowered::lower_program(&program).unwrap();
 }
 
 #[test]
