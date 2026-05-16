@@ -1711,8 +1711,10 @@ def main():
             "server_check_ms": 0,       # server check-mode compile (no wasm emit)
             "server_wasm_emit_ms": 0,   # server wasm-emit+wat2wasm wall time
             "iwasm_wall_ms": 0,         # cumulative iwasm execution wall time
+            "wamr_wall_ms": 0,          # cumulative WAMR runner wall time (subset of iwasm_wall_ms)
             "node_wall_ms": 0,          # cumulative node oracle wall time
-            "iwasm_processes": 0,       # number of iwasm invocations
+            "iwasm_processes": 0,       # number of iwasm invocations (total, including fallback)
+            "wamr_jobs_sent": 0,        # number of WAMR runner jobs dispatched
             "node_processes": 0,        # number of node invocations
             "wasm_emit_count": 0,       # successful wasm emissions (via wat crate)
             "wat2wasm_fallback_count": 0,  # actual wat2wasm CLI fallback invocations
@@ -2351,6 +2353,7 @@ def main():
                     except Exception:
                         phase_timers["server_fallback_batches"] += 1
                 if _wamr_runner is not None:
+                    phase_timers["wamr_jobs_sent"] += 1
                     try:
                         job = json.dumps({"id": 0, "wasm_path": str(wasm_path), "timeout_ms": 5000})
                         _wamr_runner.stdin.write(job + "\n")
@@ -2384,6 +2387,7 @@ def main():
 
                         resp_line = _resp_result.get("line", "")
                         _wamr_t = time.perf_counter() - _wamr_t0
+                        phase_timers["wamr_wall_ms"] += int(round(_wamr_t * 1000))
                         if _wamr_t > 0.5:
                             print(f"    SLOW WAMR ({_wamr_t*1000:.0f}ms): {_wamr_runner.pid}", file=sys.stderr)
                         if resp_line:
@@ -2847,6 +2851,9 @@ def main():
         iwasm_procs = profile_rec.get("iwasm_processes", 0)
         if iwasm_procs > 0:
             profile_rec["iwasm_avg_ms"] = profile_rec["iwasm_wall_ms"] // iwasm_procs
+        wamr_jobs = profile_rec.get("wamr_jobs_sent", 0)
+        if wamr_jobs > 0:
+            profile_rec["wamr_avg_ms"] = profile_rec["wamr_wall_ms"] // wamr_jobs
         node_procs = profile_rec.get("node_processes", 0)
         if node_procs > 0:
             profile_rec["node_avg_ms"] = profile_rec["node_wall_ms"] // node_procs
