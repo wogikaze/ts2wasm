@@ -725,6 +725,7 @@ def build_test262_jsonl_summary(
     denominator,
     passed,
     build_only,
+    semantic_skipped_sample,
     oracle_skipped,
     failed,
     unsupported,
@@ -749,8 +750,8 @@ def build_test262_jsonl_summary(
     differential_pass = passed
     executable_build_pass = passed + build_only + oracle_skipped
     conformance_pass = differential_pass + negative_compile_pass
-    executed = passed + build_only + oracle_skipped + failed + unsupported + blocked
-    build_pass = executable_build_pass + negative_compile_pass
+    executed = passed + build_only + semantic_skipped_sample + oracle_skipped + failed + unsupported + blocked
+    build_pass = executable_build_pass + negative_compile_pass + semantic_skipped_sample
     build_coverage_percent = "0.00"
     semantic_coverage_percent = "0.00"
     if denominator > 0:
@@ -775,6 +776,7 @@ def build_test262_jsonl_summary(
         "blocked": blocked,
         "oracle_skipped": oracle_skipped,
         "build_only": build_only,
+        "semantic_skipped_sample": semantic_skipped_sample,
         "total": executed,
         "executable_build_pass": executable_build_pass,
         "differential_pass": differential_pass,
@@ -801,6 +803,8 @@ def build_test262_jsonl_summary(
             "case_count": evidence.get("case_count") if isinstance(evidence, dict) else None,
             "sample_seed": evidence.get("sample_seed") if isinstance(evidence, dict) else None,
             "mode": evidence.get("mode") if isinstance(evidence, dict) else None,
+            "sample_selected": evidence.get("case_count") if isinstance(evidence, dict) else None,
+            "total_available": denominator,
         },
         "timestamp": datetime.now().isoformat(),
         "jsonl_file": str(jsonl_file),
@@ -1612,7 +1616,10 @@ def main():
     if limit:
         files = files[:limit]
 
+    non_sampled_files = []
     if sample and suite == "test262":
+        # Save full file list before sampling for non-sampled build-only processing.
+        _all_test262_files = list(files)
         # Sort for deterministic base order across runs and systems.
         files = sorted(files, key=lambda f: str(f))
         seed = sample_seed or ""
@@ -1635,7 +1642,10 @@ def main():
                 fs.sort(key=_sample_sort_key)
             sampled.extend(fs[:sample])
         files = sampled
-        print(f"Sample mode: {len(files)} files selected (max {sample} per category, seed={seed or 'none'})", file=sys.stderr)
+        # Compute non-sampled files for build-only semantic_skipped_sample pass.
+        sampled_paths = {str(f) for f in files}
+        non_sampled_files = [f for f in _all_test262_files if str(f) not in sampled_paths]
+        print(f"Sample mode: {len(files)} files selected (max {sample} per category, seed={seed or 'none'}, {len(non_sampled_files)} non-sampled)", file=sys.stderr)
 
     # Update evidence with selected files info (path_sha256, case_count)
     evidence = evidence_command(
@@ -1677,6 +1687,7 @@ def main():
         blocked = 0
         oracle_skipped = 0
         build_only = 0
+        semantic_skipped_sample = 0
         negative_compile_pass = 0
         negative_compile_unverified = 0
         negative_compile_mismatch = 0
@@ -1687,6 +1698,8 @@ def main():
         total_duration_ms = 0
         completed = 0
         total = len(files)
+        if non_sampled_files and semantic_check:
+            total += len(non_sampled_files)
         last_progress = 0
 
         jsonl_started_at = time.perf_counter()
@@ -1884,7 +1897,7 @@ def main():
             return None
 
         def consume_record(jsonl_out, record, status):
-            nonlocal passed, failed, unsupported, blocked, oracle_skipped, build_only, total_duration_ms
+            nonlocal passed, failed, unsupported, blocked, oracle_skipped, build_only, semantic_skipped_sample, total_duration_ms
             nonlocal completed, last_progress, negative_compile_pass, negative_compile_unverified, negative_compile_mismatch, unresolved_name_by_symbol
             nonlocal unsupported_diag_counts, unsupported_feature_counts, unsupported_by_phase
             if record:
@@ -1948,6 +1961,8 @@ def main():
                 oracle_skipped += 1
             elif status == "build_pass":
                 build_only += 1
+            elif status == "semantic_skipped_sample":
+                semantic_skipped_sample += 1
             completed += 1
             progress = int((completed / total) * 100)
             if progress >= last_progress + 5:
@@ -2726,17 +2741,33 @@ def main():
                                     _r.kill()
                         stop_jsonl_server(server_proc)
 
+        # Lightweight semantic_skipped_sample records for non-sampled files.
+        # Open JSONL in append mode to add skipped records.
+        if non_sampled_files and semantic_check:
+            _non_sample_t0 = time.perf_counter()
+            with open(jsonl_file, "a", encoding="utf-8") as _jsonl_out:
+                for f in non_sampled_files:
+                    skipped_record = t262.create_test_record(
+                        "test262", str(f), "skip", "semantic_skipped_sample",
+                        expected="pass", actual="skipped",
+                        reason="SemanticSkippedSample/not-selected",
+                    )
+                    _jsonl_out.write(skipped_record + "\n")
+                    semantic_skipped_sample += 1
+                    completed += 1
+            phase_timers["non_sample_ms"] = int(round((time.perf_counter() - _non_sample_t0) * 1000))
+
         save_metadata_cache()
 
         # Canonicalize JSONL order by case path for reproducibility
         if jsonl_file.is_file():
             _canonicalize_jsonl(jsonl_file)
 
-        print(f"Pass: {passed}  BuildOnly: {build_only}  OracleSkipped: {oracle_skipped}  Fail: {failed}  Unsupported: {unsupported}  Blocked: {blocked}", file=sys.stderr)
+        print(f"Pass: {passed}  BuildOnly: {build_only}  SemSkipSample: {semantic_skipped_sample}  OracleSkipped: {oracle_skipped}  Fail: {failed}  Unsupported: {unsupported}  Blocked: {blocked}", file=sys.stderr)
 
         print(f"\n=== {suite} Summary ===", file=sys.stderr)
         wall_duration_ms = int(round((time.perf_counter() - jsonl_started_at) * 1000))
-        print(f"Total: {passed + build_only + oracle_skipped + failed + unsupported + blocked}", file=sys.stderr)
+        print(f"Total: {passed + build_only + semantic_skipped_sample + oracle_skipped + failed + unsupported + blocked}", file=sys.stderr)
         print(f"Duration: {wall_duration_ms}ms", file=sys.stderr)
         if os.environ.get("TS2WASM_REFERENCE_COVERAGE_SHOW_CASE_DURATION_SUM") == "1":
             print(f"CaseDurationSum: {total_duration_ms}ms", file=sys.stderr)
@@ -2745,6 +2776,7 @@ def main():
             denominator=denominator,
             passed=passed,
             build_only=build_only,
+            semantic_skipped_sample=semantic_skipped_sample,
             oracle_skipped=oracle_skipped,
             failed=failed,
             unsupported=unsupported,
