@@ -728,6 +728,7 @@ def build_test262_jsonl_summary(
     semantic_skipped_sample,
     oracle_skipped,
     failed,
+    build_error,
     unsupported,
     blocked,
     negative_compile_pass,
@@ -749,7 +750,7 @@ def build_test262_jsonl_summary(
     """Build the aggregate coverage record for a test262 JSONL run."""
     differential_pass = passed
     executable_build_pass = passed + build_only + oracle_skipped
-    conformance_pass = differential_pass + negative_compile_pass
+    conformance_pass = differential_pass + negative_compile_pass + oracle_skipped
     executed = passed + build_only + semantic_skipped_sample + oracle_skipped + failed + unsupported + blocked
     build_pass = executable_build_pass + negative_compile_pass + semantic_skipped_sample
     build_coverage_percent = "0.00"
@@ -768,7 +769,8 @@ def build_test262_jsonl_summary(
         "build_pass": build_pass,
         "semantic_pass": conformance_pass,
         "mismatch": 0,
-        "runtime_error": 0,
+        "runtime_error": failed - build_error,  # non-build fail = runtime error
+        "build_error": build_error,
         "fail": failed,
         "passed": passed,
         "failed": failed,
@@ -1683,6 +1685,7 @@ def main():
 
         passed = 0
         failed = 0
+        build_error_count = 0
         unsupported = 0
         blocked = 0
         oracle_skipped = 0
@@ -1902,6 +1905,7 @@ def main():
             nonlocal passed, failed, unsupported, blocked, oracle_skipped, build_only, semantic_skipped_sample, total_duration_ms
             nonlocal completed, last_progress, negative_compile_pass, negative_compile_unverified, negative_compile_mismatch, unresolved_name_by_symbol
             nonlocal unsupported_diag_counts, unsupported_feature_counts, unsupported_by_phase
+            nonlocal build_error_count
             if record:
                 jsonl_out.write(record + "\n")
                 try:
@@ -1921,6 +1925,19 @@ def main():
                     passed += 1
             elif status in ("fail", "mismatch", "runtime_error"):
                 failed += 1
+                # Classify as build_error if the record indicates compile failure
+                # (no wasm_path / no WAMR execution occurred). Runtime failures
+                # from WAMR execution have "RuntimeError" in the reason.
+                if status == "fail" and record:
+                    try:
+                        rec_data = json.loads(record)
+                        reason = rec_data.get("reason", "")
+                        if reason.startswith("RuntimeError"):
+                            pass  # runtime failure, counted in failed
+                        else:
+                            build_error_count += 1
+                    except (json.JSONDecodeError, TypeError):
+                        pass
             elif status == "unsupported":
                 unsupported += 1
                 try:
@@ -2822,6 +2839,7 @@ def main():
             semantic_skipped_sample=semantic_skipped_sample,
             oracle_skipped=oracle_skipped,
             failed=failed,
+            build_error=build_error_count,
             unsupported=unsupported,
             blocked=blocked,
             negative_compile_pass=negative_compile_pass,
