@@ -127,11 +127,21 @@ impl WatEmitter<'_> {
     (local.set $keys_count (i32.load (i32.and (local.get $keys) (i32.const {heap_mask}))))
     (local.set $symbols_count (i32.load (i32.and (local.get $symbols) (i32.const {heap_mask}))))
     (local.set $total (i32.add (local.get $keys_count) (local.get $symbols_count)))
+    ;; Allocate as array (ARRAY layout) so .length and .indexOf() work
     (local.set $result
       (call $alloc_heap
-        (i32.add (i32.const {collection_size})
-          (i32.shl (local.get $total) (i32.const {entry_shift})))))
+        (i32.add (i32.const {array_header})
+          (i32.shl (local.get $total) (i32.const {elem_shift})))))
+    ;; Initialize array header
     (i32.store (local.get $result) (local.get $total))
+    (i32.store (i32.add (local.get $result) (i32.const {array_capacity_offset})) (local.get $total))
+    (i32.store (i32.add (local.get $result) (i32.const {presence_word_count_offset})) (i32.const 1))
+    (i32.store (i32.add (local.get $result) (i32.const {array_elements_offset_offset})) (i32.const {array_header}))
+    (if (i32.ge_u (local.get $total) (i32.const 32))
+      (then (i32.store (i32.add (local.get $result) (i32.const {presence_words_offset})) (i32.const -1)))
+      (else
+        (local.set $i (i32.shl (i32.const 1) (local.get $total)))
+        (i32.store (i32.add (local.get $result) (i32.const {presence_words_offset})) (i32.sub (local.get $i) (i32.const 1)))))
     ;; Copy string keys
     (local.set $i (i32.const 0))
     (block $copy_keys_done
@@ -140,12 +150,12 @@ impl WatEmitter<'_> {
         (local.set $elem
           (i32.load
             (i32.add (i32.and (local.get $keys) (i32.const {heap_mask}))
-              (i32.add (i32.const {collection_size})
-                (i32.shl (local.get $i) (i32.const {entry_shift}))))))
+              (i32.add (i32.const {array_header})
+                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
         (i32.store
           (i32.add (local.get $result)
-            (i32.add (i32.const {collection_size})
-              (i32.shl (local.get $i) (i32.const {entry_shift}))))
+            (i32.add (i32.const {array_header})
+              (i32.shl (local.get $i) (i32.const {elem_shift}))))
           (local.get $elem))
         (local.set $i (i32.add (local.get $i) (i32.const 1)))
         (br $copy_keys)))
@@ -157,23 +167,28 @@ impl WatEmitter<'_> {
         (local.set $elem
           (i32.load
             (i32.add (i32.and (local.get $symbols) (i32.const {heap_mask}))
-              (i32.add (i32.const {collection_size})
-                (i32.shl (local.get $i) (i32.const {entry_shift}))))))
+              (i32.add (i32.const {array_header})
+                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
         (i32.store
           (i32.add (local.get $result)
-            (i32.add (i32.const {collection_size})
-              (i32.shl (i32.add (local.get $keys_count) (local.get $i)) (i32.const {entry_shift}))))
+            (i32.add (i32.const {array_header})
+              (i32.shl (i32.add (local.get $keys_count) (local.get $i)) (i32.const {elem_shift}))))
           (local.get $elem))
         (local.set $i (i32.add (local.get $i) (i32.const 1)))
         (br $copy_symbols)))
-    (i32.or (local.get $result) (i32.const {object_tag})))
+    (i32.or (local.get $result) (i32.const {array_tag})))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
+            array_tag = ValueTag::ARRAY,
             heap_mask = ValueTag::HEAP_MASK,
             undefined = ValueTag::UNDEFINED,
-            collection_size = Layout::OBJECT_HEADER_SIZE,
-            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            array_capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
+            presence_word_count_offset = Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+            array_elements_offset_offset = Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
         ));
     }
 

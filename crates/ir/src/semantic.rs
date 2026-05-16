@@ -1194,7 +1194,15 @@ impl<'a> HirLowerer<'a> {
                     // Return a no-op HIR expr to pass the validator.
                     Ok(HirExpr::ConstUndefined)
                 }
-                ResolvedExpr::Ident(name) if name == "$DONE" || name == "$DONOTEVALUATE" || name == "asyncTest" || name == "$262" || name == "Test262Error" || name == "assert" || name == "__assert_throws" => {
+                ResolvedExpr::Ident(name)
+                    if name == "$DONE"
+                        || name == "$DONOTEVALUATE"
+                        || name == "asyncTest"
+                        || name == "$262"
+                        || name == "Test262Error"
+                        || name == "assert"
+                        || name == "__assert_throws" =>
+                {
                     // test262 harness functions — return no-op HIR expr.
                     Ok(HirExpr::ConstUndefined)
                 }

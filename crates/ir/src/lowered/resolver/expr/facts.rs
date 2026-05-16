@@ -490,9 +490,7 @@ pub(crate) fn resolved_expr_produces_dense_array(ctx: &LoweringCtx, expr: &Resol
         ResolvedExpr::New {
             class_name, args, ..
         } if class_name == "Array" && args.is_empty() => true,
-        ResolvedExpr::New {
-            class_name, ..
-        } if is_typed_array_class(class_name) => true,
+        ResolvedExpr::New { class_name, .. } if is_typed_array_class(class_name) => true,
         ResolvedExpr::Ident(name) => ctx.resolve_local(name).ok().is_some_and(|local_id| {
             ctx.facts.array_locals.contains(&local_id)
                 && !ctx.facts.env_cell_locals.contains(&local_id)
@@ -526,6 +524,12 @@ pub(crate) fn resolved_expr_produces_dense_array(ctx: &LoweringCtx, expr: &Resol
                     args.as_slice(),
                     [ResolvedExpr::String(raw)] if looks_like_regexp_literal(raw)
                 )
+        }
+        ResolvedExpr::MethodCall { object, method, .. }
+            if method == "ownKeys"
+                && matches!(object.as_ref(), ResolvedExpr::Ident(n) if n == "Reflect") =>
+        {
+            true
         }
         ResolvedExpr::Call { callee, .. } => match callee.as_ref() {
             ResolvedExpr::Ident(name) => ctx

@@ -1848,6 +1848,17 @@ fn build_smoke_array_reduce() {
     );
 }
 
+// Reflect.* methods basic smoke test
+#[test]
+fn build_smoke_reflect_basic() {
+    let result = run_fixture("builtins-and-io/reflect-basic.ts");
+    assert!(
+        result.is_ok(),
+        "Reflect basic methods should build: {:?}",
+        result.err()
+    );
+}
+
 // Proxy/Reflect unsupported diagnostic (issue 106)
 #[test]
 fn proxy_reflect_unsupported_diagnostic() {

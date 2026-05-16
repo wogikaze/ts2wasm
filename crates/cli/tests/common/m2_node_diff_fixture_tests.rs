@@ -4598,6 +4598,7 @@ fn common_builtin_api_fixtures_match_node_output() {
         "fixtures/builtins-and-io/number-format-no-args.ts",
         "fixtures/builtins-and-io/number-format-precision.ts",
         "fixtures/builtins-and-io/string-constructor-call.ts",
+        "fixtures/builtins-and-io/reflect-basic.ts",
         "fixtures/builtins-and-io/array-every-some-complex.ts",
     ] {
         assert_fixture_matches_node(fixture);
