@@ -385,6 +385,14 @@ pub fn lower_program_with_module_url(
     resolver.ctx.facts.generator_function_object_resume_plans =
         generator_function_object_resume_plans;
     let mut top_level_statements = Vec::new();
+    // First pass: pre-declare all let/var/const names so forward references
+    // (e.g., using a var before its declaration) work in the lowered resolver.
+    // is_var was already discarded in builtin_resolver, so we pre-declare all.
+    for stmt in program {
+        if let ResolvedStmt::Let(name, _) = stmt {
+            resolver.declare_local(name)?;
+        }
+    }
     for stmt in program {
         match stmt {
             ResolvedStmt::AmbientValue(name) => {
@@ -4233,6 +4241,13 @@ pub(super) fn lower_function(
                 else_body: vec![],
                 span: Span::generated("if_stmt"),
             });
+        }
+    }
+    // First pass: pre-declare all let/var/const names so forward references
+    // (e.g., using a var before its declaration) work in the lowered resolver.
+    for stmt in body {
+        if let ResolvedStmt::Let(name, _) = stmt {
+            resolver.declare_local(name)?;
         }
     }
     body_with_defaults.extend(resolver.lower_block(body)?);
