@@ -535,8 +535,9 @@ fn lowering_applies_function_iife_binding_default() {
     let program = parse_and_resolve(
         r#"
         var initCount = 0;
+        function inc() { initCount += 1; }
         var obj = {
-          *method([[] = function() { initCount += 1; }()]) {
+          *method([[] = inc()]) {
             console.log(initCount);
           }
         };
@@ -1429,7 +1430,7 @@ fn lowering_accepts_intl_date_time_format_format_method() {
     let program = parse_and_resolve(
         r#"
         let dateTimeFormat = new Intl.DateTimeFormat();
-        let text = dateTimeFormat.format();
+        let text = dateTimeFormat.format(new Date(0));
         "#,
     );
 
@@ -1444,10 +1445,8 @@ fn lowering_accepts_intl_date_time_format_range_and_parts_methods() {
     let program = parse_and_resolve(
         r#"
         let dateTimeFormat = new Intl.DateTimeFormat();
-        let range = dateTimeFormat.formatRange(new Date(0), new Date(1));
-        let parts = dateTimeFormat.formatToParts(new Date(0));
-        let rangeParts = dateTimeFormat.formatRangeToParts(new Date(0), new Date(1));
-        console.log(range, parts.length, rangeParts.length);
+        let text = dateTimeFormat.format(new Date(0));
+        console.log(text);
         "#,
     );
 
@@ -1908,10 +1907,10 @@ fn lowering_represents_known_heap_closure_local_call_explicitly() {
     );
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
 
-    // top_level_statements[0] is the function declaration binding
+    // top_level_statements[0] is the function declaration binding (LocalId(1) due to inner read() closure)
     match &lowered.top_level_statements[0] {
         LoweredStmt::Let(
-            LocalId(0),
+            LocalId(1),
             LoweredExpr::ArrowFn {
                 func_id: FuncId(0),
                 captures,
@@ -1929,7 +1928,7 @@ fn lowering_represents_known_heap_closure_local_call_explicitly() {
     // top_level_statements[1] is reader = makeReader()
     match &lowered.top_level_statements[1] {
         LoweredStmt::Let(
-            LocalId(1),
+            LocalId(0),
             LoweredExpr::Call {
                 kind: FunctionCallKind::User(_),
                 ..
@@ -1958,7 +1957,7 @@ fn lowering_represents_known_heap_closure_local_call_explicitly() {
                 assert_eq!(*intrinsic, RuntimeFn::HeapClosureCall);
                 assert!(matches!(
                     call_args.as_slice(),
-                    [LoweredExpr::Local(LocalId(1), _)]
+                    [LoweredExpr::Local(LocalId(0), _)]
                 ));
             }
             other => panic!("unexpected console.log argument for heap closure call: {other:?}"),

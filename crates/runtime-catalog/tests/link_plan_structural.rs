@@ -69,6 +69,9 @@ const ALL_CAPABILITIES: &[Capability] = &[
     Capability::HostDateGetLocalTimeField,
     Capability::HostDateToISOString,
     Capability::HostDateGetTimezoneOffset,
+    Capability::HostReflectApply,
+    Capability::HostReflectConstruct,
+    Capability::HostStringNormalize,
 ];
 
 const NON_RUNTIME_LINK_PLAN_CAPABILITIES: &[Capability] = &[
