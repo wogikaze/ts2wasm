@@ -49,8 +49,8 @@ fn wat_to_binary(wat: &str) -> Result<Vec<u8>, Diagnostic> {
                     span: None,
                     phase: None,
                 });
-            let _ = fs::remove_file(&temp_wat);
             let output = result?;
+            let _ = fs::remove_file(&temp_wat);
             if output.status.success() {
                 Ok(output.stdout)
             } else {
