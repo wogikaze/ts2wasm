@@ -99,6 +99,7 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "preventExtensions" => Some(RuntimeFn::ReflectPreventExtensions),
                 "set" => Some(RuntimeFn::ReflectSet),
                 "setPrototypeOf" => Some(RuntimeFn::ReflectSetPrototypeOf),
+                "apply" => Some(RuntimeFn::ReflectApply),
                 _ => None,
             };
         }

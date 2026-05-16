@@ -90,10 +90,11 @@ impl WatEmitter<'_> {
             r#"
   (func $reflect_prevent_extensions (param $target i32) (result i32)
     (local $tag i32)
+    (local $result i32)
     (local.set $tag (i32.and (local.get $target) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {object_tag}))
       (then (return (i32.const {false}))))
-    (call $object_prevent_extensions (local.get $target))
+    (local.set $result (call $object_prevent_extensions (local.get $target)))
     (i32.const {true}))
 "#,
             tag_mask = ValueTag::TAG_MASK,

@@ -2127,7 +2127,7 @@ match self {
             // Reflect methods
             Self::ReflectDefineProperty => RuntimeSpec {
                 symbol: "$reflect_define_property",
-                deps: OBJECT_DEFINE_PROPERTY_DEPS,
+                deps: &[RuntimeFn::AllocHeap, RuntimeFn::ValueToStringInto, RuntimeFn::PropertyGet, RuntimeFn::PropertySet, RuntimeFn::ObjectDefineProperty],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -2135,7 +2135,7 @@ match self {
             },
             Self::ReflectDeleteProperty => RuntimeSpec {
                 symbol: "$reflect_delete_property",
-                deps: &[RuntimeFn::AllocHeap, RuntimeFn::ValueToStringInto, RuntimeFn::MemEqual],
+                deps: &[RuntimeFn::AllocHeap, RuntimeFn::ValueToStringInto, RuntimeFn::MemEqual, RuntimeFn::PropertyDelete],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -2151,7 +2151,7 @@ match self {
             },
             Self::ReflectHas => RuntimeSpec {
                 symbol: "$reflect_has",
-                deps: &[RuntimeFn::ValueToStringInto, RuntimeFn::MemEqual, RuntimeFn::AllocHeap],
+                deps: &[RuntimeFn::ValueToStringInto, RuntimeFn::MemEqual, RuntimeFn::AllocHeap, RuntimeFn::PropertyHas],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -2159,7 +2159,7 @@ match self {
             },
             Self::ReflectOwnKeys => RuntimeSpec {
                 symbol: "$reflect_own_keys",
-                deps: &[RuntimeFn::AllocHeap, RuntimeFn::Copy],
+                deps: &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::ObjectKeys, RuntimeFn::ObjectGetOwnPropertySymbols],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -2167,7 +2167,7 @@ match self {
             },
             Self::ReflectPreventExtensions => RuntimeSpec {
                 symbol: "$reflect_prevent_extensions",
-                deps: NO_DEPS,
+                deps: &[RuntimeFn::ObjectPreventExtensions],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -2183,7 +2183,7 @@ match self {
             },
             Self::ReflectSetPrototypeOf => RuntimeSpec {
                 symbol: "$reflect_set_prototype_of",
-                deps: NO_DEPS,
+                deps: &[RuntimeFn::ObjectSetPrototypeOf],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
