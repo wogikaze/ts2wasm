@@ -2429,6 +2429,10 @@ impl super::super::Resolver {
             };
         if is_bigint_receiver {
             // fall through to class dispatch
+        } else if method == "toString"
+            && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
+        {
+            // fall through to class dispatch — Array.toString → ArrayJoin
         } else if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
             if intrinsic == RuntimeFn::JsonParse {
                 if args.is_empty() || args.len() > 2 {
