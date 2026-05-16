@@ -128,6 +128,12 @@ impl super::super::Resolver {
             || name == "isFinite"
             || name == "encodeURI"
             || name == "decodeURI"
+            || name == "$DONE"
+            || name == "$262"
+            || name == "Test262Error"
+            || name == "$ERROR"
+            || name == "$DONOTEVALUATE"
+            || name == "assert"
         {
             return Ok(LoweredExpr::Undefined(Span::generated("undef")));
         }

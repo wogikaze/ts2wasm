@@ -113,6 +113,7 @@ pub fn default_allowed_globals() -> std::collections::HashSet<String> {
         "$ERROR",
         "ERROR", // Sputnik-style assertion helper
         "$DONOTEVALUATE",
+        "$DONE",
         // Test262 harness helpers (issue 5424)
         "verifyProperty",
         "verifyWritable",

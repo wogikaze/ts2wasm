@@ -40,7 +40,7 @@ impl super::Resolver {
         let mut stmt_captures = Vec::new();
         collect_stmt_captures(body_stmts, &excluded_set, &mut stmt_captures);
         for name in stmt_captures {
-            if !capture_names.contains(&name) {
+            if !capture_names.contains(&name) && self.resolve_local(&name).is_ok() {
                 capture_names.push(name);
             }
         }

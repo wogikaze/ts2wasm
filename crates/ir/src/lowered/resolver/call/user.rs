@@ -368,7 +368,10 @@ impl super::super::Resolver {
         // Global setTimeout(): DOM timer host APIs are outside
         // the WASM subset. Return Undefined to advance past the
         // UnresolvedFunction blocker.
-        if func_name == "setTimeout" || func_name == "ERROR" {
+        if func_name == "setTimeout"
+            || func_name == "ERROR"
+            || func_name == "$DONE"
+        {
             return Ok(LoweredExpr::Undefined(Span::generated("undef")));
         }
 

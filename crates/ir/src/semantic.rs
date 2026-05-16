@@ -1194,6 +1194,11 @@ impl<'a> HirLowerer<'a> {
                     // Return a no-op HIR expr to pass the validator.
                     Ok(HirExpr::ConstUndefined)
                 }
+                ResolvedExpr::Ident(name) if name == "$DONE" => {
+                    // $DONE is a test262 async test harness function.
+                    // Return a no-op HIR expr to pass the validator.
+                    Ok(HirExpr::ConstUndefined)
+                }
                 ResolvedExpr::Ident(name) => {
                     let function =
                         self.function_ids
