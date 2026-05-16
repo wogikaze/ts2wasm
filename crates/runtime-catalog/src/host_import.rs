@@ -28,25 +28,35 @@ pub enum HostImport {
     FdWrite,
     PathOpen,
     /// WASI fd_seek — reposition file cursor
+    #[allow(dead_code)]
     FdSeek,
     FdClose,
     /// WASI fd_prestat_get — query preopened directory info
+    #[allow(dead_code)]
     FdPrestatGet,
     /// WASI fd_prestat_dir_name — get preopened directory name
+    #[allow(dead_code)]
     FdPrestatDirName,
     /// WASI path_create_directory — create a directory
+    #[allow(dead_code)]
     PathCreateDirectory,
     /// WASI path_filestat_get — get file metadata by path
+    #[allow(dead_code)]
     PathFilestatGet,
     /// WASI path_readlink — read symlink target
+    #[allow(dead_code)]
     PathReadlink,
     /// WASI path_remove_directory — remove a directory
+    #[allow(dead_code)]
     PathRemoveDirectory,
     /// WASI path_rename — rename a file or directory
+    #[allow(dead_code)]
     PathRename,
     /// WASI path_symlink — create a symbolic link
+    #[allow(dead_code)]
     PathSymlink,
     /// WASI path_unlink_file — unlink a file
+    #[allow(dead_code)]
     PathUnlinkFile,
     WasiProcExit,
     ClockTimeGet,

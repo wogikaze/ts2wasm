@@ -66,6 +66,13 @@ OVERSIZED_ALLOWLIST = {
     # Doc files (naturally long format)
     "docs/12-coding-standard.md": "coding standard reference",
     "site/docs/docs/12-coding-standard.md": "coding standard reference (site copy)",
+    # Planning documents (naturally long)
+    "plans/next-architecture-design (1).md": "architecture planning document",
+    "plans/next-architecture-design (2).md": "architecture planning document",
+    "plans/next-architecture-design (3).md": "architecture planning document",
+    "plans/next-architecture-design (4).md": "architecture planning document",
+    # Done issue with extensive notes
+    "issues/done/I-20260514-67ZV8S.md": "done issue with extensive notes",
 }
 
 # Crates that must not directly depend on ts2wasm-frontend via Cargo.toml.
@@ -168,6 +175,10 @@ FILE_SIZE_ALLOWLIST_1200 = {
     "crates/cli/tests/ir_lowering.rs": "test file",
     "crates/cli/tests/m2_node_diff.rs": "test file",
     "crates/ir/tests/mir_snapshot.rs": "test file",
+    "crates/ir/tests/lowered_snapshot.rs": "test file",
+    # P7: resolver decomposition
+    "crates/ir/src/lowered/program_builtins.rs": "P7: resolver decomposition",
+    "crates/ir/src/lowered/resolver/call/user.rs": "P7: resolver decomposition",
 }
 
 # Files that use `use super::*` outside test modules (known legacy pattern).
@@ -261,6 +272,10 @@ FUNCTION_LENGTH_ALLOWLIST = {
     ("crates/compiler/src/test262_preprocessor.rs", "build_feature_stubs"): "P4: preprocessor stub builder -- 362 lines",
     # Runtime function registry — large match by design
     ("crates/runtime-catalog/src/runtime_fn.rs", "runtime_fn_from_name"): "runtime function registry -- 296 lines",
+    # P7: resolver decomposition
+    ("crates/ir/src/lowered/resolver/object.rs", "lower_object_literal_expr_with_computed_keys"): "P7: resolver decomposition -- 227 lines",
+    # Test file (naturally large test function)
+    ("crates/ir/tests/lowered_snapshot.rs", "lowered_generator_object_accessor_captures_top_level_assignment"): "test file -- 226 lines",
 }
 
 # Files that still use string-based RuntimeCall { runtime_fn: String } — legacy pattern.
