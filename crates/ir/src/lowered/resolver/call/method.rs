@@ -16,7 +16,7 @@ use crate::lowered::classes::ObjectAccessorKey;
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::{
     GeneratorMethodIteratorBinding, GeneratorObjectResumePlan, IntlDateTimeFormatOptions,
-    IntlNumberFormatOptions,
+    IntlNumberFormatOptions, ProxyTrapKind,
 };
 use crate::lowered::*;
 use std::collections::HashMap;
@@ -2213,6 +2213,20 @@ impl super::super::Resolver {
         if let Some(result) = self.lower_object_prototype_dispatch(object, method, args, span)? {
             return Ok(Some(result));
         }
+        // ProxyDispatch: compile-time proxy trap dispatch for Reflect.* and Object.*
+        if matches!(object, ResolvedExpr::Ident(name) if name == "Reflect" || name == "Object")
+            && !args.is_empty()
+            && let Some(proxy) =
+                crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(
+                    &self.ctx, &args[0],
+                )
+            && let Some(trap) = Self::reflect_or_object_method_to_proxy_trap(method)
+        {
+            let rest_args = args[1..].to_vec();
+            return Ok(Some(
+                self.lower_proxy_trap_call(proxy, trap, rest_args, span)?,
+            ));
+        }
         if (method == "indexOf" || method == "includes")
             && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
             && !args.is_empty()
@@ -2608,6 +2622,28 @@ impl super::super::Resolver {
             }));
         }
         Ok(None)
+    }
+
+    /// Map a Reflect.* or Object.* method name to a ProxyTrapKind for compile-time proxy dispatch.
+    fn reflect_or_object_method_to_proxy_trap(method: &str) -> Option<ProxyTrapKind> {
+        match method {
+            "get" => Some(ProxyTrapKind::ProxyGet),
+            "set" => Some(ProxyTrapKind::ProxySet),
+            "has" => Some(ProxyTrapKind::ProxyHas),
+            "deleteProperty" => Some(ProxyTrapKind::ProxyDeleteProperty),
+            "construct" => Some(ProxyTrapKind::ProxyConstruct),
+            "apply" => Some(ProxyTrapKind::ProxyApply),
+            "getPrototypeOf" => Some(ProxyTrapKind::ProxyGetPrototypeOf),
+            "setPrototypeOf" => Some(ProxyTrapKind::ProxySetPrototypeOf),
+            "isExtensible" => Some(ProxyTrapKind::ProxyIsExtensible),
+            "preventExtensions" => Some(ProxyTrapKind::ProxyPreventExtensions),
+            "getOwnPropertyDescriptor" => Some(ProxyTrapKind::ProxyGetOwnPropertyDescriptor),
+            "defineProperty" => Some(ProxyTrapKind::ProxyDefineProperty),
+            "ownKeys" | "keys" | "values" | "getOwnPropertyNames" => {
+                Some(ProxyTrapKind::ProxyOwnKeys)
+            }
+            _ => None,
+        }
     }
 
     fn lower_static_proxy_object_call(

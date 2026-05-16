@@ -219,6 +219,15 @@ pub enum ProxyTrapKind {
     ProxySet,
     ProxyHas,
     ProxyDeleteProperty,
+    ProxyConstruct,
+    ProxyApply,
+    ProxyGetPrototypeOf,
+    ProxySetPrototypeOf,
+    ProxyIsExtensible,
+    ProxyPreventExtensions,
+    ProxyGetOwnPropertyDescriptor,
+    ProxyDefineProperty,
+    ProxyOwnKeys,
     Named(&'static str),
 }
 
@@ -229,6 +238,15 @@ impl ProxyTrapKind {
             Self::ProxySet => "set",
             Self::ProxyHas => "has",
             Self::ProxyDeleteProperty => "deleteProperty",
+            Self::ProxyConstruct => "construct",
+            Self::ProxyApply => "apply",
+            Self::ProxyGetPrototypeOf => "getPrototypeOf",
+            Self::ProxySetPrototypeOf => "setPrototypeOf",
+            Self::ProxyIsExtensible => "isExtensible",
+            Self::ProxyPreventExtensions => "preventExtensions",
+            Self::ProxyGetOwnPropertyDescriptor => "getOwnPropertyDescriptor",
+            Self::ProxyDefineProperty => "defineProperty",
+            Self::ProxyOwnKeys => "ownKeys",
             Self::Named(name) => name,
         }
     }

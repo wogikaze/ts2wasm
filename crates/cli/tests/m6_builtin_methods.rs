@@ -3836,6 +3836,16 @@ fn build_smoke_proxy_remaining_traps() {
 }
 
 #[test]
+fn build_smoke_proxy_traps_comprehensive() {
+    let result = run_fixture("builtins-and-io/proxy-traps-comprehensive.ts");
+    assert!(
+        result.is_ok(),
+        "proxy-traps-comprehensive should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_regexp_flag_multi() {
     let result = run_fixture("builtins-and-io/regexp-flag-multi.ts");
     assert!(
