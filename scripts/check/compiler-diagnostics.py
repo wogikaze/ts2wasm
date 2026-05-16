@@ -38,7 +38,6 @@ FIXTURE_DIAG_MAP: dict[str, str] = {
     "duplicate-parameter": "DuplicateLocal",  # DuplicateLocal is the actual compiler output
     "arity-mismatch": "ArityMismatch",
     "invalid-top-level-return": "InvalidTopLevelReturn",
-    "number-out-of-range": "UnsupportedSyntax",
     "unsupported-builtin": "UnsupportedBuiltin",
     "unsupported-date": "UnsupportedDate",
     "unsupported-module": "UnsupportedModule",
@@ -48,7 +47,9 @@ FIXTURE_DIAG_MAP: dict[str, str] = {
 }
 
 # Fixtures corresponding to diagnostic codes that cannot be triggered from source input.
-UNTRIGGERABLE_FIXTURES: set[str] = set()
+UNTRIGGERABLE_FIXTURES: set[str] = {
+    "number-out-of-range",  # Number literals > i32 range are now supported as heap numbers
+}
 
 # Diagnostic codes that can only be triggered via `ts2wasm check` (TypeScript oracle).
 CHECK_SUBCOMMAND_CODES = {"TypeScriptTypeCheck"}
