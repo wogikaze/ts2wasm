@@ -655,7 +655,7 @@ def extract_unresolved_name(stderr):
     """Extract the unresolved symbol name from compiler error output."""
     if not stderr:
         return None
-    match = re.search(r"unresolved name[`'\"]([^`'\"]+)[`'\"]", stderr, re.IGNORECASE)
+    match = re.search(r"unresolved name[: ]*[`'\"]([^`'\"]+)[`'\"]", stderr, re.IGNORECASE)
     if match:
         return match.group(1).strip()
     return None
