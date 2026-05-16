@@ -1,6 +1,6 @@
 """Resolve the ts2wasm CLI binary path.
 
-Priority: TS2WASM_BINARY env var > newest target/{release,debug}/ts2wasm.
+Priority: TS2WASM_BINARY env var > target/release/ts2wasm > target/debug/ts2wasm.
 """
 
 import os
@@ -25,28 +25,29 @@ def _cargo_target_dir() -> Path | None:
 
 
 def resolve_ts2wasm_binary() -> Path:
-    """Find the newest workspace-built ts2wasm CLI binary.
+    """Find a usable ts2wasm CLI binary.
 
-    Priority: TS2WASM_BINARY env var > .cargo/config.toml target-dir > default.
+    Priority: TS2WASM_BINARY env var > release builds > debug builds.
+    Within each location (default target/ or cargo target-dir), prefer
+    release over debug regardless of mtime — debug builds are dramatically
+    slower for compilation and should only be used when release is absent.
     """
     env_bin = os.environ.get("TS2WASM_BINARY")
     if env_bin:
         return Path(env_bin)
 
     cargo_target = _cargo_target_dir()
-    candidates = [
-        REPO_ROOT / "target" / "release" / "ts2wasm",
-        REPO_ROOT / "target" / "debug" / "ts2wasm",
-    ]
-    # If .cargo/config.toml overrides target-dir, check there too.
-    # target-dir IS the target directory, so no extra "target" subdirectory.
+    # Check order: release before debug within each location.
+    locations = []
     if cargo_target:
-        candidates.insert(0, cargo_target / "release" / "ts2wasm")
-        candidates.insert(0, cargo_target / "debug" / "ts2wasm")
-    existing = [candidate for candidate in candidates if candidate.is_file()]
-    if existing:
-        return max(existing, key=lambda path: path.stat().st_mtime)
+        locations.append(cargo_target / "release" / "ts2wasm")
+        locations.append(cargo_target / "debug" / "ts2wasm")
+    locations.append(REPO_ROOT / "target" / "release" / "ts2wasm")
+    locations.append(REPO_ROOT / "target" / "debug" / "ts2wasm")
+    for path in locations:
+        if path.is_file():
+            return path
 
     print("ERROR: ts2wasm binary not found.", file=sys.stderr)
-    print("Build first with: cargo build or cargo build --release", file=sys.stderr)
+    print("Build first with: cargo build --release", file=sys.stderr)
     sys.exit(1)

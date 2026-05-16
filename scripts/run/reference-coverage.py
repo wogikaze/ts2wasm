@@ -2356,7 +2356,33 @@ def main():
                         _wamr_runner.stdin.write(job + "\n")
                         _wamr_runner.stdin.flush()
                         _wamr_t0 = time.perf_counter()
-                        resp_line = _wamr_runner.stdout.readline()
+
+                        # Read response with timeout — WAMR runner's SIGALRM does not
+                        # interrupt CPU-bound wasm execution, so a hung runner stalls
+                        # the entire batch. Use a daemon thread to enforce the timeout.
+                        _resp_result = {}
+                        _resp_err = {}
+
+                        def _do_read():
+                            try:
+                                _resp_result["line"] = _wamr_runner.stdout.readline()
+                            except Exception as _exc:
+                                _resp_err["exc"] = _exc
+
+                        _reader = threading.Thread(target=_do_read, daemon=True)
+                        _reader.start()
+                        _reader.join(timeout=10)
+                        if _reader.is_alive():
+                            # Runner hung — kill and restart, fall through to iwasm CLI
+                            try:
+                                _wamr_runner.kill()
+                            except OSError:
+                                pass
+                            raise OSError("WAMR runner timed out")
+                        if _resp_err.get("exc") is not None:
+                            raise _resp_err["exc"]  # type: ignore[arg-type]
+
+                        resp_line = _resp_result.get("line", "")
                         _wamr_t = time.perf_counter() - _wamr_t0
                         if _wamr_t > 0.5:
                             print(f"    SLOW WAMR ({_wamr_t*1000:.0f}ms): {_wamr_runner.pid}", file=sys.stderr)
