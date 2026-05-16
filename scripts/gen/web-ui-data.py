@@ -136,7 +136,8 @@ def load_coverage_artifacts(coverage_dir):
         return artifacts
 
     for path in sorted(coverage_dir.glob("*.json")):
-        if path.name.endswith("-summary.json"):
+        name = path.name
+        if name.endswith("-summary.json") or name.endswith("-profile.json"):
             continue
         with path.open("r", encoding="utf-8") as handle:
             data = json.load(handle)
@@ -431,6 +432,8 @@ def normalized_suite_metrics(item):
         "unsupported": unsupported,
         "blocked": blocked,
         "fail": fail,
+        "build_error": int(item.get("build_error", 0) or 0),
+        "runtime_error": int(item.get("runtime_error", 0) or 0),
         "skip_with_reason": skip_with_reason,
         "build_pass_by_detail": build_pass_by_detail,
         "unresolved_name_by_symbol": unresolved_name_by_symbol,
@@ -533,6 +536,8 @@ def history_snapshot(item, coverage_dir, durations=None):
         "passed": metrics["semantic_pass"],
         "failed": metrics["fail"] + metrics["blocked"],
         "skipped": metrics["unsupported"] + metrics["skip_with_reason"],
+        "build_error": metrics.get("build_error", 0),
+        "runtime_error": metrics.get("runtime_error", 0),
         "duration_ms": duration_ms,
     }
 
