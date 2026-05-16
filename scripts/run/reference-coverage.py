@@ -2278,16 +2278,16 @@ def main():
                     return record, "build_pass"
 
                 _iwasm_t0 = time.perf_counter()
-                # Use persistent WAMR runner pool when available, fall back to iwasm CLI
+                # Use WAMR runner pool when available, fall back to iwasm CLI
                 _wamr_runner = None
-                if wamr_pool:
+                if _wamr_queue is not None:
                     try:
                         _wamr_runner = _wamr_queue.get(timeout=30)
                     except Exception:
                         phase_timers["server_fallback_batches"] += 1
                 if _wamr_runner is not None:
                     try:
-                        job = json.dumps({"id": 0, "wasm_path": str(wasm_path)})
+                        job = json.dumps({"id": 0, "wasm_path": str(wasm_path), "timeout_ms": 5000})
                         _wamr_runner.stdin.write(job + "\n")
                         _wamr_runner.stdin.flush()
                         resp_line = _wamr_runner.stdout.readline()
@@ -2315,8 +2315,8 @@ def main():
                             capture_output=True, text=True, cwd=REPO_ROOT,
                         )
                     finally:
+                        # Restart dead runners
                         if _wamr_runner.poll() is not None:
-                            phase_timers["server_fallback_batches"] += 1
                             try:
                                 _wamr_runner = subprocess.Popen(
                                     [str(REPO_ROOT / "crates" / "iwasm-runner" / "ts2wasm-iwasm-runner")],
@@ -2496,53 +2496,38 @@ def main():
                             build_items.append(result["item"])
 
                     server_proc = None
-                    wamr_pool = []
-                    import queue as _wamr_qmod
-                    _wamr_queue = _wamr_qmod.Queue()
-                    semantic_executor = None
-                    pending_semantic = set()
-                    max_pending_semantic = max(semantic_jobs * 4, 1)
+                    _wamr_pool = []
+                    _wamr_queue = None
 
-                    def drain_semantic(block=False):
-                        while pending_semantic:
-                            if block:
-                                done, _ = wait(pending_semantic, return_when=FIRST_COMPLETED)
-                            else:
-                                done, _ = wait(pending_semantic, timeout=0, return_when=FIRST_COMPLETED)
-                                if not done:
-                                    return
-                            for future in done:
-                                pending_semantic.remove(future)
-                                record, status = future.result()
-                                consume_record(jsonl_out, record, status)
-                            if not block:
-                                return
+                    def _ensure_wamr_pool():
+                        nonlocal _wamr_queue
+                        if _wamr_queue is not None:
+                            return
+                        import queue as _qmod
+                        _wamr_queue = _qmod.Queue()
+                        wamr_bin = REPO_ROOT / "crates" / "iwasm-runner" / "ts2wasm-iwasm-runner"
+                        if not wamr_bin.is_file():
+                            return
+                        pool_size = 24
+                        for _ in range(pool_size):
+                            try:
+                                p = subprocess.Popen(
+                                    [str(wamr_bin)], stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
+                                )
+                                _wamr_pool.append(p)
+                                _wamr_queue.put(p)
+                            except OSError:
+                                pass
+                        if _wamr_pool:
+                            print(f"  WAMR runner pool: {len(_wamr_pool)} processes", file=sys.stderr)
 
                     try:
                         if build_items:
                             server_proc = start_jsonl_server()
                             if semantic_check:
+                                _ensure_wamr_pool()
                                 semantic_executor = ThreadPoolExecutor(max_workers=semantic_jobs)
-                                # Start pool of persistent WAMR runners (native VMcore)
-                                wamr_bin = REPO_ROOT / "crates" / "iwasm-runner" / "ts2wasm-iwasm-runner"
-                                if wamr_bin.is_file():
-                                    wamr_pool_size = min(max(semantic_jobs, 4), 32)
-                                    for _ in range(wamr_pool_size):
-                                        try:
-                                            p = subprocess.Popen(
-                                                [str(wamr_bin)],
-                                                stdin=subprocess.PIPE,
-                                                stdout=subprocess.PIPE,
-                                                stderr=subprocess.DEVNULL,
-                                                text=True,
-                                            )
-                                            wamr_pool.append(p)
-                                        except OSError:
-                                            pass
-                                    if wamr_pool:
-                                        print(f"  WAMR runner pool: {len(wamr_pool)} processes", file=sys.stderr)
-                                        for p in wamr_pool:
-                                            _wamr_queue.put(p)
 
                         try:
                             batch_size = int(os.environ.get("TS2WASM_REFERENCE_COVERAGE_BATCH", "1000") or "1000")
@@ -2657,35 +2642,37 @@ def main():
                                     return t262.process_one_test(item["file_path"], tmp_dir, False)
                                 return run_wasm_oracle_for_item(item, wasm_path)
 
-                            for item in batch:
-                                if semantic_executor is None:
+                            if semantic_check:
+                                _sem_futs = [semantic_executor.submit(finish_item, item) for item in batch]
+                                for _fut in as_completed(_sem_futs):
+                                    record, status = _fut.result()
+                                    consume_record(jsonl_out, record, status)
+                            else:
+                                for item in batch:
                                     record, status = finish_item(item)
                                     consume_record(jsonl_out, record, status)
-                                else:
-                                    pending_semantic.add(semantic_executor.submit(finish_item, item))
-                                    if len(pending_semantic) >= max_pending_semantic:
-                                        drain_semantic(block=True)
-                            drain_semantic(block=False)
 
-                        # Record server build wall time (includes semantic drain overlap)
+                        # Record server build wall time
                         _server_key = "server_wasm_emit_ms" if emit_mode == "wasm" else "server_check_ms"
                         phase_timers[_server_key] = int(round((time.perf_counter() - _server_build_start) * 1000))
 
-                        drain_semantic(block=True)
                     finally:
-                        if semantic_executor is not None:
-                            semantic_executor.shutdown(wait=True)
-                        stop_jsonl_server(server_proc)
-                        for runner in wamr_pool:
+                        if semantic_check:
                             try:
-                                runner.stdin.write("exit\n")
-                                runner.stdin.flush()
-                            except OSError:
+                                semantic_executor.shutdown(wait=True)
+                            except Exception:
                                 pass
-                            try:
-                                runner.wait(timeout=3)
-                            except subprocess.TimeoutExpired:
-                                runner.kill()
+                            for _r in _wamr_pool:
+                                try:
+                                    _r.stdin.write("exit\n")
+                                    _r.stdin.flush()
+                                except Exception:
+                                    pass
+                                try:
+                                    _r.wait(timeout=2)
+                                except Exception:
+                                    _r.kill()
+                        stop_jsonl_server(server_proc)
 
         save_metadata_cache()
 

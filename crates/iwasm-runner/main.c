@@ -21,6 +21,7 @@
 #include <inttypes.h>
 #include <unistd.h>
 #include <time.h>
+#include <signal.h>
 
 #include "bh_platform.h"
 #include "wasm_export.h"
@@ -111,6 +112,9 @@ static char *get_json_str(const char *json, const char *key)
     return v;
 }
 
+/* SIGALRM handler: just return (interrupts the blocking call) */
+static void alarm_handler(int sig) { (void)sig; }
+
 static int64_t get_json_int(const char *json, const char *key)
 {
     char search[64];
@@ -196,6 +200,17 @@ int main(int argc, char *argv[])
             free(bytes); free(wasm_path); free(line); continue;
         }
 
+        /* Timeout from job, default 10s */
+        uint32_t timeout_sec = (uint32_t)get_json_int(line, "timeout_ms");
+        if (timeout_sec == 0) timeout_sec = 5000;
+        timeout_sec = (timeout_sec + 999) / 1000;
+
+        struct sigaction sa;
+        memset(&sa, 0, sizeof(sa));
+        sa.sa_handler = alarm_handler;
+        sigaction(SIGALRM, &sa, NULL);
+        alarm(timeout_sec);
+
         struct timespec t0, t1;
         clock_gettime(CLOCK_MONOTONIC, &t0);
 
@@ -203,6 +218,8 @@ int main(int argc, char *argv[])
         capture_start();
         uint32_t exec_ret = wasm_application_execute_main(inst, 0, NULL);
         capture_stop(&cap_out, &cap_err);
+
+        alarm(0); /* Disable alarm */
 
         clock_gettime(CLOCK_MONOTONIC, &t1);
         uint64_t dur = (t1.tv_sec - t0.tv_sec) * 1000000 +
