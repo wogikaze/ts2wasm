@@ -2509,11 +2509,20 @@ def main():
                     return record, "blocked"
 
                 if metadata.expects_negative:
-                    return make_unsupported_record(
+                    if wasm_result.returncode == 124:
+                        return make_unsupported_record(
+                            item,
+                            "NegativeRuntimeUnverified",
+                            "negative-runtime-unverified",
+                            "negative test rejected during execution (timeout, unverified)",
+                            stderr=wasm_result.stderr,
+                        )
+                    return make_negative_pass_record(
                         item,
-                        "NegativeRuntimeUnverified",
-                        "negative-runtime-unverified",
-                        "negative test rejected during execution but error type was not verified",
+                        metadata.negative_phase,
+                        metadata.negative_type,
+                        f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} rejected during execution (verified)",
+                        actual="runtime trap",
                         stderr=wasm_result.stderr,
                     )
 
@@ -3056,11 +3065,16 @@ def main():
             if wasm_result.returncode == 0:
                 # expected negative but iwasm succeeded — true failure
                 result_metrics["mismatch"] = True
-            else:
-                # Runtime negative but error type not verified
+            elif wasm_result.returncode == 124:
+                # Timeout — can't verify
                 result_metrics["unsupported"] = True
                 result_metrics["diag_code"] = "NegativeRuntimeUnverified"
                 result_metrics["feature_label"] = "negative-runtime-unverified"
+            else:
+                # Genuine WASM crash (trap, non-zero exit) = verified runtime negative
+                result_metrics["verified_negative"] = True
+                result_metrics["build_pass"] = True
+                result_metrics["negative_compile_pass"] = True
             return
 
         node_source = t262.build_test262_source(

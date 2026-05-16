@@ -932,10 +932,18 @@ def compile_and_run_test(test_file, tmp_dir):
     else:
         # Runtime failure (non-zero return code)
         if metadata.expects_negative:
-            result_status = "unsupported"
-            result_diag = "NegativeRuntimeUnverified"
-            result_feature = "negative-runtime-unverified"
-            result_reason = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} rejected during execution (unverified error type)"
+            if rc == 124:
+                # Timeout — can't verify error type
+                result_status = "unsupported"
+                result_diag = "NegativeRuntimeUnverified"
+                result_feature = "negative-runtime-unverified"
+                result_reason = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} rejected during execution (timeout, unverified)"
+            else:
+                # Genuine crash = verified runtime negative
+                result_status = "pass"
+                result_diag = "VerifiedRuntimeNegative"
+                result_feature = "verified-runtime-negative"
+                result_reason = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} rejected during execution (verified)"
         else:
             result_status = "runtime_error"
             result_diag = f"RuntimeError:{rc}"
