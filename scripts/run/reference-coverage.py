@@ -732,6 +732,9 @@ def build_test262_jsonl_summary(
     negative_compile_unverified,
     negative_compile_mismatch,
     unresolved_name_by_symbol,
+    unsupported_diag_counts,
+    unsupported_feature_counts,
+    unsupported_by_phase,
     wall_duration_ms,
     total_duration_ms,
     evidence,
@@ -779,9 +782,9 @@ def build_test262_jsonl_summary(
         "negative_compile_mismatch": negative_compile_mismatch,
         "conformance_pass": conformance_pass,
         "build_pass_by_detail": {},
-        "unsupported_diagcodes": {},
-        "unsupported_features": {},
-        "unsupported_by_phase": {},
+        "unsupported_diagcodes": unsupported_diag_counts,
+        "unsupported_features": unsupported_feature_counts,
+        "unsupported_by_phase": unsupported_by_phase,
         "unresolved_name_by_symbol": unresolved_name_by_symbol,
         "harness_includes": [],
         "duration_ms": wall_duration_ms,
@@ -1661,6 +1664,9 @@ def main():
         negative_compile_unverified = 0
         negative_compile_mismatch = 0
         unresolved_name_by_symbol = {}
+        unsupported_diag_counts = {}
+        unsupported_feature_counts = {}
+        unsupported_by_phase = {}
         total_duration_ms = 0
         completed = 0
         total = len(files)
@@ -1863,6 +1869,7 @@ def main():
         def consume_record(jsonl_out, record, status):
             nonlocal passed, failed, unsupported, blocked, oracle_skipped, build_only, total_duration_ms
             nonlocal completed, last_progress, negative_compile_pass, negative_compile_unverified, negative_compile_mismatch, unresolved_name_by_symbol
+            nonlocal unsupported_diag_counts, unsupported_feature_counts, unsupported_by_phase
             if record:
                 jsonl_out.write(record + "\n")
                 try:
@@ -1887,6 +1894,28 @@ def main():
                 try:
                     rec_data = json.loads(record)
                     reason = rec_data.get("reason", "")
+                    # Extract diag_code and feature_label from reason format: "DiagCode/feature: [phase]"
+                    diag_code = None
+                    feature_label = None
+                    if "/" in reason:
+                        parts = reason.split("/", 1)
+                        diag_code = parts[0]
+                        rest = parts[1]
+                        if ":" in rest:
+                            feature_label = rest.split(":", 1)[0].strip()
+                    else:
+                        diag_code = reason.split(":", 1)[0].strip()
+                    # Extract phase from [...] markers
+                    diag_phase = None
+                    phase_match = re.search(r'\[([^\]]+)\]', reason)
+                    if phase_match:
+                        diag_phase = phase_match.group(1)
+                    if diag_code:
+                        unsupported_diag_counts[diag_code] = unsupported_diag_counts.get(diag_code, 0) + 1
+                    if feature_label:
+                        unsupported_feature_counts[feature_label] = unsupported_feature_counts.get(feature_label, 0) + 1
+                    if diag_phase:
+                        unsupported_by_phase[diag_phase] = unsupported_by_phase.get(diag_phase, 0) + 1
                     if "UnresolvedName/" in reason:
                         symbol = t262.extract_unresolved_name(reason) or "unknown"
                         unresolved_name_by_symbol[symbol] = unresolved_name_by_symbol.get(symbol, 0) + 1
@@ -2707,6 +2736,9 @@ def main():
             negative_compile_unverified=negative_compile_unverified,
             negative_compile_mismatch=negative_compile_mismatch,
             unresolved_name_by_symbol=unresolved_name_by_symbol,
+            unsupported_diag_counts=unsupported_diag_counts,
+            unsupported_feature_counts=unsupported_feature_counts,
+            unsupported_by_phase=unsupported_by_phase,
             wall_duration_ms=wall_duration_ms,
             total_duration_ms=total_duration_ms,
             evidence=evidence,
