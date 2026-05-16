@@ -665,6 +665,36 @@ impl WatEmitter<'_> {
 {object_fallback_to_string}
       ))
 
+    ;; Array tag → join elements with "," (TypedArrays also use ARRAY tag)
+    (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {array_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $len (i32.load (local.get $obj)))
+        (local.set $n (i32.const {zero}))
+        (local.set $i (i32.const {zero}))
+        (block $arr_done
+          (loop $arr_loop
+            (br_if $arr_done (i32.ge_u (local.get $i) (local.get $len)))
+            (if (i32.gt_u (local.get $i) (i32.const {zero}))
+              (then
+                (i32.store8
+                  (i32.add (local.get $ptr) (local.get $n))
+                  (i32.const {comma}))
+                (local.set $n (i32.add (local.get $n) (i32.const {one})))))
+            (local.set $tmp
+              (i32.load
+                (i32.add (local.get $obj)
+                  (i32.add (i32.const {array_header})
+                    (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+            (local.set $j
+              (call $value_to_string_into
+                (local.get $tmp)
+                (i32.add (local.get $ptr) (local.get $n))))
+            (local.set $n (i32.add (local.get $n) (local.get $j)))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $arr_loop)))
+        (return (local.get $n))))
+
     (local.set $n (i32.shr_s (local.get $v) (i32.const {number_shift})))
 
     (if (i32.eq (local.get $n) (i32.const {zero}))
@@ -756,6 +786,10 @@ impl WatEmitter<'_> {
             string_tag = ValueTag::STRING,
 
             object_tag = ValueTag::OBJECT,
+            array_tag = ValueTag::ARRAY,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            comma = b',' as i32,
 
             tag_mask = ValueTag::TAG_MASK,
 
