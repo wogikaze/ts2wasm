@@ -98,8 +98,6 @@ NON_BLOCKING_METADATA_FEATURES = (
 
 BLOCKED_INCLUDES = (
     "agent.js",
-    "detachArrayBuffer.js",
-    "fnGlobalObject.js",
     "wellKnownIntrinsicObjects.js",
 )
 BLOCKED_FEATURES = (
@@ -397,9 +395,26 @@ var NaN = 0/0;
 var Infinity = 1/0;
 """
 
+INLINE_DETACHARRAYBUFFER_JS = r"""
+function $DETACHBUFFER(buffer) {
+  if (!$262 || typeof $262.detachArrayBuffer !== "function") {
+    throw new Test262Error("No method available to detach an ArrayBuffer");
+  }
+  $262.detachArrayBuffer(buffer);
+}
+"""
+
+INLINE_FNGLOBALOBJECT_JS = r"""
+function fnGlobalObject() {
+  return $262.global;
+}
+"""
+
 INLINE_HARNESS_STUBS = {
     "sta.js": INLINE_STA_JS,
     "assert.js": INLINE_ASSERT_JS,
+    "detachArrayBuffer.js": INLINE_DETACHARRAYBUFFER_JS,
+    "fnGlobalObject.js": INLINE_FNGLOBALOBJECT_JS,
 }
 
 
