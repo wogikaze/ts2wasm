@@ -323,7 +323,9 @@ The current implementation has several partial dynamic-code paths:
   block-function environment helpers;
 - literal-only `Function(...)` and `new Function(...)` are currently expanded
   by the parser into synthetic function expressions, with caller-local
-  non-capture guarded for the supported `typeof` slice;
+  non-capture guarded for the supported `typeof` slice and direct
+  `.name`/`.length`/`.prototype` metadata guarded for static constructor
+  locals;
 - runtime-source indirect eval lowers to the audited Node host lane with an
   exact `host.eval.indirect` manifest entry and host-deny rejection;
 - runtime-source direct eval can reach the runtime eval host helper path with an
@@ -334,8 +336,8 @@ The current implementation has several partial dynamic-code paths:
 The canonical implementation plan is
 `plans/eval-new-function-implementation-plan.md`. Current known gaps include
 the split parser/compiler eval expansion paths, direct eval declaration
-environment connection, Function constructor grammar/metadata completeness, and
-no `host.function.*` lane yet. Node-shim execution for dynamic indirect eval is
+environment connection, Function constructor grammar/constructability
+completeness, and no `host.function.*` lane yet. Node-shim execution for dynamic indirect eval is
 not covered by the current iwasm-based differential runner.
 
 ## Known compiler limitations

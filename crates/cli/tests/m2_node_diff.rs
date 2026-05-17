@@ -1155,6 +1155,11 @@ fn function_constructor_does_not_capture_caller_scope() {
 }
 
 #[test]
+fn function_constructor_metadata_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/function-constructor-metadata.ts");
+}
+
+#[test]
 fn new_function_constructor_fixture_builds_static_constructor() {
     assert_fixture_matches_node("fixtures/core-semantics/new-function-constructor-static.ts");
 }

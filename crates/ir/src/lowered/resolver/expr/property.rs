@@ -196,11 +196,11 @@ impl super::super::Resolver {
                 return self.lower_function_metadata_property(name.as_str(), key, span);
             }
         }
-        if key == "length"
+        if matches!(key, "name" | "length" | "prototype")
             && let ResolvedExpr::Ident(name) = object
-            && let Some(length) = self.local_arrow_function_length(name)
+            && let Some(metadata) = self.local_arrow_function_metadata_property(name, key)
         {
-            return Ok(LoweredExpr::Number(length as i32, Span::generated("num")));
+            return Ok(metadata);
         }
         if let ResolvedExpr::Ident(name) = object
             && is_global_builtin_function_name(name)
@@ -386,6 +386,37 @@ impl super::super::Resolver {
             .function_signatures
             .get(&closure.func_id)
             .and_then(|signature| signature.metadata_length)
+    }
+
+    fn local_arrow_function_metadata_property(&self, name: &str, key: &str) -> Option<LoweredExpr> {
+        let local = self.resolve_local(name).ok()?;
+        let closure = self.ctx.facts.arrow_locals.get(&local)?;
+        match key {
+            "name" => Some(LoweredExpr::String(
+                self.ctx
+                    .facts
+                    .function_metadata_name_locals
+                    .get(&local)
+                    .cloned()
+                    .unwrap_or_else(|| name.to_owned()),
+                Span::generated("str"),
+            )),
+            "length" => {
+                let length = self
+                    .ctx
+                    .symbols
+                    .function_signatures
+                    .get(&closure.func_id)
+                    .and_then(|signature| signature.metadata_length)?;
+                Some(LoweredExpr::Number(length as i32, Span::generated("num")))
+            }
+            "prototype" => Some(LoweredExpr::ObjectNew {
+                props: Vec::new(),
+                non_enumerable: 0,
+                span: Span::generated("function_prototype_object"),
+            }),
+            _ => None,
+        }
     }
 
     pub(super) fn lower_optional_property_access_expr(

@@ -1773,6 +1773,11 @@ pub(crate) fn static_function_metadata_name_for_expr(
     expr: &ResolvedExpr,
 ) -> Option<String> {
     match expr {
+        ResolvedExpr::FunctionExpr { origin, .. }
+            if *origin == ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor =>
+        {
+            Some("anonymous".to_owned())
+        }
         ResolvedExpr::PropertyAccess { key, .. } => Some(key.clone()),
         ResolvedExpr::ComputedIndex { index, .. } => {
             let key = string::resolved_expr_static_accessor_key(ctx, index)?;
