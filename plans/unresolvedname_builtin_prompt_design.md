@@ -36,33 +36,19 @@ Skipped 0 は中長期的な目標であり、この計画では UnresolvedName 
    修正: `"early"` を許容し、`ast-validator` phase も追加。これにより SyntaxError ケースの大部分が
    negative_pass として正しくカウントされる見込み。
 
-### UnresolvedName: 4,191 (15%) ← この計画のターゲット
+### UnresolvedName: 4,191 (15%) ← 修正対象
 
-**テストローカル変数 (解決不要):**
-| 件数 | 名前 | 理由 |
-|------|------|------|
-| 452 | codePoint | test 内部変数 |
-| 331 | f | test 内部変数 |
-| 260 | x | test 内部変数 |
-| 238 | yield | generator test 変数 |
-| 215 | instance | test 内部変数 |
-| 150 | iter | イテレータ test 変数 |
-| 78 | eval | test 内部で eval 名使用 |
-| 69 | y | test 内部変数 |
-| 53 | BPE | test 内部変数 |
-| ~700 | その他 test 変数 | — |
+**テストローカル変数 (~3,500):** 従来「本質的に unresolvable」としていたが、正しくは**名前解決器のスコープ追跡のバグ**。
+公式 test262 ハーネスがコンパイルを通るようにするのが正しい方策。
+例:
+- `var codePoint = str.codePointAt(0)` → `var` 宣言が追跡できていない
+- `testWithTypedArrayConstructors(function(TA) { new TA(3); })` → コールバック引数 `TA` がスコープ外
+- クロージャ環境・関数スコープの境界で変数が見えなくなっている
 
-**harness 関連 (preprocessor stub で解決可能):**
-| 件数 | 名前 | 対策 |
-|------|------|------|
-| 150 | testWithBigIntTypedArrayConstructors | 第1引数として渡される関数名。harness stubs が不足 |
-| 141 | testWithTypedArrayConstructors | 同上 |
-| 129 | $DETACHBUFFER | harness `detachArrayBuffer.js` の関数。stub 追加 |
-| 77 | assert | harness `assert.js` の関数名 (既に stub ありだが不足ケース) |
-| 62 | eval | harness 内の eval 参照 (allowed_globals にある) |
-| 52 | Intl | 未解決ケース (allowed_globals にある) |
-| 39 | g | test 変数 |
-| ~200 | testWith* / nonClamped* / anyTyped* | typed array harness 変数 |
+→ 別 issue でスコープ解決の改善をトラック。stub でごまかさない。
+
+**harness 関連 (~700):** `$DETACHBUFFER`, `testWithTypedArrayConstructors` 等、harness ファイル由来の名前。
+preprocessor の real content inject で解決済みのはずだが、未解決のケースがある。調査中。
 
 ### UnsupportedBuiltin: 2,427 (9%) ← 明示 unsupported 済み
 Temporal (2,042), Intl sub-APIs (~300), ShadowRealm (~50), Float16Array (~35)
