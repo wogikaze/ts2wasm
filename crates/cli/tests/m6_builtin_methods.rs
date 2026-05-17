@@ -2334,6 +2334,16 @@ fn build_smoke_typedarray_methods() {
     );
 }
 
+#[test]
+fn build_smoke_typedarray_from() {
+    let result = run_fixture("builtins-and-io/typedarray-from.ts");
+    assert!(
+        result.is_ok(),
+        "TypedArray.from should build: {:?}",
+        result.err()
+    );
+}
+
 // WeakMap/WeakSet basic — now supported
 #[test]
 fn build_smoke_weakmap_weakset_basic() {
@@ -4110,6 +4120,7 @@ fn build_smoke_typedarray_complete() {
         "builtins-and-io/typedarray-index-of.ts",
         "builtins-and-io/typedarray-mutating-methods.ts",
         "builtins-and-io/typedarray-unsupported-methods.ts",
+        "builtins-and-io/typedarray-from.ts",
     ] {
         let result = run_fixture(fixture);
         assert!(

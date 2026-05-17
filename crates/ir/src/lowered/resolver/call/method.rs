@@ -39,6 +39,9 @@ impl super::super::Resolver {
         if let Some(result) = self.lower_mcall_arraybuffer(object, method, args)? {
             return Ok(result);
         }
+        if let Some(result) = self.lower_mcall_typed_array(object, method, args)? {
+            return Ok(result);
+        }
         if let Some(result) = self.lower_mcall_intl_date_time_format(object, method, args)? {
             return Ok(result);
         }
@@ -1053,6 +1056,40 @@ impl super::super::Resolver {
                 args: vec![new_len],
                 span: Span::generated("runtime_call"),
             }));
+        }
+        Ok(None)
+    }
+
+    /// TypedArray static methods: TypedArray.from(source) → TypedArrayFromArray
+    fn lower_mcall_typed_array(
+        &mut self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if let ResolvedExpr::Ident(name) = object {
+            if is_typed_array_class(name) && method == "from" {
+                let source = match args.first() {
+                    Some(arg) => self.lower_expr(arg)?,
+                    None => LoweredExpr::ArrayNew {
+                        elements: Vec::new(),
+                        span: Span::generated("typed_array_from"),
+                    },
+                };
+                if args.len() > 1 {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "TypedArray.from with mapFn/thisArg is not supported".to_owned(),
+                        span: Some(Span::generated("typed_array_from")),
+                        phase: None,
+                    });
+                }
+                return Ok(Some(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::TypedArrayFromArray,
+                    args: vec![source],
+                    span: Span::generated("typed_array_from"),
+                }));
+            }
         }
         Ok(None)
     }
