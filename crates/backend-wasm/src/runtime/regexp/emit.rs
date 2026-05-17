@@ -126,6 +126,8 @@ impl WatEmitter<'_> {
     (local $kind i32)
     (local $lit_val i32)
     (local $quant i32)
+    (local $q_min i32)
+    (local $q_max i32)
     (local $p_header i32)
     (local $i_header i32)
     (local $flags i32)
@@ -274,6 +276,8 @@ impl WatEmitter<'_> {
                           (then
                             (local.set $quant (i32.const 3))
                             (local.set $p (i32.add (local.get $p) (i32.const {one})))))))))))
+            (if (i32.eq (local.get $kind) (i32.const 10))
+              (then (br $match_loop)))
             (if (i32.ge_u (local.get $i) (local.get $i_len))
               (then
                 (if (i32.eq (local.get $quant) (i32.const 0))
@@ -379,6 +383,8 @@ impl WatEmitter<'_> {
     (local $kind i32)
     (local $lit_val i32)
     (local $quant i32)
+    (local $q_min i32)
+    (local $q_max i32)
     (local $p_header i32)
     (local $i_header i32)
     (local $flags i32)
@@ -534,6 +540,8 @@ impl WatEmitter<'_> {
                           (then
                             (local.set $quant (i32.const 3))
                             (local.set $p (i32.add (local.get $p) (i32.const {one})))))))))))
+            (if (i32.eq (local.get $kind) (i32.const 10))
+              (then (br $match_loop)))
             (if (i32.ge_u (local.get $i) (local.get $i_len))
               (then
                 (if (i32.eq (local.get $quant) (i32.const 0))
@@ -649,6 +657,8 @@ impl WatEmitter<'_> {
     (local $kind i32)
     (local $lit_val i32)
     (local $quant i32)
+    (local $q_min i32)
+    (local $q_max i32)
     (local $p_header i32)
     (local $i_header i32)
     (local $flags i32)
@@ -807,6 +817,8 @@ impl WatEmitter<'_> {
                           (then
                             (local.set $quant (i32.const 3))
                             (local.set $p (i32.add (local.get $p) (i32.const {one})))))))))))
+            (if (i32.eq (local.get $kind) (i32.const 10))
+              (then (br $match_loop)))
             (if (i32.ge_u (local.get $i) (local.get $i_len))
               (then
                 (if (i32.eq (local.get $quant) (i32.const 0))
@@ -925,6 +937,8 @@ impl WatEmitter<'_> {
     (local $kind i32)
     (local $lit_val i32)
     (local $quant i32)
+    (local $q_min i32)
+    (local $q_max i32)
     (local $p_header i32)
     (local $i_header i32)
     (local $neg_one i32)
@@ -1077,6 +1091,8 @@ impl WatEmitter<'_> {
                           (then
                             (local.set $quant (i32.const 3))
                             (local.set $p (i32.add (local.get $p) (i32.const {one})))))))))))
+            (if (i32.eq (local.get $kind) (i32.const 10))
+              (then (br $match_loop)))
             (if (i32.ge_u (local.get $i) (local.get $i_len))
               (then
                 (if (i32.eq (local.get $quant) (i32.const 0))
