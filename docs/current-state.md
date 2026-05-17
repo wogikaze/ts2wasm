@@ -326,6 +326,8 @@ The current implementation has several partial dynamic-code paths:
   non-capture guarded for the supported `typeof` slice and direct
   `.name`/`.length`/`.prototype` metadata guarded for static constructor
   locals;
+- shadowed `Function` bindings stay ordinary user calls in the current
+  parser/lowering path;
 - runtime-source indirect eval lowers to the audited Node host lane with an
   exact `host.eval.indirect` manifest entry and host-deny rejection;
 - runtime-source direct eval can reach the runtime eval host helper path with an

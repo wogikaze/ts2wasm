@@ -1160,6 +1160,13 @@ fn function_constructor_metadata_matches_node_output() {
 }
 
 #[test]
+fn shadowed_function_constructor_is_ordinary_call() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/function-constructor-shadowed-ordinary-call.ts",
+    );
+}
+
+#[test]
 fn new_function_constructor_fixture_builds_static_constructor() {
     assert_fixture_matches_node("fixtures/core-semantics/new-function-constructor-static.ts");
 }

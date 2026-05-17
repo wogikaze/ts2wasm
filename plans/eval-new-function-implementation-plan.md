@@ -69,7 +69,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | literal `Function` | `Function("a", "return a")` | parser synthetic `FunctionExpr` slice; caller-local non-capture is guarded for supported `typeof` bodies; direct `.name` / `.length` / `.prototype` metadata is guarded for static constructor locals | resolver-owned static `FunctionConstructorPlan` |
 | literal `new Function` | `new Function("a", "return a")` | parser synthetic `FunctionExpr` slice; call output is Node differential guarded | generated function object + metadata |
 | dynamic `Function` | `new Function(body)` | 未完成 | `host.function.compile` + host function handle |
-| shadowed `eval` / `Function` | `let eval = f; eval("x")` | resolver が shadowed eval を ordinary call として保持し、parser は shadowing risk のある Function rewrite を避ける | ordinary user binding semantics |
+| shadowed `eval` / `Function` | `let eval = f; eval("x")` | resolver が shadowed eval を ordinary call として保持し、parser は shadowing risk のある Function rewrite を避ける。shadowed `Function` ordinary-call fixture は Node differential guarded | ordinary user binding semantics |
 | `$262.evalScript` | `$262.evalScript(src)` | runtime helper exists but dynamic eval body未実装 | harness/global eval lane として別分類 |
 
 ## 4. 最終設計
