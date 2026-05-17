@@ -146,6 +146,8 @@ match self {
             Self::GetIterator => "get_iterator",
             Self::IteratorNext => "iterator_next",
             Self::IteratorFrom => "iterator_from",
+            Self::EvalDirectHost => "eval_direct_host",
+            Self::EvalIndirectHost => "eval_indirect_host",
             Self::GeneratorYield => "generator_yield",
             Self::GeneratorReturn => "generator_return",
             Self::GeneratorNext => "generator_next",

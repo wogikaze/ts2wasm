@@ -657,6 +657,10 @@ pub enum RuntimeFn {
     IteratorSome,
     IteratorEvery,
     IteratorFind,
+    /// Host-eval: direct eval with runtime source.
+    EvalDirectHost,
+    /// Host-eval: indirect eval with runtime source.
+    EvalIndirectHost,
     /// GeneratorYield(values) — creates a generator state object from collected yield values.
     GeneratorYield,
     /// GeneratorReturn(value) — creates a completed generator result object.
@@ -1764,6 +1768,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "IteratorNext" => Some(RuntimeFn::IteratorNext),
         "IteratorFrom" => Some(RuntimeFn::IteratorFrom),
         "IteratorFind" => Some(RuntimeFn::IteratorFind),
+        "EvalDirectHost" => Some(RuntimeFn::EvalDirectHost),
+        "EvalIndirectHost" => Some(RuntimeFn::EvalIndirectHost),
         "IteratorEvery" => Some(RuntimeFn::IteratorEvery),
         "IteratorSome" => Some(RuntimeFn::IteratorSome),
         "IteratorForEach" => Some(RuntimeFn::IteratorForEach),
@@ -2059,6 +2065,8 @@ impl RuntimeFn {
             | Self::IteratorSome
             | Self::IteratorEvery
             | Self::IteratorFind
+            | Self::EvalDirectHost
+            | Self::EvalIndirectHost
             | Self::GeneratorYield
             | Self::GeneratorReturn
             | Self::GeneratorNext => RuntimeDomain::Iterator,

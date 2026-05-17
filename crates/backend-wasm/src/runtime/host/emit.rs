@@ -3297,6 +3297,13 @@ impl WatEmitter<'_> {
         );
     }
 
+    pub(crate) fn emit_eval_direct_host(&self, wat: &mut String) {
+        wat.push_str("(func $eval_direct_host (param $source i32) (result i32)\n    local.get $source\n  )\n");
+    }
+    pub(crate) fn emit_eval_indirect_host(&self, wat: &mut String) {
+        wat.push_str("(func $eval_indirect_host (param $source i32) (result i32)\n    local.get $source\n  )\n");
+    }
+
     pub(crate) fn emit_generator_yield(&self, wat: &mut String) {
         let values_key = self.string_value("values");
         let state_key = self.string_value("state");

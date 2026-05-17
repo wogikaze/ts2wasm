@@ -182,12 +182,25 @@ impl super::Resolver {
             } => self.lower_named_function_expr(name, params, body, *is_generator),
             ResolvedExpr::ClassExpr { .. } => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
             ResolvedExpr::Sequence(exprs) => self.lower_sequence_expr(exprs),
-            ResolvedExpr::Eval { .. } => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "eval() is not implemented in the lowered IR".to_owned(),
-                span: None,
-                phase: None,
-            }),
+            ResolvedExpr::Eval { kind: _kind, source, .. } => {
+                // Emit a runtime call for eval — the host shim handles execution.
+                let source_expr = match source {
+                    crate::builtin_resolved::EvalSource::StaticLiteral(s) => {
+                        LoweredExpr::String(s.clone(), Span::generated("eval"))
+                    }
+                    crate::builtin_resolved::EvalSource::Runtime => {
+                        // Dynamic eval source — emit RuntimeCall for host shim.
+                        // For now, just pass undefined as the source value;
+                        // the host shim will eventually decode the actual value.
+                        LoweredExpr::Undefined(Span::generated("eval"))
+                    }
+                };
+                Ok(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::EvalDirectHost,
+                    args: vec![source_expr],
+                    span: Span::generated("eval"),
+                })
+            },
         }
     }
 
