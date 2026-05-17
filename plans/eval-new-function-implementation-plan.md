@@ -28,14 +28,14 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 
 | 領域 | 現在の実装 | 重要度 |
 |---|---|---|
-| parser expression-level literal eval | `crates/frontend/src/parser/eval_expand.rs` が `let r = eval("1 + 2")` や `eval("1; 2;")` を post-parse で expression に展開する | completion value の足場が入った |
+| resolver/compiler expression-level literal eval | resolver が unshadowed `eval` を `ResolvedExpr::Eval` に分類し、`crates/compiler/src/stages/eval_expand.rs` が `let r = eval("1 + 2")` や `eval("1; 2;")` を compile-time に展開する | completion value の足場が入った |
 | parser statement-level direct eval | `crates/frontend/src/parser/statements_general.rs::direct_eval_literal_statements` が `eval('x = "after";')` を caller statement 群へ展開する | caller local mutation の static slice が動く |
 | Annex B block function slice | `static_block_function_eval_expansion` と `crates/ir/src/lowered/program_direct_eval.rs` が supported direct-eval block function fixtures を通す | eval-code function hoist の難所に着手済み |
 | indirect eval parser rejection | `globalThis.eval("x")`、`globalThis["eval"]("x")`、`(0, eval)("x")` は parser reject ではなく後段へ流れる | Phase 4/5 の土台 |
 | optional eval diagnostic | `eval?.("x")` はまだ parser で issue-347 diagnostic | 後で indirect-like semantics として整理 |
 | resolved eval IR | `ResolvedExpr::Eval { kind, source, caller_is_strict, span }`、`EvalKind::{Direct, Indirect}`、`EvalSource::{StaticLiteral, Runtime}` が存在する | 統一 IR への入口 |
 | compiler eval expansion stage | `crates/compiler/src/stages/eval_expand.rs` が static direct / indirect `ResolvedExpr::Eval` を parse / resolve / builtin-resolve して completion expression へ置換する | parser rewrite から IR rewrite へ移行する素材 |
-| literal `Function` constructor | `try_expand_function_constructor` が literal-only `Function(...)` / `new Function(...)` を synthetic `FunctionExpr` に変換する | static `Function` AOT lane の初期 slice |
+| literal `Function` constructor | resolver が unshadowed `Function(...)` / `new Function(...)` を internal constructor markers に分類し、compiler eval-expand stage が literal-only args を synthetic `FunctionExpr` に変換する | static `Function` AOT lane の初期 slice |
 | runtime catalog symbols | `RuntimeFn::EvalDirectHost` / `EvalIndirectHost` がある | host lane の名前だけはある |
 
 ### 2.2 まだ危険な点
@@ -43,7 +43,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | Gap | 現状 | 必要な修正 |
 |---|---|---|
 | eval path が 3 つある | parser expression rewrite、parser statement rewrite、compiler `ResolvedExpr::Eval` rewrite が併存 | canonical path を `DynamicCodePlan` / `EvalFragment` に一本化する |
-| parser が binding-sensitive 判断をしている | `possible_eval_shadowing` は token count heuristic。`Function` も syntactic `Ident("Function")` だけで展開される | resolver の lexical binding table で intrinsic / shadowed を判定する |
+| parser が binding-sensitive 判断をしている | statement-level direct eval expansion still uses the `possible_eval_shadowing` token count heuristic. `Function` constructor classification has moved to resolver lexical binding checks | remaining eval intrinsic / shadowed decisions should move fully to resolver facts |
 | `EvalKind` が lowering で無視される | `ResolvedExpr::Eval` は direct/indirect に関係なく `RuntimeFn::EvalDirectHost` へ lower される | direct / indirect / host-global-only / full-direct を別 lowering にする |
 | host runtime fn が host import ではない | `EvalDirectHost` / `EvalIndirectHost` は `NO_IMPORTS` / `NO_CAPS` で、string source は runtime WAT で `unreachable` | runtime catalog に real `HostImport` / `Capability` を追加し、stub trap を事前 diagnostic に置換する |
 | compiler server path が eval expansion を通らない | `pipeline.rs` は `expand_static_eval_fragments` を呼ぶが、`server.rs` は呼ばない | build path と server path の stage parity を保証する |
@@ -66,8 +66,8 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | indirect eval dynamic | `(0, eval)(src)` | `host.eval.indirect` manifest / host-deny slice は実装済み。node-shim 実行 pass は未完 | `host.eval.indirect` capability |
 | optional eval | `eval?.("x")` | parser diagnostic | indirect-like call semantics として classification |
 | `new eval` | `new eval("x")` | unsupported / TypeError 境界が未整理 | eval is not constructor の TypeError parity |
-| literal `Function` | `Function("a", "return a")` | parser synthetic `FunctionExpr` slice; zero-arg, caller-local non-capture, and direct `.name` / `.length` / `.prototype` metadata are guarded for static constructor locals | resolver-owned static `FunctionConstructorPlan` |
-| literal `new Function` | `new Function("a", "return a")` | parser synthetic `FunctionExpr` slice; zero-arg and call output are Node differential guarded | generated function object + metadata |
+| literal `Function` | `Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; zero-arg, caller-local non-capture, and direct `.name` / `.length` / `.prototype` metadata are guarded for static constructor locals | first-class static `FunctionConstructorPlan` / generated function object |
+| literal `new Function` | `new Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; zero-arg and call output are Node differential guarded | generated function object + metadata |
 | dynamic `Function` | `new Function(body)` | 未完成 | `host.function.compile` + host function handle |
 | shadowed `eval` / `Function` | `let eval = f; eval("x")` | resolver が shadowed eval を ordinary call として保持し、parser は shadowing risk のある Function rewrite を避ける。shadowed `Function` ordinary-call fixture は Node differential guarded | ordinary user binding semantics |
 | `$262.evalScript` | `$262.evalScript(src)` | runtime helper exists but dynamic eval body未実装 | harness/global eval lane として別分類 |
@@ -511,7 +511,7 @@ Exit criteria:
 
 | File / area | 変更方針 |
 |---|---|
-| `crates/frontend/src/parser/eval_expand.rs` | 一時 compatibility path として残しつつ、intrinsic 判定を resolver へ移す。eventual removal 対象。 |
+| `crates/frontend/src/parser/eval_expand.rs` | Removed for `Function` constructor expression rewriting; remaining parser-side dynamic-code compatibility is statement-level direct eval in `statements_general.rs`. |
 | `crates/frontend/src/parser/statements_general.rs` | `direct_eval_literal_statements` の parser semantic rewrite を `EvalFragment` lowering へ移す。 |
 | `crates/frontend/src/parser/expressions_main.rs` | `eval?.()` parser diagnostic を optional-call shape preservation へ移行する。 |
 | `crates/resolve/src/name_resolver.rs` | intrinsic / shadowed eval・Function 判定、strict context、scope id を管理する。未使用 diagnostic helper を整理する。 |

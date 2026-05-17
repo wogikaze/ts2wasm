@@ -16,7 +16,6 @@ pub struct Parser {
     parenthesized_expr_spans: HashSet<(usize, usize)>,
     pending_statements: Vec<Stmt>,
     possible_eval_shadowing: bool,
-    possible_function_shadowing: bool,
     /// For each token, whether it is preceded by a line terminator in the source.
     has_preceding_newline: Vec<bool>,
     /// Whether we are inside an async function body (for context-sensitive `await` parsing).
@@ -848,5 +847,4 @@ include!("parser/binding_patterns.rs");
 include!("parser/expressions.rs");
 include!("parser/tokens.rs");
 include!("parser/helpers.rs");
-include!("parser/eval_expand.rs");
 include!("parser/tests.rs");

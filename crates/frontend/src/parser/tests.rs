@@ -939,7 +939,7 @@ mod tests {
     }
 
     #[test]
-    fn multiple_function_constructor_calls_expand_without_user_binding() {
+    fn multiple_function_constructor_calls_are_preserved_for_resolver_classification() {
         let program = parse_program("let f = Function(); let g = new Function();").unwrap();
         let Stmt::Let {
             expr: first_expr, ..
@@ -953,8 +953,8 @@ mod tests {
         else {
             panic!("expected second let statement");
         };
-        assert!(matches!(first_expr, Expr::FunctionExpr { .. }));
-        assert!(matches!(second_expr, Expr::FunctionExpr { .. }));
+        assert!(matches!(first_expr, Expr::Call { callee, .. } if matches!(callee.as_ref(), Expr::Ident { name, .. } if name == "Function")));
+        assert!(matches!(second_expr, Expr::New { expr, .. } if matches!(expr.as_ref(), Expr::Ident { name, .. } if name == "Function")));
     }
 
     #[test]

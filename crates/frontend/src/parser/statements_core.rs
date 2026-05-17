@@ -15,7 +15,6 @@ impl Parser {
             .filter(|token| matches!(&token.kind, Token::Ident(name) if name == "eval"))
             .count()
             > 1;
-        let possible_function_shadowing = tokens_may_bind_name(&tokens, "Function");
         Self {
             tokens,
             cursor: 0,
@@ -24,7 +23,6 @@ impl Parser {
             parenthesized_expr_spans: HashSet::new(),
             pending_statements: Vec::new(),
             possible_eval_shadowing,
-            possible_function_shadowing,
             has_preceding_newline,
             in_async_fn: false,
             in_generator_fn: false,
@@ -64,22 +62,6 @@ impl Parser {
         while let Some(stmt) = self.take_pending_statement() {
             statements.push(stmt);
         }
-        Ok(expand_eval_in_statements(
-            statements,
-            self.strict_mode,
-            self.possible_function_shadowing,
-        ))
+        Ok(statements)
     }
-}
-
-fn tokens_may_bind_name(tokens: &[SpannedToken], name: &str) -> bool {
-    tokens.windows(2).any(|window| {
-        matches!(
-            (&window[0].kind, &window[1].kind),
-            (
-                Token::Let | Token::Const | Token::Var | Token::Function | Token::Class,
-                Token::Ident(ident),
-            ) if ident == name
-        )
-    })
 }

@@ -2,13 +2,21 @@ use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_ir::builtin_resolved::{EvalKind, EvalSource, ResolvedExpr, ResolvedStmt};
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
 use ts2wasm_ir::name_resolver::resolve_names;
-/// Expand static literal eval(source) expressions at compile time.
+use ts2wasm_ir::name_resolver::{
+    INTRINSIC_FUNCTION_CONSTRUCTOR_CALL, INTRINSIC_FUNCTION_CONSTRUCTOR_NEW,
+};
+use ts2wasm_syntax::FunctionExprOrigin;
+/// Expand static literal dynamic-code expressions at compile time.
 ///
 /// For direct or indirect eval("literal") where the source is a compile-time string literal:
 /// 1. Parse the source with the frontend parser
 /// 2. Run name resolution on the parsed AST
 /// 3. Run builtin resolution
 /// 4. Replace the Eval node with the resolved expression
+///
+/// Literal-only Function(...) / new Function(...) follows the same parse and resolve path,
+/// but produces a generated non-capturing FunctionExpr. Runtime-source Function
+/// constructor calls are rejected until the host.function.* lane exists.
 ///
 /// Runtime-source eval is left as-is for the host lane.
 pub(crate) fn expand_static_eval_fragments(
@@ -175,6 +183,21 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
             // Non-expandable eval (indirect or runtime source) — keep as-is.
             Ok(expr)
         }
+        ResolvedExpr::Call { callee, args, span }
+            if matches!(
+                callee.as_ref(),
+                ResolvedExpr::Ident(name) if name == INTRINSIC_FUNCTION_CONSTRUCTOR_CALL
+            ) =>
+        {
+            expand_static_function_constructor(args, span)
+        }
+        ResolvedExpr::New {
+            class_name,
+            args,
+            span,
+        } if class_name == INTRINSIC_FUNCTION_CONSTRUCTOR_NEW => {
+            expand_static_function_constructor(args, span)
+        }
         // Recursively expand eval in sub-expressions.
         ResolvedExpr::Unary { op, expr: inner } => Ok(ResolvedExpr::Unary {
             op,
@@ -198,6 +221,18 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
         }),
         ResolvedExpr::Call { callee, args, span } => Ok(ResolvedExpr::Call {
             callee: Box::new(expand_expr(*callee)?),
+            args: args
+                .into_iter()
+                .map(expand_expr)
+                .collect::<Result<Vec<_>, _>>()?,
+            span,
+        }),
+        ResolvedExpr::New {
+            class_name,
+            args,
+            span,
+        } => Ok(ResolvedExpr::New {
+            class_name,
             args: args
                 .into_iter()
                 .map(expand_expr)
@@ -288,6 +323,89 @@ fn expand_static_eval_source(src: &str) -> Result<ResolvedExpr, Diagnostic> {
     let builtin_resolved = resolve_builtins(&name_resolved)?;
 
     extract_completion_value(builtin_resolved)
+}
+
+fn expand_static_function_constructor(
+    args: Vec<ResolvedExpr>,
+    span: ts2wasm_source::Span,
+) -> Result<ResolvedExpr, Diagnostic> {
+    let mut strings = Vec::with_capacity(args.len());
+    for arg in args {
+        match arg {
+            ResolvedExpr::String(value) => strings.push(value),
+            _ => {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedBuiltin,
+                    message: "dynamic Function constructor requires the host.function.* lane"
+                        .to_owned(),
+                    span: Some(span),
+                    phase: None,
+                });
+            }
+        }
+    }
+
+    let (body_source, param_names): (&str, &[String]) = match strings.split_last() {
+        Some((body, params)) => (body.as_str(), params),
+        None => ("", &[]),
+    };
+    let params_source = param_names
+        .iter()
+        .map(String::as_str)
+        .collect::<Vec<_>>()
+        .join(", ");
+    let function_source = format!("function anonymous({params_source}) {{\n{body_source}\n}}");
+
+    let tokens = ts2wasm_frontend::Lexer::new(&function_source)
+        .tokenize()
+        .map_err(|e| Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("Function constructor source lex error: {e}"),
+            span: Some(span),
+            phase: None,
+        })?;
+    let program = ts2wasm_frontend::Parser::new(tokens, &function_source)
+        .parse_program()
+        .map_err(|e| Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("Function constructor source parse error: {e}"),
+            span: Some(span),
+            phase: None,
+        })?;
+
+    let name_resolved = resolve_names(&program)?;
+    let builtin_resolved = resolve_builtins(&name_resolved)?;
+    for stmt in builtin_resolved {
+        if let ResolvedStmt::Function {
+            name,
+            params,
+            body,
+            is_generator,
+            source_text,
+            ..
+        } = stmt
+        {
+            let body = body
+                .into_iter()
+                .map(expand_stmt)
+                .collect::<Result<Vec<_>, _>>()?;
+            return Ok(ResolvedExpr::FunctionExpr {
+                name,
+                params,
+                body,
+                is_generator,
+                origin: FunctionExprOrigin::FunctionConstructor,
+                source_text,
+            });
+        }
+    }
+
+    Err(Diagnostic {
+        code: DiagCode::InvariantViolation,
+        message: "Function constructor expansion did not produce a function".to_owned(),
+        span: Some(span),
+        phase: None,
+    })
 }
 
 /// Extract the completion value from a resolved program body.

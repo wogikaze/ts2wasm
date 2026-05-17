@@ -27,6 +27,57 @@ fn parses_console_log_string() {
 }
 
 #[test]
+fn compiler_expands_static_function_constructor_call_after_resolver_classification() {
+    let expanded = parse_resolve_and_expand_dynamic_code("let value = Function(\"return 1\");");
+    let ts2wasm_ir::ResolvedStmt::Let(
+        _,
+        ts2wasm_ir::ResolvedExpr::FunctionExpr { origin, name, .. },
+    ) = &expanded[0]
+    else {
+        panic!("expected static Function constructor to expand to FunctionExpr: {expanded:?}");
+    };
+    assert_eq!(
+        *origin,
+        ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor
+    );
+    assert_eq!(name, "anonymous");
+}
+
+#[test]
+fn compiler_expands_static_new_function_constructor_after_resolver_classification() {
+    let expanded = parse_resolve_and_expand_dynamic_code("let value = new Function(\"return 1\");");
+    let ts2wasm_ir::ResolvedStmt::Let(
+        _,
+        ts2wasm_ir::ResolvedExpr::FunctionExpr { origin, name, .. },
+    ) = &expanded[0]
+    else {
+        panic!("expected static new Function constructor to expand to FunctionExpr: {expanded:?}");
+    };
+    assert_eq!(
+        *origin,
+        ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor
+    );
+    assert_eq!(name, "anonymous");
+}
+
+#[test]
+fn compiler_rejects_dynamic_function_constructor_until_host_lane_exists() {
+    let parsed = parse_program("let body = \"return 1\"; let value = Function(body);").unwrap();
+    let named = ts2wasm_ir::name_resolver::resolve_names(&parsed).unwrap();
+    let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&named).unwrap();
+    let err = crate::stages::eval_expand::expand_static_eval_fragments(resolved).unwrap_err();
+    assert_eq!(err.code, DiagCode::UnsupportedBuiltin);
+    assert!(err.message.contains("host.function"));
+}
+
+fn parse_resolve_and_expand_dynamic_code(source: &str) -> Vec<ts2wasm_ir::ResolvedStmt> {
+    let parsed = parse_program(source).unwrap();
+    let named = ts2wasm_ir::name_resolver::resolve_names(&parsed).unwrap();
+    let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&named).unwrap();
+    crate::stages::eval_expand::expand_static_eval_fragments(resolved).unwrap()
+}
+
+#[test]
 fn parses_m2_subset() {
     let source = r#"
         let i = 0;

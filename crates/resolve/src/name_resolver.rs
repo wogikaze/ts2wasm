@@ -6,6 +6,9 @@ use crate::binding_pattern::parse_binding_pattern;
 
 pub const INTRINSIC_DIRECT_EVAL_CALLEE: &str = "__ts2wasm_intrinsic_direct_eval";
 pub const INTRINSIC_INDIRECT_EVAL_CALLEE: &str = "__ts2wasm_intrinsic_indirect_eval";
+pub const INTRINSIC_FUNCTION_CONSTRUCTOR_CALL: &str =
+    "__ts2wasm_intrinsic_function_constructor_call";
+pub const INTRINSIC_FUNCTION_CONSTRUCTOR_NEW: &str = "__ts2wasm_intrinsic_function_constructor_new";
 
 /// Resolves variable and function names in lexical scope.
 /// This pass runs before builtin resolution to catch unresolved names early.
@@ -1134,6 +1137,20 @@ impl NameResolver {
                         span: *span,
                     });
                 }
+                if self.is_unshadowed_function_constructor_callee(callee) {
+                    let resolved_args = args
+                        .iter()
+                        .map(|a| self.resolve_expr(a))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    return Ok(Expr::Call {
+                        callee: Box::new(Expr::Ident {
+                            name: INTRINSIC_FUNCTION_CONSTRUCTOR_CALL.to_owned(),
+                            span: *span,
+                        }),
+                        args: resolved_args,
+                        span: *span,
+                    });
+                }
                 let resolved_callee = self.resolve_expr(callee)?;
                 let resolved_args = args
                     .iter()
@@ -1353,17 +1370,22 @@ impl NameResolver {
                 {
                     return Err(type_only_value_use_diagnostic(name, *name_span));
                 }
-                let callee_name = match expr.as_ref() {
-                    Expr::Ident { name, .. } => name.clone(),
-                    Expr::Member { property, .. } => property.clone(),
-                    _ => {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "issue-062: new requires a class name identifier".to_owned(),
-                            span: Some(*span),
+                let callee_name = if self.is_unshadowed_function_constructor_callee(expr) {
+                    INTRINSIC_FUNCTION_CONSTRUCTOR_NEW.to_owned()
+                } else {
+                    match expr.as_ref() {
+                        Expr::Ident { name, .. } => name.clone(),
+                        Expr::Member { property, .. } => property.clone(),
+                        _ => {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: "issue-062: new requires a class name identifier"
+                                    .to_owned(),
+                                span: Some(*span),
 
-                            phase: None,
-                        });
+                                phase: None,
+                            });
+                        }
                     }
                 };
                 // Only unqualified `new Function(...)` triggers the eval boundary,
@@ -1426,10 +1448,22 @@ impl NameResolver {
                 expr: Box::new(self.resolve_expr(expr)?),
                 span: *span,
             }),
-            Expr::TypeOf { expr, span } => Ok(Expr::TypeOf {
-                expr: Box::new(self.resolve_expr(expr)?),
-                span: *span,
-            }),
+            Expr::TypeOf { expr, span } => {
+                let resolved_expr = match self.resolve_expr(expr) {
+                    Ok(expr) => expr,
+                    Err(err)
+                        if err.code == DiagCode::UnresolvedName
+                            && matches!(expr.as_ref(), Expr::Ident { .. }) =>
+                    {
+                        *expr.clone()
+                    }
+                    Err(err) => return Err(err),
+                };
+                Ok(Expr::TypeOf {
+                    expr: Box::new(resolved_expr),
+                    span: *span,
+                })
+            }
             Expr::Sequence { exprs, span } => Ok(Expr::Sequence {
                 exprs: exprs
                     .iter()
@@ -1714,6 +1748,11 @@ impl NameResolver {
         }
 
         None
+    }
+
+    fn is_unshadowed_function_constructor_callee(&self, callee: &Expr) -> bool {
+        matches!(callee, Expr::Ident { name, .. } if name == "Function")
+            && !self.has_user_binding("Function")
     }
 
     fn is_unshadowed_global_this_eval_member(&self, callee: &Expr) -> bool {

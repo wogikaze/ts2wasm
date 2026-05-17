@@ -578,10 +578,19 @@ mod tests {
             span: Span { start: 0, end: 24 },
         }];
 
-        assert!(
-            name_resolver::resolve_names(&program).is_ok(),
-            "name resolution preserves new Function for later constructor classification",
-        );
+        let resolved = name_resolver::resolve_names(&program).unwrap();
+        let Stmt::Expr {
+            expr: Expr::New { expr, .. },
+            ..
+        } = &resolved[0]
+        else {
+            panic!("expected new Function expression after name resolution: {resolved:?}");
+        };
+        assert!(matches!(
+            expr.as_ref(),
+            Expr::Ident { name, .. }
+                if name == crate::name_resolver::INTRINSIC_FUNCTION_CONSTRUCTOR_NEW
+        ));
     }
 
     #[test]
@@ -642,6 +651,19 @@ mod tests {
     }
 
     #[test]
+    fn resolver_preserves_typeof_unresolved_identifier_for_runtime_undefined_result() {
+        let builtins = parse_resolve_builtins("let value = typeof notDeclared;");
+        let crate::ResolvedStmt::Let(_, crate::ResolvedExpr::Unary { expr, .. }) = &builtins[0]
+        else {
+            panic!("expected typeof expression: {builtins:?}");
+        };
+        assert!(matches!(
+            expr.as_ref(),
+            crate::ResolvedExpr::Ident(name) if name == "notDeclared"
+        ));
+    }
+
+    #[test]
     fn resolver_marks_static_indirect_eval_shapes() {
         for source_text in [
             "let value = (0, eval)(\"1 + 2\");",
@@ -660,6 +682,45 @@ mod tests {
                 crate::builtin_resolved::EvalSource::StaticLiteral(value) if value == "1 + 2"
             ));
         }
+    }
+
+    #[test]
+    fn resolver_marks_unshadowed_static_function_constructor_call_for_compiler_expansion() {
+        let builtins = parse_resolve_builtins("let value = Function(\"return 1\");");
+        let crate::ResolvedStmt::Let(_, crate::ResolvedExpr::Call { callee, args, .. }) =
+            &builtins[0]
+        else {
+            panic!("expected resolver-marked Function constructor call: {builtins:?}");
+        };
+        assert!(matches!(
+            callee.as_ref(),
+            crate::ResolvedExpr::Ident(name)
+                if name == crate::name_resolver::INTRINSIC_FUNCTION_CONSTRUCTOR_CALL
+        ));
+        assert!(
+            matches!(args.as_slice(), [crate::ResolvedExpr::String(value)] if value == "return 1")
+        );
+    }
+
+    #[test]
+    fn resolver_marks_unshadowed_static_new_function_constructor_for_compiler_expansion() {
+        let builtins = parse_resolve_builtins("let value = new Function(\"return 1\");");
+        let crate::ResolvedStmt::Let(
+            _,
+            crate::ResolvedExpr::New {
+                class_name, args, ..
+            },
+        ) = &builtins[0]
+        else {
+            panic!("expected resolver-marked new Function constructor: {builtins:?}");
+        };
+        assert_eq!(
+            class_name,
+            crate::name_resolver::INTRINSIC_FUNCTION_CONSTRUCTOR_NEW
+        );
+        assert!(
+            matches!(args.as_slice(), [crate::ResolvedExpr::String(value)] if value == "return 1")
+        );
     }
 
     #[test]
