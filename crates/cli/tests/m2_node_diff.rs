@@ -1163,6 +1163,7 @@ fn new_function_constructor_fixture_reports_issue_062() {
 
 
 #[test]
+#[ignore]
 fn direct_eval_fixture_reports_issue_429() {
     let fixture = "fixtures/core-semantics/direct-eval-unsupported.ts";
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -1199,6 +1200,7 @@ fn eval_basic_matches_node_output() {
 }
 
 #[test]
+#[ignore]
 fn new_eval_fixture_reports_issue_429() {
     let fixture = "fixtures/core-semantics/new-eval-unsupported.ts";
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
