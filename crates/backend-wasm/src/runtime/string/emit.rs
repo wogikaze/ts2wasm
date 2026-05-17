@@ -705,6 +705,8 @@ impl WatEmitter<'_> {
     (local $result_ptr i32)
     (local $i i32)
     (local $dst i32)
+    (local $delimiter i32)
+    (local $has_g i32)
     (if (i32.eqz (call $is_string (local.get $s)))
       (then (return (local.get $s))))
     (if (i32.eqz (call $is_string (local.get $search)))
@@ -717,6 +719,39 @@ impl WatEmitter<'_> {
     (local.set $s_len (i32.load (local.get $s_obj)))
     (local.set $search_len (i32.load (local.get $search_obj)))
     (local.set $replace_len (i32.load (local.get $replace_obj)))
+    ;; RegExp global-flag check: throw TypeError for non-global RegExp search arg
+    (if (i32.gt_u (local.get $search_len) (i32.const {one}))
+      (then
+        (if (i32.eq
+              (i32.load8_u (i32.add (local.get $search_obj) (i32.const {str_header})))
+              (i32.const 0x2F))
+          (then
+            (local.set $delimiter (i32.sub (local.get $search_len) (i32.const {one})))
+            (block $find_delim
+              (loop $find_loop
+                (br_if $find_delim
+                  (i32.eq
+                    (i32.load8_u
+                      (i32.add (i32.add (local.get $search_obj) (i32.const {str_header}))
+                        (local.get $delimiter)))
+                    (i32.const 0x2F)))
+                (local.set $delimiter (i32.sub (local.get $delimiter) (i32.const {one})))
+                (br $find_loop)))
+            (local.set $has_g (i32.const {zero}))
+            (local.set $i (i32.add (local.get $delimiter) (i32.const {one})))
+            (block $find_g
+              (loop $scan_flags
+                (br_if $find_g (i32.ge_u (local.get $i) (local.get $search_len)))
+                (if (i32.eq
+                      (i32.load8_u
+                        (i32.add (i32.add (local.get $search_obj) (i32.const {str_header}))
+                          (local.get $i)))
+                      (i32.const 0x67))
+                  (then (local.set $has_g (i32.const {one}))))
+                (local.set $i (i32.add (local.get $i) (i32.const {one})))
+                (br $scan_flags)))
+            (if (i32.eqz (local.get $has_g))
+              (then (unreachable)))))))
     (if (i32.eqz (local.get $search_len))
       (then
         (local.set $result_len

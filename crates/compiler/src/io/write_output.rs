@@ -38,10 +38,12 @@ fn wat_to_binary(wat: &str) -> Result<Vec<u8>, Diagnostic> {
                 std::env::temp_dir().join(format!("ts2wasm-{}-{}.wat", std::process::id(), unique));
             let _ = fs::write(&temp_wat, wat);
             WAT2WASM_FALLBACK_COUNT.fetch_add(1, Ordering::Relaxed);
+            let temp_wasm =
+                std::env::temp_dir().join(format!("ts2wasm-{}-{}.wasm", std::process::id(), unique));
             let result = Command::new("wat2wasm")
                 .arg(&temp_wat)
                 .arg("-o")
-                .arg("-")
+                .arg(&temp_wasm)
                 .output()
                 .map_err(|error| Diagnostic {
                     code: DiagCode::BackendIo,
@@ -52,9 +54,13 @@ fn wat_to_binary(wat: &str) -> Result<Vec<u8>, Diagnostic> {
                     phase: None,
                 });
             let output = result?;
-            let _ = fs::remove_file(&temp_wat);
-            if output.status.success() {
-                Ok(output.stdout)
+            let wasm_bytes = if output.status.success() {
+                fs::read(&temp_wasm).map_err(|error| Diagnostic {
+                    code: DiagCode::BackendIo,
+                    message: format!("wat2wasm fallback: failed to read output: {error}"),
+                    span: None,
+                    phase: None,
+                })
             } else {
                 Err(Diagnostic {
                     code: DiagCode::BackendIo,
@@ -66,7 +72,10 @@ fn wat_to_binary(wat: &str) -> Result<Vec<u8>, Diagnostic> {
                     span: None,
                     phase: None,
                 })
-            }
+            }?;
+            let _ = fs::remove_file(&temp_wat);
+            let _ = fs::remove_file(&temp_wasm);
+            Ok(wasm_bytes)
         }
     }
 }
