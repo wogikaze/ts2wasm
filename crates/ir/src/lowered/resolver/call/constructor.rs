@@ -1,5 +1,6 @@
-use crate::builtin_resolved::ResolvedExpr;
+use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 use crate::lowered::*;
+use crate::lowered::facts::ProxyTrapKind;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 
@@ -25,6 +26,22 @@ impl super::super::Resolver {
                 .cloned()
                 .collect::<Vec<_>>();
             return self.lower_new_with_prototype(&bound.class_name, &combined_args, span);
+        }
+        // Proxy construct trap: new proxy(args) → handler.construct(target, args, proxy)
+        if let Ok(local_id) = self.resolve_local(class_name)
+            && let Some(binding) = self.ctx.facts.proxy_locals.get(&local_id)
+        {
+            let args_array = ResolvedExpr::Array(
+                args.iter()
+                    .map(|a| ResolvedArrayElement::Present(a.clone()))
+                    .collect(),
+            );
+            let construct_args = vec![
+                args_array,
+                ResolvedExpr::Ident(class_name.to_owned()),
+            ];
+            let pb = binding.clone();
+            return self.lower_proxy_trap_call(pb, ProxyTrapKind::ProxyConstruct, construct_args, span);
         }
         if class_name == "RegExp" {
             return self.lower_regexp_constructor(args);
