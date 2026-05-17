@@ -1930,6 +1930,28 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 };
             }
 
+            // Intl sub-APIs: produce explicit unsupported diagnostics for
+            // unimplemented sub-APIs, allow implemented ones to pass through.
+            if let Expr::Ident { name, .. } = object.as_ref()
+                && name == "Intl"
+            {
+                let property_str = property.as_str();
+                match property_str {
+                    "NumberFormat" | "DateTimeFormat" | "DurationFormat" | "ListFormat" => {}
+                    _ => {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedBuiltin,
+                            message: format!(
+                                "issue-436: Intl.{} is not implemented",
+                                property
+                            ),
+                            span: span_of_expr(expr),
+                            phase: None,
+                        });
+                    }
+                }
+            }
+
             // Temporal and ShadowRealm: produce explicit unsupported diagnostic
             // instead of falling through to UnresolvedName.
             if let Expr::Ident { name, .. } = object.as_ref() {
@@ -1998,6 +2020,24 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                         span: Some(*span),
                         phase: None,
                     });
+                }
+                // Intl sub-APIs: optional member access
+                if name == "Intl" {
+                    let property_str = property.as_str();
+                    match property_str {
+                        "NumberFormat" | "DateTimeFormat" | "DurationFormat" | "ListFormat" => {}
+                        _ => {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedBuiltin,
+                                message: format!(
+                                    "issue-436: Intl.{} is not implemented",
+                                    property
+                                ),
+                                span: Some(*span),
+                                phase: None,
+                            });
+                        }
+                    }
                 }
             }
             Ok(ResolvedExpr::OptionalPropertyAccess {
