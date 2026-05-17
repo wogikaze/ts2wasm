@@ -3247,9 +3247,19 @@ impl super::super::Resolver {
             if method == "valueOf" {
                 return Ok(Some(receiver));
             }
+            let mut bi_args = vec![receiver];
+            bi_args.extend(
+                args.iter()
+                    .take(1)
+                    .map(|e| self.lower_expr(e))
+                    .collect::<Result<Vec<_>, _>>()?,
+            );
+            if bi_args.len() == 1 {
+                bi_args.push(LoweredExpr::Undefined(Span::generated("radix")));
+            }
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::BigIntToString,
-                args: vec![receiver],
+                args: bi_args,
                 span: Span::generated("runtime_call"),
             }));
         }
@@ -3702,9 +3712,19 @@ impl super::super::Resolver {
                 if self.ctx.facts.bigint_locals.contains(&obj_local) {
                     match method {
                         "toString" | "toLocaleString" => {
+                            let mut bi_args = vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
+                            bi_args.extend(
+                                args.iter()
+                                    .take(1)
+                                    .map(|e| self.lower_expr(e))
+                                    .collect::<Result<Vec<_>, _>>()?,
+                            );
+                            if bi_args.len() == 1 {
+                                bi_args.push(LoweredExpr::Undefined(Span::generated("radix")));
+                            }
                             return Ok(LoweredExpr::RuntimeCall {
                                 intrinsic: RuntimeFn::BigIntToString,
-                                args: vec![LoweredExpr::Local(obj_local, Span::generated("local"))],
+                                args: bi_args,
                                 span: Span::generated("runtime_call"),
                             });
                         }
@@ -3798,9 +3818,19 @@ impl super::super::Resolver {
         if class_name == "BigInt" {
             match method {
                 "toString" | "toLocaleString" => {
+                    let mut bi_args = vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
+                    bi_args.extend(
+                        args.iter()
+                            .take(1)
+                            .map(|e| self.lower_expr(e))
+                            .collect::<Result<Vec<_>, _>>()?,
+                    );
+                    if bi_args.len() == 1 {
+                        bi_args.push(LoweredExpr::Undefined(Span::generated("radix")));
+                    }
                     return Ok(LoweredExpr::RuntimeCall {
                         intrinsic: RuntimeFn::BigIntToString,
-                        args: vec![LoweredExpr::Local(obj_local, Span::generated("local"))],
+                        args: bi_args,
                         span: Span::generated("runtime_call"),
                     });
                 }
