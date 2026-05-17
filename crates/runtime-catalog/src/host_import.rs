@@ -97,6 +97,8 @@ pub enum HostImport {
     ReflectConstruct,
     GetIterator,
     IteratorNext,
+    EvalDirect,
+    EvalIndirect,
 }
 
 impl HostImport {
