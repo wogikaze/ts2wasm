@@ -260,17 +260,59 @@ impl super::Resolver {
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
-        let [source] = args else {
+        let (source, map_fn, _this_arg) = match args {
+            [source] => (source, None, None),
+            [source, map_fn] => (source, Some(map_fn), None),
+            [source, map_fn, this_arg] => (source, Some(map_fn), Some(this_arg)),
+            _ => {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-313: Array.from currently supports at most 3 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+        };
+
+        if let Some(map_fn) = map_fn {
+            if crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, source) {
+                if let ResolvedExpr::Array(elements) = source {
+                    return self.lower_array_map_elements(source, elements, args, span);
+                }
+            }
+            // Runtime source with general mapFn: use existing shortcuts where possible
+            if crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, source) {
+                if is_identity_arrow_callback(std::slice::from_ref(map_fn)) {
+                    return Ok(LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::ArrayMapArrayLikeIdentity,
+                        args: vec![self.lower_expr(source)?],
+                        span: Span::generated("runtime_call"),
+                    });
+                }
+                if is_number_double_arrow_callback(std::slice::from_ref(map_fn)) {
+                    return Ok(LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::ArrayMapArrayLikeDouble,
+                        args: vec![self.lower_expr(source)?],
+                        span: Span::generated("runtime_call"),
+                    });
+                }
+            }
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "issue-313: Array.from currently supports exactly one source argument"
-                    .to_owned(),
+                message:
+                    "issue-313: Array.from with a general mapFn callback is not supported in this milestone for runtime-known sources"
+                        .to_owned(),
                 span: Some(span),
 
                 phase: None,
             });
-        };
+        }
 
+        // No mapFn, single source: copy elements (existing behavior)
         if crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, source) {
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::ArrayMapArrayLikeIdentity,

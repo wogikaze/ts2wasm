@@ -1,4 +1,4 @@
-use super::super::program_builtins::{is_typed_array_class, looks_like_regexp_literal};
+use super::super::program_builtins::is_typed_array_class;
 use super::super::{
     is_invalid_date_constructor_expr, is_set_prototype_property_expr,
     is_static_copy_safe_object_prop_value, string_constructor_arrow_callback,

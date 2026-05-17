@@ -1724,6 +1724,11 @@ fn array_from_matches_node() {
 }
 
 #[test]
+fn array_from_multi_arg_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-from-multi-arg.ts");
+}
+
+#[test]
 fn array_join_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/array-join.ts");
 }
