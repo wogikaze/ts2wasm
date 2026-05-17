@@ -654,7 +654,13 @@ impl super::super::Resolver {
                 phase: None,});
         }
 
-        let lowered = self.lower_named_function_expr(name, params, body, is_generator)?;
+        let lowered = self.lower_named_function_expr(
+            name,
+            params,
+            body,
+            is_generator,
+            ts2wasm_syntax::FunctionExprOrigin::User,
+        )?;
         let LoweredExpr::ArrowFn {
             func_id, captures, ..
         } = lowered

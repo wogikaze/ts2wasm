@@ -239,7 +239,15 @@ fn try_expand_function_constructor(args: &[Expr], span: Span, strict_mode: bool)
     let stmts = parser.parse_program().ok()?;
     for stmt in stmts {
         if let Stmt::Function { name, params, body, is_generator, .. } = stmt {
-            return Some(Expr::FunctionExpr { name, params, body, is_generator, span, source_text: function_source });
+            return Some(Expr::FunctionExpr {
+                name,
+                params,
+                body,
+                is_generator,
+                origin: ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor,
+                span,
+                source_text: function_source,
+            });
         }
     }
     None

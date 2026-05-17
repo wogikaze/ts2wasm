@@ -887,7 +887,13 @@ impl super::Resolver {
                 }
                 let LoweredExpr::ArrowFn {
                     func_id, captures, ..
-                } = self.lower_named_function_expr(name, params, body, false)?
+                } = self.lower_named_function_expr(
+                    name,
+                    params,
+                    body,
+                    false,
+                    ts2wasm_syntax::FunctionExprOrigin::User,
+                )?
                 else {
                     return Err(unsupported_array_map_diagnostic(Some(span)));
                 };

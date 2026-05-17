@@ -753,6 +753,7 @@ impl BigIntStaticBuiltinFolder {
                 params,
                 body,
                 is_generator,
+                origin,
                 span,
                 source_text,
             } => Expr::FunctionExpr {
@@ -760,6 +761,7 @@ impl BigIntStaticBuiltinFolder {
                 params: params.clone(),
                 body: BigIntStaticBuiltinFolder::default().fold_stmts(body),
                 is_generator: *is_generator,
+                origin: *origin,
                 span: *span,
                 source_text: source_text.clone(),
             },
@@ -2243,11 +2245,13 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             params,
             body,
             is_generator,
+            origin,
             source_text,
             ..
         } => Ok(ResolvedExpr::FunctionExpr {
             name: name.clone(),
             is_generator: *is_generator,
+            origin: *origin,
             params: params
                 .iter()
                 .map(|(param_name, default, is_rest)| {

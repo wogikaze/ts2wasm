@@ -7,6 +7,15 @@ use crate::lowered::facts::ArrowClosure;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
+use ts2wasm_syntax::FunctionExprOrigin;
+
+#[derive(Clone, Copy, Default)]
+struct NestedFunctionOptions {
+    force_receiver: bool,
+    is_generator: bool,
+    is_async: bool,
+    suppress_captures: bool,
+}
 
 impl super::Resolver {
     pub(super) fn lower_arrow_fn(
@@ -306,8 +315,18 @@ impl super::Resolver {
         params: &[ResolvedParam],
         body: &[ResolvedStmt],
         is_generator: bool,
+        origin: FunctionExprOrigin,
     ) -> Result<LoweredExpr, Diagnostic> {
-        self.lower_nested_function_with_receiver(name, params, body, false, is_generator, false)
+        self.lower_nested_function_with_receiver(
+            name,
+            params,
+            body,
+            NestedFunctionOptions {
+                is_generator,
+                suppress_captures: origin == FunctionExprOrigin::FunctionConstructor,
+                ..NestedFunctionOptions::default()
+            },
+        )
     }
 
     pub(super) fn lower_object_method_function_expr(
@@ -317,7 +336,16 @@ impl super::Resolver {
         body: &[ResolvedStmt],
         is_generator: bool,
     ) -> Result<LoweredExpr, Diagnostic> {
-        self.lower_nested_function_with_receiver(name, params, body, true, is_generator, false)
+        self.lower_nested_function_with_receiver(
+            name,
+            params,
+            body,
+            NestedFunctionOptions {
+                force_receiver: true,
+                is_generator,
+                ..NestedFunctionOptions::default()
+            },
+        )
     }
 
     pub(super) fn arrow_capture_names_with_excluded(
@@ -400,9 +428,7 @@ impl super::Resolver {
         name: &str,
         params: &[ResolvedParam],
         body: &[ResolvedStmt],
-        force_receiver: bool,
-        is_generator: bool,
-        is_async: bool,
+        options: NestedFunctionOptions,
     ) -> Result<LoweredExpr, Diagnostic> {
         if params.iter().any(|param| param.is_rest) {
             return Err(Diagnostic {
@@ -419,7 +445,7 @@ impl super::Resolver {
             if block_contains_arguments(body) && !block_contains_this(body) {
                 // `arguments` is handled by needs_arguments in the function signature;
                 // the function already inserts the signature unconditionally below.
-            } else if force_receiver {
+            } else if options.force_receiver {
                 // Object literal method shorthand has an implicit receiver.
             } else if block_contains_this(body) && params.iter().any(|p| p.name == "this") {
                 // Explicit `this` parameter: this is a receiver function, not a closure issue.
@@ -447,7 +473,11 @@ impl super::Resolver {
             }
         }
 
-        let capture_names = self.nested_function_capture_names(name, params, body)?;
+        let capture_names = if options.suppress_captures {
+            Vec::new()
+        } else {
+            self.nested_function_capture_names(name, params, body)?
+        };
         let mutable_captures = capture_names
             .iter()
             .filter(|capture| {
@@ -488,7 +518,7 @@ impl super::Resolver {
 
         let func_id = FuncId(self.ctx.functions.next_func_id);
         self.ctx.functions.next_func_id += 1;
-        let self_closure = (!name.is_empty())
+        let self_closure = (!options.suppress_captures && !name.is_empty())
             .then_some(SelfClosureOptions {
                 name,
                 func_id,
@@ -497,7 +527,7 @@ impl super::Resolver {
             })
             .filter(|_| !self.ctx.facts.env_cell_names.contains(name));
 
-        let needs_receiver = force_receiver || block_contains_super_ref(body);
+        let needs_receiver = options.force_receiver || block_contains_super_ref(body);
         self.ctx.symbols.function_signatures.insert(
             func_id,
             FunctionSignature {
@@ -540,8 +570,8 @@ impl super::Resolver {
             func_id,
             &lowered_params,
             body,
-            is_generator,
-            is_async,
+            options.is_generator,
+            options.is_async,
             &self.ctx.symbols.function_ids,
             &function_signatures,
             &function_captures,

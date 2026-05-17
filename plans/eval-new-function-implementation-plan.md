@@ -66,7 +66,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | indirect eval dynamic | `(0, eval)(src)` | `host.eval.indirect` manifest / host-deny slice は実装済み。node-shim 実行 pass は未完 | `host.eval.indirect` capability |
 | optional eval | `eval?.("x")` | parser diagnostic | indirect-like call semantics として classification |
 | `new eval` | `new eval("x")` | unsupported / TypeError 境界が未整理 | eval is not constructor の TypeError parity |
-| literal `Function` | `Function("a", "return a")` | parser synthetic `FunctionExpr` slice | resolver-owned static `FunctionConstructorPlan` |
+| literal `Function` | `Function("a", "return a")` | parser synthetic `FunctionExpr` slice; caller-local non-capture is guarded for supported `typeof` bodies | resolver-owned static `FunctionConstructorPlan` |
 | literal `new Function` | `new Function("a", "return a")` | parser synthetic `FunctionExpr` slice | generated function object + metadata |
 | dynamic `Function` | `new Function(body)` | 未完成 | `host.function.compile` + host function handle |
 | shadowed `eval` / `Function` | `let eval = f; eval("x")` | resolver が shadowed eval を ordinary call として保持し、parser は shadowing risk のある Function rewrite を避ける | ordinary user binding semantics |

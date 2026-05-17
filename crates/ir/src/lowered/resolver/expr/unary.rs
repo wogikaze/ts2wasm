@@ -48,6 +48,26 @@ impl super::super::Resolver {
         if *op == UnaryOp::Delete {
             return self.lower_delete_expr(expr);
         }
+        if *op == UnaryOp::TypeOf {
+            let lowered = match self.lower_expr(expr) {
+                Ok(expr) => expr,
+                Err(err)
+                    if matches!(expr, ResolvedExpr::Ident(_))
+                        && err.code == DiagCode::UnresolvedName =>
+                {
+                    return Ok(LoweredExpr::String(
+                        "undefined".to_owned(),
+                        Span::generated("typeof_undeclared"),
+                    ));
+                }
+                Err(err) => return Err(err),
+            };
+            return Ok(LoweredExpr::Unary {
+                op: lower_unary_op(*op)?,
+                expr: Box::new(lowered),
+                span: Span::generated("unary"),
+            });
+        }
         Ok(LoweredExpr::Unary {
             op: lower_unary_op(*op)?,
             expr: Box::new(self.lower_expr(expr)?),

@@ -1144,42 +1144,19 @@ fn json_parse_latin1_unicode_escape_matches_node_output() {
 
 #[test]
 fn function_constructor_call_fixture_builds_static_constructor() {
-    let fixture = "fixtures/core-semantics/function-constructor-call-static.ts";
-    let p = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../..")
-        .join(fixture);
-    let o = temp_wasm_path(fixture);
-    let b = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&p)
-        .arg("-o")
-        .arg(&o)
-        .output()
-        .unwrap();
-    assert!(
-        b.status.success(),
-        "Function constructor should build (compile-time expand)"
+    assert_fixture_matches_node("fixtures/core-semantics/function-constructor-call-static.ts");
+}
+
+#[test]
+fn function_constructor_does_not_capture_caller_scope() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/function-constructor-no-caller-capture.ts",
     );
 }
 
 #[test]
 fn new_function_constructor_fixture_builds_static_constructor() {
-    let fixture = "fixtures/core-semantics/new-function-constructor-static.ts";
-    let p = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../..")
-        .join(fixture);
-    let o = temp_wasm_path(fixture);
-    let b = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&p)
-        .arg("-o")
-        .arg(&o)
-        .output()
-        .unwrap();
-    assert!(
-        b.status.success(),
-        "new Function constructor should build (compile-time expand)"
-    );
+    assert_fixture_matches_node("fixtures/core-semantics/new-function-constructor-static.ts");
 }
 
 #[test]

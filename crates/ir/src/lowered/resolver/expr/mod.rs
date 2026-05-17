@@ -178,8 +178,9 @@ impl super::Resolver {
                 params,
                 body,
                 is_generator,
+                origin,
                 ..
-            } => self.lower_named_function_expr(name, params, body, *is_generator),
+            } => self.lower_named_function_expr(name, params, body, *is_generator, *origin),
             ResolvedExpr::ClassExpr { .. } => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
             ResolvedExpr::Sequence(exprs) => self.lower_sequence_expr(exprs),
             ResolvedExpr::Eval { kind, source, .. } => {

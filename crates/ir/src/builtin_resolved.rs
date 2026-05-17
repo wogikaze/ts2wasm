@@ -1,5 +1,5 @@
 use ts2wasm_source::Span;
-use ts2wasm_syntax::{BinaryOp, LogicalAssignOp, UnaryOp};
+use ts2wasm_syntax::{BinaryOp, FunctionExprOrigin, LogicalAssignOp, UnaryOp};
 
 use super::builtin::{BuiltinId, BuiltinPropertyId};
 use crate::binding_pattern::BindingPattern;
@@ -284,6 +284,7 @@ pub enum ResolvedExpr {
         params: Vec<ResolvedParam>,
         body: Vec<ResolvedStmt>,
         is_generator: bool,
+        origin: FunctionExprOrigin,
         source_text: String,
     },
     ClassExpr {

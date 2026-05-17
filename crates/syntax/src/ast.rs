@@ -48,6 +48,12 @@ pub enum UnaryOp {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FunctionExprOrigin {
+    User,
+    FunctionConstructor,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LogicalAssignOp {
     And,
     Or,
@@ -555,6 +561,7 @@ pub enum Expr {
         params: Vec<(String, Option<Expr>, bool)>,
         body: Vec<Stmt>,
         is_generator: bool,
+        origin: FunctionExprOrigin,
         span: Span,
         source_text: String,
     },

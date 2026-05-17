@@ -2386,6 +2386,7 @@ impl Parser {
                     params,
                     body,
                     is_generator: false,
+                    origin: ts2wasm_syntax::FunctionExprOrigin::User,
                     span: Span {
                         start: accessor_start,
                         end,
@@ -2400,6 +2401,7 @@ impl Parser {
                     params,
                     body,
                     is_generator: false,
+                    origin: ts2wasm_syntax::FunctionExprOrigin::User,
                     span: Span {
                         start: accessor_start,
                         end,
@@ -2482,6 +2484,7 @@ impl Parser {
             params,
             body,
             is_generator,
+            origin: ts2wasm_syntax::FunctionExprOrigin::User,
             span: Span {
                 start: method_start,
                 end,
@@ -2534,6 +2537,7 @@ impl Parser {
                 params,
                 body: Vec::new(),
                 is_generator,
+                origin: ts2wasm_syntax::FunctionExprOrigin::User,
                 span: Span {
                     start: start.start,
                     end,
@@ -2554,6 +2558,7 @@ impl Parser {
             params,
             body,
             is_generator,
+            origin: ts2wasm_syntax::FunctionExprOrigin::User,
             span: Span {
                 start: start.start,
                 end,

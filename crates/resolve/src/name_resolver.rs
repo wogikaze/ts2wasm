@@ -970,6 +970,7 @@ impl NameResolver {
                 params,
                 body,
                 is_generator,
+                origin,
                 span,
                 source_text,
             } => {
@@ -1006,6 +1007,7 @@ impl NameResolver {
                     params: params.clone(),
                     body: resolved_body,
                     is_generator: *is_generator,
+                    origin: *origin,
                     span: *span,
                     source_text: source_text.clone(),
                 })
