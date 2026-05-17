@@ -220,6 +220,15 @@ let binding = self.parse_binding_pattern()?;
                 if matches!(self.peek(), Some(Token::Comma)) {
                     return Err(self.invalid_rest_binding_diagnostic(rest_span));
                 }
+                // Rest binding must not have an initializer (e.g., [...x = 1])
+                if self.consume(TokenKind::Equal) {
+                    return Err(Diagnostic {
+                        code: DiagCode::SyntaxError,
+                        message: "A rest binding cannot have an initializer.".to_owned(),
+                        span: Some(rest_span),
+                        phase: Some("parser"),
+                    });
+                }
                 format!("...{}", pattern.text)
             } else {
                 let pattern = self.parse_binding_pattern()?;
