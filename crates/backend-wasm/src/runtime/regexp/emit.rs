@@ -36,6 +36,40 @@ impl WatEmitter<'_> {
                 (i32.ge_u (local.get $byte) (i32.const 0x61))
                 (i32.le_u (local.get $byte) (i32.const 0x7A)))
               (i32.eq (local.get $byte) (i32.const 0x5F))))))))
+    (if (i32.eq (local.get $kind) (i32.const 5))
+      (then (return
+        (i32.eqz
+          (i32.and
+            (i32.ge_u (local.get $byte) (i32.const 0x30))
+            (i32.le_u (local.get $byte) (i32.const 0x39)))))))
+    (if (i32.eq (local.get $kind) (i32.const 6))
+      (then (return
+        (i32.eqz
+          (i32.or
+            (i32.and
+              (i32.ge_u (local.get $byte) (i32.const 0x30))
+              (i32.le_u (local.get $byte) (i32.const 0x39)))
+            (i32.or
+              (i32.and
+                (i32.ge_u (local.get $byte) (i32.const 0x41))
+                (i32.le_u (local.get $byte) (i32.const 0x5A)))
+              (i32.or
+                (i32.and
+                  (i32.ge_u (local.get $byte) (i32.const 0x61))
+                  (i32.le_u (local.get $byte) (i32.const 0x7A)))
+                (i32.eq (local.get $byte) (i32.const 0x5F)))))))))
+    (if (i32.eq (local.get $kind) (i32.const 7))
+      (then (return
+        (i32.eqz
+          (i32.or
+            (i32.eq (local.get $byte) (i32.const 0x20))
+            (i32.or
+              (i32.eq (local.get $byte) (i32.const 0x09))
+              (i32.or
+                (i32.eq (local.get $byte) (i32.const 0x0A))
+                (i32.or
+                  (i32.eq (local.get $byte) (i32.const 0x0D))
+                  (i32.eq (local.get $byte) (i32.const 0x0C)))))))))))
     (return
       (i32.or
         (i32.eq (local.get $byte) (i32.const 0x20))
@@ -45,7 +79,7 @@ impl WatEmitter<'_> {
             (i32.eq (local.get $byte) (i32.const 0x0A))
             (i32.or
               (i32.eq (local.get $byte) (i32.const 0x0D))
-              (i32.eq (local.get $byte) (i32.const 0x0C))))))))
+              (i32.eq (local.get $byte) (i32.const 0x0C)))))))))
 "#,
         );
     }
@@ -163,13 +197,60 @@ impl WatEmitter<'_> {
                         (i32.add (local.get $p_header) (local.get $p))))
                     (local.set $p (i32.add (local.get $p) (i32.const {one})))
                     (if (i32.eq (local.get $ch) (i32.const 0x64))
-                      (then (local.set $kind (i32.const 2)))
+                      (then (local.set $kind (i32.const 2))
+                            (local.set $lit_val (i32.const 0)))
                       (else
-                        (if (i32.eq (local.get $ch) (i32.const 0x77))
-                          (then (local.set $kind (i32.const 3)))
+                        (if (i32.eq (local.get $ch) (i32.const 0x44))
+                          (then (local.set $kind (i32.const 5))
+                                (local.set $lit_val (i32.const 0)))
                           (else
-                            (local.set $kind (i32.const 4))))))
-                    (local.set $lit_val (i32.const 0)))
+                            (if (i32.eq (local.get $ch) (i32.const 0x77))
+                              (then (local.set $kind (i32.const 3))
+                                    (local.set $lit_val (i32.const 0)))
+                              (else
+                                (if (i32.eq (local.get $ch) (i32.const 0x57))
+                                  (then (local.set $kind (i32.const 6))
+                                        (local.set $lit_val (i32.const 0)))
+                                  (else
+                                    (if (i32.eq (local.get $ch) (i32.const 0x73))
+                                      (then (local.set $kind (i32.const 4))
+                                            (local.set $lit_val (i32.const 0)))
+                                      (else
+                                        (if (i32.eq (local.get $ch) (i32.const 0x53))
+                                          (then (local.set $kind (i32.const 7))
+                                                (local.set $lit_val (i32.const 0)))
+                                          (else
+                                            (if (i32.eq (local.get $ch) (i32.const 0x6E))
+                                              (then (local.set $kind (i32.const 0))
+                                                    (local.set $lit_val (i32.const 0x0A)))
+                                              (else
+                                                (if (i32.eq (local.get $ch) (i32.const 0x74))
+                                                  (then (local.set $kind (i32.const 0))
+                                                        (local.set $lit_val (i32.const 0x09)))
+                                                  (else
+                                                    (if (i32.eq (local.get $ch) (i32.const 0x72))
+                                                      (then (local.set $kind (i32.const 0))
+                                                            (local.set $lit_val (i32.const 0x0D)))
+                                                      (else
+                                                        (if (i32.eq (local.get $ch) (i32.const 0x66))
+                                                          (then (local.set $kind (i32.const 0))
+                                                                (local.set $lit_val (i32.const 0x0C)))
+                                                          (else
+                                                            (if (i32.eq (local.get $ch) (i32.const 0x76))
+                                                              (then (local.set $kind (i32.const 0))
+                                                                    (local.set $lit_val (i32.const 0x0B)))
+                                                              (else
+                                                                (if (i32.eq (local.get $ch) (i32.const 0x62))
+                                                                  (then (local.set $kind (i32.const 8))
+                                                                        (local.set $lit_val (i32.const 0)))
+                                                                  (else
+                                                                    (if (i32.eq (local.get $ch) (i32.const 0x42))
+                                                                      (then (local.set $kind (i32.const 9))
+                                                                            (local.set $lit_val (i32.const 0)))
+                                                                      (else
+                                                                        (local.set $kind (i32.const 0))
+                                                                        (local.set $lit_val (local.get $ch))))))))))))))))))))))))))))
+                    )
                   (else
                     (local.set $kind (i32.const 0))
                     (local.set $lit_val (local.get $ch))))))
@@ -376,13 +457,60 @@ impl WatEmitter<'_> {
                         (i32.add (local.get $p_header) (local.get $p))))
                     (local.set $p (i32.add (local.get $p) (i32.const {one})))
                     (if (i32.eq (local.get $ch) (i32.const 0x64))
-                      (then (local.set $kind (i32.const 2)))
+                      (then (local.set $kind (i32.const 2))
+                            (local.set $lit_val (i32.const 0)))
                       (else
-                        (if (i32.eq (local.get $ch) (i32.const 0x77))
-                          (then (local.set $kind (i32.const 3)))
+                        (if (i32.eq (local.get $ch) (i32.const 0x44))
+                          (then (local.set $kind (i32.const 5))
+                                (local.set $lit_val (i32.const 0)))
                           (else
-                            (local.set $kind (i32.const 4))))))
-                    (local.set $lit_val (i32.const 0)))
+                            (if (i32.eq (local.get $ch) (i32.const 0x77))
+                              (then (local.set $kind (i32.const 3))
+                                    (local.set $lit_val (i32.const 0)))
+                              (else
+                                (if (i32.eq (local.get $ch) (i32.const 0x57))
+                                  (then (local.set $kind (i32.const 6))
+                                        (local.set $lit_val (i32.const 0)))
+                                  (else
+                                    (if (i32.eq (local.get $ch) (i32.const 0x73))
+                                      (then (local.set $kind (i32.const 4))
+                                            (local.set $lit_val (i32.const 0)))
+                                      (else
+                                        (if (i32.eq (local.get $ch) (i32.const 0x53))
+                                          (then (local.set $kind (i32.const 7))
+                                                (local.set $lit_val (i32.const 0)))
+                                          (else
+                                            (if (i32.eq (local.get $ch) (i32.const 0x6E))
+                                              (then (local.set $kind (i32.const 0))
+                                                    (local.set $lit_val (i32.const 0x0A)))
+                                              (else
+                                                (if (i32.eq (local.get $ch) (i32.const 0x74))
+                                                  (then (local.set $kind (i32.const 0))
+                                                        (local.set $lit_val (i32.const 0x09)))
+                                                  (else
+                                                    (if (i32.eq (local.get $ch) (i32.const 0x72))
+                                                      (then (local.set $kind (i32.const 0))
+                                                            (local.set $lit_val (i32.const 0x0D)))
+                                                      (else
+                                                        (if (i32.eq (local.get $ch) (i32.const 0x66))
+                                                          (then (local.set $kind (i32.const 0))
+                                                                (local.set $lit_val (i32.const 0x0C)))
+                                                          (else
+                                                            (if (i32.eq (local.get $ch) (i32.const 0x76))
+                                                              (then (local.set $kind (i32.const 0))
+                                                                    (local.set $lit_val (i32.const 0x0B)))
+                                                              (else
+                                                                (if (i32.eq (local.get $ch) (i32.const 0x62))
+                                                                  (then (local.set $kind (i32.const 8))
+                                                                        (local.set $lit_val (i32.const 0)))
+                                                                  (else
+                                                                    (if (i32.eq (local.get $ch) (i32.const 0x42))
+                                                                      (then (local.set $kind (i32.const 9))
+                                                                            (local.set $lit_val (i32.const 0)))
+                                                                      (else
+                                                                        (local.set $kind (i32.const 0))
+                                                                        (local.set $lit_val (local.get $ch))))))))))))))))))))))))))))
+                    )
                   (else
                     (local.set $kind (i32.const 0))
                     (local.set $lit_val (local.get $ch))))))
@@ -602,13 +730,60 @@ impl WatEmitter<'_> {
                         (i32.add (local.get $p_header) (local.get $p))))
                     (local.set $p (i32.add (local.get $p) (i32.const {one})))
                     (if (i32.eq (local.get $ch) (i32.const 0x64))
-                      (then (local.set $kind (i32.const 2)))
+                      (then (local.set $kind (i32.const 2))
+                            (local.set $lit_val (i32.const 0)))
                       (else
-                        (if (i32.eq (local.get $ch) (i32.const 0x77))
-                          (then (local.set $kind (i32.const 3)))
+                        (if (i32.eq (local.get $ch) (i32.const 0x44))
+                          (then (local.set $kind (i32.const 5))
+                                (local.set $lit_val (i32.const 0)))
                           (else
-                            (local.set $kind (i32.const 4))))))
-                    (local.set $lit_val (i32.const 0)))
+                            (if (i32.eq (local.get $ch) (i32.const 0x77))
+                              (then (local.set $kind (i32.const 3))
+                                    (local.set $lit_val (i32.const 0)))
+                              (else
+                                (if (i32.eq (local.get $ch) (i32.const 0x57))
+                                  (then (local.set $kind (i32.const 6))
+                                        (local.set $lit_val (i32.const 0)))
+                                  (else
+                                    (if (i32.eq (local.get $ch) (i32.const 0x73))
+                                      (then (local.set $kind (i32.const 4))
+                                            (local.set $lit_val (i32.const 0)))
+                                      (else
+                                        (if (i32.eq (local.get $ch) (i32.const 0x53))
+                                          (then (local.set $kind (i32.const 7))
+                                                (local.set $lit_val (i32.const 0)))
+                                          (else
+                                            (if (i32.eq (local.get $ch) (i32.const 0x6E))
+                                              (then (local.set $kind (i32.const 0))
+                                                    (local.set $lit_val (i32.const 0x0A)))
+                                              (else
+                                                (if (i32.eq (local.get $ch) (i32.const 0x74))
+                                                  (then (local.set $kind (i32.const 0))
+                                                        (local.set $lit_val (i32.const 0x09)))
+                                                  (else
+                                                    (if (i32.eq (local.get $ch) (i32.const 0x72))
+                                                      (then (local.set $kind (i32.const 0))
+                                                            (local.set $lit_val (i32.const 0x0D)))
+                                                      (else
+                                                        (if (i32.eq (local.get $ch) (i32.const 0x66))
+                                                          (then (local.set $kind (i32.const 0))
+                                                                (local.set $lit_val (i32.const 0x0C)))
+                                                          (else
+                                                            (if (i32.eq (local.get $ch) (i32.const 0x76))
+                                                              (then (local.set $kind (i32.const 0))
+                                                                    (local.set $lit_val (i32.const 0x0B)))
+                                                              (else
+                                                                (if (i32.eq (local.get $ch) (i32.const 0x62))
+                                                                  (then (local.set $kind (i32.const 8))
+                                                                        (local.set $lit_val (i32.const 0)))
+                                                                  (else
+                                                                    (if (i32.eq (local.get $ch) (i32.const 0x42))
+                                                                      (then (local.set $kind (i32.const 9))
+                                                                            (local.set $lit_val (i32.const 0)))
+                                                                      (else
+                                                                        (local.set $kind (i32.const 0))
+                                                                        (local.set $lit_val (local.get $ch))))))))))))))))))))))))))))
+                    )
                   (else
                     (local.set $kind (i32.const 0))
                     (local.set $lit_val (local.get $ch))))))
@@ -825,13 +1000,60 @@ impl WatEmitter<'_> {
                         (i32.add (local.get $p_header) (local.get $p))))
                     (local.set $p (i32.add (local.get $p) (i32.const {one})))
                     (if (i32.eq (local.get $ch) (i32.const 0x64))
-                      (then (local.set $kind (i32.const 2)))
+                      (then (local.set $kind (i32.const 2))
+                            (local.set $lit_val (i32.const 0)))
                       (else
-                        (if (i32.eq (local.get $ch) (i32.const 0x77))
-                          (then (local.set $kind (i32.const 3)))
+                        (if (i32.eq (local.get $ch) (i32.const 0x44))
+                          (then (local.set $kind (i32.const 5))
+                                (local.set $lit_val (i32.const 0)))
                           (else
-                            (local.set $kind (i32.const 4))))))
-                    (local.set $lit_val (i32.const 0)))
+                            (if (i32.eq (local.get $ch) (i32.const 0x77))
+                              (then (local.set $kind (i32.const 3))
+                                    (local.set $lit_val (i32.const 0)))
+                              (else
+                                (if (i32.eq (local.get $ch) (i32.const 0x57))
+                                  (then (local.set $kind (i32.const 6))
+                                        (local.set $lit_val (i32.const 0)))
+                                  (else
+                                    (if (i32.eq (local.get $ch) (i32.const 0x73))
+                                      (then (local.set $kind (i32.const 4))
+                                            (local.set $lit_val (i32.const 0)))
+                                      (else
+                                        (if (i32.eq (local.get $ch) (i32.const 0x53))
+                                          (then (local.set $kind (i32.const 7))
+                                                (local.set $lit_val (i32.const 0)))
+                                          (else
+                                            (if (i32.eq (local.get $ch) (i32.const 0x6E))
+                                              (then (local.set $kind (i32.const 0))
+                                                    (local.set $lit_val (i32.const 0x0A)))
+                                              (else
+                                                (if (i32.eq (local.get $ch) (i32.const 0x74))
+                                                  (then (local.set $kind (i32.const 0))
+                                                        (local.set $lit_val (i32.const 0x09)))
+                                                  (else
+                                                    (if (i32.eq (local.get $ch) (i32.const 0x72))
+                                                      (then (local.set $kind (i32.const 0))
+                                                            (local.set $lit_val (i32.const 0x0D)))
+                                                      (else
+                                                        (if (i32.eq (local.get $ch) (i32.const 0x66))
+                                                          (then (local.set $kind (i32.const 0))
+                                                                (local.set $lit_val (i32.const 0x0C)))
+                                                          (else
+                                                            (if (i32.eq (local.get $ch) (i32.const 0x76))
+                                                              (then (local.set $kind (i32.const 0))
+                                                                    (local.set $lit_val (i32.const 0x0B)))
+                                                              (else
+                                                                (if (i32.eq (local.get $ch) (i32.const 0x62))
+                                                                  (then (local.set $kind (i32.const 8))
+                                                                        (local.set $lit_val (i32.const 0)))
+                                                                  (else
+                                                                    (if (i32.eq (local.get $ch) (i32.const 0x42))
+                                                                      (then (local.set $kind (i32.const 9))
+                                                                            (local.set $lit_val (i32.const 0)))
+                                                                      (else
+                                                                        (local.set $kind (i32.const 0))
+                                                                        (local.set $lit_val (local.get $ch))))))))))))))))))))))))))))
+                    )
                   (else
                     (local.set $kind (i32.const 0))
                     (local.set $lit_val (local.get $ch))))))
