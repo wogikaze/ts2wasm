@@ -82,17 +82,34 @@ impl super::super::Resolver {
                     span: Span::generated("runtime_call"),
                 });
             }
-            if args.len() != 1 {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: if args.len() > 1 {
-                        "issue-5243: multi-argument new Date(year, month, ...) is not supported in this slice".to_string()
-                    } else {
-                        "issue-5243: Date constructor requires an epoch-millisecond number, not a string or expression".to_string()
-                    },
-                    span: None,
-
-                    phase: None,
+            if args.len() > 1 {
+                // new Date(year, month, date, hours, minutes, seconds, ms)
+                let mut date_args: Vec<LoweredExpr> = Vec::with_capacity(7);
+                for arg in args.iter().take(7) {
+                    date_args.push(LoweredExpr::Unary {
+                        op: LoweredUnaryOp::Plus,
+                        expr: Box::new(self.lower_expr(arg)?),
+                        span: Span::generated("date_ctor_coerce"),
+                    });
+                }
+                // Pad missing args: month=0, date=1, hours=0, minutes=0, seconds=0, ms=0
+                while date_args.len() < 2 {
+                    date_args.push(LoweredExpr::Number(0, Span::generated("date_ctor_default")));
+                }
+                while date_args.len() < 3 {
+                    date_args.push(LoweredExpr::Number(1, Span::generated("date_ctor_default")));
+                }
+                while date_args.len() < 7 {
+                    date_args.push(LoweredExpr::Number(0, Span::generated("date_ctor_default")));
+                }
+                return Ok(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::DateNew,
+                    args: vec![LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::DateUTC,
+                        args: date_args,
+                        span: Span::generated("runtime_call"),
+                    }],
+                    span: Span::generated("runtime_call"),
                 });
             }
             let epoch_ms = &args[0];
