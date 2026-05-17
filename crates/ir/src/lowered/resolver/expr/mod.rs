@@ -188,16 +188,12 @@ impl super::Resolver {
                 ..
             } => {
                 // Emit a runtime call for eval — the host shim handles execution.
-                let source_expr = match &source {
-                    crate::builtin_resolved::EvalSource::StaticLiteral(s) => {
-                        LoweredExpr::String(s.clone(), Span::generated("eval"))
-                    }
-                    crate::builtin_resolved::EvalSource::Runtime(_source_expr) => {
-                        // Dynamic eval source — emit RuntimeCall for host shim.
-                        // For now, just pass undefined as the source value;
-                        // the host shim will eventually decode the actual value.
-                        LoweredExpr::Undefined(Span::generated("eval"))
-                    }
+                let source_expr = if let crate::builtin_resolved::EvalSource::StaticLiteral(s) = &source {
+                    LoweredExpr::String(s.clone(), Span::generated("eval"))
+                } else if let crate::builtin_resolved::EvalSource::Runtime(source_expr) = &source {
+                    self.lower_expr(source_expr)?
+                } else {
+                    LoweredExpr::Undefined(Span::generated("eval"))
                 };
                 Ok(LoweredExpr::RuntimeCall {
                     intrinsic: RuntimeFn::EvalDirectHost,
