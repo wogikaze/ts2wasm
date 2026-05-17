@@ -458,7 +458,41 @@ impl WatEmitter<'_> {
     (local.set $sep_obj (i32.and (local.get $sep) (i32.const {heap_mask})))
     (local.set $s_len (i32.load (local.get $s_obj)))
     (local.set $sep_len (i32.load (local.get $sep_obj)))
-    (if (i32.eqz (local.get $sep_len)) (then (return (i32.const {undefined}))))
+    (if (i32.eqz (local.get $sep_len))
+      (then
+        ;; Empty separator: split into individual bytes
+        (local.set $count (local.get $s_len))
+        (local.set $result_ptr
+          (call $alloc_heap
+            (i32.add (i32.const {array_header})
+              (i32.shl (local.get $count) (i32.const {elem_shift})))))
+        (i32.store (local.get $result_ptr) (local.get $count))
+        (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $count))
+        (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+        (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+        (i32.store
+          (i32.add (local.get $result_ptr) (i32.const 16))
+          (i32.sub (i32.shl (i32.const 1) (local.get $count)) (i32.const 1)))
+        (local.set $i (i32.const {zero}))
+        (block $empty_sep_done
+          (loop $empty_sep_loop
+            (br_if $empty_sep_done (i32.ge_u (local.get $i) (local.get $s_len)))
+            (local.set $part_ptr
+              (call $alloc_heap (i32.add (i32.const {str_header}) (i32.const 1))))
+            (i32.store (local.get $part_ptr) (i32.const 1))
+            (i32.store8
+              (i32.add (local.get $part_ptr) (i32.const {str_header}))
+              (i32.load8_u
+                (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $i))))
+            (local.set $part_value (i32.or (local.get $part_ptr) (i32.const {string_tag})))
+            (i32.store
+              (i32.add (local.get $result_ptr)
+                (i32.add (i32.const {array_header})
+                  (i32.shl (local.get $i) (i32.const {elem_shift}))))
+              (local.get $part_value))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $empty_sep_loop)))
+        (return (i32.or (local.get $result_ptr) (i32.const {array_tag})))))
     ;; First pass: count splits (count occurrences of sep + 1)
     (local.set $count (i32.const {one}))
     (local.set $i (i32.const {zero}))
