@@ -125,6 +125,8 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "isSealed" => Some(RuntimeFn::ObjectIsSealed),
                 "isFrozen" => Some(RuntimeFn::ObjectIsFrozen),
                 "defineProperty" => Some(RuntimeFn::ObjectDefineProperty),
+                "defineProperties" => Some(RuntimeFn::ObjectDefineProperties),
+                "getOwnPropertyDescriptors" => Some(RuntimeFn::ObjectGetOwnPropertyDescriptors),
                 "assign" => Some(RuntimeFn::ObjectAssign),
                 "create" => Some(RuntimeFn::ObjectCreate),
                 "is" => Some(RuntimeFn::ObjectIs),
@@ -201,6 +203,7 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "compareExchange" => Some(RuntimeFn::AtomicsCompareExchange),
                 "isLockFree" => Some(RuntimeFn::AtomicsIsLockFree),
                 "wait" => Some(RuntimeFn::AtomicsWait),
+                "waitAsync" => Some(RuntimeFn::AtomicsWaitAsync),
                 "notify" => Some(RuntimeFn::AtomicsNotify),
                 _ => None,
             };

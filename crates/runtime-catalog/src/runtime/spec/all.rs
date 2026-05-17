@@ -1224,7 +1224,7 @@ match self {
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
-                result: RuntimeResult::EffectOnly,
+                result: RuntimeResult::Value,
             },
             Self::IteratorNext => RuntimeSpec {
                 symbol: "$iterator_next",
@@ -1232,7 +1232,15 @@ match self {
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
-                result: RuntimeResult::EffectOnly,
+                result: RuntimeResult::Value,
+            },
+            Self::IteratorFrom => RuntimeSpec {
+                symbol: "$iterator_from",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
             },
             Self::GeneratorYield => RuntimeSpec {
                 symbol: "$generator_yield",
@@ -2043,6 +2051,22 @@ match self {
             Self::ObjectDefineProperty => RuntimeSpec {
                 symbol: "$object_define_property",
                 deps: OBJECT_DEFINE_PROPERTY_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ObjectDefineProperties => RuntimeSpec {
+                symbol: "$object_define_properties",
+                deps: OBJECT_DEFINE_PROPERTIES_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ObjectGetOwnPropertyDescriptors => RuntimeSpec {
+                symbol: "$object_get_own_property_descriptors",
+                deps: OBJECT_GET_OWN_PROPERTY_DESCRIPTORS_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3182,6 +3206,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::AtomicsWaitAsync => RuntimeSpec {
+                symbol: "$atomics_wait_async",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::AtomicsNotify => RuntimeSpec {
                 symbol: "$atomics_notify",
                 deps: ATOMICS_VALUE_DEPS,
@@ -3457,6 +3489,14 @@ match self {
             },
             Self::PrivateBrandCheck => RuntimeSpec {
                 symbol: "$pseudo_private_brand_check",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            _ => RuntimeSpec {
+                symbol: "$unimplemented",
                 deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,

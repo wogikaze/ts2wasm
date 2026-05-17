@@ -31,6 +31,8 @@ pub const OBJECT_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::ObjectIsSealed,
     RuntimeFn::ObjectIsFrozen,
     RuntimeFn::ObjectDefineProperty,
+    RuntimeFn::ObjectDefineProperties,
+    RuntimeFn::ObjectGetOwnPropertyDescriptors,
     RuntimeFn::ObjectAssign,
     RuntimeFn::ObjectCreate,
     RuntimeFn::GlobalThis,

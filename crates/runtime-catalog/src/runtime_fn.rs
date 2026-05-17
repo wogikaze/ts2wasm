@@ -150,6 +150,8 @@ pub enum RuntimeFn {
     AtomicsCompareExchange,
     AtomicsIsLockFree,
     AtomicsWait,
+    /// Atomics.waitAsync(typedArray, index, value) — non-threaded stub returns tagged zero.
+    AtomicsWaitAsync,
     AtomicsNotify,
     SetFromArray,
     SetValuesArray,
@@ -450,6 +452,10 @@ pub enum RuntimeFn {
     ObjectIsFrozen,
     /// Object.defineProperty(obj, prop, descriptor)
     ObjectDefineProperty,
+    /// Object.defineProperties(obj, props) — defines properties from a descriptors object
+    ObjectDefineProperties,
+    /// Object.getOwnPropertyDescriptors(obj) — returns own property descriptors as an object
+    ObjectGetOwnPropertyDescriptors,
     /// Object.assign(target, ...sources) — copies own enumerable properties
     ObjectAssign,
     /// Object.create(proto, propertiesObject)
@@ -635,6 +641,9 @@ pub enum RuntimeFn {
     /// ECMAScript IteratorNext(iterator) — calls iterator.next() and returns
     /// the result object { value, done }.
     IteratorNext,
+    /// ECMAScript Iterator.from(iterable) — wraps GetIterator as a static method
+    /// on the Iterator constructor.
+    IteratorFrom,
     /// GeneratorYield(values) — creates a generator state object from collected yield values.
     GeneratorYield,
     /// GeneratorReturn(value) — creates a completed generator result object.
@@ -1263,6 +1272,18 @@ const OBJECT_DEFINE_PROPERTY_DEPS: &[RuntimeFn] = &[
     RuntimeFn::PropertyGet,
     RuntimeFn::PropertySet,
 ];
+const OBJECT_DEFINE_PROPERTIES_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ObjectKeys,
+    RuntimeFn::PropertyGet,
+    RuntimeFn::ObjectDefineProperty,
+];
+const OBJECT_GET_OWN_PROPERTY_DESCRIPTORS_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ReflectOwnKeys,
+    RuntimeFn::ObjectGetOwnPropertyDescriptor,
+    RuntimeFn::AllocHeap,
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::PropertySet,
+];
 const OBJECT_ASSIGN_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ObjectKeys,
     RuntimeFn::PropertyGet,
@@ -1468,6 +1489,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ObjectIsSealed" => Some(RuntimeFn::ObjectIsSealed),
         "ObjectIsFrozen" => Some(RuntimeFn::ObjectIsFrozen),
         "ObjectDefineProperty" => Some(RuntimeFn::ObjectDefineProperty),
+        "ObjectDefineProperties" => Some(RuntimeFn::ObjectDefineProperties),
+        "ObjectGetOwnPropertyDescriptors" => Some(RuntimeFn::ObjectGetOwnPropertyDescriptors),
         "ReflectDefineProperty" => Some(RuntimeFn::ReflectDefineProperty),
         "ReflectDeleteProperty" => Some(RuntimeFn::ReflectDeleteProperty),
         "ReflectGet" => Some(RuntimeFn::ReflectGet),
@@ -1608,6 +1631,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "AtomicsCompareExchange" => Some(RuntimeFn::AtomicsCompareExchange),
         "AtomicsIsLockFree" => Some(RuntimeFn::AtomicsIsLockFree),
         "AtomicsWait" => Some(RuntimeFn::AtomicsWait),
+        "AtomicsWaitAsync" => Some(RuntimeFn::AtomicsWaitAsync),
         "AtomicsNotify" => Some(RuntimeFn::AtomicsNotify),
         "ArrayBufferNew" => Some(RuntimeFn::ArrayBufferNew),
         "ArrayBufferIsView" => Some(RuntimeFn::ArrayBufferIsView),
@@ -1718,6 +1742,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "Dollar262Eval" => Some(RuntimeFn::Dollar262Eval),
         "GetIterator" => Some(RuntimeFn::GetIterator),
         "IteratorNext" => Some(RuntimeFn::IteratorNext),
+        "IteratorFrom" => Some(RuntimeFn::IteratorFrom),
         "GeneratorYield" => Some(RuntimeFn::GeneratorYield),
         "GeneratorReturn" => Some(RuntimeFn::GeneratorReturn),
         "GeneratorNext" => Some(RuntimeFn::GeneratorNext),
@@ -1992,6 +2017,7 @@ impl RuntimeFn {
             | Self::Dollar262Eval => RuntimeDomain::Host,
             Self::GetIterator
             | Self::IteratorNext
+            | Self::IteratorFrom
             | Self::GeneratorYield
             | Self::GeneratorReturn
             | Self::GeneratorNext => RuntimeDomain::Iterator,
@@ -2112,6 +2138,8 @@ impl RuntimeFn {
             | Self::ObjectIsSealed
             | Self::ObjectIsFrozen
             | Self::ObjectDefineProperty
+            | Self::ObjectDefineProperties
+            | Self::ObjectGetOwnPropertyDescriptors
             | Self::ObjectAssign
             | Self::ObjectCreate
             | Self::ObjectPrototype
@@ -2250,6 +2278,7 @@ impl RuntimeFn {
             | Self::AtomicsCompareExchange
             | Self::AtomicsIsLockFree
             | Self::AtomicsWait
+            | Self::AtomicsWaitAsync
             | Self::AtomicsNotify
             | Self::DataViewNew
             | Self::DataViewGetInt8
@@ -2409,6 +2438,7 @@ impl RuntimeFn {
             | Self::AtomicsOr
             | Self::AtomicsXor
             | Self::AtomicsExchange
+            | Self::AtomicsWaitAsync
             | Self::AtomicsNotify
             | Self::JsonStringify
             | Self::TypedArraySet
@@ -2600,6 +2630,7 @@ impl RuntimeFn {
             Self::AtomicsCompareExchange,
             Self::AtomicsIsLockFree,
             Self::AtomicsWait,
+            Self::AtomicsWaitAsync,
             Self::AtomicsNotify,
             Self::SetFromArray,
             Self::SetValuesArray,
@@ -2899,6 +2930,7 @@ impl RuntimeFn {
             Self::DecodeURIComponent,
             Self::GetIterator,
             Self::IteratorNext,
+            Self::IteratorFrom,
             Self::GeneratorYield,
             Self::GeneratorReturn,
             Self::GeneratorNext,
@@ -3060,6 +3092,7 @@ impl RuntimeFn {
             Self::AtomicsCompareExchange,
             Self::AtomicsIsLockFree,
             Self::AtomicsWait,
+            Self::AtomicsWaitAsync,
             Self::AtomicsNotify,
             Self::SetFromArray,
             Self::SetValuesArray,
@@ -3357,6 +3390,7 @@ impl RuntimeFn {
             Self::EncodeURIComponent,
             Self::GetIterator,
             Self::IteratorNext,
+            Self::IteratorFrom,
             Self::GeneratorYield,
             Self::GeneratorReturn,
             Self::GeneratorNext,

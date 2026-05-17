@@ -95,6 +95,8 @@ pub enum HostImport {
     IntlDateTimeFormatFormat,
     ReflectApply,
     ReflectConstruct,
+    GetIterator,
+    IteratorNext,
 }
 
 impl HostImport {
@@ -485,6 +487,22 @@ impl HostImport {
                 params: "param i32 i32",
                 result: "result i32",
             },
+            Self::GetIterator => HostImportSpec {
+                module: "host",
+                name: "getIterator",
+                wat_symbol: "$host_get_iterator",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
+            Self::IteratorNext => HostImportSpec {
+                module: "host",
+                name: "iteratorNext",
+                wat_symbol: "$host_iterator_next",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
         }
     }
 
@@ -541,6 +559,8 @@ impl HostImport {
             Self::IntlDateTimeFormatFormat => "host.intlDateTimeFormatFormat",
             Self::ReflectApply => "host.reflectApply",
             Self::ReflectConstruct => "host.reflectConstruct",
+            Self::GetIterator => "host.getIterator",
+            Self::IteratorNext => "host.iteratorNext",
         }
     }
 }

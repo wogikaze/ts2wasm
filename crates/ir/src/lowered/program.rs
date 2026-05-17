@@ -1593,6 +1593,7 @@ pub(crate) fn collect_nested_function_captures_in_expr(
         | ResolvedExpr::Bool(_)
         | ResolvedExpr::Null
         | ResolvedExpr::Undefined => {}
+        | ResolvedExpr::Eval { .. } => {}
     }
     Ok(())
 }
@@ -1817,6 +1818,7 @@ fn collect_direct_function_call_targets_in_expr(expr: &ResolvedExpr, targets: &m
         | ResolvedExpr::ImportMeta { .. }
         | ResolvedExpr::Ident(_)
         | ResolvedExpr::ModuleLoad { .. } => {}
+        | ResolvedExpr::Eval { .. } => {}
     }
 }
 
@@ -2240,6 +2242,7 @@ fn collect_expr_nested_function_mutable_captures(
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
         | ResolvedExpr::Null
+        | ResolvedExpr::Eval { .. } => {}
         | ResolvedExpr::Undefined => {}
     }
     Ok(())
@@ -2471,6 +2474,7 @@ fn collect_expr_object_method_mutable_captures(
         | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Eval { .. } => {}
         | ResolvedExpr::Null
         | ResolvedExpr::Undefined => {}
     }
@@ -3502,6 +3506,7 @@ fn collect_call_targets_in_expr(expr: &ResolvedExpr, targets: &mut HashSet<Strin
         | ResolvedExpr::Undefined
         | ResolvedExpr::ModuleLoad { .. }
         | ResolvedExpr::ClassExpr { .. } => {}
+        | ResolvedExpr::Eval { .. } => {}
     }
 }
 
@@ -3772,6 +3777,7 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
         | ResolvedExpr::DecimalNumber(_)
         | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
+        | ResolvedExpr::Eval { .. } => false,
         | ResolvedExpr::Bool(_)
         | ResolvedExpr::Null
         | ResolvedExpr::Undefined
@@ -4010,6 +4016,7 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         | ResolvedExpr::Number(_)
         | ResolvedExpr::DecimalNumber(_)
         | ResolvedExpr::BigIntLiteral { .. }
+        | ResolvedExpr::Eval { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
         | ResolvedExpr::Null

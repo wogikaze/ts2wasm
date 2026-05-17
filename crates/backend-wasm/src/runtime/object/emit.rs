@@ -972,4 +972,123 @@ impl WatEmitter<'_> {
 "#,
         );
     }
+
+    pub(crate) fn emit_object_define_properties(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_define_properties (param $obj i32) (param $props i32) (result i32)
+    (local $keys i32)
+    (local $keys_tag i32)
+    (local $keys_base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $key_raw i32)
+    (local $key_base i32)
+    (local $key_ptr i32)
+    (local $key_len i32)
+    (local $descriptor i32)
+    (local.set $keys (call $object_keys (local.get $props)))
+    (local.set $keys_tag (i32.and (local.get $keys) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $keys_tag) (i32.const {array_tag}))
+      (then (return (local.get $obj))))
+    (local.set $keys_base (i32.and (local.get $keys) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $keys_base)))
+    (local.set $i (i32.const {zero}))
+    (block $done
+      (loop $loop
+        (br_if $done (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $key_raw
+          (i32.load
+            (i32.add (local.get $keys_base)
+              (i32.add (i32.const {array_header})
+                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        (local.set $key_base (i32.and (local.get $key_raw) (i32.const {heap_mask})))
+        (local.set $key_ptr (i32.add (local.get $key_base) (i32.const {str_header})))
+        (local.set $key_len (i32.load (local.get $key_base)))
+        (local.set $descriptor
+          (call $property_get (local.get $props) (local.get $key_ptr) (local.get $key_len)))
+        (drop
+          (call $object_define_property (local.get $obj) (local.get $key_raw) (local.get $descriptor)))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $loop)))
+    (local.get $obj))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            str_header = Layout::STRING_HEADER_SIZE,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+        ));
+    }
+
+    pub(crate) fn emit_object_get_own_property_descriptors(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_get_own_property_descriptors (param $obj i32) (result i32)
+    (local $keys i32)
+    (local $keys_tag i32)
+    (local $keys_base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $key_raw i32)
+    (local $key_len i32)
+    (local $descriptor i32)
+    (local $result_obj i32)
+    (local $proto i32)
+    (local.set $keys (call $reflect_own_keys (local.get $obj)))
+    (local.set $keys_tag (i32.and (local.get $keys) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $keys_tag) (i32.const {array_tag}))
+      (then (return (call $object_create (i32.const {null})))))
+    (local.set $keys_base (i32.and (local.get $keys) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $keys_base)))
+    (local.set $result_obj
+      (call $alloc_heap
+        (i32.add
+          (i32.const {obj_header})
+          (i32.shl (local.get $count) (i32.const {entry_shift})))))
+    (i32.store (local.get $result_obj) (local.get $count))
+    (i32.store (i32.add (local.get $result_obj) (i32.const {obj_flags})) (i32.const {zero}))
+    (local.set $proto (i32.and (call $object_prototype) (i32.const {heap_mask})))
+    (i32.store (i32.add (local.get $result_obj) (i32.const {obj_proto})) (local.get $proto))
+    (local.set $i (i32.const {zero}))
+    (block $done
+      (loop $loop
+        (br_if $done (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $key_raw
+          (i32.load
+            (i32.add (local.get $keys_base)
+              (i32.add (i32.const {array_header})
+                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        (local.set $descriptor
+          (call $object_get_own_property_descriptor (local.get $obj) (local.get $key_raw)))
+        (local.set $key_len (call $value_to_string_into (local.get $key_raw) (i32.const {scratch_offset})))
+        (drop
+          (call $property_set
+            (i32.or (local.get $result_obj) (i32.const {object_tag}))
+            (i32.const {scratch_offset})
+            (local.get $key_len)
+            (local.get $descriptor)))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $loop)))
+    (i32.or (local.get $result_obj) (i32.const {object_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            scratch_offset = Layout::SCRATCH_OFFSET,
+            object_tag = ValueTag::OBJECT,
+            null = ValueTag::NULL,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+        ));
+    }
 }
