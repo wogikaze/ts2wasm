@@ -3723,6 +3723,34 @@ impl super::super::Resolver {
                         span: Span::generated("runtime_call"),
                     });
                 }
+                // Generic fallback: route known method names through
+                // resolve_method_to_runtime_fn for methods that have defined
+                // runtime functions (e.g., String methods like "substr").
+                // This allows untyped/ambient receivers to call instance methods
+                // that the runtime already supports.
+                if let Some(intrinsic) = resolve_method_to_runtime_fn(
+                    &ResolvedExpr::Ident(receiver_name.to_string()),
+                    method,
+                ) {
+                    let mut lowered_args =
+                        vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
+                    lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<Result<
+                        Vec<_>,
+                        _,
+                    >>(
+                    )?);
+                    return Ok(LoweredExpr::RuntimeCall {
+                        intrinsic,
+                        args: lowered_args,
+                        span: Span::generated("runtime_call"),
+                    });
+                }
+
+                // RegExp.prototype.compile — emit known-unsupported diagnostic
+                if method == "compile" {
+                    return Err(unsupported_regexp_compile_diagnostic(Some(span)));
+                }
+
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: format!(
