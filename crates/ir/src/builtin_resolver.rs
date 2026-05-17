@@ -1781,7 +1781,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             })
         }
         Expr::Call { callee, args, span } => {
-            // Detect unshadowed direct eval(...) calls — produce Eval IR.
+            // Detect unshadowed direct eval(...) calls — expand static literals or produce Eval IR.
             if let Expr::Ident { name, .. } = callee.as_ref()
                 && name == "eval"
             {

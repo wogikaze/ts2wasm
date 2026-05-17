@@ -1,4 +1,5 @@
 pub mod builtin_resolve;
+pub mod eval_expand;
 pub mod emit;
 pub mod lower;
 pub mod lowered_validate;
