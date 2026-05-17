@@ -2987,14 +2987,16 @@ impl super::super::Resolver {
             || method == "flatMap")
             && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
             && !args.is_empty()
-            && matches!(
-                &args[0],
+            && match &args[0] {
                 ResolvedExpr::ArrowFn { .. }
-                    | ResolvedExpr::FunctionExpr {
-                        is_generator: false,
-                        ..
-                    }
-            )
+                | ResolvedExpr::FunctionExpr {
+                    is_generator: false, ..
+                } => true,
+                ResolvedExpr::Ident(name) => {
+                    self.ctx.symbols.function_ids.contains_key(name.as_str())
+                }
+                _ => false,
+            }
         {
             let lowered_receiver = self.lower_expr(object)?;
             return Ok(Some(self.lower_array_callback_method(

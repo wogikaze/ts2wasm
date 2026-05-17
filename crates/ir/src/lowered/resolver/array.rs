@@ -851,6 +851,30 @@ impl super::Resolver {
                 };
                 (func_id, captures, params.len())
             }
+            ResolvedExpr::Ident(name) => {
+                let func_id = self
+                    .ctx
+                    .symbols
+                    .function_ids
+                    .get(name.as_str())
+                    .copied()
+                    .ok_or_else(|| Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-270: function `{name}` is not a known function reference"
+                        ),
+                        span: Some(span),
+                        phase: None,
+                    })?;
+                let param_count = self
+                    .ctx
+                    .symbols
+                    .function_signatures
+                    .get(&func_id)
+                    .map(|sig| sig.explicit_params)
+                    .unwrap_or(0);
+                (func_id, vec![], param_count)
+            }
             _ => {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
