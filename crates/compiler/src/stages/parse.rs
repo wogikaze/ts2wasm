@@ -4,16 +4,35 @@ use std::path::Path;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_frontend::{Lexer, Parser};
 use ts2wasm_source::Span;
-use ts2wasm_syntax::{SpannedToken, Stmt, Token};
+use ts2wasm_syntax::{Expr, SpannedToken, Stmt, Token};
 
 pub fn parse_program(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
     let tokens = Lexer::new(source).tokenize()?;
     Parser::new(tokens, source).parse_program()
 }
 
+/// Check if the program's directive prologue contains `"use strict"`.
+fn has_use_strict_directive(program: &[Stmt]) -> bool {
+    for stmt in program {
+        match stmt {
+            Stmt::Expr { expr, .. } => match expr {
+                Expr::String { value, .. } => {
+                    if value == "use strict" {
+                        return true;
+                    }
+                }
+                _ => break,
+            },
+            _ => break,
+        }
+    }
+    false
+}
+
 pub(crate) fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
     let mut top_functions = HashMap::new();
     let mut top_scope = HashMap::new();
+    let strict_mode = has_use_strict_directive(program);
 
     for stmt in program {
         match stmt {
@@ -40,14 +59,18 @@ pub(crate) fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
                 }
                 if body.is_empty() {
                 } else if top_functions.contains_key(name) {
-                    return Err(Diagnostic {
-                        code: DiagCode::DuplicateFunction,
-                        message: format!(
-                            "duplicate function definition: `{name}` (TS2300: duplicate identifier)"
-                        ),
-                        span: Some(*span),
-                        phase: None,
-                    });
+                    // Strict mode: duplicate function declarations are Early Error.
+                    // Non-strict mode: allowed (web compat, last definition wins).
+                    if strict_mode {
+                        return Err(Diagnostic {
+                            code: DiagCode::DuplicateFunction,
+                            message: format!(
+                                "duplicate function definition: `{name}` (TS2300: duplicate identifier)"
+                            ),
+                            span: Some(*span),
+                            phase: None,
+                        });
+                    }
                 } else {
                     top_functions.insert(name.clone(), ());
                     validate_block(body)?;

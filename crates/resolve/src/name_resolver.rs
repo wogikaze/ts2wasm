@@ -188,9 +188,32 @@ impl NameResolver {
     }
 
     fn resolve_program(&mut self, program: &[Stmt]) -> Result<Vec<Stmt>, Diagnostic> {
+        // Check if the program's directive prologue contains `"use strict"`.
+        // Only the initial sequence of string expression statements counts (ES spec §14.1.1).
+        let strict_mode = {
+            let mut found = false;
+            for stmt in program {
+                match stmt {
+                    Stmt::Expr { expr, .. } => match expr {
+                        Expr::String { value, .. } => {
+                            if value == "use strict" {
+                                found = true;
+                                break;
+                            }
+                        }
+                        _ => break,
+                    },
+                    _ => break,
+                }
+            }
+            found
+        };
+
         // First pass: collect body-ful function declarations (hoisting).
         // Bodyless function declarations are TypeScript overload signatures.
         // Only concrete (body-ful) duplicates are rejected.
+        // In strict mode, duplicate function declarations are Early Error.
+        // In non-strict mode, they are allowed (web compat, last definition wins).
         for stmt in program {
             if let Stmt::Function {
                 name,
@@ -199,7 +222,7 @@ impl NameResolver {
                 ..
             } = stmt
             {
-                if self.functions.contains_key(name) && !overload_signature {
+                if self.functions.contains_key(name) && !overload_signature && strict_mode {
                     return Err(Diagnostic {
                         code: DiagCode::DuplicateFunction,
                         message: format!("duplicate function definition: `{name}`"),

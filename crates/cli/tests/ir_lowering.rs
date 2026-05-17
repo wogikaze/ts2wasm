@@ -872,10 +872,19 @@ fn lowering_rejects_unresolved_name() {
 }
 
 #[test]
-fn lowering_rejects_duplicate_function() {
-    let program = parse_and_resolve("function f() { return 1; } function f() { return 2; }");
+fn lowering_rejects_duplicate_function_in_strict_mode() {
+    // Strict mode (via "use strict" directive) rejects duplicate function declarations.
+    let program =
+        parse_and_resolve("\"use strict\"; function f() { return 1; } function f() { return 2; }");
     let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
     assert_eq!(err.code, DiagCode::DuplicateFunction);
+}
+
+#[test]
+fn lowering_accepts_duplicate_function_in_non_strict_mode() {
+    // Non-strict mode allows duplicate function declarations (web compat, ES spec).
+    let program = parse_and_resolve("function f() { return 1; } function f() { return 2; }");
+    assert!(ts2wasm_ir::lowered::lower_program(&program).is_ok());
 }
 
 #[test]

@@ -32,7 +32,7 @@ pub fn lower_program_with_module_url(
 ) -> Result<LoweredProgram, Diagnostic> {
     let module_url = module_url.into();
     let program_is_strict = block_has_use_strict_directive(program);
-    let function_ids = collect_function_ids(program)?;
+    let function_ids = collect_function_ids(program, program_is_strict)?;
     let generator_function_names = collect_generator_function_names(program);
     let generator_function_yields = collect_generator_function_yields(program);
     let (generator_function_steps, generator_function_completion_steps) =
@@ -540,7 +540,10 @@ pub(crate) struct FunctionLowering {
     pub(crate) next_func_id: usize,
 }
 
-fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, FuncId>, Diagnostic> {
+fn collect_function_ids(
+    program: &[ResolvedStmt],
+    program_is_strict: bool,
+) -> Result<HashMap<String, FuncId>, Diagnostic> {
     let mut function_ids = HashMap::new();
     let mut next_func_id = 0;
 
@@ -559,8 +562,9 @@ fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, Func
             ResolvedStmt::Function { name, body, .. } => {
                 if function_ids.contains_key(name.as_str()) {
                     // Allow bodyless overloads to reuse an existing name.
-                    // Only body-ful (concrete function body) duplicates are errors.
-                    if !body.is_empty() {
+                    // Only body-ful (concrete function body) duplicates are errors,
+                    // and only in strict mode (ES spec §14.1.1).
+                    if !body.is_empty() && program_is_strict {
                         return Err(Diagnostic {
                             code: DiagCode::DuplicateFunction,
                             message: format!("duplicate function definition: `{name}`"),
@@ -1825,7 +1829,7 @@ fn collect_callback_function_mutable_captures(
         return Ok(mutable_captures);
     }
 
-    let function_ids = collect_function_ids(program).unwrap_or_default();
+    let function_ids = collect_function_ids(program, false).unwrap_or_default();
     for stmt in program {
         let ResolvedStmt::Function { name, body, .. } = stmt else {
             continue;
