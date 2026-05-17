@@ -647,6 +647,16 @@ pub enum RuntimeFn {
     /// ECMAScript Iterator.from(iterable) — wraps GetIterator as a static method
     /// on the Iterator constructor.
     IteratorFrom,
+    IteratorMap,
+    IteratorFilter,
+    IteratorTake,
+    IteratorDrop,
+    IteratorToArray,
+    IteratorReduce,
+    IteratorForEach,
+    IteratorSome,
+    IteratorEvery,
+    IteratorFind,
     /// GeneratorYield(values) — creates a generator state object from collected yield values.
     GeneratorYield,
     /// GeneratorReturn(value) — creates a completed generator result object.
@@ -1753,6 +1763,16 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "GetIterator" => Some(RuntimeFn::GetIterator),
         "IteratorNext" => Some(RuntimeFn::IteratorNext),
         "IteratorFrom" => Some(RuntimeFn::IteratorFrom),
+        "IteratorFind" => Some(RuntimeFn::IteratorFind),
+        "IteratorEvery" => Some(RuntimeFn::IteratorEvery),
+        "IteratorSome" => Some(RuntimeFn::IteratorSome),
+        "IteratorForEach" => Some(RuntimeFn::IteratorForEach),
+        "IteratorReduce" => Some(RuntimeFn::IteratorReduce),
+        "IteratorToArray" => Some(RuntimeFn::IteratorToArray),
+        "IteratorDrop" => Some(RuntimeFn::IteratorDrop),
+        "IteratorTake" => Some(RuntimeFn::IteratorTake),
+        "IteratorFilter" => Some(RuntimeFn::IteratorFilter),
+        "IteratorMap" => Some(RuntimeFn::IteratorMap),
         "GeneratorYield" => Some(RuntimeFn::GeneratorYield),
         "GeneratorReturn" => Some(RuntimeFn::GeneratorReturn),
         "GeneratorNext" => Some(RuntimeFn::GeneratorNext),
@@ -2029,6 +2049,16 @@ impl RuntimeFn {
             Self::GetIterator
             | Self::IteratorNext
             | Self::IteratorFrom
+            | Self::IteratorMap
+            | Self::IteratorFilter
+            | Self::IteratorTake
+            | Self::IteratorDrop
+            | Self::IteratorToArray
+            | Self::IteratorReduce
+            | Self::IteratorForEach
+            | Self::IteratorSome
+            | Self::IteratorEvery
+            | Self::IteratorFind
             | Self::GeneratorYield
             | Self::GeneratorReturn
             | Self::GeneratorNext => RuntimeDomain::Iterator,
@@ -2947,6 +2977,16 @@ impl RuntimeFn {
             Self::GetIterator,
             Self::IteratorNext,
             Self::IteratorFrom,
+            Self::IteratorMap,
+            Self::IteratorFilter,
+            Self::IteratorTake,
+            Self::IteratorDrop,
+            Self::IteratorToArray,
+            Self::IteratorReduce,
+            Self::IteratorForEach,
+            Self::IteratorSome,
+            Self::IteratorEvery,
+            Self::IteratorFind,
             Self::GeneratorYield,
             Self::GeneratorReturn,
             Self::GeneratorNext,
@@ -3410,6 +3450,16 @@ impl RuntimeFn {
             Self::GetIterator,
             Self::IteratorNext,
             Self::IteratorFrom,
+            Self::IteratorMap,
+            Self::IteratorFilter,
+            Self::IteratorTake,
+            Self::IteratorDrop,
+            Self::IteratorToArray,
+            Self::IteratorReduce,
+            Self::IteratorForEach,
+            Self::IteratorSome,
+            Self::IteratorEvery,
+            Self::IteratorFind,
             Self::GeneratorYield,
             Self::GeneratorReturn,
             Self::GeneratorNext,
