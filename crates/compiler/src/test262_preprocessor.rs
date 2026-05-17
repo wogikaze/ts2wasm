@@ -553,9 +553,33 @@ fn extract_features_from_frontmatter(frontmatter: &str) -> Vec<String> {
 /// and create stub implementations that the parser can handle.
 /// Skips functions already present in `full_source` to avoid DuplicateFunction
 /// when the Python harness has already wrapped the source with shim functions.
-fn extract_function_stubs(_helper_source: &str, full_source: &str) -> String {
-    // For now, return hardcoded stubs for common test262 helper functions
-    // This is a temporary solution until we can properly parse helper files
+fn extract_function_stubs(helper_source: &str, full_source: &str) -> String {
+    // If the harness file doesn't use unsupported patterns (eval, new Function),
+    // include the ACTUAL content so tests get real implementations.
+    //
+    // Only fall back to hardcoded stubs for files that contain patterns
+    // the compiler cannot handle (eval, Function constructor, etc.).
+    if !uses_unsupported_or_rewritten_patterns(helper_source) {
+        // Build a list of function/var names defined in the helper
+        // and skip any that are already in the test source (prevent duplicates).
+        let defined_names = extract_defined_names(helper_source);
+        let mut result = String::new();
+        for line in helper_source.lines() {
+            let trimmed = line.trim();
+            // Check if this line starts a definition that already exists in full_source
+            let skip = defined_names.iter().any(|(decl, name)| {
+                trimmed.starts_with(decl) && source_has_binding(full_source, name)
+            });
+            if !skip {
+                result.push_str(line);
+                result.push('\n');
+            }
+        }
+        return result.trim().to_string();
+    }
+
+    // Fallback: hardcoded stubs for harness files that use unsupported patterns.
+    // Currently only wellKnownIntrinsicObjects.js hits this path.
     let candidate_stubs = [
         ("function verifyProperty() {}", "verifyProperty"),
         (
@@ -563,32 +587,16 @@ fn extract_function_stubs(_helper_source: &str, full_source: &str) -> String {
             "verifyCallableProperty",
         ),
         ("function assert() {}", "assert"),
+        ("function isPrimitive() {}", "isPrimitive"),
         ("function isConstructor() {}", "isConstructor"),
         ("function testFinished() {}", "testFinished"),
         ("function $DONOTEVALUATE() {}", "$DONOTEVALUATE"),
-        // wellKnownIntrinsicObjects.js stubs
+        // wellKnownIntrinsicObjects.js stubs (uses new Function(...) internally)
         ("var WellKnownIntrinsicObjects = [];", "WellKnownIntrinsicObjects"),
         ("function getWellKnownIntrinsicObject() {}", "getWellKnownIntrinsicObject"),
-        // fnGlobalObject.js stub
-        ("function fnGlobalObject() {}", "fnGlobalObject"),
-        // compareArray.js stub
-        ("function compareArray() {}", "compareArray"),
-        // async helpers
-        ("function $DONE() {}", "$DONE"),
-        // TypedArray helper stubs
-        ("function testWithTypedArrayConstructors() {}", "testWithTypedArrayConstructors"),
-        ("function testWithBigIntTypedArrayConstructors() {}", "testWithBigIntTypedArrayConstructors"),
-        ("function testWithAtomicsFriendlyTypedArrayConstructors() {}", "testWithAtomicsFriendlyTypedArrayConstructors"),
-        ("function testWithNonAtomicsFriendlyTypedArrayConstructors() {}", "testWithNonAtomicsFriendlyTypedArrayConstructors"),
-        ("function testWithAtomicsNonViewValues() {}", "testWithAtomicsNonViewValues"),
-        ("function testWithAtomicsOutOfBoundsIndices() {}", "testWithAtomicsOutOfBoundsIndices"),
-        ("function anyTypedArrayConstructors() {}", "anyTypedArrayConstructors"),
-        ("function nonClampedIntArrayConstructors() {}", "nonClampedIntArrayConstructors"),
-        ("function typedArrayConstructors() {}", "typedArrayConstructors"),
-        // $262 and detach helpers
-        ("function $DETACHBUFFER() {}", "$DETACHBUFFER"),
-        // Atomics helper stubs
-        ("function testWithAtomicsFriendlyArrays() {}", "testWithAtomicsFriendlyArrays"),
+        // resizableArrayBufferUtils.js stubs (uses new Function(...))
+        ("function convertToNumeric() {}", "convertToNumeric"),
+        ("function MaybeViewedOutOfBounds() {}", "MaybeViewedOutOfBounds"),
     ];
     candidate_stubs
         .iter()
@@ -596,6 +604,49 @@ fn extract_function_stubs(_helper_source: &str, full_source: &str) -> String {
         .map(|(stub, _)| *stub)
         .collect::<Vec<_>>()
         .join("\n")
+}
+
+/// Check if a harness helper source contains patterns incompatible with the compiler
+/// or that would be broken by rewrite_assert_method_calls.
+fn uses_unsupported_or_rewritten_patterns(source: &str) -> bool {
+    if source.contains("new Function(")
+        || source.contains("eval(")
+        || source.contains("new Proxy(")
+    {
+        return true;
+    }
+    // Check for assert method assignments that rewrite_assert_method_calls
+    // would break (e.g. `assert.sameValue = function(...)`)
+    let rewritten_patterns = [
+        "assert.sameValue",
+        "assert.throws",
+        "assert.notSameValue",
+        "assert.compareArray",
+    ];
+    for pattern in &rewritten_patterns {
+        if source.contains(pattern) {
+            return true;
+        }
+    }
+    false
+}
+
+/// Extract defined function/var names from a helper source.
+fn extract_defined_names(source: &str) -> Vec<(&str, &str)> {
+    let mut names = Vec::new();
+    for line in source.lines() {
+        let trimmed = line.trim();
+        if let Some(rest) = trimmed.strip_prefix("function ") {
+            if let Some(name_end) = rest.find('(') {
+                names.push(("function", &rest[..name_end]));
+            }
+        } else if let Some(rest) = trimmed.strip_prefix("var ") {
+            if let Some(name_end) = rest.find(&['=', ';', ' '] as &[_]) {
+                names.push(("var", &rest[..name_end]));
+            }
+        }
+    }
+    names
 }
 
 /// Resolve test262 harness directory from input file path
@@ -731,7 +782,7 @@ var IsHTMLDDA = $262.IsHTMLDDA;"#;
 
         assert!(processed.contains("var $262 = {};"));
         assert!(processed.contains("$262.IsHTMLDDA = {};"));
-        assert!(processed.contains("function assert() {}"));
+        assert!(processed.contains("function assert() {"));
         assert!(processed.contains("if (typeof Symbol === 'object'"));
     }
 
