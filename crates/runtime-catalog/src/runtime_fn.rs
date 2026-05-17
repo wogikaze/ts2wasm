@@ -1334,10 +1334,30 @@ const INDEX_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ArrayGet,
 ];
 const MAP_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
-const MAP_GET_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyGet];
-const MAP_SET_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertySet];
-const MAP_HAS_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyHas];
-const MAP_DELETE_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyDelete];
+/// Map.get uses SameValueZero for key equality (per ECMAScript spec).
+const MAP_GET_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::PropertyGet,
+    RuntimeFn::SameValueZero,
+];
+/// Map.set uses SameValueZero for key equality (per ECMAScript spec).
+const MAP_SET_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::PropertySet,
+    RuntimeFn::SameValueZero,
+];
+/// Map.has uses SameValueZero for key equality (per ECMAScript spec).
+const MAP_HAS_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::PropertyHas,
+    RuntimeFn::SameValueZero,
+];
+/// Map.delete uses SameValueZero for key equality (per ECMAScript spec).
+const MAP_DELETE_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::PropertyDelete,
+    RuntimeFn::SameValueZero,
+];
 const SET_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const SET_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::SameValueZero];
 const SET_HAS_DEPS: &[RuntimeFn] = &[RuntimeFn::SameValueZero];
@@ -3005,6 +3025,8 @@ impl RuntimeFn {
             Self::IteratorSome,
             Self::IteratorEvery,
             Self::IteratorFind,
+            Self::EvalDirectHost,
+            Self::EvalIndirectHost,
             Self::GeneratorYield,
             Self::GeneratorReturn,
             Self::GeneratorNext,
@@ -3459,6 +3481,8 @@ impl RuntimeFn {
             Self::BooleanCoerce,
             Self::BooleanToString,
             Self::NumberCoerce,
+            Self::EvalDirectHost,
+            Self::EvalIndirectHost,
             Self::NumberIsNaN,
             Self::NumberIsFinite,
             Self::NumberIsInteger,
