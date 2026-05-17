@@ -725,16 +725,17 @@ def feature_label(diag_code, stderr, test_file, phase=None):
 # ---------------------------------------------------------------------------
 
 def can_pass_compile_negative(metadata, result_diag, diag_phase):
-    """Strictly validate if a compilation error satisfies a parse-phase negative test."""
-    return (
-        metadata.negative_phase == "parse"
+    """Strictly validate if a compilation error satisfies a parse-phase or early-phase negative test."""
+    early_phase = (
+        metadata.negative_phase in {"parse", "early"}
         and metadata.negative_type == "SyntaxError"
         and (
             # Must be an actual SyntaxError from the compiler, not UnsupportedSyntax
             result_diag == "SyntaxError"
-            and diag_phase in {"lexer", "parser"}
+            and diag_phase in {"lexer", "parser", "ast-validator"}
         )
     )
+    return early_phase
 
 
 def _negative_type_matches(metadata, output):
