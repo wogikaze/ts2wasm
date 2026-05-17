@@ -20,6 +20,7 @@ use builtin_resolver_host::*;
 use builtin_resolver_outer::*;
 use std::collections::{HashMap, HashSet};
 
+use ts2wasm_resolve::{INTRINSIC_DIRECT_EVAL_CALLEE, INTRINSIC_INDIRECT_EVAL_CALLEE};
 use ts2wasm_runtime_abi::ValueTag;
 use ts2wasm_shared::{
     ArrayLiteralElement, BinaryOp, ClassPrivateElement, ClassStaticBlock, DiagCode, Diagnostic,
@@ -1781,10 +1782,16 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             })
         }
         Expr::Call { callee, args, span } => {
-            // Detect unshadowed direct eval(...) calls — expand static literals or produce Eval IR.
+            // Name resolution marks unshadowed eval calls. User bindings named
+            // `eval` remain ordinary calls.
             if let Expr::Ident { name, .. } = callee.as_ref()
-                && name == "eval"
+                && (name == INTRINSIC_DIRECT_EVAL_CALLEE || name == INTRINSIC_INDIRECT_EVAL_CALLEE)
             {
+                let kind = if name == INTRINSIC_DIRECT_EVAL_CALLEE {
+                    EvalKind::Direct
+                } else {
+                    EvalKind::Indirect
+                };
                 let source = if let [Expr::String { value, .. }] = args.as_slice() {
                     EvalSource::StaticLiteral(value.clone())
                 } else {
@@ -1797,7 +1804,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     ))
                 };
                 return Ok(ResolvedExpr::Eval {
-                    kind: EvalKind::Direct,
+                    kind,
                     source,
                     caller_is_strict: false, // TODO: propagate strict mode from parser
                     span: *span,

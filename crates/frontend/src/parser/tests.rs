@@ -919,16 +919,23 @@ mod tests {
     }
 
     #[test]
-    fn eval_source_expanded_at_parse_time() {
-        // eval("x") with literal source is expanded to the inner expression at parse time.
+    fn eval_source_expression_is_preserved_for_resolver_classification() {
         let program = parse_program("let result = eval(\"x\");").unwrap();
         let Stmt::Let { expr, .. } = &program[0] else {
             panic!("expected let statement");
         };
-        // After expansion, the result is Expr::Ident("x"), not an eval call.
-        assert!(matches!(expr, Expr::Ident { name, .. } if name == "x"));
-        // The eval call is no longer in the AST.
-        assert!(!expr.is_direct_eval_call());
+        assert!(expr.is_direct_eval_call());
+    }
+
+    #[test]
+    fn shadowed_function_constructor_is_preserved_for_user_binding() {
+        let program =
+            parse_program("let Function = (body) => body; let result = Function(\"return 1\");")
+                .unwrap();
+        let Stmt::Let { expr, .. } = &program[1] else {
+            panic!("expected result let statement");
+        };
+        assert!(matches!(expr, Expr::Call { callee, .. } if matches!(callee.as_ref(), Expr::Ident { name, .. } if name == "Function")));
     }
 
     #[test]

@@ -1033,12 +1033,7 @@ impl Parser {
             return Ok(None);
         };
         if self.possible_eval_shadowing {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-302: static direct eval block-function lowering requires a provably unshadowed eval binding".to_owned(),
-                span: Some(*span),
-
-                phase: None,});
+            return Ok(None);
         }
 
         let Some(expansion) = self.static_block_function_eval_expansion(source, *span)? else {

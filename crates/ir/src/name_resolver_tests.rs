@@ -5,6 +5,15 @@ mod tests {
     use ts2wasm_source::Span;
     use ts2wasm_syntax::{ArrayLiteralElement, BinaryOp, Expr, ObjectProp, Stmt};
 
+    fn parse_resolve_builtins(source: &str) -> Vec<crate::ResolvedStmt> {
+        let tokens = ts2wasm_frontend::Lexer::new(source).tokenize().unwrap();
+        let parsed = ts2wasm_frontend::Parser::new(tokens, source)
+            .parse_program()
+            .unwrap();
+        let resolved = name_resolver::resolve_names(&parsed).unwrap();
+        crate::resolve_builtins(&resolved).unwrap()
+    }
+
     #[test]
     fn test_resolve_variable_declaration() {
         let program = vec![Stmt::Let {
@@ -601,6 +610,56 @@ mod tests {
         ];
 
         assert!(name_resolver::resolve_names(&program).is_ok());
+    }
+
+    #[test]
+    fn resolver_marks_unshadowed_direct_eval_for_builtin_resolution() {
+        let builtins = parse_resolve_builtins("let value = eval(\"1 + 2\");");
+        let crate::ResolvedStmt::Let(_, crate::ResolvedExpr::Eval { kind, source, .. }) =
+            &builtins[0]
+        else {
+            panic!("expected resolver-marked eval expression: {builtins:?}");
+        };
+        assert_eq!(*kind, crate::builtin_resolved::EvalKind::Direct);
+        assert!(
+            matches!(source, crate::builtin_resolved::EvalSource::StaticLiteral(value) if value == "1 + 2")
+        );
+    }
+
+    #[test]
+    fn resolver_keeps_shadowed_eval_as_ordinary_call() {
+        let builtins = parse_resolve_builtins(
+            "let eval = (source) => source; let value = eval(\"not intrinsic\");",
+        );
+        let crate::ResolvedStmt::Let(_, crate::ResolvedExpr::Call { callee, .. }) = &builtins[1]
+        else {
+            panic!("expected shadowed eval to stay an ordinary call: {builtins:?}");
+        };
+        assert!(matches!(
+            callee.as_ref(),
+            crate::ResolvedExpr::Ident(name) if name == "eval"
+        ));
+    }
+
+    #[test]
+    fn resolver_marks_static_indirect_eval_shapes() {
+        for source_text in [
+            "let value = (0, eval)(\"1 + 2\");",
+            "let value = globalThis.eval(\"1 + 2\");",
+            "let value = globalThis[\"eval\"](\"1 + 2\");",
+        ] {
+            let builtins = parse_resolve_builtins(source_text);
+            let crate::ResolvedStmt::Let(_, crate::ResolvedExpr::Eval { kind, source, .. }) =
+                &builtins[0]
+            else {
+                panic!("expected indirect eval for {source_text}: {builtins:?}");
+            };
+            assert_eq!(*kind, crate::builtin_resolved::EvalKind::Indirect);
+            assert!(matches!(
+                source,
+                crate::builtin_resolved::EvalSource::StaticLiteral(value) if value == "1 + 2"
+            ));
+        }
     }
 
     #[test]

@@ -1936,9 +1936,9 @@ impl Parser {
             }) => {
                 let expr = self.expression()?;
                 if self.consume(TokenKind::Comma) {
-                    let mut last_expr = self.expression()?;
+                    let mut exprs = vec![expr, self.expression()?];
                     while self.consume(TokenKind::Comma) {
-                        last_expr = self.expression()?;
+                        exprs.push(self.expression()?);
                     }
                     let right_span = self.expect(TokenKind::RightParen)?;
                     let span = Span {
@@ -1946,7 +1946,7 @@ impl Parser {
                         end: right_span.end,
                     };
                     self.parenthesized_expr_spans.insert((span.start, span.end));
-                    return Ok(last_expr);
+                    return Ok(Expr::Sequence { exprs, span });
                 }
                 self.expect(TokenKind::RightParen)?;
                 self.parenthesized_expr_spans

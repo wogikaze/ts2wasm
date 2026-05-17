@@ -4,6 +4,9 @@ use ts2wasm_syntax::{ArrayLiteralElement, BinaryOp, Expr, ObjectProp, Stmt, Unar
 
 use crate::binding_pattern::parse_binding_pattern;
 
+pub const INTRINSIC_DIRECT_EVAL_CALLEE: &str = "__ts2wasm_intrinsic_direct_eval";
+pub const INTRINSIC_INDIRECT_EVAL_CALLEE: &str = "__ts2wasm_intrinsic_indirect_eval";
+
 /// Resolves variable and function names in lexical scope.
 /// This pass runs before builtin resolution to catch unresolved names early.
 /// It validates names but does not transform the AST - that's done by builtin_resolver.
@@ -1115,6 +1118,20 @@ impl NameResolver {
                         span: *span,
                     });
                 }
+                if let Some(marker) = self.classify_unshadowed_eval_callee(callee) {
+                    let resolved_args = args
+                        .iter()
+                        .map(|a| self.resolve_expr(a))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    return Ok(Expr::Call {
+                        callee: Box::new(Expr::Ident {
+                            name: marker.to_owned(),
+                            span: *span,
+                        }),
+                        args: resolved_args,
+                        span: *span,
+                    });
+                }
                 let resolved_callee = self.resolve_expr(callee)?;
                 let resolved_args = args
                     .iter()
@@ -1663,6 +1680,67 @@ impl NameResolver {
             .iter()
             .rev()
             .any(|scope| scope.contains_key(name))
+    }
+
+    fn has_user_binding(&self, name: &str) -> bool {
+        self.functions.contains_key(name)
+            || self.classes.contains_key(name)
+            || self
+                .predeclared_names
+                .iter()
+                .rev()
+                .any(|scope| scope.contains(name))
+            || self
+                .scopes
+                .iter()
+                .rev()
+                .any(|scope| scope.contains_key(name))
+            || self.is_implicit_arguments(name)
+    }
+
+    fn classify_unshadowed_eval_callee(&self, callee: &Expr) -> Option<&'static str> {
+        if matches!(callee, Expr::Ident { name, .. } if name == "eval")
+            && !self.has_user_binding("eval")
+        {
+            return Some(INTRINSIC_DIRECT_EVAL_CALLEE);
+        }
+
+        if self.is_unshadowed_global_this_eval_member(callee)
+            || self.is_unshadowed_zero_comma_eval(callee)
+        {
+            return Some(INTRINSIC_INDIRECT_EVAL_CALLEE);
+        }
+
+        None
+    }
+
+    fn is_unshadowed_global_this_eval_member(&self, callee: &Expr) -> bool {
+        if self.has_user_binding("globalThis") {
+            return false;
+        }
+        match callee {
+            Expr::Member {
+                object, property, ..
+            } => {
+                matches!(object.as_ref(), Expr::Ident { name, .. } if name == "globalThis")
+                    && property == "eval"
+            }
+            Expr::Index { object, index, .. } => {
+                matches!(object.as_ref(), Expr::Ident { name, .. } if name == "globalThis")
+                    && matches!(index.as_ref(), Expr::String { value, .. } if value == "eval")
+            }
+            _ => false,
+        }
+    }
+
+    fn is_unshadowed_zero_comma_eval(&self, callee: &Expr) -> bool {
+        let Expr::Sequence { exprs, .. } = callee else {
+            return false;
+        };
+        let [Expr::Number { value, .. }, Expr::Ident { name, .. }] = exprs.as_slice() else {
+            return false;
+        };
+        *value == 0 && name == "eval" && !self.has_user_binding("eval")
     }
 
     fn bigint_number_model_gap(&self, left: &Expr, right: &Expr, span: Span) -> Option<Diagnostic> {
