@@ -1091,4 +1091,55 @@ impl WatEmitter<'_> {
             one = RuntimeConst::ONE,
         ));
     }
+
+    pub(crate) fn emit_error_to_string(&self, wat: &mut String) {
+        let name_key_ptr = self.string_offset("name") + Layout::STRING_HEADER_SIZE;
+        let name_key_len = self.string_len("name");
+        let msg_key_ptr = self.string_offset("message") + Layout::STRING_HEADER_SIZE;
+        let msg_key_len = self.string_len("message");
+        let empty_string = self.string_value("");
+        let error_string = self.string_value("Error");
+        let colon_space = self.string_value(": ");
+        wat.push_str(&format!(
+            r#"
+  (func $error_to_string (param $obj i32) (result i32)
+    (local $name i32)
+    (local $msg i32)
+    (local $result i32)
+    ;; Get "name" property (follows prototype chain)
+    (local.set $name
+      (call $property_get
+        (local.get $obj)
+        (i32.const {name_key_ptr})
+        (i32.const {name_key_len})))
+    ;; If name is undefined, use "Error"
+    (if (i32.eqz (i32.and (local.get $name) (i32.const {tag_mask})))
+      (then (local.set $name (i32.const {error_string}))))
+    ;; Get "message" property (follows prototype chain)
+    (local.set $msg
+      (call $property_get
+        (local.get $obj)
+        (i32.const {msg_key_ptr})
+        (i32.const {msg_key_len})))
+    ;; If message is undefined, use ""
+    (if (i32.eqz (i32.and (local.get $msg) (i32.const {tag_mask})))
+      (then (local.set $msg (i32.const {empty}))))
+    ;; If message is empty, return just the name
+    (if (i32.eq (local.get $msg) (i32.const {empty}))
+      (then (return (local.get $name))))
+    ;; Concatenate: name + ": " + message
+    (local.set $result (call $concat (local.get $name) (i32.const {colon_space})))
+    (local.set $result (call $concat (local.get $result) (local.get $msg)))
+    (local.get $result))
+"#,
+            name_key_ptr = name_key_ptr,
+            name_key_len = name_key_len,
+            msg_key_ptr = msg_key_ptr,
+            msg_key_len = msg_key_len,
+            tag_mask = ValueTag::TAG_MASK,
+            error_string = error_string,
+            empty = empty_string,
+            colon_space = colon_space,
+        ));
+    }
 }

@@ -1,11 +1,12 @@
 use super::super::{
     bigint_runtime_fn_intrinsic, is_array_from_call_receiver,
     is_array_prototype_every_some_call_receiver, is_array_prototype_map_call_receiver,
-    is_array_prototype_push_expr, is_identity_arrow_callback, is_set_prototype_property_expr,
-    is_static_date_constructor_expr, is_string_split_result_expr, is_typed_array_class,
-    numeric_ascending_sort_arrow_callback, private_storage_observable_access_diagnostic,
-    string_constructor_arrow_callback, string_split_arrow_separator, unary_plus_arrow_callback,
-    unsupported_array_map_diagnostic, unsupported_array_sort_diagnostic,
+    is_array_prototype_push_expr, is_error_class, is_identity_arrow_callback,
+    is_set_prototype_property_expr, is_static_date_constructor_expr, is_string_split_result_expr,
+    is_typed_array_class, numeric_ascending_sort_arrow_callback,
+    private_storage_observable_access_diagnostic, string_constructor_arrow_callback,
+    string_split_arrow_separator, unary_plus_arrow_callback, unsupported_array_map_diagnostic,
+    unsupported_array_sort_diagnostic,
 };
 use super::builtin::{is_html_wrapper_string_method, lower_html_wrapper_string_method};
 use super::receiver::extract_prototype_method_name;
@@ -2435,22 +2436,32 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
-        // Skip ObjectToString catch-all for BigInt locals — let class dispatch handle it
-        let is_bigint_receiver = matches!(method, "toString" | "valueOf")
+        // Skip ObjectToString catch-all for Error/Array/BigInt locals — let class dispatch handle it
+        let is_class_dispatch_receiver = matches!(method, "toString" | "valueOf")
             && match object {
                 ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local| {
-                    self.ctx
-                        .classes
-                        .local_classes
-                        .get(&local)
-                        .is_some_and(|c| c == "BigInt")
+                    let class_name = self.ctx.classes.local_classes.get(&local);
+                    class_name.is_some_and(|c| c == "BigInt")
                         || self.ctx.facts.bigint_locals.contains(&local)
                 }),
                 _ => crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(
                     &self.ctx, object,
                 ),
             };
-        if is_bigint_receiver {
+        // Also skip ObjectToString catch-all for Error.toString — let class dispatch route to ErrorToString
+        let is_error_to_string = method == "toString"
+            && match object {
+                ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local| {
+                    self.ctx
+                        .classes
+                        .local_classes
+                        .get(&local)
+                        .is_some_and(|c| is_error_class(c))
+                }),
+                ResolvedExpr::New { class_name, .. } => is_error_class(class_name),
+                _ => false,
+            };
+        if is_class_dispatch_receiver || is_error_to_string {
             // fall through to class dispatch
         } else if method == "toString"
             && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
@@ -3712,7 +3723,8 @@ impl super::super::Resolver {
                 if self.ctx.facts.bigint_locals.contains(&obj_local) {
                     match method {
                         "toString" | "toLocaleString" => {
-                            let mut bi_args = vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
+                            let mut bi_args =
+                                vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
                             bi_args.extend(
                                 args.iter()
                                     .take(1)

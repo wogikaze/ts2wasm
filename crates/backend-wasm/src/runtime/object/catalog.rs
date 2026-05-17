@@ -40,6 +40,7 @@ pub const OBJECT_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::PropertyIsEnumerable,
     RuntimeFn::IsPrototypeOf,
     RuntimeFn::ObjectToString,
+    RuntimeFn::ErrorToString,
     RuntimeFn::ObjectToLocaleString,
     RuntimeFn::ReflectDefineProperty,
     RuntimeFn::ReflectDeleteProperty,

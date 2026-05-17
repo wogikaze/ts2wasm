@@ -289,6 +289,7 @@ match self {
             Self::PropertyIsEnumerable => "property_is_enumerable",
             Self::IsPrototypeOf => "is_prototype_of",
             Self::ObjectToString => "object_to_string",
+            Self::ErrorToString => "error_to_string",
             Self::ObjectToLocaleString => "object_to_locale_string",
             Self::Add => "add",
             Self::AddFast => "add_fast",

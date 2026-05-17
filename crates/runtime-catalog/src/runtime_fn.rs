@@ -475,6 +475,8 @@ pub enum RuntimeFn {
     IsPrototypeOf,
     /// Object.prototype.toString — returns "[object Object]" for objects, delegates to type-specific toString otherwise
     ObjectToString,
+    /// Error.prototype.toString — returns "name: message" per spec
+    ErrorToString,
     /// Object.prototype.toLocaleString — returns result of toString() for objects
     ObjectToLocaleString,
     /// Object.prototype.valueOf — returns the value unchanged (identity)
@@ -1320,6 +1322,8 @@ const PROPERTY_IS_ENUMERABLE_DEPS: &[RuntimeFn] =
 const IS_PROTOTYPE_OF_DEPS: &[RuntimeFn] = &[];
 const OBJECT_TO_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::BooleanToString];
 const OBJECT_TO_STRING_RUNTIME_STRINGS: &[&str] = &["[object Object]"];
+const ERROR_TO_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::PropertyGet, RuntimeFn::Concat];
+const ERROR_TO_STRING_RUNTIME_STRINGS: &[&str] = &["name", "message", "Error", ": "];
 const OBJECT_TO_LOCALE_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::ObjectToString];
 const GLOBAL_THIS_DEPS: &[RuntimeFn] = &[RuntimeFn::ObjectCreate];
 const INDEX_DEPS: &[RuntimeFn] = &[
@@ -1431,6 +1435,9 @@ const SYMBOL_FOR_RUNTIME_STRINGS: &[&str] = &[];
 
 pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
     match name {
+        "EvalDirectHost" => Some(RuntimeFn::EvalDirectHost),
+        "EvalIndirectHost" => Some(RuntimeFn::EvalIndirectHost),
+        "e" => Some(RuntimeFn::EvalDirectHost),
         "MathFloor" => Some(RuntimeFn::MathFloor),
         "MathCeil" => Some(RuntimeFn::MathCeil),
         "MathRound" => Some(RuntimeFn::MathRound),
@@ -1533,6 +1540,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "PropertyIsEnumerable" => Some(RuntimeFn::PropertyIsEnumerable),
         "IsPrototypeOf" => Some(RuntimeFn::IsPrototypeOf),
         "ObjectToString" => Some(RuntimeFn::ObjectToString),
+        "ErrorToString" => Some(RuntimeFn::ErrorToString),
         "ObjectToLocaleString" => Some(RuntimeFn::ObjectToLocaleString),
         "ValueOf" => Some(RuntimeFn::ValueOf),
         "$instanceof" => Some(RuntimeFn::InstanceOf),
@@ -2197,6 +2205,7 @@ impl RuntimeFn {
             | Self::PropertyIsEnumerable
             | Self::IsPrototypeOf
             | Self::ObjectToString
+            | Self::ErrorToString
             | Self::ObjectToLocaleString
             | Self::ReflectDefineProperty
             | Self::ReflectDeleteProperty
@@ -2891,6 +2900,7 @@ impl RuntimeFn {
             Self::PropertyIsEnumerable,
             Self::IsPrototypeOf,
             Self::ObjectToString,
+            Self::ErrorToString,
             Self::ObjectToLocaleString,
             // Reflect methods
             Self::ReflectDefineProperty,
@@ -3366,6 +3376,7 @@ impl RuntimeFn {
             Self::PropertyIsEnumerable,
             Self::IsPrototypeOf,
             Self::ObjectToString,
+            Self::ErrorToString,
             Self::ObjectToLocaleString,
             // Reflect methods
             Self::ReflectDefineProperty,

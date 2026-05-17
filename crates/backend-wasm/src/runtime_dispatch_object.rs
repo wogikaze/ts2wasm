@@ -44,6 +44,7 @@ impl WatEmitter<'_> {
             RuntimeFn::PropertyIsEnumerable => self.emit_object_property_is_enumerable(wat),
             RuntimeFn::IsPrototypeOf => self.emit_object_is_prototype_of(wat),
             RuntimeFn::ObjectToString => self.emit_object_to_string(wat),
+            RuntimeFn::ErrorToString => self.emit_error_to_string(wat),
             RuntimeFn::ObjectToLocaleString => self.emit_object_to_locale_string(wat),
             RuntimeFn::ReflectDefineProperty => self.emit_reflect_define_property(wat),
             RuntimeFn::ReflectDeleteProperty => self.emit_reflect_delete_property(wat),

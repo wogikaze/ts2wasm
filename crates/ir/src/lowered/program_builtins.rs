@@ -366,6 +366,7 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Promise", "then") => Some(RuntimeFn::PromiseThen),
         ("Promise", "catch") => Some(RuntimeFn::PromiseCatch),
         ("Promise", "finally") => Some(RuntimeFn::PromiseFinally),
+        _ if is_error_class(class_name) && method == "toString" => Some(RuntimeFn::ErrorToString),
         _ if is_typed_array_class(class_name) => typed_array_method_runtime_fn(method),
         _ => None,
     }
@@ -395,6 +396,20 @@ pub(crate) fn is_typed_array_class(class_name: &str) -> bool {
             | "Float16Array"
             | "BigInt64Array"
             | "BigUint64Array"
+    )
+}
+
+pub(crate) fn is_error_class(class_name: &str) -> bool {
+    matches!(
+        class_name,
+        "Error"
+            | "TypeError"
+            | "RangeError"
+            | "SyntaxError"
+            | "ReferenceError"
+            | "URIError"
+            | "EvalError"
+            | "AggregateError"
     )
 }
 
@@ -1262,8 +1277,8 @@ pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
                 match bytes[i + 1] {
                     b'd' | b'D' | b'w' | b'W' | b's' | b'S' | b'b' | b'B' | b'0' | b'n' | b't'
                     | b'r' | b'f' | b'v' | b'\\' | b'/' | b'.' | b'^' | b'$' | b'+' | b'*'
-                    | b'?' | b'(' | b')' | b'[' | b']' | b'{' | b'}' | b'|'
-                    | b'1' | b'2' | b'3' | b'4' | b'5' | b'6' | b'7' | b'8' | b'9' => {
+                    | b'?' | b'(' | b')' | b'[' | b']' | b'{' | b'}' | b'|' | b'1' | b'2'
+                    | b'3' | b'4' | b'5' | b'6' | b'7' | b'8' | b'9' => {
                         i += 2;
                     }
                     _ => {

@@ -1242,6 +1242,22 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::EvalDirectHost => RuntimeSpec {
+                symbol: "$eval_direct_host",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::EvalIndirectHost => RuntimeSpec {
+                symbol: "$eval_indirect_host",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::GeneratorYield => RuntimeSpec {
                 symbol: "$generator_yield",
                 deps: GENERATOR_YIELD_DEPS,
@@ -2139,6 +2155,14 @@ match self {
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: OBJECT_TO_STRING_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ErrorToString => RuntimeSpec {
+                symbol: "$error_to_string",
+                deps: ERROR_TO_STRING_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: ERROR_TO_STRING_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::ObjectToLocaleString => RuntimeSpec {
