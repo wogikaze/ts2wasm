@@ -522,7 +522,7 @@ pub(crate) fn resolved_expr_produces_dense_array(ctx: &LoweringCtx, expr: &Resol
                 .is_some()
                 && matches!(
                     args.as_slice(),
-                    [ResolvedExpr::String(raw)] if looks_like_regexp_literal(raw)
+                    [ResolvedExpr::String(_)]
                 )
         }
         ResolvedExpr::MethodCall { object, method, .. }

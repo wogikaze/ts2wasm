@@ -237,15 +237,54 @@ impl super::super::Resolver {
 
                 phase: None,});
         };
-        if !looks_like_regexp_literal(raw_pattern) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-5129: String.prototype.matchAll currently requires a RegExp literal argument"
-                    .to_owned(),
-                span: Some(span),
 
-                phase: None,});
+        // Plain string search: find all occurrences of the literal string
+        if !looks_like_regexp_literal(raw_pattern) {
+            if raw_pattern.is_empty() {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message:
+                        "issue-5129: String.prototype.matchAll does not support empty string arg in this slice"
+                            .to_owned(),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            let mut elements = Vec::new();
+            let mut start = 0;
+            while let Some(pos) = input[start..].find(raw_pattern) {
+                let abs_pos = start + pos;
+                elements.push(LoweredExpr::ObjectNew {
+                    props: vec![
+                        (
+                            "0".to_owned(),
+                            LoweredExpr::String(
+                                raw_pattern.to_string(),
+                                Span::generated("str"),
+                            ),
+                        ),
+                        (
+                            "index".to_owned(),
+                            LoweredExpr::Number(abs_pos as i32, Span::generated("num")),
+                        ),
+                        (
+                            "input".to_owned(),
+                            LoweredExpr::String(input.clone(), Span::generated("str")),
+                        ),
+                    ],
+                    non_enumerable: 0,
+
+                    span: Span::generated("object_new"),
+                });
+                start = abs_pos + 1;
+            }
+            return Ok(LoweredExpr::ArrayNew {
+                elements,
+                span: Span::generated("array_new"),
+            });
         }
+
         validate_regexp_plain_literal(raw_pattern, "String.prototype.matchAll literal")?;
         let delimiter = raw_pattern
             .rfind('/')

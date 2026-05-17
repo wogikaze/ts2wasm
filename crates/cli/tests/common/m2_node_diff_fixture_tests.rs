@@ -114,6 +114,11 @@ fn string_match_all_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn string_match_all_non_regexp_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-matchall-non-regexp.ts");
+}
+
+#[test]
 fn array_index_of_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/array-index-of.ts");
 }
