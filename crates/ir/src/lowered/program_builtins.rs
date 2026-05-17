@@ -130,6 +130,8 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "assign" => Some(RuntimeFn::ObjectAssign),
                 "create" => Some(RuntimeFn::ObjectCreate),
                 "is" => Some(RuntimeFn::ObjectIs),
+                // test262 harness: Object.createRealm() returns a new realm object
+                "createRealm" => Some(RuntimeFn::ObjectCreate),
                 _ => None,
             };
         }
