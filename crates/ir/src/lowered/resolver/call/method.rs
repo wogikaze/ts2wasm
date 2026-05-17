@@ -3290,6 +3290,62 @@ impl super::super::Resolver {
             }));
         }
 
+        // Function.prototype.call/apply with non-Ident receiver:
+        // bypass ordinary_get("call"/"apply") and inline as HeapClosureCall
+        if method == "call" || method == "apply" {
+            let fn_temp = self.alloc_temp();
+            let fn_val = LoweredExpr::Local(fn_temp, Span::generated("local"));
+            let this_arg = match args.first() {
+                Some(receiver) => self.lower_expr(receiver)?,
+                None => LoweredExpr::Undefined(Span::generated("undef")),
+            };
+            let mut call_args = vec![fn_val.clone(), this_arg];
+            if method == "call" {
+                for arg in args.iter().skip(1) {
+                    call_args.push(self.lower_expr(arg)?);
+                }
+            } else {
+                // apply: expand argArray elements
+                match args.get(1) {
+                    None | Some(ResolvedExpr::Undefined | ResolvedExpr::Null) => {}
+                    Some(ResolvedExpr::Array(elements)) => {
+                        for element in elements {
+                            match element {
+                                ResolvedArrayElement::Present(expr) => {
+                                    call_args.push(self.lower_expr(expr)?);
+                                }
+                                ResolvedArrayElement::Hole => {
+                                    call_args
+                                        .push(LoweredExpr::Undefined(Span::generated("undef")));
+                                }
+                            }
+                        }
+                    }
+                    Some(_) => {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-458: Function.prototype.apply currently supports array literals, null, or undefined argArray for non-Ident receivers".to_owned(),
+                            span: Some(span),
+                            phase: None,
+                        });
+                    }
+                }
+            }
+            return Ok(Some(LoweredExpr::Block {
+                stmts: vec![LoweredStmt::Let(
+                    fn_temp,
+                    self.lower_expr(object)?,
+                    Span::generated("let_stmt"),
+                )],
+                result: Box::new(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::HeapClosureCall,
+                    args: call_args,
+                    span: Span::generated("runtime_call"),
+                }),
+                span: Span::generated("block"),
+            }));
+        }
+
         let receiver_temp = self.alloc_temp();
         let receiver = LoweredExpr::Local(receiver_temp, Span::generated("local"));
         let callee = object_kernel::ordinary_get(receiver.clone(), method, span);
