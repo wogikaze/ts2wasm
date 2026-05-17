@@ -1941,10 +1941,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     _ => {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedBuiltin,
-                            message: format!(
-                                "issue-436: Intl.{} is not implemented",
-                                property
-                            ),
+                            message: format!("issue-436: Intl.{} is not implemented", property),
                             span: span_of_expr(expr),
                             phase: None,
                         });
@@ -2029,10 +2026,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                         _ => {
                             return Err(Diagnostic {
                                 code: DiagCode::UnsupportedBuiltin,
-                                message: format!(
-                                    "issue-436: Intl.{} is not implemented",
-                                    property
-                                ),
+                                message: format!("issue-436: Intl.{} is not implemented", property),
                                 span: Some(*span),
                                 phase: None,
                             });
