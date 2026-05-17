@@ -2665,10 +2665,14 @@ fn date_local_getters_fixture_builds() {
 
 #[test]
 fn eval_fixture_reports_unsupported() {
+    // The fixture still fails — the resolver catches direct eval("...") with issue-429.
+    // Indirect eval forms ((0, eval)(...), this["eval"](...)) now pass the parser
+    // but may fail in the backend with different errors. The resolver's issue-429
+    // diagnostic is the primary rejection point.
     assert_build_fails_with_diagnostic(
         "fixtures/builtins-and-io/eval-unsupported.ts",
         "[UnsupportedEval]",
-        "issue-347: indirect eval calls are not supported",
+        "runtime code evaluation is intentionally not implemented",
         true,
     );
 }
@@ -3127,11 +3131,13 @@ fn direct_eval_block_function_shadowed_eval_reports_issue_302() {
 }
 
 #[test]
-fn indirect_eval_fixture_reports_issue_347() {
+fn indirect_eval_fixture_reports_unsupported() {
+    // globalThis.eval(...) passes the parser but fails in the backend
+    // (no longer a parser-level rejection)
     assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/direct-eval-indirect-unsupported.ts",
         "[UnsupportedEval]",
-        "issue-347: indirect eval calls are not supported",
+        "runtime code evaluation is intentionally not implemented",
         true,
     );
 }

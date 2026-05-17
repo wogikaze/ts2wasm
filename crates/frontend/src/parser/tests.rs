@@ -961,21 +961,28 @@ mod tests {
     }
 
     #[test]
-    fn rejects_indirect_eval_calls_with_issue_347() {
+    fn rejects_optional_eval_calls_with_issue_347() {
+        // eval?.("x") is optional direct eval — kept as parser rejection (later phase)
+        let err = parse_program("eval?.(\"x\");").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(
+            err.message
+                .contains("issue-347: optional eval calls"),
+            "unexpected diagnostic: {err:?}"
+        );
+        assert!(err.span.is_some(), "diagnostic should preserve a span");
+
+        // Indirect eval forms (globalThis.eval, (0, eval), globalThis["eval"])
+        // are no longer rejected at parser level; they pass through to resolver/backend.
         for source in [
             "globalThis.eval(\"x\");",
             "globalThis[\"eval\"](\"x\");",
             "(0, eval)(\"x\");",
-            "eval?.(\"x\");",
         ] {
-            let err = parse_program(source).unwrap_err();
-            assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-            assert!(
-                err.message
-                    .contains("issue-347: indirect eval calls are not supported"),
-                "unexpected diagnostic for {source}: {err:?}"
-            );
-            assert!(err.span.is_some(), "diagnostic should preserve a span");
+            let program = parse_program(source).unwrap_or_else(|e| {
+                panic!("indirect eval should not be parser-rejected: {source}: {e}")
+            });
+            assert!(!program.is_empty(), "should produce statements for {source}");
         }
     }
 
