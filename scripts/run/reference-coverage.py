@@ -2633,7 +2633,7 @@ def main():
                         wamr_bin = REPO_ROOT / "crates" / "iwasm-runner" / "ts2wasm-iwasm-runner"
                         if not wamr_bin.is_file():
                             return
-                        pool_size = 24
+                        pool_size = min(max(semantic_jobs * 2, 24), 64)
                         for _ in range(pool_size):
                             try:
                                 p = subprocess.Popen(

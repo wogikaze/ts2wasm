@@ -246,9 +246,21 @@ int main(int argc, char *argv[])
             }
         }
 
-        const char *status = "ok";
-        if (exec_ret != 0 && (!cap_out || !cap_out[0]))
-            status = "error";
+        const char *status;
+        if (exec_ret == 0) {
+            status = "ok";
+        } else {
+            /* wasm_application_execute_main returns non-zero for both proc_exit(0/1)
+               and uncaught exceptions. Use wasm_runtime_get_exception to distinguish:
+               - Real exceptions/crashes: exception string is non-empty -> error
+               - proc_exit (normal exit): exception string is NULL/empty -> treat as ok
+               iwasm CLI also treats proc_exit(0) as rc=0. */
+            const char *exc = wasm_runtime_get_exception(inst);
+            if (exc && exc[0])
+                status = "error";
+            else
+                status = "ok";
+        }
 
         printf("{\"id\":%" PRId64 ",\"status\":\"%s\"", id_val, status);
         if (cap_out && cap_out[0]) {
