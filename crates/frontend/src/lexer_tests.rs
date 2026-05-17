@@ -381,6 +381,32 @@ mod tests {
     }
 
     #[test]
+    fn rejects_decimal_numeric_separator_before_decimal_point() {
+        let err = Lexer::new("let x = 1_.5;")
+            .tokenize()
+            .unwrap_err();
+
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(
+            err.message.contains("numeric separator"),
+            "expected numeric separator message, got: {err:?}"
+        );
+    }
+
+    #[test]
+    fn rejects_decimal_numeric_separator_after_decimal_point() {
+        let err = Lexer::new("let x = 1._5;")
+            .tokenize()
+            .unwrap_err();
+
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(
+            err.message.contains("numeric separator"),
+            "expected numeric separator message, got: {err:?}"
+        );
+    }
+
+    #[test]
     fn less_bang_and_minus_still_parse_as_operators() {
         let program = parse_program("let value = a < !b; let difference = c - -d;").unwrap();
 

@@ -127,12 +127,26 @@ impl<'a> Lexer<'a> {
                     self.advance_char();
                 }
                 '.' if !has_fraction && !digits.is_empty() => {
+                    if previous_was_separator {
+                        self.advance_char();
+                        return Err(self.invalid_numeric_separator(
+                            start,
+                            "numeric separator must not precede the decimal point",
+                        ));
+                    }
                     has_fraction = true;
                     digits.push('.');
                     previous_was_separator = false;
                     self.advance_char();
                     // Consume fractional digits
                     while let Some(fch) = self.peek_char() {
+                        if fch == '_' {
+                            self.advance_char();
+                            return Err(self.invalid_numeric_separator(
+                                start,
+                                "numeric separator must not follow the decimal point",
+                            ));
+                        }
                         if fch.is_ascii_digit() {
                             digits.push(fch);
                             self.advance_char();
