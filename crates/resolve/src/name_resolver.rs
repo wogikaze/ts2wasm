@@ -1607,18 +1607,27 @@ impl NameResolver {
     ) -> Result<(), Diagnostic> {
         // In the top-level scope, check hoisted declarations (functions, classes) for conflicts.
         // Nested scopes can shadow outer functions/classes.
-        if self.scopes.len() == 1
-            && (self.functions.contains_key(name) || self.classes.contains_key(name))
-        {
-            return Err(Diagnostic {
-                code: DiagCode::DuplicateLocal,
-                message: format!(
-                    "duplicate identifier: `{name}` conflicts with existing declaration"
-                ),
-                span,
-
-                phase: None,
-            });
+        if self.scopes.len() == 1 {
+            if self.classes.contains_key(name) {
+                return Err(Diagnostic {
+                    code: DiagCode::DuplicateLocal,
+                    message: format!(
+                        "duplicate identifier: `{name}` conflicts with existing declaration"
+                    ),
+                    span,
+                    phase: None,
+                });
+            }
+            if !is_var && self.functions.contains_key(name) {
+                return Err(Diagnostic {
+                    code: DiagCode::DuplicateLocal,
+                    message: format!(
+                        "duplicate identifier: `{name}` conflicts with existing declaration"
+                    ),
+                    span,
+                    phase: None,
+                });
+            }
         }
         let current_scope = self.scopes.last_mut().unwrap();
         if current_scope.contains_key(name) {

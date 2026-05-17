@@ -31,7 +31,7 @@ fn has_use_strict_directive(program: &[Stmt]) -> bool {
 
 pub(crate) fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
     let mut top_functions = HashMap::new();
-    let mut top_scope = HashMap::new();
+    let mut top_scope: HashMap<String, bool> = HashMap::new();
     let strict_mode = has_use_strict_directive(program);
 
     for stmt in program {
@@ -47,15 +47,17 @@ pub(crate) fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
             Stmt::Function {
                 name, body, span, ..
             } => {
-                if top_scope.contains_key(name) {
-                    return Err(Diagnostic {
-                        code: DiagCode::DuplicateLocal,
-                        message: format!(
-                            "top-level function `{name}` conflicts with existing lexical binding (TS2300: duplicate identifier)"
-                        ),
-                        span: Some(*span),
-                        phase: None,
-                    });
+                if let Some(is_var) = top_scope.get(name) {
+                    if !*is_var {
+                        return Err(Diagnostic {
+                            code: DiagCode::DuplicateLocal,
+                            message: format!(
+                                "top-level function `{name}` conflicts with existing lexical binding (TS2300: duplicate identifier)"
+                            ),
+                            span: Some(*span),
+                            phase: None,
+                        });
+                    }
                 }
                 if body.is_empty() {
                 } else if top_functions.contains_key(name) {
@@ -112,7 +114,7 @@ fn validate_class_body(statements: &[Stmt]) -> Result<(), Diagnostic> {
 fn validate_stmt(
     stmt: &Stmt,
     in_top_level: bool,
-    scope: &mut HashMap<String, ()>,
+    scope: &mut HashMap<String, bool>,
     top_functions: &HashMap<String, ()>,
 ) -> Result<(), Diagnostic> {
     match stmt {
@@ -144,7 +146,7 @@ fn validate_stmt(
                         phase: None,
                     });
                 }
-                scope.insert(name.clone(), ());
+                scope.insert(name.clone(), *is_var);
             }
             Ok(())
         }
