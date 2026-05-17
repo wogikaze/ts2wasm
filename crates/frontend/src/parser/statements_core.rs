@@ -62,6 +62,6 @@ impl Parser {
         while let Some(stmt) = self.take_pending_statement() {
             statements.push(stmt);
         }
-        Ok(statements)
+        Ok(expand_eval_in_statements(statements, self.strict_mode))
     }
 }

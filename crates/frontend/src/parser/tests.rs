@@ -919,13 +919,16 @@ mod tests {
     }
 
     #[test]
-    fn marks_syntactic_direct_eval_calls() {
+    fn eval_source_expanded_at_parse_time() {
+        // eval("x") with literal source is expanded to the inner expression at parse time.
         let program = parse_program("let result = eval(\"x\");").unwrap();
         let Stmt::Let { expr, .. } = &program[0] else {
             panic!("expected let statement");
         };
-        assert!(expr.is_direct_eval_call());
-        assert_eq!(expr.direct_eval_literal_source(), Some("x"));
+        // After expansion, the result is Expr::Ident("x"), not an eval call.
+        assert!(matches!(expr, Expr::Ident { name, .. } if name == "x"));
+        // The eval call is no longer in the AST.
+        assert!(!expr.is_direct_eval_call());
     }
 
     #[test]

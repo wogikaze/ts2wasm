@@ -74,3 +74,4 @@ include!("parser/expressions.rs");
 include!("parser/tokens.rs");
 include!("parser/helpers.rs");
 include!("parser/tests.rs");
+include!("parser/eval_expand.rs");
