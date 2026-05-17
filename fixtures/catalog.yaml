@@ -429,6 +429,7 @@ directories:
     - regexp-match-replace.ts
     - regexp-star.ts
     - regexp-word.ts
+    - receiver-class-fix.ts
     - set-constructor-array.ts
     - set-forEach.ts
     - set-identity-number-string.ts
