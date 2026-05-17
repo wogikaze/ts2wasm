@@ -1118,9 +1118,6 @@ impl NameResolver {
                 if self.is_unshadowed_function_constructor(callee) {
                     return Err(unsupported_function_constructor(*span));
                 }
-                if self.is_unshadowed_eval(callee) {
-                    return Err(unsupported_eval_diagnostic(*span));
-                }
                 let resolved_callee = self.resolve_expr(callee)?;
                 let resolved_args = args
                     .iter()
@@ -1686,10 +1683,6 @@ impl NameResolver {
     fn is_unshadowed_function_constructor(&self, expr: &Expr) -> bool {
         matches!(expr, Expr::Ident { name, .. } if name == "Function")
             && !self.is_user_declared("Function")
-    }
-
-    fn is_unshadowed_eval(&self, expr: &Expr) -> bool {
-        matches!(expr, Expr::Ident { name, .. } if name == "eval") && !self.is_user_declared("eval")
     }
 
     fn bigint_number_model_gap(&self, left: &Expr, right: &Expr, span: Span) -> Option<Diagnostic> {

@@ -2,8 +2,6 @@ use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_ir::builtin_resolved::{EvalKind, EvalSource, ResolvedExpr, ResolvedStmt};
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
 use ts2wasm_ir::name_resolver::resolve_names;
-use ts2wasm_syntax::Stmt;
-
 /// Expand static literal eval(source) expressions at compile time.
 ///
 /// For direct eval("literal") where the source is a compile-time string literal:
@@ -32,15 +30,27 @@ fn expand_stmt(stmt: ResolvedStmt) -> Result<ResolvedStmt, Diagnostic> {
             else_body,
         } => Ok(ResolvedStmt::If {
             condition: expand_expr(condition)?,
-            then_body: then_body.into_iter().map(|s| expand_stmt(s)).collect::<Result<Vec<_>, _>>()?,
-            else_body: else_body.into_iter().map(|s| expand_stmt(s)).collect::<Result<Vec<_>, _>>()?,
+            then_body: then_body
+                .into_iter()
+                .map(|s| expand_stmt(s))
+                .collect::<Result<Vec<_>, _>>()?,
+            else_body: else_body
+                .into_iter()
+                .map(|s| expand_stmt(s))
+                .collect::<Result<Vec<_>, _>>()?,
         }),
         ResolvedStmt::While { condition, body } => Ok(ResolvedStmt::While {
             condition: expand_expr(condition)?,
-            body: body.into_iter().map(|s| expand_stmt(s)).collect::<Result<Vec<_>, _>>()?,
+            body: body
+                .into_iter()
+                .map(|s| expand_stmt(s))
+                .collect::<Result<Vec<_>, _>>()?,
         }),
         ResolvedStmt::DoWhile { body, condition } => Ok(ResolvedStmt::DoWhile {
-            body: body.into_iter().map(|s| expand_stmt(s)).collect::<Result<Vec<_>, _>>()?,
+            body: body
+                .into_iter()
+                .map(|s| expand_stmt(s))
+                .collect::<Result<Vec<_>, _>>()?,
             condition: expand_expr(condition)?,
         }),
         ResolvedStmt::For {
@@ -55,28 +65,43 @@ fn expand_stmt(stmt: ResolvedStmt) -> Result<ResolvedStmt, Diagnostic> {
             },
             condition: condition.map(|e| expand_expr(e)).transpose()?,
             update: update.map(|e| expand_expr(e)).transpose()?,
-            body: body.into_iter().map(|s| expand_stmt(s)).collect::<Result<Vec<_>, _>>()?,
+            body: body
+                .into_iter()
+                .map(|s| expand_stmt(s))
+                .collect::<Result<Vec<_>, _>>()?,
         }),
         ResolvedStmt::ForIn { var, iter, body } => Ok(ResolvedStmt::ForIn {
             var,
             iter: expand_expr(iter)?,
-            body: body.into_iter().map(|s| expand_stmt(s)).collect::<Result<Vec<_>, _>>()?,
+            body: body
+                .into_iter()
+                .map(|s| expand_stmt(s))
+                .collect::<Result<Vec<_>, _>>()?,
         }),
         ResolvedStmt::ForOf { var, iter, body } => Ok(ResolvedStmt::ForOf {
             var,
             iter: expand_expr(iter)?,
-            body: body.into_iter().map(|s| expand_stmt(s)).collect::<Result<Vec<_>, _>>()?,
+            body: body
+                .into_iter()
+                .map(|s| expand_stmt(s))
+                .collect::<Result<Vec<_>, _>>()?,
         }),
         ResolvedStmt::ForAwaitOf { var, iter, body } => Ok(ResolvedStmt::ForAwaitOf {
             var,
             iter: expand_expr(iter)?,
-            body: body.into_iter().map(|s| expand_stmt(s)).collect::<Result<Vec<_>, _>>()?,
+            body: body
+                .into_iter()
+                .map(|s| expand_stmt(s))
+                .collect::<Result<Vec<_>, _>>()?,
         }),
         ResolvedStmt::Switch { expr, cases } => {
             let mut expanded_cases = Vec::new();
             for (cond, body) in cases {
                 let expanded_cond = cond.map(|e| expand_expr(e)).transpose()?;
-                let expanded_body = body.into_iter().map(|s| expand_stmt(s)).collect::<Result<Vec<_>, _>>()?;
+                let expanded_body = body
+                    .into_iter()
+                    .map(|s| expand_stmt(s))
+                    .collect::<Result<Vec<_>, _>>()?;
                 expanded_cases.push((expanded_cond, expanded_body));
             }
             Ok(ResolvedStmt::Switch {
@@ -90,17 +115,31 @@ fn expand_stmt(stmt: ResolvedStmt) -> Result<ResolvedStmt, Diagnostic> {
             catch_block,
             finally_block,
         } => Ok(ResolvedStmt::TryCatch {
-            try_block: try_block.into_iter().map(|s| expand_stmt(s)).collect::<Result<Vec<_>, _>>()?,
+            try_block: try_block
+                .into_iter()
+                .map(|s| expand_stmt(s))
+                .collect::<Result<Vec<_>, _>>()?,
             catch_param,
             catch_block: catch_block
-                .map(|b| b.into_iter().map(|s| expand_stmt(s)).collect::<Result<Vec<_>, _>>())
+                .map(|b| {
+                    b.into_iter()
+                        .map(|s| expand_stmt(s))
+                        .collect::<Result<Vec<_>, _>>()
+                })
                 .transpose()?,
             finally_block: finally_block
-                .map(|b| b.into_iter().map(|s| expand_stmt(s)).collect::<Result<Vec<_>, _>>())
+                .map(|b| {
+                    b.into_iter()
+                        .map(|s| expand_stmt(s))
+                        .collect::<Result<Vec<_>, _>>()
+                })
                 .transpose()?,
         }),
         ResolvedStmt::Block { statements } => Ok(ResolvedStmt::Block {
-            statements: statements.into_iter().map(|s| expand_stmt(s)).collect::<Result<Vec<_>, _>>()?,
+            statements: statements
+                .into_iter()
+                .map(|s| expand_stmt(s))
+                .collect::<Result<Vec<_>, _>>()?,
         }),
         ResolvedStmt::Labeled { label, body } => Ok(ResolvedStmt::Labeled {
             label,
@@ -162,9 +201,10 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
             Ok(expr)
         }
         // Recursively expand eval in sub-expressions.
-        ResolvedExpr::Unary { op, expr: inner } => {
-            Ok(ResolvedExpr::Unary { op, expr: Box::new(expand_expr(*inner)?) })
-        }
+        ResolvedExpr::Unary { op, expr: inner } => Ok(ResolvedExpr::Unary {
+            op,
+            expr: Box::new(expand_expr(*inner)?),
+        }),
         ResolvedExpr::Binary { left, op, right } => Ok(ResolvedExpr::Binary {
             left: Box::new(expand_expr(*left)?),
             op,
@@ -183,13 +223,24 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
         }),
         ResolvedExpr::Call { callee, args, span } => Ok(ResolvedExpr::Call {
             callee: Box::new(expand_expr(*callee)?),
-            args: args.into_iter().map(expand_expr).collect::<Result<Vec<_>, _>>()?,
+            args: args
+                .into_iter()
+                .map(expand_expr)
+                .collect::<Result<Vec<_>, _>>()?,
             span,
         }),
-        ResolvedExpr::MethodCall { object, method, args, span } => Ok(ResolvedExpr::MethodCall {
+        ResolvedExpr::MethodCall {
+            object,
+            method,
+            args,
+            span,
+        } => Ok(ResolvedExpr::MethodCall {
             object: Box::new(expand_expr(*object)?),
             method,
-            args: args.into_iter().map(expand_expr).collect::<Result<Vec<_>, _>>()?,
+            args: args
+                .into_iter()
+                .map(expand_expr)
+                .collect::<Result<Vec<_>, _>>()?,
             span,
         }),
         ResolvedExpr::PropertyAccess { object, key, span } => Ok(ResolvedExpr::PropertyAccess {
@@ -208,13 +259,15 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
             object: Box::new(expand_expr(*object)?),
             index: Box::new(expand_expr(*index)?),
         }),
-        ResolvedExpr::OptionalComputedIndex { object, index, span } => {
-            Ok(ResolvedExpr::OptionalComputedIndex {
-                object: Box::new(expand_expr(*object)?),
-                index: Box::new(expand_expr(*index)?),
-                span,
-            })
-        }
+        ResolvedExpr::OptionalComputedIndex {
+            object,
+            index,
+            span,
+        } => Ok(ResolvedExpr::OptionalComputedIndex {
+            object: Box::new(expand_expr(*object)?),
+            index: Box::new(expand_expr(*index)?),
+            span,
+        }),
         ResolvedExpr::Assign { name, expr: inner } => Ok(ResolvedExpr::Assign {
             name,
             expr: Box::new(expand_expr(*inner)?),
@@ -248,7 +301,9 @@ fn extract_completion_value(stmts: Vec<ResolvedStmt>) -> Result<ResolvedExpr, Di
     for stmt in stmts {
         match stmt {
             ResolvedStmt::Expr(expr) => last_expr = Some(expr),
-            ResolvedStmt::Let(_, expr) | ResolvedStmt::Assign(_, expr) | ResolvedStmt::Return(expr) => {
+            ResolvedStmt::Let(_, expr)
+            | ResolvedStmt::Assign(_, expr)
+            | ResolvedStmt::Return(expr) => {
                 last_expr = Some(expr);
             }
             _ => last_expr = Some(ResolvedExpr::Undefined),

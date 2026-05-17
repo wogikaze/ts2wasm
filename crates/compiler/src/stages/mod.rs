@@ -1,6 +1,6 @@
 pub mod builtin_resolve;
-pub mod eval_expand;
 pub mod emit;
+pub mod eval_expand;
 pub mod lower;
 pub mod lowered_validate;
 pub mod module_graph;

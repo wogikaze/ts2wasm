@@ -1821,7 +1821,8 @@ fn dynamic_eval_unsupported_diagnostic() {
     );
     let err_msg = result.err().unwrap();
     assert!(
-        err_msg.contains("eval is not supported"),
+        err_msg.contains("eval() is not implemented in the lowered IR")
+            || err_msg.contains("eval is not supported"),
         "Diagnostic should mention eval: {}",
         err_msg
     );

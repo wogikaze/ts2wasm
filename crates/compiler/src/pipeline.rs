@@ -12,6 +12,7 @@ use crate::CompileReport;
 use crate::ModuleGraph;
 use crate::io;
 use crate::stages::builtin_resolve::resolve_builtins;
+use crate::stages::eval_expand::expand_static_eval_fragments;
 use crate::stages::lower::build_multi_section_file;
 use crate::stages::lowered_validate;
 use crate::stages::module_graph;
@@ -130,6 +131,9 @@ fn build_file_impl(
 
     let name_resolved = resolve_names(&static_module_binding.rewritten_program)?;
     let resolved = resolve_builtins(&name_resolved)?;
+
+    // Stage: expand static literal eval(...) calls at compile time.
+    let resolved = expand_static_eval_fragments(resolved)?;
 
     // Stage: semantic / cross-module validation
     semantic_validate::validate_semantics(input, &resolved)
