@@ -1211,8 +1211,8 @@ fn direct_eval_fixture_reports_issue_429() {
     );
     let stderr = String::from_utf8_lossy(&build.stderr);
     assert!(
-        stderr_contains_diag_code(&stderr, "UnsupportedSyntax"),
-        "expected UnsupportedSyntax diagnostic for {fixture}, got:\n{stderr}"
+        stderr_contains_diag_code(&stderr, "UnsupportedEval"),
+        "expected UnsupportedEval diagnostic for {fixture}, got:\n{stderr}"
     );
     assert!(
         stderr.contains("eval() is not implemented in the lowered IR"),

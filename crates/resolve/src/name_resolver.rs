@@ -1115,9 +1115,6 @@ impl NameResolver {
                         span: *span,
                     });
                 }
-                if self.is_unshadowed_function_constructor(callee) {
-                    return Err(unsupported_function_constructor(*span));
-                }
                 let resolved_callee = self.resolve_expr(callee)?;
                 let resolved_args = args
                     .iter()

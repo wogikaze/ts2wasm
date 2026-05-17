@@ -243,7 +243,7 @@ fn build_with_host_deny_rejects_host_imports() {
 
 #[test]
 fn build_explain_unsupported_shows_tracking_and_fixture() {
-    let input = write_temp_source("contract-explain", "let x = eval('1+1');");
+    let input = write_temp_source("contract-explain", "let x = new (class extends null {})();");
     let output =
         std::env::temp_dir().join(format!("contract-explain-out-{}.wasm", unique_suffix()));
 
@@ -255,7 +255,7 @@ fn build_explain_unsupported_shows_tracking_and_fixture() {
         .arg(&output)
         .output()
         .expect("ts2wasm build should execute");
-    assert!(!result_plain.status.success(), "build should fail for eval");
+    assert!(!result_plain.status.success(), "build should fail");
     let stderr_plain = String::from_utf8_lossy(&result_plain.stderr);
     assert!(
         !stderr_plain.contains("explain-unsupported"),
