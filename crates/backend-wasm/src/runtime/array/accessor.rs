@@ -268,7 +268,7 @@ impl WatEmitter<'_> {
               (i32.add
                 (i32.const {array_header})
                 (i32.shl (local.get $i) (i32.const {elem_shift}))))))
-        (if (i32.eq (call $strict_equal (local.get $elem) (local.get $search)) (i32.const {true_tag}))
+        (if (i32.eq (call $same_value_zero (local.get $elem) (local.get $search)) (i32.const {true_tag}))
           (then (return (i32.const {true}))))
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
         (br $scan)))

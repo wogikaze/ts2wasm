@@ -88,6 +88,9 @@ pub enum RuntimeFn {
     GreaterEqual,
     GreaterEqualFast,
     StrictEqual,
+    /// SameValueZero (used by Set.add/has/delete and Array.includes).
+    /// Like StrictEqual but NaN equals NaN.
+    SameValueZero,
     EqualEqual,
     BangEqual,
     StrictNotEqual,
@@ -905,6 +908,13 @@ const STRICT_EQUAL_DEPS: &[RuntimeFn] = &[
     RuntimeFn::MemEqual,
     RuntimeFn::NumberToI32,
 ];
+const SAME_VALUE_ZERO_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::IsString,
+    RuntimeFn::StringEqual,
+    RuntimeFn::BigIntCompare,
+    RuntimeFn::MemEqual,
+    RuntimeFn::NumberToI32,
+];
 const EQUAL_EQUAL_DEPS: &[RuntimeFn] = &[
     RuntimeFn::StrictEqual,
     RuntimeFn::NumberFromI32,
@@ -1181,7 +1191,7 @@ const ARRAY_JOIN_DEPS: &[RuntimeFn] = &[
 ];
 const ARRAY_REVERSE_DEPS: &[RuntimeFn] = &[];
 const ARRAY_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
-const ARRAY_INCLUDES_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
+const ARRAY_INCLUDES_DEPS: &[RuntimeFn] = &[RuntimeFn::SameValueZero];
 const ARRAY_FIND_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 const ARRAY_FIND_INDEX_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 const ARRAY_FIND_LAST_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
@@ -1311,9 +1321,9 @@ const MAP_SET_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::Pr
 const MAP_HAS_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyHas];
 const MAP_DELETE_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyDelete];
 const SET_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
-const SET_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
-const SET_HAS_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
-const SET_DELETE_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
+const SET_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::SameValueZero];
+const SET_HAS_DEPS: &[RuntimeFn] = &[RuntimeFn::SameValueZero];
+const SET_DELETE_DEPS: &[RuntimeFn] = &[RuntimeFn::SameValueZero];
 const SET_SIZE_DEPS: &[RuntimeFn] = &[];
 const SET_CLEAR_DEPS: &[RuntimeFn] = &[];
 const SET_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::SetNew, RuntimeFn::SetAdd];
@@ -1839,6 +1849,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ReadStdinBytes" => Some(RuntimeFn::ReadStdinBytes),
         "RegexpMatchInner" => Some(RuntimeFn::RegexpMatchInner),
         "StrictEqual" => Some(RuntimeFn::StrictEqual),
+        "SameValueZero" => Some(RuntimeFn::SameValueZero),
         "StrictNotEqual" => Some(RuntimeFn::StrictNotEqual),
         "StringEqual" => Some(RuntimeFn::StringEqual),
         "Sub" => Some(RuntimeFn::Sub),
@@ -2183,6 +2194,7 @@ impl RuntimeFn {
             | Self::GreaterEqual
             | Self::GreaterEqualFast
             | Self::StrictEqual
+            | Self::SameValueZero
             | Self::EqualEqual
             | Self::BangEqual
             | Self::StrictNotEqual
@@ -2408,6 +2420,7 @@ impl RuntimeFn {
             | Self::ParseInt
             | Self::JsonParse
             | Self::AggregateError
+            | Self::SameValueZero
             | Self::StrictEqual
             | Self::ValueToStringInto
             | Self::NumberToExponential
@@ -2558,6 +2571,7 @@ impl RuntimeFn {
             Self::GreaterFast,
             Self::GreaterEqual,
             Self::GreaterEqualFast,
+            Self::SameValueZero,
             Self::StrictEqual,
             Self::EqualEqual,
             Self::BangEqual,
@@ -3022,6 +3036,7 @@ impl RuntimeFn {
             Self::GreaterFast,
             Self::GreaterEqual,
             Self::GreaterEqualFast,
+            Self::SameValueZero,
             Self::StrictEqual,
             Self::EqualEqual,
             Self::BangEqual,

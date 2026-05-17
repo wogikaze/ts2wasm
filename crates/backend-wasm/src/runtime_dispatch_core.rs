@@ -70,6 +70,7 @@ impl WatEmitter<'_> {
             RuntimeFn::GreaterEqual => self.emit_greater_equal(wat),
             RuntimeFn::GreaterEqualFast => self.emit_greater_equal_fast(wat),
             RuntimeFn::StrictEqual => self.emit_strict_equal(wat),
+            RuntimeFn::SameValueZero => self.emit_same_value_zero(wat),
             RuntimeFn::EqualEqual => self.emit_equal_equal(wat),
             RuntimeFn::BangEqual => self.emit_bang_equal(wat),
             RuntimeFn::StrictNotEqual => self.emit_strict_not_equal(wat),

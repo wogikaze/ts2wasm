@@ -832,7 +832,7 @@ impl WatEmitter<'_> {
             (i32.add (i32.const {obj_header})
               (i32.shl (local.get $i) (i32.const {entry_shift})))))
         (if (i32.eq
-              (call $strict_equal
+              (call $same_value_zero
                 (i32.load (local.get $entry_base))
                 (local.get $value))
               (i32.const {true}))
@@ -883,7 +883,7 @@ impl WatEmitter<'_> {
             (i32.add (i32.const {obj_header})
               (i32.shl (local.get $i) (i32.const {entry_shift})))))
         (if (i32.eq
-              (call $strict_equal
+              (call $same_value_zero
                 (i32.load (local.get $entry_base))
                 (local.get $value))
               (i32.const {true}))
@@ -928,7 +928,7 @@ impl WatEmitter<'_> {
             (i32.add (i32.const {obj_header})
               (i32.shl (local.get $i) (i32.const {entry_shift})))))
         (if (i32.eq
-              (call $strict_equal
+              (call $same_value_zero
                 (i32.load (local.get $entry_base))
                 (local.get $value))
               (i32.const {true}))

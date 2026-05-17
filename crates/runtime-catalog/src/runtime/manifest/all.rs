@@ -312,6 +312,7 @@ match self {
             Self::GreaterEqual => "greater_equal",
             Self::GreaterEqualFast => "greater_equal_fast",
             Self::StrictEqual => "strict_equal",
+            Self::SameValueZero => "same_value_zero",
             Self::EqualEqual => "equal_equal",
             Self::BangEqual => "bang_equal",
             Self::StrictNotEqual => "strict_not_equal",

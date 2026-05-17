@@ -2422,6 +2422,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::SameValueZero => RuntimeSpec {
+                symbol: "$same_value_zero",
+                deps: SAME_VALUE_ZERO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::EqualEqual => RuntimeSpec {
                 symbol: "$equal_equal",
                 deps: EQUAL_EQUAL_DEPS,
