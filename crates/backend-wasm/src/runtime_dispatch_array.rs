@@ -70,6 +70,7 @@ impl WatEmitter<'_> {
             RuntimeFn::AtomicsCompareExchange => self.emit_atomics_compare_exchange(wat),
             RuntimeFn::AtomicsIsLockFree => self.emit_atomics_is_lock_free(wat),
             RuntimeFn::AtomicsWait => self.emit_atomics_wait(wat),
+            RuntimeFn::AtomicsWaitAsync => self.emit_atomics_wait_async(wat),
             RuntimeFn::AtomicsNotify => self.emit_atomics_notify(wat),
             RuntimeFn::DataViewNew => self.emit_dataview_new(wat),
             RuntimeFn::DataViewGetInt8 => self.emit_dataview_get_int8(wat),

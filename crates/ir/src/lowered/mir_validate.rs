@@ -605,22 +605,16 @@ fn validate_call_kind(
                     func_id.0, num_funcs
                 )));
             } else {
-                let func = &program.functions[func_id.0];
-                if arg_count < func.min_required_params {
-                    errors.push(arity(format!(
-                        "function {} expects at least {} argument(s), got {}",
-                        func_id.0, func.min_required_params, arg_count
-                    )));
-                }
+                // JS semantics: callers may pass fewer args than declared params
+                // Missing params are undefined at runtime. No lower-bound check needed.
             }
         }
         FunctionCallKind::Builtin(builtin) => {
             let expected = builtin.expected_arity();
-            let min_required = builtin.min_arity();
-            if arg_count < min_required || arg_count > expected {
+            if arg_count > expected {
                 errors.push(arity(format!(
-                    "builtin {:?} expects {}-{} argument(s), got {}",
-                    builtin, min_required, expected, arg_count
+                    "builtin {:?} expects at most {} argument(s), got {}",
+                    builtin, expected, arg_count
                 )));
             }
             if value_required
@@ -724,21 +718,13 @@ fn validate_constructor_arity(
         return;
     }
     let func = &program.functions[constructor.0];
-    let min_required = func.min_required_params.saturating_sub(1);
-    if args.len() < min_required {
-        errors.push(arity(format!(
-            "constructor {} expects at least {} argument(s), got {}",
-            constructor.0,
-            min_required,
-            args.len()
-        )));
-    } else if func.rest_param_index.is_none() {
+    // JS semantics: constructors accept any number of args (missing params → undefined)
+    if func.rest_param_index.is_none() {
         let max_allowed = func.params.len().saturating_sub(1);
         if args.len() > max_allowed {
             errors.push(arity(format!(
-                "constructor {} expects between {} and {} argument(s), got {}",
+                "constructor {} expects at most {} argument(s), got {}",
                 constructor.0,
-                min_required,
                 max_allowed,
                 args.len()
             )));

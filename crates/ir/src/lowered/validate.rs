@@ -429,34 +429,18 @@ fn validate_expr(
                             phase: None,
                         });
                     } else {
-                        let func = &program.functions[func_id.0];
-                        let min_required = func.min_required_params;
-                        if args.len() < min_required {
-                            errors.push(Diagnostic {
-                                code: DiagCode::ArityMismatch,
-                                message: format!(
-                                    "function {} expects at least {} argument(s), got {}",
-                                    func_id.0,
-                                    min_required,
-                                    args.len()
-                                ),
-                                span: None,
-
-                                phase: None,
-                            });
-                        } // Extra args beyond params are allowed (JS semantics)
+                        // JS semantics: callers may pass fewer args than declared params
+                        // Missing params are undefined at runtime. No lower-bound check needed.
                     }
                 }
                 FunctionCallKind::Builtin(builtin) => {
                     let expected = builtin.expected_arity();
-                    let min_required = builtin.min_arity();
-                    if args.len() < min_required || args.len() > expected {
+                    if args.len() > expected {
                         errors.push(Diagnostic {
                             code: DiagCode::ArityMismatch,
                             message: format!(
-                                "builtin {:?} expects {}-{} argument(s), got {}",
+                                "builtin {:?} expects at most {} argument(s), got {}",
                                 builtin,
-                                min_required,
                                 expected,
                                 args.len()
                             ),
@@ -825,29 +809,16 @@ fn validate_constructor_arity(
         return;
     }
     let func = &program.functions[constructor.0];
-    let min_required = func.min_required_params.saturating_sub(1);
-    if args.len() < min_required {
-        errors.push(Diagnostic {
-            code: DiagCode::ArityMismatch,
-            message: format!(
-                "constructor {} expects at least {} argument(s), got {}",
-                constructor.0,
-                min_required,
-                args.len()
-            ),
-            span: None,
-
-            phase: None,
-        });
-    } else if func.rest_param_index.is_none() {
+    // JS semantics: constructors accept any number of args (missing params → undefined)
+    // Only check upper bound for non-rest-param constructors
+    if func.rest_param_index.is_none() {
         let max_allowed = func.params.len().saturating_sub(1);
         if args.len() > max_allowed {
             errors.push(Diagnostic {
                 code: DiagCode::ArityMismatch,
                 message: format!(
-                    "constructor {} expects between {} and {} argument(s), got {}",
+                    "constructor {} expects at most {} argument(s), got {}",
                     constructor.0,
-                    min_required,
                     max_allowed,
                     args.len()
                 ),

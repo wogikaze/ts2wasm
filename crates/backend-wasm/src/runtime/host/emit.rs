@@ -3274,7 +3274,7 @@ impl WatEmitter<'_> {
         wat.push_str(
             r#"
     (func $get_iterator (param $obj i32) (result i32)
-      (unreachable))
+    (call $host_get_iterator (local.get $obj)))
   "#,
         );
     }
@@ -3283,7 +3283,16 @@ impl WatEmitter<'_> {
         wat.push_str(
             r#"
     (func $iterator_next (param $iter i32) (result i32)
-      (unreachable))
+    (call $host_iterator_next (local.get $iter)))
+  "#,
+        );
+    }
+
+    pub(crate) fn emit_iterator_from(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $iterator_from (param $iterable i32) (result i32)
+    (call $get_iterator (local.get $iterable)))
   "#,
         );
     }

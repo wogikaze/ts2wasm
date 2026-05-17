@@ -182,6 +182,22 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_atomics_wait_async(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func {symbol} (param $arr i32) (param $index i32) (param $value i32) (result i32)
+    ;; Non-threaded WASI subset: Atomics.waitAsync cannot block. Return tagged 0
+    ;; as a synchronous "not-equal" completion until thread parking exists.
+    (drop (local.get $arr))
+    (drop (local.get $index))
+    (drop (local.get $value))
+    (i32.const {zero_tagged}))
+"#,
+            symbol = RuntimeFn::AtomicsWaitAsync.symbol(),
+            zero_tagged = ValueTag::NUMBER,
+        ));
+    }
+
     pub(super) fn emit_atomics_notify(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

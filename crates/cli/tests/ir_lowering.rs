@@ -1712,9 +1712,12 @@ fn validate_rejects_arity_mismatch() {
         modules: vec![],
     };
 
-    let errs = ts2wasm_ir::lowered::validate_lowered(&program).unwrap_err();
-    assert_eq!(errs.len(), 1);
-    assert_eq!(errs[0].code, DiagCode::ArityMismatch);
+    // JS semantics: callers may pass fewer args than declared params (missing params are undefined).
+    let result = ts2wasm_ir::lowered::validate_lowered(&program);
+    assert!(
+        result.is_ok(),
+        "call with fewer args than params should be valid per JS semantics"
+    );
     let _ = LoweredBinaryOp::Add;
 }
 
