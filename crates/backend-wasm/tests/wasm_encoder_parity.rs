@@ -54,7 +54,6 @@ fn validate_wat(wat: &str) {
 
 /// Validate that the given binary wasm bytes decode correctly via wasm2wat.
 /// Uses `wasm2wat` to convert binary to WAT; success means the binary is valid.
-
 fn validate_binary(wasm_bytes: &[u8]) {
     let mut child = Command::new("wasm2wat")
         .arg("-o")

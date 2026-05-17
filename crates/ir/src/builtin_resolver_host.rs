@@ -541,12 +541,11 @@ fn format_console_args(args: &[ResolvedExpr]) -> Vec<ResolvedExpr> {
     }
 
     // Try format substitution on the first arg if it's a static string
-    if let ResolvedExpr::String(fmt) = &args[0] {
-        if fmt.contains('%') {
-            if let Some((formatted, _consumed)) = apply_format_substitution(fmt, &args[1..]) {
-                return vec![ResolvedExpr::String(formatted)];
-            }
-        }
+    if let ResolvedExpr::String(fmt) = &args[0]
+        && fmt.contains('%')
+        && let Some((formatted, _consumed)) = apply_format_substitution(fmt, &args[1..])
+    {
+        return vec![ResolvedExpr::String(formatted)];
     }
 
     // No format substitution applied: join all static args with spaces

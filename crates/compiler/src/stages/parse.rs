@@ -15,14 +15,14 @@ pub fn parse_program(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
 fn has_use_strict_directive(program: &[Stmt]) -> bool {
     for stmt in program {
         match stmt {
-            Stmt::Expr { expr, .. } => match expr {
-                Expr::String { value, .. } => {
-                    if value == "use strict" {
-                        return true;
-                    }
+            Stmt::Expr {
+                expr: Expr::String { value, .. },
+                ..
+            } => {
+                if value == "use strict" {
+                    return true;
                 }
-                _ => break,
-            },
+            }
             _ => break,
         }
     }
@@ -47,17 +47,17 @@ pub(crate) fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
             Stmt::Function {
                 name, body, span, ..
             } => {
-                if let Some(is_var) = top_scope.get(name) {
-                    if !*is_var {
-                        return Err(Diagnostic {
-                            code: DiagCode::DuplicateLocal,
-                            message: format!(
-                                "top-level function `{name}` conflicts with existing lexical binding (TS2300: duplicate identifier)"
-                            ),
-                            span: Some(*span),
-                            phase: None,
-                        });
-                    }
+                if let Some(is_var) = top_scope.get(name)
+                    && !*is_var
+                {
+                    return Err(Diagnostic {
+                        code: DiagCode::DuplicateLocal,
+                        message: format!(
+                            "top-level function `{name}` conflicts with existing lexical binding (TS2300: duplicate identifier)"
+                        ),
+                        span: Some(*span),
+                        phase: None,
+                    });
                 }
                 if body.is_empty() {
                 } else if top_functions.contains_key(name) {

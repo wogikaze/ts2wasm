@@ -894,7 +894,7 @@ pub(super) fn expr_contains_bigint(expr: &Expr) -> bool {
                 || expr_contains_bigint(index)
                 || expr_contains_bigint(value)
         }
-        Expr::Sequence { exprs, .. } => exprs.iter().any(|e| expr_contains_bigint(e)),
+        Expr::Sequence { exprs, .. } => exprs.iter().any(expr_contains_bigint),
         Expr::Number { .. }
         | Expr::DecimalNumber { .. }
         | Expr::String { .. }

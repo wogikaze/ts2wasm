@@ -593,7 +593,7 @@ fn validate_call_kind(
     kind: FunctionCallKind,
     arg_count: usize,
     num_funcs: usize,
-    program: &MirProgram,
+    _program: &MirProgram,
     errors: &mut Vec<Diagnostic>,
     value_required: bool,
 ) {

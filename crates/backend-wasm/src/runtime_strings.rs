@@ -365,20 +365,20 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_string_normalize(&self, wat: &mut String) {
-        wat.push_str(&format!(
+        wat.push_str(
             r#"
   (func $string_normalize (param $receiver i32) (param $form i32) (result i32)
     (call $host_string_normalize (local.get $receiver) (local.get $form)))
 "#,
-        ));
+        );
     }
 
     pub(super) fn emit_intl_number_format_format(&self, wat: &mut String) {
-        wat.push_str(&format!(
+        wat.push_str(
             r#"
   (func $intl_number_format_format (param $value i32) (param $options_str i32) (result i32)
     (call $host_intl_number_format_format (local.get $value) (local.get $options_str)))
 "#,
-        ));
+        );
     }
 }

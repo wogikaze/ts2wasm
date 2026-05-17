@@ -662,10 +662,10 @@ fn extract_defined_names(source: &str) -> Vec<(&str, &str)> {
             if let Some(name_end) = rest.find('(') {
                 names.push(("function", &rest[..name_end]));
             }
-        } else if let Some(rest) = trimmed.strip_prefix("var ") {
-            if let Some(name_end) = rest.find(&['=', ';', ' '] as &[_]) {
-                names.push(("var", &rest[..name_end]));
-            }
+        } else if let Some(rest) = trimmed.strip_prefix("var ")
+            && let Some(name_end) = rest.find(&['=', ';', ' '] as &[_])
+        {
+            names.push(("var", &rest[..name_end]));
         }
     }
     names

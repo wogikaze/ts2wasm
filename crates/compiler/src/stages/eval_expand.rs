@@ -14,7 +14,7 @@ use ts2wasm_ir::name_resolver::resolve_names;
 pub(crate) fn expand_static_eval_fragments(
     resolved: Vec<ResolvedStmt>,
 ) -> Result<Vec<ResolvedStmt>, Diagnostic> {
-    resolved.into_iter().map(|stmt| expand_stmt(stmt)).collect()
+    resolved.into_iter().map(expand_stmt).collect()
 }
 
 fn expand_stmt(stmt: ResolvedStmt) -> Result<ResolvedStmt, Diagnostic> {
@@ -32,24 +32,24 @@ fn expand_stmt(stmt: ResolvedStmt) -> Result<ResolvedStmt, Diagnostic> {
             condition: expand_expr(condition)?,
             then_body: then_body
                 .into_iter()
-                .map(|s| expand_stmt(s))
+                .map(expand_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
             else_body: else_body
                 .into_iter()
-                .map(|s| expand_stmt(s))
+                .map(expand_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
         }),
         ResolvedStmt::While { condition, body } => Ok(ResolvedStmt::While {
             condition: expand_expr(condition)?,
             body: body
                 .into_iter()
-                .map(|s| expand_stmt(s))
+                .map(expand_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
         }),
         ResolvedStmt::DoWhile { body, condition } => Ok(ResolvedStmt::DoWhile {
             body: body
                 .into_iter()
-                .map(|s| expand_stmt(s))
+                .map(expand_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
             condition: expand_expr(condition)?,
         }),
@@ -63,11 +63,11 @@ fn expand_stmt(stmt: ResolvedStmt) -> Result<ResolvedStmt, Diagnostic> {
                 Some(boxed) => Some(Box::new(expand_stmt(*boxed)?)),
                 None => None,
             },
-            condition: condition.map(|e| expand_expr(e)).transpose()?,
-            update: update.map(|e| expand_expr(e)).transpose()?,
+            condition: condition.map(expand_expr).transpose()?,
+            update: update.map(expand_expr).transpose()?,
             body: body
                 .into_iter()
-                .map(|s| expand_stmt(s))
+                .map(expand_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
         }),
         ResolvedStmt::ForIn { var, iter, body } => Ok(ResolvedStmt::ForIn {
@@ -75,7 +75,7 @@ fn expand_stmt(stmt: ResolvedStmt) -> Result<ResolvedStmt, Diagnostic> {
             iter: expand_expr(iter)?,
             body: body
                 .into_iter()
-                .map(|s| expand_stmt(s))
+                .map(expand_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
         }),
         ResolvedStmt::ForOf { var, iter, body } => Ok(ResolvedStmt::ForOf {
@@ -83,7 +83,7 @@ fn expand_stmt(stmt: ResolvedStmt) -> Result<ResolvedStmt, Diagnostic> {
             iter: expand_expr(iter)?,
             body: body
                 .into_iter()
-                .map(|s| expand_stmt(s))
+                .map(expand_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
         }),
         ResolvedStmt::ForAwaitOf { var, iter, body } => Ok(ResolvedStmt::ForAwaitOf {
@@ -91,16 +91,16 @@ fn expand_stmt(stmt: ResolvedStmt) -> Result<ResolvedStmt, Diagnostic> {
             iter: expand_expr(iter)?,
             body: body
                 .into_iter()
-                .map(|s| expand_stmt(s))
+                .map(expand_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
         }),
         ResolvedStmt::Switch { expr, cases } => {
             let mut expanded_cases = Vec::new();
             for (cond, body) in cases {
-                let expanded_cond = cond.map(|e| expand_expr(e)).transpose()?;
+                let expanded_cond = cond.map(expand_expr).transpose()?;
                 let expanded_body = body
                     .into_iter()
-                    .map(|s| expand_stmt(s))
+                    .map(expand_stmt)
                     .collect::<Result<Vec<_>, _>>()?;
                 expanded_cases.push((expanded_cond, expanded_body));
             }
@@ -117,20 +117,20 @@ fn expand_stmt(stmt: ResolvedStmt) -> Result<ResolvedStmt, Diagnostic> {
         } => Ok(ResolvedStmt::TryCatch {
             try_block: try_block
                 .into_iter()
-                .map(|s| expand_stmt(s))
+                .map(expand_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
             catch_param,
             catch_block: catch_block
                 .map(|b| {
                     b.into_iter()
-                        .map(|s| expand_stmt(s))
+                        .map(expand_stmt)
                         .collect::<Result<Vec<_>, _>>()
                 })
                 .transpose()?,
             finally_block: finally_block
                 .map(|b| {
                     b.into_iter()
-                        .map(|s| expand_stmt(s))
+                        .map(expand_stmt)
                         .collect::<Result<Vec<_>, _>>()
                 })
                 .transpose()?,
@@ -138,7 +138,7 @@ fn expand_stmt(stmt: ResolvedStmt) -> Result<ResolvedStmt, Diagnostic> {
         ResolvedStmt::Block { statements } => Ok(ResolvedStmt::Block {
             statements: statements
                 .into_iter()
-                .map(|s| expand_stmt(s))
+                .map(expand_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
         }),
         ResolvedStmt::Labeled { label, body } => Ok(ResolvedStmt::Labeled {

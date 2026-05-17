@@ -267,7 +267,7 @@ BigInt mixed comparison の object `ToPrimitive` boundary: direct object-literal
 
 | 機能 | ECMAScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
 |---|---|---|---|---|---|
-| `eval` | ES1 | dynamic code evaluation | 部分実装 (static string direct `eval(...)` expression statements are expanded in the parser/resolver slice; indirect/dynamic runtime eval remains unsupported) | P3 | 347, 349 |
+| `eval` / `Function` | ES1 | dynamic code evaluation | 部分実装 (static string direct `eval(...)` and literal-only `Function(...)` / `new Function(...)` have compile-time expansion slices; indirect/runtime-source eval and dynamic Function constructor remain under the audited host-lane plan) | P3 | 347, 349 |
 | `with` | ES1 | scope extension | 未実装 (unsupported-dynamic-code) | P3 | - |
 | `Proxy` | ES6 | meta-programming | 部分実装 (statically visible `new Proxy(target, handler)` locals support basic get/set/has/deleteProperty trap lowering) | P3 | 407 |
 | `Reflect` | ES6 | reflection API | 未実装 | P3 | - |

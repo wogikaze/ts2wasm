@@ -581,8 +581,6 @@ impl HostImport {
             Self::IteratorNext => "host.iteratorNext",
             Self::EvalDirect => "host.eval.direct",
             Self::EvalIndirect => "host.eval.indirect",
-            Self::EvalDirect => "host.evalDirect",
-            Self::EvalIndirect => "host.evalIndirect",
         }
     }
 }

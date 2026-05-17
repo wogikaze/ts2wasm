@@ -1,558 +1,418 @@
-# eval / `Function` constructor 実装計画
+# eval / `Function` constructor 完全実装計画
 
-Created: 2026-05-17  
-Primary issue: `issues/I-20260517-WE8P5A.md` (`UnsupportedEval: implement eval support (596 cases)`)  
-Related issues: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B49ZZE.md`, `issues/I-20260513-WBEJBE.md`, `issues/I-20260515-7N7MWQ.md`
+Last audited: 2026-05-17 (`archive(14).zip`)
+Previous plan: `plans/eval-new-function-implementation-plan.md`
+Primary tracking candidate: `issues/I-20260517-WE8P5A.md`
+Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B49ZZE.md`, `issues/I-20260513-WBEJBE.md`, `issues/I-20260515-7N7MWQ.md`
 
 ## 1. 目的
 
-`eval` と `Function` / `new Function` は、このプロジェクトが「TypeScript / JavaScript source を wasm に変換する compiler」であり続けられるかを決める難所である。
-この document の目的は、次の 2 つを両立する実装順序を固定することである。
+`eval` と `Function` / `new Function` は、ts2wasm が JavaScript engine wrapper ではなく compiler として成立するかを決める難所である。この計画の目的は、現在進んだ parser-level / resolver-level の対応を土台にしつつ、次の最終形へ到達する実装順序を固定することにある。
 
-1. **静的に解析できるコードは wasm としてコンパイルする。**
-   - `eval("...")` や `new Function("...", "...")` の source が compile-time literal として確定している場合、可能な範囲では runtime eval へ逃がさず、通常の parse / resolve / lower / backend pipeline に乗せる。
-   - この場合、capability manifest は standalone のままにする。eval そのものを理由に Node host を要求してはならない。
-2. **本当に runtime でしか分からない dynamic code は、明示的な capability と監査可能な Node host shim として扱う。**
-   - `host.eval.*` / `host.function.*` import を exact に manifest へ出す。
-   - `standalone: false` と `node_host.imports` / `capability_reasons` が一致しない artifact は emit しない。
-   - whole-program source を Node.js `eval` へ渡す wrapper 実装は禁止する。host shim が扱うのは、ユーザーコードが runtime で生成した dynamic source value に限定する。
+1. **compile-time に source が確定する dynamic-code construct は wasm-native AOT lane へ入れる。**
+   - static string direct `eval("...")`、static string indirect eval、literal-only `Function("...", "body")` / `new Function(...)` は、可能な限り parse / resolve / lower / backend pipeline に再投入する。
+   - static lane は `eval` / `Function` そのものを理由に Node host import を出してはならない。
+2. **runtime でしか source が分からない construct は capability-gated host lane へ入れる。**
+   - dynamic indirect eval、dynamic `Function` constructor、dynamic direct eval は段階的に `host.eval.*` / `host.function.*` import で扱う。
+   - host lane は manifest 上で `standalone: false`、`node_host.imports`、`capability_reasons` が完全一致している場合だけ emit できる。
+3. **direct eval の caller-scope mutation は最後に実装する。**
+   - local read/write-back、`var` / function declaration landing zone、strict eval lexical environment、TDZ、closure capture が絡むため、不完全な host eval で見かけ上 pass させない。
 
-この方針は `docs/01-project-definition.md` の禁止事項と、`docs/14-runtime-abi.md` の `Direct eval execution strategy` を前提にする。
+禁止事項は変わらない。original source 全体を Node.js `eval` / `Function` / `vm` に渡す wrapper 実装は禁止する。host shim が扱うのは、ユーザーコードが runtime に生成した source value に限定する。
 
-## 2. 現状整理
+## 2. 現在の進展と再評価
 
-### 2.1 実装済みの薄い slice
+`archive(14).zip` では、前回計画時より eval 周辺が明確に進んでいる。ただし進展はまだ **3 つの異なる path に分散**しており、このまま拡張すると semantics の取りこぼしが起きる。
 
-現在は static string の direct eval expression statement だけが部分対応されている。
+### 2.1 進んだ点
 
-- `crates/syntax/src/ast.rs`
-  - `Expr::is_direct_eval_call()` と `Expr::direct_eval_literal_source()` がある。
-- `crates/frontend/src/parser/statements_general.rs`
-  - `eval("...");` のような expression statement を parser 内で eval source の statement 群に展開する。
-  - block function declaration の一部 pattern を特別扱いして caller scope へ展開する。
-- `crates/ir/src/lowered/program_direct_eval.rs`
-  - direct eval block function binding の env cell / heap closure 補助がある。
-- `issues/done/I-20260513-HD4K3Q.md`
-  - done になっているが、実際の受け入れ範囲は static-string direct eval の compile-time 展開である。
+| 領域 | 現在の実装 | 重要度 |
+|---|---|---|
+| parser expression-level literal eval | `crates/frontend/src/parser/eval_expand.rs` が `let r = eval("1 + 2")` や `eval("1; 2;")` を post-parse で expression に展開する | completion value の足場が入った |
+| parser statement-level direct eval | `crates/frontend/src/parser/statements_general.rs::direct_eval_literal_statements` が `eval('x = "after";')` を caller statement 群へ展開する | caller local mutation の static slice が動く |
+| Annex B block function slice | `static_block_function_eval_expansion` と `crates/ir/src/lowered/program_direct_eval.rs` が supported direct-eval block function fixtures を通す | eval-code function hoist の難所に着手済み |
+| indirect eval parser rejection | `globalThis.eval("x")`、`globalThis["eval"]("x")`、`(0, eval)("x")` は parser reject ではなく後段へ流れる | Phase 4/5 の土台 |
+| optional eval diagnostic | `eval?.("x")` はまだ parser で issue-347 diagnostic | 後で indirect-like semantics として整理 |
+| resolved eval IR | `ResolvedExpr::Eval { kind, source, caller_is_strict, span }`、`EvalKind::{Direct, Indirect}`、`EvalSource::{StaticLiteral, Runtime}` が存在する | 統一 IR への入口 |
+| compiler eval expansion stage | `crates/compiler/src/stages/eval_expand.rs` が static direct `ResolvedExpr::Eval` を parse / resolve / builtin-resolve して completion expression へ置換する | parser rewrite から IR rewrite へ移行する素材 |
+| literal `Function` constructor | `try_expand_function_constructor` が literal-only `Function(...)` / `new Function(...)` を synthetic `FunctionExpr` に変換する | static `Function` AOT lane の初期 slice |
+| runtime catalog symbols | `RuntimeFn::EvalDirectHost` / `EvalIndirectHost` がある | host lane の名前だけはある |
 
-この slice は重要だが、次の制限がある。
+### 2.2 まだ危険な点
 
-- `let x = eval("1 + 1")` のような **eval の completion value を式として使うケース** は、parser statement 展開だけでは扱いにくい。
-- `eval` binding の shadowing 判定が parser の `possible_eval_shadowing` heuristic に依存している。
-- direct / indirect / optional / member eval の判定が parser と resolver に分散している。
-- dynamic source は未対応で、runtime ABI / capability manifest の形がまだない。
+| Gap | 現状 | 必要な修正 |
+|---|---|---|
+| eval path が 3 つある | parser expression rewrite、parser statement rewrite、compiler `ResolvedExpr::Eval` rewrite が併存 | canonical path を `DynamicCodePlan` / `EvalFragment` に一本化する |
+| parser が binding-sensitive 判断をしている | `possible_eval_shadowing` は token count heuristic。`Function` も syntactic `Ident("Function")` だけで展開される | resolver の lexical binding table で intrinsic / shadowed を判定する |
+| `EvalKind` が lowering で無視される | `ResolvedExpr::Eval` は direct/indirect に関係なく `RuntimeFn::EvalDirectHost` へ lower される | direct / indirect / host-global-only / full-direct を別 lowering にする |
+| host runtime fn が host import ではない | `EvalDirectHost` / `EvalIndirectHost` は `NO_IMPORTS` / `NO_CAPS` で、string source は runtime WAT で `unreachable` | runtime catalog に real `HostImport` / `Capability` を追加し、stub trap を事前 diagnostic に置換する |
+| compiler server path が eval expansion を通らない | `pipeline.rs` は `expand_static_eval_fragments` を呼ぶが、`server.rs` は呼ばない | build path と server path の stage parity を保証する |
+| `caller_is_strict` が未接続 | builtin resolver で `false` 固定 | parser/resolver から strict context を伝搬する |
+| static eval declaration completion が不安定 | `compiler/src/stages/eval_expand.rs::extract_completion_value` は statement を expression に潰すだけで、declaration environment を caller へ接続しない | eval-code statement lowering と completion slot を導入する |
+| `Function` constructor grammar が簡易 | parameter strings を `join(", ")` して synthetic function を parse するのみ | ECMAScript Function constructor の parameter/body parse rules、strict restrictions、SyntaxError timing を明示実装する |
+| tests / fixtures / issues が古い | `function-constructor-unsupported` という fixture 名や comment が build-success と矛盾。`I-20260517-WE8P5A` は dropped のまま | Phase 0 で tracking と naming を更新する |
 
-### 2.2 現在の拒否箇所
+この計画では、既に入った parser-level 実装を無駄にしない。ただし、それを最終形とは見なさず、**短期的には regression guard、長期的には resolver/lowering 主導の canonical implementation へ移行**する。
 
-- `crates/frontend/src/parser/expressions_main.rs`
-  - `globalThis.eval("x")`, `globalThis["eval"]("x")`, `(0, eval)("x")`, `eval?.("x")` を parser 段階で `issue-347` として拒否している。
-- `crates/resolve/src/name_resolver.rs`
-  - unshadowed `eval(...)` を `UnsupportedEval` / `issue-429` で拒否する path が残っている。
-  - unqualified `Function(...)` / `new Function(...)` を `issue-062` で拒否している。
-  - `new eval` も `UnsupportedEval` で拒否している。
-- `crates/backend-wasm/src/runtime/host/emit.rs`
-  - `$dollar_262_eval` は `unreachable` 実装で、test262 host hook の実行体がない。
-- `crates/runtime-catalog/src/host_import.rs`
-  - `HostImport` に eval / function constructor 用の NodeShim import がない。
-- `crates/runtime-catalog/src/capability.rs`
-  - eval / function constructor 用の Host capability がない。
+## 3. 現在の support matrix
 
-### 2.3 tracking 上の注意
-
-`issues/done/I-20260513-B49ZZE.md` は `Function constructor and indirect eval` が done のように見えるが、evidence は `build_smoke_function_constructor: PASS (diagnostic)` であり、実装完了ではない。
-次の作業では、この issue を「diagnostic slice was accepted」と解釈し、実機能は `I-20260517-WE8P5A` 配下で再設計する。
-
-## 3. 非目標と禁止事項
-
-この実装では以下を行わない。
-
-- original TypeScript / JavaScript source 全体を文字列として保持し、generated wasm から Node.js `eval` / `Function` / `vm` へ渡す wrapper 化。
-- static literal eval まで host eval に逃がすこと。
-- capability manifest なしで Node host eval を暗黙利用すること。
-- parser 段階で indirect eval を構文エラー扱いし続けること。
-- 仕様が難しいから `eval` / `Function` を permanent expected-fail に分類すること。
-
-ただし、段階的実装のため、dynamic direct eval のうち caller lexical scope の read/write-back が必要なケースは最後の phase まで診断を維持してよい。
-これは拒否ではなく、scope write-back model を安全に導入するための順序である。
-
-## 4. 基本設計
-
-### 4.1 two-lane design
-
-`eval` / `Function` は、source の確定タイミングで 2 lane に分ける。
-
-| Lane | 対象 | 実行方式 | capability | 目的 |
-|---|---|---|---|---|
-| AOT lane | source / params / body が compile-time literal として確定 | compiler pipeline で parse / resolve / lower し、wasm として emit | eval 自体では不要 | standalone を維持し、wrapper 化を防ぐ |
-| Dynamic host lane | source が runtime value | audited Node host shim import | `host.eval.*` / `host.function.*` | pure wasm で不可能な runtime code generation を明示的に扱う |
-
-この分岐は resolver / lowering で行い、parser の statement rewrite だけに閉じ込めない。
-
-### 4.2 eval kind
-
-`eval` は少なくとも次の kind を区別する。
-
-| Kind | 例 | Scope | 優先実装 |
+| Feature | 例 | 現在 | 完全実装の着地点 |
 |---|---|---|---|
-| direct eval | `eval(src)` | caller lexical / variable environment | static literal を最優先 |
-| indirect eval | `(0, eval)(src)`, `globalThis.eval(src)` | global environment | static literal と dynamic host を優先 |
-| optional direct eval | `eval?.(src)` | direct eval ではなく indirect-like 扱いになるケースがあるため spec 確認後 | 後続 |
-| construct eval | `new eval(...)` | eval は constructor ではない | `TypeError` または現行診断を spec に寄せる |
+| static direct eval expression | `let x = eval("1 + 2")` | parser post-parse rewrite で一部対応 | `EvalFragment` + completion slot で対応 |
+| static direct eval statement mutation | `eval('x = "after"')` | statement rewrite で一部対応 | caller-scope eval-code lowering で対応 |
+| static direct eval block function | `eval('{ function f(){} }')` | Annex B supported slice あり | hoist plan / mutable binding env を validation 付きで対応 |
+| direct eval with declarations | `eval('var x=1; x')` | expression completion と environment 接続が未完成 | eval-code environment + completion record |
+| indirect eval static literal | `(0, eval)("1+2")` | parser は通すが semantic path 未完成 | global `EvalFragment` AOT |
+| indirect eval dynamic | `(0, eval)(src)` | runtime stub か diagnostic | `host.eval.indirect` capability |
+| optional eval | `eval?.("x")` | parser diagnostic | indirect-like call semantics として classification |
+| `new eval` | `new eval("x")` | unsupported / TypeError 境界が未整理 | eval is not constructor の TypeError parity |
+| literal `Function` | `Function("a", "return a")` | parser synthetic `FunctionExpr` slice | resolver-owned static `FunctionConstructorPlan` |
+| literal `new Function` | `new Function("a", "return a")` | parser synthetic `FunctionExpr` slice | generated function object + metadata |
+| dynamic `Function` | `new Function(body)` | 未完成 | `host.function.compile` + host function handle |
+| shadowed `eval` / `Function` | `let eval = f; eval("x")` | eval は heuristic、Function は syntactic expansion risk | ordinary user binding semantics |
+| `$262.evalScript` | `$262.evalScript(src)` | runtime helper exists but dynamic eval body未実装 | harness/global eval lane として別分類 |
 
-初期実装では、parser が indirect eval を拒否せず、AST / resolved IR 上で `EvalKind::Indirect` として表現できることを優先する。
+## 4. 最終設計
 
-### 4.3 `Function` / `new Function` kind
+### 4.1 two-lane execution
 
-`Function(...)` と `new Function(...)` は同じ constructor semantics を共有する。
+| Lane | Source certainty | Scope semantics | Output | Capability |
+|---|---|---|---|---|
+| AOT direct eval | static string | caller lexical / variable env | wasm-native eval-code lowering | eval 自体では不要 |
+| AOT indirect eval | static string | global env | wasm-native global eval-code lowering | eval 自体では不要 |
+| AOT Function constructor | all params/body static strings | global env, no caller capture | generated function object | eval 自体では不要 |
+| Dynamic indirect eval | runtime maybe-string | global env | Node host shim | `host.eval.indirect` |
+| Dynamic Function constructor | runtime params/body | global env, no caller capture | host function handle | `host.function.compile` / call / construct |
+| Dynamic direct eval | runtime maybe-string | caller env with read/write-back | Node host shim + env descriptor | `host.eval.direct` |
 
-- parameter string 群と body string を結合して function source を構築する。
-- created function は caller lexical scope を capture しない。
-- global scope で評価される。
-- `name` は通常 `"anonymous"`。
-- `length` は parameter count から決まる。
-- call 可能な function object であり、`new` で construct 可能な通常 function として prototype を持つ。
+### 4.2 parser の責務
 
-compile-time literal だけで source が確定する場合は、generated function と function object metadata を compiler 側で合成する。
-runtime value が混じる場合は dynamic host lane に入れる。
+parser は以下だけを行う。
 
-## 5. 意味論 contract
+- syntactic shape を壊さず AST に残す。
+- literal source text と span を保持する。
+- optional chaining / comma / member / call / new の構文構造を失わない。
+- nested eval source を parse する場合でも、その結果を最終 semantic として確定しない。
 
-### 5.1 direct eval
+parser が行ってはいけないこと:
 
-`eval(src)` が unshadowed intrinsic eval への direct call である場合、以下を満たす。
+- `eval` や `Function` が user binding で shadowed されていないと仮定すること。
+- caller scope mutation の landing zone を決めること。
+- Function constructor が intrinsic であると syntactic name だけで決めること。
 
-- `src` が string でない場合は `src` をそのまま返す。
-- `src` が string の場合、eval code として parse する。
-- sloppy mode では `var` / function declaration が caller variable environment に作用する。
-- strict mode eval code の lexical declaration は eval code 内に閉じる。
-- completion value は `eval` expression の戻り値になる。
-- eval 内の exception は caller 側へ伝搬する。
-- direct eval によって `new.target`, `this`, `arguments`, function/class bindings へ影響するケースは、phase ごとに support matrix を明示する。
+現行 parser rewrite は一時的な compatibility shim として残してよいが、新しい coverage は resolver/lowering path に寄せる。
 
-最初の AOT direct eval phase では、literal source を `EvalFragment` として保持し、caller scope context 付きで resolve / lower する。
-現行の parser 展開は互換性のために残してもよいが、最終的には expression-level completion value を扱える IR path へ移す。
+### 4.3 resolver の責務
 
-### 5.2 indirect eval
-
-indirect eval は global eval として扱う。
-
-- caller lexical bindings を参照・変更しない。
-- global `var` / function declaration は global object / global env へ作用する。
-- static literal indirect eval は AOT lane で global eval fragment として lower できる。
-- dynamic source は `host.eval.indirect` に限定して Node host shim へ渡す。
-
-### 5.3 dynamic direct eval
-
-dynamic direct eval は最も危険で、caller local binding の read/write-back が必要になる。
-
-MVP では次のように段階分けする。
-
-1. source が compile-time literal の direct eval は AOT lane で実装する。
-2. source が dynamic だが caller lexical / local binding を必要としないと静的に証明できるケースだけ `host.eval.direct.global_only` 相当で許可する。
-3. caller local の read/write-back が必要な dynamic direct eval は、env snapshot / mutation ledger / write-back table が実装されるまで `UnsupportedEval` を維持する。
-
-この順序により、不完全な host eval で local mutation を取りこぼす事故を避ける。
-
-### 5.4 Function constructor
-
-`Function` constructor は direct eval ではなく global function compilation として扱う。
-
-- literal args only:
-  - parameter list と body を compile-time に parse する。
-  - generated function を `LoweredProgram.generated_functions` に追加する。
-  - function object metadata (`length`, `name`, `prototype`, constructability) を runtime object model に登録する。
-- dynamic args:
-  - Node host shim で compile する。
-  - returned host function object は RawValue として表現し、call / construct / property access の境界を明示する。
-  - first-class function object model (`issues/I-20260513-WBEJBE.md`) と連携する。
-
-## 6. AST / resolved IR / lowered IR 設計
-
-### 6.1 parser / syntax
-
-現行の `Expr::Call` と `Expr::New` は維持するが、helper を増やす。
-
-追加候補:
+resolver は lexical binding table を使って intrinsic dynamic-code construct を分類する。
 
 ```rust
-pub enum EvalCalleeKind {
-    Direct,
-    IndirectMember,
-    IndirectComma,
-    IndirectOptional,
-}
-
-pub enum DynamicCodeSource {
-    StaticLiteral(String),
-    RuntimeExpr(Box<Expr>),
-    NonStringExpr(Box<Expr>),
-}
-```
-
-parser の責務:
-
-- syntactic shape を落とさず AST に残す。
-- indirect eval を parser diagnostic にしない。
-- literal source の tokenization / nested parse は resolver/lowering へ移すか、少なくとも `EvalFragment` として source span と mode を保持する。
-- `Function(...)` / `new Function(...)` の args は通常の call/new expression として保持する。
-
-削除・緩和する箇所:
-
-- `Parser::indirect_eval_call_diagnostic` による即時 rejection。
-- `possible_eval_shadowing` による過剰 rejection。shadowing は resolver の binding table で判断する。
-
-### 6.2 resolver
-
-resolver は次を判定する。
-
-- `eval` が user binding で shadow されているか。
-- call が direct eval か indirect eval か。
-- source が static literal か runtime value か。
-- `Function` が user binding で shadow されているか。
-- `Function(...)` / `new Function(...)` の args がすべて static literal か。
-- target policy が dynamic host eval を許すか。
-
-追加候補:
-
-```rust
-pub enum ResolvedDynamicCodeKind {
+pub enum DynamicCodeKind {
     DirectEval,
     IndirectEval,
     FunctionConstructor { called_with_new: bool },
+    EvalScriptHostHook,
 }
 
-pub enum ResolvedExpr {
-    // existing variants ...
-    Eval {
-        kind: EvalKind,
-        source: EvalSource,
-        caller_scope: Option<ScopeId>,
-        strict_caller: bool,
-        span: Span,
-    },
-    FunctionConstructor {
-        args: Vec<ResolvedExpr>,
-        static_plan: Option<StaticFunctionConstructorPlan>,
-        called_with_new: bool,
-        span: Span,
-    },
+pub enum DynamicCodeSource<T> {
+    StaticString { value: String, span: Span },
+    RuntimeExpr(Box<T>),
+    NonStringStatic(Box<T>),
 }
-```
 
-resolver diagnostic policy:
+pub enum EvalScopeMode {
+    CallerScope { scope_id: ScopeId, strict_caller: bool },
+    GlobalScope,
+}
 
-- shadowed `eval` / `Function` は通常 identifier / call として扱う。
-- unshadowed eval / Function は専用 IR へ変換する。
-- host lane が disabled の場合は、dynamic source に対して `UnsupportedEval` または `UnsupportedRuntimeSubset` を出す。
-- diagnostic message には direct / indirect / Function constructor / static / dynamic の分類を含める。
+pub struct EvalFragmentPlan {
+    pub kind: DynamicCodeKind,
+    pub source: DynamicCodeSource<ResolvedExpr>,
+    pub scope_mode: EvalScopeMode,
+    pub source_span: Span,
+    pub call_span: Span,
+}
 
-### 6.3 lowering
-
-lowering は AOT lane と dynamic host lane を分けて `LoweredExpr` にする。
-
-追加候補:
-
-```rust
-pub enum LoweredExpr {
-    // existing variants ...
-    EvalStaticFragment {
-        kind: EvalKind,
-        fragment_id: EvalFragmentId,
-        span: Span,
-    },
-    EvalHostCall {
-        kind: EvalKind,
-        source: Box<LoweredExpr>,
-        env: Option<EvalEnvDescriptorId>,
-        span: Span,
-    },
-    FunctionConstructorStatic {
-        function_id: FuncId,
-        metadata: FunctionObjectMetadata,
-        span: Span,
-    },
-    FunctionConstructorHost {
-        params_and_body: Vec<LoweredExpr>,
-        span: Span,
-    },
+pub struct FunctionConstructorPlan {
+    pub called_with_new: bool,
+    pub params_and_body: Vec<DynamicCodeSource<ResolvedExpr>>,
+    pub static_parse: Option<StaticFunctionParsePlan>,
+    pub call_span: Span,
 }
 ```
 
-必要な補助構造:
+`eval` / `Function` が user binding で shadowed されている場合は、専用 IR にせず通常の identifier / call / new として扱う。
+
+### 4.4 AOT eval-code lowering
+
+static eval source は ordinary source file と同じ pipeline へ単純に投げるだけでは足りない。eval-code には caller scope / global scope への接続が必要である。
+
+必要な構造:
 
 - `EvalFragmentId`
-  - eval source text, strict flag, caller/global scope mode, original span を保持。
+  - source text、source span、strict flag、scope mode、parse goal を保持。
 - `EvalCompletionSlot`
-  - eval fragment の completion value を expression result に戻す。
-- `EvalHoistPlan`
-  - sloppy direct eval の `var` / function declaration を caller variable env に接続する。
-- `EvalEnvDescriptor`
-  - dynamic direct eval 用。scope id、readable binding list、writable binding list、write-back slot を持つ。
-- `FunctionObjectMetadata`
-  - `name`, `length`, `prototype`, constructable, strict, source span。
+  - eval expression の戻り値を statement lowering から取り出す。
+- `EvalDeclarationPlan`
+  - `var` / function declaration の landing zone。
+- `EvalLexicalEnvPlan`
+  - strict eval / lexical declaration の閉じ込め。
+- `EvalBlockFunctionPlan`
+  - Annex B block-level function declaration の initial binding / mutable binding / var binding 接続。
 
-### 6.4 backend
+static direct eval の completion は `docs/22-completion-records.md` の Completion Record model と接続する。
 
-backend は次を emit する。
+### 4.5 `Function` constructor lowering
 
-- `EvalStaticFragment`
-  - 通常の lowered statements / completion record として emit。
-  - host import を追加しない。
-- `EvalHostCall`
-  - runtime catalog 経由で該当 `RuntimeFn` を要求する。
-  - import 文字列を backend が直書きしない。
-- `FunctionConstructorStatic`
-  - generated function を callable object として allocate / return。
-  - `.length`, `.name`, `.prototype` metadata を既存 function object model と揃える。
-- `FunctionConstructorHost`
-  - `host.function.compile` で host function handle を作る。
-  - call / construct / property access に必要な bridge を runtime function に集約する。
+literal-only `Function` / `new Function` は eval ではなく **global function compilation** として扱う。
 
-## 7. Runtime catalog / capability / host ABI
+必要な contract:
 
-### 7.1 HostImport 追加案
+- caller lexical environment を capture しない。
+- global environment で resolve する。
+- parameter strings と body string は Function constructor grammar で parse する。
+- duplicate parameter、default/rest/destructuring、strict mode directive、body-level `use strict` の early error を Node と揃える。
+- resulting function object は callable かつ constructable。
+- `.name === "anonymous"`、`.length`、own `.prototype` を metadata として持つ。
+- static generated function は host import を出さない。
 
-`crates/runtime-catalog/src/host_import.rs` に NodeShim import を追加する。
+現行の `Expr::FunctionExpr` への parser rewrite は、短期的な build slice としては有用だが、metadata / constructability / non-capture validation を表現しづらい。最終的には `ResolvedExpr::FunctionConstructor` または `LoweredExpr::FunctionConstructorStatic` に移す。
 
-```rust
-HostImport::EvalIndirect,
-HostImport::EvalDirectGlobalOnly,
-HostImport::FunctionCompile,
-HostImport::FunctionCall,
-HostImport::FunctionConstruct,
-```
+### 4.6 dynamic host lane
 
-manifest name 例:
+runtime source の実行は pure wasm では実装できない。host lane は runtime catalog からのみ import を出す。
 
-| HostImport | spec.name | manifest import |
+追加する host imports:
+
+| HostImport | manifest import | 用途 |
 |---|---|---|
-| `EvalIndirect` | `eval.indirect` | `host.eval.indirect` |
-| `EvalDirectGlobalOnly` | `eval.directGlobalOnly` | `host.eval.directGlobalOnly` |
-| `FunctionCompile` | `function.compile` | `host.function.compile` |
-| `FunctionCall` | `function.call` | `host.function.call` |
-| `FunctionConstruct` | `function.construct` | `host.function.construct` |
+| `EvalIndirect` | `host.eval.indirect` | dynamic indirect eval |
+| `EvalDirectGlobalOnly` | `host.eval.directGlobalOnly` | local write-back 不要と証明できる direct eval subset |
+| `EvalDirect` | `host.eval.direct` | env descriptor / write-back 付き full direct eval |
+| `FunctionCompile` | `host.function.compile` | dynamic Function constructor compile |
+| `FunctionCall` | `host.function.call` | host function handle call |
+| `FunctionConstruct` | `host.function.construct` | host function handle construct |
 
-`host.eval.direct` という名前を最初から広く使うと、caller local mutation まで実装済みに見える。
-MVP では `directGlobalOnly` のように制限を名前へ含め、full direct eval は env write-back 実装後に追加する。
-
-### 7.2 Capability 追加案
-
-`crates/runtime-catalog/src/capability.rs` に次を追加する。
+対応する capability:
 
 ```rust
-Capability::HostEvalIndirect,
-Capability::HostEvalDirectGlobalOnly,
-Capability::HostFunctionCompile,
-Capability::HostFunctionCall,
-Capability::HostFunctionConstruct,
+Capability::HostEvalIndirect
+Capability::HostEvalDirectGlobalOnly
+Capability::HostEvalDirect
+Capability::HostFunctionCompile
+Capability::HostFunctionCall
+Capability::HostFunctionConstruct
 ```
 
-次の箇所も同時に更新する。
+現在の `RuntimeFn::EvalDirectHost` / `EvalIndirectHost` は名前に反して host import を持たず、string source で `unreachable` する。完全実装では次のどちらかに直す。
 
-- `Capability::manifest_name()`
-- `node_shim_import_to_capability()`
-- `cap_is_host()`
-- `RuntimeSpec` の imports / capability arrays
-- `RuntimeLinkPlan::populate_derived_sets()` の reason 生成
-- `backend-wasm/src/capability_manifest.rs` の manifest reason key
+1. dynamic host lane を有効化し、RuntimeSpec に HostImport / Capability を付ける。
+2. host lane 未有効時は lowering / runtime-gate で `UnsupportedEval` diagnostic を出し、WAT に `unreachable` stub を混入させない。
 
-特に manifest validation は `node_host.imports` の各 import 名に一致する `capability_reasons` key を要求する。
-そのため、`host.eval.indirect` の import を出す場合は `capability_reasons["host.eval.indirect"]` を必ず追加する。
+## 5. 実装 phase
 
-### 7.3 RuntimeFn 追加案
+### Phase 0: tracking / docs / tests の整合
 
-`crates/runtime-catalog/src/runtime_fn.rs` に追加する。
-
-```rust
-RuntimeFn::EvalIndirectHost,
-RuntimeFn::EvalDirectGlobalOnlyHost,
-RuntimeFn::FunctionCompileHost,
-RuntimeFn::FunctionCallHost,
-RuntimeFn::FunctionConstructHost,
-RuntimeFn::FunctionObjectCreateStatic,
-```
-
-`RuntimeSpec` では、host lane の runtime fn だけ NodeShim import と Host capability を持つ。
-static lane の `FunctionObjectCreateStatic` は import を持たない。
-
-### 7.4 Host ABI の粒度
-
-初期 ABI は RawValue i32 を中心にする。
-
-- `host.eval.indirect(source_value: RawValue, strict_flag: i32) -> RawValue`
-- `host.eval.directGlobalOnly(source_value: RawValue, strict_flag: i32) -> RawValue`
-- `host.function.compile(params_array_value: RawValue, body_value: RawValue, strict_flag: i32) -> RawValue`
-- `host.function.call(function_value: RawValue, this_arg: RawValue, args_array_value: RawValue) -> RawValue`
-- `host.function.construct(function_value: RawValue, args_array_value: RawValue) -> RawValue`
-
-exception handling は host shim 側で JS exception を runtime exception representation へ変換する。
-この変換が未整備なら、初期 slice では thrown error を `UnsupportedRuntimeSubset` に落とすのではなく、runtime helper と test を先に入れる。
-
-### 7.5 Node host shim の安全条件
-
-- shim は generated wasm の exported memory を通じて source RawValue を decode する。
-- shim は original module source 全体を受け取らない。
-- shim は import 単位で tree-shake される。
-- shim は `eval` / `Function` を使う import を manifest に露出する。
-- `--host-deny node` または host-deny validation では、dynamic host lane を明確に fail させる。
-
-## 8. 実装 phase
-
-### Phase 0: audit と tracking 修正
-
-目的: 既存の done/diagnostic slice と本実装範囲を混同しない。
+目的: 既存の進展を誤って diagnostic-only / unsupported と扱わないようにする。
 
 作業:
 
-- `issues/done/I-20260513-B49ZZE.md` の note に「diagnostic acceptance only」を追記するか、`I-20260517-WE8P5A` から明示的に参照する。
-- `docs/language-reference/javascript-features.md` の eval row を「static direct eval partial; dynamic/indirect/function planned by docs/28」に更新する。
-- `docs/14-runtime-abi.md` の Direct eval strategy と本 doc の host ABI 名を揃える。
-- parser / resolver / lowering / backend の current rejection point を grep で inventory 化する。
+- `issues/I-20260517-WE8P5A.md` の dropped 状態を再検討し、runtime eval 全拒否ではなく「AOT lane + host lane 完全実装」issue に再編する。
+- `issues/done/I-20260513-B49ZZE.md` は diagnostic acceptance だったことを明示し、literal Function constructor の現状とは分ける。
+- fixture 名・comment の矛盾を直す。
+  - `function-constructor-call-static.ts`
+  - `new-function-constructor-static.ts`
+  - `builtins-and-io/function-constructor.ts`
+- name resolver tests で `dynamic Function constructor` rejection を期待する古い test を、static literal / dynamic runtime / shadowed の分類 test に置き換える。
+- `current-state.md` と `docs/language-reference/javascript-features.md` を現状に合わせる。
 
 Exit criteria:
 
-- eval / Function の current support matrix が docs と issue 上で一致している。
-- diagnostic-only done を機能完了と誤読しない状態になっている。
+- eval / Function の support matrix が docs、fixtures、tests、issues で一致する。
+- 「Function constructor は unsupported」という古い表現が、literal-only AOT slice と dynamic host lane の区別に置き換わる。
 
-### Phase 1: eval を expression-level static AOT に昇格
+### Phase 1: current AOT literal eval を regression guard 化する
 
-目的: `eval("...")` を statement rewrite ではなく expression として扱い、completion value を正しく返す。
+目的: 既に動く static direct eval slice を壊さず、canonical path へ移行できるようにする。
 
 作業:
 
-- `Expr::Call` から unshadowed direct eval を resolver で `ResolvedExpr::Eval { kind: Direct, source: StaticLiteral, ... }` へ変換する。
-- eval source を `EvalFragment` として parse し、caller scope context を渡して resolve する。
-- `eval("1 + 1")` / `let x = eval("1 + 1")` / `return eval("x")` の completion value を返す。
-- `eval("var x = 1")` の caller variable env hoisting を整理する。
-- 現行 parser expansion は compatibility path として一時的に残し、同じ fixture が新 path で通るようになったら削る。
+- parser tests を以下に分ける。
+  - expression-only eval completion
+  - statement mutation eval
+  - block function eval
+  - shadowed eval ordinary-call
+  - indirect eval shape preservation
+  - optional eval diagnostic
+- `pipeline.rs` と `server.rs` の stage parity を直す。
+  - `expand_static_eval_fragments` を両方で呼ぶ、または canonical resolver/lowering path へ移して両方から不要にする。
+- `compiler/src/stages/eval_expand.rs` の責務を明確化する。
+  - 一時 stage なら current limitations を test で固定する。
+  - canonical stage にするなら caller scope context を渡す。
+- static direct eval が host import を出さない manifest test を追加する。
 
-主な変更ファイル:
+Exit criteria:
 
-- `crates/frontend/src/parser/statements_general.rs`
-- `crates/syntax/src/ast.rs`
-- `crates/resolve/src/name_resolver.rs`
-- `crates/ir/src/builtin_resolved.rs`
-- `crates/ir/src/lowered/program.rs`
-- `crates/ir/src/lowered/program_direct_eval.rs`
-- `crates/backend-wasm/src/expr_emit.rs`
+- `eval("1; 2;")`、`let x = 1; let y = eval("x + 2")`、`eval('x = "after"')` の supported subset が Node differential で一致する。
+- build path と server path で同じ結果になる。
+- static eval を含む standalone artifact に `host.eval.*` import がない。
 
-新規テスト例:
+### Phase 2: resolver-owned `EvalFragment` へ移行
+
+目的: parser rewrite 依存を減らし、declaration / completion / scope effect を扱える IR にする。
+
+作業:
+
+- `ResolvedExpr::Eval` を `EvalFragmentPlan` 付きに拡張する。
+- unshadowed direct eval 判定を resolver に移す。
+- `possible_eval_shadowing` heuristic による parser rejection を削る。
+- direct eval source を caller scope context で name resolve する。
+- eval fragment 内の declarations を caller env / eval lexical env に正しく接続する。
+- eval expression result は `EvalCompletionSlot` 経由で戻す。
+- strict caller / strict eval code を伝搬する。
+
+追加 fixtures:
 
 ```ts
 let x = 1;
-let y = eval("x + 2");
-console.log(y); // 3
+console.log(eval("x + 2"));
 ```
 
 ```ts
 function f() {
   let x = "before";
-  eval('x = "after";');
+  let r = eval('x = "after"; x');
+  console.log(r);
   return x;
 }
-console.log(f()); // after
+console.log(f());
 ```
 
 ```ts
-let r = eval('1; 2;');
-console.log(r); // 2
+function f() {
+  eval('var x = 1; function g(){ return x; }');
+  return g();
+}
+console.log(f());
 ```
 
 Exit criteria:
 
-- static direct eval は host import を追加しない。
-- `m11_host_deny` に「static direct eval remains standalone」を追加し、pass する。
-- completion value を使う eval fixtures が Node differential で一致する。
+- static direct eval with expression completion and supported declarations is not implemented by parser-only statement splicing.
+- shadowed `eval` is ordinary user call/new behavior, not intrinsic eval.
+- unsupported eval-code syntax fails with `UnsupportedEval` / issue-linked diagnostic before backend trap.
 
-### Phase 2: static literal indirect eval
+### Phase 3: Annex B / strict mode direct eval completion
 
-目的: indirect eval の parser rejection を外し、static literal は global eval fragment として wasm 化する。
+目的: direct eval の最も壊れやすい block function / strictness / binding interaction を正す。
 
 作業:
 
-- `Parser::indirect_eval_call_diagnostic` を削除または feature gate 下へ移動する。
-- resolver で `(0, eval)("...")`, `globalThis.eval("...")`, `globalThis["eval"]("...")` を `EvalKind::Indirect` にする。
-- source が static literal の場合、global scope context で parse / resolve / lower する。
-- caller local を参照した場合は spec 通り global lookup になり、unresolved なら global unresolved / ReferenceError path になるようにする。
-
-新規テスト例:
-
-```ts
-let x = 1;
-globalThis.x = 10;
-let y = (0, eval)("x");
-console.log(y); // 10
-```
+- Annex B block-level function declarations in eval-code を `EvalBlockFunctionPlan` に移す。
+- sloppy direct eval の function declaration landing zone を caller function env に接続する。
+- strict eval code の lexical declarations を eval lexical env 内へ閉じ込める。
+- `arguments` / `this` / `new.target` / function self-reference の read semantics を caller context と合わせる。
+- eval-code abrupt completion (`throw`, `return` invalidity, break/continue invalidity) を Completion Record と接続する。
 
 Exit criteria:
 
-- parser tests の `rejects_indirect_eval_calls_with_issue_347` を「marks/resolves indirect eval」に置き換える。
-- static indirect eval も host import なしで standalone。
-- global scope 参照と caller local 非 capture の differential test が pass する。
+- 既存 fixtures `direct-eval-block-function*` が parser special-case ではなく eval lowering path で通る。
+- strict/sloppy の代表 test262 direct eval cases が Node differential で一致する。
 
-### Phase 3: static `Function` / `new Function`
+### Phase 4: static `Function` / `new Function` AOT lane
 
-目的: literal args の `Function` constructor を runtime codegen なしで generated wasm function にする。
+目的: literal-only Function constructor を generated wasm function object として完全化する。
 
 作業:
 
-- resolver で unshadowed `Function(...)` / `new Function(...)` を専用 expression に変換する。
-- args がすべて static string literal の場合、parameter list と body を compile-time に parse する。
-- parse 時に `Function` constructor 特有の parameter/body 結合ルールを実装する。
-- generated function は global scope で resolve し、caller lexical scope を capture しない。
+- parser rewrite ではなく resolver で unshadowed intrinsic `Function` を分類する。
+- `ResolvedExpr::FunctionConstructor` を追加する。
+- static args の parse rule を実装する。
+  - 0 args: empty body。
+  - 1 arg: body only。
+  - 2+ args: all but last are parameter strings, last is body。
+- parameter strings は FormalParameters parse goal として parse する。
+- body は FunctionBody parse goal として parse する。
+- body-level `"use strict"` と non-simple params の early error を test で固定する。
+- generated function は global scope で resolve し、caller capture list が空であることを validate する。
 - function object metadata を作る。
+  - `.name`
   - `.length`
-  - `.name === "anonymous"`
   - `.prototype`
-  - callable / constructable flag
-- `issues/I-20260513-WBEJBE.md` の first-class Function object model と統合する。
+  - callable / constructable
+- `new Function(...)` と `Function(...)` の結果 object identity / call behavior を揃える。
 
-新規テスト例:
-
-```ts
-let f = new Function("a", "b", "return a + b;");
-console.log(f(1, 2)); // 3
-```
+追加 fixtures:
 
 ```ts
-let x = 1;
-let f = Function("return typeof x;");
-console.log(f()); // global lookup; caller local を capture しない
-```
-
-```ts
-let f = new Function("a", "b", "return a + b;");
+let f = new Function("a", "b", "return a + b");
+console.log(f(1, 2));
 console.log(f.length);
 console.log(f.name);
 ```
 
+```ts
+let x = 1;
+let f = Function("return typeof x");
+console.log(f()); // caller local を capture しない
+```
+
+```ts
+const Function = (x) => x;
+console.log(Function("return 1")); // ordinary call
+```
+
 Exit criteria:
 
-- literal-only `Function` / `new Function` は host import なしで動く。
-- 現行 `build_smoke_function_constructor` は diagnostic expectation から behavior expectation に更新する。
-- `Function` が user binding で shadow されている場合は従来通り user call として扱う。
+- literal-only `Function` / `new Function` は host import なしで Node differential pass。
+- metadata fixtures が pass。
+- shadowed `Function` は ordinary user binding として扱われる。
 
-### Phase 4: dynamic indirect eval host lane
+### Phase 5: static indirect eval AOT lane
 
-目的: pure wasm で不可能な runtime source の indirect eval を capability-gated Node host shim で実装する。
+目的: indirect eval の static literal source を global eval-code として wasm-native 実行する。
 
 作業:
 
-- `HostImport::EvalIndirect`, `Capability::HostEvalIndirect`, `RuntimeFn::EvalIndirectHost` を追加する。
-- runtime link plan validation に import/capability/reason の対応を追加する。
-- capability manifest に `host.eval.indirect` と reason を出す。
-- backend runtime helper `$eval_indirect_host` を追加する。
-- Node shim import `host.eval.indirect` を実装する。
-- `--host-deny node` では compile または validation で明確に fail させる。
+- `(0, eval)("...")`、`globalThis.eval("...")`、`globalThis["eval"]("...")` を resolver で `EvalKind::Indirect` に分類する。
+- source static string の場合は global scope context で parse / resolve / lower する。
+- caller local は参照しない。global lookup / ReferenceError path を使う。
+- `eval?.("...")` は spec に従い direct eval ではなく optional call / indirect-like global eval として扱うか、明示 diagnostic を維持する。
 
-新規テスト例:
+追加 fixtures:
 
 ```ts
-let src = "1 + 2";
-console.log((0, eval)(src)); // 3, node-host target only
+let x = 1;
+globalThis.x = 10;
+console.log((0, eval)("x"));
 ```
 
-manifest expectation:
+```ts
+let y = "local";
+console.log(globalThis.eval("typeof y"));
+```
+
+Exit criteria:
+
+- static indirect eval は host import なし。
+- caller local non-capture が Node differential で一致する。
+- `EvalKind::Indirect` が lowering/backend で direct に潰れない。
+
+### Phase 6: dynamic indirect eval host lane
+
+目的: runtime source の indirect eval を capability-gated Node host shim で実装する。
+
+作業:
+
+- `HostImport::EvalIndirect` を追加する。
+- `Capability::HostEvalIndirect` を追加する。
+- `RuntimeFn::EvalIndirectHost` spec を `imports: &[HostImport::EvalIndirect]`、`capability: &[Capability::HostEvalIndirect]` にする。
+- backend import emission は `RuntimeLinkPlan` 経由に限定する。
+- capability manifest に `host.eval.indirect` と reason を出す。
+- Node shim は RawValue string decode / non-string return / JS exception bridge を持つ。
+- host-deny では compile または runtime-gate で明確に fail する。
+
+Manifest example:
 
 ```json
 {
@@ -562,284 +422,217 @@ manifest expectation:
     "imports": ["host.eval.indirect"]
   },
   "capability_reasons": {
-    "host.eval.indirect": ["indirect eval with runtime source"]
+    "host.eval.indirect": ["dynamic indirect eval source"]
   }
 }
 ```
 
 Exit criteria:
 
-- dynamic indirect eval fixture passes on node-shim target.
-- same fixture fails under host-deny with explicit diagnostic.
-- static indirect eval fixture still has no `host.eval.indirect` import.
+- dynamic indirect eval node-shim target passes。
+- same fixture under host-deny fails with explicit diagnostic。
+- static indirect eval remains standalone。
 
-### Phase 5: dynamic `Function` / `new Function` host lane
+### Phase 7: dynamic `Function` / `new Function` host lane
 
-目的: runtime-generated params/body を Node host shim で compile し、function object として扱う。
+目的: runtime-generated params/body を host で compile し、host function handle として扱う。
 
 作業:
 
-- `HostImport::FunctionCompile`, `Capability::HostFunctionCompile`, `RuntimeFn::FunctionCompileHost` を追加する。
-- dynamic host function handle の value representation を定義する。
-  - wasm heap object wrapping host handle id
-  - or RawValue object tag with host external id table
-- call / construct bridge を追加する。
-  - 既存 `ReflectApply` / `ReflectConstruct` と競合しないようにする。
-  - 必要なら `host.function.call` / `host.function.construct` を追加する。
-- property access bridge を定義する。
-  - minimum: `.length`, `.name`, `.prototype`
-  - follow-up: arbitrary property get/set
+- `HostImport::FunctionCompile` / `FunctionCall` / `FunctionConstruct` を追加する。
+- `Capability::HostFunctionCompile` / `HostFunctionCall` / `HostFunctionConstruct` を追加する。
+- `RuntimeFn::FunctionCompileHost` などを runtime catalog に追加する。
+- host function handle representation を決める。
+  - wasm heap object wrapping host external id。
+  - or RawValue external-host tag + table id。
+- host function call / construct の bridge を追加する。
+- `.length`, `.name`, `.prototype` の minimum property bridge を実装する。
 - thrown SyntaxError / runtime error を caller へ伝搬する。
-
-新規テスト例:
-
-```ts
-let body = "return a + b;";
-let f = new Function("a", "b", body);
-console.log(f(1, 2)); // 3, node-host target only
-```
-
-```ts
-let f = Function("return this === globalThis;");
-console.log(f());
-```
 
 Exit criteria:
 
-- dynamic `new Function` passes on node-shim target with manifest import.
-- host-deny fails clearly.
-- literal-only `new Function` remains standalone.
+- dynamic `new Function(body)` passes on node-shim target。
+- literal-only `new Function` remains standalone。
+- host-deny fails clearly。
 
-### Phase 6: dynamic direct eval with env descriptor
+### Phase 8: dynamic direct eval with env descriptor
 
-目的: caller local binding を読む/書く dynamic direct eval を安全に実装する。
+目的: caller local read/write を必要とする dynamic direct eval を安全に実装する。
 
 作業:
 
 - `EvalEnvDescriptor` を lower する。
-  - readable bindings
-  - writable bindings
-  - var/function declaration landing zone
-  - lexical declaration isolation for strict eval
-- host shim へ env snapshot object を渡す。
+  - readable bindings。
+  - writable bindings。
+  - `var` / function declaration landing zone。
+  - strict eval lexical declaration isolation。
+  - module live binding / imported binding exclusion。
+- host shim に env snapshot を渡す。
 - host eval 後、mutation ledger を wasm env cells / locals へ write back する。
-- local を env cell 化する必要がある関数を事前に mark する。
-- unsupported な binding kind は diagnostic にする。
-  - TDZ が必要な lexical binding
-  - private name
-  - module live binding
-  - nested closure mutation と競合する binding
+- direct eval を含む function の locals を必要に応じて env-cell 化する。
+- TDZ、private name、module live binding、nested closure mutation と競合する binding は diagnostic にする。
 
 Exit criteria:
 
-- dynamic direct eval が caller local read/write を Node differential で一致させる。
-- env descriptor の write-back missing は validation で検出される。
-- dynamic direct eval による host import は full direct eval 用の名前で manifest に出る。
+- `eval(src)` が caller local read/write を Node differential で一致させる。
+- write-back missing は validation で検出される。
+- dynamic direct eval import は `host.eval.direct` として manifest に出る。
 
-### Phase 7: test262 ramp と expected-fail 再分類
+### Phase 9: `$262.evalScript` / test262 ramp / cleanup
 
-目的: `I-20260517-WE8P5A` の 596 blocked cases を段階的に burn down する。
+目的: language eval と harness eval を分けて coverage を伸ばす。
 
 作業:
 
-- `reference-coverage` の eval / Function constructor filter を作る。
-- test262 result を次に分類する。
-  - static direct eval AOT
-  - static indirect eval AOT
-  - static Function constructor AOT
-  - dynamic indirect eval host
-  - dynamic Function constructor host
-  - dynamic direct eval env write-back
-  - realm / cross-realm / `$262.evalScript` gap
-- `docs/15-coverage-matrix.md` と generated coverage artifact のラベルを更新する。
+- `$262.evalScript(source)` は direct eval ではなく test262 host hook として分類する。
+- `scripts/lib/test262_harness.py` / `compiler/src/test262_preprocessor.rs` の `new Function` stripping を見直す。
+- reference coverage の eval filter を以下に分類する。
+  - static direct eval AOT。
+  - static indirect eval AOT。
+  - static Function constructor AOT。
+  - dynamic indirect eval host。
+  - dynamic Function constructor host。
+  - dynamic direct eval env write-back。
+  - realm / cross-realm / `$262.evalScript` harness gap。
+- `UnsupportedEval` burn-down を artifact で確認する。
 
 Exit criteria:
 
-- UnsupportedEval 件数が phase ごとに下がる。
-- expected-fail は「実装しないから」ではなく、realm/harness 等の明確な未対応理由に限定される。
+- eval / Function constructor による expected-fail は実装不能扱いではなく、realm/harness/security など明確な理由だけに残る。
 
-## 9. テスト計画
+## 6. File-by-file task map
 
-### 9.1 unit tests
+| File / area | 変更方針 |
+|---|---|
+| `crates/frontend/src/parser/eval_expand.rs` | 一時 compatibility path として残しつつ、intrinsic 判定を resolver へ移す。eventual removal 対象。 |
+| `crates/frontend/src/parser/statements_general.rs` | `direct_eval_literal_statements` の parser semantic rewrite を `EvalFragment` lowering へ移す。 |
+| `crates/frontend/src/parser/expressions_main.rs` | `eval?.()` parser diagnostic を optional-call shape preservation へ移行する。 |
+| `crates/resolve/src/name_resolver.rs` | intrinsic / shadowed eval・Function 判定、strict context、scope id を管理する。未使用 diagnostic helper を整理する。 |
+| `crates/ir/src/builtin_resolved.rs` | `EvalFragmentPlan` / `FunctionConstructorPlan` を追加または既存 `Eval` を拡張する。 |
+| `crates/ir/src/builtin_resolver.rs` | direct / indirect / Function constructor classification を resolver facts に基づいて行う。 |
+| `crates/compiler/src/stages/eval_expand.rs` | canonical stage にする場合は caller/global scope context を受ける。そうでなければ削除する。 |
+| `crates/compiler/src/pipeline.rs` / `server.rs` | eval expansion / dynamic-code lowering stage parity を保証する。 |
+| `crates/ir/src/lowered/program_direct_eval.rs` | Annex B block function support を `EvalBlockFunctionPlan` として一般化する。 |
+| `crates/ir/src/lowered/resolver/expr/mod.rs` | `EvalKind` を無視せず、static / host / unsupported を分岐する。 |
+| `crates/runtime-catalog/src/host_import.rs` | eval / function host imports を追加する。 |
+| `crates/runtime-catalog/src/capability.rs` | host eval/function capabilities を追加する。 |
+| `crates/runtime-catalog/src/runtime_fn.rs` | runtime specs に imports / capabilities を接続する。 |
+| `crates/backend-wasm/src/runtime/host/emit.rs` | string source `unreachable` stubs を廃止し、host import or diagnostic にする。 |
+| `crates/backend-wasm/src/capability_manifest.rs` | `host.eval.*` / `host.function.*` reasons を manifest に出す。 |
+| `fixtures/core-semantics/*eval*` | static/dynamic/direct/indirect/optional/shadowed を命名で分ける。 |
+| `fixtures/builtins-and-io/function-constructor.ts` | comment と expected behavior を literal AOT slice に合わせる。 |
+| `scripts/lib/test262_harness.py` / `compiler/src/test262_preprocessor.rs` | `new Function` stripping を phase ごとの分類に置き換える。 |
 
-- parser
-  - indirect eval を reject しない。
-  - direct eval syntactic shape を保持する。
-  - optional/member/comma eval shape を保持する。
-- resolver
-  - unshadowed eval / Function は専用 IR へ変換する。
-  - shadowed eval / Function は user binding として扱う。
-  - static/dynamic source の分類が正しい。
-- runtime catalog
-  - new HostImport が manifest name / spec.name / wat_symbol を持つ。
-  - NodeShim import と Host capability の対応が validation で通る。
-  - reason key が `host.*` import 名と一致する。
-- capability manifest
-  - dynamic eval import は `standalone:false`。
-  - static eval は import なし。
-  - missing reason は validation failure。
-
-### 9.2 integration / CLI tests
-
-- `m6_builtin_methods.rs`
-  - static direct eval expression value。
-  - static indirect eval。
-  - static `new Function`。
-  - dynamic indirect eval node-shim。
-  - dynamic `new Function` node-shim。
-- `m11_host_deny.rs`
-  - static direct eval は host-deny でも pass。
-  - dynamic eval は host-deny で fail。
-- `m2_node_diff.rs`
-  - Node output と比較する fixtures を追加。
-
-### 9.3 negative tests
-
-- `eval` shadowing:
-
-```ts
-function f(eval) { return eval("x"); }
-```
-
-この場合は intrinsic direct eval ではなく通常 call である。
-
-- `Function` shadowing:
-
-```ts
-const Function = (x) => x;
-console.log(Function("return 1"));
-```
-
-この場合は dynamic code generation ではない。
-
-- host denied:
-
-```ts
-let s = "1 + 1";
-(0, eval)(s);
-```
-
-`--host-deny node` では capability denial になる。
-
-- syntax error timing:
-
-```ts
-new Function("return ;;");
-```
-
-Node と同じタイミングで SyntaxError を出す。
-
-## 10. Acceptance gates
-
-この作業は難所なので、phase ごとに以下を gate にする。
+## 7. Acceptance gates
 
 | Gate | 条件 |
 |---|---|
-| G1 static direct eval | `eval("expr")` が expression value を返し、host import なし |
-| G2 static indirect eval | parser rejection なし、global scope semantics、host import なし |
-| G3 static Function constructor | literal-only `new Function` が generated wasm function として動く |
-| G4 dynamic indirect eval | `host.eval.indirect` が manifest に exact に出て、node-shim で pass |
-| G5 dynamic Function constructor | `host.function.compile` 系 import が exact に出て、function object call が pass |
-| G6 dynamic direct eval | env descriptor / write-back が validated され、caller local mutation が pass |
-| G7 coverage | `UnsupportedEval` の減少が reference-coverage artifact で確認できる |
+| G0 tracking | docs / fixtures / issue status が current support matrix と一致する |
+| G1 static direct eval | expression completion + caller local mutation + no host import |
+| G2 direct eval declarations | supported `var` / function declaration landing zone + completion record |
+| G3 Annex B block function | existing block-function fixtures pass through canonical eval lowering |
+| G4 static Function constructor | literal-only `Function` / `new Function` Node differential + metadata + no host import |
+| G5 static indirect eval | global-scope semantics + no host import |
+| G6 dynamic indirect eval | `host.eval.indirect` exact manifest + node-shim pass + host-deny fail |
+| G7 dynamic Function constructor | `host.function.*` exact manifest + host function call/construct pass |
+| G8 dynamic direct eval | env descriptor + mutation ledger + write-back validation |
+| G9 coverage | `UnsupportedEval` / Function-constructor expected-fail count decreases with categorized artifact |
 
-すべての gate で共通:
+全 gate の共通条件:
 
-- panic / `unreachable` による失敗は禁止。
-- unsupported は `UnsupportedEval` などの分類済み diagnostic にする。
-- host import を追加した場合、runtime catalog / link plan / capability manifest / generated shim が同じ import name を使う。
-- standalone artifact に Node host eval import が混入しない。
+- backend WAT に silent `unreachable` eval stub を混ぜない。
+- parser-only rewrite による semantic pass を新規 acceptance としない。
+- host import 追加時は RuntimeCatalog、RuntimeLinkPlan、CapabilityManifest、Node shim の名前を完全一致させる。
+- standalone artifact に Node host eval import を混入させない。
 
-## 11. リスクと対策
+## 8. 推奨 PR 分割
 
-| Risk | 影響 | 対策 |
-|---|---|---|
-| direct eval の scope mutation を取りこぼす | observable semantics が壊れる | static AOT を先行し、dynamic direct は env descriptor 完成まで制限 |
-| parser rewrite が completion value を失う | `eval("1;2")` が不正 | expression-level `EvalFragment` へ移行 |
-| Function constructor が caller scope を capture する | spec 違反 | global scope resolve を強制し、capture list を空に validate |
-| host eval が wrapper 化に見える | project identity 破壊 | host lane は runtime-generated source のみに限定し、manifest に exact import を出す |
-| manifest reason mismatch | artifact validation failure | `host.*` import key と reason key の一致を unit test 化 |
-| dynamic host function object が wasm object model と乖離 | call/property が壊れる | first-class Function object issue と統合し、host handle wrapper を定義 |
-| test262 realm / `$262.evalScript` と混同 | coverage 分析が濁る | eval language feature と harness/realm gap を分類する |
+### PR 1: tracking and regression guard
 
-## 12. 推奨実装順序
+- この計画を更新。
+- current-state / language reference / fixture comments を現状に合わせる。
+- stale `unsupported Function constructor` tests を分類し直す。
+- static eval / literal Function current behavior の focused tests を追加する。
 
-最短で成果が出て、かつ壊れにくい順序は以下である。
+### PR 2: resolver-owned dynamic-code classification
 
-1. Phase 0: tracking / docs / diagnostic inventory。
-2. Phase 1: static direct eval を expression-level に昇格。
-3. Phase 2: static indirect eval を global AOT で通す。
-4. Phase 3: literal-only `new Function` を static generated function として通す。
-5. Phase 4: dynamic indirect eval を `host.eval.indirect` で capability-gated 実装。
-6. Phase 5: dynamic `Function` / `new Function` を host function object で実装。
-7. Phase 6: dynamic direct eval の env descriptor / write-back。
-8. Phase 7: test262 ramp。
+- shadowed / unshadowed eval and Function を resolver で判定する。
+- indirect eval shape を `EvalKind::Indirect` にする。
+- parser heuristic rejection を縮小する。
 
-最初から dynamic direct eval を実装しようとすると、scope, TDZ, closure, var hoist, function hoist, exception, completion value が同時に絡む。
-そのため、AOT lane と global dynamic lane で coverage を先に伸ばし、最後に caller-scope dynamic direct eval を入れる。
+### PR 3: static direct eval `EvalFragment`
 
-## 13. 直近 PR 分割案
+- `EvalFragmentPlan`、completion slot、caller-scope resolution。
+- parser rewrite 依存を段階的に削減。
 
-### PR 1: documentation and classification
+### PR 4: direct eval declarations and Annex B
 
-- この document を追加。
-- language reference / runtime ABI の eval row を更新。
-- current rejection points の test names を整理。
+- var/function hoist plan。
+- block function mutable env plan。
+- strict eval lexical env。
 
-### PR 2: parser no-longer-rejects indirect eval
+### PR 5: static Function constructor AOT
 
-- indirect eval parser diagnostic を外す。
-- AST tests を「shape is preserved」に変更。
-- resolver はまだ diagnostic を出してもよい。
+- `FunctionConstructorPlan`。
+- Function constructor grammar。
+- generated function object metadata。
 
-### PR 3: resolved eval IR
+### PR 6: static indirect eval AOT
 
-- `ResolvedExpr::Eval` を追加。
-- direct/indirect/static/dynamic classification unit tests を追加。
-- shadowed eval tests を追加。
-
-### PR 4: static direct eval expression completion
-
-- `EvalFragment` lowering。
-- completion value slot。
-- static direct eval fixtures。
-
-### PR 5: static indirect eval
-
-- global scope eval fragment。
-- fixtures and host-deny no-import assertions。
-
-### PR 6: static Function constructor
-
-- literal args parse。
-- generated function registration。
-- function object metadata。
+- global eval fragment。
+- caller local non-capture tests。
 
 ### PR 7: dynamic indirect eval host catalog
 
 - HostImport / Capability / RuntimeFn / manifest。
-- Node shim import。
-- host-deny test。
+- Node shim。
+- host-deny tests。
 
 ### PR 8: dynamic Function constructor host lane
 
-- host compile/call/construct imports。
-- host function handle wrapper。
-- fixtures。
+- host function handle representation。
+- compile / call / construct bridge。
+- metadata bridge。
 
-### PR 9+: dynamic direct eval env write-back
+### PR 9+: dynamic direct eval env descriptor and test262 ramp
 
-- env descriptor。
+- env snapshot。
 - mutation ledger。
-- local/env-cell write-back。
-- test262 ramp。
+- write-back。
+- `$262.evalScript` / realm classification。
 
-## 14. 完了時の状態
+## 9. 直近の最小作業単位
 
-完了後、次が成り立つ。
+次に着手すべき最小単位は **PR 1 + PR 2 の前半**である。
 
-- static direct eval / static indirect eval / literal-only `Function` constructor は wasm-native に実行される。
-- runtime-generated indirect eval / Function constructor は Node host capability として明示される。
-- dynamic direct eval は env descriptor によって caller scope mutation を検証可能な形で扱う。
-- `UnsupportedEval` は実装可能な eval case では減り、残る場合も理由が分類されている。
-- `docs/01-project-definition.md` の「JS engine wrapper 禁止」を破らない。
+1. `plans/eval-new-function-implementation-plan.md` をこの版へ更新する。
+2. `current-state.md` の eval paragraph を archive(14) の実装に合わせる。
+3. stale fixture comments と stale test names を直す。
+4. `server.rs` が `pipeline.rs` と同じ eval expansion stage を通るか確認し、差があるなら focused test を追加する。
+5. `RuntimeFn::EvalDirectHost` / `EvalIndirectHost` の host import と capability reason を明示しつつ、static eval が host import を出さない regression test を残す。
+
+これで「既に進んだ static lane」と「これから実装する dynamic host lane」の境界が明確になる。その後に resolver-owned `EvalFragment` へ移行する。
+
+## 10. リスクと対策
+
+| Risk | 影響 | 対策 |
+|---|---|---|
+| parser rewrite が shadowed eval / Function を誤展開する | user binding semantics が壊れる | intrinsic 判定を resolver へ移す |
+| eval completion value が declaration env と切り離される | `eval('let x=1; x')` などが壊れる | statement lowering + completion slot で扱う |
+| indirect eval が direct eval として lower される | caller local capture の spec 違反 | `EvalKind` を lowering/backend validation で必須分岐にする |
+| runtime stub `unreachable` が semantic failure を隠す | backend trap が diagnostic を置き換える | dynamic eval 未実装時は lowering/runtime-gate diagnostic |
+| Function constructor が caller scope を capture する | spec 違反 | global resolve + empty capture validation |
+| host eval capability が広すぎる | sandbox / manifest の信用低下 | exact import names + host-deny + reason validation |
+| direct dynamic eval write-back が漏れる | observable mutation loss | env descriptor validation と mutation ledger |
+| test262 `$262.evalScript` と language eval を混同する | coverage 分析が濁る | harness hook を別 label に分類 |
+
+## 11. 完了時の状態
+
+完了時には以下が成立する。
+
+- static direct eval は expression completion、caller local mutation、supported declarations、Annex B block functions を wasm-native に実行する。
+- static indirect eval は global semantics で wasm-native に実行する。
+- literal-only `Function` / `new Function` は generated wasm function object として実行し、metadata を持つ。
+- dynamic indirect eval と dynamic `Function` constructor は exact capability manifest を伴う Node host lane で動く。
+- dynamic direct eval は env descriptor / mutation ledger / write-back により caller scope mutation を検証可能に扱う。
+- `UnsupportedEval` は「未実装だから大量に残る」状態ではなく、realm / harness / unsupported binding kind など明確な理由に分類される。

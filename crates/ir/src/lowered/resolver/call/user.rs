@@ -6,7 +6,7 @@ use crate::builtin_resolved::{
     ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedParam, ResolvedStmt,
 };
 use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
-use crate::lowered::facts::{FunctionMethodKind, ProxyBinding, ProxyTrapKind};
+use crate::lowered::facts::{FunctionMethodKind, ProxyTrapKind};
 use crate::lowered::*;
 use std::collections::HashMap;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};

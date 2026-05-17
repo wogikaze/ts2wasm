@@ -1027,6 +1027,8 @@ const CAP_HOST_DATE_PARSE: &[Capability] = &[Capability::HostDateParse];
 const CAP_HOST_DATE_UTC: &[Capability] = &[Capability::HostDateUTC];
 const CAP_HOST_REFLECT_APPLY: &[Capability] = &[Capability::HostReflectApply];
 const CAP_HOST_REFLECT_CONSTRUCT: &[Capability] = &[Capability::HostReflectConstruct];
+const CAP_HOST_EVAL_DIRECT: &[Capability] = &[Capability::HostEvalDirect];
+const CAP_HOST_EVAL_INDIRECT: &[Capability] = &[Capability::HostEvalIndirect];
 const CAP_STRING_NORMALIZE: &[Capability] = &[Capability::HostStringNormalize];
 const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::UNDEFINED,

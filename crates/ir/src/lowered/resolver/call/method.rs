@@ -1067,29 +1067,30 @@ impl super::super::Resolver {
         method: &str,
         args: &[ResolvedExpr],
     ) -> Result<Option<LoweredExpr>, Diagnostic> {
-        if let ResolvedExpr::Ident(name) = object {
-            if is_typed_array_class(name) && method == "from" {
-                let source = match args.first() {
-                    Some(arg) => self.lower_expr(arg)?,
-                    None => LoweredExpr::ArrayNew {
-                        elements: Vec::new(),
-                        span: Span::generated("typed_array_from"),
-                    },
-                };
-                if args.len() > 1 {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "TypedArray.from with mapFn/thisArg is not supported".to_owned(),
-                        span: Some(Span::generated("typed_array_from")),
-                        phase: None,
-                    });
-                }
-                return Ok(Some(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeFn::TypedArrayFromArray,
-                    args: vec![source],
+        if let ResolvedExpr::Ident(name) = object
+            && is_typed_array_class(name)
+            && method == "from"
+        {
+            let source = match args.first() {
+                Some(arg) => self.lower_expr(arg)?,
+                None => LoweredExpr::ArrayNew {
+                    elements: Vec::new(),
                     span: Span::generated("typed_array_from"),
-                }));
+                },
+            };
+            if args.len() > 1 {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "TypedArray.from with mapFn/thisArg is not supported".to_owned(),
+                    span: Some(Span::generated("typed_array_from")),
+                    phase: None,
+                });
             }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::TypedArrayFromArray,
+                args: vec![source],
+                span: Span::generated("typed_array_from"),
+            }));
         }
         Ok(None)
     }
@@ -3513,7 +3514,7 @@ impl super::super::Resolver {
                 .classes
                 .local_classes
                 .get(&obj_local)
-                .is_some_and(is_intl_date_time_format_class)
+                .is_some_and(|class_name| is_intl_date_time_format_class(class_name.as_str()))
             && is_intl_date_time_format_method(method)
         {
             let options = self
@@ -4783,11 +4784,8 @@ fn intl_list_format_part_object() -> LoweredExpr {
     }
 }
 
-fn is_intl_date_time_format_class(class_name: &String) -> bool {
-    matches!(
-        class_name.as_str(),
-        "Intl.DateTimeFormat" | "DateTimeFormat"
-    )
+fn is_intl_date_time_format_class(class_name: &str) -> bool {
+    matches!(class_name, "Intl.DateTimeFormat" | "DateTimeFormat")
 }
 
 fn static_string_expr(expr: &ResolvedExpr) -> Option<&str> {

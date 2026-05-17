@@ -16,6 +16,7 @@ use ts2wasm_ir::lowered::LoweredProgram;
 use ts2wasm_ir::name_resolver;
 
 use crate::module_graph;
+use crate::stages::eval_expand::expand_static_eval_fragments;
 use crate::write_wasm_from_wat;
 use crate::{
     ensure_runtime_feature_gates, lower_static_named_import_bindings_for_build,
@@ -519,6 +520,8 @@ fn lower_source_text(path: &Path, source: &str) -> Result<LoweredProgram, Diagno
         .map_err(|d| d.with_phase("name-resolver"))?;
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)
         .map_err(|d| d.with_phase("builtin-resolver"))?;
+    let resolved =
+        expand_static_eval_fragments(resolved).map_err(|d| d.with_phase("eval-expand"))?;
     super::validate_typescript_semantics_for_path(path, &resolved)
         .map_err(|d| d.with_phase("semantic-validator"))?;
     validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)
@@ -691,6 +694,25 @@ mod tests {
             results[1].message
         );
         assert_eq!(results[2].status, "ok");
+
+        let _ = fs::remove_dir_all(tmpdir);
+    }
+
+    #[test]
+    fn lower_source_text_expands_static_eval_like_build_pipeline() {
+        let tmpdir = test_tmpdir("static-eval");
+        let path = tmpdir.join("static-eval.js");
+        let source = r#"let result = eval("let local = 1"); console.log(result);"#;
+        fs::write(&path, source)
+            .expect("test source should be written for module graph resolution");
+        let lowered = lower_source_text(&path, source)
+            .expect("server lowering should expand static eval fragments");
+        let dump = format!("{lowered:#?}");
+
+        assert!(
+            !dump.contains("EvalDirectHost") && !dump.contains("EvalIndirectHost"),
+            "static eval expansion should not leave host eval runtime calls in server lowering:\n{dump}"
+        );
 
         let _ = fs::remove_dir_all(tmpdir);
     }

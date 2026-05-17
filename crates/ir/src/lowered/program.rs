@@ -2679,10 +2679,9 @@ fn collect_function_sources(
         if let ResolvedStmt::Function {
             name, source_text, ..
         } = stmt
+            && !source_text.is_empty()
         {
-            if !source_text.is_empty() {
-                sources.insert(function_ids[name], source_text.clone());
-            }
+            sources.insert(function_ids[name], source_text.clone());
         }
     }
     sources
@@ -3771,7 +3770,7 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::ArrowFn { body, .. } => expr_contains_this(body),
         ResolvedExpr::FunctionExpr { .. } => false,
         ResolvedExpr::ClassExpr { .. } => false,
-        ResolvedExpr::Sequence(exprs) => exprs.iter().any(|e| expr_contains_this(e)),
+        ResolvedExpr::Sequence(exprs) => exprs.iter().any(expr_contains_this),
         ResolvedExpr::Number(_)
         | ResolvedExpr::DecimalNumber(_)
         | ResolvedExpr::BigIntLiteral { .. }
@@ -4008,7 +4007,7 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         }
         ResolvedExpr::ArrowFn { body, .. } => expr_contains_arguments(body),
         ResolvedExpr::FunctionExpr { .. } | ResolvedExpr::ClassExpr { .. } => false,
-        ResolvedExpr::Sequence(exprs) => exprs.iter().any(|e| expr_contains_arguments(e)),
+        ResolvedExpr::Sequence(exprs) => exprs.iter().any(expr_contains_arguments),
         ResolvedExpr::This { .. }
         | ResolvedExpr::NewTarget { .. }
         | ResolvedExpr::ImportMeta { .. }

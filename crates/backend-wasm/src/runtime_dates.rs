@@ -1580,11 +1580,11 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_intl_date_time_format_format(&self, wat: &mut String) {
-        wat.push_str(&format!(
+        wat.push_str(
             r#"
   (func $intl_date_time_format_format (param $value i32) (param $options_str i32) (result i32)
     (call $host_intl_date_time_format_format (local.get $value) (local.get $options_str)))
 "#,
-        ));
+        );
     }
 }

@@ -369,6 +369,8 @@ fn node_shim_import_to_capability(import: &HostImport) -> Option<Capability> {
         HostImport::IntlNumberFormatFormat => Some(Capability::HostIntlNumberFormatFormat),
         HostImport::ReflectApply => Some(Capability::HostReflectApply),
         HostImport::ReflectConstruct => Some(Capability::HostReflectConstruct),
+        HostImport::EvalDirect => Some(Capability::HostEvalDirect),
+        HostImport::EvalIndirect => Some(Capability::HostEvalIndirect),
         HostImport::IntlDateTimeFormatFormat => Some(Capability::HostIntlDateTimeFormatFormat),
         HostImport::StringNormalize => Some(Capability::HostStringNormalize),
         _ => None,
@@ -405,6 +407,8 @@ fn cap_is_host(cap: &Capability) -> bool {
             | Capability::HostStringNormalize
             | Capability::HostReflectApply
             | Capability::HostReflectConstruct
+            | Capability::HostEvalDirect
+            | Capability::HostEvalIndirect
     )
 }
 
@@ -447,18 +451,18 @@ pub fn validate_runtime_link_plan(
     for import in &plan.required_imports {
         if import_is_node_shim(import) {
             let expected_cap = node_shim_import_to_capability(import);
-            if let Some(cap) = expected_cap {
-                if !plan.required_capabilities.contains(&cap) {
-                    violations.push(
-                        RuntimeLinkPlanViolation::NodeShimImportWithoutHostCapability {
-                            import: *import,
-                            import_name: import.manifest_name().to_owned(),
-                        },
-                    );
-                }
+            if let Some(cap) = expected_cap
+                && !plan.required_capabilities.contains(&cap)
+            {
+                violations.push(
+                    RuntimeLinkPlanViolation::NodeShimImportWithoutHostCapability {
+                        import: *import,
+                        import_name: import.manifest_name().to_owned(),
+                    },
+                );
             }
             // If no specific cap mapping, check that at least one Host* cap exists
-            let has_any_host_cap = plan.required_capabilities.iter().any(|c| cap_is_host(c));
+            let has_any_host_cap = plan.required_capabilities.iter().any(cap_is_host);
             if expected_cap.is_none() && !has_any_host_cap {
                 violations.push(
                     RuntimeLinkPlanViolation::NodeShimImportWithoutHostCapability {
@@ -472,15 +476,13 @@ pub fn validate_runtime_link_plan(
 
     // 2. Check that WASI imports (except always-present ones like WasiProcExit/FdClose)
     //    have at least one Wasi* capability declared.
-    let has_wasi_cap = plan.required_capabilities.iter().any(|c| cap_is_wasi(c));
+    let has_wasi_cap = plan.required_capabilities.iter().any(cap_is_wasi);
     for import in &plan.required_imports {
-        if import_is_wasi(import) && !import_is_always_present(import) {
-            if !has_wasi_cap {
-                violations.push(RuntimeLinkPlanViolation::WasiImportWithoutCapability {
-                    import: *import,
-                    import_name: import.manifest_name().to_owned(),
-                });
-            }
+        if import_is_wasi(import) && !import_is_always_present(import) && !has_wasi_cap {
+            violations.push(RuntimeLinkPlanViolation::WasiImportWithoutCapability {
+                import: *import,
+                import_name: import.manifest_name().to_owned(),
+            });
         }
     }
 

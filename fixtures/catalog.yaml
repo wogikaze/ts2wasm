@@ -250,7 +250,7 @@ directories:
     - date-to-string-timezone-unsupported.ts
     - date-to-time-string.ts
     - date-utc-getters.ts
-    - dynamic-eval-unsupported-diagnostic.ts
+    - dynamic-eval-host-path.ts
     - dynamic-import-helper.ts
     - dynamic-import.ts
     - error-instanceof.ts
@@ -908,7 +908,7 @@ directories:
     - for-loop-prefix-increment.ts
     - for-of-array.ts
     - function-arguments.ts
-    - function-constructor-call-unsupported.ts
+    - function-constructor-call-static.ts
     - function-bind-call-apply.ts
     - function-expression-iife-return-this.ts
     - function-let-conflict-unsupported.ts
@@ -944,7 +944,7 @@ directories:
     - nested-namespace-abc.ts
     - nested-namespace-unsupported.ts
     - new-eval-unsupported.ts
-    - new-function-constructor-unsupported.ts
+    - new-function-constructor-static.ts
     - null-undefined.ts
     - nullish-coalescing.ts
     - number-stringify.ts

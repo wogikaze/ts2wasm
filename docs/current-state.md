@@ -308,6 +308,28 @@ Focused coverage is `fixtures/builtins-and-io/es-module-live-binding.ts`,
 `cargo nextest run -p ts2wasm-cli --test m9_modules build_smoke_live_binding`,
 and `grep -R 'ModuleExportsUpdate\|live_binding' crates/ir/src/lowered crates/backend-wasm/src/runtime`.
 
+## Eval / Function Constructor
+
+Last audited: 2026-05-18T00:00:00+09:00.
+
+The current implementation has several partial dynamic-code paths:
+
+- static string direct `eval(...)` can be expanded at compile time for the
+  supported expression-completion and caller-local mutation slices;
+- supported direct-eval block-function fixtures lower through the direct-eval
+  block-function environment helpers;
+- literal-only `Function(...)` and `new Function(...)` are currently expanded
+  by the parser into synthetic function expressions;
+- dynamic eval source values can reach the runtime eval host helper path, but
+  direct-vs-indirect lowering split and caller-scope direct-eval write-back
+  model are not complete;
+- dynamic `Function` constructor host compilation is not implemented.
+
+The canonical implementation plan is
+`plans/eval-new-function-implementation-plan.md`. Current known gaps include
+the split parser/compiler eval expansion paths, incomplete direct/indirect eval
+classification in lowering, and no `host.function.*` lane yet.
+
 ## Known compiler limitations
 
 ### test262 harness

@@ -195,15 +195,15 @@ impl NameResolver {
             let mut found = false;
             for stmt in program {
                 match stmt {
-                    Stmt::Expr { expr, .. } => match expr {
-                        Expr::String { value, .. } => {
-                            if value == "use strict" {
-                                found = true;
-                                break;
-                            }
+                    Stmt::Expr {
+                        expr: Expr::String { value, .. },
+                        ..
+                    } => {
+                        if value == "use strict" {
+                            found = true;
+                            break;
                         }
-                        _ => break,
-                    },
+                    }
                     _ => break,
                 }
             }
@@ -1665,11 +1665,6 @@ impl NameResolver {
             .any(|scope| scope.contains_key(name))
     }
 
-    fn is_unshadowed_function_constructor(&self, expr: &Expr) -> bool {
-        matches!(expr, Expr::Ident { name, .. } if name == "Function")
-            && !self.is_user_declared("Function")
-    }
-
     fn bigint_number_model_gap(&self, left: &Expr, right: &Expr, span: Span) -> Option<Diagnostic> {
         let other = if expr_contains_bigint_literal(left) {
             Some(right)
@@ -1919,26 +1914,6 @@ impl NameResolver {
             self.predeclare_name(binding, span)
         }
     }
-}
-
-fn unsupported_function_constructor(span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: "issue-062: dynamic Function constructor is not supported; runtime code evaluation is intentionally not implemented".to_owned(),
-        span: Some(span),
-
-
-        phase: None,}
-}
-
-fn unsupported_eval_diagnostic(span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedEval,
-        message: "issue-429: direct eval is not supported; runtime code evaluation is intentionally not implemented".to_owned(),
-        span: Some(span),
-
-
-        phase: None,}
 }
 
 fn unsupported_arguments_outside_function(span: Span) -> Diagnostic {

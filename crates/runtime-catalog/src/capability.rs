@@ -39,6 +39,8 @@ pub enum Capability {
     HostIntlDateTimeFormatFormat,
     HostReflectApply,
     HostReflectConstruct,
+    HostEvalDirect,
+    HostEvalIndirect,
 }
 
 impl Capability {
@@ -81,6 +83,8 @@ impl Capability {
             Self::HostIntlDateTimeFormatFormat => "host.intlDateTimeFormatFormat",
             Self::HostReflectApply => "host.reflectApply",
             Self::HostReflectConstruct => "host.reflectConstruct",
+            Self::HostEvalDirect => "host.eval.direct",
+            Self::HostEvalIndirect => "host.eval.indirect",
         }
     }
 }

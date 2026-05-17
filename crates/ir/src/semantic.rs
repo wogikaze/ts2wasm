@@ -836,7 +836,7 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
                 || expr_contains_arguments(key)
                 || expr_contains_arguments(expr)
         }
-        ResolvedExpr::Sequence(exprs) => exprs.iter().any(|e| expr_contains_arguments(e)),
+        ResolvedExpr::Sequence(exprs) => exprs.iter().any(expr_contains_arguments),
         ResolvedExpr::Spread(expr) => expr_contains_arguments(expr),
         ResolvedExpr::FunctionExpr { .. } => false,
         ResolvedExpr::ArrowFn { body, .. } => expr_contains_arguments(body),

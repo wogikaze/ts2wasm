@@ -440,7 +440,7 @@ fn wasi_fs_read_write_under_iwasm() {
     fs::create_dir_all(&temp).unwrap();
 
     // Create an input file for the fixture to read
-    fs::write(&temp.join("input.txt"), "hello from wasi\n").unwrap();
+    fs::write(temp.join("input.txt"), "hello from wasi\n").unwrap();
 
     let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")

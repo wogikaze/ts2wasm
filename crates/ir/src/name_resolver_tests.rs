@@ -530,7 +530,7 @@ mod tests {
     }
 
     #[test]
-    fn rejects_global_function_constructor_call_with_issue_062_diagnostic() {
+    fn allows_global_function_constructor_call_for_builtin_classification() {
         let program = vec![Stmt::Expr {
             expr: Expr::Call {
                 callee: Box::new(Expr::Ident {
@@ -546,15 +546,14 @@ mod tests {
             span: Span { start: 0, end: 20 },
         }];
 
-        let err = name_resolver::resolve_names(&program).unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-062"));
-        assert!(err.message.contains("dynamic Function constructor"));
-        assert_eq!(err.span.map(|span| (span.start, span.end)), Some((0, 20)));
+        assert!(
+            name_resolver::resolve_names(&program).is_ok(),
+            "name resolution only validates the global Function binding; builtin resolution classifies static vs dynamic constructor semantics",
+        );
     }
 
     #[test]
-    fn rejects_global_new_function_constructor_with_issue_062_diagnostic() {
+    fn allows_global_new_function_constructor_for_builtin_classification() {
         let program = vec![Stmt::Expr {
             expr: Expr::New {
                 expr: Box::new(Expr::Ident {
@@ -570,11 +569,10 @@ mod tests {
             span: Span { start: 0, end: 24 },
         }];
 
-        let err = name_resolver::resolve_names(&program).unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-062"));
-        assert!(err.message.contains("dynamic Function constructor"));
-        assert_eq!(err.span.map(|span| (span.start, span.end)), Some((0, 24)));
+        assert!(
+            name_resolver::resolve_names(&program).is_ok(),
+            "name resolution preserves new Function for later constructor classification",
+        );
     }
 
     #[test]

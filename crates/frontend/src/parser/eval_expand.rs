@@ -70,19 +70,16 @@ fn expand_eval_in_expr(expr: Expr, strict_mode: bool) -> Expr {
         Expr::Call { callee, args, span } => {
             if let Expr::Ident { name, .. } = callee.as_ref()
                 && name == "eval"
+                && let [Expr::String { value, .. }] = args.as_slice()
+                && let Some(parsed) = try_parse_eval_source(value, strict_mode)
             {
-                if let [Expr::String { value, .. }] = args.as_slice() {
-                    if let Some(parsed) = try_parse_eval_source(value, strict_mode) {
-                        return parsed;
-                    }
-                }
+                return parsed;
             }
             if let Expr::Ident { name, .. } = callee.as_ref()
                 && name == "Function"
+                && let Some(parsed) = try_expand_function_constructor(&args, span, strict_mode)
             {
-                if let Some(parsed) = try_expand_function_constructor(&args, span, strict_mode) {
-                    return parsed;
-                }
+                return parsed;
             }
             Expr::Call {
                 callee: Box::new(expand_eval_in_expr(*callee, strict_mode)),
@@ -120,18 +117,17 @@ fn expand_eval_in_expr(expr: Expr, strict_mode: bool) -> Expr {
         Expr::OptionalCall { callee, args, span } => {
             if let Expr::Ident { name, .. } = callee.as_ref()
                 && (name == "eval" || name == "Function")
+                && let [Expr::String { value, .. }] = args.as_slice()
             {
-                if let [Expr::String { value, .. }] = args.as_slice() {
-                    if name == "eval" {
-                        if let Some(parsed) = try_parse_eval_source(value, strict_mode) {
-                            return parsed;
-                        }
-                    }
-                    if name == "Function" {
-                        if let Some(parsed) = try_expand_function_constructor(&args, span, strict_mode) {
-                            return parsed;
-                        }
-                    }
+                if name == "eval"
+                    && let Some(parsed) = try_parse_eval_source(value, strict_mode)
+                {
+                    return parsed;
+                }
+                if name == "Function"
+                    && let Some(parsed) = try_expand_function_constructor(&args, span, strict_mode)
+                {
+                    return parsed;
                 }
             }
             Expr::OptionalCall {
@@ -143,10 +139,9 @@ fn expand_eval_in_expr(expr: Expr, strict_mode: bool) -> Expr {
         Expr::New { expr, args, span } => {
             if let Expr::Ident { name, .. } = expr.as_ref()
                 && name == "Function"
+                && let Some(parsed) = try_expand_function_constructor(&args, span, strict_mode)
             {
-                if let Some(parsed) = try_expand_function_constructor(&args, span, strict_mode) {
-                    return parsed;
-                }
+                return parsed;
             }
             Expr::New {
                 expr: Box::new(expand_eval_in_expr(*expr, strict_mode)),

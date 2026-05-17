@@ -279,10 +279,10 @@ impl super::Resolver {
         };
 
         if let Some(map_fn) = map_fn {
-            if crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, source) {
-                if let ResolvedExpr::Array(elements) = source {
-                    return self.lower_array_map_elements(source, elements, args, span);
-                }
+            if crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, source)
+                && let ResolvedExpr::Array(elements) = source
+            {
+                return self.lower_array_map_elements(source, elements, args, span);
             }
             // Runtime source with general mapFn: use existing shortcuts where possible
             if crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, source) {

@@ -1822,20 +1822,14 @@ fn build_smoke_regexp_advanced() {
     );
 }
 
-// Dynamic eval unsupported diagnostic (issue 111)
+// Dynamic eval runtime-source host path smoke (issue 111)
 #[test]
-fn dynamic_eval_unsupported_diagnostic() {
-    let result = run_fixture("builtins-and-io/dynamic-eval-unsupported-diagnostic.ts");
+fn build_smoke_dynamic_eval_host_path() {
+    let result = run_fixture("builtins-and-io/dynamic-eval-host-path.ts");
     assert!(
-        result.is_err(),
-        "Dynamic eval should produce unsupported diagnostic"
-    );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("eval() is not implemented in the lowered IR")
-            || err_msg.contains("eval is not supported"),
-        "Diagnostic should mention eval: {}",
-        err_msg
+        result.is_ok(),
+        "dynamic eval runtime-source host path should build: {:?}",
+        result.err()
     );
 }
 
