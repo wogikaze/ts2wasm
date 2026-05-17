@@ -2064,20 +2064,15 @@ impl Parser {
                 destructuring_binding = Some(pattern);
                 "_binding".to_owned()
             } else {
-                let (name, _) = self.expect_binding_ident()?;
-                // Cover initializer: `for (var x = expr in obj)` — skip `= expr`
+                let (name, name_span) = self.expect_binding_ident()?;
+                // Cover initializer: `for (var x = expr in obj)` — reject and skip `= expr`
                 if self.consume(TokenKind::Equal) {
-                    let mut depth_paren: usize = 0;
-                    loop {
-                        match self.peek() {
-                            Some(Token::In | Token::Of) if depth_paren == 0 => break,
-                            Some(Token::LeftParen) => { depth_paren += 1; self.advance(); },
-                            Some(Token::RightParen) if depth_paren > 0 => { depth_paren -= 1; self.advance(); },
-                            Some(Token::RightParen) => break,
-                            Some(_) => { self.advance(); },
-                            None => break,
-                        }
-                    }
+                    return Err(Diagnostic {
+                        code: DiagCode::SyntaxError,
+                        message: "for-in/of loop variable declaration may not have an initializer".to_owned(),
+                        span: Some(name_span),
+                        phase: Some("parser"),
+                    });
                 }
                 name
             };
