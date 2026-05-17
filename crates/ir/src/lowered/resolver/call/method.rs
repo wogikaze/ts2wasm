@@ -3631,7 +3631,7 @@ impl super::super::Resolver {
         ];
         let number_methods = ["toFixed", "toExponential", "toPrecision"];
         let promise_methods = ["then", "catch", "finally"];
-        let regexp_methods = ["test", "exec"];
+        let regexp_methods = ["test", "exec", "compile"];
         let class_name_str = match self.ctx.classes.local_classes.get(&obj_local) {
             Some(c) => c.clone(),
             None if array_like_methods.contains(&method) => "Array".to_owned(),
@@ -3765,6 +3765,11 @@ impl super::super::Resolver {
             }
         };
         let class_name = class_name_str.as_str();
+
+        // RegExp.prototype.compile — emit known-unsupported diagnostic
+        if class_name == "RegExp" && method == "compile" {
+            return Err(unsupported_regexp_compile_diagnostic(Some(span)));
+        }
 
         // BigInt.prototype.toString / valueOf
         if class_name == "BigInt" {

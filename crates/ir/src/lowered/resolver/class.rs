@@ -425,22 +425,14 @@ impl super::Resolver {
             .get(class_name)
             .and_then(|p| p.clone());
         while let Some(parent) = current {
-            let parent_constructor = self
-                .ctx
-                .classes
-                .class_constructor_ids
-                .get(&parent)
-                .copied()
-                .ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-207: superclass constructor `{}` is not available for instanceof",
-                        parent
-                    ),
-                    span: None,
-
-                    phase: None,
-                })?;
+            let Some(parent_constructor) =
+                self.ctx.classes.class_constructor_ids.get(&parent).copied()
+            else {
+                // Parent is a builtin (e.g., RegExp, Array, Date) — not a user-defined
+                // class with a registered constructor FuncId. Terminate the parent chain
+                // here; the runtime prototype chain handles the rest via proto links.
+                break;
+            };
             parent_constructors.push(parent_constructor);
             current = self
                 .ctx

@@ -568,17 +568,29 @@ fn extract_function_stubs(helper_source: &str, full_source: &str) -> String {
     // Fallback: hardcoded stubs for files where stripping is insufficient.
     let candidate_stubs = [
         ("function verifyProperty() {}", "verifyProperty"),
-        ("function verifyCallableProperty() {}", "verifyCallableProperty"),
+        (
+            "function verifyCallableProperty() {}",
+            "verifyCallableProperty",
+        ),
         ("function assert() {}", "assert"),
         ("function isPrimitive() {}", "isPrimitive"),
         ("function isConstructor() {}", "isConstructor"),
         ("function testFinished() {}", "testFinished"),
         ("function $DONOTEVALUATE() {}", "$DONOTEVALUATE"),
         ("function $DETACHBUFFER() {}", "$DETACHBUFFER"),
-        ("var WellKnownIntrinsicObjects = [];", "WellKnownIntrinsicObjects"),
-        ("function getWellKnownIntrinsicObject() {}", "getWellKnownIntrinsicObject"),
+        (
+            "var WellKnownIntrinsicObjects = [];",
+            "WellKnownIntrinsicObjects",
+        ),
+        (
+            "function getWellKnownIntrinsicObject() {}",
+            "getWellKnownIntrinsicObject",
+        ),
         ("function convertToNumeric() {}", "convertToNumeric"),
-        ("function MaybeViewedOutOfBounds() {}", "MaybeViewedOutOfBounds"),
+        (
+            "function MaybeViewedOutOfBounds() {}",
+            "MaybeViewedOutOfBounds",
+        ),
     ];
     candidate_stubs
         .iter()
@@ -594,9 +606,9 @@ fn inject_real_content(helper_source: &str, full_source: &str) -> String {
     let mut result = String::new();
     for line in helper_source.lines() {
         let trimmed = line.trim();
-        let skip = defined_names.iter().any(|(decl, name)| {
-            trimmed.starts_with(decl) && source_has_binding(full_source, name)
-        });
+        let skip = defined_names
+            .iter()
+            .any(|(decl, name)| trimmed.starts_with(decl) && source_has_binding(full_source, name));
         if !skip {
             result.push_str(line);
             result.push('\n');
@@ -614,13 +626,12 @@ fn remove_new_function_lines(source: &str) -> String {
     if source.contains("WellKnownIntrinsicObjects.forEach") {
         let marker = "WellKnownIntrinsicObjects.forEach";
         let before = source.find(marker).unwrap_or(0);
-        let after = source[before..].find("});")
+        let after = source[before..]
+            .find("});")
             .map(|pos| before + pos + 2)
             .unwrap_or(source.len());
         let mut result = source[..before].to_string();
-        result.push_str(
-            "// forEach block removed (newFunction/scope); values remain undefined\n",
-        );
+        result.push_str("// forEach block removed (newFunction/scope); values remain undefined\n");
         result.push_str(source[after..].trim());
         return result;
     }

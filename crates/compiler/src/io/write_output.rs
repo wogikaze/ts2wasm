@@ -38,8 +38,11 @@ fn wat_to_binary(wat: &str) -> Result<Vec<u8>, Diagnostic> {
                 std::env::temp_dir().join(format!("ts2wasm-{}-{}.wat", std::process::id(), unique));
             let _ = fs::write(&temp_wat, wat);
             WAT2WASM_FALLBACK_COUNT.fetch_add(1, Ordering::Relaxed);
-            let temp_wasm =
-                std::env::temp_dir().join(format!("ts2wasm-{}-{}.wasm", std::process::id(), unique));
+            let temp_wasm = std::env::temp_dir().join(format!(
+                "ts2wasm-{}-{}.wasm",
+                std::process::id(),
+                unique
+            ));
             let result = Command::new("wat2wasm")
                 .arg(&temp_wat)
                 .arg("-o")

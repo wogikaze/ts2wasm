@@ -1348,9 +1348,7 @@ pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
             if i < bytes.len() && bytes[i] == b')' {
                 i += 1; // consume ')'
             } else {
-                return Err(unsupported_regexp_literal(
-                    context, raw, "unclosed group",
-                ));
+                return Err(unsupported_regexp_literal(context, raw, "unclosed group"));
             }
         } else if ch == b')' {
             return Err(unsupported_regexp_literal(
@@ -1375,7 +1373,9 @@ pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
             }
             if i >= bytes.len() || bytes[i] != b'}' {
                 return Err(unsupported_regexp_literal(
-                    context, raw, "unclosed quantifier brace",
+                    context,
+                    raw,
+                    "unclosed quantifier brace",
                 ));
             }
             i += 1; // skip '}'

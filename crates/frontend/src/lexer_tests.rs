@@ -382,9 +382,7 @@ mod tests {
 
     #[test]
     fn rejects_decimal_numeric_separator_before_decimal_point() {
-        let err = Lexer::new("let x = 1_.5;")
-            .tokenize()
-            .unwrap_err();
+        let err = Lexer::new("let x = 1_.5;").tokenize().unwrap_err();
 
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(
@@ -395,9 +393,7 @@ mod tests {
 
     #[test]
     fn rejects_decimal_numeric_separator_after_decimal_point() {
-        let err = Lexer::new("let x = 1._5;")
-            .tokenize()
-            .unwrap_err();
+        let err = Lexer::new("let x = 1._5;").tokenize().unwrap_err();
 
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(
