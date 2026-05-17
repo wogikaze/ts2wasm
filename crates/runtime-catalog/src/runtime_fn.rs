@@ -1110,6 +1110,9 @@ const STRING_SPLIT_DEPS: &[RuntimeFn] = &[
     RuntimeFn::Copy,
     RuntimeFn::IsString,
     RuntimeFn::MemEqual,
+    RuntimeFn::RegexpMatchInner,
+    RuntimeFn::RegexpParseFlags,
+    RuntimeFn::StringSubstring,
 ];
 const STRING_TRIM_DEPS: &[RuntimeFn] =
     &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];

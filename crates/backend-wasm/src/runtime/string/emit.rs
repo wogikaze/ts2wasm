@@ -436,6 +436,9 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_string_split(&self, wat: &mut String) {
+        // Emit helpers needed for RegExp separator support
+        self.emit_regexp_match_from(wat);
+        self.emit_string_split_regexp(wat);
         wat.push_str(&format!(
             r#"
   (func $string_split (param $s i32) (param $sep i32) (result i32)
@@ -452,6 +455,7 @@ impl WatEmitter<'_> {
     (local $part_len i32)
     (local $result_idx i32)
     (local $part_value i32)
+    (local $first_byte i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
     (if (i32.eqz (call $is_string (local.get $sep)))
       (then
@@ -463,6 +467,12 @@ impl WatEmitter<'_> {
         (i32.store (i32.add (local.get $result_ptr) (i32.const 16)) (i32.const 1))
         (i32.store (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header}) (i32.const 0))) (local.get $s))
         (return (i32.or (local.get $result_ptr) (i32.const {array_tag})))))
+    ;; Check if separator is a RegExp pattern (starts with '/')
+    (local.set $first_byte
+      (i32.load8_u
+        (i32.add (i32.and (local.get $sep) (i32.const {heap_mask})) (i32.const {str_header}))))
+    (if (i32.eq (local.get $first_byte) (i32.const {slash}))
+      (then (return (call $string_split_regexp (local.get $s) (local.get $sep)))))
     (local.set $s_obj (i32.and (local.get $s) (i32.const {heap_mask})))
     (local.set $sep_obj (i32.and (local.get $sep) (i32.const {heap_mask})))
     (local.set $s_len (i32.load (local.get $s_obj)))
@@ -576,6 +586,117 @@ impl WatEmitter<'_> {
             array_header = Layout::ARRAY_HEADER_SIZE,
             str_header = Layout::STRING_HEADER_SIZE,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            slash = b'/' as i32,
+        ));
+    }
+
+    /// Split string by RegExp pattern separator (e.g., "/,/" splits on commas).
+    /// Uses $regexp_match_from which stores match_end at SCRATCH_OFFSET.
+    pub(crate) fn emit_string_split_regexp(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_split_regexp (param $input i32) (param $pattern i32) (result i32)
+    (local $i_obj i32)
+    (local $i_len i32)
+    (local $count i32)
+    (local $search_pos i32)
+    (local $match_str i32)
+    (local $match_end i32)
+    (local $match_len i32)
+    (local $result_ptr i32)
+    (local $part_start i32)
+    (local $result_idx i32)
+    (local $part_ptr i32)
+    (local $part_len i32)
+    (local $part_value i32)
+    (if (i32.eqz (call $is_string (local.get $input))) (then (return (i32.const {null_tag}))))
+    (if (i32.eqz (call $is_string (local.get $pattern))) (then (return (i32.const {null_tag}))))
+    (local.set $i_obj (i32.and (local.get $input) (i32.const {heap_mask})))
+    (local.set $i_len (i32.load (local.get $i_obj)))
+    ;; First pass: count parts (at minimum 1)
+    (local.set $count (i32.const {one}))
+    (local.set $search_pos (i32.const {zero}))
+    (block $count_done
+      (loop $count_loop
+        (local.set $match_str (call $regexp_match_from (local.get $pattern) (local.get $input) (local.get $search_pos)))
+        (if (i32.eqz (call $is_string (local.get $match_str))) (then (br $count_done)))
+        (local.set $match_end (i32.load (i32.const {scratch})))
+        (local.set $count (i32.add (local.get $count) (i32.const {one})))
+        (local.set $search_pos (local.get $match_end))
+        (local.set $match_len (i32.load (i32.and (local.get $match_str) (i32.const {heap_mask}))))
+        (if (i32.eqz (local.get $match_len))
+          (then (local.set $search_pos (i32.add (local.get $search_pos) (i32.const {one})))))
+        (br $count_loop)))
+    ;; Allocate result array
+    (local.set $result_ptr
+      (call $alloc_heap
+        (i32.add (i32.const {array_header})
+          (i32.shl (local.get $count) (i32.const {elem_shift})))))
+    (i32.store (local.get $result_ptr) (local.get $count))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $count))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    (i32.store
+      (i32.add (local.get $result_ptr) (i32.const 16))
+      (i32.sub (i32.shl (i32.const 1) (local.get $count)) (i32.const 1)))
+    ;; Second pass: extract parts
+    (local.set $result_idx (i32.const {zero}))
+    (local.set $part_start (i32.const {zero}))
+    (local.set $search_pos (i32.const {zero}))
+    (block $extract_done
+      (loop $extract_loop
+        (br_if $extract_done
+          (i32.ge_u (local.get $result_idx) (i32.sub (local.get $count) (i32.const {one}))))
+        (local.set $match_str (call $regexp_match_from (local.get $pattern) (local.get $input) (local.get $search_pos)))
+        (local.set $match_end (i32.load (i32.const {scratch})))
+        (local.set $match_len (i32.load (i32.and (local.get $match_str) (i32.const {heap_mask}))))
+        ;; Extract part: input[part_start .. match_end-match_len]
+        (local.set $part_len
+          (i32.sub (i32.sub (local.get $match_end) (local.get $match_len)) (local.get $part_start)))
+        (local.set $part_ptr (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $part_len))))
+        (i32.store (local.get $part_ptr) (local.get $part_len))
+        (call $copy
+          (i32.add (i32.add (local.get $i_obj) (i32.const {str_header})) (local.get $part_start))
+          (i32.add (local.get $part_ptr) (i32.const {str_header}))
+          (local.get $part_len))
+        (local.set $part_value (i32.or (local.get $part_ptr) (i32.const {string_tag})))
+        (i32.store
+          (i32.add (local.get $result_ptr)
+            (i32.add (i32.const {array_header})
+              (i32.shl (local.get $result_idx) (i32.const {elem_shift}))))
+          (local.get $part_value))
+        (local.set $result_idx (i32.add (local.get $result_idx) (i32.const {one})))
+        (local.set $part_start (local.get $match_end))
+        (local.set $search_pos (local.get $match_end))
+        (if (i32.eqz (local.get $match_len))
+          (then (local.set $search_pos (i32.add (local.get $search_pos) (i32.const {one})))))
+        (br $extract_loop)))
+    ;; Final part: input[part_start .. end]
+    (local.set $part_len (i32.sub (local.get $i_len) (local.get $part_start)))
+    (local.set $part_ptr (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $part_len))))
+    (i32.store (local.get $part_ptr) (local.get $part_len))
+    (call $copy
+      (i32.add (i32.add (local.get $i_obj) (i32.const {str_header})) (local.get $part_start))
+      (i32.add (local.get $part_ptr) (i32.const {str_header}))
+      (local.get $part_len))
+    (local.set $part_value (i32.or (local.get $part_ptr) (i32.const {string_tag})))
+    (i32.store
+      (i32.add (local.get $result_ptr)
+        (i32.add (i32.const {array_header})
+          (i32.shl (local.get $result_idx) (i32.const {elem_shift}))))
+      (local.get $part_value))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            string_tag = ValueTag::STRING,
+            array_tag = ValueTag::ARRAY,
+            null_tag = ValueTag::NULL,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            str_header = Layout::STRING_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            scratch = Layout::SCRATCH_OFFSET,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
         ));

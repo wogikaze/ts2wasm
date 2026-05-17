@@ -712,6 +712,16 @@ fn build_smoke_string_split_method() {
 }
 
 #[test]
+fn build_smoke_string_split_regexp_method() {
+    let result = run_fixture("builtins-and-io/string-split-regexp.ts");
+    assert!(
+        result.is_ok(),
+        "String.split with RegExp should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_string_replace_method() {
     let result = run_fixture("builtins-and-io/string-replace.ts");
     assert!(
@@ -775,6 +785,7 @@ fn build_smoke_string_supplementary() {
         "builtins-and-io/string-pad-start.ts",
         "builtins-and-io/string-pad-end.ts",
         "builtins-and-io/string-repeat.ts",
+        "builtins-and-io/string-split-regexp.ts",
     ] {
         let result = run_fixture(fixture);
         assert!(
