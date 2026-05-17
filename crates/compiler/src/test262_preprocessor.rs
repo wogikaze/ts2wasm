@@ -472,7 +472,7 @@ fn build_feature_stubs(features: &[String], source: &str) -> Result<String, Diag
                 needs_262 = true;
                 stubs.push_str("$262.IsHTMLDDA = {};\n");
             }
-            "createRealm" => {
+            "createRealm" | "cross-realm" => {
                 needs_262 = true;
                 stubs.push_str("$262.createRealm = function createRealm() { return {}; };\n");
             }

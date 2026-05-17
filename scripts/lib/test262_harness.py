@@ -101,7 +101,6 @@ BLOCKED_INCLUDES = (
     "wellKnownIntrinsicObjects.js",
 )
 BLOCKED_FEATURES = (
-    "cross-realm",
     "evalScript",
     "SharedArrayBuffer",
     "Atomics",
@@ -362,7 +361,7 @@ function test262_evalScript(source) {
 }
 
 function test262_createRealm() {
-  throw new Error("$262.createRealm is not supported by this runner slice");
+  return { global: $262.global };
 }
 
 function test262_detachArrayBuffer() {
