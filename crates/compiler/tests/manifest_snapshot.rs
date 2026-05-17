@@ -201,6 +201,40 @@ fn console_log_manifest_declares_wasi_stdout() {
 }
 
 #[test]
+fn static_function_constructor_manifest_remains_standalone_without_host_function_imports() {
+    let manifest = build_and_get_manifest(
+        r#"
+        let f = Function("return 1");
+        let g = new Function("return 2");
+        console.log(f());
+        console.log(g());
+        "#,
+        "static-function-constructor",
+    );
+    let parsed: serde_json::Value =
+        serde_json::from_str(&manifest).expect("manifest should be valid JSON");
+
+    assert_eq!(
+        parsed["standalone"], true,
+        "static Function should stay standalone"
+    );
+    assert_eq!(
+        parsed["node_host"]["required"], false,
+        "static Function should not require a Node host lane"
+    );
+    let imports = parsed["node_host"]["imports"]
+        .as_array()
+        .expect("node_host.imports should be an array");
+    assert!(
+        imports.iter().all(|import| !import
+            .as_str()
+            .unwrap_or_default()
+            .starts_with("host.function.")),
+        "static Function should not emit host.function imports: {imports:?}"
+    );
+}
+
+#[test]
 fn manifest_snapshot_roundtrip_from_lowered_program() {
     // Test that emit_canonical_manifest_json works with a manually constructed
     // LoweredProgram containing MathRandom.
