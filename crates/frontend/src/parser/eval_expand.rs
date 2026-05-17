@@ -1,4 +1,4 @@
-/// Post-parse pass: expand `eval("expr")` in expression position.
+/// Post-parse pass: expand `eval("expr")` and `Function("...", "body")` calls.
 pub(super) fn expand_eval_in_statements(stmts: Vec<Stmt>, strict_mode: bool) -> Vec<Stmt> {
     stmts
         .into_iter()
@@ -77,6 +77,13 @@ fn expand_eval_in_expr(expr: Expr, strict_mode: bool) -> Expr {
                     }
                 }
             }
+            if let Expr::Ident { name, .. } = callee.as_ref()
+                && name == "Function"
+            {
+                if let Some(parsed) = try_expand_function_constructor(&args, span, strict_mode) {
+                    return parsed;
+                }
+            }
             Expr::Call {
                 callee: Box::new(expand_eval_in_expr(*callee, strict_mode)),
                 args: args.into_iter().map(|a| expand_eval_in_expr(a, strict_mode)).collect(),
@@ -110,18 +117,70 @@ fn expand_eval_in_expr(expr: Expr, strict_mode: bool) -> Expr {
             index: Box::new(expand_eval_in_expr(*index, strict_mode)),
             span,
         },
-        Expr::OptionalCall { callee, args, span } => Expr::OptionalCall {
-            callee: Box::new(expand_eval_in_expr(*callee, strict_mode)),
-            args: args.into_iter().map(|a| expand_eval_in_expr(a, strict_mode)).collect(),
-            span,
-        },
-        Expr::New { expr, args, span } => Expr::New {
-            expr: Box::new(expand_eval_in_expr(*expr, strict_mode)),
-            args: args.into_iter().map(|a| expand_eval_in_expr(a, strict_mode)).collect(),
-            span,
-        },
+        Expr::OptionalCall { callee, args, span } => {
+            if let Expr::Ident { name, .. } = callee.as_ref()
+                && (name == "eval" || name == "Function")
+            {
+                if let [Expr::String { value, .. }] = args.as_slice() {
+                    if name == "eval" {
+                        if let Some(parsed) = try_parse_eval_source(value, strict_mode) {
+                            return parsed;
+                        }
+                    }
+                    if name == "Function" {
+                        if let Some(parsed) = try_expand_function_constructor(&args, span, strict_mode) {
+                            return parsed;
+                        }
+                    }
+                }
+            }
+            Expr::OptionalCall {
+                callee: Box::new(expand_eval_in_expr(*callee, strict_mode)),
+                args: args.into_iter().map(|a| expand_eval_in_expr(a, strict_mode)).collect(),
+                span,
+            }
+        }
+        Expr::New { expr, args, span } => {
+            if let Expr::Ident { name, .. } = expr.as_ref()
+                && name == "Function"
+            {
+                if let Some(parsed) = try_expand_function_constructor(&args, span, strict_mode) {
+                    return parsed;
+                }
+            }
+            Expr::New {
+                expr: Box::new(expand_eval_in_expr(*expr, strict_mode)),
+                args: args.into_iter().map(|a| expand_eval_in_expr(a, strict_mode)).collect(),
+                span,
+            }
+        }
         other => other,
     }
+}
+
+/// Try to expand `Function("param1", ..., "body")` into a FunctionExpr.
+fn try_expand_function_constructor(args: &[Expr], span: Span, strict_mode: bool) -> Option<Expr> {
+    let strings: Vec<&str> = args.iter().filter_map(|arg| match arg {
+        Expr::String { value, .. } => Some(value.as_str()),
+        _ => None,
+    }).collect();
+    if strings.len() != args.len() || args.is_empty() {
+        return None;
+    }
+    let body_source = strings[strings.len() - 1];
+    let param_names = &strings[..strings.len() - 1];
+    let params_str = param_names.join(", ");
+    let function_source = format!("function anonymous({params_str}) {{\n{body_source}\n}}");
+    let tokens = crate::Lexer::new_with_strict_mode(&function_source, strict_mode)
+        .tokenize().ok()?;
+    let mut parser = Parser::new_with_strict_mode(tokens, strict_mode, &function_source);
+    let stmts = parser.parse_program().ok()?;
+    for stmt in stmts {
+        if let Stmt::Function { name, params, body, is_generator, .. } = stmt {
+            return Some(Expr::FunctionExpr { name, params, body, is_generator, span, source_text: function_source });
+        }
+    }
+    None
 }
 
 fn try_parse_eval_source(source: &str, strict_mode: bool) -> Option<Expr> {
@@ -130,21 +189,13 @@ fn try_parse_eval_source(source: &str, strict_mode: bool) -> Option<Expr> {
         return None;
     }
     let tokens = crate::Lexer::new_with_strict_mode(trimmed, strict_mode)
-        .tokenize()
-        .ok()?;
+        .tokenize().ok()?;
     let mut parser = Parser::new_with_strict_mode(tokens, strict_mode, trimmed);
     let stmts = parser.parse_program().ok()?;
-    // Extract the completion value: the last expression statement wins.
-    // Preceding pure-expression statements are dropped (no side effects observable at compile time).
     let mut completion: Option<Expr> = None;
     for stmt in stmts {
         match stmt {
-            Stmt::Expr { expr, .. } => {
-                // All preceding expressions are overwritten by the last expression
-                // (they have no observable side effects for compile-time expansion).
-                completion = Some(expr);
-            }
-            // Declaration, function, or other statement — cannot simplify to an expression.
+            Stmt::Expr { expr, .. } => completion = Some(expr),
             _ => return None,
         }
     }
