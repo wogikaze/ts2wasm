@@ -543,7 +543,10 @@ fn dump_ast_accepts_class_expression_with_decorator() {
     let stdout = run_dump(&["--ast"], "var v = @decorate class C { static p = 1 };");
     assert!(stdout.contains("ClassExpr"), "{stdout}");
     assert!(stdout.contains("C"), "{stdout}");
-    assert!(!stdout.contains("[UnsupportedTypeScriptSyntax]"), "{stdout}");
+    assert!(
+        !stdout.contains("[UnsupportedTypeScriptSyntax]"),
+        "{stdout}"
+    );
 }
 
 #[test]

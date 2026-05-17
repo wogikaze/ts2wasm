@@ -592,11 +592,20 @@ fn extract_function_stubs(helper_source: &str, full_source: &str) -> String {
         ("function testFinished() {}", "testFinished"),
         ("function $DONOTEVALUATE() {}", "$DONOTEVALUATE"),
         // wellKnownIntrinsicObjects.js stubs (uses new Function(...) internally)
-        ("var WellKnownIntrinsicObjects = [];", "WellKnownIntrinsicObjects"),
-        ("function getWellKnownIntrinsicObject() {}", "getWellKnownIntrinsicObject"),
+        (
+            "var WellKnownIntrinsicObjects = [];",
+            "WellKnownIntrinsicObjects",
+        ),
+        (
+            "function getWellKnownIntrinsicObject() {}",
+            "getWellKnownIntrinsicObject",
+        ),
         // resizableArrayBufferUtils.js stubs (uses new Function(...))
         ("function convertToNumeric() {}", "convertToNumeric"),
-        ("function MaybeViewedOutOfBounds() {}", "MaybeViewedOutOfBounds"),
+        (
+            "function MaybeViewedOutOfBounds() {}",
+            "MaybeViewedOutOfBounds",
+        ),
     ];
     candidate_stubs
         .iter()
@@ -609,9 +618,7 @@ fn extract_function_stubs(helper_source: &str, full_source: &str) -> String {
 /// Check if a harness helper source contains patterns incompatible with the compiler
 /// or that would be broken by rewrite_assert_method_calls.
 fn uses_unsupported_or_rewritten_patterns(source: &str) -> bool {
-    if source.contains("new Function(")
-        || source.contains("eval(")
-        || source.contains("new Proxy(")
+    if source.contains("new Function(") || source.contains("eval(") || source.contains("new Proxy(")
     {
         return true;
     }
