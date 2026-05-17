@@ -188,7 +188,9 @@ impl super::Resolver {
                 ..
             } => {
                 // Emit a runtime call for eval — the host shim handles execution.
-                let source_expr = if let crate::builtin_resolved::EvalSource::StaticLiteral(s) = &source {
+                let source_expr = if let crate::builtin_resolved::EvalSource::StaticLiteral(s) =
+                    &source
+                {
                     LoweredExpr::String(s.clone(), Span::generated("eval"))
                 } else if let crate::builtin_resolved::EvalSource::Runtime(source_expr) = &source {
                     self.lower_expr(source_expr)?

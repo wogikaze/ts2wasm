@@ -1799,8 +1799,6 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "IteratorNext" => Some(RuntimeFn::IteratorNext),
         "IteratorFrom" => Some(RuntimeFn::IteratorFrom),
         "IteratorFind" => Some(RuntimeFn::IteratorFind),
-        "EvalDirectHost" => Some(RuntimeFn::EvalDirectHost),
-        "EvalIndirectHost" => Some(RuntimeFn::EvalIndirectHost),
         "IteratorEvery" => Some(RuntimeFn::IteratorEvery),
         "IteratorSome" => Some(RuntimeFn::IteratorSome),
         "IteratorForEach" => Some(RuntimeFn::IteratorForEach),

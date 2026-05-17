@@ -1,6 +1,6 @@
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
-use crate::lowered::*;
 use crate::lowered::facts::ProxyTrapKind;
+use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 
@@ -36,12 +36,14 @@ impl super::super::Resolver {
                     .map(|a| ResolvedArrayElement::Present(a.clone()))
                     .collect(),
             );
-            let construct_args = vec![
-                args_array,
-                ResolvedExpr::Ident(class_name.to_owned()),
-            ];
+            let construct_args = vec![args_array, ResolvedExpr::Ident(class_name.to_owned())];
             let pb = binding.clone();
-            return self.lower_proxy_trap_call(pb, ProxyTrapKind::ProxyConstruct, construct_args, span);
+            return self.lower_proxy_trap_call(
+                pb,
+                ProxyTrapKind::ProxyConstruct,
+                construct_args,
+                span,
+            );
         }
         if class_name == "RegExp" {
             return self.lower_regexp_constructor(args);

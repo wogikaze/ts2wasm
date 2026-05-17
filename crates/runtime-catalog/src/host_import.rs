@@ -505,6 +505,22 @@ impl HostImport {
                 params: "param i32",
                 result: "result i32",
             },
+            Self::EvalDirect => HostImportSpec {
+                module: "host",
+                name: "evalDirect",
+                wat_symbol: "$host_eval_direct",
+                abi: HostAbi::NodeShim,
+                params: "param i32 i32",
+                result: "result i32",
+            },
+            Self::EvalIndirect => HostImportSpec {
+                module: "host",
+                name: "evalIndirect",
+                wat_symbol: "$host_eval_indirect",
+                abi: HostAbi::NodeShim,
+                params: "param i32 i32",
+                result: "result i32",
+            },
         }
     }
 
@@ -563,6 +579,8 @@ impl HostImport {
             Self::ReflectConstruct => "host.reflectConstruct",
             Self::GetIterator => "host.getIterator",
             Self::IteratorNext => "host.iteratorNext",
+            Self::EvalDirect => "host.evalDirect",
+            Self::EvalIndirect => "host.evalIndirect",
         }
     }
 }
