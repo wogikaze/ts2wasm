@@ -607,6 +607,24 @@ fn inject_real_content(helper_source: &str, full_source: &str) -> String {
 
 /// Remove lines containing `new Function(` so the rest of the harness can be used.
 fn remove_new_function_lines(source: &str) -> String {
+    // For wellKnownIntrinsicObjects.js, the forEach callback has both
+    // new Function(...) and an unresolvable callback-local `actual`
+    // variable. Replace the entire forEach block with a comment so the
+    // data array and getWellKnownIntrinsicObject function remain intact.
+    if source.contains("WellKnownIntrinsicObjects.forEach") {
+        let marker = "WellKnownIntrinsicObjects.forEach";
+        let before = source.find(marker).unwrap_or(0);
+        let after = source[before..].find("});")
+            .map(|pos| before + pos + 2)
+            .unwrap_or(source.len());
+        let mut result = source[..before].to_string();
+        result.push_str(
+            "// forEach block removed (newFunction/scope); values remain undefined\n",
+        );
+        result.push_str(source[after..].trim());
+        return result;
+    }
+    // Default: just remove new Function lines (resizableArrayBufferUtils.js etc).
     source
         .lines()
         .filter(|line| !line.contains("new Function("))

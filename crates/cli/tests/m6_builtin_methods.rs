@@ -2215,9 +2215,14 @@ fn build_smoke_array_last_index_of() {
 fn build_smoke_cover_initializer_for_var_in() {
     let result = run_fixture("core-semantics/cover-initializer-for-var-in.ts");
     assert!(
-        result.is_ok(),
-        "Cover initializer for-var-in should build: {:?}",
-        result.err()
+        result.is_err(),
+        "Cover initializer for-var-in should fail (SyntaxError per ES spec)"
+    );
+    let err = result.err().unwrap();
+    assert!(
+        err.contains("for-in/of loop variable declaration may not have an initializer"),
+        "Expected initializer SyntaxError: {}",
+        err
     );
 }
 
