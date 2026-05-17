@@ -3984,8 +3984,8 @@ fn build_smoke_temporal_unsupported_diagnostic() {
     );
     let err_msg = result.err().unwrap();
     assert!(
-        err_msg.contains("unresolved name"),
-        "Diagnostic should mention unresolved name: {}",
+        err_msg.contains("issue-436"),
+        "Diagnostic should mention issue-436: {}",
         err_msg
     );
 }
@@ -3999,8 +3999,8 @@ fn build_smoke_shadowrealm_unsupported_diagnostic() {
     );
     let err_msg = result.err().unwrap();
     assert!(
-        err_msg.contains("unresolved name"),
-        "Diagnostic should mention unresolved name: {}",
+        err_msg.contains("issue-436"),
+        "Diagnostic should mention issue-436: {}",
         err_msg
     );
 }

@@ -1930,6 +1930,27 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 };
             }
 
+            // Temporal and ShadowRealm: produce explicit unsupported diagnostic
+            // instead of falling through to UnresolvedName.
+            if let Expr::Ident { name, .. } = object.as_ref() {
+                if name == "Temporal" {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedBuiltin,
+                        message: "issue-436: Temporal API is not implemented".to_owned(),
+                        span: span_of_expr(expr),
+                        phase: None,
+                    });
+                }
+                if name == "ShadowRealm" {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedBuiltin,
+                        message: "issue-436: ShadowRealm API is not implemented".to_owned(),
+                        span: span_of_expr(expr),
+                        phase: None,
+                    });
+                }
+            }
+
             let resolved_object = Box::new(resolve_expr(object)?);
             if property == "length" {
                 Ok(ResolvedExpr::BuiltinProperty {
@@ -1959,6 +1980,25 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
 
                     phase: None,
                 });
+            }
+            // Temporal/ShadowRealm optional member access: explicit unsupported
+            if let Expr::Ident { name, .. } = object.as_ref() {
+                if name == "Temporal" {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedBuiltin,
+                        message: "issue-436: Temporal API is not implemented".to_owned(),
+                        span: Some(*span),
+                        phase: None,
+                    });
+                }
+                if name == "ShadowRealm" {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedBuiltin,
+                        message: "issue-436: ShadowRealm API is not implemented".to_owned(),
+                        span: Some(*span),
+                        phase: None,
+                    });
+                }
             }
             Ok(ResolvedExpr::OptionalPropertyAccess {
                 object: Box::new(resolve_expr(object)?),
@@ -2054,6 +2094,15 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                                 .to_owned(),
                         span: Some(*span),
 
+                        phase: None,
+                    });
+                }
+                // ShadowRealm: explicit unsupported diagnostic
+                if class_name == "ShadowRealm" {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedBuiltin,
+                        message: "issue-436: ShadowRealm API is not implemented".to_owned(),
+                        span: Some(*span),
                         phase: None,
                     });
                 }
