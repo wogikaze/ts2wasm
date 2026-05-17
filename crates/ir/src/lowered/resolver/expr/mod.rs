@@ -182,6 +182,12 @@ impl super::Resolver {
             } => self.lower_named_function_expr(name, params, body, *is_generator),
             ResolvedExpr::ClassExpr { .. } => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
             ResolvedExpr::Sequence(exprs) => self.lower_sequence_expr(exprs),
+            ResolvedExpr::Eval { .. } => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "eval() is not implemented in the lowered IR".to_owned(),
+                span: None,
+                phase: None,
+            }),
         }
     }
 

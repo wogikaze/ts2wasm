@@ -30,7 +30,7 @@ use super::binding_pattern::parse_binding_pattern;
 use super::builtin::BuiltinId;
 use super::builtin::BuiltinPropertyId;
 use super::builtin_resolved::{
-    ClassMethod, ClassMethodKind, ResolvedExpr, ResolvedParam, ResolvedStmt,
+    ClassMethod, ClassMethodKind, EvalKind, EvalSource, ResolvedExpr, ResolvedParam, ResolvedStmt,
 };
 
 const BIGINT_FROM_VALUE_RUNTIME_CALL: &str = "__ts2wasm_bigint_from_value";
@@ -1781,6 +1781,22 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             })
         }
         Expr::Call { callee, args, span } => {
+            // Detect unshadowed direct eval(...) calls — produce Eval IR.
+            if let Expr::Ident { name, .. } = callee.as_ref()
+                && name == "eval"
+            {
+                let source = if let [Expr::String { value, .. }] = args.as_slice() {
+                    EvalSource::StaticLiteral(value.clone())
+                } else {
+                    EvalSource::Runtime
+                };
+                return Ok(ResolvedExpr::Eval {
+                    kind: EvalKind::Direct,
+                    source,
+                    caller_is_strict: false, // TODO: propagate strict mode from parser
+                    span: *span,
+                });
+            }
             if is_test262_assert_type_error_non_constructor_probe(callee, args) {
                 return Ok(ResolvedExpr::Undefined);
             }

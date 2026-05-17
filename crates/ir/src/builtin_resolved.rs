@@ -291,6 +291,24 @@ pub enum ResolvedExpr {
         body: Vec<ResolvedStmt>,
     },
     Sequence(Vec<ResolvedExpr>),
+    Eval {
+        kind: EvalKind,
+        source: EvalSource,
+        caller_is_strict: bool,
+        span: Span,
+    },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EvalKind {
+    Direct,
+    Indirect,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EvalSource {
+    StaticLiteral(String),
+    Runtime,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

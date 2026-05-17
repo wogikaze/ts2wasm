@@ -835,8 +835,8 @@ pub(super) fn expr_contains_super_ref(expr: &ResolvedExpr) -> bool {
         | ResolvedExpr::Undefined
         | ResolvedExpr::This { .. }
         | ResolvedExpr::NewTarget { .. }
-        | ResolvedExpr::ImportMeta { .. }
-        | ResolvedExpr::Ident(_) => false,
+        | ResolvedExpr::Eval { .. } => false,
+        ResolvedExpr::ImportMeta { .. } | ResolvedExpr::Ident(_) => false,
     }
 }
 

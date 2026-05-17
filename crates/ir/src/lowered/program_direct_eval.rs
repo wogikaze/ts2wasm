@@ -358,6 +358,7 @@ pub(crate) fn collect_direct_eval_function_assignment_expr(
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
         | ResolvedExpr::Null
-        | ResolvedExpr::Undefined => {}
+        | ResolvedExpr::Eval { .. } => {}
+        ResolvedExpr::Undefined => {}
     }
 }

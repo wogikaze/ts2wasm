@@ -145,7 +145,8 @@ pub(crate) fn collect_arrow_captures(
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
         | ResolvedExpr::Null
-        | ResolvedExpr::Undefined => {}
+        | ResolvedExpr::Eval { .. } => {}
+        ResolvedExpr::Undefined => {}
     }
 }
 
@@ -516,7 +517,8 @@ pub(crate) fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bo
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
         | ResolvedExpr::Null
-        | ResolvedExpr::Undefined => false,
+        | ResolvedExpr::Eval { .. } => false,
+        ResolvedExpr::Undefined => false,
     }
 }
 

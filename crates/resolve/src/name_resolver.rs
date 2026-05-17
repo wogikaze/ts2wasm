@@ -82,6 +82,7 @@ pub fn default_allowed_globals() -> std::collections::HashSet<String> {
         "globalThis",
         "setTimeout",
         // ECMAScript global builtins (issue 5412)
+        "eval",
         "Proxy",
         "WeakMap",
         "WeakSet",

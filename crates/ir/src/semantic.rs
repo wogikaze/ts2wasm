@@ -5,7 +5,9 @@ use ts2wasm_source::Span;
 use ts2wasm_syntax::{BinaryOp, UnaryOp};
 
 use crate::builtin::{BuiltinId, BuiltinPropertyId};
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::builtin_resolved::{
+    EvalKind, EvalSource, ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt,
+};
 
 // ---------------------------------------------------------------------------
 // Completion Record types (ECMAScript [[Type]] / [[Value]] / [[Target]])
@@ -472,7 +474,8 @@ impl TypeScriptCallArityValidator {
             | ResolvedExpr::NewTarget { .. }
             | ResolvedExpr::ImportMeta { .. }
             | ResolvedExpr::Ident(_)
-            | ResolvedExpr::ModuleLoad { .. } => {}
+            | ResolvedExpr::ModuleLoad { .. }
+            | ResolvedExpr::Eval { .. } => {}
             ResolvedExpr::Await { expr } => {
                 self.validate_expr(expr)?;
             }
@@ -838,6 +841,7 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::FunctionExpr { .. } => false,
         ResolvedExpr::ArrowFn { body, .. } => expr_contains_arguments(body),
         ResolvedExpr::ClassExpr { .. } => false,
+        ResolvedExpr::Eval { .. } => false,
     }
 }
 
@@ -1242,6 +1246,19 @@ impl<'a> HirLowerer<'a> {
             | ResolvedExpr::LogicalComputedPropertyAssign { .. } => Err(unsupported(
                 "assignment expressions are not part of the initial HIR slice",
             )),
+            ResolvedExpr::Eval { kind, source, .. } => {
+                let kind_str = match kind {
+                    EvalKind::Direct => "direct",
+                    EvalKind::Indirect => "indirect",
+                };
+                let source_str = match source {
+                    EvalSource::StaticLiteral(s) => s.as_str(),
+                    EvalSource::Runtime => "[dynamic]",
+                };
+                Err(unsupported(&format!(
+                    "eval ({kind_str}, source={source_str:?}) is not implemented in HIR slice"
+                )))
+            }
             _ => Err(unsupported(
                 "expression kind is not part of the initial HIR slice",
             )),
