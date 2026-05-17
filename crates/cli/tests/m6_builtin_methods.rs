@@ -4181,14 +4181,9 @@ fn build_smoke_promise_job_order() {
 fn build_smoke_function_constructor() {
     let result = run_fixture("builtins-and-io/function-constructor.ts");
     assert!(
-        result.is_err(),
-        "Function constructor should produce unsupported diagnostic"
-    );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("UnsupportedEval") || err_msg.contains("eval"),
-        "Diagnostic should mention UnsupportedEval/eval: {}",
-        err_msg
+        result.is_ok(),
+        "Function constructor with literal args should build: {:?}",
+        result.err()
     );
 }
 
