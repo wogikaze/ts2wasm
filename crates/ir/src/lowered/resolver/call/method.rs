@@ -2990,7 +2990,8 @@ impl super::super::Resolver {
             && match &args[0] {
                 ResolvedExpr::ArrowFn { .. }
                 | ResolvedExpr::FunctionExpr {
-                    is_generator: false, ..
+                    is_generator: false,
+                    ..
                 } => true,
                 ResolvedExpr::Ident(name) => {
                     self.ctx.symbols.function_ids.contains_key(name.as_str())
@@ -3324,10 +3325,20 @@ impl super::super::Resolver {
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
-        // Map.forEach or Set.forEach with ArrowFn — expand at IR level
+        // Map.forEach or Set.forEach with ArrowFn/FunctionExpr/Ident — expand at IR level
         if method == "forEach"
             && !args.is_empty()
-            && matches!(&args[0], ResolvedExpr::ArrowFn { .. })
+            && match &args[0] {
+                ResolvedExpr::ArrowFn { .. }
+                | ResolvedExpr::FunctionExpr {
+                    is_generator: false,
+                    ..
+                } => true,
+                ResolvedExpr::Ident(name) => {
+                    self.ctx.symbols.function_ids.contains_key(name.as_str())
+                }
+                _ => false,
+            }
             && let Ok(obj_local) = self.resolve_local(receiver_name)
             && let Some(class_name) = self.ctx.classes.local_classes.get(&obj_local)
             && (class_name == "Map" || class_name == "Set")

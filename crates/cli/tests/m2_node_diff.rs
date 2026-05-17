@@ -1215,8 +1215,8 @@ fn direct_eval_fixture_reports_issue_429() {
         "expected UnsupportedEval diagnostic for {fixture}, got:\n{stderr}"
     );
     assert!(
-        stderr.contains("eval() is not implemented in the lowered IR"),
-        "expected eval lowering diagnostic for {fixture}, got:\n{stderr}"
+        stderr.contains("issue-429"),
+        "expected issue-429 diagnostic for {fixture}, got:\n{stderr}"
     );
 }
 
