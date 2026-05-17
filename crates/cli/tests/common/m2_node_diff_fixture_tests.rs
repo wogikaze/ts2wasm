@@ -3179,13 +3179,8 @@ fn function_prototype_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn unsupported_function_prototype_metadata_reports_issue_062f() {
-    assert_build_fails_with_diagnostic(
-        "fixtures/core-semantics/function-prototype-metadata-unsupported.ts",
-        "[UnsupportedRuntimeSubset]",
-        "issue-062f: function `score` prototype metadata is not supported",
-        true,
-    );
+fn function_prototype_object_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/function-prototype-object.ts");
 }
 
 #[test]

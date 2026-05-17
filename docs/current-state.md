@@ -350,7 +350,6 @@ Compiler gaps blocking real harness usage:
 |---|---|---|
 | Method call on untyped receiver | `unknown receiver class for method X` | `crates/ir/src/lowered/resolver/call/method.rs` |
 | Function self-reference in body | `unresolved name: X` | `crates/ir/src/semantic.rs` |
-| Prototype property as metadata | `prototype metadata is not supported` | `crates/ir/src/lowered/resolver/call/user.rs` |
 
 Tracking: `I-20260513-HDW7PQ` (reopened — false-done audit), `I-20260513-4E2BR9`
 Plan: `plans/457-harness-compiler-gaps.md`

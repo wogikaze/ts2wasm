@@ -2,4 +2,4 @@ function score(left, right) {
     return left + right;
 }
 
-console.log(score.prototype);
+console.log(String(score.prototype));

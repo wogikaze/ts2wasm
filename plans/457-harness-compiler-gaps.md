@@ -176,11 +176,7 @@ crates/ir/src/lowered/resolver/call/user.rs
 
 ## 現状
 
-`lower_function_metadata_property` が `"prototype"` key を metadata として扱い、以下で落ちる。
-
-```text
-prototype metadata is not supported
-```
+`lower_function_metadata_property` は `"prototype"` key を空の function prototype object として lower できる。
 
 対象コード例。
 
@@ -245,7 +241,7 @@ mise run reference-coverage test262 --path-filter language/statements --limit 10
 
 ## 完了条件
 
-* `prototype metadata is not supported` が対象 fixture で出なくなる。
+* `function.prototype` metadata read が対象 fixture で Node differential pass する。
 * 既存 method / user call 系テストが regression しない。
 * `cargo nextest run` が通る。
 

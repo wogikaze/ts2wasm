@@ -912,7 +912,7 @@ directories:
     - function-expression-iife-return-this.ts
     - function-let-conflict-unsupported.ts
     - function-object-metadata.ts
-    - function-prototype-metadata-unsupported.ts
+    - function-prototype-object.ts
     - function-this-direct-call-unsupported.ts
     - function-this-receiver.ts
     - gc-call-frame-root.ts

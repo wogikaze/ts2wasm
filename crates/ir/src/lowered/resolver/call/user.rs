@@ -1243,14 +1243,10 @@ impl super::super::Resolver {
                     })
                 }
             }
-            "prototype" => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-062f: function `{name}` prototype metadata is not supported in this slice"
-                ),
-                span: Some(span),
-
-                phase: None,
+            "prototype" => Ok(LoweredExpr::ObjectNew {
+                props: Vec::new(),
+                non_enumerable: 0,
+                span: Span::generated("function_prototype_object"),
             }),
             _ => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
