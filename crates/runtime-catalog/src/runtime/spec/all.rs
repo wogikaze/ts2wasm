@@ -1245,7 +1245,7 @@ match self {
             Self::EvalDirectHost => RuntimeSpec {
                 symbol: "$eval_direct_host",
                 deps: NO_DEPS,
-                imports: NO_IMPORTS,
+                imports: &[HostImport::EvalDirect],
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
@@ -1253,7 +1253,7 @@ match self {
             Self::EvalIndirectHost => RuntimeSpec {
                 symbol: "$eval_indirect_host",
                 deps: NO_DEPS,
-                imports: NO_IMPORTS,
+                imports: &[HostImport::EvalIndirect],
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
