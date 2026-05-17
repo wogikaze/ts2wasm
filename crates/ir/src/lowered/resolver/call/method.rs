@@ -3161,6 +3161,11 @@ impl super::super::Resolver {
                     for arg in args.iter().take(max_args) {
                         lowered_args.push(self.lower_expr(arg)?);
                     }
+                    // $array_index_of / $array_includes expect 3 params:
+                    // $arr, $search, $from_idx. Pad missing fromIndex with 0.
+                    if (method == "indexOf" || method == "includes") && lowered_args.len() < 3 {
+                        lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
+                    }
                 }
                 return Ok(Some(LoweredExpr::RuntimeCall {
                     intrinsic,
@@ -3324,6 +3329,11 @@ impl super::super::Resolver {
                 };
                 for arg in args.iter().take(max_args) {
                     lowered_args.push(self.lower_expr(arg)?);
+                }
+                // $array_index_of / $array_includes expect 3 params:
+                // $arr, $search, $from_idx. Pad missing fromIndex with 0.
+                if (method == "indexOf" || method == "includes") && lowered_args.len() < 3 {
+                    lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
                 }
             }
             return Ok(Some(LoweredExpr::RuntimeCall {
@@ -4058,6 +4068,17 @@ impl super::super::Resolver {
                 || (class_name == "Number" && is_number_format_method(method)))
         {
             lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+        } else if (class_name == "Array" || is_typed_array_class(class_name))
+            && (method == "indexOf" || method == "includes")
+        {
+            // $array_index_of / $array_includes expect 3 params: $arr, $search, $from_idx.
+            // Pad missing args: searchElement defaults to undefined, fromIndex defaults to 0.
+            if lowered_args.len() < 2 {
+                lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+            }
+            if lowered_args.len() < 3 {
+                lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
+            }
         }
         Ok(lowered_args)
     }
