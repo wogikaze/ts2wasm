@@ -1,10 +1,6 @@
 use crate::emitter::WatEmitter;
 use ts2wasm_runtime_abi::{consts::RuntimeConst, layout::Layout, value::ValueTag};
 
-fn tagged_number_sentinel(payload: i32) -> i32 {
-    ((payload as i64) << (ValueTag::NUMBER_SHIFT as u32)) as i32 | ValueTag::NUMBER
-}
-
 impl WatEmitter<'_> {
     pub(crate) fn emit_array_get(&self, wat: &mut String) {
         wat.push_str(&format!(
@@ -739,16 +735,43 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $map_get (param $map i32) (param $key i32) (result i32)
-    (local $key_len i32)
-    (if (i32.eq (local.get $key) (i32.const {negative_zero}))
-      (then (local.set $key (i32.const {positive_zero}))))
-    (local.set $key_len
-      (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
-    (call $property_get (local.get $map) (i32.const {scratch_offset}) (local.get $key_len)))
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local.set $tag (i32.and (local.get $map) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $base (i32.and (local.get $map) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (local.get $count))
+    (block $not_found
+      (loop $scan
+        (br_if $not_found (i32.eq (local.get $i) (i32.const {zero})))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq
+              (call $same_value_zero
+                (i32.load (local.get $entry_base))
+                (local.get $key))
+              (i32.const {true}))
+          (then (return (i32.load (i32.add (local.get $entry_base) (i32.const {value_off}))))))
+        (br $scan)))
+    (i32.const {undefined}))
 "#,
-            scratch_offset = Layout::SCRATCH_OFFSET,
-            negative_zero = tagged_number_sentinel(ValueTag::NEG_ZERO_PAYLOAD),
-            positive_zero = ValueTag::encode_number(0),
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            value_off = Layout::OBJECT_VALUE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            true = ValueTag::TRUE,
+            undefined = ValueTag::UNDEFINED,
         ));
     }
 
@@ -756,22 +779,51 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $map_set (param $map i32) (param $key i32) (param $value i32) (result i32)
-    (local $key_len i32)
-    (if (i32.eq (local.get $key) (i32.const {negative_zero}))
-      (then (local.set $key (i32.const {positive_zero}))))
-    (local.set $key_len
-      (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
-    (drop
-      (call $property_set
-        (local.get $map)
-        (i32.const {scratch_offset})
-        (local.get $key_len)
-        (local.get $value)))
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local.set $tag (i32.and (local.get $map) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $base (i32.and (local.get $map) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (local.get $count))
+    (block $append
+      (loop $scan
+        (br_if $append (i32.eq (local.get $i) (i32.const {zero})))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq
+              (call $same_value_zero
+                (i32.load (local.get $entry_base))
+                (local.get $key))
+              (i32.const {true}))
+          (then
+            (i32.store (i32.add (local.get $entry_base) (i32.const {value_off})) (local.get $value))
+            (return (local.get $map))))
+        (br $scan)))
+    (local.set $entry_base
+      (i32.add (local.get $base)
+        (i32.add (i32.const {obj_header}) (i32.shl (local.get $count) (i32.const {entry_shift})))))
+    (i32.store (local.get $entry_base) (local.get $key))
+    (i32.store (i32.add (local.get $entry_base) (i32.const {value_off})) (local.get $value))
+    (i32.store (local.get $base) (i32.add (local.get $count) (i32.const {one})))
     (local.get $map))
 "#,
-            scratch_offset = Layout::SCRATCH_OFFSET,
-            negative_zero = tagged_number_sentinel(ValueTag::NEG_ZERO_PAYLOAD),
-            positive_zero = ValueTag::encode_number(0),
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            value_off = Layout::OBJECT_VALUE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            true = ValueTag::TRUE,
+            undefined = ValueTag::UNDEFINED,
         ));
     }
 
@@ -779,16 +831,42 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $map_has (param $map i32) (param $key i32) (result i32)
-    (local $key_len i32)
-    (if (i32.eq (local.get $key) (i32.const {negative_zero}))
-      (then (local.set $key (i32.const {positive_zero}))))
-    (local.set $key_len
-      (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
-    (call $property_has (local.get $map) (i32.const {scratch_offset}) (local.get $key_len)))
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local.set $tag (i32.and (local.get $map) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
+    (local.set $base (i32.and (local.get $map) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (local.get $count))
+    (block $not_found
+      (loop $scan
+        (br_if $not_found (i32.eq (local.get $i) (i32.const {zero})))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq
+              (call $same_value_zero
+                (i32.load (local.get $entry_base))
+                (local.get $key))
+              (i32.const {true}))
+          (then (return (i32.const {true}))))
+        (br $scan)))
+    (i32.const {false}))
 "#,
-            scratch_offset = Layout::SCRATCH_OFFSET,
-            negative_zero = tagged_number_sentinel(ValueTag::NEG_ZERO_PAYLOAD),
-            positive_zero = ValueTag::encode_number(0),
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            false = ValueTag::FALSE,
+            true = ValueTag::TRUE,
         ));
     }
 
@@ -796,16 +874,54 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $map_delete (param $map i32) (param $key i32) (result i32)
-    (local $key_len i32)
-    (if (i32.eq (local.get $key) (i32.const {negative_zero}))
-      (then (local.set $key (i32.const {positive_zero}))))
-    (local.set $key_len
-      (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
-    (call $property_delete (local.get $map) (i32.const {scratch_offset}) (local.get $key_len)))
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $last_entry_base i32)
+    (local.set $tag (i32.and (local.get $map) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
+    (local.set $base (i32.and (local.get $map) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (local.get $count))
+    (block $not_found
+      (loop $scan
+        (br_if $not_found (i32.eq (local.get $i) (i32.const {zero})))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq
+              (call $same_value_zero
+                (i32.load (local.get $entry_base))
+                (local.get $key))
+              (i32.const {true}))
+          (then
+            (local.set $count (i32.sub (local.get $count) (i32.const {one})))
+            (local.set $last_entry_base
+              (i32.add (local.get $base)
+                (i32.add (i32.const {obj_header})
+                  (i32.shl (local.get $count) (i32.const {entry_shift})))))
+            (i32.store (local.get $entry_base) (i32.load (local.get $last_entry_base)))
+            (i32.store (i32.add (local.get $entry_base) (i32.const {value_off}))
+              (i32.load (i32.add (local.get $last_entry_base) (i32.const {value_off}))))
+            (i32.store (local.get $base) (local.get $count))
+            (return (i32.const {true}))))
+        (br $scan)))
+    (i32.const {false}))
 "#,
-            scratch_offset = Layout::SCRATCH_OFFSET,
-            negative_zero = tagged_number_sentinel(ValueTag::NEG_ZERO_PAYLOAD),
-            positive_zero = ValueTag::encode_number(0),
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            value_off = Layout::OBJECT_VALUE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            false = ValueTag::FALSE,
+            true = ValueTag::TRUE,
         ));
     }
 
