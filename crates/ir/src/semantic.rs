@@ -1253,7 +1253,7 @@ impl<'a> HirLowerer<'a> {
                 };
                 let source_str = match source {
                     EvalSource::StaticLiteral(s) => s.as_str(),
-                    EvalSource::Runtime => "[dynamic]",
+                    EvalSource::Runtime(_) => "[dynamic]",
                 };
                 Err(unsupported(&format!(
                     "eval ({kind_str}, source={source_str:?}) is not implemented in HIR slice"

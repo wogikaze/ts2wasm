@@ -308,7 +308,7 @@ pub enum EvalKind {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum EvalSource {
     StaticLiteral(String),
-    Runtime,
+    Runtime(Box<ResolvedExpr>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

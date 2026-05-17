@@ -1788,7 +1788,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 let source = if let [Expr::String { value, .. }] = args.as_slice() {
                     EvalSource::StaticLiteral(value.clone())
                 } else {
-                    EvalSource::Runtime
+                    EvalSource::Runtime(Box::new(args.iter().next().map(resolve_expr).transpose()?.unwrap_or(ResolvedExpr::Undefined)))
                 };
                 return Ok(ResolvedExpr::Eval {
                     kind: EvalKind::Direct,
