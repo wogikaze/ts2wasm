@@ -427,6 +427,7 @@ fn typed_array_method_runtime_fn(method: &str) -> Option<RuntimeFn> {
         "sort" => Some(RuntimeFn::ArraySortNumeric),
         "toReversed" => Some(RuntimeFn::ArrayToReversed),
         "toSorted" => Some(RuntimeFn::ArrayToSorted),
+        "toLocaleString" => Some(RuntimeFn::ArrayJoin),
         "toString" => Some(RuntimeFn::ArrayJoin),
         "values" => Some(RuntimeFn::ArrayValues),
         "with" => Some(RuntimeFn::ArrayWith),
@@ -1261,7 +1262,8 @@ pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
                 match bytes[i + 1] {
                     b'd' | b'D' | b'w' | b'W' | b's' | b'S' | b'b' | b'B' | b'0' | b'n' | b't'
                     | b'r' | b'f' | b'v' | b'\\' | b'/' | b'.' | b'^' | b'$' | b'+' | b'*'
-                    | b'?' | b'(' | b')' | b'[' | b']' | b'{' | b'}' | b'|' => {
+                    | b'?' | b'(' | b')' | b'[' | b']' | b'{' | b'}' | b'|'
+                    | b'1' | b'2' | b'3' | b'4' | b'5' | b'6' | b'7' | b'8' | b'9' => {
                         i += 2;
                     }
                     _ => {
