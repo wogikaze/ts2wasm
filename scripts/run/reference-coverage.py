@@ -2363,7 +2363,7 @@ def main():
                 if _wamr_queue is not None:
                     try:
                         _q_t0 = time.perf_counter()
-                        _wamr_runner = _wamr_queue.get(timeout=30)
+                        _wamr_runner = _wamr_queue.get_nowait()
                         _q_t = time.perf_counter() - _q_t0
                         if _q_t > 0.001:
                             print(f"    QUEUE WAIT: {_q_t*1000:.0f}ms", file=sys.stderr)
@@ -2431,7 +2431,8 @@ def main():
                             capture_output=True, text=True, cwd=REPO_ROOT,
                         )
                     finally:
-                        # Restart dead runners
+                        # Restart dead runners; if restart fails, don't put dead
+                        # runner back (prevents dead-runner loops in the queue).
                         if _wamr_runner.poll() is not None:
                             try:
                                 _wamr_runner = subprocess.Popen(
@@ -2440,8 +2441,9 @@ def main():
                                     stderr=subprocess.DEVNULL, text=True,
                                 )
                             except OSError:
-                                pass
-                        _wamr_queue.put(_wamr_runner)
+                                _wamr_runner = None  # skip putting dead runner back
+                        if _wamr_runner is not None:
+                            _wamr_queue.put(_wamr_runner)
                 else:
                     wasm_result = subprocess.run(
                         ["timeout", "5s", "iwasm", str(wasm_path)],
@@ -2633,7 +2635,7 @@ def main():
                         wamr_bin = REPO_ROOT / "crates" / "iwasm-runner" / "ts2wasm-iwasm-runner"
                         if not wamr_bin.is_file():
                             return
-                        pool_size = min(max(semantic_jobs * 2, 24), 64)
+                        pool_size = min(max(semantic_jobs * 4, 48), 96)
                         for _ in range(pool_size):
                             try:
                                 p = subprocess.Popen(
