@@ -226,6 +226,26 @@ int main(int argc, char *argv[])
                        (t1.tv_nsec - t0.tv_nsec) / 1000;
         dur = (dur + 500) / 1000; /* round to nearest ms */
 
+        /* Capture exception info when execution fails */
+        if (exec_ret != 0) {
+            const char *exc = wasm_runtime_get_exception(inst);
+            if (exc && exc[0]) {
+                /* Prepend exception to captured stderr */
+                size_t exc_len = strlen(exc);
+                if (cap_err) {
+                    size_t old_len = strlen(cap_err);
+                    cap_err = realloc(cap_err, exc_len + 3 + old_len + 1);
+                    memmove(cap_err + exc_len + 2, cap_err, old_len + 1);
+                    memcpy(cap_err, exc, exc_len);
+                    cap_err[exc_len] = '\n';
+                    cap_err[exc_len + 1] = '\n';
+                } else {
+                    cap_err = malloc(exc_len + 1);
+                    memcpy(cap_err, exc, exc_len + 1);
+                }
+            }
+        }
+
         const char *status = "ok";
         if (exec_ret != 0 && (!cap_out || !cap_out[0]))
             status = "error";
