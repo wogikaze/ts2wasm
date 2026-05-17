@@ -1311,12 +1311,74 @@ pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
                 ));
             }
             i += 1; // skip ']'
-        } else if matches!(ch, b'(' | b')' | b'{' | b'}' | b'|') {
+        } else if ch == b'(' {
+            // Simple capture group: skip to matching ')'
+            // This handles basic (...), not (?...), (?!...), etc.
+            let depth = 1u32;
+            let mut j = i + 1;
+            while j < bytes.len() && depth > 0 {
+                if bytes[j] == b'\\' {
+                    j += 2; // skip escape
+                } else if bytes[j] == b'(' {
+                    // nested group
+                    // skip past it by finding its matching ')'
+                    let mut nd = 1u32;
+                    let mut k = j + 1;
+                    while k < bytes.len() && nd > 0 {
+                        if bytes[k] == b'\\' {
+                            k += 2;
+                        } else if bytes[k] == b'(' {
+                            nd += 1;
+                            k += 1;
+                        } else if bytes[k] == b')' {
+                            nd -= 1;
+                            k += 1;
+                        } else {
+                            k += 1;
+                        }
+                    }
+                    j = k;
+                } else if bytes[j] == b')' {
+                    i = j; // point to ')', will be consumed below
+                    break;
+                } else {
+                    j += 1;
+                }
+            }
+            if i < bytes.len() && bytes[i] == b')' {
+                i += 1; // consume ')'
+            } else {
+                return Err(unsupported_regexp_literal(
+                    context, raw, "unclosed group",
+                ));
+            }
+        } else if ch == b')' {
             return Err(unsupported_regexp_literal(
                 context,
                 raw,
-                &format!("unsupported meta character `{}`", ch as char),
+                "unmatched closing parenthesis",
             ));
+        } else if ch == b'|' {
+            // Alternation: skip to end of current alternative
+            i += 1;
+        } else if ch == b'{' {
+            // Quantifier {n}, {n,}, {n,m}
+            i += 1;
+            while i < bytes.len() && bytes[i].is_ascii_digit() {
+                i += 1;
+            }
+            if i < bytes.len() && bytes[i] == b',' {
+                i += 1;
+                while i < bytes.len() && bytes[i].is_ascii_digit() {
+                    i += 1;
+                }
+            }
+            if i >= bytes.len() || bytes[i] != b'}' {
+                return Err(unsupported_regexp_literal(
+                    context, raw, "unclosed quantifier brace",
+                ));
+            }
+            i += 1; // skip '}'
         } else {
             // ^ and $ are allowed (anchors), also . + * ?
             i += 1;
