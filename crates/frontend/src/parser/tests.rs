@@ -939,6 +939,25 @@ mod tests {
     }
 
     #[test]
+    fn multiple_function_constructor_calls_expand_without_user_binding() {
+        let program = parse_program("let f = Function(); let g = new Function();").unwrap();
+        let Stmt::Let {
+            expr: first_expr, ..
+        } = &program[0]
+        else {
+            panic!("expected first let statement");
+        };
+        let Stmt::Let {
+            expr: second_expr, ..
+        } = &program[1]
+        else {
+            panic!("expected second let statement");
+        };
+        assert!(matches!(first_expr, Expr::FunctionExpr { .. }));
+        assert!(matches!(second_expr, Expr::FunctionExpr { .. }));
+    }
+
+    #[test]
     fn expands_direct_eval_literal_statements_in_caller_scope() {
         let program =
             parse_program("function f() { let x = \"before\"; eval('x = \"after\";'); return x; }")

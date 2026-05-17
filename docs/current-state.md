@@ -325,7 +325,7 @@ The current implementation has several partial dynamic-code paths:
   by the parser into synthetic function expressions, with caller-local
   non-capture guarded for the supported `typeof` slice and direct
   `.name`/`.length`/`.prototype` metadata guarded for static constructor
-  locals;
+  locals, including zero-argument `Function()` / `new Function()`;
 - shadowed `Function` bindings stay ordinary user calls in the current
   parser/lowering path;
 - runtime-source indirect eval lowers to the audited Node host lane with an

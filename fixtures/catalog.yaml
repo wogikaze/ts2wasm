@@ -911,6 +911,7 @@ directories:
     - function-constructor-metadata.ts
     - function-constructor-no-caller-capture.ts
     - function-constructor-shadowed-ordinary-call.ts
+    - function-constructor-zero-args.ts
     - function-bind-call-apply.ts
     - function-expression-iife-return-this.ts
     - function-let-conflict-unsupported.ts

@@ -226,11 +226,13 @@ fn try_expand_function_constructor(args: &[Expr], span: Span, strict_mode: bool)
         Expr::String { value, .. } => Some(value.as_str()),
         _ => None,
     }).collect();
-    if strings.len() != args.len() || args.is_empty() {
+    if strings.len() != args.len() {
         return None;
     }
-    let body_source = strings[strings.len() - 1];
-    let param_names = &strings[..strings.len() - 1];
+    let (body_source, param_names): (&str, &[&str]) = match strings.split_last() {
+        Some((body, params)) => (*body, params),
+        None => ("", &[]),
+    };
     let params_str = param_names.join(", ");
     let function_source = format!("function anonymous({params_str}) {{\n{body_source}\n}}");
     let tokens = crate::Lexer::new_with_strict_mode(&function_source, strict_mode)
