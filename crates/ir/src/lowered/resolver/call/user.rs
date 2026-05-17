@@ -6,7 +6,7 @@ use crate::builtin_resolved::{
     ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedParam, ResolvedStmt,
 };
 use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
-use crate::lowered::facts::FunctionMethodKind;
+use crate::lowered::facts::{FunctionMethodKind, ProxyBinding, ProxyTrapKind};
 use crate::lowered::*;
 use std::collections::HashMap;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -201,6 +201,16 @@ impl super::super::Resolver {
                 args: lowered_args,
                 span: Span::generated("call"),
             });
+        }
+
+        // Proxy callable: proxy(args) → handler.apply(target, undefined, args)
+        if let Ok(local_id) = self.resolve_local(func_name)
+            && let Some(binding) = self.ctx.facts.proxy_locals.get(&local_id)
+        {
+            let mut apply_args = vec![binding.target.clone(), ResolvedExpr::Undefined];
+            apply_args.extend(args.iter().cloned());
+            let pb = binding.clone();
+            return self.lower_proxy_trap_call(pb, ProxyTrapKind::ProxyApply, apply_args, span);
         }
 
         if let Ok(local_id) = self.resolve_local(func_name)
