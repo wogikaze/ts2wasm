@@ -134,13 +134,19 @@ fn try_parse_eval_source(source: &str, strict_mode: bool) -> Option<Expr> {
         .ok()?;
     let mut parser = Parser::new_with_strict_mode(tokens, strict_mode, trimmed);
     let stmts = parser.parse_program().ok()?;
-    let mut iter = stmts.into_iter();
-    let first = iter.next()?;
-    if iter.next().is_some() {
-        return None;
+    // Extract the completion value: the last expression statement wins.
+    // Preceding pure-expression statements are dropped (no side effects observable at compile time).
+    let mut completion: Option<Expr> = None;
+    for stmt in stmts {
+        match stmt {
+            Stmt::Expr { expr, .. } => {
+                // All preceding expressions are overwritten by the last expression
+                // (they have no observable side effects for compile-time expansion).
+                completion = Some(expr);
+            }
+            // Declaration, function, or other statement — cannot simplify to an expression.
+            _ => return None,
+        }
     }
-    match first {
-        Stmt::Expr { expr, .. } => Some(expr),
-        _ => None,
-    }
+    completion
 }
