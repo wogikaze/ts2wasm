@@ -2599,6 +2599,28 @@ impl super::super::Resolver {
                     lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
                 }
             }
+            // Object.assign(target, source) — pad source to undefined
+            if intrinsic == RuntimeFn::ObjectAssign && lowered_args.len() < 2 {
+                while lowered_args.len() < 2 {
+                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                }
+            }
+            // Object.create(proto, properties) — pad properties to undefined
+            if intrinsic == RuntimeFn::ObjectCreate && lowered_args.len() < 2 {
+                while lowered_args.len() < 2 {
+                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                }
+            }
+            // Object.is(a, b) — pad to 2 args
+            if intrinsic == RuntimeFn::ObjectIs && lowered_args.len() < 2 {
+                while lowered_args.len() < 2 {
+                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                }
+            }
+            // Object.fromEntries(entries) — pad to 1 arg
+            if intrinsic == RuntimeFn::ObjectFromEntries && lowered_args.is_empty() {
+                lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+            }
             // Reflect.get(target, key, receiver) — pad receiver to undefined
             if intrinsic == RuntimeFn::ReflectGet && lowered_args.len() < 3 {
                 while lowered_args.len() < 3 {
