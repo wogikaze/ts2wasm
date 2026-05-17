@@ -3298,10 +3298,20 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_eval_direct_host(&self, wat: &mut String) {
-        wat.push_str("(func $eval_direct_host (param $source i32) (result i32)\n    local.get $source\n  )\n");
+        // Per ECMAScript: if source is not a string, return it unchanged.
+        // If it IS a string, runtime eval is not yet implemented (needs host shim).
+        let string_tag = ts2wasm_runtime_abi::value::ValueTag::STRING;
+        wat.push_str(&format!(
+            "(func $eval_direct_host (param $source i32) (result i32)\n  (if (i32.eq (i32.and (local.get $source) (i32.const 7)) (i32.const {}))\n    (then unreachable)\n  )\n  local.get $source\n)\n",
+            string_tag
+        ));
     }
     pub(crate) fn emit_eval_indirect_host(&self, wat: &mut String) {
-        wat.push_str("(func $eval_indirect_host (param $source i32) (result i32)\n    local.get $source\n  )\n");
+        let string_tag = ts2wasm_runtime_abi::value::ValueTag::STRING;
+        wat.push_str(&format!(
+            "(func $eval_indirect_host (param $source i32) (result i32)\n  (if (i32.eq (i32.and (local.get $source) (i32.const 7)) (i32.const {}))\n    (then unreachable)\n  )\n  local.get $source\n)\n",
+            string_tag
+        ));
     }
 
     pub(crate) fn emit_generator_yield(&self, wat: &mut String) {
