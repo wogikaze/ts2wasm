@@ -1183,6 +1183,11 @@ fn new_function_constructor_fixture_builds_static_constructor() {
 }
 
 #[test]
+fn static_indirect_eval_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/indirect-eval-static.ts");
+}
+
+#[test]
 #[ignore]
 fn direct_eval_fixture_reports_issue_429() {
     let fixture = "fixtures/core-semantics/direct-eval-unsupported.ts";

@@ -401,6 +401,14 @@ fn static_direct_eval_declares_no_node_host_eval_capability() {
     );
 }
 
+#[test]
+fn static_indirect_eval_declares_no_node_host_eval_capability() {
+    assert_standalone_category(
+        "core-semantics/indirect-eval-static.ts",
+        "static indirect eval",
+    );
+}
+
 /// Helper: typescript-directives fixtures expected to fail under --host-deny
 /// with unsupported syntax diagnostics (not host-deny errors).
 fn assert_unsupported_syntax_under_host_deny(fixture_path: &str) {

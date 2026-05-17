@@ -4,13 +4,13 @@ use ts2wasm_ir::builtin_resolver::resolve_builtins;
 use ts2wasm_ir::name_resolver::resolve_names;
 /// Expand static literal eval(source) expressions at compile time.
 ///
-/// For direct eval("literal") where the source is a compile-time string literal:
+/// For direct or indirect eval("literal") where the source is a compile-time string literal:
 /// 1. Parse the source with the frontend parser
 /// 2. Run name resolution on the parsed AST
 /// 3. Run builtin resolution
 /// 4. Replace the Eval node with the resolved expression
 ///
-/// Runtime-source eval (EvalKind::Runtime) is left as-is for the host lane.
+/// Runtime-source eval is left as-is for the host lane.
 pub(crate) fn expand_static_eval_fragments(
     resolved: Vec<ResolvedStmt>,
 ) -> Result<Vec<ResolvedStmt>, Diagnostic> {
@@ -167,35 +167,10 @@ fn expand_stmt(stmt: ResolvedStmt) -> Result<ResolvedStmt, Diagnostic> {
 fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
     match expr {
         ResolvedExpr::Eval {
-            kind: EvalKind::Direct,
+            kind: EvalKind::Direct | EvalKind::Indirect,
             source: EvalSource::StaticLiteral(ref src),
             ..
-        } => {
-            // Parse the eval source as a program.
-            let tokens = ts2wasm_frontend::Lexer::new(src)
-                .tokenize()
-                .map_err(|e| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!("eval source lex error: {e}"),
-                    span: None,
-                    phase: None,
-                })?;
-            let program = ts2wasm_frontend::Parser::new(tokens, src)
-                .parse_program()
-                .map_err(|e| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!("eval source parse error: {e}"),
-                    span: None,
-                    phase: None,
-                })?;
-
-            // Name-resolve and builtin-resolve the eval source.
-            let name_resolved = resolve_names(&program)?;
-            let builtin_resolved = resolve_builtins(&name_resolved)?;
-
-            // Extract the completion value from the resolved statements.
-            extract_completion_value(builtin_resolved)
-        }
+        } => expand_static_eval_source(src),
         ResolvedExpr::Eval { .. } => {
             // Non-expandable eval (indirect or runtime source) — keep as-is.
             Ok(expr)
@@ -289,6 +264,30 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
         // Leaf expressions and other types — no recursive expansion needed.
         other => Ok(other),
     }
+}
+
+fn expand_static_eval_source(src: &str) -> Result<ResolvedExpr, Diagnostic> {
+    let tokens = ts2wasm_frontend::Lexer::new(src)
+        .tokenize()
+        .map_err(|e| Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("eval source lex error: {e}"),
+            span: None,
+            phase: None,
+        })?;
+    let program = ts2wasm_frontend::Parser::new(tokens, src)
+        .parse_program()
+        .map_err(|e| Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("eval source parse error: {e}"),
+            span: None,
+            phase: None,
+        })?;
+
+    let name_resolved = resolve_names(&program)?;
+    let builtin_resolved = resolve_builtins(&name_resolved)?;
+
+    extract_completion_value(builtin_resolved)
 }
 
 /// Extract the completion value from a resolved program body.

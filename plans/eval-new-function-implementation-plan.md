@@ -34,7 +34,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | indirect eval parser rejection | `globalThis.eval("x")`、`globalThis["eval"]("x")`、`(0, eval)("x")` は parser reject ではなく後段へ流れる | Phase 4/5 の土台 |
 | optional eval diagnostic | `eval?.("x")` はまだ parser で issue-347 diagnostic | 後で indirect-like semantics として整理 |
 | resolved eval IR | `ResolvedExpr::Eval { kind, source, caller_is_strict, span }`、`EvalKind::{Direct, Indirect}`、`EvalSource::{StaticLiteral, Runtime}` が存在する | 統一 IR への入口 |
-| compiler eval expansion stage | `crates/compiler/src/stages/eval_expand.rs` が static direct `ResolvedExpr::Eval` を parse / resolve / builtin-resolve して completion expression へ置換する | parser rewrite から IR rewrite へ移行する素材 |
+| compiler eval expansion stage | `crates/compiler/src/stages/eval_expand.rs` が static direct / indirect `ResolvedExpr::Eval` を parse / resolve / builtin-resolve して completion expression へ置換する | parser rewrite から IR rewrite へ移行する素材 |
 | literal `Function` constructor | `try_expand_function_constructor` が literal-only `Function(...)` / `new Function(...)` を synthetic `FunctionExpr` に変換する | static `Function` AOT lane の初期 slice |
 | runtime catalog symbols | `RuntimeFn::EvalDirectHost` / `EvalIndirectHost` がある | host lane の名前だけはある |
 
@@ -62,14 +62,14 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | static direct eval statement mutation | `eval('x = "after"')` | statement rewrite で一部対応 | caller-scope eval-code lowering で対応 |
 | static direct eval block function | `eval('{ function f(){} }')` | Annex B supported slice あり | hoist plan / mutable binding env を validation 付きで対応 |
 | direct eval with declarations | `eval('var x=1; x')` | expression completion と environment 接続が未完成 | eval-code environment + completion record |
-| indirect eval static literal | `(0, eval)("1+2")` | parser は通すが semantic path 未完成 | global `EvalFragment` AOT |
+| indirect eval static literal | `(0, eval)("1+2")` | resolver が direct/indirect を分類し、supported literal subset は AOT eval expansion で host import なし | global `EvalFragment` AOT |
 | indirect eval dynamic | `(0, eval)(src)` | runtime stub か diagnostic | `host.eval.indirect` capability |
 | optional eval | `eval?.("x")` | parser diagnostic | indirect-like call semantics として classification |
 | `new eval` | `new eval("x")` | unsupported / TypeError 境界が未整理 | eval is not constructor の TypeError parity |
 | literal `Function` | `Function("a", "return a")` | parser synthetic `FunctionExpr` slice | resolver-owned static `FunctionConstructorPlan` |
 | literal `new Function` | `new Function("a", "return a")` | parser synthetic `FunctionExpr` slice | generated function object + metadata |
 | dynamic `Function` | `new Function(body)` | 未完成 | `host.function.compile` + host function handle |
-| shadowed `eval` / `Function` | `let eval = f; eval("x")` | eval は heuristic、Function は syntactic expansion risk | ordinary user binding semantics |
+| shadowed `eval` / `Function` | `let eval = f; eval("x")` | resolver が shadowed eval を ordinary call として保持し、parser は shadowing risk のある Function rewrite を避ける | ordinary user binding semantics |
 | `$262.evalScript` | `$262.evalScript(src)` | runtime helper exists but dynamic eval body未実装 | harness/global eval lane として別分類 |
 
 ## 4. 最終設計

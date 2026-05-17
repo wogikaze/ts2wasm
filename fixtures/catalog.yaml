@@ -884,7 +884,6 @@ directories:
     - direct-eval-block-function-shadowed-unsupported.ts
     - direct-eval-block-function.ts
     - direct-eval-caller-local.ts
-    - direct-eval-indirect-unsupported.ts
     - direct-eval-unsupported.ts
     - duplicate-class-decl-unsupported.ts
     - duplicate-function-decl-unsupported.ts
@@ -921,6 +920,8 @@ directories:
     - gc-object-root.ts
     - gc-transient-allocation.ts
     - generator-function-unsupported.ts
+    - indirect-eval-dynamic-unsupported.ts
+    - indirect-eval-static.ts
     - in-operator-prototype.ts
     - in-operator.ts
     - increment-expression-statement.ts

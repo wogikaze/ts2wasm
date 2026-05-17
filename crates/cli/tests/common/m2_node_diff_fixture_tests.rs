@@ -3144,10 +3144,9 @@ fn direct_eval_block_function_shadowed_eval_reports_issue_302() {
 
 #[test]
 fn indirect_eval_fixture_reports_unsupported() {
-    // globalThis.eval(...) passes the parser but fails in the backend
-    // (no longer a parser-level rejection)
+    // Runtime-source indirect eval passes the parser but requires the audited host lane.
     assert_build_fails_with_diagnostic(
-        "fixtures/core-semantics/direct-eval-indirect-unsupported.ts",
+        "fixtures/core-semantics/indirect-eval-dynamic-unsupported.ts",
         "[UnsupportedEval]",
         "runtime code evaluation is intentionally not implemented",
         true,
