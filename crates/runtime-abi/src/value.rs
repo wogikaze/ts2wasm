@@ -79,6 +79,31 @@ impl ValueTag {
         (n << Self::NUMBER_SHIFT) | Self::NUMBER
     }
 
+    /// Tagged NaN sentinel.
+    pub const fn encode_nan() -> WasmTaggedJsWire {
+        Self::encode_reserved_number_payload(Self::NAN_PAYLOAD)
+    }
+
+    /// Tagged +Infinity sentinel.
+    pub const fn encode_infinity() -> WasmTaggedJsWire {
+        Self::encode_reserved_number_payload(Self::INFINITY_PAYLOAD)
+    }
+
+    /// Tagged -Infinity sentinel.
+    pub const fn encode_neg_infinity() -> WasmTaggedJsWire {
+        Self::encode_reserved_number_payload(Self::NEG_INFINITY_PAYLOAD)
+    }
+
+    /// Tagged -0 (negative zero) sentinel.
+    pub const fn encode_neg_zero() -> WasmTaggedJsWire {
+        Self::encode_reserved_number_payload(Self::NEG_ZERO_PAYLOAD)
+    }
+
+    /// Encode a small signed integer as a tagged SMI value.
+    pub fn encode_smi(n: i32) -> WasmTaggedJsWire {
+        Self::encode_number(n)
+    }
+
     /// Returns true when `n` can be represented by the small-int tagged payload.
     pub fn can_encode_number(n: i32) -> bool {
         (Self::NUMBER_PAYLOAD_MIN..=Self::NUMBER_PAYLOAD_MAX).contains(&n)

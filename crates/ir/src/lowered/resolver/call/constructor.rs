@@ -535,6 +535,7 @@ fn is_typed_array_constructor(class_name: &str) -> bool {
             | "Uint32Array"
             | "Float32Array"
             | "Float64Array"
+            | "Float16Array"
             | "BigInt64Array"
             | "BigUint64Array"
     )

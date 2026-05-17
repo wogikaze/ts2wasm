@@ -1,0 +1,10 @@
+name: ts2wasm
+version: 1.0.0
+description: APM project for ts2wasm
+author: wogikaze
+dependencies:
+  apm:
+  - dahatake/skills
+  mcp: []
+includes: auto
+scripts: {}

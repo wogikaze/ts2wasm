@@ -156,6 +156,10 @@ run = "python scripts/manager.py clippy"
 description = "cargo nextest run (default project test entry)"
 run = "python scripts/manager.py nextest"
 
+[tasks.mdq]
+description = "Markdown cross-file query (index, search, list, stats)"
+run = ".venv/bin/python -m mdq"
+
 [tasks."check-repo-smoke"]
 description = "Compatibility alias for check"
 hide = true

@@ -887,7 +887,7 @@ fn well_known_symbol_description(key: &str) -> String {
 fn typed_array_element_size(class_name: &str) -> Option<i32> {
     match class_name {
         "Int8Array" | "Uint8Array" | "Uint8ClampedArray" => Some(1),
-        "Int16Array" | "Uint16Array" => Some(2),
+        "Int16Array" | "Uint16Array" | "Float16Array" => Some(2),
         "Int32Array" | "Uint32Array" | "Float32Array" => Some(4),
         "Float64Array" | "BigInt64Array" | "BigUint64Array" => Some(8),
         _ => None,

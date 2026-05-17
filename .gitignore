@@ -56,3 +56,7 @@ site/docs
 .reference-coverage-delta.json
 /.recursive/config/recursive-router-discovered.json
 issue-views/
+
+
+# APM dependencies
+apm_modules/

@@ -67,6 +67,7 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "exp" => Some(RuntimeFn::MathExp),
                 "expm1" => Some(RuntimeFn::MathExpm1),
                 "fround" => Some(RuntimeFn::MathFround),
+                "f16round" => Some(RuntimeFn::MathF16round),
                 "hypot" => Some(RuntimeFn::MathHypot),
                 "log" => Some(RuntimeFn::MathLog),
                 "log10" => Some(RuntimeFn::MathLog10),
@@ -277,6 +278,8 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("DataView", "setFloat32") => Some(RuntimeFn::DataViewSetFloat32),
         ("DataView", "getFloat64") => Some(RuntimeFn::DataViewGetFloat64),
         ("DataView", "setFloat64") => Some(RuntimeFn::DataViewSetFloat64),
+        ("DataView", "getFloat16") => Some(RuntimeFn::DataViewGetFloat16),
+        ("DataView", "setFloat16") => Some(RuntimeFn::DataViewSetFloat16),
         ("DataView", "getBigInt64") => Some(RuntimeFn::DataViewGetBigInt64),
         ("DataView", "setBigInt64") => Some(RuntimeFn::DataViewSetBigInt64),
         ("DataView", "getBigUint64") => Some(RuntimeFn::DataViewGetBigUint64),
@@ -384,6 +387,7 @@ pub(crate) fn is_typed_array_class(class_name: &str) -> bool {
             | "Uint32Array"
             | "Float32Array"
             | "Float64Array"
+            | "Float16Array"
             | "BigInt64Array"
             | "BigUint64Array"
     )

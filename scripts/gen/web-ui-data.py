@@ -529,6 +529,7 @@ def history_snapshot(item, coverage_dir, durations=None):
     denominator = metrics["denominator"]
     executed = metrics["executed"]
     build_pass = metrics["build_pass"]
+    semantic_pass_val = metrics["semantic_pass"]
     fail = metrics["fail"]
     blocked = metrics["blocked"]
     unsupported = metrics["unsupported"]
@@ -548,6 +549,7 @@ def history_snapshot(item, coverage_dir, durations=None):
         "skipped": unsupported + skip_with_reason,
         "build_error": build_error,
         "runtime_error": runtime_error,
+        "semantic_pass": semantic_pass_val,
         "duration_ms": duration_ms,
     }
 

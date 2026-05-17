@@ -681,6 +681,137 @@ impl WatEmitter<'_> {
         push_math_unary_identity(wat, "math_fround");
     }
 
+    /// Math.f16round — round to f16 precision.
+    /// For SMI: converts to f16 bit pattern and back (round-trip rounds to f16 precision).
+    /// For special values (NaN, Inf, -Inf, -0): pass through unchanged.
+    /// For heap numbers / non-numbers: return NaN.
+    pub(crate) fn emit_math_f16round(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $math_f16round (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32) (local $abs i32) (local $sign i32)
+    (local $lz i32) (local $exp i32) (local $bias i32)
+    (local $mant i32) (local $shift i32)
+    (local $dropped i32) (local $halfway i32)
+    (local $bits i32)
+    ;; Check if value is a number (SMI or heap number)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    ;; Pass through special values, NaN for heap numbers
+    (if (i32.eq (local.get $v) (i32.const {nan_value})) (then (return (local.get $v))))
+    (if (i32.eq (local.get $v) (i32.const {pos_inf})) (then (return (local.get $v))))
+    (if (i32.eq (local.get $v) (i32.const {neg_inf})) (then (return (local.get $v))))
+    (if (i32.eq (local.get $v) (i32.const {neg_zero})) (then (return (local.get $v))))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then (return (i32.const {nan_value}))))
+    ;; SMI → f16 → tagged round-trip
+    (local.set $n (i32.shr_s (local.get $v) (i32.const {num_shift})))
+    (if (i32.eq (local.get $n) (i32.const 0))
+      (then (return (i32.const {smi_zero}))))
+    (local.set $sign (i32.shl (i32.shr_s (local.get $n) (i32.const 31)) (i32.const 15)))
+    (local.set $abs (select (i32.sub (i32.const 0) (local.get $n)) (local.get $n) (i32.lt_s (local.get $n) (i32.const 0))))
+    (local.set $lz (i32.clz (local.get $abs)))
+    (local.set $exp (i32.sub (i32.const 31) (local.get $lz)))
+    (if (i32.gt_s (i32.add (local.get $exp) (i32.const 15)) (i32.const 30))
+      (then (return (i32.const {pos_inf}))))
+    (local.set $bias (i32.add (local.get $exp) (i32.const 15)))
+    (local.set $shift (i32.sub (local.get $exp) (i32.const 10)))
+    (if (i32.gt_s (local.get $shift) (i32.const 0))
+      (then
+        (local.set $mant (i32.shr_u (local.get $abs) (local.get $shift)))
+        (local.set $mant (i32.and (local.get $mant) (i32.const 1023)))
+        (local.set $halfway (i32.shl (i32.const 1) (i32.sub (local.get $shift) (i32.const 1))))
+        (local.set $dropped (i32.and (local.get $abs) (i32.sub (i32.shl (i32.const 1) (local.get $shift)) (i32.const 1))))
+        (block $math_round_gt
+          (if (i32.le_u (local.get $dropped) (local.get $halfway))
+            (then (br $math_round_gt)))
+          (local.set $mant (i32.add (local.get $mant) (i32.const 1)))
+          (block $math_carry_gt
+            (if (i32.ne (local.get $mant) (i32.const 1024))
+              (then (br $math_carry_gt)))
+            (local.set $mant (i32.const 0))
+            (local.set $bias (i32.add (local.get $bias) (i32.const 1)))
+            (block $math_overflow_gt
+              (if (i32.le_s (local.get $bias) (i32.const 30))
+                (then (br $math_overflow_gt)))
+              (return (i32.const {pos_inf})))))
+        (block $math_round_ties
+          (if (i32.ne (local.get $dropped) (local.get $halfway))
+            (then (br $math_round_ties)))
+          (block $math_ties_odd
+            (if (i32.ne (i32.and (local.get $mant) (i32.const 1)) (i32.const 1))
+              (then (br $math_ties_odd)))
+            (local.set $mant (i32.add (local.get $mant) (i32.const 1)))
+            (block $math_carry_ties
+              (if (i32.ne (local.get $mant) (i32.const 1024))
+                (then (br $math_carry_ties)))
+              (local.set $mant (i32.const 0))
+              (local.set $bias (i32.add (local.get $bias) (i32.const 1)))
+              (block $math_overflow_ties
+                (if (i32.le_s (local.get $bias) (i32.const 30))
+                  (then (br $math_overflow_ties)))
+                (return (i32.const {pos_inf}))))))
+        (local.set $bits (i32.or (local.get $sign) (i32.or (i32.shl (local.get $bias) (i32.const 10)) (local.get $mant)))))
+      (else
+        (local.set $mant (i32.shl (local.get $abs) (i32.sub (i32.const 10) (local.get $exp))))
+        (local.set $mant (i32.and (local.get $mant) (i32.const 1023)))
+        (local.set $bits (i32.or (local.get $sign) (i32.or (i32.shl (local.get $bias) (i32.const 10)) (local.get $mant))))))
+    ;; f16 bits → tagged value
+    (local.set $sign (i32.and (i32.shr_u (local.get $bits) (i32.const 15)) (i32.const 1)))
+    (local.set $exp (i32.and (i32.shr_u (local.get $bits) (i32.const 10)) (i32.const 31)))
+    (local.set $mant (i32.and (local.get $bits) (i32.const 1023)))
+    (if (i32.eq (local.get $exp) (i32.const 31))
+      (then
+        (if (i32.eq (local.get $mant) (i32.const 0))
+          (then (if (local.get $sign) (then (return (i32.const {neg_inf}))) (else (return (i32.const {pos_inf})))))
+          (else (return (i32.const {nan_value}))))))
+    (if (i32.eq (local.get $exp) (i32.const 0))
+      (then
+        (if (i32.eq (local.get $mant) (i32.const 0))
+          (then (if (local.get $sign) (then (return (i32.const {neg_zero}))) (else (return (i32.const {smi_zero})))))
+          (else (return (i32.const {smi_zero}))))))
+    (local.set $n (i32.add (local.get $mant) (i32.const 1024)))
+    (if (i32.ge_u (local.get $exp) (i32.const 25))
+      (then
+        (local.set $n (i32.shl (local.get $n) (i32.sub (local.get $exp) (i32.const 25))))
+        (local.set $n (select (i32.sub (i32.const 0) (local.get $n)) (local.get $n) (local.get $sign)))
+        (return (i32.or (i32.shl (local.get $n) (i32.const {num_shift})) (i32.const {num_tag}))))
+      (else
+        (local.set $abs (i32.shr_u (local.get $n) (i32.sub (i32.const 25) (local.get $exp))))
+        (local.set $n (i32.and (local.get $n) (i32.sub (i32.shl (i32.const 1) (i32.sub (i32.const 25) (local.get $exp))) (i32.const 1))))
+        (if (i32.eq (local.get $n) (i32.const 0))
+          (then
+            (local.set $abs (select (i32.sub (i32.const 0) (local.get $abs)) (local.get $abs) (local.get $sign)))
+            (return (i32.or (i32.shl (local.get $abs) (i32.const {num_shift})) (i32.const {num_tag}))))
+          (else (return (i32.const {nan_value}))))))
+    (unreachable))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            num_shift = ValueTag::NUMBER_SHIFT,
+            num_tag = ValueTag::NUMBER,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+            pos_inf = ValueTag::encode_infinity(),
+            neg_inf = ValueTag::encode_neg_infinity(),
+            neg_zero = ValueTag::encode_neg_zero(),
+            smi_zero = ValueTag::encode_smi(0),
+        ));
+    }
+
     pub(crate) fn emit_math_log(&self, wat: &mut String) {
         push_math_unary_exact(wat, "math_log", 1, 0);
     }

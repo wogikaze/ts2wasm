@@ -487,8 +487,10 @@ function App() {
         : historyRows.map(run => ({
             run_id: run.run_id,
             timestamp: run.timestamp,
-            passed: run.passed,
-            failed: run.failed,
+            build_pass: run.passed,
+            semantic_pass: run.semantic_pass ?? '',
+            build_error: run.build_error ?? '',
+            runtime_error: run.runtime_error ?? '',
             skipped: run.skipped,
             compile_time: run.compile_time,
             runtime: run.runtime,
@@ -1099,13 +1101,15 @@ function App() {
 
             <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
               <div className="overflow-x-auto">
-              <table className="w-full min-w-[1120px]">
+              <table className="w-full min-w-[1440px]">
                 <thead className="bg-gray-800/50">
                   <tr>
                     <th className="w-44 px-4 py-3 text-left text-sm font-medium text-gray-400">Run ID</th>
                     <th className="w-44 px-4 py-3 text-left text-sm font-medium text-gray-400">Timestamp</th>
-                    <th className="w-24 px-4 py-3 text-right text-sm font-medium text-gray-400">Passed</th>
-                    <th className="w-24 px-4 py-3 text-right text-sm font-medium text-gray-400">Failed</th>
+                    <th className="w-24 px-4 py-3 text-right text-sm font-medium text-green-500">Build Pass</th>
+                    <th className="w-24 px-4 py-3 text-right text-sm font-medium text-green-400/70">Semantic Pass</th>
+                    <th className="w-24 px-4 py-3 text-right text-sm font-medium text-red-400">Build Error</th>
+                    <th className="w-24 px-4 py-3 text-right text-sm font-medium text-orange-400">Runtime Error</th>
                     <th className="w-24 px-4 py-3 text-right text-sm font-medium text-gray-400">Skipped</th>
                     <th className="w-32 px-4 py-3 text-right text-sm font-medium text-gray-400">Duration</th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Delta</th>
@@ -1120,7 +1124,9 @@ function App() {
                       </td>
                       <td className="px-4 py-3 text-gray-400">{run.displayTime}</td>
                       <td className="px-4 py-3 text-right text-green-500">{run.passed.toLocaleString()}</td>
-                      <td className="px-4 py-3 text-right text-red-500">{run.failed.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right text-green-400">{(run.semantic_pass ?? run.passed).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right text-red-400">{(run.build_error ?? 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right text-orange-400">{(run.runtime_error ?? 0).toLocaleString()}</td>
                       <td className="px-4 py-3 text-right text-yellow-500">{run.skipped.toLocaleString()}</td>
                       <td className="px-4 py-3 text-right text-gray-400">
                         {run.duration_ms === null ? '-' : `${Math.round(run.duration_ms).toLocaleString()}ms`}

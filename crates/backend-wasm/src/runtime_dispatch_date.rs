@@ -68,6 +68,7 @@ impl WatEmitter<'_> {
             RuntimeFn::MathExp => self.emit_math_exp(wat),
             RuntimeFn::MathExpm1 => self.emit_math_expm1(wat),
             RuntimeFn::MathFround => self.emit_math_fround(wat),
+            RuntimeFn::MathF16round => self.emit_math_f16round(wat),
             RuntimeFn::MathHypot => self.emit_math_hypot(wat),
             RuntimeFn::MathLog => self.emit_math_log(wat),
             RuntimeFn::MathLog10 => self.emit_math_log10(wat),

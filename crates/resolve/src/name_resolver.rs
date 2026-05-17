@@ -104,6 +104,7 @@ pub fn default_allowed_globals() -> std::collections::HashSet<String> {
         "BigUint64Array",
         "Float32Array",
         "Float64Array",
+        "Float16Array",
         "encodeURIComponent",
         "decodeURIComponent",
         // Test262 harness globals (issue 5424)

@@ -68,6 +68,9 @@ export interface HistoricalData {
   duration_ms?: number | null;
   compile_time?: number;
   runtime?: number;
+  build_error?: number;
+  runtime_error?: number;
+  semantic_pass?: number;
 }
 
 export interface TestSummary {

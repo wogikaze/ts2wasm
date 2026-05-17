@@ -210,6 +210,8 @@ pub enum RuntimeFn {
     DataViewSetFloat32,
     DataViewGetFloat64,
     DataViewSetFloat64,
+    DataViewGetFloat16,
+    DataViewSetFloat16,
     DataViewGetBigInt64,
     DataViewSetBigInt64,
     DataViewGetBigUint64,
@@ -536,6 +538,8 @@ pub enum RuntimeFn {
     MathExpm1,
     /// Math.fround - no-op for integer-backed numbers.
     MathFround,
+    /// Math.f16round - round to half-precision.
+    MathF16round,
     /// Math.hypot - integer square root of summed squares.
     MathHypot,
     /// Math.log - exact integer-backed cases.
@@ -1407,6 +1411,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MathExp" => Some(RuntimeFn::MathExp),
         "MathExpm1" => Some(RuntimeFn::MathExpm1),
         "MathFround" => Some(RuntimeFn::MathFround),
+        "MathF16round" => Some(RuntimeFn::MathF16round),
         "MathHypot" => Some(RuntimeFn::MathHypot),
         "MathLog" => Some(RuntimeFn::MathLog),
         "MathLog10" => Some(RuntimeFn::MathLog10),
@@ -1625,6 +1630,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DataViewSetFloat32" => Some(RuntimeFn::DataViewSetFloat32),
         "DataViewGetFloat64" => Some(RuntimeFn::DataViewGetFloat64),
         "DataViewSetFloat64" => Some(RuntimeFn::DataViewSetFloat64),
+        "DataViewGetFloat16" => Some(RuntimeFn::DataViewGetFloat16),
+        "DataViewSetFloat16" => Some(RuntimeFn::DataViewSetFloat16),
         "DataViewGetBigInt64" => Some(RuntimeFn::DataViewGetBigInt64),
         "DataViewSetBigInt64" => Some(RuntimeFn::DataViewSetBigInt64),
         "DataViewGetBigUint64" => Some(RuntimeFn::DataViewGetBigUint64),
@@ -2060,6 +2067,7 @@ impl RuntimeFn {
             | Self::MathExp
             | Self::MathExpm1
             | Self::MathFround
+            | Self::MathF16round
             | Self::MathHypot
             | Self::MathLog
             | Self::MathLog10
@@ -2260,6 +2268,8 @@ impl RuntimeFn {
             | Self::DataViewSetFloat32
             | Self::DataViewGetFloat64
             | Self::DataViewSetFloat64
+            | Self::DataViewGetFloat16
+            | Self::DataViewSetFloat16
             | Self::DataViewGetBigInt64
             | Self::DataViewSetBigInt64
             | Self::DataViewGetBigUint64
@@ -2409,6 +2419,7 @@ impl RuntimeFn {
             | Self::DataViewGetUint32
             | Self::DataViewGetFloat32
             | Self::DataViewGetFloat64
+            | Self::DataViewGetFloat16
             | Self::DataViewGetBigInt64
             | Self::DataViewGetBigUint64 => RuntimeSignature {
                 params: 3,
@@ -2438,6 +2449,7 @@ impl RuntimeFn {
             | Self::DataViewSetUint32
             | Self::DataViewSetFloat32
             | Self::DataViewSetFloat64
+            | Self::DataViewSetFloat16
             | Self::DataViewSetBigInt64
             | Self::DataViewSetBigUint64 => RuntimeSignature {
                 params: 4,
@@ -2636,6 +2648,8 @@ impl RuntimeFn {
             Self::DataViewSetFloat32,
             Self::DataViewGetFloat64,
             Self::DataViewSetFloat64,
+            Self::DataViewGetFloat16,
+            Self::DataViewSetFloat16,
             Self::DataViewGetBigInt64,
             Self::DataViewSetBigInt64,
             Self::DataViewGetBigUint64,
@@ -2834,6 +2848,7 @@ impl RuntimeFn {
             Self::MathExp,
             Self::MathExpm1,
             Self::MathFround,
+            Self::MathF16round,
             Self::MathHypot,
             Self::MathLog,
             Self::MathLog10,
@@ -3093,6 +3108,8 @@ impl RuntimeFn {
             Self::DataViewSetFloat32,
             Self::DataViewGetFloat64,
             Self::DataViewSetFloat64,
+            Self::DataViewGetFloat16,
+            Self::DataViewSetFloat16,
             Self::DataViewGetBigInt64,
             Self::DataViewSetBigInt64,
             Self::DataViewGetBigUint64,
@@ -3291,6 +3308,7 @@ impl RuntimeFn {
             Self::MathExp,
             Self::MathExpm1,
             Self::MathFround,
+            Self::MathF16round,
             Self::MathHypot,
             Self::MathLog,
             Self::MathLog10,
