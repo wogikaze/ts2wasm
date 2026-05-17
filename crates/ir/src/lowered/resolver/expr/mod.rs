@@ -182,7 +182,11 @@ impl super::Resolver {
             } => self.lower_named_function_expr(name, params, body, *is_generator),
             ResolvedExpr::ClassExpr { .. } => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
             ResolvedExpr::Sequence(exprs) => self.lower_sequence_expr(exprs),
-            ResolvedExpr::Eval { kind: _kind, source, .. } => {
+            ResolvedExpr::Eval {
+                kind: _kind,
+                source,
+                ..
+            } => {
                 // Emit a runtime call for eval — the host shim handles execution.
                 let source_expr = match source {
                     crate::builtin_resolved::EvalSource::StaticLiteral(s) => {
@@ -200,7 +204,7 @@ impl super::Resolver {
                     args: vec![source_expr],
                     span: Span::generated("eval"),
                 })
-            },
+            }
         }
     }
 

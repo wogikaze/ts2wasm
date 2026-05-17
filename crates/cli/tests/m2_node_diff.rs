@@ -1145,22 +1145,42 @@ fn json_parse_latin1_unicode_escape_matches_node_output() {
 #[test]
 fn function_constructor_call_fixture_reports_issue_062() {
     let fixture = "fixtures/core-semantics/function-constructor-call-unsupported.ts";
-    let p = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..").join(fixture);
+    let p = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
     let o = temp_wasm_path(fixture);
-    let b = Command::new(env!("CARGO_BIN_EXE_ts2wasm")).arg("build").arg(&p).arg("-o").arg(&o).output().unwrap();
-    assert!(b.status.success(), "Function constructor should build (compile-time expand)");
+    let b = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&p)
+        .arg("-o")
+        .arg(&o)
+        .output()
+        .unwrap();
+    assert!(
+        b.status.success(),
+        "Function constructor should build (compile-time expand)"
+    );
 }
 
 #[test]
 fn new_function_constructor_fixture_reports_issue_062() {
     let fixture = "fixtures/core-semantics/new-function-constructor-unsupported.ts";
-    let p = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..").join(fixture);
+    let p = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
     let o = temp_wasm_path(fixture);
-    let b = Command::new(env!("CARGO_BIN_EXE_ts2wasm")).arg("build").arg(&p).arg("-o").arg(&o).output().unwrap();
-    assert!(b.status.success(), "new Function constructor should build (compile-time expand)");
+    let b = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&p)
+        .arg("-o")
+        .arg(&o)
+        .output()
+        .unwrap();
+    assert!(
+        b.status.success(),
+        "new Function constructor should build (compile-time expand)"
+    );
 }
-
-
 
 #[test]
 #[ignore]

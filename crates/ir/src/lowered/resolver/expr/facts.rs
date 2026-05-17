@@ -520,10 +520,7 @@ pub(crate) fn resolved_expr_produces_dense_array(ctx: &LoweringCtx, expr: &Resol
         } if method == "matchAll" => {
             crate::lowered::resolver::string::resolved_expr_static_string_value(ctx, object)
                 .is_some()
-                && matches!(
-                    args.as_slice(),
-                    [ResolvedExpr::String(_)]
-                )
+                && matches!(args.as_slice(), [ResolvedExpr::String(_)])
         }
         ResolvedExpr::MethodCall { object, method, .. }
             if method == "ownKeys"

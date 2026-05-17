@@ -259,10 +259,7 @@ impl super::super::Resolver {
                     props: vec![
                         (
                             "0".to_owned(),
-                            LoweredExpr::String(
-                                raw_pattern.to_string(),
-                                Span::generated("str"),
-                            ),
+                            LoweredExpr::String(raw_pattern.to_string(), Span::generated("str")),
                         ),
                         (
                             "index".to_owned(),

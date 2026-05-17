@@ -1193,17 +1193,25 @@ impl Parser {
                 body,
                 is_generator,
                 ..
-            } => Ok(Some(Stmt::Function {
-                name,
-                params,
-                body,
-                is_generator,
-                is_async: false,
-                is_ambient: false,
-                overload_signature: false,
-                span: eval_span,
-                source_text: self.source[eval_span.start..eval_span.end].to_owned(),
-            })),
+            } => {
+                // Adjust body statement spans to be relative to the main source
+                // (the inner parser uses the eval fragment as source).
+                let mut body = body;
+                for stmt in &mut body {
+                    offset_stmt_spans(stmt, eval_span.start);
+                }
+                Ok(Some(Stmt::Function {
+                    name,
+                    params,
+                    body,
+                    is_generator,
+                    is_async: false,
+                    is_ambient: false,
+                    overload_signature: false,
+                    span: eval_span,
+                    source_text: self.source[eval_span.start..eval_span.end].to_owned(),
+                }))
+            },
             _ => Ok(None),
         }
     }
@@ -1223,10 +1231,18 @@ impl Parser {
                 diagnostic
             })?;
         let mut parser = Parser::new_with_strict_mode(tokens, self.strict_mode, source);
-        parser.parse_program().map_err(|mut diagnostic| {
+        let mut statements = parser.parse_program().map_err(|mut diagnostic| {
             diagnostic.span = Some(eval_span);
             diagnostic
-        })
+        })?;
+        // Adjust all statement spans to be relative to the main source
+        // (the inner parser uses the eval fragment as source, producing
+        // fragment-relative spans that would cause slice panics when used
+        // against the main source for e.g. body.last().span().end).
+        for stmt in &mut statements {
+            offset_stmt_spans(stmt, eval_span.start);
+        }
+        Ok(statements)
     }
 
     fn single_block_source(source: &str) -> Option<&str> {
