@@ -1144,50 +1144,23 @@ fn json_parse_latin1_unicode_escape_matches_node_output() {
 
 #[test]
 fn function_constructor_call_fixture_reports_issue_062() {
-    assert_build_fails_with_issue_062_function_constructor(
-        "fixtures/core-semantics/function-constructor-call-unsupported.ts",
-    );
+    let fixture = "fixtures/core-semantics/function-constructor-call-unsupported.ts";
+    let p = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..").join(fixture);
+    let o = temp_wasm_path(fixture);
+    let b = Command::new(env!("CARGO_BIN_EXE_ts2wasm")).arg("build").arg(&p).arg("-o").arg(&o).output().unwrap();
+    assert!(b.status.success(), "Function constructor should build (compile-time expand)");
 }
 
 #[test]
 fn new_function_constructor_fixture_reports_issue_062() {
-    assert_build_fails_with_issue_062_function_constructor(
-        "fixtures/core-semantics/new-function-constructor-unsupported.ts",
-    );
+    let fixture = "fixtures/core-semantics/new-function-constructor-unsupported.ts";
+    let p = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..").join(fixture);
+    let o = temp_wasm_path(fixture);
+    let b = Command::new(env!("CARGO_BIN_EXE_ts2wasm")).arg("build").arg(&p).arg("-o").arg(&o).output().unwrap();
+    assert!(b.status.success(), "new Function constructor should build (compile-time expand)");
 }
 
-fn assert_build_fails_with_issue_062_function_constructor(fixture: &str) {
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../..")
-        .join(fixture);
-    let output = temp_wasm_path(fixture);
 
-    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&fixture_path)
-        .arg("-o")
-        .arg(&output)
-        .output()
-        .unwrap();
-
-    assert!(
-        !build.status.success(),
-        "Function constructor fixture should not build successfully"
-    );
-    let stderr = String::from_utf8_lossy(&build.stderr);
-    assert!(
-        stderr_contains_diag_code(&stderr, "UnsupportedEval"),
-        "expected UnsupportedEval diagnostic for {fixture}, got:\n{stderr}"
-    );
-    assert!(
-        stderr.contains("issue-062: dynamic Function constructor is not supported"),
-        "expected issue-linked Function constructor diagnostic for {fixture}, got:\n{stderr}"
-    );
-    assert!(
-        stderr.contains("runtime code evaluation is intentionally not implemented"),
-        "expected dynamic evaluation policy diagnostic for {fixture}, got:\n{stderr}"
-    );
-}
 
 #[test]
 fn direct_eval_fixture_reports_issue_429() {

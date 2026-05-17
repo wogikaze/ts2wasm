@@ -1115,6 +1115,15 @@ impl NameResolver {
                         span: *span,
                     });
                 }
+                if self.is_unshadowed_function_constructor(callee) {
+                    return Err(unsupported_function_constructor(*span));
+                }
+                if let Expr::Ident { name, .. } = callee.as_ref()
+                    && name == "eval"
+                    && !self.is_user_declared("eval")
+                {
+                    return Err(unsupported_eval_diagnostic(*span));
+                }
                 let resolved_callee = self.resolve_expr(callee)?;
                 let resolved_args = args
                     .iter()
@@ -1350,6 +1359,18 @@ impl NameResolver {
                 // Only unqualified `new Function(...)` triggers the eval boundary,
                 // NOT qualified calls like `new M.Function(...)`.
                 if matches!(expr.as_ref(), Expr::Ident { .. })
+                    && callee_name == "Function"
+                    && !self.is_user_declared("Function")
+                {
+                    return Err(unsupported_function_constructor(*span));
+                }
+                if matches!(expr.as_ref(), Expr::Ident { .. })
+                    && callee_name == "eval"
+                    && !self.is_user_declared("eval")
+                {
+                    return Err(unsupported_eval_diagnostic(*span));
+                }
+                Ok(Expr::New {
                     expr: Box::new(Expr::Ident {
                         name: callee_name,
                         span: *span,
