@@ -141,6 +141,16 @@ const HOST_IMPORT_RUNTIME_CASES: &[RuntimeImportCase] = &[
         imports: &[HostImport::DateUTC],
         capabilities: &[Capability::HostDateUTC],
     },
+    RuntimeImportCase {
+        runtime_fn: RuntimeFn::EvalDirectHost,
+        imports: &[HostImport::EvalDirect],
+        capabilities: &[Capability::HostEvalDirect],
+    },
+    RuntimeImportCase {
+        runtime_fn: RuntimeFn::EvalIndirectHost,
+        imports: &[HostImport::EvalIndirect],
+        capabilities: &[Capability::HostEvalIndirect],
+    },
 ];
 
 const ALL_HOST_IMPORTS: &[HostImport] = &[
@@ -177,6 +187,8 @@ const ALL_HOST_IMPORTS: &[HostImport] = &[
     HostImport::DateToTimeString,
     HostImport::DateParse,
     HostImport::DateUTC,
+    HostImport::EvalDirect,
+    HostImport::EvalIndirect,
 ];
 
 const NON_RUNTIME_LINK_PLAN_HOST_IMPORTS: &[HostImport] = &[

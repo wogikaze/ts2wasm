@@ -920,7 +920,7 @@ directories:
     - gc-object-root.ts
     - gc-transient-allocation.ts
     - generator-function-unsupported.ts
-    - indirect-eval-dynamic-unsupported.ts
+    - indirect-eval-dynamic-host-path.ts
     - indirect-eval-static.ts
     - in-operator-prototype.ts
     - in-operator.ts

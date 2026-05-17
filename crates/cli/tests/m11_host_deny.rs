@@ -409,6 +409,118 @@ fn static_indirect_eval_declares_no_node_host_eval_capability() {
     );
 }
 
+#[test]
+fn dynamic_indirect_eval_declares_node_host_eval_indirect_capability() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../fixtures")
+        .join("core-semantics/indirect-eval-dynamic-host-path.ts");
+
+    let output_wasm = std::env::temp_dir().join(format!(
+        "ts2wasm-dynamic-indirect-eval-{}.wasm",
+        std::process::id()
+    ));
+
+    let output_manifest = std::env::temp_dir().join(format!(
+        "ts2wasm-dynamic-indirect-eval-{}.json",
+        std::process::id()
+    ));
+
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture)
+        .arg("-o")
+        .arg(&output_wasm)
+        .arg("--emit-manifest")
+        .arg(&output_manifest)
+        .output()
+        .expect("Failed to execute ts2wasm");
+
+    assert!(
+        output.status.success(),
+        "dynamic indirect eval should compile through the Node host lane: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let manifest_content =
+        std::fs::read_to_string(&output_manifest).expect("Failed to read manifest");
+    let manifest: serde_json::Value =
+        serde_json::from_str(&manifest_content).expect("Manifest should be valid JSON");
+
+    assert_eq!(manifest["standalone"], false);
+    assert_eq!(manifest["node_host"]["required"], true);
+    assert_eq!(
+        manifest["node_host"]["imports"],
+        serde_json::json!(["host.eval.indirect"])
+    );
+    assert!(
+        manifest["capability_reasons"]["host.eval.indirect"]
+            .as_array()
+            .is_some_and(|reasons| !reasons.is_empty()),
+        "dynamic indirect eval must carry an auditable host.eval.indirect reason: {manifest}"
+    );
+}
+
+#[test]
+fn host_deny_rejects_dynamic_indirect_eval_host_lane() {
+    assert_host_deny_rejects("core-semantics/indirect-eval-dynamic-host-path.ts");
+}
+
+#[test]
+fn dynamic_direct_eval_declares_node_host_eval_direct_capability() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../fixtures")
+        .join("builtins-and-io/dynamic-eval-host-path.ts");
+
+    let output_wasm = std::env::temp_dir().join(format!(
+        "ts2wasm-dynamic-direct-eval-{}.wasm",
+        std::process::id()
+    ));
+
+    let output_manifest = std::env::temp_dir().join(format!(
+        "ts2wasm-dynamic-direct-eval-{}.json",
+        std::process::id()
+    ));
+
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture)
+        .arg("-o")
+        .arg(&output_wasm)
+        .arg("--emit-manifest")
+        .arg(&output_manifest)
+        .output()
+        .expect("Failed to execute ts2wasm");
+
+    assert!(
+        output.status.success(),
+        "dynamic direct eval should compile through the Node host lane: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let manifest_content =
+        std::fs::read_to_string(&output_manifest).expect("Failed to read manifest");
+    let manifest: serde_json::Value =
+        serde_json::from_str(&manifest_content).expect("Manifest should be valid JSON");
+
+    assert_eq!(manifest["standalone"], false);
+    assert_eq!(manifest["node_host"]["required"], true);
+    assert_eq!(
+        manifest["node_host"]["imports"],
+        serde_json::json!(["host.eval.direct"])
+    );
+    assert!(
+        manifest["capability_reasons"]["host.eval.direct"]
+            .as_array()
+            .is_some_and(|reasons| !reasons.is_empty()),
+        "dynamic direct eval must carry an auditable host.eval.direct reason: {manifest}"
+    );
+}
+
+#[test]
+fn host_deny_rejects_dynamic_direct_eval_host_lane() {
+    assert_host_deny_rejects("builtins-and-io/dynamic-eval-host-path.ts");
+}
+
 /// Helper: typescript-directives fixtures expected to fail under --host-deny
 /// with unsupported syntax diagnostics (not host-deny errors).
 fn assert_unsupported_syntax_under_host_deny(fixture_path: &str) {

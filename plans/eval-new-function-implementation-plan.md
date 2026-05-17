@@ -63,7 +63,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | static direct eval block function | `eval('{ function f(){} }')` | Annex B supported slice あり | hoist plan / mutable binding env を validation 付きで対応 |
 | direct eval with declarations | `eval('var x=1; x')` | expression completion と environment 接続が未完成 | eval-code environment + completion record |
 | indirect eval static literal | `(0, eval)("1+2")` | resolver が direct/indirect を分類し、supported literal subset は AOT eval expansion で host import なし | global `EvalFragment` AOT |
-| indirect eval dynamic | `(0, eval)(src)` | runtime stub か diagnostic | `host.eval.indirect` capability |
+| indirect eval dynamic | `(0, eval)(src)` | `host.eval.indirect` manifest / host-deny slice は実装済み。node-shim 実行 pass は未完 | `host.eval.indirect` capability |
 | optional eval | `eval?.("x")` | parser diagnostic | indirect-like call semantics として classification |
 | `new eval` | `new eval("x")` | unsupported / TypeError 境界が未整理 | eval is not constructor の TypeError parity |
 | literal `Function` | `Function("a", "return a")` | parser synthetic `FunctionExpr` slice | resolver-owned static `FunctionConstructorPlan` |
@@ -533,7 +533,7 @@ Exit criteria:
 | G3 Annex B block function | existing block-function fixtures pass through canonical eval lowering |
 | G4 static Function constructor | literal-only `Function` / `new Function` Node differential + metadata + no host import |
 | G5 static indirect eval | global-scope semantics + no host import |
-| G6 dynamic indirect eval | `host.eval.indirect` exact manifest + node-shim pass + host-deny fail |
+| G6 dynamic indirect eval | `host.eval.indirect` exact manifest + node-shim pass + host-deny fail (`host.eval.indirect` manifest + host-deny fail は完了、node-shim pass は未完) |
 | G7 dynamic Function constructor | `host.function.*` exact manifest + host function call/construct pass |
 | G8 dynamic direct eval | env descriptor + mutation ledger + write-back validation |
 | G9 coverage | `UnsupportedEval` / Function-constructor expected-fail count decreases with categorized artifact |

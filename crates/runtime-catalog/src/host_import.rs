@@ -507,7 +507,7 @@ impl HostImport {
             },
             Self::EvalDirect => HostImportSpec {
                 module: "host",
-                name: "evalDirect",
+                name: "eval.direct",
                 wat_symbol: "$host_eval_direct",
                 abi: HostAbi::NodeShim,
                 params: "param i32 i32",
@@ -515,7 +515,7 @@ impl HostImport {
             },
             Self::EvalIndirect => HostImportSpec {
                 module: "host",
-                name: "evalIndirect",
+                name: "eval.indirect",
                 wat_symbol: "$host_eval_indirect",
                 abi: HostAbi::NodeShim,
                 params: "param i32 i32",

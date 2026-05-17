@@ -323,7 +323,10 @@ The current implementation has several partial dynamic-code paths:
   block-function environment helpers;
 - literal-only `Function(...)` and `new Function(...)` are currently expanded
   by the parser into synthetic function expressions;
-- dynamic eval source values can reach the runtime eval host helper path, but
+- runtime-source indirect eval lowers to the audited Node host lane with an
+  exact `host.eval.indirect` manifest entry and host-deny rejection;
+- runtime-source direct eval can reach the runtime eval host helper path with an
+  exact `host.eval.direct` manifest entry and host-deny rejection, but
   caller-scope direct-eval write-back is not complete;
 - dynamic `Function` constructor host compilation is not implemented.
 
@@ -331,7 +334,8 @@ The canonical implementation plan is
 `plans/eval-new-function-implementation-plan.md`. Current known gaps include
 the split parser/compiler eval expansion paths, direct eval declaration
 environment connection, Function constructor metadata completeness, and no
-`host.function.*` lane yet.
+`host.function.*` lane yet. Node-shim execution for dynamic indirect eval is
+not covered by the current iwasm-based differential runner.
 
 ## Known compiler limitations
 

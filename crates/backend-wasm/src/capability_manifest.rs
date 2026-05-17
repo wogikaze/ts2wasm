@@ -162,7 +162,7 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
     // Map Node host imports
     for import in plan.required_imports() {
         if matches!(import.spec().abi, HostAbi::NodeShim) {
-            let import_name = format!("host.{}", import.spec().name);
+            let import_name = import.manifest_name().to_owned();
             if !manifest.node_host.imports.contains(&import_name) {
                 manifest.node_host.imports.push(import_name);
             }

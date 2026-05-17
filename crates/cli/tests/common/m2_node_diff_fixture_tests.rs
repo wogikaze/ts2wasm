@@ -3143,13 +3143,28 @@ fn direct_eval_block_function_shadowed_eval_reports_issue_302() {
 }
 
 #[test]
-fn indirect_eval_fixture_reports_unsupported() {
-    // Runtime-source indirect eval passes the parser but requires the audited host lane.
-    assert_build_fails_with_diagnostic(
-        "fixtures/core-semantics/indirect-eval-dynamic-unsupported.ts",
-        "[UnsupportedEval]",
-        "runtime code evaluation is intentionally not implemented",
-        true,
+fn indirect_eval_dynamic_fixture_builds_for_host_lane() {
+    if skip_m2_node_diff_by_default() {
+        return;
+    }
+    let fixture = "fixtures/core-semantics/indirect-eval-dynamic-host-path.ts";
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        build.status.success(),
+        "runtime-source indirect eval should build through the host lane:\n{}",
+        String::from_utf8_lossy(&build.stderr)
     );
 }
 
