@@ -591,6 +591,8 @@ fn extract_function_stubs(helper_source: &str, full_source: &str) -> String {
         ("function isConstructor() {}", "isConstructor"),
         ("function testFinished() {}", "testFinished"),
         ("function $DONOTEVALUATE() {}", "$DONOTEVALUATE"),
+        // detachArrayBuffer.js stub (safe fallback for tests missing the include)
+        ("function $DETACHBUFFER() {}", "$DETACHBUFFER"),
         // wellKnownIntrinsicObjects.js stubs (uses new Function(...) internally)
         (
             "var WellKnownIntrinsicObjects = [];",
