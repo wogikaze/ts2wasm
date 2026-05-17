@@ -539,11 +539,11 @@ fn dump_ast_reports_unterminated_ambient_function() {
 }
 
 #[test]
-fn dump_ast_reports_class_expression_decorator_boundary() {
-    let stderr = run_dump_error(&["--ast"], "var v = @decorate class C { static p = 1 };");
-    assert!(stderr.contains("[UnsupportedTypeScriptSyntax]"), "{stderr}");
-    assert!(stderr.contains("decorator"), "{stderr}");
-    assert!(!stderr.contains("unsupported character"), "{stderr}");
+fn dump_ast_accepts_class_expression_with_decorator() {
+    let stdout = run_dump(&["--ast"], "var v = @decorate class C { static p = 1 };");
+    assert!(stdout.contains("ClassExpr"), "{stdout}");
+    assert!(stdout.contains("C"), "{stdout}");
+    assert!(!stdout.contains("[UnsupportedTypeScriptSyntax]"), "{stdout}");
 }
 
 #[test]

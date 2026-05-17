@@ -2163,23 +2163,70 @@ impl Parser {
                 kind: Token::At,
                 span: at_span,
             }) => {
-                // Consume the decorator identifier if present
-                let decorator_end = if matches!(self.peek(), Some(Token::Ident(_))) {
-                    let ident_span = self.peek_span().unwrap_or(at_span);
-                    self.advance();
-                    ident_span.end
+                // ES decorator syntax (stage 3/4): @<decorator> class { ... }
+                // Consume the decorator expression, then parse the class expression.
+                // Decorator is a no-op for compilation (erased at the parser level).
+                let mut consumed = false;
+                loop {
+                    match self.peek() {
+                        Some(Token::Ident(_) | Token::PrivateIdentifier(_)) => {
+                            consumed = true;
+                            self.advance();
+                        }
+                        Some(Token::Dot) => {
+                            consumed = true;
+                            self.advance();
+                        }
+                        Some(Token::LeftParen) => {
+                            consumed = true;
+                            self.advance(); // consume '('
+                            let mut depth = 1u32;
+                            loop {
+                                match self.peek() {
+                                    Some(Token::LeftParen) => {
+                                        depth += 1;
+                                        self.advance();
+                                    }
+                                    Some(Token::RightParen) => {
+                                        depth -= 1;
+                                        self.advance();
+                                        if depth == 0 {
+                                            break;
+                                        }
+                                    }
+                                    Some(_) => {
+                                        self.advance();
+                                    }
+                                    None => {
+                                        return Err(Diagnostic {
+                                            code: DiagCode::UnsupportedSyntax,
+                                            message:
+                                                "unterminated decorator call expression"
+                                                    .to_owned(),
+                                            span: Some(at_span),
+                                            phase: None,
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        _ => break,
+                    }
+                }
+                if consumed && matches!(self.peek(), Some(Token::Class)) {
+                    let class_span = self.peek_span().unwrap_or(at_span);
+                    self.advance(); // consume 'class'
+                    self.class_expression(class_span)
                 } else {
-                    at_span.end
-                };
-                Err(Diagnostic {
-                    code: DiagCode::UnsupportedTypeScriptSyntax,
-                    message: "issue-5253: TypeScript decorator syntax is not supported".to_owned(),
-                    span: Some(Span {
-                        start: at_span.start,
-                        end: decorator_end,
-                    }),
+                    Err(Diagnostic {
+                        code: DiagCode::UnsupportedTypeScriptSyntax,
+                        message:
+                            "issue-5253: decorator syntax is not supported outside class expressions"
+                                .to_owned(),
+                        span: Some(at_span),
 
-                    phase: None,})
+                        phase: None,})
+                }
             }
             Some(SpannedToken {
                 kind: Token::With, ..

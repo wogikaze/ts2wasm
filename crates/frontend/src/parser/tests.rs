@@ -611,16 +611,14 @@ mod tests {
     }
 
     #[test]
-    fn rejects_class_expression_decorator_with_boundary_diagnostic() {
-        let err = parse_program("var v = @decorate class C {};")
-            .expect_err("class expression decorator should report boundary diagnostic");
-        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
-        assert!(err.message.contains("decorator"), "{err:?}");
-        let span = err.span.expect("diagnostic must have a source span");
-        assert_eq!(
-            &"var v = @decorate class C {};"[span.start..span.end],
-            "@decorate"
-        );
+    fn accepts_class_expression_with_decorator() {
+        let program = parse_program("var v = @decorate class C {};")
+            .expect("class expression with decorator should parse");
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Let { name, .. } => assert_eq!(name, "v"),
+            other => panic!("expected Let, got {other:?}"),
+        }
     }
 
     #[test]
