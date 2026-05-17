@@ -554,60 +554,31 @@ fn extract_features_from_frontmatter(frontmatter: &str) -> Vec<String> {
 /// Skips functions already present in `full_source` to avoid DuplicateFunction
 /// when the Python harness has already wrapped the source with shim functions.
 fn extract_function_stubs(helper_source: &str, full_source: &str) -> String {
-    // If the harness file doesn't use unsupported patterns (eval, new Function),
-    // include the ACTUAL content so tests get real implementations.
-    //
-    // Only fall back to hardcoded stubs for files that contain patterns
-    // the compiler cannot handle (eval, Function constructor, etc.).
+    // If the harness file doesn't use unsupported patterns, include the ACTUAL content.
     if !uses_unsupported_or_rewritten_patterns(helper_source) {
-        // Build a list of function/var names defined in the helper
-        // and skip any that are already in the test source (prevent duplicates).
-        let defined_names = extract_defined_names(helper_source);
-        let mut result = String::new();
-        for line in helper_source.lines() {
-            let trimmed = line.trim();
-            // Check if this line starts a definition that already exists in full_source
-            let skip = defined_names.iter().any(|(decl, name)| {
-                trimmed.starts_with(decl) && source_has_binding(full_source, name)
-            });
-            if !skip {
-                result.push_str(line);
-                result.push('\n');
-            }
-        }
-        return result.trim().to_string();
+        return inject_real_content(helper_source, full_source);
     }
 
-    // Fallback: hardcoded stubs for harness files that use unsupported patterns.
-    // Currently only wellKnownIntrinsicObjects.js hits this path.
+    // For files with new Function(...), strip those lines and try real content.
+    let cleaned = remove_new_function_lines(helper_source);
+    if cleaned.trim().len() > 50 {
+        return inject_real_content(&cleaned, full_source);
+    }
+
+    // Fallback: hardcoded stubs for files where stripping is insufficient.
     let candidate_stubs = [
         ("function verifyProperty() {}", "verifyProperty"),
-        (
-            "function verifyCallableProperty() {}",
-            "verifyCallableProperty",
-        ),
+        ("function verifyCallableProperty() {}", "verifyCallableProperty"),
         ("function assert() {}", "assert"),
         ("function isPrimitive() {}", "isPrimitive"),
         ("function isConstructor() {}", "isConstructor"),
         ("function testFinished() {}", "testFinished"),
         ("function $DONOTEVALUATE() {}", "$DONOTEVALUATE"),
-        // detachArrayBuffer.js stub (safe fallback for tests missing the include)
         ("function $DETACHBUFFER() {}", "$DETACHBUFFER"),
-        // wellKnownIntrinsicObjects.js stubs (uses new Function(...) internally)
-        (
-            "var WellKnownIntrinsicObjects = [];",
-            "WellKnownIntrinsicObjects",
-        ),
-        (
-            "function getWellKnownIntrinsicObject() {}",
-            "getWellKnownIntrinsicObject",
-        ),
-        // resizableArrayBufferUtils.js stubs (uses new Function(...))
+        ("var WellKnownIntrinsicObjects = [];", "WellKnownIntrinsicObjects"),
+        ("function getWellKnownIntrinsicObject() {}", "getWellKnownIntrinsicObject"),
         ("function convertToNumeric() {}", "convertToNumeric"),
-        (
-            "function MaybeViewedOutOfBounds() {}",
-            "MaybeViewedOutOfBounds",
-        ),
+        ("function MaybeViewedOutOfBounds() {}", "MaybeViewedOutOfBounds"),
     ];
     candidate_stubs
         .iter()
@@ -617,27 +588,35 @@ fn extract_function_stubs(helper_source: &str, full_source: &str) -> String {
         .join("\n")
 }
 
-/// Check if a harness helper source contains patterns incompatible with the compiler
-/// or that would be broken by rewrite_assert_method_calls.
-fn uses_unsupported_or_rewritten_patterns(source: &str) -> bool {
-    if source.contains("new Function(") || source.contains("eval(") || source.contains("new Proxy(")
-    {
-        return true;
-    }
-    // Check for assert method assignments that rewrite_assert_method_calls
-    // would break (e.g. `assert.sameValue = function(...)`)
-    let rewritten_patterns = [
-        "assert.sameValue",
-        "assert.throws",
-        "assert.notSameValue",
-        "assert.compareArray",
-    ];
-    for pattern in &rewritten_patterns {
-        if source.contains(pattern) {
-            return true;
+/// Include real harness content, skipping definitions already present in the test source.
+fn inject_real_content(helper_source: &str, full_source: &str) -> String {
+    let defined_names = extract_defined_names(helper_source);
+    let mut result = String::new();
+    for line in helper_source.lines() {
+        let trimmed = line.trim();
+        let skip = defined_names.iter().any(|(decl, name)| {
+            trimmed.starts_with(decl) && source_has_binding(full_source, name)
+        });
+        if !skip {
+            result.push_str(line);
+            result.push('\n');
         }
     }
-    false
+    result.trim().to_string()
+}
+
+/// Remove lines containing `new Function(` so the rest of the harness can be used.
+fn remove_new_function_lines(source: &str) -> String {
+    source
+        .lines()
+        .filter(|line| !line.contains("new Function("))
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+/// Check if a harness helper source contains patterns incompatible with the compiler.
+fn uses_unsupported_or_rewritten_patterns(source: &str) -> bool {
+    source.contains("new Function(") || source.contains("eval(") || source.contains("new Proxy(")
 }
 
 /// Extract defined function/var names from a helper source.
@@ -791,7 +770,7 @@ var IsHTMLDDA = $262.IsHTMLDDA;"#;
 
         assert!(processed.contains("var $262 = {};"));
         assert!(processed.contains("$262.IsHTMLDDA = {};"));
-        assert!(processed.contains("function assert() {"));
+        assert!(processed.contains("function assert("));
         assert!(processed.contains("if (typeof Symbol === 'object'"));
     }
 
