@@ -3820,6 +3820,16 @@ impl super::super::Resolver {
                 {
                     lowered_args.push(LoweredExpr::Bool(false, Span::generated("bool")));
                 }
+                "setInt8" | "setUint8" if args.len() == 1 => {
+                    lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
+                }
+                "setInt16" | "setUint16" | "setInt32" | "setUint32" | "setFloat32"
+                | "setFloat64" | "setFloat16"
+                    if args.len() == 1 =>
+                {
+                    lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
+                    lowered_args.push(LoweredExpr::Bool(false, Span::generated("bool")));
+                }
                 "setInt16" | "setUint16" | "setInt32" | "setUint32" | "setFloat32"
                 | "setFloat64" | "setFloat16"
                     if args.len() == 2 =>

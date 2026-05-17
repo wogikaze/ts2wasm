@@ -673,6 +673,13 @@ impl super::super::Resolver {
                     span,
                 )))
             }
+            ("DataView", "byteLength") => {
+                // DataView byteLength = underlying buffer byte length, same as ArrayBuffer
+                Ok(Some(LoweredExpr::GetLength(
+                    Box::new(self.lower_expr(object)?),
+                    span,
+                )))
+            }
             (cn, "byteLength") if crate::lowered::program_builtins::is_typed_array_class(cn) => {
                 // byteLength = element_count * BYTES_PER_ELEMENT
                 if let Some(elem_size) = typed_array_element_size(cn) {
