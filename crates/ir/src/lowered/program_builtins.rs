@@ -916,7 +916,7 @@ pub(crate) fn is_date_now_expr(expr: &ResolvedExpr) -> bool {
 }
 
 pub(crate) fn is_annex_b_date_method(method: &str) -> bool {
-    matches!(method, "getYear" | "setYear" | "toGMTString")
+    matches!(method, "setYear" | "toGMTString")
 }
 
 pub(crate) fn unsupported_annex_b_date_method_diagnostic(

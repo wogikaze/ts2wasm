@@ -1947,6 +1947,29 @@ impl super::super::Resolver {
                 span: Span::generated("binary"),
             }));
         }
+        if method == "getYear" && self.is_date_receiver(object) {
+            if !args.is_empty() {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 0 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+                    phase: None,
+                });
+            }
+            return Ok(Some(LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::DateGetUtcFullYear,
+                    args: vec![self.lower_expr(object)?],
+                    span: Span::generated("runtime_call"),
+                }),
+                op: LoweredBinaryOp::Subtract,
+                right: Box::new(LoweredExpr::Number(1900, Span::generated("num"))),
+                span: Span::generated("binary"),
+            }));
+        }
         if is_annex_b_date_method(method) && self.is_date_receiver(object) {
             return Err(unsupported_annex_b_date_method_diagnostic(
                 method,
