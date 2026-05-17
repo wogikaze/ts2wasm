@@ -566,6 +566,29 @@ fn extract_function_stubs(_helper_source: &str, full_source: &str) -> String {
         ("function isConstructor() {}", "isConstructor"),
         ("function testFinished() {}", "testFinished"),
         ("function $DONOTEVALUATE() {}", "$DONOTEVALUATE"),
+        // wellKnownIntrinsicObjects.js stubs
+        ("var WellKnownIntrinsicObjects = [];", "WellKnownIntrinsicObjects"),
+        ("function getWellKnownIntrinsicObject() {}", "getWellKnownIntrinsicObject"),
+        // fnGlobalObject.js stub
+        ("function fnGlobalObject() {}", "fnGlobalObject"),
+        // compareArray.js stub
+        ("function compareArray() {}", "compareArray"),
+        // async helpers
+        ("function $DONE() {}", "$DONE"),
+        // TypedArray helper stubs
+        ("function testWithTypedArrayConstructors() {}", "testWithTypedArrayConstructors"),
+        ("function testWithBigIntTypedArrayConstructors() {}", "testWithBigIntTypedArrayConstructors"),
+        ("function testWithAtomicsFriendlyTypedArrayConstructors() {}", "testWithAtomicsFriendlyTypedArrayConstructors"),
+        ("function testWithNonAtomicsFriendlyTypedArrayConstructors() {}", "testWithNonAtomicsFriendlyTypedArrayConstructors"),
+        ("function testWithAtomicsNonViewValues() {}", "testWithAtomicsNonViewValues"),
+        ("function testWithAtomicsOutOfBoundsIndices() {}", "testWithAtomicsOutOfBoundsIndices"),
+        ("function anyTypedArrayConstructors() {}", "anyTypedArrayConstructors"),
+        ("function nonClampedIntArrayConstructors() {}", "nonClampedIntArrayConstructors"),
+        ("function typedArrayConstructors() {}", "typedArrayConstructors"),
+        // $262 and detach helpers
+        ("function $DETACHBUFFER() {}", "$DETACHBUFFER"),
+        // Atomics helper stubs
+        ("function testWithAtomicsFriendlyArrays() {}", "testWithAtomicsFriendlyArrays"),
     ];
     candidate_stubs
         .iter()
