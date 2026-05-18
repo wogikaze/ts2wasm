@@ -1352,6 +1352,24 @@ fn eval_statement_completion_step(
                 is_async,
             }
         }
+        ResolvedStmt::ClassDecl {
+            name,
+            extends,
+            constructor,
+            methods,
+            static_blocks,
+            private_fields,
+            static_private_fields,
+            ..
+        } if matches!(ast_stmt, Some(Stmt::ClassDecl { .. })) => EvalCompletionStep::ClassDecl {
+            name,
+            extends,
+            constructor,
+            methods,
+            private_fields,
+            static_private_fields,
+            static_blocks,
+        },
         ResolvedStmt::Break { label } => EvalCompletionStep::Break { label },
         ResolvedStmt::Continue { label } => EvalCompletionStep::Continue { label },
         ResolvedStmt::Throw(expr) => EvalCompletionStep::Throw(expr),

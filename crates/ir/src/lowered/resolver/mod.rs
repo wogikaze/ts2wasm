@@ -10,7 +10,9 @@ pub(crate) mod string;
 use std::collections::{HashMap, HashSet};
 
 use crate::binding_pattern::{BindingDefault, parse_binding_pattern};
-use crate::builtin_resolved::{ResolvedExpr, ResolvedStmt};
+use crate::builtin_resolved::{
+    ClassMethod, ClassMethodKind, ResolvedExpr, ResolvedParam, ResolvedStmt,
+};
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::{
     ArrowClosure, BoundConstructor, BoundFunction, FunctionMethodBinding, FunctionMethodKind,
@@ -25,6 +27,16 @@ use ts2wasm_syntax::{BinaryOp, UnaryOp};
 /// All mutable state is owned by ctx. Borrowed function maps are cloned into ctx on construction.
 pub(super) struct Resolver {
     pub(crate) ctx: LoweringCtx,
+}
+
+pub(super) struct EvalClassDeclParts<'a> {
+    pub(super) name: &'a str,
+    pub(super) extends: &'a Option<String>,
+    pub(super) constructor: &'a Option<(Vec<ResolvedParam>, Vec<ResolvedStmt>)>,
+    pub(super) methods: &'a [ClassMethod],
+    pub(super) private_fields: &'a [String],
+    pub(super) static_private_fields: &'a [(String, ResolvedExpr, Span)],
+    pub(super) static_blocks: &'a [(Span, Vec<ResolvedStmt>)],
 }
 
 impl Resolver {
@@ -1397,6 +1409,242 @@ impl Resolver {
                 Span::generated("block"),
             )),
         }
+    }
+
+    pub(super) fn lower_eval_class_decl(
+        &mut self,
+        class_decl: EvalClassDeclParts<'_>,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        let EvalClassDeclParts {
+            name,
+            extends,
+            constructor,
+            methods,
+            private_fields,
+            static_private_fields,
+            static_blocks,
+        } = class_decl;
+
+        let ctor_id = FuncId(self.ctx.functions.next_func_id);
+        self.ctx.functions.next_func_id += 1;
+        self.ctx
+            .classes
+            .class_constructor_ids
+            .insert(name.to_owned(), ctor_id);
+        self.ctx
+            .classes
+            .class_parents
+            .insert(name.to_owned(), extends.clone());
+        self.ctx.classes.class_private_fields.insert(
+            name.to_owned(),
+            private_fields
+                .iter()
+                .enumerate()
+                .map(|(slot, field)| (field.clone(), slot))
+                .collect(),
+        );
+        self.ctx.classes.class_static_private_fields.insert(
+            name.to_owned(),
+            static_private_fields
+                .iter()
+                .map(|(field, _, _)| {
+                    (
+                        field.clone(),
+                        crate::builtin_resolver::static_private_field_local_name(name, field),
+                    )
+                })
+                .collect(),
+        );
+
+        let mut instance_methods = Vec::new();
+        let mut static_methods = Vec::new();
+        let mut method_ids = Vec::new();
+        for method in methods {
+            let method_id = FuncId(self.ctx.functions.next_func_id);
+            self.ctx.functions.next_func_id += 1;
+            if let Some(stripped) = method.name.strip_prefix("static::") {
+                self.ctx
+                    .classes
+                    .class_static_method_ids
+                    .insert((name.to_owned(), stripped.to_owned()), method_id);
+                static_methods.push((stripped.to_owned(), method_id));
+            } else {
+                self.ctx
+                    .classes
+                    .class_method_ids
+                    .insert((name.to_owned(), method.name.clone()), method_id);
+                if method.kind == ClassMethodKind::Method {
+                    instance_methods.push((method.name.clone(), method_id));
+                }
+            }
+            method_ids.push((method, method_id));
+        }
+
+        let (ctor_params, ctor_body) = constructor
+            .as_ref()
+            .cloned()
+            .unwrap_or_else(|| (Vec::new(), Vec::new()));
+        let mut ctor_params_with_this = vec![ResolvedParam {
+            name: "this".to_owned(),
+            default: None,
+            is_rest: false,
+            span: None,
+        }];
+        ctor_params_with_this.extend(ctor_params);
+        if constructor.is_none() && extends.is_some() {
+            ctor_params_with_this.push(ResolvedParam {
+                name: "...args".to_owned(),
+                default: None,
+                is_rest: true,
+                span: None,
+            });
+        }
+
+        self.ctx.symbols.function_signatures.insert(
+            ctor_id,
+            FunctionSignature {
+                explicit_params: ctor_params_with_this.len(),
+                has_rest: ctor_params_with_this.iter().any(|param| param.is_rest),
+                is_strict: true,
+                ..FunctionSignature::default()
+            },
+        );
+        let function_signatures = self.ctx.symbols.function_signatures.clone();
+        let function_captures = self.ctx.functions.function_captures.clone();
+        let function_mutable_captures = self.ctx.functions.function_mutable_captures.clone();
+        let lowered = lower_function(
+            ctor_id,
+            &ctor_params_with_this,
+            &ctor_body,
+            false,
+            false,
+            &self.ctx.symbols.function_ids,
+            &function_signatures,
+            &function_captures,
+            &function_mutable_captures,
+            &self.ctx.functions.class_method_captures,
+            &self.ctx.functions.class_method_mutable_captures,
+            &collect_dynamic_direct_eval_env_cell_names(&ctor_params_with_this, &ctor_body),
+            &self.ctx.facts.heap_closure_names,
+            self.ctx.classes.class_parents.clone(),
+            self.ctx.classes.class_private_fields.clone(),
+            self.ctx.classes.class_static_private_fields.clone(),
+            LowerFunctionOptions {
+                current_class: Some(name),
+                in_constructor: true,
+                next_func_id: self.ctx.functions.next_func_id,
+                self_closure: None,
+                capture_facts: FunctionCaptureFacts::default(),
+                recursion_depth: 0,
+                new_target_class: Some(name),
+                module_url: self.ctx.current_module_url.as_str(),
+                strict_context: true,
+            },
+        )?;
+        self.ctx.functions.next_func_id = lowered.next_func_id;
+        self.ctx
+            .functions
+            .generated_functions
+            .push(lowered.function);
+        self.ctx
+            .functions
+            .generated_functions
+            .extend(lowered.generated_functions);
+
+        for (method, method_id) in method_ids {
+            let mut method_params_with_this = if method.name.starts_with("static::") {
+                method.params.clone()
+            } else {
+                let mut params = vec![ResolvedParam {
+                    name: "this".to_owned(),
+                    default: None,
+                    is_rest: false,
+                    span: None,
+                }];
+                params.extend(method.params.clone());
+                params
+            };
+            method_params_with_this.extend(method.captures.iter().map(|capture| ResolvedParam {
+                name: capture.clone(),
+                default: None,
+                is_rest: false,
+                span: None,
+            }));
+            self.ctx.symbols.function_signatures.insert(
+                method_id,
+                FunctionSignature {
+                    explicit_params: method_params_with_this.len(),
+                    has_rest: method.params.iter().any(|param| param.is_rest),
+                    is_strict: true,
+                    metadata_length: Some(method.params.len()),
+                    ..FunctionSignature::default()
+                },
+            );
+            if !method.captures.is_empty() {
+                self.ctx
+                    .functions
+                    .class_method_captures
+                    .insert(method_id, method.captures.clone());
+            }
+            let function_signatures = self.ctx.symbols.function_signatures.clone();
+            let function_captures = self.ctx.functions.function_captures.clone();
+            let function_mutable_captures = self.ctx.functions.function_mutable_captures.clone();
+            let lowered = lower_function(
+                method_id,
+                &method_params_with_this,
+                &method.body,
+                false,
+                false,
+                &self.ctx.symbols.function_ids,
+                &function_signatures,
+                &function_captures,
+                &function_mutable_captures,
+                &self.ctx.functions.class_method_captures,
+                &self.ctx.functions.class_method_mutable_captures,
+                &collect_dynamic_direct_eval_env_cell_names(&method_params_with_this, &method.body),
+                &self.ctx.facts.heap_closure_names,
+                self.ctx.classes.class_parents.clone(),
+                self.ctx.classes.class_private_fields.clone(),
+                self.ctx.classes.class_static_private_fields.clone(),
+                LowerFunctionOptions {
+                    current_class: Some(name),
+                    in_constructor: false,
+                    next_func_id: self.ctx.functions.next_func_id,
+                    self_closure: None,
+                    capture_facts: FunctionCaptureFacts::default(),
+                    recursion_depth: 0,
+                    new_target_class: None,
+                    module_url: self.ctx.current_module_url.as_str(),
+                    strict_context: true,
+                },
+            )?;
+            self.ctx.functions.next_func_id = lowered.next_func_id;
+            self.ctx
+                .functions
+                .generated_functions
+                .push(lowered.function);
+            self.ctx
+                .functions
+                .generated_functions
+                .extend(lowered.generated_functions);
+        }
+
+        let mut stmts = vec![LoweredStmt::ClassDecl {
+            name: name.to_owned(),
+            extends: extends.clone(),
+            constructor: Some(ctor_id),
+            methods: instance_methods,
+            static_methods,
+            private_fields: private_fields.to_vec(),
+            span: Span::generated("eval_class_decl"),
+        }];
+        for (field, initializer, _) in static_private_fields {
+            stmts.push(self.lower_class_static_private_field(name, field, initializer)?);
+        }
+        for (_, block) in static_blocks {
+            stmts.extend(self.lower_class_static_block(name, block)?);
+        }
+        Ok(stmts)
     }
 
     pub(super) fn lower_class_static_private_field(

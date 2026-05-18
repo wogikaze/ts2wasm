@@ -258,6 +258,13 @@ impl super::Resolver {
     ) -> Result<LoweredExpr, Diagnostic> {
         let completion = self.alloc_temp();
         self.ctx.symbols.scopes.push(HashMap::new());
+        let saved_class_constructor_ids = self.ctx.classes.class_constructor_ids.clone();
+        let saved_class_method_ids = self.ctx.classes.class_method_ids.clone();
+        let saved_class_static_method_ids = self.ctx.classes.class_static_method_ids.clone();
+        let saved_class_parents = self.ctx.classes.class_parents.clone();
+        let saved_class_private_fields = self.ctx.classes.class_private_fields.clone();
+        let saved_class_static_private_fields =
+            self.ctx.classes.class_static_private_fields.clone();
         let caller_scope_index = self.ctx.symbols.scopes.len().saturating_sub(2);
         let lowered = (|| {
             let mut stmts = vec![LoweredStmt::Let(
@@ -280,6 +287,12 @@ impl super::Resolver {
                 span: Span::generated("eval_completion"),
             })
         })();
+        self.ctx.classes.class_constructor_ids = saved_class_constructor_ids;
+        self.ctx.classes.class_method_ids = saved_class_method_ids;
+        self.ctx.classes.class_static_method_ids = saved_class_static_method_ids;
+        self.ctx.classes.class_parents = saved_class_parents;
+        self.ctx.classes.class_private_fields = saved_class_private_fields;
+        self.ctx.classes.class_static_private_fields = saved_class_static_private_fields;
         self.ctx.symbols.scopes.pop();
         lowered
     }
@@ -365,6 +378,25 @@ impl super::Resolver {
                         *is_async,
                         caller_scope_index,
                     )?);
+                }
+                EvalCompletionStep::ClassDecl {
+                    name,
+                    extends,
+                    constructor,
+                    methods,
+                    private_fields,
+                    static_private_fields,
+                    static_blocks,
+                } => {
+                    stmts.extend(self.lower_eval_class_decl(super::EvalClassDeclParts {
+                        name,
+                        extends,
+                        constructor,
+                        methods,
+                        private_fields,
+                        static_private_fields,
+                        static_blocks,
+                    })?);
                 }
                 EvalCompletionStep::Block(block_steps) => {
                     self.ctx.symbols.scopes.push(HashMap::new());
@@ -821,6 +853,26 @@ impl super::Resolver {
                 *is_async,
                 caller_scope_index,
             )?)),
+            EvalCompletionStep::ClassDecl {
+                name,
+                extends,
+                constructor,
+                methods,
+                private_fields,
+                static_private_fields,
+                static_blocks,
+            } => Ok(Some(LoweredStmt::Block(
+                self.lower_eval_class_decl(super::EvalClassDeclParts {
+                    name,
+                    extends,
+                    constructor,
+                    methods,
+                    private_fields,
+                    static_private_fields,
+                    static_blocks,
+                })?,
+                Span::generated("eval_non_completion_class_decl"),
+            ))),
             EvalCompletionStep::Throw(expr) => Ok(Some(LoweredStmt::Throw(
                 self.lower_expr(expr)?,
                 Span::generated("eval_non_completion_throw"),

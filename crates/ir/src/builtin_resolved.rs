@@ -329,6 +329,15 @@ pub enum EvalCompletionStep {
         body: Vec<ResolvedStmt>,
         is_async: bool,
     },
+    ClassDecl {
+        name: String,
+        extends: Option<String>,
+        constructor: Option<ResolvedConstructor>,
+        methods: Vec<ClassMethod>,
+        private_fields: Vec<String>,
+        static_private_fields: Vec<(String, ResolvedExpr, Span)>,
+        static_blocks: Vec<(Span, Vec<ResolvedStmt>)>,
+    },
     Block(Vec<EvalCompletionStep>),
     If {
         condition: ResolvedExpr,
@@ -423,6 +432,7 @@ impl EvalCompletionStep {
             Self::Throw(expr) => Some(expr),
             Self::HoistVars(_)
             | Self::HoistFunctions(_)
+            | Self::ClassDecl { .. }
             | Self::Empty(None)
             | Self::TryCatch { .. }
             | Self::Labeled { .. }
