@@ -1564,8 +1564,12 @@ function evalWithEnvDescriptor(source, envRaw) {
     }
     for (const entryRaw of bindingEntries) {
       const entry = decodeArray(entryRaw);
-      if (entry.length !== 2) {
+      if (entry.length !== 2 && entry.length !== 3) {
         throw new TypeError('invalid direct eval env descriptor binding');
+      }
+      const kind = entry.length === 3 ? decodeString(entry[2]) : 'readwrite';
+      if (kind !== 'readwrite') {
+        throw new TypeError(`unsupported direct eval env descriptor binding kind: ${kind}`);
       }
       const name = decodeString(entry[0]);
       const cellRaw = entry[1];

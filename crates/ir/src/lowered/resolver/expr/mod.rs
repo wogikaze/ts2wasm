@@ -1288,6 +1288,7 @@ impl super::Resolver {
                     bindings.push(DirectEvalEnvBinding {
                         name: name.clone(),
                         local: *local,
+                        kind: DirectEvalEnvBindingKind::ReadWrite,
                     });
                 }
             }
@@ -1525,6 +1526,19 @@ struct DirectEvalEnvDescriptor {
 struct DirectEvalEnvBinding {
     name: String,
     local: LocalId,
+    kind: DirectEvalEnvBindingKind,
+}
+
+enum DirectEvalEnvBindingKind {
+    ReadWrite,
+}
+
+impl DirectEvalEnvBindingKind {
+    fn as_descriptor_tag(&self) -> &'static str {
+        match self {
+            Self::ReadWrite => "readwrite",
+        }
+    }
 }
 
 const DIRECT_EVAL_DESCRIPTOR_VERSION_KEY: &str = "__ts2wasm_eval_descriptor_v2";
@@ -1576,6 +1590,10 @@ impl DirectEvalEnvBinding {
             elements: vec![
                 LoweredExpr::String(self.name, Span::generated("eval_env_name")),
                 LoweredExpr::Local(self.local, Span::generated("eval_env_cell")),
+                LoweredExpr::String(
+                    self.kind.as_descriptor_tag().to_owned(),
+                    Span::generated("eval_env_binding_kind"),
+                ),
             ],
             span: Span::generated("eval_env_binding"),
         }
