@@ -4275,6 +4275,28 @@ pub(super) fn lower_function(
             });
         }
     }
+    let capture_param_names = function_captures
+        .get(&id)
+        .into_iter()
+        .chain(class_method_captures.get(&id))
+        .flat_map(|names| names.iter())
+        .collect::<HashSet<_>>();
+    for (param, param_id) in lowered_params.iter().zip(param_ids.iter().copied()) {
+        let clean_name = param.name.strip_prefix("...").unwrap_or(&param.name);
+        if capture_param_names.contains(&clean_name.to_owned()) {
+            continue;
+        }
+        if resolver.ctx.facts.env_cell_locals.contains(&param_id) {
+            body_with_defaults.push(LoweredStmt::Assign(
+                param_id,
+                LoweredExpr::EnvCellNew(
+                    Box::new(LoweredExpr::Local(param_id, Span::generated("local"))),
+                    Span::generated("env_cell_new"),
+                ),
+                Span::generated("assign"),
+            ));
+        }
+    }
     // First pass: pre-declare all let/var/const names so forward references
     // (e.g., using a var before its declaration) work in the lowered resolver.
     for stmt in body {
