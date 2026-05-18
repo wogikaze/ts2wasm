@@ -2153,6 +2153,10 @@ impl WatEmitter<'_> {
             self.emit_concat_call(writer, args, indent, frame);
             return;
         }
+        if *intrinsic == RuntimeFn::ArrayConcat {
+            self.emit_array_concat_call(writer, args, indent, frame);
+            return;
+        }
         if *intrinsic == RuntimeFn::HeapClosureCall {
             self.emit_heap_closure_dispatch(writer, args, indent, frame);
             return;

@@ -494,7 +494,7 @@ pub(crate) fn collection_method_runtime_fn_arg(method: &str) -> Option<RuntimeFn
 pub(crate) fn is_identity_array_method(method: &str) -> bool {
     matches!(
         method,
-        "every" | "some" | "find" | "findIndex" | "findLast" | "findLastIndex" | "filter"
+        "some" | "find" | "findIndex" | "findLast" | "findLastIndex"
     )
 }
 

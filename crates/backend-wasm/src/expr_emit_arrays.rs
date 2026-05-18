@@ -143,6 +143,42 @@ impl WatEmitter<'_> {
         ));
     }
 
+    fn emit_array_concat_call(
+        &self,
+        writer: &mut WatWriter,
+        args: &[LoweredExpr],
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let Some((first, rest)) = args.split_first() else {
+            writer.i32_const(indent, ValueTag::UNDEFINED);
+            return;
+        };
+        if rest.is_empty() {
+            self.emit_expr(writer, first, indent, frame);
+            return;
+        }
+
+        let pad = " ".repeat(indent);
+        let result = frame.heap_base_tmp();
+        let child_frame = frame.child_temp_frame();
+        let next = child_frame.heap_value_tmp();
+        self.emit_expr(writer, first, indent, frame);
+        writer.local_set(indent, result);
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, result, frame);
+        for arg in rest {
+            self.emit_expr(writer, arg, indent, &child_frame);
+            writer.local_set(indent, next);
+            self.emit_gc_root_mirror_index(writer.output_mut(), &pad, next, &child_frame);
+            writer.local_get(indent, result);
+            writer.local_get(indent, next);
+            writer.call(indent, RuntimeFn::ArrayConcat.symbol());
+            writer.local_set(indent, result);
+            self.emit_gc_root_mirror_index(writer.output_mut(), &pad, result, frame);
+        }
+        writer.local_get(indent, result);
+    }
+
     fn emit_array_literal(
         &self,
         writer: &mut WatWriter,
