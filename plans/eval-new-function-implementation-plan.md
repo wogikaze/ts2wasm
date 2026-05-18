@@ -32,7 +32,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | parser statement-level direct eval | `crates/frontend/src/parser/statements_general.rs::direct_eval_literal_statements` が `eval('x = "after";')` を caller statement 群へ展開する | caller local mutation の static slice が動く |
 | Annex B block function slice | `static_block_function_eval_expansion` と `crates/ir/src/lowered/program_direct_eval.rs` が supported direct-eval block function fixtures を通す | eval-code function hoist の難所に着手済み |
 | indirect eval parser rejection | `globalThis.eval("x")`、`globalThis["eval"]("x")`、`(0, eval)("x")` は parser reject ではなく後段へ流れる | Phase 4/5 の土台 |
-| optional eval diagnostic | `eval?.("x")` はまだ parser で issue-347 diagnostic | 後で indirect-like semantics として整理 |
+| optional eval classification | `eval?.(src)` は parser shape を保持し、unshadowed optional eval を indirect eval として既存 host/static lane へ流す | optional-call nullish/shadowing edge の拡張 |
 | resolved eval IR | `ResolvedExpr::Eval { kind, source, caller_is_strict, span }`、`EvalKind::{Direct, Indirect}`、`EvalSource::{StaticLiteral, Runtime}` が存在する | 統一 IR への入口 |
 | compiler eval expansion stage | `crates/compiler/src/stages/eval_expand.rs` が static direct / indirect `ResolvedExpr::Eval` を parse / resolve / builtin-resolve して completion expression へ置換し、nested function/class bodies と parameter defaults も再帰的に処理する | parser rewrite から IR rewrite へ移行する素材 |
 | literal `Function` constructor | resolver が unshadowed `Function(...)` / `new Function(...)` を internal constructor markers に分類し、compiler eval-expand stage が literal-only args を synthetic `FunctionExpr` に変換する | static `Function` AOT lane の初期 slice |
@@ -66,7 +66,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | indirect eval static literal | `(0, eval)("1+2")` | resolver が direct/indirect を分類し、supported literal subset は AOT eval expansion で host import なし | global `EvalFragment` AOT |
 | indirect eval dynamic | `(0, eval)(src)` | `host.eval.indirect` manifest / host-deny slice と primitive-return / string-keyed primitive object property node-shim 実行 regression は実装済み | `host.eval.indirect` capability |
 | direct eval dynamic | `eval(src)` | `host.eval.direct` manifest / host-deny slice と primitive-return node-shim 実行 regression は実装済み。initialized env-cell descriptor 経由の primitive number caller-local / parameter write-back、未初期化 caller env binding の TDZ-unsafe host 実行拒否、plain object result と string-keyed primitive property bridge も focused node-shim guarded。declaration landing / lexical env / object-identity/nested/error bridge は未完 | env descriptor + mutation ledger + write-back |
-| optional eval | `eval?.("x")` | parser diagnostic | indirect-like call semantics として classification |
+| optional eval | `eval?.(src)` | unshadowed optional eval は indirect eval として resolver が分類し、dynamic source は `host.eval.indirect` Node shim 実行 regression 済み | optional-call nullish/shadowing edge の拡張 |
 | `new eval` | `new eval("x")` | unsupported / TypeError 境界が未整理 | eval is not constructor の TypeError parity |
 | literal `Function` | `Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; nested function/class body traversal, zero-arg, caller-local non-capture, non-simple duplicate bound-name and strict-body duplicate/non-simple/eval/arguments parameter early errors, and direct `.name` / `.length` / `.prototype` metadata are guarded for static constructor locals | first-class static `FunctionConstructorPlan` / generated function object |
 | literal `new Function` | `new Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; zero-arg and call output are Node differential guarded | generated function object + metadata |
@@ -388,7 +388,7 @@ Exit criteria:
 - `(0, eval)("...")`、`globalThis.eval("...")`、`globalThis["eval"]("...")` を resolver で `EvalKind::Indirect` に分類する。
 - source static string の場合は global scope context で parse / resolve / lower する。
 - caller local は参照しない。global lookup / ReferenceError path を使う。
-- `eval?.("...")` は spec に従い direct eval ではなく optional call / indirect-like global eval として扱うか、明示 diagnostic を維持する。
+- `eval?.("...")` は spec に従い direct eval ではなく optional call / indirect-like global eval として扱う。
 
 追加 fixtures:
 
@@ -408,6 +408,7 @@ Exit criteria:
 - static indirect eval は host import なし。
 - caller local non-capture が Node differential で一致する。
 - `EvalKind::Indirect` が lowering/backend で direct に潰れない。
+- unshadowed optional eval は parser diagnostic ではなく indirect eval として分類される。
 
 ### Phase 6: dynamic indirect eval host lane
 

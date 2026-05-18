@@ -1469,14 +1469,6 @@ impl Parser {
                 if allow_call && self.consume(TokenKind::LeftParen) {
                     let (args, end) = self.finish_call_args()?;
                     let start = expr.span().start;
-                    if matches!(expr, Expr::Ident { ref name, .. } if name == "eval") {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "issue-347: optional eval calls (eval?.()) are not supported in this milestone".to_owned(),
-                            span: Some(Span { start, end }),
-                            phase: None,
-                        });
-                    }
                     expr = Expr::OptionalCall {
                         callee: Box::new(expr),
                         args,

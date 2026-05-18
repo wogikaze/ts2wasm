@@ -1287,14 +1287,31 @@ impl NameResolver {
                     span: *span,
                 })
             }
-            Expr::OptionalCall { callee, args, span } => Ok(Expr::OptionalCall {
-                callee: Box::new(self.resolve_expr(callee)?),
-                args: args
-                    .iter()
-                    .map(|arg| self.resolve_expr(arg))
-                    .collect::<Result<Vec<_>, _>>()?,
-                span: *span,
-            }),
+            Expr::OptionalCall { callee, args, span } => {
+                if self.classify_unshadowed_eval_callee(callee).is_some() {
+                    let resolved_args = args
+                        .iter()
+                        .map(|arg| self.resolve_expr(arg))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    return Ok(Expr::Call {
+                        callee: Box::new(Expr::Ident {
+                            name: INTRINSIC_INDIRECT_EVAL_CALLEE.to_owned(),
+                            span: *span,
+                        }),
+                        args: resolved_args,
+                        span: *span,
+                    });
+                }
+
+                Ok(Expr::OptionalCall {
+                    callee: Box::new(self.resolve_expr(callee)?),
+                    args: args
+                        .iter()
+                        .map(|arg| self.resolve_expr(arg))
+                        .collect::<Result<Vec<_>, _>>()?,
+                    span: *span,
+                })
+            }
             Expr::Array { elements, span } => Ok(Expr::Array {
                 elements: elements
                     .iter()

@@ -977,6 +977,7 @@ directories:
     - null-undefined.ts
     - nullish-coalescing.ts
     - number-stringify.ts
+    - optional-eval-dynamic-node-shim.ts
     - optional-chaining-call.ts
     - optional-chaining-member-index.ts
     - ordinary-bitwise-and-xor.ts

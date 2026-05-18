@@ -990,19 +990,18 @@ mod tests {
     }
 
     #[test]
-    fn rejects_optional_eval_calls_with_issue_347() {
-        // eval?.("x") is optional direct eval — kept as parser rejection (later phase)
-        let err = parse_program("eval?.(\"x\");").unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(
-            err.message
-                .contains("issue-347: optional eval calls"),
-            "unexpected diagnostic: {err:?}"
-        );
-        assert!(err.span.is_some(), "diagnostic should preserve a span");
+    fn preserves_optional_eval_call_shape() {
+        let program = parse_program("eval?.(\"x\");").unwrap();
+        assert!(matches!(
+            &program[0],
+            Stmt::Expr {
+                expr: Expr::OptionalCall { callee, .. },
+                ..
+            } if matches!(callee.as_ref(), Expr::Ident { name, .. } if name == "eval")
+        ));
 
         // Indirect eval forms (globalThis.eval, (0, eval), globalThis["eval"])
-        // are no longer rejected at parser level; they pass through to resolver/backend.
+        // are not rejected at parser level; they pass through to resolver/backend.
         for source in [
             "globalThis.eval(\"x\");",
             "globalThis[\"eval\"](\"x\");",

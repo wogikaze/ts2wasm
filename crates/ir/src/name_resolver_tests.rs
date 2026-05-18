@@ -685,6 +685,23 @@ mod tests {
     }
 
     #[test]
+    fn resolver_marks_optional_eval_as_indirect_eval() {
+        let builtins = parse_resolve_builtins("let source = \"1\"; let value = eval?.(source);");
+        let crate::ResolvedStmt::Let(_, expr) = &builtins[1] else {
+            panic!("expected let statement: {builtins:?}");
+        };
+        let crate::ResolvedExpr::Eval { kind, source, .. } = expr else {
+            panic!("expected optional eval to become indirect eval: {builtins:?}");
+        };
+
+        assert_eq!(*kind, crate::builtin_resolved::EvalKind::Indirect);
+        assert!(matches!(
+            source,
+            crate::builtin_resolved::EvalSource::Runtime(_)
+        ));
+    }
+
+    #[test]
     fn resolver_marks_unshadowed_static_function_constructor_call_for_compiler_expansion() {
         let builtins = parse_resolve_builtins("let value = Function(\"return 1\");");
         let crate::ResolvedStmt::Let(_, crate::ResolvedExpr::Call { callee, args, .. }) =
