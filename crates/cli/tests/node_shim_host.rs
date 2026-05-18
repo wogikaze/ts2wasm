@@ -52,6 +52,12 @@ fn dynamic_function_handle_tracks_object_shape_changes_through_node_shim_host_im
 }
 
 #[test]
+fn dynamic_function_handle_bridges_nested_arrays_through_node_shim_host_imports() {
+    let fixture = "fixtures/core-semantics/function-constructor-dynamic-nested-array-node-shim.ts";
+    assert_node_shim_stdout(fixture, "2\n7\n8\nundefined\n");
+}
+
+#[test]
 fn dynamic_function_handle_exposes_metadata_through_node_shim_host_imports() {
     let fixture = "fixtures/core-semantics/function-constructor-dynamic-metadata-node-shim.ts";
     assert_node_shim_stdout(fixture, "2\nanonymous\n[object Object]\n7\n");
@@ -222,11 +228,13 @@ const OBJECT_ENTRY_SIZE = 8;
 const GC_HEADER_SIZE = 16;
 const GC_FLAGS_AND_TYPE_OFFSET = 0;
 const GC_BODY_SIZE_OFFSET = 4;
+const GC_KIND_ARRAY = 8;
 const GC_KIND_OBJECT = 12;
 
 let memory;
 const hostFunctions = [];
 const hostFunctionHandles = new Map();
+const hostArrayHandles = new WeakMap();
 const hostObjectHandles = new WeakMap();
 const decoder = new TextDecoder();
 const encoder = new TextEncoder();
@@ -340,6 +348,54 @@ function encodeString(value) {
   return ptr | TAG_STRING;
 }
 
+function refreshHostArrayEntries(value, record) {
+  if (value.length > record.capacity) {
+    throw new TypeError('unsupported host array growth for this test');
+  }
+  const ptr = rawPtr(record.raw);
+  view().setInt32(ptr, value.length, true);
+  for (let word = 0; word < record.presenceWords; word += 1) {
+    view().setUint32(ptr + ARRAY_PRESENCE_WORDS_OFFSET + word * 4, 0, true);
+  }
+  for (let i = 0; i < value.length; i += 1) {
+    const entry = ptr + record.elementsOffset + i * 4;
+    if (Object.prototype.hasOwnProperty.call(value, i)) {
+      const word = i >> 5;
+      const bit = i & 31;
+      const maskOffset = ptr + ARRAY_PRESENCE_WORDS_OFFSET + word * 4;
+      const mask = view().getUint32(maskOffset, true) | (1 << bit);
+      view().setUint32(maskOffset, mask, true);
+      view().setInt32(entry, encodeHostValue(value[i]), true);
+    } else {
+      view().setInt32(entry, TAG_UNDEFINED, true);
+    }
+  }
+}
+
+function encodeHostArray(value) {
+  const existing = hostArrayHandles.get(value);
+  if (existing !== undefined) {
+    refreshHostArrayEntries(value, existing);
+    return existing.raw;
+  }
+  const capacity = Math.max(value.length, 4);
+  const presenceWords = Math.max(1, Math.ceil(capacity / 32));
+  const elementsOffset = ARRAY_PRESENCE_WORDS_OFFSET + presenceWords * 4;
+  const size = elementsOffset + capacity * 4;
+  const base = hostAlloc(GC_HEADER_SIZE + size);
+  view().setInt32(base + GC_FLAGS_AND_TYPE_OFFSET, GC_KIND_ARRAY, true);
+  view().setInt32(base + GC_BODY_SIZE_OFFSET, size, true);
+  const ptr = base + GC_HEADER_SIZE;
+  view().setInt32(ptr + 4, capacity, true);
+  view().setInt32(ptr + 8, presenceWords, true);
+  view().setInt32(ptr + 12, elementsOffset, true);
+  const raw = ptr | TAG_ARRAY;
+  const record = { raw, capacity, presenceWords, elementsOffset };
+  hostArrayHandles.set(value, record);
+  refreshHostArrayEntries(value, record);
+  return raw;
+}
+
 function refreshHostObjectEntries(value, record) {
   const keys = Object.keys(value);
   if (keys.length > record.capacity) {
@@ -409,6 +465,7 @@ function encodeHostValue(value) {
   if (value === true) return TAG_TRUE;
   if (Number.isInteger(value)) return (value << 3) | TAG_NUMBER;
   if (typeof value === 'string') return encodeString(value);
+  if (Array.isArray(value)) return encodeHostArray(value);
   if (typeof value === 'object') return encodeHostObject(value);
   throw new TypeError(`unsupported host return value for this test: ${String(value)}`);
 }
