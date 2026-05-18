@@ -513,8 +513,9 @@ Exit criteria:
   direct eval. Lowering now passes an initialized env-cell descriptor to the
   host import, and the Node shim regression covers primitive number
   caller-local, parameter, and shadowed block-local write-back plus string
-  result/write-back bridging. Full declaration landing, strict lexical env
-  isolation, TDZ, and object/error bridge semantics remain open.
+  result/write-back bridging and strict lexical shadow isolation for local
+  `let`. Full declaration landing, TDZ, and object/error bridge semantics
+  remain open.
 
 ### Phase 9: `$262.evalScript` / test262 ramp / cleanup
 

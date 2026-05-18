@@ -341,8 +341,9 @@ The current implementation has several partial dynamic-code paths:
   eval now lowers an environment descriptor for initialized env-cell locals and
   wraps direct-eval-visible user parameters at function entry. The focused Node
   shim covers primitive number caller-local, parameter, and shadowed block-local
-  write-back plus string result/write-back bridging. Broader declaration
-  landing, strict eval lexical-env, object/error bridging, and
+  write-back plus string result/write-back bridging and strict eval lexical
+  shadow isolation for local `let`. Broader declaration landing, TDZ,
+  object/error bridging, and
   iwasm-differential coverage remain incomplete;
 - dynamic `Function` constructor compile and statically visible host-handle
   call/construct lower to the audited Node host lane with exact
@@ -361,8 +362,9 @@ completeness, broader host Function handle object/error bridging, and
 full dynamic direct-eval environment semantics beyond the primitive env-cell
 write-back slice. Node-shim execution for dynamic indirect eval and dynamic
 Function handles is covered by focused integration tests, as are primitive-return
-and primitive local/parameter/block-shadow/string write-back dynamic direct
-eval, but not by the current iwasm-based differential runner.
+and primitive local/parameter/block-shadow/string write-back plus strict lexical
+shadow isolation for dynamic direct eval, but not by the current iwasm-based
+differential runner.
 
 ## Known compiler limitations
 

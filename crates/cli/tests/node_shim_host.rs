@@ -54,6 +54,12 @@ fn dynamic_direct_eval_writes_back_string_env_cell_through_node_shim_host_import
     assert_node_shim_stdout(fixture, "after\nafter\n");
 }
 
+#[test]
+fn dynamic_direct_eval_strict_lexical_shadow_does_not_write_back_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-strict-lexical-shadow-node-shim.ts";
+    assert_node_shim_stdout(fixture, "2\n1\n");
+}
+
 fn assert_node_shim_stdout(fixture: &str, expected_stdout: &str) {
     let fixture_path = fixture_path(fixture);
     let output_wasm = temp_wasm_path(fixture);
