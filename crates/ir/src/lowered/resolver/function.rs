@@ -565,6 +565,15 @@ impl super::Resolver {
             .filter(|_| !self.ctx.facts.env_cell_names.contains(name));
 
         let needs_receiver = options.force_receiver || block_contains_super_ref(body);
+        let dynamic_direct_eval_env_cell_names =
+            collect_dynamic_direct_eval_env_cell_names(&lowered_params, body, true, needs_receiver);
+        let nested_env_cell_names = self
+            .ctx
+            .facts
+            .env_cell_names
+            .union(&dynamic_direct_eval_env_cell_names)
+            .cloned()
+            .collect::<HashSet<_>>();
         self.ctx.symbols.function_signatures.insert(
             func_id,
             FunctionSignature {
@@ -616,7 +625,7 @@ impl super::Resolver {
             &function_mutable_captures,
             &self.ctx.functions.class_method_captures,
             &self.ctx.functions.class_method_mutable_captures,
-            &self.ctx.facts.env_cell_names,
+            &nested_env_cell_names,
             &self.ctx.facts.heap_closure_names,
             self.ctx.classes.class_parents.clone(),
             self.ctx.classes.class_private_fields.clone(),

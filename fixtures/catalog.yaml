@@ -926,6 +926,7 @@ directories:
     - direct-eval-dynamic-nested-array-node-shim.ts
     - direct-eval-dynamic-nested-object-node-shim.ts
     - direct-eval-dynamic-object-identity-node-shim.ts
+    - direct-eval-dynamic-object-method-this-node-shim.ts
     - direct-eval-dynamic-object-properties-node-shim.ts
     - direct-eval-dynamic-object-result-node-shim.ts
     - direct-eval-dynamic-param-writeback-node-shim.ts
