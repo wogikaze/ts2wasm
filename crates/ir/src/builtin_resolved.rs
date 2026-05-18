@@ -359,6 +359,8 @@ impl FunctionConstructorPlan {
 pub struct StaticFunctionConstructorSource {
     pub params: Vec<String>,
     pub body: String,
+    pub parse_goals: FunctionConstructorParseGoals,
+    pub generated_function: FunctionConstructorGeneratedFunction,
 }
 
 impl StaticFunctionConstructorSource {
@@ -382,7 +384,60 @@ impl StaticFunctionConstructorSource {
         Some(Self {
             params: params.to_vec(),
             body: body.to_owned(),
+            parse_goals: FunctionConstructorParseGoals::default(),
+            generated_function: FunctionConstructorGeneratedFunction::anonymous(),
         })
+    }
+
+    pub fn synthetic_function_source(&self) -> String {
+        let params_source = self
+            .params
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>()
+            .join(", ");
+        format!(
+            "function {}({params_source}) {{\n{}\n}}",
+            self.generated_function.name, self.body
+        )
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FunctionConstructorParseGoals {
+    pub params: FunctionConstructorParseGoal,
+    pub body: FunctionConstructorParseGoal,
+}
+
+impl Default for FunctionConstructorParseGoals {
+    fn default() -> Self {
+        Self {
+            params: FunctionConstructorParseGoal::FormalParameters,
+            body: FunctionConstructorParseGoal::FunctionBody,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FunctionConstructorParseGoal {
+    FormalParameters,
+    FunctionBody,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FunctionConstructorGeneratedFunction {
+    pub name: String,
+    pub constructable: bool,
+    pub suppress_captures: bool,
+}
+
+impl FunctionConstructorGeneratedFunction {
+    pub fn anonymous() -> Self {
+        Self {
+            name: "anonymous".to_owned(),
+            constructable: true,
+            suppress_captures: true,
+        }
     }
 }
 

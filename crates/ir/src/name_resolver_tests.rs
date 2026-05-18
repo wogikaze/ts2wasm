@@ -821,6 +821,18 @@ mod tests {
                 .map(|source| source.body.as_str()),
             Some("return 1")
         );
+        let static_source = plan.static_source.as_ref().expect("static source");
+        assert_eq!(
+            static_source.parse_goals.params,
+            crate::builtin_resolved::FunctionConstructorParseGoal::FormalParameters
+        );
+        assert_eq!(
+            static_source.parse_goals.body,
+            crate::builtin_resolved::FunctionConstructorParseGoal::FunctionBody
+        );
+        assert_eq!(static_source.generated_function.name, "anonymous");
+        assert!(static_source.generated_function.constructable);
+        assert!(static_source.generated_function.suppress_captures);
         assert!(
             matches!(plan.args.as_slice(), [crate::ResolvedExpr::String(value)] if value == "return 1")
         );
@@ -848,6 +860,18 @@ mod tests {
                 .map(|source| source.body.as_str()),
             Some("return 1")
         );
+        let static_source = plan.static_source.as_ref().expect("static source");
+        assert_eq!(
+            static_source.parse_goals.params,
+            crate::builtin_resolved::FunctionConstructorParseGoal::FormalParameters
+        );
+        assert_eq!(
+            static_source.parse_goals.body,
+            crate::builtin_resolved::FunctionConstructorParseGoal::FunctionBody
+        );
+        assert_eq!(static_source.generated_function.name, "anonymous");
+        assert!(static_source.generated_function.constructable);
+        assert!(static_source.generated_function.suppress_captures);
         assert!(
             matches!(plan.args.as_slice(), [crate::ResolvedExpr::String(value)] if value == "return 1")
         );

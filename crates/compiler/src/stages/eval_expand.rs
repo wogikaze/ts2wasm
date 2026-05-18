@@ -944,14 +944,8 @@ fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<Resolved
     let Some(static_source) = static_source else {
         return Ok(function_constructor_host_lane(kind, args, span));
     };
-    let params_source = static_source
-        .params
-        .iter()
-        .map(String::as_str)
-        .collect::<Vec<_>>()
-        .join(", ");
-    let body_source = static_source.body;
-    let function_source = format!("function anonymous({params_source}) {{\n{body_source}\n}}");
+    let function_name = static_source.generated_function.name.clone();
+    let function_source = static_source.synthetic_function_source();
 
     let tokens = ts2wasm_frontend::Lexer::new(&function_source)
         .tokenize()
@@ -975,7 +969,7 @@ fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<Resolved
     let builtin_resolved = resolve_builtins(&name_resolved)?;
     for stmt in builtin_resolved {
         if let ResolvedStmt::Function {
-            name,
+            name: _,
             params,
             body,
             is_generator,
@@ -987,7 +981,7 @@ fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<Resolved
             function_ctx.declare_params(&params);
             let body = expand_stmts(body, &mut function_ctx)?;
             return Ok(ResolvedExpr::FunctionExpr {
-                name,
+                name: function_name,
                 params,
                 body,
                 is_generator,
