@@ -297,7 +297,7 @@ pub enum ResolvedExpr {
         body: Vec<ResolvedStmt>,
     },
     Sequence(Vec<ResolvedExpr>),
-    EvalCompletion(Vec<EvalCompletionStep>),
+    EvalCompletion(EvalCompletionPlan),
     Eval {
         plan: EvalFragmentPlan,
     },
@@ -376,6 +376,42 @@ impl EvalHostPolicy {
 pub enum EvalSource {
     StaticLiteral(String),
     Runtime(Box<ResolvedExpr>),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EvalCompletionPlan {
+    pub steps: Vec<EvalCompletionStep>,
+}
+
+impl EvalCompletionPlan {
+    pub fn new(steps: Vec<EvalCompletionStep>) -> Self {
+        Self { steps }
+    }
+
+    pub fn steps(&self) -> &[EvalCompletionStep] {
+        &self.steps
+    }
+
+    pub fn as_slice(&self) -> &[EvalCompletionStep] {
+        self.steps()
+    }
+
+    pub fn iter(&self) -> std::slice::Iter<'_, EvalCompletionStep> {
+        self.steps.iter()
+    }
+
+    pub fn last(&self) -> Option<&EvalCompletionStep> {
+        self.steps.last()
+    }
+}
+
+impl<'a> IntoIterator for &'a EvalCompletionPlan {
+    type Item = &'a EvalCompletionStep;
+    type IntoIter = std::slice::Iter<'a, EvalCompletionStep>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.steps.iter()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

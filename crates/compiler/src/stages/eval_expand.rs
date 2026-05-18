@@ -2,9 +2,9 @@ use std::collections::HashSet;
 
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_ir::builtin_resolved::{
-    ClassMethod, EvalCompletionStep, EvalFragmentPlan, EvalFunctionHoist, EvalKind, EvalSource,
-    FunctionConstructorKind, ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedParam,
-    ResolvedStmt,
+    ClassMethod, EvalCompletionPlan, EvalCompletionStep, EvalFragmentPlan, EvalFunctionHoist,
+    EvalKind, EvalSource, FunctionConstructorKind, ResolvedArrayElement, ResolvedExpr,
+    ResolvedObjectProp, ResolvedParam, ResolvedStmt,
 };
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
 use ts2wasm_ir::name_resolver::resolve_names;
@@ -1176,7 +1176,7 @@ fn extract_completion_value(
         stmts,
         leak_var_declarations,
     ));
-    Ok(ResolvedExpr::EvalCompletion(steps))
+    Ok(ResolvedExpr::EvalCompletion(EvalCompletionPlan::new(steps)))
 }
 
 fn rewrite_indirect_eval_caller_binding_collisions(
@@ -1530,9 +1530,11 @@ fn rewrite_eval_expr_global_collisions(
         ResolvedExpr::Sequence(exprs) => ResolvedExpr::Sequence(
             rewrite_eval_exprs_global_collisions(exprs, collisions, scopes),
         ),
-        ResolvedExpr::EvalCompletion(steps) => ResolvedExpr::EvalCompletion(
-            rewrite_eval_steps_global_collisions(steps, collisions, scopes),
-        ),
+        ResolvedExpr::EvalCompletion(plan) => {
+            ResolvedExpr::EvalCompletion(EvalCompletionPlan::new(
+                rewrite_eval_steps_global_collisions(plan.steps, collisions, scopes),
+            ))
+        }
         ResolvedExpr::Eval { plan } => ResolvedExpr::Eval {
             plan: EvalFragmentPlan {
                 source: match plan.source {

@@ -188,7 +188,7 @@ impl super::Resolver {
             } => self.lower_named_function_expr(name, params, body, *is_generator, *origin),
             ResolvedExpr::ClassExpr { .. } => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
             ResolvedExpr::Sequence(exprs) => self.lower_sequence_expr(exprs),
-            ResolvedExpr::EvalCompletion(steps) => self.lower_eval_completion_expr(steps),
+            ResolvedExpr::EvalCompletion(plan) => self.lower_eval_completion_expr(plan.steps()),
             ResolvedExpr::Eval { plan } => {
                 let crate::builtin_resolved::EvalSource::Runtime(source_expr) = &plan.source else {
                     return Err(Diagnostic {
