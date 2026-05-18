@@ -3326,6 +3326,12 @@ impl WatEmitter<'_> {
         );
     }
 
+    pub(crate) fn emit_function_call_method_host(&self, wat: &mut String) {
+        wat.push_str(
+            "(func $function_call_method_host (param $handle i32) (param $receiver i32) (param $args i32) (result i32)\n  (call $host_function_call_method (local.get $handle) (local.get $receiver) (local.get $args))\n)\n",
+        );
+    }
+
     pub(crate) fn emit_function_construct_host(&self, wat: &mut String) {
         wat.push_str(
             "(func $function_construct_host (param $handle i32) (param $args i32) (result i32)\n  (call $host_function_construct (local.get $handle) (local.get $args))\n)\n",

@@ -366,8 +366,9 @@ The current implementation has several partial dynamic-code paths:
   changes beyond the first host record capacity, bridges nested JS arrays with
   length/index reads for primitive elements and later array growth, bridges
   function-valued object properties as metadata-bearing callable host handles,
-  including aliased property calls, and carries handles as wasm object cells
-  backed by host-side handle maps instead of number values.
+  including aliased property calls and receiver-bound method calls, and carries
+  handles as wasm object cells backed by host-side handle maps instead of
+  number values.
 
 The canonical implementation plan is
 `plans/eval-new-function-implementation-plan.md`. Current known gaps include

@@ -3780,13 +3780,14 @@ impl super::super::Resolver {
                             .collect(),
                     );
                     return Ok(LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeFn::FunctionCallHost,
+                        intrinsic: RuntimeFn::FunctionCallMethodHost,
                         args: vec![
                             object_kernel::ordinary_get(
                                 LoweredExpr::Local(obj_local, Span::generated("local")),
                                 method,
                                 span,
                             ),
+                            LoweredExpr::Local(obj_local, Span::generated("local")),
                             self.lower_expr(&args_array)?,
                         ],
                         span: Span::generated("runtime_call"),

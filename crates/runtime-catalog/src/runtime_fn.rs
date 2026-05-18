@@ -667,6 +667,8 @@ pub enum RuntimeFn {
     FunctionCompileHost,
     /// Host function-handle call produced by dynamic Function constructor compile.
     FunctionCallHost,
+    /// Host function-handle method call with an explicit receiver.
+    FunctionCallMethodHost,
     /// Host function-handle construct produced by dynamic Function constructor compile.
     FunctionConstructHost,
     /// GeneratorYield(values) — creates a generator state object from collected yield values.
@@ -1037,6 +1039,7 @@ const CAP_HOST_EVAL_DIRECT: &[Capability] = &[Capability::HostEvalDirect];
 const CAP_HOST_EVAL_INDIRECT: &[Capability] = &[Capability::HostEvalIndirect];
 const CAP_HOST_FUNCTION_COMPILE: &[Capability] = &[Capability::HostFunctionCompile];
 const CAP_HOST_FUNCTION_CALL: &[Capability] = &[Capability::HostFunctionCall];
+const CAP_HOST_FUNCTION_CALL_METHOD: &[Capability] = &[Capability::HostFunctionCallMethod];
 const CAP_HOST_FUNCTION_CONSTRUCT: &[Capability] = &[Capability::HostFunctionConstruct];
 const CAP_STRING_NORMALIZE: &[Capability] = &[Capability::HostStringNormalize];
 const VTS_RUNTIME_STRINGS: &[&str] = &[
@@ -1473,6 +1476,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "EvalIndirectHost" => Some(RuntimeFn::EvalIndirectHost),
         "FunctionCompileHost" => Some(RuntimeFn::FunctionCompileHost),
         "FunctionCallHost" => Some(RuntimeFn::FunctionCallHost),
+        "FunctionCallMethodHost" => Some(RuntimeFn::FunctionCallMethodHost),
         "FunctionConstructHost" => Some(RuntimeFn::FunctionConstructHost),
         "e" => Some(RuntimeFn::EvalDirectHost),
         "MathFloor" => Some(RuntimeFn::MathFloor),
@@ -2097,6 +2101,7 @@ impl RuntimeFn {
             | Self::Dollar262Eval
             | Self::FunctionCompileHost
             | Self::FunctionCallHost
+            | Self::FunctionCallMethodHost
             | Self::FunctionConstructHost => RuntimeDomain::Host,
             Self::GetIterator
             | Self::IteratorNext
@@ -3047,6 +3052,7 @@ impl RuntimeFn {
             Self::EvalIndirectHost,
             Self::FunctionCompileHost,
             Self::FunctionCallHost,
+            Self::FunctionCallMethodHost,
             Self::FunctionConstructHost,
             Self::GeneratorYield,
             Self::GeneratorReturn,
@@ -3506,6 +3512,7 @@ impl RuntimeFn {
             Self::EvalIndirectHost,
             Self::FunctionCompileHost,
             Self::FunctionCallHost,
+            Self::FunctionCallMethodHost,
             Self::FunctionConstructHost,
             Self::NumberIsNaN,
             Self::NumberIsFinite,

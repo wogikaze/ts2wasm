@@ -46,6 +46,13 @@ fn dynamic_function_handle_calls_function_properties_through_node_shim_host_impo
 }
 
 #[test]
+fn dynamic_function_handle_binds_this_for_function_properties_through_node_shim_host_imports() {
+    let fixture =
+        "fixtures/core-semantics/function-constructor-dynamic-function-property-this-node-shim.ts";
+    assert_node_shim_stdout(fixture, "9\n");
+}
+
+#[test]
 fn dynamic_function_handle_preserves_object_identity_through_node_shim_host_imports() {
     let fixture =
         "fixtures/core-semantics/function-constructor-dynamic-object-identity-node-shim.ts";
@@ -269,6 +276,7 @@ const hostFunctionHandles = new Map();
 const hostFunctionHandleValues = new WeakMap();
 const hostArrayHandles = new WeakMap();
 const hostObjectHandles = new WeakMap();
+const hostObjectValues = new Map();
 const decoder = new TextDecoder();
 const encoder = new TextEncoder();
 let stdout = '';
@@ -462,6 +470,7 @@ function allocateHostObjectRecord(value, requestedCapacity) {
   const raw = ptr | TAG_OBJECT;
   const record = { raw, keys: [], capacity };
   hostObjectHandles.set(value, record);
+  hostObjectValues.set(ptr, value);
   return record;
 }
 
@@ -505,6 +514,14 @@ function decodeHostFunctionHandle(raw) {
     throw new TypeError(`unknown host function handle object: ${raw}`);
   }
   return hostFunctionHandles.get(ptr);
+}
+
+function decodeHostReceiver(raw) {
+  if (rawTag(raw) === TAG_OBJECT) {
+    const ptr = rawPtr(raw);
+    if (hostObjectValues.has(ptr)) return hostObjectValues.get(ptr);
+  }
+  return decodeValue(raw);
 }
 
 function encodeHostValue(value) {
@@ -605,6 +622,13 @@ const imports = {
         throw new TypeError(`unknown host function handle: ${handleRaw}`);
       }
       return encodeHostValue(fn(...decodeArgs(argsRaw)));
+    },
+    'function.callMethod'(handleRaw, receiverRaw, argsRaw) {
+      const fn = hostFunctions[decodeHostFunctionHandle(handleRaw)];
+      if (typeof fn !== 'function') {
+        throw new TypeError(`unknown host function handle: ${handleRaw}`);
+      }
+      return encodeHostValue(fn.apply(decodeHostReceiver(receiverRaw), decodeArgs(argsRaw)));
     },
     'function.construct'(handleRaw, argsRaw) {
       const fn = hostFunctions[decodeHostFunctionHandle(handleRaw)];

@@ -921,6 +921,7 @@ directories:
     - function-constructor-dynamic-array-growth-node-shim.ts
     - function-constructor-dynamic-function-property-call-node-shim.ts
     - function-constructor-dynamic-function-property-node-shim.ts
+    - function-constructor-dynamic-function-property-this-node-shim.ts
     - function-constructor-dynamic-host-path.ts
     - function-constructor-dynamic-metadata-node-shim.ts
     - function-constructor-dynamic-nested-array-node-shim.ts

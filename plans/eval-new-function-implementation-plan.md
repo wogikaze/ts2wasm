@@ -481,9 +481,10 @@ Exit criteria:
   record capacity, bridges nested JS arrays with length/index reads for
   primitive elements and later array growth, exposes `.length`, `.name`, and
   `.prototype` metadata, bridges function-valued object properties as
-  metadata-bearing callable host handles including aliased property calls, and
-  carries handles as wasm object cells backed by host-side handle maps instead
-  of number values; remaining work is identity-stable growth for
+  metadata-bearing callable host handles including aliased property calls and
+  receiver-bound method calls, and carries handles as wasm object cells backed
+  by host-side handle maps instead of number values; remaining work is
+  identity-stable growth for
   already-returned wasm references, error bridging, and a runtime-wide host
   external object contract beyond the focused shim.
 

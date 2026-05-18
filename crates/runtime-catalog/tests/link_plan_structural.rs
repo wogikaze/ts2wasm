@@ -74,6 +74,7 @@ const ALL_CAPABILITIES: &[Capability] = &[
     Capability::HostStringNormalize,
     Capability::HostFunctionCompile,
     Capability::HostFunctionCall,
+    Capability::HostFunctionCallMethod,
     Capability::HostFunctionConstruct,
 ];
 

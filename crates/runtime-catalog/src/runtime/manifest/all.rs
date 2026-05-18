@@ -150,6 +150,7 @@ match self {
             Self::EvalIndirectHost => "eval_indirect_host",
             Self::FunctionCompileHost => "function_compile_host",
             Self::FunctionCallHost => "function_call_host",
+            Self::FunctionCallMethodHost => "function_call_method_host",
             Self::FunctionConstructHost => "function_construct_host",
             Self::GeneratorYield => "generator_yield",
             Self::GeneratorReturn => "generator_return",

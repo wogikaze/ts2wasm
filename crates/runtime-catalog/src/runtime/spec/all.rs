@@ -1354,6 +1354,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::FunctionCallMethodHost => RuntimeSpec {
+                symbol: "$function_call_method_host",
+                deps: NO_DEPS,
+                imports: &[HostImport::FunctionCallMethod],
+                capability: CAP_HOST_FUNCTION_CALL_METHOD,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::FunctionConstructHost => RuntimeSpec {
                 symbol: "$function_construct_host",
                 deps: NO_DEPS,

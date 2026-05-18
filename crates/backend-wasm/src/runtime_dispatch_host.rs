@@ -44,6 +44,7 @@ impl WatEmitter<'_> {
             RuntimeFn::EvalIndirectHost => self.emit_eval_indirect_host(wat),
             RuntimeFn::FunctionCompileHost => self.emit_function_compile_host(wat),
             RuntimeFn::FunctionCallHost => self.emit_function_call_host(wat),
+            RuntimeFn::FunctionCallMethodHost => self.emit_function_call_method_host(wat),
             RuntimeFn::FunctionConstructHost => self.emit_function_construct_host(wat),
             RuntimeFn::GeneratorReturn => self.emit_generator_return(wat),
             RuntimeFn::GeneratorNext => self.emit_generator_next(wat),
