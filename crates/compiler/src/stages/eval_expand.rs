@@ -1242,6 +1242,20 @@ fn eval_statement_completion_step(
                 }),
             }
         }
+        ResolvedStmt::Labeled { label, body } => {
+            let ast_body = match ast_stmt {
+                Some(Stmt::Labeled { body, .. }) => Some(body.as_ref()),
+                _ => None,
+            };
+            EvalCompletionStep::Labeled {
+                label,
+                body: Box::new(eval_statement_completion_step(
+                    ast_body,
+                    *body,
+                    leak_var_declarations,
+                )),
+            }
+        }
         ResolvedStmt::Function {
             name,
             params,

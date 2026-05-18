@@ -364,6 +364,10 @@ pub enum EvalCompletionStep {
         catch_steps: Option<Vec<EvalCompletionStep>>,
         finally_steps: Option<Vec<EvalCompletionStep>>,
     },
+    Labeled {
+        label: String,
+        body: Box<EvalCompletionStep>,
+    },
     Throw(ResolvedExpr),
     Break {
         label: Option<String>,
@@ -411,6 +415,7 @@ impl EvalCompletionStep {
             | Self::HoistFunctions(_)
             | Self::Empty(None)
             | Self::TryCatch { .. }
+            | Self::Labeled { .. }
             | Self::Break { .. }
             | Self::Continue { .. }
             | Self::FunctionDecl { .. }

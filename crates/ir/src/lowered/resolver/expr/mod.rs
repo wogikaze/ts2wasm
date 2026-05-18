@@ -660,6 +660,28 @@ impl super::Resolver {
                         Span::generated("eval_completion_throw"),
                     ));
                 }
+                EvalCompletionStep::Labeled { label, body } => {
+                    let mut labeled_body = Vec::new();
+                    self.lower_eval_completion_steps_into(
+                        std::slice::from_ref(body.as_ref()),
+                        completion,
+                        caller_scope_index,
+                        &mut labeled_body,
+                    )?;
+                    let body = if labeled_body.len() == 1 {
+                        labeled_body.remove(0)
+                    } else {
+                        LoweredStmt::Block(
+                            labeled_body,
+                            Span::generated("eval_completion_labeled_block"),
+                        )
+                    };
+                    stmts.push(LoweredStmt::Labeled {
+                        label: label.clone(),
+                        body: Box::new(body),
+                        span: Span::generated("eval_completion_labeled"),
+                    });
+                }
                 EvalCompletionStep::Break { label } => {
                     stmts.push(LoweredStmt::Break {
                         label: label.clone(),
@@ -769,6 +791,21 @@ impl super::Resolver {
                 self.lower_expr(expr)?,
                 Span::generated("eval_non_completion_throw"),
             ))),
+            EvalCompletionStep::Labeled { label, body } => {
+                let body = self
+                    .lower_eval_non_completion_step(body, caller_scope_index)?
+                    .unwrap_or_else(|| {
+                        LoweredStmt::Block(
+                            Vec::new(),
+                            Span::generated("eval_non_completion_labeled_empty"),
+                        )
+                    });
+                Ok(Some(LoweredStmt::Labeled {
+                    label: label.clone(),
+                    body: Box::new(body),
+                    span: Span::generated("eval_non_completion_labeled"),
+                }))
+            }
             EvalCompletionStep::Break { label } => Ok(Some(LoweredStmt::Break {
                 label: label.clone(),
                 span: Span::generated("eval_non_completion_break"),

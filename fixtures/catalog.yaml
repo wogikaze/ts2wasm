@@ -896,6 +896,7 @@ directories:
     - direct-eval-function-hoisted-before-use.ts
     - direct-eval-if-var-hoisted-undefined.ts
     - direct-eval-if-var-lands-in-caller.ts
+    - direct-eval-labeled-completion.ts
     - direct-eval-switch-completion.ts
     - direct-eval-nested-static.ts
     - direct-eval-try-completion.ts
