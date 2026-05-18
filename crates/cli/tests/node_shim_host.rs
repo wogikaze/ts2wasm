@@ -592,6 +592,12 @@ fn dynamic_direct_eval_ignores_later_binding_name_inside_source_string_literal()
 }
 
 #[test]
+fn dynamic_direct_eval_ignores_later_binding_name_inside_source_template_raw_text() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-tdz-name-in-template-node-shim.ts";
+    assert_node_shim_stdout(fixture, "later\nafter\n");
+}
+
+#[test]
 fn dynamic_direct_eval_bridges_nested_objects_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-nested-object-node-shim.ts";
     assert_node_shim_stdout(fixture, "7\nok\nundefined\n");
@@ -671,6 +677,13 @@ fn dynamic_direct_eval_strict_caller_ignores_restricted_words_in_strings_node_sh
 #[test]
 fn dynamic_direct_eval_rejects_tdz_env_descriptor_conflict() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-tdz-conflict-unsupported.ts";
+    assert_build_fails_with(fixture, "UnsupportedEval", "TDZ-aware env descriptors");
+}
+
+#[test]
+fn dynamic_direct_eval_rejects_tdz_template_expression_reference() {
+    let fixture =
+        "fixtures/core-semantics/direct-eval-dynamic-tdz-template-expression-unsupported.ts";
     assert_build_fails_with(fixture, "UnsupportedEval", "TDZ-aware env descriptors");
 }
 

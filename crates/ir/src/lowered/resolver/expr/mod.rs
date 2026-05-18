@@ -1367,6 +1367,14 @@ fn source_mentions_identifier(source: &str, name: &str) -> bool {
                 index = skip_quoted_source(bytes, index, bytes[index]);
                 continue;
             }
+            b'`' => {
+                let (mentions, next) = template_mentions_identifier(bytes, index, name);
+                if mentions {
+                    return true;
+                }
+                index = next;
+                continue;
+            }
             b'/' if bytes.get(index + 1) == Some(&b'/') => {
                 index += 2;
                 while index < bytes.len() && bytes[index] != b'\n' && bytes[index] != b'\r' {
@@ -1395,6 +1403,99 @@ fn source_mentions_identifier(source: &str, name: &str) -> bool {
         index += 1;
     }
     false
+}
+
+fn template_mentions_identifier(bytes: &[u8], start: usize, name: &str) -> (bool, usize) {
+    let mut index = start + 1;
+    while index < bytes.len() {
+        if bytes[index] == b'\\' {
+            index = (index + 2).min(bytes.len());
+            continue;
+        }
+        if bytes[index] == b'`' {
+            return (false, index + 1);
+        }
+        if bytes[index] == b'$'
+            && bytes.get(index + 1) == Some(&b'{')
+            && let Some(expr_end) = find_template_expr_end(bytes, index + 2)
+        {
+            if std::str::from_utf8(&bytes[index + 2..expr_end])
+                .ok()
+                .is_some_and(|expr| source_mentions_identifier(expr, name))
+            {
+                return (true, expr_end + 1);
+            }
+            index = expr_end + 1;
+            continue;
+        }
+        index += 1;
+    }
+    (false, bytes.len())
+}
+
+fn find_template_expr_end(bytes: &[u8], start: usize) -> Option<usize> {
+    let mut depth = 1usize;
+    let mut index = start;
+    while index < bytes.len() {
+        match bytes[index] {
+            b'\'' | b'"' => {
+                index = skip_quoted_source(bytes, index, bytes[index]);
+                continue;
+            }
+            b'`' => {
+                index = skip_template_source(bytes, index);
+                continue;
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'/') => {
+                index += 2;
+                while index < bytes.len() && bytes[index] != b'\n' && bytes[index] != b'\r' {
+                    index += 1;
+                }
+                continue;
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'*') => {
+                index += 2;
+                while index + 1 < bytes.len() && !(bytes[index] == b'*' && bytes[index + 1] == b'/')
+                {
+                    index += 1;
+                }
+                index = (index + 2).min(bytes.len());
+                continue;
+            }
+            b'{' => depth += 1,
+            b'}' => {
+                depth -= 1;
+                if depth == 0 {
+                    return Some(index);
+                }
+            }
+            _ => {}
+        }
+        index += 1;
+    }
+    None
+}
+
+fn skip_template_source(bytes: &[u8], start: usize) -> usize {
+    let mut index = start + 1;
+    while index < bytes.len() {
+        if bytes[index] == b'\\' {
+            index = (index + 2).min(bytes.len());
+            continue;
+        }
+        if bytes[index] == b'`' {
+            return index + 1;
+        }
+        if bytes[index] == b'$'
+            && bytes.get(index + 1) == Some(&b'{')
+            && let Some(expr_end) = find_template_expr_end(bytes, index + 2)
+        {
+            index = expr_end + 1;
+            continue;
+        }
+        index += 1;
+    }
+    bytes.len()
 }
 
 fn skip_quoted_source(bytes: &[u8], start: usize, quote: u8) -> usize {
