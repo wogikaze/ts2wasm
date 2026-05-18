@@ -825,19 +825,7 @@ impl NameResolver {
                 statements,
                 span: block_span,
             } => {
-                self.enter_scope();
-                // Register block-scoped class declarations in the current scope
-                // so they don't collide with outer scope names during resolution.
-                for stmt in statements {
-                    if let Stmt::ClassDecl { name, .. } = stmt {
-                        self.declare_variable(name, Some(*block_span), false)?;
-                    }
-                }
-                let resolved = statements
-                    .iter()
-                    .map(|s| self.resolve_stmt(s))
-                    .collect::<Result<Vec<_>, _>>()?;
-                self.exit_scope();
+                let resolved = self.resolve_block(statements)?;
                 Ok(Stmt::Block {
                     statements: resolved,
                     span: *block_span,

@@ -884,6 +884,7 @@ directories:
     - direct-eval-block-function-shadowed-unsupported.ts
     - direct-eval-block-function.ts
     - direct-eval-caller-local.ts
+    - direct-eval-dynamic-block-shadow-writeback-node-shim.ts
     - direct-eval-dynamic-local-writeback-node-shim.ts
     - direct-eval-dynamic-param-writeback-node-shim.ts
     - direct-eval-unsupported.ts

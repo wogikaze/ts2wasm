@@ -36,6 +36,12 @@ fn dynamic_direct_eval_writes_back_parameter_env_cell_through_node_shim_host_imp
     assert_node_shim_stdout(fixture, "7\n7\n");
 }
 
+#[test]
+fn dynamic_direct_eval_writes_back_shadowed_block_env_cell_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-block-shadow-writeback-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\n7\n1\n");
+}
+
 fn assert_node_shim_stdout(fixture: &str, expected_stdout: &str) {
     let fixture_path = fixture_path(fixture);
     let output_wasm = temp_wasm_path(fixture);

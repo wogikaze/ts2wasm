@@ -1321,7 +1321,7 @@ impl Resolver {
                 Span::generated("expr_stmt"),
             )),
             ResolvedStmt::Block { statements, .. } => Ok(LoweredStmt::Block(
-                self.lower_block(statements)?,
+                self.lower_nested_block(statements)?,
                 Span::generated("block"),
             )),
         }

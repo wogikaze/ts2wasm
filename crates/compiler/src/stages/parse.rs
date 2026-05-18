@@ -200,8 +200,10 @@ fn validate_stmt(
         Stmt::Throw { .. } => Ok(()),
         Stmt::Labeled { body, .. } => validate_stmt(body, in_top_level, scope, top_functions),
         Stmt::Block { statements, .. } => {
+            let mut block_scope = HashMap::new();
+            let block_functions = HashMap::new();
             for s in statements {
-                validate_stmt(s, in_top_level, scope, top_functions)?;
+                validate_stmt(s, in_top_level, &mut block_scope, &block_functions)?;
             }
             Ok(())
         }

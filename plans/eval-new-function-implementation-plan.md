@@ -510,9 +510,9 @@ Exit criteria:
   focused Node WebAssembly shim regression covers primitive-return dynamic
   direct eval. Lowering now passes an initialized env-cell descriptor to the
   host import, and the Node shim regression covers primitive number
-  caller-local and parameter write-back. Full declaration landing, strict
-  lexical env isolation, TDZ, and object/string/error bridge semantics remain
-  open.
+  caller-local, parameter, and shadowed block-local write-back. Full declaration
+  landing, strict lexical env isolation, TDZ, and object/string/error bridge
+  semantics remain open.
 
 ### Phase 9: `$262.evalScript` / test262 ramp / cleanup
 
