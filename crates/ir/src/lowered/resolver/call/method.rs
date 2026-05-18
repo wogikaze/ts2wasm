@@ -3494,6 +3494,13 @@ impl super::super::Resolver {
                     .map(|e| self.lower_expr(e))
                     .collect::<Result<Vec<_>, _>>()?,
             );
+            // ArrayJoin expects a separator argument. Inject "," for toString/toLocaleString
+            // when no separator was explicitly passed.
+            if (method == "toString" || method == "toLocaleString")
+                && lowered_args.len() == 1
+            {
+                lowered_args.push(LoweredExpr::String(",".to_owned(), Span::generated("str")));
+            }
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic,
                 args: lowered_args,
