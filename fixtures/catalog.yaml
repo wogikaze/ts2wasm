@@ -1074,6 +1074,7 @@ directories:
     - optional-eval-dynamic-node-shim.ts
     - optional-eval-shadowed-ordinary-call.ts
     - optional-eval-static-global-scope.ts
+    - optional-eval-static-non-string.ts
     - optional-chaining-call.ts
     - optional-chaining-member-index.ts
     - ordinary-bitwise-and-xor.ts

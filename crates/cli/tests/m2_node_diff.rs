@@ -1277,6 +1277,11 @@ fn static_optional_eval_global_scope_fixture_matches_node_output() {
 }
 
 #[test]
+fn static_optional_eval_non_string_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/optional-eval-static-non-string.ts");
+}
+
+#[test]
 fn shadowed_optional_eval_is_ordinary_optional_call() {
     assert_fixture_matches_node("fixtures/core-semantics/optional-eval-shadowed-ordinary-call.ts");
 }

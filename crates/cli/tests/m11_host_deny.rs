@@ -471,6 +471,14 @@ fn static_optional_eval_global_scope_declares_no_node_host_eval_capability() {
 }
 
 #[test]
+fn static_optional_eval_non_string_declares_no_node_host_eval_capability() {
+    assert_standalone_category(
+        "core-semantics/optional-eval-static-non-string.ts",
+        "static optional eval non-string",
+    );
+}
+
+#[test]
 fn shadowed_optional_eval_declares_no_node_host_eval_capability() {
     assert_standalone_category(
         "core-semantics/optional-eval-shadowed-ordinary-call.ts",
