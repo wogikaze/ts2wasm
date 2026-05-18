@@ -42,6 +42,12 @@ fn dynamic_direct_eval_writes_back_shadowed_block_env_cell_through_node_shim_hos
     assert_node_shim_stdout(fixture, "7\n7\n1\n");
 }
 
+#[test]
+fn dynamic_direct_eval_writes_back_string_env_cell_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-string-writeback-node-shim.ts";
+    assert_node_shim_stdout(fixture, "after\nafter\n");
+}
+
 fn assert_node_shim_stdout(fixture: &str, expected_stdout: &str) {
     let fixture_path = fixture_path(fixture);
     let output_wasm = temp_wasm_path(fixture);
@@ -101,7 +107,9 @@ const ARRAY_PRESENCE_WORDS_OFFSET = 16;
 let memory;
 const hostFunctions = [];
 const decoder = new TextDecoder();
+const encoder = new TextEncoder();
 let stdout = '';
+let hostHeapCursor = 0;
 
 function view() {
   return new DataView(memory.buffer);
@@ -185,12 +193,38 @@ function writeEnvCellRaw(cellRaw, valueRaw) {
   view().setInt32(base + ARRAY_HEADER_SIZE, valueRaw, true);
 }
 
-function encodePrimitive(value) {
+function alignHostPtr(ptr) {
+  return Math.ceil(ptr / 8) * 8;
+}
+
+function hostAlloc(size) {
+  if (hostHeapCursor === 0) {
+    hostHeapCursor = bytes().byteLength;
+  }
+  const ptr = alignHostPtr(hostHeapCursor);
+  const end = ptr + size;
+  while (end > bytes().byteLength) {
+    memory.grow(1);
+  }
+  hostHeapCursor = end;
+  return ptr;
+}
+
+function encodeString(value) {
+  const data = encoder.encode(value);
+  const ptr = hostAlloc(4 + data.length);
+  view().setInt32(ptr, data.length, true);
+  bytes().set(data, ptr + 4);
+  return ptr | TAG_STRING;
+}
+
+function encodeHostValue(value) {
   if (value === undefined) return TAG_UNDEFINED;
   if (value === null) return TAG_NULL;
   if (value === false) return TAG_FALSE;
   if (value === true) return TAG_TRUE;
   if (Number.isInteger(value)) return (value << 3) | TAG_NUMBER;
+  if (typeof value === 'string') return encodeString(value);
   throw new TypeError(`unsupported host return value for this test: ${String(value)}`);
 }
 
@@ -229,7 +263,7 @@ function evalWithEnvDescriptor(source, envRaw) {
 
   for (let i = 0; i < bindings.length; i += 1) {
     if (!Object.is(bindings[i].value, updatedValues[i])) {
-      writeEnvCellRaw(bindings[i].cellRaw, encodePrimitive(updatedValues[i]));
+      writeEnvCellRaw(bindings[i].cellRaw, encodeHostValue(updatedValues[i]));
     }
   }
 
@@ -262,11 +296,11 @@ const imports = {
   host: {
     'eval.direct'(sourceRaw, envRaw) {
       const result = evalWithEnvDescriptor(decodeString(sourceRaw), envRaw);
-      return encodePrimitive(result);
+      return encodeHostValue(result);
     },
     'eval.indirect'(sourceRaw, _envRaw) {
       const result = globalThis.eval(decodeString(sourceRaw));
-      return encodePrimitive(result);
+      return encodeHostValue(result);
     },
     'function.compile'(argsRaw) {
       const args = decodeArgs(argsRaw);
@@ -279,7 +313,7 @@ const imports = {
       if (typeof fn !== 'function') {
         throw new TypeError(`unknown host function handle: ${handleRaw}`);
       }
-      return encodePrimitive(fn(...decodeArgs(argsRaw)));
+      return encodeHostValue(fn(...decodeArgs(argsRaw)));
     },
     'function.construct'(handleRaw, argsRaw) {
       const fn = hostFunctions[decodeValue(handleRaw)];
