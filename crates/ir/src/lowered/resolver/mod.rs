@@ -552,6 +552,11 @@ impl Resolver {
                     local_id,
                     expr,
                 );
+                crate::lowered::resolver::expr::facts::update_host_function_handle_local(
+                    &mut self.ctx,
+                    local_id,
+                    expr,
+                );
                 crate::lowered::resolver::expr::facts::update_bigint_local(
                     &mut self.ctx,
                     local_id,
@@ -802,6 +807,11 @@ impl Resolver {
                 }
                 self.update_heap_closure_local(local_id, expr, &lowered);
                 crate::lowered::resolver::expr::facts::update_nullish_local(
+                    &mut self.ctx,
+                    local_id,
+                    expr,
+                );
+                crate::lowered::resolver::expr::facts::update_host_function_handle_local(
                     &mut self.ctx,
                     local_id,
                     expr,

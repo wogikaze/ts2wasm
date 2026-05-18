@@ -100,6 +100,8 @@ pub enum HostImport {
     EvalDirect,
     EvalIndirect,
     FunctionCompile,
+    FunctionCall,
+    FunctionConstruct,
 }
 
 impl HostImport {
@@ -530,6 +532,22 @@ impl HostImport {
                 params: "param i32",
                 result: "result i32",
             },
+            Self::FunctionCall => HostImportSpec {
+                module: "host",
+                name: "function.call",
+                wat_symbol: "$host_function_call",
+                abi: HostAbi::NodeShim,
+                params: "param i32 i32",
+                result: "result i32",
+            },
+            Self::FunctionConstruct => HostImportSpec {
+                module: "host",
+                name: "function.construct",
+                wat_symbol: "$host_function_construct",
+                abi: HostAbi::NodeShim,
+                params: "param i32 i32",
+                result: "result i32",
+            },
         }
     }
 
@@ -591,6 +609,8 @@ impl HostImport {
             Self::EvalDirect => "host.eval.direct",
             Self::EvalIndirect => "host.eval.indirect",
             Self::FunctionCompile => "host.function.compile",
+            Self::FunctionCall => "host.function.call",
+            Self::FunctionConstruct => "host.function.construct",
         }
     }
 }

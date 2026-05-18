@@ -1346,6 +1346,22 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::FunctionCallHost => RuntimeSpec {
+                symbol: "$function_call_host",
+                deps: NO_DEPS,
+                imports: &[HostImport::FunctionCall],
+                capability: CAP_HOST_FUNCTION_CALL,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::FunctionConstructHost => RuntimeSpec {
+                symbol: "$function_construct_host",
+                deps: NO_DEPS,
+                imports: &[HostImport::FunctionConstruct],
+                capability: CAP_HOST_FUNCTION_CONSTRUCT,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::GeneratorYield => RuntimeSpec {
                 symbol: "$generator_yield",
                 deps: GENERATOR_YIELD_DEPS,

@@ -372,6 +372,8 @@ fn node_shim_import_to_capability(import: &HostImport) -> Option<Capability> {
         HostImport::EvalDirect => Some(Capability::HostEvalDirect),
         HostImport::EvalIndirect => Some(Capability::HostEvalIndirect),
         HostImport::FunctionCompile => Some(Capability::HostFunctionCompile),
+        HostImport::FunctionCall => Some(Capability::HostFunctionCall),
+        HostImport::FunctionConstruct => Some(Capability::HostFunctionConstruct),
         HostImport::IntlDateTimeFormatFormat => Some(Capability::HostIntlDateTimeFormatFormat),
         HostImport::StringNormalize => Some(Capability::HostStringNormalize),
         _ => None,
@@ -411,6 +413,8 @@ fn cap_is_host(cap: &Capability) -> bool {
             | Capability::HostEvalDirect
             | Capability::HostEvalIndirect
             | Capability::HostFunctionCompile
+            | Capability::HostFunctionCall
+            | Capability::HostFunctionConstruct
     )
 }
 

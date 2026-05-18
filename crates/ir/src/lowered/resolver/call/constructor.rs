@@ -46,6 +46,28 @@ impl super::super::Resolver {
                 span,
             );
         }
+        if let Ok(local_id) = self.resolve_local(class_name)
+            && self
+                .ctx
+                .facts
+                .host_function_handle_locals
+                .contains(&local_id)
+        {
+            let args_array = ResolvedExpr::Array(
+                args.iter()
+                    .cloned()
+                    .map(ResolvedArrayElement::Present)
+                    .collect(),
+            );
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::FunctionConstructHost,
+                args: vec![
+                    LoweredExpr::Local(local_id, Span::generated("local")),
+                    self.lower_expr(&args_array)?,
+                ],
+                span: Span::generated("runtime_call"),
+            });
+        }
         if class_name == INTRINSIC_FUNCTION_CONSTRUCTOR_NEW {
             return self.lower_dynamic_function_constructor_host_compile(args, span);
         }

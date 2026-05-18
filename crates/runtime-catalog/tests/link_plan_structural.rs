@@ -73,6 +73,8 @@ const ALL_CAPABILITIES: &[Capability] = &[
     Capability::HostReflectConstruct,
     Capability::HostStringNormalize,
     Capability::HostFunctionCompile,
+    Capability::HostFunctionCall,
+    Capability::HostFunctionConstruct,
 ];
 
 const NON_RUNTIME_LINK_PLAN_CAPABILITIES: &[Capability] = &[

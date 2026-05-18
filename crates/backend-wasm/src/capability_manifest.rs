@@ -154,8 +154,10 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
             | Capability::HostReflectConstruct
             | Capability::HostEvalDirect
             | Capability::HostEvalIndirect
-            | Capability::HostFunctionCompile => {
-                // Node host capabilities for URI encoding/decoding, Date, String, Reflect, and eval
+            | Capability::HostFunctionCompile
+            | Capability::HostFunctionCall
+            | Capability::HostFunctionConstruct => {
+                // Node host capabilities for URI encoding/decoding, Date, String, Reflect, eval, and Function handles
             }
         }
     }

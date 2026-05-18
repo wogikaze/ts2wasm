@@ -414,6 +414,29 @@ impl super::super::Resolver {
             });
         }
 
+        if let Ok(local_id) = self.resolve_local(func_name)
+            && self
+                .ctx
+                .facts
+                .host_function_handle_locals
+                .contains(&local_id)
+        {
+            let args_array = ResolvedExpr::Array(
+                args.iter()
+                    .cloned()
+                    .map(ResolvedArrayElement::Present)
+                    .collect(),
+            );
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::FunctionCallHost,
+                args: vec![
+                    LoweredExpr::Local(local_id, Span::generated("local")),
+                    self.lower_expr(&args_array)?,
+                ],
+                span: Span::generated("runtime_call"),
+            });
+        }
+
         let func_id = match self.resolve_func(func_name) {
             Ok(func_id) => func_id,
             Err(_) if self.resolve_local(func_name).is_ok() => {

@@ -1217,6 +1217,9 @@ impl<'a> HirLowerer<'a> {
                     Ok(HirExpr::ConstUndefined)
                 }
                 ResolvedExpr::Ident(name) => {
+                    if self.resolve_local(name).is_ok() {
+                        return Ok(HirExpr::ConstUndefined);
+                    }
                     let function =
                         self.function_ids
                             .get(name.as_str())
@@ -1237,6 +1240,9 @@ impl<'a> HirLowerer<'a> {
             ResolvedExpr::New { class_name, .. }
                 if class_name == INTRINSIC_FUNCTION_CONSTRUCTOR_NEW =>
             {
+                Ok(HirExpr::ConstUndefined)
+            }
+            ResolvedExpr::New { class_name, .. } if self.resolve_local(class_name).is_ok() => {
                 Ok(HirExpr::ConstUndefined)
             }
             ResolvedExpr::MethodCall {

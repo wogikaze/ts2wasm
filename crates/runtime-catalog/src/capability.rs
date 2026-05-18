@@ -42,6 +42,8 @@ pub enum Capability {
     HostEvalDirect,
     HostEvalIndirect,
     HostFunctionCompile,
+    HostFunctionCall,
+    HostFunctionConstruct,
 }
 
 impl Capability {
@@ -87,6 +89,8 @@ impl Capability {
             Self::HostEvalDirect => "host.eval.direct",
             Self::HostEvalIndirect => "host.eval.indirect",
             Self::HostFunctionCompile => "host.function.compile",
+            Self::HostFunctionCall => "host.function.call",
+            Self::HostFunctionConstruct => "host.function.construct",
         }
     }
 }

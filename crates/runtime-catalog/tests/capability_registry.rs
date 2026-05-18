@@ -156,6 +156,16 @@ const HOST_IMPORT_RUNTIME_CASES: &[RuntimeImportCase] = &[
         imports: &[HostImport::FunctionCompile],
         capabilities: &[Capability::HostFunctionCompile],
     },
+    RuntimeImportCase {
+        runtime_fn: RuntimeFn::FunctionCallHost,
+        imports: &[HostImport::FunctionCall],
+        capabilities: &[Capability::HostFunctionCall],
+    },
+    RuntimeImportCase {
+        runtime_fn: RuntimeFn::FunctionConstructHost,
+        imports: &[HostImport::FunctionConstruct],
+        capabilities: &[Capability::HostFunctionConstruct],
+    },
 ];
 
 const ALL_HOST_IMPORTS: &[HostImport] = &[
@@ -195,6 +205,8 @@ const ALL_HOST_IMPORTS: &[HostImport] = &[
     HostImport::EvalDirect,
     HostImport::EvalIndirect,
     HostImport::FunctionCompile,
+    HostImport::FunctionCall,
+    HostImport::FunctionConstruct,
 ];
 
 const NON_RUNTIME_LINK_PLAN_HOST_IMPORTS: &[HostImport] = &[
@@ -243,6 +255,8 @@ const ALL_CAPABILITIES: &[Capability] = &[
     Capability::HostDateParse,
     Capability::HostDateUTC,
     Capability::HostFunctionCompile,
+    Capability::HostFunctionCall,
+    Capability::HostFunctionConstruct,
 ];
 
 const NON_RUNTIME_LINK_PLAN_CAPABILITIES: &[Capability] = &[

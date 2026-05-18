@@ -9,6 +9,9 @@ use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::StaticFunctionArrayLike;
 use crate::lowered::facts::{GeneratorIteratorBinding, ProxyBinding};
 use crate::lowered::*;
+use crate::name_resolver::{
+    INTRINSIC_FUNCTION_CONSTRUCTOR_CALL, INTRINSIC_FUNCTION_CONSTRUCTOR_NEW,
+};
 use std::collections::HashSet;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_syntax::{BinaryOp, OBJECT_SPREAD_SENTINEL, SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp};
@@ -33,6 +36,37 @@ pub(crate) fn update_nullish_local(ctx: &mut LoweringCtx, local_id: LocalId, exp
         ctx.facts.nullish_locals.insert(local_id);
     } else {
         ctx.facts.nullish_locals.remove(&local_id);
+    }
+}
+
+pub(crate) fn update_host_function_handle_local(
+    ctx: &mut LoweringCtx,
+    local_id: LocalId,
+    expr: &ResolvedExpr,
+) {
+    if resolved_expr_is_dynamic_function_constructor(ctx, expr) {
+        ctx.facts.host_function_handle_locals.insert(local_id);
+    } else {
+        ctx.facts.host_function_handle_locals.remove(&local_id);
+    }
+}
+
+fn resolved_expr_is_dynamic_function_constructor(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
+    match expr {
+        ResolvedExpr::Call { callee, args, .. } if matches!(callee.as_ref(), ResolvedExpr::Ident(name) if name == INTRINSIC_FUNCTION_CONSTRUCTOR_CALL) => {
+            args.iter()
+                .any(|arg| !matches!(arg, ResolvedExpr::String(_)))
+        }
+        ResolvedExpr::New {
+            class_name, args, ..
+        } if class_name == INTRINSIC_FUNCTION_CONSTRUCTOR_NEW => args
+            .iter()
+            .any(|arg| !matches!(arg, ResolvedExpr::String(_))),
+        ResolvedExpr::Ident(name) => ctx
+            .resolve_local(name)
+            .ok()
+            .is_some_and(|local_id| ctx.facts.host_function_handle_locals.contains(&local_id)),
+        _ => false,
     }
 }
 
