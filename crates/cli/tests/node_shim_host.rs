@@ -310,6 +310,12 @@ fn static_direct_eval_class_method_preserves_this_receiver() {
 }
 
 #[test]
+fn static_direct_eval_class_constructor_mutates_this_receiver() {
+    let fixture = "fixtures/core-semantics/direct-eval-class-constructor-this.ts";
+    assert_node_shim_stdout(fixture, "7\n");
+}
+
+#[test]
 fn static_direct_eval_class_constructor_preserves_new_target() {
     let fixture = "fixtures/core-semantics/direct-eval-class-new-target.ts";
     assert_node_shim_stdout(fixture, "true\n");

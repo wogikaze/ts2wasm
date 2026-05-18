@@ -463,6 +463,14 @@ fn static_direct_eval_class_method_this_declares_no_node_host_eval_capability() 
 }
 
 #[test]
+fn static_direct_eval_class_constructor_this_declares_no_node_host_eval_capability() {
+    assert_standalone_category(
+        "core-semantics/direct-eval-class-constructor-this.ts",
+        "static direct eval class constructor this",
+    );
+}
+
+#[test]
 fn static_direct_eval_class_new_target_declares_no_node_host_eval_capability() {
     assert_standalone_category(
         "core-semantics/direct-eval-class-new-target.ts",
