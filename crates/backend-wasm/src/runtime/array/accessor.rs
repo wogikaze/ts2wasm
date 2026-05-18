@@ -519,6 +519,9 @@ impl WatEmitter<'_> {
     (local.set $arr_tag (i32.and (local.get $arr) (i32.const {tag_mask})))
     (if (i32.ne (local.get $arr_tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
     (local.set $idx_tag (i32.and (local.get $idx) (i32.const {tag_mask})))
+    ;; ToIntegerOrInfinity: undefined → 0, otherwise try number
+    (if (i32.eq (local.get $idx_tag) (i32.const {undefined}))
+      (then (return (call $array_get (local.get $arr) (i32.const {number_tag})))))
     (if (i32.ne (local.get $idx_tag) (i32.const {number_tag})) (then (return (i32.const {undefined}))))
     (local.set $raw_i (i32.shr_s (local.get $idx) (i32.const {number_shift})))
     ;; Normalize negative index: if i < 0, i = max(0, len + i)
