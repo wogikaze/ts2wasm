@@ -825,6 +825,13 @@ fn host_deny_rejects_dynamic_direct_eval_new_var_declaration_host_lane() {
 }
 
 #[test]
+fn host_deny_rejects_dynamic_direct_eval_new_var_destructuring_host_lane() {
+    assert_host_deny_rejects(
+        "core-semantics/direct-eval-dynamic-new-var-destructuring-node-shim.ts",
+    );
+}
+
+#[test]
 fn host_deny_rejects_dynamic_direct_eval_new_function_declaration_host_lane() {
     assert_host_deny_rejects(
         "core-semantics/direct-eval-dynamic-new-function-declaration-node-shim.ts",

@@ -446,6 +446,13 @@ fn dynamic_direct_eval_new_var_declaration_is_visible_to_later_eval_through_node
 }
 
 #[test]
+fn dynamic_direct_eval_new_var_destructuring_is_visible_to_later_eval_through_node_shim_host_import()
+ {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-new-var-destructuring-node-shim.ts";
+    assert_node_shim_stdout(fixture, "9\n9\n");
+}
+
+#[test]
 fn dynamic_direct_eval_new_function_declaration_is_visible_to_later_eval_through_node_shim_host_import()
  {
     let fixture =
@@ -1061,6 +1068,144 @@ function uniqueInternalName(base, names) {
   return name;
 }
 
+function isIdentifierStart(ch) {
+  return /[A-Za-z_$]/.test(ch);
+}
+
+function isIdentifierPart(ch) {
+  return /[0-9A-Za-z_$]/.test(ch);
+}
+
+function skipWhitespace(text, index) {
+  let i = index;
+  while (i < text.length && /\s/.test(text[i])) i += 1;
+  return i;
+}
+
+function splitTopLevelComma(text) {
+  const parts = [];
+  let start = 0;
+  let depth = 0;
+  let quote = null;
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i];
+    if (quote !== null) {
+      if (ch === '\\') i += 1;
+      else if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === '`') {
+      quote = ch;
+    } else if (ch === '{' || ch === '[' || ch === '(') {
+      depth += 1;
+    } else if (ch === '}' || ch === ']' || ch === ')') {
+      depth -= 1;
+    } else if (ch === ',' && depth === 0) {
+      parts.push(text.slice(start, i));
+      start = i + 1;
+    }
+  }
+  parts.push(text.slice(start));
+  return parts;
+}
+
+function topLevelEqualsIndex(text) {
+  let depth = 0;
+  let quote = null;
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i];
+    if (quote !== null) {
+      if (ch === '\\') i += 1;
+      else if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === '`') {
+      quote = ch;
+    } else if (ch === '{' || ch === '[' || ch === '(') {
+      depth += 1;
+    } else if (ch === '}' || ch === ']' || ch === ')') {
+      depth -= 1;
+    } else if (ch === '=' && depth === 0) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+function skipBindingInitializer(text, index) {
+  let i = index;
+  let depth = 0;
+  let quote = null;
+  while (i < text.length) {
+    const ch = text[i];
+    if (quote !== null) {
+      if (ch === '\\') i += 1;
+      else if (ch === quote) quote = null;
+      i += 1;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === '`') {
+      quote = ch;
+    } else if (ch === '{' || ch === '[' || ch === '(') {
+      depth += 1;
+    } else if (ch === '}' || ch === ']' || ch === ')') {
+      if (depth === 0) return i;
+      depth -= 1;
+    } else if (ch === ',' && depth === 0) {
+      return i;
+    }
+    i += 1;
+  }
+  return i;
+}
+
+function addBindingNamesFromPattern(pattern, addName) {
+  for (let i = 0; i < pattern.length; ) {
+    const ch = pattern[i];
+    if (ch === '=') {
+      i = skipBindingInitializer(pattern, i + 1);
+      continue;
+    }
+    if (!isIdentifierStart(ch)) {
+      i += 1;
+      continue;
+    }
+    let end = i + 1;
+    while (end < pattern.length && isIdentifierPart(pattern[end])) end += 1;
+    const name = pattern.slice(i, end);
+    const next = skipWhitespace(pattern, end);
+    if (pattern[next] === ':') {
+      i = next + 1;
+      continue;
+    }
+    addName(name);
+    i = end;
+  }
+}
+
+function readVarDeclarationText(source, index) {
+  let depth = 0;
+  let quote = null;
+  for (let i = index; i < source.length; i += 1) {
+    const ch = source[i];
+    if (quote !== null) {
+      if (ch === '\\') i += 1;
+      else if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === '`') {
+      quote = ch;
+    } else if (ch === '{' || ch === '[' || ch === '(') {
+      depth += 1;
+    } else if (ch === '}' || ch === ']' || ch === ')') {
+      depth -= 1;
+    } else if (ch === ';' && depth === 0) {
+      return source.slice(index, i);
+    }
+  }
+  return source.slice(index);
+}
+
 function directEvalEnvKey(bindings) {
   return bindings
     .map((binding) => `${binding.name}:${binding.cellRaw}`)
@@ -1068,14 +1213,28 @@ function directEvalEnvKey(bindings) {
     .join('|');
 }
 
-function collectEvalDeclarationNames(source) {
+function collectVariableDeclarationBindingNames(source, keyword) {
   const names = [];
   const addName = (name) => {
     if (!names.includes(name)) names.push(name);
   };
-  for (const match of source.matchAll(/\bvar\s+([A-Za-z_$][0-9A-Za-z_$]*)/g)) {
-    addName(match[1]);
+  const keywordPattern = new RegExp(`\\b${keyword}\\b`, 'g');
+  for (const match of source.matchAll(keywordPattern)) {
+    const declarationText = readVarDeclarationText(source, match.index + match[0].length);
+    for (const declarator of splitTopLevelComma(declarationText)) {
+      const equalsIndex = topLevelEqualsIndex(declarator);
+      const pattern = (equalsIndex === -1 ? declarator : declarator.slice(0, equalsIndex)).trim();
+      addBindingNamesFromPattern(pattern, addName);
+    }
   }
+  return names;
+}
+
+function collectEvalDeclarationNames(source) {
+  const names = collectVariableDeclarationBindingNames(source, 'var');
+  const addName = (name) => {
+    if (!names.includes(name)) names.push(name);
+  };
   for (const match of source.matchAll(/\bfunction\s+([A-Za-z_$][0-9A-Za-z_$]*)\s*\(/g)) {
     addName(match[1]);
   }
@@ -1086,13 +1245,10 @@ function strictEvalHasDeleteIdentifier(source) {
   return /\bdelete\s+[A-Za-z_$][0-9A-Za-z_$]*\b(?!\s*[.[(])/.test(source);
 }
 
-function strictEvalHasRestrictedObjectBinding(source) {
-  for (const match of source.matchAll(/\b(?:var|let|const)\s*\{([^}=;]*)\}/g)) {
-    if (
-      /(?:^|[,{])\s*(?:arguments|eval)\s*(?=[,}]|$)|:\s*(?:arguments|eval)\s*(?=[,}=]|$)/.test(
-        match[1],
-      )
-    ) {
+function strictEvalHasRestrictedVariableBinding(source) {
+  for (const keyword of ['var', 'let', 'const']) {
+    const names = collectVariableDeclarationBindingNames(source, keyword);
+    if (names.includes('arguments') || names.includes('eval')) {
       return true;
     }
   }
@@ -1101,9 +1257,7 @@ function strictEvalHasRestrictedObjectBinding(source) {
 
 function strictEvalHasRestrictedBinding(source) {
   return (
-    /\b(?:var|let|const)\s+(?:arguments|eval)\b/.test(source) ||
-    /\b(?:var|let|const)\s*\[[^\]=;]*\b(?:arguments|eval)\b/.test(source) ||
-    strictEvalHasRestrictedObjectBinding(source) ||
+    strictEvalHasRestrictedVariableBinding(source) ||
     /\b(?:async\s+)?function\s*\*?\s+(?:arguments|eval)\b/.test(source)
   );
 }
