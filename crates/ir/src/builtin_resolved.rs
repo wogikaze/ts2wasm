@@ -366,19 +366,10 @@ pub struct StaticFunctionConstructorSource {
 
 impl StaticFunctionConstructorSource {
     pub fn from_args(args: &[ResolvedExpr]) -> Option<Self> {
-        if !args
-            .iter()
-            .all(|arg| matches!(arg, ResolvedExpr::String(_)))
-        {
-            return None;
-        }
         let strings = args
             .iter()
-            .map(|arg| match arg {
-                ResolvedExpr::String(value) => value.clone(),
-                _ => unreachable!("all args were validated as strings"),
-            })
-            .collect::<Vec<_>>();
+            .map(function_constructor_source_string)
+            .collect::<Option<Vec<_>>>()?;
         let (body, params) = strings
             .split_last()
             .map_or(("", &[][..]), |(body, params)| (body.as_str(), params));
@@ -401,6 +392,26 @@ impl StaticFunctionConstructorSource {
             "function {}({params_source}\n) {{\n{}\n}}",
             self.generated_function.name, self.body
         )
+    }
+}
+
+fn function_constructor_source_string(arg: &ResolvedExpr) -> Option<String> {
+    match arg {
+        ResolvedExpr::String(value) => Some(value.clone()),
+        ResolvedExpr::Number(value) => Some(value.to_string()),
+        ResolvedExpr::DecimalNumber(value) => Some(value.clone()),
+        ResolvedExpr::BigIntLiteral { decimal, sign, .. } => {
+            if *sign < 0 {
+                Some(format!("-{decimal}"))
+            } else {
+                Some(decimal.clone())
+            }
+        }
+        ResolvedExpr::Bool(true) => Some("true".to_owned()),
+        ResolvedExpr::Bool(false) => Some("false".to_owned()),
+        ResolvedExpr::Null => Some("null".to_owned()),
+        ResolvedExpr::Undefined => Some("undefined".to_owned()),
+        _ => None,
     }
 }
 

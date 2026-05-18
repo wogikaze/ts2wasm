@@ -1289,6 +1289,7 @@ fn standalone_fixtures_pass_host_deny() {
         "core-semantics/function-constructor-new-static-prototype.ts",
         "core-semantics/function-constructor-parameter-grammar.ts",
         "core-semantics/function-constructor-rest-params.ts",
+        "core-semantics/function-constructor-static-primitive-source.ts",
         "core-semantics/function-constructor-static-construct.ts",
         "core-semantics/function-constructor-this-binding.ts",
         "core-semantics/function-constructor-zero-args.ts",

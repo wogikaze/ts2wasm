@@ -79,6 +79,34 @@ fn compiler_expands_static_new_function_constructor_after_resolver_classificatio
 }
 
 #[test]
+fn compiler_expands_static_function_constructor_primitive_source_args() {
+    let expanded = parse_resolve_and_expand_dynamic_code(
+        "let value = Function(null); let other = new Function(true);",
+    );
+    for stmt in &expanded {
+        let ts2wasm_ir::ResolvedStmt::Let(
+            _,
+            ts2wasm_ir::ResolvedExpr::FunctionExpr {
+                origin,
+                constructor_metadata,
+                ..
+            },
+        ) = stmt
+        else {
+            panic!("expected primitive static Function constructor to expand: {expanded:?}");
+        };
+        assert_eq!(
+            *origin,
+            ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor
+        );
+        assert_eq!(
+            constructor_metadata.as_ref().map(|meta| meta.name.as_str()),
+            Some("anonymous")
+        );
+    }
+}
+
+#[test]
 fn compiler_preserves_dynamic_function_constructor_for_host_lane() {
     let parsed = parse_program(
         "let body = \"return 1\"; let value = Function(body); let other = new Function(body);",
