@@ -618,8 +618,10 @@ Exit criteria:
   host-deny regressions cover the host lane. The reference test262 runner's
   Node oracle prelude now implements `$262.evalScript` with indirect global
   eval instead of an unsupported stub, so evalScript cases are not blocked by
-  oracle setup. Realm / cross-realm classification and broader test262 burn-down
-  remain open.
+  oracle setup. JSONL `--no-server --no-semantic` now preserves compile-only
+  semantics instead of running the Node oracle, matching server check-mode
+  classification for the focused `$262.evalScript` eval-code case. Realm /
+  cross-realm classification and broader test262 burn-down remain open.
 
 ## 6. File-by-file task map
 

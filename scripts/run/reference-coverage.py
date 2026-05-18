@@ -2583,7 +2583,131 @@ def main():
                 return None, EOFError("server disconnected")
             return read_result[0], None
 
+        def classify_legacy_compile_result(item, build_result):
+            if build_result.returncode == 0:
+                duration = elapsed_ms(item["started_at"])
+                record = t262.create_test_record(
+                    "test262",
+                    str(item["file_path"]),
+                    "wasm-iwasm",
+                    "build_pass",
+                    None,
+                    None,
+                    "build_pass",
+                    source_code=record_source(item),
+                    duration_ms=duration,
+                )
+                return record, "build_pass"
+            if build_result.returncode == 124:
+                return make_blocked_record(
+                    item,
+                    "Timeout",
+                    "test262-harness",
+                    "legacy compile timed out",
+                    stderr=build_result.stderr,
+                )
+
+            metadata = item["metadata"]
+            stderr = build_result.stderr or ""
+            diag_match = re.search(
+                r"(SyntaxError|UnsupportedSyntax|UnsupportedBuiltin|UnsupportedDate|UnsupportedRegExp|UnsupportedModule|UnsupportedEval|UnsupportedTypeScriptSyntax|UnsupportedRuntimeSubset|UnresolvedName|UnresolvedFunction|TypeError|RuntimeError|InvariantViolation|BackendIo|CompilationError)",
+                stderr,
+            )
+            diag_code = diag_match.group(1) if diag_match else "CompilationError"
+            diag_phase = ""
+            phase_match = re.search(fr"\[{diag_code}/([^\]]+)\]", stderr)
+            if phase_match:
+                diag_phase = phase_match.group(1)
+            message = stderr.strip() or diag_code
+            item["error_line"] = extract_error_line(message, item.get("source_code", ""))
+
+            if metadata.expects_negative:
+                if t262.can_pass_compile_negative(metadata, diag_code, diag_phase):
+                    reason = (
+                        f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} "
+                        "rejected during compilation"
+                    )
+                    return make_negative_pass_record(
+                        item,
+                        metadata.negative_phase,
+                        metadata.negative_type,
+                        reason,
+                        actual=stderr,
+                        stderr=stderr,
+                    )
+                verified, oracle_reason, oracle_output = _verify_compile_negative_with_node(
+                    item, metadata, tmp_dir
+                )
+                if verified:
+                    return make_negative_pass_record(
+                        item,
+                        metadata.negative_phase,
+                        metadata.negative_type,
+                        oracle_reason,
+                        actual=oracle_reason,
+                        stderr=f"{stderr}\n[node oracle]\n{oracle_output}",
+                    )
+                if metadata.expects_compile_negative:
+                    unverified_code, unverified_feature, unverified_reason = _negative_compile_mismatch_classification(metadata)
+                else:
+                    unverified_code, unverified_feature, unverified_reason = _negative_unverified_classification(metadata)
+                return make_unsupported_record(
+                    item,
+                    unverified_code,
+                    unverified_feature,
+                    f"{unverified_reason}: {oracle_reason}",
+                    stderr=stderr,
+                )
+
+            feature = t262.feature_label(diag_code, message, str(item["file_path"]), diag_phase)
+            if diag_code == "BackendIo":
+                return make_blocked_record(item, diag_code, feature, message, stderr=stderr)
+            if diag_code == "InvariantViolation":
+                return make_fail_record(item, diag_code, message, stderr=stderr)
+            return make_unsupported_record(item, diag_code, feature, message, stderr=stderr)
+
+        def run_legacy_jsonl_compile_only_item(item):
+            if "build_source" not in item:
+                prepared = prepare_jsonl_item((item.get("id", 0), item["file_path"]))
+                if prepared["type"] == "early_record":
+                    return prepared["record_status"]
+                item = prepared["item"]
+
+            thread_tmp = Path(tempfile.mkdtemp(dir=tmp_dir))
+            try:
+                build_input = thread_tmp / "in.js"
+                build_input.write_text(item["build_source"], encoding="utf-8")
+                out_wasm = thread_tmp / "out.wasm"
+                build_result = subprocess.run(
+                    [
+                        "timeout",
+                        "8s",
+                        str(ts2wasm_binary()),
+                        "build",
+                        str(build_input),
+                        "-o",
+                        str(out_wasm),
+                    ],
+                    capture_output=True,
+                    text=True,
+                    cwd=REPO_ROOT,
+                )
+                return classify_legacy_compile_result(item, build_result)
+            finally:
+                shutil.rmtree(thread_tmp, ignore_errors=True)
+
         def run_legacy_jsonl_batch(jsonl_out, batch_items):
+            if not semantic_check:
+                with ThreadPoolExecutor(max_workers=jobs) as executor:
+                    futures = {
+                        executor.submit(run_legacy_jsonl_compile_only_item, item): item
+                        for item in batch_items
+                    }
+                    for future in as_completed(futures):
+                        record, status = future.result()
+                        consume_record(jsonl_out, record, status)
+                return
+
             with ThreadPoolExecutor(max_workers=jobs) as executor:
                 futures = {
                     executor.submit(t262.process_one_test, item["file_path"], tmp_dir, False): item
@@ -2599,7 +2723,10 @@ def main():
                 if not server_mode:
                     run_legacy_jsonl_batch(
                         jsonl_out,
-                        [{"file_path": file_path} for file_path in files],
+                        [
+                            {"id": index, "file_path": file_path, "started_at": time.perf_counter()}
+                            for index, file_path in enumerate(files)
+                        ],
                     )
                 else:
                     prepared = [None] * len(files)
