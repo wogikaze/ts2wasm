@@ -1362,6 +1362,29 @@ fn source_mentions_identifier(source: &str, name: &str) -> bool {
     let needle = name.as_bytes();
     let mut index = 0;
     while index + needle.len() <= bytes.len() {
+        match bytes[index] {
+            b'\'' | b'"' => {
+                index = skip_quoted_source(bytes, index, bytes[index]);
+                continue;
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'/') => {
+                index += 2;
+                while index < bytes.len() && bytes[index] != b'\n' && bytes[index] != b'\r' {
+                    index += 1;
+                }
+                continue;
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'*') => {
+                index += 2;
+                while index + 1 < bytes.len() && !(bytes[index] == b'*' && bytes[index + 1] == b'/')
+                {
+                    index += 1;
+                }
+                index = (index + 2).min(bytes.len());
+                continue;
+            }
+            _ => {}
+        }
         if &bytes[index..index + needle.len()] == needle
             && (index == 0 || !is_identifier_part(bytes[index - 1]))
             && (index + needle.len() == bytes.len()
@@ -1372,6 +1395,21 @@ fn source_mentions_identifier(source: &str, name: &str) -> bool {
         index += 1;
     }
     false
+}
+
+fn skip_quoted_source(bytes: &[u8], start: usize, quote: u8) -> usize {
+    let mut index = start + 1;
+    while index < bytes.len() {
+        if bytes[index] == b'\\' {
+            index = (index + 2).min(bytes.len());
+            continue;
+        }
+        if bytes[index] == quote {
+            return index + 1;
+        }
+        index += 1;
+    }
+    bytes.len()
 }
 
 fn is_identifier_part(byte: u8) -> bool {

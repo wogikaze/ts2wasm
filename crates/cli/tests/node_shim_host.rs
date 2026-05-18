@@ -586,6 +586,12 @@ fn dynamic_direct_eval_let_initializer_ignores_unreferenced_later_bindings() {
 }
 
 #[test]
+fn dynamic_direct_eval_ignores_later_binding_name_inside_source_string_literal() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-tdz-name-in-string-node-shim.ts";
+    assert_node_shim_stdout(fixture, "later\nafter\n");
+}
+
+#[test]
 fn dynamic_direct_eval_bridges_nested_objects_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-nested-object-node-shim.ts";
     assert_node_shim_stdout(fixture, "7\nok\nundefined\n");
