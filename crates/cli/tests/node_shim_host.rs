@@ -635,6 +635,12 @@ fn dynamic_direct_eval_strict_caller_async_function_eval_is_syntax_error_node_sh
 }
 
 #[test]
+fn dynamic_direct_eval_strict_caller_ignores_restricted_words_in_strings_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-strict-caller-string-restricted-words-node-shim.ts";
+    assert_node_shim_stdout(fixture, "var arguments\nafter\n");
+}
+
+#[test]
 fn dynamic_direct_eval_rejects_tdz_env_descriptor_conflict() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-tdz-conflict-unsupported.ts";
     assert_build_fails_with(fixture, "UnsupportedEval", "TDZ-aware env descriptors");
@@ -1243,6 +1249,51 @@ function readVarDeclarationText(source, index) {
   return source.slice(index);
 }
 
+function codeKeywordMatches(source, keyword) {
+  const matches = [];
+  for (let i = 0; i < source.length; ) {
+    const ch = source[i];
+    const next = source[i + 1];
+    if (ch === '"' || ch === "'" || ch === '`') {
+      const quote = ch;
+      i += 1;
+      while (i < source.length) {
+        if (source[i] === '\\') {
+          i += 2;
+        } else if (source[i] === quote) {
+          i += 1;
+          break;
+        } else {
+          i += 1;
+        }
+      }
+      continue;
+    }
+    if (ch === '/' && next === '/') {
+      i += 2;
+      while (i < source.length && source[i] !== '\n' && source[i] !== '\r') i += 1;
+      continue;
+    }
+    if (ch === '/' && next === '*') {
+      i += 2;
+      while (i + 1 < source.length && !(source[i] === '*' && source[i + 1] === '/')) i += 1;
+      i = Math.min(source.length, i + 2);
+      continue;
+    }
+    if (
+      source.startsWith(keyword, i) &&
+      (i === 0 || !isIdentifierPart(source[i - 1])) &&
+      (i + keyword.length >= source.length || !isIdentifierPart(source[i + keyword.length]))
+    ) {
+      matches.push(i);
+      i += keyword.length;
+      continue;
+    }
+    i += 1;
+  }
+  return matches;
+}
+
 function directEvalEnvKey(bindings) {
   return bindings
     .map((binding) => `${binding.name}:${binding.cellRaw}`)
@@ -1255,13 +1306,47 @@ function collectVariableDeclarationBindingNames(source, keyword) {
   const addName = (name) => {
     if (!names.includes(name)) names.push(name);
   };
-  const keywordPattern = new RegExp(`\\b${keyword}\\b`, 'g');
-  for (const match of source.matchAll(keywordPattern)) {
-    const declarationText = readVarDeclarationText(source, match.index + match[0].length);
+  for (const keywordIndex of codeKeywordMatches(source, keyword)) {
+    const declarationText = readVarDeclarationText(source, keywordIndex + keyword.length);
     for (const declarator of splitTopLevelComma(declarationText)) {
       const equalsIndex = topLevelEqualsIndex(declarator);
       const pattern = (equalsIndex === -1 ? declarator : declarator.slice(0, equalsIndex)).trim();
       addBindingNamesFromPattern(pattern, addName);
+    }
+  }
+  return names;
+}
+
+function asyncFunctionDeclarationStart(source, functionIndex) {
+  let asyncEnd = functionIndex;
+  while (asyncEnd > 0 && /\s/.test(source[asyncEnd - 1])) asyncEnd -= 1;
+  const asyncStart = asyncEnd - 'async'.length;
+  if (
+    asyncStart >= 0 &&
+    source.slice(asyncStart, asyncEnd) === 'async' &&
+    (asyncStart === 0 || !isIdentifierPart(source[asyncStart - 1]))
+  ) {
+    return asyncStart;
+  }
+  return functionIndex;
+}
+
+function collectFunctionDeclarationNames(source) {
+  const names = [];
+  const addName = (name) => {
+    if (!names.includes(name)) names.push(name);
+  };
+  for (const functionIndex of codeKeywordMatches(source, 'function')) {
+    const declarationStart = asyncFunctionDeclarationStart(source, functionIndex);
+    let prior = declarationStart - 1;
+    while (prior >= 0 && /\s/.test(source[prior])) prior -= 1;
+    if (prior >= 0 && !';{}'.includes(source[prior])) {
+      continue;
+    }
+    const rest = source.slice(functionIndex);
+    const match = /^function\s*\*?\s+([A-Za-z_$][0-9A-Za-z_$]*)\s*\(/.exec(rest);
+    if (match !== null) {
+      addName(match[1]);
     }
   }
   return names;
@@ -1272,19 +1357,20 @@ function collectEvalDeclarationNames(source) {
   const addName = (name) => {
     if (!names.includes(name)) names.push(name);
   };
-  for (const match of source.matchAll(/\b(?:async\s+)?function\s*\*?\s+([A-Za-z_$][0-9A-Za-z_$]*)\s*\(/g)) {
-    let prior = match.index - 1;
-    while (prior >= 0 && /\s/.test(source[prior])) prior -= 1;
-    if (prior >= 0 && !';{}'.includes(source[prior])) {
-      continue;
-    }
-    addName(match[1]);
-  }
+  for (const name of collectFunctionDeclarationNames(source)) addName(name);
   return names;
 }
 
 function strictEvalHasDeleteIdentifier(source) {
-  return /\bdelete\s+[A-Za-z_$][0-9A-Za-z_$]*\b(?!\s*[.[(])/.test(source);
+  for (const keywordIndex of codeKeywordMatches(source, 'delete')) {
+    let index = skipWhitespace(source, keywordIndex + 'delete'.length);
+    if (!isIdentifierStart(source[index])) continue;
+    index += 1;
+    while (index < source.length && isIdentifierPart(source[index])) index += 1;
+    const next = skipWhitespace(source, index);
+    if (next >= source.length || !'.[('.includes(source[next])) return true;
+  }
+  return false;
 }
 
 function strictEvalHasRestrictedVariableBinding(source) {
@@ -1300,7 +1386,7 @@ function strictEvalHasRestrictedVariableBinding(source) {
 function strictEvalHasRestrictedBinding(source) {
   return (
     strictEvalHasRestrictedVariableBinding(source) ||
-    /\b(?:async\s+)?function\s*\*?\s+(?:arguments|eval)\b/.test(source)
+    collectFunctionDeclarationNames(source).some((name) => name === 'arguments' || name === 'eval')
   );
 }
 

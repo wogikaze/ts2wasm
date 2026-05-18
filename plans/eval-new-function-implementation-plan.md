@@ -563,7 +563,9 @@ Exit criteria:
   errors such as `delete Identifier`, including `delete arguments` when the env
   descriptor carries an `arguments` compatibility binding. Strict eval source
   that binds `arguments` or `eval` is rejected before the host shim falls back
-  to compatibility bindings. Direct wasm access to those runtime-created
+  to compatibility bindings, using code keyword scanning that skips string
+  literals and comments instead of regexing the whole source text. Direct wasm
+  access to those runtime-created
   bindings remains open.
   Lowering also rejects dynamic direct eval before
   not-yet-initialized caller env bindings so the current host lane cannot bypass
