@@ -415,6 +415,21 @@ fn dynamic_direct_eval_var_declaration_writes_back_var_binding_through_node_shim
 }
 
 #[test]
+fn dynamic_direct_eval_new_var_declaration_is_visible_to_later_eval_through_node_shim_host_import()
+{
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-new-var-declaration-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\n7\n");
+}
+
+#[test]
+fn dynamic_direct_eval_new_function_declaration_is_visible_to_later_eval_through_node_shim_host_import()
+ {
+    let fixture =
+        "fixtures/core-semantics/direct-eval-dynamic-new-function-declaration-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\n7\n");
+}
+
+#[test]
 fn dynamic_direct_eval_class_method_reads_arguments_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-class-method-arguments-node-shim.ts";
     assert_node_shim_stdout(fixture, "9:1\n");
@@ -617,6 +632,7 @@ const hostFunctionHandleValues = new WeakMap();
 const hostArrayHandles = new WeakMap();
 const hostObjectHandles = new WeakMap();
 const hostObjectValues = new Map();
+const directEvalExtraBindings = new Map();
 const decoder = new TextDecoder();
 const encoder = new TextEncoder();
 let stdout = '';
@@ -967,6 +983,27 @@ function uniqueInternalName(base, names) {
   return name;
 }
 
+function directEvalEnvKey(bindings) {
+  return bindings
+    .map((binding) => `${binding.name}:${binding.cellRaw}`)
+    .sort()
+    .join('|');
+}
+
+function collectEvalDeclarationNames(source) {
+  const names = [];
+  const addName = (name) => {
+    if (!names.includes(name)) names.push(name);
+  };
+  for (const match of source.matchAll(/\bvar\s+([A-Za-z_$][0-9A-Za-z_$]*)/g)) {
+    addName(match[1]);
+  }
+  for (const match of source.matchAll(/\bfunction\s+([A-Za-z_$][0-9A-Za-z_$]*)\s*\(/g)) {
+    addName(match[1]);
+  }
+  return names;
+}
+
 function evalWithEnvDescriptor(source, envRaw) {
   if (envRaw === TAG_UNDEFINED) {
     return eval(source);
@@ -983,8 +1020,24 @@ function evalWithEnvDescriptor(source, envRaw) {
 
   const names = bindings.map((binding) => binding.name);
   const thisBinding = bindings.find((binding) => binding.name === 'this');
+  const envKey = directEvalEnvKey(bindings);
+  const extraMap = directEvalExtraBindings.get(envKey) ?? new Map();
+  const extraBindings = [];
+  for (const [name, value] of extraMap.entries()) {
+    if (!names.includes(name)) {
+      extraBindings.push({ name, value });
+      names.push(name);
+    }
+  }
+  for (const name of collectEvalDeclarationNames(source)) {
+    if (!names.includes(name)) {
+      extraBindings.push({ name, value: undefined });
+      names.push(name);
+    }
+  }
   const formalBindings = bindings.filter((binding) => binding.name !== 'this');
-  const formalNames = formalBindings.map((binding) => binding.name);
+  const allFormalBindings = formalBindings.concat(extraBindings);
+  const formalNames = allFormalBindings.map((binding) => binding.name);
   const sourceName = uniqueInternalName('__ts2wasm_eval_source', names);
   const resultName = uniqueInternalName('__ts2wasm_eval_result', [...names, sourceName]);
   const wrapper = Function(
@@ -992,15 +1045,20 @@ function evalWithEnvDescriptor(source, envRaw) {
     ...formalNames,
     `let ${resultName} = eval(${sourceName}); return [${resultName}, ${formalNames.join(', ')}];`,
   );
-  const values = formalBindings.map((binding) => binding.value);
+  const values = allFormalBindings.map((binding) => binding.value);
   const thisValue = thisBinding === undefined ? undefined : thisBinding.value;
   const [result, ...updatedValues] = wrapper.call(thisValue, source, ...values);
 
-  for (let i = 0; i < formalBindings.length; i += 1) {
-    if (!Object.is(formalBindings[i].value, updatedValues[i])) {
-      writeEnvCellRaw(formalBindings[i].cellRaw, encodeHostValue(updatedValues[i]));
+  for (let i = 0; i < allFormalBindings.length; i += 1) {
+    if (!Object.is(allFormalBindings[i].value, updatedValues[i])) {
+      if (allFormalBindings[i].cellRaw !== undefined) {
+        writeEnvCellRaw(allFormalBindings[i].cellRaw, encodeHostValue(updatedValues[i]));
+      } else {
+        extraMap.set(allFormalBindings[i].name, updatedValues[i]);
+      }
     }
   }
+  if (extraMap.size > 0) directEvalExtraBindings.set(envKey, extraMap);
 
   return result;
 }
