@@ -283,9 +283,40 @@ fn compiler_records_eval_declarations_in_completion_plan() {
         panic!("expected eval completion plan: {body:?}");
     };
 
+    assert_eq!(
+        plan.scope_mode,
+        ts2wasm_ir::builtin_resolved::EvalScopeMode::Caller
+    );
+    assert!(!plan.caller_is_strict);
+    assert!(!plan.eval_is_strict);
     assert_eq!(plan.declarations.var_names, ["value", "read"]);
     assert_eq!(plan.declarations.function_hoists.len(), 1);
     assert_eq!(plan.declarations.function_hoists[0].name, "read");
+}
+
+#[test]
+fn compiler_records_indirect_eval_global_completion_context() {
+    let expanded = parse_resolve_and_expand_dynamic_code(
+        r#"
+        let result = (0, eval)("1 + 2");
+        "#,
+    );
+    let ts2wasm_ir::ResolvedStmt::Let(_, ts2wasm_ir::ResolvedExpr::EvalCompletion(plan)) =
+        &expanded[0]
+    else {
+        panic!("expected eval completion plan: {expanded:?}");
+    };
+
+    assert_eq!(
+        plan.scope_mode,
+        ts2wasm_ir::builtin_resolved::EvalScopeMode::Global {
+            realm: ts2wasm_ir::builtin_resolved::EvalRealm::Current
+        }
+    );
+    assert!(!plan.caller_is_strict);
+    assert!(!plan.eval_is_strict);
+    assert!(plan.declarations.var_names.is_empty());
+    assert!(plan.declarations.function_hoists.is_empty());
 }
 
 #[test]
@@ -337,21 +368,26 @@ fn compiler_keeps_strict_caller_eval_var_declarations_local() {
         let result = eval("var value = 2; value");
         "#,
     );
+    let ts2wasm_ir::ResolvedStmt::Let(name, ts2wasm_ir::ResolvedExpr::EvalCompletion(plan)) =
+        &expanded[1]
+    else {
+        panic!("expected strict eval completion plan: {expanded:?}");
+    };
+    assert_eq!(name, "result");
+    assert_eq!(
+        plan.scope_mode,
+        ts2wasm_ir::builtin_resolved::EvalScopeMode::Caller
+    );
+    assert!(plan.caller_is_strict);
+    assert!(plan.eval_is_strict);
     assert!(matches!(
-        &expanded[1],
-        ts2wasm_ir::ResolvedStmt::Let(
-            name,
-            ts2wasm_ir::ResolvedExpr::EvalCompletion(steps)
-        ) if name == "result"
-            && matches!(
-                steps.as_slice(),
-                [
-                    ts2wasm_ir::builtin_resolved::EvalCompletionStep::LexicalLet { name, .. },
-                    ts2wasm_ir::builtin_resolved::EvalCompletionStep::Value(
-                        ts2wasm_ir::ResolvedExpr::Ident(read_name)
-                    )
-                ] if name == "value" && read_name == "value"
+        plan.as_slice(),
+        [
+            ts2wasm_ir::builtin_resolved::EvalCompletionStep::LexicalLet { name, .. },
+            ts2wasm_ir::builtin_resolved::EvalCompletionStep::Value(
+                ts2wasm_ir::ResolvedExpr::Ident(read_name)
             )
+        ] if name == "value" && read_name == "value"
     ));
 }
 

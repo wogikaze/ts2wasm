@@ -281,6 +281,18 @@ impl super::Resolver {
         &mut self,
         plan: &crate::builtin_resolved::EvalCompletionPlan,
     ) -> Result<LoweredExpr, Diagnostic> {
+        if plan.scope_mode != crate::builtin_resolved::EvalScopeMode::Caller
+            && (!plan.declarations.is_empty()
+                || eval_completion_steps_have_caller_landings(plan.steps()))
+        {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedEval,
+                message: "global eval completion cannot land declarations in the caller scope"
+                    .to_owned(),
+                span: Some(Span::generated("eval_completion_scope")),
+                phase: None,
+            });
+        }
         let completion = self.alloc_temp();
         self.ctx.symbols.scopes.push(HashMap::new());
         let saved_class_constructor_ids = self.ctx.classes.class_constructor_ids.clone();
@@ -1267,6 +1279,72 @@ fn dynamic_direct_eval_tdz_diagnostic(name: &str, span: Span) -> Diagnostic {
         span: Some(span),
         phase: None,
     }
+}
+
+fn eval_completion_steps_have_caller_landings(
+    steps: &[crate::builtin_resolved::EvalCompletionStep],
+) -> bool {
+    use crate::builtin_resolved::EvalCompletionStep;
+
+    steps.iter().any(|step| match step {
+        EvalCompletionStep::VarLet { .. } | EvalCompletionStep::FunctionDecl { .. } => true,
+        EvalCompletionStep::Block(steps)
+        | EvalCompletionStep::While {
+            body_steps: steps, ..
+        }
+        | EvalCompletionStep::DoWhile {
+            body_steps: steps, ..
+        }
+        | EvalCompletionStep::ForOf {
+            body_steps: steps, ..
+        }
+        | EvalCompletionStep::ForIn {
+            body_steps: steps, ..
+        } => eval_completion_steps_have_caller_landings(steps),
+        EvalCompletionStep::If {
+            then_steps,
+            else_steps,
+            ..
+        } => {
+            eval_completion_steps_have_caller_landings(then_steps)
+                || eval_completion_steps_have_caller_landings(else_steps)
+        }
+        EvalCompletionStep::For {
+            init, body_steps, ..
+        } => {
+            init.as_deref().is_some_and(|step| {
+                eval_completion_steps_have_caller_landings(std::slice::from_ref(step))
+            }) || eval_completion_steps_have_caller_landings(body_steps)
+        }
+        EvalCompletionStep::Switch { cases, .. } => cases
+            .iter()
+            .any(|(_, steps)| eval_completion_steps_have_caller_landings(steps)),
+        EvalCompletionStep::TryCatch {
+            try_steps,
+            catch_steps,
+            finally_steps,
+            ..
+        } => {
+            eval_completion_steps_have_caller_landings(try_steps)
+                || catch_steps
+                    .as_deref()
+                    .is_some_and(eval_completion_steps_have_caller_landings)
+                || finally_steps
+                    .as_deref()
+                    .is_some_and(eval_completion_steps_have_caller_landings)
+        }
+        EvalCompletionStep::Labeled { body, .. } => {
+            eval_completion_steps_have_caller_landings(std::slice::from_ref(body.as_ref()))
+        }
+        EvalCompletionStep::Value(_)
+        | EvalCompletionStep::Empty(_)
+        | EvalCompletionStep::ClassDecl { .. }
+        | EvalCompletionStep::Throw(_)
+        | EvalCompletionStep::Break { .. }
+        | EvalCompletionStep::Continue { .. }
+        | EvalCompletionStep::LexicalLet { .. }
+        | EvalCompletionStep::DestructureLet { .. } => false,
+    })
 }
 
 /// Check if a name is a known global builtin function (for metadata queries).

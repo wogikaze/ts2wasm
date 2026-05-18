@@ -511,6 +511,9 @@ pub enum EvalSource {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EvalCompletionPlan {
+    pub scope_mode: EvalScopeMode,
+    pub caller_is_strict: bool,
+    pub eval_is_strict: bool,
     pub declarations: EvalDeclarationPlan,
     pub steps: Vec<EvalCompletionStep>,
 }
@@ -518,6 +521,9 @@ pub struct EvalCompletionPlan {
 impl EvalCompletionPlan {
     pub fn new(steps: Vec<EvalCompletionStep>) -> Self {
         Self {
+            scope_mode: EvalScopeMode::Caller,
+            caller_is_strict: false,
+            eval_is_strict: false,
             declarations: EvalDeclarationPlan::default(),
             steps,
         }
@@ -528,6 +534,25 @@ impl EvalCompletionPlan {
         steps: Vec<EvalCompletionStep>,
     ) -> Self {
         Self {
+            scope_mode: EvalScopeMode::Caller,
+            caller_is_strict: false,
+            eval_is_strict: false,
+            declarations,
+            steps,
+        }
+    }
+
+    pub fn with_eval_context(
+        scope_mode: EvalScopeMode,
+        caller_is_strict: bool,
+        eval_is_strict: bool,
+        declarations: EvalDeclarationPlan,
+        steps: Vec<EvalCompletionStep>,
+    ) -> Self {
+        Self {
+            scope_mode,
+            caller_is_strict,
+            eval_is_strict,
             declarations,
             steps,
         }
@@ -563,6 +588,12 @@ impl<'a> IntoIterator for &'a EvalCompletionPlan {
 pub struct EvalDeclarationPlan {
     pub var_names: Vec<String>,
     pub function_hoists: Vec<EvalFunctionHoist>,
+}
+
+impl EvalDeclarationPlan {
+    pub fn is_empty(&self) -> bool {
+        self.var_names.is_empty() && self.function_hoists.is_empty()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

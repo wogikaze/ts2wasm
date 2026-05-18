@@ -844,6 +844,15 @@ fn expand_static_eval_source(
         expr: extract_completion_value(
             &program,
             builtin_resolved,
+            if direct_caller_scope {
+                ts2wasm_ir::builtin_resolved::EvalScopeMode::Caller
+            } else {
+                ts2wasm_ir::builtin_resolved::EvalScopeMode::Global {
+                    realm: ts2wasm_ir::builtin_resolved::EvalRealm::Current,
+                }
+            },
+            caller_is_strict,
+            eval_is_strict,
             leak_var_declarations,
             &eval_declarations,
             function_hoists,
@@ -1156,6 +1165,9 @@ fn function_constructor_syntax_error(message: &str, span: ts2wasm_source::Span) 
 fn extract_completion_value(
     ast_stmts: &[Stmt],
     stmts: Vec<ResolvedStmt>,
+    scope_mode: ts2wasm_ir::builtin_resolved::EvalScopeMode,
+    caller_is_strict: bool,
+    eval_is_strict: bool,
     leak_var_declarations: bool,
     eval_declarations: &[String],
     function_hoists: Vec<EvalFunctionHoist>,
@@ -1167,7 +1179,10 @@ fn extract_completion_value(
         leak_var_declarations,
     ));
     Ok(ResolvedExpr::EvalCompletion(
-        EvalCompletionPlan::with_declarations(
+        EvalCompletionPlan::with_eval_context(
+            scope_mode,
+            caller_is_strict,
+            eval_is_strict,
             EvalDeclarationPlan {
                 var_names: eval_declarations.to_vec(),
                 function_hoists: function_hoists.clone(),
@@ -1536,7 +1551,10 @@ fn rewrite_eval_expr_global_collisions(
                 collisions,
                 scopes,
             );
-            ResolvedExpr::EvalCompletion(EvalCompletionPlan::with_declarations(
+            ResolvedExpr::EvalCompletion(EvalCompletionPlan::with_eval_context(
+                plan.scope_mode,
+                plan.caller_is_strict,
+                plan.eval_is_strict,
                 declarations,
                 rewrite_eval_steps_global_collisions(plan.steps, collisions, scopes),
             ))
