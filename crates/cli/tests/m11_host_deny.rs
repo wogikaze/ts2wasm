@@ -806,6 +806,13 @@ fn host_deny_rejects_dynamic_direct_eval_function_declaration_writeback_host_lan
 }
 
 #[test]
+fn host_deny_rejects_dynamic_direct_eval_function_property_call_host_lane() {
+    assert_host_deny_rejects(
+        "core-semantics/direct-eval-dynamic-function-property-call-node-shim.ts",
+    );
+}
+
+#[test]
 fn host_deny_rejects_dynamic_direct_eval_var_declaration_writeback_host_lane() {
     assert_host_deny_rejects(
         "core-semantics/direct-eval-dynamic-var-declaration-writeback-node-shim.ts",

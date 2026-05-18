@@ -3791,15 +3791,16 @@ impl super::super::Resolver {
                             .map(ResolvedArrayElement::Present)
                             .collect(),
                     );
+                    let receiver = if self.ctx.facts.env_cell_locals.contains(&obj_local) {
+                        LoweredExpr::EnvCellGet(obj_local, Span::generated("env_cell_get"))
+                    } else {
+                        LoweredExpr::Local(obj_local, Span::generated("local"))
+                    };
                     return Ok(LoweredExpr::RuntimeCall {
                         intrinsic: RuntimeFn::FunctionCallMethodHost,
                         args: vec![
-                            object_kernel::ordinary_get(
-                                LoweredExpr::Local(obj_local, Span::generated("local")),
-                                method,
-                                span,
-                            ),
-                            LoweredExpr::Local(obj_local, Span::generated("local")),
+                            object_kernel::ordinary_get(receiver.clone(), method, span),
+                            receiver,
                             self.lower_expr(&args_array)?,
                         ],
                         span: Span::generated("runtime_call"),

@@ -40,18 +40,28 @@ impl super::super::Resolver {
             &mut self.ctx,
             local,
         );
-        let expr = Box::new(self.lower_expr(expr)?);
+        let lowered_expr = Box::new(self.lower_expr(expr)?);
         self.ctx.facts.nullish_locals.remove(&local);
+        crate::lowered::resolver::expr::facts::update_host_function_handle_local(
+            &mut self.ctx,
+            local,
+            expr,
+        );
+        crate::lowered::resolver::expr::facts::update_host_external_object_local(
+            &mut self.ctx,
+            local,
+            expr,
+        );
         if self.ctx.facts.env_cell_locals.contains(&local) {
             Ok(LoweredExpr::EnvCellSet {
                 cell: local,
-                expr,
+                expr: lowered_expr,
                 span: Span::generated("env_cell_set"),
             })
         } else {
             Ok(LoweredExpr::Assign {
                 local,
-                expr,
+                expr: lowered_expr,
                 span: Span::generated("assign"),
             })
         }

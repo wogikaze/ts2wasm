@@ -428,12 +428,14 @@ impl super::super::Resolver {
                     .map(ResolvedArrayElement::Present)
                     .collect(),
             );
+            let handle = if self.ctx.facts.env_cell_locals.contains(&local_id) {
+                LoweredExpr::EnvCellGet(local_id, Span::generated("env_cell_get"))
+            } else {
+                LoweredExpr::Local(local_id, Span::generated("local"))
+            };
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::FunctionCallHost,
-                args: vec![
-                    LoweredExpr::Local(local_id, Span::generated("local")),
-                    self.lower_expr(&args_array)?,
-                ],
+                args: vec![handle, self.lower_expr(&args_array)?],
                 span: Span::generated("runtime_call"),
             });
         }

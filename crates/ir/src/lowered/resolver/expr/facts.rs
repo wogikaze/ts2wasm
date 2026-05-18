@@ -109,6 +109,11 @@ fn resolved_expr_returns_host_external_object(ctx: &LoweringCtx, expr: &Resolved
         ResolvedExpr::Call { callee, .. } => {
             resolved_expr_is_dynamic_function_constructor(ctx, callee)
         }
+        ResolvedExpr::Eval { plan }
+            if matches!(plan.source, crate::builtin_resolved::EvalSource::Runtime(_)) =>
+        {
+            true
+        }
         ResolvedExpr::New { class_name, .. } => ctx
             .resolve_local(class_name)
             .ok()
