@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_ir::builtin_resolved::{
-    ClassMethod, EvalCompletionStep, EvalFunctionHoist, EvalKind, EvalSource,
+    ClassMethod, EvalCompletionStep, EvalFragmentPlan, EvalFunctionHoist, EvalKind, EvalSource,
     FunctionConstructorKind, ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedParam,
     ResolvedStmt,
 };
@@ -394,9 +394,12 @@ fn expand_expr(
 ) -> Result<ResolvedExpr, Diagnostic> {
     match expr {
         ResolvedExpr::Eval {
-            kind: EvalKind::Direct,
-            source: EvalSource::StaticLiteral(ref src),
-            ..
+            plan:
+                EvalFragmentPlan {
+                    kind: EvalKind::Direct,
+                    source: EvalSource::StaticLiteral(ref src),
+                    ..
+                },
         } => {
             let expanded = expand_static_eval_source(src, &ctx.visible_bindings(), true)?;
             for name in &expanded.caller_var_declarations {
@@ -405,9 +408,12 @@ fn expand_expr(
             Ok(expanded.expr)
         }
         ResolvedExpr::Eval {
-            kind: EvalKind::Indirect,
-            source: EvalSource::StaticLiteral(ref src),
-            ..
+            plan:
+                EvalFragmentPlan {
+                    kind: EvalKind::Indirect,
+                    source: EvalSource::StaticLiteral(ref src),
+                    ..
+                },
         } => {
             let caller_bindings = ctx.visible_bindings();
             expand_static_eval_source(src, &caller_bindings, false).map(|expanded| {
@@ -1460,21 +1466,16 @@ fn rewrite_eval_expr_global_collisions(
         ResolvedExpr::EvalCompletion(steps) => ResolvedExpr::EvalCompletion(
             rewrite_eval_steps_global_collisions(steps, collisions, scopes),
         ),
-        ResolvedExpr::Eval {
-            kind,
-            source,
-            caller_is_strict,
-            span,
-        } => ResolvedExpr::Eval {
-            kind,
-            source: match source {
-                EvalSource::Runtime(expr) => EvalSource::Runtime(Box::new(
-                    rewrite_eval_expr_global_collisions(*expr, collisions, scopes),
-                )),
-                EvalSource::StaticLiteral(src) => EvalSource::StaticLiteral(src),
+        ResolvedExpr::Eval { plan } => ResolvedExpr::Eval {
+            plan: EvalFragmentPlan {
+                source: match plan.source {
+                    EvalSource::Runtime(expr) => EvalSource::Runtime(Box::new(
+                        rewrite_eval_expr_global_collisions(*expr, collisions, scopes),
+                    )),
+                    EvalSource::StaticLiteral(src) => EvalSource::StaticLiteral(src),
+                },
+                ..plan
             },
-            caller_is_strict,
-            span,
         },
         ResolvedExpr::Number(_)
         | ResolvedExpr::DecimalNumber(_)

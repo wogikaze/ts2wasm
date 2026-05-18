@@ -316,7 +316,10 @@ The current implementation has several partial dynamic-code paths:
 
 - static string direct `eval(...)` can be expanded at compile time for the
   supported expression-completion and caller-local mutation slices, including
-  function-body follow-up reads of eval-created `var` bindings;
+  function-body follow-up reads of eval-created `var` bindings. Resolved eval
+  expressions now carry kind/source/strict/span metadata through an explicit
+  `EvalFragmentPlan` object, but the richer scope/declaration/completion plan
+  is still future work;
 - static string indirect eval shapes `(0, eval)(...)`, `globalThis.eval(...)`,
   and `globalThis["eval"](...)` are classified by resolver and expanded through
   the AOT eval lane without Node host imports for the supported literal subset;

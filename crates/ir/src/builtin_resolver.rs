@@ -34,8 +34,8 @@ use super::binding_pattern::parse_binding_pattern;
 use super::builtin::BuiltinId;
 use super::builtin::BuiltinPropertyId;
 use super::builtin_resolved::{
-    ClassMethod, ClassMethodKind, EvalKind, EvalSource, FunctionConstructorKind, ResolvedExpr,
-    ResolvedParam, ResolvedStmt,
+    ClassMethod, ClassMethodKind, EvalFragmentPlan, EvalKind, EvalSource, FunctionConstructorKind,
+    ResolvedExpr, ResolvedParam, ResolvedStmt,
 };
 
 const BIGINT_FROM_VALUE_RUNTIME_CALL: &str = "__ts2wasm_bigint_from_value";
@@ -1810,10 +1810,12 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     ))
                 };
                 return Ok(ResolvedExpr::Eval {
-                    kind,
-                    source,
-                    caller_is_strict: false, // TODO: propagate strict mode from parser
-                    span: *span,
+                    plan: EvalFragmentPlan {
+                        kind,
+                        source,
+                        caller_is_strict: false, // TODO: propagate strict mode from parser
+                        span: *span,
+                    },
                 });
             }
             if is_test262_assert_type_error_non_constructor_probe(callee, args) {

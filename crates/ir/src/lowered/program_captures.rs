@@ -142,8 +142,8 @@ pub(crate) fn collect_arrow_captures(
                 }
             }
         }
-        ResolvedExpr::Eval { source, .. } => {
-            if let EvalSource::Runtime(expr) = source {
+        ResolvedExpr::Eval { plan } => {
+            if let EvalSource::Runtime(expr) = &plan.source {
                 collect_arrow_captures(expr, params, captures);
             }
         }

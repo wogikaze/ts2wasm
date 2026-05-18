@@ -210,11 +210,14 @@ fn stmt_contains_dynamic_direct_eval(stmt: &ResolvedStmt) -> bool {
 fn expr_contains_dynamic_direct_eval(expr: &ResolvedExpr) -> bool {
     match expr {
         ResolvedExpr::Eval {
-            kind: EvalKind::Direct,
-            source: EvalSource::Runtime(_),
-            ..
+            plan:
+                crate::builtin_resolved::EvalFragmentPlan {
+                    kind: EvalKind::Direct,
+                    source: EvalSource::Runtime(_),
+                    ..
+                },
         } => true,
-        ResolvedExpr::Eval { source, .. } => match source {
+        ResolvedExpr::Eval { plan } => match &plan.source {
             EvalSource::Runtime(expr) => expr_contains_dynamic_direct_eval(expr),
             EvalSource::StaticLiteral(_) => false,
         },

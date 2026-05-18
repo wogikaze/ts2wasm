@@ -624,14 +624,12 @@ mod tests {
     #[test]
     fn resolver_marks_unshadowed_direct_eval_for_builtin_resolution() {
         let builtins = parse_resolve_builtins("let value = eval(\"1 + 2\");");
-        let crate::ResolvedStmt::Let(_, crate::ResolvedExpr::Eval { kind, source, .. }) =
-            &builtins[0]
-        else {
+        let crate::ResolvedStmt::Let(_, crate::ResolvedExpr::Eval { plan }) = &builtins[0] else {
             panic!("expected resolver-marked eval expression: {builtins:?}");
         };
-        assert_eq!(*kind, crate::builtin_resolved::EvalKind::Direct);
+        assert_eq!(plan.kind, crate::builtin_resolved::EvalKind::Direct);
         assert!(
-            matches!(source, crate::builtin_resolved::EvalSource::StaticLiteral(value) if value == "1 + 2")
+            matches!(&plan.source, crate::builtin_resolved::EvalSource::StaticLiteral(value) if value == "1 + 2")
         );
     }
 
@@ -703,14 +701,13 @@ mod tests {
             "let value = globalThis[\"eval\"](\"1 + 2\");",
         ] {
             let builtins = parse_resolve_builtins(source_text);
-            let crate::ResolvedStmt::Let(_, crate::ResolvedExpr::Eval { kind, source, .. }) =
-                &builtins[0]
+            let crate::ResolvedStmt::Let(_, crate::ResolvedExpr::Eval { plan }) = &builtins[0]
             else {
                 panic!("expected indirect eval for {source_text}: {builtins:?}");
             };
-            assert_eq!(*kind, crate::builtin_resolved::EvalKind::Indirect);
+            assert_eq!(plan.kind, crate::builtin_resolved::EvalKind::Indirect);
             assert!(matches!(
-                source,
+                &plan.source,
                 crate::builtin_resolved::EvalSource::StaticLiteral(value) if value == "1 + 2"
             ));
         }
@@ -722,13 +719,13 @@ mod tests {
         let crate::ResolvedStmt::Let(_, expr) = &builtins[1] else {
             panic!("expected let statement: {builtins:?}");
         };
-        let crate::ResolvedExpr::Eval { kind, source, .. } = expr else {
+        let crate::ResolvedExpr::Eval { plan } = expr else {
             panic!("expected optional eval to become indirect eval: {builtins:?}");
         };
 
-        assert_eq!(*kind, crate::builtin_resolved::EvalKind::Indirect);
+        assert_eq!(plan.kind, crate::builtin_resolved::EvalKind::Indirect);
         assert!(matches!(
-            source,
+            &plan.source,
             crate::builtin_resolved::EvalSource::Runtime(_)
         ));
     }

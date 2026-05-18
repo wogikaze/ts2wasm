@@ -189,26 +189,25 @@ impl super::Resolver {
             ResolvedExpr::ClassExpr { .. } => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
             ResolvedExpr::Sequence(exprs) => self.lower_sequence_expr(exprs),
             ResolvedExpr::EvalCompletion(steps) => self.lower_eval_completion_expr(steps),
-            ResolvedExpr::Eval {
-                kind, source, span, ..
-            } => {
+            ResolvedExpr::Eval { plan } => {
                 // Emit a runtime call for eval — the host shim handles execution.
-                let source_expr = if let crate::builtin_resolved::EvalSource::StaticLiteral(s) =
-                    &source
-                {
-                    LoweredExpr::String(s.clone(), Span::generated("eval"))
-                } else if let crate::builtin_resolved::EvalSource::Runtime(source_expr) = &source {
-                    self.lower_expr(source_expr)?
-                } else {
-                    LoweredExpr::Undefined(Span::generated("eval"))
-                };
-                let intrinsic = match kind {
+                let source_expr =
+                    if let crate::builtin_resolved::EvalSource::StaticLiteral(s) = &plan.source {
+                        LoweredExpr::String(s.clone(), Span::generated("eval"))
+                    } else if let crate::builtin_resolved::EvalSource::Runtime(source_expr) =
+                        &plan.source
+                    {
+                        self.lower_expr(source_expr)?
+                    } else {
+                        LoweredExpr::Undefined(Span::generated("eval"))
+                    };
+                let intrinsic = match plan.kind {
                     crate::builtin_resolved::EvalKind::Direct => RuntimeFn::EvalDirectHost,
                     crate::builtin_resolved::EvalKind::Indirect => RuntimeFn::EvalIndirectHost,
                 };
-                let args = if matches!(kind, crate::builtin_resolved::EvalKind::Direct) {
-                    if matches!(source, crate::builtin_resolved::EvalSource::Runtime(_)) {
-                        self.ensure_direct_eval_env_descriptor_initialized(*span)?;
+                let args = if matches!(plan.kind, crate::builtin_resolved::EvalKind::Direct) {
+                    if matches!(plan.source, crate::builtin_resolved::EvalSource::Runtime(_)) {
+                        self.ensure_direct_eval_env_descriptor_initialized(plan.span)?;
                     }
                     vec![source_expr, self.lower_direct_eval_env_descriptor()]
                 } else {

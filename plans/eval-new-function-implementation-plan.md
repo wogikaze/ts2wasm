@@ -33,7 +33,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | Annex B block function slice | `static_block_function_eval_expansion` と `crates/ir/src/lowered/program_direct_eval.rs` が supported direct-eval block function fixtures を通す | eval-code function hoist の難所に着手済み |
 | indirect eval parser rejection | `globalThis.eval("x")`、`globalThis["eval"]("x")`、`(0, eval)("x")` は parser reject ではなく後段へ流れる | Phase 4/5 の土台 |
 | optional eval classification | `eval?.(src)` は parser shape を保持し、unshadowed optional eval を indirect eval として既存 host/static lane へ流す | optional-call nullish/shadowing edge の拡張 |
-| resolved eval IR | `ResolvedExpr::Eval { kind, source, caller_is_strict, span }`、`EvalKind::{Direct, Indirect}`、`EvalSource::{StaticLiteral, Runtime}` が存在する | 統一 IR への入口 |
+| resolved eval IR | `ResolvedExpr::Eval { plan: EvalFragmentPlan }`、`EvalKind::{Direct, Indirect}`、`EvalSource::{StaticLiteral, Runtime}` が存在する | 統一 IR への入口 |
 | compiler eval expansion stage | `crates/compiler/src/stages/eval_expand.rs` が static direct / indirect `ResolvedExpr::Eval` を parse / resolve / builtin-resolve して completion expression へ置換し、nested function/class bodies と parameter defaults も再帰的に処理する | parser rewrite から IR rewrite へ移行する素材 |
 | literal `Function` constructor | resolver が unshadowed `Function(...)` / `new Function(...)` を internal constructor markers に分類し、compiler eval-expand stage が literal-only args を synthetic `FunctionExpr` に変換する | static `Function` AOT lane の初期 slice |
 | build/server dynamic-code stage parity | `pipeline.rs` と `server.rs` はどちらも `expand_static_eval_fragments` を通し、server lowering focused test が host eval runtime call の残存を検出する | batch/server path でも static AOT lane を維持 |
@@ -265,7 +265,9 @@ Exit criteria:
 
 作業:
 
-- `ResolvedExpr::Eval` を `EvalFragmentPlan` 付きに拡張する。
+- `ResolvedExpr::Eval` を `EvalFragmentPlan` 付きに拡張する。Resolved IR now
+  carries eval kind/source/strict/span through an explicit plan object; remaining
+  work is to enrich that plan with scope/declaration/completion records.
 - unshadowed direct eval 判定を resolver に移す。
 - `possible_eval_shadowing` heuristic による parser rejection を削る。
 - direct eval source を caller scope context で name resolve する。

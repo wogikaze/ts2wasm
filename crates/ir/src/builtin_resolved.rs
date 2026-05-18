@@ -299,11 +299,16 @@ pub enum ResolvedExpr {
     Sequence(Vec<ResolvedExpr>),
     EvalCompletion(Vec<EvalCompletionStep>),
     Eval {
-        kind: EvalKind,
-        source: EvalSource,
-        caller_is_strict: bool,
-        span: Span,
+        plan: EvalFragmentPlan,
     },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EvalFragmentPlan {
+    pub kind: EvalKind,
+    pub source: EvalSource,
+    pub caller_is_strict: bool,
+    pub span: Span,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

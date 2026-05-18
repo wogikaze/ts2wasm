@@ -1279,12 +1279,12 @@ impl<'a> HirLowerer<'a> {
             | ResolvedExpr::LogicalComputedPropertyAssign { .. } => Err(unsupported(
                 "assignment expressions are not part of the initial HIR slice",
             )),
-            ResolvedExpr::Eval { kind, source, .. } => {
-                let kind_str = match kind {
+            ResolvedExpr::Eval { plan } => {
+                let kind_str = match plan.kind {
                     EvalKind::Direct => "direct",
                     EvalKind::Indirect => "indirect",
                 };
-                let source_str = match source {
+                let source_str = match &plan.source {
                     EvalSource::StaticLiteral(s) => s.as_str(),
                     EvalSource::Runtime(_) => "[dynamic]",
                 };
