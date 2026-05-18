@@ -292,6 +292,12 @@ fn static_direct_eval_class_declaration_preserves_completion() {
 }
 
 #[test]
+fn static_direct_eval_class_private_field_preserves_completion() {
+    let fixture = "fixtures/core-semantics/direct-eval-class-private-field.ts";
+    assert_node_shim_stdout(fixture, "8\nundefined\n");
+}
+
+#[test]
 fn static_direct_eval_recursively_expands_nested_static_eval() {
     let fixture = "fixtures/core-semantics/direct-eval-nested-static.ts";
     assert_node_shim_stdout(fixture, "3\n");

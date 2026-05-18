@@ -1427,6 +1427,8 @@ impl Resolver {
 
         let ctor_id = FuncId(self.ctx.functions.next_func_id);
         self.ctx.functions.next_func_id += 1;
+        let mut eval_function_ids = self.ctx.symbols.function_ids.clone();
+        eval_function_ids.insert(eval_class_constructor_key(name), ctor_id);
         self.ctx
             .classes
             .class_constructor_ids
@@ -1462,6 +1464,7 @@ impl Resolver {
         for method in methods {
             let method_id = FuncId(self.ctx.functions.next_func_id);
             self.ctx.functions.next_func_id += 1;
+            eval_function_ids.insert(eval_class_method_key(name, &method.name), method_id);
             if let Some(stripped) = method.name.strip_prefix("static::") {
                 self.ctx
                     .classes
@@ -1484,15 +1487,9 @@ impl Resolver {
             .as_ref()
             .cloned()
             .unwrap_or_else(|| (Vec::new(), Vec::new()));
-        let mut ctor_params_with_this = vec![ResolvedParam {
-            name: "this".to_owned(),
-            default: None,
-            is_rest: false,
-            span: None,
-        }];
-        ctor_params_with_this.extend(ctor_params);
+        let mut ctor_params_for_lowering = ctor_params;
         if constructor.is_none() && extends.is_some() {
-            ctor_params_with_this.push(ResolvedParam {
+            ctor_params_for_lowering.push(ResolvedParam {
                 name: "...args".to_owned(),
                 default: None,
                 is_rest: true,
@@ -1503,8 +1500,9 @@ impl Resolver {
         self.ctx.symbols.function_signatures.insert(
             ctor_id,
             FunctionSignature {
-                explicit_params: ctor_params_with_this.len(),
-                has_rest: ctor_params_with_this.iter().any(|param| param.is_rest),
+                explicit_params: ctor_params_for_lowering.len(),
+                needs_receiver: true,
+                has_rest: ctor_params_for_lowering.iter().any(|param| param.is_rest),
                 is_strict: true,
                 ..FunctionSignature::default()
             },
@@ -1514,17 +1512,17 @@ impl Resolver {
         let function_mutable_captures = self.ctx.functions.function_mutable_captures.clone();
         let lowered = lower_function(
             ctor_id,
-            &ctor_params_with_this,
+            &ctor_params_for_lowering,
             &ctor_body,
             false,
             false,
-            &self.ctx.symbols.function_ids,
+            &eval_function_ids,
             &function_signatures,
             &function_captures,
             &function_mutable_captures,
             &self.ctx.functions.class_method_captures,
             &self.ctx.functions.class_method_mutable_captures,
-            &collect_dynamic_direct_eval_env_cell_names(&ctor_params_with_this, &ctor_body),
+            &collect_dynamic_direct_eval_env_cell_names(&ctor_params_for_lowering, &ctor_body),
             &self.ctx.facts.heap_closure_names,
             self.ctx.classes.class_parents.clone(),
             self.ctx.classes.class_private_fields.clone(),
@@ -1595,7 +1593,7 @@ impl Resolver {
                 &method.body,
                 false,
                 false,
-                &self.ctx.symbols.function_ids,
+                &eval_function_ids,
                 &function_signatures,
                 &function_captures,
                 &function_mutable_captures,
@@ -1682,6 +1680,14 @@ impl Resolver {
         self.ctx.classes.current_class = previous;
         result
     }
+}
+
+fn eval_class_constructor_key(class_name: &str) -> String {
+    format!("class::{class_name}::constructor")
+}
+
+fn eval_class_method_key(class_name: &str, method_name: &str) -> String {
+    format!("class::{class_name}::{method_name}")
 }
 
 pub(crate) fn class_maps(

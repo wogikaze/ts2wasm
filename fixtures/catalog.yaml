@@ -886,6 +886,7 @@ directories:
     - direct-eval-block-var-lands-in-caller.ts
     - direct-eval-caller-local.ts
     - direct-eval-class-declaration-completion.ts
+    - direct-eval-class-private-field.ts
     - direct-eval-declaration-empty-completion.ts
     - direct-eval-declaration-preserves-previous-completion.ts
     - direct-eval-destructuring-completion.ts

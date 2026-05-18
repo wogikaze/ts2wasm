@@ -447,6 +447,14 @@ fn static_direct_eval_block_var_landing_declares_no_node_host_eval_capability() 
 }
 
 #[test]
+fn static_direct_eval_class_private_field_declares_no_node_host_eval_capability() {
+    assert_standalone_category(
+        "core-semantics/direct-eval-class-private-field.ts",
+        "static direct eval class private field",
+    );
+}
+
+#[test]
 fn static_direct_eval_if_var_landing_declares_no_node_host_eval_capability() {
     assert_standalone_category(
         "core-semantics/direct-eval-if-var-lands-in-caller.ts",
