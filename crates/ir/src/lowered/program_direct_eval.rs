@@ -51,6 +51,390 @@ pub(crate) fn collect_dynamic_direct_eval_created_binding_names(
     names
 }
 
+pub(crate) fn collect_dynamic_direct_eval_created_function_names(
+    body: &[ResolvedStmt],
+) -> HashSet<String> {
+    let known_sources = collect_unassigned_string_bindings(body);
+    let mut names = HashSet::new();
+    collect_dynamic_direct_eval_created_function_names_from_stmts(body, &known_sources, &mut names);
+    names
+}
+
+fn collect_dynamic_direct_eval_created_function_names_from_stmts(
+    stmts: &[ResolvedStmt],
+    known_sources: &HashMap<String, String>,
+    names: &mut HashSet<String>,
+) {
+    for stmt in stmts {
+        match stmt {
+            ResolvedStmt::Let(_, expr)
+            | ResolvedStmt::Assign(_, expr)
+            | ResolvedStmt::Expr(expr)
+            | ResolvedStmt::Return(expr)
+            | ResolvedStmt::Throw(expr) => {
+                collect_dynamic_direct_eval_created_function_names_from_expr(
+                    expr,
+                    known_sources,
+                    names,
+                );
+            }
+            ResolvedStmt::ModuleExportsAssign { expr } => {
+                collect_dynamic_direct_eval_created_function_names_from_expr(
+                    expr,
+                    known_sources,
+                    names,
+                );
+            }
+            ResolvedStmt::If {
+                condition,
+                then_body,
+                else_body,
+            } => {
+                collect_dynamic_direct_eval_created_function_names_from_expr(
+                    condition,
+                    known_sources,
+                    names,
+                );
+                collect_dynamic_direct_eval_created_function_names_from_stmts(
+                    then_body,
+                    known_sources,
+                    names,
+                );
+                collect_dynamic_direct_eval_created_function_names_from_stmts(
+                    else_body,
+                    known_sources,
+                    names,
+                );
+            }
+            ResolvedStmt::While { condition, body } | ResolvedStmt::DoWhile { condition, body } => {
+                collect_dynamic_direct_eval_created_function_names_from_expr(
+                    condition,
+                    known_sources,
+                    names,
+                );
+                collect_dynamic_direct_eval_created_function_names_from_stmts(
+                    body,
+                    known_sources,
+                    names,
+                );
+            }
+            ResolvedStmt::For {
+                init,
+                condition,
+                update,
+                body,
+            } => {
+                if let Some(init) = init {
+                    collect_dynamic_direct_eval_created_function_names_from_stmts(
+                        std::slice::from_ref(init.as_ref()),
+                        known_sources,
+                        names,
+                    );
+                }
+                if let Some(condition) = condition {
+                    collect_dynamic_direct_eval_created_function_names_from_expr(
+                        condition,
+                        known_sources,
+                        names,
+                    );
+                }
+                if let Some(update) = update {
+                    collect_dynamic_direct_eval_created_function_names_from_expr(
+                        update,
+                        known_sources,
+                        names,
+                    );
+                }
+                collect_dynamic_direct_eval_created_function_names_from_stmts(
+                    body,
+                    known_sources,
+                    names,
+                );
+            }
+            ResolvedStmt::ForIn { iter, body, .. }
+            | ResolvedStmt::ForOf { iter, body, .. }
+            | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
+                collect_dynamic_direct_eval_created_function_names_from_expr(
+                    iter,
+                    known_sources,
+                    names,
+                );
+                collect_dynamic_direct_eval_created_function_names_from_stmts(
+                    body,
+                    known_sources,
+                    names,
+                );
+            }
+            ResolvedStmt::Switch { expr, cases } => {
+                collect_dynamic_direct_eval_created_function_names_from_expr(
+                    expr,
+                    known_sources,
+                    names,
+                );
+                for (_, body) in cases {
+                    collect_dynamic_direct_eval_created_function_names_from_stmts(
+                        body,
+                        known_sources,
+                        names,
+                    );
+                }
+            }
+            ResolvedStmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                collect_dynamic_direct_eval_created_function_names_from_stmts(
+                    try_block,
+                    known_sources,
+                    names,
+                );
+                if let Some(catch_block) = catch_block {
+                    collect_dynamic_direct_eval_created_function_names_from_stmts(
+                        catch_block,
+                        known_sources,
+                        names,
+                    );
+                }
+                if let Some(finally_block) = finally_block {
+                    collect_dynamic_direct_eval_created_function_names_from_stmts(
+                        finally_block,
+                        known_sources,
+                        names,
+                    );
+                }
+            }
+            ResolvedStmt::Block { statements } => {
+                collect_dynamic_direct_eval_created_function_names_from_stmts(
+                    statements,
+                    known_sources,
+                    names,
+                );
+            }
+            ResolvedStmt::Labeled { body, .. } => {
+                collect_dynamic_direct_eval_created_function_names_from_stmts(
+                    std::slice::from_ref(body.as_ref()),
+                    known_sources,
+                    names,
+                );
+            }
+            _ => {}
+        }
+    }
+}
+
+fn collect_dynamic_direct_eval_created_function_names_from_expr(
+    expr: &ResolvedExpr,
+    known_sources: &HashMap<String, String>,
+    names: &mut HashSet<String>,
+) {
+    if let Some(source) = dynamic_direct_eval_known_source(expr, known_sources) {
+        collect_eval_function_names(source, names);
+    }
+    match expr {
+        ResolvedExpr::Eval { plan } => {
+            if let EvalSource::Runtime(source) = &plan.source {
+                collect_dynamic_direct_eval_created_function_names_from_expr(
+                    source,
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        ResolvedExpr::Call { callee, args, .. }
+        | ResolvedExpr::OptionalCall { callee, args, .. } => {
+            collect_dynamic_direct_eval_created_function_names_from_expr(
+                callee,
+                known_sources,
+                names,
+            );
+            for arg in args {
+                collect_dynamic_direct_eval_created_function_names_from_expr(
+                    arg,
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        ResolvedExpr::MethodCall { object, args, .. } => {
+            collect_dynamic_direct_eval_created_function_names_from_expr(
+                object,
+                known_sources,
+                names,
+            );
+            for arg in args {
+                collect_dynamic_direct_eval_created_function_names_from_expr(
+                    arg,
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        ResolvedExpr::Await { expr }
+        | ResolvedExpr::Yield {
+            expr: Some(expr), ..
+        }
+        | ResolvedExpr::Unary { expr, .. }
+        | ResolvedExpr::Assign { expr, .. }
+        | ResolvedExpr::LogicalAssign { expr, .. }
+        | ResolvedExpr::Spread(expr)
+        | ResolvedExpr::PropertyAccess { object: expr, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object: expr, .. }
+        | ResolvedExpr::BuiltinProperty { object: expr, .. } => {
+            collect_dynamic_direct_eval_created_function_names_from_expr(
+                expr,
+                known_sources,
+                names,
+            );
+        }
+        ResolvedExpr::Binary { left, right, .. }
+        | ResolvedExpr::ComputedIndex {
+            object: left,
+            index: right,
+        }
+        | ResolvedExpr::OptionalComputedIndex {
+            object: left,
+            index: right,
+            ..
+        } => {
+            collect_dynamic_direct_eval_created_function_names_from_expr(
+                left,
+                known_sources,
+                names,
+            );
+            collect_dynamic_direct_eval_created_function_names_from_expr(
+                right,
+                known_sources,
+                names,
+            );
+        }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            for expr in [condition.as_ref(), then_expr.as_ref(), else_expr.as_ref()] {
+                collect_dynamic_direct_eval_created_function_names_from_expr(
+                    expr,
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        ResolvedExpr::New { args, .. } | ResolvedExpr::BuiltinCall { args, .. } => {
+            for arg in args {
+                collect_dynamic_direct_eval_created_function_names_from_expr(
+                    arg,
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        ResolvedExpr::Array(elements) => {
+            for element in elements {
+                if let ResolvedArrayElement::Present(expr) = element {
+                    collect_dynamic_direct_eval_created_function_names_from_expr(
+                        expr,
+                        known_sources,
+                        names,
+                    );
+                }
+            }
+        }
+        ResolvedExpr::Object(props) => {
+            for prop in props {
+                if let Some(key) = prop.computed_key() {
+                    collect_dynamic_direct_eval_created_function_names_from_expr(
+                        key,
+                        known_sources,
+                        names,
+                    );
+                }
+                collect_dynamic_direct_eval_created_function_names_from_expr(
+                    prop.value(),
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        ResolvedExpr::PropertyAssign { object, value, .. }
+        | ResolvedExpr::LogicalMemberAssign {
+            object,
+            expr: value,
+            ..
+        } => {
+            collect_dynamic_direct_eval_created_function_names_from_expr(
+                object,
+                known_sources,
+                names,
+            );
+            collect_dynamic_direct_eval_created_function_names_from_expr(
+                value,
+                known_sources,
+                names,
+            );
+        }
+        ResolvedExpr::PropertyAssignDynamic { object, key, value }
+        | ResolvedExpr::LogicalComputedMemberAssign {
+            object,
+            key,
+            expr: value,
+            ..
+        } => {
+            for expr in [object.as_ref(), key.as_ref(), value.as_ref()] {
+                collect_dynamic_direct_eval_created_function_names_from_expr(
+                    expr,
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
+            collect_dynamic_direct_eval_created_function_names_from_expr(key, known_sources, names);
+            collect_dynamic_direct_eval_created_function_names_from_expr(
+                expr,
+                known_sources,
+                names,
+            );
+        }
+        ResolvedExpr::Sequence(exprs) => {
+            for expr in exprs {
+                collect_dynamic_direct_eval_created_function_names_from_expr(
+                    expr,
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        ResolvedExpr::ArrowFn {
+            body, body_stmts, ..
+        } => {
+            collect_dynamic_direct_eval_created_function_names_from_stmts(
+                body_stmts,
+                known_sources,
+                names,
+            );
+            collect_dynamic_direct_eval_created_function_names_from_expr(
+                body,
+                known_sources,
+                names,
+            );
+        }
+        ResolvedExpr::FunctionConstructor { plan } => {
+            for arg in &plan.args {
+                collect_dynamic_direct_eval_created_function_names_from_expr(
+                    arg,
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        _ => {}
+    }
+}
+
 fn collect_dynamic_direct_eval_created_binding_names_from_stmts(
     stmts: &[ResolvedStmt],
     known_sources: &HashMap<String, String>,
@@ -552,6 +936,10 @@ fn collect_unassigned_string_bindings_from_stmts(
 
 fn collect_eval_var_function_names(source: &str, names: &mut HashSet<String>) {
     collect_keyword_bound_names(source, "var", names);
+    collect_eval_function_names(source, names);
+}
+
+fn collect_eval_function_names(source: &str, names: &mut HashSet<String>) {
     collect_keyword_bound_names(source, "function", names);
 }
 
@@ -1002,6 +1390,27 @@ mod tests {
         ];
 
         let names = collect_dynamic_direct_eval_created_binding_names(&body);
+        assert!(names.contains("created"));
+    }
+
+    #[test]
+    fn collects_created_function_from_known_runtime_direct_eval_source() {
+        let body = vec![
+            ResolvedStmt::Let(
+                "source".to_owned(),
+                ResolvedExpr::String("function created() { return 7; } created()".to_owned()),
+            ),
+            ResolvedStmt::Expr(ResolvedExpr::Eval {
+                plan: EvalFragmentPlan::new(
+                    EvalKind::Direct,
+                    EvalSource::Runtime(Box::new(ResolvedExpr::Ident("source".to_owned()))),
+                    false,
+                    Span::generated("eval"),
+                ),
+            }),
+        ];
+
+        let names = collect_dynamic_direct_eval_created_function_names(&body);
         assert!(names.contains("created"));
     }
 }

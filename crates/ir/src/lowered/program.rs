@@ -6,7 +6,7 @@ use crate::builtin_resolved::{
 };
 use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
 use crate::lowered::facts::{
-    GeneratorObjectResumePlan, GeneratorYieldStep, IntlNumberFormatOptions,
+    GeneratorObjectResumePlan, GeneratorYieldStep, HostExternalKind, IntlNumberFormatOptions,
 };
 use crate::lowered::symbols::FunctionSignature;
 use std::collections::{HashMap, HashSet};
@@ -60,6 +60,8 @@ pub fn lower_program_with_module_url(
         collect_dynamic_direct_eval_env_cell_names(&[], program, false, false);
     let dynamic_direct_eval_created_binding_names =
         collect_dynamic_direct_eval_created_binding_names(program);
+    let dynamic_direct_eval_created_function_names =
+        collect_dynamic_direct_eval_created_function_names(program);
     let env_cell_names = mutable_class_capture_names
         .union(&mutable_object_method_capture_names)
         .cloned()
@@ -129,6 +131,8 @@ pub fn lower_program_with_module_url(
                     collect_dynamic_direct_eval_env_cell_names(params, body, true, false);
                 let dynamic_direct_eval_created_binding_names =
                     collect_dynamic_direct_eval_created_binding_names(body);
+                let dynamic_direct_eval_created_function_names =
+                    collect_dynamic_direct_eval_created_function_names(body);
                 let function_env_cell_names = function_env_cell_names
                     .union(&arrow_mutable_captures)
                     .cloned()
@@ -143,6 +147,9 @@ pub fn lower_program_with_module_url(
                     .cloned()
                     .collect::<HashSet<_>>()
                     .union(&dynamic_direct_eval_created_binding_names)
+                    .cloned()
+                    .collect::<HashSet<_>>()
+                    .union(&dynamic_direct_eval_created_function_names)
                     .cloned()
                     .collect::<HashSet<_>>();
                 let self_closure = top_level_function_body_references_name(params, body, name)?
@@ -237,6 +244,8 @@ pub fn lower_program_with_module_url(
                 );
                 let dynamic_direct_eval_created_binding_names =
                     collect_dynamic_direct_eval_created_binding_names(&ctor_body);
+                let dynamic_direct_eval_created_function_names =
+                    collect_dynamic_direct_eval_created_function_names(&ctor_body);
                 let constructor_env_cell_names = constructor_object_method_mutable_captures
                     .union(&constructor_nested_function_mutable_captures)
                     .cloned()
@@ -245,6 +254,9 @@ pub fn lower_program_with_module_url(
                     .cloned()
                     .collect::<HashSet<_>>()
                     .union(&dynamic_direct_eval_created_binding_names)
+                    .cloned()
+                    .collect::<HashSet<_>>()
+                    .union(&dynamic_direct_eval_created_function_names)
                     .cloned()
                     .collect::<HashSet<_>>();
                 let lowered = lower_function(
@@ -310,6 +322,8 @@ pub fn lower_program_with_module_url(
                         );
                     let dynamic_direct_eval_created_binding_names =
                         collect_dynamic_direct_eval_created_binding_names(&method.body);
+                    let dynamic_direct_eval_created_function_names =
+                        collect_dynamic_direct_eval_created_function_names(&method.body);
                     let method_env_cell_names = method_env_cell_names
                         .union(&method_object_method_mutable_captures)
                         .cloned()
@@ -321,6 +335,9 @@ pub fn lower_program_with_module_url(
                         .cloned()
                         .collect::<HashSet<_>>()
                         .union(&dynamic_direct_eval_created_binding_names)
+                        .cloned()
+                        .collect::<HashSet<_>>()
+                        .union(&dynamic_direct_eval_created_function_names)
                         .cloned()
                         .collect::<HashSet<_>>();
                     let lowered = lower_function(
@@ -447,6 +464,12 @@ pub fn lower_program_with_module_url(
             continue;
         }
         let local_id = resolver.declare_local(&name)?;
+        if dynamic_direct_eval_created_function_names.contains(&name) {
+            resolver
+                .ctx
+                .facts
+                .mark_host_external(local_id, HostExternalKind::FunctionHandle, true);
+        }
         if resolver.ctx.facts.env_cell_names.contains(&name) {
             resolver.ctx.facts.env_cell_locals.insert(local_id);
             resolver
@@ -5057,6 +5080,7 @@ fn lower_function_with_resolved_params(
             resolver.declare_local(name)?;
         }
     }
+    let eval_created_function_names = collect_dynamic_direct_eval_created_function_names(body);
     let mut eval_created_names = collect_dynamic_direct_eval_created_binding_names(body)
         .into_iter()
         .collect::<Vec<_>>();
@@ -5066,6 +5090,12 @@ fn lower_function_with_resolved_params(
             continue;
         }
         let local_id = resolver.declare_local(&name)?;
+        if eval_created_function_names.contains(&name) {
+            resolver
+                .ctx
+                .facts
+                .mark_host_external(local_id, HostExternalKind::FunctionHandle, true);
+        }
         if resolver.ctx.facts.env_cell_names.contains(&name) {
             resolver.ctx.facts.env_cell_locals.insert(local_id);
             resolver

@@ -938,6 +938,7 @@ directories:
     - direct-eval-dynamic-nested-object-node-shim.ts
     - direct-eval-dynamic-new-async-function-declaration-node-shim.ts
     - direct-eval-dynamic-new-function-declaration-node-shim.ts
+    - direct-eval-dynamic-new-function-normal-code-node-shim.ts
     - direct-eval-dynamic-new-generator-function-declaration-node-shim.ts
     - direct-eval-dynamic-new-var-array-destructuring-node-shim.ts
     - direct-eval-dynamic-new-var-destructuring-node-shim.ts
