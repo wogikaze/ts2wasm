@@ -1157,6 +1157,29 @@ fn eval_statement_completion_step(
                 condition,
             }
         }
+        ResolvedStmt::For {
+            init,
+            condition,
+            update,
+            body,
+        } => {
+            let (ast_init, ast_body) = match ast_stmt {
+                Some(Stmt::For { init, body, .. }) => (init.as_deref(), body.as_slice()),
+                _ => (None, &[][..]),
+            };
+            EvalCompletionStep::For {
+                init: init.map(|stmt| {
+                    Box::new(eval_statement_completion_step(
+                        ast_init,
+                        *stmt,
+                        leak_var_declarations,
+                    ))
+                }),
+                condition,
+                update,
+                body_steps: eval_completion_steps(ast_body, body, leak_var_declarations),
+            }
+        }
         ResolvedStmt::Function {
             name,
             params,

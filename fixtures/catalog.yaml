@@ -890,6 +890,7 @@ directories:
     - direct-eval-do-while-completion.ts
     - direct-eval-expression-caller-local.ts
     - direct-eval-expression-side-effect.ts
+    - direct-eval-for-completion.ts
     - direct-eval-function-lands-in-caller.ts
     - direct-eval-function-hoisted-before-use.ts
     - direct-eval-if-var-hoisted-undefined.ts

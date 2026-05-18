@@ -466,6 +466,43 @@ impl super::Resolver {
                         span: Span::generated("eval_completion_do_while"),
                     });
                 }
+                EvalCompletionStep::For {
+                    init,
+                    condition,
+                    update,
+                    body_steps,
+                } => {
+                    self.ctx.symbols.scopes.push(HashMap::new());
+                    let lowered = (|| {
+                        let init = init
+                            .as_deref()
+                            .map(|step| {
+                                self.lower_eval_non_completion_step(step, caller_scope_index)
+                            })
+                            .transpose()?
+                            .flatten()
+                            .map(Box::new);
+                        let condition =
+                            condition.as_ref().map(|c| self.lower_expr(c)).transpose()?;
+                        let update = update.as_ref().map(|u| self.lower_expr(u)).transpose()?;
+                        let mut body = Vec::new();
+                        self.lower_eval_completion_steps_into(
+                            body_steps,
+                            completion,
+                            caller_scope_index,
+                            &mut body,
+                        )?;
+                        Ok(LoweredStmt::For {
+                            init,
+                            condition,
+                            update,
+                            body,
+                            span: Span::generated("eval_completion_for"),
+                        })
+                    })();
+                    self.ctx.symbols.scopes.pop();
+                    stmts.push(lowered?);
+                }
                 EvalCompletionStep::LexicalLet { name, init } => {
                     stmts.push(self.lower_stmt(&ResolvedStmt::Let(name.clone(), init.clone()))?);
                 }
@@ -473,6 +510,75 @@ impl super::Resolver {
             }
         }
         Ok(())
+    }
+
+    fn lower_eval_non_completion_step(
+        &mut self,
+        step: &crate::builtin_resolved::EvalCompletionStep,
+        caller_scope_index: usize,
+    ) -> Result<Option<LoweredStmt>, Diagnostic> {
+        use crate::builtin_resolved::EvalCompletionStep;
+
+        match step {
+            EvalCompletionStep::Value(expr) | EvalCompletionStep::Empty(Some(expr)) => {
+                Ok(Some(LoweredStmt::Expr(
+                    self.lower_expr(expr)?,
+                    Span::generated("eval_non_completion_expr"),
+                )))
+            }
+            EvalCompletionStep::VarLet { name, init } => {
+                let (local, existed) =
+                    self.declare_eval_var_in_caller_scope(name, caller_scope_index)?;
+                let init = self.lower_expr(init)?;
+                if existed {
+                    Ok(Some(LoweredStmt::Assign(
+                        local,
+                        init,
+                        Span::generated("eval_non_completion_var_assign"),
+                    )))
+                } else {
+                    Ok(Some(LoweredStmt::Let(
+                        local,
+                        init,
+                        Span::generated("eval_non_completion_var_let"),
+                    )))
+                }
+            }
+            EvalCompletionStep::LexicalLet { name, init } => Ok(Some(
+                self.lower_stmt(&ResolvedStmt::Let(name.clone(), init.clone()))?,
+            )),
+            EvalCompletionStep::FunctionDecl {
+                name,
+                params,
+                body,
+                is_async,
+            } => Ok(Some(self.lower_eval_function_decl_in_caller_scope(
+                name,
+                params,
+                body,
+                *is_async,
+                caller_scope_index,
+            )?)),
+            EvalCompletionStep::Empty(None) => Ok(None),
+            other => {
+                let temp = self.alloc_temp();
+                let mut stmts = vec![LoweredStmt::Let(
+                    temp,
+                    LoweredExpr::Undefined(Span::generated("eval_non_completion_temp")),
+                    Span::generated("eval_non_completion_temp_let"),
+                )];
+                self.lower_eval_completion_steps_into(
+                    std::slice::from_ref(other),
+                    temp,
+                    caller_scope_index,
+                    &mut stmts,
+                )?;
+                Ok(Some(LoweredStmt::Block(
+                    stmts,
+                    Span::generated("eval_non_completion_block"),
+                )))
+            }
+        }
     }
 
     fn declare_eval_var_in_caller_scope(

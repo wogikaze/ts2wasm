@@ -487,6 +487,14 @@ fn static_direct_eval_do_while_completion_declares_no_node_host_eval_capability(
 }
 
 #[test]
+fn static_direct_eval_for_completion_declares_no_node_host_eval_capability() {
+    assert_standalone_category(
+        "core-semantics/direct-eval-for-completion.ts",
+        "static direct eval for completion",
+    );
+}
+
+#[test]
 fn static_direct_eval_var_landing_declares_no_node_host_eval_capability() {
     assert_standalone_category(
         "core-semantics/direct-eval-var-lands-in-caller.ts",
