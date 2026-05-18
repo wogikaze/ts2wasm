@@ -872,6 +872,7 @@ const hostObjectHandles = new WeakMap();
 const hostObjectValues = new Map();
 const refreshingHostObjects = new WeakSet();
 const directEvalExtraBindings = new Map();
+const EVAL_DESCRIPTOR_VERSION = '__ts2wasm_eval_descriptor_v2';
 const EVAL_DESCRIPTOR_CALLER_STRICT = '__ts2wasm_eval_caller_strict';
 const decoder = new TextDecoder();
 const encoder = new TextEncoder();
@@ -1524,10 +1525,20 @@ function evalWithEnvDescriptor(source, envRaw) {
   if (
     pairs.length >= 2 &&
     rawTag(pairs[0]) === TAG_STRING &&
-    decodeString(pairs[0]) === EVAL_DESCRIPTOR_CALLER_STRICT
+    decodeString(pairs[0]) === EVAL_DESCRIPTOR_VERSION
   ) {
-    callerIsStrict = decodeValue(pairs[1]) === true;
+    if (decodeValue(pairs[1]) !== true) {
+      throw new TypeError('unsupported direct eval env descriptor version');
+    }
     pairOffset = 2;
+  }
+  if (
+    pairs.length >= pairOffset + 2 &&
+    rawTag(pairs[pairOffset]) === TAG_STRING &&
+    decodeString(pairs[pairOffset]) === EVAL_DESCRIPTOR_CALLER_STRICT
+  ) {
+    callerIsStrict = decodeValue(pairs[pairOffset + 1]) === true;
+    pairOffset += 2;
   }
   if ((pairs.length - pairOffset) % 2 !== 0) {
     throw new TypeError('invalid direct eval env descriptor');

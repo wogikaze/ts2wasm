@@ -1527,15 +1527,23 @@ struct DirectEvalEnvBinding {
     local: LocalId,
 }
 
+const DIRECT_EVAL_DESCRIPTOR_VERSION_KEY: &str = "__ts2wasm_eval_descriptor_v2";
+const DIRECT_EVAL_DESCRIPTOR_CALLER_STRICT_KEY: &str = "__ts2wasm_eval_caller_strict";
+
 impl DirectEvalEnvDescriptor {
     fn into_lowered_expr(self) -> LoweredExpr {
         if self.bindings.is_empty() && !self.caller_is_strict {
             return LoweredExpr::Undefined(Span::generated("eval_env"));
         }
 
-        let mut elements = Vec::with_capacity(2 + self.bindings.len() * 2);
+        let mut elements = Vec::with_capacity(4 + self.bindings.len() * 2);
         elements.push(LoweredExpr::String(
-            "__ts2wasm_eval_caller_strict".to_owned(),
+            DIRECT_EVAL_DESCRIPTOR_VERSION_KEY.to_owned(),
+            Span::generated("eval_env_version"),
+        ));
+        elements.push(LoweredExpr::Bool(true, Span::generated("eval_env_version")));
+        elements.push(LoweredExpr::String(
+            DIRECT_EVAL_DESCRIPTOR_CALLER_STRICT_KEY.to_owned(),
             Span::generated("eval_env_strict"),
         ));
         elements.push(LoweredExpr::Bool(
