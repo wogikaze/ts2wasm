@@ -463,9 +463,10 @@ Exit criteria:
 
 - `host.function.compile`, `host.function.call`, and
   `host.function.construct` manifest / host-deny lowering slices are
-  implemented for statically visible dynamic Function handles; remaining work
-  is node-shim target execution and the concrete host handle representation
-  bridge.
+  implemented for statically visible dynamic Function handles. A focused Node
+  WebAssembly shim regression covers primitive-return calls and discarded
+  constructor calls; remaining work is broader object/string/error bridging and
+  the concrete host handle representation bridge.
 
 Exit criteria:
 

@@ -1,0 +1,207 @@
+use std::{fs, process::Command};
+
+#[path = "common/capability.rs"]
+mod capability;
+
+use capability::node_command;
+use ts2wasm_shared::test_helpers::{fixture_path, temp_wasm_path, unique_temp_dir};
+
+#[test]
+fn dynamic_function_handles_execute_through_node_shim_host_imports() {
+    let fixture = "fixtures/core-semantics/function-constructor-dynamic-node-shim.ts";
+    let fixture_path = fixture_path(fixture);
+    let output_wasm = temp_wasm_path(fixture);
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output_wasm)
+        .output()
+        .expect("failed to execute ts2wasm build");
+
+    assert!(
+        build.status.success(),
+        "dynamic Function host-shim fixture should build\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let runner_dir = unique_temp_dir("dynamic-function-node-shim");
+    let runner = runner_dir.join("runner.mjs");
+    fs::write(&runner, NODE_SHIM_RUNNER).expect("failed to write node shim runner");
+
+    let node = node_command()
+        .arg(&runner)
+        .arg(&output_wasm)
+        .output()
+        .expect("failed to execute node shim runner");
+
+    assert!(
+        node.status.success(),
+        "node shim runner should execute dynamic Function handles\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&node.stdout),
+        String::from_utf8_lossy(&node.stderr)
+    );
+    assert_eq!(String::from_utf8_lossy(&node.stdout), "7\n");
+}
+
+const NODE_SHIM_RUNNER: &str = r#"
+import fs from 'node:fs';
+
+const wasmPath = process.argv[process.argv.length - 1];
+const wasmBytes = fs.readFileSync(wasmPath);
+
+const TAG_UNDEFINED = 0;
+const TAG_NULL = 1;
+const TAG_FALSE = 2;
+const TAG_TRUE = 3;
+const TAG_NUMBER = 4;
+const TAG_ARRAY = 5;
+const TAG_STRING = 6;
+const TAG_MASK = 7;
+const HEAP_MASK = -8;
+const ARRAY_PRESENCE_WORDS_OFFSET = 16;
+
+let memory;
+const hostFunctions = [];
+const decoder = new TextDecoder();
+let stdout = '';
+
+function view() {
+  return new DataView(memory.buffer);
+}
+
+function bytes() {
+  return new Uint8Array(memory.buffer);
+}
+
+function rawTag(raw) {
+  return raw & TAG_MASK;
+}
+
+function rawPtr(raw) {
+  return raw & HEAP_MASK;
+}
+
+function decodeString(raw) {
+  if (rawTag(raw) !== TAG_STRING) {
+    throw new TypeError(`expected string RawValue, got ${raw}`);
+  }
+  const base = rawPtr(raw);
+  const len = view().getInt32(base, true);
+  return decoder.decode(bytes().subarray(base + 4, base + 4 + len));
+}
+
+function decodeArray(raw) {
+  if (rawTag(raw) !== TAG_ARRAY) {
+    throw new TypeError(`expected array RawValue, got ${raw}`);
+  }
+  const base = rawPtr(raw);
+  const len = view().getInt32(base, true);
+  const presenceWords = view().getInt32(base + 8, true);
+  const elementsOffset = view().getInt32(base + 12, true);
+  const values = [];
+  for (let i = 0; i < len; i += 1) {
+    const wordIndex = i >> 5;
+    const bitIndex = i & 31;
+    const present =
+      wordIndex < presenceWords &&
+      (view().getUint32(base + ARRAY_PRESENCE_WORDS_OFFSET + wordIndex * 4, true) &
+        (1 << bitIndex)) !==
+        0;
+    values.push(present ? view().getInt32(base + elementsOffset + i * 4, true) : TAG_UNDEFINED);
+  }
+  return values;
+}
+
+function decodeValue(raw) {
+  switch (rawTag(raw)) {
+    case TAG_UNDEFINED:
+      return undefined;
+    case TAG_NULL:
+      return null;
+    case TAG_FALSE:
+      return false;
+    case TAG_TRUE:
+      return true;
+    case TAG_NUMBER:
+      return raw >> 3;
+    case TAG_STRING:
+      return decodeString(raw);
+    default:
+      throw new TypeError(`unsupported RawValue for this host-shim test: ${raw}`);
+  }
+}
+
+function encodePrimitive(value) {
+  if (value === undefined) return TAG_UNDEFINED;
+  if (value === null) return TAG_NULL;
+  if (value === false) return TAG_FALSE;
+  if (value === true) return TAG_TRUE;
+  if (Number.isInteger(value)) return (value << 3) | TAG_NUMBER;
+  throw new TypeError(`unsupported host return value for this test: ${String(value)}`);
+}
+
+function decodeArgs(raw) {
+  return decodeArray(raw).map(decodeValue);
+}
+
+const imports = {
+  wasi_snapshot_preview1: {
+    fd_write(fd, iovs, iovsLen, nwritten) {
+      if (fd !== 1) return 8;
+      let written = 0;
+      for (let i = 0; i < iovsLen; i += 1) {
+        const iov = iovs + i * 8;
+        const ptr = view().getInt32(iov, true);
+        const len = view().getInt32(iov + 4, true);
+        stdout += decoder.decode(bytes().subarray(ptr, ptr + len));
+        written += len;
+      }
+      view().setInt32(nwritten, written, true);
+      return 0;
+    },
+    proc_exit(code) {
+      throw Object.assign(new Error(`proc_exit(${code})`), { code });
+    },
+  },
+  host: {
+    'function.compile'(argsRaw) {
+      const args = decodeArgs(argsRaw);
+      const fn = Function(...args);
+      hostFunctions.push(fn);
+      return ((hostFunctions.length - 1) << 3) | TAG_NUMBER;
+    },
+    'function.call'(handleRaw, argsRaw) {
+      const fn = hostFunctions[decodeValue(handleRaw)];
+      if (typeof fn !== 'function') {
+        throw new TypeError(`unknown host function handle: ${handleRaw}`);
+      }
+      return encodePrimitive(fn(...decodeArgs(argsRaw)));
+    },
+    'function.construct'(handleRaw, argsRaw) {
+      const fn = hostFunctions[decodeValue(handleRaw)];
+      if (typeof fn !== 'function') {
+        throw new TypeError(`unknown host function handle: ${handleRaw}`);
+      }
+      Reflect.construct(fn, decodeArgs(argsRaw));
+      return TAG_UNDEFINED;
+    },
+  },
+};
+
+try {
+  const { instance } = await WebAssembly.instantiate(wasmBytes, imports);
+  memory = instance.exports.memory;
+  instance.exports._start();
+} catch (error) {
+  if (error && error.code === 0) {
+    process.stdout.write(stdout);
+    process.exit(0);
+  }
+  throw error;
+}
+
+process.stdout.write(stdout);
+"#;
