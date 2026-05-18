@@ -360,15 +360,16 @@ The current implementation has several partial dynamic-code paths:
   constructed objects with string-keyed primitive property reads for statically
   visible dynamic Function handles. The shim preserves stable identity when the
   same host object is returned repeatedly, refreshes existing string-keyed
-  primitive properties on repeated returns, and carries handles as wasm object
-  cells backed by host-side handle maps instead of number values.
+  primitive properties on repeated returns, tracks capacity-bounded
+  string-keyed primitive shape changes, and carries handles as wasm object cells
+  backed by host-side handle maps instead of number values.
 
 The canonical implementation plan is
 `plans/eval-new-function-implementation-plan.md`. Current known gaps include
 the split parser/compiler eval expansion paths, direct eval declaration
 environment connection, remaining Function constructor grammar/constructability
-completeness, broader host Function handle object shape/nested/error bridging, and
-full dynamic direct-eval environment semantics beyond the primitive env-cell
+completeness, broader host Function handle object growth/nested/error bridging,
+and full dynamic direct-eval environment semantics beyond the primitive env-cell
 write-back slice. Node-shim execution for dynamic indirect eval and dynamic
 Function handles is covered by focused integration tests, as are primitive-return
 and primitive local/parameter/block-shadow/string write-back, object result and

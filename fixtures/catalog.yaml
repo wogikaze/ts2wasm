@@ -925,6 +925,7 @@ directories:
     - function-constructor-dynamic-object-mutation-node-shim.ts
     - function-constructor-dynamic-object-node-shim.ts
     - function-constructor-dynamic-object-properties-node-shim.ts
+    - function-constructor-dynamic-object-shape-node-shim.ts
     - function-constructor-dynamic-string-node-shim.ts
     - function-constructor-metadata.ts
     - function-constructor-no-caller-capture.ts
