@@ -4036,7 +4036,15 @@ impl super::super::Resolver {
                 // runtime functions (e.g., String methods like "substr").
                 // This allows untyped/ambient receivers to call instance methods
                 // that the runtime already supports.
-                if let Some(intrinsic) = resolve_method_to_runtime_fn(
+                // Skip methods that are ambiguous between String and Array
+                // (at, slice, indexOf, lastIndexOf, includes, concat) — these
+                // would be misrouted to String variants for Array receivers.
+                let is_ambiguous = matches!(
+                    method,
+                    "at" | "slice" | "indexOf" | "lastIndexOf" | "includes" | "concat"
+                );
+                if !is_ambiguous
+                    && let Some(intrinsic) = resolve_method_to_runtime_fn(
                     &ResolvedExpr::Ident(receiver_name.to_string()),
                     method,
                 ) {
