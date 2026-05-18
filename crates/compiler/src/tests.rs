@@ -342,11 +342,16 @@ fn compiler_lands_static_indirect_eval_var_on_global_object() {
     assert!(matches!(
         plan.as_slice(),
         [
-            ts2wasm_ir::builtin_resolved::EvalCompletionStep::GlobalVarLet { name, .. },
+            ts2wasm_ir::builtin_resolved::EvalCompletionStep::GlobalVarLet {
+                name,
+                init: ts2wasm_ir::ResolvedExpr::Undefined,
+            },
+            ts2wasm_ir::builtin_resolved::EvalCompletionStep::GlobalVarLet { name: assigned, .. },
             ts2wasm_ir::builtin_resolved::EvalCompletionStep::Value(
                 ts2wasm_ir::ResolvedExpr::PropertyAccess { object, key, .. }
             )
         ] if name == "indirectGlobal"
+            && assigned == "indirectGlobal"
             && matches!(
                 object.as_ref(),
                 ts2wasm_ir::ResolvedExpr::Ident(global) if global == "globalThis"
@@ -376,16 +381,21 @@ fn compiler_lands_static_indirect_eval_function_on_global_object() {
         }
     );
     assert!(plan.declarations.var_names.is_empty());
-    let [
-        ts2wasm_ir::builtin_resolved::EvalCompletionStep::GlobalFunctionDecl { name, body, .. },
-        ts2wasm_ir::builtin_resolved::EvalCompletionStep::Value(
-            ts2wasm_ir::ResolvedExpr::MethodCall { object, method, .. },
-        ),
-    ] = plan.as_slice()
+    let Some(ts2wasm_ir::builtin_resolved::EvalCompletionStep::GlobalFunctionDecl {
+        name,
+        body,
+        ..
+    }) = plan.as_slice().first()
     else {
-        panic!("expected global function declaration and call: {plan:?}");
+        panic!("expected global function hoist: {plan:?}");
     };
     assert_eq!(name, "indirectGlobalFn");
+    let Some(ts2wasm_ir::builtin_resolved::EvalCompletionStep::Value(
+        ts2wasm_ir::ResolvedExpr::MethodCall { object, method, .. },
+    )) = plan.as_slice().last()
+    else {
+        panic!("expected global function call completion: {plan:?}");
+    };
     assert_eq!(method, "indirectGlobalFn");
     assert!(matches!(
         object.as_ref(),
@@ -434,6 +444,28 @@ fn compiler_keeps_static_indirect_eval_lexical_declarations_eval_local() {
                 ts2wasm_ir::ResolvedExpr::Ident(read_name)
             )
         ] if name == "indirectLexical" && other == "other" && read_name == "other"
+    ));
+}
+
+#[test]
+fn compiler_hoists_static_indirect_eval_global_var_declarations() {
+    let expanded = parse_resolve_and_expand_dynamic_code(
+        r#"
+        let result = (0, eval)("if (false) { var indirectHoisted = 1; } typeof indirectHoisted");
+        "#,
+    );
+    let ts2wasm_ir::ResolvedStmt::Let(_, ts2wasm_ir::ResolvedExpr::EvalCompletion(plan)) =
+        &expanded[0]
+    else {
+        panic!("expected eval completion plan: {expanded:?}");
+    };
+
+    assert!(matches!(
+        plan.as_slice().first(),
+        Some(ts2wasm_ir::builtin_resolved::EvalCompletionStep::GlobalVarLet {
+            name,
+            init: ts2wasm_ir::ResolvedExpr::Undefined,
+        }) if name == "indirectHoisted"
     ));
 }
 

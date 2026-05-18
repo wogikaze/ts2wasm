@@ -697,7 +697,9 @@ pub struct EvalFunctionHoist {
     pub name: String,
     pub params: Vec<ResolvedParam>,
     pub body: Vec<ResolvedStmt>,
+    pub is_generator: bool,
     pub is_async: bool,
+    pub source_text: String,
 }
 
 impl EvalCompletionStep {

@@ -827,9 +827,11 @@ fn expand_static_eval_source(
     let eval_is_strict = caller_is_strict || block_has_use_strict_directive(&program);
     let leak_var_declarations = !eval_is_strict;
     let mut caller_landing_declarations = Vec::new();
+    let mut global_var_hoists = Vec::new();
     let mut global_declaration_names = Vec::new();
     if leak_var_declarations {
         collect_eval_var_declaration_names(&program, &mut caller_landing_declarations);
+        collect_eval_var_let_declaration_names(&program, &mut global_var_hoists);
         collect_eval_var_declaration_names(&program, &mut global_declaration_names);
     }
     let var_landing = match (direct_caller_scope, leak_var_declarations) {
@@ -843,6 +845,7 @@ fn expand_static_eval_source(
         Vec::new()
     };
     if var_landing != EvalVarLanding::Global {
+        global_var_hoists.clear();
         global_declaration_names.clear();
     }
 
@@ -869,9 +872,15 @@ fn expand_static_eval_source(
     }
     let builtin_resolved = expand_stmts(builtin_resolved, &mut nested_ctx)?;
     let mut function_hoists = Vec::new();
-    if var_landing == EvalVarLanding::Caller {
+    if matches!(var_landing, EvalVarLanding::Caller | EvalVarLanding::Global) {
         collect_eval_function_hoists(&program, &builtin_resolved, src, &mut function_hoists);
     }
+    let (caller_function_hoists, global_function_hoists) = if var_landing == EvalVarLanding::Global
+    {
+        (Vec::new(), function_hoists)
+    } else {
+        (function_hoists, Vec::new())
+    };
 
     Ok(StaticEvalExpansion {
         expr: extract_completion_value(
@@ -888,7 +897,9 @@ fn expand_static_eval_source(
             eval_is_strict,
             var_landing,
             &caller_var_declarations,
-            function_hoists,
+            caller_function_hoists,
+            &global_var_hoists,
+            global_function_hoists,
         )?,
         caller_var_declarations,
         global_declaration_names,
@@ -1205,8 +1216,29 @@ fn extract_completion_value(
     var_landing: EvalVarLanding,
     eval_declarations: &[String],
     function_hoists: Vec<EvalFunctionHoist>,
+    global_var_hoists: &[String],
+    global_function_hoists: Vec<EvalFunctionHoist>,
 ) -> Result<ResolvedExpr, Diagnostic> {
     let mut steps = Vec::new();
+    steps.extend(
+        global_var_hoists
+            .iter()
+            .cloned()
+            .map(|name| EvalCompletionStep::GlobalVarLet {
+                name,
+                init: ResolvedExpr::Undefined,
+            }),
+    );
+    steps.extend(global_function_hoists.into_iter().map(|hoist| {
+        EvalCompletionStep::GlobalFunctionDecl {
+            name: hoist.name,
+            params: hoist.params,
+            body: hoist.body,
+            is_generator: hoist.is_generator,
+            is_async: hoist.is_async,
+            source_text: hoist.source_text,
+        }
+    }));
     steps.extend(eval_completion_steps(ast_stmts, stmts, var_landing));
     Ok(ResolvedExpr::EvalCompletion(
         EvalCompletionPlan::with_eval_context(
@@ -2612,6 +2644,60 @@ fn collect_eval_var_declaration_names(stmts: &[Stmt], out: &mut Vec<String>) {
     }
 }
 
+fn collect_eval_var_let_declaration_names(stmts: &[Stmt], out: &mut Vec<String>) {
+    for stmt in stmts {
+        match stmt {
+            Stmt::Let {
+                name, is_var: true, ..
+            } => {
+                if !out.contains(name) {
+                    out.push(name.clone());
+                }
+            }
+            Stmt::Block { statements, .. } => {
+                collect_eval_var_let_declaration_names(statements, out)
+            }
+            Stmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                collect_eval_var_let_declaration_names(then_body, out);
+                collect_eval_var_let_declaration_names(else_body, out);
+            }
+            Stmt::While { body, .. }
+            | Stmt::DoWhile { body, .. }
+            | Stmt::For { body, .. }
+            | Stmt::ForIn { body, .. }
+            | Stmt::ForOf { body, .. }
+            | Stmt::ForAwaitOf { body, .. } => collect_eval_var_let_declaration_names(body, out),
+            Stmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    collect_eval_var_let_declaration_names(body, out);
+                }
+            }
+            Stmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                collect_eval_var_let_declaration_names(try_block, out);
+                if let Some(catch_block) = catch_block {
+                    collect_eval_var_let_declaration_names(catch_block, out);
+                }
+                if let Some(finally_block) = finally_block {
+                    collect_eval_var_let_declaration_names(finally_block, out);
+                }
+            }
+            Stmt::Labeled { body, .. } => {
+                collect_eval_var_let_declaration_names(std::slice::from_ref(body.as_ref()), out);
+            }
+            _ => {}
+        }
+    }
+}
+
 fn collect_eval_function_hoists(
     ast_stmts: &[Stmt],
     stmts: &[ResolvedStmt],
@@ -2624,7 +2710,9 @@ fn collect_eval_function_hoists(
                 name,
                 params,
                 body,
+                is_generator,
                 is_async,
+                source_text,
                 ..
             } => {
                 let is_block_function = matches!(
@@ -2637,7 +2725,9 @@ fn collect_eval_function_hoists(
                         name: name.clone(),
                         params: params.clone(),
                         body: body.clone(),
+                        is_generator: *is_generator,
                         is_async: *is_async,
+                        source_text: source_text.clone(),
                     });
                 }
             }
