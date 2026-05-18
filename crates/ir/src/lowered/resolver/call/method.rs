@@ -2069,11 +2069,68 @@ impl super::super::Resolver {
                 span: Span::generated("binary"),
             }));
         }
-        if is_annex_b_date_method(method) && self.is_date_receiver(object) {
-            return Err(unsupported_annex_b_date_method_diagnostic(
-                method,
-                Some(span),
-            ));
+        if method == "setYear" && self.is_date_receiver(object) {
+            if args.len() != 1 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 1 argument, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            // B.2.4.2: if 0 ≤ ToInteger(year) ≤ 99, add 1900
+            let year_arg = match &args[0] {
+                ResolvedExpr::Number(n) if *n >= 0 && *n <= 99 => {
+                    LoweredExpr::Number(*n + 1900, Span::generated("num"))
+                }
+                ResolvedExpr::DecimalNumber(s) => {
+                    if let Ok(n) = s.parse::<i32>() {
+                        if n >= 0 && n <= 99 {
+                            LoweredExpr::Number(n + 1900, Span::generated("num"))
+                        } else {
+                            self.lower_expr(&args[0])?
+                        }
+                    } else {
+                        self.lower_expr(&args[0])?
+                    }
+                }
+                _ => self.lower_expr(&args[0])?,
+            };
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateSetFullYear,
+                args: vec![
+                    self.lower_expr(object)?,
+                    year_arg,
+                    LoweredExpr::Number(0, Span::generated("num")),
+                    LoweredExpr::Number(1, Span::generated("num")),
+                ],
+
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if self.is_date_receiver(object) && matches!(method, "toGMTString" | "toUTCString") {
+            if !args.is_empty() {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Date.prototype.{method} expects 0 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+
+                    phase: None,
+                });
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateToString,
+                args: vec![self.lower_expr(object)?],
+
+                span: Span::generated("runtime_call"),
+            }));
         }
         if method == "toString" && self.is_date_receiver(object) {
             if !args.is_empty() {

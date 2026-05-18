@@ -962,25 +962,6 @@ pub(crate) fn is_date_now_expr(expr: &ResolvedExpr) -> bool {
     )
 }
 
-pub(crate) fn is_annex_b_date_method(method: &str) -> bool {
-    matches!(method, "setYear" | "toGMTString")
-}
-
-pub(crate) fn unsupported_annex_b_date_method_diagnostic(
-    method: &str,
-    span: Option<Span>,
-) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!(
-            "issue-241: Date.prototype.{method} is Annex B legacy Date behavior and is not supported in the deterministic Date epoch slice"
-        ),
-        span,
-
-        phase: None,
-    }
-}
-
 pub(crate) fn is_local_tz_date_method(method: &str) -> bool {
     matches!(
         method,
