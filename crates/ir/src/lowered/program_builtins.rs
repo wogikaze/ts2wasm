@@ -496,10 +496,7 @@ pub(crate) fn collection_method_runtime_fn_arg(method: &str) -> Option<RuntimeFn
 
 /// Returns true for array methods whose WASM runtime function doesn't accept user callbacks
 pub(crate) fn is_identity_array_method(method: &str) -> bool {
-    matches!(
-        method,
-        "some"
-    )
+    matches!(method, "some")
 }
 
 pub(crate) fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {
