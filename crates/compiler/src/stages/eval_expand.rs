@@ -1147,6 +1147,16 @@ fn eval_statement_completion_step(
                 body_steps: eval_completion_steps(ast_body, body, leak_var_declarations),
             }
         }
+        ResolvedStmt::DoWhile { body, condition } => {
+            let ast_body = match ast_stmt {
+                Some(Stmt::DoWhile { body, .. }) => body.as_slice(),
+                _ => &[],
+            };
+            EvalCompletionStep::DoWhile {
+                body_steps: eval_completion_steps(ast_body, body, leak_var_declarations),
+                condition,
+            }
+        }
         ResolvedStmt::Function {
             name,
             params,

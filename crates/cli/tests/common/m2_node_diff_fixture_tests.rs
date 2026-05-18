@@ -3134,6 +3134,7 @@ fn direct_eval_block_function_fixture_matches_node_output_under_iwasm() {
         "fixtures/core-semantics/direct-eval-block-function-block-scoping.ts",
         "fixtures/core-semantics/direct-eval-block-function-mutable-env.ts",
         "fixtures/core-semantics/direct-eval-block-var-lands-in-caller.ts",
+        "fixtures/core-semantics/direct-eval-do-while-completion.ts",
         "fixtures/core-semantics/direct-eval-if-var-hoisted-undefined.ts",
         "fixtures/core-semantics/direct-eval-if-var-lands-in-caller.ts",
         "fixtures/core-semantics/direct-eval-function-hoisted-before-use.ts",

@@ -339,6 +339,10 @@ pub enum EvalCompletionStep {
         condition: ResolvedExpr,
         body_steps: Vec<EvalCompletionStep>,
     },
+    DoWhile {
+        body_steps: Vec<EvalCompletionStep>,
+        condition: ResolvedExpr,
+    },
     LexicalLet {
         name: String,
         init: ResolvedExpr,
@@ -363,6 +367,9 @@ impl EvalCompletionStep {
                 condition: expr, ..
             }
             | Self::While {
+                condition: expr, ..
+            }
+            | Self::DoWhile {
                 condition: expr, ..
             }
             | Self::LexicalLet { init: expr, .. } => Some(expr),
