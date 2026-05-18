@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use super::{binding_param_default_ref_names, binding_param_names};
+use super::{binding_param_default_ref_names, binding_param_names, block_contains_new_target};
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
 use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
 use crate::lowered::facts::ArrowClosure;
@@ -15,6 +15,7 @@ struct NestedFunctionOptions {
     is_generator: bool,
     is_async: bool,
     suppress_captures: bool,
+    needs_new_target: bool,
 }
 
 impl super::Resolver {
@@ -386,6 +387,8 @@ impl super::Resolver {
                     && block_contains_this(body),
                 is_generator,
                 suppress_captures: origin == FunctionExprOrigin::FunctionConstructor,
+                needs_new_target: origin == FunctionExprOrigin::FunctionConstructor
+                    && block_contains_new_target(body),
                 ..NestedFunctionOptions::default()
             },
         )
@@ -631,6 +634,7 @@ impl super::Resolver {
                 needs_arguments: (block_contains_arguments(body)
                     || block_contains_dynamic_direct_eval(body))
                     && !params.iter().any(|param| param.name == "arguments"),
+                needs_new_target: options.needs_new_target,
                 has_rest: params.iter().any(|param| param.is_rest),
                 metadata_length: Some(function_length_metadata(params)),
                 ..FunctionSignature::default()

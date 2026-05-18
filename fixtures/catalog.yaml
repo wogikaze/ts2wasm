@@ -966,6 +966,7 @@ directories:
     - for-loop-prefix-increment.ts
     - for-of-array.ts
     - function-arguments.ts
+    - function-constructor-arguments.ts
     - function-constructor-call-static.ts
     - function-constructor-construct-return-object.ts
     - function-constructor-dynamic-array-existing-ref-growth-node-shim.ts
@@ -991,6 +992,7 @@ directories:
     - function-constructor-dynamic-syntax-error-catch-node-shim.ts
     - function-constructor-dynamic-throw-catch-node-shim.ts
     - function-constructor-metadata.ts
+    - function-constructor-new-target.ts
     - function-constructor-no-caller-capture.ts
     - function-constructor-parameter-grammar.ts
     - function-constructor-rest-params.ts

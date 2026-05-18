@@ -69,7 +69,7 @@ impl super::super::Resolver {
             });
         }
         if let Some(prototype) = self.constructable_function_prototype_ref(class_name) {
-            let lowered_args = self.lower_constructor_args(prototype.constructor, args)?;
+            let lowered_args = self.lower_construct_args(prototype.constructor, args)?;
             return Ok(LoweredExpr::New {
                 constructor: prototype.constructor,
                 prototype,
@@ -592,7 +592,7 @@ impl super::super::Resolver {
             }
         };
 
-        let lowered_args = self.lower_constructor_args(prototype.constructor, args)?;
+        let lowered_args = self.lower_construct_args(prototype.constructor, args)?;
         let private_slot_count = self.private_slot_count(class_name);
         let private_brand = if self.class_has_instance_private_brand(class_name) {
             Some(self.private_brand_for_class(class_name, None)?)
@@ -609,59 +609,6 @@ impl super::super::Resolver {
             private_slot_count,
             span: Span::generated("new"),
         })
-    }
-
-    fn lower_constructor_args(
-        &mut self,
-        constructor: FuncId,
-        args: &[ResolvedExpr],
-    ) -> Result<Vec<LoweredExpr>, Diagnostic> {
-        let signature = self
-            .ctx
-            .symbols
-            .function_signatures
-            .get(&constructor)
-            .copied()
-            .unwrap_or_default();
-        let explicit_args = self.lower_call_args(args)?;
-        if !signature.needs_arguments {
-            return Ok(explicit_args);
-        }
-
-        let fixed_count = if signature.has_rest {
-            signature.explicit_params.saturating_sub(1)
-        } else {
-            signature.explicit_params
-        };
-        let mut lowered_args = Vec::new();
-        lowered_args.extend(explicit_args.iter().take(fixed_count).cloned());
-        for _ in explicit_args.len()..fixed_count {
-            lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
-        }
-
-        let argument_count = explicit_args.len();
-        let mut props = explicit_args
-            .iter()
-            .cloned()
-            .enumerate()
-            .map(|(index, arg)| (index.to_string(), arg))
-            .collect::<Vec<_>>();
-        let length_index = props.len();
-        props.push((
-            "length".to_owned(),
-            LoweredExpr::Number(argument_count as i32, Span::generated("num")),
-        ));
-        lowered_args.push(LoweredExpr::ObjectNew {
-            props,
-            non_enumerable: 1 << length_index,
-            span: Span::generated("object_new"),
-        });
-
-        if signature.has_rest {
-            lowered_args.extend(explicit_args.into_iter().skip(fixed_count));
-        }
-
-        Ok(lowered_args)
     }
 }
 

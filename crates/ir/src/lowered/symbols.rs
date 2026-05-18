@@ -52,6 +52,8 @@ pub struct FunctionSignature {
     pub is_strict: bool,
     /// Whether the function references `arguments`.
     pub needs_arguments: bool,
+    /// Whether the function references `new.target`.
+    pub needs_new_target: bool,
     /// Whether the function has a rest parameter.
     pub has_rest: bool,
     /// Metadata length for function-level metadata tracking.

@@ -1318,12 +1318,13 @@ impl Parser {
                 self.advance(); // consume '.'
                 self.advance(); // consume 'target' ident
                 let end = self.prev_span().map(|s| s.end).unwrap_or(new_span.end);
-                return Ok(Expr::NewTarget {
+                let expr = Expr::NewTarget {
                     span: Span {
                         start: new_span.start,
                         end,
                     },
-                });
+                };
+                return self.finish_call_member(expr, true);
             }
             let expr = self.call_member_no_call()?;
             self.try_consume_typescript_new_type_arguments(&expr)?;

@@ -13,6 +13,9 @@ use std::collections::{HashMap, HashSet};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 use ts2wasm_syntax::{BinaryOp, LogicalAssignOp, UnaryOp};
+
+pub(crate) const SYNTHETIC_NEW_TARGET_PARAM: &str = "__ts2wasm_new_target";
+
 #[path = "program_builtins.rs"]
 pub(crate) mod program_builtins;
 #[path = "program_captures.rs"]
@@ -2651,6 +2654,7 @@ fn collect_function_signatures(
                         needs_arguments: (block_contains_arguments(body)
                             || block_contains_dynamic_direct_eval(body))
                             && !params.iter().any(|param| param.name == "arguments"),
+                        needs_new_target: false,
                         has_rest: params.iter().any(|param| param.is_rest),
                         metadata_length: fixed_arity_metadata_length(params),
                         returns_heap_closure: block_returns_declared_function(body),
@@ -2828,6 +2832,7 @@ fn function_signature_for_params_body(
         needs_arguments: (block_contains_arguments(body)
             || block_contains_dynamic_direct_eval(body))
             && !params.iter().any(|param| param.name == "arguments"),
+        needs_new_target: false,
         has_rest: params.iter().any(|param| param.is_rest),
         metadata_length: fixed_arity_metadata_length(params),
         returns_heap_closure: block_returns_declared_function(body),
@@ -4021,6 +4026,10 @@ pub(super) fn block_contains_arguments(stmts: &[ResolvedStmt]) -> bool {
     stmts.iter().any(stmt_contains_arguments)
 }
 
+pub(super) fn block_contains_new_target(stmts: &[ResolvedStmt]) -> bool {
+    stmts.iter().any(stmt_contains_new_target)
+}
+
 pub(crate) fn direct_iife_body_has_static_eval_block_function_binding(
     stmts: &[ResolvedStmt],
 ) -> bool {
@@ -4158,6 +4167,170 @@ fn stmt_contains_arguments(stmt: &ResolvedStmt) -> bool {
         | ResolvedStmt::ClassDecl { .. }
         | ResolvedStmt::Break { .. }
         | ResolvedStmt::Continue { .. } => false,
+    }
+}
+
+fn stmt_contains_new_target(stmt: &ResolvedStmt) -> bool {
+    match stmt {
+        ResolvedStmt::Let(_, expr)
+        | ResolvedStmt::DestructureLet { expr, .. }
+        | ResolvedStmt::Assign(_, expr)
+        | ResolvedStmt::Expr(expr)
+        | ResolvedStmt::Return(expr)
+        | ResolvedStmt::Throw(expr) => expr_contains_new_target(expr),
+        ResolvedStmt::If {
+            condition,
+            then_body,
+            else_body,
+        } => {
+            expr_contains_new_target(condition)
+                || block_contains_new_target(then_body)
+                || block_contains_new_target(else_body)
+        }
+        ResolvedStmt::While { condition, body } | ResolvedStmt::DoWhile { body, condition } => {
+            expr_contains_new_target(condition) || block_contains_new_target(body)
+        }
+        ResolvedStmt::For {
+            init,
+            condition,
+            update,
+            body,
+        } => {
+            init.as_ref()
+                .is_some_and(|stmt| stmt_contains_new_target(stmt))
+                || condition.as_ref().is_some_and(expr_contains_new_target)
+                || update.as_ref().is_some_and(expr_contains_new_target)
+                || block_contains_new_target(body)
+        }
+        ResolvedStmt::ForIn { iter, body, .. }
+        | ResolvedStmt::ForOf { iter, body, .. }
+        | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
+            expr_contains_new_target(iter) || block_contains_new_target(body)
+        }
+        ResolvedStmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            block_contains_new_target(try_block)
+                || catch_block
+                    .as_ref()
+                    .is_some_and(|block| block_contains_new_target(block))
+                || finally_block
+                    .as_ref()
+                    .is_some_and(|block| block_contains_new_target(block))
+        }
+        ResolvedStmt::Switch { expr, cases } => {
+            expr_contains_new_target(expr)
+                || cases.iter().any(|(case_expr, body)| {
+                    case_expr.as_ref().is_some_and(expr_contains_new_target)
+                        || block_contains_new_target(body)
+                })
+        }
+        ResolvedStmt::Labeled { body, .. } => stmt_contains_new_target(body),
+        ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
+            expr_contains_new_target(expr)
+        }
+        ResolvedStmt::Block { statements, .. } => block_contains_new_target(statements),
+        ResolvedStmt::AmbientValue(_)
+        | ResolvedStmt::Function { .. }
+        | ResolvedStmt::ClassDecl { .. }
+        | ResolvedStmt::Break { .. }
+        | ResolvedStmt::Continue { .. } => false,
+    }
+}
+
+fn expr_contains_new_target(expr: &ResolvedExpr) -> bool {
+    match expr {
+        ResolvedExpr::NewTarget { .. } => true,
+        ResolvedExpr::Await { expr } => expr_contains_new_target(expr),
+        ResolvedExpr::Yield { expr, .. } => expr.as_deref().is_some_and(expr_contains_new_target),
+        ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
+            expr_contains_new_target(expr)
+        }
+        ResolvedExpr::Binary { left, right, .. } => {
+            expr_contains_new_target(left) || expr_contains_new_target(right)
+        }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            expr_contains_new_target(condition)
+                || expr_contains_new_target(then_expr)
+                || expr_contains_new_target(else_expr)
+        }
+        ResolvedExpr::Call { callee, args, .. }
+        | ResolvedExpr::OptionalCall { callee, args, .. } => {
+            expr_contains_new_target(callee) || args.iter().any(expr_contains_new_target)
+        }
+        ResolvedExpr::Assign { expr, .. }
+        | ResolvedExpr::LogicalAssign { expr, .. }
+        | ResolvedExpr::LogicalPropertyAssign { expr, .. } => expr_contains_new_target(expr),
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            expr_contains_new_target(object) || expr_contains_new_target(expr)
+        }
+        ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
+            expr_contains_new_target(key) || expr_contains_new_target(expr)
+        }
+        ResolvedExpr::LogicalComputedMemberAssign {
+            object, key, expr, ..
+        } => {
+            expr_contains_new_target(object)
+                || expr_contains_new_target(key)
+                || expr_contains_new_target(expr)
+        }
+        ResolvedExpr::Array(elements) => elements.iter().any(|element| match element {
+            ResolvedArrayElement::Present(expr) => expr_contains_new_target(expr),
+            ResolvedArrayElement::Hole => false,
+        }),
+        ResolvedExpr::Object(props) => props.iter().any(|prop| {
+            prop.computed_key().is_some_and(expr_contains_new_target)
+                || expr_contains_new_target(prop.value())
+        }),
+        ResolvedExpr::ComputedIndex { object, index }
+        | ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
+            expr_contains_new_target(object) || expr_contains_new_target(index)
+        }
+        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+            args.iter().any(expr_contains_new_target)
+        }
+        ResolvedExpr::BuiltinProperty { object, .. }
+        | ResolvedExpr::PropertyAccess { object, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object, .. } => expr_contains_new_target(object),
+        ResolvedExpr::MethodCall { object, args, .. } => {
+            expr_contains_new_target(object) || args.iter().any(expr_contains_new_target)
+        }
+        ResolvedExpr::PropertyAssign { object, value, .. } => {
+            expr_contains_new_target(object) || expr_contains_new_target(value)
+        }
+        ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+            expr_contains_new_target(object)
+                || expr_contains_new_target(key)
+                || expr_contains_new_target(value)
+        }
+        ResolvedExpr::ArrowFn { body, .. } => expr_contains_new_target(body),
+        ResolvedExpr::Sequence(exprs) => exprs.iter().any(expr_contains_new_target),
+        ResolvedExpr::EvalCompletion(steps) => steps
+            .iter()
+            .filter_map(|step| step.expr())
+            .any(expr_contains_new_target),
+        ResolvedExpr::FunctionExpr { .. }
+        | ResolvedExpr::ClassExpr { .. }
+        | ResolvedExpr::This { .. }
+        | ResolvedExpr::ImportMeta { .. }
+        | ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
+        | ResolvedExpr::BigIntLiteral { .. }
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Eval { .. }
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined
+        | ResolvedExpr::Ident(_)
+        | ResolvedExpr::ModuleLoad { .. } => false,
     }
 }
 
@@ -4333,6 +4506,14 @@ pub(super) fn lower_function(
         } else {
             lowered_params.push(param.clone());
         }
+    }
+    if signature.needs_new_target {
+        lowered_params.push(ResolvedParam {
+            name: SYNTHETIC_NEW_TARGET_PARAM.to_owned(),
+            default: None,
+            is_rest: false,
+            span: None,
+        });
     }
     if signature.needs_arguments {
         let synthetic_arguments_param_index = lowered_params.len();

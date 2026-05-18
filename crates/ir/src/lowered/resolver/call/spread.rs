@@ -4,6 +4,15 @@ use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 use ts2wasm_syntax::SYMBOL_ITERATOR_OBJECT_KEY;
 
+fn direct_function_token(func_id: FuncId) -> LoweredExpr {
+    LoweredExpr::ArrowFn {
+        func_id,
+        captures: Vec::new(),
+        representation: ClosureRepresentation::DirectLocalToken,
+        span: Span::generated("function_token"),
+    }
+}
+
 impl super::super::Resolver {
     pub(crate) fn lower_function_call_args(
         &mut self,
@@ -60,8 +69,20 @@ impl super::super::Resolver {
             for _ in explicit_args.len()..fixed_count {
                 lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
             }
+            if signature.needs_new_target {
+                lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+            }
         } else if signature.has_rest {
-            lowered_args.extend(explicit_args.iter().cloned());
+            if signature.needs_new_target {
+                let fixed_count = signature.explicit_params.saturating_sub(1);
+                lowered_args.extend(explicit_args.iter().take(fixed_count).cloned());
+                for _ in explicit_args.len()..fixed_count {
+                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                }
+                lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+            } else {
+                lowered_args.extend(explicit_args.iter().cloned());
+            }
         } else {
             lowered_args.extend(
                 explicit_args
@@ -70,6 +91,9 @@ impl super::super::Resolver {
                     .cloned(),
             );
             for _ in explicit_args.len()..signature.explicit_params {
+                lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+            }
+            if signature.needs_new_target {
                 lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
             }
         }
@@ -94,12 +118,70 @@ impl super::super::Resolver {
             });
         }
 
-        if signature.has_rest && signature.needs_arguments {
+        if signature.has_rest && (signature.needs_arguments || signature.needs_new_target) {
             let fixed_count = signature.explicit_params.saturating_sub(1);
             lowered_args.extend(explicit_args.into_iter().skip(fixed_count));
         }
 
         self.append_function_captures(func_id, &mut lowered_args)?;
+
+        Ok(lowered_args)
+    }
+
+    pub(crate) fn lower_construct_args(
+        &mut self,
+        constructor: FuncId,
+        args: &[ResolvedExpr],
+    ) -> Result<Vec<LoweredExpr>, Diagnostic> {
+        let signature = self
+            .ctx
+            .symbols
+            .function_signatures
+            .get(&constructor)
+            .copied()
+            .unwrap_or_default();
+        let explicit_args = self.lower_call_args(args)?;
+        if !signature.has_rest && !signature.needs_arguments && !signature.needs_new_target {
+            return Ok(explicit_args);
+        }
+
+        let fixed_count = if signature.has_rest {
+            signature.explicit_params.saturating_sub(1)
+        } else {
+            signature.explicit_params
+        };
+        let mut lowered_args = Vec::new();
+        lowered_args.extend(explicit_args.iter().take(fixed_count).cloned());
+        for _ in explicit_args.len()..fixed_count {
+            lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+        }
+        if signature.needs_new_target {
+            lowered_args.push(direct_function_token(constructor));
+        }
+
+        if signature.needs_arguments {
+            let argument_count = explicit_args.len();
+            let mut props = explicit_args
+                .iter()
+                .cloned()
+                .enumerate()
+                .map(|(index, arg)| (index.to_string(), arg))
+                .collect::<Vec<_>>();
+            let length_index = props.len();
+            props.push((
+                "length".to_owned(),
+                LoweredExpr::Number(argument_count as i32, Span::generated("num")),
+            ));
+            lowered_args.push(LoweredExpr::ObjectNew {
+                props,
+                non_enumerable: 1 << length_index,
+                span: Span::generated("object_new"),
+            });
+        }
+
+        if signature.has_rest {
+            lowered_args.extend(explicit_args.into_iter().skip(fixed_count));
+        }
 
         Ok(lowered_args)
     }

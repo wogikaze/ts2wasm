@@ -1105,7 +1105,9 @@ fn standalone_fixtures_pass_host_deny() {
         // Rest parameters (WASI stdout only)
         "rest-parameters/rest-basic.ts",
         // Static Function constructor parameter grammar compiles without host imports.
+        "core-semantics/function-constructor-arguments.ts",
         "core-semantics/function-constructor-construct-return-object.ts",
+        "core-semantics/function-constructor-new-target.ts",
         "core-semantics/function-constructor-parameter-grammar.ts",
         "core-semantics/function-constructor-rest-params.ts",
         "core-semantics/function-constructor-this-binding.ts",

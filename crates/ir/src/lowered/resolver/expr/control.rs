@@ -49,6 +49,11 @@ impl super::super::Resolver {
     }
 
     pub(super) fn lower_new_target_expr(&mut self, span: Span) -> Result<LoweredExpr, Diagnostic> {
+        if let Ok(local_id) =
+            self.resolve_local(crate::lowered::program::SYNTHETIC_NEW_TARGET_PARAM)
+        {
+            return Ok(LoweredExpr::Local(local_id, span));
+        }
         // NewTargetPropagate: constructor scopes expose new.target and arrows inherit it.
         let class_name = self.ctx.classes.new_target_class.clone().or_else(|| {
             (self.ctx.classes.in_constructor)

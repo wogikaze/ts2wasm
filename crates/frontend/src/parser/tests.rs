@@ -2024,6 +2024,28 @@ b /* parameter b */,
     }
 
     #[test]
+    fn parses_new_target_member_access() {
+        let program = parse_program("function f() { return new.target.name; }").unwrap();
+
+        let Stmt::Function { body, .. } = &program[0] else {
+            panic!("expected function declaration");
+        };
+        let Stmt::Return {
+            expr:
+                Expr::Member {
+                    object, property, ..
+                },
+            ..
+        } = &body[0]
+        else {
+            panic!("expected new.target member return");
+        };
+
+        assert!(matches!(object.as_ref(), Expr::NewTarget { .. }));
+        assert_eq!(property, "name");
+    }
+
+    #[test]
     fn parses_class_static_block_as_distinct_class_element() {
         let program = parse_program("class C { static { console.log(1); } }").unwrap();
 
