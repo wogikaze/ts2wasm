@@ -455,6 +455,14 @@ fn static_direct_eval_class_private_field_declares_no_node_host_eval_capability(
 }
 
 #[test]
+fn static_direct_eval_class_method_this_declares_no_node_host_eval_capability() {
+    assert_standalone_category(
+        "core-semantics/direct-eval-class-method-this.ts",
+        "static direct eval class method this",
+    );
+}
+
+#[test]
 fn static_direct_eval_class_new_target_declares_no_node_host_eval_capability() {
     assert_standalone_category(
         "core-semantics/direct-eval-class-new-target.ts",

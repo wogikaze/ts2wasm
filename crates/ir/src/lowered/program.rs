@@ -189,13 +189,7 @@ pub fn lower_program_with_module_url(
                     (Vec::new(), Vec::new())
                 };
 
-                let mut ctor_params_with_this: Vec<ResolvedParam> = vec![ResolvedParam {
-                    name: "this".to_owned(),
-                    default: None,
-                    is_rest: false,
-                    span: None,
-                }];
-                ctor_params_with_this.extend(ctor_params.clone());
+                let mut ctor_params_for_lowering = ctor_params.clone();
 
                 // Derived classes without explicit constructors have an implicit
                 // default constructor that accepts any number of arguments
@@ -203,13 +197,20 @@ pub fn lower_program_with_module_url(
                 // Add a rest parameter to match JavaScript semantics so that
                 // new Derived(arg) passes arity validation.
                 if constructor.is_none() && extends.is_some() {
-                    ctor_params_with_this.push(ResolvedParam {
+                    ctor_params_for_lowering.push(ResolvedParam {
                         name: "...args".to_owned(),
                         default: None,
                         is_rest: true,
                         span: None,
                     });
                 }
+                let mut ctor_params_with_this: Vec<ResolvedParam> = vec![ResolvedParam {
+                    name: "this".to_owned(),
+                    default: None,
+                    is_rest: false,
+                    span: None,
+                }];
+                ctor_params_with_this.extend(ctor_params_for_lowering.clone());
 
                 let constructor_object_method_mutable_captures =
                     collect_block_object_method_mutable_captures(&ctor_body)?;
@@ -226,7 +227,7 @@ pub fn lower_program_with_module_url(
                     .collect::<HashSet<_>>();
                 let lowered = lower_function(
                     ctor_id,
-                    &ctor_params_with_this,
+                    &ctor_params_for_lowering,
                     &ctor_body,
                     false,
                     false,
@@ -2676,8 +2677,7 @@ fn collect_function_signatures(
                 let ctor_params_len = constructor
                     .as_ref()
                     .map(|(params, _)| params.len())
-                    .unwrap_or_default()
-                    + 1;
+                    .unwrap_or_default();
                 let ctor_has_rest = constructor
                     .as_ref()
                     .is_some_and(|(params, _)| params.iter().any(|param| param.is_rest))
@@ -2694,6 +2694,7 @@ fn collect_function_signatures(
                     function_ids[&ctor_key],
                     FunctionSignature {
                         explicit_params: ctor_params_len,
+                        needs_receiver: true,
                         has_rest: ctor_has_rest,
                         is_strict: true,
                         returns_heap_closure: ctor_returns_heap_closure,
