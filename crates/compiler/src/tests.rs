@@ -247,6 +247,47 @@ fn compiler_preserves_static_direct_eval_expression_side_effects() {
 }
 
 #[test]
+fn compiler_preserves_multiple_eval_block_function_declarations_in_order() {
+    let expanded = parse_resolve_and_expand_dynamic_code(
+        r#"
+        var updated;
+        eval('{ function f() { return "first"; } }{ function f() { return "second"; } }updated = f;');
+        "#,
+    );
+    let ts2wasm_ir::ResolvedStmt::Expr(ts2wasm_ir::ResolvedExpr::EvalCompletion(steps)) =
+        &expanded[1]
+    else {
+        panic!("expected eval completion expression: {expanded:?}");
+    };
+
+    let names = steps
+        .iter()
+        .filter_map(|step| match step {
+            ts2wasm_ir::builtin_resolved::EvalCompletionStep::FunctionDecl {
+                name, body, ..
+            } => {
+                let returned = match body.as_slice() {
+                    [ts2wasm_ir::ResolvedStmt::Return(ts2wasm_ir::ResolvedExpr::String(value))] => {
+                        value.as_str()
+                    }
+                    _ => "",
+                };
+                Some((name.as_str(), returned))
+            }
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+
+    assert_eq!(names, [("f", "first"), ("f", "second")]);
+    assert!(matches!(
+        steps.last(),
+        Some(ts2wasm_ir::builtin_resolved::EvalCompletionStep::Value(
+            ts2wasm_ir::ResolvedExpr::Assign { name, .. }
+        )) if name == "updated"
+    ));
+}
+
+#[test]
 fn compiler_keeps_strict_caller_eval_var_declarations_local() {
     let expanded = parse_resolve_and_expand_dynamic_code(
         r#"

@@ -834,8 +834,6 @@ fn expand_static_eval_source(
         nested_ctx.declare(binding.clone());
     }
     let builtin_resolved = expand_stmts(builtin_resolved, &mut nested_ctx)?;
-    let (program, builtin_resolved) =
-        remove_post_prefix_block_function_decls(program, builtin_resolved, src);
     let mut function_hoists = Vec::new();
     if leak_var_declarations {
         collect_eval_function_hoists(&program, &builtin_resolved, src, &mut function_hoists);
@@ -864,34 +862,6 @@ fn resolved_block_has_use_strict_directive(stmts: &[ResolvedStmt]) -> bool {
         }
     }
     false
-}
-
-fn remove_post_prefix_block_function_decls(
-    ast_stmts: Vec<Stmt>,
-    stmts: Vec<ResolvedStmt>,
-    source: &str,
-) -> (Vec<Stmt>, Vec<ResolvedStmt>) {
-    let mut filtered_ast = Vec::new();
-    let mut filtered_resolved = Vec::new();
-    let mut saw_prior_stmt = false;
-
-    for (ast_stmt, resolved_stmt) in ast_stmts.into_iter().zip(stmts) {
-        let drop_block_function = matches!(
-            (&ast_stmt, &resolved_stmt),
-            (
-                Stmt::Function { span, .. },
-                ResolvedStmt::Function { .. }
-            ) if saw_prior_stmt && function_decl_is_preceded_by_block_open(source, *span)
-        );
-        if drop_block_function {
-            continue;
-        }
-        saw_prior_stmt = true;
-        filtered_ast.push(ast_stmt);
-        filtered_resolved.push(resolved_stmt);
-    }
-
-    (filtered_ast, filtered_resolved)
 }
 
 fn validate_static_eval_source(program: &[Stmt]) -> Result<(), Diagnostic> {

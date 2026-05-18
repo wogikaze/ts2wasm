@@ -624,8 +624,11 @@ Exit criteria:
   oracle now executes non-module prepared test262 sources with
   `vm.runInThisContext`, and `$262.evalScript` uses the same script-context
   helper, so the focused Annex B eval-code case passes strict Node/iwasm
-  semantic comparison. Realm / cross-realm classification and broader test262
-  burn-down remain open.
+  semantic comparison. Static direct eval completion now preserves multiple
+  flattened Annex B block function declarations in execution order, so a second
+  block-level function declaration can update the caller var binding instead of
+  being dropped before lowering. Realm / cross-realm classification and broader
+  test262 burn-down remain open.
 
 ## 6. File-by-file task map
 
