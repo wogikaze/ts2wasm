@@ -396,9 +396,9 @@ impl StaticFunctionConstructorSource {
             .iter()
             .map(String::as_str)
             .collect::<Vec<_>>()
-            .join(", ");
+            .join(",");
         format!(
-            "function {}({params_source}) {{\n{}\n}}",
+            "function {}({params_source}\n) {{\n{}\n}}",
             self.generated_function.name, self.body
         )
     }

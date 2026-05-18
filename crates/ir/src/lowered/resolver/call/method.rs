@@ -1370,18 +1370,43 @@ impl super::super::Resolver {
                     // Lower the new RegExp to string representation, toString returns it
                     return Ok(Some(self.lower_expr(object)?));
                 }
-                ResolvedExpr::Ident(name) if self.is_function_identifier(object) => {
-                    let body = if let Ok(func_id) = self.resolve_func(name) {
-                        self.ctx
+                ResolvedExpr::Ident(name) => {
+                    if let Ok(local) = self.resolve_local(name)
+                        && let Some(closure) = self.ctx.facts.arrow_locals.get(&local)
+                    {
+                        let body = self
+                            .ctx
                             .function_sources
-                            .get(&func_id)
-                            .filter(|s| !s.is_empty())
+                            .get(&closure.func_id)
+                            .filter(|source| !source.is_empty())
                             .cloned()
-                            .unwrap_or_else(|| format!("function {}() {{ [native code] }}", name))
-                    } else {
-                        format!("function {}() {{ [native code] }}", name)
-                    };
-                    return Ok(Some(LoweredExpr::String(body, Span::generated("str"))));
+                            .unwrap_or_else(|| {
+                                let metadata_name = self
+                                    .ctx
+                                    .facts
+                                    .function_metadata_name_locals
+                                    .get(&local)
+                                    .map(String::as_str)
+                                    .unwrap_or(name);
+                                format!("function {metadata_name}() {{ [native code] }}")
+                            });
+                        return Ok(Some(LoweredExpr::String(body, Span::generated("str"))));
+                    }
+                    if self.is_function_identifier(object) {
+                        let body = if let Ok(func_id) = self.resolve_func(name) {
+                            self.ctx
+                                .function_sources
+                                .get(&func_id)
+                                .filter(|s| !s.is_empty())
+                                .cloned()
+                                .unwrap_or_else(|| {
+                                    format!("function {}() {{ [native code] }}", name)
+                                })
+                        } else {
+                            format!("function {}() {{ [native code] }}", name)
+                        };
+                        return Ok(Some(LoweredExpr::String(body, Span::generated("str"))));
+                    }
                 }
                 ResolvedExpr::ArrowFn {
                     params,

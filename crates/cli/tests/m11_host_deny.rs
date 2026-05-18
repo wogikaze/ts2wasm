@@ -1227,6 +1227,7 @@ fn standalone_fixtures_pass_host_deny() {
         // Static Function constructor parameter grammar compiles without host imports.
         "core-semantics/function-constructor-arguments.ts",
         "core-semantics/function-constructor-construct-return-object.ts",
+        "core-semantics/function-constructor-metadata.ts",
         "core-semantics/function-constructor-new-target.ts",
         "core-semantics/function-constructor-parameter-grammar.ts",
         "core-semantics/function-constructor-rest-params.ts",

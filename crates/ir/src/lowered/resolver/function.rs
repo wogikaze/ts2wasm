@@ -20,6 +20,7 @@ struct NestedFunctionOptions {
     suppress_captures: bool,
     needs_new_target: bool,
     metadata_name: Option<String>,
+    source_text: Option<String>,
 }
 
 impl super::Resolver {
@@ -382,6 +383,7 @@ impl super::Resolver {
         is_generator: bool,
         origin: FunctionExprOrigin,
         constructor_metadata: Option<&FunctionConstructorGeneratedFunction>,
+        source_text: &str,
     ) -> Result<LoweredExpr, Diagnostic> {
         let is_function_constructor =
             origin == FunctionExprOrigin::FunctionConstructor || constructor_metadata.is_some();
@@ -401,6 +403,7 @@ impl super::Resolver {
                         (origin == FunctionExprOrigin::FunctionConstructor)
                             .then(|| "anonymous".to_owned())
                     }),
+                source_text: (!source_text.is_empty()).then(|| source_text.to_owned()),
                 ..NestedFunctionOptions::default()
             },
         )
@@ -615,6 +618,11 @@ impl super::Resolver {
 
         let func_id = FuncId(self.ctx.functions.next_func_id);
         self.ctx.functions.next_func_id += 1;
+        if let Some(source_text) = &options.source_text {
+            self.ctx
+                .function_sources
+                .insert(func_id, source_text.clone());
+        }
         let self_closure = (!options.suppress_captures && !name.is_empty())
             .then_some(SelfClosureOptions {
                 name,
