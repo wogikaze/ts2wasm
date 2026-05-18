@@ -37,6 +37,8 @@ pub struct StaticFacts {
     pub regexp_literal_locals: HashSet<LocalId>,
     /// Locals holding invalid Date instances.
     pub invalid_date_locals: HashSet<LocalId>,
+    /// Locals holding Date instances (valid or invalid).
+    pub date_locals: HashSet<LocalId>,
     /// Locals holding bigint values.
     pub bigint_locals: HashSet<LocalId>,
     /// Locals holding bigint values that need division/remainder precision tracking.
@@ -309,6 +311,7 @@ impl StaticFacts {
             nullish_locals: HashSet::new(),
             regexp_literal_locals: HashSet::new(),
             invalid_date_locals: HashSet::new(),
+            date_locals: HashSet::new(),
             bigint_locals: HashSet::new(),
             control_flow_bigint_div_rem_locals: HashSet::new(),
             control_flow_mixed_bigint_locals: HashSet::new(),

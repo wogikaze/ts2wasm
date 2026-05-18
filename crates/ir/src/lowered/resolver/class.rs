@@ -369,11 +369,25 @@ impl super::Resolver {
     pub(super) fn is_date_receiver(&self, expr: &ResolvedExpr) -> bool {
         match expr {
             ResolvedExpr::New { class_name, .. } => class_name == "Date",
-            ResolvedExpr::Ident(name) => self
-                .resolve_local(name)
-                .ok()
-                .and_then(|local_id| self.ctx.classes.local_classes.get(&local_id))
-                .is_some_and(|class_name| class_name == "Date"),
+            ResolvedExpr::Ident(name) => {
+                if let Ok(local_id) = self.resolve_local(name) {
+                    // Primary check: local_classes
+                    if self
+                        .ctx
+                        .classes
+                        .local_classes
+                        .get(&local_id)
+                        .is_some_and(|c| c == "Date")
+                    {
+                        return true;
+                    }
+                    // Fallback: check date_locals fact set for untyped Date variables
+                    if self.ctx.facts.date_locals.contains(&local_id) {
+                        return true;
+                    }
+                }
+                false
+            }
             _ => false,
         }
     }

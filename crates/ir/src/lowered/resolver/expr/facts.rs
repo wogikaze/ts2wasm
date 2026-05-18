@@ -660,8 +660,13 @@ pub(crate) fn update_invalid_date_local(
 ) {
     if is_invalid_date_constructor_expr(expr) {
         ctx.facts.invalid_date_locals.insert(local_id);
+        ctx.facts.date_locals.insert(local_id);
+    } else if matches!(expr, ResolvedExpr::New { class_name, .. } if class_name == "Date") {
+        ctx.facts.invalid_date_locals.remove(&local_id);
+        ctx.facts.date_locals.insert(local_id);
     } else {
         ctx.facts.invalid_date_locals.remove(&local_id);
+        ctx.facts.date_locals.remove(&local_id);
     }
 }
 
