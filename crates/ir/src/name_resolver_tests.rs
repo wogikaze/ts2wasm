@@ -628,6 +628,14 @@ mod tests {
             panic!("expected resolver-marked eval expression: {builtins:?}");
         };
         assert_eq!(plan.kind, crate::builtin_resolved::EvalKind::Direct);
+        assert_eq!(
+            plan.scope_mode,
+            crate::builtin_resolved::EvalScopeMode::Caller
+        );
+        assert_eq!(
+            plan.host_policy,
+            crate::builtin_resolved::EvalHostPolicy::AotOnly
+        );
         assert!(
             matches!(&plan.source, crate::builtin_resolved::EvalSource::StaticLiteral(value) if value == "1 + 2")
         );
@@ -641,6 +649,14 @@ mod tests {
             panic!("expected strict-script eval expression: {builtins:?}");
         };
         assert!(plan.caller_is_strict);
+        assert_eq!(
+            plan.scope_mode,
+            crate::builtin_resolved::EvalScopeMode::Caller
+        );
+        assert_eq!(
+            plan.host_policy,
+            crate::builtin_resolved::EvalHostPolicy::DirectHost
+        );
     }
 
     #[test]
@@ -743,6 +759,14 @@ mod tests {
                 panic!("expected indirect eval for {source_text}: {builtins:?}");
             };
             assert_eq!(plan.kind, crate::builtin_resolved::EvalKind::Indirect);
+            assert_eq!(
+                plan.scope_mode,
+                crate::builtin_resolved::EvalScopeMode::Global
+            );
+            assert_eq!(
+                plan.host_policy,
+                crate::builtin_resolved::EvalHostPolicy::AotOnly
+            );
             assert!(matches!(
                 &plan.source,
                 crate::builtin_resolved::EvalSource::StaticLiteral(value) if value == "1 + 2"
@@ -761,6 +785,14 @@ mod tests {
         };
 
         assert_eq!(plan.kind, crate::builtin_resolved::EvalKind::Indirect);
+        assert_eq!(
+            plan.scope_mode,
+            crate::builtin_resolved::EvalScopeMode::Global
+        );
+        assert_eq!(
+            plan.host_policy,
+            crate::builtin_resolved::EvalHostPolicy::IndirectHost
+        );
         assert!(matches!(
             &plan.source,
             crate::builtin_resolved::EvalSource::Runtime(_)

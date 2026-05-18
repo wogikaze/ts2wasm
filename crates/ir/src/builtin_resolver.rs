@@ -2115,12 +2115,10 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     ))
                 };
                 return Ok(ResolvedExpr::Eval {
-                    plan: EvalFragmentPlan {
-                        kind,
-                        source,
-                        caller_is_strict: false, // TODO: propagate strict mode from parser
-                        span: *span,
-                    },
+                    plan: EvalFragmentPlan::new(
+                        kind, source, false, // TODO: propagate strict mode from parser
+                        *span,
+                    ),
                 });
             }
             if is_test262_assert_type_error_non_constructor_probe(callee, args) {

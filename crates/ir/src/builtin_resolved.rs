@@ -307,8 +307,25 @@ pub enum ResolvedExpr {
 pub struct EvalFragmentPlan {
     pub kind: EvalKind,
     pub source: EvalSource,
+    pub scope_mode: EvalScopeMode,
     pub caller_is_strict: bool,
+    pub host_policy: EvalHostPolicy,
     pub span: Span,
+}
+
+impl EvalFragmentPlan {
+    pub fn new(kind: EvalKind, source: EvalSource, caller_is_strict: bool, span: Span) -> Self {
+        let scope_mode = EvalScopeMode::for_kind(kind);
+        let host_policy = EvalHostPolicy::for_kind_and_source(kind, &source);
+        Self {
+            kind,
+            source,
+            scope_mode,
+            caller_is_strict,
+            host_policy,
+            span,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -321,6 +338,38 @@ pub enum FunctionConstructorKind {
 pub enum EvalKind {
     Direct,
     Indirect,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EvalScopeMode {
+    Caller,
+    Global,
+}
+
+impl EvalScopeMode {
+    pub fn for_kind(kind: EvalKind) -> Self {
+        match kind {
+            EvalKind::Direct => Self::Caller,
+            EvalKind::Indirect => Self::Global,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EvalHostPolicy {
+    AotOnly,
+    DirectHost,
+    IndirectHost,
+}
+
+impl EvalHostPolicy {
+    pub fn for_kind_and_source(kind: EvalKind, source: &EvalSource) -> Self {
+        match (kind, source) {
+            (_, EvalSource::StaticLiteral(_)) => Self::AotOnly,
+            (EvalKind::Direct, EvalSource::Runtime(_)) => Self::DirectHost,
+            (EvalKind::Indirect, EvalSource::Runtime(_)) => Self::IndirectHost,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
