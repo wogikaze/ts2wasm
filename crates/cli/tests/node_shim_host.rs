@@ -408,6 +408,13 @@ fn dynamic_direct_eval_function_declaration_writes_back_var_binding_through_node
 }
 
 #[test]
+fn dynamic_direct_eval_var_declaration_writes_back_var_binding_through_node_shim_host_import() {
+    let fixture =
+        "fixtures/core-semantics/direct-eval-dynamic-var-declaration-writeback-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\n7\n");
+}
+
+#[test]
 fn dynamic_direct_eval_class_method_reads_arguments_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-class-method-arguments-node-shim.ts";
     assert_node_shim_stdout(fixture, "9:1\n");

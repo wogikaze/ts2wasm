@@ -936,6 +936,7 @@ directories:
     - direct-eval-dynamic-strict-lexical-shadow-node-shim.ts
     - direct-eval-dynamic-string-writeback-node-shim.ts
     - direct-eval-dynamic-throw-catch-node-shim.ts
+    - direct-eval-dynamic-var-declaration-writeback-node-shim.ts
     - direct-eval-dynamic-tdz-conflict-unsupported.ts
     - direct-eval-dynamic-host-path.ts
     - direct-eval-var-function-declaration.ts
