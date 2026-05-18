@@ -287,6 +287,7 @@ impl super::super::Resolver {
                     body: Vec::new(),
                     is_generator: *is_generator,
                     origin: ts2wasm_syntax::FunctionExprOrigin::User,
+                    constructor_metadata: None,
                     source_text: String::new(),
                 })
             }

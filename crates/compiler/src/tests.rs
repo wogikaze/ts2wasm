@@ -31,7 +31,12 @@ fn compiler_expands_static_function_constructor_call_after_resolver_classificati
     let expanded = parse_resolve_and_expand_dynamic_code("let value = Function(\"return 1\");");
     let ts2wasm_ir::ResolvedStmt::Let(
         _,
-        ts2wasm_ir::ResolvedExpr::FunctionExpr { origin, name, .. },
+        ts2wasm_ir::ResolvedExpr::FunctionExpr {
+            origin,
+            name,
+            constructor_metadata,
+            ..
+        },
     ) = &expanded[0]
     else {
         panic!("expected static Function constructor to expand to FunctionExpr: {expanded:?}");
@@ -41,6 +46,10 @@ fn compiler_expands_static_function_constructor_call_after_resolver_classificati
         ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor
     );
     assert_eq!(name, "anonymous");
+    assert_eq!(
+        constructor_metadata.as_ref().map(|meta| meta.name.as_str()),
+        Some("anonymous")
+    );
 }
 
 #[test]
@@ -48,7 +57,12 @@ fn compiler_expands_static_new_function_constructor_after_resolver_classificatio
     let expanded = parse_resolve_and_expand_dynamic_code("let value = new Function(\"return 1\");");
     let ts2wasm_ir::ResolvedStmt::Let(
         _,
-        ts2wasm_ir::ResolvedExpr::FunctionExpr { origin, name, .. },
+        ts2wasm_ir::ResolvedExpr::FunctionExpr {
+            origin,
+            name,
+            constructor_metadata,
+            ..
+        },
     ) = &expanded[0]
     else {
         panic!("expected static new Function constructor to expand to FunctionExpr: {expanded:?}");
@@ -58,6 +72,10 @@ fn compiler_expands_static_new_function_constructor_after_resolver_classificatio
         ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor
     );
     assert_eq!(name, "anonymous");
+    assert_eq!(
+        constructor_metadata.as_ref().map(|meta| meta.name.as_str()),
+        Some("anonymous")
+    );
 }
 
 #[test]

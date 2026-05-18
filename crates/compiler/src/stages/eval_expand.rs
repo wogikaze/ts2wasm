@@ -701,6 +701,7 @@ fn expand_expr(
             body,
             is_generator,
             origin,
+            constructor_metadata,
             source_text,
         } => {
             let function_is_strict = resolved_block_has_use_strict_directive(&body);
@@ -719,6 +720,7 @@ fn expand_expr(
                 body,
                 is_generator,
                 origin,
+                constructor_metadata,
                 source_text,
             })
         }
@@ -986,6 +988,7 @@ fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<Resolved
                 body,
                 is_generator,
                 origin: FunctionExprOrigin::FunctionConstructor,
+                constructor_metadata: Some(static_source.generated_function),
                 source_text,
             });
         }
@@ -1495,6 +1498,7 @@ fn rewrite_eval_expr_global_collisions(
             body,
             is_generator,
             origin,
+            constructor_metadata,
             source_text,
         } => {
             scopes.push(HashSet::new());
@@ -1510,6 +1514,7 @@ fn rewrite_eval_expr_global_collisions(
                 body,
                 is_generator,
                 origin,
+                constructor_metadata,
                 source_text,
             }
         }

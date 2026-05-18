@@ -2599,6 +2599,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 .iter()
                 .map(resolve_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
+            constructor_metadata: None,
             source_text: source_text.clone(),
         }),
         Expr::ClassExpr { name, body, .. } => resolve_class_expr(name, body),

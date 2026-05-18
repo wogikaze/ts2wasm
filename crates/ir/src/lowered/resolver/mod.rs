@@ -2138,6 +2138,10 @@ pub(crate) fn static_function_metadata_name_for_expr(
     expr: &ResolvedExpr,
 ) -> Option<String> {
     match expr {
+        ResolvedExpr::FunctionExpr {
+            constructor_metadata: Some(metadata),
+            ..
+        } => Some(metadata.name.clone()),
         ResolvedExpr::FunctionExpr { origin, .. }
             if *origin == ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor =>
         {
@@ -2155,8 +2159,13 @@ pub(crate) fn static_function_metadata_name_for_expr(
 pub(crate) fn static_function_constructor_expr(expr: &ResolvedExpr) -> bool {
     matches!(
         expr,
-        ResolvedExpr::FunctionExpr { origin, .. }
-            if *origin == ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor
+        ResolvedExpr::FunctionExpr {
+            constructor_metadata,
+            origin,
+            ..
+        }
+            if constructor_metadata.is_some()
+                || *origin == ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor
     )
 }
 

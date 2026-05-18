@@ -894,6 +894,7 @@ impl super::Resolver {
                     body,
                     false,
                     ts2wasm_syntax::FunctionExprOrigin::User,
+                    None,
                 )?
                 else {
                     return Err(unsupported_array_map_diagnostic(Some(span)));

@@ -727,6 +727,7 @@ impl super::super::Resolver {
             body,
             is_generator,
             ts2wasm_syntax::FunctionExprOrigin::User,
+            None,
         )?;
         let LoweredExpr::ArrowFn {
             func_id, captures, ..

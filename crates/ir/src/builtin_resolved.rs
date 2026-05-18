@@ -288,6 +288,7 @@ pub enum ResolvedExpr {
         body: Vec<ResolvedStmt>,
         is_generator: bool,
         origin: FunctionExprOrigin,
+        constructor_metadata: Option<FunctionConstructorGeneratedFunction>,
         source_text: String,
     },
     ClassExpr {

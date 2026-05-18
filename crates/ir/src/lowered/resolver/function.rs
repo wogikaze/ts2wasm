@@ -1,7 +1,10 @@
 use std::collections::{HashMap, HashSet};
 
 use super::{binding_param_default_ref_names, binding_param_names, block_contains_new_target};
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use crate::builtin_resolved::{
+    FunctionConstructorGeneratedFunction, ResolvedArrayElement, ResolvedExpr, ResolvedParam,
+    ResolvedStmt,
+};
 use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
 use crate::lowered::facts::ArrowClosure;
 use crate::lowered::*;
@@ -9,14 +12,14 @@ use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 use ts2wasm_syntax::FunctionExprOrigin;
 
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Default)]
 struct NestedFunctionOptions {
     force_receiver: bool,
     is_generator: bool,
     is_async: bool,
     suppress_captures: bool,
     needs_new_target: bool,
-    metadata_name: Option<&'static str>,
+    metadata_name: Option<String>,
 }
 
 impl super::Resolver {
@@ -378,20 +381,26 @@ impl super::Resolver {
         body: &[ResolvedStmt],
         is_generator: bool,
         origin: FunctionExprOrigin,
+        constructor_metadata: Option<&FunctionConstructorGeneratedFunction>,
     ) -> Result<LoweredExpr, Diagnostic> {
+        let is_function_constructor =
+            origin == FunctionExprOrigin::FunctionConstructor || constructor_metadata.is_some();
         self.lower_nested_function_with_receiver(
             name,
             params,
             body,
             NestedFunctionOptions {
-                force_receiver: origin == FunctionExprOrigin::FunctionConstructor
-                    && block_contains_this(body),
+                force_receiver: is_function_constructor && block_contains_this(body),
                 is_generator,
-                suppress_captures: origin == FunctionExprOrigin::FunctionConstructor,
-                needs_new_target: origin == FunctionExprOrigin::FunctionConstructor
-                    && block_contains_new_target(body),
-                metadata_name: (origin == FunctionExprOrigin::FunctionConstructor)
-                    .then_some("anonymous"),
+                suppress_captures: constructor_metadata.is_some_and(|meta| meta.suppress_captures)
+                    || origin == FunctionExprOrigin::FunctionConstructor,
+                needs_new_target: is_function_constructor && block_contains_new_target(body),
+                metadata_name: constructor_metadata
+                    .map(|meta| meta.name.clone())
+                    .or_else(|| {
+                        (origin == FunctionExprOrigin::FunctionConstructor)
+                            .then(|| "anonymous".to_owned())
+                    }),
                 ..NestedFunctionOptions::default()
             },
         )
@@ -640,7 +649,7 @@ impl super::Resolver {
                 needs_new_target: options.needs_new_target,
                 has_rest: params.iter().any(|param| param.is_rest),
                 metadata_length: Some(function_length_metadata(params)),
-                metadata_name: options.metadata_name.map(str::to_owned),
+                metadata_name: options.metadata_name,
                 ..FunctionSignature::default()
             },
         );
