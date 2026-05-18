@@ -190,31 +190,41 @@ impl super::Resolver {
             ResolvedExpr::Sequence(exprs) => self.lower_sequence_expr(exprs),
             ResolvedExpr::EvalCompletion(steps) => self.lower_eval_completion_expr(steps),
             ResolvedExpr::Eval { plan } => {
-                // Emit a runtime call for eval — the host shim handles execution.
-                let source_expr =
-                    if let crate::builtin_resolved::EvalSource::StaticLiteral(s) = &plan.source {
-                        LoweredExpr::String(s.clone(), Span::generated("eval"))
-                    } else if let crate::builtin_resolved::EvalSource::Runtime(source_expr) =
-                        &plan.source
-                    {
-                        self.lower_expr(source_expr)?
-                    } else {
-                        LoweredExpr::Undefined(Span::generated("eval"))
-                    };
-                let intrinsic = match plan.kind {
-                    crate::builtin_resolved::EvalKind::Direct => RuntimeFn::EvalDirectHost,
-                    crate::builtin_resolved::EvalKind::Indirect => RuntimeFn::EvalIndirectHost,
+                let crate::builtin_resolved::EvalSource::Runtime(source_expr) = &plan.source else {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedEval,
+                        message: "static eval fragment reached lowering without AOT expansion"
+                            .to_owned(),
+                        span: Some(plan.span),
+                        phase: None,
+                    });
                 };
-                let args = if matches!(plan.kind, crate::builtin_resolved::EvalKind::Direct) {
-                    if matches!(plan.source, crate::builtin_resolved::EvalSource::Runtime(_)) {
+                let source_expr = self.lower_expr(source_expr)?;
+                let intrinsic = match plan.host_policy {
+                    crate::builtin_resolved::EvalHostPolicy::DirectHost => {
                         self.ensure_direct_eval_env_descriptor_initialized(plan.span)?;
+                        RuntimeFn::EvalDirectHost
                     }
-                    vec![
+                    crate::builtin_resolved::EvalHostPolicy::IndirectHost => {
+                        RuntimeFn::EvalIndirectHost
+                    }
+                    crate::builtin_resolved::EvalHostPolicy::AotOnly => {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedEval,
+                            message: "AOT-only eval fragment cannot use a runtime host eval lane"
+                                .to_owned(),
+                            span: Some(plan.span),
+                            phase: None,
+                        });
+                    }
+                };
+                let args = match plan.host_policy {
+                    crate::builtin_resolved::EvalHostPolicy::DirectHost => vec![
                         source_expr,
                         self.lower_direct_eval_env_descriptor(plan.caller_is_strict),
-                    ]
-                } else {
-                    vec![source_expr]
+                    ],
+                    crate::builtin_resolved::EvalHostPolicy::IndirectHost => vec![source_expr],
+                    crate::builtin_resolved::EvalHostPolicy::AotOnly => unreachable!(),
                 };
                 Ok(LoweredExpr::RuntimeCall {
                     intrinsic,

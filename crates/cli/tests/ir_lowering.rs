@@ -260,6 +260,25 @@ fn lowering_initializes_direct_eval_catch_binding_env_cell() {
 }
 
 #[test]
+fn lowering_rejects_unexpanded_static_eval_fragment() {
+    let source = r#"let value = eval("1 + 2");"#;
+    let tokens = ts2wasm_frontend::Lexer::new(source).tokenize().unwrap();
+    let ast = ts2wasm_frontend::Parser::new(tokens, source)
+        .parse_program()
+        .unwrap();
+    let named = ts2wasm_ir::name_resolver::resolve_names(&ast).unwrap();
+    let program = ts2wasm_ir::builtin_resolver::resolve_builtins(&named).unwrap();
+    let err = ts2wasm_ir::lowered::lower_program(&program)
+        .expect_err("static eval must pass through AOT expansion before lowering");
+    assert_eq!(err.code, DiagCode::UnsupportedEval);
+    assert!(
+        err.message
+            .contains("static eval fragment reached lowering without AOT expansion"),
+        "unexpected diagnostic: {err:?}"
+    );
+}
+
+#[test]
 fn lowering_passes_static_direct_eval_function_declaration_capture() {
     use ts2wasm_ir::lowered::{FuncId, FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
 
