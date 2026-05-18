@@ -620,8 +620,12 @@ Exit criteria:
   eval instead of an unsupported stub, so evalScript cases are not blocked by
   oracle setup. JSONL `--no-server --no-semantic` now preserves compile-only
   semantics instead of running the Node oracle, matching server check-mode
-  classification for the focused `$262.evalScript` eval-code case. Realm /
-  cross-realm classification and broader test262 burn-down remain open.
+  classification for the focused `$262.evalScript` eval-code case. The Node
+  oracle now executes non-module prepared test262 sources with
+  `vm.runInThisContext`, and `$262.evalScript` uses the same script-context
+  helper, so the focused Annex B eval-code case passes strict Node/iwasm
+  semantic comparison. Realm / cross-realm classification and broader test262
+  burn-down remain open.
 
 ## 6. File-by-file task map
 

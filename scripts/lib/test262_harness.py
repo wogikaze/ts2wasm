@@ -388,6 +388,16 @@ $262.agent = {};
 $262.agent.start = test262_agent_start;
 """
 
+NODE_HOST_PRELUDE = COMMON_HOST_PRELUDE.replace(
+    "function test262_evalScript(source) {\n  return (0, eval)(source);\n}",
+    "function test262_evalScript(source) {\n"
+    "  if (typeof globalThis.__ts2wasm_evalScript === \"function\") {\n"
+    "    return globalThis.__ts2wasm_evalScript(source);\n"
+    "  }\n"
+    "  return require(\"node:vm\").runInThisContext(source);\n"
+    "}",
+)
+
 # JavaScript standard globals that the compiler may not resolve natively
 WASM_GLOBALS = r"""
 var NaN = 0/0;
@@ -602,7 +612,7 @@ def build_test262_source(test_file, source_code, metadata, target="wasm"):
     chunks = []
     if "onlyStrict" in metadata.flags:
         chunks.append('"use strict";')
-    chunks.append(COMMON_HOST_PRELUDE)
+    chunks.append(NODE_HOST_PRELUDE if target == "node" else COMMON_HOST_PRELUDE)
     if target == "wasm":
         chunks.append("\n/* standard globals shim */\n")
         chunks.append(WASM_GLOBALS)
@@ -989,6 +999,26 @@ def run_node_reference_source(
     suffix = ".mjs" if "module" in metadata.flags else ".js"
     tmp_source = Path(tmp_dir) / f"{source_stem}{suffix}"
     tmp_source.write_text(prepared_source, encoding="utf-8")
+    if "module" not in metadata.flags:
+        runner = Path(tmp_dir) / f"{source_stem}-runner.cjs"
+        runner.write_text(
+            """
+const fs = require("node:fs");
+const vm = require("node:vm");
+const sourcePath = process.argv[2];
+globalThis.__ts2wasm_evalScript = function(source) {
+  return vm.runInThisContext(source, { filename: sourcePath + "::evalScript" });
+};
+vm.runInThisContext(fs.readFileSync(sourcePath, "utf8"), { filename: sourcePath });
+""".lstrip(),
+            encoding="utf-8",
+        )
+        return subprocess.run(
+            ["timeout", f"{timeout_seconds}s", "node", str(runner), str(tmp_source)],
+            capture_output=True,
+            text=text,
+            cwd=cwd,
+        )
     return subprocess.run(
         ["timeout", f"{timeout_seconds}s", "node", str(tmp_source)],
         capture_output=True,
