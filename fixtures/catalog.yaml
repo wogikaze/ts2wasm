@@ -939,6 +939,7 @@ directories:
     - direct-eval-dynamic-param-writeback-node-shim.ts
     - direct-eval-dynamic-strict-caller-delete-arguments-node-shim.ts
     - direct-eval-dynamic-strict-caller-delete-node-shim.ts
+    - direct-eval-dynamic-strict-caller-function-eval-node-shim.ts
     - direct-eval-dynamic-strict-caller-var-local-node-shim.ts
     - direct-eval-dynamic-strict-caller-var-arguments-node-shim.ts
     - direct-eval-dynamic-strict-lexical-shadow-node-shim.ts

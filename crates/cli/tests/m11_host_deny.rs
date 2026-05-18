@@ -860,6 +860,13 @@ fn host_deny_rejects_dynamic_direct_eval_strict_caller_var_arguments_host_lane()
 }
 
 #[test]
+fn host_deny_rejects_dynamic_direct_eval_strict_caller_function_eval_host_lane() {
+    assert_host_deny_rejects(
+        "core-semantics/direct-eval-dynamic-strict-caller-function-eval-node-shim.ts",
+    );
+}
+
+#[test]
 fn host_deny_rejects_dynamic_direct_eval_class_method_this_host_lane() {
     assert_host_deny_rejects("core-semantics/direct-eval-dynamic-class-method-this-node-shim.ts");
 }

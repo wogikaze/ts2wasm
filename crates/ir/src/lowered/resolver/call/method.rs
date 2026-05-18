@@ -3205,7 +3205,13 @@ impl super::super::Resolver {
                 if class_name == "Array"
                     && !call_args.is_empty()
                     && (matches!(call_args[0], ResolvedExpr::ArrowFn { .. })
-                        || matches!(call_args[0], ResolvedExpr::FunctionExpr { is_generator: false, .. }))
+                        || matches!(
+                            call_args[0],
+                            ResolvedExpr::FunctionExpr {
+                                is_generator: false,
+                                ..
+                            }
+                        ))
                     && (proto_method == "every"
                         || proto_method == "some"
                         || proto_method == "find"

@@ -559,6 +559,13 @@ fn dynamic_direct_eval_strict_caller_var_arguments_is_syntax_error_node_shim_hos
 }
 
 #[test]
+fn dynamic_direct_eval_strict_caller_function_eval_is_syntax_error_node_shim_host_import() {
+    let fixture =
+        "fixtures/core-semantics/direct-eval-dynamic-strict-caller-function-eval-node-shim.ts";
+    assert_node_shim_stdout(fixture, "SyntaxError\nafter\n");
+}
+
+#[test]
 fn dynamic_direct_eval_rejects_tdz_env_descriptor_conflict() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-tdz-conflict-unsupported.ts";
     assert_build_fails_with(fixture, "UnsupportedEval", "TDZ-aware env descriptors");
