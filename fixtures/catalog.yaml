@@ -889,6 +889,7 @@ directories:
     - direct-eval-dynamic-param-writeback-node-shim.ts
     - direct-eval-dynamic-strict-lexical-shadow-node-shim.ts
     - direct-eval-dynamic-string-writeback-node-shim.ts
+    - direct-eval-dynamic-tdz-conflict-unsupported.ts
     - direct-eval-unsupported.ts
     - duplicate-class-decl-unsupported.ts
     - duplicate-function-decl-unsupported.ts

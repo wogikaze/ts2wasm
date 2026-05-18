@@ -184,7 +184,9 @@ impl super::Resolver {
             } => self.lower_named_function_expr(name, params, body, *is_generator, *origin),
             ResolvedExpr::ClassExpr { .. } => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
             ResolvedExpr::Sequence(exprs) => self.lower_sequence_expr(exprs),
-            ResolvedExpr::Eval { kind, source, .. } => {
+            ResolvedExpr::Eval {
+                kind, source, span, ..
+            } => {
                 // Emit a runtime call for eval — the host shim handles execution.
                 let source_expr = if let crate::builtin_resolved::EvalSource::StaticLiteral(s) =
                     &source
@@ -200,6 +202,9 @@ impl super::Resolver {
                     crate::builtin_resolved::EvalKind::Indirect => RuntimeFn::EvalIndirectHost,
                 };
                 let args = if matches!(kind, crate::builtin_resolved::EvalKind::Direct) {
+                    if matches!(source, crate::builtin_resolved::EvalSource::Runtime(_)) {
+                        self.ensure_direct_eval_env_descriptor_initialized(*span)?;
+                    }
                     vec![source_expr, self.lower_direct_eval_env_descriptor()]
                 } else {
                     vec![source_expr]
@@ -275,6 +280,41 @@ impl super::Resolver {
                 span: Span::generated("eval_env"),
             }
         }
+    }
+
+    fn ensure_direct_eval_env_descriptor_initialized(&self, span: Span) -> Result<(), Diagnostic> {
+        let mut names = self
+            .ctx
+            .facts
+            .env_cell_names
+            .iter()
+            .cloned()
+            .collect::<Vec<_>>();
+        names.sort();
+
+        for name in names {
+            let Some(local) = self.ctx.symbols.resolve(&name) else {
+                return Err(dynamic_direct_eval_tdz_diagnostic(&name, span));
+            };
+            if !self.ctx.facts.env_cell_locals.contains(&local)
+                || !self.ctx.facts.initialized_env_cell_locals.contains(&local)
+            {
+                return Err(dynamic_direct_eval_tdz_diagnostic(&name, span));
+            }
+        }
+
+        Ok(())
+    }
+}
+
+fn dynamic_direct_eval_tdz_diagnostic(name: &str, span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedEval,
+        message: format!(
+            "issue-429: dynamic direct eval cannot safely run before caller binding `{name}` is initialized; TDZ-aware env descriptors are not implemented"
+        ),
+        span: Some(span),
+        phase: None,
     }
 }
 
