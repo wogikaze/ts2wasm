@@ -127,6 +127,8 @@ pub struct LoweredFunction {
     pub uses_receiver: bool,
     pub min_required_params: usize,
     pub rest_param_index: Option<usize>,
+    pub metadata_length: Option<usize>,
+    pub metadata_name: Option<String>,
     pub locals: Vec<LocalId>,
     pub body: Vec<LoweredStmt>,
     /// Static recursion depth: 0 = not recursive, 1+ = part of a recursive cycle.

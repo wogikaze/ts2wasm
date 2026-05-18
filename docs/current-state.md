@@ -332,7 +332,7 @@ The current implementation has several partial dynamic-code paths:
   `.length` metadata, `arguments` object reads match Node for the guarded
   slice, constructor calls preserve explicit object returns, strict/sloppy
   `this` binding matches Node for the guarded slice, construct-call
-  `new.target` typeof behavior matches Node for the guarded slice, and direct
+  `new.target` typeof / `.name` / `.length` behavior matches Node for the guarded slice, and direct
   `.name`/`.length`/`.prototype` metadata is guarded for static constructor
   locals, including zero-argument `Function()` / `new Function()`;
 - shadowed `Function` bindings stay ordinary user calls in the current

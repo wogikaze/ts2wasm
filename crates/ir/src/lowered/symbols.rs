@@ -42,7 +42,7 @@ pub struct SymbolEnv {
 }
 
 /// Function signature metadata used during lowering.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct FunctionSignature {
     /// Number of explicit parameters (excluding captures).
     pub explicit_params: usize,
@@ -58,6 +58,8 @@ pub struct FunctionSignature {
     pub has_rest: bool,
     /// Metadata length for function-level metadata tracking.
     pub metadata_length: Option<usize>,
+    /// Metadata name for runtime function-token property access.
+    pub metadata_name: Option<String>,
     /// Whether the function returns a heap-allocated closure.
     pub returns_heap_closure: bool,
     /// Whether the function returns a dense array.

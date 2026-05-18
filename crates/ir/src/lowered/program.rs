@@ -2657,6 +2657,7 @@ fn collect_function_signatures(
                         needs_new_target: false,
                         has_rest: params.iter().any(|param| param.is_rest),
                         metadata_length: fixed_arity_metadata_length(params),
+                        metadata_name: Some(name.clone()),
                         returns_heap_closure: block_returns_declared_function(body),
                         returns_dense_array: block_returns_dense_array_local(body),
                         returns_first_param_identity: body_returns_first_param_identity(
@@ -2835,6 +2836,7 @@ fn function_signature_for_params_body(
         needs_new_target: false,
         has_rest: params.iter().any(|param| param.is_rest),
         metadata_length: fixed_arity_metadata_length(params),
+        metadata_name: None,
         returns_heap_closure: block_returns_declared_function(body),
         returns_dense_array: block_returns_dense_array_local(body),
         returns_first_param_identity: body_returns_first_param_identity(params, body),
@@ -4483,7 +4485,7 @@ pub(super) fn lower_function(
     class_static_private_fields: ClassStaticPrivateFields,
     options: LowerFunctionOptions<'_>,
 ) -> Result<FunctionLowering, Diagnostic> {
-    let signature = function_signatures.get(&id).copied().unwrap_or_default();
+    let signature = function_signatures.get(&id).cloned().unwrap_or_default();
     let min_required_params = params
         .iter()
         .filter(|param| param.default.is_none() && !param.is_rest)
@@ -4610,7 +4612,7 @@ fn lower_function_with_resolved_params(
     class_static_private_fields: ClassStaticPrivateFields,
     options: LowerFunctionOptions<'_>,
 ) -> Result<FunctionLowering, Diagnostic> {
-    let signature = function_signatures.get(&id).copied().unwrap_or_default();
+    let signature = function_signatures.get(&id).cloned().unwrap_or_default();
     let is_strict_context = function_body_is_strict(options.strict_context, body);
     let (mut resolver, param_ids) = crate::lowered::resolver::Resolver::with_params(
         function_ids,
@@ -4805,6 +4807,8 @@ fn lower_function_with_resolved_params(
             uses_receiver: signature.needs_receiver,
             min_required_params,
             rest_param_index,
+            metadata_length: signature.metadata_length,
+            metadata_name: signature.metadata_name.clone(),
             locals: resolver.ctx.symbols.locals,
             body: body_with_defaults,
             recursion_depth: options.recursion_depth,

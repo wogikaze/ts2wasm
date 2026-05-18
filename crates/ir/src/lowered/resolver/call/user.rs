@@ -226,7 +226,7 @@ impl super::super::Resolver {
                 .symbols
                 .function_signatures
                 .get(&closure.func_id)
-                .copied()
+                .cloned()
             {
                 let receiver = if signature.is_strict {
                     LoweredExpr::Undefined(Span::generated("undef"))
@@ -562,7 +562,7 @@ impl super::super::Resolver {
             .symbols
             .function_signatures
             .get(&func_id)
-            .copied()
+            .cloned()
             .unwrap_or_default();
         if signature.needs_receiver && !signature.is_strict {
             return Err(Diagnostic {
@@ -1279,7 +1279,7 @@ impl super::super::Resolver {
                     .symbols
                     .function_signatures
                     .get(&func_id)
-                    .copied()
+                    .cloned()
                     .unwrap_or_default();
                 if let Some(length) = signature.metadata_length {
                     Ok(LoweredExpr::Number(length as i32, Span::generated("num")))

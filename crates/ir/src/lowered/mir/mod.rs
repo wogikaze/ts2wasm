@@ -137,6 +137,8 @@ mod tests {
                 uses_receiver: false,
                 min_required_params: 1,
                 rest_param_index: None,
+                metadata_length: None,
+                metadata_name: None,
                 locals: vec![LocalId(0)],
                 body: vec![LoweredStmt::Return(
                     LoweredExpr::Local(LocalId(0), make_span()),

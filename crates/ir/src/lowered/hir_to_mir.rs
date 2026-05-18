@@ -68,6 +68,8 @@ impl HirToMirLowerer {
                     uses_receiver: false,
                     min_required_params: hir_fn.params.len(),
                     rest_param_index: None,
+                    metadata_length: None,
+                    metadata_name: None,
                     locals: lowered_locals,
                     body: self.lower_stmts(&hir_fn.body),
                     recursion_depth: 0,

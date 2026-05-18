@@ -2,6 +2,34 @@ use crate::emitter::WatEmitter;
 use ts2wasm_runtime_abi::{consts::RuntimeConst, layout::Layout, value::ValueTag};
 
 impl WatEmitter<'_> {
+    fn direct_function_property_get_branches(&self, key: &str) -> String {
+        self.program
+            .functions
+            .iter()
+            .filter_map(|function| {
+                let value = match key {
+                    "name" => {
+                        let name = function.metadata_name.as_ref()?;
+                        self.string_value(name) as i32
+                    }
+                    "length" => {
+                        let length = function.metadata_length.unwrap_or_else(|| {
+                            function.params.len() - usize::from(function.uses_receiver)
+                        });
+                        ValueTag::encode_number(length as i32)
+                    }
+                    _ => return None,
+                };
+                let payload = ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE + function.id.0 as i32;
+                Some(format!(
+                    r#"
+          (if (i32.eq (local.get $payload) (i32.const {payload}))
+            (then (return (i32.const {value}))))"#,
+                ))
+            })
+            .collect::<String>()
+    }
+
     pub(crate) fn emit_array_get(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -261,6 +289,10 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_property_get(&self, wat: &mut String) {
+        let direct_function_name_gets = self.direct_function_property_get_branches("name");
+        let direct_function_length_gets = self.direct_function_property_get_branches("length");
+        let name_key_ptr = self.string_offset("name") + Layout::STRING_HEADER_SIZE;
+        let length_key_ptr = self.string_offset("length") + Layout::STRING_HEADER_SIZE;
         wat.push_str(&format!(
             r#"
   (func $property_get (param $obj i32) (param $key_ptr i32) (param $key_len i32) (result i32)
@@ -278,7 +310,28 @@ impl WatEmitter<'_> {
     (local $array_idx i32)
     (local $is_array_index i32)
     (local $array_steps i32)
+    (local $payload i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    ;; Direct-local function tokens are NUMBER-tagged sentinels, but they still
+    ;; expose function metadata for reflective property reads.
+    (if (i32.eq (local.get $tag) (i32.const {number_tag}))
+      (then
+        (local.set $payload (i32.shr_u (local.get $obj) (i32.const {number_shift})))
+        (if (i32.ge_u (local.get $payload) (i32.const {direct_local_token_payload_base}))
+          (then
+            (if (i32.and
+                  (i32.eq (local.get $key_len) (i32.const 4))
+                  (call $mem_equal (local.get $key_ptr) (i32.const {name_key_ptr}) (local.get $key_len)))
+              (then
+{direct_function_name_gets}
+              ))
+            (if (i32.and
+                  (i32.eq (local.get $key_len) (i32.const 6))
+                  (call $mem_equal (local.get $key_ptr) (i32.const {length_key_ptr}) (local.get $key_len)))
+              (then
+{direct_function_length_gets}
+              ))
+            (return (i32.const {undefined}))))))
     ;; ARRAY tag: parse key as numeric index and read from array
     (if (i32.eq (local.get $tag) (i32.const {array_tag}))
       (then
@@ -385,9 +438,16 @@ impl WatEmitter<'_> {
     (i32.const {undefined})))
 "#,
             tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            direct_local_token_payload_base = ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE,
             object_tag = ValueTag::OBJECT,
             array_tag = ValueTag::ARRAY,
             heap_mask = ValueTag::HEAP_MASK,
+            name_key_ptr = name_key_ptr,
+            length_key_ptr = length_key_ptr,
+            direct_function_name_gets = direct_function_name_gets,
+            direct_function_length_gets = direct_function_length_gets,
             obj_header = Layout::OBJECT_HEADER_SIZE,
             obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,

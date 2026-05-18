@@ -20,6 +20,11 @@ impl super::super::Resolver {
     ) -> Result<LoweredExpr, Diagnostic> {
         match builtin {
             BuiltinPropertyId::Length => match object {
+                ResolvedExpr::NewTarget { .. } => Ok(object_kernel::ordinary_get(
+                    self.lower_expr(object)?,
+                    "length",
+                    Span::generated("new_target_length"),
+                )),
                 ResolvedExpr::Ident(name) if self.resolve_func(name.as_str()).is_ok() => {
                     self.lower_function_metadata_property(name.as_str(), "length", span)
                 }

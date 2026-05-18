@@ -1797,6 +1797,8 @@ fn validate_rejects_arity_mismatch() {
         uses_receiver: false,
         min_required_params: 2,
         rest_param_index: None,
+        metadata_length: None,
+        metadata_name: None,
         recursion_depth: 0,
         is_async: false,
         is_generator: false,

@@ -25,7 +25,7 @@ impl super::super::Resolver {
             .symbols
             .function_signatures
             .get(&func_id)
-            .copied()
+            .cloned()
             .unwrap_or_default();
         let explicit_args = if !signature.has_rest && !signature.needs_arguments {
             if let Some(local_id) = self.single_dense_array_local_spread_arg(args) {
@@ -138,7 +138,7 @@ impl super::super::Resolver {
             .symbols
             .function_signatures
             .get(&constructor)
-            .copied()
+            .cloned()
             .unwrap_or_default();
         let explicit_args = self.lower_call_args(args)?;
         if !signature.has_rest && !signature.needs_arguments && !signature.needs_new_target {

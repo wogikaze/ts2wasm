@@ -428,6 +428,8 @@ mod tests {
                 uses_receiver: false,
                 min_required_params: 0,
                 rest_param_index: None,
+                metadata_length: None,
+                metadata_name: None,
                 locals: vec![],
                 body: vec![],
                 recursion_depth: 0,
@@ -665,6 +667,8 @@ mod tests {
                 uses_receiver: false,
                 min_required_params: 0,
                 rest_param_index: None,
+                metadata_length: None,
+                metadata_name: None,
                 locals: vec![LocalId(0)],
                 body: vec![
                     LoweredStmt::Let(
@@ -975,6 +979,8 @@ mod tests {
                 uses_receiver: false,
                 min_required_params: 0,
                 rest_param_index: None,
+                metadata_length: None,
+                metadata_name: None,
                 locals: vec![],
                 body: vec![],
                 recursion_depth: 0,
@@ -1127,6 +1133,8 @@ mod tests {
                 uses_receiver: true,
                 min_required_params: 1,
                 rest_param_index: None,
+                metadata_length: None,
+                metadata_name: None,
                 locals: vec![],
                 body: vec![LoweredStmt::Expr(
                     LoweredExpr::RuntimeCall {
@@ -1216,6 +1224,8 @@ mod tests {
                 uses_receiver: true,
                 min_required_params: 1,
                 rest_param_index: None,
+                metadata_length: None,
+                metadata_name: None,
                 locals: vec![],
                 body: vec![],
                 recursion_depth: 0,
@@ -1430,6 +1440,8 @@ mod tests {
                 uses_receiver: true,
                 min_required_params: 1,
                 rest_param_index: None,
+                metadata_length: None,
+                metadata_name: None,
                 locals: vec![],
                 body: vec![],
                 recursion_depth: 0,

@@ -534,6 +534,8 @@ fn mir_function_to_lower(func: &MirFunction) -> LoweredFunction {
         uses_receiver: func.uses_receiver,
         min_required_params: func.min_required_params,
         rest_param_index: func.rest_param_index,
+        metadata_length: None,
+        metadata_name: None,
         locals: func.locals.clone(),
         body: func.body.iter().map(mir_stmt_to_lower).collect(),
         recursion_depth: func.recursion_depth,

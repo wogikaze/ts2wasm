@@ -444,7 +444,7 @@ impl super::Resolver {
                     .symbols
                     .function_signatures
                     .get(&func_id)
-                    .copied()
+                    .cloned()
                     .unwrap_or_default();
                 let mut explicit_args = vec![
                     element,

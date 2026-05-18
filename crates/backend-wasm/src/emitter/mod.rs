@@ -183,8 +183,13 @@ impl<'a> WatEmitter<'a> {
             current_is_async: Cell::new(false),
         };
         emitter.intern_required_runtime_strings();
+        emitter.intern_string("name");
+        emitter.intern_string("length");
         emitter.collect_program_strings(&program.top_level_statements);
         for function in &program.functions {
+            if let Some(name) = &function.metadata_name {
+                emitter.intern_string(name);
+            }
             emitter.collect_program_strings(&function.body);
         }
         for module in &program.modules {

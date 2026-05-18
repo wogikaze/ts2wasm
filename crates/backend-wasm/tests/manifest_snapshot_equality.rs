@@ -182,6 +182,8 @@ fn program_with_function_produces_deterministic_snapshot() {
             uses_receiver: false,
             min_required_params: 0,
             rest_param_index: None,
+            metadata_length: None,
+            metadata_name: None,
             locals: vec![],
             body: vec![LoweredStmt::Return(
                 LoweredExpr::Number(42, Span::generated("test")),

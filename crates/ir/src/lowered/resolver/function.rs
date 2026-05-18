@@ -16,6 +16,7 @@ struct NestedFunctionOptions {
     is_async: bool,
     suppress_captures: bool,
     needs_new_target: bool,
+    metadata_name: Option<&'static str>,
 }
 
 impl super::Resolver {
@@ -389,6 +390,8 @@ impl super::Resolver {
                 suppress_captures: origin == FunctionExprOrigin::FunctionConstructor,
                 needs_new_target: origin == FunctionExprOrigin::FunctionConstructor
                     && block_contains_new_target(body),
+                metadata_name: (origin == FunctionExprOrigin::FunctionConstructor)
+                    .then_some("anonymous"),
                 ..NestedFunctionOptions::default()
             },
         )
@@ -637,6 +640,7 @@ impl super::Resolver {
                 needs_new_target: options.needs_new_target,
                 has_rest: params.iter().any(|param| param.is_rest),
                 metadata_length: Some(function_length_metadata(params)),
+                metadata_name: options.metadata_name.map(str::to_owned),
                 ..FunctionSignature::default()
             },
         );

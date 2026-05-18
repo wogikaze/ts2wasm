@@ -8,7 +8,9 @@ impl WatEmitter<'_> {
             .functions
             .iter()
             .map(|function| {
-                let metadata_length = function.params.len() - usize::from(function.uses_receiver);
+                let metadata_length = function
+                    .metadata_length
+                    .unwrap_or_else(|| function.params.len() - usize::from(function.uses_receiver));
                 let payload = ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE + function.id.0 as i32;
                 let tagged_length = ValueTag::encode_number(metadata_length as i32);
                 format!(
