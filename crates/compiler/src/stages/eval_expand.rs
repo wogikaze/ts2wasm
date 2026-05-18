@@ -2,7 +2,8 @@ use std::collections::HashSet;
 
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_ir::builtin_resolved::{
-    EvalCompletionStep, EvalKind, EvalSource, ResolvedExpr, ResolvedParam, ResolvedStmt,
+    EvalCompletionStep, EvalFunctionHoist, EvalKind, EvalSource, ResolvedExpr, ResolvedParam,
+    ResolvedStmt,
 };
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
 use ts2wasm_ir::name_resolver::resolve_names;
@@ -784,6 +785,10 @@ fn expand_static_eval_source(
         resolve_names_with_outer_bindings(&program, &effective_outer_bindings)?
     };
     let builtin_resolved = resolve_builtins(&name_resolved)?;
+    let mut function_hoists = Vec::new();
+    if leak_var_declarations {
+        collect_eval_function_hoists(&builtin_resolved, &mut function_hoists);
+    }
 
     Ok(StaticEvalExpansion {
         expr: extract_completion_value(
@@ -791,6 +796,7 @@ fn expand_static_eval_source(
             builtin_resolved,
             leak_var_declarations,
             &eval_declarations,
+            function_hoists,
         )?,
         caller_var_declarations: eval_declarations,
     })
@@ -1052,10 +1058,14 @@ fn extract_completion_value(
     stmts: Vec<ResolvedStmt>,
     leak_var_declarations: bool,
     eval_declarations: &[String],
+    function_hoists: Vec<EvalFunctionHoist>,
 ) -> Result<ResolvedExpr, Diagnostic> {
     let mut steps = Vec::new();
     if !eval_declarations.is_empty() {
         steps.push(EvalCompletionStep::HoistVars(eval_declarations.to_vec()));
+    }
+    if !function_hoists.is_empty() {
+        steps.push(EvalCompletionStep::HoistFunctions(function_hoists));
     }
     steps.extend(eval_completion_steps(
         ast_stmts,
@@ -1193,6 +1203,63 @@ fn collect_eval_var_declaration_names(stmts: &[Stmt], out: &mut Vec<String>) {
             }
             Stmt::Labeled { body, .. } => {
                 collect_eval_var_declaration_names(std::slice::from_ref(body.as_ref()), out);
+            }
+            _ => {}
+        }
+    }
+}
+
+fn collect_eval_function_hoists(stmts: &[ResolvedStmt], out: &mut Vec<EvalFunctionHoist>) {
+    for stmt in stmts {
+        match stmt {
+            ResolvedStmt::Function {
+                name,
+                params,
+                body,
+                is_async,
+                ..
+            } => out.push(EvalFunctionHoist {
+                name: name.clone(),
+                params: params.clone(),
+                body: body.clone(),
+                is_async: *is_async,
+            }),
+            ResolvedStmt::Block { statements } => collect_eval_function_hoists(statements, out),
+            ResolvedStmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                collect_eval_function_hoists(then_body, out);
+                collect_eval_function_hoists(else_body, out);
+            }
+            ResolvedStmt::While { body, .. }
+            | ResolvedStmt::DoWhile { body, .. }
+            | ResolvedStmt::For { body, .. }
+            | ResolvedStmt::ForIn { body, .. }
+            | ResolvedStmt::ForOf { body, .. }
+            | ResolvedStmt::ForAwaitOf { body, .. } => collect_eval_function_hoists(body, out),
+            ResolvedStmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    collect_eval_function_hoists(body, out);
+                }
+            }
+            ResolvedStmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                collect_eval_function_hoists(try_block, out);
+                if let Some(catch_block) = catch_block {
+                    collect_eval_function_hoists(catch_block, out);
+                }
+                if let Some(finally_block) = finally_block {
+                    collect_eval_function_hoists(finally_block, out);
+                }
+            }
+            ResolvedStmt::Labeled { body, .. } => {
+                collect_eval_function_hoists(std::slice::from_ref(body.as_ref()), out);
             }
             _ => {}
         }

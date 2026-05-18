@@ -308,6 +308,17 @@ impl super::Resolver {
                         }
                     }
                 }
+                EvalCompletionStep::HoistFunctions(functions) => {
+                    for function in functions {
+                        stmts.push(self.lower_eval_function_decl_in_caller_scope(
+                            &function.name,
+                            &function.params,
+                            &function.body,
+                            function.is_async,
+                            caller_scope_index,
+                        )?);
+                    }
+                }
                 EvalCompletionStep::Value(expr) => {
                     let value = self.lower_expr(expr)?;
                     stmts.push(LoweredStmt::Assign(

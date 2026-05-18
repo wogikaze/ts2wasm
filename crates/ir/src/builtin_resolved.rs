@@ -316,6 +316,7 @@ pub enum EvalSource {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum EvalCompletionStep {
     HoistVars(Vec<String>),
+    HoistFunctions(Vec<EvalFunctionHoist>),
     Value(ResolvedExpr),
     Empty(Option<ResolvedExpr>),
     VarLet {
@@ -340,6 +341,14 @@ pub enum EvalCompletionStep {
     },
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EvalFunctionHoist {
+    pub name: String,
+    pub params: Vec<ResolvedParam>,
+    pub body: Vec<ResolvedStmt>,
+    pub is_async: bool,
+}
+
 impl EvalCompletionStep {
     pub fn expr(&self) -> Option<&ResolvedExpr> {
         match self {
@@ -350,9 +359,11 @@ impl EvalCompletionStep {
                 condition: expr, ..
             }
             | Self::LexicalLet { init: expr, .. } => Some(expr),
-            Self::HoistVars(_) | Self::Empty(None) | Self::FunctionDecl { .. } | Self::Block(_) => {
-                None
-            }
+            Self::HoistVars(_)
+            | Self::HoistFunctions(_)
+            | Self::Empty(None)
+            | Self::FunctionDecl { .. }
+            | Self::Block(_) => None,
         }
     }
 }
