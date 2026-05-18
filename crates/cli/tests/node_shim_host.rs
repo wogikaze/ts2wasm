@@ -201,6 +201,13 @@ fn static_direct_eval_declaration_only_completion_is_undefined() {
 }
 
 #[test]
+fn static_direct_eval_declaration_preserves_previous_completion() {
+    let fixture =
+        "fixtures/core-semantics/direct-eval-declaration-preserves-previous-completion.ts";
+    assert_node_shim_stdout(fixture, "1\n");
+}
+
+#[test]
 fn dynamic_direct_eval_writes_back_local_env_cell_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-local-writeback-node-shim.ts";
     assert_node_shim_stdout(fixture, "7\n7\n");

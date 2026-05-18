@@ -135,6 +135,13 @@ pub(crate) fn collect_arrow_captures(
                 collect_arrow_captures(e, params, captures);
             }
         }
+        ResolvedExpr::EvalCompletion(steps) => {
+            for step in steps {
+                if let Some(expr) = step.expr() {
+                    collect_arrow_captures(expr, params, captures);
+                }
+            }
+        }
         ResolvedExpr::ArrowFn { .. }
         | ResolvedExpr::FunctionExpr { .. }
         | ResolvedExpr::ClassExpr { .. }
@@ -503,6 +510,10 @@ pub(crate) fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bo
                 || expr_assigns_any_name(value, names)
         }
         ResolvedExpr::Sequence(exprs) => exprs.iter().any(|e| expr_assigns_any_name(e, names)),
+        ResolvedExpr::EvalCompletion(steps) => steps
+            .iter()
+            .filter_map(|step| step.expr())
+            .any(|expr| expr_assigns_any_name(expr, names)),
         ResolvedExpr::ArrowFn { .. }
         | ResolvedExpr::FunctionExpr { .. }
         | ResolvedExpr::ClassExpr { .. }

@@ -1602,6 +1602,13 @@ pub(crate) fn collect_nested_function_captures_in_expr(
                 collect_nested_function_captures_in_expr(e, outer_excluded, captures)?;
             }
         }
+        ResolvedExpr::EvalCompletion(steps) => {
+            for step in steps {
+                if let Some(expr) = step.expr() {
+                    collect_nested_function_captures_in_expr(expr, outer_excluded, captures)?;
+                }
+            }
+        }
         ResolvedExpr::ArrowFn { .. }
         | ResolvedExpr::ClassExpr { .. }
         | ResolvedExpr::This { .. }
@@ -1824,6 +1831,13 @@ fn collect_direct_function_call_targets_in_expr(expr: &ResolvedExpr, targets: &m
         ResolvedExpr::Sequence(exprs) => {
             for e in exprs {
                 collect_direct_function_call_targets_in_expr(e, targets);
+            }
+        }
+        ResolvedExpr::EvalCompletion(steps) => {
+            for step in steps {
+                if let Some(expr) = step.expr() {
+                    collect_direct_function_call_targets_in_expr(expr, targets);
+                }
             }
         }
         ResolvedExpr::ArrowFn { .. }
@@ -2253,6 +2267,13 @@ fn collect_expr_nested_function_mutable_captures(
                 collect_expr_nested_function_mutable_captures(e, mutable_captures)?;
             }
         }
+        ResolvedExpr::EvalCompletion(steps) => {
+            for step in steps {
+                if let Some(expr) = step.expr() {
+                    collect_expr_nested_function_mutable_captures(expr, mutable_captures)?;
+                }
+            }
+        }
         ResolvedExpr::ClassExpr { .. }
         | ResolvedExpr::This { .. }
         | ResolvedExpr::NewTarget { .. }
@@ -2482,6 +2503,13 @@ fn collect_expr_object_method_mutable_captures(
         ResolvedExpr::Sequence(exprs) => {
             for e in exprs {
                 collect_expr_object_method_mutable_captures(e, mutable_captures)?;
+            }
+        }
+        ResolvedExpr::EvalCompletion(steps) => {
+            for step in steps {
+                if let Some(expr) = step.expr() {
+                    collect_expr_object_method_mutable_captures(expr, mutable_captures)?;
+                }
             }
         }
         ResolvedExpr::ArrowFn { .. }
@@ -3514,6 +3542,13 @@ fn collect_call_targets_in_expr(expr: &ResolvedExpr, targets: &mut HashSet<Strin
                 collect_call_targets_in_expr(e, targets);
             }
         }
+        ResolvedExpr::EvalCompletion(steps) => {
+            for step in steps {
+                if let Some(expr) = step.expr() {
+                    collect_call_targets_in_expr(expr, targets);
+                }
+            }
+        }
         ResolvedExpr::This { .. }
         | ResolvedExpr::NewTarget { .. }
         | ResolvedExpr::ImportMeta { .. }
@@ -3794,6 +3829,10 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::FunctionExpr { .. } => false,
         ResolvedExpr::ClassExpr { .. } => false,
         ResolvedExpr::Sequence(exprs) => exprs.iter().any(expr_contains_this),
+        ResolvedExpr::EvalCompletion(steps) => steps
+            .iter()
+            .filter_map(|step| step.expr())
+            .any(expr_contains_this),
         ResolvedExpr::Number(_)
         | ResolvedExpr::DecimalNumber(_)
         | ResolvedExpr::BigIntLiteral { .. }
@@ -4031,6 +4070,10 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::ArrowFn { body, .. } => expr_contains_arguments(body),
         ResolvedExpr::FunctionExpr { .. } | ResolvedExpr::ClassExpr { .. } => false,
         ResolvedExpr::Sequence(exprs) => exprs.iter().any(expr_contains_arguments),
+        ResolvedExpr::EvalCompletion(steps) => steps
+            .iter()
+            .filter_map(|step| step.expr())
+            .any(expr_contains_arguments),
         ResolvedExpr::This { .. }
         | ResolvedExpr::NewTarget { .. }
         | ResolvedExpr::ImportMeta { .. }

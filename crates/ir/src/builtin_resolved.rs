@@ -292,6 +292,7 @@ pub enum ResolvedExpr {
         body: Vec<ResolvedStmt>,
     },
     Sequence(Vec<ResolvedExpr>),
+    EvalCompletion(Vec<EvalCompletionStep>),
     Eval {
         kind: EvalKind,
         source: EvalSource,
@@ -310,6 +311,21 @@ pub enum EvalKind {
 pub enum EvalSource {
     StaticLiteral(String),
     Runtime(Box<ResolvedExpr>),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EvalCompletionStep {
+    Value(ResolvedExpr),
+    Empty(Option<ResolvedExpr>),
+}
+
+impl EvalCompletionStep {
+    pub fn expr(&self) -> Option<&ResolvedExpr> {
+        match self {
+            Self::Value(expr) | Self::Empty(Some(expr)) => Some(expr),
+            Self::Empty(None) => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

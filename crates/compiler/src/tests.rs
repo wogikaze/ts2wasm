@@ -182,7 +182,13 @@ fn compiler_expands_static_dynamic_code_inside_function_bodies() {
     ));
     assert!(matches!(
         &body[1],
-        ts2wasm_ir::ResolvedStmt::Return(ts2wasm_ir::ResolvedExpr::Binary { .. })
+        ts2wasm_ir::ResolvedStmt::Return(ts2wasm_ir::ResolvedExpr::EvalCompletion(steps))
+            if matches!(
+                steps.as_slice(),
+                [ts2wasm_ir::builtin_resolved::EvalCompletionStep::Value(
+                    ts2wasm_ir::ResolvedExpr::Binary { .. }
+                )]
+            )
     ));
 }
 
@@ -198,9 +204,14 @@ fn compiler_expands_direct_eval_expression_with_caller_binding_context() {
         &expanded[1],
         ts2wasm_ir::ResolvedStmt::Let(
             name,
-            ts2wasm_ir::ResolvedExpr::Binary { left, .. }
+            ts2wasm_ir::ResolvedExpr::EvalCompletion(steps)
         ) if name == "y"
-            && matches!(left.as_ref(), ts2wasm_ir::ResolvedExpr::Ident(name) if name == "x")
+            && matches!(
+                steps.as_slice(),
+                [ts2wasm_ir::builtin_resolved::EvalCompletionStep::Value(
+                    ts2wasm_ir::ResolvedExpr::Binary { left, .. }
+                )] if matches!(left.as_ref(), ts2wasm_ir::ResolvedExpr::Ident(name) if name == "x")
+            )
     ));
 }
 
@@ -216,13 +227,17 @@ fn compiler_preserves_static_direct_eval_expression_side_effects() {
         &expanded[1],
         ts2wasm_ir::ResolvedStmt::Let(
             name,
-            ts2wasm_ir::ResolvedExpr::Sequence(exprs)
+            ts2wasm_ir::ResolvedExpr::EvalCompletion(steps)
         ) if name == "result"
             && matches!(
-                exprs.as_slice(),
+                steps.as_slice(),
                 [
-                    ts2wasm_ir::ResolvedExpr::Assign { name, .. },
-                    ts2wasm_ir::ResolvedExpr::Ident(read_name)
+                    ts2wasm_ir::builtin_resolved::EvalCompletionStep::Value(
+                        ts2wasm_ir::ResolvedExpr::Assign { name, .. }
+                    ),
+                    ts2wasm_ir::builtin_resolved::EvalCompletionStep::Value(
+                        ts2wasm_ir::ResolvedExpr::Ident(read_name)
+                    )
                 ] if name == "x" && read_name == "x"
             )
     ));

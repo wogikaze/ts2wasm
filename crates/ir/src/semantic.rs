@@ -604,6 +604,13 @@ impl TypeScriptCallArityValidator {
                     self.validate_expr(e)?;
                 }
             }
+            ResolvedExpr::EvalCompletion(steps) => {
+                for step in steps {
+                    if let Some(expr) = step.expr() {
+                        self.validate_expr(expr)?;
+                    }
+                }
+            }
         }
         Ok(())
     }
@@ -840,6 +847,10 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
                 || expr_contains_arguments(expr)
         }
         ResolvedExpr::Sequence(exprs) => exprs.iter().any(expr_contains_arguments),
+        ResolvedExpr::EvalCompletion(steps) => steps
+            .iter()
+            .filter_map(|step| step.expr())
+            .any(expr_contains_arguments),
         ResolvedExpr::Spread(expr) => expr_contains_arguments(expr),
         ResolvedExpr::FunctionExpr { .. } => false,
         ResolvedExpr::ArrowFn { body, .. } => expr_contains_arguments(body),

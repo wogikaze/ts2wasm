@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_ir::builtin_resolved::{
-    EvalKind, EvalSource, ResolvedExpr, ResolvedParam, ResolvedStmt,
+    EvalCompletionStep, EvalKind, EvalSource, ResolvedExpr, ResolvedParam, ResolvedStmt,
 };
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
 use ts2wasm_ir::name_resolver::resolve_names;
@@ -1012,30 +1012,26 @@ fn function_constructor_syntax_error(message: &str, span: ts2wasm_source::Span) 
 
 /// Extract the completion value from a resolved program body.
 ///
-/// * Empty block → `ResolvedExpr::Undefined`
-/// * Single expression statement → the expression itself
-/// * Multiple statements → the last statement's completion value
+/// Produces a completion-plan expression so lower IR can evaluate all eval-code
+/// side effects while preserving the last non-empty completion value exactly once.
 fn extract_completion_value(stmts: Vec<ResolvedStmt>) -> Result<ResolvedExpr, Diagnostic> {
-    let mut exprs = Vec::new();
-    for stmt in stmts {
-        exprs.push(eval_statement_completion_expr(stmt));
-    }
-    Ok(match exprs.len() {
-        0 => ResolvedExpr::Undefined,
-        1 => exprs.pop().expect("single completion expression exists"),
-        _ => ResolvedExpr::Sequence(exprs),
-    })
+    Ok(ResolvedExpr::EvalCompletion(
+        stmts
+            .into_iter()
+            .map(eval_statement_completion_step)
+            .collect(),
+    ))
 }
 
-fn eval_statement_completion_expr(stmt: ResolvedStmt) -> ResolvedExpr {
+fn eval_statement_completion_step(stmt: ResolvedStmt) -> EvalCompletionStep {
     match stmt {
-        ResolvedStmt::Expr(expr) => expr,
-        ResolvedStmt::Assign(name, expr) => ResolvedExpr::Assign {
+        ResolvedStmt::Expr(expr) => EvalCompletionStep::Value(expr),
+        ResolvedStmt::Assign(name, expr) => EvalCompletionStep::Value(ResolvedExpr::Assign {
             name,
             expr: Box::new(expr),
-        },
-        ResolvedStmt::Let(_, expr) => ResolvedExpr::Sequence(vec![expr, ResolvedExpr::Undefined]),
-        ResolvedStmt::Return(expr) => expr,
-        _ => ResolvedExpr::Undefined,
+        }),
+        ResolvedStmt::Let(_, expr) => EvalCompletionStep::Empty(Some(expr)),
+        ResolvedStmt::Return(expr) => EvalCompletionStep::Value(expr),
+        _ => EvalCompletionStep::Empty(None),
     }
 }

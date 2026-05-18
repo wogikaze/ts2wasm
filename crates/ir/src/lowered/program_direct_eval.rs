@@ -285,6 +285,10 @@ fn expr_contains_dynamic_direct_eval(expr: &ResolvedExpr) -> bool {
                 || expr_contains_dynamic_direct_eval(expr)
         }
         ResolvedExpr::Sequence(exprs) => exprs.iter().any(expr_contains_dynamic_direct_eval),
+        ResolvedExpr::EvalCompletion(steps) => steps
+            .iter()
+            .filter_map(|step| step.expr())
+            .any(expr_contains_dynamic_direct_eval),
         ResolvedExpr::ArrowFn { .. }
         | ResolvedExpr::FunctionExpr { .. }
         | ResolvedExpr::ClassExpr { .. }
@@ -634,6 +638,13 @@ pub(crate) fn collect_direct_eval_function_assignment_expr(
         ResolvedExpr::Sequence(exprs) => {
             for e in exprs {
                 collect_direct_eval_function_assignment_expr(function_name, e, env);
+            }
+        }
+        ResolvedExpr::EvalCompletion(steps) => {
+            for step in steps {
+                if let Some(expr) = step.expr() {
+                    collect_direct_eval_function_assignment_expr(function_name, expr, env);
+                }
             }
         }
         ResolvedExpr::ArrowFn { .. }

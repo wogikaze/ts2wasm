@@ -184,6 +184,7 @@ impl super::Resolver {
             } => self.lower_named_function_expr(name, params, body, *is_generator, *origin),
             ResolvedExpr::ClassExpr { .. } => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
             ResolvedExpr::Sequence(exprs) => self.lower_sequence_expr(exprs),
+            ResolvedExpr::EvalCompletion(steps) => self.lower_eval_completion_expr(steps),
             ResolvedExpr::Eval {
                 kind, source, span, ..
             } => {
@@ -248,6 +249,48 @@ impl super::Resolver {
         }
         // Single-element sequence (shouldn't happen but handle gracefully)
         unreachable!("sequence with zero elements")
+    }
+
+    fn lower_eval_completion_expr(
+        &mut self,
+        steps: &[crate::builtin_resolved::EvalCompletionStep],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        use crate::builtin_resolved::EvalCompletionStep;
+
+        let completion = self.alloc_temp();
+        let mut stmts = vec![LoweredStmt::Let(
+            completion,
+            LoweredExpr::Undefined(Span::generated("eval_completion_init")),
+            Span::generated("eval_completion_let"),
+        )];
+        for step in steps {
+            match step {
+                EvalCompletionStep::Value(expr) => {
+                    let value = self.lower_expr(expr)?;
+                    stmts.push(LoweredStmt::Assign(
+                        completion,
+                        value,
+                        Span::generated("eval_completion_set"),
+                    ));
+                }
+                EvalCompletionStep::Empty(Some(expr)) => {
+                    let side_effect = self.lower_expr(expr)?;
+                    stmts.push(LoweredStmt::Expr(
+                        side_effect,
+                        Span::generated("eval_completion_empty"),
+                    ));
+                }
+                EvalCompletionStep::Empty(None) => {}
+            }
+        }
+        Ok(LoweredExpr::Block {
+            stmts,
+            result: Box::new(LoweredExpr::Local(
+                completion,
+                Span::generated("eval_completion_result"),
+            )),
+            span: Span::generated("eval_completion"),
+        })
     }
 
     fn lower_direct_eval_env_descriptor(&self) -> LoweredExpr {
