@@ -124,7 +124,10 @@ fn dynamic_function_handle_grows_existing_array_references_through_node_shim_hos
 #[test]
 fn dynamic_function_handle_exposes_metadata_through_node_shim_host_imports() {
     let fixture = "fixtures/core-semantics/function-constructor-dynamic-metadata-node-shim.ts";
-    assert_node_shim_stdout(fixture, "2\nanonymous\n[object Object]\n7\n");
+    assert_node_shim_stdout(
+        fixture,
+        "2\nanonymous\n[object Object]\nfunction anonymous(a,b\n) {\nreturn a + b\n}\n7\n",
+    );
 }
 
 #[test]
@@ -1036,11 +1039,19 @@ function encodeHostObject(value) {
 }
 
 function encodeHostFunctionHandle(fn, index) {
-  const raw = encodeHostObject({
+  const handleObject = {
     length: fn.length,
     name: fn.name,
     prototype: {},
-  });
+  };
+  if (fn.__ts2wasm_host_function_to_string !== true) {
+    const toStringFn = function toString() {
+      return fn.toString();
+    };
+    Object.defineProperty(toStringFn, '__ts2wasm_host_function_to_string', { value: true });
+    handleObject.toString = toStringFn;
+  }
+  const raw = encodeHostObject(handleObject);
   hostFunctionHandles.set(rawPtr(raw), index);
   return raw;
 }

@@ -91,6 +91,33 @@ impl super::super::Resolver {
             };
             return Ok(LoweredExpr::String(body, span));
         }
+        if method == "toString"
+            && args.is_empty()
+            && let ResolvedExpr::Ident(name) = object
+            && let Ok(local_id) = self.resolve_local(name)
+            && self
+                .ctx
+                .facts
+                .is_host_external(local_id, HostExternalKind::FunctionHandle)
+        {
+            let receiver = if self.ctx.facts.env_cell_locals.contains(&local_id) {
+                LoweredExpr::EnvCellGet(local_id, Span::generated("env_cell_get"))
+            } else {
+                LoweredExpr::Local(local_id, Span::generated("local"))
+            };
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::FunctionCallMethodHost,
+                args: vec![
+                    object_kernel::ordinary_get(receiver.clone(), method, span),
+                    receiver,
+                    LoweredExpr::ArrayNew {
+                        elements: Vec::new(),
+                        span: Span::generated("array"),
+                    },
+                ],
+                span: Span::generated("runtime_call"),
+            });
+        }
         if let Some(result) = self.lower_mcall_date_string(object, method, args, span)? {
             return Ok(result);
         }
@@ -3183,9 +3210,10 @@ impl super::super::Resolver {
             return Ok(None);
         }
 
-        // Array.prototype.forEach with ArrowFn/FunctionExpr callback —
-        // route through IR-level While loop expansion even for non-ident receivers
-        if method == "forEach"
+        // Array.prototype.forEach/find/findIndex/findLast/findLastIndex with
+        // ArrowFn/FunctionExpr callback — route through IR-level While loop
+        // expansion even for non-ident receivers
+        if matches!(method, "forEach" | "find" | "findIndex" | "findLast" | "findLastIndex")
             && !args.is_empty()
             && match &args[0] {
                 ResolvedExpr::ArrowFn { .. }
@@ -3220,7 +3248,9 @@ impl super::super::Resolver {
             if let Some(intrinsic) = collection_method_runtime_fn_arg(method) {
                 let receiver_expr = self.lower_expr(object)?;
                 let mut lowered_args = vec![receiver_expr];
-                if !is_identity_array_method(method) {
+                if !is_identity_array_method(method)
+                    && !matches!(method, "find" | "findIndex" | "findLast" | "findLastIndex")
+                {
                     let max_args = if method == "indexOf" || method == "includes" {
                         1
                     } else {
@@ -3411,7 +3441,9 @@ impl super::super::Resolver {
         if let Some(intrinsic) = collection_method_runtime_fn_arg(method) {
             let receiver_expr = self.lower_expr(object)?;
             let mut lowered_args = vec![receiver_expr];
-            if !is_identity_array_method(method) {
+            if !is_identity_array_method(method)
+                && !matches!(method, "find" | "findIndex" | "findLast" | "findLastIndex")
+            {
                 let max_args = if method == "indexOf" || method == "includes" {
                     2
                 } else {
@@ -3881,6 +3913,11 @@ impl super::super::Resolver {
                     .ctx
                     .facts
                     .is_host_external(obj_local, HostExternalKind::Object)
+                    || (method == "toString"
+                        && self
+                            .ctx
+                            .facts
+                            .is_host_external(obj_local, HostExternalKind::FunctionHandle))
                 {
                     let args_array = ResolvedExpr::Array(
                         args.iter()

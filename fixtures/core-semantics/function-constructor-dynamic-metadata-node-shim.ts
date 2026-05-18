@@ -5,4 +5,5 @@ let f = Function(p1, p2, body);
 console.log(f.length);
 console.log(f.name);
 console.log(f.prototype);
+console.log(f.toString());
 console.log(f(3, 4));
