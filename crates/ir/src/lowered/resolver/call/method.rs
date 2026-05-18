@@ -4992,10 +4992,15 @@ impl super::super::Resolver {
                     span: Span::generated("object_is_prototype_of"),
                 })
             }
-            "toString" | "toLocaleString" => Ok(LoweredExpr::String(
+            "toString" => Ok(LoweredExpr::String(
                 "[object Object]".to_owned(),
                 Span::generated("str"),
             )),
+            "toLocaleString" => Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ObjectToLocaleString,
+                args: vec![receiver],
+                span: Span::generated("runtime_call"),
+            }),
             "valueOf" => Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::ValueOf,
                 args: vec![receiver],
