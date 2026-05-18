@@ -245,7 +245,7 @@ Exit criteria:
   - block function eval
   - shadowed eval ordinary-call
   - indirect eval shape preservation
-  - optional eval diagnostic
+  - optional eval indirect classification
 - `pipeline.rs` と `server.rs` の stage parity を直す。
   - `expand_static_eval_fragments` を両方で呼ぶ、または canonical resolver/lowering path へ移して両方から不要にする。
 - `compiler/src/stages/eval_expand.rs` の責務を明確化する。
@@ -557,7 +557,7 @@ Exit criteria:
 |---|---|
 | `crates/frontend/src/parser/eval_expand.rs` | Removed for `Function` constructor expression rewriting; remaining parser-side dynamic-code compatibility is statement-level direct eval in `statements_general.rs`. |
 | `crates/frontend/src/parser/statements_general.rs` | `direct_eval_literal_statements` の parser semantic rewrite を `EvalFragment` lowering へ移す。 |
-| `crates/frontend/src/parser/expressions_main.rs` | `eval?.()` parser diagnostic を optional-call shape preservation へ移行する。 |
+| `crates/frontend/src/parser/expressions_main.rs` | `eval?.()` は optional-call shape を保持し、resolver で indirect eval classification へ渡す。 |
 | `crates/resolve/src/name_resolver.rs` | intrinsic / shadowed eval・Function 判定、strict context、scope id を管理する。未使用 diagnostic helper を整理する。 |
 | `crates/ir/src/builtin_resolved.rs` | `EvalFragmentPlan` / `FunctionConstructorPlan` を追加または既存 `Eval` を拡張する。 |
 | `crates/ir/src/builtin_resolver.rs` | direct / indirect / Function constructor classification を resolver facts に基づいて行う。 |
