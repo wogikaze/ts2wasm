@@ -874,6 +874,7 @@ const refreshingHostObjects = new WeakSet();
 const directEvalExtraBindings = new Map();
 const EVAL_DESCRIPTOR_VERSION = '__ts2wasm_eval_descriptor_v2';
 const EVAL_DESCRIPTOR_CALLER_STRICT = '__ts2wasm_eval_caller_strict';
+const EVAL_DESCRIPTOR_BINDINGS = '__ts2wasm_eval_bindings';
 const decoder = new TextDecoder();
 const encoder = new TextEncoder();
 let stdout = '';
@@ -1551,11 +1552,36 @@ function evalWithEnvDescriptor(source, envRaw) {
   }
 
   const bindings = [];
-  for (let i = pairOffset; i < pairs.length; i += 2) {
-    const name = decodeString(pairs[i]);
-    const cellRaw = pairs[i + 1];
-    const raw = readEnvCellRaw(cellRaw);
-    bindings.push({ name, cellRaw, raw, value: decodeValue(raw) });
+  if (
+    pairs.length >= pairOffset + 2 &&
+    rawTag(pairs[pairOffset]) === TAG_STRING &&
+    decodeString(pairs[pairOffset]) === EVAL_DESCRIPTOR_BINDINGS
+  ) {
+    const bindingEntries = decodeArray(pairs[pairOffset + 1]);
+    pairOffset += 2;
+    if (pairOffset !== pairs.length) {
+      throw new TypeError('invalid direct eval env descriptor');
+    }
+    for (const entryRaw of bindingEntries) {
+      const entry = decodeArray(entryRaw);
+      if (entry.length !== 2) {
+        throw new TypeError('invalid direct eval env descriptor binding');
+      }
+      const name = decodeString(entry[0]);
+      const cellRaw = entry[1];
+      const raw = readEnvCellRaw(cellRaw);
+      bindings.push({ name, cellRaw, raw, value: decodeValue(raw) });
+    }
+  } else {
+    if ((pairs.length - pairOffset) % 2 !== 0) {
+      throw new TypeError('invalid direct eval env descriptor');
+    }
+    for (let i = pairOffset; i < pairs.length; i += 2) {
+      const name = decodeString(pairs[i]);
+      const cellRaw = pairs[i + 1];
+      const raw = readEnvCellRaw(cellRaw);
+      bindings.push({ name, cellRaw, raw, value: decodeValue(raw) });
+    }
   }
 
   const names = bindings.map((binding) => binding.name);

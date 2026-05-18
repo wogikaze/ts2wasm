@@ -1529,6 +1529,7 @@ struct DirectEvalEnvBinding {
 
 const DIRECT_EVAL_DESCRIPTOR_VERSION_KEY: &str = "__ts2wasm_eval_descriptor_v2";
 const DIRECT_EVAL_DESCRIPTOR_CALLER_STRICT_KEY: &str = "__ts2wasm_eval_caller_strict";
+const DIRECT_EVAL_DESCRIPTOR_BINDINGS_KEY: &str = "__ts2wasm_eval_bindings";
 
 impl DirectEvalEnvDescriptor {
     fn into_lowered_expr(self) -> LoweredExpr {
@@ -1536,7 +1537,7 @@ impl DirectEvalEnvDescriptor {
             return LoweredExpr::Undefined(Span::generated("eval_env"));
         }
 
-        let mut elements = Vec::with_capacity(4 + self.bindings.len() * 2);
+        let mut elements = Vec::with_capacity(6);
         elements.push(LoweredExpr::String(
             DIRECT_EVAL_DESCRIPTOR_VERSION_KEY.to_owned(),
             Span::generated("eval_env_version"),
@@ -1550,19 +1551,33 @@ impl DirectEvalEnvDescriptor {
             self.caller_is_strict,
             Span::generated("eval_env_strict"),
         ));
-        for binding in self.bindings {
-            elements.push(LoweredExpr::String(
-                binding.name,
-                Span::generated("eval_env_name"),
-            ));
-            elements.push(LoweredExpr::Local(
-                binding.local,
-                Span::generated("eval_env_cell"),
-            ));
-        }
+        elements.push(LoweredExpr::String(
+            DIRECT_EVAL_DESCRIPTOR_BINDINGS_KEY.to_owned(),
+            Span::generated("eval_env_bindings"),
+        ));
+        elements.push(LoweredExpr::ArrayNew {
+            elements: self
+                .bindings
+                .into_iter()
+                .map(DirectEvalEnvBinding::into_lowered_expr)
+                .collect(),
+            span: Span::generated("eval_env_bindings"),
+        });
         LoweredExpr::ArrayNew {
             elements,
             span: Span::generated("eval_env"),
+        }
+    }
+}
+
+impl DirectEvalEnvBinding {
+    fn into_lowered_expr(self) -> LoweredExpr {
+        LoweredExpr::ArrayNew {
+            elements: vec![
+                LoweredExpr::String(self.name, Span::generated("eval_env_name")),
+                LoweredExpr::Local(self.local, Span::generated("eval_env_cell")),
+            ],
+            span: Span::generated("eval_env_binding"),
         }
     }
 }
