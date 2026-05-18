@@ -68,7 +68,7 @@ TypeScript 型は、最適化のヒントであって別言語への opt-in で�
 
 このプロジェクトの難所は TypeScript 構文ではなく JavaScript 意味論である。特に、`this`、prototype、property lookup、dynamic object shape、truthiness、`==`、`===`、`NaN`、`-0`、exception、closure、`eval`、`with`、getter / setter、Proxy などは WASM への直接変換を難しくする。
 
-対応方針として、まず通常の TypeScript コードでよく使われる範囲を正確に実装する。`eval` や `with` のような最適化を破壊する機能は、最初から最重要扱いにはしない。ただし、仕様から削除はしない。明示的に `unsupported-dynamic-code` として扱う。
+対応方針として、まず通常の TypeScript コードでよく使われる範囲を正確に実装する。`eval` や `with` のような最適化を破壊する機能は、最初から最重要扱いにはしない。ただし、仕様から削除はしない。静的 source が確定する `eval` / `Function` は AOT eval-code lowering として扱い、実行時 source が必要な dynamic code は exact capability manifest を伴う audited host lane として扱う。
 
 WAMR は multi-thread (wasi-threads)、socket API (Berkeley/Posix Socket) をサポートしており、WASI 経由でネットワーク機能や並列処理も実行可能である。wasm-tools は既に Wasm GC、reference-types、function-references、multi-memory、multi-value、SIMD、tail-call、threads などの提案を実装しており（多くは Stage 4+）、これらを活用することでより効率的な実装が可能になる。
 
@@ -81,7 +81,7 @@ WAMR は multi-thread (wasi-threads)、socket API (Berkeley/Posix Socket) をサ
 | `===`           | primitive fast path を用意                   |
 | `NaN` / `-0`    | number semantics のテスト対象にする                |
 | exception       | runtime stack と wasm exception の両案を検討     |
-| `eval`          | static-string direct eval は eval-code を caller scope 内の Lowered IR に展開して wasm として実行。dynamic / indirect eval は診断または将来の audited host shim 対象 |
+| `eval`          | static-string direct/indirect eval は eval-code を Lowered IR に展開して wasm として実行。runtime-source direct/indirect eval は `host.eval.*` capability を持つ audited host lane に限定する |
 | `with`          | 初期非対応、診断必須                                |
 | Proxy           | 初期非対応、object model 安定後に検討                 |
 

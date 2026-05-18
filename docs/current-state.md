@@ -344,14 +344,19 @@ The current implementation has several partial dynamic-code paths:
   eval now lowers an environment descriptor for initialized env-cell locals and
   wraps direct-eval-visible user parameters at function entry. The focused Node
   shim covers primitive number caller-local, parameter, and shadowed block-local
-  write-back plus string result/write-back bridging and strict eval lexical
-  shadow isolation for local `let`, while lowering rejects dynamic direct eval
-  before not-yet-initialized caller env bindings to avoid TDZ-unsafe host
-  execution. The focused Node shim also bridges plain object results into wasm
-  object cells with enumerable string-keyed primitive properties, enough for
-  default object stringification and direct property reads. Broader declaration
-  landing, full TDZ modeling, object identity/nested object semantics, error
-  bridging, and iwasm-differential coverage remain incomplete;
+  write-back plus catch-binding write-back, string result/write-back bridging,
+  object identity, nested object/array primitive properties, host-thrown error
+  bridging, and strict eval lexical shadow isolation for local `let`, while
+  lowering rejects dynamic direct eval before not-yet-initialized caller env
+  bindings to avoid TDZ-unsafe host execution. The focused Node shim also
+  bridges plain object results into wasm object cells with enumerable
+  string-keyed primitive properties, enough for default object stringification
+  and direct property reads. Broader declaration landing, full TDZ modeling,
+  runtime-wide host external object contracts, and iwasm-differential coverage
+  remain incomplete;
+- intrinsic `new eval(...)` now lowers to a catchable `TypeError` path and is
+  guarded by a Node shim fixture; shadowed user bindings named `eval` remain
+  ordinary constructor calls through the user-binding path;
 - dynamic `Function` constructor compile and statically visible host-handle
   call/construct lower to the audited Node host lane with exact
   `host.function.compile`, `host.function.call`, and
@@ -376,14 +381,14 @@ The canonical implementation plan is
 `plans/eval-new-function-implementation-plan.md`. Current known gaps include
 the split parser/compiler eval expansion paths, direct eval declaration
 environment connection, remaining Function constructor grammar/constructability
-completeness, identity-stable growth for already-returned host array references,
-and error bridging, and full dynamic direct-eval environment semantics beyond the
-primitive env-cell write-back slice. Node-shim execution for dynamic indirect eval and dynamic
-Function handles is covered by focused integration tests, as are primitive-return
-and primitive local/parameter/block-shadow/string write-back, object result and
-primitive property bridging, strict lexical shadow isolation, and a TDZ-conflict
-diagnostic for dynamic direct eval, but not by the current iwasm-based
-differential runner.
+completeness, runtime-wide host external object contracts, and full dynamic
+direct-eval environment semantics beyond the focused env-cell write-back slice.
+Node-shim execution for dynamic indirect eval, dynamic direct eval, and dynamic
+Function handles is covered by focused integration tests, as are primitive
+return values, local/parameter/block-shadow/catch-binding/string write-back,
+object result and primitive property bridging, strict lexical shadow isolation,
+host-thrown error bridging, and a TDZ-conflict diagnostic for dynamic direct
+eval, but not by the current iwasm-based differential runner.
 
 ## Known compiler limitations
 

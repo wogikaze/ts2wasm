@@ -129,7 +129,7 @@ The smoke gate (`--smoke`) selects a fixed set of known-passing and known-unsupp
 | Intl | data/runtime dependency が大きい |
 | WeakMap / WeakSet | GC semantics が必要 |
 | Atomics / SharedArrayBuffer | threading model が必要 |
-| eval / Function constructor | AOT compiler と相性が悪い |
+| eval / Function constructor | static-string AOT と audited host lane の境界、direct-eval environment、realm/test262 harness 分類が必要 |
 
 ## Issue-Test Mapping
 
