@@ -899,6 +899,7 @@ directories:
     - direct-eval-labeled-completion.ts
     - direct-eval-switch-completion.ts
     - direct-eval-nested-static.ts
+    - direct-eval-return-unsupported.ts
     - direct-eval-try-completion.ts
     - direct-eval-var-lands-in-caller.ts
     - direct-eval-while-completion.ts

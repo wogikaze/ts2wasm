@@ -387,6 +387,16 @@ fn dynamic_direct_eval_rejects_tdz_env_descriptor_conflict() {
     assert_build_fails_with(fixture, "UnsupportedEval", "TDZ-aware env descriptors");
 }
 
+#[test]
+fn static_direct_eval_rejects_return_statement() {
+    let fixture = "fixtures/core-semantics/direct-eval-return-unsupported.ts";
+    assert_build_fails_with(
+        fixture,
+        "UnsupportedEval",
+        "return statement is not valid in eval source",
+    );
+}
+
 fn assert_build_fails_with(fixture: &str, expected_code: &str, expected_message: &str) {
     let fixture_path = fixture_path(fixture);
     let output_wasm = temp_wasm_path(fixture);

@@ -765,6 +765,7 @@ fn expand_static_eval_source(
             span: None,
             phase: None,
         })?;
+    validate_static_eval_source(&program)?;
 
     let leak_var_declarations = direct_caller_scope && !block_has_use_strict_directive(&program);
     let mut eval_declarations = Vec::new();
@@ -800,6 +801,72 @@ fn expand_static_eval_source(
         )?,
         caller_var_declarations: eval_declarations,
     })
+}
+
+fn validate_static_eval_source(program: &[Stmt]) -> Result<(), Diagnostic> {
+    if let Some(span) = eval_source_illegal_return_span(program) {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedEval,
+            message: "return statement is not valid in eval source".to_owned(),
+            span: Some(span),
+            phase: None,
+        });
+    }
+    Ok(())
+}
+
+fn eval_source_illegal_return_span(stmts: &[Stmt]) -> Option<ts2wasm_source::Span> {
+    for stmt in stmts {
+        if let Some(span) = eval_stmt_illegal_return_span(stmt) {
+            return Some(span);
+        }
+    }
+    None
+}
+
+fn eval_stmt_illegal_return_span(stmt: &Stmt) -> Option<ts2wasm_source::Span> {
+    match stmt {
+        Stmt::Return { span, .. } => Some(*span),
+        Stmt::Block { statements, .. } => eval_source_illegal_return_span(statements),
+        Stmt::If {
+            then_body,
+            else_body,
+            ..
+        } => eval_source_illegal_return_span(then_body)
+            .or_else(|| eval_source_illegal_return_span(else_body)),
+        Stmt::While { body, .. }
+        | Stmt::DoWhile { body, .. }
+        | Stmt::ForIn { body, .. }
+        | Stmt::ForOf { body, .. }
+        | Stmt::ForAwaitOf { body, .. } => eval_source_illegal_return_span(body),
+        Stmt::For { init, body, .. } => init
+            .as_deref()
+            .and_then(eval_stmt_illegal_return_span)
+            .or_else(|| eval_source_illegal_return_span(body)),
+        Stmt::Switch { cases, .. } => cases
+            .iter()
+            .find_map(|(_, body)| eval_source_illegal_return_span(body)),
+        Stmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => eval_source_illegal_return_span(try_block)
+            .or_else(|| {
+                catch_block
+                    .as_deref()
+                    .and_then(eval_source_illegal_return_span)
+            })
+            .or_else(|| {
+                finally_block
+                    .as_deref()
+                    .and_then(eval_source_illegal_return_span)
+            }),
+        Stmt::Labeled { body, .. } => eval_stmt_illegal_return_span(body),
+        Stmt::ExportDecl { declaration, .. } => eval_stmt_illegal_return_span(declaration),
+        Stmt::Function { .. } | Stmt::ClassDecl { .. } => None,
+        _ => None,
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
