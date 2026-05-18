@@ -38,6 +38,13 @@ fn dynamic_function_handle_exposes_metadata_through_node_shim_host_imports() {
 }
 
 #[test]
+fn dynamic_function_construct_returns_object_through_node_shim_host_imports() {
+    let fixture =
+        "fixtures/core-semantics/function-constructor-dynamic-construct-object-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\nok\nundefined\n");
+}
+
+#[test]
 fn dynamic_indirect_eval_executes_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/indirect-eval-dynamic-node-shim.ts";
     assert_node_shim_stdout(fixture, "7\n");
@@ -454,8 +461,7 @@ const imports = {
       if (typeof fn !== 'function') {
         throw new TypeError(`unknown host function handle: ${handleRaw}`);
       }
-      Reflect.construct(fn, decodeArgs(argsRaw));
-      return TAG_UNDEFINED;
+      return encodeHostValue(Reflect.construct(fn, decodeArgs(argsRaw)));
     },
   },
 };

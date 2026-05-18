@@ -356,7 +356,8 @@ The current implementation has several partial dynamic-code paths:
   `host.function.construct` manifest entries and host-deny rejection. A focused
   Node WebAssembly shim regression covers primitive/string/object-return calls,
   string-keyed primitive object property reads, `.length` / `.name` /
-  `.prototype` metadata reads, and discarded constructor calls for statically
+  `.prototype` metadata reads, discarded constructor calls, and returned
+  constructed objects with string-keyed primitive property reads for statically
   visible dynamic Function handles. The shim carries handles as wasm object
   cells backed by a host-side handle map instead of number values.
 
