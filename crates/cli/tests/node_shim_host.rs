@@ -144,6 +144,13 @@ fn dynamic_function_handle_exposes_metadata_through_node_shim_host_imports() {
 }
 
 #[test]
+fn dynamic_function_handle_calls_computed_tostring_through_node_shim_host_imports() {
+    let fixture =
+        "fixtures/core-semantics/function-constructor-dynamic-computed-tostring-node-shim.ts";
+    assert_node_shim_stdout(fixture, "function anonymous(a,b\n) {\nreturn a + b\n}\n");
+}
+
+#[test]
 fn dynamic_function_handle_preserves_prototype_constructor_identity_through_node_shim_host_imports()
 {
     let fixture =

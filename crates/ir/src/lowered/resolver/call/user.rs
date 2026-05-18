@@ -108,6 +108,40 @@ impl super::super::Resolver {
             });
         }
 
+        if let ResolvedExpr::ComputedIndex { object, index } = callee
+            && let ResolvedExpr::Ident(receiver_name) = object.as_ref()
+            && let Ok(receiver_local) = self.resolve_local(receiver_name)
+            && self
+                .ctx
+                .facts
+                .is_host_external(receiver_local, HostExternalKind::FunctionHandle)
+        {
+            let receiver = if self.ctx.facts.env_cell_locals.contains(&receiver_local) {
+                LoweredExpr::EnvCellGet(receiver_local, Span::generated("env_cell_get"))
+            } else {
+                LoweredExpr::Local(receiver_local, Span::generated("local"))
+            };
+            let args_array = ResolvedExpr::Array(
+                args.iter()
+                    .cloned()
+                    .map(ResolvedArrayElement::Present)
+                    .collect(),
+            );
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::FunctionCallMethodHost,
+                args: vec![
+                    object_kernel::ordinary_get_dynamic(
+                        receiver.clone(),
+                        self.lower_expr(index)?,
+                        span,
+                    ),
+                    receiver,
+                    self.lower_expr(&args_array)?,
+                ],
+                span: Span::generated("runtime_call"),
+            });
+        }
+
         if let ResolvedExpr::MethodCall {
             object,
             method,
