@@ -687,6 +687,9 @@ def extract_unresolved_name(stderr):
 
 def feature_label(diag_code, stderr, test_file, phase=None):
     """Generate feature label from diagnostic code."""
+    if diag_code == "UnsupportedEval":
+        return _eval_feature_label(stderr, test_file)
+
     feature_map = {
         "ExpectedNegativeSyntax": "negative-parse-syntaxerror",
         "SyntaxError": "syntax-error",
@@ -695,7 +698,6 @@ def feature_label(diag_code, stderr, test_file, phase=None):
         "UnsupportedDate": "date",
         "UnsupportedRegExp": "regexp-literal",
         "UnsupportedModule": "import-export",
-        "UnsupportedEval": "eval",
         "UnsupportedTypeScriptSyntax": "parser-syntax",
         "UnsupportedRuntimeSubset": "runtime-subset",
         "UnresolvedName": "feature-resolution",
@@ -742,6 +744,30 @@ def feature_label(diag_code, stderr, test_file, phase=None):
                 label = sub_label
                 break
     return label
+
+
+def _eval_feature_label(stderr, test_file):
+    """Refine UnsupportedEval into burn-down buckets."""
+    text = (stderr or "").lower()
+    path = str(test_file or "").lower()
+
+    if "tdz-aware env descriptors" in text:
+        return "eval-direct-tdz"
+    if (
+        "static eval fragment reached lowering without aot expansion" in text
+        or "aot-only eval fragment" in text
+    ):
+        return "eval-static-aot"
+    if "/language/eval-code/" in path or "/annexb/language/eval-code/" in path:
+        return "eval-code"
+    if (
+        "function constructor" in text
+        or "new function" in text
+        or "/built-ins/function/" in path
+        or "/built-ins/function." in path
+    ):
+        return "function-constructor"
+    return "eval-unsupported"
 
 
 # ---------------------------------------------------------------------------

@@ -112,6 +112,11 @@ FEATURE_PRIORITY = {
     "legacy-global-builtin": "p3",
     "annexb-ishtmldda": "p3",
     "eval": "p3",
+    "eval-unsupported": "p3",
+    "eval-code": "p3",
+    "eval-direct-tdz": "p3",
+    "eval-static-aot": "p3",
+    "function-constructor": "p3",
     "jsx": "p3",
 }
 

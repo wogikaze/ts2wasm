@@ -33,6 +33,17 @@ ts2wasm_feature_label() {
     NumberOutOfRange) echo "number-range"; return ;;
     ArityMismatch) echo "arity"; return ;;
     InvalidTopLevelReturn) echo "top-level-return"; return ;;
+    UnsupportedEval)
+      case "$text" in
+        *"tdz-aware env descriptors"*) echo "eval-direct-tdz"; return ;;
+        *"static eval fragment reached lowering without aot expansion"*|*"aot-only eval fragment"*) echo "eval-static-aot"; return ;;
+        *"function constructor"*|*"new function"*) echo "function-constructor"; return ;;
+      esac
+      case "$path_lc" in
+        *"/language/eval-code/"*|*"/annexb/language/eval-code/"*) echo "eval-code"; return ;;
+        *"/built-ins/function/"*|*"/built-ins/function."*) echo "function-constructor"; return ;;
+      esac
+      echo "eval-unsupported"; return ;;
   esac
 
   case "$path_lc" in
@@ -45,7 +56,7 @@ ts2wasm_feature_label() {
     *"/built-ins/escape/"*|*"/built-ins/unescape/"*) echo "legacy-global-builtin"; return ;;
     *"/built-ins/"*) echo "builtin-api"; return ;;
     *"/annexb/language/comments/"*) echo "html-comment"; return ;;
-    *"/annexb/language/eval-code/"*) echo "eval"; return ;;
+    *"/annexb/language/eval-code/"*) echo "eval-code"; return ;;
     *"/annexb/language/expressions/logical-assignment/"*) echo "logical-assignment"; return ;;
     *"/annexb/language/expressions/template-literal/legacy-octal-escape-sequence-"*) echo "legacy-octal-escape"; return ;;
     *"/annexb/language/expressions/"*"/emulates-undefined.js") echo "annexb-ishtmldda"; return ;;

@@ -897,7 +897,7 @@ def feature_label(diag_code, err_file, file_path, phase=None):
     elif diag_code == "UnsupportedModule":
         return "import-export"
     elif diag_code == "UnsupportedEval":
-        return "eval"
+        return _eval_feature_label(err_file, file_path)
     elif diag_code == "UnsupportedTypeScriptSyntax":
         return "parser-syntax"
     elif diag_code == "UnsupportedRuntimeSubset":
@@ -936,7 +936,7 @@ def feature_label(diag_code, err_file, file_path, phase=None):
     elif "/annexb/language/comments/" in path_lc:
         return "html-comment"
     elif "/annexb/language/eval-code/" in path_lc:
-        return "eval"
+        return "eval-code"
     elif (
         "/annexb/language/expressions/logical-assignment/" in path_lc
         and "/emulates-undefined-" in path_lc
@@ -1080,6 +1080,30 @@ def feature_label(diag_code, err_file, file_path, phase=None):
     if _parser_suffix:
         result += ":parser"
     return result
+
+
+def _eval_feature_label(err_file, file_path):
+    """Refine UnsupportedEval into burn-down buckets."""
+    text = (err_file or "").lower()
+    path = str(file_path or "").lower()
+
+    if "tdz-aware env descriptors" in text:
+        return "eval-direct-tdz"
+    if (
+        "static eval fragment reached lowering without aot expansion" in text
+        or "aot-only eval fragment" in text
+    ):
+        return "eval-static-aot"
+    if "/language/eval-code/" in path or "/annexb/language/eval-code/" in path:
+        return "eval-code"
+    if (
+        "function constructor" in text
+        or "new function" in text
+        or "/built-ins/function/" in path
+        or "/built-ins/function." in path
+    ):
+        return "function-constructor"
+    return "eval-unsupported"
 
 
 def _infer_ts_boundary(rec: dict) -> str | None:

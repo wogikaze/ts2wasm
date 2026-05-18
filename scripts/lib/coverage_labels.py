@@ -104,6 +104,30 @@ FEATURE_LABELS: dict[str, dict[str, Any]] = {
         "diag_codes": ["UnsupportedEval"],
         "legacy_labels": ["eval"],
     },
+    "eval-code": {
+        "description": "ECMAScript eval-code semantics and Annex B eval-code cases",
+        "owner": "runtime",
+        "diag_codes": [],
+        "legacy_labels": [],
+    },
+    "eval-direct-tdz": {
+        "description": "dynamic direct eval blocked on TDZ-aware env descriptors",
+        "owner": "runtime",
+        "diag_codes": [],
+        "legacy_labels": [],
+    },
+    "eval-static-aot": {
+        "description": "static eval fragment missed or rejected by AOT eval expansion",
+        "owner": "compiler",
+        "diag_codes": [],
+        "legacy_labels": [],
+    },
+    "function-constructor": {
+        "description": "Function constructor and new Function semantics",
+        "owner": "runtime",
+        "diag_codes": [],
+        "legacy_labels": ["function"],
+    },
     "runtime-subset": {
         "description": "Syntax and lowering succeeded but runtime/link-plan support absent",
         "owner": "runtime",
@@ -205,6 +229,10 @@ LABEL_OWNERS: dict[str, str] = {
     "regexp-literal": "runtime",
     "module-resolution": "ir",
     "eval-unsupported": "runtime",
+    "eval-code": "runtime",
+    "eval-direct-tdz": "runtime",
+    "eval-static-aot": "compiler",
+    "function-constructor": "runtime",
     "runtime-subset": "runtime",
     "runtime-subset:date": "runtime",
     "runtime-subset:regexp-literal": "runtime",
@@ -248,6 +276,9 @@ def classify_diagnostic(
     no label matches. Phase-aware classification is applied for parser
     diagnostics when ``phase`` is provided.
     """
+    if diag_code == "UnsupportedEval":
+        return _classify_eval(stderr, file_path)
+
     # Direct diagnostic code lookup
     if diag_code in _DIAG_CODE_TO_LABEL:
         return _DIAG_CODE_TO_LABEL[diag_code]
@@ -264,6 +295,30 @@ def classify_diagnostic(
             return "parser-syntax"
 
     return "unknown-unsupported"
+
+
+def _classify_eval(stderr: str, file_path: str) -> str:
+    """Refine UnsupportedEval into burn-down buckets."""
+    text = (stderr or "").lower()
+    path = (file_path or "").lower()
+
+    if "tdz-aware env descriptors" in text:
+        return "eval-direct-tdz"
+    if (
+        "static eval fragment reached lowering without aot expansion" in text
+        or "aot-only eval fragment" in text
+    ):
+        return "eval-static-aot"
+    if "/language/eval-code/" in path or "/annexb/language/eval-code/" in path:
+        return "eval-code"
+    if (
+        "function constructor" in text
+        or "new function" in text
+        or "/built-ins/function/" in path
+        or "/built-ins/function." in path
+    ):
+        return "function-constructor"
+    return "eval-unsupported"
 
 
 def _classify_legacy(
@@ -430,7 +485,35 @@ def _self_test() -> int:
     if label != "builtin-date":
         errors.append(f"Test 6: expected 'builtin-date', got '{label}'")
 
-    # Test 7: build_top_failures with sample data
+    # Test 7: classify UnsupportedEval burn-down buckets
+    eval_cases = [
+        (
+            "issue-429: TDZ-aware env descriptors are not implemented",
+            "reference/test262/test/language/eval-code/direct/foo.js",
+            "eval-direct-tdz",
+        ),
+        (
+            "static eval fragment reached lowering without AOT expansion",
+            "reference/test262/test/language/expressions/foo.js",
+            "eval-static-aot",
+        ),
+        (
+            "",
+            "reference/test262/test/language/eval-code/direct/foo.js",
+            "eval-code",
+        ),
+        (
+            "Function constructor fallback",
+            "reference/test262/test/built-ins/Function/foo.js",
+            "function-constructor",
+        ),
+    ]
+    for stderr, path, expected in eval_cases:
+        label = classify_diagnostic("UnsupportedEval", stderr=stderr, file_path=path)
+        if label != expected:
+            errors.append(f"Test 7: expected '{expected}', got '{label}'")
+
+    # Test 8: build_top_failures with sample data
     records = [
         {"outcome": "unsupported", "phase": "parse", "diagnostic_code": "UnsupportedSyntax",
          "feature_label": "parser-syntax", "case": "test/foo.js", "stderr": ""},
@@ -441,23 +524,23 @@ def _self_test() -> int:
     ]
     top = build_top_failures(records, top_n=5)
     if len(top) != 2:
-        errors.append(f"Test 7: expected 2 buckets, got {len(top)}")
+        errors.append(f"Test 8: expected 2 buckets, got {len(top)}")
     elif top[0]["count"] == 2 and top[0]["feature"] == "parser-syntax":
         pass  # expected
     else:
-        errors.append(f"Test 7: unexpected sort order: {top}")
+        errors.append(f"Test 8: unexpected sort order: {top}")
 
-    # Test 8: format_triage_markdown
+    # Test 9: format_triage_markdown
     md = format_triage_markdown("test262", top)
     if "# Triage Report: test262" not in md:
-        errors.append("Test 8: missing report header")
+        errors.append("Test 9: missing report header")
     if "parser-syntax" not in md:
-        errors.append("Test 8: missing parser-syntax bucket")
+        errors.append("Test 9: missing parser-syntax bucket")
 
-    # Test 9: LABEL_OWNERS consistency
+    # Test 10: LABEL_OWNERS consistency
     for label in FEATURE_LABELS:
         if label not in LABEL_OWNERS:
-            errors.append(f"Test 9: label '{label}' missing from LABEL_OWNERS")
+            errors.append(f"Test 10: label '{label}' missing from LABEL_OWNERS")
 
     # Summary
     if errors:
@@ -466,7 +549,7 @@ def _self_test() -> int:
             print(f"  - {error}", file=sys.stderr)
         return 1
 
-    print("coverage_labels: self-test OK (9 checks)", file=sys.stderr)
+    print("coverage_labels: self-test OK (10 checks)", file=sys.stderr)
     return 0
 
 
