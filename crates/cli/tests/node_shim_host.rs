@@ -183,6 +183,12 @@ fn dynamic_direct_eval_writes_back_shadowed_block_env_cell_through_node_shim_hos
 }
 
 #[test]
+fn dynamic_direct_eval_writes_back_catch_binding_env_cell_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-catch-binding-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\n7\n");
+}
+
+#[test]
 fn dynamic_direct_eval_writes_back_string_env_cell_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-string-writeback-node-shim.ts";
     assert_node_shim_stdout(fixture, "after\nafter\n");

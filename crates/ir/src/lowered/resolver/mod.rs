@@ -1171,18 +1171,50 @@ impl Resolver {
                         span: Span::generated("try_finally"),
                     })
                 } else {
-                    let catch_var = if let Some(param) = catch_param {
-                        Some(self.declare_local(param)?)
+                    let try_body = self.lower_nested_block(try_block)?;
+                    let (catch_var, catch_body) = if let Some(block) = catch_block {
+                        self.ctx.symbols.scopes.push(HashMap::new());
+                        let lowered = (|| {
+                            let catch_var = if let Some(param) = catch_param {
+                                let local_id = self.declare_local(param)?;
+                                if self.ctx.facts.env_cell_names.contains(param) {
+                                    self.ctx.facts.env_cell_locals.insert(local_id);
+                                    self.ctx.facts.initialized_env_cell_locals.insert(local_id);
+                                }
+                                Some(local_id)
+                            } else {
+                                None
+                            };
+                            let mut catch_body = self.lower_block(block)?;
+                            if let Some(local_id) = catch_var
+                                && self.ctx.facts.env_cell_locals.contains(&local_id)
+                            {
+                                catch_body.insert(
+                                    0,
+                                    LoweredStmt::Assign(
+                                        local_id,
+                                        LoweredExpr::EnvCellNew(
+                                            Box::new(LoweredExpr::Local(
+                                                local_id,
+                                                Span::generated("catch_binding"),
+                                            )),
+                                            Span::generated("env_cell_new"),
+                                        ),
+                                        Span::generated("assign"),
+                                    ),
+                                );
+                            }
+                            Ok((catch_var, Some(catch_body)))
+                        })();
+                        self.ctx.symbols.scopes.pop();
+                        lowered?
                     } else {
-                        None
+                        (None, None)
                     };
                     Ok(LoweredStmt::TryCatch {
-                        try_body: self.lower_nested_block(try_block)?,
+                        try_body,
                         catch_var,
-                        catch_body: catch_block
-                            .as_ref()
-                            .map(|b| self.lower_nested_block(b))
-                            .transpose()?,
+                        catch_body,
                         finally_body: finally_block
                             .as_ref()
                             .map(|b| self.lower_nested_block(b))

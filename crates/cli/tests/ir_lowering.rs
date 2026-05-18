@@ -202,6 +202,55 @@ fn lowering_passes_function_expression_mutable_outer_local_capture() {
 }
 
 #[test]
+fn lowering_initializes_direct_eval_catch_binding_env_cell() {
+    use ts2wasm_ir::lowered::{LocalId, LoweredExpr, LoweredStmt};
+
+    let source = r#"
+        function outer() {
+          let source = "err = err + 4; err";
+          try {
+            throw 3;
+          } catch (err) {
+            eval(source);
+          }
+        }
+        "#;
+    let tokens = ts2wasm_frontend::Lexer::new(source).tokenize().unwrap();
+    let ast = ts2wasm_frontend::Parser::new(tokens, source)
+        .parse_program()
+        .unwrap();
+    let named = ts2wasm_ir::name_resolver::resolve_names(&ast).unwrap();
+    let program = ts2wasm_ir::builtin_resolver::resolve_builtins(&named).unwrap();
+    let lowered = ts2wasm_ir::lowered::lower_program(&program)
+        .expect("catch binding direct eval env cell should lower");
+    let outer = &lowered.functions[0];
+
+    let try_catch = outer
+        .body
+        .iter()
+        .find_map(|stmt| match stmt {
+            LoweredStmt::TryCatch {
+                catch_var,
+                catch_body,
+                ..
+            } => Some((catch_var, catch_body)),
+            _ => None,
+        })
+        .expect("outer function should contain try/catch");
+
+    assert_eq!(*try_catch.0, Some(LocalId(1)));
+    let catch_body = try_catch.1.as_ref().expect("catch body should lower");
+    assert!(matches!(
+        catch_body.first(),
+        Some(LoweredStmt::Assign(
+            LocalId(1),
+            LoweredExpr::EnvCellNew(initial, _),
+            _
+        )) if matches!(initial.as_ref(), LoweredExpr::Local(LocalId(1), _))
+    ));
+}
+
+#[test]
 fn lowering_passes_top_level_capture_through_double_nested_function_expr() {
     let program = parse_and_resolve(
         r#"

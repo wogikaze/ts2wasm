@@ -65,7 +65,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | direct eval with declarations | `eval('var x=1; x')` | expression completion と environment 接続が未完成 | eval-code environment + completion record |
 | indirect eval static literal | `(0, eval)("1+2")` | resolver が direct/indirect を分類し、supported literal subset は AOT eval expansion で host import なし | global `EvalFragment` AOT |
 | indirect eval dynamic | `(0, eval)(src)` | `host.eval.indirect` manifest / host-deny slice と primitive-return / string-keyed primitive object property node-shim 実行 regression は実装済み | `host.eval.indirect` capability |
-| direct eval dynamic | `eval(src)` | `host.eval.direct` manifest / host-deny slice と primitive-return node-shim 実行 regression は実装済み。initialized env-cell descriptor 経由の primitive number caller-local / parameter write-back、未初期化 caller env binding の TDZ-unsafe host 実行拒否、plain object result と string-keyed primitive property bridge も focused node-shim guarded。declaration landing / lexical env / object-identity/nested/error bridge は未完 | env descriptor + mutation ledger + write-back |
+| direct eval dynamic | `eval(src)` | `host.eval.direct` manifest / host-deny slice と primitive-return node-shim 実行 regression は実装済み。initialized env-cell descriptor 経由の primitive number caller-local / parameter / catch binding write-back、未初期化 caller env binding の TDZ-unsafe host 実行拒否、plain object result、object identity、nested object/array properties、string-keyed primitive property bridge、host-thrown error bridge も focused node-shim guarded。declaration landing と full TDZ modeling は未完 | env descriptor + mutation ledger + write-back |
 | optional eval | `eval?.(src)` | unshadowed optional eval は indirect eval として resolver が分類し、dynamic source は `host.eval.indirect` Node shim 実行 regression 済み | optional-call nullish/shadowing edge の拡張 |
 | `new eval` | `new eval("x")` | unsupported / TypeError 境界が未整理 | eval is not constructor の TypeError parity |
 | literal `Function` | `Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; nested function/class body traversal, zero-arg, caller-local non-capture, non-simple duplicate bound-name and strict-body duplicate/non-simple/eval/arguments parameter early errors, and direct `.name` / `.length` / `.prototype` metadata are guarded for static constructor locals | first-class static `FunctionConstructorPlan` / generated function object |
@@ -533,10 +533,11 @@ Exit criteria:
   bridges thrown dynamic direct and indirect eval
   errors into wasm `try/catch` for the supported env-descriptor slice, including
   a catch binding that observes the bridged Error-like object when the binding is
-  not part of the eval env descriptor. Lowering also rejects dynamic direct eval before
+  not part of the eval env descriptor. Dynamic direct eval inside a catch block
+  also reads and writes back the initialized catch binding through an env cell.
+  Lowering also rejects dynamic direct eval before
   not-yet-initialized caller env bindings so the current host lane cannot bypass
-  TDZ semantics. Full declaration landing, full TDZ modeling, and dynamic eval
-  inside catch bindings beyond the current env descriptor remain open.
+  TDZ semantics. Full declaration landing and full TDZ modeling remain open.
 
 ### Phase 9: `$262.evalScript` / test262 ramp / cleanup
 
