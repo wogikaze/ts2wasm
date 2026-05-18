@@ -479,7 +479,8 @@ Exit criteria:
   repeatedly, refreshes existing string-keyed primitive properties on repeated
   returns, tracks string-keyed primitive shape changes beyond the first host
   record capacity, bridges nested JS arrays with length/index reads for
-  primitive elements and later array growth, exposes `.length`, `.name`, and
+  primitive elements and later array growth, bridges nested JS objects with
+  primitive string-keyed leaves, exposes `.length`, `.name`, and
   `.prototype` metadata, bridges function-valued object properties as
   metadata-bearing callable host handles including aliased property calls and
   receiver-bound method calls, and carries handles as wasm object cells backed
@@ -527,14 +528,15 @@ Exit criteria:
   caller-local, parameter, and shadowed block-local write-back plus string
   result/write-back bridging, object result default stringification,
   string-keyed primitive object property reads, object identity, nested array
-  properties with primitive elements, and strict lexical shadow isolation for
-  local `let`. The host lane bridges thrown dynamic direct and indirect eval
+  properties with primitive elements, nested object properties with primitive
+  leaves, and strict lexical shadow isolation for local `let`. The host lane
+  bridges thrown dynamic direct and indirect eval
   errors into wasm `try/catch` for the supported env-descriptor slice. Lowering
   also rejects dynamic direct eval before
   not-yet-initialized caller env bindings so the current host lane cannot bypass
-  TDZ semantics. Full declaration landing, full TDZ modeling, nested
-  non-primitive properties, and direct-eval catch-binding/error-object parity
-  beyond the current env descriptor remain open.
+  TDZ semantics. Full declaration landing, full TDZ modeling, and direct-eval
+  catch-binding/error-object parity beyond the current env descriptor remain
+  open.
 
 ### Phase 9: `$262.evalScript` / test262 ramp / cleanup
 

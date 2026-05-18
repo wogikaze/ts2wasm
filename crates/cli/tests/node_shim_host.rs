@@ -104,6 +104,12 @@ fn dynamic_function_handle_bridges_nested_arrays_through_node_shim_host_imports(
 }
 
 #[test]
+fn dynamic_function_handle_bridges_nested_objects_through_node_shim_host_imports() {
+    let fixture = "fixtures/core-semantics/function-constructor-dynamic-nested-object-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\nok\nundefined\n");
+}
+
+#[test]
 fn dynamic_function_handle_grows_nested_arrays_through_node_shim_host_imports() {
     let fixture = "fixtures/core-semantics/function-constructor-dynamic-array-growth-node-shim.ts";
     assert_node_shim_stdout(fixture, "4\n5\n5\nundefined\n");
@@ -204,6 +210,12 @@ fn dynamic_direct_eval_preserves_object_identity_through_node_shim_host_import()
 fn dynamic_direct_eval_bridges_nested_arrays_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-nested-array-node-shim.ts";
     assert_node_shim_stdout(fixture, "2\n7\n8\nundefined\n");
+}
+
+#[test]
+fn dynamic_direct_eval_bridges_nested_objects_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-nested-object-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\nok\nundefined\n");
 }
 
 #[test]
