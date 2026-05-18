@@ -39,6 +39,13 @@ fn dynamic_function_handle_preserves_object_identity_through_node_shim_host_impo
 }
 
 #[test]
+fn dynamic_function_handle_refreshes_object_properties_through_node_shim_host_imports() {
+    let fixture =
+        "fixtures/core-semantics/function-constructor-dynamic-object-mutation-node-shim.ts";
+    assert_node_shim_stdout(fixture, "2\ntrue\n3\n3\n");
+}
+
+#[test]
 fn dynamic_function_handle_exposes_metadata_through_node_shim_host_imports() {
     let fixture = "fixtures/core-semantics/function-constructor-dynamic-metadata-node-shim.ts";
     assert_node_shim_stdout(fixture, "2\nanonymous\n[object Object]\n7\n");
@@ -327,9 +334,26 @@ function encodeString(value) {
   return ptr | TAG_STRING;
 }
 
+function refreshHostObjectEntries(value, record) {
+  const keys = Object.keys(value);
+  if (
+    keys.length !== record.keys.length ||
+    keys.some((key, index) => key !== record.keys[index])
+  ) {
+    throw new TypeError('unsupported host object shape mutation for this test');
+  }
+  const ptr = rawPtr(record.raw);
+  for (let i = 0; i < keys.length; i += 1) {
+    const entry = ptr + OBJECT_ENTRIES_OFFSET + i * OBJECT_ENTRY_SIZE;
+    view().setInt32(entry + 4, encodeHostValue(value[keys[i]]), true);
+  }
+}
+
 function encodeHostObject(value) {
-  if (hostObjectHandles.has(value)) {
-    return hostObjectHandles.get(value);
+  const existing = hostObjectHandles.get(value);
+  if (existing !== undefined) {
+    refreshHostObjectEntries(value, existing);
+    return existing.raw;
   }
   const keys = Object.keys(value);
   const size = OBJECT_HEADER_SIZE + keys.length * OBJECT_ENTRY_SIZE;
@@ -340,13 +364,14 @@ function encodeHostObject(value) {
   view().setInt32(ptr, keys.length, true);
   view().setInt32(ptr + 4, 0, true);
   view().setInt32(ptr + 8, 0, true);
-  hostObjectHandles.set(value, ptr | TAG_OBJECT);
+  const raw = ptr | TAG_OBJECT;
+  hostObjectHandles.set(value, { raw, keys });
   for (let i = 0; i < keys.length; i += 1) {
     const entry = ptr + OBJECT_ENTRIES_OFFSET + i * OBJECT_ENTRY_SIZE;
     view().setInt32(entry, encodeString(keys[i]), true);
     view().setInt32(entry + 4, encodeHostValue(value[keys[i]]), true);
   }
-  return ptr | TAG_OBJECT;
+  return raw;
 }
 
 function encodeHostFunctionHandle(fn, index) {

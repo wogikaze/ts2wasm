@@ -475,11 +475,12 @@ Exit criteria:
   string-keyed primitive object property reads, discarded constructor calls, and
   returned constructed objects with string-keyed primitive property reads. The
   focused shim preserves stable identity when the same host object is returned
-  repeatedly, exposes `.length`, `.name`, and `.prototype` metadata, and carries
+  repeatedly, refreshes existing string-keyed primitive properties on repeated
+  returns, exposes `.length`, `.name`, and `.prototype` metadata, and carries
   handles as wasm object cells backed by host-side handle maps instead of number
-  values; remaining work is host object mutation freshness,
-  nested/non-primitive properties, error bridging, and a runtime-wide host
-  external object contract beyond the focused shim.
+  values; remaining work is host object shape changes, nested/non-primitive
+  properties, error bridging, and a runtime-wide host external object contract
+  beyond the focused shim.
 
 Exit criteria:
 

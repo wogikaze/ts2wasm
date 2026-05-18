@@ -922,6 +922,7 @@ directories:
     - function-constructor-dynamic-metadata-node-shim.ts
     - function-constructor-dynamic-node-shim.ts
     - function-constructor-dynamic-object-identity-node-shim.ts
+    - function-constructor-dynamic-object-mutation-node-shim.ts
     - function-constructor-dynamic-object-node-shim.ts
     - function-constructor-dynamic-object-properties-node-shim.ts
     - function-constructor-dynamic-string-node-shim.ts
