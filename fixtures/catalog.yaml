@@ -940,7 +940,9 @@ directories:
     - direct-eval-dynamic-new-function-declaration-node-shim.ts
     - direct-eval-dynamic-new-function-normal-code-node-shim.ts
     - direct-eval-dynamic-new-generator-function-declaration-node-shim.ts
+    - direct-eval-dynamic-new-var-array-destructuring-normal-code-node-shim.ts
     - direct-eval-dynamic-new-var-array-destructuring-node-shim.ts
+    - direct-eval-dynamic-new-var-destructuring-normal-code-node-shim.ts
     - direct-eval-dynamic-new-var-destructuring-node-shim.ts
     - direct-eval-dynamic-new-var-declaration-node-shim.ts
     - direct-eval-dynamic-new-var-normal-code-node-shim.ts

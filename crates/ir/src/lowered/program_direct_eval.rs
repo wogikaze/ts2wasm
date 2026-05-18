@@ -947,6 +947,15 @@ fn collect_keyword_bound_names(source: &str, keyword: &str, names: &mut HashSet<
     let mut index = 0;
     while let Some(keyword_start) = find_keyword_outside_literals(source, keyword, index) {
         let after_keyword = keyword_start + keyword.len();
+        if keyword == "var" {
+            let declaration_text = read_var_declaration_text(source, after_keyword);
+            for declarator in split_top_level_comma(declaration_text) {
+                let pattern_end = top_level_equals_index(declarator).unwrap_or(declarator.len());
+                collect_binding_names_from_pattern(&declarator[..pattern_end], names);
+            }
+            index = after_keyword;
+            continue;
+        }
         let mut cursor = skip_ascii_ws(source, after_keyword);
         if keyword == "function" && source[cursor..].starts_with('*') {
             cursor = skip_ascii_ws(source, cursor + 1);
@@ -965,6 +974,119 @@ fn collect_keyword_bound_names(source: &str, keyword: &str, names: &mut HashSet<
         }
         index = after_keyword;
     }
+}
+
+fn read_var_declaration_text(source: &str, start: usize) -> &str {
+    let mut index = start;
+    let mut depth = 0usize;
+    let bytes = source.as_bytes();
+    while index < source.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => {
+                index = skip_quoted_source(source, index);
+                continue;
+            }
+            b'{' | b'[' | b'(' => depth += 1,
+            b'}' | b']' | b')' if depth > 0 => depth -= 1,
+            b';' if depth == 0 => return &source[start..index],
+            _ => {}
+        }
+        index += 1;
+    }
+    &source[start..]
+}
+
+fn split_top_level_comma(text: &str) -> Vec<&str> {
+    let mut parts = Vec::new();
+    let mut start = 0usize;
+    let mut index = 0usize;
+    let mut depth = 0usize;
+    let bytes = text.as_bytes();
+    while index < text.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => {
+                index = skip_quoted_source(text, index);
+                continue;
+            }
+            b'{' | b'[' | b'(' => depth += 1,
+            b'}' | b']' | b')' if depth > 0 => depth -= 1,
+            b',' if depth == 0 => {
+                parts.push(&text[start..index]);
+                start = index + 1;
+            }
+            _ => {}
+        }
+        index += 1;
+    }
+    parts.push(&text[start..]);
+    parts
+}
+
+fn top_level_equals_index(text: &str) -> Option<usize> {
+    let mut index = 0usize;
+    let mut depth = 0usize;
+    let bytes = text.as_bytes();
+    while index < text.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => {
+                index = skip_quoted_source(text, index);
+                continue;
+            }
+            b'{' | b'[' | b'(' => depth += 1,
+            b'}' | b']' | b')' if depth > 0 => depth -= 1,
+            b'=' if depth == 0 => return Some(index),
+            _ => {}
+        }
+        index += 1;
+    }
+    None
+}
+
+fn collect_binding_names_from_pattern(pattern: &str, names: &mut HashSet<String>) {
+    let bytes = pattern.as_bytes();
+    let mut index = 0usize;
+    while index < pattern.len() {
+        if bytes[index] == b'=' {
+            index = skip_binding_initializer(pattern, index + 1);
+            continue;
+        }
+        if !is_ident_start_byte(bytes[index]) {
+            index += 1;
+            continue;
+        }
+        let mut end = index + 1;
+        while bytes.get(end).copied().is_some_and(is_ident_continue_byte) {
+            end += 1;
+        }
+        let next = skip_ascii_ws(pattern, end);
+        if pattern.as_bytes().get(next) == Some(&b':') {
+            index = next + 1;
+            continue;
+        }
+        names.insert(pattern[index..end].to_owned());
+        index = end;
+    }
+}
+
+fn skip_binding_initializer(pattern: &str, start: usize) -> usize {
+    let mut index = start;
+    let mut depth = 0usize;
+    let bytes = pattern.as_bytes();
+    while index < pattern.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => {
+                index = skip_quoted_source(pattern, index);
+                continue;
+            }
+            b'{' | b'[' | b'(' => depth += 1,
+            b'}' | b']' | b')' if depth == 0 => return index,
+            b'}' | b']' | b')' => depth -= 1,
+            b',' if depth == 0 => return index,
+            _ => {}
+        }
+        index += 1;
+    }
+    index
 }
 
 fn find_keyword_outside_literals(source: &str, keyword: &str, start: usize) -> Option<usize> {
@@ -1391,6 +1513,30 @@ mod tests {
 
         let names = collect_dynamic_direct_eval_created_binding_names(&body);
         assert!(names.contains("created"));
+    }
+
+    #[test]
+    fn collects_created_destructuring_vars_from_known_runtime_direct_eval_source() {
+        let body = vec![
+            ResolvedStmt::Let(
+                "source".to_owned(),
+                ResolvedExpr::String(
+                    "var {value: created, nested: {leaf}} = {value: 4, nested: {leaf: 5}}; created + leaf".to_owned(),
+                ),
+            ),
+            ResolvedStmt::Expr(ResolvedExpr::Eval {
+                plan: EvalFragmentPlan::new(
+                    EvalKind::Direct,
+                    EvalSource::Runtime(Box::new(ResolvedExpr::Ident("source".to_owned()))),
+                    false,
+                    Span::generated("eval"),
+                ),
+            }),
+        ];
+
+        let names = collect_dynamic_direct_eval_created_binding_names(&body);
+        assert!(names.contains("created"));
+        assert!(names.contains("leaf"));
     }
 
     #[test]

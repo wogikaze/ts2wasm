@@ -484,10 +484,24 @@ fn dynamic_direct_eval_new_var_destructuring_is_visible_to_later_eval_through_no
 }
 
 #[test]
+fn dynamic_direct_eval_new_var_destructuring_is_visible_to_normal_code_through_node_shim_host_import()
+ {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-new-var-destructuring-normal-code-node-shim.ts";
+    assert_node_shim_stdout(fixture, "9\n9\n");
+}
+
+#[test]
 fn dynamic_direct_eval_new_var_array_destructuring_is_visible_to_later_eval_through_node_shim_host_import()
  {
     let fixture =
         "fixtures/core-semantics/direct-eval-dynamic-new-var-array-destructuring-node-shim.ts";
+    assert_node_shim_stdout(fixture, "4\n4\n");
+}
+
+#[test]
+fn dynamic_direct_eval_new_var_array_destructuring_is_visible_to_normal_code_through_node_shim_host_import()
+ {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-new-var-array-destructuring-normal-code-node-shim.ts";
     assert_node_shim_stdout(fixture, "4\n4\n");
 }
 

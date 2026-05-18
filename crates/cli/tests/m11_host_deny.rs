@@ -1121,9 +1121,23 @@ fn host_deny_rejects_dynamic_direct_eval_new_var_destructuring_host_lane() {
 }
 
 #[test]
+fn host_deny_rejects_dynamic_direct_eval_new_var_destructuring_normal_code_host_lane() {
+    assert_host_deny_rejects(
+        "core-semantics/direct-eval-dynamic-new-var-destructuring-normal-code-node-shim.ts",
+    );
+}
+
+#[test]
 fn host_deny_rejects_dynamic_direct_eval_new_var_array_destructuring_host_lane() {
     assert_host_deny_rejects(
         "core-semantics/direct-eval-dynamic-new-var-array-destructuring-node-shim.ts",
+    );
+}
+
+#[test]
+fn host_deny_rejects_dynamic_direct_eval_new_var_array_destructuring_normal_code_host_lane() {
+    assert_host_deny_rejects(
+        "core-semantics/direct-eval-dynamic-new-var-array-destructuring-normal-code-node-shim.ts",
     );
 }
 
