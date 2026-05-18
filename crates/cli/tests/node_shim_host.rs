@@ -104,6 +104,13 @@ fn dynamic_function_handle_bridges_nested_arrays_through_node_shim_host_imports(
 }
 
 #[test]
+fn dynamic_function_handle_calls_array_function_elements_through_node_shim_host_imports() {
+    let fixture =
+        "fixtures/core-semantics/function-constructor-dynamic-array-function-element-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\n12\n");
+}
+
+#[test]
 fn dynamic_function_handle_bridges_nested_objects_through_node_shim_host_imports() {
     let fixture = "fixtures/core-semantics/function-constructor-dynamic-nested-object-node-shim.ts";
     assert_node_shim_stdout(fixture, "7\nok\nundefined\n");

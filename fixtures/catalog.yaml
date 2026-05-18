@@ -989,6 +989,7 @@ directories:
     - function-constructor-call-static.ts
     - function-constructor-construct-return-object.ts
     - function-constructor-dynamic-array-existing-ref-growth-node-shim.ts
+    - function-constructor-dynamic-array-function-element-node-shim.ts
     - function-constructor-dynamic-construct-object-node-shim.ts
     - function-constructor-dynamic-call-construct-host-path.ts
     - function-constructor-dynamic-array-growth-node-shim.ts
