@@ -9,8 +9,8 @@ mod property;
 mod ternary;
 mod unary;
 
-use crate::builtin_resolved::ResolvedExpr;
-use std::collections::HashSet;
+use crate::builtin_resolved::{ResolvedExpr, ResolvedStmt};
+use std::collections::{HashMap, HashSet};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 
@@ -258,39 +258,48 @@ impl super::Resolver {
         use crate::builtin_resolved::EvalCompletionStep;
 
         let completion = self.alloc_temp();
-        let mut stmts = vec![LoweredStmt::Let(
-            completion,
-            LoweredExpr::Undefined(Span::generated("eval_completion_init")),
-            Span::generated("eval_completion_let"),
-        )];
-        for step in steps {
-            match step {
-                EvalCompletionStep::Value(expr) => {
-                    let value = self.lower_expr(expr)?;
-                    stmts.push(LoweredStmt::Assign(
-                        completion,
-                        value,
-                        Span::generated("eval_completion_set"),
-                    ));
-                }
-                EvalCompletionStep::Empty(Some(expr)) => {
-                    let side_effect = self.lower_expr(expr)?;
-                    stmts.push(LoweredStmt::Expr(
-                        side_effect,
-                        Span::generated("eval_completion_empty"),
-                    ));
-                }
-                EvalCompletionStep::Empty(None) => {}
-            }
-        }
-        Ok(LoweredExpr::Block {
-            stmts,
-            result: Box::new(LoweredExpr::Local(
+        self.ctx.symbols.scopes.push(HashMap::new());
+        let lowered = (|| {
+            let mut stmts = vec![LoweredStmt::Let(
                 completion,
-                Span::generated("eval_completion_result"),
-            )),
-            span: Span::generated("eval_completion"),
-        })
+                LoweredExpr::Undefined(Span::generated("eval_completion_init")),
+                Span::generated("eval_completion_let"),
+            )];
+            for step in steps {
+                match step {
+                    EvalCompletionStep::Value(expr) => {
+                        let value = self.lower_expr(expr)?;
+                        stmts.push(LoweredStmt::Assign(
+                            completion,
+                            value,
+                            Span::generated("eval_completion_set"),
+                        ));
+                    }
+                    EvalCompletionStep::Empty(Some(expr)) => {
+                        let side_effect = self.lower_expr(expr)?;
+                        stmts.push(LoweredStmt::Expr(
+                            side_effect,
+                            Span::generated("eval_completion_empty"),
+                        ));
+                    }
+                    EvalCompletionStep::LexicalLet { name, init } => {
+                        stmts
+                            .push(self.lower_stmt(&ResolvedStmt::Let(name.clone(), init.clone()))?);
+                    }
+                    EvalCompletionStep::Empty(None) => {}
+                }
+            }
+            Ok(LoweredExpr::Block {
+                stmts,
+                result: Box::new(LoweredExpr::Local(
+                    completion,
+                    Span::generated("eval_completion_result"),
+                )),
+                span: Span::generated("eval_completion"),
+            })
+        })();
+        self.ctx.symbols.scopes.pop();
+        lowered
     }
 
     fn lower_direct_eval_env_descriptor(&self) -> LoweredExpr {

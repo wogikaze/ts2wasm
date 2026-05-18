@@ -214,6 +214,12 @@ fn static_direct_eval_recursively_expands_nested_static_eval() {
 }
 
 #[test]
+fn static_direct_eval_strict_lexical_local_shadows_caller_local() {
+    let fixture = "fixtures/core-semantics/direct-eval-strict-lexical-local.ts";
+    assert_node_shim_stdout(fixture, "2\n1\n");
+}
+
+#[test]
 fn dynamic_direct_eval_writes_back_local_env_cell_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-local-writeback-node-shim.ts";
     assert_node_shim_stdout(fixture, "7\n7\n");

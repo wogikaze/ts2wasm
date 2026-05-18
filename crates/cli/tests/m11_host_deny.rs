@@ -415,6 +415,14 @@ fn nested_static_direct_eval_declares_no_node_host_eval_capability() {
 }
 
 #[test]
+fn static_direct_eval_strict_lexical_declares_no_node_host_eval_capability() {
+    assert_standalone_category(
+        "core-semantics/direct-eval-strict-lexical-local.ts",
+        "static direct eval strict lexical local",
+    );
+}
+
+#[test]
 fn dynamic_indirect_eval_declares_node_host_eval_indirect_capability() {
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")

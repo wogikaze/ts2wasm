@@ -1030,7 +1030,7 @@ fn eval_statement_completion_step(stmt: ResolvedStmt) -> EvalCompletionStep {
             name,
             expr: Box::new(expr),
         }),
-        ResolvedStmt::Let(_, expr) => EvalCompletionStep::Empty(Some(expr)),
+        ResolvedStmt::Let(name, expr) => EvalCompletionStep::LexicalLet { name, init: expr },
         ResolvedStmt::Return(expr) => EvalCompletionStep::Value(expr),
         _ => EvalCompletionStep::Empty(None),
     }

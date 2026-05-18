@@ -317,12 +317,15 @@ pub enum EvalSource {
 pub enum EvalCompletionStep {
     Value(ResolvedExpr),
     Empty(Option<ResolvedExpr>),
+    LexicalLet { name: String, init: ResolvedExpr },
 }
 
 impl EvalCompletionStep {
     pub fn expr(&self) -> Option<&ResolvedExpr> {
         match self {
-            Self::Value(expr) | Self::Empty(Some(expr)) => Some(expr),
+            Self::Value(expr) | Self::Empty(Some(expr)) | Self::LexicalLet { init: expr, .. } => {
+                Some(expr)
+            }
             Self::Empty(None) => None,
         }
     }
