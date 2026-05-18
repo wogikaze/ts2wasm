@@ -3187,6 +3187,17 @@ impl super::super::Resolver {
                     if method == "fill" && lowered_args.len() < 4 {
                         lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
                     }
+                    // Promise prototype methods: pad missing callbacks with undefined
+                    let promise_expected = match method {
+                        "then" => Some(3),              // receiver + onFulfilled + onRejected
+                        "catch" | "finally" => Some(2), // receiver + callback
+                        _ => None,
+                    };
+                    if let Some(expected) = promise_expected {
+                        while lowered_args.len() < expected {
+                            lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                        }
+                    }
                 }
                 return Ok(Some(LoweredExpr::RuntimeCall {
                     intrinsic,
@@ -3366,6 +3377,17 @@ impl super::super::Resolver {
                 // $array_fill expects 4 params: $arr, $val, $start, $end
                 if method == "fill" && lowered_args.len() < 4 {
                     lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                }
+                // Promise prototype methods: pad missing callbacks with undefined
+                let promise_expected = match method {
+                    "then" => Some(3),    // receiver + onFulfilled + onRejected
+                    "catch" | "finally" => Some(2), // receiver + callback
+                    _ => None,
+                };
+                if let Some(expected) = promise_expected {
+                    while lowered_args.len() < expected {
+                        lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                    }
                 }
             }
             return Ok(Some(LoweredExpr::RuntimeCall {

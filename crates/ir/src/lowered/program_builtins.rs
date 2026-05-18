@@ -486,6 +486,10 @@ pub(crate) fn collection_method_runtime_fn_arg(method: &str) -> Option<RuntimeFn
         "values" => Some(RuntimeFn::ArrayValues),
         "keys" => Some(RuntimeFn::ArrayKeys),
         "entries" => Some(RuntimeFn::ArrayEntries),
+        // Promise prototype methods — chained call routing
+        "then" => Some(RuntimeFn::PromiseThen),
+        "catch" => Some(RuntimeFn::PromiseCatch),
+        "finally" => Some(RuntimeFn::PromiseFinally),
         _ => None,
     }
 }
