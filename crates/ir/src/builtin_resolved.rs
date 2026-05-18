@@ -608,6 +608,14 @@ pub enum EvalCompletionStep {
         name: String,
         init: ResolvedExpr,
     },
+    GlobalFunctionDecl {
+        name: String,
+        params: Vec<ResolvedParam>,
+        body: Vec<ResolvedStmt>,
+        is_generator: bool,
+        is_async: bool,
+        source_text: String,
+    },
     FunctionDecl {
         name: String,
         params: Vec<ResolvedParam>,
@@ -723,6 +731,7 @@ impl EvalCompletionStep {
             | Self::Break { .. }
             | Self::Continue { .. }
             | Self::FunctionDecl { .. }
+            | Self::GlobalFunctionDecl { .. }
             | Self::Block(_) => None,
         }
     }

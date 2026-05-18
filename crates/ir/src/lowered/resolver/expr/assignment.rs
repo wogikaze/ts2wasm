@@ -287,6 +287,13 @@ impl super::super::Resolver {
                     self.ctx.classes.object_accessor_props.remove(&local_id);
                 }
             }
+        } else if matches!(object, ResolvedExpr::Ident(name) if name == "globalThis") {
+            if let LoweredExpr::ArrowFn { func_id, .. } = &lowered_value {
+                self.ctx
+                    .classes
+                    .global_object_function_props
+                    .insert(ObjectAccessorKey::Property(key.to_owned()), *func_id);
+            }
         }
         Ok(object_kernel::ordinary_set(
             lowered_object,

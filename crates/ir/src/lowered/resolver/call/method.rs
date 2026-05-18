@@ -3002,6 +3002,30 @@ impl super::super::Resolver {
             )));
         }
 
+        if matches!(object, ResolvedExpr::Ident(name) if name == "globalThis")
+            && let Some(method_id) = self
+                .ctx
+                .classes
+                .global_object_function_props
+                .get(&ObjectAccessorKey::Property(method.to_owned()))
+                .copied()
+        {
+            let lowered_args = self.lower_function_call_args(
+                method_id,
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::GlobalThis,
+                    args: Vec::new(),
+                    span: Span::generated("globalThis"),
+                },
+                args,
+            )?;
+            return Ok(Some(LoweredExpr::Call {
+                kind: FunctionCallKind::User(method_id),
+                args: lowered_args,
+                span: Span::generated("call"),
+            }));
+        }
+
         if let ResolvedExpr::Ident(receiver_name) = object
             && let Ok(obj_local) = self.resolve_local(receiver_name)
             && let Some(method_id) = self

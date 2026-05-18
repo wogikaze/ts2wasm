@@ -356,6 +356,42 @@ fn compiler_lands_static_indirect_eval_var_on_global_object() {
 }
 
 #[test]
+fn compiler_lands_static_indirect_eval_function_on_global_object() {
+    let expanded = parse_resolve_and_expand_dynamic_code(
+        r#"
+        let result = (0, eval)("function indirectGlobalFn() { return 7; } indirectGlobalFn()");
+        "#,
+    );
+    let ts2wasm_ir::ResolvedStmt::Let(_, ts2wasm_ir::ResolvedExpr::EvalCompletion(plan)) =
+        &expanded[0]
+    else {
+        panic!("expected eval completion plan: {expanded:?}");
+    };
+
+    assert_eq!(
+        plan.scope_mode,
+        ts2wasm_ir::builtin_resolved::EvalScopeMode::Global {
+            realm: ts2wasm_ir::builtin_resolved::EvalRealm::Current
+        }
+    );
+    assert!(plan.declarations.var_names.is_empty());
+    assert!(matches!(
+        plan.as_slice(),
+        [
+            ts2wasm_ir::builtin_resolved::EvalCompletionStep::GlobalFunctionDecl { name, .. },
+            ts2wasm_ir::builtin_resolved::EvalCompletionStep::Value(
+                ts2wasm_ir::ResolvedExpr::MethodCall { object, method, .. }
+            )
+        ] if name == "indirectGlobalFn"
+            && matches!(
+                object.as_ref(),
+                ts2wasm_ir::ResolvedExpr::Ident(global) if global == "globalThis"
+            )
+            && method == "indirectGlobalFn"
+    ));
+}
+
+#[test]
 fn compiler_preserves_multiple_eval_block_function_declarations_in_order() {
     let expanded = parse_resolve_and_expand_dynamic_code(
         r#"

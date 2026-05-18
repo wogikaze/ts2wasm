@@ -454,7 +454,7 @@ fn expand_expr(
                 caller_is_strict || ctx.is_strict_context(),
             )?;
             let mut global_bindings = caller_bindings;
-            for name in &expanded.global_var_declarations {
+            for name in &expanded.global_declaration_names {
                 if !global_bindings.contains(name) {
                     global_bindings.push(name.clone());
                 }
@@ -782,7 +782,7 @@ fn expand_object_prop(
 struct StaticEvalExpansion {
     expr: ResolvedExpr,
     caller_var_declarations: Vec<String>,
-    global_var_declarations: Vec<String>,
+    global_declaration_names: Vec<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -827,10 +827,10 @@ fn expand_static_eval_source(
     let eval_is_strict = caller_is_strict || block_has_use_strict_directive(&program);
     let leak_var_declarations = !eval_is_strict;
     let mut caller_landing_declarations = Vec::new();
-    let mut global_var_declarations = Vec::new();
+    let mut global_declaration_names = Vec::new();
     if leak_var_declarations {
         collect_eval_var_declaration_names(&program, &mut caller_landing_declarations);
-        collect_eval_var_let_declaration_names(&program, &mut global_var_declarations);
+        collect_eval_var_declaration_names(&program, &mut global_declaration_names);
     }
     let var_landing = match (direct_caller_scope, leak_var_declarations) {
         (true, true) => EvalVarLanding::Caller,
@@ -843,13 +843,13 @@ fn expand_static_eval_source(
         Vec::new()
     };
     if var_landing != EvalVarLanding::Global {
-        global_var_declarations.clear();
+        global_declaration_names.clear();
     }
 
     let mut effective_outer_bindings = outer_bindings.to_vec();
     for name in caller_var_declarations
         .iter()
-        .chain(global_var_declarations.iter())
+        .chain(global_declaration_names.iter())
     {
         if !effective_outer_bindings.contains(name) {
             effective_outer_bindings.push(name.clone());
@@ -891,7 +891,7 @@ fn expand_static_eval_source(
             function_hoists,
         )?,
         caller_var_declarations,
-        global_var_declarations,
+        global_declaration_names,
     })
 }
 
@@ -1290,12 +1290,24 @@ fn rewrite_eval_expr_global_collisions(
             )),
             span,
         },
-        ResolvedExpr::Call { callee, args, span } => ResolvedExpr::Call {
-            callee: Box::new(rewrite_eval_expr_global_collisions(
-                *callee, collisions, scopes,
-            )),
-            args: rewrite_eval_exprs_global_collisions(args, collisions, scopes),
-            span,
+        ResolvedExpr::Call { callee, args, span } => match *callee {
+            ResolvedExpr::Ident(name)
+                if collisions.contains(&name) && !eval_name_is_scoped(&name, scopes) =>
+            {
+                ResolvedExpr::MethodCall {
+                    object: Box::new(ResolvedExpr::Ident("globalThis".to_owned())),
+                    method: name,
+                    args: rewrite_eval_exprs_global_collisions(args, collisions, scopes),
+                    span,
+                }
+            }
+            callee => ResolvedExpr::Call {
+                callee: Box::new(rewrite_eval_expr_global_collisions(
+                    callee, collisions, scopes,
+                )),
+                args: rewrite_eval_exprs_global_collisions(args, collisions, scopes),
+                span,
+            },
         },
         ResolvedExpr::Assign { name, expr }
             if collisions.contains(&name) && !eval_name_is_scoped(&name, scopes) =>
@@ -2038,6 +2050,27 @@ fn rewrite_eval_step_global_collisions(
                 is_async,
             }
         }
+        EvalCompletionStep::GlobalFunctionDecl {
+            name,
+            params,
+            body,
+            is_generator,
+            is_async,
+            source_text,
+        } => {
+            scopes.push(HashSet::new());
+            let params = rewrite_eval_params_global_collisions(params, collisions, scopes);
+            let body = rewrite_eval_stmts_global_collisions(body, collisions, scopes);
+            scopes.pop();
+            EvalCompletionStep::GlobalFunctionDecl {
+                name,
+                params,
+                body,
+                is_generator,
+                is_async,
+                source_text,
+            }
+        }
         EvalCompletionStep::ClassDecl {
             name,
             extends,
@@ -2480,6 +2513,26 @@ fn eval_statement_completion_step(
                 is_async,
             }
         }
+        ResolvedStmt::Function {
+            name,
+            params,
+            body,
+            is_generator,
+            is_async,
+            source_text,
+            ..
+        } if var_landing == EvalVarLanding::Global
+            && matches!(ast_stmt, Some(Stmt::Function { .. })) =>
+        {
+            EvalCompletionStep::GlobalFunctionDecl {
+                name,
+                params,
+                body,
+                is_generator,
+                is_async,
+                source_text,
+            }
+        }
         ResolvedStmt::ClassDecl {
             name,
             extends,
@@ -2553,60 +2606,6 @@ fn collect_eval_var_declaration_names(stmts: &[Stmt], out: &mut Vec<String>) {
             }
             Stmt::Labeled { body, .. } => {
                 collect_eval_var_declaration_names(std::slice::from_ref(body.as_ref()), out);
-            }
-            _ => {}
-        }
-    }
-}
-
-fn collect_eval_var_let_declaration_names(stmts: &[Stmt], out: &mut Vec<String>) {
-    for stmt in stmts {
-        match stmt {
-            Stmt::Let {
-                name, is_var: true, ..
-            } => {
-                if !out.contains(name) {
-                    out.push(name.clone());
-                }
-            }
-            Stmt::Block { statements, .. } => {
-                collect_eval_var_let_declaration_names(statements, out)
-            }
-            Stmt::If {
-                then_body,
-                else_body,
-                ..
-            } => {
-                collect_eval_var_let_declaration_names(then_body, out);
-                collect_eval_var_let_declaration_names(else_body, out);
-            }
-            Stmt::While { body, .. }
-            | Stmt::DoWhile { body, .. }
-            | Stmt::For { body, .. }
-            | Stmt::ForIn { body, .. }
-            | Stmt::ForOf { body, .. }
-            | Stmt::ForAwaitOf { body, .. } => collect_eval_var_let_declaration_names(body, out),
-            Stmt::Switch { cases, .. } => {
-                for (_, body) in cases {
-                    collect_eval_var_let_declaration_names(body, out);
-                }
-            }
-            Stmt::TryCatch {
-                try_block,
-                catch_block,
-                finally_block,
-                ..
-            } => {
-                collect_eval_var_let_declaration_names(try_block, out);
-                if let Some(catch_block) = catch_block {
-                    collect_eval_var_let_declaration_names(catch_block, out);
-                }
-                if let Some(finally_block) = finally_block {
-                    collect_eval_var_let_declaration_names(finally_block, out);
-                }
-            }
-            Stmt::Labeled { body, .. } => {
-                collect_eval_var_let_declaration_names(std::slice::from_ref(body.as_ref()), out);
             }
             _ => {}
         }

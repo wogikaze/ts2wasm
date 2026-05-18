@@ -453,6 +453,26 @@ impl super::Resolver {
                         Span::generated("eval_global_var"),
                     ));
                 }
+                EvalCompletionStep::GlobalFunctionDecl {
+                    name,
+                    params,
+                    body,
+                    is_generator,
+                    is_async,
+                    source_text,
+                } => {
+                    stmts.push(LoweredStmt::Expr(
+                        self.lower_static_global_eval_function_landing(
+                            name,
+                            params,
+                            body,
+                            *is_generator,
+                            *is_async,
+                            source_text,
+                        )?,
+                        Span::generated("eval_global_function"),
+                    ));
+                }
                 EvalCompletionStep::FunctionDecl {
                     name,
                     params,
@@ -924,6 +944,24 @@ impl super::Resolver {
                 self.lower_static_global_eval_var_landing(name, init)?,
                 Span::generated("eval_non_completion_global_var"),
             ))),
+            EvalCompletionStep::GlobalFunctionDecl {
+                name,
+                params,
+                body,
+                is_generator,
+                is_async,
+                source_text,
+            } => Ok(Some(LoweredStmt::Expr(
+                self.lower_static_global_eval_function_landing(
+                    name,
+                    params,
+                    body,
+                    *is_generator,
+                    *is_async,
+                    source_text,
+                )?,
+                Span::generated("eval_non_completion_global_function"),
+            ))),
             EvalCompletionStep::LexicalLet { name, init } => Ok(Some(
                 self.lower_stmt(&ResolvedStmt::Let(name.clone(), init.clone()))?,
             )),
@@ -1056,6 +1094,32 @@ impl super::Resolver {
             name,
             init,
             Span::generated("static_indirect_eval_global_var"),
+        )
+    }
+
+    fn lower_static_global_eval_function_landing(
+        &mut self,
+        name: &str,
+        params: &[crate::builtin_resolved::ResolvedParam],
+        body: &[ResolvedStmt],
+        is_generator: bool,
+        _is_async: bool,
+        source_text: &str,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let function = ResolvedExpr::FunctionExpr {
+            name: name.to_owned(),
+            params: params.to_vec(),
+            body: body.to_vec(),
+            is_generator,
+            origin: ts2wasm_syntax::FunctionExprOrigin::User,
+            constructor_metadata: None,
+            source_text: source_text.to_owned(),
+        };
+        self.lower_property_assign_expr(
+            &ResolvedExpr::Ident("globalThis".to_owned()),
+            name,
+            &function,
+            Span::generated("static_indirect_eval_global_function"),
         )
     }
 
@@ -1362,6 +1426,7 @@ fn eval_completion_steps_have_caller_landings(
         EvalCompletionStep::Value(_)
         | EvalCompletionStep::Empty(_)
         | EvalCompletionStep::GlobalVarLet { .. }
+        | EvalCompletionStep::GlobalFunctionDecl { .. }
         | EvalCompletionStep::ClassDecl { .. }
         | EvalCompletionStep::Throw(_)
         | EvalCompletionStep::Break { .. }
