@@ -604,6 +604,10 @@ pub enum EvalCompletionStep {
         name: String,
         init: ResolvedExpr,
     },
+    GlobalVarLet {
+        name: String,
+        init: ResolvedExpr,
+    },
     FunctionDecl {
         name: String,
         params: Vec<ResolvedParam>,
@@ -694,6 +698,7 @@ impl EvalCompletionStep {
             Self::Value(expr)
             | Self::Empty(Some(expr))
             | Self::VarLet { init: expr, .. }
+            | Self::GlobalVarLet { init: expr, .. }
             | Self::DestructureLet { init: expr, .. }
             | Self::If {
                 condition: expr, ..

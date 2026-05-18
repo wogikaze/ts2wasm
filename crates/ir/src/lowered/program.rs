@@ -1714,6 +1714,7 @@ fn collect_nested_function_captures_in_eval_step(
         EvalCompletionStep::Value(_)
         | EvalCompletionStep::Empty(_)
         | EvalCompletionStep::VarLet { .. }
+        | EvalCompletionStep::GlobalVarLet { .. }
         | EvalCompletionStep::DestructureLet { .. }
         | EvalCompletionStep::LexicalLet { .. }
         | EvalCompletionStep::ClassDecl { .. }
@@ -2473,6 +2474,7 @@ fn collect_eval_step_nested_function_mutable_captures(
         EvalCompletionStep::Value(_)
         | EvalCompletionStep::Empty(_)
         | EvalCompletionStep::VarLet { .. }
+        | EvalCompletionStep::GlobalVarLet { .. }
         | EvalCompletionStep::DestructureLet { .. }
         | EvalCompletionStep::LexicalLet { .. }
         | EvalCompletionStep::ClassDecl { .. }

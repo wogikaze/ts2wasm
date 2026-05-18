@@ -447,15 +447,22 @@ fn expand_expr(
                 },
         } => {
             let caller_bindings = ctx.visible_bindings();
-            expand_static_eval_source(
+            let expanded = expand_static_eval_source(
                 src,
                 &caller_bindings,
                 false,
                 caller_is_strict || ctx.is_strict_context(),
-            )
-            .map(|expanded| {
-                rewrite_indirect_eval_caller_binding_collisions(expanded.expr, &caller_bindings)
-            })
+            )?;
+            let mut global_bindings = caller_bindings;
+            for name in &expanded.global_var_declarations {
+                if !global_bindings.contains(name) {
+                    global_bindings.push(name.clone());
+                }
+            }
+            Ok(rewrite_indirect_eval_caller_binding_collisions(
+                expanded.expr,
+                &global_bindings,
+            ))
         }
         ResolvedExpr::Eval { .. } => {
             // Non-expandable eval (indirect or runtime source) — keep as-is.
@@ -775,6 +782,14 @@ fn expand_object_prop(
 struct StaticEvalExpansion {
     expr: ResolvedExpr,
     caller_var_declarations: Vec<String>,
+    global_var_declarations: Vec<String>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum EvalVarLanding {
+    Caller,
+    Global,
+    Lexical,
 }
 
 fn expand_static_eval_source(
@@ -810,14 +825,32 @@ fn expand_static_eval_source(
     validate_static_eval_source(&program)?;
 
     let eval_is_strict = caller_is_strict || block_has_use_strict_directive(&program);
-    let leak_var_declarations = direct_caller_scope && !eval_is_strict;
-    let mut eval_declarations = Vec::new();
+    let leak_var_declarations = !eval_is_strict;
+    let mut caller_landing_declarations = Vec::new();
+    let mut global_var_declarations = Vec::new();
     if leak_var_declarations {
-        collect_eval_var_declaration_names(&program, &mut eval_declarations);
+        collect_eval_var_declaration_names(&program, &mut caller_landing_declarations);
+        collect_eval_var_let_declaration_names(&program, &mut global_var_declarations);
+    }
+    let var_landing = match (direct_caller_scope, leak_var_declarations) {
+        (true, true) => EvalVarLanding::Caller,
+        (false, true) => EvalVarLanding::Global,
+        _ => EvalVarLanding::Lexical,
+    };
+    let caller_var_declarations = if var_landing == EvalVarLanding::Caller {
+        caller_landing_declarations.clone()
+    } else {
+        Vec::new()
+    };
+    if var_landing != EvalVarLanding::Global {
+        global_var_declarations.clear();
     }
 
     let mut effective_outer_bindings = outer_bindings.to_vec();
-    for name in &eval_declarations {
+    for name in caller_var_declarations
+        .iter()
+        .chain(global_var_declarations.iter())
+    {
         if !effective_outer_bindings.contains(name) {
             effective_outer_bindings.push(name.clone());
         }
@@ -836,7 +869,7 @@ fn expand_static_eval_source(
     }
     let builtin_resolved = expand_stmts(builtin_resolved, &mut nested_ctx)?;
     let mut function_hoists = Vec::new();
-    if leak_var_declarations {
+    if var_landing == EvalVarLanding::Caller {
         collect_eval_function_hoists(&program, &builtin_resolved, src, &mut function_hoists);
     }
 
@@ -853,11 +886,12 @@ fn expand_static_eval_source(
             },
             caller_is_strict,
             eval_is_strict,
-            leak_var_declarations,
-            &eval_declarations,
+            var_landing,
+            &caller_var_declarations,
             function_hoists,
         )?,
-        caller_var_declarations: eval_declarations,
+        caller_var_declarations,
+        global_var_declarations,
     })
 }
 
@@ -1168,16 +1202,12 @@ fn extract_completion_value(
     scope_mode: ts2wasm_ir::builtin_resolved::EvalScopeMode,
     caller_is_strict: bool,
     eval_is_strict: bool,
-    leak_var_declarations: bool,
+    var_landing: EvalVarLanding,
     eval_declarations: &[String],
     function_hoists: Vec<EvalFunctionHoist>,
 ) -> Result<ResolvedExpr, Diagnostic> {
     let mut steps = Vec::new();
-    steps.extend(eval_completion_steps(
-        ast_stmts,
-        stmts,
-        leak_var_declarations,
-    ));
+    steps.extend(eval_completion_steps(ast_stmts, stmts, var_landing));
     Ok(ResolvedExpr::EvalCompletion(
         EvalCompletionPlan::with_eval_context(
             scope_mode,
@@ -1974,6 +2004,10 @@ fn rewrite_eval_step_global_collisions(
             eval_declare_name(&name, scopes);
             EvalCompletionStep::VarLet { name, init }
         }
+        EvalCompletionStep::GlobalVarLet { name, init } => {
+            let init = rewrite_eval_expr_global_collisions(init, collisions, scopes);
+            EvalCompletionStep::GlobalVarLet { name, init }
+        }
         EvalCompletionStep::LexicalLet { name, init } => {
             let init = rewrite_eval_expr_global_collisions(init, collisions, scopes);
             eval_declare_name(&name, scopes);
@@ -2241,21 +2275,19 @@ fn eval_global_property(name: String) -> ResolvedExpr {
 fn eval_completion_steps(
     ast_stmts: &[Stmt],
     stmts: Vec<ResolvedStmt>,
-    leak_var_declarations: bool,
+    var_landing: EvalVarLanding,
 ) -> Vec<EvalCompletionStep> {
     stmts
         .into_iter()
         .enumerate()
-        .map(|(idx, stmt)| {
-            eval_statement_completion_step(ast_stmts.get(idx), stmt, leak_var_declarations)
-        })
+        .map(|(idx, stmt)| eval_statement_completion_step(ast_stmts.get(idx), stmt, var_landing))
         .collect()
 }
 
 fn eval_statement_completion_step(
     ast_stmt: Option<&Stmt>,
     stmt: ResolvedStmt,
-    leak_var_declarations: bool,
+    var_landing: EvalVarLanding,
 ) -> EvalCompletionStep {
     match stmt {
         ResolvedStmt::Expr(expr) => EvalCompletionStep::Value(expr),
@@ -2264,10 +2296,16 @@ fn eval_statement_completion_step(
             expr: Box::new(expr),
         }),
         ResolvedStmt::Let(name, expr)
-            if leak_var_declarations
+            if var_landing == EvalVarLanding::Caller
                 && matches!(ast_stmt, Some(Stmt::Let { is_var: true, .. })) =>
         {
             EvalCompletionStep::VarLet { name, init: expr }
+        }
+        ResolvedStmt::Let(name, expr)
+            if var_landing == EvalVarLanding::Global
+                && matches!(ast_stmt, Some(Stmt::Let { is_var: true, .. })) =>
+        {
+            EvalCompletionStep::GlobalVarLet { name, init: expr }
         }
         ResolvedStmt::Let(name, expr) => EvalCompletionStep::LexicalLet { name, init: expr },
         ResolvedStmt::DestructureLet { pattern, expr } => EvalCompletionStep::DestructureLet {
@@ -2282,7 +2320,7 @@ fn eval_statement_completion_step(
             EvalCompletionStep::Block(eval_completion_steps(
                 ast_statements,
                 statements,
-                leak_var_declarations,
+                var_landing,
             ))
         }
         ResolvedStmt::If {
@@ -2300,8 +2338,8 @@ fn eval_statement_completion_step(
             };
             EvalCompletionStep::If {
                 condition,
-                then_steps: eval_completion_steps(ast_then, then_body, leak_var_declarations),
-                else_steps: eval_completion_steps(ast_else, else_body, leak_var_declarations),
+                then_steps: eval_completion_steps(ast_then, then_body, var_landing),
+                else_steps: eval_completion_steps(ast_else, else_body, var_landing),
             }
         }
         ResolvedStmt::While { condition, body } => {
@@ -2311,7 +2349,7 @@ fn eval_statement_completion_step(
             };
             EvalCompletionStep::While {
                 condition,
-                body_steps: eval_completion_steps(ast_body, body, leak_var_declarations),
+                body_steps: eval_completion_steps(ast_body, body, var_landing),
             }
         }
         ResolvedStmt::DoWhile { body, condition } => {
@@ -2320,7 +2358,7 @@ fn eval_statement_completion_step(
                 _ => &[],
             };
             EvalCompletionStep::DoWhile {
-                body_steps: eval_completion_steps(ast_body, body, leak_var_declarations),
+                body_steps: eval_completion_steps(ast_body, body, var_landing),
                 condition,
             }
         }
@@ -2336,15 +2374,11 @@ fn eval_statement_completion_step(
             };
             EvalCompletionStep::For {
                 init: init.map(|stmt| {
-                    Box::new(eval_statement_completion_step(
-                        ast_init,
-                        *stmt,
-                        leak_var_declarations,
-                    ))
+                    Box::new(eval_statement_completion_step(ast_init, *stmt, var_landing))
                 }),
                 condition,
                 update,
-                body_steps: eval_completion_steps(ast_body, body, leak_var_declarations),
+                body_steps: eval_completion_steps(ast_body, body, var_landing),
             }
         }
         ResolvedStmt::ForOf { var, iter, body } => {
@@ -2355,7 +2389,7 @@ fn eval_statement_completion_step(
             EvalCompletionStep::ForOf {
                 var,
                 iter,
-                body_steps: eval_completion_steps(ast_body, body, leak_var_declarations),
+                body_steps: eval_completion_steps(ast_body, body, var_landing),
             }
         }
         ResolvedStmt::ForIn { var, iter, body } => {
@@ -2366,7 +2400,7 @@ fn eval_statement_completion_step(
             EvalCompletionStep::ForIn {
                 var,
                 iter,
-                body_steps: eval_completion_steps(ast_body, body, leak_var_declarations),
+                body_steps: eval_completion_steps(ast_body, body, var_landing),
             }
         }
         ResolvedStmt::Switch { expr, cases } => {
@@ -2384,7 +2418,7 @@ fn eval_statement_completion_step(
                         .unwrap_or(&[]);
                     (
                         case_expr,
-                        eval_completion_steps(ast_body, body, leak_var_declarations),
+                        eval_completion_steps(ast_body, body, var_landing),
                     )
                 })
                 .collect();
@@ -2410,13 +2444,13 @@ fn eval_statement_completion_step(
                 _ => (&[][..], None, None),
             };
             EvalCompletionStep::TryCatch {
-                try_steps: eval_completion_steps(ast_try, try_block, leak_var_declarations),
+                try_steps: eval_completion_steps(ast_try, try_block, var_landing),
                 catch_param,
                 catch_steps: catch_block.map(|block| {
-                    eval_completion_steps(ast_catch.unwrap_or(&[]), block, leak_var_declarations)
+                    eval_completion_steps(ast_catch.unwrap_or(&[]), block, var_landing)
                 }),
                 finally_steps: finally_block.map(|block| {
-                    eval_completion_steps(ast_finally.unwrap_or(&[]), block, leak_var_declarations)
+                    eval_completion_steps(ast_finally.unwrap_or(&[]), block, var_landing)
                 }),
             }
         }
@@ -2427,11 +2461,7 @@ fn eval_statement_completion_step(
             };
             EvalCompletionStep::Labeled {
                 label,
-                body: Box::new(eval_statement_completion_step(
-                    ast_body,
-                    *body,
-                    leak_var_declarations,
-                )),
+                body: Box::new(eval_statement_completion_step(ast_body, *body, var_landing)),
             }
         }
         ResolvedStmt::Function {
@@ -2440,7 +2470,9 @@ fn eval_statement_completion_step(
             body,
             is_async,
             ..
-        } if leak_var_declarations && matches!(ast_stmt, Some(Stmt::Function { .. })) => {
+        } if var_landing == EvalVarLanding::Caller
+            && matches!(ast_stmt, Some(Stmt::Function { .. })) =>
+        {
             EvalCompletionStep::FunctionDecl {
                 name,
                 params,
@@ -2521,6 +2553,60 @@ fn collect_eval_var_declaration_names(stmts: &[Stmt], out: &mut Vec<String>) {
             }
             Stmt::Labeled { body, .. } => {
                 collect_eval_var_declaration_names(std::slice::from_ref(body.as_ref()), out);
+            }
+            _ => {}
+        }
+    }
+}
+
+fn collect_eval_var_let_declaration_names(stmts: &[Stmt], out: &mut Vec<String>) {
+    for stmt in stmts {
+        match stmt {
+            Stmt::Let {
+                name, is_var: true, ..
+            } => {
+                if !out.contains(name) {
+                    out.push(name.clone());
+                }
+            }
+            Stmt::Block { statements, .. } => {
+                collect_eval_var_let_declaration_names(statements, out)
+            }
+            Stmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                collect_eval_var_let_declaration_names(then_body, out);
+                collect_eval_var_let_declaration_names(else_body, out);
+            }
+            Stmt::While { body, .. }
+            | Stmt::DoWhile { body, .. }
+            | Stmt::For { body, .. }
+            | Stmt::ForIn { body, .. }
+            | Stmt::ForOf { body, .. }
+            | Stmt::ForAwaitOf { body, .. } => collect_eval_var_let_declaration_names(body, out),
+            Stmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    collect_eval_var_let_declaration_names(body, out);
+                }
+            }
+            Stmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                collect_eval_var_let_declaration_names(try_block, out);
+                if let Some(catch_block) = catch_block {
+                    collect_eval_var_let_declaration_names(catch_block, out);
+                }
+                if let Some(finally_block) = finally_block {
+                    collect_eval_var_let_declaration_names(finally_block, out);
+                }
+            }
+            Stmt::Labeled { body, .. } => {
+                collect_eval_var_let_declaration_names(std::slice::from_ref(body.as_ref()), out);
             }
             _ => {}
         }

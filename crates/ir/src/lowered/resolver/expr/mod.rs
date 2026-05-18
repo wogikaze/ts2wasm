@@ -447,6 +447,12 @@ impl super::Resolver {
                         ));
                     }
                 }
+                EvalCompletionStep::GlobalVarLet { name, init } => {
+                    stmts.push(LoweredStmt::Expr(
+                        self.lower_static_global_eval_var_landing(name, init)?,
+                        Span::generated("eval_global_var"),
+                    ));
+                }
                 EvalCompletionStep::FunctionDecl {
                     name,
                     params,
@@ -914,6 +920,10 @@ impl super::Resolver {
                     )))
                 }
             }
+            EvalCompletionStep::GlobalVarLet { name, init } => Ok(Some(LoweredStmt::Expr(
+                self.lower_static_global_eval_var_landing(name, init)?,
+                Span::generated("eval_non_completion_global_var"),
+            ))),
             EvalCompletionStep::LexicalLet { name, init } => Ok(Some(
                 self.lower_stmt(&ResolvedStmt::Let(name.clone(), init.clone()))?,
             )),
@@ -1034,6 +1044,19 @@ impl super::Resolver {
         self.ctx.symbols.locals.push(local);
         scope.insert(name.to_owned(), local);
         Ok((local, false))
+    }
+
+    fn lower_static_global_eval_var_landing(
+        &mut self,
+        name: &str,
+        init: &ResolvedExpr,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        self.lower_property_assign_expr(
+            &ResolvedExpr::Ident("globalThis".to_owned()),
+            name,
+            init,
+            Span::generated("static_indirect_eval_global_var"),
+        )
     }
 
     fn lower_eval_function_decl_in_caller_scope(
@@ -1338,6 +1361,7 @@ fn eval_completion_steps_have_caller_landings(
         }
         EvalCompletionStep::Value(_)
         | EvalCompletionStep::Empty(_)
+        | EvalCompletionStep::GlobalVarLet { .. }
         | EvalCompletionStep::ClassDecl { .. }
         | EvalCompletionStep::Throw(_)
         | EvalCompletionStep::Break { .. }
