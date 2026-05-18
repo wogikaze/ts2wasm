@@ -510,7 +510,7 @@ impl super::Resolver {
         body: &[ResolvedStmt],
         options: NestedFunctionOptions,
     ) -> Result<LoweredExpr, Diagnostic> {
-        if params.iter().any(|param| param.is_rest) {
+        if params.iter().any(|param| param.is_rest) && !options.suppress_captures {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!(
@@ -630,7 +630,7 @@ impl super::Resolver {
                     || block_contains_dynamic_direct_eval(body))
                     && !params.iter().any(|param| param.name == "arguments"),
                 has_rest: params.iter().any(|param| param.is_rest),
-                metadata_length: Some(params.len()),
+                metadata_length: Some(function_length_metadata(params)),
                 ..FunctionSignature::default()
             },
         );
@@ -822,6 +822,13 @@ impl super::Resolver {
             self.ctx.facts.heap_closure_locals.remove(&local_id);
         }
     }
+}
+
+fn function_length_metadata(params: &[ResolvedParam]) -> usize {
+    params
+        .iter()
+        .take_while(|param| param.default.is_none() && !param.is_rest)
+        .count()
 }
 
 fn property_keyed_object_function_props(

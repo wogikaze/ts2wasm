@@ -328,7 +328,7 @@ The current implementation has several partial dynamic-code paths:
   defaults. Caller-local non-capture is guarded for the supported `typeof`
   slice, static parameter early errors are guarded for non-simple duplicate
   bound names plus strict-body duplicate / non-simple / `eval` / `arguments`
-  params, and direct
+  params, rest parameters execute with Node-compatible `.length` metadata, and direct
   `.name`/`.length`/`.prototype` metadata is guarded for static constructor
   locals, including zero-argument `Function()` / `new Function()`;
 - shadowed `Function` bindings stay ordinary user calls in the current

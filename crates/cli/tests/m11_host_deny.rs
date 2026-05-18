@@ -1104,6 +1104,8 @@ fn standalone_fixtures_pass_host_deny() {
         "core-statements/while.ts",
         // Rest parameters (WASI stdout only)
         "rest-parameters/rest-basic.ts",
+        // Static Function constructor rest parameters compile without host imports.
+        "core-semantics/function-constructor-rest-params.ts",
         // Spread arguments (WASI stdout only)
         "spread-args/spread-arguments.ts",
         // TypeScript directives that now compile standalone
