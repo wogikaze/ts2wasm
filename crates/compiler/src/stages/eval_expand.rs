@@ -28,27 +28,49 @@ pub fn expand_static_eval_fragments(
     resolved: Vec<ResolvedStmt>,
 ) -> Result<Vec<ResolvedStmt>, Diagnostic> {
     let mut ctx = EvalExpansionContext::new();
+    ctx.set_strict_context(resolved_block_has_use_strict_directive(&resolved));
     expand_stmts(resolved, &mut ctx)
 }
 
 #[derive(Debug, Default)]
 struct EvalExpansionContext {
     scopes: Vec<HashSet<String>>,
+    strict_contexts: Vec<bool>,
 }
 
 impl EvalExpansionContext {
     fn new() -> Self {
         Self {
             scopes: vec![HashSet::new()],
+            strict_contexts: vec![false],
         }
     }
 
     fn enter_scope(&mut self) {
         self.scopes.push(HashSet::new());
+        let strict = self.is_strict_context();
+        self.strict_contexts.push(strict);
+    }
+
+    fn enter_strict_scope(&mut self, strict_context: bool) {
+        self.scopes.push(HashSet::new());
+        self.strict_contexts
+            .push(self.is_strict_context() || strict_context);
     }
 
     fn exit_scope(&mut self) {
         self.scopes.pop();
+        self.strict_contexts.pop();
+    }
+
+    fn set_strict_context(&mut self, strict_context: bool) {
+        if let Some(current) = self.strict_contexts.last_mut() {
+            *current |= strict_context;
+        }
+    }
+
+    fn is_strict_context(&self) -> bool {
+        self.strict_contexts.last().copied().unwrap_or(false)
     }
 
     fn declare(&mut self, name: impl Into<String>) {
@@ -256,7 +278,8 @@ fn expand_stmt(
             source_text,
         } => {
             ctx.declare(name.clone());
-            ctx.enter_scope();
+            let function_is_strict = resolved_block_has_use_strict_directive(&body);
+            ctx.enter_strict_scope(function_is_strict);
             ctx.declare("arguments");
             let params = expand_params(params, ctx)?;
             ctx.declare_params(&params);
@@ -360,7 +383,7 @@ fn expand_constructor(
     (params, body): ts2wasm_ir::builtin_resolved::ResolvedConstructor,
     ctx: &mut EvalExpansionContext,
 ) -> Result<ts2wasm_ir::builtin_resolved::ResolvedConstructor, Diagnostic> {
-    ctx.enter_scope();
+    ctx.enter_strict_scope(true);
     ctx.declare("arguments");
     let params = expand_params(params, ctx)?;
     ctx.declare_params(&params);
@@ -373,7 +396,7 @@ fn expand_class_method(
     method: ts2wasm_ir::builtin_resolved::ClassMethod,
     ctx: &mut EvalExpansionContext,
 ) -> Result<ts2wasm_ir::builtin_resolved::ClassMethod, Diagnostic> {
-    ctx.enter_scope();
+    ctx.enter_strict_scope(true);
     ctx.declare("arguments");
     let params = expand_params(method.params, ctx)?;
     ctx.declare_params(&params);
@@ -398,10 +421,16 @@ fn expand_expr(
                 EvalFragmentPlan {
                     kind: EvalKind::Direct,
                     source: EvalSource::StaticLiteral(ref src),
+                    caller_is_strict,
                     ..
                 },
         } => {
-            let expanded = expand_static_eval_source(src, &ctx.visible_bindings(), true)?;
+            let expanded = expand_static_eval_source(
+                src,
+                &ctx.visible_bindings(),
+                true,
+                caller_is_strict || ctx.is_strict_context(),
+            )?;
             for name in &expanded.caller_var_declarations {
                 ctx.declare(name.clone());
             }
@@ -412,11 +441,18 @@ fn expand_expr(
                 EvalFragmentPlan {
                     kind: EvalKind::Indirect,
                     source: EvalSource::StaticLiteral(ref src),
+                    caller_is_strict,
                     ..
                 },
         } => {
             let caller_bindings = ctx.visible_bindings();
-            expand_static_eval_source(src, &caller_bindings, false).map(|expanded| {
+            expand_static_eval_source(
+                src,
+                &caller_bindings,
+                false,
+                caller_is_strict || ctx.is_strict_context(),
+            )
+            .map(|expanded| {
                 rewrite_indirect_eval_caller_binding_collisions(expanded.expr, &caller_bindings)
             })
         }
@@ -645,7 +681,8 @@ fn expand_expr(
             body_stmts,
             source_text,
         } => {
-            ctx.enter_scope();
+            let function_is_strict = resolved_block_has_use_strict_directive(&body_stmts);
+            ctx.enter_strict_scope(function_is_strict);
             for param in &params {
                 ctx.declare(param.clone());
             }
@@ -667,7 +704,8 @@ fn expand_expr(
             origin,
             source_text,
         } => {
-            ctx.enter_scope();
+            let function_is_strict = resolved_block_has_use_strict_directive(&body);
+            ctx.enter_strict_scope(function_is_strict);
             if !name.is_empty() {
                 ctx.declare(name.clone());
             }
@@ -686,7 +724,7 @@ fn expand_expr(
             })
         }
         ResolvedExpr::ClassExpr { name, body } => {
-            ctx.enter_scope();
+            ctx.enter_strict_scope(true);
             if !name.is_empty() {
                 ctx.declare(name.clone());
             }
@@ -742,26 +780,36 @@ fn expand_static_eval_source(
     src: &str,
     outer_bindings: &[String],
     direct_caller_scope: bool,
+    caller_is_strict: bool,
 ) -> Result<StaticEvalExpansion, Diagnostic> {
-    let tokens = ts2wasm_frontend::Lexer::new(src)
-        .tokenize()
-        .map_err(|e| Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!("eval source lex error: {e}"),
-            span: None,
-            phase: None,
-        })?;
-    let program = ts2wasm_frontend::Parser::new(tokens, src)
-        .parse_program()
-        .map_err(|e| Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!("eval source parse error: {e}"),
-            span: None,
-            phase: None,
-        })?;
+    let tokens = if caller_is_strict {
+        ts2wasm_frontend::Lexer::new_with_strict_mode(src, true)
+    } else {
+        ts2wasm_frontend::Lexer::new(src)
+    }
+    .tokenize()
+    .map_err(|e| Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!("eval source lex error: {e}"),
+        span: None,
+        phase: None,
+    })?;
+    let program = if caller_is_strict {
+        ts2wasm_frontend::Parser::new_with_strict_mode(tokens, true, src)
+    } else {
+        ts2wasm_frontend::Parser::new(tokens, src)
+    }
+    .parse_program()
+    .map_err(|e| Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!("eval source parse error: {e}"),
+        span: None,
+        phase: None,
+    })?;
     validate_static_eval_source(&program)?;
 
-    let leak_var_declarations = direct_caller_scope && !block_has_use_strict_directive(&program);
+    let eval_is_strict = caller_is_strict || block_has_use_strict_directive(&program);
+    let leak_var_declarations = direct_caller_scope && !eval_is_strict;
     let mut eval_declarations = Vec::new();
     if leak_var_declarations {
         collect_eval_var_declaration_names(&program, &mut eval_declarations);
@@ -781,6 +829,7 @@ fn expand_static_eval_source(
     };
     let builtin_resolved = resolve_builtins(&name_resolved)?;
     let mut nested_ctx = EvalExpansionContext::new();
+    nested_ctx.set_strict_context(eval_is_strict);
     for binding in &effective_outer_bindings {
         nested_ctx.declare(binding.clone());
     }
@@ -802,6 +851,19 @@ fn expand_static_eval_source(
         )?,
         caller_var_declarations: eval_declarations,
     })
+}
+
+fn resolved_block_has_use_strict_directive(stmts: &[ResolvedStmt]) -> bool {
+    for stmt in stmts {
+        match stmt {
+            ResolvedStmt::Expr(ResolvedExpr::String(value)) if value == "use strict" => {
+                return true;
+            }
+            ResolvedStmt::Expr(_) => continue,
+            _ => return false,
+        }
+    }
+    false
 }
 
 fn remove_post_prefix_block_function_decls(

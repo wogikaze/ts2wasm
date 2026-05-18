@@ -324,8 +324,10 @@ The current implementation has several partial dynamic-code paths:
   static eval now keeps the call shape through parse/name-resolution and uses
   compiler `EvalCompletionStep` expansion plus lowered eval-completion
   execution for the supported slices. Nested static eval is recursively expanded,
-  and eval-completion function declarations participate in mutable-capture
-  env-cell planning for the guarded Annex B block-function cases;
+  strict caller contexts keep eval-code `var` declarations local to the eval
+  fragment, and eval-completion function declarations participate in
+  mutable-capture env-cell planning for the guarded Annex B block-function
+  cases;
 - static string indirect eval shapes `(0, eval)(...)`, `globalThis.eval(...)`,
   and `globalThis["eval"](...)` are classified by resolver and expanded through
   the AOT eval lane without Node host imports for the supported literal subset;

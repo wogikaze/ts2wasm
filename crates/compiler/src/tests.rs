@@ -246,6 +246,32 @@ fn compiler_preserves_static_direct_eval_expression_side_effects() {
     ));
 }
 
+#[test]
+fn compiler_keeps_strict_caller_eval_var_declarations_local() {
+    let expanded = parse_resolve_and_expand_dynamic_code(
+        r#"
+        "use strict";
+        let result = eval("var value = 2; value");
+        "#,
+    );
+    assert!(matches!(
+        &expanded[1],
+        ts2wasm_ir::ResolvedStmt::Let(
+            name,
+            ts2wasm_ir::ResolvedExpr::EvalCompletion(steps)
+        ) if name == "result"
+            && matches!(
+                steps.as_slice(),
+                [
+                    ts2wasm_ir::builtin_resolved::EvalCompletionStep::LexicalLet { name, .. },
+                    ts2wasm_ir::builtin_resolved::EvalCompletionStep::Value(
+                        ts2wasm_ir::ResolvedExpr::Ident(read_name)
+                    )
+                ] if name == "value" && read_name == "value"
+            )
+    ));
+}
+
 fn parse_resolve_and_expand_dynamic_code(source: &str) -> Vec<ts2wasm_ir::ResolvedStmt> {
     let parsed = parse_program(source).unwrap();
     let named = ts2wasm_ir::name_resolver::resolve_names(&parsed).unwrap();

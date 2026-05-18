@@ -615,6 +615,14 @@ fn static_direct_eval_var_landing_declares_no_node_host_eval_capability() {
 }
 
 #[test]
+fn static_direct_eval_strict_caller_var_declares_no_node_host_eval_capability() {
+    assert_standalone_category(
+        "core-semantics/direct-eval-strict-caller-var-local.ts",
+        "static direct eval strict caller var local",
+    );
+}
+
+#[test]
 fn static_direct_eval_strict_lexical_assignment_declares_no_node_host_eval_capability() {
     assert_standalone_category(
         "core-semantics/direct-eval-strict-lexical-assignment.ts",

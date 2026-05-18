@@ -916,6 +916,7 @@ directories:
     - direct-eval-var-lands-in-caller.ts
     - direct-eval-while-completion.ts
     - direct-eval-while-var-hoisted-undefined.ts
+    - direct-eval-strict-caller-var-local.ts
     - direct-eval-strict-lexical-assignment.ts
     - direct-eval-strict-lexical-local.ts
     - direct-eval-dynamic-arrow-lexical-this-node-shim.ts

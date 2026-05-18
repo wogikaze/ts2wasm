@@ -48,7 +48,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | `EvalKind` の lowering 分岐 | lowering は direct を `RuntimeFn::EvalDirectHost`、indirect を `RuntimeFn::EvalIndirectHost` へ分ける | static/direct/indirect/host-global/full-direct の plan 情報をさらに明示する |
 | host runtime fn coverage | `host.eval.*` / `host.function.*` manifest and host-deny slices は focused 実装済み | runtime-wide host external object contract と broader audit を進める |
 | compiler server dump path parity の regression 化 | `pipeline.rs`、`server.rs`、dump pipeline は `expand_static_eval_fragments` を呼ぶ | parity test を維持し、今後の `DynamicCodePlan` 移行時にも各 path で同じ stage を通す |
-| `caller_is_strict` が未接続 | builtin resolver で `false` 固定 | parser/resolver から strict context を伝搬する |
+| `caller_is_strict` が未接続 | compiler eval-expand now tracks strict caller context for static eval expansion and strict-caller `var` locality; the `EvalFragmentPlan` field itself is still not fully populated for every host-lane path | parser/resolver から strict context を伝搬し、dynamic direct eval host descriptor でも使用する |
 | static eval declaration completion が不安定 | `compiler/src/stages/eval_expand.rs::extract_completion_value` は statement を expression に潰すだけで、declaration environment を caller へ接続しない | eval-code statement lowering と completion slot を導入する |
 | `Function` constructor grammar が簡易 | parameter strings を `join(", ")` して synthetic function を parse するのみ | ECMAScript Function constructor の parameter/body parse rules、strict restrictions、SyntaxError timing を明示実装する |
 | tests / fixtures / issues が古い | `function-constructor-unsupported` という fixture 名や comment が build-success と矛盾。`I-20260517-WE8P5A` は dropped のまま | Phase 0 で tracking と naming を更新する |
@@ -274,7 +274,10 @@ Exit criteria:
 - direct eval source を caller scope context で name resolve する。
 - eval fragment 内の declarations を caller env / eval lexical env に正しく接続する。
 - eval expression result は `EvalCompletionSlot` 経由で戻す。
-- strict caller / strict eval code を伝搬する。
+- strict caller / strict eval code を伝搬する。Static eval expansion now tracks
+  strict caller context through nested function/class scopes and keeps
+  strict-caller `var` declarations eval-local; remaining work is to populate the
+  resolver-owned plan for all dynamic host-lane paths.
 
 追加 fixtures:
 
