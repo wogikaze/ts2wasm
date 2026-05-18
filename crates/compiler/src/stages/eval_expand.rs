@@ -868,7 +868,7 @@ fn resolved_block_has_use_strict_directive(stmts: &[ResolvedStmt]) -> bool {
 fn validate_static_eval_source(program: &[Stmt]) -> Result<(), Diagnostic> {
     if let Some(span) = eval_source_illegal_return_span(program) {
         return Err(Diagnostic {
-            code: DiagCode::UnsupportedEval,
+            code: DiagCode::UnsupportedSyntax,
             message: "return statement is not valid in eval source".to_owned(),
             span: Some(span),
             phase: None,

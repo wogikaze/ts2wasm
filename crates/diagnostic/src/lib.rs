@@ -154,6 +154,10 @@ impl Diagnostic {
             return DiagCode::UnsupportedRegExp;
         }
 
+        if message.contains("return statement is not valid in eval source") {
+            return DiagCode::UnsupportedSyntax;
+        }
+
         if message.contains("eval")
             || message.contains("issue-302")
             || message.contains("issue-347")
@@ -311,6 +315,11 @@ mod tests {
                 "issue-051: RegExp.prototype.compile is not supported in this subset",
                 DiagCode::UnsupportedRegExp,
                 "[UnsupportedRegExp]",
+            ),
+            (
+                "return statement is not valid in eval source",
+                DiagCode::UnsupportedSyntax,
+                "[UnsupportedSyntax]",
             ),
             (
                 "issue-347: indirect eval calls are not supported",
