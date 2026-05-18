@@ -392,12 +392,6 @@ impl super::Resolver {
 
         for step in steps {
             match step {
-                EvalCompletionStep::HoistVars(names) => {
-                    self.lower_eval_hoisted_vars_into(names, caller_scope_index, stmts)?;
-                }
-                EvalCompletionStep::HoistFunctions(functions) => {
-                    self.lower_eval_hoisted_functions_into(functions, caller_scope_index, stmts)?;
-                }
                 EvalCompletionStep::Value(expr) => {
                     let value = self.lower_expr(expr)?;
                     stmts.push(LoweredStmt::Assign(

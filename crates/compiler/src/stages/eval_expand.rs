@@ -1947,33 +1947,6 @@ fn rewrite_eval_step_global_collisions(
     scopes: &mut Vec<HashSet<String>>,
 ) -> EvalCompletionStep {
     match step {
-        EvalCompletionStep::HoistVars(names) => {
-            for name in &names {
-                eval_declare_name(name, scopes);
-            }
-            EvalCompletionStep::HoistVars(names)
-        }
-        EvalCompletionStep::HoistFunctions(hoists) => {
-            for hoist in &hoists {
-                eval_declare_name(&hoist.name, scopes);
-            }
-            EvalCompletionStep::HoistFunctions(
-                hoists
-                    .into_iter()
-                    .map(|mut hoist| {
-                        scopes.push(HashSet::new());
-                        let params =
-                            rewrite_eval_params_global_collisions(hoist.params, collisions, scopes);
-                        let body =
-                            rewrite_eval_stmts_global_collisions(hoist.body, collisions, scopes);
-                        scopes.pop();
-                        hoist.params = params;
-                        hoist.body = body;
-                        hoist
-                    })
-                    .collect(),
-            )
-        }
         EvalCompletionStep::Value(expr) => EvalCompletionStep::Value(
             rewrite_eval_expr_global_collisions(expr, collisions, scopes),
         ),

@@ -1645,19 +1645,6 @@ fn collect_nested_function_captures_in_eval_step(
             collect_stmt_captures(body, &nested_excluded, captures);
             collect_nested_function_captures_in_stmts(body, &nested_excluded, captures)?;
         }
-        EvalCompletionStep::HoistFunctions(functions) => {
-            for function in functions {
-                let mut nested_excluded = outer_excluded.clone();
-                nested_excluded.extend(resolved_param_names(&function.params)?);
-                collect_declared_names_in_stmts(&function.body, &mut nested_excluded);
-                collect_stmt_captures(&function.body, &nested_excluded, captures);
-                collect_nested_function_captures_in_stmts(
-                    &function.body,
-                    &nested_excluded,
-                    captures,
-                )?;
-            }
-        }
         EvalCompletionStep::Block(steps) => {
             for step in steps {
                 collect_nested_function_captures_in_eval_step(step, outer_excluded, captures)?;
@@ -1728,8 +1715,7 @@ fn collect_nested_function_captures_in_eval_step(
         | EvalCompletionStep::ClassDecl { .. }
         | EvalCompletionStep::Throw(_)
         | EvalCompletionStep::Break { .. }
-        | EvalCompletionStep::Continue { .. }
-        | EvalCompletionStep::HoistVars(_) => {}
+        | EvalCompletionStep::Continue { .. } => {}
     }
     if let Some(expr) = step.expr() {
         collect_nested_function_captures_in_expr(expr, outer_excluded, captures)?;
@@ -2412,18 +2398,6 @@ fn collect_eval_step_nested_function_mutable_captures(
             mutable_captures.extend(collect_function_expr_mutable_captures(params, body)?);
             collect_block_nested_function_mutable_captures_into(body, mutable_captures)?;
         }
-        EvalCompletionStep::HoistFunctions(functions) => {
-            for function in functions {
-                mutable_captures.extend(collect_function_expr_mutable_captures(
-                    &function.params,
-                    &function.body,
-                )?);
-                collect_block_nested_function_mutable_captures_into(
-                    &function.body,
-                    mutable_captures,
-                )?;
-            }
-        }
         EvalCompletionStep::Block(steps) => {
             for step in steps {
                 collect_eval_step_nested_function_mutable_captures(step, mutable_captures)?;
@@ -2494,8 +2468,7 @@ fn collect_eval_step_nested_function_mutable_captures(
         | EvalCompletionStep::ClassDecl { .. }
         | EvalCompletionStep::Throw(_)
         | EvalCompletionStep::Break { .. }
-        | EvalCompletionStep::Continue { .. }
-        | EvalCompletionStep::HoistVars(_) => {}
+        | EvalCompletionStep::Continue { .. } => {}
     }
     if let Some(expr) = step.expr() {
         collect_expr_nested_function_mutable_captures(expr, mutable_captures)?;

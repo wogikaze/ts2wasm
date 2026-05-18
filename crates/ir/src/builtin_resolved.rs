@@ -436,8 +436,6 @@ pub struct EvalDeclarationPlan {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum EvalCompletionStep {
-    HoistVars(Vec<String>),
-    HoistFunctions(Vec<EvalFunctionHoist>),
     Value(ResolvedExpr),
     Empty(Option<ResolvedExpr>),
     VarLet {
@@ -551,9 +549,7 @@ impl EvalCompletionStep {
             Self::ForOf { iter: expr, .. } | Self::ForIn { iter: expr, .. } => Some(expr),
             Self::Switch { expr, .. } => Some(expr),
             Self::Throw(expr) => Some(expr),
-            Self::HoistVars(_)
-            | Self::HoistFunctions(_)
-            | Self::ClassDecl { .. }
+            Self::ClassDecl { .. }
             | Self::Empty(None)
             | Self::TryCatch { .. }
             | Self::Labeled { .. }
