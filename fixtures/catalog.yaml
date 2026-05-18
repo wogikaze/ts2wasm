@@ -917,6 +917,7 @@ directories:
     - direct-eval-while-var-hoisted-undefined.ts
     - direct-eval-strict-lexical-assignment.ts
     - direct-eval-strict-lexical-local.ts
+    - direct-eval-dynamic-arrow-lexical-this-node-shim.ts
     - direct-eval-dynamic-block-shadow-writeback-node-shim.ts
     - direct-eval-dynamic-catch-binding-node-shim.ts
     - direct-eval-dynamic-class-constructor-this-node-shim.ts

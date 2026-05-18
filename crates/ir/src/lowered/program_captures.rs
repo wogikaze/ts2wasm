@@ -1,4 +1,4 @@
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
+use crate::builtin_resolved::{EvalSource, ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
 use std::collections::HashSet;
 
 pub(crate) fn collect_arrow_captures(
@@ -142,6 +142,11 @@ pub(crate) fn collect_arrow_captures(
                 }
             }
         }
+        ResolvedExpr::Eval { source, .. } => {
+            if let EvalSource::Runtime(expr) = source {
+                collect_arrow_captures(expr, params, captures);
+            }
+        }
         ResolvedExpr::ArrowFn { .. }
         | ResolvedExpr::FunctionExpr { .. }
         | ResolvedExpr::ClassExpr { .. }
@@ -151,8 +156,7 @@ pub(crate) fn collect_arrow_captures(
         | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
-        | ResolvedExpr::Null
-        | ResolvedExpr::Eval { .. } => {}
+        | ResolvedExpr::Null => {}
         ResolvedExpr::Undefined => {}
     }
 }

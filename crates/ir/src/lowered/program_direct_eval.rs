@@ -297,8 +297,12 @@ fn expr_contains_dynamic_direct_eval(expr: &ResolvedExpr) -> bool {
             .iter()
             .filter_map(|step| step.expr())
             .any(expr_contains_dynamic_direct_eval),
-        ResolvedExpr::ArrowFn { .. }
-        | ResolvedExpr::FunctionExpr { .. }
+        ResolvedExpr::ArrowFn {
+            body, body_stmts, ..
+        } => {
+            block_contains_dynamic_direct_eval(body_stmts) || expr_contains_dynamic_direct_eval(body)
+        }
+        ResolvedExpr::FunctionExpr { .. }
         | ResolvedExpr::ClassExpr { .. }
         | ResolvedExpr::Yield { expr: None, .. }
         | ResolvedExpr::This { .. }

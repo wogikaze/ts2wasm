@@ -53,6 +53,11 @@ impl super::Resolver {
                 capture_names.push(name);
             }
         }
+        let mut lowered_body_stmts: Vec<ResolvedStmt> = body_stmts.to_vec();
+        lowered_body_stmts.push(ResolvedStmt::Return((*body).clone()));
+        let arrow_body_has_dynamic_direct_eval =
+            block_contains_dynamic_direct_eval(&lowered_body_stmts);
+
         // If the arrow body references super.method() or super.property, the
         // super.method() lowering at resolver_expr.rs:1919 needs `this` as a
         // local to construct the first call argument.  Arrow functions do not
@@ -64,6 +69,27 @@ impl super::Resolver {
             && self.resolve_local("this").is_ok()
         {
             capture_names.push("this".to_owned());
+        }
+        if arrow_body_has_dynamic_direct_eval {
+            let mut dynamic_eval_captures = self
+                .ctx
+                .facts
+                .env_cell_names
+                .iter()
+                .cloned()
+                .collect::<Vec<_>>();
+            dynamic_eval_captures.extend(["this".to_owned(), "arguments".to_owned()]);
+            dynamic_eval_captures.sort();
+            dynamic_eval_captures.dedup();
+            for name in dynamic_eval_captures {
+                if !capture_names.iter().any(|capture| capture == &name)
+                    && (!excluded_set.contains(&name)
+                        || active_self_name.is_some_and(|self_name| self_name == name))
+                    && self.resolve_local(&name).is_ok()
+                {
+                    capture_names.push(name);
+                }
+            }
         }
         let captures = capture_names
             .iter()
@@ -101,8 +127,25 @@ impl super::Resolver {
 
         let func_id = FuncId(self.ctx.functions.next_func_id);
         self.ctx.functions.next_func_id += 1;
-        let mut lowered_body_stmts: Vec<ResolvedStmt> = body_stmts.to_vec();
-        lowered_body_stmts.push(ResolvedStmt::Return((*body).clone()));
+        if !capture_names.is_empty() {
+            self.ctx
+                .functions
+                .function_captures
+                .insert(func_id, capture_names.clone());
+        }
+        let dynamic_direct_eval_env_cell_names = collect_dynamic_direct_eval_env_cell_names(
+            &lowered_params,
+            &lowered_body_stmts,
+            false,
+            false,
+        );
+        let nested_env_cell_names = self
+            .ctx
+            .facts
+            .env_cell_names
+            .union(&dynamic_direct_eval_env_cell_names)
+            .cloned()
+            .collect::<HashSet<_>>();
         let lowered = lower_function(
             func_id,
             &lowered_params,
@@ -115,7 +158,7 @@ impl super::Resolver {
             &self.ctx.functions.function_mutable_captures,
             &self.ctx.functions.class_method_captures,
             &self.ctx.functions.class_method_mutable_captures,
-            &self.ctx.facts.env_cell_names,
+            &nested_env_cell_names,
             &self.ctx.facts.heap_closure_names,
             self.ctx.classes.class_parents.clone(),
             self.ctx.classes.class_private_fields.clone(),

@@ -759,6 +759,11 @@ fn host_deny_rejects_dynamic_direct_eval_object_method_this_host_lane() {
 }
 
 #[test]
+fn host_deny_rejects_dynamic_direct_eval_arrow_lexical_this_host_lane() {
+    assert_host_deny_rejects("core-semantics/direct-eval-dynamic-arrow-lexical-this-node-shim.ts");
+}
+
+#[test]
 fn dynamic_function_constructor_declares_node_host_function_compile_capability() {
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")

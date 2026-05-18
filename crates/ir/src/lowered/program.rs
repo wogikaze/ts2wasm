@@ -4373,12 +4373,20 @@ pub(super) fn lower_function(
     if let Some(param) = rest_param {
         lowered_params.push(param);
     }
+    let synthetic_arguments_param_index =
+        lowered_params
+            .iter()
+            .enumerate()
+            .find_map(|(index, param)| {
+                let name = param.name.strip_prefix("...").unwrap_or(&param.name);
+                (index >= signature.explicit_params && name == "arguments").then_some(index)
+            });
 
     lower_function_with_resolved_params(
         id,
         lowered_params,
         rest_param_index,
-        None,
+        synthetic_arguments_param_index,
         min_required_params,
         body,
         is_generator,

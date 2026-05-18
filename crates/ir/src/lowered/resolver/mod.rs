@@ -494,6 +494,17 @@ impl Resolver {
                 } else {
                     self.lower_expr(expr)?
                 };
+                let arrow_closure = if let LoweredExpr::ArrowFn {
+                    func_id, captures, ..
+                } = &lowered
+                {
+                    Some(ArrowClosure {
+                        func_id: *func_id,
+                        captures: captures.clone(),
+                    })
+                } else {
+                    None
+                };
                 let lowered = if self.ctx.facts.env_cell_names.contains(name) {
                     self.ctx.facts.env_cell_locals.insert(local_id);
                     self.ctx.facts.initialized_env_cell_locals.insert(local_id);
@@ -507,17 +518,8 @@ impl Resolver {
                         .get_or_insert_with(HashMap::new)
                         .extend(lowered_props);
                 }
-                if let LoweredExpr::ArrowFn {
-                    func_id, captures, ..
-                } = &lowered
-                {
-                    self.ctx.facts.arrow_locals.insert(
-                        local_id,
-                        ArrowClosure {
-                            func_id: *func_id,
-                            captures: captures.clone(),
-                        },
-                    );
+                if let Some(closure) = arrow_closure {
+                    self.ctx.facts.arrow_locals.insert(local_id, closure);
                     if let Some(metadata_name) =
                         static_function_metadata_name_for_expr(&self.ctx, expr)
                     {
