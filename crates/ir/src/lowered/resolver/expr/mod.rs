@@ -421,6 +421,29 @@ impl super::Resolver {
                         span: Span::generated("eval_completion_if"),
                     });
                 }
+                EvalCompletionStep::While {
+                    condition,
+                    body_steps,
+                } => {
+                    let condition = self.lower_expr(condition)?;
+                    self.ctx.symbols.scopes.push(HashMap::new());
+                    let body = (|| {
+                        let mut body_stmts = Vec::new();
+                        self.lower_eval_completion_steps_into(
+                            body_steps,
+                            completion,
+                            caller_scope_index,
+                            &mut body_stmts,
+                        )?;
+                        Ok(body_stmts)
+                    })();
+                    self.ctx.symbols.scopes.pop();
+                    stmts.push(LoweredStmt::While {
+                        condition,
+                        body: body?,
+                        span: Span::generated("eval_completion_while"),
+                    });
+                }
                 EvalCompletionStep::LexicalLet { name, init } => {
                     stmts.push(self.lower_stmt(&ResolvedStmt::Let(name.clone(), init.clone()))?);
                 }

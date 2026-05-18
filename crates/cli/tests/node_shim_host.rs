@@ -207,6 +207,12 @@ fn static_direct_eval_while_var_is_hoisted_as_undefined() {
 }
 
 #[test]
+fn static_direct_eval_while_preserves_completion() {
+    let fixture = "fixtures/core-semantics/direct-eval-while-completion.ts";
+    assert_node_shim_stdout(fixture, "3\n3\n");
+}
+
+#[test]
 fn static_direct_eval_expression_reads_caller_local() {
     let fixture = "fixtures/core-semantics/direct-eval-expression-caller-local.ts";
     assert_node_shim_stdout(fixture, "3\n");

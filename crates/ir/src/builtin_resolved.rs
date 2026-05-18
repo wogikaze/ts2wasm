@@ -335,6 +335,10 @@ pub enum EvalCompletionStep {
         then_steps: Vec<EvalCompletionStep>,
         else_steps: Vec<EvalCompletionStep>,
     },
+    While {
+        condition: ResolvedExpr,
+        body_steps: Vec<EvalCompletionStep>,
+    },
     LexicalLet {
         name: String,
         init: ResolvedExpr,
@@ -356,6 +360,9 @@ impl EvalCompletionStep {
             | Self::Empty(Some(expr))
             | Self::VarLet { init: expr, .. }
             | Self::If {
+                condition: expr, ..
+            }
+            | Self::While {
                 condition: expr, ..
             }
             | Self::LexicalLet { init: expr, .. } => Some(expr),
