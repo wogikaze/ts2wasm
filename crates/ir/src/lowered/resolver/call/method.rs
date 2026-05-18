@@ -2390,6 +2390,15 @@ impl super::super::Resolver {
                         lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
                     }
                 }
+                "fill" => {
+                    // fill(value, start?, end?) — pad missing start/end with Undefined
+                    for arg in args.iter().take(3) {
+                        lowered_args.push(self.lower_expr(arg)?);
+                    }
+                    while lowered_args.len() < 4 {
+                        lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                    }
+                }
                 "slice" | "subarray" => {
                     for arg in args.iter().take(2) {
                         lowered_args.push(self.lower_expr(arg)?);
@@ -3174,6 +3183,10 @@ impl super::super::Resolver {
                     if (method == "indexOf" || method == "includes") && lowered_args.len() < 3 {
                         lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
                     }
+                    // $array_fill expects 4 params: $arr, $val, $start, $end
+                    if method == "fill" && lowered_args.len() < 4 {
+                        lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                    }
                 }
                 return Ok(Some(LoweredExpr::RuntimeCall {
                     intrinsic,
@@ -3349,6 +3362,10 @@ impl super::super::Resolver {
                 // $arr, $search, $from_idx. Pad missing fromIndex with 0.
                 if (method == "indexOf" || method == "includes") && lowered_args.len() < 3 {
                     lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
+                }
+                // $array_fill expects 4 params: $arr, $val, $start, $end
+                if method == "fill" && lowered_args.len() < 4 {
+                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
                 }
             }
             return Ok(Some(LoweredExpr::RuntimeCall {
@@ -3585,6 +3602,14 @@ impl super::super::Resolver {
                 lowered_args.push(LoweredExpr::String(",".to_owned(), Span::generated("str")));
             } else if is_array_like_class && method == "copyWithin" {
                 // copyWithin(target, start, end) — pad missing args with undefined
+                for arg in args.iter().take(3) {
+                    lowered_args.push(self.lower_expr(arg)?);
+                }
+                while lowered_args.len() < 4 {
+                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                }
+            } else if is_array_like_class && method == "fill" {
+                // fill(value, start?, end?) — pad missing args with undefined
                 for arg in args.iter().take(3) {
                     lowered_args.push(self.lower_expr(arg)?);
                 }
