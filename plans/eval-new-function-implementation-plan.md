@@ -531,12 +531,12 @@ Exit criteria:
   properties with primitive elements, nested object properties with primitive
   leaves, and strict lexical shadow isolation for local `let`. The host lane
   bridges thrown dynamic direct and indirect eval
-  errors into wasm `try/catch` for the supported env-descriptor slice. Lowering
-  also rejects dynamic direct eval before
+  errors into wasm `try/catch` for the supported env-descriptor slice, including
+  a catch binding that observes the bridged Error-like object when the binding is
+  not part of the eval env descriptor. Lowering also rejects dynamic direct eval before
   not-yet-initialized caller env bindings so the current host lane cannot bypass
-  TDZ semantics. Full declaration landing, full TDZ modeling, and direct-eval
-  catch-binding/error-object parity beyond the current env descriptor remain
-  open.
+  TDZ semantics. Full declaration landing, full TDZ modeling, and dynamic eval
+  inside catch bindings beyond the current env descriptor remain open.
 
 ### Phase 9: `$262.evalScript` / test262 ramp / cleanup
 

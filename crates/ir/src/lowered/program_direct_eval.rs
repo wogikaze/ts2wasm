@@ -81,12 +81,13 @@ fn collect_block_declared_names(stmts: &[ResolvedStmt], names: &mut HashSet<Stri
                 finally_block,
             } => {
                 collect_block_declared_names(try_block, names);
-                if let Some(catch_param) = catch_param
-                    && is_direct_eval_env_binding_name(catch_param)
-                {
-                    names.insert(catch_param.clone());
-                }
                 if let Some(block) = catch_block {
+                    if let Some(catch_param) = catch_param
+                        && block_contains_dynamic_direct_eval(block)
+                        && is_direct_eval_env_binding_name(catch_param)
+                    {
+                        names.insert(catch_param.clone());
+                    }
                     collect_block_declared_names(block, names);
                 }
                 if let Some(block) = finally_block {

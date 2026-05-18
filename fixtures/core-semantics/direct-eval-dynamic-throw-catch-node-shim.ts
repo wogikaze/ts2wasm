@@ -2,8 +2,9 @@ function f() {
   let source = "throw new Error('direct boom')";
   try {
     eval(source);
-  } catch {
-    console.log("caught direct boom");
+  } catch (err) {
+    console.log(err.name);
+    console.log(err.message);
   }
 }
 

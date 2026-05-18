@@ -221,7 +221,7 @@ fn dynamic_direct_eval_bridges_nested_objects_through_node_shim_host_import() {
 #[test]
 fn dynamic_direct_eval_bridges_thrown_errors_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-throw-catch-node-shim.ts";
-    assert_node_shim_stdout(fixture, "caught direct boom\n");
+    assert_node_shim_stdout(fixture, "Error\ndirect boom\n");
 }
 
 #[test]
