@@ -407,6 +407,14 @@ fn static_indirect_eval_declares_no_node_host_eval_capability() {
 }
 
 #[test]
+fn static_indirect_eval_global_scope_declares_no_node_host_eval_capability() {
+    assert_standalone_category(
+        "core-semantics/indirect-eval-static-global-scope.ts",
+        "static indirect eval global scope",
+    );
+}
+
+#[test]
 fn nested_static_direct_eval_declares_no_node_host_eval_capability() {
     assert_standalone_category(
         "core-semantics/direct-eval-nested-static.ts",
