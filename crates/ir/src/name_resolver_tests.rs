@@ -804,6 +804,25 @@ mod tests {
     }
 
     #[test]
+    fn resolver_keeps_shadowed_optional_eval_as_ordinary_optional_call() {
+        let builtins = parse_resolve_builtins(
+            "let eval = (source) => source; let value = eval?.(\"not intrinsic\");",
+        );
+        let crate::ResolvedStmt::Let(_, expr) = &builtins[1] else {
+            panic!("expected let statement: {builtins:?}");
+        };
+        let crate::ResolvedExpr::OptionalCall { callee, args, .. } = expr else {
+            panic!("expected shadowed optional eval to remain an optional call: {builtins:?}");
+        };
+
+        assert!(matches!(
+            callee.as_ref(),
+            crate::ResolvedExpr::Ident(name) if name == "eval"
+        ));
+        assert_eq!(args.len(), 1);
+    }
+
+    #[test]
     fn resolver_marks_unshadowed_static_function_constructor_call_for_compiler_expansion() {
         let builtins = parse_resolve_builtins("let value = Function(\"return 1\");");
         let crate::ResolvedStmt::Let(_, crate::ResolvedExpr::FunctionConstructor { plan }) =
