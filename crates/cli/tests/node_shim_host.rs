@@ -195,6 +195,18 @@ fn static_direct_eval_if_var_lands_in_caller_scope() {
 }
 
 #[test]
+fn static_direct_eval_if_var_is_hoisted_as_undefined() {
+    let fixture = "fixtures/core-semantics/direct-eval-if-var-hoisted-undefined.ts";
+    assert_node_shim_stdout(fixture, "undefined\nundefined\n");
+}
+
+#[test]
+fn static_direct_eval_while_var_is_hoisted_as_undefined() {
+    let fixture = "fixtures/core-semantics/direct-eval-while-var-hoisted-undefined.ts";
+    assert_node_shim_stdout(fixture, "undefined\nundefined\n");
+}
+
+#[test]
 fn static_direct_eval_expression_reads_caller_local() {
     let fixture = "fixtures/core-semantics/direct-eval-expression-caller-local.ts";
     assert_node_shim_stdout(fixture, "3\n");

@@ -786,7 +786,12 @@ fn expand_static_eval_source(
     let builtin_resolved = resolve_builtins(&name_resolved)?;
 
     Ok(StaticEvalExpansion {
-        expr: extract_completion_value(&program, builtin_resolved, leak_var_declarations)?,
+        expr: extract_completion_value(
+            &program,
+            builtin_resolved,
+            leak_var_declarations,
+            &eval_declarations,
+        )?,
         caller_var_declarations: eval_declarations,
     })
 }
@@ -1046,12 +1051,18 @@ fn extract_completion_value(
     ast_stmts: &[Stmt],
     stmts: Vec<ResolvedStmt>,
     leak_var_declarations: bool,
+    eval_declarations: &[String],
 ) -> Result<ResolvedExpr, Diagnostic> {
-    Ok(ResolvedExpr::EvalCompletion(eval_completion_steps(
+    let mut steps = Vec::new();
+    if !eval_declarations.is_empty() {
+        steps.push(EvalCompletionStep::HoistVars(eval_declarations.to_vec()));
+    }
+    steps.extend(eval_completion_steps(
         ast_stmts,
         stmts,
         leak_var_declarations,
-    )))
+    ));
+    Ok(ResolvedExpr::EvalCompletion(steps))
 }
 
 fn eval_completion_steps(

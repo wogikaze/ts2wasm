@@ -3134,8 +3134,10 @@ fn direct_eval_block_function_fixture_matches_node_output_under_iwasm() {
         "fixtures/core-semantics/direct-eval-block-function-block-scoping.ts",
         "fixtures/core-semantics/direct-eval-block-function-mutable-env.ts",
         "fixtures/core-semantics/direct-eval-block-var-lands-in-caller.ts",
+        "fixtures/core-semantics/direct-eval-if-var-hoisted-undefined.ts",
         "fixtures/core-semantics/direct-eval-if-var-lands-in-caller.ts",
         "fixtures/core-semantics/direct-eval-var-function-declaration.ts",
+        "fixtures/core-semantics/direct-eval-while-var-hoisted-undefined.ts",
         "fixtures/core-semantics/ordinary-function-direct-call.ts",
     ] {
         assert_fixture_matches_node(fixture);

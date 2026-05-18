@@ -295,6 +295,19 @@ impl super::Resolver {
 
         for step in steps {
             match step {
+                EvalCompletionStep::HoistVars(names) => {
+                    for name in names {
+                        let (local, existed) =
+                            self.declare_eval_var_in_caller_scope(name, caller_scope_index)?;
+                        if !existed {
+                            stmts.push(LoweredStmt::Let(
+                                local,
+                                LoweredExpr::Undefined(Span::generated("eval_var_hoist")),
+                                Span::generated("eval_var_hoist_let"),
+                            ));
+                        }
+                    }
+                }
                 EvalCompletionStep::Value(expr) => {
                     let value = self.lower_expr(expr)?;
                     stmts.push(LoweredStmt::Assign(

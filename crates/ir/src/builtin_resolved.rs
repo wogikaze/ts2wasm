@@ -315,6 +315,7 @@ pub enum EvalSource {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum EvalCompletionStep {
+    HoistVars(Vec<String>),
     Value(ResolvedExpr),
     Empty(Option<ResolvedExpr>),
     VarLet {
@@ -349,7 +350,9 @@ impl EvalCompletionStep {
                 condition: expr, ..
             }
             | Self::LexicalLet { init: expr, .. } => Some(expr),
-            Self::Empty(None) | Self::FunctionDecl { .. } | Self::Block(_) => None,
+            Self::HoistVars(_) | Self::Empty(None) | Self::FunctionDecl { .. } | Self::Block(_) => {
+                None
+            }
         }
     }
 }
