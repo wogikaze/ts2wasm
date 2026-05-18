@@ -886,6 +886,7 @@ directories:
     - direct-eval-caller-local.ts
     - direct-eval-dynamic-block-shadow-writeback-node-shim.ts
     - direct-eval-dynamic-local-writeback-node-shim.ts
+    - direct-eval-dynamic-object-result-node-shim.ts
     - direct-eval-dynamic-param-writeback-node-shim.ts
     - direct-eval-dynamic-strict-lexical-shadow-node-shim.ts
     - direct-eval-dynamic-string-writeback-node-shim.ts
@@ -917,6 +918,7 @@ directories:
     - function-constructor-dynamic-call-construct-host-path.ts
     - function-constructor-dynamic-host-path.ts
     - function-constructor-dynamic-node-shim.ts
+    - function-constructor-dynamic-object-node-shim.ts
     - function-constructor-dynamic-string-node-shim.ts
     - function-constructor-metadata.ts
     - function-constructor-no-caller-capture.ts

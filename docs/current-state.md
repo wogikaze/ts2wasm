@@ -344,14 +344,16 @@ The current implementation has several partial dynamic-code paths:
   write-back plus string result/write-back bridging and strict eval lexical
   shadow isolation for local `let`, while lowering rejects dynamic direct eval
   before not-yet-initialized caller env bindings to avoid TDZ-unsafe host
-  execution. Broader declaration landing, full TDZ modeling, object/error bridging, and
+  execution. The focused Node shim also bridges plain object results into empty
+  wasm object cells for default object stringification. Broader declaration
+  landing, full TDZ modeling, object property preservation, error bridging, and
   iwasm-differential coverage remain incomplete;
 - dynamic `Function` constructor compile and statically visible host-handle
   call/construct lower to the audited Node host lane with exact
   `host.function.compile`, `host.function.call`, and
   `host.function.construct` manifest entries and host-deny rejection. A focused
-  Node WebAssembly shim regression covers primitive/string-return calls and
-  discarded constructor calls for statically visible dynamic Function handles;
+  Node WebAssembly shim regression covers primitive/string/object-return calls
+  and discarded constructor calls for statically visible dynamic Function handles;
   the shim carries handles as object-tagged host external cells instead of
   number values.
 
@@ -363,9 +365,9 @@ completeness, broader host Function handle object/error bridging, and
 full dynamic direct-eval environment semantics beyond the primitive env-cell
 write-back slice. Node-shim execution for dynamic indirect eval and dynamic
 Function handles is covered by focused integration tests, as are primitive-return
-and primitive local/parameter/block-shadow/string write-back plus strict lexical
-shadow isolation and a TDZ-conflict diagnostic for dynamic direct eval, but not
-by the current iwasm-based differential runner.
+and primitive local/parameter/block-shadow/string write-back, object result
+bridging, strict lexical shadow isolation, and a TDZ-conflict diagnostic for
+dynamic direct eval, but not by the current iwasm-based differential runner.
 
 ## Known compiler limitations
 
