@@ -1034,7 +1034,8 @@ fn eval_statement_completion_expr(stmt: ResolvedStmt) -> ResolvedExpr {
             name,
             expr: Box::new(expr),
         },
-        ResolvedStmt::Let(_, expr) | ResolvedStmt::Return(expr) => expr,
+        ResolvedStmt::Let(_, expr) => ResolvedExpr::Sequence(vec![expr, ResolvedExpr::Undefined]),
+        ResolvedStmt::Return(expr) => expr,
         _ => ResolvedExpr::Undefined,
     }
 }
