@@ -3165,7 +3165,8 @@ impl super::super::Resolver {
             && match &args[0] {
                 ResolvedExpr::ArrowFn { .. }
                 | ResolvedExpr::FunctionExpr {
-                    is_generator: false, ..
+                    is_generator: false,
+                    ..
                 } => true,
                 ResolvedExpr::Ident(name) => {
                     self.ctx.symbols.function_ids.contains_key(name.as_str())
