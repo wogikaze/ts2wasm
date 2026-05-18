@@ -3496,9 +3496,7 @@ impl super::super::Resolver {
             );
             // ArrayJoin expects a separator argument. Inject "," for toString/toLocaleString
             // when no separator was explicitly passed.
-            if (method == "toString" || method == "toLocaleString")
-                && lowered_args.len() == 1
-            {
+            if (method == "toString" || method == "toLocaleString") && lowered_args.len() == 1 {
                 lowered_args.push(LoweredExpr::String(",".to_owned(), Span::generated("str")));
             }
             return Ok(Some(LoweredExpr::RuntimeCall {
