@@ -1250,16 +1250,6 @@ impl WatEmitter<'_> {
         ));
     }
 
-    pub(crate) fn emit_set_for_each(&self, wat: &mut String) {
-        wat.push_str(&format!(
-            r#"
-  (func $set_for_each (param $set i32) (param $callback i32) (result i32)
-    (i32.const {undefined}))
-"#,
-            undefined = ValueTag::UNDEFINED,
-        ));
-    }
-
     pub(crate) fn emit_map_clear(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -2000,16 +1990,6 @@ impl WatEmitter<'_> {
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
-            undefined = ValueTag::UNDEFINED,
-        ));
-    }
-
-    pub(crate) fn emit_map_for_each(&self, wat: &mut String) {
-        wat.push_str(&format!(
-            r#"
-  (func $map_for_each (param $map i32) (param $callback i32) (result i32)
-    (i32.const {undefined}))
-"#,
             undefined = ValueTag::UNDEFINED,
         ));
     }

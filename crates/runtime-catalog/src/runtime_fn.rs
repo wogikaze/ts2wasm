@@ -130,10 +130,8 @@ pub enum RuntimeFn {
     SetDelete,
     SetSize,
     SetClear,
-    SetForEach,
     MapClear,
     MapSize,
-    MapForEach,
     MapEntriesArray,
     MapEntryPairsArray,
     /// TypedArray constructor from array: new Uint8Array([1,2,3]), etc.
@@ -1383,7 +1381,6 @@ const SET_SIZE_DEPS: &[RuntimeFn] = &[];
 const SET_CLEAR_DEPS: &[RuntimeFn] = &[];
 const SET_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::SetNew, RuntimeFn::SetAdd];
 const SET_VALUES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
-const SET_FOR_EACH_DEPS: &[RuntimeFn] = &[];
 const SET_IS_DISJOINT_FROM_DEPS: &[RuntimeFn] = &[RuntimeFn::SetHas];
 const SET_IS_SUBSET_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::SetHas];
 const SET_IS_SUPERSET_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::SetHas];
@@ -1397,7 +1394,6 @@ const SET_SYMMETRIC_DIFFERENCE_DEPS: &[RuntimeFn] =
 const MAP_VALUES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const MAP_CLEAR_DEPS: &[RuntimeFn] = &[];
 const MAP_SIZE_DEPS: &[RuntimeFn] = &[];
-const MAP_FOR_EACH_DEPS: &[RuntimeFn] = &[];
 const MAP_ENTRIES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const MAP_ENTRY_PAIRS_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const TYPED_ARRAY_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Index];
@@ -1684,10 +1680,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "SetDelete" => Some(RuntimeFn::SetDelete),
         "SetSize" => Some(RuntimeFn::SetSize),
         "SetClear" => Some(RuntimeFn::SetClear),
-        "SetForEach" => Some(RuntimeFn::SetForEach),
         "MapClear" => Some(RuntimeFn::MapClear),
         "MapSize" => Some(RuntimeFn::MapSize),
-        "MapForEach" => Some(RuntimeFn::MapForEach),
         "MapEntriesArray" => Some(RuntimeFn::MapEntriesArray),
         "MapEntryPairsArray" => Some(RuntimeFn::MapEntryPairsArray),
         "TypedArrayFromArray" => Some(RuntimeFn::TypedArrayFromArray),
@@ -2135,10 +2129,8 @@ impl RuntimeFn {
             | Self::SetDelete
             | Self::SetSize
             | Self::SetClear
-            | Self::SetForEach
             | Self::MapClear
             | Self::MapSize
-            | Self::MapForEach
             | Self::MapEntriesArray
             | Self::MapEntryPairsArray
             | Self::SetFromArray
@@ -2714,10 +2706,8 @@ impl RuntimeFn {
             Self::SetDelete,
             Self::SetSize,
             Self::SetClear,
-            Self::SetForEach,
             Self::MapClear,
             Self::MapSize,
-            Self::MapForEach,
             Self::MapEntriesArray,
             Self::MapEntryPairsArray,
             Self::TypedArrayFromArray,
@@ -3196,10 +3186,8 @@ impl RuntimeFn {
             Self::SetDelete,
             Self::SetSize,
             Self::SetClear,
-            Self::SetForEach,
             Self::MapClear,
             Self::MapSize,
-            Self::MapForEach,
             Self::MapEntriesArray,
             Self::MapEntryPairsArray,
             Self::TypedArrayFromArray,

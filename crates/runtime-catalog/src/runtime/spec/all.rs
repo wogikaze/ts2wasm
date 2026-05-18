@@ -1514,14 +1514,6 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
-            Self::SetForEach => RuntimeSpec {
-                symbol: "$set_for_each",
-                deps: SET_FOR_EACH_DEPS,
-                imports: NO_IMPORTS,
-                capability: NO_CAPS,
-                runtime_strings: NO_RUNTIME_STRINGS,
-                result: RuntimeResult::Value,
-            },
             Self::MapClear => RuntimeSpec {
                 symbol: "$map_clear",
                 deps: MAP_CLEAR_DEPS,
@@ -1533,14 +1525,6 @@ match self {
             Self::MapSize => RuntimeSpec {
                 symbol: "$map_size",
                 deps: MAP_SIZE_DEPS,
-                imports: NO_IMPORTS,
-                capability: NO_CAPS,
-                runtime_strings: NO_RUNTIME_STRINGS,
-                result: RuntimeResult::Value,
-            },
-            Self::MapForEach => RuntimeSpec {
-                symbol: "$map_for_each",
-                deps: MAP_FOR_EACH_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
