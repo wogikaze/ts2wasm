@@ -25,6 +25,13 @@ fn dynamic_function_handle_returns_object_through_node_shim_host_imports() {
 }
 
 #[test]
+fn dynamic_function_handle_preserves_object_properties_through_node_shim_host_imports() {
+    let fixture =
+        "fixtures/core-semantics/function-constructor-dynamic-object-properties-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\nok\nundefined\n");
+}
+
+#[test]
 fn dynamic_indirect_eval_executes_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/indirect-eval-dynamic-node-shim.ts";
     assert_node_shim_stdout(fixture, "7\n");
@@ -64,6 +71,12 @@ fn dynamic_direct_eval_writes_back_string_env_cell_through_node_shim_host_import
 fn dynamic_direct_eval_returns_object_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-object-result-node-shim.ts";
     assert_node_shim_stdout(fixture, "[object Object]\n");
+}
+
+#[test]
+fn dynamic_direct_eval_preserves_object_properties_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-object-properties-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\nok\nundefined\n");
 }
 
 #[test]
@@ -165,6 +178,8 @@ const HEAP_MASK = -8;
 const ARRAY_HEADER_SIZE = 20;
 const ARRAY_PRESENCE_WORDS_OFFSET = 16;
 const OBJECT_HEADER_SIZE = 12;
+const OBJECT_ENTRIES_OFFSET = 12;
+const OBJECT_ENTRY_SIZE = 8;
 const GC_HEADER_SIZE = 16;
 const GC_FLAGS_AND_TYPE_OFFSET = 0;
 const GC_BODY_SIZE_OFFSET = 4;
@@ -292,14 +307,21 @@ function encodeHostFunctionHandle(index) {
   return ptr | TAG_OBJECT;
 }
 
-function encodeEmptyHostObject() {
-  const base = hostAlloc(GC_HEADER_SIZE + OBJECT_HEADER_SIZE);
+function encodeHostObject(value) {
+  const keys = Object.keys(value);
+  const size = OBJECT_HEADER_SIZE + keys.length * OBJECT_ENTRY_SIZE;
+  const base = hostAlloc(GC_HEADER_SIZE + size);
   view().setInt32(base + GC_FLAGS_AND_TYPE_OFFSET, GC_KIND_OBJECT, true);
-  view().setInt32(base + GC_BODY_SIZE_OFFSET, OBJECT_HEADER_SIZE, true);
+  view().setInt32(base + GC_BODY_SIZE_OFFSET, size, true);
   const ptr = base + GC_HEADER_SIZE;
-  view().setInt32(ptr, 0, true);
+  view().setInt32(ptr, keys.length, true);
   view().setInt32(ptr + 4, 0, true);
   view().setInt32(ptr + 8, 0, true);
+  for (let i = 0; i < keys.length; i += 1) {
+    const entry = ptr + OBJECT_ENTRIES_OFFSET + i * OBJECT_ENTRY_SIZE;
+    view().setInt32(entry, encodeString(keys[i]), true);
+    view().setInt32(entry + 4, encodeHostValue(value[keys[i]]), true);
+  }
   return ptr | TAG_OBJECT;
 }
 
@@ -321,7 +343,7 @@ function encodeHostValue(value) {
   if (value === true) return TAG_TRUE;
   if (Number.isInteger(value)) return (value << 3) | TAG_NUMBER;
   if (typeof value === 'string') return encodeString(value);
-  if (typeof value === 'object') return encodeEmptyHostObject();
+  if (typeof value === 'object') return encodeHostObject(value);
   throw new TypeError(`unsupported host return value for this test: ${String(value)}`);
 }
 
