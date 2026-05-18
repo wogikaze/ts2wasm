@@ -53,6 +53,19 @@ fn dynamic_function_handle_binds_this_for_function_properties_through_node_shim_
 }
 
 #[test]
+fn dynamic_function_handle_bridges_thrown_errors_through_node_shim_host_imports() {
+    let fixture = "fixtures/core-semantics/function-constructor-dynamic-throw-catch-node-shim.ts";
+    assert_node_shim_stdout(fixture, "Error\nfunction boom\n");
+}
+
+#[test]
+fn dynamic_function_compile_bridges_syntax_errors_through_node_shim_host_imports() {
+    let fixture =
+        "fixtures/core-semantics/function-constructor-dynamic-syntax-error-catch-node-shim.ts";
+    assert_node_shim_stdout(fixture, "SyntaxError\n");
+}
+
+#[test]
 fn dynamic_function_handle_preserves_object_identity_through_node_shim_host_imports() {
     let fixture =
         "fixtures/core-semantics/function-constructor-dynamic-object-identity-node-shim.ts";
@@ -134,6 +147,12 @@ fn dynamic_indirect_eval_preserves_object_properties_through_node_shim_host_impo
 }
 
 #[test]
+fn dynamic_indirect_eval_bridges_thrown_errors_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/indirect-eval-dynamic-throw-catch-node-shim.ts";
+    assert_node_shim_stdout(fixture, "Error\nindirect boom\n");
+}
+
+#[test]
 fn dynamic_direct_eval_executes_through_node_shim_host_import() {
     let fixture = "fixtures/builtins-and-io/dynamic-eval-host-path.ts";
     assert_node_shim_stdout(fixture, "3\n");
@@ -185,6 +204,12 @@ fn dynamic_direct_eval_preserves_object_identity_through_node_shim_host_import()
 fn dynamic_direct_eval_bridges_nested_arrays_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-nested-array-node-shim.ts";
     assert_node_shim_stdout(fixture, "2\n7\n8\nundefined\n");
+}
+
+#[test]
+fn dynamic_direct_eval_bridges_thrown_errors_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-throw-catch-node-shim.ts";
+    assert_node_shim_stdout(fixture, "caught direct boom\n");
 }
 
 #[test]
@@ -285,6 +310,7 @@ const TAG_MASK = 7;
 const HEAP_MASK = -8;
 const ARRAY_HEADER_SIZE = 20;
 const ARRAY_PRESENCE_WORDS_OFFSET = 16;
+const HOST_EXCEPTION_ARRAY_CAPACITY = -2;
 const OBJECT_HEADER_SIZE = 12;
 const OBJECT_ENTRIES_OFFSET = 12;
 const OBJECT_ENTRY_SIZE = 8;
@@ -595,6 +621,23 @@ function encodeHostValue(value) {
   throw new TypeError(`unsupported host return value for this test: ${String(value)}`);
 }
 
+function encodeHostException(error) {
+  const name = error && typeof error.name === 'string' ? error.name : 'Error';
+  const message = error && typeof error.message === 'string' ? error.message : String(error);
+  const errorRaw = encodeHostObject({ name, message });
+  const base = hostAlloc(GC_HEADER_SIZE + ARRAY_HEADER_SIZE + 4);
+  view().setInt32(base + GC_FLAGS_AND_TYPE_OFFSET, GC_KIND_ARRAY, true);
+  view().setInt32(base + GC_BODY_SIZE_OFFSET, ARRAY_HEADER_SIZE + 4, true);
+  const ptr = base + GC_HEADER_SIZE;
+  view().setInt32(ptr, 1, true);
+  view().setInt32(ptr + 4, HOST_EXCEPTION_ARRAY_CAPACITY, true);
+  view().setInt32(ptr + 8, 1, true);
+  view().setInt32(ptr + 12, ARRAY_HEADER_SIZE, true);
+  view().setUint32(ptr + ARRAY_PRESENCE_WORDS_OFFSET, 1, true);
+  view().setInt32(ptr + ARRAY_HEADER_SIZE, errorRaw, true);
+  return ptr | TAG_ARRAY;
+}
+
 function uniqueInternalName(base, names) {
   let name = base;
   while (names.includes(name)) {
@@ -662,38 +705,62 @@ const imports = {
   },
   host: {
     'eval.direct'(sourceRaw, envRaw) {
-      const result = evalWithEnvDescriptor(decodeString(sourceRaw), envRaw);
-      return encodeHostValue(result);
+      try {
+        const result = evalWithEnvDescriptor(decodeString(sourceRaw), envRaw);
+        return encodeHostValue(result);
+      } catch (error) {
+        return encodeHostException(error);
+      }
     },
     'eval.indirect'(sourceRaw, _envRaw) {
-      const result = globalThis.eval(decodeString(sourceRaw));
-      return encodeHostValue(result);
+      try {
+        const result = globalThis.eval(decodeString(sourceRaw));
+        return encodeHostValue(result);
+      } catch (error) {
+        return encodeHostException(error);
+      }
     },
     'function.compile'(argsRaw) {
-      const args = decodeArgs(argsRaw);
-      const fn = Function(...args);
-      return encodeHostFunctionValue(fn);
+      try {
+        const args = decodeArgs(argsRaw);
+        const fn = Function(...args);
+        return encodeHostFunctionValue(fn);
+      } catch (error) {
+        return encodeHostException(error);
+      }
     },
     'function.call'(handleRaw, argsRaw) {
-      const fn = hostFunctions[decodeHostFunctionHandle(handleRaw)];
-      if (typeof fn !== 'function') {
-        throw new TypeError(`unknown host function handle: ${handleRaw}`);
+      try {
+        const fn = hostFunctions[decodeHostFunctionHandle(handleRaw)];
+        if (typeof fn !== 'function') {
+          throw new TypeError(`unknown host function handle: ${handleRaw}`);
+        }
+        return encodeHostValue(fn(...decodeArgs(argsRaw)));
+      } catch (error) {
+        return encodeHostException(error);
       }
-      return encodeHostValue(fn(...decodeArgs(argsRaw)));
     },
     'function.callMethod'(handleRaw, receiverRaw, argsRaw) {
-      const fn = hostFunctions[decodeHostFunctionHandle(handleRaw)];
-      if (typeof fn !== 'function') {
-        throw new TypeError(`unknown host function handle: ${handleRaw}`);
+      try {
+        const fn = hostFunctions[decodeHostFunctionHandle(handleRaw)];
+        if (typeof fn !== 'function') {
+          throw new TypeError(`unknown host function handle: ${handleRaw}`);
+        }
+        return encodeHostValue(fn.apply(decodeHostReceiver(receiverRaw), decodeArgs(argsRaw)));
+      } catch (error) {
+        return encodeHostException(error);
       }
-      return encodeHostValue(fn.apply(decodeHostReceiver(receiverRaw), decodeArgs(argsRaw)));
     },
     'function.construct'(handleRaw, argsRaw) {
-      const fn = hostFunctions[decodeHostFunctionHandle(handleRaw)];
-      if (typeof fn !== 'function') {
-        throw new TypeError(`unknown host function handle: ${handleRaw}`);
+      try {
+        const fn = hostFunctions[decodeHostFunctionHandle(handleRaw)];
+        if (typeof fn !== 'function') {
+          throw new TypeError(`unknown host function handle: ${handleRaw}`);
+        }
+        return encodeHostValue(Reflect.construct(fn, decodeArgs(argsRaw)));
+      } catch (error) {
+        return encodeHostException(error);
       }
-      return encodeHostValue(Reflect.construct(fn, decodeArgs(argsRaw)));
     },
   },
 };

@@ -485,8 +485,9 @@ Exit criteria:
   receiver-bound method calls, and carries handles as wasm object cells backed
   by host-side handle maps instead of number values. The focused shim forwards
   already-returned host object and array references when the backing JS value
-  outgrows its first wasm record; remaining work is error bridging and a
-  runtime-wide host external object contract beyond the focused shim.
+  outgrows its first wasm record, and bridges host-thrown dynamic Function
+  compile/call errors into wasm `try/catch`; remaining work is a runtime-wide
+  host external object contract beyond the focused shim.
 
 Exit criteria:
 
@@ -527,10 +528,13 @@ Exit criteria:
   result/write-back bridging, object result default stringification,
   string-keyed primitive object property reads, object identity, nested array
   properties with primitive elements, and strict lexical shadow isolation for
-  local `let`. Lowering also rejects dynamic direct eval before
+  local `let`. The host lane bridges thrown dynamic direct and indirect eval
+  errors into wasm `try/catch` for the supported env-descriptor slice. Lowering
+  also rejects dynamic direct eval before
   not-yet-initialized caller env bindings so the current host lane cannot bypass
   TDZ semantics. Full declaration landing, full TDZ modeling, nested
-  non-primitive properties, and error bridge semantics remain open.
+  non-primitive properties, and direct-eval catch-binding/error-object parity
+  beyond the current env descriptor remain open.
 
 ### Phase 9: `$262.evalScript` / test262 ramp / cleanup
 

@@ -893,6 +893,7 @@ directories:
     - direct-eval-dynamic-param-writeback-node-shim.ts
     - direct-eval-dynamic-strict-lexical-shadow-node-shim.ts
     - direct-eval-dynamic-string-writeback-node-shim.ts
+    - direct-eval-dynamic-throw-catch-node-shim.ts
     - direct-eval-dynamic-tdz-conflict-unsupported.ts
     - direct-eval-unsupported.ts
     - duplicate-class-decl-unsupported.ts
@@ -937,6 +938,8 @@ directories:
     - function-constructor-dynamic-object-properties-node-shim.ts
     - function-constructor-dynamic-object-shape-node-shim.ts
     - function-constructor-dynamic-string-node-shim.ts
+    - function-constructor-dynamic-syntax-error-catch-node-shim.ts
+    - function-constructor-dynamic-throw-catch-node-shim.ts
     - function-constructor-metadata.ts
     - function-constructor-no-caller-capture.ts
     - function-constructor-shadowed-ordinary-call.ts
@@ -956,6 +959,7 @@ directories:
     - indirect-eval-dynamic-host-path.ts
     - indirect-eval-dynamic-node-shim.ts
     - indirect-eval-dynamic-object-properties-node-shim.ts
+    - indirect-eval-dynamic-throw-catch-node-shim.ts
     - indirect-eval-static.ts
     - in-operator-prototype.ts
     - in-operator.ts

@@ -65,6 +65,35 @@ fn push_math_unary_identity(wat: &mut String, symbol: &str) {
     ));
 }
 
+fn host_exception_bridge_wat(result_local: &str) -> String {
+    format!(
+        r#"(if
+    (i32.and
+      (i32.eq
+        (i32.and (local.get ${result_local}) (i32.const {tag_mask}))
+        (i32.const {array_tag}))
+      (i32.eq
+        (i32.load
+          (i32.add
+            (i32.and (local.get ${result_local}) (i32.const {heap_mask}))
+            (i32.const {capacity_offset})))
+        (i32.const -2)))
+    (then
+      (global.set $exception_pending
+        (i32.load
+          (i32.add
+            (i32.and (local.get ${result_local}) (i32.const {heap_mask}))
+            (i32.const {array_header}))))
+      (return (i32.const {undefined}))))"#,
+        tag_mask = ValueTag::TAG_MASK,
+        array_tag = ValueTag::ARRAY,
+        heap_mask = ValueTag::HEAP_MASK,
+        capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
+        array_header = Layout::ARRAY_HEADER_SIZE,
+        undefined = ValueTag::UNDEFINED,
+    )
+}
+
 impl WatEmitter<'_> {
     pub(crate) fn emit_math_floor(&self, wat: &mut String) {
         wat.push_str(&format!(
@@ -3302,40 +3331,46 @@ impl WatEmitter<'_> {
         // If it IS a string, call the host shim import ($host_eval_direct) to evaluate it.
         let string_tag = ts2wasm_runtime_abi::value::ValueTag::STRING;
         wat.push_str(&format!(
-            "(func $eval_direct_host (param $source i32) (param $env i32) (result i32)\n  (if (i32.eq (i32.and (local.get $source) (i32.const 7)) (i32.const {}))\n    (then (return (call $host_eval_direct (local.get $source) (local.get $env))))\n  )\n  local.get $source\n)\n",
-            string_tag
+            "(func $eval_direct_host (param $source i32) (param $env i32) (result i32)\n  (local $result i32)\n  (if (i32.eq (i32.and (local.get $source) (i32.const 7)) (i32.const {}))\n    (then\n      (local.set $result (call $host_eval_direct (local.get $source) (local.get $env)))\n      {}\n      (return (local.get $result))))\n  local.get $source\n)\n",
+            string_tag,
+            host_exception_bridge_wat("result")
         ));
     }
     pub(crate) fn emit_eval_indirect_host(&self, wat: &mut String) {
         let string_tag = ts2wasm_runtime_abi::value::ValueTag::STRING;
         wat.push_str(&format!(
-            "(func $eval_indirect_host (param $source i32) (result i32)\n  (if (i32.eq (i32.and (local.get $source) (i32.const 7)) (i32.const {}))\n    (then (return (call $host_eval_indirect (local.get $source) (i32.const 0))))\n  )\n  local.get $source\n)\n",
-            string_tag
+            "(func $eval_indirect_host (param $source i32) (result i32)\n  (local $result i32)\n  (if (i32.eq (i32.and (local.get $source) (i32.const 7)) (i32.const {}))\n    (then\n      (local.set $result (call $host_eval_indirect (local.get $source) (i32.const 0)))\n      {}\n      (return (local.get $result))))\n  local.get $source\n)\n",
+            string_tag,
+            host_exception_bridge_wat("result")
         ));
     }
 
     pub(crate) fn emit_function_compile_host(&self, wat: &mut String) {
-        wat.push_str(
-            "(func $function_compile_host (param $args i32) (result i32)\n  (call $host_function_compile (local.get $args))\n)\n",
-        );
+        wat.push_str(&format!(
+            "(func $function_compile_host (param $args i32) (result i32)\n  (local $result i32)\n  (local.set $result (call $host_function_compile (local.get $args)))\n  {}\n  (local.get $result)\n)\n",
+            host_exception_bridge_wat("result")
+        ));
     }
 
     pub(crate) fn emit_function_call_host(&self, wat: &mut String) {
-        wat.push_str(
-            "(func $function_call_host (param $handle i32) (param $args i32) (result i32)\n  (call $host_function_call (local.get $handle) (local.get $args))\n)\n",
-        );
+        wat.push_str(&format!(
+            "(func $function_call_host (param $handle i32) (param $args i32) (result i32)\n  (local $result i32)\n  (local.set $result (call $host_function_call (local.get $handle) (local.get $args)))\n  {}\n  (local.get $result)\n)\n",
+            host_exception_bridge_wat("result")
+        ));
     }
 
     pub(crate) fn emit_function_call_method_host(&self, wat: &mut String) {
-        wat.push_str(
-            "(func $function_call_method_host (param $handle i32) (param $receiver i32) (param $args i32) (result i32)\n  (call $host_function_call_method (local.get $handle) (local.get $receiver) (local.get $args))\n)\n",
-        );
+        wat.push_str(&format!(
+            "(func $function_call_method_host (param $handle i32) (param $receiver i32) (param $args i32) (result i32)\n  (local $result i32)\n  (local.set $result (call $host_function_call_method (local.get $handle) (local.get $receiver) (local.get $args)))\n  {}\n  (local.get $result)\n)\n",
+            host_exception_bridge_wat("result")
+        ));
     }
 
     pub(crate) fn emit_function_construct_host(&self, wat: &mut String) {
-        wat.push_str(
-            "(func $function_construct_host (param $handle i32) (param $args i32) (result i32)\n  (call $host_function_construct (local.get $handle) (local.get $args))\n)\n",
-        );
+        wat.push_str(&format!(
+            "(func $function_construct_host (param $handle i32) (param $args i32) (result i32)\n  (local $result i32)\n  (local.set $result (call $host_function_construct (local.get $handle) (local.get $args)))\n  {}\n  (local.get $result)\n)\n",
+            host_exception_bridge_wat("result")
+        ));
     }
 
     pub(crate) fn emit_generator_yield(&self, wat: &mut String) {
