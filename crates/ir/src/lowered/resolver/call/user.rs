@@ -402,6 +402,7 @@ impl super::super::Resolver {
         // and deserve a more precise diagnostic.
         if let Ok(local_id) = self.resolve_local(func_name)
             && self.ctx.facts.nullish_locals.contains(&local_id)
+            && !self.ctx.facts.env_cell_locals.contains(&local_id)
         {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -445,8 +446,12 @@ impl super::super::Resolver {
                 // runtime handles both DirectLocalToken and HeapObject
                 // closure representations.
                 let closure_local = self.resolve_local(func_name).unwrap();
-                let mut lowered_args =
-                    vec![LoweredExpr::Local(closure_local, Span::generated("local"))];
+                let closure_value = if self.ctx.facts.env_cell_locals.contains(&closure_local) {
+                    LoweredExpr::EnvCellGet(closure_local, Span::generated("env_cell_get"))
+                } else {
+                    LoweredExpr::Local(closure_local, Span::generated("local"))
+                };
+                let mut lowered_args = vec![closure_value];
                 lowered_args.extend(self.lower_call_args(args)?);
                 return Ok(LoweredExpr::RuntimeCall {
                     intrinsic: RuntimeFn::HeapClosureCall,
@@ -680,6 +685,20 @@ impl super::super::Resolver {
             Self::direct_return_this_iife_result(self.ctx.is_strict_context(), params, body, args)
         {
             return Ok(result);
+        }
+        if !is_generator
+            && params.is_empty()
+            && args.is_empty()
+            && !block_contains_return_statement(body)
+        {
+            self.ctx.symbols.scopes.push(HashMap::new());
+            let lowered = self.lower_block(body);
+            self.ctx.symbols.scopes.pop();
+            return Ok(LoweredExpr::Block {
+                stmts: lowered?,
+                result: Box::new(LoweredExpr::Undefined(Span::generated("iife"))),
+                span,
+            });
         }
         if params.iter().any(|param| param.is_rest) {
             return Err(Diagnostic {
@@ -1310,6 +1329,60 @@ impl super::super::Resolver {
                 phase: None,
             }),
         }
+    }
+}
+
+fn block_contains_return_statement(stmts: &[ResolvedStmt]) -> bool {
+    stmts.iter().any(stmt_contains_return_statement)
+}
+
+fn stmt_contains_return_statement(stmt: &ResolvedStmt) -> bool {
+    match stmt {
+        ResolvedStmt::Return(_) => true,
+        ResolvedStmt::If {
+            then_body,
+            else_body,
+            ..
+        } => {
+            block_contains_return_statement(then_body) || block_contains_return_statement(else_body)
+        }
+        ResolvedStmt::While { body, .. }
+        | ResolvedStmt::DoWhile { body, .. }
+        | ResolvedStmt::For { body, .. }
+        | ResolvedStmt::ForIn { body, .. }
+        | ResolvedStmt::ForOf { body, .. }
+        | ResolvedStmt::ForAwaitOf { body, .. }
+        | ResolvedStmt::Block { statements: body } => block_contains_return_statement(body),
+        ResolvedStmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            block_contains_return_statement(try_block)
+                || catch_block
+                    .as_deref()
+                    .is_some_and(block_contains_return_statement)
+                || finally_block
+                    .as_deref()
+                    .is_some_and(block_contains_return_statement)
+        }
+        ResolvedStmt::Switch { cases, .. } => cases
+            .iter()
+            .any(|(_, body)| block_contains_return_statement(body)),
+        ResolvedStmt::Labeled { body, .. } => stmt_contains_return_statement(body),
+        ResolvedStmt::Let(_, _)
+        | ResolvedStmt::DestructureLet { .. }
+        | ResolvedStmt::Assign(_, _)
+        | ResolvedStmt::Expr(_)
+        | ResolvedStmt::Throw(_)
+        | ResolvedStmt::Function { .. }
+        | ResolvedStmt::ClassDecl { .. }
+        | ResolvedStmt::Break { .. }
+        | ResolvedStmt::Continue { .. }
+        | ResolvedStmt::Export { .. }
+        | ResolvedStmt::ModuleExportsAssign { .. }
+        | ResolvedStmt::AmbientValue(_) => false,
     }
 }
 

@@ -41,6 +41,7 @@ impl super::super::Resolver {
             local,
         );
         let expr = Box::new(self.lower_expr(expr)?);
+        self.ctx.facts.nullish_locals.remove(&local);
         if self.ctx.facts.env_cell_locals.contains(&local) {
             Ok(LoweredExpr::EnvCellSet {
                 cell: local,

@@ -958,18 +958,24 @@ mod tests {
     }
 
     #[test]
-    fn expands_direct_eval_literal_statements_in_caller_scope() {
+    fn preserves_direct_eval_literal_statement_for_resolver_classification() {
         let program =
             parse_program("function f() { let x = \"before\"; eval('x = \"after\";'); return x; }")
                 .unwrap();
         let Stmt::Function { body, .. } = &program[0] else {
             panic!("expected function statement");
         };
-        assert!(matches!(body[1], Stmt::Assign { ref name, .. } if name == "x"));
+        assert!(matches!(
+            &body[1],
+            Stmt::Expr {
+                expr: Expr::Call { .. },
+                ..
+            }
+        ));
     }
 
     #[test]
-    fn expands_direct_eval_existing_block_function_residuals() {
+    fn preserves_direct_eval_existing_block_function_residuals() {
         let program = parse_program(
             "function f() { let init; eval('init = f;{ function f() {} }{ function f() {} }'); return init; }",
         )
@@ -980,13 +986,11 @@ mod tests {
 
         assert!(matches!(
             &body[1],
-            Stmt::Let {
-                name,
-                expr: Expr::Undefined { .. },
+            Stmt::Expr {
+                expr: Expr::Call { .. },
                 ..
-            } if name == "f"
+            }
         ));
-        assert!(matches!(&body[2], Stmt::Assign { name, .. } if name == "init"));
     }
 
     #[test]
@@ -1015,12 +1019,17 @@ mod tests {
     }
 
     #[test]
-    fn expands_direct_eval_existing_block_function_suffix_with_asi() {
+    fn preserves_direct_eval_existing_block_function_suffix_with_asi() {
         let program =
             parse_program("eval('init = f; { function f() {} }{ function f() {  } }');").unwrap();
-        assert_eq!(program.len(), 2);
-        assert!(matches!(&program[0], Stmt::Let { name, .. } if name == "f"));
-        assert!(matches!(&program[1], Stmt::Assign { name, .. } if name == "init"));
+        assert_eq!(program.len(), 1);
+        assert!(matches!(
+            &program[0],
+            Stmt::Expr {
+                expr: Expr::Call { .. },
+                ..
+            }
+        ));
     }
 
     #[test]

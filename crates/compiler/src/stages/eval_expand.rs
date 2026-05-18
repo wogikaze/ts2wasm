@@ -24,7 +24,7 @@ use ts2wasm_syntax::{Expr, FunctionExprOrigin, Stmt};
 /// constructor calls are left for the host.function.* lane.
 ///
 /// Runtime-source eval is left as-is for the host lane.
-pub(crate) fn expand_static_eval_fragments(
+pub fn expand_static_eval_fragments(
     resolved: Vec<ResolvedStmt>,
 ) -> Result<Vec<ResolvedStmt>, Diagnostic> {
     let mut ctx = EvalExpansionContext::new();
@@ -780,9 +780,16 @@ fn expand_static_eval_source(
         resolve_names_with_outer_bindings(&program, &effective_outer_bindings)?
     };
     let builtin_resolved = resolve_builtins(&name_resolved)?;
+    let mut nested_ctx = EvalExpansionContext::new();
+    for binding in &effective_outer_bindings {
+        nested_ctx.declare(binding.clone());
+    }
+    let builtin_resolved = expand_stmts(builtin_resolved, &mut nested_ctx)?;
+    let (program, builtin_resolved) =
+        remove_post_prefix_block_function_decls(program, builtin_resolved, src);
     let mut function_hoists = Vec::new();
     if leak_var_declarations {
-        collect_eval_function_hoists(&builtin_resolved, &mut function_hoists);
+        collect_eval_function_hoists(&program, &builtin_resolved, src, &mut function_hoists);
     }
 
     Ok(StaticEvalExpansion {
@@ -795,6 +802,34 @@ fn expand_static_eval_source(
         )?,
         caller_var_declarations: eval_declarations,
     })
+}
+
+fn remove_post_prefix_block_function_decls(
+    ast_stmts: Vec<Stmt>,
+    stmts: Vec<ResolvedStmt>,
+    source: &str,
+) -> (Vec<Stmt>, Vec<ResolvedStmt>) {
+    let mut filtered_ast = Vec::new();
+    let mut filtered_resolved = Vec::new();
+    let mut saw_prior_stmt = false;
+
+    for (ast_stmt, resolved_stmt) in ast_stmts.into_iter().zip(stmts) {
+        let drop_block_function = matches!(
+            (&ast_stmt, &resolved_stmt),
+            (
+                Stmt::Function { span, .. },
+                ResolvedStmt::Function { .. }
+            ) if saw_prior_stmt && function_decl_is_preceded_by_block_open(source, *span)
+        );
+        if drop_block_function {
+            continue;
+        }
+        saw_prior_stmt = true;
+        filtered_ast.push(ast_stmt);
+        filtered_resolved.push(resolved_stmt);
+    }
+
+    (filtered_ast, filtered_resolved)
 }
 
 fn validate_static_eval_source(program: &[Stmt]) -> Result<(), Diagnostic> {
@@ -2435,8 +2470,13 @@ fn collect_eval_var_declaration_names(stmts: &[Stmt], out: &mut Vec<String>) {
     }
 }
 
-fn collect_eval_function_hoists(stmts: &[ResolvedStmt], out: &mut Vec<EvalFunctionHoist>) {
-    for stmt in stmts {
+fn collect_eval_function_hoists(
+    ast_stmts: &[Stmt],
+    stmts: &[ResolvedStmt],
+    source: &str,
+    out: &mut Vec<EvalFunctionHoist>,
+) {
+    for (index, stmt) in stmts.iter().enumerate() {
         match stmt {
             ResolvedStmt::Function {
                 name,
@@ -2444,30 +2484,44 @@ fn collect_eval_function_hoists(stmts: &[ResolvedStmt], out: &mut Vec<EvalFuncti
                 body,
                 is_async,
                 ..
-            } => out.push(EvalFunctionHoist {
-                name: name.clone(),
-                params: params.clone(),
-                body: body.clone(),
-                is_async: *is_async,
-            }),
-            ResolvedStmt::Block { statements } => collect_eval_function_hoists(statements, out),
+            } => {
+                let is_block_function = matches!(
+                    ast_stmts.get(index),
+                    Some(Stmt::Function { span, .. })
+                        if function_decl_is_preceded_by_block_open(source, *span)
+                );
+                if !is_block_function {
+                    out.push(EvalFunctionHoist {
+                        name: name.clone(),
+                        params: params.clone(),
+                        body: body.clone(),
+                        is_async: *is_async,
+                    });
+                }
+            }
+            // Block-level function declarations are Annex B execution-time
+            // bindings. Keep their caller var hoist as undefined, but do not
+            // initialize them before preceding eval-code statements.
+            ResolvedStmt::Block { .. } => {}
             ResolvedStmt::If {
                 then_body,
                 else_body,
                 ..
             } => {
-                collect_eval_function_hoists(then_body, out);
-                collect_eval_function_hoists(else_body, out);
+                collect_eval_function_hoists(&[], then_body, source, out);
+                collect_eval_function_hoists(&[], else_body, source, out);
             }
             ResolvedStmt::While { body, .. }
             | ResolvedStmt::DoWhile { body, .. }
             | ResolvedStmt::For { body, .. }
             | ResolvedStmt::ForIn { body, .. }
             | ResolvedStmt::ForOf { body, .. }
-            | ResolvedStmt::ForAwaitOf { body, .. } => collect_eval_function_hoists(body, out),
+            | ResolvedStmt::ForAwaitOf { body, .. } => {
+                collect_eval_function_hoists(&[], body, source, out);
+            }
             ResolvedStmt::Switch { cases, .. } => {
                 for (_, body) in cases {
-                    collect_eval_function_hoists(body, out);
+                    collect_eval_function_hoists(&[], body, source, out);
                 }
             }
             ResolvedStmt::TryCatch {
@@ -2476,18 +2530,25 @@ fn collect_eval_function_hoists(stmts: &[ResolvedStmt], out: &mut Vec<EvalFuncti
                 finally_block,
                 ..
             } => {
-                collect_eval_function_hoists(try_block, out);
+                collect_eval_function_hoists(&[], try_block, source, out);
                 if let Some(catch_block) = catch_block {
-                    collect_eval_function_hoists(catch_block, out);
+                    collect_eval_function_hoists(&[], catch_block, source, out);
                 }
                 if let Some(finally_block) = finally_block {
-                    collect_eval_function_hoists(finally_block, out);
+                    collect_eval_function_hoists(&[], finally_block, source, out);
                 }
             }
             ResolvedStmt::Labeled { body, .. } => {
-                collect_eval_function_hoists(std::slice::from_ref(body.as_ref()), out);
+                collect_eval_function_hoists(&[], std::slice::from_ref(body.as_ref()), source, out);
             }
             _ => {}
         }
     }
+}
+
+fn function_decl_is_preceded_by_block_open(source: &str, span: Span) -> bool {
+    source
+        .get(..span.start)
+        .and_then(|prefix| prefix.chars().rev().find(|ch| !ch.is_whitespace()))
+        == Some('{')
 }

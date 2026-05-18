@@ -314,10 +314,24 @@ impl super::Resolver {
                     for name in names {
                         let (local, existed) =
                             self.declare_eval_var_in_caller_scope(name, caller_scope_index)?;
+                        if self.ctx.facts.env_cell_names.contains(name) {
+                            self.ctx.facts.env_cell_locals.insert(local);
+                            self.ctx.facts.initialized_env_cell_locals.insert(local);
+                        }
                         if !existed {
+                            let init = if self.ctx.facts.env_cell_locals.contains(&local) {
+                                LoweredExpr::EnvCellNew(
+                                    Box::new(LoweredExpr::Undefined(Span::generated(
+                                        "eval_var_hoist",
+                                    ))),
+                                    Span::generated("eval_var_hoist_cell"),
+                                )
+                            } else {
+                                LoweredExpr::Undefined(Span::generated("eval_var_hoist"))
+                            };
                             stmts.push(LoweredStmt::Let(
                                 local,
-                                LoweredExpr::Undefined(Span::generated("eval_var_hoist")),
+                                init,
                                 Span::generated("eval_var_hoist_let"),
                             ));
                         }
@@ -965,9 +979,40 @@ impl super::Resolver {
         scope_index: usize,
     ) -> Result<LoweredStmt, Diagnostic> {
         let (local_id, existed) = self.declare_eval_var_in_caller_scope(name, scope_index)?;
-        if self.ctx.facts.env_cell_names.contains(name) {
+        let self_mutates = block_assigns_any_name(body, &[name.to_owned()]);
+        let mut env_cell_conversions = Vec::new();
+        let capture_names = self.nested_function_capture_names(name, params, body)?;
+        for capture in capture_names {
+            if !block_assigns_any_name(body, std::slice::from_ref(&capture))
+                || self.ctx.facts.env_cell_names.contains(&capture)
+            {
+                continue;
+            }
+            let capture_local = self.resolve_local(&capture)?;
+            self.ctx.facts.env_cell_names.insert(capture);
+            self.ctx.facts.env_cell_locals.insert(capture_local);
+            self.ctx
+                .facts
+                .initialized_env_cell_locals
+                .insert(capture_local);
+            self.ctx.facts.nullish_locals.remove(&capture_local);
+            env_cell_conversions.push(LoweredStmt::Assign(
+                capture_local,
+                LoweredExpr::EnvCellNew(
+                    Box::new(LoweredExpr::Local(
+                        capture_local,
+                        Span::generated("eval_capture_current"),
+                    )),
+                    Span::generated("eval_capture_env_cell_new"),
+                ),
+                Span::generated("eval_capture_env_cell_assign"),
+            ));
+        }
+        if self.ctx.facts.env_cell_names.contains(name) || self_mutates {
+            self.ctx.facts.env_cell_names.insert(name.to_owned());
             self.ctx.facts.env_cell_locals.insert(local_id);
             self.ctx.facts.initialized_env_cell_locals.insert(local_id);
+            self.ctx.facts.nullish_locals.remove(&local_id);
         }
         let closure = self.lower_nested_function(name, params, body, is_async)?;
         if let LoweredExpr::ArrowFn {
@@ -992,14 +1037,33 @@ impl super::Resolver {
         self.ctx.facts.nullish_locals.remove(&local_id);
         if self.ctx.facts.env_cell_locals.contains(&local_id) {
             if existed {
-                Ok(LoweredStmt::Expr(
+                let set_closure = LoweredStmt::Expr(
                     LoweredExpr::EnvCellSet {
                         cell: local_id,
                         expr: Box::new(closure),
                         span: Span::generated("env_cell_set"),
                     },
                     Span::generated("expr_stmt"),
-                ))
+                );
+                if self_mutates || !env_cell_conversions.is_empty() {
+                    if self_mutates {
+                        env_cell_conversions.push(LoweredStmt::Assign(
+                            local_id,
+                            LoweredExpr::EnvCellNew(
+                                Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+                                Span::generated("env_cell_new"),
+                            ),
+                            Span::generated("eval_function_env_cell_assign"),
+                        ));
+                    }
+                    env_cell_conversions.push(set_closure);
+                    Ok(LoweredStmt::Block(
+                        env_cell_conversions,
+                        Span::generated("block"),
+                    ))
+                } else {
+                    Ok(set_closure)
+                }
             } else {
                 Ok(LoweredStmt::Block(
                     vec![

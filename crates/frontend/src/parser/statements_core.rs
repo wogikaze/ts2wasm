@@ -10,11 +10,6 @@ impl Parser {
         source: &str,
     ) -> Self {
         let has_preceding_newline = compute_newline_flags(source, &tokens);
-        let possible_eval_shadowing = tokens
-            .iter()
-            .filter(|token| matches!(&token.kind, Token::Ident(name) if name == "eval"))
-            .count()
-            > 1;
         Self {
             tokens,
             cursor: 0,
@@ -22,7 +17,6 @@ impl Parser {
             typescript_generic_functions: HashSet::new(),
             parenthesized_expr_spans: HashSet::new(),
             pending_statements: Vec::new(),
-            possible_eval_shadowing,
             has_preceding_newline,
             in_async_fn: false,
             in_generator_fn: false,

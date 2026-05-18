@@ -6,6 +6,15 @@ fn parse_and_resolve(source: &str) -> Vec<ts2wasm_ir::builtin_resolved::Resolved
     ts2wasm_ir::builtin_resolver::resolve_builtins(&program).unwrap()
 }
 
+fn parse_resolve_and_expand_static_eval(
+    source: &str,
+) -> Vec<ts2wasm_ir::builtin_resolved::ResolvedStmt> {
+    let program = ts2wasm_cli::parse_program(source).unwrap();
+    let named = ts2wasm_ir::name_resolver::resolve_names(&program).unwrap();
+    let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&named).unwrap();
+    ts2wasm_compiler::stages::eval_expand::expand_static_eval_fragments(resolved).unwrap()
+}
+
 #[test]
 fn lowering_pads_object_get_own_property_descriptor_static_call_arity() {
     use ts2wasm_ir::lowered::{LoweredExpr, LoweredStmt};
@@ -254,7 +263,7 @@ fn lowering_initializes_direct_eval_catch_binding_env_cell() {
 fn lowering_passes_static_direct_eval_function_declaration_capture() {
     use ts2wasm_ir::lowered::{FuncId, FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
 
-    let program = parse_and_resolve(
+    let program = parse_resolve_and_expand_static_eval(
         r#"
         function outer() {
           eval("var x = 1; function g() { return x; }");
@@ -270,12 +279,12 @@ fn lowering_passes_static_direct_eval_function_declaration_capture() {
         outer.body.last(),
         Some(LoweredStmt::Return(
             LoweredExpr::Call {
-                kind: FunctionCallKind::User(FuncId(1)),
+                kind: FunctionCallKind::User(FuncId(2)),
                 args,
                 ..
             },
             _
-        )) if matches!(args.as_slice(), [LoweredExpr::Local(LocalId(0), _)])
+        )) if matches!(args.as_slice(), [LoweredExpr::Local(LocalId(1), _)])
     ));
 }
 
@@ -819,7 +828,7 @@ fn lowering_hoists_direct_eval_block_function_to_enclosing_function_scope() {
         ClosureRepresentation, FuncId, FunctionCallKind, LocalId, LoweredExpr, LoweredStmt,
     };
 
-    let program = parse_and_resolve(
+    let program = parse_resolve_and_expand_static_eval(
         r#"
         function outer() {
           eval('{ function f() { return 1; } }');
@@ -832,21 +841,34 @@ fn lowering_hoists_direct_eval_block_function_to_enclosing_function_scope() {
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
 
     let outer = &lowered.functions[0];
-    assert_eq!(outer.locals, vec![LocalId(0)]);
+    assert_eq!(outer.locals, vec![LocalId(0), LocalId(1)]);
     assert!(matches!(
         outer.body.as_slice(),
         [
-            LoweredStmt::Let(
-                LocalId(0),
-                LoweredExpr::ArrowFn {
-                    func_id: FuncId(1),
-                    captures,
-                    representation: ClosureRepresentation::DirectLocalToken, ..},
-             _),
+            LoweredStmt::Expr(
+                LoweredExpr::Block { stmts, .. },
+                _
+            ),
             LoweredStmt::Return(LoweredExpr::Call {
                 kind: FunctionCallKind::User(FuncId(1)),
                 args, ..}, _),
-        ] if captures.is_empty() && args.is_empty()
+        ] if matches!(
+            stmts.as_slice(),
+            [
+                LoweredStmt::Let(LocalId(0), LoweredExpr::Undefined(_), _),
+                LoweredStmt::Let(LocalId(1), LoweredExpr::Undefined(_), _),
+                LoweredStmt::Assign(
+                    LocalId(1),
+                    LoweredExpr::ArrowFn {
+                        func_id: FuncId(1),
+                        captures,
+                        representation: ClosureRepresentation::DirectLocalToken,
+                        ..
+                    },
+                    _
+                ),
+            ] if captures.is_empty()
+        ) && args.is_empty()
     ));
     assert!(matches!(
         lowered.functions[1].body.as_slice(),

@@ -6,6 +6,7 @@ use std::{fmt::Write as _, fs, path::Path};
 use super::{
     backend, build_multi_section_file, lowered, split_file_name_sections, test262_preprocessor,
 };
+use crate::stages::eval_expand::expand_static_eval_fragments;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_frontend::{Lexer, Parser, validate_type_reference_directives};
 use ts2wasm_ir::builtin_resolved::ResolvedStmt;
@@ -198,6 +199,7 @@ fn build_dump_pipeline(
     let name_resolved = ts2wasm_ir::name_resolver::resolve_names(&ast)?;
     eprintln!("[pipeline] resolve_builtins");
     let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&name_resolved)?;
+    let resolved = expand_static_eval_fragments(resolved)?;
     super::validate_typescript_semantics_for_path(input, &resolved)?;
     eprintln!("[pipeline] build_typed_ir");
     let typed_ir = build_typed_ir(&resolved);

@@ -1,8 +1,8 @@
 use super::types::*;
 use crate::binding_pattern::parse_binding_pattern;
 use crate::builtin_resolved::{
-    ClassMethodKind, ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedParam,
-    ResolvedStmt,
+    ClassMethodKind, EvalCompletionStep, ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp,
+    ResolvedParam, ResolvedStmt,
 };
 use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
 use crate::lowered::facts::{
@@ -1610,9 +1610,7 @@ pub(crate) fn collect_nested_function_captures_in_expr(
         }
         ResolvedExpr::EvalCompletion(steps) => {
             for step in steps {
-                if let Some(expr) = step.expr() {
-                    collect_nested_function_captures_in_expr(expr, outer_excluded, captures)?;
-                }
+                collect_nested_function_captures_in_eval_step(step, outer_excluded, captures)?;
             }
         }
         ResolvedExpr::ArrowFn { .. }
@@ -1630,6 +1628,111 @@ pub(crate) fn collect_nested_function_captures_in_expr(
         | ResolvedExpr::Null
         | ResolvedExpr::Undefined => {}
         ResolvedExpr::Eval { .. } => {}
+    }
+    Ok(())
+}
+
+fn collect_nested_function_captures_in_eval_step(
+    step: &EvalCompletionStep,
+    outer_excluded: &HashSet<String>,
+    captures: &mut Vec<String>,
+) -> Result<(), Diagnostic> {
+    match step {
+        EvalCompletionStep::FunctionDecl { params, body, .. } => {
+            let mut nested_excluded = outer_excluded.clone();
+            nested_excluded.extend(resolved_param_names(params)?);
+            collect_declared_names_in_stmts(body, &mut nested_excluded);
+            collect_stmt_captures(body, &nested_excluded, captures);
+            collect_nested_function_captures_in_stmts(body, &nested_excluded, captures)?;
+        }
+        EvalCompletionStep::HoistFunctions(functions) => {
+            for function in functions {
+                let mut nested_excluded = outer_excluded.clone();
+                nested_excluded.extend(resolved_param_names(&function.params)?);
+                collect_declared_names_in_stmts(&function.body, &mut nested_excluded);
+                collect_stmt_captures(&function.body, &nested_excluded, captures);
+                collect_nested_function_captures_in_stmts(
+                    &function.body,
+                    &nested_excluded,
+                    captures,
+                )?;
+            }
+        }
+        EvalCompletionStep::Block(steps) => {
+            for step in steps {
+                collect_nested_function_captures_in_eval_step(step, outer_excluded, captures)?;
+            }
+        }
+        EvalCompletionStep::If {
+            then_steps,
+            else_steps,
+            ..
+        } => {
+            for step in then_steps.iter().chain(else_steps) {
+                collect_nested_function_captures_in_eval_step(step, outer_excluded, captures)?;
+            }
+        }
+        EvalCompletionStep::While { body_steps, .. }
+        | EvalCompletionStep::DoWhile { body_steps, .. }
+        | EvalCompletionStep::ForIn { body_steps, .. }
+        | EvalCompletionStep::ForOf { body_steps, .. } => {
+            for step in body_steps {
+                collect_nested_function_captures_in_eval_step(step, outer_excluded, captures)?;
+            }
+        }
+        EvalCompletionStep::For {
+            init, body_steps, ..
+        } => {
+            if let Some(init) = init {
+                collect_nested_function_captures_in_eval_step(init, outer_excluded, captures)?;
+            }
+            for step in body_steps {
+                collect_nested_function_captures_in_eval_step(step, outer_excluded, captures)?;
+            }
+        }
+        EvalCompletionStep::Switch { cases, .. } => {
+            for (_, steps) in cases {
+                for step in steps {
+                    collect_nested_function_captures_in_eval_step(step, outer_excluded, captures)?;
+                }
+            }
+        }
+        EvalCompletionStep::TryCatch {
+            try_steps,
+            catch_steps,
+            finally_steps,
+            ..
+        } => {
+            for step in try_steps {
+                collect_nested_function_captures_in_eval_step(step, outer_excluded, captures)?;
+            }
+            if let Some(steps) = catch_steps {
+                for step in steps {
+                    collect_nested_function_captures_in_eval_step(step, outer_excluded, captures)?;
+                }
+            }
+            if let Some(steps) = finally_steps {
+                for step in steps {
+                    collect_nested_function_captures_in_eval_step(step, outer_excluded, captures)?;
+                }
+            }
+        }
+        EvalCompletionStep::Labeled { body, .. } => {
+            collect_nested_function_captures_in_eval_step(body, outer_excluded, captures)?;
+        }
+        EvalCompletionStep::Value(_)
+        | EvalCompletionStep::Empty(_)
+        | EvalCompletionStep::VarLet { .. }
+        | EvalCompletionStep::DestructureLet { .. }
+        | EvalCompletionStep::LexicalLet { .. }
+        | EvalCompletionStep::ClassDecl { .. }
+        | EvalCompletionStep::Throw(_)
+        | EvalCompletionStep::Break { .. }
+        | EvalCompletionStep::Continue { .. }
+        | EvalCompletionStep::HoistVars(_) => {}
+    }
+    if let Some(expr) = step.expr() {
+        collect_nested_function_captures_in_expr(expr, outer_excluded, captures)?;
     }
     Ok(())
 }
@@ -2279,9 +2382,7 @@ fn collect_expr_nested_function_mutable_captures(
         }
         ResolvedExpr::EvalCompletion(steps) => {
             for step in steps {
-                if let Some(expr) = step.expr() {
-                    collect_expr_nested_function_mutable_captures(expr, mutable_captures)?;
-                }
+                collect_eval_step_nested_function_mutable_captures(step, mutable_captures)?;
             }
         }
         ResolvedExpr::ClassExpr { .. }
@@ -2298,6 +2399,106 @@ fn collect_expr_nested_function_mutable_captures(
         | ResolvedExpr::Null
         | ResolvedExpr::Eval { .. } => {}
         ResolvedExpr::Undefined => {}
+    }
+    Ok(())
+}
+
+fn collect_eval_step_nested_function_mutable_captures(
+    step: &EvalCompletionStep,
+    mutable_captures: &mut HashSet<String>,
+) -> Result<(), Diagnostic> {
+    match step {
+        EvalCompletionStep::FunctionDecl { params, body, .. } => {
+            mutable_captures.extend(collect_function_expr_mutable_captures(params, body)?);
+            collect_block_nested_function_mutable_captures_into(body, mutable_captures)?;
+        }
+        EvalCompletionStep::HoistFunctions(functions) => {
+            for function in functions {
+                mutable_captures.extend(collect_function_expr_mutable_captures(
+                    &function.params,
+                    &function.body,
+                )?);
+                collect_block_nested_function_mutable_captures_into(
+                    &function.body,
+                    mutable_captures,
+                )?;
+            }
+        }
+        EvalCompletionStep::Block(steps) => {
+            for step in steps {
+                collect_eval_step_nested_function_mutable_captures(step, mutable_captures)?;
+            }
+        }
+        EvalCompletionStep::If {
+            then_steps,
+            else_steps,
+            ..
+        } => {
+            for step in then_steps.iter().chain(else_steps) {
+                collect_eval_step_nested_function_mutable_captures(step, mutable_captures)?;
+            }
+        }
+        EvalCompletionStep::While { body_steps, .. }
+        | EvalCompletionStep::DoWhile { body_steps, .. }
+        | EvalCompletionStep::ForIn { body_steps, .. }
+        | EvalCompletionStep::ForOf { body_steps, .. } => {
+            for step in body_steps {
+                collect_eval_step_nested_function_mutable_captures(step, mutable_captures)?;
+            }
+        }
+        EvalCompletionStep::For {
+            init, body_steps, ..
+        } => {
+            if let Some(init) = init {
+                collect_eval_step_nested_function_mutable_captures(init, mutable_captures)?;
+            }
+            for step in body_steps {
+                collect_eval_step_nested_function_mutable_captures(step, mutable_captures)?;
+            }
+        }
+        EvalCompletionStep::Switch { cases, .. } => {
+            for (_, steps) in cases {
+                for step in steps {
+                    collect_eval_step_nested_function_mutable_captures(step, mutable_captures)?;
+                }
+            }
+        }
+        EvalCompletionStep::TryCatch {
+            try_steps,
+            catch_steps,
+            finally_steps,
+            ..
+        } => {
+            for step in try_steps {
+                collect_eval_step_nested_function_mutable_captures(step, mutable_captures)?;
+            }
+            if let Some(steps) = catch_steps {
+                for step in steps {
+                    collect_eval_step_nested_function_mutable_captures(step, mutable_captures)?;
+                }
+            }
+            if let Some(steps) = finally_steps {
+                for step in steps {
+                    collect_eval_step_nested_function_mutable_captures(step, mutable_captures)?;
+                }
+            }
+        }
+        EvalCompletionStep::Labeled { body, .. } => {
+            collect_eval_step_nested_function_mutable_captures(body, mutable_captures)?;
+        }
+        EvalCompletionStep::Value(_)
+        | EvalCompletionStep::Empty(_)
+        | EvalCompletionStep::VarLet { .. }
+        | EvalCompletionStep::DestructureLet { .. }
+        | EvalCompletionStep::LexicalLet { .. }
+        | EvalCompletionStep::ClassDecl { .. }
+        | EvalCompletionStep::Throw(_)
+        | EvalCompletionStep::Break { .. }
+        | EvalCompletionStep::Continue { .. }
+        | EvalCompletionStep::HoistVars(_) => {}
+    }
+    if let Some(expr) = step.expr() {
+        collect_expr_nested_function_mutable_captures(expr, mutable_captures)?;
     }
     Ok(())
 }

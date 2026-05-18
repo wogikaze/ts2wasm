@@ -29,25 +29,25 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | 領域 | 現在の実装 | 重要度 |
 |---|---|---|
 | resolver/compiler expression-level literal eval | resolver が unshadowed `eval` を `ResolvedExpr::Eval` に分類し、`crates/compiler/src/stages/eval_expand.rs` が `let r = eval("1 + 2")` や `eval("1; 2;")` を compile-time に展開する | completion value の足場が入った |
-| parser statement-level direct eval | `crates/frontend/src/parser/statements_general.rs::direct_eval_literal_statements` が `eval('x = "after";')` を caller statement 群へ展開する | caller local mutation の static slice が動く |
-| Annex B block function slice | `static_block_function_eval_expansion` と `crates/ir/src/lowered/program_direct_eval.rs` が supported direct-eval block function fixtures を通す | eval-code function hoist の難所に着手済み |
+| parser statement-level direct eval | parser-side `direct_eval_literal_statements` / `possible_eval_shadowing` splice は削除済み。statement position の `eval("...")` も AST call shape を保持し、resolver + compiler eval-expand へ流れる | parser rewrite 依存を削減 |
+| Annex B block function slice | supported direct-eval block function fixtures は compiler eval-expand の `EvalCompletionStep` と `crates/ir/src/lowered/program_direct_eval.rs` 経由で通る | eval-code function hoist の難所に着手済み |
 | indirect eval parser rejection | `globalThis.eval("x")`、`globalThis["eval"]("x")`、`(0, eval)("x")` は parser reject ではなく後段へ流れる | Phase 4/5 の土台 |
 | optional eval classification | `eval?.(src)` は parser shape を保持し、unshadowed optional eval を indirect eval として既存 host/static lane へ流す | optional-call nullish/shadowing edge の拡張 |
 | resolved eval IR | `ResolvedExpr::Eval { plan: EvalFragmentPlan }`、`EvalKind::{Direct, Indirect}`、`EvalSource::{StaticLiteral, Runtime}` が存在する | 統一 IR への入口 |
-| compiler eval expansion stage | `crates/compiler/src/stages/eval_expand.rs` が static direct / indirect `ResolvedExpr::Eval` を parse / resolve / builtin-resolve して completion expression へ置換し、nested function/class bodies と parameter defaults も再帰的に処理する | parser rewrite から IR rewrite へ移行する素材 |
+| compiler eval expansion stage | `crates/compiler/src/stages/eval_expand.rs` が static direct / indirect `ResolvedExpr::Eval` を parse / resolve / builtin-resolve して completion expression へ置換し、nested static eval、nested function/class bodies、parameter defaults も再帰的に処理する | parser rewrite から IR rewrite へ移行する素材 |
 | literal `Function` constructor | resolver が unshadowed `Function(...)` / `new Function(...)` を internal constructor markers に分類し、compiler eval-expand stage が literal-only args を synthetic `FunctionExpr` に変換する | static `Function` AOT lane の初期 slice |
-| build/server dynamic-code stage parity | `pipeline.rs` と `server.rs` はどちらも `expand_static_eval_fragments` を通し、server lowering focused test が host eval runtime call の残存を検出する | batch/server path でも static AOT lane を維持 |
+| build/server/dump dynamic-code stage parity | `pipeline.rs`、`server.rs`、dump pipeline は `expand_static_eval_fragments` を通し、server lowering focused test が host eval runtime call の残存を検出する | batch/server/dump path でも static AOT lane を維持 |
 | runtime catalog symbols | `RuntimeFn::EvalDirectHost` / `EvalIndirectHost` がある | host lane の名前だけはある |
 
 ### 2.2 まだ危険な点
 
 | Gap | 現状 | 必要な修正 |
 |---|---|---|
-| eval path が 3 つある | parser expression rewrite、parser statement rewrite、compiler `ResolvedExpr::Eval` rewrite が併存 | canonical path を `DynamicCodePlan` / `EvalFragment` に一本化する |
-| parser が binding-sensitive 判断をしている | statement-level direct eval expansion still uses the `possible_eval_shadowing` token count heuristic. `Function` constructor classification has moved to resolver lexical binding checks | remaining eval intrinsic / shadowed decisions should move fully to resolver facts |
-| `EvalKind` が lowering で無視される | `ResolvedExpr::Eval` は direct/indirect に関係なく `RuntimeFn::EvalDirectHost` へ lower される | direct / indirect / host-global-only / full-direct を別 lowering にする |
-| host runtime fn が host import ではない | `EvalDirectHost` / `EvalIndirectHost` は `NO_IMPORTS` / `NO_CAPS` で、string source は runtime WAT で `unreachable` | runtime catalog に real `HostImport` / `Capability` を追加し、stub trap を事前 diagnostic に置換する |
-| compiler server path parity の regression 化 | `pipeline.rs` と `server.rs` はどちらも `expand_static_eval_fragments` を呼ぶ | parity test を維持し、今後の `DynamicCodePlan` 移行時にも両 path で同じ stage を通す |
+| eval path がまだ段階的 | parser statement rewrite は削除済みだが、compiler eval-expand と lower-time dynamic host lane が併存 | canonical path を `DynamicCodePlan` / `EvalFragment` に一本化する |
+| parser が binding-sensitive 判断をしている | eval / Function の intrinsic 判定は resolver 側へ移行済み。parser は eval call shape を保持する | optional-call nullish など残 edge を resolver facts で扱う |
+| `EvalKind` の lowering 分岐 | lowering は direct を `RuntimeFn::EvalDirectHost`、indirect を `RuntimeFn::EvalIndirectHost` へ分ける | static/direct/indirect/host-global/full-direct の plan 情報をさらに明示する |
+| host runtime fn coverage | `host.eval.*` / `host.function.*` manifest and host-deny slices は focused 実装済み | runtime-wide host external object contract と broader audit を進める |
+| compiler server dump path parity の regression 化 | `pipeline.rs`、`server.rs`、dump pipeline は `expand_static_eval_fragments` を呼ぶ | parity test を維持し、今後の `DynamicCodePlan` 移行時にも各 path で同じ stage を通す |
 | `caller_is_strict` が未接続 | builtin resolver で `false` 固定 | parser/resolver から strict context を伝搬する |
 | static eval declaration completion が不安定 | `compiler/src/stages/eval_expand.rs::extract_completion_value` は statement を expression に潰すだけで、declaration environment を caller へ接続しない | eval-code statement lowering と completion slot を導入する |
 | `Function` constructor grammar が簡易 | parameter strings を `join(", ")` して synthetic function を parse するのみ | ECMAScript Function constructor の parameter/body parse rules、strict restrictions、SyntaxError timing を明示実装する |
@@ -269,7 +269,8 @@ Exit criteria:
   carries eval kind/source/strict/span through an explicit plan object; remaining
   work is to enrich that plan with scope/declaration/completion records.
 - unshadowed direct eval 判定を resolver に移す。
-- `possible_eval_shadowing` heuristic による parser rejection を削る。
+- `possible_eval_shadowing` heuristic による parser-side statement splice は削除済み。
+- nested static eval と EvalCompletion 内 function declaration の mutable-capture env-cell planning は compiler/lowering 側で guarded。
 - direct eval source を caller scope context で name resolve する。
 - eval fragment 内の declarations を caller env / eval lexical env に正しく接続する。
 - eval expression result は `EvalCompletionSlot` 経由で戻す。
@@ -608,14 +609,14 @@ Exit criteria:
 
 | File / area | 変更方針 |
 |---|---|
-| `crates/frontend/src/parser/eval_expand.rs` | Removed for `Function` constructor expression rewriting; remaining parser-side dynamic-code compatibility is statement-level direct eval in `statements_general.rs`. |
-| `crates/frontend/src/parser/statements_general.rs` | `direct_eval_literal_statements` の parser semantic rewrite を `EvalFragment` lowering へ移す。 |
+| `crates/frontend/src/parser/eval_expand.rs` | Removed for `Function` constructor expression rewriting. |
+| `crates/frontend/src/parser/statements_general.rs` | `direct_eval_literal_statements` parser semantic rewrite is removed; eval statements now preserve call shape for resolver/compiler expansion. |
 | `crates/frontend/src/parser/expressions_main.rs` | `eval?.()` は optional-call shape を保持し、resolver で indirect eval classification へ渡す。 |
 | `crates/resolve/src/name_resolver.rs` | intrinsic / shadowed eval・Function 判定、strict context、scope id を管理する。未使用 diagnostic helper を整理する。 |
 | `crates/ir/src/builtin_resolved.rs` | `EvalFragmentPlan` / `FunctionConstructorPlan` を追加または既存 `Eval` を拡張する。 |
 | `crates/ir/src/builtin_resolver.rs` | direct / indirect / Function constructor classification を resolver facts に基づいて行う。 |
 | `crates/compiler/src/stages/eval_expand.rs` | canonical stage にする場合は caller/global scope context を受ける。そうでなければ削除する。 |
-| `crates/compiler/src/pipeline.rs` / `server.rs` | eval expansion / dynamic-code lowering stage parity を保証する。 |
+| `crates/compiler/src/pipeline.rs` / `server.rs` / `dump/mod.rs` | eval expansion / dynamic-code lowering stage parity を保証する。 |
 | `crates/ir/src/lowered/program_direct_eval.rs` | Annex B block function support を `EvalBlockFunctionPlan` として一般化する。 |
 | `crates/ir/src/lowered/resolver/expr/mod.rs` | `EvalKind` を無視せず、static / host / unsupported を分岐する。 |
 | `crates/runtime-catalog/src/host_import.rs` | eval / function host imports を追加する。 |
