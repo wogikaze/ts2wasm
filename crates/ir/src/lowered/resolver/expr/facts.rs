@@ -7,7 +7,7 @@ use super::super::{
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp};
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::StaticFunctionArrayLike;
-use crate::lowered::facts::{GeneratorIteratorBinding, ProxyBinding};
+use crate::lowered::facts::{GeneratorIteratorBinding, HostExternalKind, ProxyBinding};
 use crate::lowered::*;
 use crate::name_resolver::{
     INTRINSIC_FUNCTION_CONSTRUCTOR_CALL, INTRINSIC_FUNCTION_CONSTRUCTOR_NEW,
@@ -44,11 +44,11 @@ pub(crate) fn update_host_function_handle_local(
     local_id: LocalId,
     expr: &ResolvedExpr,
 ) {
-    if resolved_expr_is_dynamic_function_constructor(ctx, expr) {
-        ctx.facts.host_function_handle_locals.insert(local_id);
-    } else {
-        ctx.facts.host_function_handle_locals.remove(&local_id);
-    }
+    ctx.facts.mark_host_external(
+        local_id,
+        HostExternalKind::FunctionHandle,
+        resolved_expr_is_dynamic_function_constructor(ctx, expr),
+    );
 }
 
 fn resolved_expr_is_dynamic_function_constructor(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
@@ -65,10 +65,10 @@ fn resolved_expr_is_dynamic_function_constructor(ctx: &LoweringCtx, expr: &Resol
         } if class_name == INTRINSIC_FUNCTION_CONSTRUCTOR_NEW => args
             .iter()
             .any(|arg| !matches!(arg, ResolvedExpr::String(_))),
-        ResolvedExpr::Ident(name) => ctx
-            .resolve_local(name)
-            .ok()
-            .is_some_and(|local_id| ctx.facts.host_function_handle_locals.contains(&local_id)),
+        ResolvedExpr::Ident(name) => ctx.resolve_local(name).ok().is_some_and(|local_id| {
+            ctx.facts
+                .is_host_external(local_id, HostExternalKind::FunctionHandle)
+        }),
         ResolvedExpr::PropertyAccess { object, .. } => {
             resolved_expr_is_host_external_object(ctx, object)
         }
@@ -84,11 +84,11 @@ pub(crate) fn update_host_external_object_local(
     local_id: LocalId,
     expr: &ResolvedExpr,
 ) {
-    if resolved_expr_returns_host_external_object(ctx, expr) {
-        ctx.facts.host_external_object_locals.insert(local_id);
-    } else {
-        ctx.facts.host_external_object_locals.remove(&local_id);
-    }
+    ctx.facts.mark_host_external(
+        local_id,
+        HostExternalKind::Object,
+        resolved_expr_returns_host_external_object(ctx, expr),
+    );
 }
 
 pub(crate) fn resolved_expr_is_host_external_object(
@@ -96,10 +96,10 @@ pub(crate) fn resolved_expr_is_host_external_object(
     expr: &ResolvedExpr,
 ) -> bool {
     match expr {
-        ResolvedExpr::Ident(name) => ctx
-            .resolve_local(name)
-            .ok()
-            .is_some_and(|local_id| ctx.facts.host_external_object_locals.contains(&local_id)),
+        ResolvedExpr::Ident(name) => ctx.resolve_local(name).ok().is_some_and(|local_id| {
+            ctx.facts
+                .is_host_external(local_id, HostExternalKind::Object)
+        }),
         _ => false,
     }
 }
@@ -114,14 +114,16 @@ fn resolved_expr_returns_host_external_object(ctx: &LoweringCtx, expr: &Resolved
         {
             true
         }
-        ResolvedExpr::New { class_name, .. } => ctx
-            .resolve_local(class_name)
-            .ok()
-            .is_some_and(|local_id| ctx.facts.host_function_handle_locals.contains(&local_id)),
-        ResolvedExpr::Ident(name) => ctx
-            .resolve_local(name)
-            .ok()
-            .is_some_and(|local_id| ctx.facts.host_external_object_locals.contains(&local_id)),
+        ResolvedExpr::New { class_name, .. } => {
+            ctx.resolve_local(class_name).ok().is_some_and(|local_id| {
+                ctx.facts
+                    .is_host_external(local_id, HostExternalKind::FunctionHandle)
+            })
+        }
+        ResolvedExpr::Ident(name) => ctx.resolve_local(name).ok().is_some_and(|local_id| {
+            ctx.facts
+                .is_host_external(local_id, HostExternalKind::Object)
+        }),
         _ => false,
     }
 }

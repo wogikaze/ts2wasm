@@ -1,5 +1,5 @@
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
-use crate::lowered::facts::ProxyTrapKind;
+use crate::lowered::facts::{HostExternalKind, ProxyTrapKind};
 use crate::lowered::*;
 use crate::name_resolver::INTRINSIC_FUNCTION_CONSTRUCTOR_NEW;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -50,8 +50,7 @@ impl super::super::Resolver {
             && self
                 .ctx
                 .facts
-                .host_function_handle_locals
-                .contains(&local_id)
+                .is_host_external(local_id, HostExternalKind::FunctionHandle)
         {
             let args_array = ResolvedExpr::Array(
                 args.iter()

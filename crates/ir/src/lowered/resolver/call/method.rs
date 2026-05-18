@@ -16,8 +16,8 @@ use crate::builtin_resolved::{
 use crate::lowered::classes::ObjectAccessorKey;
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::{
-    GeneratorMethodIteratorBinding, GeneratorObjectResumePlan, IntlDateTimeFormatOptions,
-    IntlNumberFormatOptions, ProxyTrapKind,
+    GeneratorMethodIteratorBinding, GeneratorObjectResumePlan, HostExternalKind,
+    IntlDateTimeFormatOptions, IntlNumberFormatOptions, ProxyTrapKind,
 };
 use crate::lowered::*;
 use std::collections::HashMap;
@@ -3829,8 +3829,7 @@ impl super::super::Resolver {
                 if self
                     .ctx
                     .facts
-                    .host_external_object_locals
-                    .contains(&obj_local)
+                    .is_host_external(obj_local, HostExternalKind::Object)
                 {
                     let args_array = ResolvedExpr::Array(
                         args.iter()

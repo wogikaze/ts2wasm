@@ -119,6 +119,35 @@ pub struct StaticFacts {
     pub intl_date_time_format_locals: HashMap<LocalId, IntlDateTimeFormatOptions>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HostExternalKind {
+    FunctionHandle,
+    Object,
+}
+
+impl StaticFacts {
+    pub fn mark_host_external(&mut self, local_id: LocalId, kind: HostExternalKind, present: bool) {
+        let set = match kind {
+            HostExternalKind::FunctionHandle => &mut self.host_function_handle_locals,
+            HostExternalKind::Object => &mut self.host_external_object_locals,
+        };
+        if present {
+            set.insert(local_id);
+        } else {
+            set.remove(&local_id);
+        }
+    }
+
+    pub fn is_host_external(&self, local_id: LocalId, kind: HostExternalKind) -> bool {
+        match kind {
+            HostExternalKind::FunctionHandle => {
+                self.host_function_handle_locals.contains(&local_id)
+            }
+            HostExternalKind::Object => self.host_external_object_locals.contains(&local_id),
+        }
+    }
+}
+
 /// Tracks the known elements of a function-parameter-based array-like value
 /// (e.g., `function(a, b, c) { ... }` where we track assignments to indices).
 #[derive(Debug, Clone)]

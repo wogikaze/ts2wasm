@@ -6,7 +6,7 @@ use crate::builtin_resolved::{
     ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedParam, ResolvedStmt,
 };
 use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
-use crate::lowered::facts::{FunctionMethodKind, ProxyTrapKind};
+use crate::lowered::facts::{FunctionMethodKind, HostExternalKind, ProxyTrapKind};
 use crate::lowered::*;
 use crate::name_resolver::INTRINSIC_FUNCTION_CONSTRUCTOR_CALL;
 use std::collections::HashMap;
@@ -419,8 +419,7 @@ impl super::super::Resolver {
             && self
                 .ctx
                 .facts
-                .host_function_handle_locals
-                .contains(&local_id)
+                .is_host_external(local_id, HostExternalKind::FunctionHandle)
         {
             let args_array = ResolvedExpr::Array(
                 args.iter()
