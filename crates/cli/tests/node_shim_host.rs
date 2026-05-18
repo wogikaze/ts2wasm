@@ -138,6 +138,14 @@ fn dynamic_function_handle_exposes_metadata_through_node_shim_host_imports() {
 }
 
 #[test]
+fn dynamic_function_handle_preserves_prototype_constructor_identity_through_node_shim_host_imports()
+{
+    let fixture =
+        "fixtures/core-semantics/function-constructor-dynamic-prototype-identity-node-shim.ts";
+    assert_node_shim_stdout(fixture, "true\nanonymous\n");
+}
+
+#[test]
 fn dynamic_function_construct_returns_object_through_node_shim_host_imports() {
     let fixture =
         "fixtures/core-semantics/function-constructor-dynamic-construct-object-node-shim.ts";
@@ -829,6 +837,7 @@ const hostFunctionHandleValues = new WeakMap();
 const hostArrayHandles = new WeakMap();
 const hostObjectHandles = new WeakMap();
 const hostObjectValues = new Map();
+const refreshingHostObjects = new WeakSet();
 const directEvalExtraBindings = new Map();
 const EVAL_DESCRIPTOR_CALLER_STRICT = '__ts2wasm_eval_caller_strict';
 const decoder = new TextDecoder();
@@ -1101,16 +1110,19 @@ function encodeHostObject(value) {
     record = allocateHostObjectRecord(value, record.capacity * 2);
     forwardHostObjectRecord(previous, record);
   }
-  refreshHostObjectEntries(value, record);
+  if (refreshingHostObjects.has(value)) return record.raw;
+  refreshingHostObjects.add(value);
+  try {
+    refreshHostObjectEntries(value, record);
+  } finally {
+    refreshingHostObjects.delete(value);
+  }
   return record.raw;
 }
 
 function encodeHostFunctionHandle(fn, index) {
-  const handleObject = {
-    length: fn.length,
-    name: fn.name,
-    prototype: {},
-  };
+  const handleObject = { length: fn.length, name: fn.name };
+  handleObject.prototype = { constructor: handleObject };
   if (fn.__ts2wasm_host_function_to_string !== true) {
     const toStringFn = function toString() {
       return fn.toString();
