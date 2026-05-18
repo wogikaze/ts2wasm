@@ -53,6 +53,12 @@ fn dynamic_function_handle_binds_this_for_function_properties_through_node_shim_
 }
 
 #[test]
+fn dynamic_function_handle_calls_computed_function_properties_through_node_shim_host_imports() {
+    let fixture = "fixtures/core-semantics/function-constructor-dynamic-computed-function-property-call-node-shim.ts";
+    assert_node_shim_stdout(fixture, "10\n");
+}
+
+#[test]
 fn dynamic_function_handle_bridges_thrown_errors_through_node_shim_host_imports() {
     let fixture = "fixtures/core-semantics/function-constructor-dynamic-throw-catch-node-shim.ts";
     assert_node_shim_stdout(fixture, "Error\nfunction boom\n");

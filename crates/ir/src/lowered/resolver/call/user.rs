@@ -7,6 +7,7 @@ use crate::builtin_resolved::{
 };
 use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
 use crate::lowered::facts::{FunctionMethodKind, HostExternalKind, ProxyTrapKind};
+use crate::lowered::object_kernel;
 use crate::lowered::*;
 use crate::name_resolver::INTRINSIC_FUNCTION_CONSTRUCTOR_CALL;
 use std::collections::HashMap;
@@ -68,6 +69,42 @@ impl super::super::Resolver {
                 kind: FunctionCallKind::User(method_id),
                 args: lowered_args,
                 span: Span::generated("call"),
+            });
+        }
+
+        if let ResolvedExpr::ComputedIndex { object, index } = callee
+            && crate::lowered::resolver::expr::facts::resolved_expr_returns_host_external_object(
+                &self.ctx, object,
+            )
+        {
+            let receiver_temp = self.alloc_temp();
+            let receiver = LoweredExpr::Local(receiver_temp, Span::generated("local"));
+            let args_array = ResolvedExpr::Array(
+                args.iter()
+                    .cloned()
+                    .map(ResolvedArrayElement::Present)
+                    .collect(),
+            );
+            return Ok(LoweredExpr::Block {
+                stmts: vec![LoweredStmt::Let(
+                    receiver_temp,
+                    self.lower_expr(object)?,
+                    Span::generated("let_stmt"),
+                )],
+                result: Box::new(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::FunctionCallMethodHost,
+                    args: vec![
+                        object_kernel::ordinary_get_dynamic(
+                            receiver.clone(),
+                            self.lower_expr(index)?,
+                            span,
+                        ),
+                        receiver,
+                        self.lower_expr(&args_array)?,
+                    ],
+                    span: Span::generated("runtime_call"),
+                }),
+                span: Span::generated("block"),
             });
         }
 

@@ -1000,6 +1000,7 @@ directories:
     - function-constructor-dynamic-array-existing-ref-growth-node-shim.ts
     - function-constructor-dynamic-array-function-element-node-shim.ts
     - function-constructor-dynamic-construct-object-node-shim.ts
+    - function-constructor-dynamic-computed-function-property-call-node-shim.ts
     - function-constructor-dynamic-call-construct-host-path.ts
     - function-constructor-dynamic-array-growth-node-shim.ts
     - function-constructor-dynamic-object-existing-ref-growth-node-shim.ts
