@@ -105,10 +105,12 @@ const TAG_TRUE = 3;
 const TAG_NUMBER = 4;
 const TAG_ARRAY = 5;
 const TAG_STRING = 6;
+const TAG_OBJECT = 7;
 const TAG_MASK = 7;
 const HEAP_MASK = -8;
 const ARRAY_HEADER_SIZE = 20;
 const ARRAY_PRESENCE_WORDS_OFFSET = 16;
+const HOST_FUNCTION_SENTINEL = 0x4853464e;
 
 let memory;
 const hostFunctions = [];
@@ -224,6 +226,24 @@ function encodeString(value) {
   return ptr | TAG_STRING;
 }
 
+function encodeHostFunctionHandle(index) {
+  const ptr = hostAlloc(8);
+  view().setInt32(ptr, HOST_FUNCTION_SENTINEL, true);
+  view().setInt32(ptr + 4, index, true);
+  return ptr | TAG_OBJECT;
+}
+
+function decodeHostFunctionHandle(raw) {
+  if (rawTag(raw) !== TAG_OBJECT) {
+    throw new TypeError(`expected host function handle object RawValue, got ${raw}`);
+  }
+  const ptr = rawPtr(raw);
+  if (view().getInt32(ptr, true) !== HOST_FUNCTION_SENTINEL) {
+    throw new TypeError(`unknown host function handle object: ${raw}`);
+  }
+  return view().getInt32(ptr + 4, true);
+}
+
 function encodeHostValue(value) {
   if (value === undefined) return TAG_UNDEFINED;
   if (value === null) return TAG_NULL;
@@ -312,17 +332,17 @@ const imports = {
       const args = decodeArgs(argsRaw);
       const fn = Function(...args);
       hostFunctions.push(fn);
-      return ((hostFunctions.length - 1) << 3) | TAG_NUMBER;
+      return encodeHostFunctionHandle(hostFunctions.length - 1);
     },
     'function.call'(handleRaw, argsRaw) {
-      const fn = hostFunctions[decodeValue(handleRaw)];
+      const fn = hostFunctions[decodeHostFunctionHandle(handleRaw)];
       if (typeof fn !== 'function') {
         throw new TypeError(`unknown host function handle: ${handleRaw}`);
       }
       return encodeHostValue(fn(...decodeArgs(argsRaw)));
     },
     'function.construct'(handleRaw, argsRaw) {
-      const fn = hostFunctions[decodeValue(handleRaw)];
+      const fn = hostFunctions[decodeHostFunctionHandle(handleRaw)];
       if (typeof fn !== 'function') {
         throw new TypeError(`unknown host function handle: ${handleRaw}`);
       }

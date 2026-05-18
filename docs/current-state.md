@@ -349,7 +349,9 @@ The current implementation has several partial dynamic-code paths:
   `host.function.compile`, `host.function.call`, and
   `host.function.construct` manifest entries and host-deny rejection. A focused
   Node WebAssembly shim regression covers primitive/string-return calls and
-  discarded constructor calls for statically visible dynamic Function handles.
+  discarded constructor calls for statically visible dynamic Function handles;
+  the shim carries handles as object-tagged host external cells instead of
+  number values.
 
 The canonical implementation plan is
 `plans/eval-new-function-implementation-plan.md`. Current known gaps include
