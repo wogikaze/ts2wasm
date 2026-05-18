@@ -1029,6 +1029,7 @@ directories:
     - nullish-coalescing.ts
     - number-stringify.ts
     - optional-eval-dynamic-node-shim.ts
+    - optional-eval-static-global-scope.ts
     - optional-chaining-call.ts
     - optional-chaining-member-index.ts
     - ordinary-bitwise-and-xor.ts

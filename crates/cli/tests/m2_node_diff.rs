@@ -1192,6 +1192,11 @@ fn static_indirect_eval_global_scope_fixture_matches_node_output() {
 }
 
 #[test]
+fn static_optional_eval_global_scope_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/optional-eval-static-global-scope.ts");
+}
+
+#[test]
 fn direct_eval_dynamic_fixture_matches_node_output() {
     assert_fixture_matches_node("fixtures/core-semantics/direct-eval-dynamic-host-path.ts");
 }
