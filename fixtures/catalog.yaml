@@ -909,6 +909,7 @@ directories:
     - direct-eval-if-var-hoisted-undefined.ts
     - direct-eval-if-var-lands-in-caller.ts
     - direct-eval-labeled-completion.ts
+    - direct-eval-lexical-shadows-caller.ts
     - direct-eval-switch-completion.ts
     - direct-eval-nested-static.ts
     - direct-eval-return-unsupported.ts

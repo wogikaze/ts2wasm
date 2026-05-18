@@ -447,6 +447,14 @@ fn static_direct_eval_strict_lexical_declares_no_node_host_eval_capability() {
 }
 
 #[test]
+fn static_direct_eval_lexical_shadow_declares_no_node_host_eval_capability() {
+    assert_standalone_category(
+        "core-semantics/direct-eval-lexical-shadows-caller.ts",
+        "static direct eval lexical shadows caller",
+    );
+}
+
+#[test]
 fn static_direct_eval_function_landing_declares_no_node_host_eval_capability() {
     assert_standalone_category(
         "core-semantics/direct-eval-function-lands-in-caller.ts",
