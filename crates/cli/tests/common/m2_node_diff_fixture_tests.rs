@@ -3169,11 +3169,11 @@ fn direct_eval_block_function_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn direct_eval_block_function_shadowed_eval_reports_issue_302() {
+fn direct_eval_block_function_shadowed_eval_stays_ordinary_call() {
     assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/direct-eval-block-function-shadowed-unsupported.ts",
-        "[UnsupportedEval]",
-        "issue-302: static direct eval block-function lowering requires a provably unshadowed eval binding",
+        "[UnresolvedName/name-resolver]",
+        "unresolved name: `directEvalBlockFunctionShadowed`",
         true,
     );
 }

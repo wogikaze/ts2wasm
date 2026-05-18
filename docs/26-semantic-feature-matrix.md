@@ -1,6 +1,6 @@
 # Semantic Feature Matrix
 
-Last updated: 2026-05-13
+Last updated: 2026-05-18
 
 この文書は、ts2wasm が対応する言語機能のセマンティックフィーチャーマトリクスを定義する。
 各 feature label は `fixtures/catalog.yaml` で参照され、テストカバレッジとの対応を機械的に検証できる。
@@ -214,7 +214,7 @@ Last updated: 2026-05-13
 | `builtin:atomics` | Atomics | 未実装 | builtins-and-io (unsupported) |
 | `builtin:intl` | Intl | 未実装 | builtins-and-io (unsupported) |
 | `builtin:proxy-reflect` | Proxy / Reflect | 部分実装 | builtins-and-io (Proxy basic trap slice; Reflect unsupported) |
-| `builtin:eval` | eval / Function constructor | 部分実装 | builtins-and-io, core-semantics (static AOT + audited host-lane slices) |
+| `builtin:eval` | eval / Function constructor | 部分実装 (static direct/indirect/optional eval and literal Function constructor AOT slices; audited dynamic host lanes including `host.function.callMethod`; canonical eval/function plans, full TDZ/realm handling, and runtime-wide host external contracts remain open) | builtins-and-io, core-semantics |
 
 ### 制御フロー (ControlFlow)
 

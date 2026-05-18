@@ -267,7 +267,7 @@ BigInt mixed comparison の object `ToPrimitive` boundary: direct object-literal
 
 | 機能 | ECMAScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
 |---|---|---|---|---|---|
-| `eval` / `Function` | ES1 | dynamic code evaluation | 部分実装 (static string direct `eval(...)`, supported static string indirect eval shapes, and literal-only `Function(...)` / `new Function(...)` have compile-time expansion slices; runtime-source eval and dynamic Function constructor have audited capability-gated host-lane slices, with broader direct-eval declarations/TDZ/realm behavior still incomplete) | P3 | 347, 349 |
+| `eval` / `Function` | ES1 | dynamic code evaluation | 部分実装 (static string direct `eval(...)`, supported static string indirect/optional eval shapes, and literal-only `Function(...)` / `new Function(...)` have compile-time AOT expansion slices; runtime-source eval and dynamic Function constructor have audited capability-gated host-lane slices with exact `host.eval.indirect`, `host.eval.direct`, `host.function.compile`, `host.function.call`, `host.function.callMethod`, and `host.function.construct` imports as needed. Broader direct-eval lexical declarations, TDZ, realm/global-env behavior, first-class `FunctionConstructorPlan`, and runtime-wide host external object/function contracts remain incomplete) | P3 | 347, 349 |
 | `with` | ES1 | scope extension | 未実装 (unsupported-dynamic-code) | P3 | - |
 | `Proxy` | ES6 | meta-programming | 部分実装 (statically visible `new Proxy(target, handler)` locals support basic get/set/has/deleteProperty trap lowering) | P3 | 407 |
 | `Reflect` | ES6 | reflection API | 未実装 | P3 | - |
