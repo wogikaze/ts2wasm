@@ -940,11 +940,10 @@ pub(super) fn expr_contains_super_ref(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::ComputedIndex { object, index } => {
             expr_contains_super_ref(object) || expr_contains_super_ref(index)
         }
-        ResolvedExpr::BuiltinCall { args, .. }
-        | ResolvedExpr::New { args, .. }
-        | ResolvedExpr::FunctionConstructor { args, .. } => {
+        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
             args.iter().any(expr_contains_super_ref)
         }
+        ResolvedExpr::FunctionConstructor { plan } => plan.args.iter().any(expr_contains_super_ref),
         ResolvedExpr::BuiltinProperty { object, .. }
         | ResolvedExpr::OptionalPropertyAccess { object, .. } => expr_contains_super_ref(object),
         ResolvedExpr::OptionalComputedIndex { object, index, .. } => {

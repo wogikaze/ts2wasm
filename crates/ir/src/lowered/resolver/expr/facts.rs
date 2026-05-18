@@ -53,9 +53,9 @@ pub(crate) fn update_host_function_handle_local(
 
 fn resolved_expr_is_dynamic_function_constructor(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
     match expr {
-        ResolvedExpr::FunctionConstructor { args, .. } => args
-            .iter()
-            .any(|arg| !matches!(arg, ResolvedExpr::String(_))),
+        ResolvedExpr::FunctionConstructor { plan } => {
+            plan.host_policy == crate::builtin_resolved::FunctionConstructorHostPolicy::HostCompile
+        }
         ResolvedExpr::Call { callee, args, .. } if matches!(callee.as_ref(), ResolvedExpr::Ident(name) if name == INTRINSIC_FUNCTION_CONSTRUCTOR_CALL) => {
             args.iter()
                 .any(|arg| !matches!(arg, ResolvedExpr::String(_)))

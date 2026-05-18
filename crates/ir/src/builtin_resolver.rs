@@ -35,7 +35,7 @@ use super::builtin::BuiltinId;
 use super::builtin::BuiltinPropertyId;
 use super::builtin_resolved::{
     ClassMethod, ClassMethodKind, EvalFragmentPlan, EvalKind, EvalSource, FunctionConstructorKind,
-    ResolvedExpr, ResolvedParam, ResolvedStmt,
+    FunctionConstructorPlan, ResolvedExpr, ResolvedParam, ResolvedStmt,
 };
 
 const BIGINT_FROM_VALUE_RUNTIME_CALL: &str = "__ts2wasm_bigint_from_value";
@@ -227,10 +227,13 @@ fn mark_eval_strict_contexts_in_expr(expr: &mut ResolvedExpr, strict_context: bo
             mark_eval_strict_contexts_in_expr(callee, strict_context);
             mark_eval_strict_contexts_in_exprs(args, strict_context);
         }
-        ResolvedExpr::New { args, .. }
-        | ResolvedExpr::BuiltinCall { args, .. }
-        | ResolvedExpr::FunctionConstructor { args, .. }
-        | ResolvedExpr::Sequence(args) => {
+        ResolvedExpr::New { args, .. } | ResolvedExpr::BuiltinCall { args, .. } => {
+            mark_eval_strict_contexts_in_exprs(args, strict_context);
+        }
+        ResolvedExpr::FunctionConstructor { plan } => {
+            mark_eval_strict_contexts_in_exprs(&mut plan.args, strict_context);
+        }
+        ResolvedExpr::Sequence(args) => {
             mark_eval_strict_contexts_in_exprs(args, strict_context);
         }
         ResolvedExpr::Assign { expr, .. } | ResolvedExpr::LogicalAssign { expr, .. } => {
@@ -2135,9 +2138,11 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 && name == INTRINSIC_FUNCTION_CONSTRUCTOR_CALL
             {
                 return Ok(ResolvedExpr::FunctionConstructor {
-                    kind: FunctionConstructorKind::Call,
-                    args: resolved_args,
-                    span: *span,
+                    plan: FunctionConstructorPlan::new(
+                        FunctionConstructorKind::Call,
+                        resolved_args,
+                        *span,
+                    ),
                 });
             }
             if let Expr::Ident { name, .. } = callee.as_ref()
@@ -2495,9 +2500,11 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     .collect::<Result<Vec<_>, _>>()?;
                 if class_name == INTRINSIC_FUNCTION_CONSTRUCTOR_NEW {
                     return Ok(ResolvedExpr::FunctionConstructor {
-                        kind: FunctionConstructorKind::New,
-                        args: resolved_args,
-                        span: *span,
+                        plan: FunctionConstructorPlan::new(
+                            FunctionConstructorKind::New,
+                            resolved_args,
+                            *span,
+                        ),
                     });
                 }
                 Ok(ResolvedExpr::New {

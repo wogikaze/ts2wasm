@@ -156,8 +156,8 @@ impl super::Resolver {
                 args,
                 span,
             } => self.lower_new_expr(class_name, args, *span),
-            ResolvedExpr::FunctionConstructor { args, span, .. } => {
-                self.lower_dynamic_function_constructor_host_compile(args, *span)
+            ResolvedExpr::FunctionConstructor { plan } => {
+                self.lower_dynamic_function_constructor_host_compile(&plan.args, plan.span)
             }
             ResolvedExpr::ModuleLoad {
                 specifier,

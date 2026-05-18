@@ -519,10 +519,11 @@ impl TypeScriptCallArityValidator {
                 self.validate_expr(callee)?;
                 self.validate_args(args)?;
             }
-            ResolvedExpr::BuiltinCall { args, .. }
-            | ResolvedExpr::New { args, .. }
-            | ResolvedExpr::FunctionConstructor { args, .. } => {
+            ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
                 self.validate_args(args)?;
+            }
+            ResolvedExpr::FunctionConstructor { plan } => {
+                self.validate_args(&plan.args)?;
             }
             ResolvedExpr::Assign { expr, .. } | ResolvedExpr::LogicalAssign { expr, .. } => {
                 self.validate_expr(expr)?;
@@ -802,9 +803,8 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         | ResolvedExpr::OptionalCall { callee, args, .. } => {
             expr_contains_arguments(callee) || args.iter().any(expr_contains_arguments)
         }
-        ResolvedExpr::New { args, .. } | ResolvedExpr::FunctionConstructor { args, .. } => {
-            args.iter().any(expr_contains_arguments)
-        }
+        ResolvedExpr::New { args, .. } => args.iter().any(expr_contains_arguments),
+        ResolvedExpr::FunctionConstructor { plan } => plan.args.iter().any(expr_contains_arguments),
         ResolvedExpr::Assign { name, expr } => name == "arguments" || expr_contains_arguments(expr),
         ResolvedExpr::PropertyAssign { object, value, .. } => {
             expr_contains_arguments(object) || expr_contains_arguments(value)

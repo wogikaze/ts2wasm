@@ -125,8 +125,13 @@ pub(crate) fn collect_arrow_captures(
             collect_arrow_captures(key, params, captures);
             collect_arrow_captures(value, params, captures);
         }
-        ResolvedExpr::New { args, .. } | ResolvedExpr::FunctionConstructor { args, .. } => {
+        ResolvedExpr::New { args, .. } => {
             for arg in args {
+                collect_arrow_captures(arg, params, captures);
+            }
+        }
+        ResolvedExpr::FunctionConstructor { plan } => {
+            for arg in &plan.args {
                 collect_arrow_captures(arg, params, captures);
             }
         }
@@ -486,11 +491,13 @@ pub(crate) fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bo
         ResolvedExpr::ComputedIndex { object, index } => {
             expr_assigns_any_name(object, names) || expr_assigns_any_name(index, names)
         }
-        ResolvedExpr::BuiltinCall { args, .. }
-        | ResolvedExpr::New { args, .. }
-        | ResolvedExpr::FunctionConstructor { args, .. } => {
+        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
             args.iter().any(|arg| expr_assigns_any_name(arg, names))
         }
+        ResolvedExpr::FunctionConstructor { plan } => plan
+            .args
+            .iter()
+            .any(|arg| expr_assigns_any_name(arg, names)),
         ResolvedExpr::BuiltinProperty { object, .. }
         | ResolvedExpr::PropertyAccess { object, .. }
         | ResolvedExpr::OptionalPropertyAccess { object, .. } => {

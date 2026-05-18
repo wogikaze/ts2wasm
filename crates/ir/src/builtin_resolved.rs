@@ -265,9 +265,7 @@ pub enum ResolvedExpr {
         value: Box<ResolvedExpr>,
     },
     FunctionConstructor {
-        kind: FunctionConstructorKind,
-        args: Vec<ResolvedExpr>,
-        span: Span,
+        plan: FunctionConstructorPlan,
     },
     New {
         class_name: String,
@@ -332,6 +330,45 @@ impl EvalFragmentPlan {
 pub enum FunctionConstructorKind {
     Call,
     New,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FunctionConstructorPlan {
+    pub kind: FunctionConstructorKind,
+    pub args: Vec<ResolvedExpr>,
+    pub host_policy: FunctionConstructorHostPolicy,
+    pub span: Span,
+}
+
+impl FunctionConstructorPlan {
+    pub fn new(kind: FunctionConstructorKind, args: Vec<ResolvedExpr>, span: Span) -> Self {
+        let host_policy = FunctionConstructorHostPolicy::for_args(&args);
+        Self {
+            kind,
+            args,
+            host_policy,
+            span,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FunctionConstructorHostPolicy {
+    AotOnly,
+    HostCompile,
+}
+
+impl FunctionConstructorHostPolicy {
+    pub fn for_args(args: &[ResolvedExpr]) -> Self {
+        if args
+            .iter()
+            .all(|arg| matches!(arg, ResolvedExpr::String(_)))
+        {
+            Self::AotOnly
+        } else {
+            Self::HostCompile
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

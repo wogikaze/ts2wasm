@@ -3,8 +3,9 @@ use std::collections::HashSet;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_ir::builtin_resolved::{
     ClassMethod, EvalCompletionPlan, EvalCompletionStep, EvalDeclarationPlan, EvalFragmentPlan,
-    EvalFunctionHoist, EvalKind, EvalSource, FunctionConstructorKind, ResolvedArrayElement,
-    ResolvedExpr, ResolvedObjectProp, ResolvedParam, ResolvedStmt,
+    EvalFunctionHoist, EvalKind, EvalSource, FunctionConstructorHostPolicy,
+    FunctionConstructorKind, FunctionConstructorPlan, ResolvedArrayElement, ResolvedExpr,
+    ResolvedObjectProp, ResolvedParam, ResolvedStmt,
 };
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
 use ts2wasm_ir::name_resolver::resolve_names;
@@ -460,9 +461,7 @@ fn expand_expr(
             // Non-expandable eval (indirect or runtime source) — keep as-is.
             Ok(expr)
         }
-        ResolvedExpr::FunctionConstructor { kind, args, span } => {
-            expand_function_constructor(kind, args, span)
-        }
+        ResolvedExpr::FunctionConstructor { plan } => expand_function_constructor(plan),
         // Recursively expand eval in sub-expressions.
         ResolvedExpr::Unary { op, expr: inner } => Ok(ResolvedExpr::Unary {
             op,
@@ -930,11 +929,17 @@ fn eval_stmt_illegal_return_span(stmt: &Stmt) -> Option<ts2wasm_source::Span> {
     }
 }
 
-fn expand_function_constructor(
-    kind: FunctionConstructorKind,
-    args: Vec<ResolvedExpr>,
-    span: ts2wasm_source::Span,
-) -> Result<ResolvedExpr, Diagnostic> {
+fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<ResolvedExpr, Diagnostic> {
+    let FunctionConstructorPlan {
+        kind,
+        args,
+        host_policy,
+        span,
+    } = plan;
+    if host_policy != FunctionConstructorHostPolicy::AotOnly {
+        return Ok(function_constructor_host_lane(kind, args, span));
+    }
+
     let mut strings = Vec::with_capacity(args.len());
     for arg in &args {
         match arg {
@@ -1013,7 +1018,9 @@ fn function_constructor_host_lane(
     args: Vec<ResolvedExpr>,
     span: ts2wasm_source::Span,
 ) -> ResolvedExpr {
-    ResolvedExpr::FunctionConstructor { kind, args, span }
+    ResolvedExpr::FunctionConstructor {
+        plan: FunctionConstructorPlan::new(kind, args, span),
+    }
 }
 
 fn validate_static_function_constructor_early_errors(
@@ -1470,13 +1477,13 @@ fn rewrite_eval_expr_global_collisions(
             args: rewrite_eval_exprs_global_collisions(args, collisions, scopes),
             span,
         },
-        ResolvedExpr::FunctionConstructor { kind, args, span } => {
-            ResolvedExpr::FunctionConstructor {
-                kind,
-                args: rewrite_eval_exprs_global_collisions(args, collisions, scopes),
-                span,
-            }
-        }
+        ResolvedExpr::FunctionConstructor { plan } => ResolvedExpr::FunctionConstructor {
+            plan: FunctionConstructorPlan::new(
+                plan.kind,
+                rewrite_eval_exprs_global_collisions(plan.args, collisions, scopes),
+                plan.span,
+            ),
+        },
         ResolvedExpr::ArrowFn {
             params,
             body,

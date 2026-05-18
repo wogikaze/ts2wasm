@@ -802,35 +802,42 @@ mod tests {
     #[test]
     fn resolver_marks_unshadowed_static_function_constructor_call_for_compiler_expansion() {
         let builtins = parse_resolve_builtins("let value = Function(\"return 1\");");
-        let crate::ResolvedStmt::Let(
-            _,
-            crate::ResolvedExpr::FunctionConstructor { kind, args, .. },
-        ) = &builtins[0]
+        let crate::ResolvedStmt::Let(_, crate::ResolvedExpr::FunctionConstructor { plan }) =
+            &builtins[0]
         else {
             panic!("expected resolver-marked Function constructor call: {builtins:?}");
         };
         assert_eq!(
-            *kind,
+            plan.kind,
             crate::builtin_resolved::FunctionConstructorKind::Call
         );
+        assert_eq!(
+            plan.host_policy,
+            crate::builtin_resolved::FunctionConstructorHostPolicy::AotOnly
+        );
         assert!(
-            matches!(args.as_slice(), [crate::ResolvedExpr::String(value)] if value == "return 1")
+            matches!(plan.args.as_slice(), [crate::ResolvedExpr::String(value)] if value == "return 1")
         );
     }
 
     #[test]
     fn resolver_marks_unshadowed_static_new_function_constructor_for_compiler_expansion() {
         let builtins = parse_resolve_builtins("let value = new Function(\"return 1\");");
-        let crate::ResolvedStmt::Let(
-            _,
-            crate::ResolvedExpr::FunctionConstructor { kind, args, .. },
-        ) = &builtins[0]
+        let crate::ResolvedStmt::Let(_, crate::ResolvedExpr::FunctionConstructor { plan }) =
+            &builtins[0]
         else {
             panic!("expected resolver-marked new Function constructor: {builtins:?}");
         };
-        assert_eq!(*kind, crate::builtin_resolved::FunctionConstructorKind::New);
+        assert_eq!(
+            plan.kind,
+            crate::builtin_resolved::FunctionConstructorKind::New
+        );
+        assert_eq!(
+            plan.host_policy,
+            crate::builtin_resolved::FunctionConstructorHostPolicy::AotOnly
+        );
         assert!(
-            matches!(args.as_slice(), [crate::ResolvedExpr::String(value)] if value == "return 1")
+            matches!(plan.args.as_slice(), [crate::ResolvedExpr::String(value)] if value == "return 1")
         );
     }
 
