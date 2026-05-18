@@ -336,19 +336,53 @@ pub enum FunctionConstructorKind {
 pub struct FunctionConstructorPlan {
     pub kind: FunctionConstructorKind,
     pub args: Vec<ResolvedExpr>,
+    pub static_source: Option<StaticFunctionConstructorSource>,
     pub host_policy: FunctionConstructorHostPolicy,
     pub span: Span,
 }
 
 impl FunctionConstructorPlan {
     pub fn new(kind: FunctionConstructorKind, args: Vec<ResolvedExpr>, span: Span) -> Self {
-        let host_policy = FunctionConstructorHostPolicy::for_args(&args);
+        let static_source = StaticFunctionConstructorSource::from_args(&args);
+        let host_policy = FunctionConstructorHostPolicy::for_static_source(&static_source);
         Self {
             kind,
             args,
+            static_source,
             host_policy,
             span,
         }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StaticFunctionConstructorSource {
+    pub params: Vec<String>,
+    pub body: String,
+}
+
+impl StaticFunctionConstructorSource {
+    pub fn from_args(args: &[ResolvedExpr]) -> Option<Self> {
+        if !args
+            .iter()
+            .all(|arg| matches!(arg, ResolvedExpr::String(_)))
+        {
+            return None;
+        }
+        let strings = args
+            .iter()
+            .map(|arg| match arg {
+                ResolvedExpr::String(value) => value.clone(),
+                _ => unreachable!("all args were validated as strings"),
+            })
+            .collect::<Vec<_>>();
+        let (body, params) = strings
+            .split_last()
+            .map_or(("", &[][..]), |(body, params)| (body.as_str(), params));
+        Some(Self {
+            params: params.to_vec(),
+            body: body.to_owned(),
+        })
     }
 }
 
@@ -359,11 +393,8 @@ pub enum FunctionConstructorHostPolicy {
 }
 
 impl FunctionConstructorHostPolicy {
-    pub fn for_args(args: &[ResolvedExpr]) -> Self {
-        if args
-            .iter()
-            .all(|arg| matches!(arg, ResolvedExpr::String(_)))
-        {
+    pub fn for_static_source(static_source: &Option<StaticFunctionConstructorSource>) -> Self {
+        if static_source.is_some() {
             Self::AotOnly
         } else {
             Self::HostCompile

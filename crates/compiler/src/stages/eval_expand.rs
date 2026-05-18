@@ -933,6 +933,7 @@ fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<Resolved
     let FunctionConstructorPlan {
         kind,
         args,
+        static_source,
         host_policy,
         span,
     } = plan;
@@ -940,25 +941,16 @@ fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<Resolved
         return Ok(function_constructor_host_lane(kind, args, span));
     }
 
-    let mut strings = Vec::with_capacity(args.len());
-    for arg in &args {
-        match arg {
-            ResolvedExpr::String(value) => strings.push(value.clone()),
-            _ => {
-                return Ok(function_constructor_host_lane(kind, args, span));
-            }
-        }
-    }
-
-    let (body_source, param_names): (&str, &[String]) = match strings.split_last() {
-        Some((body, params)) => (body.as_str(), params),
-        None => ("", &[]),
+    let Some(static_source) = static_source else {
+        return Ok(function_constructor_host_lane(kind, args, span));
     };
-    let params_source = param_names
+    let params_source = static_source
+        .params
         .iter()
         .map(String::as_str)
         .collect::<Vec<_>>()
         .join(", ");
+    let body_source = static_source.body;
     let function_source = format!("function anonymous({params_source}) {{\n{body_source}\n}}");
 
     let tokens = ts2wasm_frontend::Lexer::new(&function_source)

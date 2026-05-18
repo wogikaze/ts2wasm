@@ -815,6 +815,12 @@ mod tests {
             plan.host_policy,
             crate::builtin_resolved::FunctionConstructorHostPolicy::AotOnly
         );
+        assert_eq!(
+            plan.static_source
+                .as_ref()
+                .map(|source| source.body.as_str()),
+            Some("return 1")
+        );
         assert!(
             matches!(plan.args.as_slice(), [crate::ResolvedExpr::String(value)] if value == "return 1")
         );
@@ -835,6 +841,12 @@ mod tests {
         assert_eq!(
             plan.host_policy,
             crate::builtin_resolved::FunctionConstructorHostPolicy::AotOnly
+        );
+        assert_eq!(
+            plan.static_source
+                .as_ref()
+                .map(|source| source.body.as_str()),
+            Some("return 1")
         );
         assert!(
             matches!(plan.args.as_slice(), [crate::ResolvedExpr::String(value)] if value == "return 1")

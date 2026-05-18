@@ -82,6 +82,7 @@ fn compiler_preserves_dynamic_function_constructor_for_host_lane() {
         plan.host_policy,
         ts2wasm_ir::builtin_resolved::FunctionConstructorHostPolicy::HostCompile
     );
+    assert!(plan.static_source.is_none());
     let ts2wasm_ir::ResolvedStmt::Let(_, ts2wasm_ir::ResolvedExpr::FunctionConstructor { plan }) =
         &expanded[2]
     else {
@@ -91,6 +92,7 @@ fn compiler_preserves_dynamic_function_constructor_for_host_lane() {
         plan.kind,
         ts2wasm_ir::builtin_resolved::FunctionConstructorKind::New
     );
+    assert!(plan.static_source.is_none());
 }
 
 #[test]
