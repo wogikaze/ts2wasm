@@ -128,6 +128,18 @@ FEATURE_LABELS: dict[str, dict[str, Any]] = {
         "diag_codes": [],
         "legacy_labels": ["function"],
     },
+    "test262-evalscript": {
+        "description": "$262.evalScript harness hook and global-script eval classification",
+        "owner": "harness",
+        "diag_codes": [],
+        "legacy_labels": [],
+    },
+    "test262-cross-realm": {
+        "description": "test262 cross-realm / $262.createRealm harness boundary",
+        "owner": "harness",
+        "diag_codes": [],
+        "legacy_labels": [],
+    },
     "runtime-subset": {
         "description": "Syntax and lowering succeeded but runtime/link-plan support absent",
         "owner": "runtime",
@@ -233,6 +245,8 @@ LABEL_OWNERS: dict[str, str] = {
     "eval-direct-tdz": "runtime",
     "eval-static-aot": "compiler",
     "function-constructor": "runtime",
+    "test262-evalscript": "harness",
+    "test262-cross-realm": "harness",
     "runtime-subset": "runtime",
     "runtime-subset:date": "runtime",
     "runtime-subset:regexp-literal": "runtime",
@@ -302,6 +316,10 @@ def _classify_eval(stderr: str, file_path: str) -> str:
     text = (stderr or "").lower()
     path = (file_path or "").lower()
 
+    if "$262.evalscript" in text or "evalscript" in text:
+        return "test262-evalscript"
+    if "cross-realm" in text or "createrealm" in text or "create realm" in text:
+        return "test262-cross-realm"
     if "tdz-aware env descriptors" in text:
         return "eval-direct-tdz"
     if (
@@ -506,6 +524,16 @@ def _self_test() -> int:
             "Function constructor fallback",
             "reference/test262/test/built-ins/Function/foo.js",
             "function-constructor",
+        ),
+        (
+            "$262.evalScript realm hook failed",
+            "reference/test262/test/annexB/language/global-code/foo.js",
+            "test262-evalscript",
+        ),
+        (
+            "$262.createRealm cross-realm hook failed",
+            "reference/test262/test/language/eval-code/indirect/realm.js",
+            "test262-cross-realm",
         ),
     ]
     for stderr, path, expected in eval_cases:

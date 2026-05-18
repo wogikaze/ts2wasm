@@ -117,6 +117,8 @@ FEATURE_PRIORITY = {
     "eval-direct-tdz": "p3",
     "eval-static-aot": "p3",
     "function-constructor": "p3",
+    "test262-evalscript": "p3",
+    "test262-cross-realm": "p3",
     "jsx": "p3",
 }
 

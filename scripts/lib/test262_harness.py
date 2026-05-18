@@ -751,6 +751,10 @@ def _eval_feature_label(stderr, test_file):
     text = (stderr or "").lower()
     path = str(test_file or "").lower()
 
+    if "$262.evalscript" in text or "evalscript" in text:
+        return "test262-evalscript"
+    if "cross-realm" in text or "createrealm" in text or "create realm" in text:
+        return "test262-cross-realm"
     if "tdz-aware env descriptors" in text:
         return "eval-direct-tdz"
     if (

@@ -35,6 +35,8 @@ ts2wasm_feature_label() {
     InvalidTopLevelReturn) echo "top-level-return"; return ;;
     UnsupportedEval)
       case "$text" in
+        *"\$262.evalscript"*|*"evalscript"*) echo "test262-evalscript"; return ;;
+        *"cross-realm"*|*"createrealm"*|*"create realm"*) echo "test262-cross-realm"; return ;;
         *"tdz-aware env descriptors"*) echo "eval-direct-tdz"; return ;;
         *"static eval fragment reached lowering without aot expansion"*|*"aot-only eval fragment"*) echo "eval-static-aot"; return ;;
         *"function constructor"*|*"new function"*) echo "function-constructor"; return ;;
