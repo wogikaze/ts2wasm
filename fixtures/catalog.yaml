@@ -888,6 +888,7 @@ directories:
     - direct-eval-declaration-preserves-previous-completion.ts
     - direct-eval-expression-caller-local.ts
     - direct-eval-expression-side-effect.ts
+    - direct-eval-function-lands-in-caller.ts
     - direct-eval-nested-static.ts
     - direct-eval-var-lands-in-caller.ts
     - direct-eval-strict-lexical-assignment.ts

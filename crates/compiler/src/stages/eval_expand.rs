@@ -1073,6 +1073,20 @@ fn eval_statement_completion_step(
             EvalCompletionStep::VarLet { name, init: expr }
         }
         ResolvedStmt::Let(name, expr) => EvalCompletionStep::LexicalLet { name, init: expr },
+        ResolvedStmt::Function {
+            name,
+            params,
+            body,
+            is_async,
+            ..
+        } if leak_var_declarations && matches!(ast_stmt, Some(Stmt::Function { .. })) => {
+            EvalCompletionStep::FunctionDecl {
+                name,
+                params,
+                body,
+                is_async,
+            }
+        }
         ResolvedStmt::Return(expr) => EvalCompletionStep::Value(expr),
         _ => EvalCompletionStep::Empty(None),
     }
@@ -1083,6 +1097,7 @@ fn eval_top_level_var_name(stmt: &Stmt) -> Option<String> {
         Stmt::Let {
             name, is_var: true, ..
         } => Some(name.clone()),
+        Stmt::Function { name, .. } => Some(name.clone()),
         _ => None,
     }
 }

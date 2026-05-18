@@ -317,8 +317,20 @@ pub enum EvalSource {
 pub enum EvalCompletionStep {
     Value(ResolvedExpr),
     Empty(Option<ResolvedExpr>),
-    VarLet { name: String, init: ResolvedExpr },
-    LexicalLet { name: String, init: ResolvedExpr },
+    VarLet {
+        name: String,
+        init: ResolvedExpr,
+    },
+    FunctionDecl {
+        name: String,
+        params: Vec<ResolvedParam>,
+        body: Vec<ResolvedStmt>,
+        is_async: bool,
+    },
+    LexicalLet {
+        name: String,
+        init: ResolvedExpr,
+    },
 }
 
 impl EvalCompletionStep {
@@ -328,7 +340,7 @@ impl EvalCompletionStep {
             | Self::Empty(Some(expr))
             | Self::VarLet { init: expr, .. }
             | Self::LexicalLet { init: expr, .. } => Some(expr),
-            Self::Empty(None) => None,
+            Self::Empty(None) | Self::FunctionDecl { .. } => None,
         }
     }
 }

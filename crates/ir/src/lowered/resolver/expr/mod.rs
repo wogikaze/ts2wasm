@@ -10,6 +10,7 @@ mod ternary;
 mod unary;
 
 use crate::builtin_resolved::{ResolvedExpr, ResolvedStmt};
+use crate::lowered::facts::ArrowClosure;
 use std::collections::{HashMap, HashSet};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
@@ -301,6 +302,20 @@ impl super::Resolver {
                             ));
                         }
                     }
+                    EvalCompletionStep::FunctionDecl {
+                        name,
+                        params,
+                        body,
+                        is_async,
+                    } => {
+                        stmts.push(self.lower_eval_function_decl_in_caller_scope(
+                            name,
+                            params,
+                            body,
+                            *is_async,
+                            caller_scope_index,
+                        )?);
+                    }
                     EvalCompletionStep::LexicalLet { name, init } => {
                         stmts
                             .push(self.lower_stmt(&ResolvedStmt::Let(name.clone(), init.clone()))?);
@@ -351,6 +366,88 @@ impl super::Resolver {
         self.ctx.symbols.locals.push(local);
         scope.insert(name.to_owned(), local);
         Ok((local, false))
+    }
+
+    fn lower_eval_function_decl_in_caller_scope(
+        &mut self,
+        name: &str,
+        params: &[crate::builtin_resolved::ResolvedParam],
+        body: &[ResolvedStmt],
+        is_async: bool,
+        scope_index: usize,
+    ) -> Result<LoweredStmt, Diagnostic> {
+        let (local_id, existed) = self.declare_eval_var_in_caller_scope(name, scope_index)?;
+        if self.ctx.facts.env_cell_names.contains(name) {
+            self.ctx.facts.env_cell_locals.insert(local_id);
+            self.ctx.facts.initialized_env_cell_locals.insert(local_id);
+        }
+        let closure = self.lower_nested_function(name, params, body, is_async)?;
+        if let LoweredExpr::ArrowFn {
+            func_id,
+            captures,
+            representation,
+            span: _,
+        } = &closure
+        {
+            if matches!(representation, ClosureRepresentation::HeapObject) {
+                self.ctx.facts.heap_closure_locals.insert(local_id);
+            } else {
+                self.ctx.facts.arrow_locals.insert(
+                    local_id,
+                    ArrowClosure {
+                        func_id: *func_id,
+                        captures: captures.clone(),
+                    },
+                );
+            }
+        }
+        self.ctx.facts.nullish_locals.remove(&local_id);
+        if self.ctx.facts.env_cell_locals.contains(&local_id) {
+            if existed {
+                Ok(LoweredStmt::Expr(
+                    LoweredExpr::EnvCellSet {
+                        cell: local_id,
+                        expr: Box::new(closure),
+                        span: Span::generated("env_cell_set"),
+                    },
+                    Span::generated("expr_stmt"),
+                ))
+            } else {
+                Ok(LoweredStmt::Block(
+                    vec![
+                        LoweredStmt::Let(
+                            local_id,
+                            LoweredExpr::EnvCellNew(
+                                Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+                                Span::generated("env_cell_new"),
+                            ),
+                            Span::generated("let_stmt"),
+                        ),
+                        LoweredStmt::Expr(
+                            LoweredExpr::EnvCellSet {
+                                cell: local_id,
+                                expr: Box::new(closure),
+                                span: Span::generated("env_cell_set"),
+                            },
+                            Span::generated("expr_stmt"),
+                        ),
+                    ],
+                    Span::generated("block"),
+                ))
+            }
+        } else if existed {
+            Ok(LoweredStmt::Assign(
+                local_id,
+                closure,
+                Span::generated("eval_function_assign"),
+            ))
+        } else {
+            Ok(LoweredStmt::Let(
+                local_id,
+                closure,
+                Span::generated("eval_function_let"),
+            ))
+        }
     }
 
     fn lower_direct_eval_env_descriptor(&self) -> LoweredExpr {
