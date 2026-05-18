@@ -634,6 +634,43 @@ mod tests {
     }
 
     #[test]
+    fn resolver_marks_direct_eval_plan_strict_in_strict_script() {
+        let builtins =
+            parse_resolve_builtins("\"use strict\"; let source = \"1\"; let value = eval(source);");
+        let crate::ResolvedStmt::Let(_, crate::ResolvedExpr::Eval { plan }) = &builtins[2] else {
+            panic!("expected strict-script eval expression: {builtins:?}");
+        };
+        assert!(plan.caller_is_strict);
+    }
+
+    #[test]
+    fn resolver_marks_direct_eval_plan_strict_in_strict_function_body() {
+        let builtins =
+            parse_resolve_builtins("function run(source) { \"use strict\"; return eval(source); }");
+        let crate::ResolvedStmt::Function { body, .. } = &builtins[0] else {
+            panic!("expected function statement: {builtins:?}");
+        };
+        let crate::ResolvedStmt::Return(crate::ResolvedExpr::Eval { plan }) = &body[1] else {
+            panic!("expected strict function eval return: {body:?}");
+        };
+        assert!(plan.caller_is_strict);
+    }
+
+    #[test]
+    fn resolver_marks_direct_eval_plan_strict_in_class_method() {
+        let builtins =
+            parse_resolve_builtins("class Box { value(source) { return eval(source); } }");
+        let crate::ResolvedStmt::ClassDecl { methods, .. } = &builtins[0] else {
+            panic!("expected class declaration: {builtins:?}");
+        };
+        let crate::ResolvedStmt::Return(crate::ResolvedExpr::Eval { plan }) = &methods[0].body[0]
+        else {
+            panic!("expected class method eval return: {:?}", methods[0].body);
+        };
+        assert!(plan.caller_is_strict);
+    }
+
+    #[test]
     fn resolver_keeps_shadowed_eval_as_ordinary_call() {
         let builtins = parse_resolve_builtins(
             "let eval = (source) => source; let value = eval(\"not intrinsic\");",

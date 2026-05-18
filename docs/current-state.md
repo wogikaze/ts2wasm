@@ -317,9 +317,9 @@ The current implementation has several partial dynamic-code paths:
 - static string direct `eval(...)` can be expanded at compile time for the
   supported expression-completion and caller-local mutation slices, including
   function-body follow-up reads of eval-created `var` bindings. Resolved eval
-  expressions now carry kind/source/strict/span metadata through an explicit
-  `EvalFragmentPlan` object, but the richer scope/declaration/completion plan
-  is still future work;
+  expressions now carry kind/source/span metadata plus strict caller context
+  through an explicit `EvalFragmentPlan` object, but the richer
+  scope/declaration/completion plan is still future work;
 - direct eval statements are no longer spliced by the parser. Statement-position
   static eval now keeps the call shape through parse/name-resolution and uses
   compiler `EvalCompletionStep` expansion plus lowered eval-completion

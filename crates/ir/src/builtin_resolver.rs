@@ -48,10 +48,315 @@ pub fn resolve_builtins(program: &[Stmt]) -> Result<Vec<ResolvedStmt>, Diagnosti
     BigIntRuntimeGuard::default().visit_stmts(&program)?;
     let outer_bindings = collect_top_level_bindings(&program)?;
     let class_names = collect_top_level_class_names(&program);
-    program
+    let mut resolved = program
         .iter()
         .map(|stmt| resolve_stmt_with_outer_bindings(stmt, &outer_bindings, &class_names))
-        .collect()
+        .collect::<Result<Vec<_>, _>>()?;
+    let program_is_strict = resolved_block_has_use_strict_directive(&resolved);
+    mark_eval_strict_contexts_in_stmts(&mut resolved, program_is_strict);
+    Ok(resolved)
+}
+
+fn mark_eval_strict_contexts_in_stmts(stmts: &mut [ResolvedStmt], strict_context: bool) {
+    for stmt in stmts {
+        match stmt {
+            ResolvedStmt::Let(_, expr)
+            | ResolvedStmt::DestructureLet { expr, .. }
+            | ResolvedStmt::Assign(_, expr)
+            | ResolvedStmt::Expr(expr)
+            | ResolvedStmt::Return(expr)
+            | ResolvedStmt::Throw(expr) => mark_eval_strict_contexts_in_expr(expr, strict_context),
+            ResolvedStmt::If {
+                condition,
+                then_body,
+                else_body,
+            } => {
+                mark_eval_strict_contexts_in_expr(condition, strict_context);
+                mark_eval_strict_contexts_in_stmts(then_body, strict_context);
+                mark_eval_strict_contexts_in_stmts(else_body, strict_context);
+            }
+            ResolvedStmt::While { condition, body } => {
+                mark_eval_strict_contexts_in_expr(condition, strict_context);
+                mark_eval_strict_contexts_in_stmts(body, strict_context);
+            }
+            ResolvedStmt::Function { params, body, .. } => {
+                mark_eval_strict_contexts_in_params(params, strict_context);
+                let function_strict =
+                    strict_context || resolved_block_has_use_strict_directive(body);
+                mark_eval_strict_contexts_in_stmts(body, function_strict);
+            }
+            ResolvedStmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                mark_eval_strict_contexts_in_stmts(try_block, strict_context);
+                if let Some(catch_block) = catch_block {
+                    mark_eval_strict_contexts_in_stmts(catch_block, strict_context);
+                }
+                if let Some(finally_block) = finally_block {
+                    mark_eval_strict_contexts_in_stmts(finally_block, strict_context);
+                }
+            }
+            ResolvedStmt::Switch { expr, cases } => {
+                mark_eval_strict_contexts_in_expr(expr, strict_context);
+                for (case_expr, body) in cases {
+                    if let Some(case_expr) = case_expr {
+                        mark_eval_strict_contexts_in_expr(case_expr, strict_context);
+                    }
+                    mark_eval_strict_contexts_in_stmts(body, strict_context);
+                }
+            }
+            ResolvedStmt::DoWhile { body, condition } => {
+                mark_eval_strict_contexts_in_stmts(body, strict_context);
+                mark_eval_strict_contexts_in_expr(condition, strict_context);
+            }
+            ResolvedStmt::For {
+                init,
+                condition,
+                update,
+                body,
+            } => {
+                if let Some(init) = init {
+                    mark_eval_strict_contexts_in_stmt(init, strict_context);
+                }
+                if let Some(condition) = condition {
+                    mark_eval_strict_contexts_in_expr(condition, strict_context);
+                }
+                if let Some(update) = update {
+                    mark_eval_strict_contexts_in_expr(update, strict_context);
+                }
+                mark_eval_strict_contexts_in_stmts(body, strict_context);
+            }
+            ResolvedStmt::ForIn { iter, body, .. }
+            | ResolvedStmt::ForOf { iter, body, .. }
+            | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
+                mark_eval_strict_contexts_in_expr(iter, strict_context);
+                mark_eval_strict_contexts_in_stmts(body, strict_context);
+            }
+            ResolvedStmt::Labeled { body, .. } => {
+                mark_eval_strict_contexts_in_stmt(body, strict_context);
+            }
+            ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
+                mark_eval_strict_contexts_in_expr(expr, strict_context);
+            }
+            ResolvedStmt::ClassDecl {
+                constructor,
+                methods,
+                statics,
+                static_blocks,
+                static_private_fields,
+                ..
+            } => {
+                if let Some((params, body)) = constructor {
+                    mark_eval_strict_contexts_in_params(params, true);
+                    mark_eval_strict_contexts_in_stmts(body, true);
+                }
+                for method in methods {
+                    mark_eval_strict_contexts_in_params(&mut method.params, true);
+                    mark_eval_strict_contexts_in_stmts(&mut method.body, true);
+                }
+                for (_, expr) in statics {
+                    mark_eval_strict_contexts_in_expr(expr, true);
+                }
+                for (_, body) in static_blocks {
+                    mark_eval_strict_contexts_in_stmts(body, true);
+                }
+                for (_, expr, _) in static_private_fields {
+                    mark_eval_strict_contexts_in_expr(expr, true);
+                }
+            }
+            ResolvedStmt::Block { statements } => {
+                mark_eval_strict_contexts_in_stmts(statements, strict_context);
+            }
+            ResolvedStmt::AmbientValue(_)
+            | ResolvedStmt::Break { .. }
+            | ResolvedStmt::Continue { .. } => {}
+        }
+    }
+}
+
+fn mark_eval_strict_contexts_in_stmt(stmt: &mut ResolvedStmt, strict_context: bool) {
+    mark_eval_strict_contexts_in_stmts(std::slice::from_mut(stmt), strict_context);
+}
+
+fn mark_eval_strict_contexts_in_params(params: &mut [ResolvedParam], strict_context: bool) {
+    for param in params {
+        if let Some(default) = &mut param.default {
+            mark_eval_strict_contexts_in_expr(default, strict_context);
+        }
+    }
+}
+
+fn mark_eval_strict_contexts_in_expr(expr: &mut ResolvedExpr, strict_context: bool) {
+    match expr {
+        ResolvedExpr::Eval { plan } => {
+            plan.caller_is_strict |= strict_context;
+            if let EvalSource::Runtime(source) = &mut plan.source {
+                mark_eval_strict_contexts_in_expr(source, strict_context);
+            }
+        }
+        ResolvedExpr::Unary { expr, .. }
+        | ResolvedExpr::Await { expr }
+        | ResolvedExpr::Spread(expr)
+        | ResolvedExpr::BuiltinProperty { object: expr, .. } => {
+            mark_eval_strict_contexts_in_expr(expr, strict_context);
+        }
+        ResolvedExpr::Yield {
+            expr: Some(expr), ..
+        } => {
+            mark_eval_strict_contexts_in_expr(expr, strict_context);
+        }
+        ResolvedExpr::Binary { left, right, .. } => {
+            mark_eval_strict_contexts_in_expr(left, strict_context);
+            mark_eval_strict_contexts_in_expr(right, strict_context);
+        }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            mark_eval_strict_contexts_in_expr(condition, strict_context);
+            mark_eval_strict_contexts_in_expr(then_expr, strict_context);
+            mark_eval_strict_contexts_in_expr(else_expr, strict_context);
+        }
+        ResolvedExpr::Call { callee, args, .. }
+        | ResolvedExpr::OptionalCall { callee, args, .. } => {
+            mark_eval_strict_contexts_in_expr(callee, strict_context);
+            mark_eval_strict_contexts_in_exprs(args, strict_context);
+        }
+        ResolvedExpr::New { args, .. }
+        | ResolvedExpr::BuiltinCall { args, .. }
+        | ResolvedExpr::FunctionConstructor { args, .. }
+        | ResolvedExpr::Sequence(args) => {
+            mark_eval_strict_contexts_in_exprs(args, strict_context);
+        }
+        ResolvedExpr::Assign { expr, .. } | ResolvedExpr::LogicalAssign { expr, .. } => {
+            mark_eval_strict_contexts_in_expr(expr, strict_context);
+        }
+        ResolvedExpr::PropertyAssign {
+            object,
+            value: expr,
+            ..
+        } => {
+            mark_eval_strict_contexts_in_expr(object, strict_context);
+            mark_eval_strict_contexts_in_expr(expr, strict_context);
+        }
+        ResolvedExpr::LogicalComputedMemberAssign {
+            object, key, expr, ..
+        } => {
+            mark_eval_strict_contexts_in_expr(object, strict_context);
+            mark_eval_strict_contexts_in_expr(key, strict_context);
+            mark_eval_strict_contexts_in_expr(expr, strict_context);
+        }
+        ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+            mark_eval_strict_contexts_in_expr(object, strict_context);
+            mark_eval_strict_contexts_in_expr(key, strict_context);
+            mark_eval_strict_contexts_in_expr(value, strict_context);
+        }
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            mark_eval_strict_contexts_in_expr(object, strict_context);
+            mark_eval_strict_contexts_in_expr(expr, strict_context);
+        }
+        ResolvedExpr::LogicalPropertyAssign { expr, .. } => {
+            mark_eval_strict_contexts_in_expr(expr, strict_context);
+        }
+        ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
+            mark_eval_strict_contexts_in_expr(key, strict_context);
+            mark_eval_strict_contexts_in_expr(expr, strict_context);
+        }
+        ResolvedExpr::Array(elements) => {
+            for element in elements {
+                match element {
+                    crate::builtin_resolved::ResolvedArrayElement::Present(expr) => {
+                        mark_eval_strict_contexts_in_expr(expr, strict_context);
+                    }
+                    crate::builtin_resolved::ResolvedArrayElement::Hole => {}
+                }
+            }
+        }
+        ResolvedExpr::Object(props) => {
+            for prop in props {
+                match prop {
+                    crate::builtin_resolved::ResolvedObjectProp::KeyValue { value, .. }
+                    | crate::builtin_resolved::ResolvedObjectProp::Shorthand { value, .. }
+                    | crate::builtin_resolved::ResolvedObjectProp::MethodShorthand {
+                        value, ..
+                    } => {
+                        mark_eval_strict_contexts_in_expr(value, strict_context);
+                    }
+                    crate::builtin_resolved::ResolvedObjectProp::ComputedKey { key, value } => {
+                        mark_eval_strict_contexts_in_expr(key, strict_context);
+                        mark_eval_strict_contexts_in_expr(value, strict_context);
+                    }
+                }
+            }
+        }
+        ResolvedExpr::ComputedIndex { object, index }
+        | ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
+            mark_eval_strict_contexts_in_expr(object, strict_context);
+            mark_eval_strict_contexts_in_expr(index, strict_context);
+        }
+        ResolvedExpr::MethodCall { object, args, .. } => {
+            mark_eval_strict_contexts_in_expr(object, strict_context);
+            mark_eval_strict_contexts_in_exprs(args, strict_context);
+        }
+        ResolvedExpr::PropertyAccess { object, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object, .. } => {
+            mark_eval_strict_contexts_in_expr(object, strict_context);
+        }
+        ResolvedExpr::ArrowFn {
+            body, body_stmts, ..
+        } => {
+            let function_strict =
+                strict_context || resolved_block_has_use_strict_directive(body_stmts);
+            mark_eval_strict_contexts_in_expr(body, function_strict);
+            mark_eval_strict_contexts_in_stmts(body_stmts, function_strict);
+        }
+        ResolvedExpr::FunctionExpr { params, body, .. } => {
+            mark_eval_strict_contexts_in_params(params, strict_context);
+            let function_strict = strict_context || resolved_block_has_use_strict_directive(body);
+            mark_eval_strict_contexts_in_stmts(body, function_strict);
+        }
+        ResolvedExpr::ClassExpr { body, .. } => {
+            mark_eval_strict_contexts_in_stmts(body, true);
+        }
+        ResolvedExpr::EvalCompletion(_)
+        | ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
+        | ResolvedExpr::BigIntLiteral { .. }
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined
+        | ResolvedExpr::This { .. }
+        | ResolvedExpr::NewTarget { .. }
+        | ResolvedExpr::ImportMeta { .. }
+        | ResolvedExpr::Yield { expr: None, .. }
+        | ResolvedExpr::Ident(_)
+        | ResolvedExpr::ModuleLoad { .. } => {}
+    }
+}
+
+fn mark_eval_strict_contexts_in_exprs(exprs: &mut [ResolvedExpr], strict_context: bool) {
+    for expr in exprs {
+        mark_eval_strict_contexts_in_expr(expr, strict_context);
+    }
+}
+
+fn resolved_block_has_use_strict_directive(stmts: &[ResolvedStmt]) -> bool {
+    for stmt in stmts {
+        match stmt {
+            ResolvedStmt::Expr(ResolvedExpr::String(value)) if value == "use strict" => {
+                return true;
+            }
+            ResolvedStmt::Expr(_) => continue,
+            _ => return false,
+        }
+    }
+    false
 }
 
 #[derive(Default)]
