@@ -480,11 +480,12 @@ Exit criteria:
   returns, tracks string-keyed primitive shape changes beyond the first host
   record capacity, bridges nested JS arrays with length/index reads for
   primitive elements and later array growth, exposes `.length`, `.name`, and
-  `.prototype` metadata, and carries handles as wasm object cells backed by
-  host-side handle maps instead of number values; remaining work is broader
-  non-primitive properties, identity-stable growth for already-returned wasm
-  references, error bridging, and a runtime-wide host external object contract
-  beyond the focused shim.
+  `.prototype` metadata, bridges function-valued object properties as
+  metadata-bearing host handles, and carries handles as wasm object cells
+  backed by host-side handle maps instead of number values; remaining work is
+  callable dispatch for function-valued properties, identity-stable growth for
+  already-returned wasm references, error bridging, and a runtime-wide host
+  external object contract beyond the focused shim.
 
 Exit criteria:
 

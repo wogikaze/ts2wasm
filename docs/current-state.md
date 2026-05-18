@@ -364,18 +364,19 @@ The current implementation has several partial dynamic-code paths:
   same host object is returned repeatedly, refreshes existing string-keyed
   primitive properties on repeated returns, tracks string-keyed primitive shape
   changes beyond the first host record capacity, bridges nested JS arrays with
-  length/index reads for primitive elements and later array growth, and carries
-  handles as wasm object cells backed by host-side handle maps instead of number
-  values.
+  length/index reads for primitive elements and later array growth, bridges
+  function-valued object properties as metadata-bearing host handles, and
+  carries handles as wasm object cells backed by host-side handle maps instead
+  of number values.
 
 The canonical implementation plan is
 `plans/eval-new-function-implementation-plan.md`. Current known gaps include
 the split parser/compiler eval expansion paths, direct eval declaration
 environment connection, remaining Function constructor grammar/constructability
-completeness, broader host Function handle non-primitive properties,
-identity-stable growth for already-returned wasm references, and error bridging,
-and full dynamic direct-eval environment semantics beyond the primitive env-cell
-write-back slice. Node-shim execution for dynamic indirect eval and dynamic
+completeness, callable dispatch for host Function handle function-valued
+properties, identity-stable growth for already-returned wasm references, and
+error bridging, and full dynamic direct-eval environment semantics beyond the
+primitive env-cell write-back slice. Node-shim execution for dynamic indirect eval and dynamic
 Function handles is covered by focused integration tests, as are primitive-return
 and primitive local/parameter/block-shadow/string write-back, object result and
 primitive property bridging, strict lexical shadow isolation, and a TDZ-conflict

@@ -32,6 +32,13 @@ fn dynamic_function_handle_preserves_object_properties_through_node_shim_host_im
 }
 
 #[test]
+fn dynamic_function_handle_bridges_function_properties_through_node_shim_host_imports() {
+    let fixture =
+        "fixtures/core-semantics/function-constructor-dynamic-function-property-node-shim.ts";
+    assert_node_shim_stdout(fixture, "2\nhostCallback\n[object Object]\nundefined\n");
+}
+
+#[test]
 fn dynamic_function_handle_preserves_object_identity_through_node_shim_host_imports() {
     let fixture =
         "fixtures/core-semantics/function-constructor-dynamic-object-identity-node-shim.ts";
@@ -252,6 +259,7 @@ const GC_KIND_OBJECT = 12;
 let memory;
 const hostFunctions = [];
 const hostFunctionHandles = new Map();
+const hostFunctionHandleValues = new WeakMap();
 const hostArrayHandles = new WeakMap();
 const hostObjectHandles = new WeakMap();
 const decoder = new TextDecoder();
@@ -472,6 +480,15 @@ function encodeHostFunctionHandle(fn, index) {
   return raw;
 }
 
+function encodeHostFunctionValue(fn) {
+  const existing = hostFunctionHandleValues.get(fn);
+  if (existing !== undefined) return existing;
+  hostFunctions.push(fn);
+  const raw = encodeHostFunctionHandle(fn, hostFunctions.length - 1);
+  hostFunctionHandleValues.set(fn, raw);
+  return raw;
+}
+
 function decodeHostFunctionHandle(raw) {
   if (rawTag(raw) !== TAG_OBJECT) {
     throw new TypeError(`expected host function handle object RawValue, got ${raw}`);
@@ -492,6 +509,7 @@ function encodeHostValue(value) {
   if (typeof value === 'string') return encodeString(value);
   if (Array.isArray(value)) return encodeHostArray(value);
   if (typeof value === 'object') return encodeHostObject(value);
+  if (typeof value === 'function') return encodeHostFunctionValue(value);
   throw new TypeError(`unsupported host return value for this test: ${String(value)}`);
 }
 
@@ -572,8 +590,7 @@ const imports = {
     'function.compile'(argsRaw) {
       const args = decodeArgs(argsRaw);
       const fn = Function(...args);
-      hostFunctions.push(fn);
-      return encodeHostFunctionHandle(fn, hostFunctions.length - 1);
+      return encodeHostFunctionValue(fn);
     },
     'function.call'(handleRaw, argsRaw) {
       const fn = hostFunctions[decodeHostFunctionHandle(handleRaw)];
