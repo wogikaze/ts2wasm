@@ -1182,35 +1182,8 @@ fn static_indirect_eval_fixture_matches_node_output() {
 }
 
 #[test]
-#[ignore]
-fn direct_eval_fixture_reports_issue_429() {
-    let fixture = "fixtures/core-semantics/direct-eval-unsupported.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../..")
-        .join(fixture);
-    let output = temp_wasm_path(fixture);
-
-    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&fixture_path)
-        .arg("-o")
-        .arg(&output)
-        .output()
-        .unwrap();
-
-    assert!(
-        !build.status.success(),
-        "direct eval fixture should not build successfully"
-    );
-    let stderr = String::from_utf8_lossy(&build.stderr);
-    assert!(
-        stderr_contains_diag_code(&stderr, "UnsupportedEval"),
-        "expected UnsupportedEval diagnostic for {fixture}, got:\n{stderr}"
-    );
-    assert!(
-        stderr.contains("issue-429"),
-        "expected issue-429 diagnostic for {fixture}, got:\n{stderr}"
-    );
+fn direct_eval_dynamic_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/direct-eval-dynamic-host-path.ts");
 }
 
 #[test]

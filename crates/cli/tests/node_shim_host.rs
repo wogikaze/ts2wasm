@@ -171,6 +171,12 @@ fn dynamic_direct_eval_executes_through_node_shim_host_import() {
 }
 
 #[test]
+fn dynamic_direct_eval_runtime_source_keeps_following_statements() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-host-path.ts";
+    assert_node_shim_stdout(fixture, "unreachable\n");
+}
+
+#[test]
 fn static_direct_eval_lands_var_and_function_declarations() {
     let fixture = "fixtures/core-semantics/direct-eval-var-function-declaration.ts";
     assert_node_shim_stdout(fixture, "1\n");
