@@ -925,6 +925,7 @@ directories:
     - direct-eval-dynamic-block-shadow-writeback-node-shim.ts
     - direct-eval-dynamic-catch-binding-node-shim.ts
     - direct-eval-dynamic-async-generator-expression-name-not-binding-node-shim.ts
+    - direct-eval-dynamic-array-function-element-node-shim.ts
     - direct-eval-dynamic-class-constructor-this-node-shim.ts
     - direct-eval-dynamic-class-method-arguments-node-shim.ts
     - direct-eval-dynamic-class-method-this-node-shim.ts

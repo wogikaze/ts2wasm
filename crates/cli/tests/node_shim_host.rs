@@ -574,6 +574,12 @@ fn dynamic_direct_eval_bridges_nested_arrays_through_node_shim_host_import() {
 }
 
 #[test]
+fn dynamic_direct_eval_calls_array_function_elements_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-array-function-element-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\n12\n");
+}
+
+#[test]
 fn dynamic_direct_eval_bridges_nested_objects_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-nested-object-node-shim.ts";
     assert_node_shim_stdout(fixture, "7\nok\nundefined\n");
