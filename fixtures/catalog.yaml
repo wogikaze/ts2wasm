@@ -969,6 +969,7 @@ directories:
     - function-constructor-dynamic-throw-catch-node-shim.ts
     - function-constructor-metadata.ts
     - function-constructor-no-caller-capture.ts
+    - function-constructor-static-construct.ts
     - function-constructor-shadowed-ordinary-call.ts
     - function-constructor-zero-args.ts
     - function-bind-call-apply.ts

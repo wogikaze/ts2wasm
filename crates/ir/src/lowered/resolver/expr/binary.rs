@@ -60,6 +60,16 @@ impl super::super::Resolver {
                     span: Span::generated("runtime_call"),
                 });
             }
+            if let Some(prototype) = self.constructable_function_prototype_ref(name) {
+                return Ok(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::InstanceOf,
+                    args: vec![
+                        self.lower_expr(left)?,
+                        LoweredExpr::ClassPrototype(prototype, Span::generated("function_proto")),
+                    ],
+                    span: Span::generated("runtime_call"),
+                });
+            }
         }
         // Dynamic path: RHS is not statically known.
         // Evaluate RHS at runtime and use SymbolHasInstance which checks

@@ -131,6 +131,19 @@ impl super::super::Resolver {
                 span: Span::generated("generator_prototype"),
             });
         }
+        if key == "constructor"
+            && let ResolvedExpr::PropertyAccess {
+                object: prototype_object,
+                key: prototype_key,
+                ..
+            } = object
+            && prototype_key == "prototype"
+            && let ResolvedExpr::Ident(name) = prototype_object.as_ref()
+            && self.constructable_function_prototype_ref(name).is_some()
+            && let Ok(local) = self.resolve_local(name)
+        {
+            return Ok(LoweredExpr::Local(local, Span::generated("local")));
+        }
         if key == "description" {
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::SymbolDescription,
@@ -410,11 +423,20 @@ impl super::super::Resolver {
                     .and_then(|signature| signature.metadata_length)?;
                 Some(LoweredExpr::Number(length as i32, Span::generated("num")))
             }
-            "prototype" => Some(LoweredExpr::ObjectNew {
-                props: Vec::new(),
-                non_enumerable: 0,
-                span: Span::generated("function_prototype_object"),
-            }),
+            "prototype" => {
+                if let Some(prototype) = self.constructable_function_prototype_ref(name) {
+                    Some(LoweredExpr::ClassPrototype(
+                        prototype,
+                        Span::generated("function_prototype_object"),
+                    ))
+                } else {
+                    Some(LoweredExpr::ObjectNew {
+                        props: Vec::new(),
+                        non_enumerable: 0,
+                        span: Span::generated("function_prototype_object"),
+                    })
+                }
+            }
             _ => None,
         }
     }

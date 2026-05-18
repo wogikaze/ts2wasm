@@ -513,11 +513,26 @@ impl Resolver {
                             .function_metadata_name_locals
                             .remove(&local_id);
                     }
+                    if static_function_constructor_expr(expr) {
+                        self.ctx
+                            .facts
+                            .constructable_function_locals
+                            .insert(local_id);
+                    } else {
+                        self.ctx
+                            .facts
+                            .constructable_function_locals
+                            .remove(&local_id);
+                    }
                 } else {
                     self.ctx.facts.arrow_locals.remove(&local_id);
                     self.ctx
                         .facts
                         .function_metadata_name_locals
+                        .remove(&local_id);
+                    self.ctx
+                        .facts
+                        .constructable_function_locals
                         .remove(&local_id);
                 }
                 if let Some(bound_function) = bound_function {
@@ -780,11 +795,26 @@ impl Resolver {
                             .function_metadata_name_locals
                             .remove(&local_id);
                     }
+                    if static_function_constructor_expr(expr) {
+                        self.ctx
+                            .facts
+                            .constructable_function_locals
+                            .insert(local_id);
+                    } else {
+                        self.ctx
+                            .facts
+                            .constructable_function_locals
+                            .remove(&local_id);
+                    }
                 } else {
                     self.ctx.facts.arrow_locals.remove(&local_id);
                     self.ctx
                         .facts
                         .function_metadata_name_locals
+                        .remove(&local_id);
+                    self.ctx
+                        .facts
+                        .constructable_function_locals
                         .remove(&local_id);
                 }
                 if let Some(bound_function) = bound_function {
@@ -1839,6 +1869,14 @@ pub(crate) fn static_function_metadata_name_for_expr(
         }
         _ => None,
     }
+}
+
+pub(crate) fn static_function_constructor_expr(expr: &ResolvedExpr) -> bool {
+    matches!(
+        expr,
+        ResolvedExpr::FunctionExpr { origin, .. }
+            if *origin == ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor
+    )
 }
 
 fn static_accessor_key_metadata_name(

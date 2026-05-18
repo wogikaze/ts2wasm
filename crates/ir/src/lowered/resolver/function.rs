@@ -343,6 +343,26 @@ impl super::Resolver {
         )
     }
 
+    pub(crate) fn constructable_function_prototype_ref(
+        &self,
+        name: &str,
+    ) -> Option<ClassPrototypeRef> {
+        let local = self.resolve_local(name).ok()?;
+        if !self
+            .ctx
+            .facts
+            .constructable_function_locals
+            .contains(&local)
+        {
+            return None;
+        }
+        let closure = self.ctx.facts.arrow_locals.get(&local)?;
+        Some(ClassPrototypeRef {
+            constructor: closure.func_id,
+            parent_constructors: Vec::new(),
+        })
+    }
+
     pub(super) fn lower_object_method_function_expr(
         &mut self,
         name: &str,

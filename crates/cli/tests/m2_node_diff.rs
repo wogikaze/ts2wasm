@@ -1160,6 +1160,11 @@ fn function_constructor_metadata_matches_node_output() {
 }
 
 #[test]
+fn function_constructor_static_construct_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/function-constructor-static-construct.ts");
+}
+
+#[test]
 fn function_constructor_zero_args_matches_node_output() {
     assert_fixture_matches_node("fixtures/core-semantics/function-constructor-zero-args.ts");
 }

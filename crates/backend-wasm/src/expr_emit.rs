@@ -2382,12 +2382,18 @@ impl WatEmitter<'_> {
         // Call constructor with implicit `this` first argument.
         if let Some(func) = self.program.functions.get(constructor.0) {
             if let Some(rest_index) = func.rest_param_index {
-                writer.push_str(&format!(
-                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
-                    local_index(*base_local),
-                    ValueTag::OBJECT,
-                ));
-                let explicit_fixed_count = rest_index.saturating_sub(1);
+                if func.uses_receiver {
+                    writer.push_str(&format!(
+                        "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+                        local_index(*base_local),
+                        ValueTag::OBJECT,
+                    ));
+                }
+                let explicit_fixed_count = if func.uses_receiver {
+                    rest_index.saturating_sub(1)
+                } else {
+                    rest_index
+                };
                 for arg_index in 0..explicit_fixed_count {
                     if let Some(arg) = args.get(arg_index) {
                         self.emit_expr(writer, arg, indent, frame);
@@ -2398,15 +2404,18 @@ impl WatEmitter<'_> {
                 let rest_start = explicit_fixed_count.min(args.len());
                 self.emit_array_literal(writer, &args[rest_start..], indent, frame);
             } else {
-                writer.push_str(&format!(
-                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
-                    local_index(*base_local),
-                    ValueTag::OBJECT,
-                ));
+                if func.uses_receiver {
+                    writer.push_str(&format!(
+                        "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+                        local_index(*base_local),
+                        ValueTag::OBJECT,
+                    ));
+                }
                 for arg in args {
                     self.emit_expr(writer, arg, indent, frame);
                 }
-                for _ in (args.len() + 1)..func.params.len() {
+                let emitted_count = args.len() + usize::from(func.uses_receiver);
+                for _ in emitted_count..func.params.len() {
                     writer.i32_const(indent, ValueTag::UNDEFINED);
                 }
             }

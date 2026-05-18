@@ -68,6 +68,21 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             });
         }
+        if let Some(prototype) = self.constructable_function_prototype_ref(class_name) {
+            let lowered_args = args
+                .iter()
+                .map(|arg| self.lower_expr(arg))
+                .collect::<Result<Vec<_>, _>>()?;
+            return Ok(LoweredExpr::New {
+                constructor: prototype.constructor,
+                prototype,
+                args: lowered_args,
+                base_local: self.alloc_temp(),
+                private_brand: None,
+                private_slot_count: 0,
+                span: Span::generated("new_function_constructor"),
+            });
+        }
         if class_name == INTRINSIC_FUNCTION_CONSTRUCTOR_NEW {
             return self.lower_dynamic_function_constructor_host_compile(args, span);
         }
