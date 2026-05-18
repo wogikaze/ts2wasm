@@ -353,6 +353,13 @@ pub enum EvalCompletionStep {
         expr: ResolvedExpr,
         cases: Vec<(Option<ResolvedExpr>, Vec<EvalCompletionStep>)>,
     },
+    TryCatch {
+        try_steps: Vec<EvalCompletionStep>,
+        catch_param: Option<String>,
+        catch_steps: Option<Vec<EvalCompletionStep>>,
+        finally_steps: Option<Vec<EvalCompletionStep>>,
+    },
+    Throw(ResolvedExpr),
     Break {
         label: Option<String>,
     },
@@ -393,9 +400,11 @@ impl EvalCompletionStep {
                 condition, update, ..
             } => condition.as_ref().or(update.as_ref()),
             Self::Switch { expr, .. } => Some(expr),
+            Self::Throw(expr) => Some(expr),
             Self::HoistVars(_)
             | Self::HoistFunctions(_)
             | Self::Empty(None)
+            | Self::TryCatch { .. }
             | Self::Break { .. }
             | Self::Continue { .. }
             | Self::FunctionDecl { .. }

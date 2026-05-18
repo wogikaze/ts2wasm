@@ -530,8 +530,92 @@ impl super::Resolver {
                         span: Span::generated("eval_completion_switch"),
                     });
                 }
+                EvalCompletionStep::TryCatch {
+                    try_steps,
+                    catch_param,
+                    catch_steps,
+                    finally_steps,
+                } => {
+                    let try_body = self.lower_eval_completion_steps_scoped(
+                        try_steps,
+                        completion,
+                        caller_scope_index,
+                    )?;
+                    let (catch_var, catch_body) = if let Some(catch_steps) = catch_steps {
+                        self.ctx.symbols.scopes.push(HashMap::new());
+                        let lowered = (|| {
+                            let catch_var = if let Some(param) = catch_param {
+                                let local_id = self.declare_local(param)?;
+                                if self.ctx.facts.env_cell_names.contains(param) {
+                                    self.ctx.facts.env_cell_locals.insert(local_id);
+                                    self.ctx.facts.initialized_env_cell_locals.insert(local_id);
+                                }
+                                Some(local_id)
+                            } else {
+                                None
+                            };
+                            let mut catch_body = Vec::new();
+                            self.lower_eval_completion_steps_into(
+                                catch_steps,
+                                completion,
+                                caller_scope_index,
+                                &mut catch_body,
+                            )?;
+                            if let Some(local_id) = catch_var
+                                && self.ctx.facts.env_cell_locals.contains(&local_id)
+                            {
+                                catch_body.insert(
+                                    0,
+                                    LoweredStmt::Assign(
+                                        local_id,
+                                        LoweredExpr::EnvCellNew(
+                                            Box::new(LoweredExpr::Local(
+                                                local_id,
+                                                Span::generated("catch_binding"),
+                                            )),
+                                            Span::generated("env_cell_new"),
+                                        ),
+                                        Span::generated("assign"),
+                                    ),
+                                );
+                            }
+                            Ok((catch_var, Some(catch_body)))
+                        })();
+                        self.ctx.symbols.scopes.pop();
+                        lowered?
+                    } else {
+                        (None, None)
+                    };
+                    let finally_body = finally_steps
+                        .as_deref()
+                        .map(|steps| {
+                            self.lower_eval_non_completion_steps_scoped(steps, caller_scope_index)
+                        })
+                        .transpose()?;
+                    if catch_body.is_none() && finally_body.is_some() {
+                        stmts.push(LoweredStmt::TryFinally {
+                            try_body,
+                            finally_body: finally_body.unwrap_or_default(),
+                            span: Span::generated("eval_completion_try_finally"),
+                        });
+                    } else {
+                        stmts.push(LoweredStmt::TryCatch {
+                            try_body,
+                            catch_var,
+                            catch_body,
+                            finally_body,
+                            span: Span::generated("eval_completion_try_catch"),
+                        });
+                    }
+                }
                 EvalCompletionStep::LexicalLet { name, init } => {
                     stmts.push(self.lower_stmt(&ResolvedStmt::Let(name.clone(), init.clone()))?);
+                }
+                EvalCompletionStep::Throw(expr) => {
+                    stmts.push(LoweredStmt::Throw(
+                        self.lower_expr(expr)?,
+                        Span::generated("eval_completion_throw"),
+                    ));
                 }
                 EvalCompletionStep::Break { label } => {
                     stmts.push(LoweredStmt::Break {
@@ -549,6 +633,46 @@ impl super::Resolver {
             }
         }
         Ok(())
+    }
+
+    fn lower_eval_completion_steps_scoped(
+        &mut self,
+        steps: &[crate::builtin_resolved::EvalCompletionStep],
+        completion: LocalId,
+        caller_scope_index: usize,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        self.ctx.symbols.scopes.push(HashMap::new());
+        let lowered = (|| {
+            let mut body = Vec::new();
+            self.lower_eval_completion_steps_into(
+                steps,
+                completion,
+                caller_scope_index,
+                &mut body,
+            )?;
+            Ok(body)
+        })();
+        self.ctx.symbols.scopes.pop();
+        lowered
+    }
+
+    fn lower_eval_non_completion_steps_scoped(
+        &mut self,
+        steps: &[crate::builtin_resolved::EvalCompletionStep],
+        caller_scope_index: usize,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        self.ctx.symbols.scopes.push(HashMap::new());
+        let lowered = (|| {
+            let mut body = Vec::new();
+            for step in steps {
+                if let Some(stmt) = self.lower_eval_non_completion_step(step, caller_scope_index)? {
+                    body.push(stmt);
+                }
+            }
+            Ok(body)
+        })();
+        self.ctx.symbols.scopes.pop();
+        lowered
     }
 
     fn lower_eval_non_completion_step(
@@ -598,6 +722,10 @@ impl super::Resolver {
                 *is_async,
                 caller_scope_index,
             )?)),
+            EvalCompletionStep::Throw(expr) => Ok(Some(LoweredStmt::Throw(
+                self.lower_expr(expr)?,
+                Span::generated("eval_non_completion_throw"),
+            ))),
             EvalCompletionStep::Break { label } => Ok(Some(LoweredStmt::Break {
                 label: label.clone(),
                 span: Span::generated("eval_non_completion_break"),

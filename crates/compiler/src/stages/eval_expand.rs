@@ -1201,6 +1201,36 @@ fn eval_statement_completion_step(
                 .collect();
             EvalCompletionStep::Switch { expr, cases }
         }
+        ResolvedStmt::TryCatch {
+            try_block,
+            catch_param,
+            catch_block,
+            finally_block,
+        } => {
+            let (ast_try, ast_catch, ast_finally) = match ast_stmt {
+                Some(Stmt::TryCatch {
+                    try_block,
+                    catch_block,
+                    finally_block,
+                    ..
+                }) => (
+                    try_block.as_slice(),
+                    catch_block.as_deref(),
+                    finally_block.as_deref(),
+                ),
+                _ => (&[][..], None, None),
+            };
+            EvalCompletionStep::TryCatch {
+                try_steps: eval_completion_steps(ast_try, try_block, leak_var_declarations),
+                catch_param,
+                catch_steps: catch_block.map(|block| {
+                    eval_completion_steps(ast_catch.unwrap_or(&[]), block, leak_var_declarations)
+                }),
+                finally_steps: finally_block.map(|block| {
+                    eval_completion_steps(ast_finally.unwrap_or(&[]), block, leak_var_declarations)
+                }),
+            }
+        }
         ResolvedStmt::Function {
             name,
             params,
@@ -1217,6 +1247,7 @@ fn eval_statement_completion_step(
         }
         ResolvedStmt::Break { label } => EvalCompletionStep::Break { label },
         ResolvedStmt::Continue { label } => EvalCompletionStep::Continue { label },
+        ResolvedStmt::Throw(expr) => EvalCompletionStep::Throw(expr),
         ResolvedStmt::Return(expr) => EvalCompletionStep::Value(expr),
         _ => EvalCompletionStep::Empty(None),
     }

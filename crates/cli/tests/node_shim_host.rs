@@ -231,6 +231,12 @@ fn static_direct_eval_switch_preserves_completion() {
 }
 
 #[test]
+fn static_direct_eval_try_preserves_completion() {
+    let fixture = "fixtures/core-semantics/direct-eval-try-completion.ts";
+    assert_node_shim_stdout(fixture, "1\n2\n7\n8\n");
+}
+
+#[test]
 fn static_direct_eval_expression_reads_caller_local() {
     let fixture = "fixtures/core-semantics/direct-eval-expression-caller-local.ts";
     assert_node_shim_stdout(fixture, "3\n");
