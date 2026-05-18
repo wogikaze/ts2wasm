@@ -765,26 +765,29 @@ fn expand_static_eval_source(
             phase: None,
         })?;
 
-    let name_resolved = if outer_bindings.is_empty() {
+    let leak_var_declarations = direct_caller_scope && !block_has_use_strict_directive(&program);
+    let mut eval_declarations = Vec::new();
+    if leak_var_declarations {
+        collect_eval_var_declaration_names(&program, &mut eval_declarations);
+    }
+
+    let mut effective_outer_bindings = outer_bindings.to_vec();
+    for name in &eval_declarations {
+        if !effective_outer_bindings.contains(name) {
+            effective_outer_bindings.push(name.clone());
+        }
+    }
+
+    let name_resolved = if effective_outer_bindings.is_empty() {
         resolve_names(&program)?
     } else {
-        resolve_names_with_outer_bindings(&program, outer_bindings)?
+        resolve_names_with_outer_bindings(&program, &effective_outer_bindings)?
     };
     let builtin_resolved = resolve_builtins(&name_resolved)?;
 
-    let leak_var_declarations = direct_caller_scope && !block_has_use_strict_directive(&program);
-    let caller_var_declarations = if leak_var_declarations {
-        program
-            .iter()
-            .filter_map(eval_top_level_var_name)
-            .collect::<Vec<_>>()
-    } else {
-        Vec::new()
-    };
-
     Ok(StaticEvalExpansion {
         expr: extract_completion_value(&program, builtin_resolved, leak_var_declarations)?,
-        caller_var_declarations,
+        caller_var_declarations: eval_declarations,
     })
 }
 
@@ -1044,15 +1047,25 @@ fn extract_completion_value(
     stmts: Vec<ResolvedStmt>,
     leak_var_declarations: bool,
 ) -> Result<ResolvedExpr, Diagnostic> {
-    Ok(ResolvedExpr::EvalCompletion(
-        stmts
-            .into_iter()
-            .enumerate()
-            .map(|(idx, stmt)| {
-                eval_statement_completion_step(ast_stmts.get(idx), stmt, leak_var_declarations)
-            })
-            .collect(),
-    ))
+    Ok(ResolvedExpr::EvalCompletion(eval_completion_steps(
+        ast_stmts,
+        stmts,
+        leak_var_declarations,
+    )))
+}
+
+fn eval_completion_steps(
+    ast_stmts: &[Stmt],
+    stmts: Vec<ResolvedStmt>,
+    leak_var_declarations: bool,
+) -> Vec<EvalCompletionStep> {
+    stmts
+        .into_iter()
+        .enumerate()
+        .map(|(idx, stmt)| {
+            eval_statement_completion_step(ast_stmts.get(idx), stmt, leak_var_declarations)
+        })
+        .collect()
 }
 
 fn eval_statement_completion_step(
@@ -1073,6 +1086,36 @@ fn eval_statement_completion_step(
             EvalCompletionStep::VarLet { name, init: expr }
         }
         ResolvedStmt::Let(name, expr) => EvalCompletionStep::LexicalLet { name, init: expr },
+        ResolvedStmt::Block { statements } => {
+            let ast_statements = match ast_stmt {
+                Some(Stmt::Block { statements, .. }) => statements.as_slice(),
+                _ => &[],
+            };
+            EvalCompletionStep::Block(eval_completion_steps(
+                ast_statements,
+                statements,
+                leak_var_declarations,
+            ))
+        }
+        ResolvedStmt::If {
+            condition,
+            then_body,
+            else_body,
+        } => {
+            let (ast_then, ast_else) = match ast_stmt {
+                Some(Stmt::If {
+                    then_body,
+                    else_body,
+                    ..
+                }) => (then_body.as_slice(), else_body.as_slice()),
+                _ => (&[][..], &[][..]),
+            };
+            EvalCompletionStep::If {
+                condition,
+                then_steps: eval_completion_steps(ast_then, then_body, leak_var_declarations),
+                else_steps: eval_completion_steps(ast_else, else_body, leak_var_declarations),
+            }
+        }
         ResolvedStmt::Function {
             name,
             params,
@@ -1092,12 +1135,55 @@ fn eval_statement_completion_step(
     }
 }
 
-fn eval_top_level_var_name(stmt: &Stmt) -> Option<String> {
-    match stmt {
-        Stmt::Let {
-            name, is_var: true, ..
-        } => Some(name.clone()),
-        Stmt::Function { name, .. } => Some(name.clone()),
-        _ => None,
+fn collect_eval_var_declaration_names(stmts: &[Stmt], out: &mut Vec<String>) {
+    for stmt in stmts {
+        match stmt {
+            Stmt::Let {
+                name, is_var: true, ..
+            }
+            | Stmt::Function { name, .. } => {
+                if !out.contains(name) {
+                    out.push(name.clone());
+                }
+            }
+            Stmt::Block { statements, .. } => collect_eval_var_declaration_names(statements, out),
+            Stmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                collect_eval_var_declaration_names(then_body, out);
+                collect_eval_var_declaration_names(else_body, out);
+            }
+            Stmt::While { body, .. }
+            | Stmt::DoWhile { body, .. }
+            | Stmt::For { body, .. }
+            | Stmt::ForIn { body, .. }
+            | Stmt::ForOf { body, .. }
+            | Stmt::ForAwaitOf { body, .. } => collect_eval_var_declaration_names(body, out),
+            Stmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    collect_eval_var_declaration_names(body, out);
+                }
+            }
+            Stmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                collect_eval_var_declaration_names(try_block, out);
+                if let Some(catch_block) = catch_block {
+                    collect_eval_var_declaration_names(catch_block, out);
+                }
+                if let Some(finally_block) = finally_block {
+                    collect_eval_var_declaration_names(finally_block, out);
+                }
+            }
+            Stmt::Labeled { body, .. } => {
+                collect_eval_var_declaration_names(std::slice::from_ref(body.as_ref()), out);
+            }
+            _ => {}
+        }
     }
 }

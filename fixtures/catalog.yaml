@@ -883,12 +883,14 @@ directories:
     - direct-eval-block-function-mutable-env.ts
     - direct-eval-block-function-shadowed-unsupported.ts
     - direct-eval-block-function.ts
+    - direct-eval-block-var-lands-in-caller.ts
     - direct-eval-caller-local.ts
     - direct-eval-declaration-empty-completion.ts
     - direct-eval-declaration-preserves-previous-completion.ts
     - direct-eval-expression-caller-local.ts
     - direct-eval-expression-side-effect.ts
     - direct-eval-function-lands-in-caller.ts
+    - direct-eval-if-var-lands-in-caller.ts
     - direct-eval-nested-static.ts
     - direct-eval-var-lands-in-caller.ts
     - direct-eval-strict-lexical-assignment.ts

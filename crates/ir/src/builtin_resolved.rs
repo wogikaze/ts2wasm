@@ -327,6 +327,12 @@ pub enum EvalCompletionStep {
         body: Vec<ResolvedStmt>,
         is_async: bool,
     },
+    Block(Vec<EvalCompletionStep>),
+    If {
+        condition: ResolvedExpr,
+        then_steps: Vec<EvalCompletionStep>,
+        else_steps: Vec<EvalCompletionStep>,
+    },
     LexicalLet {
         name: String,
         init: ResolvedExpr,
@@ -339,8 +345,11 @@ impl EvalCompletionStep {
             Self::Value(expr)
             | Self::Empty(Some(expr))
             | Self::VarLet { init: expr, .. }
+            | Self::If {
+                condition: expr, ..
+            }
             | Self::LexicalLet { init: expr, .. } => Some(expr),
-            Self::Empty(None) | Self::FunctionDecl { .. } => None,
+            Self::Empty(None) | Self::FunctionDecl { .. } | Self::Block(_) => None,
         }
     }
 }

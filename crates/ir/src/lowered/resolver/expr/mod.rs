@@ -256,8 +256,6 @@ impl super::Resolver {
         &mut self,
         steps: &[crate::builtin_resolved::EvalCompletionStep],
     ) -> Result<LoweredExpr, Diagnostic> {
-        use crate::builtin_resolved::EvalCompletionStep;
-
         let completion = self.alloc_temp();
         self.ctx.symbols.scopes.push(HashMap::new());
         let caller_scope_index = self.ctx.symbols.scopes.len().saturating_sub(2);
@@ -267,62 +265,12 @@ impl super::Resolver {
                 LoweredExpr::Undefined(Span::generated("eval_completion_init")),
                 Span::generated("eval_completion_let"),
             )];
-            for step in steps {
-                match step {
-                    EvalCompletionStep::Value(expr) => {
-                        let value = self.lower_expr(expr)?;
-                        stmts.push(LoweredStmt::Assign(
-                            completion,
-                            value,
-                            Span::generated("eval_completion_set"),
-                        ));
-                    }
-                    EvalCompletionStep::Empty(Some(expr)) => {
-                        let side_effect = self.lower_expr(expr)?;
-                        stmts.push(LoweredStmt::Expr(
-                            side_effect,
-                            Span::generated("eval_completion_empty"),
-                        ));
-                    }
-                    EvalCompletionStep::VarLet { name, init } => {
-                        let (local, existed) =
-                            self.declare_eval_var_in_caller_scope(name, caller_scope_index)?;
-                        let init = self.lower_expr(init)?;
-                        if existed {
-                            stmts.push(LoweredStmt::Assign(
-                                local,
-                                init,
-                                Span::generated("eval_var_assign"),
-                            ));
-                        } else {
-                            stmts.push(LoweredStmt::Let(
-                                local,
-                                init,
-                                Span::generated("eval_var_let"),
-                            ));
-                        }
-                    }
-                    EvalCompletionStep::FunctionDecl {
-                        name,
-                        params,
-                        body,
-                        is_async,
-                    } => {
-                        stmts.push(self.lower_eval_function_decl_in_caller_scope(
-                            name,
-                            params,
-                            body,
-                            *is_async,
-                            caller_scope_index,
-                        )?);
-                    }
-                    EvalCompletionStep::LexicalLet { name, init } => {
-                        stmts
-                            .push(self.lower_stmt(&ResolvedStmt::Let(name.clone(), init.clone()))?);
-                    }
-                    EvalCompletionStep::Empty(None) => {}
-                }
-            }
+            self.lower_eval_completion_steps_into(
+                steps,
+                completion,
+                caller_scope_index,
+                &mut stmts,
+            )?;
             Ok(LoweredExpr::Block {
                 stmts,
                 result: Box::new(LoweredExpr::Local(
@@ -334,6 +282,128 @@ impl super::Resolver {
         })();
         self.ctx.symbols.scopes.pop();
         lowered
+    }
+
+    fn lower_eval_completion_steps_into(
+        &mut self,
+        steps: &[crate::builtin_resolved::EvalCompletionStep],
+        completion: LocalId,
+        caller_scope_index: usize,
+        stmts: &mut Vec<LoweredStmt>,
+    ) -> Result<(), Diagnostic> {
+        use crate::builtin_resolved::EvalCompletionStep;
+
+        for step in steps {
+            match step {
+                EvalCompletionStep::Value(expr) => {
+                    let value = self.lower_expr(expr)?;
+                    stmts.push(LoweredStmt::Assign(
+                        completion,
+                        value,
+                        Span::generated("eval_completion_set"),
+                    ));
+                }
+                EvalCompletionStep::Empty(Some(expr)) => {
+                    let side_effect = self.lower_expr(expr)?;
+                    stmts.push(LoweredStmt::Expr(
+                        side_effect,
+                        Span::generated("eval_completion_empty"),
+                    ));
+                }
+                EvalCompletionStep::VarLet { name, init } => {
+                    let (local, existed) =
+                        self.declare_eval_var_in_caller_scope(name, caller_scope_index)?;
+                    let init = self.lower_expr(init)?;
+                    if existed {
+                        stmts.push(LoweredStmt::Assign(
+                            local,
+                            init,
+                            Span::generated("eval_var_assign"),
+                        ));
+                    } else {
+                        stmts.push(LoweredStmt::Let(
+                            local,
+                            init,
+                            Span::generated("eval_var_let"),
+                        ));
+                    }
+                }
+                EvalCompletionStep::FunctionDecl {
+                    name,
+                    params,
+                    body,
+                    is_async,
+                } => {
+                    stmts.push(self.lower_eval_function_decl_in_caller_scope(
+                        name,
+                        params,
+                        body,
+                        *is_async,
+                        caller_scope_index,
+                    )?);
+                }
+                EvalCompletionStep::Block(block_steps) => {
+                    self.ctx.symbols.scopes.push(HashMap::new());
+                    let lowered = (|| {
+                        let mut block_stmts = Vec::new();
+                        self.lower_eval_completion_steps_into(
+                            block_steps,
+                            completion,
+                            caller_scope_index,
+                            &mut block_stmts,
+                        )?;
+                        Ok(LoweredStmt::Block(
+                            block_stmts,
+                            Span::generated("eval_completion_block"),
+                        ))
+                    })();
+                    self.ctx.symbols.scopes.pop();
+                    stmts.push(lowered?);
+                }
+                EvalCompletionStep::If {
+                    condition,
+                    then_steps,
+                    else_steps,
+                } => {
+                    let condition = self.lower_expr(condition)?;
+                    self.ctx.symbols.scopes.push(HashMap::new());
+                    let then_body = (|| {
+                        let mut then_stmts = Vec::new();
+                        self.lower_eval_completion_steps_into(
+                            then_steps,
+                            completion,
+                            caller_scope_index,
+                            &mut then_stmts,
+                        )?;
+                        Ok(then_stmts)
+                    })();
+                    self.ctx.symbols.scopes.pop();
+                    self.ctx.symbols.scopes.push(HashMap::new());
+                    let else_body = (|| {
+                        let mut else_stmts = Vec::new();
+                        self.lower_eval_completion_steps_into(
+                            else_steps,
+                            completion,
+                            caller_scope_index,
+                            &mut else_stmts,
+                        )?;
+                        Ok(else_stmts)
+                    })();
+                    self.ctx.symbols.scopes.pop();
+                    stmts.push(LoweredStmt::If {
+                        condition,
+                        then_body: then_body?,
+                        else_body: else_body?,
+                        span: Span::generated("eval_completion_if"),
+                    });
+                }
+                EvalCompletionStep::LexicalLet { name, init } => {
+                    stmts.push(self.lower_stmt(&ResolvedStmt::Let(name.clone(), init.clone()))?);
+                }
+                EvalCompletionStep::Empty(None) => {}
+            }
+        }
+        Ok(())
     }
 
     fn declare_eval_var_in_caller_scope(
