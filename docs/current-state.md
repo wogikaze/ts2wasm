@@ -323,10 +323,11 @@ The current implementation has several partial dynamic-code paths:
   block-function environment helpers;
 - literal-only `Function(...)` and `new Function(...)` are classified by name
   resolution and expanded by the compiler eval-expand stage into synthetic
-  function expressions, with caller-local non-capture guarded for the supported
-  `typeof` slice, static strict-body parameter early errors guarded for
-  duplicate / non-simple / `eval` / `arguments` params, and direct
-  `.name`/`.length`/`.prototype` metadata guarded for static constructor
+  function expressions, including nested function/class bodies and parameter
+  defaults. Caller-local non-capture is guarded for the supported `typeof`
+  slice, static strict-body parameter early errors are guarded for duplicate /
+  non-simple / `eval` / `arguments` params, and direct
+  `.name`/`.length`/`.prototype` metadata is guarded for static constructor
   locals, including zero-argument `Function()` / `new Function()`;
 - shadowed `Function` bindings stay ordinary user calls in the current
   parser/lowering path;

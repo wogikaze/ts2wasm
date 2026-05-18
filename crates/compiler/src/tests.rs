@@ -120,6 +120,35 @@ fn compiler_allows_sloppy_duplicate_function_constructor_params() {
     ));
 }
 
+#[test]
+fn compiler_expands_static_dynamic_code_inside_function_bodies() {
+    let expanded = parse_resolve_and_expand_dynamic_code(
+        r#"
+        function make() {
+            let f = Function("return 1");
+            return eval("1 + 2");
+        }
+        "#,
+    );
+    let ts2wasm_ir::ResolvedStmt::Function { body, .. } = &expanded[0] else {
+        panic!("expected function declaration after expansion: {expanded:?}");
+    };
+    assert!(matches!(
+        &body[0],
+        ts2wasm_ir::ResolvedStmt::Let(
+            _,
+            ts2wasm_ir::ResolvedExpr::FunctionExpr {
+                origin: ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor,
+                ..
+            }
+        )
+    ));
+    assert!(matches!(
+        &body[1],
+        ts2wasm_ir::ResolvedStmt::Return(ts2wasm_ir::ResolvedExpr::Binary { .. })
+    ));
+}
+
 fn parse_resolve_and_expand_dynamic_code(source: &str) -> Vec<ts2wasm_ir::ResolvedStmt> {
     let parsed = parse_program(source).unwrap();
     let named = ts2wasm_ir::name_resolver::resolve_names(&parsed).unwrap();

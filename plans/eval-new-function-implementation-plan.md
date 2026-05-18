@@ -34,8 +34,9 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | indirect eval parser rejection | `globalThis.eval("x")`、`globalThis["eval"]("x")`、`(0, eval)("x")` は parser reject ではなく後段へ流れる | Phase 4/5 の土台 |
 | optional eval diagnostic | `eval?.("x")` はまだ parser で issue-347 diagnostic | 後で indirect-like semantics として整理 |
 | resolved eval IR | `ResolvedExpr::Eval { kind, source, caller_is_strict, span }`、`EvalKind::{Direct, Indirect}`、`EvalSource::{StaticLiteral, Runtime}` が存在する | 統一 IR への入口 |
-| compiler eval expansion stage | `crates/compiler/src/stages/eval_expand.rs` が static direct / indirect `ResolvedExpr::Eval` を parse / resolve / builtin-resolve して completion expression へ置換する | parser rewrite から IR rewrite へ移行する素材 |
+| compiler eval expansion stage | `crates/compiler/src/stages/eval_expand.rs` が static direct / indirect `ResolvedExpr::Eval` を parse / resolve / builtin-resolve して completion expression へ置換し、nested function/class bodies と parameter defaults も再帰的に処理する | parser rewrite から IR rewrite へ移行する素材 |
 | literal `Function` constructor | resolver が unshadowed `Function(...)` / `new Function(...)` を internal constructor markers に分類し、compiler eval-expand stage が literal-only args を synthetic `FunctionExpr` に変換する | static `Function` AOT lane の初期 slice |
+| build/server dynamic-code stage parity | `pipeline.rs` と `server.rs` はどちらも `expand_static_eval_fragments` を通し、server lowering focused test が host eval runtime call の残存を検出する | batch/server path でも static AOT lane を維持 |
 | runtime catalog symbols | `RuntimeFn::EvalDirectHost` / `EvalIndirectHost` がある | host lane の名前だけはある |
 
 ### 2.2 まだ危険な点
@@ -46,7 +47,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | parser が binding-sensitive 判断をしている | statement-level direct eval expansion still uses the `possible_eval_shadowing` token count heuristic. `Function` constructor classification has moved to resolver lexical binding checks | remaining eval intrinsic / shadowed decisions should move fully to resolver facts |
 | `EvalKind` が lowering で無視される | `ResolvedExpr::Eval` は direct/indirect に関係なく `RuntimeFn::EvalDirectHost` へ lower される | direct / indirect / host-global-only / full-direct を別 lowering にする |
 | host runtime fn が host import ではない | `EvalDirectHost` / `EvalIndirectHost` は `NO_IMPORTS` / `NO_CAPS` で、string source は runtime WAT で `unreachable` | runtime catalog に real `HostImport` / `Capability` を追加し、stub trap を事前 diagnostic に置換する |
-| compiler server path が eval expansion を通らない | `pipeline.rs` は `expand_static_eval_fragments` を呼ぶが、`server.rs` は呼ばない | build path と server path の stage parity を保証する |
+| compiler server path parity の regression 化 | `pipeline.rs` と `server.rs` はどちらも `expand_static_eval_fragments` を呼ぶ | parity test を維持し、今後の `DynamicCodePlan` 移行時にも両 path で同じ stage を通す |
 | `caller_is_strict` が未接続 | builtin resolver で `false` 固定 | parser/resolver から strict context を伝搬する |
 | static eval declaration completion が不安定 | `compiler/src/stages/eval_expand.rs::extract_completion_value` は statement を expression に潰すだけで、declaration environment を caller へ接続しない | eval-code statement lowering と completion slot を導入する |
 | `Function` constructor grammar が簡易 | parameter strings を `join(", ")` して synthetic function を parse するのみ | ECMAScript Function constructor の parameter/body parse rules、strict restrictions、SyntaxError timing を明示実装する |
@@ -66,7 +67,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | indirect eval dynamic | `(0, eval)(src)` | `host.eval.indirect` manifest / host-deny slice は実装済み。node-shim 実行 pass は未完 | `host.eval.indirect` capability |
 | optional eval | `eval?.("x")` | parser diagnostic | indirect-like call semantics として classification |
 | `new eval` | `new eval("x")` | unsupported / TypeError 境界が未整理 | eval is not constructor の TypeError parity |
-| literal `Function` | `Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; zero-arg, caller-local non-capture, strict-body duplicate/non-simple/eval/arguments parameter early errors, and direct `.name` / `.length` / `.prototype` metadata are guarded for static constructor locals | first-class static `FunctionConstructorPlan` / generated function object |
+| literal `Function` | `Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; nested function/class body traversal, zero-arg, caller-local non-capture, strict-body duplicate/non-simple/eval/arguments parameter early errors, and direct `.name` / `.length` / `.prototype` metadata are guarded for static constructor locals | first-class static `FunctionConstructorPlan` / generated function object |
 | literal `new Function` | `new Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; zero-arg and call output are Node differential guarded | generated function object + metadata |
 | dynamic `Function` | `new Function(body)` | 未完成 | `host.function.compile` + host function handle |
 | shadowed `eval` / `Function` | `let eval = f; eval("x")` | resolver が shadowed eval を ordinary call として保持し、parser は shadowing risk のある Function rewrite を避ける。shadowed `Function` ordinary-call fixture は Node differential guarded | ordinary user binding semantics |
@@ -327,6 +328,7 @@ Exit criteria:
 
 - parser rewrite ではなく resolver で unshadowed intrinsic `Function` を分類する。
 - `ResolvedExpr::FunctionConstructor` を追加する。
+- eval-expand traversal は nested function/class bodies と parameter defaults の current regression を維持する。
 - static args の parse rule を実装する。
   - 0 args: empty body。
   - 1 arg: body only。

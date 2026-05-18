@@ -168,10 +168,90 @@ fn expand_stmt(stmt: ResolvedStmt) -> Result<ResolvedStmt, Diagnostic> {
         ResolvedStmt::ModuleExportsAssign { expr } => Ok(ResolvedStmt::ModuleExportsAssign {
             expr: Box::new(expand_expr(*expr)?),
         }),
-        ResolvedStmt::Function { .. }
-        | ResolvedStmt::ClassDecl { .. }
-        | ResolvedStmt::AmbientValue(_) => Ok(stmt),
+        ResolvedStmt::Function {
+            name,
+            params,
+            body,
+            is_generator,
+            is_async,
+            is_ambient,
+            source_text,
+        } => Ok(ResolvedStmt::Function {
+            name,
+            params: expand_params(params)?,
+            body: expand_stmts(body)?,
+            is_generator,
+            is_async,
+            is_ambient,
+            source_text,
+        }),
+        ResolvedStmt::ClassDecl {
+            name,
+            extends,
+            constructor,
+            methods,
+            statics,
+            static_blocks,
+            private_fields,
+            static_private_fields,
+        } => Ok(ResolvedStmt::ClassDecl {
+            name,
+            extends,
+            constructor: constructor.map(expand_constructor).transpose()?,
+            methods: methods
+                .into_iter()
+                .map(expand_class_method)
+                .collect::<Result<Vec<_>, _>>()?,
+            statics: statics
+                .into_iter()
+                .map(|(name, expr)| Ok((name, expand_expr(expr)?)))
+                .collect::<Result<Vec<_>, Diagnostic>>()?,
+            static_blocks: static_blocks
+                .into_iter()
+                .map(|(span, body)| Ok((span, expand_stmts(body)?)))
+                .collect::<Result<Vec<_>, Diagnostic>>()?,
+            private_fields,
+            static_private_fields: static_private_fields
+                .into_iter()
+                .map(|(name, expr, span)| Ok((name, expand_expr(expr)?, span)))
+                .collect::<Result<Vec<_>, Diagnostic>>()?,
+        }),
+        ResolvedStmt::AmbientValue(_) => Ok(stmt),
     }
+}
+
+fn expand_stmts(stmts: Vec<ResolvedStmt>) -> Result<Vec<ResolvedStmt>, Diagnostic> {
+    stmts.into_iter().map(expand_stmt).collect()
+}
+
+fn expand_params(
+    params: Vec<ts2wasm_ir::builtin_resolved::ResolvedParam>,
+) -> Result<Vec<ts2wasm_ir::builtin_resolved::ResolvedParam>, Diagnostic> {
+    params
+        .into_iter()
+        .map(|mut param| {
+            param.default = param.default.map(expand_expr).transpose()?;
+            Ok(param)
+        })
+        .collect()
+}
+
+fn expand_constructor(
+    (params, body): ts2wasm_ir::builtin_resolved::ResolvedConstructor,
+) -> Result<ts2wasm_ir::builtin_resolved::ResolvedConstructor, Diagnostic> {
+    Ok((expand_params(params)?, expand_stmts(body)?))
+}
+
+fn expand_class_method(
+    method: ts2wasm_ir::builtin_resolved::ClassMethod,
+) -> Result<ts2wasm_ir::builtin_resolved::ClassMethod, Diagnostic> {
+    Ok(ts2wasm_ir::builtin_resolved::ClassMethod {
+        name: method.name,
+        kind: method.kind,
+        params: expand_params(method.params)?,
+        body: expand_stmts(method.body)?,
+        captures: method.captures,
+    })
 }
 
 fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
@@ -284,6 +364,59 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
             name,
             expr: Box::new(expand_expr(*inner)?),
         }),
+        ResolvedExpr::LogicalAssign {
+            name,
+            op,
+            expr: inner,
+        } => Ok(ResolvedExpr::LogicalAssign {
+            name,
+            op,
+            expr: Box::new(expand_expr(*inner)?),
+        }),
+        ResolvedExpr::LogicalPropertyAssign {
+            object,
+            key,
+            op,
+            expr: inner,
+        } => Ok(ResolvedExpr::LogicalPropertyAssign {
+            object,
+            key,
+            op,
+            expr: Box::new(expand_expr(*inner)?),
+        }),
+        ResolvedExpr::LogicalComputedPropertyAssign {
+            object,
+            key,
+            op,
+            expr: inner,
+        } => Ok(ResolvedExpr::LogicalComputedPropertyAssign {
+            object,
+            key: Box::new(expand_expr(*key)?),
+            op,
+            expr: Box::new(expand_expr(*inner)?),
+        }),
+        ResolvedExpr::LogicalComputedMemberAssign {
+            object,
+            key,
+            op,
+            expr: inner,
+        } => Ok(ResolvedExpr::LogicalComputedMemberAssign {
+            object: Box::new(expand_expr(*object)?),
+            key: Box::new(expand_expr(*key)?),
+            op,
+            expr: Box::new(expand_expr(*inner)?),
+        }),
+        ResolvedExpr::LogicalMemberAssign {
+            object,
+            key,
+            op,
+            expr: inner,
+        } => Ok(ResolvedExpr::LogicalMemberAssign {
+            object: Box::new(expand_expr(*object)?),
+            key,
+            op,
+            expr: Box::new(expand_expr(*inner)?),
+        }),
         ResolvedExpr::Array(elements) => {
             let expanded = elements
                 .into_iter()
@@ -298,8 +431,130 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
                 .collect::<Result<Vec<_>, _>>()?;
             Ok(ResolvedExpr::Array(expanded))
         }
+        ResolvedExpr::Object(props) => Ok(ResolvedExpr::Object(
+            props
+                .into_iter()
+                .map(expand_object_prop)
+                .collect::<Result<Vec<_>, _>>()?,
+        )),
+        ResolvedExpr::BuiltinCall { builtin, args } => Ok(ResolvedExpr::BuiltinCall {
+            builtin,
+            args: args
+                .into_iter()
+                .map(expand_expr)
+                .collect::<Result<Vec<_>, _>>()?,
+        }),
+        ResolvedExpr::BuiltinProperty {
+            builtin,
+            object,
+            span,
+        } => Ok(ResolvedExpr::BuiltinProperty {
+            builtin,
+            object: Box::new(expand_expr(*object)?),
+            span,
+        }),
+        ResolvedExpr::OptionalCall { callee, args, span } => Ok(ResolvedExpr::OptionalCall {
+            callee: Box::new(expand_expr(*callee)?),
+            args: args
+                .into_iter()
+                .map(expand_expr)
+                .collect::<Result<Vec<_>, _>>()?,
+            span,
+        }),
+        ResolvedExpr::PropertyAssign {
+            object,
+            key,
+            value,
+            span,
+        } => Ok(ResolvedExpr::PropertyAssign {
+            object: Box::new(expand_expr(*object)?),
+            key,
+            value: Box::new(expand_expr(*value)?),
+            span,
+        }),
+        ResolvedExpr::Spread(inner) => Ok(ResolvedExpr::Spread(Box::new(expand_expr(*inner)?))),
+        ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+            Ok(ResolvedExpr::PropertyAssignDynamic {
+                object: Box::new(expand_expr(*object)?),
+                key: Box::new(expand_expr(*key)?),
+                value: Box::new(expand_expr(*value)?),
+            })
+        }
+        ResolvedExpr::Await { expr: inner } => Ok(ResolvedExpr::Await {
+            expr: Box::new(expand_expr(*inner)?),
+        }),
+        ResolvedExpr::Yield {
+            expr: Some(inner),
+            delegate,
+        } => Ok(ResolvedExpr::Yield {
+            expr: Some(Box::new(expand_expr(*inner)?)),
+            delegate,
+        }),
+        ResolvedExpr::ArrowFn {
+            params,
+            body,
+            body_stmts,
+            source_text,
+        } => Ok(ResolvedExpr::ArrowFn {
+            params,
+            body: Box::new(expand_expr(*body)?),
+            body_stmts: expand_stmts(body_stmts)?,
+            source_text,
+        }),
+        ResolvedExpr::FunctionExpr {
+            name,
+            params,
+            body,
+            is_generator,
+            origin,
+            source_text,
+        } => Ok(ResolvedExpr::FunctionExpr {
+            name,
+            params: expand_params(params)?,
+            body: expand_stmts(body)?,
+            is_generator,
+            origin,
+            source_text,
+        }),
+        ResolvedExpr::ClassExpr { name, body } => Ok(ResolvedExpr::ClassExpr {
+            name,
+            body: expand_stmts(body)?,
+        }),
+        ResolvedExpr::Sequence(exprs) => Ok(ResolvedExpr::Sequence(
+            exprs
+                .into_iter()
+                .map(expand_expr)
+                .collect::<Result<Vec<_>, _>>()?,
+        )),
         // Leaf expressions and other types — no recursive expansion needed.
         other => Ok(other),
+    }
+}
+
+fn expand_object_prop(
+    prop: ts2wasm_ir::builtin_resolved::ResolvedObjectProp,
+) -> Result<ts2wasm_ir::builtin_resolved::ResolvedObjectProp, Diagnostic> {
+    use ts2wasm_ir::builtin_resolved::ResolvedObjectProp;
+
+    match prop {
+        ResolvedObjectProp::KeyValue { key, value } => Ok(ResolvedObjectProp::KeyValue {
+            key,
+            value: expand_expr(value)?,
+        }),
+        ResolvedObjectProp::Shorthand { key, value } => Ok(ResolvedObjectProp::Shorthand {
+            key,
+            value: expand_expr(value)?,
+        }),
+        ResolvedObjectProp::ComputedKey { key, value } => Ok(ResolvedObjectProp::ComputedKey {
+            key: Box::new(expand_expr(*key)?),
+            value: expand_expr(value)?,
+        }),
+        ResolvedObjectProp::MethodShorthand { key, value } => {
+            Ok(ResolvedObjectProp::MethodShorthand {
+                key,
+                value: expand_expr(value)?,
+            })
+        }
     }
 }
 
