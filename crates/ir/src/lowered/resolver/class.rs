@@ -504,6 +504,14 @@ impl super::Resolver {
             {
                 Some("Object".to_owned())
             }
+            ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
+                Some("RegExp".to_owned())
+            }
+            ResolvedExpr::String(_) => Some("String".to_owned()),
+            ResolvedExpr::Number(_) | ResolvedExpr::DecimalNumber(_) => {
+                Some("Number".to_owned())
+            }
+            ResolvedExpr::Bool(_) => Some("Boolean".to_owned()),
             ResolvedExpr::Array(_) => Some("Array".to_owned()),
             ResolvedExpr::BigIntLiteral { .. } => Some("BigInt".to_owned()),
             ResolvedExpr::Ident(name) => self
