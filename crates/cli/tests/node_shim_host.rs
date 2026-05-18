@@ -406,6 +406,12 @@ fn dynamic_direct_eval_class_method_reads_arguments_through_node_shim_host_impor
 }
 
 #[test]
+fn dynamic_direct_eval_class_method_reads_this_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-class-method-this-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7:5\n");
+}
+
+#[test]
 fn dynamic_direct_eval_writes_back_string_env_cell_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-string-writeback-node-shim.ts";
     assert_node_shim_stdout(fixture, "after\nafter\n");
@@ -932,19 +938,23 @@ function evalWithEnvDescriptor(source, envRaw) {
   }
 
   const names = bindings.map((binding) => binding.name);
+  const thisBinding = bindings.find((binding) => binding.name === 'this');
+  const formalBindings = bindings.filter((binding) => binding.name !== 'this');
+  const formalNames = formalBindings.map((binding) => binding.name);
   const sourceName = uniqueInternalName('__ts2wasm_eval_source', names);
   const resultName = uniqueInternalName('__ts2wasm_eval_result', [...names, sourceName]);
   const wrapper = Function(
     sourceName,
-    ...names,
-    `let ${resultName} = eval(${sourceName}); return [${resultName}, ${names.join(', ')}];`,
+    ...formalNames,
+    `let ${resultName} = eval(${sourceName}); return [${resultName}, ${formalNames.join(', ')}];`,
   );
-  const values = bindings.map((binding) => binding.value);
-  const [result, ...updatedValues] = wrapper(source, ...values);
+  const values = formalBindings.map((binding) => binding.value);
+  const thisValue = thisBinding === undefined ? undefined : thisBinding.value;
+  const [result, ...updatedValues] = wrapper.call(thisValue, source, ...values);
 
-  for (let i = 0; i < bindings.length; i += 1) {
-    if (!Object.is(bindings[i].value, updatedValues[i])) {
-      writeEnvCellRaw(bindings[i].cellRaw, encodeHostValue(updatedValues[i]));
+  for (let i = 0; i < formalBindings.length; i += 1) {
+    if (!Object.is(formalBindings[i].value, updatedValues[i])) {
+      writeEnvCellRaw(formalBindings[i].cellRaw, encodeHostValue(updatedValues[i]));
     }
   }
 

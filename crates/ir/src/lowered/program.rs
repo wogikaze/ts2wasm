@@ -54,7 +54,7 @@ pub fn lower_program_with_module_url(
         collect_block_object_method_mutable_captures(program)?;
     let direct_eval_env = collect_direct_eval_block_function_env(program);
     let dynamic_direct_eval_env_cell_names =
-        collect_dynamic_direct_eval_env_cell_names(&[], program, false);
+        collect_dynamic_direct_eval_env_cell_names(&[], program, false, false);
     let env_cell_names = mutable_class_capture_names
         .union(&mutable_object_method_capture_names)
         .cloned()
@@ -118,7 +118,7 @@ pub fn lower_program_with_module_url(
                 let nested_function_mutable_captures =
                     collect_block_nested_function_mutable_captures(body)?;
                 let dynamic_direct_eval_env_cell_names =
-                    collect_dynamic_direct_eval_env_cell_names(params, body, true);
+                    collect_dynamic_direct_eval_env_cell_names(params, body, true, false);
                 let function_env_cell_names = function_env_cell_names
                     .union(&arrow_mutable_captures)
                     .cloned()
@@ -220,6 +220,7 @@ pub fn lower_program_with_module_url(
                     &ctor_params_with_this,
                     &ctor_body,
                     true,
+                    false,
                 );
                 let constructor_env_cell_names = constructor_object_method_mutable_captures
                     .union(&constructor_nested_function_mutable_captures)
@@ -286,6 +287,7 @@ pub fn lower_program_with_module_url(
                         collect_dynamic_direct_eval_env_cell_names(
                             &method_params_for_lowering,
                             &method.body,
+                            true,
                             true,
                         );
                     let method_env_cell_names = method_env_cell_names
@@ -2709,6 +2711,7 @@ fn collect_function_signatures(
                         FunctionSignature {
                             explicit_params: method.params.len(),
                             needs_receiver: block_contains_this(&method.body)
+                                || block_contains_dynamic_direct_eval(&method.body)
                                 || (!is_static_method && block_contains_super(&method.body)),
                             needs_arguments: (block_contains_arguments(&method.body)
                                 || block_contains_dynamic_direct_eval(&method.body))

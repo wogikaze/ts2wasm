@@ -28,6 +28,9 @@ impl super::super::Resolver {
 
     pub(super) fn lower_this_expr(&mut self) -> Result<LoweredExpr, Diagnostic> {
         match self.resolve_local("this") {
+            Ok(local) if self.ctx.facts.env_cell_locals.contains(&local) => Ok(
+                LoweredExpr::EnvCellGet(local, Span::generated("env_cell_get")),
+            ),
             Ok(local) => Ok(LoweredExpr::Local(local, Span::generated("local"))),
             Err(_) if self.ctx.classes.static_block_this_class.is_some() => {
                 let class_name = self

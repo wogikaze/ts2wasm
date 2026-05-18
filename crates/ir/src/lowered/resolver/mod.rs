@@ -1532,6 +1532,7 @@ impl Resolver {
                 &ctor_params_for_lowering,
                 &ctor_body,
                 true,
+                true,
             ),
             &self.ctx.facts.heap_closure_names,
             self.ctx.classes.class_parents.clone(),
@@ -1575,6 +1576,7 @@ impl Resolver {
                 FunctionSignature {
                     explicit_params: method.params.len(),
                     needs_receiver: block_contains_this(&method.body)
+                        || block_contains_dynamic_direct_eval(&method.body)
                         || (!method.name.starts_with("static::")
                             && block_contains_super(&method.body)),
                     needs_arguments: (block_contains_arguments(&method.body)
@@ -1610,6 +1612,7 @@ impl Resolver {
                 &collect_dynamic_direct_eval_env_cell_names(
                     &method_params_for_lowering,
                     &method.body,
+                    true,
                     true,
                 ),
                 &self.ctx.facts.heap_closure_names,
