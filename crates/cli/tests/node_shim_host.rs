@@ -552,6 +552,13 @@ fn dynamic_direct_eval_strict_caller_delete_arguments_is_syntax_error_node_shim_
 }
 
 #[test]
+fn dynamic_direct_eval_strict_caller_var_arguments_is_syntax_error_node_shim_host_import() {
+    let fixture =
+        "fixtures/core-semantics/direct-eval-dynamic-strict-caller-var-arguments-node-shim.ts";
+    assert_node_shim_stdout(fixture, "SyntaxError\n9\n");
+}
+
+#[test]
 fn dynamic_direct_eval_rejects_tdz_env_descriptor_conflict() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-tdz-conflict-unsupported.ts";
     assert_build_fails_with(fixture, "UnsupportedEval", "TDZ-aware env descriptors");
@@ -1047,6 +1054,12 @@ function strictEvalHasDeleteIdentifier(source) {
   return /\bdelete\s+[A-Za-z_$][0-9A-Za-z_$]*\b(?!\s*[.[(])/.test(source);
 }
 
+function strictEvalHasRestrictedBinding(source) {
+  return /\b(?:var|let|const)\s+(?:arguments|eval)\b|\bfunction\s*\*?\s+(?:arguments|eval)\b/.test(
+    source,
+  );
+}
+
 function evalWithEnvDescriptor(source, envRaw) {
   if (envRaw === TAG_UNDEFINED) {
     return eval(source);
@@ -1068,6 +1081,9 @@ function evalWithEnvDescriptor(source, envRaw) {
   }
   if (callerIsStrict && strictEvalHasDeleteIdentifier(source)) {
     throw new SyntaxError('Delete of an unqualified identifier in strict mode.');
+  }
+  if (callerIsStrict && strictEvalHasRestrictedBinding(source)) {
+    throw new SyntaxError('Unexpected eval or arguments in strict mode.');
   }
 
   const bindings = [];
