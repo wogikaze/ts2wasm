@@ -220,6 +220,12 @@ fn static_direct_eval_strict_lexical_local_shadows_caller_local() {
 }
 
 #[test]
+fn static_direct_eval_strict_lexical_assignment_stays_eval_local() {
+    let fixture = "fixtures/core-semantics/direct-eval-strict-lexical-assignment.ts";
+    assert_node_shim_stdout(fixture, "3\n1\n");
+}
+
+#[test]
 fn dynamic_direct_eval_writes_back_local_env_cell_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-local-writeback-node-shim.ts";
     assert_node_shim_stdout(fixture, "7\n7\n");

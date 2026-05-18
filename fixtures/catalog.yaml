@@ -889,6 +889,7 @@ directories:
     - direct-eval-expression-caller-local.ts
     - direct-eval-expression-side-effect.ts
     - direct-eval-nested-static.ts
+    - direct-eval-strict-lexical-assignment.ts
     - direct-eval-strict-lexical-local.ts
     - direct-eval-dynamic-block-shadow-writeback-node-shim.ts
     - direct-eval-dynamic-catch-binding-node-shim.ts

@@ -3123,6 +3123,7 @@ fn direct_eval_block_function_fixture_matches_node_output_under_iwasm() {
         "fixtures/core-semantics/direct-eval-expression-caller-local.ts",
         "fixtures/core-semantics/direct-eval-expression-side-effect.ts",
         "fixtures/core-semantics/direct-eval-nested-static.ts",
+        "fixtures/core-semantics/direct-eval-strict-lexical-assignment.ts",
         "fixtures/core-semantics/direct-eval-strict-lexical-local.ts",
         "fixtures/core-semantics/direct-eval-block-function.ts",
         "fixtures/core-semantics/direct-eval-block-function-init.ts",
