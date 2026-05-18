@@ -9,6 +9,16 @@ use ts2wasm_shared::test_helpers::{fixture_path, temp_wasm_path, unique_temp_dir
 #[test]
 fn dynamic_function_handles_execute_through_node_shim_host_imports() {
     let fixture = "fixtures/core-semantics/function-constructor-dynamic-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\n");
+}
+
+#[test]
+fn dynamic_indirect_eval_executes_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/indirect-eval-dynamic-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\n");
+}
+
+fn assert_node_shim_stdout(fixture: &str, expected_stdout: &str) {
     let fixture_path = fixture_path(fixture);
     let output_wasm = temp_wasm_path(fixture);
 
@@ -22,12 +32,12 @@ fn dynamic_function_handles_execute_through_node_shim_host_imports() {
 
     assert!(
         build.status.success(),
-        "dynamic Function host-shim fixture should build\nstdout:\n{}\nstderr:\n{}",
+        "{fixture} should build for node-shim execution\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&build.stdout),
         String::from_utf8_lossy(&build.stderr)
     );
 
-    let runner_dir = unique_temp_dir("dynamic-function-node-shim");
+    let runner_dir = unique_temp_dir("node-shim-host");
     let runner = runner_dir.join("runner.mjs");
     fs::write(&runner, NODE_SHIM_RUNNER).expect("failed to write node shim runner");
 
@@ -39,11 +49,11 @@ fn dynamic_function_handles_execute_through_node_shim_host_imports() {
 
     assert!(
         node.status.success(),
-        "node shim runner should execute dynamic Function handles\nstdout:\n{}\nstderr:\n{}",
+        "node shim runner should execute {fixture}\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&node.stdout),
         String::from_utf8_lossy(&node.stderr)
     );
-    assert_eq!(String::from_utf8_lossy(&node.stdout), "7\n");
+    assert_eq!(String::from_utf8_lossy(&node.stdout), expected_stdout);
 }
 
 const NODE_SHIM_RUNNER: &str = r#"
@@ -167,6 +177,10 @@ const imports = {
     },
   },
   host: {
+    'eval.indirect'(sourceRaw, _envRaw) {
+      const result = globalThis.eval(decodeString(sourceRaw));
+      return encodePrimitive(result);
+    },
     'function.compile'(argsRaw) {
       const args = decodeArgs(argsRaw);
       const fn = Function(...args);
