@@ -412,6 +412,12 @@ fn dynamic_direct_eval_class_method_reads_this_through_node_shim_host_import() {
 }
 
 #[test]
+fn dynamic_direct_eval_class_constructor_reads_this_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-class-constructor-this-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7:7\n");
+}
+
+#[test]
 fn dynamic_direct_eval_writes_back_string_env_cell_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-string-writeback-node-shim.ts";
     assert_node_shim_stdout(fixture, "after\nafter\n");
