@@ -1462,19 +1462,43 @@ function evalWithEnvDescriptor(source, envRaw) {
   const values = wrapperBindings.map((binding) => binding.value);
   const thisValue = thisBinding === undefined ? undefined : thisBinding.value;
   const [result, ...updatedValues] = wrapper.call(thisValue, source, ...values);
+  const ledger = {
+    result,
+    writes: [],
+    createdBindings: [],
+  };
 
   for (let i = 0; i < wrapperBindings.length; i += 1) {
     if (!Object.is(wrapperBindings[i].value, updatedValues[i])) {
       if (wrapperBindings[i].cellRaw !== undefined) {
-        writeEnvCellRaw(wrapperBindings[i].cellRaw, encodeHostValue(updatedValues[i]));
+        ledger.writes.push({
+          cellRaw: wrapperBindings[i].cellRaw,
+          value: updatedValues[i],
+        });
       } else {
-        extraMap.set(wrapperBindings[i].name, updatedValues[i]);
+        ledger.createdBindings.push({
+          name: wrapperBindings[i].name,
+          value: updatedValues[i],
+        });
       }
     }
   }
+  applyDirectEvalMutationLedger(envKey, extraMap, ledger);
   if (extraMap.size > 0) directEvalExtraBindings.set(envKey, extraMap);
 
-  return result;
+  return ledger.result;
+}
+
+function applyDirectEvalMutationLedger(envKey, extraMap, ledger) {
+  if (ledger === null || typeof ledger !== 'object') {
+    throw new TypeError(`invalid direct eval mutation ledger for ${envKey}`);
+  }
+  for (const write of ledger.writes ?? []) {
+    writeEnvCellRaw(write.cellRaw, encodeHostValue(write.value));
+  }
+  for (const binding of ledger.createdBindings ?? []) {
+    extraMap.set(binding.name, binding.value);
+  }
 }
 
 function decodeArgs(raw) {
