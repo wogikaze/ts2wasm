@@ -556,6 +556,13 @@ fn dynamic_direct_eval_new_function_declaration_is_visible_to_normal_code_throug
 }
 
 #[test]
+fn dynamic_direct_eval_new_function_computed_tostring_through_node_shim_host_import() {
+    let fixture =
+        "fixtures/core-semantics/direct-eval-dynamic-new-function-computed-tostring-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\nfunction created() { return 7; }\n");
+}
+
+#[test]
 fn dynamic_direct_eval_new_generator_function_declaration_is_visible_to_later_eval_through_node_shim_host_import()
  {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-new-generator-function-declaration-node-shim.ts";
