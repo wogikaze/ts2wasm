@@ -146,6 +146,12 @@ fn dynamic_function_handle_preserves_prototype_constructor_identity_through_node
 }
 
 #[test]
+fn dynamic_function_handle_calls_prototype_constructor_through_node_shim_host_imports() {
+    let fixture = "fixtures/core-semantics/function-constructor-dynamic-prototype-constructor-call-node-shim.ts";
+    assert_node_shim_stdout(fixture, "anonymous:2\n");
+}
+
+#[test]
 fn dynamic_function_construct_returns_object_through_node_shim_host_imports() {
     let fixture =
         "fixtures/core-semantics/function-constructor-dynamic-construct-object-node-shim.ts";

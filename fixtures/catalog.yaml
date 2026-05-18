@@ -1017,6 +1017,7 @@ directories:
     - function-constructor-dynamic-object-node-shim.ts
     - function-constructor-dynamic-object-properties-node-shim.ts
     - function-constructor-dynamic-object-shape-node-shim.ts
+    - function-constructor-dynamic-prototype-constructor-call-node-shim.ts
     - function-constructor-dynamic-prototype-identity-node-shim.ts
     - function-constructor-dynamic-string-node-shim.ts
     - function-constructor-dynamic-syntax-error-catch-node-shim.ts

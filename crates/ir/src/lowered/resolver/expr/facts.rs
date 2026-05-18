@@ -104,7 +104,10 @@ pub(crate) fn resolved_expr_is_host_external_object(
     }
 }
 
-fn resolved_expr_returns_host_external_object(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
+pub(crate) fn resolved_expr_returns_host_external_object(
+    ctx: &LoweringCtx,
+    expr: &ResolvedExpr,
+) -> bool {
     match expr {
         ResolvedExpr::Call { callee, .. } => {
             resolved_expr_is_dynamic_function_constructor(ctx, callee)
@@ -123,6 +126,24 @@ fn resolved_expr_returns_host_external_object(ctx: &LoweringCtx, expr: &Resolved
         ResolvedExpr::Ident(name) => ctx.resolve_local(name).ok().is_some_and(|local_id| {
             ctx.facts
                 .is_host_external(local_id, HostExternalKind::Object)
+        }),
+        ResolvedExpr::PropertyAccess { object, key, .. } => {
+            resolved_expr_is_host_external_object(ctx, object)
+                || (key == "prototype"
+                    && resolved_expr_is_host_function_handle(ctx, object.as_ref()))
+        }
+        ResolvedExpr::ComputedIndex { object, .. } => {
+            resolved_expr_is_host_external_object(ctx, object)
+        }
+        _ => false,
+    }
+}
+
+fn resolved_expr_is_host_function_handle(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
+    match expr {
+        ResolvedExpr::Ident(name) => ctx.resolve_local(name).ok().is_some_and(|local_id| {
+            ctx.facts
+                .is_host_external(local_id, HostExternalKind::FunctionHandle)
         }),
         _ => false,
     }

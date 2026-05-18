@@ -3564,6 +3564,36 @@ impl super::super::Resolver {
             }));
         }
 
+        if crate::lowered::resolver::expr::facts::resolved_expr_returns_host_external_object(
+            &self.ctx, object,
+        ) {
+            let receiver_temp = self.alloc_temp();
+            let receiver = LoweredExpr::Local(receiver_temp, Span::generated("local"));
+            let args_array = ResolvedExpr::Array(
+                args.iter()
+                    .cloned()
+                    .map(ResolvedArrayElement::Present)
+                    .collect(),
+            );
+            return Ok(Some(LoweredExpr::Block {
+                stmts: vec![LoweredStmt::Let(
+                    receiver_temp,
+                    self.lower_expr(object)?,
+                    Span::generated("let_stmt"),
+                )],
+                result: Box::new(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::FunctionCallMethodHost,
+                    args: vec![
+                        object_kernel::ordinary_get(receiver.clone(), method, span),
+                        receiver,
+                        self.lower_expr(&args_array)?,
+                    ],
+                    span: Span::generated("runtime_call"),
+                }),
+                span: Span::generated("block"),
+            }));
+        }
+
         // new C().method() — route through runtime_fn for Map/Set/Array collection methods
         if let ResolvedExpr::New { class_name, .. } = object
             && let Some(intrinsic) = collection_method_runtime_fn(class_name, method)
@@ -4103,9 +4133,10 @@ impl super::super::Resolver {
                 );
                 if !is_ambiguous
                     && let Some(intrinsic) = resolve_method_to_runtime_fn(
-                    &ResolvedExpr::Ident(receiver_name.to_string()),
-                    method,
-                ) {
+                        &ResolvedExpr::Ident(receiver_name.to_string()),
+                        method,
+                    )
+                {
                     let mut lowered_args =
                         vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
                     lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<Result<
