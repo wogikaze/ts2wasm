@@ -304,6 +304,18 @@ fn static_direct_eval_class_private_field_preserves_completion() {
 }
 
 #[test]
+fn static_direct_eval_class_constructor_preserves_new_target() {
+    let fixture = "fixtures/core-semantics/direct-eval-class-new-target.ts";
+    assert_node_shim_stdout(fixture, "true\n");
+}
+
+#[test]
+fn static_direct_eval_class_static_block_is_class_context() {
+    let fixture = "fixtures/core-semantics/direct-eval-class-static-block.ts";
+    assert_node_shim_stdout(fixture, "true\n");
+}
+
+#[test]
 fn static_direct_eval_class_static_block_binds_this() {
     let fixture = "fixtures/core-semantics/direct-eval-class-static-block-this.ts";
     assert_node_shim_stdout(fixture, "7\nundefined\n");

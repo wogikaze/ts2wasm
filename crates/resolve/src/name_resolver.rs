@@ -55,6 +55,7 @@ struct NameResolver {
     loop_depth: usize,
     breakable_depth: usize,
     function_depth: usize,
+    class_method_depth: usize,
 }
 
 #[derive(Clone)]
@@ -210,6 +211,7 @@ impl NameResolver {
             loop_depth: 0,
             breakable_depth: 0,
             function_depth: 0,
+            class_method_depth: 0,
             predeclared_names: vec![std::collections::HashSet::new()],
         }
     }
@@ -611,11 +613,28 @@ impl NameResolver {
                     .cloned()
                     .collect();
 
+                let resolved_body = filtered_body
+                    .iter()
+                    .map(|item| self.resolve_class_body_stmt(item))
+                    .collect::<Result<Vec<_>, _>>()?;
+                let resolved_static_blocks = static_blocks
+                    .iter()
+                    .map(|block| {
+                        self.enter_scope();
+                        let body = self.resolve_block(&block.body);
+                        self.exit_scope();
+                        Ok(ts2wasm_syntax::ClassStaticBlock {
+                            body: body?,
+                            span: block.span,
+                        })
+                    })
+                    .collect::<Result<Vec<_>, Diagnostic>>()?;
+
                 Ok(Stmt::ClassDecl {
                     name: name.clone(),
                     extends: extends.clone(),
-                    body: filtered_body,
-                    static_blocks: static_blocks.clone(),
+                    body: resolved_body,
+                    static_blocks: resolved_static_blocks,
                     private_elements: private_elements.clone(),
                     ts_private_field_names: ts_private_field_names.clone(),
                     interface_heritage: interface_heritage.clone(),
@@ -898,6 +917,67 @@ impl NameResolver {
         self.breakable_depth += 1;
     }
 
+    fn resolve_class_body_stmt(&mut self, stmt: &Stmt) -> Result<Stmt, Diagnostic> {
+        let Stmt::Function {
+            name,
+            params,
+            body,
+            is_generator,
+            is_async,
+            is_ambient,
+            overload_signature,
+            span,
+            source_text,
+        } = stmt
+        else {
+            return Ok(stmt.clone());
+        };
+
+        self.enter_scope();
+        self.function_depth += 1;
+        self.class_method_depth += 1;
+        for (param_name, _default, is_rest) in params {
+            self.declare_binding(param_name, Some(*span), true)?;
+            if *is_rest
+                && let Some(inner) = param_name.strip_prefix("...")
+                && let Some(pattern) = parse_binding_pattern(inner, Some(*span))?
+            {
+                for name in pattern.names() {
+                    self.declare_variable(name, Some(*span), false)?;
+                }
+            }
+        }
+        let resolved_params = params
+            .iter()
+            .map(|(param_name, default, is_rest)| {
+                Ok((
+                    param_name.clone(),
+                    default
+                        .as_ref()
+                        .map(|expr| self.resolve_expr(expr))
+                        .transpose()?,
+                    *is_rest,
+                ))
+            })
+            .collect::<Result<Vec<_>, Diagnostic>>()?;
+        let resolved_body = self.resolve_block(body)?;
+        self.class_method_depth -= 1;
+        self.function_depth -= 1;
+        self.exit_scope();
+
+        Ok(Stmt::Function {
+            name: name.clone(),
+            params: resolved_params,
+            body: resolved_body,
+            is_generator: *is_generator,
+            is_async: *is_async,
+            is_ambient: *is_ambient,
+            overload_signature: *overload_signature,
+            span: *span,
+            source_text: source_text.clone(),
+        })
+    }
+
     fn exit_loop(&mut self) {
         self.loop_depth -= 1;
         self.breakable_depth -= 1;
@@ -1066,6 +1146,12 @@ impl NameResolver {
                 // 'super' is a special keyword, not a regular identifier.
                 // Don't try to resolve it as a variable name.
                 if name == "super" {
+                    if self.class_method_depth > 0 {
+                        return Ok(Expr::Ident {
+                            name: name.clone(),
+                            span: *span,
+                        });
+                    }
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message:
