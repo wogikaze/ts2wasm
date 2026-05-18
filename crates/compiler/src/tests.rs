@@ -247,6 +247,28 @@ fn compiler_preserves_static_direct_eval_expression_side_effects() {
 }
 
 #[test]
+fn compiler_records_eval_declarations_in_completion_plan() {
+    let expanded = parse_resolve_and_expand_dynamic_code(
+        r#"
+        function outer() {
+          eval("var value = 2; function read() { return value; }");
+        }
+        "#,
+    );
+    let ts2wasm_ir::ResolvedStmt::Function { body, .. } = &expanded[0] else {
+        panic!("expected function declaration: {expanded:?}");
+    };
+    let ts2wasm_ir::ResolvedStmt::Expr(ts2wasm_ir::ResolvedExpr::EvalCompletion(plan)) = &body[0]
+    else {
+        panic!("expected eval completion plan: {body:?}");
+    };
+
+    assert_eq!(plan.declarations.var_names, ["value", "read"]);
+    assert_eq!(plan.declarations.function_hoists.len(), 1);
+    assert_eq!(plan.declarations.function_hoists[0].name, "read");
+}
+
+#[test]
 fn compiler_preserves_multiple_eval_block_function_declarations_in_order() {
     let expanded = parse_resolve_and_expand_dynamic_code(
         r#"

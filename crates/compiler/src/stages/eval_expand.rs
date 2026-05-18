@@ -2,9 +2,9 @@ use std::collections::HashSet;
 
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_ir::builtin_resolved::{
-    ClassMethod, EvalCompletionPlan, EvalCompletionStep, EvalFragmentPlan, EvalFunctionHoist,
-    EvalKind, EvalSource, FunctionConstructorKind, ResolvedArrayElement, ResolvedExpr,
-    ResolvedObjectProp, ResolvedParam, ResolvedStmt,
+    ClassMethod, EvalCompletionPlan, EvalCompletionStep, EvalDeclarationPlan, EvalFragmentPlan,
+    EvalFunctionHoist, EvalKind, EvalSource, FunctionConstructorKind, ResolvedArrayElement,
+    ResolvedExpr, ResolvedObjectProp, ResolvedParam, ResolvedStmt,
 };
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
 use ts2wasm_ir::name_resolver::resolve_names;
@@ -1169,14 +1169,22 @@ fn extract_completion_value(
         steps.push(EvalCompletionStep::HoistVars(eval_declarations.to_vec()));
     }
     if !function_hoists.is_empty() {
-        steps.push(EvalCompletionStep::HoistFunctions(function_hoists));
+        steps.push(EvalCompletionStep::HoistFunctions(function_hoists.clone()));
     }
     steps.extend(eval_completion_steps(
         ast_stmts,
         stmts,
         leak_var_declarations,
     ));
-    Ok(ResolvedExpr::EvalCompletion(EvalCompletionPlan::new(steps)))
+    Ok(ResolvedExpr::EvalCompletion(
+        EvalCompletionPlan::with_declarations(
+            EvalDeclarationPlan {
+                var_names: eval_declarations.to_vec(),
+                function_hoists: function_hoists.clone(),
+            },
+            steps,
+        ),
+    ))
 }
 
 fn rewrite_indirect_eval_caller_binding_collisions(
@@ -1531,7 +1539,13 @@ fn rewrite_eval_expr_global_collisions(
             rewrite_eval_exprs_global_collisions(exprs, collisions, scopes),
         ),
         ResolvedExpr::EvalCompletion(plan) => {
-            ResolvedExpr::EvalCompletion(EvalCompletionPlan::new(
+            let declarations = rewrite_eval_declaration_plan_global_collisions(
+                plan.declarations,
+                collisions,
+                scopes,
+            );
+            ResolvedExpr::EvalCompletion(EvalCompletionPlan::with_declarations(
+                declarations,
                 rewrite_eval_steps_global_collisions(plan.steps, collisions, scopes),
             ))
         }
@@ -1905,6 +1919,32 @@ fn rewrite_eval_steps_global_collisions(
         .into_iter()
         .map(|step| rewrite_eval_step_global_collisions(step, collisions, scopes))
         .collect()
+}
+
+fn rewrite_eval_declaration_plan_global_collisions(
+    plan: EvalDeclarationPlan,
+    collisions: &HashSet<String>,
+    scopes: &mut Vec<HashSet<String>>,
+) -> EvalDeclarationPlan {
+    for name in &plan.var_names {
+        eval_declare_name(name, scopes);
+    }
+    let function_hoists = plan
+        .function_hoists
+        .into_iter()
+        .map(|mut hoist| {
+            eval_declare_name(&hoist.name, scopes);
+            scopes.push(HashSet::new());
+            hoist.params = rewrite_eval_params_global_collisions(hoist.params, collisions, scopes);
+            hoist.body = rewrite_eval_stmts_global_collisions(hoist.body, collisions, scopes);
+            scopes.pop();
+            hoist
+        })
+        .collect();
+    EvalDeclarationPlan {
+        var_names: plan.var_names,
+        function_hoists,
+    }
 }
 
 fn rewrite_eval_step_global_collisions(

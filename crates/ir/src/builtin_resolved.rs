@@ -380,12 +380,26 @@ pub enum EvalSource {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EvalCompletionPlan {
+    pub declarations: EvalDeclarationPlan,
     pub steps: Vec<EvalCompletionStep>,
 }
 
 impl EvalCompletionPlan {
     pub fn new(steps: Vec<EvalCompletionStep>) -> Self {
-        Self { steps }
+        Self {
+            declarations: EvalDeclarationPlan::default(),
+            steps,
+        }
+    }
+
+    pub fn with_declarations(
+        declarations: EvalDeclarationPlan,
+        steps: Vec<EvalCompletionStep>,
+    ) -> Self {
+        Self {
+            declarations,
+            steps,
+        }
     }
 
     pub fn steps(&self) -> &[EvalCompletionStep] {
@@ -412,6 +426,12 @@ impl<'a> IntoIterator for &'a EvalCompletionPlan {
     fn into_iter(self) -> Self::IntoIter {
         self.steps.iter()
     }
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct EvalDeclarationPlan {
+    pub var_names: Vec<String>,
+    pub function_hoists: Vec<EvalFunctionHoist>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
