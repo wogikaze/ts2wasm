@@ -18,7 +18,7 @@ use ts2wasm_syntax::{Expr, FunctionExprOrigin, Stmt};
 ///
 /// Literal-only Function(...) / new Function(...) follows the same parse and resolve path,
 /// but produces a generated non-capturing FunctionExpr. Runtime-source Function
-/// constructor calls are rejected until the host.function.* lane exists.
+/// constructor calls are left for the host.function.* lane.
 ///
 /// Runtime-source eval is left as-is for the host lane.
 pub(crate) fn expand_static_eval_fragments(
@@ -271,15 +271,23 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
                 ResolvedExpr::Ident(name) if name == INTRINSIC_FUNCTION_CONSTRUCTOR_CALL
             ) =>
         {
-            expand_static_function_constructor(args, span)
+            expand_function_constructor(
+                FunctionConstructorKind::Call,
+                INTRINSIC_FUNCTION_CONSTRUCTOR_CALL,
+                args,
+                span,
+            )
         }
         ResolvedExpr::New {
             class_name,
             args,
             span,
-        } if class_name == INTRINSIC_FUNCTION_CONSTRUCTOR_NEW => {
-            expand_static_function_constructor(args, span)
-        }
+        } if class_name == INTRINSIC_FUNCTION_CONSTRUCTOR_NEW => expand_function_constructor(
+            FunctionConstructorKind::New,
+            INTRINSIC_FUNCTION_CONSTRUCTOR_NEW,
+            args,
+            span,
+        ),
         // Recursively expand eval in sub-expressions.
         ResolvedExpr::Unary { op, expr: inner } => Ok(ResolvedExpr::Unary {
             op,
@@ -582,22 +590,29 @@ fn expand_static_eval_source(src: &str) -> Result<ResolvedExpr, Diagnostic> {
     extract_completion_value(builtin_resolved)
 }
 
-fn expand_static_function_constructor(
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum FunctionConstructorKind {
+    Call,
+    New,
+}
+
+fn expand_function_constructor(
+    kind: FunctionConstructorKind,
+    intrinsic_name: &str,
     args: Vec<ResolvedExpr>,
     span: ts2wasm_source::Span,
 ) -> Result<ResolvedExpr, Diagnostic> {
     let mut strings = Vec::with_capacity(args.len());
-    for arg in args {
+    for arg in &args {
         match arg {
-            ResolvedExpr::String(value) => strings.push(value),
+            ResolvedExpr::String(value) => strings.push(value.clone()),
             _ => {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedBuiltin,
-                    message: "dynamic Function constructor requires the host.function.* lane"
-                        .to_owned(),
-                    span: Some(span),
-                    phase: None,
-                });
+                return Ok(function_constructor_host_lane(
+                    kind,
+                    intrinsic_name,
+                    args,
+                    span,
+                ));
             }
         }
     }
@@ -664,6 +679,26 @@ fn expand_static_function_constructor(
         span: Some(span),
         phase: None,
     })
+}
+
+fn function_constructor_host_lane(
+    kind: FunctionConstructorKind,
+    intrinsic_name: &str,
+    args: Vec<ResolvedExpr>,
+    span: ts2wasm_source::Span,
+) -> ResolvedExpr {
+    match kind {
+        FunctionConstructorKind::Call => ResolvedExpr::Call {
+            callee: Box::new(ResolvedExpr::Ident(intrinsic_name.to_owned())),
+            args,
+            span,
+        },
+        FunctionConstructorKind::New => ResolvedExpr::New {
+            class_name: intrinsic_name.to_owned(),
+            args,
+            span,
+        },
+    }
 }
 
 fn validate_static_function_constructor_early_errors(

@@ -42,6 +42,7 @@ impl WatEmitter<'_> {
             RuntimeFn::GeneratorYield => self.emit_generator_yield(wat),
             RuntimeFn::EvalDirectHost => self.emit_eval_direct_host(wat),
             RuntimeFn::EvalIndirectHost => self.emit_eval_indirect_host(wat),
+            RuntimeFn::FunctionCompileHost => self.emit_function_compile_host(wat),
             RuntimeFn::GeneratorReturn => self.emit_generator_return(wat),
             RuntimeFn::GeneratorNext => self.emit_generator_next(wat),
             _ => unreachable!("non-host RuntimeFn routed to host dispatch"),

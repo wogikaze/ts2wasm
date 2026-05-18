@@ -8,6 +8,7 @@ use crate::builtin_resolved::{
 use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
 use crate::lowered::facts::{FunctionMethodKind, ProxyTrapKind};
 use crate::lowered::*;
+use crate::name_resolver::INTRINSIC_FUNCTION_CONSTRUCTOR_CALL;
 use std::collections::HashMap;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
@@ -113,6 +114,10 @@ impl super::super::Resolver {
             && let Some(result) = self.lower_static_test262_verify_property(args)
         {
             return Ok(result);
+        }
+
+        if func_name == INTRINSIC_FUNCTION_CONSTRUCTOR_CALL {
+            return self.lower_dynamic_function_constructor_host_compile(args, span);
         }
 
         if func_name == "String" {
@@ -455,6 +460,24 @@ impl super::super::Resolver {
             }
         };
         self.lower_call_with_func_id(func_id, func_name, args, span)
+    }
+
+    pub(crate) fn lower_dynamic_function_constructor_host_compile(
+        &mut self,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let args_array = ResolvedExpr::Array(
+            args.iter()
+                .cloned()
+                .map(ResolvedArrayElement::Present)
+                .collect(),
+        );
+        Ok(LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::FunctionCompileHost,
+            args: vec![self.lower_expr(&args_array)?],
+            span,
+        })
     }
 
     fn lower_generator_call(&mut self, func_name: &str) -> Result<LoweredExpr, Diagnostic> {

@@ -8,6 +8,9 @@ use crate::builtin::{BuiltinId, BuiltinPropertyId};
 use crate::builtin_resolved::{
     EvalKind, EvalSource, ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt,
 };
+use crate::name_resolver::{
+    INTRINSIC_FUNCTION_CONSTRUCTOR_CALL, INTRINSIC_FUNCTION_CONSTRUCTOR_NEW,
+};
 
 // ---------------------------------------------------------------------------
 // Completion Record types (ECMAScript [[Type]] / [[Value]] / [[Target]])
@@ -1198,6 +1201,9 @@ impl<'a> HirLowerer<'a> {
                     // Return a no-op HIR expr to pass the validator.
                     Ok(HirExpr::ConstUndefined)
                 }
+                ResolvedExpr::Ident(name) if name == INTRINSIC_FUNCTION_CONSTRUCTOR_CALL => {
+                    Ok(HirExpr::ConstUndefined)
+                }
                 ResolvedExpr::Ident(name)
                     if name == "$DONE"
                         || name == "$DONOTEVALUATE"
@@ -1228,6 +1234,11 @@ impl<'a> HirLowerer<'a> {
                 }
                 _ => Err(unsupported("dynamic function calls in initial HIR slice")),
             },
+            ResolvedExpr::New { class_name, .. }
+                if class_name == INTRINSIC_FUNCTION_CONSTRUCTOR_NEW =>
+            {
+                Ok(HirExpr::ConstUndefined)
+            }
             ResolvedExpr::MethodCall {
                 object,
                 method,

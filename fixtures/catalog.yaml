@@ -908,6 +908,7 @@ directories:
     - for-of-array.ts
     - function-arguments.ts
     - function-constructor-call-static.ts
+    - function-constructor-dynamic-host-path.ts
     - function-constructor-metadata.ts
     - function-constructor-no-caller-capture.ts
     - function-constructor-shadowed-ordinary-call.ts

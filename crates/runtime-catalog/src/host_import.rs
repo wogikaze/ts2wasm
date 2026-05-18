@@ -99,6 +99,7 @@ pub enum HostImport {
     IteratorNext,
     EvalDirect,
     EvalIndirect,
+    FunctionCompile,
 }
 
 impl HostImport {
@@ -521,6 +522,14 @@ impl HostImport {
                 params: "param i32 i32",
                 result: "result i32",
             },
+            Self::FunctionCompile => HostImportSpec {
+                module: "host",
+                name: "function.compile",
+                wat_symbol: "$host_function_compile",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
         }
     }
 
@@ -581,6 +590,7 @@ impl HostImport {
             Self::IteratorNext => "host.iteratorNext",
             Self::EvalDirect => "host.eval.direct",
             Self::EvalIndirect => "host.eval.indirect",
+            Self::FunctionCompile => "host.function.compile",
         }
     }
 }

@@ -3314,6 +3314,12 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(crate) fn emit_function_compile_host(&self, wat: &mut String) {
+        wat.push_str(
+            "(func $function_compile_host (param $args i32) (result i32)\n  (call $host_function_compile (local.get $args))\n)\n",
+        );
+    }
+
     pub(crate) fn emit_generator_yield(&self, wat: &mut String) {
         let values_key = self.string_value("values");
         let state_key = self.string_value("state");

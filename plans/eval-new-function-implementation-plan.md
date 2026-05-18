@@ -69,7 +69,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | `new eval` | `new eval("x")` | unsupported / TypeError 境界が未整理 | eval is not constructor の TypeError parity |
 | literal `Function` | `Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; nested function/class body traversal, zero-arg, caller-local non-capture, strict-body duplicate/non-simple/eval/arguments parameter early errors, and direct `.name` / `.length` / `.prototype` metadata are guarded for static constructor locals | first-class static `FunctionConstructorPlan` / generated function object |
 | literal `new Function` | `new Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; zero-arg and call output are Node differential guarded | generated function object + metadata |
-| dynamic `Function` | `new Function(body)` | 未完成 | `host.function.compile` + host function handle |
+| dynamic `Function` | `new Function(body)` | `host.function.compile` manifest / host-deny slice は実装済み。returned host function handle の call/construct execution は未完 | `host.function.compile` + host function handle |
 | shadowed `eval` / `Function` | `let eval = f; eval("x")` | resolver が shadowed eval を ordinary call として保持し、parser は shadowing risk のある Function rewrite を避ける。shadowed `Function` ordinary-call fixture は Node differential guarded | ordinary user binding semantics |
 | `$262.evalScript` | `$262.evalScript(src)` | runtime helper exists but dynamic eval body未実装 | harness/global eval lane として別分類 |
 
@@ -457,6 +457,11 @@ Exit criteria:
 - host function call / construct の bridge を追加する。
 - `.length`, `.name`, `.prototype` の minimum property bridge を実装する。
 - thrown SyntaxError / runtime error を caller へ伝搬する。
+
+進捗:
+
+- `host.function.compile` manifest / host-deny slice is implemented; remaining
+  work is host handle call/construct execution and node-shim target pass.
 
 Exit criteria:
 

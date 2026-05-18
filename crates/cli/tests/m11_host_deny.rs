@@ -521,6 +521,62 @@ fn host_deny_rejects_dynamic_direct_eval_host_lane() {
     assert_host_deny_rejects("builtins-and-io/dynamic-eval-host-path.ts");
 }
 
+#[test]
+fn dynamic_function_constructor_declares_node_host_function_compile_capability() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../fixtures")
+        .join("core-semantics/function-constructor-dynamic-host-path.ts");
+
+    let output_wasm = std::env::temp_dir().join(format!(
+        "ts2wasm-dynamic-function-constructor-{}.wasm",
+        std::process::id()
+    ));
+
+    let output_manifest = std::env::temp_dir().join(format!(
+        "ts2wasm-dynamic-function-constructor-{}.json",
+        std::process::id()
+    ));
+
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture)
+        .arg("-o")
+        .arg(&output_wasm)
+        .arg("--emit-manifest")
+        .arg(&output_manifest)
+        .output()
+        .expect("Failed to execute ts2wasm");
+
+    assert!(
+        output.status.success(),
+        "dynamic Function constructor should compile through the Node host lane: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let manifest_content =
+        std::fs::read_to_string(&output_manifest).expect("Failed to read manifest");
+    let manifest: serde_json::Value =
+        serde_json::from_str(&manifest_content).expect("Manifest should be valid JSON");
+
+    assert_eq!(manifest["standalone"], false);
+    assert_eq!(manifest["node_host"]["required"], true);
+    assert_eq!(
+        manifest["node_host"]["imports"],
+        serde_json::json!(["host.function.compile"])
+    );
+    assert!(
+        manifest["capability_reasons"]["host.function.compile"]
+            .as_array()
+            .is_some_and(|reasons| !reasons.is_empty()),
+        "dynamic Function constructor must carry an auditable host.function.compile reason: {manifest}"
+    );
+}
+
+#[test]
+fn host_deny_rejects_dynamic_function_constructor_host_lane() {
+    assert_host_deny_rejects("core-semantics/function-constructor-dynamic-host-path.ts");
+}
+
 /// Helper: typescript-directives fixtures expected to fail under --host-deny
 /// with unsupported syntax diagnostics (not host-deny errors).
 fn assert_unsupported_syntax_under_host_deny(fixture_path: &str) {

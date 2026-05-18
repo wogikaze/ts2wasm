@@ -1338,6 +1338,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::FunctionCompileHost => RuntimeSpec {
+                symbol: "$function_compile_host",
+                deps: NO_DEPS,
+                imports: &[HostImport::FunctionCompile],
+                capability: CAP_HOST_FUNCTION_COMPILE,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::GeneratorYield => RuntimeSpec {
                 symbol: "$generator_yield",
                 deps: GENERATOR_YIELD_DEPS,

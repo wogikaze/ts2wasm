@@ -1,6 +1,7 @@
 use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 use crate::lowered::facts::ProxyTrapKind;
 use crate::lowered::*;
+use crate::name_resolver::INTRINSIC_FUNCTION_CONSTRUCTOR_NEW;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 
@@ -44,6 +45,9 @@ impl super::super::Resolver {
                 construct_args,
                 span,
             );
+        }
+        if class_name == INTRINSIC_FUNCTION_CONSTRUCTOR_NEW {
+            return self.lower_dynamic_function_constructor_host_compile(args, span);
         }
         if class_name == "RegExp" {
             return self.lower_regexp_constructor(args);
