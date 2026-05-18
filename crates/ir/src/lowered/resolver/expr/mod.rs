@@ -1155,45 +1155,37 @@ impl super::Resolver {
     }
 
     fn lower_direct_eval_env_descriptor(&self, caller_is_strict: bool) -> LoweredExpr {
+        self.collect_direct_eval_env_descriptor(caller_is_strict)
+            .into_lowered_expr()
+    }
+
+    fn collect_direct_eval_env_descriptor(
+        &self,
+        caller_is_strict: bool,
+    ) -> DirectEvalEnvDescriptor {
         let mut seen = HashSet::new();
-        let mut elements = Vec::new();
+        let mut bindings = Vec::new();
         for scope in self.ctx.symbols.scopes.iter().rev() {
-            let mut bindings = scope.iter().collect::<Vec<_>>();
-            bindings.sort_by(|(left, _), (right, _)| left.cmp(right));
-            for (name, local) in bindings {
+            let mut scope_bindings = scope.iter().collect::<Vec<_>>();
+            scope_bindings.sort_by(|(left, _), (right, _)| left.cmp(right));
+            for (name, local) in scope_bindings {
                 if !seen.insert(name.clone()) {
                     continue;
                 }
                 if self.ctx.facts.env_cell_locals.contains(local)
                     && self.ctx.facts.initialized_env_cell_locals.contains(local)
                 {
-                    elements.push(LoweredExpr::String(
-                        name.clone(),
-                        Span::generated("eval_env_name"),
-                    ));
-                    elements.push(LoweredExpr::Local(*local, Span::generated("eval_env_cell")));
+                    bindings.push(DirectEvalEnvBinding {
+                        name: name.clone(),
+                        local: *local,
+                    });
                 }
             }
         }
 
-        if elements.is_empty() && !caller_is_strict {
-            return LoweredExpr::Undefined(Span::generated("eval_env"));
-        }
-
-        elements.insert(
-            0,
-            LoweredExpr::Bool(caller_is_strict, Span::generated("eval_env_strict")),
-        );
-        elements.insert(
-            0,
-            LoweredExpr::String(
-                "__ts2wasm_eval_caller_strict".to_owned(),
-                Span::generated("eval_env_strict"),
-            ),
-        );
-        LoweredExpr::ArrayNew {
-            elements,
-            span: Span::generated("eval_env"),
+        DirectEvalEnvDescriptor {
+            caller_is_strict,
+            bindings,
         }
     }
 
@@ -1219,6 +1211,48 @@ impl super::Resolver {
         }
 
         Ok(())
+    }
+}
+
+struct DirectEvalEnvDescriptor {
+    caller_is_strict: bool,
+    bindings: Vec<DirectEvalEnvBinding>,
+}
+
+struct DirectEvalEnvBinding {
+    name: String,
+    local: LocalId,
+}
+
+impl DirectEvalEnvDescriptor {
+    fn into_lowered_expr(self) -> LoweredExpr {
+        if self.bindings.is_empty() && !self.caller_is_strict {
+            return LoweredExpr::Undefined(Span::generated("eval_env"));
+        }
+
+        let mut elements = Vec::with_capacity(2 + self.bindings.len() * 2);
+        elements.push(LoweredExpr::String(
+            "__ts2wasm_eval_caller_strict".to_owned(),
+            Span::generated("eval_env_strict"),
+        ));
+        elements.push(LoweredExpr::Bool(
+            self.caller_is_strict,
+            Span::generated("eval_env_strict"),
+        ));
+        for binding in self.bindings {
+            elements.push(LoweredExpr::String(
+                binding.name,
+                Span::generated("eval_env_name"),
+            ));
+            elements.push(LoweredExpr::Local(
+                binding.local,
+                Span::generated("eval_env_cell"),
+            ));
+        }
+        LoweredExpr::ArrayNew {
+            elements,
+            span: Span::generated("eval_env"),
+        }
     }
 }
 
