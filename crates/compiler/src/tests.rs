@@ -107,6 +107,17 @@ fn compiler_expands_static_function_constructor_primitive_source_args() {
 }
 
 #[test]
+fn compiler_rejects_static_function_constructor_primitive_parameter_source() {
+    let err = parse_resolve_and_expand_dynamic_code_err("let value = Function(1, \"return 1\");");
+    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    assert!(
+        err.message
+            .contains("Function constructor source parse error"),
+        "unexpected diagnostic: {err:?}"
+    );
+}
+
+#[test]
 fn compiler_preserves_dynamic_function_constructor_for_host_lane() {
     let parsed = parse_program(
         "let body = \"return 1\"; let value = Function(body); let other = new Function(body);",
