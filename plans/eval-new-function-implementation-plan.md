@@ -560,8 +560,9 @@ Exit criteria:
   caller env. The env descriptor also carries resolver-owned strict-caller
   metadata into the Node shim, where strict-caller runtime-source direct eval
   keeps eval-created `var` declarations eval-local and bridges strict syntax
-  errors such as `delete Identifier`. Direct wasm access to those
-  runtime-created bindings remains open.
+  errors such as `delete Identifier`, including `delete arguments` when the env
+  descriptor carries an `arguments` compatibility binding. Direct wasm access
+  to those runtime-created bindings remains open.
   Lowering also rejects dynamic direct eval before
   not-yet-initialized caller env bindings so the current host lane cannot bypass
   TDZ semantics. Full TDZ modeling remains open.
