@@ -71,6 +71,24 @@ impl super::super::Resolver {
         if class_name == INTRINSIC_FUNCTION_CONSTRUCTOR_NEW {
             return self.lower_dynamic_function_constructor_host_compile(args, span);
         }
+        if class_name == "eval" && self.resolve_local(class_name).is_err() {
+            return Ok(LoweredExpr::Block {
+                stmts: vec![LoweredStmt::Throw(
+                    LoweredExpr::ErrorNew {
+                        constructor: BuiltinErrorConstructor::TypeError,
+                        message: Box::new(LoweredExpr::String(
+                            "eval is not a constructor".to_owned(),
+                            Span::generated("str"),
+                        )),
+                        cause: None,
+                        span: Span::generated("error_new"),
+                    },
+                    Span::generated("throw"),
+                )],
+                result: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+                span: Span::generated("new_eval"),
+            });
+        }
         if class_name == "RegExp" {
             return self.lower_regexp_constructor(args);
         }

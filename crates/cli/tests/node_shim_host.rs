@@ -147,6 +147,12 @@ fn dynamic_optional_eval_executes_as_indirect_eval_through_node_shim_host_import
 }
 
 #[test]
+fn new_eval_throws_type_error() {
+    let fixture = "fixtures/core-semantics/new-eval-type-error.ts";
+    assert_node_shim_stdout(fixture, "TypeError\n");
+}
+
+#[test]
 fn dynamic_indirect_eval_preserves_object_properties_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/indirect-eval-dynamic-object-properties-node-shim.ts";
     assert_node_shim_stdout(fixture, "7\nok\nundefined\n");

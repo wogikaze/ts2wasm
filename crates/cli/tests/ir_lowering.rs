@@ -280,6 +280,36 @@ fn lowering_passes_static_direct_eval_function_declaration_capture() {
 }
 
 #[test]
+fn lowering_new_eval_throws_type_error() {
+    use ts2wasm_ir::lowered::{BuiltinErrorConstructor, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve("new eval(\"1 + 1\");");
+    let lowered =
+        ts2wasm_ir::lowered::lower_program(&program).expect("new eval TypeError path should lower");
+
+    assert!(matches!(
+        lowered.top_level_statements.as_slice(),
+        [LoweredStmt::Expr(
+            LoweredExpr::Block {
+                stmts,
+                result,
+                ..
+            },
+            _
+        )] if matches!(
+            stmts.as_slice(),
+            [LoweredStmt::Throw(
+                LoweredExpr::ErrorNew {
+                    constructor: BuiltinErrorConstructor::TypeError,
+                    ..
+                },
+                _
+            )]
+        ) && matches!(result.as_ref(), LoweredExpr::Undefined(_))
+    ));
+}
+
+#[test]
 fn lowering_passes_top_level_capture_through_double_nested_function_expr() {
     let program = parse_and_resolve(
         r#"

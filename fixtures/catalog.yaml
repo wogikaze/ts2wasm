@@ -990,7 +990,7 @@ directories:
     - nested-function-declaration-unsupported.ts
     - nested-namespace-abc.ts
     - nested-namespace-unsupported.ts
-    - new-eval-unsupported.ts
+    - new-eval-type-error.ts
     - new-function-constructor-static.ts
     - null-undefined.ts
     - nullish-coalescing.ts
