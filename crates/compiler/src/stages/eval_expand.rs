@@ -1165,12 +1165,6 @@ fn extract_completion_value(
     function_hoists: Vec<EvalFunctionHoist>,
 ) -> Result<ResolvedExpr, Diagnostic> {
     let mut steps = Vec::new();
-    if !eval_declarations.is_empty() {
-        steps.push(EvalCompletionStep::HoistVars(eval_declarations.to_vec()));
-    }
-    if !function_hoists.is_empty() {
-        steps.push(EvalCompletionStep::HoistFunctions(function_hoists.clone()));
-    }
     steps.extend(eval_completion_steps(
         ast_stmts,
         stmts,

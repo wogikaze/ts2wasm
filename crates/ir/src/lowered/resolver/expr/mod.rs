@@ -188,7 +188,7 @@ impl super::Resolver {
             } => self.lower_named_function_expr(name, params, body, *is_generator, *origin),
             ResolvedExpr::ClassExpr { .. } => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
             ResolvedExpr::Sequence(exprs) => self.lower_sequence_expr(exprs),
-            ResolvedExpr::EvalCompletion(plan) => self.lower_eval_completion_expr(plan.steps()),
+            ResolvedExpr::EvalCompletion(plan) => self.lower_eval_completion_expr(plan),
             ResolvedExpr::Eval { plan } => {
                 let crate::builtin_resolved::EvalSource::Runtime(source_expr) = &plan.source else {
                     return Err(Diagnostic {
@@ -269,7 +269,7 @@ impl super::Resolver {
 
     fn lower_eval_completion_expr(
         &mut self,
-        steps: &[crate::builtin_resolved::EvalCompletionStep],
+        plan: &crate::builtin_resolved::EvalCompletionPlan,
     ) -> Result<LoweredExpr, Diagnostic> {
         let completion = self.alloc_temp();
         self.ctx.symbols.scopes.push(HashMap::new());
@@ -287,8 +287,13 @@ impl super::Resolver {
                 LoweredExpr::Undefined(Span::generated("eval_completion_init")),
                 Span::generated("eval_completion_let"),
             )];
+            self.lower_eval_declaration_plan_into(
+                &plan.declarations,
+                caller_scope_index,
+                &mut stmts,
+            )?;
             self.lower_eval_completion_steps_into(
-                steps,
+                plan.steps(),
                 completion,
                 caller_scope_index,
                 &mut stmts,
@@ -312,6 +317,70 @@ impl super::Resolver {
         lowered
     }
 
+    fn lower_eval_declaration_plan_into(
+        &mut self,
+        declarations: &crate::builtin_resolved::EvalDeclarationPlan,
+        caller_scope_index: usize,
+        stmts: &mut Vec<LoweredStmt>,
+    ) -> Result<(), Diagnostic> {
+        self.lower_eval_hoisted_vars_into(&declarations.var_names, caller_scope_index, stmts)?;
+        self.lower_eval_hoisted_functions_into(
+            &declarations.function_hoists,
+            caller_scope_index,
+            stmts,
+        )
+    }
+
+    fn lower_eval_hoisted_vars_into(
+        &mut self,
+        names: &[String],
+        caller_scope_index: usize,
+        stmts: &mut Vec<LoweredStmt>,
+    ) -> Result<(), Diagnostic> {
+        for name in names {
+            let (local, existed) =
+                self.declare_eval_var_in_caller_scope(name, caller_scope_index)?;
+            if self.ctx.facts.env_cell_names.contains(name) {
+                self.ctx.facts.env_cell_locals.insert(local);
+                self.ctx.facts.initialized_env_cell_locals.insert(local);
+            }
+            if !existed {
+                let init = if self.ctx.facts.env_cell_locals.contains(&local) {
+                    LoweredExpr::EnvCellNew(
+                        Box::new(LoweredExpr::Undefined(Span::generated("eval_var_hoist"))),
+                        Span::generated("eval_var_hoist_cell"),
+                    )
+                } else {
+                    LoweredExpr::Undefined(Span::generated("eval_var_hoist"))
+                };
+                stmts.push(LoweredStmt::Let(
+                    local,
+                    init,
+                    Span::generated("eval_var_hoist_let"),
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    fn lower_eval_hoisted_functions_into(
+        &mut self,
+        functions: &[crate::builtin_resolved::EvalFunctionHoist],
+        caller_scope_index: usize,
+        stmts: &mut Vec<LoweredStmt>,
+    ) -> Result<(), Diagnostic> {
+        for function in functions {
+            stmts.push(self.lower_eval_function_decl_in_caller_scope(
+                &function.name,
+                &function.params,
+                &function.body,
+                function.is_async,
+                caller_scope_index,
+            )?);
+        }
+        Ok(())
+    }
+
     fn lower_eval_completion_steps_into(
         &mut self,
         steps: &[crate::builtin_resolved::EvalCompletionStep],
@@ -324,42 +393,10 @@ impl super::Resolver {
         for step in steps {
             match step {
                 EvalCompletionStep::HoistVars(names) => {
-                    for name in names {
-                        let (local, existed) =
-                            self.declare_eval_var_in_caller_scope(name, caller_scope_index)?;
-                        if self.ctx.facts.env_cell_names.contains(name) {
-                            self.ctx.facts.env_cell_locals.insert(local);
-                            self.ctx.facts.initialized_env_cell_locals.insert(local);
-                        }
-                        if !existed {
-                            let init = if self.ctx.facts.env_cell_locals.contains(&local) {
-                                LoweredExpr::EnvCellNew(
-                                    Box::new(LoweredExpr::Undefined(Span::generated(
-                                        "eval_var_hoist",
-                                    ))),
-                                    Span::generated("eval_var_hoist_cell"),
-                                )
-                            } else {
-                                LoweredExpr::Undefined(Span::generated("eval_var_hoist"))
-                            };
-                            stmts.push(LoweredStmt::Let(
-                                local,
-                                init,
-                                Span::generated("eval_var_hoist_let"),
-                            ));
-                        }
-                    }
+                    self.lower_eval_hoisted_vars_into(names, caller_scope_index, stmts)?;
                 }
                 EvalCompletionStep::HoistFunctions(functions) => {
-                    for function in functions {
-                        stmts.push(self.lower_eval_function_decl_in_caller_scope(
-                            &function.name,
-                            &function.params,
-                            &function.body,
-                            function.is_async,
-                            caller_scope_index,
-                        )?);
-                    }
+                    self.lower_eval_hoisted_functions_into(functions, caller_scope_index, stmts)?;
                 }
                 EvalCompletionStep::Value(expr) => {
                     let value = self.lower_expr(expr)?;
