@@ -384,6 +384,10 @@ pub enum EvalCompletionStep {
         name: String,
         init: ResolvedExpr,
     },
+    DestructureLet {
+        pattern: BindingPattern,
+        init: ResolvedExpr,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -400,6 +404,7 @@ impl EvalCompletionStep {
             Self::Value(expr)
             | Self::Empty(Some(expr))
             | Self::VarLet { init: expr, .. }
+            | Self::DestructureLet { init: expr, .. }
             | Self::If {
                 condition: expr, ..
             }

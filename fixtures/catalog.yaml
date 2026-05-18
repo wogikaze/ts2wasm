@@ -887,6 +887,7 @@ directories:
     - direct-eval-caller-local.ts
     - direct-eval-declaration-empty-completion.ts
     - direct-eval-declaration-preserves-previous-completion.ts
+    - direct-eval-destructuring-completion.ts
     - direct-eval-do-while-completion.ts
     - direct-eval-expression-caller-local.ts
     - direct-eval-expression-side-effect.ts

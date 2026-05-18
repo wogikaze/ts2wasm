@@ -676,6 +676,12 @@ impl super::Resolver {
                 EvalCompletionStep::LexicalLet { name, init } => {
                     stmts.push(self.lower_stmt(&ResolvedStmt::Let(name.clone(), init.clone()))?);
                 }
+                EvalCompletionStep::DestructureLet { pattern, init } => {
+                    stmts.push(self.lower_stmt(&ResolvedStmt::DestructureLet {
+                        pattern: pattern.clone(),
+                        expr: init.clone(),
+                    })?);
+                }
                 EvalCompletionStep::Throw(expr) => {
                     stmts.push(LoweredStmt::Throw(
                         self.lower_expr(expr)?,
@@ -797,6 +803,12 @@ impl super::Resolver {
             EvalCompletionStep::LexicalLet { name, init } => Ok(Some(
                 self.lower_stmt(&ResolvedStmt::Let(name.clone(), init.clone()))?,
             )),
+            EvalCompletionStep::DestructureLet { pattern, init } => {
+                Ok(Some(self.lower_stmt(&ResolvedStmt::DestructureLet {
+                    pattern: pattern.clone(),
+                    expr: init.clone(),
+                })?))
+            }
             EvalCompletionStep::FunctionDecl {
                 name,
                 params,

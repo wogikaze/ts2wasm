@@ -280,6 +280,12 @@ fn static_direct_eval_declaration_preserves_previous_completion() {
 }
 
 #[test]
+fn static_direct_eval_destructuring_preserves_completion() {
+    let fixture = "fixtures/core-semantics/direct-eval-destructuring-completion.ts";
+    assert_node_shim_stdout(fixture, "7\n");
+}
+
+#[test]
 fn static_direct_eval_recursively_expands_nested_static_eval() {
     let fixture = "fixtures/core-semantics/direct-eval-nested-static.ts";
     assert_node_shim_stdout(fixture, "3\n");

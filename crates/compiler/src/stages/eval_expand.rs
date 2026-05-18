@@ -1174,6 +1174,10 @@ fn eval_statement_completion_step(
             EvalCompletionStep::VarLet { name, init: expr }
         }
         ResolvedStmt::Let(name, expr) => EvalCompletionStep::LexicalLet { name, init: expr },
+        ResolvedStmt::DestructureLet { pattern, expr } => EvalCompletionStep::DestructureLet {
+            pattern,
+            init: expr,
+        },
         ResolvedStmt::Block { statements } => {
             let ast_statements = match ast_stmt {
                 Some(Stmt::Block { statements, .. }) => statements.as_slice(),
