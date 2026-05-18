@@ -400,6 +400,14 @@ fn dynamic_direct_eval_writes_back_catch_binding_env_cell_through_node_shim_host
 }
 
 #[test]
+fn dynamic_direct_eval_function_declaration_writes_back_var_binding_through_node_shim_host_import()
+{
+    let fixture =
+        "fixtures/core-semantics/direct-eval-dynamic-function-declaration-writeback-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\n7\n");
+}
+
+#[test]
 fn dynamic_direct_eval_class_method_reads_arguments_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-class-method-arguments-node-shim.ts";
     assert_node_shim_stdout(fixture, "9:1\n");
@@ -692,8 +700,13 @@ function decodeValue(raw) {
       return decodeString(raw);
     case TAG_ARRAY:
       return decodeArray(raw).map(decodeValue);
-    case TAG_OBJECT:
+    case TAG_OBJECT: {
+      const ptr = rawPtr(raw);
+      if (hostFunctionHandles.has(ptr)) {
+        return hostFunctions[hostFunctionHandles.get(ptr)];
+      }
       return decodeObject(raw);
+    }
     default:
       throw new TypeError(`unsupported RawValue for this host-shim test: ${raw}`);
   }

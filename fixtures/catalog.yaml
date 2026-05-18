@@ -924,6 +924,7 @@ directories:
     - direct-eval-dynamic-class-constructor-this-node-shim.ts
     - direct-eval-dynamic-class-method-arguments-node-shim.ts
     - direct-eval-dynamic-class-method-this-node-shim.ts
+    - direct-eval-dynamic-function-declaration-writeback-node-shim.ts
     - direct-eval-dynamic-local-writeback-node-shim.ts
     - direct-eval-dynamic-nested-array-node-shim.ts
     - direct-eval-dynamic-nested-object-node-shim.ts
