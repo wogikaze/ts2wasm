@@ -148,7 +148,7 @@ pub(crate) fn collect_arrow_captures(
             }
         }
         ResolvedExpr::Eval { plan } => {
-            if let EvalSource::Runtime(expr) = &plan.source {
+            if let EvalSource::Runtime(expr) | EvalSource::NonStringStatic(expr) = &plan.source {
                 collect_arrow_captures(expr, params, captures);
             }
         }

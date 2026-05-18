@@ -193,7 +193,9 @@ fn mark_eval_strict_contexts_in_expr(expr: &mut ResolvedExpr, strict_context: bo
     match expr {
         ResolvedExpr::Eval { plan } => {
             plan.caller_is_strict |= strict_context;
-            if let EvalSource::Runtime(source) = &mut plan.source {
+            if let EvalSource::Runtime(source) | EvalSource::NonStringStatic(source) =
+                &mut plan.source
+            {
                 mark_eval_strict_contexts_in_expr(source, strict_context);
             }
         }
@@ -340,6 +342,19 @@ fn mark_eval_strict_contexts_in_expr(expr: &mut ResolvedExpr, strict_context: bo
         | ResolvedExpr::Yield { expr: None, .. }
         | ResolvedExpr::Ident(_)
         | ResolvedExpr::ModuleLoad { .. } => {}
+    }
+}
+
+fn eval_source_from_resolved_arg(arg: ResolvedExpr) -> EvalSource {
+    match arg {
+        ResolvedExpr::String(value) => EvalSource::StaticLiteral(value),
+        ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
+        | ResolvedExpr::BigIntLiteral { .. }
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined => EvalSource::NonStringStatic(Box::new(arg)),
+        _ => EvalSource::Runtime(Box::new(arg)),
     }
 }
 
@@ -2109,13 +2124,13 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 let source = if let [Expr::String { value, .. }] = args.as_slice() {
                     EvalSource::StaticLiteral(value.clone())
                 } else {
-                    EvalSource::Runtime(Box::new(
+                    eval_source_from_resolved_arg(
                         args.iter()
                             .next()
                             .map(resolve_expr)
                             .transpose()?
                             .unwrap_or(ResolvedExpr::Undefined),
-                    ))
+                    )
                 };
                 return Ok(ResolvedExpr::Eval {
                     plan: EvalFragmentPlan::new(

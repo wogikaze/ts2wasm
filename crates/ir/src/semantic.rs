@@ -1286,6 +1286,7 @@ impl<'a> HirLowerer<'a> {
                 };
                 let source_str = match &plan.source {
                     EvalSource::StaticLiteral(s) => s.as_str(),
+                    EvalSource::NonStringStatic(_) => "[non-string-static]",
                     EvalSource::Runtime(_) => "[dynamic]",
                 };
                 Err(unsupported(&format!(

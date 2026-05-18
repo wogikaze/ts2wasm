@@ -200,6 +200,11 @@ impl super::Resolver {
             ResolvedExpr::Sequence(exprs) => self.lower_sequence_expr(exprs),
             ResolvedExpr::EvalCompletion(plan) => self.lower_eval_completion_expr(plan),
             ResolvedExpr::Eval { plan } => {
+                if let crate::builtin_resolved::EvalSource::NonStringStatic(source_expr) =
+                    &plan.source
+                {
+                    return self.lower_expr(source_expr);
+                }
                 let crate::builtin_resolved::EvalSource::Runtime(source_expr) = &plan.source else {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedEval,

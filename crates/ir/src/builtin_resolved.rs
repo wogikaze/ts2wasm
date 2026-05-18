@@ -507,7 +507,7 @@ pub enum EvalHostPolicy {
 impl EvalHostPolicy {
     pub fn for_kind_and_source(kind: EvalKind, source: &EvalSource) -> Self {
         match (kind, source) {
-            (_, EvalSource::StaticLiteral(_)) => Self::AotOnly,
+            (_, EvalSource::StaticLiteral(_) | EvalSource::NonStringStatic(_)) => Self::AotOnly,
             (EvalKind::Direct, EvalSource::Runtime(_)) => Self::DirectHost,
             (EvalKind::Indirect, EvalSource::Runtime(_)) => Self::IndirectHost,
         }
@@ -517,6 +517,7 @@ impl EvalHostPolicy {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum EvalSource {
     StaticLiteral(String),
+    NonStringStatic(Box<ResolvedExpr>),
     Runtime(Box<ResolvedExpr>),
 }
 

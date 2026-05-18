@@ -464,6 +464,13 @@ fn expand_expr(
                 &global_bindings,
             ))
         }
+        ResolvedExpr::Eval {
+            plan:
+                EvalFragmentPlan {
+                    source: EvalSource::NonStringStatic(value),
+                    ..
+                },
+        } => expand_expr(*value, ctx),
         ResolvedExpr::Eval { .. } => {
             // Non-expandable eval (indirect or runtime source) — keep as-is.
             Ok(expr)
@@ -1640,6 +1647,9 @@ fn rewrite_eval_expr_global_collisions(
                         rewrite_eval_expr_global_collisions(*expr, collisions, scopes),
                     )),
                     EvalSource::StaticLiteral(src) => EvalSource::StaticLiteral(src),
+                    EvalSource::NonStringStatic(expr) => EvalSource::NonStringStatic(Box::new(
+                        rewrite_eval_expr_global_collisions(*expr, collisions, scopes),
+                    )),
                 },
                 ..plan
             },

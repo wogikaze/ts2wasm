@@ -219,7 +219,7 @@ fn expr_contains_dynamic_direct_eval(expr: &ResolvedExpr) -> bool {
         } => true,
         ResolvedExpr::Eval { plan } => match &plan.source {
             EvalSource::Runtime(expr) => expr_contains_dynamic_direct_eval(expr),
-            EvalSource::StaticLiteral(_) => false,
+            EvalSource::StaticLiteral(_) | EvalSource::NonStringStatic(_) => false,
         },
         ResolvedExpr::Await { expr }
         | ResolvedExpr::Spread(expr)

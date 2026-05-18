@@ -966,6 +966,7 @@ directories:
     - duplicate-local-same-scope-unsupported.ts
     - dynamic-call-assign-unsupported.ts
     - eval-static-expression.ts
+    - eval-static-non-string.ts
     - fncsem-arguments-object.ts
     - fncsem-builtin-call.ts
     - fncsem-call-extra-args.ts

@@ -1230,6 +1230,11 @@ fn new_function_constructor_fixture_builds_static_constructor() {
 }
 
 #[test]
+fn static_non_string_eval_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/eval-static-non-string.ts");
+}
+
+#[test]
 fn static_indirect_eval_fixture_matches_node_output() {
     assert_fixture_matches_node("fixtures/core-semantics/indirect-eval-static.ts");
 }
