@@ -66,6 +66,54 @@ fn resolved_expr_is_dynamic_function_constructor(ctx: &LoweringCtx, expr: &Resol
             .resolve_local(name)
             .ok()
             .is_some_and(|local_id| ctx.facts.host_function_handle_locals.contains(&local_id)),
+        ResolvedExpr::PropertyAccess { object, .. } => {
+            resolved_expr_is_host_external_object(ctx, object)
+        }
+        ResolvedExpr::ComputedIndex { object, .. } => {
+            resolved_expr_is_host_external_object(ctx, object)
+        }
+        _ => false,
+    }
+}
+
+pub(crate) fn update_host_external_object_local(
+    ctx: &mut LoweringCtx,
+    local_id: LocalId,
+    expr: &ResolvedExpr,
+) {
+    if resolved_expr_returns_host_external_object(ctx, expr) {
+        ctx.facts.host_external_object_locals.insert(local_id);
+    } else {
+        ctx.facts.host_external_object_locals.remove(&local_id);
+    }
+}
+
+pub(crate) fn resolved_expr_is_host_external_object(
+    ctx: &LoweringCtx,
+    expr: &ResolvedExpr,
+) -> bool {
+    match expr {
+        ResolvedExpr::Ident(name) => ctx
+            .resolve_local(name)
+            .ok()
+            .is_some_and(|local_id| ctx.facts.host_external_object_locals.contains(&local_id)),
+        _ => false,
+    }
+}
+
+fn resolved_expr_returns_host_external_object(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
+    match expr {
+        ResolvedExpr::Call { callee, .. } => {
+            resolved_expr_is_dynamic_function_constructor(ctx, callee)
+        }
+        ResolvedExpr::New { class_name, .. } => ctx
+            .resolve_local(class_name)
+            .ok()
+            .is_some_and(|local_id| ctx.facts.host_function_handle_locals.contains(&local_id)),
+        ResolvedExpr::Ident(name) => ctx
+            .resolve_local(name)
+            .ok()
+            .is_some_and(|local_id| ctx.facts.host_external_object_locals.contains(&local_id)),
         _ => false,
     }
 }

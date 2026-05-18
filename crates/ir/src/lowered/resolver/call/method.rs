@@ -3767,6 +3767,31 @@ impl super::super::Resolver {
                 if receiver_name == "durationFormat" && is_intl_duration_format_method(method) {
                     return self.lower_intl_duration_format_method(method, args);
                 }
+                if self
+                    .ctx
+                    .facts
+                    .host_external_object_locals
+                    .contains(&obj_local)
+                {
+                    let args_array = ResolvedExpr::Array(
+                        args.iter()
+                            .cloned()
+                            .map(ResolvedArrayElement::Present)
+                            .collect(),
+                    );
+                    return Ok(LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::FunctionCallHost,
+                        args: vec![
+                            object_kernel::ordinary_get(
+                                LoweredExpr::Local(obj_local, Span::generated("local")),
+                                method,
+                                span,
+                            ),
+                            self.lower_expr(&args_array)?,
+                        ],
+                        span: Span::generated("runtime_call"),
+                    });
+                }
                 // BigInt.prototype.toString/valueOf handling
                 if self.ctx.facts.bigint_locals.contains(&obj_local) {
                     match method {

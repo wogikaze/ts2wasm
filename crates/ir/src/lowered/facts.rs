@@ -105,6 +105,8 @@ pub struct StaticFacts {
     pub function_method_locals: HashMap<LocalId, FunctionMethodBinding>,
     /// Locals holding host function handles returned by dynamic `Function(...)`.
     pub host_function_handle_locals: HashSet<LocalId>,
+    /// Locals holding values returned from host function handles.
+    pub host_external_object_locals: HashSet<LocalId>,
     /// Static bound class constructor locals created with `ClassName.bind(...)`.
     pub bound_constructor_locals: HashMap<LocalId, BoundConstructor>,
     /// Static Proxy locals created as `new Proxy(target, handler)`.
@@ -308,6 +310,7 @@ impl StaticFacts {
             bound_function_locals: HashMap::new(),
             function_method_locals: HashMap::new(),
             host_function_handle_locals: HashSet::new(),
+            host_external_object_locals: HashSet::new(),
             bound_constructor_locals: HashMap::new(),
             proxy_locals: HashMap::new(),
             intl_number_format_locals: HashMap::new(),

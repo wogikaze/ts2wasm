@@ -558,6 +558,11 @@ impl Resolver {
                     local_id,
                     expr,
                 );
+                crate::lowered::resolver::expr::facts::update_host_external_object_local(
+                    &mut self.ctx,
+                    local_id,
+                    expr,
+                );
                 crate::lowered::resolver::expr::facts::update_bigint_local(
                     &mut self.ctx,
                     local_id,
@@ -813,6 +818,11 @@ impl Resolver {
                     expr,
                 );
                 crate::lowered::resolver::expr::facts::update_host_function_handle_local(
+                    &mut self.ctx,
+                    local_id,
+                    expr,
+                );
+                crate::lowered::resolver::expr::facts::update_host_external_object_local(
                     &mut self.ctx,
                     local_id,
                     expr,

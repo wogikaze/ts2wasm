@@ -39,6 +39,13 @@ fn dynamic_function_handle_bridges_function_properties_through_node_shim_host_im
 }
 
 #[test]
+fn dynamic_function_handle_calls_function_properties_through_node_shim_host_imports() {
+    let fixture =
+        "fixtures/core-semantics/function-constructor-dynamic-function-property-call-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\n7\n");
+}
+
+#[test]
 fn dynamic_function_handle_preserves_object_identity_through_node_shim_host_imports() {
     let fixture =
         "fixtures/core-semantics/function-constructor-dynamic-object-identity-node-shim.ts";
