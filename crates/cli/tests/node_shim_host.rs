@@ -79,6 +79,12 @@ fn dynamic_function_handle_grows_object_shape_through_node_shim_host_imports() {
 }
 
 #[test]
+fn dynamic_function_handle_grows_existing_object_references_through_node_shim_host_imports() {
+    let fixture = "fixtures/core-semantics/function-constructor-dynamic-object-existing-ref-growth-node-shim.ts";
+    assert_node_shim_stdout(fixture, "1\n5\nundefined\n");
+}
+
+#[test]
 fn dynamic_function_handle_bridges_nested_arrays_through_node_shim_host_imports() {
     let fixture = "fixtures/core-semantics/function-constructor-dynamic-nested-array-node-shim.ts";
     assert_node_shim_stdout(fixture, "2\n7\n8\nundefined\n");
@@ -474,13 +480,23 @@ function allocateHostObjectRecord(value, requestedCapacity) {
   return record;
 }
 
+function forwardHostObjectRecord(from, to) {
+  const fromPtr = rawPtr(from.raw);
+  const toPtr = rawPtr(to.raw);
+  view().setInt32(fromPtr, 0, true);
+  view().setInt32(fromPtr + 4, 0, true);
+  view().setInt32(fromPtr + 8, toPtr, true);
+}
+
 function encodeHostObject(value) {
   const keys = Object.keys(value);
   let record = hostObjectHandles.get(value);
   if (record === undefined) {
     record = allocateHostObjectRecord(value, keys.length);
   } else if (keys.length > record.capacity) {
+    const previous = record;
     record = allocateHostObjectRecord(value, record.capacity * 2);
+    forwardHostObjectRecord(previous, record);
   }
   refreshHostObjectEntries(value, record);
   return record.raw;

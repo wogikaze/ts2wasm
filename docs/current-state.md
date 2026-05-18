@@ -368,14 +368,16 @@ The current implementation has several partial dynamic-code paths:
   function-valued object properties as metadata-bearing callable host handles,
   including aliased property calls and receiver-bound method calls, and carries
   handles as wasm object cells backed by host-side handle maps instead of
-  number values.
+  number values. When a host-returned object outgrows its first wasm record, the
+  focused shim keeps already-returned object references usable by forwarding the
+  old record through its prototype pointer to the replacement record.
 
 The canonical implementation plan is
 `plans/eval-new-function-implementation-plan.md`. Current known gaps include
 the split parser/compiler eval expansion paths, direct eval declaration
 environment connection, remaining Function constructor grammar/constructability
-completeness, identity-stable growth for already-returned wasm references, and
-error bridging, and full dynamic direct-eval environment semantics beyond the
+completeness, identity-stable growth for already-returned host array references,
+and error bridging, and full dynamic direct-eval environment semantics beyond the
 primitive env-cell write-back slice. Node-shim execution for dynamic indirect eval and dynamic
 Function handles is covered by focused integration tests, as are primitive-return
 and primitive local/parameter/block-shadow/string write-back, object result and

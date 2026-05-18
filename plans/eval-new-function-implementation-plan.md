@@ -483,9 +483,10 @@ Exit criteria:
   `.prototype` metadata, bridges function-valued object properties as
   metadata-bearing callable host handles including aliased property calls and
   receiver-bound method calls, and carries handles as wasm object cells backed
-  by host-side handle maps instead of number values; remaining work is
-  identity-stable growth for
-  already-returned wasm references, error bridging, and a runtime-wide host
+  by host-side handle maps instead of number values. The focused shim forwards
+  already-returned host object references when the backing JS object outgrows
+  its first wasm record; remaining work is identity-stable growth for
+  already-returned array references, error bridging, and a runtime-wide host
   external object contract beyond the focused shim.
 
 Exit criteria:
