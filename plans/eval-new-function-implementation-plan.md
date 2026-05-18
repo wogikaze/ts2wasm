@@ -70,7 +70,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | `new eval` | `new eval("x")` | unsupported / TypeError 境界が未整理 | eval is not constructor の TypeError parity |
 | literal `Function` | `Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; nested function/class body traversal, zero-arg, caller-local non-capture, non-simple duplicate bound-name and strict-body duplicate/non-simple/eval/arguments parameter early errors, and direct `.name` / `.length` / `.prototype` metadata are guarded for static constructor locals | first-class static `FunctionConstructorPlan` / generated function object |
 | literal `new Function` | `new Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; zero-arg and call output are Node differential guarded | generated function object + metadata |
-| dynamic `Function` | `new Function(body)` | `host.function.compile` manifest / host-deny slice と statically visible returned host function handle の `host.function.call` / `host.function.construct` manifest/lowering slice は実装済み。primitive/string/object-return call、discarded construct、string-keyed primitive object property reads、`.length` / `.name` / `.prototype` metadata reads の node-shim regression も実装済み | `host.function.compile` + host function handle |
+| dynamic `Function` | `new Function(body)` | `host.function.compile` manifest / host-deny slice と statically visible returned host function handle の `host.function.call` / `host.function.construct` manifest/lowering slice は実装済み。primitive/string/object-return call、discarded construct、string-keyed primitive object property reads、`.length` / `.name` / `.prototype` metadata reads、host object/array growth forwarding の node-shim regression も実装済み | `host.function.compile` + host function handle |
 | shadowed `eval` / `Function` | `let eval = f; eval("x")` | resolver が shadowed eval を ordinary call として保持し、parser は shadowing risk のある Function rewrite を避ける。shadowed `Function` ordinary-call fixture は Node differential guarded | ordinary user binding semantics |
 | `$262.evalScript` | `$262.evalScript(src)` | runtime helper exists but dynamic eval body未実装 | harness/global eval lane として別分類 |
 
@@ -484,10 +484,9 @@ Exit criteria:
   metadata-bearing callable host handles including aliased property calls and
   receiver-bound method calls, and carries handles as wasm object cells backed
   by host-side handle maps instead of number values. The focused shim forwards
-  already-returned host object references when the backing JS object outgrows
-  its first wasm record; remaining work is identity-stable growth for
-  already-returned array references, error bridging, and a runtime-wide host
-  external object contract beyond the focused shim.
+  already-returned host object and array references when the backing JS value
+  outgrows its first wasm record; remaining work is error bridging and a
+  runtime-wide host external object contract beyond the focused shim.
 
 Exit criteria:
 

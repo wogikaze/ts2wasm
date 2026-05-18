@@ -97,6 +97,12 @@ fn dynamic_function_handle_grows_nested_arrays_through_node_shim_host_imports() 
 }
 
 #[test]
+fn dynamic_function_handle_grows_existing_array_references_through_node_shim_host_imports() {
+    let fixture = "fixtures/core-semantics/function-constructor-dynamic-array-existing-ref-growth-node-shim.ts";
+    assert_node_shim_stdout(fixture, "5\n5\nundefined\n");
+}
+
+#[test]
 fn dynamic_function_handle_exposes_metadata_through_node_shim_host_imports() {
     let fixture = "fixtures/core-semantics/function-constructor-dynamic-metadata-node-shim.ts";
     assert_node_shim_stdout(fixture, "2\nanonymous\n[object Object]\n7\n");
@@ -317,7 +323,7 @@ function decodeArray(raw) {
   if (rawTag(raw) !== TAG_ARRAY) {
     throw new TypeError(`expected array RawValue, got ${raw}`);
   }
-  const base = rawPtr(raw);
+  const base = rawPtr(resolveHostArrayRaw(raw));
   const len = view().getInt32(base, true);
   const presenceWords = view().getInt32(base + 8, true);
   const elementsOffset = view().getInt32(base + 12, true);
@@ -419,6 +425,18 @@ function refreshHostArrayEntries(value, record) {
   }
 }
 
+function resolveHostArrayRaw(raw) {
+  let current = raw;
+  for (let steps = 0; steps < 64; steps += 1) {
+    const ptr = rawPtr(current);
+    if (view().getInt32(ptr + 4, true) !== -1) {
+      return current;
+    }
+    current = view().getInt32(ptr + ARRAY_HEADER_SIZE, true);
+  }
+  throw new TypeError('host array forwarding cycle');
+}
+
 function allocateHostArrayRecord(value, requestedCapacity) {
   const capacity = Math.max(value.length, requestedCapacity, 4);
   const presenceWords = Math.max(1, Math.ceil(capacity / 32));
@@ -437,12 +455,24 @@ function allocateHostArrayRecord(value, requestedCapacity) {
   return record;
 }
 
+function forwardHostArrayRecord(from, to) {
+  const fromPtr = rawPtr(from.raw);
+  view().setInt32(fromPtr, 1, true);
+  view().setInt32(fromPtr + 4, -1, true);
+  view().setInt32(fromPtr + 8, 1, true);
+  view().setInt32(fromPtr + 12, ARRAY_HEADER_SIZE, true);
+  view().setUint32(fromPtr + ARRAY_PRESENCE_WORDS_OFFSET, 1, true);
+  view().setInt32(fromPtr + ARRAY_HEADER_SIZE, to.raw, true);
+}
+
 function encodeHostArray(value) {
   let record = hostArrayHandles.get(value);
   if (record === undefined) {
     record = allocateHostArrayRecord(value, value.length);
   } else if (value.length > record.capacity) {
+    const previous = record;
     record = allocateHostArrayRecord(value, record.capacity * 2);
+    forwardHostArrayRecord(previous, record);
   }
   refreshHostArrayEntries(value, record);
   return record.raw;

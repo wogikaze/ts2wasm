@@ -10,11 +10,26 @@ impl WatEmitter<'_> {
     (local $idx_tag i32)
     (local $base i32)
     (local $i i32)
+    (local $steps i32)
     (local.set $arr_tag (i32.and (local.get $arr) (i32.const {tag_mask})))
     (if (i32.ne (local.get $arr_tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
     (local.set $idx_tag (i32.and (local.get $idx) (i32.const {tag_mask})))
     (if (i32.ne (local.get $idx_tag) (i32.const {number_tag})) (then (return (i32.const {undefined}))))
     (local.set $base (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (block $forward_done
+      (loop $forward
+        (br_if $forward_done
+          (i32.ne
+            (i32.load (i32.add (local.get $base) (i32.const {capacity_offset})))
+            (i32.const -1)))
+        (local.set $steps (i32.add (local.get $steps) (i32.const 1)))
+        (if (i32.gt_u (local.get $steps) (i32.const 64))
+          (then (return (i32.const {undefined}))))
+        (local.set $base
+          (i32.and
+            (i32.load (i32.add (local.get $base) (i32.const {header})))
+            (i32.const {heap_mask})))
+        (br $forward)))
     (local.set $i (i32.shr_s (local.get $idx) (i32.const {number_shift})))
     (if (i32.lt_s (local.get $i) (i32.const {zero})) (then (return (i32.const {undefined}))))
     (if (i32.ge_u (local.get $i) (i32.load (local.get $base))) (then (return (i32.const {undefined}))))
@@ -37,6 +52,7 @@ impl WatEmitter<'_> {
             zero = RuntimeConst::ZERO,
             undefined = ValueTag::UNDEFINED,
             header = Layout::ARRAY_HEADER_SIZE,
+            capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
             presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
         ));
     }
@@ -47,11 +63,26 @@ impl WatEmitter<'_> {
   (func $array_index_present (param $arr i32) (param $idx i32) (result i32)
     (local $base i32)
     (local $i i32)
+    (local $steps i32)
     (if (i32.ne (i32.and (local.get $arr) (i32.const {tag_mask})) (i32.const {array_tag}))
       (then (return (i32.const {false}))))
     (if (i32.ne (i32.and (local.get $idx) (i32.const {tag_mask})) (i32.const {number_tag}))
       (then (return (i32.const {false}))))
     (local.set $base (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (block $forward_done
+      (loop $forward
+        (br_if $forward_done
+          (i32.ne
+            (i32.load (i32.add (local.get $base) (i32.const {capacity_offset})))
+            (i32.const -1)))
+        (local.set $steps (i32.add (local.get $steps) (i32.const 1)))
+        (if (i32.gt_u (local.get $steps) (i32.const 64))
+          (then (return (i32.const {false}))))
+        (local.set $base
+          (i32.and
+            (i32.load (i32.add (local.get $base) (i32.const {header})))
+            (i32.const {heap_mask})))
+        (br $forward)))
     (local.set $i (i32.shr_s (local.get $idx) (i32.const {number_shift})))
     (if (i32.lt_s (local.get $i) (i32.const {zero})) (then (return (i32.const {false}))))
     (if (i32.ge_u (local.get $i) (i32.load (local.get $base))) (then (return (i32.const {false}))))
@@ -70,6 +101,8 @@ impl WatEmitter<'_> {
             zero = RuntimeConst::ZERO,
             false = ValueTag::FALSE,
             true = ValueTag::TRUE,
+            header = Layout::ARRAY_HEADER_SIZE,
+            capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
             presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
         ));
     }
@@ -164,6 +197,8 @@ impl WatEmitter<'_> {
             r#"
   (func $get_length (param $v i32) (result i32)
     (local $tag i32)
+    (local $base i32)
+    (local $steps i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (if (i32.eq (local.get $tag) (i32.const {string_tag}))
       (then
@@ -175,10 +210,25 @@ impl WatEmitter<'_> {
             (i32.const {number_tag})))))
     (if (i32.eq (local.get $tag) (i32.const {array_tag}))
       (then
+        (local.set $base (i32.and (local.get $v) (i32.const {heap_mask})))
+        (block $forward_done
+          (loop $forward
+            (br_if $forward_done
+              (i32.ne
+                (i32.load (i32.add (local.get $base) (i32.const {capacity_offset})))
+                (i32.const -1)))
+            (local.set $steps (i32.add (local.get $steps) (i32.const 1)))
+            (if (i32.gt_u (local.get $steps) (i32.const 64))
+              (then (return (i32.const {undefined}))))
+            (local.set $base
+              (i32.and
+                (i32.load (i32.add (local.get $base) (i32.const {header})))
+                (i32.const {heap_mask})))
+            (br $forward)))
         (return
           (i32.or
             (i32.shl
-              (i32.load (i32.and (local.get $v) (i32.const {heap_mask})))
+              (i32.load (local.get $base))
               (i32.const {number_shift}))
             (i32.const {number_tag})))))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -205,6 +255,8 @@ impl WatEmitter<'_> {
             number_tag = ValueTag::NUMBER,
             undefined = ValueTag::UNDEFINED,
             scratch_offset = Layout::SCRATCH_OFFSET,
+            header = Layout::ARRAY_HEADER_SIZE,
+            capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
         ));
     }
 
@@ -225,6 +277,7 @@ impl WatEmitter<'_> {
     (local $digit i32)
     (local $array_idx i32)
     (local $is_array_index i32)
+    (local $array_steps i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     ;; ARRAY tag: parse key as numeric index and read from array
     (if (i32.eq (local.get $tag) (i32.const {array_tag}))
@@ -251,6 +304,20 @@ impl WatEmitter<'_> {
         (if (i32.ne (local.get $is_array_index) (i32.const 0))
           (then
             (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+            (block $array_forward_done
+              (loop $array_forward
+                (br_if $array_forward_done
+                  (i32.ne
+                    (i32.load (i32.add (local.get $base) (i32.const {capacity_offset})))
+                    (i32.const -1)))
+                (local.set $array_steps (i32.add (local.get $array_steps) (i32.const 1)))
+                (if (i32.gt_u (local.get $array_steps) (i32.const 64))
+                  (then (return (i32.const {undefined}))))
+                (local.set $base
+                  (i32.and
+                    (i32.load (i32.add (local.get $base) (i32.const {header})))
+                    (i32.const {heap_mask})))
+                (br $array_forward)))
             (if (i32.ge_u (local.get $array_idx) (i32.load (local.get $base)))
               (then (return (i32.const {undefined}))))
             (if
@@ -328,6 +395,7 @@ impl WatEmitter<'_> {
             symbol_sentinel = Layout::SYMBOL_SENTINEL,
             value_off = Layout::OBJECT_VALUE_OFFSET,
             header = Layout::ARRAY_HEADER_SIZE,
+            capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
             presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
