@@ -470,6 +470,13 @@ fn dynamic_direct_eval_new_var_declaration_is_visible_to_later_eval_through_node
 }
 
 #[test]
+fn dynamic_direct_eval_new_var_declaration_is_visible_to_normal_code_through_node_shim_host_import()
+{
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-new-var-normal-code-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\n7\n");
+}
+
+#[test]
 fn dynamic_direct_eval_new_var_destructuring_is_visible_to_later_eval_through_node_shim_host_import()
  {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-new-var-destructuring-node-shim.ts";

@@ -1730,6 +1730,11 @@ impl NameResolver {
         }
         let mut names = Vec::new();
         collect_static_direct_eval_declarations_from_stmts(block, &mut names);
+        collect_known_runtime_direct_eval_declarations_from_stmts(
+            block,
+            &collect_direct_eval_source_bindings(block),
+            &mut names,
+        );
         for name in names {
             self.declare_binding(&name, None, true)?;
         }
@@ -2232,6 +2237,298 @@ fn collect_static_direct_eval_declarations_from_stmts(stmts: &[Stmt], names: &mu
     for stmt in stmts {
         collect_static_direct_eval_declarations_from_stmt(stmt, names);
     }
+}
+
+fn collect_known_runtime_direct_eval_declarations_from_stmts(
+    stmts: &[Stmt],
+    sources: &std::collections::HashMap<String, String>,
+    names: &mut Vec<String>,
+) {
+    for stmt in stmts {
+        match stmt {
+            Stmt::Let { expr, .. }
+            | Stmt::Assign { expr, .. }
+            | Stmt::Expr { expr, .. }
+            | Stmt::Return { expr, .. }
+            | Stmt::Throw { expr, .. } => {
+                collect_known_runtime_direct_eval_declarations_from_expr(expr, sources, names);
+            }
+            Stmt::If {
+                condition,
+                then_body,
+                else_body,
+                ..
+            } => {
+                collect_known_runtime_direct_eval_declarations_from_expr(condition, sources, names);
+                collect_known_runtime_direct_eval_declarations_from_stmts(
+                    then_body, sources, names,
+                );
+                collect_known_runtime_direct_eval_declarations_from_stmts(
+                    else_body, sources, names,
+                );
+            }
+            Stmt::While {
+                condition, body, ..
+            } => {
+                collect_known_runtime_direct_eval_declarations_from_expr(condition, sources, names);
+                collect_known_runtime_direct_eval_declarations_from_stmts(body, sources, names);
+            }
+            Stmt::DoWhile {
+                body, condition, ..
+            } => {
+                collect_known_runtime_direct_eval_declarations_from_stmts(body, sources, names);
+                collect_known_runtime_direct_eval_declarations_from_expr(condition, sources, names);
+            }
+            Stmt::For {
+                init,
+                condition,
+                update,
+                body,
+                ..
+            } => {
+                if let Some(init) = init {
+                    collect_known_runtime_direct_eval_declarations_from_stmts(
+                        std::slice::from_ref(init.as_ref()),
+                        sources,
+                        names,
+                    );
+                }
+                if let Some(condition) = condition {
+                    collect_known_runtime_direct_eval_declarations_from_expr(
+                        condition, sources, names,
+                    );
+                }
+                if let Some(update) = update {
+                    collect_known_runtime_direct_eval_declarations_from_expr(
+                        update, sources, names,
+                    );
+                }
+                collect_known_runtime_direct_eval_declarations_from_stmts(body, sources, names);
+            }
+            Stmt::ForIn { iter, body, .. }
+            | Stmt::ForOf { iter, body, .. }
+            | Stmt::ForAwaitOf { iter, body, .. } => {
+                collect_known_runtime_direct_eval_declarations_from_expr(iter, sources, names);
+                collect_known_runtime_direct_eval_declarations_from_stmts(body, sources, names);
+            }
+            Stmt::Switch { expr, cases, .. } => {
+                collect_known_runtime_direct_eval_declarations_from_expr(expr, sources, names);
+                for (_, body) in cases {
+                    collect_known_runtime_direct_eval_declarations_from_stmts(body, sources, names);
+                }
+            }
+            Stmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                collect_known_runtime_direct_eval_declarations_from_stmts(
+                    try_block, sources, names,
+                );
+                if let Some(catch_block) = catch_block {
+                    collect_known_runtime_direct_eval_declarations_from_stmts(
+                        catch_block,
+                        sources,
+                        names,
+                    );
+                }
+                if let Some(finally_block) = finally_block {
+                    collect_known_runtime_direct_eval_declarations_from_stmts(
+                        finally_block,
+                        sources,
+                        names,
+                    );
+                }
+            }
+            Stmt::Block { statements, .. } => {
+                collect_known_runtime_direct_eval_declarations_from_stmts(
+                    statements, sources, names,
+                );
+            }
+            Stmt::Labeled { body, .. }
+            | Stmt::ExportDecl {
+                declaration: body, ..
+            } => {
+                collect_known_runtime_direct_eval_declarations_from_stmts(
+                    std::slice::from_ref(body.as_ref()),
+                    sources,
+                    names,
+                );
+            }
+            _ => {}
+        }
+    }
+}
+
+fn collect_known_runtime_direct_eval_declarations_from_expr(
+    expr: &Expr,
+    sources: &std::collections::HashMap<String, String>,
+    names: &mut Vec<String>,
+) {
+    if let Some(source) = known_runtime_direct_eval_source(expr, sources) {
+        collect_static_eval_var_function_names(source, names);
+    }
+    match expr {
+        Expr::Await { expr, .. }
+        | Expr::Yield {
+            expr: Some(expr), ..
+        }
+        | Expr::Unary { expr, .. }
+        | Expr::Assign { expr, .. }
+        | Expr::LogicalAssign { expr, .. }
+        | Expr::TypeOf { expr, .. }
+        | Expr::Spread { expr, .. }
+        | Expr::Member { object: expr, .. }
+        | Expr::OptionalMember { object: expr, .. } => {
+            collect_known_runtime_direct_eval_declarations_from_expr(expr, sources, names);
+        }
+        Expr::Binary { left, right, .. }
+        | Expr::Index {
+            object: left,
+            index: right,
+            ..
+        }
+        | Expr::OptionalIndex {
+            object: left,
+            index: right,
+            ..
+        }
+        | Expr::InstanceOf {
+            expr: left,
+            type_expr: right,
+            ..
+        } => {
+            collect_known_runtime_direct_eval_declarations_from_expr(left, sources, names);
+            collect_known_runtime_direct_eval_declarations_from_expr(right, sources, names);
+        }
+        Expr::Call { callee, args, .. }
+        | Expr::OptionalCall { callee, args, .. }
+        | Expr::New {
+            expr: callee, args, ..
+        } => {
+            collect_known_runtime_direct_eval_declarations_from_expr(callee, sources, names);
+            for arg in args {
+                collect_known_runtime_direct_eval_declarations_from_expr(arg, sources, names);
+            }
+        }
+        Expr::Array { elements, .. } => {
+            for element in elements {
+                match element {
+                    ArrayLiteralElement::Present(expr) | ArrayLiteralElement::Spread(expr) => {
+                        collect_known_runtime_direct_eval_declarations_from_expr(
+                            expr, sources, names,
+                        );
+                    }
+                    ArrayLiteralElement::Hole(_) => {}
+                }
+            }
+        }
+        Expr::Object { props, .. } => {
+            for prop in props {
+                collect_known_runtime_direct_eval_declarations_from_expr(
+                    prop.value(),
+                    sources,
+                    names,
+                );
+            }
+        }
+        Expr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            collect_known_runtime_direct_eval_declarations_from_expr(condition, sources, names);
+            collect_known_runtime_direct_eval_declarations_from_expr(then_expr, sources, names);
+            collect_known_runtime_direct_eval_declarations_from_expr(else_expr, sources, names);
+        }
+        Expr::PropertyAssign { object, value, .. } => {
+            collect_known_runtime_direct_eval_declarations_from_expr(object, sources, names);
+            collect_known_runtime_direct_eval_declarations_from_expr(value, sources, names);
+        }
+        Expr::IndexAssign {
+            object,
+            index,
+            value,
+            ..
+        } => {
+            collect_known_runtime_direct_eval_declarations_from_expr(object, sources, names);
+            collect_known_runtime_direct_eval_declarations_from_expr(index, sources, names);
+            collect_known_runtime_direct_eval_declarations_from_expr(value, sources, names);
+        }
+        Expr::Sequence { exprs, .. } => {
+            for expr in exprs {
+                collect_known_runtime_direct_eval_declarations_from_expr(expr, sources, names);
+            }
+        }
+        Expr::LogicalPropertyAssign {
+            object_expr,
+            computed_key,
+            expr,
+            ..
+        } => {
+            if let Some(object_expr) = object_expr {
+                collect_known_runtime_direct_eval_declarations_from_expr(
+                    object_expr,
+                    sources,
+                    names,
+                );
+            }
+            if let Some(computed_key) = computed_key {
+                collect_known_runtime_direct_eval_declarations_from_expr(
+                    computed_key,
+                    sources,
+                    names,
+                );
+            }
+            collect_known_runtime_direct_eval_declarations_from_expr(expr, sources, names);
+        }
+        _ => {}
+    }
+}
+
+fn known_runtime_direct_eval_source<'a>(
+    expr: &'a Expr,
+    sources: &'a std::collections::HashMap<String, String>,
+) -> Option<&'a str> {
+    let Expr::Call { args, .. } = expr else {
+        return None;
+    };
+    if !expr.is_direct_eval_call() {
+        return None;
+    }
+    let [Expr::Ident { name, .. }] = args.as_slice() else {
+        return None;
+    };
+    sources.get(name).map(String::as_str)
+}
+
+fn collect_direct_eval_source_bindings(
+    block: &[Stmt],
+) -> std::collections::HashMap<String, String> {
+    let mut candidates = std::collections::HashMap::new();
+    let mut assigned = std::collections::HashSet::new();
+    for stmt in block {
+        match stmt {
+            Stmt::Let {
+                name,
+                expr: Expr::String { value, .. },
+                ..
+            } => {
+                candidates.insert(name.clone(), value.clone());
+            }
+            Stmt::Let { name, .. } | Stmt::Assign { name, .. } => {
+                candidates.remove(name);
+                assigned.insert(name.clone());
+            }
+            _ => {}
+        }
+    }
+    for name in assigned {
+        candidates.remove(&name);
+    }
+    candidates
 }
 
 fn collect_static_direct_eval_declarations_from_stmt(stmt: &Stmt, names: &mut Vec<String>) {

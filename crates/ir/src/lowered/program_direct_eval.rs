@@ -5,7 +5,7 @@ use super::{
 use crate::builtin_resolved::{
     EvalKind, EvalSource, ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt,
 };
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 pub(crate) fn collect_direct_eval_block_function_env(
     program: &[ResolvedStmt],
@@ -42,8 +42,655 @@ pub(crate) fn collect_dynamic_direct_eval_env_cell_names(
     names
 }
 
+pub(crate) fn collect_dynamic_direct_eval_created_binding_names(
+    body: &[ResolvedStmt],
+) -> HashSet<String> {
+    let known_sources = collect_unassigned_string_bindings(body);
+    let mut names = HashSet::new();
+    collect_dynamic_direct_eval_created_binding_names_from_stmts(body, &known_sources, &mut names);
+    names
+}
+
+fn collect_dynamic_direct_eval_created_binding_names_from_stmts(
+    stmts: &[ResolvedStmt],
+    known_sources: &HashMap<String, String>,
+    names: &mut HashSet<String>,
+) {
+    for stmt in stmts {
+        match stmt {
+            ResolvedStmt::Let(_, expr)
+            | ResolvedStmt::Assign(_, expr)
+            | ResolvedStmt::Expr(expr)
+            | ResolvedStmt::Return(expr)
+            | ResolvedStmt::Throw(expr) => {
+                collect_dynamic_direct_eval_created_binding_names_from_expr(
+                    expr,
+                    known_sources,
+                    names,
+                );
+            }
+            ResolvedStmt::ModuleExportsAssign { expr } => {
+                collect_dynamic_direct_eval_created_binding_names_from_expr(
+                    expr,
+                    known_sources,
+                    names,
+                );
+            }
+            ResolvedStmt::If {
+                condition,
+                then_body,
+                else_body,
+            } => {
+                collect_dynamic_direct_eval_created_binding_names_from_expr(
+                    condition,
+                    known_sources,
+                    names,
+                );
+                collect_dynamic_direct_eval_created_binding_names_from_stmts(
+                    then_body,
+                    known_sources,
+                    names,
+                );
+                collect_dynamic_direct_eval_created_binding_names_from_stmts(
+                    else_body,
+                    known_sources,
+                    names,
+                );
+            }
+            ResolvedStmt::While { condition, body } | ResolvedStmt::DoWhile { condition, body } => {
+                collect_dynamic_direct_eval_created_binding_names_from_expr(
+                    condition,
+                    known_sources,
+                    names,
+                );
+                collect_dynamic_direct_eval_created_binding_names_from_stmts(
+                    body,
+                    known_sources,
+                    names,
+                );
+            }
+            ResolvedStmt::For {
+                init,
+                condition,
+                update,
+                body,
+            } => {
+                if let Some(init) = init {
+                    collect_dynamic_direct_eval_created_binding_names_from_stmts(
+                        std::slice::from_ref(init.as_ref()),
+                        known_sources,
+                        names,
+                    );
+                }
+                if let Some(condition) = condition {
+                    collect_dynamic_direct_eval_created_binding_names_from_expr(
+                        condition,
+                        known_sources,
+                        names,
+                    );
+                }
+                if let Some(update) = update {
+                    collect_dynamic_direct_eval_created_binding_names_from_expr(
+                        update,
+                        known_sources,
+                        names,
+                    );
+                }
+                collect_dynamic_direct_eval_created_binding_names_from_stmts(
+                    body,
+                    known_sources,
+                    names,
+                );
+            }
+            ResolvedStmt::ForIn { iter, body, .. }
+            | ResolvedStmt::ForOf { iter, body, .. }
+            | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
+                collect_dynamic_direct_eval_created_binding_names_from_expr(
+                    iter,
+                    known_sources,
+                    names,
+                );
+                collect_dynamic_direct_eval_created_binding_names_from_stmts(
+                    body,
+                    known_sources,
+                    names,
+                );
+            }
+            ResolvedStmt::Switch { expr, cases } => {
+                collect_dynamic_direct_eval_created_binding_names_from_expr(
+                    expr,
+                    known_sources,
+                    names,
+                );
+                for (_, body) in cases {
+                    collect_dynamic_direct_eval_created_binding_names_from_stmts(
+                        body,
+                        known_sources,
+                        names,
+                    );
+                }
+            }
+            ResolvedStmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                collect_dynamic_direct_eval_created_binding_names_from_stmts(
+                    try_block,
+                    known_sources,
+                    names,
+                );
+                if let Some(catch_block) = catch_block {
+                    collect_dynamic_direct_eval_created_binding_names_from_stmts(
+                        catch_block,
+                        known_sources,
+                        names,
+                    );
+                }
+                if let Some(finally_block) = finally_block {
+                    collect_dynamic_direct_eval_created_binding_names_from_stmts(
+                        finally_block,
+                        known_sources,
+                        names,
+                    );
+                }
+            }
+            ResolvedStmt::Block { statements } => {
+                collect_dynamic_direct_eval_created_binding_names_from_stmts(
+                    statements,
+                    known_sources,
+                    names,
+                );
+            }
+            ResolvedStmt::Labeled { body, .. } => {
+                collect_dynamic_direct_eval_created_binding_names_from_stmts(
+                    std::slice::from_ref(body.as_ref()),
+                    known_sources,
+                    names,
+                );
+            }
+            ResolvedStmt::Function { .. }
+            | ResolvedStmt::ClassDecl { .. }
+            | ResolvedStmt::AmbientValue(_)
+            | ResolvedStmt::DestructureLet { .. }
+            | ResolvedStmt::Break { .. }
+            | ResolvedStmt::Continue { .. }
+            | ResolvedStmt::Export { .. } => {}
+        }
+    }
+}
+
+fn collect_dynamic_direct_eval_created_binding_names_from_expr(
+    expr: &ResolvedExpr,
+    known_sources: &HashMap<String, String>,
+    names: &mut HashSet<String>,
+) {
+    if let Some(source) = dynamic_direct_eval_known_source(expr, known_sources) {
+        collect_eval_var_function_names(source, names);
+    }
+    match expr {
+        ResolvedExpr::Eval { plan } => {
+            if let EvalSource::Runtime(source) = &plan.source {
+                collect_dynamic_direct_eval_created_binding_names_from_expr(
+                    source,
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        ResolvedExpr::Call { callee, args, .. }
+        | ResolvedExpr::OptionalCall { callee, args, .. } => {
+            collect_dynamic_direct_eval_created_binding_names_from_expr(
+                callee,
+                known_sources,
+                names,
+            );
+            for arg in args {
+                collect_dynamic_direct_eval_created_binding_names_from_expr(
+                    arg,
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        ResolvedExpr::MethodCall { object, args, .. } => {
+            collect_dynamic_direct_eval_created_binding_names_from_expr(
+                object,
+                known_sources,
+                names,
+            );
+            for arg in args {
+                collect_dynamic_direct_eval_created_binding_names_from_expr(
+                    arg,
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        ResolvedExpr::Await { expr }
+        | ResolvedExpr::Yield {
+            expr: Some(expr), ..
+        }
+        | ResolvedExpr::Unary { expr, .. }
+        | ResolvedExpr::Assign { expr, .. }
+        | ResolvedExpr::LogicalAssign { expr, .. }
+        | ResolvedExpr::Spread(expr)
+        | ResolvedExpr::PropertyAccess { object: expr, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object: expr, .. }
+        | ResolvedExpr::BuiltinProperty { object: expr, .. } => {
+            collect_dynamic_direct_eval_created_binding_names_from_expr(expr, known_sources, names);
+        }
+        ResolvedExpr::Binary { left, right, .. }
+        | ResolvedExpr::ComputedIndex {
+            object: left,
+            index: right,
+        }
+        | ResolvedExpr::OptionalComputedIndex {
+            object: left,
+            index: right,
+            ..
+        } => {
+            collect_dynamic_direct_eval_created_binding_names_from_expr(left, known_sources, names);
+            collect_dynamic_direct_eval_created_binding_names_from_expr(
+                right,
+                known_sources,
+                names,
+            );
+        }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            for expr in [condition.as_ref(), then_expr.as_ref(), else_expr.as_ref()] {
+                collect_dynamic_direct_eval_created_binding_names_from_expr(
+                    expr,
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        ResolvedExpr::New { args, .. } | ResolvedExpr::BuiltinCall { args, .. } => {
+            for arg in args {
+                collect_dynamic_direct_eval_created_binding_names_from_expr(
+                    arg,
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        ResolvedExpr::Array(elements) => {
+            for element in elements {
+                match element {
+                    ResolvedArrayElement::Present(expr) => {
+                        collect_dynamic_direct_eval_created_binding_names_from_expr(
+                            expr,
+                            known_sources,
+                            names,
+                        );
+                    }
+                    ResolvedArrayElement::Hole => {}
+                }
+            }
+        }
+        ResolvedExpr::Object(props) => {
+            for prop in props {
+                if let Some(key) = prop.computed_key() {
+                    collect_dynamic_direct_eval_created_binding_names_from_expr(
+                        key,
+                        known_sources,
+                        names,
+                    );
+                }
+                collect_dynamic_direct_eval_created_binding_names_from_expr(
+                    prop.value(),
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        ResolvedExpr::PropertyAssign { object, value, .. }
+        | ResolvedExpr::LogicalMemberAssign {
+            object,
+            expr: value,
+            ..
+        } => {
+            collect_dynamic_direct_eval_created_binding_names_from_expr(
+                object,
+                known_sources,
+                names,
+            );
+            collect_dynamic_direct_eval_created_binding_names_from_expr(
+                value,
+                known_sources,
+                names,
+            );
+        }
+        ResolvedExpr::PropertyAssignDynamic { object, key, value }
+        | ResolvedExpr::LogicalComputedMemberAssign {
+            object,
+            key,
+            expr: value,
+            ..
+        } => {
+            for expr in [object.as_ref(), key.as_ref(), value.as_ref()] {
+                collect_dynamic_direct_eval_created_binding_names_from_expr(
+                    expr,
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
+            collect_dynamic_direct_eval_created_binding_names_from_expr(key, known_sources, names);
+            collect_dynamic_direct_eval_created_binding_names_from_expr(expr, known_sources, names);
+        }
+        ResolvedExpr::Sequence(exprs) => {
+            for expr in exprs {
+                collect_dynamic_direct_eval_created_binding_names_from_expr(
+                    expr,
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        ResolvedExpr::ArrowFn {
+            body, body_stmts, ..
+        } => {
+            collect_dynamic_direct_eval_created_binding_names_from_stmts(
+                body_stmts,
+                known_sources,
+                names,
+            );
+            collect_dynamic_direct_eval_created_binding_names_from_expr(body, known_sources, names);
+        }
+        ResolvedExpr::EvalCompletion(_) => {}
+        ResolvedExpr::FunctionConstructor { plan } => {
+            for arg in &plan.args {
+                collect_dynamic_direct_eval_created_binding_names_from_expr(
+                    arg,
+                    known_sources,
+                    names,
+                );
+            }
+        }
+        ResolvedExpr::FunctionExpr { .. }
+        | ResolvedExpr::ClassExpr { .. }
+        | ResolvedExpr::Yield { expr: None, .. }
+        | ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
+        | ResolvedExpr::BigIntLiteral { .. }
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined
+        | ResolvedExpr::Ident(_)
+        | ResolvedExpr::This { .. }
+        | ResolvedExpr::NewTarget { .. }
+        | ResolvedExpr::ImportMeta { .. }
+        | ResolvedExpr::ModuleLoad { .. }
+        | ResolvedExpr::LogicalPropertyAssign { .. } => {}
+    }
+}
+
 fn is_direct_eval_env_binding_name(name: &str) -> bool {
     !name.is_empty()
+}
+
+fn dynamic_direct_eval_known_source<'a>(
+    expr: &'a ResolvedExpr,
+    known_sources: &'a HashMap<String, String>,
+) -> Option<&'a str> {
+    let ResolvedExpr::Eval { plan } = expr else {
+        return None;
+    };
+    if plan.kind != EvalKind::Direct {
+        return None;
+    }
+    let EvalSource::Runtime(source) = &plan.source else {
+        return None;
+    };
+    match source.as_ref() {
+        ResolvedExpr::Ident(name) => known_sources.get(name).map(String::as_str),
+        ResolvedExpr::String(value) => Some(value.as_str()),
+        _ => None,
+    }
+}
+
+fn collect_unassigned_string_bindings(stmts: &[ResolvedStmt]) -> HashMap<String, String> {
+    let mut candidates = HashMap::new();
+    let mut assigned = HashSet::new();
+    collect_unassigned_string_bindings_from_stmts(stmts, &mut candidates, &mut assigned);
+    for name in assigned {
+        candidates.remove(&name);
+    }
+    candidates
+}
+
+fn collect_unassigned_string_bindings_from_stmts(
+    stmts: &[ResolvedStmt],
+    candidates: &mut HashMap<String, String>,
+    assigned: &mut HashSet<String>,
+) {
+    for stmt in stmts {
+        match stmt {
+            ResolvedStmt::Let(name, ResolvedExpr::String(value)) => {
+                candidates.insert(name.clone(), value.clone());
+            }
+            ResolvedStmt::Let(name, _) | ResolvedStmt::Assign(name, _) => {
+                candidates.remove(name);
+                assigned.insert(name.clone());
+            }
+            ResolvedStmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                collect_unassigned_string_bindings_from_stmts(then_body, candidates, assigned);
+                collect_unassigned_string_bindings_from_stmts(else_body, candidates, assigned);
+            }
+            ResolvedStmt::While { body, .. }
+            | ResolvedStmt::DoWhile { body, .. }
+            | ResolvedStmt::Block { statements: body } => {
+                collect_unassigned_string_bindings_from_stmts(body, candidates, assigned);
+            }
+            ResolvedStmt::For { init, body, .. } => {
+                if let Some(init) = init {
+                    collect_unassigned_string_bindings_from_stmts(
+                        std::slice::from_ref(init.as_ref()),
+                        candidates,
+                        assigned,
+                    );
+                }
+                collect_unassigned_string_bindings_from_stmts(body, candidates, assigned);
+            }
+            ResolvedStmt::ForIn { body, .. }
+            | ResolvedStmt::ForOf { body, .. }
+            | ResolvedStmt::ForAwaitOf { body, .. } => {
+                collect_unassigned_string_bindings_from_stmts(body, candidates, assigned);
+            }
+            ResolvedStmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    collect_unassigned_string_bindings_from_stmts(body, candidates, assigned);
+                }
+            }
+            ResolvedStmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                collect_unassigned_string_bindings_from_stmts(try_block, candidates, assigned);
+                if let Some(catch_block) = catch_block {
+                    collect_unassigned_string_bindings_from_stmts(
+                        catch_block,
+                        candidates,
+                        assigned,
+                    );
+                }
+                if let Some(finally_block) = finally_block {
+                    collect_unassigned_string_bindings_from_stmts(
+                        finally_block,
+                        candidates,
+                        assigned,
+                    );
+                }
+            }
+            ResolvedStmt::Labeled { body, .. } => {
+                collect_unassigned_string_bindings_from_stmts(
+                    std::slice::from_ref(body.as_ref()),
+                    candidates,
+                    assigned,
+                );
+            }
+            _ => {}
+        }
+    }
+}
+
+fn collect_eval_var_function_names(source: &str, names: &mut HashSet<String>) {
+    collect_keyword_bound_names(source, "var", names);
+    collect_keyword_bound_names(source, "function", names);
+}
+
+fn collect_keyword_bound_names(source: &str, keyword: &str, names: &mut HashSet<String>) {
+    let mut index = 0;
+    while let Some(keyword_start) = find_keyword_outside_literals(source, keyword, index) {
+        let after_keyword = keyword_start + keyword.len();
+        let mut cursor = skip_ascii_ws(source, after_keyword);
+        if keyword == "function" && source[cursor..].starts_with('*') {
+            cursor = skip_ascii_ws(source, cursor + 1);
+        }
+        while let Some((name, next)) = parse_identifier_at(source, cursor) {
+            names.insert(name.to_owned());
+            if keyword == "function" {
+                break;
+            }
+            cursor = skip_var_initializer(source, next);
+            if source[cursor..].starts_with(',') {
+                cursor = skip_ascii_ws(source, cursor + 1);
+                continue;
+            }
+            break;
+        }
+        index = after_keyword;
+    }
+}
+
+fn find_keyword_outside_literals(source: &str, keyword: &str, start: usize) -> Option<usize> {
+    let bytes = source.as_bytes();
+    let mut index = start;
+    while index < source.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => index = skip_quoted_source(source, index),
+            b'/' if bytes.get(index + 1) == Some(&b'/') => {
+                index += 2;
+                while index < source.len() && bytes[index] != b'\n' {
+                    index += 1;
+                }
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'*') => {
+                index += 2;
+                while index + 1 < source.len()
+                    && !(bytes[index] == b'*' && bytes[index + 1] == b'/')
+                {
+                    index += 1;
+                }
+                index = (index + 2).min(source.len());
+            }
+            _ if source[index..].starts_with(keyword) => {
+                let end = index + keyword.len();
+                if is_identifier_boundary(source, index, end) {
+                    return Some(index);
+                }
+                index = end;
+            }
+            _ => index += 1,
+        }
+    }
+    None
+}
+
+fn skip_quoted_source(source: &str, start: usize) -> usize {
+    let bytes = source.as_bytes();
+    let quote = bytes[start];
+    let mut index = start + 1;
+    while index < source.len() {
+        if bytes[index] == b'\\' {
+            index = (index + 2).min(source.len());
+            continue;
+        }
+        if bytes[index] == quote {
+            return index + 1;
+        }
+        index += 1;
+    }
+    source.len()
+}
+
+fn skip_var_initializer(source: &str, start: usize) -> usize {
+    let mut cursor = start;
+    let mut depth = 0usize;
+    let bytes = source.as_bytes();
+    while cursor < source.len() {
+        let ch = bytes[cursor] as char;
+        match ch {
+            '(' | '[' | '{' => depth += 1,
+            ')' | ']' | '}' if depth > 0 => depth -= 1,
+            ',' | ';' if depth == 0 => break,
+            _ => {}
+        }
+        cursor += 1;
+    }
+    skip_ascii_ws(source, cursor)
+}
+
+fn is_identifier_boundary(source: &str, start: usize, end: usize) -> bool {
+    let before = start
+        .checked_sub(1)
+        .and_then(|pos| source.as_bytes().get(pos).copied())
+        .is_none_or(|byte| !is_ident_continue_byte(byte));
+    let after = source
+        .as_bytes()
+        .get(end)
+        .copied()
+        .is_none_or(|byte| !is_ident_continue_byte(byte));
+    before && after
+}
+
+fn parse_identifier_at(source: &str, start: usize) -> Option<(&str, usize)> {
+    let bytes = source.as_bytes();
+    let first = *bytes.get(start)?;
+    if !is_ident_start_byte(first) {
+        return None;
+    }
+    let mut end = start + 1;
+    while bytes.get(end).copied().is_some_and(is_ident_continue_byte) {
+        end += 1;
+    }
+    Some((&source[start..end], skip_ascii_ws(source, end)))
+}
+
+fn skip_ascii_ws(source: &str, mut index: usize) -> usize {
+    while source
+        .as_bytes()
+        .get(index)
+        .copied()
+        .is_some_and(|byte| byte.is_ascii_whitespace())
+    {
+        index += 1;
+    }
+    index
+}
+
+fn is_ident_start_byte(byte: u8) -> bool {
+    byte == b'_' || byte == b'$' || byte.is_ascii_alphabetic()
+}
+
+fn is_ident_continue_byte(byte: u8) -> bool {
+    is_ident_start_byte(byte) || byte.is_ascii_digit()
 }
 
 fn collect_block_declared_names(stmts: &[ResolvedStmt], names: &mut HashSet<String>) {
@@ -323,6 +970,39 @@ fn expr_contains_dynamic_direct_eval(expr: &ResolvedExpr) -> bool {
         | ResolvedExpr::Bool(_)
         | ResolvedExpr::Null
         | ResolvedExpr::Undefined => false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::builtin_resolved::{EvalFragmentPlan, EvalKind};
+    use ts2wasm_source::Span;
+
+    #[test]
+    fn collects_created_var_from_known_runtime_direct_eval_source() {
+        let body = vec![
+            ResolvedStmt::Let(
+                "source".to_owned(),
+                ResolvedExpr::String("var created = 7; created".to_owned()),
+            ),
+            ResolvedStmt::Expr(ResolvedExpr::MethodCall {
+                object: Box::new(ResolvedExpr::Ident("console".to_owned())),
+                method: "log".to_owned(),
+                args: vec![ResolvedExpr::Eval {
+                    plan: EvalFragmentPlan::new(
+                        EvalKind::Direct,
+                        EvalSource::Runtime(Box::new(ResolvedExpr::Ident("source".to_owned()))),
+                        false,
+                        Span::generated("eval"),
+                    ),
+                }],
+                span: Span::generated("call"),
+            }),
+        ];
+
+        let names = collect_dynamic_direct_eval_created_binding_names(&body);
+        assert!(names.contains("created"));
     }
 }
 pub(crate) fn collect_direct_eval_block_function_env_from_stmts(

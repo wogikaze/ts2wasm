@@ -145,11 +145,16 @@ impl super::Resolver {
             false,
             false,
         );
+        let dynamic_direct_eval_created_binding_names =
+            collect_dynamic_direct_eval_created_binding_names(&lowered_body_stmts);
         let nested_env_cell_names = self
             .ctx
             .facts
             .env_cell_names
             .union(&dynamic_direct_eval_env_cell_names)
+            .cloned()
+            .collect::<HashSet<_>>()
+            .union(&dynamic_direct_eval_created_binding_names)
             .cloned()
             .collect::<HashSet<_>>();
         let lowered = lower_function(
@@ -635,11 +640,16 @@ impl super::Resolver {
         let needs_receiver = options.force_receiver || block_contains_super_ref(body);
         let dynamic_direct_eval_env_cell_names =
             collect_dynamic_direct_eval_env_cell_names(&lowered_params, body, true, needs_receiver);
+        let dynamic_direct_eval_created_binding_names =
+            collect_dynamic_direct_eval_created_binding_names(body);
         let nested_env_cell_names = self
             .ctx
             .facts
             .env_cell_names
             .union(&dynamic_direct_eval_env_cell_names)
+            .cloned()
+            .collect::<HashSet<_>>()
+            .union(&dynamic_direct_eval_created_binding_names)
             .cloned()
             .collect::<HashSet<_>>();
         self.ctx.symbols.function_signatures.insert(

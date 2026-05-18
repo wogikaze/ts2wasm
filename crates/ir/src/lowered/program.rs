@@ -58,6 +58,8 @@ pub fn lower_program_with_module_url(
     let direct_eval_env = collect_direct_eval_block_function_env(program);
     let dynamic_direct_eval_env_cell_names =
         collect_dynamic_direct_eval_env_cell_names(&[], program, false, false);
+    let dynamic_direct_eval_created_binding_names =
+        collect_dynamic_direct_eval_created_binding_names(program);
     let env_cell_names = mutable_class_capture_names
         .union(&mutable_object_method_capture_names)
         .cloned()
@@ -71,6 +73,9 @@ pub fn lower_program_with_module_url(
         .cloned()
         .collect::<HashSet<_>>()
         .union(&dynamic_direct_eval_env_cell_names)
+        .cloned()
+        .collect::<HashSet<_>>()
+        .union(&dynamic_direct_eval_created_binding_names)
         .cloned()
         .collect::<HashSet<_>>();
     let class_parents = collect_class_parents(program);
@@ -122,6 +127,8 @@ pub fn lower_program_with_module_url(
                     collect_block_nested_function_mutable_captures(body)?;
                 let dynamic_direct_eval_env_cell_names =
                     collect_dynamic_direct_eval_env_cell_names(params, body, true, false);
+                let dynamic_direct_eval_created_binding_names =
+                    collect_dynamic_direct_eval_created_binding_names(body);
                 let function_env_cell_names = function_env_cell_names
                     .union(&arrow_mutable_captures)
                     .cloned()
@@ -133,6 +140,9 @@ pub fn lower_program_with_module_url(
                     .cloned()
                     .collect::<HashSet<_>>()
                     .union(&dynamic_direct_eval_env_cell_names)
+                    .cloned()
+                    .collect::<HashSet<_>>()
+                    .union(&dynamic_direct_eval_created_binding_names)
                     .cloned()
                     .collect::<HashSet<_>>();
                 let self_closure = top_level_function_body_references_name(params, body, name)?
@@ -225,11 +235,16 @@ pub fn lower_program_with_module_url(
                     true,
                     false,
                 );
+                let dynamic_direct_eval_created_binding_names =
+                    collect_dynamic_direct_eval_created_binding_names(&ctor_body);
                 let constructor_env_cell_names = constructor_object_method_mutable_captures
                     .union(&constructor_nested_function_mutable_captures)
                     .cloned()
                     .collect::<HashSet<_>>()
                     .union(&dynamic_direct_eval_env_cell_names)
+                    .cloned()
+                    .collect::<HashSet<_>>()
+                    .union(&dynamic_direct_eval_created_binding_names)
                     .cloned()
                     .collect::<HashSet<_>>();
                 let lowered = lower_function(
@@ -293,6 +308,8 @@ pub fn lower_program_with_module_url(
                             true,
                             true,
                         );
+                    let dynamic_direct_eval_created_binding_names =
+                        collect_dynamic_direct_eval_created_binding_names(&method.body);
                     let method_env_cell_names = method_env_cell_names
                         .union(&method_object_method_mutable_captures)
                         .cloned()
@@ -301,6 +318,9 @@ pub fn lower_program_with_module_url(
                         .cloned()
                         .collect::<HashSet<_>>()
                         .union(&dynamic_direct_eval_env_cell_names)
+                        .cloned()
+                        .collect::<HashSet<_>>()
+                        .union(&dynamic_direct_eval_created_binding_names)
                         .cloned()
                         .collect::<HashSet<_>>();
                     let lowered = lower_function(
@@ -416,6 +436,38 @@ pub fn lower_program_with_module_url(
     for stmt in program {
         if let ResolvedStmt::Let(name, _) = stmt {
             resolver.declare_local(name)?;
+        }
+    }
+    let mut eval_created_names = dynamic_direct_eval_created_binding_names
+        .into_iter()
+        .collect::<Vec<_>>();
+    eval_created_names.sort();
+    for name in eval_created_names {
+        if resolver.ctx.symbols.resolve(&name).is_some() {
+            continue;
+        }
+        let local_id = resolver.declare_local(&name)?;
+        if resolver.ctx.facts.env_cell_names.contains(&name) {
+            resolver.ctx.facts.env_cell_locals.insert(local_id);
+            resolver
+                .ctx
+                .facts
+                .initialized_env_cell_locals
+                .insert(local_id);
+            top_level_statements.push(LoweredStmt::Let(
+                local_id,
+                LoweredExpr::EnvCellNew(
+                    Box::new(LoweredExpr::Undefined(Span::generated("undefined"))),
+                    Span::generated("env_cell_new"),
+                ),
+                Span::generated("direct_eval_created_binding"),
+            ));
+        } else {
+            top_level_statements.push(LoweredStmt::Let(
+                local_id,
+                LoweredExpr::Undefined(Span::generated("undefined")),
+                Span::generated("direct_eval_created_binding"),
+            ));
         }
     }
     for stmt in program {
@@ -5003,6 +5055,38 @@ fn lower_function_with_resolved_params(
     for stmt in body {
         if let ResolvedStmt::Let(name, _) = stmt {
             resolver.declare_local(name)?;
+        }
+    }
+    let mut eval_created_names = collect_dynamic_direct_eval_created_binding_names(body)
+        .into_iter()
+        .collect::<Vec<_>>();
+    eval_created_names.sort();
+    for name in eval_created_names {
+        if resolver.ctx.symbols.resolve(&name).is_some() {
+            continue;
+        }
+        let local_id = resolver.declare_local(&name)?;
+        if resolver.ctx.facts.env_cell_names.contains(&name) {
+            resolver.ctx.facts.env_cell_locals.insert(local_id);
+            resolver
+                .ctx
+                .facts
+                .initialized_env_cell_locals
+                .insert(local_id);
+            body_with_defaults.push(LoweredStmt::Let(
+                local_id,
+                LoweredExpr::EnvCellNew(
+                    Box::new(LoweredExpr::Undefined(Span::generated("undefined"))),
+                    Span::generated("env_cell_new"),
+                ),
+                Span::generated("direct_eval_created_binding"),
+            ));
+        } else {
+            body_with_defaults.push(LoweredStmt::Let(
+                local_id,
+                LoweredExpr::Undefined(Span::generated("undefined")),
+                Span::generated("direct_eval_created_binding"),
+            ));
         }
     }
     body_with_defaults.extend(resolver.lower_block(body)?);
