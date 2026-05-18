@@ -91,6 +91,8 @@ pub struct StaticFacts {
     pub env_cell_names: HashSet<String>,
     /// Locals that have been wrapped in environment cells.
     pub env_cell_locals: HashSet<LocalId>,
+    /// Environment-cell locals whose cell object has been initialized.
+    pub initialized_env_cell_locals: HashSet<LocalId>,
     /// Names that use heap-allocated closure representation.
     pub heap_closure_names: HashSet<String>,
     /// Arrow closure locals: local_id → ArrowClosure (for inline arrow fn expansion).
@@ -299,6 +301,7 @@ impl StaticFacts {
             generator_function_names: HashSet::new(),
             env_cell_names: HashSet::new(),
             env_cell_locals: HashSet::new(),
+            initialized_env_cell_locals: HashSet::new(),
             heap_closure_names: HashSet::new(),
             arrow_locals: HashMap::new(),
             function_metadata_name_locals: HashMap::new(),

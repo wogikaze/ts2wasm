@@ -3302,7 +3302,7 @@ impl WatEmitter<'_> {
         // If it IS a string, call the host shim import ($host_eval_direct) to evaluate it.
         let string_tag = ts2wasm_runtime_abi::value::ValueTag::STRING;
         wat.push_str(&format!(
-            "(func $eval_direct_host (param $source i32) (result i32)\n  (if (i32.eq (i32.and (local.get $source) (i32.const 7)) (i32.const {}))\n    (then (return (call $host_eval_direct (local.get $source) (i32.const 0))))\n  )\n  local.get $source\n)\n",
+            "(func $eval_direct_host (param $source i32) (param $env i32) (result i32)\n  (if (i32.eq (i32.and (local.get $source) (i32.const 7)) (i32.const {}))\n    (then (return (call $host_eval_direct (local.get $source) (local.get $env))))\n  )\n  local.get $source\n)\n",
             string_tag
         ));
     }

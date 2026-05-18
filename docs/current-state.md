@@ -337,8 +337,11 @@ The current implementation has several partial dynamic-code paths:
   Node WebAssembly shim execution coverage for primitive return values;
 - runtime-source direct eval can reach the runtime eval host helper path with an
   exact `host.eval.direct` manifest entry, host-deny rejection, and focused
-  Node WebAssembly shim execution coverage for primitive return values, but
-  caller-scope direct-eval write-back is not complete;
+  Node WebAssembly shim execution coverage for primitive return values. Direct
+  eval now lowers an environment descriptor for initialized env-cell locals, and
+  the focused Node shim covers primitive number caller-local write-back. Broader
+  declaration landing, lexical-env, object/string/error bridging, and
+  iwasm-differential coverage remain incomplete;
 - dynamic `Function` constructor compile and statically visible host-handle
   call/construct lower to the audited Node host lane with exact
   `host.function.compile`, `host.function.call`, and
@@ -350,10 +353,12 @@ The canonical implementation plan is
 `plans/eval-new-function-implementation-plan.md`. Current known gaps include
 the split parser/compiler eval expansion paths, direct eval declaration
 environment connection, remaining Function constructor grammar/constructability
-completeness and broader host Function handle object/string/error bridging.
-Node-shim execution for dynamic indirect eval and dynamic Function handles is
-covered by focused integration tests, as is primitive-return dynamic direct
-eval, but not by the current iwasm-based differential runner.
+completeness, broader host Function handle object/string/error bridging, and
+full dynamic direct-eval environment semantics beyond the primitive env-cell
+write-back slice. Node-shim execution for dynamic indirect eval and dynamic
+Function handles is covered by focused integration tests, as are primitive-return
+and primitive local-write-back dynamic direct eval, but not by the current
+iwasm-based differential runner.
 
 ## Known compiler limitations
 

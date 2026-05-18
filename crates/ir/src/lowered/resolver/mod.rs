@@ -478,6 +478,7 @@ impl Resolver {
                 };
                 let lowered = if self.ctx.facts.env_cell_names.contains(name) {
                     self.ctx.facts.env_cell_locals.insert(local_id);
+                    self.ctx.facts.initialized_env_cell_locals.insert(local_id);
                     LoweredExpr::EnvCellNew(Box::new(lowered), Span::generated("env_cell_new"))
                 } else {
                     lowered
@@ -1091,6 +1092,7 @@ impl Resolver {
                 let local_id = self.declare_local(name)?;
                 if self.ctx.facts.env_cell_names.contains(name) {
                     self.ctx.facts.env_cell_locals.insert(local_id);
+                    self.ctx.facts.initialized_env_cell_locals.insert(local_id);
                 }
                 let closure = self.lower_nested_function(name, params, body, *is_async)?;
                 if let LoweredExpr::ArrowFn {

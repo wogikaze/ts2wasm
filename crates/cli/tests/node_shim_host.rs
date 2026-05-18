@@ -24,6 +24,12 @@ fn dynamic_direct_eval_executes_through_node_shim_host_import() {
     assert_node_shim_stdout(fixture, "3\n");
 }
 
+#[test]
+fn dynamic_direct_eval_writes_back_local_env_cell_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-local-writeback-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\n7\n");
+}
+
 fn assert_node_shim_stdout(fixture: &str, expected_stdout: &str) {
     let fixture_path = fixture_path(fixture);
     let output_wasm = temp_wasm_path(fixture);
@@ -77,6 +83,7 @@ const TAG_ARRAY = 5;
 const TAG_STRING = 6;
 const TAG_MASK = 7;
 const HEAP_MASK = -8;
+const ARRAY_HEADER_SIZE = 20;
 const ARRAY_PRESENCE_WORDS_OFFSET = 16;
 
 let memory;
@@ -150,6 +157,22 @@ function decodeValue(raw) {
   }
 }
 
+function readEnvCellRaw(cellRaw) {
+  if (rawTag(cellRaw) !== TAG_ARRAY) {
+    throw new TypeError(`expected env cell array RawValue, got ${cellRaw}`);
+  }
+  const base = rawPtr(cellRaw);
+  return view().getInt32(base + ARRAY_HEADER_SIZE, true);
+}
+
+function writeEnvCellRaw(cellRaw, valueRaw) {
+  if (rawTag(cellRaw) !== TAG_ARRAY) {
+    throw new TypeError(`expected env cell array RawValue, got ${cellRaw}`);
+  }
+  const base = rawPtr(cellRaw);
+  view().setInt32(base + ARRAY_HEADER_SIZE, valueRaw, true);
+}
+
 function encodePrimitive(value) {
   if (value === undefined) return TAG_UNDEFINED;
   if (value === null) return TAG_NULL;
@@ -157,6 +180,48 @@ function encodePrimitive(value) {
   if (value === true) return TAG_TRUE;
   if (Number.isInteger(value)) return (value << 3) | TAG_NUMBER;
   throw new TypeError(`unsupported host return value for this test: ${String(value)}`);
+}
+
+function uniqueInternalName(base, names) {
+  let name = base;
+  while (names.includes(name)) {
+    name = `_${name}`;
+  }
+  return name;
+}
+
+function evalWithEnvDescriptor(source, envRaw) {
+  if (envRaw === TAG_UNDEFINED) {
+    return eval(source);
+  }
+
+  const pairs = decodeArray(envRaw);
+  const bindings = [];
+  for (let i = 0; i < pairs.length; i += 2) {
+    const name = decodeString(pairs[i]);
+    const cellRaw = pairs[i + 1];
+    const raw = readEnvCellRaw(cellRaw);
+    bindings.push({ name, cellRaw, raw, value: decodeValue(raw) });
+  }
+
+  const names = bindings.map((binding) => binding.name);
+  const sourceName = uniqueInternalName('__ts2wasm_eval_source', names);
+  const resultName = uniqueInternalName('__ts2wasm_eval_result', [...names, sourceName]);
+  const wrapper = Function(
+    sourceName,
+    ...names,
+    `let ${resultName} = eval(${sourceName}); return [${resultName}, ${names.join(', ')}];`,
+  );
+  const values = bindings.map((binding) => binding.value);
+  const [result, ...updatedValues] = wrapper(source, ...values);
+
+  for (let i = 0; i < bindings.length; i += 1) {
+    if (!Object.is(bindings[i].value, updatedValues[i])) {
+      writeEnvCellRaw(bindings[i].cellRaw, encodePrimitive(updatedValues[i]));
+    }
+  }
+
+  return result;
 }
 
 function decodeArgs(raw) {
@@ -183,8 +248,8 @@ const imports = {
     },
   },
   host: {
-    'eval.direct'(sourceRaw, _envRaw) {
-      const result = eval(decodeString(sourceRaw));
+    'eval.direct'(sourceRaw, envRaw) {
+      const result = evalWithEnvDescriptor(decodeString(sourceRaw), envRaw);
       return encodePrimitive(result);
     },
     'eval.indirect'(sourceRaw, _envRaw) {

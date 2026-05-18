@@ -53,6 +53,8 @@ pub fn lower_program_with_module_url(
     let mutable_object_method_capture_names =
         collect_block_object_method_mutable_captures(program)?;
     let direct_eval_env = collect_direct_eval_block_function_env(program);
+    let dynamic_direct_eval_env_cell_names =
+        collect_dynamic_direct_eval_env_cell_names(&[], program);
     let env_cell_names = mutable_class_capture_names
         .union(&mutable_object_method_capture_names)
         .cloned()
@@ -63,6 +65,9 @@ pub fn lower_program_with_module_url(
         .cloned()
         .collect::<HashSet<_>>()
         .union(&direct_eval_env.env_cell_names)
+        .cloned()
+        .collect::<HashSet<_>>()
+        .union(&dynamic_direct_eval_env_cell_names)
         .cloned()
         .collect::<HashSet<_>>();
     let class_parents = collect_class_parents(program);
@@ -112,6 +117,8 @@ pub fn lower_program_with_module_url(
                     collect_block_object_method_mutable_captures(body)?;
                 let nested_function_mutable_captures =
                     collect_block_nested_function_mutable_captures(body)?;
+                let dynamic_direct_eval_env_cell_names =
+                    collect_dynamic_direct_eval_env_cell_names(params, body);
                 let function_env_cell_names = function_env_cell_names
                     .union(&arrow_mutable_captures)
                     .cloned()
@@ -120,6 +127,9 @@ pub fn lower_program_with_module_url(
                     .cloned()
                     .collect::<HashSet<_>>()
                     .union(&nested_function_mutable_captures)
+                    .cloned()
+                    .collect::<HashSet<_>>()
+                    .union(&dynamic_direct_eval_env_cell_names)
                     .cloned()
                     .collect::<HashSet<_>>();
                 let self_closure = top_level_function_body_references_name(params, body, name)?
@@ -204,8 +214,13 @@ pub fn lower_program_with_module_url(
                     collect_block_object_method_mutable_captures(&ctor_body)?;
                 let constructor_nested_function_mutable_captures =
                     collect_block_nested_function_mutable_captures(&ctor_body)?;
+                let dynamic_direct_eval_env_cell_names =
+                    collect_dynamic_direct_eval_env_cell_names(&ctor_params_with_this, &ctor_body);
                 let constructor_env_cell_names = constructor_object_method_mutable_captures
                     .union(&constructor_nested_function_mutable_captures)
+                    .cloned()
+                    .collect::<HashSet<_>>()
+                    .union(&dynamic_direct_eval_env_cell_names)
                     .cloned()
                     .collect::<HashSet<_>>();
                 let lowered = lower_function(
@@ -273,11 +288,19 @@ pub fn lower_program_with_module_url(
                         collect_block_object_method_mutable_captures(&method.body)?;
                     let method_nested_function_mutable_captures =
                         collect_block_nested_function_mutable_captures(&method.body)?;
+                    let dynamic_direct_eval_env_cell_names =
+                        collect_dynamic_direct_eval_env_cell_names(
+                            &method_params_with_this,
+                            &method.body,
+                        );
                     let method_env_cell_names = method_env_cell_names
                         .union(&method_object_method_mutable_captures)
                         .cloned()
                         .collect::<HashSet<_>>()
                         .union(&method_nested_function_mutable_captures)
+                        .cloned()
+                        .collect::<HashSet<_>>()
+                        .union(&dynamic_direct_eval_env_cell_names)
                         .cloned()
                         .collect::<HashSet<_>>();
                     let lowered = lower_function(

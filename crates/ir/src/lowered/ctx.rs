@@ -212,6 +212,7 @@ impl LoweringCtx {
             .insert(name.to_owned(), local_id);
         if self.facts.env_cell_names.contains(name) {
             self.facts.env_cell_locals.insert(local_id);
+            self.facts.initialized_env_cell_locals.insert(local_id);
         }
         if self.facts.heap_closure_names.contains(name) {
             self.facts.heap_closure_locals.insert(local_id);

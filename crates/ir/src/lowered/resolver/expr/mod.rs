@@ -10,6 +10,7 @@ mod ternary;
 mod unary;
 
 use crate::builtin_resolved::ResolvedExpr;
+use std::collections::HashSet;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 
@@ -198,9 +199,14 @@ impl super::Resolver {
                     crate::builtin_resolved::EvalKind::Direct => RuntimeFn::EvalDirectHost,
                     crate::builtin_resolved::EvalKind::Indirect => RuntimeFn::EvalIndirectHost,
                 };
+                let args = if matches!(kind, crate::builtin_resolved::EvalKind::Direct) {
+                    vec![source_expr, self.lower_direct_eval_env_descriptor()]
+                } else {
+                    vec![source_expr]
+                };
                 Ok(LoweredExpr::RuntimeCall {
                     intrinsic,
-                    args: vec![source_expr],
+                    args,
                     span: Span::generated("eval"),
                 })
             }
@@ -237,6 +243,38 @@ impl super::Resolver {
         }
         // Single-element sequence (shouldn't happen but handle gracefully)
         unreachable!("sequence with zero elements")
+    }
+
+    fn lower_direct_eval_env_descriptor(&self) -> LoweredExpr {
+        let mut seen = HashSet::new();
+        let mut elements = Vec::new();
+        for scope in self.ctx.symbols.scopes.iter().rev() {
+            let mut bindings = scope.iter().collect::<Vec<_>>();
+            bindings.sort_by(|(left, _), (right, _)| left.cmp(right));
+            for (name, local) in bindings {
+                if !seen.insert(name.clone()) {
+                    continue;
+                }
+                if self.ctx.facts.env_cell_locals.contains(local)
+                    && self.ctx.facts.initialized_env_cell_locals.contains(local)
+                {
+                    elements.push(LoweredExpr::String(
+                        name.clone(),
+                        Span::generated("eval_env_name"),
+                    ));
+                    elements.push(LoweredExpr::Local(*local, Span::generated("eval_env_cell")));
+                }
+            }
+        }
+
+        if elements.is_empty() {
+            LoweredExpr::Undefined(Span::generated("eval_env"))
+        } else {
+            LoweredExpr::ArrayNew {
+                elements,
+                span: Span::generated("eval_env"),
+            }
+        }
     }
 }
 
