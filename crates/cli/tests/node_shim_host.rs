@@ -32,6 +32,12 @@ fn dynamic_function_handle_preserves_object_properties_through_node_shim_host_im
 }
 
 #[test]
+fn dynamic_function_handle_exposes_metadata_through_node_shim_host_imports() {
+    let fixture = "fixtures/core-semantics/function-constructor-dynamic-metadata-node-shim.ts";
+    assert_node_shim_stdout(fixture, "2\nanonymous\n[object Object]\n7\n");
+}
+
+#[test]
 fn dynamic_indirect_eval_executes_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/indirect-eval-dynamic-node-shim.ts";
     assert_node_shim_stdout(fixture, "7\n");
@@ -184,10 +190,10 @@ const GC_HEADER_SIZE = 16;
 const GC_FLAGS_AND_TYPE_OFFSET = 0;
 const GC_BODY_SIZE_OFFSET = 4;
 const GC_KIND_OBJECT = 12;
-const HOST_FUNCTION_SENTINEL = 0x4853464e;
 
 let memory;
 const hostFunctions = [];
+const hostFunctionHandles = new Map();
 const decoder = new TextDecoder();
 const encoder = new TextEncoder();
 let stdout = '';
@@ -300,13 +306,6 @@ function encodeString(value) {
   return ptr | TAG_STRING;
 }
 
-function encodeHostFunctionHandle(index) {
-  const ptr = hostAlloc(8);
-  view().setInt32(ptr, HOST_FUNCTION_SENTINEL, true);
-  view().setInt32(ptr + 4, index, true);
-  return ptr | TAG_OBJECT;
-}
-
 function encodeHostObject(value) {
   const keys = Object.keys(value);
   const size = OBJECT_HEADER_SIZE + keys.length * OBJECT_ENTRY_SIZE;
@@ -325,15 +324,25 @@ function encodeHostObject(value) {
   return ptr | TAG_OBJECT;
 }
 
+function encodeHostFunctionHandle(fn, index) {
+  const raw = encodeHostObject({
+    length: fn.length,
+    name: fn.name,
+    prototype: {},
+  });
+  hostFunctionHandles.set(rawPtr(raw), index);
+  return raw;
+}
+
 function decodeHostFunctionHandle(raw) {
   if (rawTag(raw) !== TAG_OBJECT) {
     throw new TypeError(`expected host function handle object RawValue, got ${raw}`);
   }
   const ptr = rawPtr(raw);
-  if (view().getInt32(ptr, true) !== HOST_FUNCTION_SENTINEL) {
+  if (!hostFunctionHandles.has(ptr)) {
     throw new TypeError(`unknown host function handle object: ${raw}`);
   }
-  return view().getInt32(ptr + 4, true);
+  return hostFunctionHandles.get(ptr);
 }
 
 function encodeHostValue(value) {
@@ -425,7 +434,7 @@ const imports = {
       const args = decodeArgs(argsRaw);
       const fn = Function(...args);
       hostFunctions.push(fn);
-      return encodeHostFunctionHandle(hostFunctions.length - 1);
+      return encodeHostFunctionHandle(fn, hostFunctions.length - 1);
     },
     'function.call'(handleRaw, argsRaw) {
       const fn = hostFunctions[decodeHostFunctionHandle(handleRaw)];
