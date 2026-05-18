@@ -177,6 +177,12 @@ fn static_direct_eval_expression_reads_caller_local() {
 }
 
 #[test]
+fn static_direct_eval_expression_preserves_side_effect_completion() {
+    let fixture = "fixtures/core-semantics/direct-eval-expression-side-effect.ts";
+    assert_node_shim_stdout(fixture, "after\nafter\n");
+}
+
+#[test]
 fn dynamic_direct_eval_writes_back_local_env_cell_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-local-writeback-node-shim.ts";
     assert_node_shim_stdout(fixture, "7\n7\n");

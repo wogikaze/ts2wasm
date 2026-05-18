@@ -204,6 +204,30 @@ fn compiler_expands_direct_eval_expression_with_caller_binding_context() {
     ));
 }
 
+#[test]
+fn compiler_preserves_static_direct_eval_expression_side_effects() {
+    let expanded = parse_resolve_and_expand_dynamic_code(
+        r#"
+        let x = "before";
+        let result = eval('x = "after"; x');
+        "#,
+    );
+    assert!(matches!(
+        &expanded[1],
+        ts2wasm_ir::ResolvedStmt::Let(
+            name,
+            ts2wasm_ir::ResolvedExpr::Sequence(exprs)
+        ) if name == "result"
+            && matches!(
+                exprs.as_slice(),
+                [
+                    ts2wasm_ir::ResolvedExpr::Assign { name, .. },
+                    ts2wasm_ir::ResolvedExpr::Ident(read_name)
+                ] if name == "x" && read_name == "x"
+            )
+    ));
+}
+
 fn parse_resolve_and_expand_dynamic_code(source: &str) -> Vec<ts2wasm_ir::ResolvedStmt> {
     let parsed = parse_program(source).unwrap();
     let named = ts2wasm_ir::name_resolver::resolve_names(&parsed).unwrap();

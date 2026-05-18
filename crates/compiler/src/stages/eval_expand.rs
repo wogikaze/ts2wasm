@@ -1016,17 +1016,25 @@ fn function_constructor_syntax_error(message: &str, span: ts2wasm_source::Span) 
 /// * Single expression statement → the expression itself
 /// * Multiple statements → the last statement's completion value
 fn extract_completion_value(stmts: Vec<ResolvedStmt>) -> Result<ResolvedExpr, Diagnostic> {
-    let mut last_expr: Option<ResolvedExpr> = None;
+    let mut exprs = Vec::new();
     for stmt in stmts {
-        match stmt {
-            ResolvedStmt::Expr(expr) => last_expr = Some(expr),
-            ResolvedStmt::Let(_, expr)
-            | ResolvedStmt::Assign(_, expr)
-            | ResolvedStmt::Return(expr) => {
-                last_expr = Some(expr);
-            }
-            _ => last_expr = Some(ResolvedExpr::Undefined),
-        }
+        exprs.push(eval_statement_completion_expr(stmt));
     }
-    Ok(last_expr.unwrap_or(ResolvedExpr::Undefined))
+    Ok(match exprs.len() {
+        0 => ResolvedExpr::Undefined,
+        1 => exprs.pop().expect("single completion expression exists"),
+        _ => ResolvedExpr::Sequence(exprs),
+    })
+}
+
+fn eval_statement_completion_expr(stmt: ResolvedStmt) -> ResolvedExpr {
+    match stmt {
+        ResolvedStmt::Expr(expr) => expr,
+        ResolvedStmt::Assign(name, expr) => ResolvedExpr::Assign {
+            name,
+            expr: Box::new(expr),
+        },
+        ResolvedStmt::Let(_, expr) | ResolvedStmt::Return(expr) => expr,
+        _ => ResolvedExpr::Undefined,
+    }
 }
