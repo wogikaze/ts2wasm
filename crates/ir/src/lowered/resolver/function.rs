@@ -244,7 +244,7 @@ impl super::Resolver {
         self.ctx.symbols.function_signatures.insert(
             func_id,
             FunctionSignature {
-                explicit_params: lowered_params.len(),
+                explicit_params: params.len(),
                 needs_receiver: block_contains_super_ref(body),
                 is_strict: crate::lowered::program::function_body_is_strict(
                     self.ctx.is_strict_context(),
@@ -255,7 +255,21 @@ impl super::Resolver {
                 ..FunctionSignature::default()
             },
         );
+        if !capture_names.is_empty() {
+            self.ctx
+                .functions
+                .function_captures
+                .insert(func_id, capture_names.clone());
+        }
+        if !mutable_captures.is_empty() {
+            self.ctx
+                .functions
+                .function_mutable_captures
+                .insert(func_id, mutable_captures.clone());
+        }
         let function_signatures = self.ctx.symbols.function_signatures.clone();
+        let function_captures = self.ctx.functions.function_captures.clone();
+        let function_mutable_captures = self.ctx.functions.function_mutable_captures.clone();
 
         let lowered = lower_function(
             func_id,
@@ -265,8 +279,8 @@ impl super::Resolver {
             is_async,
             &self.ctx.symbols.function_ids,
             &function_signatures,
-            &self.ctx.functions.function_captures,
-            &self.ctx.functions.function_mutable_captures,
+            &function_captures,
+            &function_mutable_captures,
             &self.ctx.functions.class_method_captures,
             &self.ctx.functions.class_method_mutable_captures,
             &self.ctx.facts.env_cell_names,

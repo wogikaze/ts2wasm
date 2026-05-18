@@ -251,6 +251,35 @@ fn lowering_initializes_direct_eval_catch_binding_env_cell() {
 }
 
 #[test]
+fn lowering_passes_static_direct_eval_function_declaration_capture() {
+    use ts2wasm_ir::lowered::{FuncId, FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        function outer() {
+          eval("var x = 1; function g() { return x; }");
+          return g();
+        }
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program)
+        .expect("direct eval var/function declarations should lower");
+    let outer = &lowered.functions[0];
+
+    assert!(matches!(
+        outer.body.last(),
+        Some(LoweredStmt::Return(
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(FuncId(1)),
+                args,
+                ..
+            },
+            _
+        )) if matches!(args.as_slice(), [LoweredExpr::Local(LocalId(0), _)])
+    ));
+}
+
+#[test]
 fn lowering_passes_top_level_capture_through_double_nested_function_expr() {
     let program = parse_and_resolve(
         r#"

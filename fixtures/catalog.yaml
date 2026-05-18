@@ -898,6 +898,7 @@ directories:
     - direct-eval-dynamic-throw-catch-node-shim.ts
     - direct-eval-dynamic-tdz-conflict-unsupported.ts
     - direct-eval-unsupported.ts
+    - direct-eval-var-function-declaration.ts
     - duplicate-class-decl-unsupported.ts
     - duplicate-function-decl-unsupported.ts
     - duplicate-local-same-scope-unsupported.ts

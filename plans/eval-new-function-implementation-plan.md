@@ -62,7 +62,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | static direct eval expression | `let x = eval("1 + 2")` | parser post-parse rewrite で一部対応 | `EvalFragment` + completion slot で対応 |
 | static direct eval statement mutation | `eval('x = "after"')` | statement rewrite で一部対応 | caller-scope eval-code lowering で対応 |
 | static direct eval block function | `eval('{ function f(){} }')` | Annex B supported slice あり | hoist plan / mutable binding env を validation 付きで対応 |
-| direct eval with declarations | `eval('var x=1; x')` | expression completion と environment 接続が未完成 | eval-code environment + completion record |
+| direct eval with declarations | `eval('var x=1; x')` | static direct eval statement expansion now covers a guarded `var` + function declaration landing slice where the eval-defined function reads the eval-defined var. Expression completion and broader environment connection remain incomplete | eval-code environment + completion record |
 | indirect eval static literal | `(0, eval)("1+2")` | resolver が direct/indirect を分類し、supported literal subset は AOT eval expansion で host import なし | global `EvalFragment` AOT |
 | indirect eval dynamic | `(0, eval)(src)` | `host.eval.indirect` manifest / host-deny slice と primitive-return / string-keyed primitive object property node-shim 実行 regression は実装済み | `host.eval.indirect` capability |
 | direct eval dynamic | `eval(src)` | `host.eval.direct` manifest / host-deny slice と primitive-return node-shim 実行 regression は実装済み。initialized env-cell descriptor 経由の primitive number caller-local / parameter / catch binding write-back、未初期化 caller env binding の TDZ-unsafe host 実行拒否、plain object result、object identity、nested object/array properties、string-keyed primitive property bridge、host-thrown error bridge も focused node-shim guarded。declaration landing と full TDZ modeling は未完 | env descriptor + mutation ledger + write-back |
@@ -543,6 +543,9 @@ Phase 1 regression note:
 
 - Static direct eval caller-local mutation builds as standalone without
   `host.eval.*` capability under host-deny, and the guard is no longer ignored.
+- Static direct eval `var` plus function declaration landing has a focused
+  regression where the eval-defined function reads the eval-defined var through
+  the nested-function capture call path.
 
 ### Phase 9: `$262.evalScript` / test262 ramp / cleanup
 
