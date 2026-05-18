@@ -1309,6 +1309,7 @@ fn standalone_fixtures_pass_host_deny() {
         "core-semantics/function-constructor-static-construct.ts",
         "core-semantics/function-constructor-this-binding.ts",
         "core-semantics/function-constructor-zero-args.ts",
+        "core-semantics/new-function-constructor-static.ts",
         // Spread arguments (WASI stdout only)
         "spread-args/spread-arguments.ts",
         // TypeScript directives that now compile standalone
