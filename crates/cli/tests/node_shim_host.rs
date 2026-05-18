@@ -580,6 +580,12 @@ fn dynamic_direct_eval_calls_array_function_elements_through_node_shim_host_impo
 }
 
 #[test]
+fn dynamic_direct_eval_let_initializer_ignores_unreferenced_later_bindings() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-let-initializer-node-shim.ts";
+    assert_node_shim_stdout(fixture, "ok\nafter\n");
+}
+
+#[test]
 fn dynamic_direct_eval_bridges_nested_objects_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-nested-object-node-shim.ts";
     assert_node_shim_stdout(fixture, "7\nok\nundefined\n");

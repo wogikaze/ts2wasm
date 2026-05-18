@@ -932,6 +932,7 @@ directories:
     - direct-eval-dynamic-function-declaration-writeback-node-shim.ts
     - direct-eval-dynamic-function-expression-name-not-binding-node-shim.ts
     - direct-eval-dynamic-function-property-call-node-shim.ts
+    - direct-eval-dynamic-let-initializer-node-shim.ts
     - direct-eval-dynamic-local-writeback-node-shim.ts
     - direct-eval-dynamic-nested-array-node-shim.ts
     - direct-eval-dynamic-nested-object-node-shim.ts
