@@ -891,6 +891,7 @@ directories:
     - direct-eval-expression-caller-local.ts
     - direct-eval-expression-side-effect.ts
     - direct-eval-for-completion.ts
+    - direct-eval-for-in-completion.ts
     - direct-eval-for-of-completion.ts
     - direct-eval-function-lands-in-caller.ts
     - direct-eval-function-hoisted-before-use.ts

@@ -225,6 +225,12 @@ fn static_direct_eval_for_preserves_completion() {
 }
 
 #[test]
+fn static_direct_eval_for_in_preserves_completion() {
+    let fixture = "fixtures/core-semantics/direct-eval-for-in-completion.ts";
+    assert_node_shim_stdout(fixture, "ab\nab\n");
+}
+
+#[test]
 fn static_direct_eval_for_of_preserves_completion() {
     let fixture = "fixtures/core-semantics/direct-eval-for-of-completion.ts";
     assert_node_shim_stdout(fixture, "6\n6\n");

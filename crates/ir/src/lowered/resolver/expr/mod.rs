@@ -546,6 +546,28 @@ impl super::Resolver {
                         span: Span::generated("eval_completion_for_of"),
                     });
                 }
+                EvalCompletionStep::ForIn {
+                    var,
+                    iter,
+                    body_steps,
+                } => {
+                    let var_id = self.declare_local(var)?;
+                    let iter = self.lower_expr(iter)?;
+                    let body = self.lower_eval_completion_steps_scoped(
+                        body_steps,
+                        completion,
+                        caller_scope_index,
+                    )?;
+                    stmts.push(LoweredStmt::ForIn {
+                        var: var_id,
+                        iter,
+                        iter_local: self.alloc_temp(),
+                        index_local: self.alloc_temp(),
+                        len_local: self.alloc_temp(),
+                        body,
+                        span: Span::generated("eval_completion_for_in"),
+                    });
+                }
                 EvalCompletionStep::Switch { expr, cases } => {
                     let expr = self.lower_expr(expr)?;
                     let cases = cases

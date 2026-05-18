@@ -354,6 +354,11 @@ pub enum EvalCompletionStep {
         iter: ResolvedExpr,
         body_steps: Vec<EvalCompletionStep>,
     },
+    ForIn {
+        var: String,
+        iter: ResolvedExpr,
+        body_steps: Vec<EvalCompletionStep>,
+    },
     Switch {
         expr: ResolvedExpr,
         cases: Vec<(Option<ResolvedExpr>, Vec<EvalCompletionStep>)>,
@@ -408,7 +413,7 @@ impl EvalCompletionStep {
             Self::For {
                 condition, update, ..
             } => condition.as_ref().or(update.as_ref()),
-            Self::ForOf { iter: expr, .. } => Some(expr),
+            Self::ForOf { iter: expr, .. } | Self::ForIn { iter: expr, .. } => Some(expr),
             Self::Switch { expr, .. } => Some(expr),
             Self::Throw(expr) => Some(expr),
             Self::HoistVars(_)
