@@ -246,6 +246,7 @@ pub(crate) fn resolve_method_to_runtime_fn(
         "codePointAt" => Some(RuntimeFn::StringCodePointAt),
         "isWellFormed" => Some(RuntimeFn::StringIsWellFormed),
         "toWellFormed" => Some(RuntimeFn::StringToWellFormed),
+        "normalize" => Some(RuntimeFn::StringNormalize),
         "hasOwnProperty" => Some(RuntimeFn::ObjectHasOwnProperty),
         "propertyIsEnumerable" => Some(RuntimeFn::PropertyIsEnumerable),
         "isPrototypeOf" => Some(RuntimeFn::IsPrototypeOf),
