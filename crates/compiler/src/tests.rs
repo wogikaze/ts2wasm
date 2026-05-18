@@ -355,6 +355,18 @@ fn compiler_keeps_strict_caller_eval_var_declarations_local() {
     ));
 }
 
+#[test]
+fn compiler_rejects_static_eval_lexical_var_conflicts() {
+    for source in [
+        r#"let result = eval("let value = 1; var value = 2");"#,
+        r#"let result = eval("var value = 1; let value = 2");"#,
+    ] {
+        let err = parse_resolve_and_expand_dynamic_code_err(source);
+        assert_eq!(err.code, DiagCode::DuplicateLocal, "{source}");
+        assert!(err.message.contains("value"), "{source}: {}", err.message);
+    }
+}
+
 fn parse_resolve_and_expand_dynamic_code(source: &str) -> Vec<ts2wasm_ir::ResolvedStmt> {
     let parsed = parse_program(source).unwrap();
     let named = ts2wasm_ir::name_resolver::resolve_names(&parsed).unwrap();
