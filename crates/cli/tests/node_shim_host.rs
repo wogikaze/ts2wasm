@@ -469,6 +469,13 @@ fn dynamic_direct_eval_new_function_declaration_is_visible_to_later_eval_through
 }
 
 #[test]
+fn dynamic_direct_eval_new_generator_function_declaration_is_visible_to_later_eval_through_node_shim_host_import()
+ {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-new-generator-function-declaration-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\n7\n");
+}
+
+#[test]
 fn dynamic_direct_eval_class_method_reads_arguments_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-class-method-arguments-node-shim.ts";
     assert_node_shim_stdout(fixture, "9:1\n");
@@ -1243,7 +1250,7 @@ function collectEvalDeclarationNames(source) {
   const addName = (name) => {
     if (!names.includes(name)) names.push(name);
   };
-  for (const match of source.matchAll(/\bfunction\s+([A-Za-z_$][0-9A-Za-z_$]*)\s*\(/g)) {
+  for (const match of source.matchAll(/\b(?:async\s+)?function\s*\*?\s+([A-Za-z_$][0-9A-Za-z_$]*)\s*\(/g)) {
     addName(match[1]);
   }
   return names;

@@ -846,6 +846,13 @@ fn host_deny_rejects_dynamic_direct_eval_new_function_declaration_host_lane() {
 }
 
 #[test]
+fn host_deny_rejects_dynamic_direct_eval_new_generator_function_declaration_host_lane() {
+    assert_host_deny_rejects(
+        "core-semantics/direct-eval-dynamic-new-generator-function-declaration-node-shim.ts",
+    );
+}
+
+#[test]
 fn host_deny_rejects_dynamic_direct_eval_class_method_arguments_host_lane() {
     assert_host_deny_rejects(
         "core-semantics/direct-eval-dynamic-class-method-arguments-node-shim.ts",
