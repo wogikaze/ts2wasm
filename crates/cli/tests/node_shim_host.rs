@@ -559,9 +559,22 @@ fn dynamic_direct_eval_strict_caller_var_arguments_is_syntax_error_node_shim_hos
 }
 
 #[test]
+fn dynamic_direct_eval_strict_caller_array_binding_arguments_is_syntax_error_node_shim_host_import()
+{
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-strict-caller-array-binding-arguments-node-shim.ts";
+    assert_node_shim_stdout(fixture, "SyntaxError\n9\n");
+}
+
+#[test]
 fn dynamic_direct_eval_strict_caller_function_eval_is_syntax_error_node_shim_host_import() {
     let fixture =
         "fixtures/core-semantics/direct-eval-dynamic-strict-caller-function-eval-node-shim.ts";
+    assert_node_shim_stdout(fixture, "SyntaxError\nafter\n");
+}
+
+#[test]
+fn dynamic_direct_eval_strict_caller_async_function_eval_is_syntax_error_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-strict-caller-async-function-eval-node-shim.ts";
     assert_node_shim_stdout(fixture, "SyntaxError\nafter\n");
 }
 
@@ -1062,8 +1075,10 @@ function strictEvalHasDeleteIdentifier(source) {
 }
 
 function strictEvalHasRestrictedBinding(source) {
-  return /\b(?:var|let|const)\s+(?:arguments|eval)\b|\bfunction\s*\*?\s+(?:arguments|eval)\b/.test(
-    source,
+  return (
+    /\b(?:var|let|const)\s+(?:arguments|eval)\b/.test(source) ||
+    /\b(?:var|let|const)\s*\[[^\]=;]*\b(?:arguments|eval)\b/.test(source) ||
+    /\b(?:async\s+)?function\s*\*?\s+(?:arguments|eval)\b/.test(source)
   );
 }
 

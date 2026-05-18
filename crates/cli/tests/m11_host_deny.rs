@@ -860,9 +860,23 @@ fn host_deny_rejects_dynamic_direct_eval_strict_caller_var_arguments_host_lane()
 }
 
 #[test]
+fn host_deny_rejects_dynamic_direct_eval_strict_caller_array_binding_arguments_host_lane() {
+    assert_host_deny_rejects(
+        "core-semantics/direct-eval-dynamic-strict-caller-array-binding-arguments-node-shim.ts",
+    );
+}
+
+#[test]
 fn host_deny_rejects_dynamic_direct_eval_strict_caller_function_eval_host_lane() {
     assert_host_deny_rejects(
         "core-semantics/direct-eval-dynamic-strict-caller-function-eval-node-shim.ts",
+    );
+}
+
+#[test]
+fn host_deny_rejects_dynamic_direct_eval_strict_caller_async_function_eval_host_lane() {
+    assert_host_deny_rejects(
+        "core-semantics/direct-eval-dynamic-strict-caller-async-function-eval-node-shim.ts",
     );
 }
 

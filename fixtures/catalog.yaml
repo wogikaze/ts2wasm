@@ -937,6 +937,8 @@ directories:
     - direct-eval-dynamic-object-properties-node-shim.ts
     - direct-eval-dynamic-object-result-node-shim.ts
     - direct-eval-dynamic-param-writeback-node-shim.ts
+    - direct-eval-dynamic-strict-caller-array-binding-arguments-node-shim.ts
+    - direct-eval-dynamic-strict-caller-async-function-eval-node-shim.ts
     - direct-eval-dynamic-strict-caller-delete-arguments-node-shim.ts
     - direct-eval-dynamic-strict-caller-delete-node-shim.ts
     - direct-eval-dynamic-strict-caller-function-eval-node-shim.ts
