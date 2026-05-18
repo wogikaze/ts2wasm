@@ -921,6 +921,7 @@ directories:
     - function-constructor-dynamic-host-path.ts
     - function-constructor-dynamic-metadata-node-shim.ts
     - function-constructor-dynamic-node-shim.ts
+    - function-constructor-dynamic-object-identity-node-shim.ts
     - function-constructor-dynamic-object-node-shim.ts
     - function-constructor-dynamic-object-properties-node-shim.ts
     - function-constructor-dynamic-string-node-shim.ts

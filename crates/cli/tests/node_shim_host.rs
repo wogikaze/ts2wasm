@@ -32,6 +32,13 @@ fn dynamic_function_handle_preserves_object_properties_through_node_shim_host_im
 }
 
 #[test]
+fn dynamic_function_handle_preserves_object_identity_through_node_shim_host_imports() {
+    let fixture =
+        "fixtures/core-semantics/function-constructor-dynamic-object-identity-node-shim.ts";
+    assert_node_shim_stdout(fixture, "true\n7\n");
+}
+
+#[test]
 fn dynamic_function_handle_exposes_metadata_through_node_shim_host_imports() {
     let fixture = "fixtures/core-semantics/function-constructor-dynamic-metadata-node-shim.ts";
     assert_node_shim_stdout(fixture, "2\nanonymous\n[object Object]\n7\n");
@@ -207,6 +214,7 @@ const GC_KIND_OBJECT = 12;
 let memory;
 const hostFunctions = [];
 const hostFunctionHandles = new Map();
+const hostObjectHandles = new WeakMap();
 const decoder = new TextDecoder();
 const encoder = new TextEncoder();
 let stdout = '';
@@ -320,6 +328,9 @@ function encodeString(value) {
 }
 
 function encodeHostObject(value) {
+  if (hostObjectHandles.has(value)) {
+    return hostObjectHandles.get(value);
+  }
   const keys = Object.keys(value);
   const size = OBJECT_HEADER_SIZE + keys.length * OBJECT_ENTRY_SIZE;
   const base = hostAlloc(GC_HEADER_SIZE + size);
@@ -329,6 +340,7 @@ function encodeHostObject(value) {
   view().setInt32(ptr, keys.length, true);
   view().setInt32(ptr + 4, 0, true);
   view().setInt32(ptr + 8, 0, true);
+  hostObjectHandles.set(value, ptr | TAG_OBJECT);
   for (let i = 0; i < keys.length; i += 1) {
     const entry = ptr + OBJECT_ENTRIES_OFFSET + i * OBJECT_ENTRY_SIZE;
     view().setInt32(entry, encodeString(keys[i]), true);
