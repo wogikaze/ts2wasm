@@ -867,6 +867,13 @@ fn host_deny_rejects_dynamic_direct_eval_strict_caller_array_binding_arguments_h
 }
 
 #[test]
+fn host_deny_rejects_dynamic_direct_eval_strict_caller_object_binding_eval_host_lane() {
+    assert_host_deny_rejects(
+        "core-semantics/direct-eval-dynamic-strict-caller-object-binding-eval-node-shim.ts",
+    );
+}
+
+#[test]
 fn host_deny_rejects_dynamic_direct_eval_strict_caller_function_eval_host_lane() {
     assert_host_deny_rejects(
         "core-semantics/direct-eval-dynamic-strict-caller-function-eval-node-shim.ts",
