@@ -214,6 +214,12 @@ fn static_direct_eval_recursively_expands_nested_static_eval() {
 }
 
 #[test]
+fn static_direct_eval_var_lands_in_caller_scope() {
+    let fixture = "fixtures/core-semantics/direct-eval-var-lands-in-caller.ts";
+    assert_node_shim_stdout(fixture, "2\n2\n");
+}
+
+#[test]
 fn static_direct_eval_strict_lexical_local_shadows_caller_local() {
     let fixture = "fixtures/core-semantics/direct-eval-strict-lexical-local.ts";
     assert_node_shim_stdout(fixture, "2\n1\n");

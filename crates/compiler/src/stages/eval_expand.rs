@@ -394,12 +394,18 @@ fn expand_expr(
             kind: EvalKind::Direct,
             source: EvalSource::StaticLiteral(ref src),
             ..
-        } => expand_static_eval_source(src, &ctx.visible_bindings()),
+        } => {
+            let expanded = expand_static_eval_source(src, &ctx.visible_bindings(), true)?;
+            for name in &expanded.caller_var_declarations {
+                ctx.declare(name.clone());
+            }
+            Ok(expanded.expr)
+        }
         ResolvedExpr::Eval {
             kind: EvalKind::Indirect,
             source: EvalSource::StaticLiteral(ref src),
             ..
-        } => expand_static_eval_source(src, &[]),
+        } => expand_static_eval_source(src, &[], false).map(|expanded| expanded.expr),
         ResolvedExpr::Eval { .. } => {
             // Non-expandable eval (indirect or runtime source) — keep as-is.
             Ok(expr)
@@ -732,10 +738,16 @@ fn expand_object_prop(
     }
 }
 
+struct StaticEvalExpansion {
+    expr: ResolvedExpr,
+    caller_var_declarations: Vec<String>,
+}
+
 fn expand_static_eval_source(
     src: &str,
     outer_bindings: &[String],
-) -> Result<ResolvedExpr, Diagnostic> {
+    direct_caller_scope: bool,
+) -> Result<StaticEvalExpansion, Diagnostic> {
     let tokens = ts2wasm_frontend::Lexer::new(src)
         .tokenize()
         .map_err(|e| Diagnostic {
@@ -760,7 +772,20 @@ fn expand_static_eval_source(
     };
     let builtin_resolved = resolve_builtins(&name_resolved)?;
 
-    extract_completion_value(builtin_resolved)
+    let leak_var_declarations = direct_caller_scope && !block_has_use_strict_directive(&program);
+    let caller_var_declarations = if leak_var_declarations {
+        program
+            .iter()
+            .filter_map(eval_top_level_var_name)
+            .collect::<Vec<_>>()
+    } else {
+        Vec::new()
+    };
+
+    Ok(StaticEvalExpansion {
+        expr: extract_completion_value(&program, builtin_resolved, leak_var_declarations)?,
+        caller_var_declarations,
+    })
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1014,24 +1039,50 @@ fn function_constructor_syntax_error(message: &str, span: ts2wasm_source::Span) 
 ///
 /// Produces a completion-plan expression so lower IR can evaluate all eval-code
 /// side effects while preserving the last non-empty completion value exactly once.
-fn extract_completion_value(stmts: Vec<ResolvedStmt>) -> Result<ResolvedExpr, Diagnostic> {
+fn extract_completion_value(
+    ast_stmts: &[Stmt],
+    stmts: Vec<ResolvedStmt>,
+    leak_var_declarations: bool,
+) -> Result<ResolvedExpr, Diagnostic> {
     Ok(ResolvedExpr::EvalCompletion(
         stmts
             .into_iter()
-            .map(eval_statement_completion_step)
+            .enumerate()
+            .map(|(idx, stmt)| {
+                eval_statement_completion_step(ast_stmts.get(idx), stmt, leak_var_declarations)
+            })
             .collect(),
     ))
 }
 
-fn eval_statement_completion_step(stmt: ResolvedStmt) -> EvalCompletionStep {
+fn eval_statement_completion_step(
+    ast_stmt: Option<&Stmt>,
+    stmt: ResolvedStmt,
+    leak_var_declarations: bool,
+) -> EvalCompletionStep {
     match stmt {
         ResolvedStmt::Expr(expr) => EvalCompletionStep::Value(expr),
         ResolvedStmt::Assign(name, expr) => EvalCompletionStep::Value(ResolvedExpr::Assign {
             name,
             expr: Box::new(expr),
         }),
+        ResolvedStmt::Let(name, expr)
+            if leak_var_declarations
+                && matches!(ast_stmt, Some(Stmt::Let { is_var: true, .. })) =>
+        {
+            EvalCompletionStep::VarLet { name, init: expr }
+        }
         ResolvedStmt::Let(name, expr) => EvalCompletionStep::LexicalLet { name, init: expr },
         ResolvedStmt::Return(expr) => EvalCompletionStep::Value(expr),
         _ => EvalCompletionStep::Empty(None),
+    }
+}
+
+fn eval_top_level_var_name(stmt: &Stmt) -> Option<String> {
+    match stmt {
+        Stmt::Let {
+            name, is_var: true, ..
+        } => Some(name.clone()),
+        _ => None,
     }
 }

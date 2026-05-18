@@ -259,6 +259,7 @@ impl super::Resolver {
 
         let completion = self.alloc_temp();
         self.ctx.symbols.scopes.push(HashMap::new());
+        let caller_scope_index = self.ctx.symbols.scopes.len().saturating_sub(2);
         let lowered = (|| {
             let mut stmts = vec![LoweredStmt::Let(
                 completion,
@@ -282,6 +283,24 @@ impl super::Resolver {
                             Span::generated("eval_completion_empty"),
                         ));
                     }
+                    EvalCompletionStep::VarLet { name, init } => {
+                        let (local, existed) =
+                            self.declare_eval_var_in_caller_scope(name, caller_scope_index)?;
+                        let init = self.lower_expr(init)?;
+                        if existed {
+                            stmts.push(LoweredStmt::Assign(
+                                local,
+                                init,
+                                Span::generated("eval_var_assign"),
+                            ));
+                        } else {
+                            stmts.push(LoweredStmt::Let(
+                                local,
+                                init,
+                                Span::generated("eval_var_let"),
+                            ));
+                        }
+                    }
                     EvalCompletionStep::LexicalLet { name, init } => {
                         stmts
                             .push(self.lower_stmt(&ResolvedStmt::Let(name.clone(), init.clone()))?);
@@ -300,6 +319,38 @@ impl super::Resolver {
         })();
         self.ctx.symbols.scopes.pop();
         lowered
+    }
+
+    fn declare_eval_var_in_caller_scope(
+        &mut self,
+        name: &str,
+        scope_index: usize,
+    ) -> Result<(LocalId, bool), Diagnostic> {
+        if self.ctx.is_strict_context() && matches!(name, "eval" | "arguments") {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-450: {:?} strict mode forbids binding local `{name}`",
+                    crate::lowered::ctx::StrictModeCheck::StrictEval
+                ),
+                span: None,
+                phase: None,
+            });
+        }
+        let scope = self
+            .ctx
+            .symbols
+            .scopes
+            .get_mut(scope_index)
+            .expect("eval caller scope must exist");
+        if let Some(&existing) = scope.get(name) {
+            return Ok((existing, true));
+        }
+        let local = LocalId(self.ctx.symbols.next_local_id);
+        self.ctx.symbols.next_local_id += 1;
+        self.ctx.symbols.locals.push(local);
+        scope.insert(name.to_owned(), local);
+        Ok((local, false))
     }
 
     fn lower_direct_eval_env_descriptor(&self) -> LoweredExpr {
