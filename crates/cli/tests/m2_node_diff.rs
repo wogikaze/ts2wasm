@@ -1177,6 +1177,13 @@ fn function_constructor_new_target_matches_node_output() {
 }
 
 #[test]
+fn function_constructor_new_static_prototype_matches_node_output() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/function-constructor-new-static-prototype.ts",
+    );
+}
+
+#[test]
 fn function_constructor_parameter_grammar_matches_node_output() {
     assert_fixture_matches_node(
         "fixtures/core-semantics/function-constructor-parameter-grammar.ts",

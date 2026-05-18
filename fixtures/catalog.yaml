@@ -1011,6 +1011,7 @@ directories:
     - function-constructor-dynamic-throw-catch-node-shim.ts
     - function-constructor-metadata.ts
     - function-constructor-new-target.ts
+    - function-constructor-new-static-prototype.ts
     - function-constructor-no-caller-capture.ts
     - function-constructor-parameter-grammar.ts
     - function-constructor-rest-params.ts

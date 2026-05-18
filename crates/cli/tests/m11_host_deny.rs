@@ -1285,6 +1285,7 @@ fn standalone_fixtures_pass_host_deny() {
         "core-semantics/function-constructor-construct-return-object.ts",
         "core-semantics/function-constructor-metadata.ts",
         "core-semantics/function-constructor-new-target.ts",
+        "core-semantics/function-constructor-new-static-prototype.ts",
         "core-semantics/function-constructor-parameter-grammar.ts",
         "core-semantics/function-constructor-rest-params.ts",
         "core-semantics/function-constructor-this-binding.ts",
