@@ -214,10 +214,14 @@ impl super::Resolver {
                         phase: None,
                     });
                 };
-                let source_expr = self.lower_expr(source_expr)?;
+                let source_value_expr = source_expr;
+                let source_expr = self.lower_expr(source_value_expr)?;
                 let intrinsic = match plan.host_policy {
                     crate::builtin_resolved::EvalHostPolicy::DirectHost => {
-                        self.ensure_direct_eval_env_descriptor_initialized(plan.span)?;
+                        self.ensure_direct_eval_env_descriptor_initialized(
+                            source_value_expr,
+                            plan.span,
+                        )?;
                         RuntimeFn::EvalDirectHost
                     }
                     crate::builtin_resolved::EvalHostPolicy::IndirectHost => {
@@ -1295,7 +1299,12 @@ impl super::Resolver {
         }
     }
 
-    fn ensure_direct_eval_env_descriptor_initialized(&self, span: Span) -> Result<(), Diagnostic> {
+    fn ensure_direct_eval_env_descriptor_initialized(
+        &self,
+        source_expr: &ResolvedExpr,
+        span: Span,
+    ) -> Result<(), Diagnostic> {
+        let static_source = self.direct_eval_static_source_value(source_expr);
         let mut names = self
             .ctx
             .facts
@@ -1307,17 +1316,66 @@ impl super::Resolver {
 
         for name in names {
             let Some(local) = self.ctx.symbols.resolve(&name) else {
-                return Err(dynamic_direct_eval_tdz_diagnostic(&name, span));
+                if static_source
+                    .as_deref()
+                    .is_none_or(|source| source_mentions_identifier(source, &name))
+                {
+                    return Err(dynamic_direct_eval_tdz_diagnostic(&name, span));
+                }
+                continue;
             };
             if !self.ctx.facts.env_cell_locals.contains(&local)
                 || !self.ctx.facts.initialized_env_cell_locals.contains(&local)
             {
-                return Err(dynamic_direct_eval_tdz_diagnostic(&name, span));
+                if static_source
+                    .as_deref()
+                    .is_none_or(|source| source_mentions_identifier(source, &name))
+                {
+                    return Err(dynamic_direct_eval_tdz_diagnostic(&name, span));
+                }
             }
         }
 
         Ok(())
     }
+
+    fn direct_eval_static_source_value(&self, source_expr: &ResolvedExpr) -> Option<String> {
+        if let Some(value) = crate::lowered::resolver::string::resolved_expr_static_string_value(
+            &self.ctx,
+            source_expr,
+        ) {
+            return Some(value);
+        }
+        let ResolvedExpr::Ident(name) = source_expr else {
+            return None;
+        };
+        let local_id = self.ctx.resolve_local(name).ok()?;
+        self.ctx.facts.string_literal_locals.get(&local_id).cloned()
+    }
+}
+
+fn source_mentions_identifier(source: &str, name: &str) -> bool {
+    if name.is_empty() {
+        return false;
+    }
+    let bytes = source.as_bytes();
+    let needle = name.as_bytes();
+    let mut index = 0;
+    while index + needle.len() <= bytes.len() {
+        if &bytes[index..index + needle.len()] == needle
+            && (index == 0 || !is_identifier_part(bytes[index - 1]))
+            && (index + needle.len() == bytes.len()
+                || !is_identifier_part(bytes[index + needle.len()]))
+        {
+            return true;
+        }
+        index += 1;
+    }
+    false
+}
+
+fn is_identifier_part(byte: u8) -> bool {
+    byte == b'_' || byte == b'$' || byte.is_ascii_alphanumeric()
 }
 
 struct DirectEvalEnvDescriptor {
