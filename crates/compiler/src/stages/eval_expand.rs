@@ -258,6 +258,7 @@ fn expand_stmt(
         } => {
             ctx.declare(name.clone());
             ctx.enter_scope();
+            ctx.declare("arguments");
             let params = expand_params(params, ctx)?;
             ctx.declare_params(&params);
             let body = expand_stmts(body, ctx)?;
@@ -361,6 +362,7 @@ fn expand_constructor(
     ctx: &mut EvalExpansionContext,
 ) -> Result<ts2wasm_ir::builtin_resolved::ResolvedConstructor, Diagnostic> {
     ctx.enter_scope();
+    ctx.declare("arguments");
     let params = expand_params(params, ctx)?;
     ctx.declare_params(&params);
     let body = expand_stmts(body, ctx)?;
@@ -373,6 +375,7 @@ fn expand_class_method(
     ctx: &mut EvalExpansionContext,
 ) -> Result<ts2wasm_ir::builtin_resolved::ClassMethod, Diagnostic> {
     ctx.enter_scope();
+    ctx.declare("arguments");
     let params = expand_params(method.params, ctx)?;
     ctx.declare_params(&params);
     let body = expand_stmts(method.body, ctx)?;
@@ -678,6 +681,7 @@ fn expand_expr(
             if !name.is_empty() {
                 ctx.declare(name.clone());
             }
+            ctx.declare("arguments");
             let params = expand_params(params, ctx)?;
             ctx.declare_params(&params);
             let body = expand_stmts(body, ctx)?;

@@ -3123,6 +3123,7 @@ fn fncsem_spread_dynamic_call_reports_unsupported_syntax() {
 fn direct_eval_block_function_fixture_matches_node_output_under_iwasm() {
     for fixture in [
         "fixtures/core-semantics/direct-eval-caller-local.ts",
+        "fixtures/core-semantics/direct-eval-arguments.ts",
         "fixtures/core-semantics/direct-eval-expression-caller-local.ts",
         "fixtures/core-semantics/direct-eval-expression-side-effect.ts",
         "fixtures/core-semantics/direct-eval-function-lands-in-caller.ts",

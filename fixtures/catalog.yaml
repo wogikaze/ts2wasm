@@ -876,6 +876,7 @@ directories:
     - destructuring-binding-rest-runtime.ts
     - destructuring-binding-runtime.ts
     - destructuring-binding-unsupported.ts
+    - direct-eval-arguments.ts
     - direct-eval-block-function-block-scoping.ts
     - direct-eval-block-function-function-scope.ts
     - direct-eval-block-function-iife-init.ts

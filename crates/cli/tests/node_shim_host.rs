@@ -267,6 +267,12 @@ fn static_direct_eval_expression_preserves_side_effect_completion() {
 }
 
 #[test]
+fn static_direct_eval_reads_caller_arguments_object() {
+    let fixture = "fixtures/core-semantics/direct-eval-arguments.ts";
+    assert_node_shim_stdout(fixture, "7:3\n");
+}
+
+#[test]
 fn static_direct_eval_declaration_only_completion_is_undefined() {
     let fixture = "fixtures/core-semantics/direct-eval-declaration-empty-completion.ts";
     assert_node_shim_stdout(fixture, "undefined\n");
