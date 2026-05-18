@@ -4015,12 +4015,8 @@ impl super::super::Resolver {
                 phase: None,
             })?;
 
-        let mut lowered_args = vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
-        lowered_args.extend(
-            args.iter()
-                .map(|e| self.lower_expr(e))
-                .collect::<Result<Vec<_>, _>>()?,
-        );
+        let receiver = LoweredExpr::Local(obj_local, Span::generated("local"));
+        let mut lowered_args = self.lower_function_call_args(method_id, receiver, args)?;
         self.append_class_method_captures(method_id, &mut lowered_args)?;
 
         Ok(LoweredExpr::Call {

@@ -3140,6 +3140,7 @@ fn direct_eval_block_function_fixture_matches_node_output_under_iwasm() {
         "fixtures/core-semantics/direct-eval-block-var-lands-in-caller.ts",
         "fixtures/core-semantics/direct-eval-class-constructor-this.ts",
         "fixtures/core-semantics/direct-eval-class-declaration-completion.ts",
+        "fixtures/core-semantics/direct-eval-class-method-arguments.ts",
         "fixtures/core-semantics/direct-eval-class-method-this.ts",
         "fixtures/core-semantics/direct-eval-class-new-target.ts",
         "fixtures/core-semantics/direct-eval-class-private-field.ts",

@@ -126,7 +126,7 @@ fn lowering_passes_mutable_class_method_outer_local_capture() {
         lowered.functions[1].body.as_slice(),
         [LoweredStmt::Expr(
             LoweredExpr::EnvCellSet {
-                cell: LocalId(1),
+                cell: LocalId(0),
                 ..
             },
             _
@@ -733,7 +733,7 @@ fn lowering_passes_immutable_class_method_outer_local_capture() {
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
 
     let read = &lowered.functions[1];
-    assert_eq!(read.params, vec![LocalId(0), LocalId(1), LocalId(2)]);
+    assert_eq!(read.params, vec![LocalId(0), LocalId(1)]);
 
     // Verify ClassDecl is emitted with constructor and read method FuncIds
     match &lowered.top_level_statements[1] {
@@ -771,7 +771,6 @@ fn lowering_passes_immutable_class_method_outer_local_capture() {
                 },
             ] => {
                 assert!(matches!(method_args.as_slice(), [
-                    LoweredExpr::Local(LocalId(1), _),
                     LoweredExpr::String(prefix, _),
                     LoweredExpr::Local(LocalId(0), _),
                 ] if prefix == "class"));
@@ -2251,7 +2250,7 @@ fn lowering_represents_same_class_private_field_receiver_as_branded_slot_call() 
             assert!(matches!(
                 args.as_slice(),
                 [
-                    LoweredExpr::Local(LocalId(1), _),
+                    LoweredExpr::Local(LocalId(0), _),
                     LoweredExpr::Number(1, _),
                     LoweredExpr::Number(0, _)
                 ]
@@ -2272,10 +2271,10 @@ fn lowering_represents_same_class_private_field_receiver_as_branded_slot_call() 
             assert!(matches!(
                 args.as_slice(),
                 [
-                    LoweredExpr::Local(LocalId(1), _),
+                    LoweredExpr::Local(LocalId(0), _),
                     LoweredExpr::Number(1, _),
                     LoweredExpr::Number(0, _),
-                    LoweredExpr::Local(LocalId(2), _)
+                    LoweredExpr::Local(LocalId(1), _)
                 ]
             ));
         }

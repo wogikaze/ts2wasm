@@ -262,20 +262,8 @@ pub fn lower_program_with_module_url(
                 for method in methods {
                     let method_key = class_method_key(name, &method.name);
                     let method_id = function_ids[&method_key];
-                    let mut method_params_with_this: Vec<ResolvedParam> =
-                        if method.name.starts_with("static::") {
-                            method.params.clone()
-                        } else {
-                            let mut params = vec![ResolvedParam {
-                                name: "this".to_owned(),
-                                default: None,
-                                is_rest: false,
-                                span: None,
-                            }];
-                            params.extend(method.params.clone());
-                            params
-                        };
-                    method_params_with_this.extend(method.captures.iter().map(|name| {
+                    let mut method_params_for_lowering = method.params.clone();
+                    method_params_for_lowering.extend(method.captures.iter().map(|name| {
                         ResolvedParam {
                             name: name.clone(),
                             default: None,
@@ -293,7 +281,7 @@ pub fn lower_program_with_module_url(
                         collect_block_nested_function_mutable_captures(&method.body)?;
                     let dynamic_direct_eval_env_cell_names =
                         collect_dynamic_direct_eval_env_cell_names(
-                            &method_params_with_this,
+                            &method_params_for_lowering,
                             &method.body,
                         );
                     let method_env_cell_names = method_env_cell_names
@@ -308,7 +296,7 @@ pub fn lower_program_with_module_url(
                         .collect::<HashSet<_>>();
                     let lowered = lower_function(
                         method_id,
-                        &method_params_with_this,
+                        &method_params_for_lowering,
                         &method.body,
                         false,
                         false,
@@ -2706,12 +2694,14 @@ fn collect_function_signatures(
                 for method in methods {
                     let method_key = class_method_key(name, &method.name);
                     let is_static_method = method.name.starts_with("static::");
-                    let receiver_param_count = usize::from(!is_static_method);
                     signatures.insert(
                         function_ids[&method_key],
                         FunctionSignature {
-                            explicit_params: method.params.len() + receiver_param_count,
-                            needs_receiver: is_static_method && block_contains_this(&method.body),
+                            explicit_params: method.params.len(),
+                            needs_receiver: block_contains_this(&method.body)
+                                || (!is_static_method && block_contains_super(&method.body)),
+                            needs_arguments: block_contains_arguments(&method.body)
+                                && !method.params.iter().any(|param| param.name == "arguments"),
                             has_rest: method.params.iter().any(|param| param.is_rest),
                             is_strict: true,
                             returns_heap_closure: block_returns_declared_function(&method.body),
@@ -2996,6 +2986,10 @@ pub(crate) struct DirectEvalBlockFunctionEnv {
 
 pub(super) fn block_contains_this(stmts: &[ResolvedStmt]) -> bool {
     stmts.iter().any(stmt_contains_this)
+}
+
+pub(super) fn block_contains_super(stmts: &[ResolvedStmt]) -> bool {
+    stmts.iter().any(stmt_contains_super)
 }
 
 pub(crate) fn function_body_is_strict(parent_is_strict: bool, stmts: &[ResolvedStmt]) -> bool {
@@ -3853,6 +3847,161 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
     }
 }
 
+fn stmt_contains_super(stmt: &ResolvedStmt) -> bool {
+    match stmt {
+        ResolvedStmt::Let(_, expr)
+        | ResolvedStmt::Assign(_, expr)
+        | ResolvedStmt::Expr(expr)
+        | ResolvedStmt::Return(expr)
+        | ResolvedStmt::Throw(expr) => expr_contains_super(expr),
+        ResolvedStmt::If {
+            condition,
+            then_body,
+            else_body,
+        } => {
+            expr_contains_super(condition)
+                || block_contains_super(then_body)
+                || block_contains_super(else_body)
+        }
+        ResolvedStmt::While { condition, body } | ResolvedStmt::DoWhile { condition, body } => {
+            expr_contains_super(condition) || block_contains_super(body)
+        }
+        ResolvedStmt::For {
+            init,
+            condition,
+            update,
+            body,
+        } => {
+            init.as_ref().is_some_and(|stmt| stmt_contains_super(stmt))
+                || condition.as_ref().is_some_and(expr_contains_super)
+                || update.as_ref().is_some_and(expr_contains_super)
+                || block_contains_super(body)
+        }
+        ResolvedStmt::ForOf { iter, body, .. }
+        | ResolvedStmt::ForIn { iter, body, .. }
+        | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
+            expr_contains_super(iter) || block_contains_super(body)
+        }
+        ResolvedStmt::Block { statements, .. } => block_contains_super(statements),
+        ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
+            expr_contains_super(expr)
+        }
+        ResolvedStmt::Switch { expr, cases } => {
+            expr_contains_super(expr)
+                || cases.iter().any(|(case_expr, body)| {
+                    case_expr.as_ref().is_some_and(expr_contains_super)
+                        || block_contains_super(body)
+                })
+        }
+        ResolvedStmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            block_contains_super(try_block)
+                || catch_block
+                    .as_ref()
+                    .is_some_and(|block| block_contains_super(block))
+                || finally_block
+                    .as_ref()
+                    .is_some_and(|block| block_contains_super(block))
+        }
+        ResolvedStmt::Labeled { body, .. } => stmt_contains_super(body),
+        ResolvedStmt::DestructureLet { expr, .. } => expr_contains_super(expr),
+        ResolvedStmt::AmbientValue(_)
+        | ResolvedStmt::Function { .. }
+        | ResolvedStmt::ClassDecl { .. }
+        | ResolvedStmt::Break { .. }
+        | ResolvedStmt::Continue { .. } => false,
+    }
+}
+
+fn expr_contains_super(expr: &ResolvedExpr) -> bool {
+    match expr {
+        ResolvedExpr::Ident(name) => name == "super",
+        ResolvedExpr::Await { expr } => expr_contains_super(expr),
+        ResolvedExpr::Yield { expr, .. } => expr.as_deref().is_some_and(expr_contains_super),
+        ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => expr_contains_super(expr),
+        ResolvedExpr::Binary { left, right, .. } => {
+            expr_contains_super(left) || expr_contains_super(right)
+        }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            expr_contains_super(condition)
+                || expr_contains_super(then_expr)
+                || expr_contains_super(else_expr)
+        }
+        ResolvedExpr::Call { callee, args, .. }
+        | ResolvedExpr::OptionalCall { callee, args, .. } => {
+            expr_contains_super(callee) || args.iter().any(expr_contains_super)
+        }
+        ResolvedExpr::Assign { expr, .. }
+        | ResolvedExpr::LogicalAssign { expr, .. }
+        | ResolvedExpr::LogicalPropertyAssign { expr, .. } => expr_contains_super(expr),
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            expr_contains_super(object) || expr_contains_super(expr)
+        }
+        ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
+            expr_contains_super(key) || expr_contains_super(expr)
+        }
+        ResolvedExpr::LogicalComputedMemberAssign {
+            object, key, expr, ..
+        } => expr_contains_super(object) || expr_contains_super(key) || expr_contains_super(expr),
+        ResolvedExpr::Array(elements) => elements.iter().any(|element| match element {
+            ResolvedArrayElement::Present(expr) => expr_contains_super(expr),
+            ResolvedArrayElement::Hole => false,
+        }),
+        ResolvedExpr::Object(props) => props.iter().any(|prop| {
+            prop.computed_key().is_some_and(expr_contains_super)
+                || expr_contains_super(prop.value())
+        }),
+        ResolvedExpr::ComputedIndex { object, index }
+        | ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
+            expr_contains_super(object) || expr_contains_super(index)
+        }
+        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+            args.iter().any(expr_contains_super)
+        }
+        ResolvedExpr::BuiltinProperty { object, .. }
+        | ResolvedExpr::PropertyAccess { object, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object, .. } => expr_contains_super(object),
+        ResolvedExpr::MethodCall { object, args, .. } => {
+            expr_contains_super(object) || args.iter().any(expr_contains_super)
+        }
+        ResolvedExpr::PropertyAssign { object, value, .. } => {
+            expr_contains_super(object) || expr_contains_super(value)
+        }
+        ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+            expr_contains_super(object) || expr_contains_super(key) || expr_contains_super(value)
+        }
+        ResolvedExpr::ArrowFn { body, .. } => expr_contains_super(body),
+        ResolvedExpr::Sequence(exprs) => exprs.iter().any(expr_contains_super),
+        ResolvedExpr::EvalCompletion(steps) => steps
+            .iter()
+            .filter_map(|step| step.expr())
+            .any(expr_contains_super),
+        ResolvedExpr::FunctionExpr { .. }
+        | ResolvedExpr::ClassExpr { .. }
+        | ResolvedExpr::This { .. }
+        | ResolvedExpr::NewTarget { .. }
+        | ResolvedExpr::ImportMeta { .. }
+        | ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
+        | ResolvedExpr::BigIntLiteral { .. }
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Eval { .. }
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined
+        | ResolvedExpr::ModuleLoad { .. } => false,
+    }
+}
+
 pub(super) fn block_contains_arguments(stmts: &[ResolvedStmt]) -> bool {
     stmts.iter().any(stmt_contains_arguments)
 }
@@ -4147,7 +4296,12 @@ pub(super) fn lower_function(
     options: LowerFunctionOptions<'_>,
 ) -> Result<FunctionLowering, Diagnostic> {
     let signature = function_signatures.get(&id).copied().unwrap_or_default();
-    let is_strict_context = function_body_is_strict(options.strict_context, body);
+    let min_required_params = params
+        .iter()
+        .filter(|param| param.default.is_none() && !param.is_rest)
+        .count()
+        + usize::from(signature.needs_receiver)
+        + usize::from(signature.needs_arguments);
     let mut lowered_params = Vec::new();
     if signature.needs_receiver {
         lowered_params.push(ResolvedParam {
@@ -4166,18 +4320,94 @@ pub(super) fn lower_function(
         }
     }
     if signature.needs_arguments {
+        let synthetic_arguments_param_index = lowered_params.len();
         lowered_params.push(ResolvedParam {
             name: "arguments".to_owned(),
             default: None,
             is_rest: false,
             span: None,
         });
+        let rest_param_index = rest_param.as_ref().map(|_| lowered_params.len());
+        if let Some(param) = rest_param {
+            lowered_params.push(param);
+        }
+        return lower_function_with_resolved_params(
+            id,
+            lowered_params,
+            rest_param_index,
+            Some(synthetic_arguments_param_index),
+            min_required_params,
+            body,
+            is_generator,
+            is_async,
+            function_ids,
+            function_signatures,
+            function_captures,
+            function_mutable_captures,
+            class_method_captures,
+            class_method_mutable_captures,
+            env_cell_names,
+            heap_closure_names,
+            class_parents,
+            class_private_fields,
+            class_static_private_fields,
+            options,
+        );
     }
     let rest_param_index = rest_param.as_ref().map(|_| lowered_params.len());
     if let Some(param) = rest_param {
         lowered_params.push(param);
     }
 
+    lower_function_with_resolved_params(
+        id,
+        lowered_params,
+        rest_param_index,
+        None,
+        min_required_params,
+        body,
+        is_generator,
+        is_async,
+        function_ids,
+        function_signatures,
+        function_captures,
+        function_mutable_captures,
+        class_method_captures,
+        class_method_mutable_captures,
+        env_cell_names,
+        heap_closure_names,
+        class_parents,
+        class_private_fields,
+        class_static_private_fields,
+        options,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn lower_function_with_resolved_params(
+    id: FuncId,
+    lowered_params: Vec<ResolvedParam>,
+    rest_param_index: Option<usize>,
+    synthetic_arguments_param_index: Option<usize>,
+    min_required_params: usize,
+    body: &[ResolvedStmt],
+    is_generator: bool,
+    is_async: bool,
+    function_ids: &HashMap<String, FuncId>,
+    function_signatures: &HashMap<FuncId, FunctionSignature>,
+    function_captures: &HashMap<FuncId, Vec<String>>,
+    function_mutable_captures: &HashMap<FuncId, Vec<String>>,
+    class_method_captures: &HashMap<FuncId, Vec<String>>,
+    class_method_mutable_captures: &HashMap<FuncId, Vec<String>>,
+    env_cell_names: &HashSet<String>,
+    heap_closure_names: &HashSet<String>,
+    class_parents: HashMap<String, Option<String>>,
+    class_private_fields: ClassPrivateFieldSlots,
+    class_static_private_fields: ClassStaticPrivateFields,
+    options: LowerFunctionOptions<'_>,
+) -> Result<FunctionLowering, Diagnostic> {
+    let signature = function_signatures.get(&id).copied().unwrap_or_default();
+    let is_strict_context = function_body_is_strict(options.strict_context, body);
     let (mut resolver, param_ids) = crate::lowered::resolver::Resolver::with_params(
         function_ids,
         function_signatures,
@@ -4193,6 +4423,7 @@ pub(super) fn lower_function(
             .map(|param| param.name.clone())
             .collect::<Vec<_>>()
             .as_slice(),
+        synthetic_arguments_param_index,
         class_parents,
         class_private_fields,
         class_static_private_fields,
@@ -4253,7 +4484,7 @@ pub(super) fn lower_function(
 
     // Insert default parameter assignments at the start of the body.
     let mut body_with_defaults = Vec::new();
-    for param in params {
+    for param in &lowered_params {
         if let Some(pattern) = parse_binding_pattern(&param.name, param.span)? {
             if param.is_rest {
                 return Err(Diagnostic {
@@ -4363,18 +4594,12 @@ pub(super) fn lower_function(
         None
     };
 
-    let min_required = params
-        .iter()
-        .filter(|param| param.default.is_none() && !param.is_rest)
-        .count()
-        + usize::from(signature.needs_receiver)
-        + usize::from(signature.needs_arguments);
     Ok(FunctionLowering {
         function: LoweredFunction {
             id,
             params: param_ids,
             uses_receiver: signature.needs_receiver,
-            min_required_params: min_required,
+            min_required_params,
             rest_param_index,
             locals: resolver.ctx.symbols.locals,
             body: body_with_defaults,

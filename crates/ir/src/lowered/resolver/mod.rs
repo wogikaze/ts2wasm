@@ -142,6 +142,7 @@ impl Resolver {
         env_cell_names: &HashSet<String>,
         heap_closure_names: &HashSet<String>,
         params: &[String],
+        synthetic_arguments_param_index: Option<usize>,
         class_parents: HashMap<String, Option<String>>,
         class_private_fields: ClassPrivateFieldSlots,
         class_static_private_fields: ClassStaticPrivateFields,
@@ -184,9 +185,14 @@ impl Resolver {
         let mut param_ids = Vec::new();
         let mut seen_params = HashMap::new();
 
-        for param in params {
+        for (index, param) in params.iter().enumerate() {
             let clean_name = param.strip_prefix("...").unwrap_or(param.as_str());
-            if resolver.ctx.is_strict_context() && matches!(clean_name, "eval" | "arguments") {
+            let is_synthetic_arguments_param =
+                synthetic_arguments_param_index == Some(index) && clean_name == "arguments";
+            if resolver.ctx.is_strict_context()
+                && matches!(clean_name, "eval" | "arguments")
+                && !is_synthetic_arguments_param
+            {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: format!(
@@ -1551,30 +1557,24 @@ impl Resolver {
             .extend(lowered.generated_functions);
 
         for (method, method_id) in method_ids {
-            let mut method_params_with_this = if method.name.starts_with("static::") {
-                method.params.clone()
-            } else {
-                let mut params = vec![ResolvedParam {
-                    name: "this".to_owned(),
+            let mut method_params_for_lowering = method.params.clone();
+            method_params_for_lowering.extend(method.captures.iter().map(|capture| {
+                ResolvedParam {
+                    name: capture.clone(),
                     default: None,
                     is_rest: false,
                     span: None,
-                }];
-                params.extend(method.params.clone());
-                params
-            };
-            method_params_with_this.extend(method.captures.iter().map(|capture| ResolvedParam {
-                name: capture.clone(),
-                default: None,
-                is_rest: false,
-                span: None,
+                }
             }));
             self.ctx.symbols.function_signatures.insert(
                 method_id,
                 FunctionSignature {
-                    explicit_params: method_params_with_this.len(),
-                    needs_receiver: method.name.starts_with("static::")
-                        && block_contains_this(&method.body),
+                    explicit_params: method.params.len(),
+                    needs_receiver: block_contains_this(&method.body)
+                        || (!method.name.starts_with("static::")
+                            && block_contains_super(&method.body)),
+                    needs_arguments: block_contains_arguments(&method.body)
+                        && !method.params.iter().any(|param| param.name == "arguments"),
                     has_rest: method.params.iter().any(|param| param.is_rest),
                     is_strict: true,
                     metadata_length: Some(method.params.len()),
@@ -1592,7 +1592,7 @@ impl Resolver {
             let function_mutable_captures = self.ctx.functions.function_mutable_captures.clone();
             let lowered = lower_function(
                 method_id,
-                &method_params_with_this,
+                &method_params_for_lowering,
                 &method.body,
                 false,
                 false,
@@ -1602,7 +1602,10 @@ impl Resolver {
                 &function_mutable_captures,
                 &self.ctx.functions.class_method_captures,
                 &self.ctx.functions.class_method_mutable_captures,
-                &collect_dynamic_direct_eval_env_cell_names(&method_params_with_this, &method.body),
+                &collect_dynamic_direct_eval_env_cell_names(
+                    &method_params_for_lowering,
+                    &method.body,
+                ),
                 &self.ctx.facts.heap_closure_names,
                 self.ctx.classes.class_parents.clone(),
                 self.ctx.classes.class_private_fields.clone(),

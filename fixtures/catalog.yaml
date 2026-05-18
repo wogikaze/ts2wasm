@@ -888,6 +888,7 @@ directories:
     - direct-eval-caller-local.ts
     - direct-eval-class-constructor-this.ts
     - direct-eval-class-declaration-completion.ts
+    - direct-eval-class-method-arguments.ts
     - direct-eval-class-method-this.ts
     - direct-eval-class-new-target.ts
     - direct-eval-class-private-field.ts
