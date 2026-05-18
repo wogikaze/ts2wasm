@@ -615,8 +615,11 @@ Exit criteria:
 - `$262.evalScript(source)` method calls now lower to `Dollar262Eval`, which
   depends on `EvalIndirectHost` and delegates to the `host.eval.indirect` helper
   instead of trapping with a silent `unreachable`. Focused Node-shim and
-  host-deny regressions cover the host lane. Realm / cross-realm classification
-  and broader test262 burn-down remain open.
+  host-deny regressions cover the host lane. The reference test262 runner's
+  Node oracle prelude now implements `$262.evalScript` with indirect global
+  eval instead of an unsupported stub, so evalScript cases are not blocked by
+  oracle setup. Realm / cross-realm classification and broader test262 burn-down
+  remain open.
 
 ## 6. File-by-file task map
 

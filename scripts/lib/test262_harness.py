@@ -357,7 +357,7 @@ var $262 = {};
 function test262_gc() {}
 
 function test262_evalScript(source) {
-  throw new Error("$262.evalScript is not supported by this runner slice");
+  return (0, eval)(source);
 }
 
 function test262_createRealm() {
