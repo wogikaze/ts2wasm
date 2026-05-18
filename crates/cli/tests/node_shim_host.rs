@@ -13,6 +13,12 @@ fn dynamic_function_handles_execute_through_node_shim_host_imports() {
 }
 
 #[test]
+fn dynamic_function_handle_returns_string_through_node_shim_host_imports() {
+    let fixture = "fixtures/core-semantics/function-constructor-dynamic-string-node-shim.ts";
+    assert_node_shim_stdout(fixture, "dynamic-string\n");
+}
+
+#[test]
 fn dynamic_indirect_eval_executes_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/indirect-eval-dynamic-node-shim.ts";
     assert_node_shim_stdout(fixture, "7\n");

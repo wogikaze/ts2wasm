@@ -915,6 +915,7 @@ directories:
     - function-constructor-dynamic-call-construct-host-path.ts
     - function-constructor-dynamic-host-path.ts
     - function-constructor-dynamic-node-shim.ts
+    - function-constructor-dynamic-string-node-shim.ts
     - function-constructor-metadata.ts
     - function-constructor-no-caller-capture.ts
     - function-constructor-shadowed-ordinary-call.ts

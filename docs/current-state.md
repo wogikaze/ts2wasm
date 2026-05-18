@@ -348,14 +348,14 @@ The current implementation has several partial dynamic-code paths:
   call/construct lower to the audited Node host lane with exact
   `host.function.compile`, `host.function.call`, and
   `host.function.construct` manifest entries and host-deny rejection. A focused
-  Node WebAssembly shim regression covers primitive-return calls and discarded
-  constructor calls for statically visible dynamic Function handles.
+  Node WebAssembly shim regression covers primitive/string-return calls and
+  discarded constructor calls for statically visible dynamic Function handles.
 
 The canonical implementation plan is
 `plans/eval-new-function-implementation-plan.md`. Current known gaps include
 the split parser/compiler eval expansion paths, direct eval declaration
 environment connection, remaining Function constructor grammar/constructability
-completeness, broader host Function handle object/string/error bridging, and
+completeness, broader host Function handle object/error bridging, and
 full dynamic direct-eval environment semantics beyond the primitive env-cell
 write-back slice. Node-shim execution for dynamic indirect eval and dynamic
 Function handles is covered by focused integration tests, as are primitive-return
