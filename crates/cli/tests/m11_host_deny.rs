@@ -1282,13 +1282,16 @@ fn standalone_fixtures_pass_host_deny() {
         "rest-parameters/rest-basic.ts",
         // Static Function constructor parameter grammar compiles without host imports.
         "core-semantics/function-constructor-arguments.ts",
+        "core-semantics/function-constructor-call-static.ts",
         "core-semantics/function-constructor-construct-return-object.ts",
         "core-semantics/function-constructor-metadata.ts",
         "core-semantics/function-constructor-new-target.ts",
         "core-semantics/function-constructor-new-static-prototype.ts",
         "core-semantics/function-constructor-parameter-grammar.ts",
         "core-semantics/function-constructor-rest-params.ts",
+        "core-semantics/function-constructor-static-construct.ts",
         "core-semantics/function-constructor-this-binding.ts",
+        "core-semantics/function-constructor-zero-args.ts",
         // Spread arguments (WASI stdout only)
         "spread-args/spread-arguments.ts",
         // TypeScript directives that now compile standalone
