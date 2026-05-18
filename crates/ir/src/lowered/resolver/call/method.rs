@@ -3380,7 +3380,7 @@ impl super::super::Resolver {
                 }
                 // Promise prototype methods: pad missing callbacks with undefined
                 let promise_expected = match method {
-                    "then" => Some(3),    // receiver + onFulfilled + onRejected
+                    "then" => Some(3),              // receiver + onFulfilled + onRejected
                     "catch" | "finally" => Some(2), // receiver + callback
                     _ => None,
                 };
