@@ -708,11 +708,29 @@ fn validate_static_function_constructor_early_errors(
     let Some(Stmt::Function { params, body, .. }) = program.first() else {
         return Ok(());
     };
+
+    let has_non_simple_params = params.iter().any(|(name, default, is_rest)| {
+        default.is_some() || *is_rest || !is_simple_identifier(name)
+    });
+    let mut seen = HashSet::new();
+    if has_non_simple_params {
+        for (name, _, _) in params {
+            for bound_name in function_constructor_bound_names(name) {
+                if !seen.insert(bound_name) {
+                    return Err(function_constructor_syntax_error(
+                        "Duplicate parameter name not allowed in this context",
+                        span,
+                    ));
+                }
+            }
+        }
+    }
+
     if !block_has_use_strict_directive(body) {
         return Ok(());
     }
 
-    let mut seen = HashSet::new();
+    seen.clear();
     for (name, default, is_rest) in params {
         if default.is_some() || *is_rest || !is_simple_identifier(name) {
             return Err(function_constructor_syntax_error(
@@ -726,7 +744,7 @@ fn validate_static_function_constructor_early_errors(
                 span,
             ));
         }
-        if !seen.insert(name.as_str()) {
+        if !seen.insert(name.to_owned()) {
             return Err(function_constructor_syntax_error(
                 "Duplicate parameter name not allowed in this context",
                 span,
@@ -735,6 +753,52 @@ fn validate_static_function_constructor_early_errors(
     }
 
     Ok(())
+}
+
+fn function_constructor_bound_names(param: &str) -> Vec<String> {
+    let text = param.trim();
+    if is_simple_identifier(text) {
+        return vec![text.to_owned()];
+    }
+    if let Some(inner) = text.strip_prefix('{').and_then(|s| s.strip_suffix('}')) {
+        return inner
+            .split(',')
+            .filter_map(object_binding_name)
+            .collect::<Vec<_>>();
+    }
+    if let Some(inner) = text.strip_prefix('[').and_then(|s| s.strip_suffix(']')) {
+        return inner
+            .split(',')
+            .filter_map(array_binding_name)
+            .collect::<Vec<_>>();
+    }
+    Vec::new()
+}
+
+fn object_binding_name(part: &str) -> Option<String> {
+    let mut text = part.trim().trim_start_matches("...").trim();
+    if text.is_empty() {
+        return None;
+    }
+    if let Some((_, binding)) = text.split_once(':') {
+        text = binding.trim();
+    }
+    if let Some((binding, _)) = text.split_once('=') {
+        text = binding.trim();
+    }
+    is_simple_identifier(text).then(|| text.to_owned())
+}
+
+fn array_binding_name(part: &str) -> Option<String> {
+    let text = part
+        .trim()
+        .trim_start_matches("...")
+        .split_once('=')
+        .map_or_else(
+            || part.trim().trim_start_matches("..."),
+            |(binding, _)| binding.trim(),
+        );
+    is_simple_identifier(text).then(|| text.to_owned())
 }
 
 fn block_has_use_strict_directive(stmts: &[Stmt]) -> bool {

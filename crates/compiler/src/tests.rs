@@ -116,6 +116,23 @@ fn compiler_rejects_strict_body_non_simple_function_constructor_params() {
 }
 
 #[test]
+fn compiler_rejects_non_simple_duplicate_function_constructor_params() {
+    for source in [
+        r#"let value = Function("a = 1", "a", "return a");"#,
+        r#"let value = Function("a", "a = 1", "return a");"#,
+        r#"let value = Function("{a}", "a", "return a");"#,
+        r#"let value = Function("[a]", "a", "return a");"#,
+    ] {
+        let err = parse_resolve_and_expand_dynamic_code_err(source);
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(
+            err.message.contains("Duplicate parameter name"),
+            "unexpected diagnostic for {source}: {err:?}"
+        );
+    }
+}
+
+#[test]
 fn compiler_rejects_strict_body_eval_arguments_function_constructor_params() {
     for source in [
         r#"let value = Function("eval", "\"use strict\"; return eval");"#,
