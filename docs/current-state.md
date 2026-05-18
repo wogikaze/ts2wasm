@@ -322,17 +322,18 @@ The current implementation has several partial dynamic-code paths:
   the AOT eval lane without Node host imports for the supported literal subset;
 - supported direct-eval block-function fixtures lower through the direct-eval
   block-function environment helpers;
-- literal-only `Function(...)` and `new Function(...)` are classified by name
-  resolution and expanded by the compiler eval-expand stage into synthetic
-  function expressions, including nested function/class bodies and parameter
-  defaults. Caller-local non-capture is guarded for the supported `typeof`
-  slice, static parameter early errors are guarded for non-simple duplicate
-  bound names plus strict-body duplicate / non-simple / `eval` / `arguments`
-  params, default/rest/destructuring parameters execute with Node-compatible
-  `.length` metadata, `arguments` object reads match Node for the guarded
-  slice, constructor calls preserve explicit object returns, strict/sloppy
-  `this` binding matches Node for the guarded slice, construct-call
-  `new.target` typeof / `.name` / `.length` behavior matches Node for the guarded slice, and direct
+- literal-only `Function(...)` and `new Function(...)` are classified into an
+  explicit resolved `FunctionConstructor` node and expanded by the compiler
+  eval-expand stage into synthetic function expressions, including nested
+  function/class bodies and parameter defaults. Caller-local non-capture is
+  guarded for the supported `typeof` slice, static parameter early errors are
+  guarded for non-simple duplicate bound names plus strict-body duplicate /
+  non-simple / `eval` / `arguments` params, default/rest/destructuring
+  parameters execute with Node-compatible `.length` metadata, `arguments`
+  object reads match Node for the guarded slice, constructor calls preserve
+  explicit object returns, strict/sloppy `this` binding matches Node for the
+  guarded slice, construct-call `new.target` typeof / `.name` / `.length`
+  behavior matches Node for the guarded slice, and direct
   `.name`/`.length`/`.prototype` metadata is guarded for static constructor
   locals, including zero-argument `Function()` / `new Function()`;
 - shadowed `Function` bindings stay ordinary user calls in the current

@@ -264,6 +264,11 @@ pub enum ResolvedExpr {
         key: Box<ResolvedExpr>,
         value: Box<ResolvedExpr>,
     },
+    FunctionConstructor {
+        kind: FunctionConstructorKind,
+        args: Vec<ResolvedExpr>,
+        span: Span,
+    },
     New {
         class_name: String,
         args: Vec<ResolvedExpr>,
@@ -299,6 +304,12 @@ pub enum ResolvedExpr {
         caller_is_strict: bool,
         span: Span,
     },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FunctionConstructorKind {
+    Call,
+    New,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

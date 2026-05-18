@@ -20,7 +20,10 @@ use builtin_resolver_host::*;
 use builtin_resolver_outer::*;
 use std::collections::{HashMap, HashSet};
 
-use ts2wasm_resolve::{INTRINSIC_DIRECT_EVAL_CALLEE, INTRINSIC_INDIRECT_EVAL_CALLEE};
+use ts2wasm_resolve::{
+    INTRINSIC_DIRECT_EVAL_CALLEE, INTRINSIC_FUNCTION_CONSTRUCTOR_CALL,
+    INTRINSIC_FUNCTION_CONSTRUCTOR_NEW, INTRINSIC_INDIRECT_EVAL_CALLEE,
+};
 use ts2wasm_runtime_abi::ValueTag;
 use ts2wasm_shared::{
     ArrayLiteralElement, BinaryOp, ClassPrivateElement, ClassStaticBlock, DiagCode, Diagnostic,
@@ -31,7 +34,8 @@ use super::binding_pattern::parse_binding_pattern;
 use super::builtin::BuiltinId;
 use super::builtin::BuiltinPropertyId;
 use super::builtin_resolved::{
-    ClassMethod, ClassMethodKind, EvalKind, EvalSource, ResolvedExpr, ResolvedParam, ResolvedStmt,
+    ClassMethod, ClassMethodKind, EvalKind, EvalSource, FunctionConstructorKind, ResolvedExpr,
+    ResolvedParam, ResolvedStmt,
 };
 
 const BIGINT_FROM_VALUE_RUNTIME_CALL: &str = "__ts2wasm_bigint_from_value";
@@ -1823,6 +1827,15 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 .map(resolve_expr)
                 .collect::<Result<Vec<_>, _>>()?;
             if let Expr::Ident { name, .. } = callee.as_ref()
+                && name == INTRINSIC_FUNCTION_CONSTRUCTOR_CALL
+            {
+                return Ok(ResolvedExpr::FunctionConstructor {
+                    kind: FunctionConstructorKind::Call,
+                    args: resolved_args,
+                    span: *span,
+                });
+            }
+            if let Expr::Ident { name, .. } = callee.as_ref()
                 && name == "BigInt"
             {
                 return resolve_bigint_function_call(&resolved_args, *span);
@@ -2175,6 +2188,13 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     .iter()
                     .map(resolve_expr)
                     .collect::<Result<Vec<_>, _>>()?;
+                if class_name == INTRINSIC_FUNCTION_CONSTRUCTOR_NEW {
+                    return Ok(ResolvedExpr::FunctionConstructor {
+                        kind: FunctionConstructorKind::New,
+                        args: resolved_args,
+                        span: *span,
+                    });
+                }
                 Ok(ResolvedExpr::New {
                     class_name: class_name.clone(),
                     args: resolved_args,

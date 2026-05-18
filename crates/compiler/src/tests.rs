@@ -69,24 +69,27 @@ fn compiler_preserves_dynamic_function_constructor_for_host_lane() {
     let named = ts2wasm_ir::name_resolver::resolve_names(&parsed).unwrap();
     let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&named).unwrap();
     let expanded = crate::stages::eval_expand::expand_static_eval_fragments(resolved).unwrap();
-    let ts2wasm_ir::ResolvedStmt::Let(_, ts2wasm_ir::ResolvedExpr::Call { callee, .. }) =
-        &expanded[1]
+    let ts2wasm_ir::ResolvedStmt::Let(
+        _,
+        ts2wasm_ir::ResolvedExpr::FunctionConstructor { kind, .. },
+    ) = &expanded[1]
     else {
         panic!("expected dynamic Function constructor call to stay in host lane: {expanded:?}");
     };
-    assert!(matches!(
-        callee.as_ref(),
-        ts2wasm_ir::ResolvedExpr::Ident(name)
-            if name == ts2wasm_ir::name_resolver::INTRINSIC_FUNCTION_CONSTRUCTOR_CALL
-    ));
-    let ts2wasm_ir::ResolvedStmt::Let(_, ts2wasm_ir::ResolvedExpr::New { class_name, .. }) =
-        &expanded[2]
+    assert_eq!(
+        *kind,
+        ts2wasm_ir::builtin_resolved::FunctionConstructorKind::Call
+    );
+    let ts2wasm_ir::ResolvedStmt::Let(
+        _,
+        ts2wasm_ir::ResolvedExpr::FunctionConstructor { kind, .. },
+    ) = &expanded[2]
     else {
         panic!("expected dynamic new Function constructor to stay in host lane: {expanded:?}");
     };
     assert_eq!(
-        class_name,
-        ts2wasm_ir::name_resolver::INTRINSIC_FUNCTION_CONSTRUCTOR_NEW
+        *kind,
+        ts2wasm_ir::builtin_resolved::FunctionConstructorKind::New
     );
 }
 

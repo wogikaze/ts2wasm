@@ -2,15 +2,13 @@ use std::collections::HashSet;
 
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_ir::builtin_resolved::{
-    ClassMethod, EvalCompletionStep, EvalFunctionHoist, EvalKind, EvalSource, ResolvedArrayElement,
-    ResolvedExpr, ResolvedObjectProp, ResolvedParam, ResolvedStmt,
+    ClassMethod, EvalCompletionStep, EvalFunctionHoist, EvalKind, EvalSource,
+    FunctionConstructorKind, ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedParam,
+    ResolvedStmt,
 };
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
 use ts2wasm_ir::name_resolver::resolve_names;
-use ts2wasm_ir::name_resolver::{
-    INTRINSIC_FUNCTION_CONSTRUCTOR_CALL, INTRINSIC_FUNCTION_CONSTRUCTOR_NEW,
-    resolve_names_with_outer_bindings,
-};
+use ts2wasm_ir::name_resolver::resolve_names_with_outer_bindings;
 use ts2wasm_source::Span;
 use ts2wasm_syntax::{Expr, FunctionExprOrigin, Stmt};
 /// Expand static literal dynamic-code expressions at compile time.
@@ -420,29 +418,9 @@ fn expand_expr(
             // Non-expandable eval (indirect or runtime source) — keep as-is.
             Ok(expr)
         }
-        ResolvedExpr::Call { callee, args, span }
-            if matches!(
-                callee.as_ref(),
-                ResolvedExpr::Ident(name) if name == INTRINSIC_FUNCTION_CONSTRUCTOR_CALL
-            ) =>
-        {
-            expand_function_constructor(
-                FunctionConstructorKind::Call,
-                INTRINSIC_FUNCTION_CONSTRUCTOR_CALL,
-                args,
-                span,
-            )
+        ResolvedExpr::FunctionConstructor { kind, args, span } => {
+            expand_function_constructor(kind, args, span)
         }
-        ResolvedExpr::New {
-            class_name,
-            args,
-            span,
-        } if class_name == INTRINSIC_FUNCTION_CONSTRUCTOR_NEW => expand_function_constructor(
-            FunctionConstructorKind::New,
-            INTRINSIC_FUNCTION_CONSTRUCTOR_NEW,
-            args,
-            span,
-        ),
         // Recursively expand eval in sub-expressions.
         ResolvedExpr::Unary { op, expr: inner } => Ok(ResolvedExpr::Unary {
             op,
@@ -879,15 +857,8 @@ fn eval_stmt_illegal_return_span(stmt: &Stmt) -> Option<ts2wasm_source::Span> {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum FunctionConstructorKind {
-    Call,
-    New,
-}
-
 fn expand_function_constructor(
     kind: FunctionConstructorKind,
-    intrinsic_name: &str,
     args: Vec<ResolvedExpr>,
     span: ts2wasm_source::Span,
 ) -> Result<ResolvedExpr, Diagnostic> {
@@ -896,12 +867,7 @@ fn expand_function_constructor(
         match arg {
             ResolvedExpr::String(value) => strings.push(value.clone()),
             _ => {
-                return Ok(function_constructor_host_lane(
-                    kind,
-                    intrinsic_name,
-                    args,
-                    span,
-                ));
+                return Ok(function_constructor_host_lane(kind, args, span));
             }
         }
     }
@@ -971,22 +937,10 @@ fn expand_function_constructor(
 
 fn function_constructor_host_lane(
     kind: FunctionConstructorKind,
-    intrinsic_name: &str,
     args: Vec<ResolvedExpr>,
     span: ts2wasm_source::Span,
 ) -> ResolvedExpr {
-    match kind {
-        FunctionConstructorKind::Call => ResolvedExpr::Call {
-            callee: Box::new(ResolvedExpr::Ident(intrinsic_name.to_owned())),
-            args,
-            span,
-        },
-        FunctionConstructorKind::New => ResolvedExpr::New {
-            class_name: intrinsic_name.to_owned(),
-            args,
-            span,
-        },
-    }
+    ResolvedExpr::FunctionConstructor { kind, args, span }
 }
 
 fn validate_static_function_constructor_early_errors(
@@ -1441,6 +1395,13 @@ fn rewrite_eval_expr_global_collisions(
             args: rewrite_eval_exprs_global_collisions(args, collisions, scopes),
             span,
         },
+        ResolvedExpr::FunctionConstructor { kind, args, span } => {
+            ResolvedExpr::FunctionConstructor {
+                kind,
+                args: rewrite_eval_exprs_global_collisions(args, collisions, scopes),
+                span,
+            }
+        }
         ResolvedExpr::ArrowFn {
             params,
             body,

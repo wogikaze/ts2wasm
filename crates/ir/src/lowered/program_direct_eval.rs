@@ -258,7 +258,7 @@ fn expr_contains_dynamic_direct_eval(expr: &ResolvedExpr) -> bool {
         | ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
             expr_contains_dynamic_direct_eval(object) || expr_contains_dynamic_direct_eval(index)
         }
-        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } | ResolvedExpr::FunctionConstructor { args, .. } => {
             args.iter().any(expr_contains_dynamic_direct_eval)
         }
         ResolvedExpr::BuiltinProperty { object, .. }
@@ -598,7 +598,9 @@ pub(crate) fn collect_direct_eval_function_assignment_expr(
             collect_direct_eval_function_assignment_expr(function_name, object, env);
             collect_direct_eval_function_assignment_expr(function_name, index, env);
         }
-        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+        ResolvedExpr::BuiltinCall { args, .. }
+        | ResolvedExpr::New { args, .. }
+        | ResolvedExpr::FunctionConstructor { args, .. } => {
             for arg in args {
                 collect_direct_eval_function_assignment_expr(function_name, arg, env);
             }

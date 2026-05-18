@@ -1013,7 +1013,9 @@ fn contains_generator_yield_expr(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::PropertyAssign { object, value, .. } => {
             contains_generator_yield_expr(object) || contains_generator_yield_expr(value)
         }
-        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+        ResolvedExpr::BuiltinCall { args, .. }
+        | ResolvedExpr::New { args, .. }
+        | ResolvedExpr::FunctionConstructor { args, .. } => {
             args.iter().any(contains_generator_yield_expr)
         }
         ResolvedExpr::ArrowFn {
@@ -1574,7 +1576,9 @@ pub(crate) fn collect_nested_function_captures_in_expr(
             collect_nested_function_captures_in_expr(object, outer_excluded, captures)?;
             collect_nested_function_captures_in_expr(index, outer_excluded, captures)?;
         }
-        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+        ResolvedExpr::BuiltinCall { args, .. }
+        | ResolvedExpr::New { args, .. }
+        | ResolvedExpr::FunctionConstructor { args, .. } => {
             for arg in args {
                 collect_nested_function_captures_in_expr(arg, outer_excluded, captures)?;
             }
@@ -1814,7 +1818,9 @@ fn collect_direct_function_call_targets_in_expr(expr: &ResolvedExpr, targets: &m
                 collect_direct_function_call_targets_in_expr(prop.value(), targets);
             }
         }
-        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+        ResolvedExpr::BuiltinCall { args, .. }
+        | ResolvedExpr::New { args, .. }
+        | ResolvedExpr::FunctionConstructor { args, .. } => {
             for arg in args {
                 collect_direct_function_call_targets_in_expr(arg, targets);
             }
@@ -2233,7 +2239,9 @@ fn collect_expr_nested_function_mutable_captures(
             collect_expr_nested_function_mutable_captures(object, mutable_captures)?;
             collect_expr_nested_function_mutable_captures(index, mutable_captures)?;
         }
-        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+        ResolvedExpr::BuiltinCall { args, .. }
+        | ResolvedExpr::New { args, .. }
+        | ResolvedExpr::FunctionConstructor { args, .. } => {
             for arg in args {
                 collect_expr_nested_function_mutable_captures(arg, mutable_captures)?;
             }
@@ -2477,7 +2485,9 @@ fn collect_expr_object_method_mutable_captures(
             collect_expr_object_method_mutable_captures(object, mutable_captures)?;
             collect_expr_object_method_mutable_captures(index, mutable_captures)?;
         }
-        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+        ResolvedExpr::BuiltinCall { args, .. }
+        | ResolvedExpr::New { args, .. }
+        | ResolvedExpr::FunctionConstructor { args, .. } => {
             for arg in args {
                 collect_expr_object_method_mutable_captures(arg, mutable_captures)?;
             }
@@ -3532,7 +3542,9 @@ fn collect_call_targets_in_expr(expr: &ResolvedExpr, targets: &mut HashSet<Strin
                 collect_call_targets_in_expr(prop.value(), targets);
             }
         }
-        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+        ResolvedExpr::BuiltinCall { args, .. }
+        | ResolvedExpr::New { args, .. }
+        | ResolvedExpr::FunctionConstructor { args, .. } => {
             for arg in args {
                 collect_call_targets_in_expr(arg, targets);
             }
@@ -3827,9 +3839,9 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::ComputedIndex { object, index } => {
             expr_contains_this(object) || expr_contains_this(index)
         }
-        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
-            args.iter().any(expr_contains_this)
-        }
+        ResolvedExpr::BuiltinCall { args, .. }
+        | ResolvedExpr::New { args, .. }
+        | ResolvedExpr::FunctionConstructor { args, .. } => args.iter().any(expr_contains_this),
         ResolvedExpr::BuiltinProperty { object, .. }
         | ResolvedExpr::PropertyAccess { object, .. }
         | ResolvedExpr::OptionalPropertyAccess { object, .. } => expr_contains_this(object),
@@ -3986,9 +3998,9 @@ fn expr_contains_super(expr: &ResolvedExpr) -> bool {
         | ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
             expr_contains_super(object) || expr_contains_super(index)
         }
-        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
-            args.iter().any(expr_contains_super)
-        }
+        ResolvedExpr::BuiltinCall { args, .. }
+        | ResolvedExpr::New { args, .. }
+        | ResolvedExpr::FunctionConstructor { args, .. } => args.iter().any(expr_contains_super),
         ResolvedExpr::BuiltinProperty { object, .. }
         | ResolvedExpr::PropertyAccess { object, .. }
         | ResolvedExpr::OptionalPropertyAccess { object, .. } => expr_contains_super(object),
@@ -4296,7 +4308,9 @@ fn expr_contains_new_target(expr: &ResolvedExpr) -> bool {
         | ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
             expr_contains_new_target(object) || expr_contains_new_target(index)
         }
-        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+        ResolvedExpr::BuiltinCall { args, .. }
+        | ResolvedExpr::New { args, .. }
+        | ResolvedExpr::FunctionConstructor { args, .. } => {
             args.iter().any(expr_contains_new_target)
         }
         ResolvedExpr::BuiltinProperty { object, .. }
@@ -4390,7 +4404,9 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::ComputedIndex { object, index } => {
             expr_contains_arguments(object) || expr_contains_arguments(index)
         }
-        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+        ResolvedExpr::BuiltinCall { args, .. }
+        | ResolvedExpr::New { args, .. }
+        | ResolvedExpr::FunctionConstructor { args, .. } => {
             args.iter().any(expr_contains_arguments)
         }
         ResolvedExpr::BuiltinProperty { object, .. }
