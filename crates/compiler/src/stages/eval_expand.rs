@@ -1,11 +1,14 @@
 use std::collections::HashSet;
 
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
-use ts2wasm_ir::builtin_resolved::{EvalKind, EvalSource, ResolvedExpr, ResolvedStmt};
+use ts2wasm_ir::builtin_resolved::{
+    EvalKind, EvalSource, ResolvedExpr, ResolvedParam, ResolvedStmt,
+};
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
 use ts2wasm_ir::name_resolver::resolve_names;
 use ts2wasm_ir::name_resolver::{
     INTRINSIC_FUNCTION_CONSTRUCTOR_CALL, INTRINSIC_FUNCTION_CONSTRUCTOR_NEW,
+    resolve_names_with_outer_bindings,
 };
 use ts2wasm_syntax::{Expr, FunctionExprOrigin, Stmt};
 /// Expand static literal dynamic-code expressions at compile time.
@@ -24,98 +27,161 @@ use ts2wasm_syntax::{Expr, FunctionExprOrigin, Stmt};
 pub(crate) fn expand_static_eval_fragments(
     resolved: Vec<ResolvedStmt>,
 ) -> Result<Vec<ResolvedStmt>, Diagnostic> {
-    resolved.into_iter().map(expand_stmt).collect()
+    let mut ctx = EvalExpansionContext::new();
+    expand_stmts(resolved, &mut ctx)
 }
 
-fn expand_stmt(stmt: ResolvedStmt) -> Result<ResolvedStmt, Diagnostic> {
+#[derive(Debug, Default)]
+struct EvalExpansionContext {
+    scopes: Vec<HashSet<String>>,
+}
+
+impl EvalExpansionContext {
+    fn new() -> Self {
+        Self {
+            scopes: vec![HashSet::new()],
+        }
+    }
+
+    fn enter_scope(&mut self) {
+        self.scopes.push(HashSet::new());
+    }
+
+    fn exit_scope(&mut self) {
+        self.scopes.pop();
+    }
+
+    fn declare(&mut self, name: impl Into<String>) {
+        if let Some(scope) = self.scopes.last_mut() {
+            scope.insert(name.into());
+        }
+    }
+
+    fn declare_params(&mut self, params: &[ResolvedParam]) {
+        for param in params {
+            self.declare(param.name.clone());
+        }
+    }
+
+    fn visible_bindings(&self) -> Vec<String> {
+        let mut bindings = Vec::new();
+        for scope in &self.scopes {
+            for name in scope {
+                bindings.push(name.clone());
+            }
+        }
+        bindings
+    }
+}
+
+fn expand_stmt(
+    stmt: ResolvedStmt,
+    ctx: &mut EvalExpansionContext,
+) -> Result<ResolvedStmt, Diagnostic> {
     match stmt {
-        ResolvedStmt::Expr(expr) => Ok(ResolvedStmt::Expr(expand_expr(expr)?)),
-        ResolvedStmt::Let(name, expr) => Ok(ResolvedStmt::Let(name, expand_expr(expr)?)),
-        ResolvedStmt::Assign(name, expr) => Ok(ResolvedStmt::Assign(name, expand_expr(expr)?)),
-        ResolvedStmt::Return(expr) => Ok(ResolvedStmt::Return(expand_expr(expr)?)),
-        ResolvedStmt::Throw(expr) => Ok(ResolvedStmt::Throw(expand_expr(expr)?)),
+        ResolvedStmt::Expr(expr) => Ok(ResolvedStmt::Expr(expand_expr(expr, ctx)?)),
+        ResolvedStmt::Let(name, expr) => {
+            let expr = expand_expr(expr, ctx)?;
+            ctx.declare(name.clone());
+            Ok(ResolvedStmt::Let(name, expr))
+        }
+        ResolvedStmt::Assign(name, expr) => Ok(ResolvedStmt::Assign(name, expand_expr(expr, ctx)?)),
+        ResolvedStmt::Return(expr) => Ok(ResolvedStmt::Return(expand_expr(expr, ctx)?)),
+        ResolvedStmt::Throw(expr) => Ok(ResolvedStmt::Throw(expand_expr(expr, ctx)?)),
         ResolvedStmt::If {
             condition,
             then_body,
             else_body,
-        } => Ok(ResolvedStmt::If {
-            condition: expand_expr(condition)?,
-            then_body: then_body
-                .into_iter()
-                .map(expand_stmt)
-                .collect::<Result<Vec<_>, _>>()?,
-            else_body: else_body
-                .into_iter()
-                .map(expand_stmt)
-                .collect::<Result<Vec<_>, _>>()?,
-        }),
+        } => {
+            let condition = expand_expr(condition, ctx)?;
+            ctx.enter_scope();
+            let then_body = expand_stmts(then_body, ctx)?;
+            ctx.exit_scope();
+            ctx.enter_scope();
+            let else_body = expand_stmts(else_body, ctx)?;
+            ctx.exit_scope();
+            Ok(ResolvedStmt::If {
+                condition,
+                then_body,
+                else_body,
+            })
+        }
         ResolvedStmt::While { condition, body } => Ok(ResolvedStmt::While {
-            condition: expand_expr(condition)?,
-            body: body
-                .into_iter()
-                .map(expand_stmt)
-                .collect::<Result<Vec<_>, _>>()?,
+            condition: expand_expr(condition, ctx)?,
+            body: {
+                ctx.enter_scope();
+                let body = expand_stmts(body, ctx)?;
+                ctx.exit_scope();
+                body
+            },
         }),
-        ResolvedStmt::DoWhile { body, condition } => Ok(ResolvedStmt::DoWhile {
-            body: body
-                .into_iter()
-                .map(expand_stmt)
-                .collect::<Result<Vec<_>, _>>()?,
-            condition: expand_expr(condition)?,
-        }),
+        ResolvedStmt::DoWhile { body, condition } => {
+            ctx.enter_scope();
+            let body = expand_stmts(body, ctx)?;
+            ctx.exit_scope();
+            Ok(ResolvedStmt::DoWhile {
+                body,
+                condition: expand_expr(condition, ctx)?,
+            })
+        }
         ResolvedStmt::For {
             init,
             condition,
             update,
             body,
-        } => Ok(ResolvedStmt::For {
-            init: match init {
-                Some(boxed) => Some(Box::new(expand_stmt(*boxed)?)),
+        } => {
+            ctx.enter_scope();
+            let init = match init {
+                Some(boxed) => Some(Box::new(expand_stmt(*boxed, ctx)?)),
                 None => None,
-            },
-            condition: condition.map(expand_expr).transpose()?,
-            update: update.map(expand_expr).transpose()?,
-            body: body
-                .into_iter()
-                .map(expand_stmt)
-                .collect::<Result<Vec<_>, _>>()?,
-        }),
-        ResolvedStmt::ForIn { var, iter, body } => Ok(ResolvedStmt::ForIn {
-            var,
-            iter: expand_expr(iter)?,
-            body: body
-                .into_iter()
-                .map(expand_stmt)
-                .collect::<Result<Vec<_>, _>>()?,
-        }),
-        ResolvedStmt::ForOf { var, iter, body } => Ok(ResolvedStmt::ForOf {
-            var,
-            iter: expand_expr(iter)?,
-            body: body
-                .into_iter()
-                .map(expand_stmt)
-                .collect::<Result<Vec<_>, _>>()?,
-        }),
-        ResolvedStmt::ForAwaitOf { var, iter, body } => Ok(ResolvedStmt::ForAwaitOf {
-            var,
-            iter: expand_expr(iter)?,
-            body: body
-                .into_iter()
-                .map(expand_stmt)
-                .collect::<Result<Vec<_>, _>>()?,
-        }),
+            };
+            let condition = condition.map(|expr| expand_expr(expr, ctx)).transpose()?;
+            let update = update.map(|expr| expand_expr(expr, ctx)).transpose()?;
+            let body = expand_stmts(body, ctx)?;
+            ctx.exit_scope();
+            Ok(ResolvedStmt::For {
+                init,
+                condition,
+                update,
+                body,
+            })
+        }
+        ResolvedStmt::ForIn { var, iter, body } => {
+            let iter = expand_expr(iter, ctx)?;
+            ctx.enter_scope();
+            ctx.declare(var.clone());
+            let body = expand_stmts(body, ctx)?;
+            ctx.exit_scope();
+            Ok(ResolvedStmt::ForIn { var, iter, body })
+        }
+        ResolvedStmt::ForOf { var, iter, body } => {
+            let iter = expand_expr(iter, ctx)?;
+            ctx.enter_scope();
+            ctx.declare(var.clone());
+            let body = expand_stmts(body, ctx)?;
+            ctx.exit_scope();
+            Ok(ResolvedStmt::ForOf { var, iter, body })
+        }
+        ResolvedStmt::ForAwaitOf { var, iter, body } => {
+            let iter = expand_expr(iter, ctx)?;
+            ctx.enter_scope();
+            ctx.declare(var.clone());
+            let body = expand_stmts(body, ctx)?;
+            ctx.exit_scope();
+            Ok(ResolvedStmt::ForAwaitOf { var, iter, body })
+        }
         ResolvedStmt::Switch { expr, cases } => {
             let mut expanded_cases = Vec::new();
+            let expr = expand_expr(expr, ctx)?;
             for (cond, body) in cases {
-                let expanded_cond = cond.map(expand_expr).transpose()?;
-                let expanded_body = body
-                    .into_iter()
-                    .map(expand_stmt)
-                    .collect::<Result<Vec<_>, _>>()?;
+                let expanded_cond = cond.map(|expr| expand_expr(expr, ctx)).transpose()?;
+                ctx.enter_scope();
+                let expanded_body = expand_stmts(body, ctx)?;
+                ctx.exit_scope();
                 expanded_cases.push((expanded_cond, expanded_body));
             }
             Ok(ResolvedStmt::Switch {
-                expr: expand_expr(expr)?,
+                expr,
                 cases: expanded_cases,
             })
         }
@@ -124,49 +190,61 @@ fn expand_stmt(stmt: ResolvedStmt) -> Result<ResolvedStmt, Diagnostic> {
             catch_param,
             catch_block,
             finally_block,
-        } => Ok(ResolvedStmt::TryCatch {
-            try_block: try_block
-                .into_iter()
-                .map(expand_stmt)
-                .collect::<Result<Vec<_>, _>>()?,
-            catch_param,
-            catch_block: catch_block
+        } => {
+            ctx.enter_scope();
+            let try_block = expand_stmts(try_block, ctx)?;
+            ctx.exit_scope();
+            let catch_block = catch_block
                 .map(|b| {
-                    b.into_iter()
-                        .map(expand_stmt)
-                        .collect::<Result<Vec<_>, _>>()
+                    ctx.enter_scope();
+                    if let Some(catch_param) = &catch_param {
+                        ctx.declare(catch_param.clone());
+                    }
+                    let result = expand_stmts(b, ctx);
+                    ctx.exit_scope();
+                    result
                 })
-                .transpose()?,
-            finally_block: finally_block
+                .transpose()?;
+            let finally_block = finally_block
                 .map(|b| {
-                    b.into_iter()
-                        .map(expand_stmt)
-                        .collect::<Result<Vec<_>, _>>()
+                    ctx.enter_scope();
+                    let result = expand_stmts(b, ctx);
+                    ctx.exit_scope();
+                    result
                 })
-                .transpose()?,
-        }),
-        ResolvedStmt::Block { statements } => Ok(ResolvedStmt::Block {
-            statements: statements
-                .into_iter()
-                .map(expand_stmt)
-                .collect::<Result<Vec<_>, _>>()?,
-        }),
+                .transpose()?;
+            Ok(ResolvedStmt::TryCatch {
+                try_block,
+                catch_param,
+                catch_block,
+                finally_block,
+            })
+        }
+        ResolvedStmt::Block { statements } => {
+            ctx.enter_scope();
+            let statements = expand_stmts(statements, ctx)?;
+            ctx.exit_scope();
+            Ok(ResolvedStmt::Block { statements })
+        }
         ResolvedStmt::Labeled { label, body } => Ok(ResolvedStmt::Labeled {
             label,
-            body: Box::new(expand_stmt(*body)?),
+            body: Box::new(expand_stmt(*body, ctx)?),
         }),
         ResolvedStmt::Break { label } => Ok(ResolvedStmt::Break { label }),
         ResolvedStmt::Continue { label } => Ok(ResolvedStmt::Continue { label }),
-        ResolvedStmt::DestructureLet { pattern, expr } => Ok(ResolvedStmt::DestructureLet {
-            pattern,
-            expr: expand_expr(expr)?,
-        }),
+        ResolvedStmt::DestructureLet { pattern, expr } => {
+            let expr = expand_expr(expr, ctx)?;
+            for name in pattern.names() {
+                ctx.declare(name.to_owned());
+            }
+            Ok(ResolvedStmt::DestructureLet { pattern, expr })
+        }
         ResolvedStmt::Export { name, expr } => Ok(ResolvedStmt::Export {
             name,
-            expr: Box::new(expand_expr(*expr)?),
+            expr: Box::new(expand_expr(*expr, ctx)?),
         }),
         ResolvedStmt::ModuleExportsAssign { expr } => Ok(ResolvedStmt::ModuleExportsAssign {
-            expr: Box::new(expand_expr(*expr)?),
+            expr: Box::new(expand_expr(*expr, ctx)?),
         }),
         ResolvedStmt::Function {
             name,
@@ -176,15 +254,23 @@ fn expand_stmt(stmt: ResolvedStmt) -> Result<ResolvedStmt, Diagnostic> {
             is_async,
             is_ambient,
             source_text,
-        } => Ok(ResolvedStmt::Function {
-            name,
-            params: expand_params(params)?,
-            body: expand_stmts(body)?,
-            is_generator,
-            is_async,
-            is_ambient,
-            source_text,
-        }),
+        } => {
+            ctx.declare(name.clone());
+            ctx.enter_scope();
+            let params = expand_params(params, ctx)?;
+            ctx.declare_params(&params);
+            let body = expand_stmts(body, ctx)?;
+            ctx.exit_scope();
+            Ok(ResolvedStmt::Function {
+                name,
+                params,
+                body,
+                is_generator,
+                is_async,
+                is_ambient,
+                source_text,
+            })
+        }
         ResolvedStmt::ClassDecl {
             name,
             extends,
@@ -194,43 +280,76 @@ fn expand_stmt(stmt: ResolvedStmt) -> Result<ResolvedStmt, Diagnostic> {
             static_blocks,
             private_fields,
             static_private_fields,
-        } => Ok(ResolvedStmt::ClassDecl {
-            name,
-            extends,
-            constructor: constructor.map(expand_constructor).transpose()?,
-            methods: methods
+        } => {
+            ctx.declare(name.clone());
+            let constructor = constructor
+                .map(|ctor| expand_constructor(ctor, ctx))
+                .transpose()?;
+            let methods = methods
                 .into_iter()
-                .map(expand_class_method)
-                .collect::<Result<Vec<_>, _>>()?,
-            statics: statics
+                .map(|method| expand_class_method(method, ctx))
+                .collect::<Result<Vec<_>, _>>()?;
+            let statics = statics
                 .into_iter()
-                .map(|(name, expr)| Ok((name, expand_expr(expr)?)))
-                .collect::<Result<Vec<_>, Diagnostic>>()?,
-            static_blocks: static_blocks
+                .map(|(name, expr)| Ok((name, expand_expr(expr, ctx)?)))
+                .collect::<Result<Vec<_>, Diagnostic>>()?;
+            let static_blocks = static_blocks
                 .into_iter()
-                .map(|(span, body)| Ok((span, expand_stmts(body)?)))
-                .collect::<Result<Vec<_>, Diagnostic>>()?,
-            private_fields,
-            static_private_fields: static_private_fields
+                .map(|(span, body)| {
+                    ctx.enter_scope();
+                    let result = expand_stmts(body, ctx);
+                    ctx.exit_scope();
+                    Ok((span, result?))
+                })
+                .collect::<Result<Vec<_>, Diagnostic>>()?;
+            let static_private_fields = static_private_fields
                 .into_iter()
-                .map(|(name, expr, span)| Ok((name, expand_expr(expr)?, span)))
-                .collect::<Result<Vec<_>, Diagnostic>>()?,
-        }),
+                .map(|(name, expr, span)| Ok((name, expand_expr(expr, ctx)?, span)))
+                .collect::<Result<Vec<_>, Diagnostic>>()?;
+            Ok(ResolvedStmt::ClassDecl {
+                name,
+                extends,
+                constructor,
+                methods,
+                statics,
+                static_blocks,
+                private_fields,
+                static_private_fields,
+            })
+        }
         ResolvedStmt::AmbientValue(_) => Ok(stmt),
     }
 }
 
-fn expand_stmts(stmts: Vec<ResolvedStmt>) -> Result<Vec<ResolvedStmt>, Diagnostic> {
-    stmts.into_iter().map(expand_stmt).collect()
+fn expand_stmts(
+    stmts: Vec<ResolvedStmt>,
+    ctx: &mut EvalExpansionContext,
+) -> Result<Vec<ResolvedStmt>, Diagnostic> {
+    for stmt in &stmts {
+        match stmt {
+            ResolvedStmt::Function { name, .. } | ResolvedStmt::ClassDecl { name, .. } => {
+                ctx.declare(name.clone());
+            }
+            _ => {}
+        }
+    }
+    stmts
+        .into_iter()
+        .map(|stmt| expand_stmt(stmt, ctx))
+        .collect()
 }
 
 fn expand_params(
     params: Vec<ts2wasm_ir::builtin_resolved::ResolvedParam>,
+    ctx: &mut EvalExpansionContext,
 ) -> Result<Vec<ts2wasm_ir::builtin_resolved::ResolvedParam>, Diagnostic> {
     params
         .into_iter()
         .map(|mut param| {
-            param.default = param.default.map(expand_expr).transpose()?;
+            param.default = param
+                .default
+                .map(|expr| expand_expr(expr, ctx))
+                .transpose()?;
             Ok(param)
         })
         .collect()
@@ -238,29 +357,49 @@ fn expand_params(
 
 fn expand_constructor(
     (params, body): ts2wasm_ir::builtin_resolved::ResolvedConstructor,
+    ctx: &mut EvalExpansionContext,
 ) -> Result<ts2wasm_ir::builtin_resolved::ResolvedConstructor, Diagnostic> {
-    Ok((expand_params(params)?, expand_stmts(body)?))
+    ctx.enter_scope();
+    let params = expand_params(params, ctx)?;
+    ctx.declare_params(&params);
+    let body = expand_stmts(body, ctx)?;
+    ctx.exit_scope();
+    Ok((params, body))
 }
 
 fn expand_class_method(
     method: ts2wasm_ir::builtin_resolved::ClassMethod,
+    ctx: &mut EvalExpansionContext,
 ) -> Result<ts2wasm_ir::builtin_resolved::ClassMethod, Diagnostic> {
+    ctx.enter_scope();
+    let params = expand_params(method.params, ctx)?;
+    ctx.declare_params(&params);
+    let body = expand_stmts(method.body, ctx)?;
+    ctx.exit_scope();
     Ok(ts2wasm_ir::builtin_resolved::ClassMethod {
         name: method.name,
         kind: method.kind,
-        params: expand_params(method.params)?,
-        body: expand_stmts(method.body)?,
+        params,
+        body,
         captures: method.captures,
     })
 }
 
-fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
+fn expand_expr(
+    expr: ResolvedExpr,
+    ctx: &mut EvalExpansionContext,
+) -> Result<ResolvedExpr, Diagnostic> {
     match expr {
         ResolvedExpr::Eval {
-            kind: EvalKind::Direct | EvalKind::Indirect,
+            kind: EvalKind::Direct,
             source: EvalSource::StaticLiteral(ref src),
             ..
-        } => expand_static_eval_source(src),
+        } => expand_static_eval_source(src, &ctx.visible_bindings()),
+        ResolvedExpr::Eval {
+            kind: EvalKind::Indirect,
+            source: EvalSource::StaticLiteral(ref src),
+            ..
+        } => expand_static_eval_source(src, &[]),
         ResolvedExpr::Eval { .. } => {
             // Non-expandable eval (indirect or runtime source) — keep as-is.
             Ok(expr)
@@ -291,12 +430,12 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
         // Recursively expand eval in sub-expressions.
         ResolvedExpr::Unary { op, expr: inner } => Ok(ResolvedExpr::Unary {
             op,
-            expr: Box::new(expand_expr(*inner)?),
+            expr: Box::new(expand_expr(*inner, ctx)?),
         }),
         ResolvedExpr::Binary { left, op, right } => Ok(ResolvedExpr::Binary {
-            left: Box::new(expand_expr(*left)?),
+            left: Box::new(expand_expr(*left, ctx)?),
             op,
-            right: Box::new(expand_expr(*right)?),
+            right: Box::new(expand_expr(*right, ctx)?),
         }),
         ResolvedExpr::Ternary {
             condition,
@@ -304,16 +443,16 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
             else_expr,
             span,
         } => Ok(ResolvedExpr::Ternary {
-            condition: Box::new(expand_expr(*condition)?),
-            then_expr: Box::new(expand_expr(*then_expr)?),
-            else_expr: Box::new(expand_expr(*else_expr)?),
+            condition: Box::new(expand_expr(*condition, ctx)?),
+            then_expr: Box::new(expand_expr(*then_expr, ctx)?),
+            else_expr: Box::new(expand_expr(*else_expr, ctx)?),
             span,
         }),
         ResolvedExpr::Call { callee, args, span } => Ok(ResolvedExpr::Call {
-            callee: Box::new(expand_expr(*callee)?),
+            callee: Box::new(expand_expr(*callee, ctx)?),
             args: args
                 .into_iter()
-                .map(expand_expr)
+                .map(|expr| expand_expr(expr, ctx))
                 .collect::<Result<Vec<_>, _>>()?,
             span,
         }),
@@ -325,7 +464,7 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
             class_name,
             args: args
                 .into_iter()
-                .map(expand_expr)
+                .map(|expr| expand_expr(expr, ctx))
                 .collect::<Result<Vec<_>, _>>()?,
             span,
         }),
@@ -335,42 +474,42 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
             args,
             span,
         } => Ok(ResolvedExpr::MethodCall {
-            object: Box::new(expand_expr(*object)?),
+            object: Box::new(expand_expr(*object, ctx)?),
             method,
             args: args
                 .into_iter()
-                .map(expand_expr)
+                .map(|expr| expand_expr(expr, ctx))
                 .collect::<Result<Vec<_>, _>>()?,
             span,
         }),
         ResolvedExpr::PropertyAccess { object, key, span } => Ok(ResolvedExpr::PropertyAccess {
-            object: Box::new(expand_expr(*object)?),
+            object: Box::new(expand_expr(*object, ctx)?),
             key,
             span,
         }),
         ResolvedExpr::OptionalPropertyAccess { object, key, span } => {
             Ok(ResolvedExpr::OptionalPropertyAccess {
-                object: Box::new(expand_expr(*object)?),
+                object: Box::new(expand_expr(*object, ctx)?),
                 key,
                 span,
             })
         }
         ResolvedExpr::ComputedIndex { object, index } => Ok(ResolvedExpr::ComputedIndex {
-            object: Box::new(expand_expr(*object)?),
-            index: Box::new(expand_expr(*index)?),
+            object: Box::new(expand_expr(*object, ctx)?),
+            index: Box::new(expand_expr(*index, ctx)?),
         }),
         ResolvedExpr::OptionalComputedIndex {
             object,
             index,
             span,
         } => Ok(ResolvedExpr::OptionalComputedIndex {
-            object: Box::new(expand_expr(*object)?),
-            index: Box::new(expand_expr(*index)?),
+            object: Box::new(expand_expr(*object, ctx)?),
+            index: Box::new(expand_expr(*index, ctx)?),
             span,
         }),
         ResolvedExpr::Assign { name, expr: inner } => Ok(ResolvedExpr::Assign {
             name,
-            expr: Box::new(expand_expr(*inner)?),
+            expr: Box::new(expand_expr(*inner, ctx)?),
         }),
         ResolvedExpr::LogicalAssign {
             name,
@@ -379,7 +518,7 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
         } => Ok(ResolvedExpr::LogicalAssign {
             name,
             op,
-            expr: Box::new(expand_expr(*inner)?),
+            expr: Box::new(expand_expr(*inner, ctx)?),
         }),
         ResolvedExpr::LogicalPropertyAssign {
             object,
@@ -390,7 +529,7 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
             object,
             key,
             op,
-            expr: Box::new(expand_expr(*inner)?),
+            expr: Box::new(expand_expr(*inner, ctx)?),
         }),
         ResolvedExpr::LogicalComputedPropertyAssign {
             object,
@@ -399,9 +538,9 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
             expr: inner,
         } => Ok(ResolvedExpr::LogicalComputedPropertyAssign {
             object,
-            key: Box::new(expand_expr(*key)?),
+            key: Box::new(expand_expr(*key, ctx)?),
             op,
-            expr: Box::new(expand_expr(*inner)?),
+            expr: Box::new(expand_expr(*inner, ctx)?),
         }),
         ResolvedExpr::LogicalComputedMemberAssign {
             object,
@@ -409,10 +548,10 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
             op,
             expr: inner,
         } => Ok(ResolvedExpr::LogicalComputedMemberAssign {
-            object: Box::new(expand_expr(*object)?),
-            key: Box::new(expand_expr(*key)?),
+            object: Box::new(expand_expr(*object, ctx)?),
+            key: Box::new(expand_expr(*key, ctx)?),
             op,
-            expr: Box::new(expand_expr(*inner)?),
+            expr: Box::new(expand_expr(*inner, ctx)?),
         }),
         ResolvedExpr::LogicalMemberAssign {
             object,
@@ -420,10 +559,10 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
             op,
             expr: inner,
         } => Ok(ResolvedExpr::LogicalMemberAssign {
-            object: Box::new(expand_expr(*object)?),
+            object: Box::new(expand_expr(*object, ctx)?),
             key,
             op,
-            expr: Box::new(expand_expr(*inner)?),
+            expr: Box::new(expand_expr(*inner, ctx)?),
         }),
         ResolvedExpr::Array(elements) => {
             let expanded = elements
@@ -431,7 +570,7 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
                 .map(|el| match el {
                     ts2wasm_ir::builtin_resolved::ResolvedArrayElement::Present(e) => {
                         Ok(ts2wasm_ir::builtin_resolved::ResolvedArrayElement::Present(
-                            expand_expr(e)?,
+                            expand_expr(e, ctx)?,
                         ))
                     }
                     hole @ ts2wasm_ir::builtin_resolved::ResolvedArrayElement::Hole => Ok(hole),
@@ -442,14 +581,14 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
         ResolvedExpr::Object(props) => Ok(ResolvedExpr::Object(
             props
                 .into_iter()
-                .map(expand_object_prop)
+                .map(|prop| expand_object_prop(prop, ctx))
                 .collect::<Result<Vec<_>, _>>()?,
         )),
         ResolvedExpr::BuiltinCall { builtin, args } => Ok(ResolvedExpr::BuiltinCall {
             builtin,
             args: args
                 .into_iter()
-                .map(expand_expr)
+                .map(|expr| expand_expr(expr, ctx))
                 .collect::<Result<Vec<_>, _>>()?,
         }),
         ResolvedExpr::BuiltinProperty {
@@ -458,14 +597,14 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
             span,
         } => Ok(ResolvedExpr::BuiltinProperty {
             builtin,
-            object: Box::new(expand_expr(*object)?),
+            object: Box::new(expand_expr(*object, ctx)?),
             span,
         }),
         ResolvedExpr::OptionalCall { callee, args, span } => Ok(ResolvedExpr::OptionalCall {
-            callee: Box::new(expand_expr(*callee)?),
+            callee: Box::new(expand_expr(*callee, ctx)?),
             args: args
                 .into_iter()
-                .map(expand_expr)
+                .map(|expr| expand_expr(expr, ctx))
                 .collect::<Result<Vec<_>, _>>()?,
             span,
         }),
@@ -475,27 +614,29 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
             value,
             span,
         } => Ok(ResolvedExpr::PropertyAssign {
-            object: Box::new(expand_expr(*object)?),
+            object: Box::new(expand_expr(*object, ctx)?),
             key,
-            value: Box::new(expand_expr(*value)?),
+            value: Box::new(expand_expr(*value, ctx)?),
             span,
         }),
-        ResolvedExpr::Spread(inner) => Ok(ResolvedExpr::Spread(Box::new(expand_expr(*inner)?))),
+        ResolvedExpr::Spread(inner) => {
+            Ok(ResolvedExpr::Spread(Box::new(expand_expr(*inner, ctx)?)))
+        }
         ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
             Ok(ResolvedExpr::PropertyAssignDynamic {
-                object: Box::new(expand_expr(*object)?),
-                key: Box::new(expand_expr(*key)?),
-                value: Box::new(expand_expr(*value)?),
+                object: Box::new(expand_expr(*object, ctx)?),
+                key: Box::new(expand_expr(*key, ctx)?),
+                value: Box::new(expand_expr(*value, ctx)?),
             })
         }
         ResolvedExpr::Await { expr: inner } => Ok(ResolvedExpr::Await {
-            expr: Box::new(expand_expr(*inner)?),
+            expr: Box::new(expand_expr(*inner, ctx)?),
         }),
         ResolvedExpr::Yield {
             expr: Some(inner),
             delegate,
         } => Ok(ResolvedExpr::Yield {
-            expr: Some(Box::new(expand_expr(*inner)?)),
+            expr: Some(Box::new(expand_expr(*inner, ctx)?)),
             delegate,
         }),
         ResolvedExpr::ArrowFn {
@@ -503,12 +644,21 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
             body,
             body_stmts,
             source_text,
-        } => Ok(ResolvedExpr::ArrowFn {
-            params,
-            body: Box::new(expand_expr(*body)?),
-            body_stmts: expand_stmts(body_stmts)?,
-            source_text,
-        }),
+        } => {
+            ctx.enter_scope();
+            for param in &params {
+                ctx.declare(param.clone());
+            }
+            let body = Box::new(expand_expr(*body, ctx)?);
+            let body_stmts = expand_stmts(body_stmts, ctx)?;
+            ctx.exit_scope();
+            Ok(ResolvedExpr::ArrowFn {
+                params,
+                body,
+                body_stmts,
+                source_text,
+            })
+        }
         ResolvedExpr::FunctionExpr {
             name,
             params,
@@ -516,22 +666,37 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
             is_generator,
             origin,
             source_text,
-        } => Ok(ResolvedExpr::FunctionExpr {
-            name,
-            params: expand_params(params)?,
-            body: expand_stmts(body)?,
-            is_generator,
-            origin,
-            source_text,
-        }),
-        ResolvedExpr::ClassExpr { name, body } => Ok(ResolvedExpr::ClassExpr {
-            name,
-            body: expand_stmts(body)?,
-        }),
+        } => {
+            ctx.enter_scope();
+            if !name.is_empty() {
+                ctx.declare(name.clone());
+            }
+            let params = expand_params(params, ctx)?;
+            ctx.declare_params(&params);
+            let body = expand_stmts(body, ctx)?;
+            ctx.exit_scope();
+            Ok(ResolvedExpr::FunctionExpr {
+                name,
+                params,
+                body,
+                is_generator,
+                origin,
+                source_text,
+            })
+        }
+        ResolvedExpr::ClassExpr { name, body } => {
+            ctx.enter_scope();
+            if !name.is_empty() {
+                ctx.declare(name.clone());
+            }
+            let body = expand_stmts(body, ctx)?;
+            ctx.exit_scope();
+            Ok(ResolvedExpr::ClassExpr { name, body })
+        }
         ResolvedExpr::Sequence(exprs) => Ok(ResolvedExpr::Sequence(
             exprs
                 .into_iter()
-                .map(expand_expr)
+                .map(|expr| expand_expr(expr, ctx))
                 .collect::<Result<Vec<_>, _>>()?,
         )),
         // Leaf expressions and other types — no recursive expansion needed.
@@ -541,32 +706,36 @@ fn expand_expr(expr: ResolvedExpr) -> Result<ResolvedExpr, Diagnostic> {
 
 fn expand_object_prop(
     prop: ts2wasm_ir::builtin_resolved::ResolvedObjectProp,
+    ctx: &mut EvalExpansionContext,
 ) -> Result<ts2wasm_ir::builtin_resolved::ResolvedObjectProp, Diagnostic> {
     use ts2wasm_ir::builtin_resolved::ResolvedObjectProp;
 
     match prop {
         ResolvedObjectProp::KeyValue { key, value } => Ok(ResolvedObjectProp::KeyValue {
             key,
-            value: expand_expr(value)?,
+            value: expand_expr(value, ctx)?,
         }),
         ResolvedObjectProp::Shorthand { key, value } => Ok(ResolvedObjectProp::Shorthand {
             key,
-            value: expand_expr(value)?,
+            value: expand_expr(value, ctx)?,
         }),
         ResolvedObjectProp::ComputedKey { key, value } => Ok(ResolvedObjectProp::ComputedKey {
-            key: Box::new(expand_expr(*key)?),
-            value: expand_expr(value)?,
+            key: Box::new(expand_expr(*key, ctx)?),
+            value: expand_expr(value, ctx)?,
         }),
         ResolvedObjectProp::MethodShorthand { key, value } => {
             Ok(ResolvedObjectProp::MethodShorthand {
                 key,
-                value: expand_expr(value)?,
+                value: expand_expr(value, ctx)?,
             })
         }
     }
 }
 
-fn expand_static_eval_source(src: &str) -> Result<ResolvedExpr, Diagnostic> {
+fn expand_static_eval_source(
+    src: &str,
+    outer_bindings: &[String],
+) -> Result<ResolvedExpr, Diagnostic> {
     let tokens = ts2wasm_frontend::Lexer::new(src)
         .tokenize()
         .map_err(|e| Diagnostic {
@@ -584,7 +753,11 @@ fn expand_static_eval_source(src: &str) -> Result<ResolvedExpr, Diagnostic> {
             phase: None,
         })?;
 
-    let name_resolved = resolve_names(&program)?;
+    let name_resolved = if outer_bindings.is_empty() {
+        resolve_names(&program)?
+    } else {
+        resolve_names_with_outer_bindings(&program, outer_bindings)?
+    };
     let builtin_resolved = resolve_builtins(&name_resolved)?;
 
     extract_completion_value(builtin_resolved)
@@ -658,10 +831,9 @@ fn expand_function_constructor(
             ..
         } = stmt
         {
-            let body = body
-                .into_iter()
-                .map(expand_stmt)
-                .collect::<Result<Vec<_>, _>>()?;
+            let mut function_ctx = EvalExpansionContext::new();
+            function_ctx.declare_params(&params);
+            let body = expand_stmts(body, &mut function_ctx)?;
             return Ok(ResolvedExpr::FunctionExpr {
                 name,
                 params,

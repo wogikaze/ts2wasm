@@ -18,6 +18,26 @@ pub fn resolve_names(program: &[Stmt]) -> Result<Vec<Stmt>, Diagnostic> {
     resolver.resolve_program(program)
 }
 
+/// Resolve a dynamic-code fragment with bindings supplied by its caller.
+///
+/// Static direct eval needs this while the canonical EvalFragment lowering is
+/// still being built: the fragment is parsed as a fresh program, but
+/// identifiers that are already live in the caller must be accepted as ordinary
+/// bindings instead of reported as unresolved globals.
+pub fn resolve_names_with_outer_bindings(
+    program: &[Stmt],
+    outer_bindings: &[String],
+) -> Result<Vec<Stmt>, Diagnostic> {
+    let mut resolver = NameResolver::new();
+    for binding in outer_bindings {
+        resolver.declare_variable(binding, None, true)?;
+    }
+    resolver.enter_scope();
+    let resolved = resolver.resolve_program(program);
+    resolver.exit_scope();
+    resolved
+}
+
 struct NameResolver {
     /// Stack of lexical scopes, each mapping names to their declaration spans
     scopes: Vec<std::collections::HashMap<String, Option<Span>>>,

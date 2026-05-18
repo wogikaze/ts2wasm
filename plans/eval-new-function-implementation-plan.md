@@ -59,7 +59,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 
 | Feature | 例 | 現在 | 完全実装の着地点 |
 |---|---|---|---|
-| static direct eval expression | `let x = eval("1 + 2")` | parser post-parse rewrite で一部対応 | `EvalFragment` + completion slot で対応 |
+| static direct eval expression | `let x = eval("1 + 2")` | parser post-parse rewrite で一部対応。compiler eval-expand now resolves expression-only direct eval against visible caller bindings for a guarded caller-local read slice | `EvalFragment` + completion slot で対応 |
 | static direct eval statement mutation | `eval('x = "after"')` | statement rewrite で一部対応 | caller-scope eval-code lowering で対応 |
 | static direct eval block function | `eval('{ function f(){} }')` | Annex B supported slice あり | hoist plan / mutable binding env を validation 付きで対応 |
 | direct eval with declarations | `eval('var x=1; x')` | static direct eval statement expansion now covers a guarded `var` + function declaration landing slice where the eval-defined function reads the eval-defined var. Expression completion and broader environment connection remain incomplete | eval-code environment + completion record |
@@ -546,6 +546,10 @@ Phase 1 regression note:
 - Static direct eval `var` plus function declaration landing has a focused
   regression where the eval-defined function reads the eval-defined var through
   the nested-function capture call path.
+- Static direct eval expression completion has a focused caller-local read
+  regression (`let y = eval("x + 2")`) resolved through eval-expand caller
+  binding context. Statement side effects and declaration completion still need
+  `EvalCompletionSlot`.
 
 ### Phase 9: `$262.evalScript` / test262 ramp / cleanup
 

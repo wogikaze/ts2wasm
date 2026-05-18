@@ -186,6 +186,24 @@ fn compiler_expands_static_dynamic_code_inside_function_bodies() {
     ));
 }
 
+#[test]
+fn compiler_expands_direct_eval_expression_with_caller_binding_context() {
+    let expanded = parse_resolve_and_expand_dynamic_code(
+        r#"
+        let x = 1;
+        let y = eval("x + 2");
+        "#,
+    );
+    assert!(matches!(
+        &expanded[1],
+        ts2wasm_ir::ResolvedStmt::Let(
+            name,
+            ts2wasm_ir::ResolvedExpr::Binary { left, .. }
+        ) if name == "y"
+            && matches!(left.as_ref(), ts2wasm_ir::ResolvedExpr::Ident(name) if name == "x")
+    ));
+}
+
 fn parse_resolve_and_expand_dynamic_code(source: &str) -> Vec<ts2wasm_ir::ResolvedStmt> {
     let parsed = parse_program(source).unwrap();
     let named = ts2wasm_ir::name_resolver::resolve_names(&parsed).unwrap();
