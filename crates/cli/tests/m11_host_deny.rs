@@ -813,6 +813,13 @@ fn host_deny_rejects_dynamic_direct_eval_function_expression_name_host_lane() {
 }
 
 #[test]
+fn host_deny_rejects_dynamic_direct_eval_async_generator_expression_name_host_lane() {
+    assert_host_deny_rejects(
+        "core-semantics/direct-eval-dynamic-async-generator-expression-name-not-binding-node-shim.ts",
+    );
+}
+
+#[test]
 fn host_deny_rejects_dynamic_direct_eval_function_property_call_host_lane() {
     assert_host_deny_rejects(
         "core-semantics/direct-eval-dynamic-function-property-call-node-shim.ts",

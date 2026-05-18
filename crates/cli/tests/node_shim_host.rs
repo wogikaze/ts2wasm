@@ -433,6 +433,13 @@ fn dynamic_direct_eval_function_expression_name_does_not_create_eval_binding_nod
 }
 
 #[test]
+fn dynamic_direct_eval_async_and_generator_expression_names_do_not_create_eval_bindings_node_shim_host_import()
+ {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-async-generator-expression-name-not-binding-node-shim.ts";
+    assert_node_shim_stdout(fixture, "3\n3\n4\n4\n");
+}
+
+#[test]
 fn dynamic_direct_eval_calls_function_properties_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-function-property-call-node-shim.ts";
     assert_node_shim_stdout(fixture, "7\n7\n9\n");
