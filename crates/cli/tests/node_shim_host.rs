@@ -18,6 +18,12 @@ fn dynamic_indirect_eval_executes_through_node_shim_host_import() {
     assert_node_shim_stdout(fixture, "7\n");
 }
 
+#[test]
+fn dynamic_direct_eval_executes_through_node_shim_host_import() {
+    let fixture = "fixtures/builtins-and-io/dynamic-eval-host-path.ts";
+    assert_node_shim_stdout(fixture, "3\n");
+}
+
 fn assert_node_shim_stdout(fixture: &str, expected_stdout: &str) {
     let fixture_path = fixture_path(fixture);
     let output_wasm = temp_wasm_path(fixture);
@@ -177,6 +183,10 @@ const imports = {
     },
   },
   host: {
+    'eval.direct'(sourceRaw, _envRaw) {
+      const result = eval(decodeString(sourceRaw));
+      return encodePrimitive(result);
+    },
     'eval.indirect'(sourceRaw, _envRaw) {
       const result = globalThis.eval(decodeString(sourceRaw));
       return encodePrimitive(result);

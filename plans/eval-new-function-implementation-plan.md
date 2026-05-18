@@ -69,7 +69,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | `new eval` | `new eval("x")` | unsupported / TypeError 境界が未整理 | eval is not constructor の TypeError parity |
 | literal `Function` | `Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; nested function/class body traversal, zero-arg, caller-local non-capture, non-simple duplicate bound-name and strict-body duplicate/non-simple/eval/arguments parameter early errors, and direct `.name` / `.length` / `.prototype` metadata are guarded for static constructor locals | first-class static `FunctionConstructorPlan` / generated function object |
 | literal `new Function` | `new Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; zero-arg and call output are Node differential guarded | generated function object + metadata |
-| dynamic `Function` | `new Function(body)` | `host.function.compile` manifest / host-deny slice と statically visible returned host function handle の `host.function.call` / `host.function.construct` manifest/lowering slice は実装済み。node-shim execution は未完 | `host.function.compile` + host function handle |
+| dynamic `Function` | `new Function(body)` | `host.function.compile` manifest / host-deny slice と statically visible returned host function handle の `host.function.call` / `host.function.construct` manifest/lowering slice は実装済み。primitive-return call / discarded construct の node-shim regression も実装済み | `host.function.compile` + host function handle |
 | shadowed `eval` / `Function` | `let eval = f; eval("x")` | resolver が shadowed eval を ordinary call として保持し、parser は shadowing risk のある Function rewrite を避ける。shadowed `Function` ordinary-call fixture は Node differential guarded | ordinary user binding semantics |
 | `$262.evalScript` | `$262.evalScript(src)` | runtime helper exists but dynamic eval body未実装 | harness/global eval lane として別分類 |
 
@@ -502,6 +502,12 @@ Exit criteria:
 - `eval(src)` が caller local read/write を Node differential で一致させる。
 - write-back missing は validation で検出される。
 - dynamic direct eval import は `host.eval.direct` として manifest に出る。
+
+進捗:
+
+- `host.eval.direct` manifest / host-deny checks are implemented, and a
+  focused Node WebAssembly shim regression covers primitive-return dynamic
+  direct eval. Caller env descriptor and write-back remain open.
 
 ### Phase 9: `$262.evalScript` / test262 ramp / cleanup
 

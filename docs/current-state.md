@@ -336,7 +336,8 @@ The current implementation has several partial dynamic-code paths:
   exact `host.eval.indirect` manifest entry, host-deny rejection, and focused
   Node WebAssembly shim execution coverage for primitive return values;
 - runtime-source direct eval can reach the runtime eval host helper path with an
-  exact `host.eval.direct` manifest entry and host-deny rejection, but
+  exact `host.eval.direct` manifest entry, host-deny rejection, and focused
+  Node WebAssembly shim execution coverage for primitive return values, but
   caller-scope direct-eval write-back is not complete;
 - dynamic `Function` constructor compile and statically visible host-handle
   call/construct lower to the audited Node host lane with exact
@@ -351,8 +352,8 @@ the split parser/compiler eval expansion paths, direct eval declaration
 environment connection, remaining Function constructor grammar/constructability
 completeness and broader host Function handle object/string/error bridging.
 Node-shim execution for dynamic indirect eval and dynamic Function handles is
-covered by focused integration tests, but not by the current iwasm-based
-differential runner.
+covered by focused integration tests, as is primitive-return dynamic direct
+eval, but not by the current iwasm-based differential runner.
 
 ## Known compiler limitations
 
