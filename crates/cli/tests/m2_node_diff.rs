@@ -1241,6 +1241,13 @@ fn static_indirect_eval_function_global_fixture_matches_node_output() {
 }
 
 #[test]
+fn static_indirect_eval_function_hoist_global_fixture_matches_node_output() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/indirect-eval-static-function-hoist-global.ts",
+    );
+}
+
+#[test]
 fn static_indirect_eval_lexical_local_fixture_matches_node_output() {
     assert_fixture_matches_node("fixtures/core-semantics/indirect-eval-static-lexical-local.ts");
 }

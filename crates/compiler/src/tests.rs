@@ -470,6 +470,37 @@ fn compiler_hoists_static_indirect_eval_global_var_declarations() {
 }
 
 #[test]
+fn compiler_hoists_static_indirect_eval_global_function_declarations() {
+    let expanded = parse_resolve_and_expand_dynamic_code(
+        r#"
+        let result = (0, eval)('indirectHoistedFn(); function indirectHoistedFn() { return "hoisted"; }');
+        "#,
+    );
+    let ts2wasm_ir::ResolvedStmt::Let(_, ts2wasm_ir::ResolvedExpr::EvalCompletion(plan)) =
+        &expanded[0]
+    else {
+        panic!("expected eval completion plan: {expanded:?}");
+    };
+
+    assert!(matches!(
+        plan.as_slice().first(),
+        Some(ts2wasm_ir::builtin_resolved::EvalCompletionStep::GlobalFunctionDecl {
+            name,
+            ..
+        }) if name == "indirectHoistedFn"
+    ));
+    assert!(matches!(
+        plan.as_slice().get(1),
+        Some(ts2wasm_ir::builtin_resolved::EvalCompletionStep::Value(
+            ts2wasm_ir::ResolvedExpr::MethodCall { object, method, .. }
+        )) if matches!(
+            object.as_ref(),
+            ts2wasm_ir::ResolvedExpr::Ident(global) if global == "globalThis"
+        ) && method == "indirectHoistedFn"
+    ));
+}
+
+#[test]
 fn compiler_preserves_multiple_eval_block_function_declarations_in_order() {
     let expanded = parse_resolve_and_expand_dynamic_code(
         r#"
