@@ -18,6 +18,7 @@ pub(crate) fn collect_direct_eval_block_function_env(
 pub(crate) fn collect_dynamic_direct_eval_env_cell_names(
     params: &[ResolvedParam],
     body: &[ResolvedStmt],
+    include_arguments: bool,
 ) -> HashSet<String> {
     if !block_contains_dynamic_direct_eval(body) {
         return HashSet::new();
@@ -30,12 +31,15 @@ pub(crate) fn collect_dynamic_direct_eval_env_cell_names(
             names.insert(name.to_owned());
         }
     }
+    if include_arguments && !params.iter().any(|param| param.name == "arguments") {
+        names.insert("arguments".to_owned());
+    }
     collect_block_declared_names(body, &mut names);
     names
 }
 
 fn is_direct_eval_env_binding_name(name: &str) -> bool {
-    !name.is_empty() && !matches!(name, "this" | "arguments")
+    !name.is_empty() && name != "this"
 }
 
 fn collect_block_declared_names(stmts: &[ResolvedStmt], names: &mut HashSet<String>) {
@@ -118,7 +122,7 @@ fn collect_block_declared_names(stmts: &[ResolvedStmt], names: &mut HashSet<Stri
     }
 }
 
-fn block_contains_dynamic_direct_eval(stmts: &[ResolvedStmt]) -> bool {
+pub(crate) fn block_contains_dynamic_direct_eval(stmts: &[ResolvedStmt]) -> bool {
     stmts.iter().any(stmt_contains_dynamic_direct_eval)
 }
 

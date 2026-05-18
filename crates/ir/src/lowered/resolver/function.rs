@@ -251,7 +251,8 @@ impl super::Resolver {
                     self.ctx.is_strict_context(),
                     body,
                 ),
-                needs_arguments: block_contains_arguments(body)
+                needs_arguments: (block_contains_arguments(body)
+                    || block_contains_dynamic_direct_eval(body))
                     && !params.iter().any(|param| param.name == "arguments"),
                 ..FunctionSignature::default()
             },
@@ -573,7 +574,8 @@ impl super::Resolver {
                     self.ctx.is_strict_context(),
                     body,
                 ),
-                needs_arguments: block_contains_arguments(body)
+                needs_arguments: (block_contains_arguments(body)
+                    || block_contains_dynamic_direct_eval(body))
                     && !params.iter().any(|param| param.name == "arguments"),
                 has_rest: params.iter().any(|param| param.is_rest),
                 metadata_length: Some(params.len()),

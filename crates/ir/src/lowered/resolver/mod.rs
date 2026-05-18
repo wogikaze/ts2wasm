@@ -1528,7 +1528,11 @@ impl Resolver {
             &function_mutable_captures,
             &self.ctx.functions.class_method_captures,
             &self.ctx.functions.class_method_mutable_captures,
-            &collect_dynamic_direct_eval_env_cell_names(&ctor_params_for_lowering, &ctor_body),
+            &collect_dynamic_direct_eval_env_cell_names(
+                &ctor_params_for_lowering,
+                &ctor_body,
+                true,
+            ),
             &self.ctx.facts.heap_closure_names,
             self.ctx.classes.class_parents.clone(),
             self.ctx.classes.class_private_fields.clone(),
@@ -1573,7 +1577,8 @@ impl Resolver {
                     needs_receiver: block_contains_this(&method.body)
                         || (!method.name.starts_with("static::")
                             && block_contains_super(&method.body)),
-                    needs_arguments: block_contains_arguments(&method.body)
+                    needs_arguments: (block_contains_arguments(&method.body)
+                        || block_contains_dynamic_direct_eval(&method.body))
                         && !method.params.iter().any(|param| param.name == "arguments"),
                     has_rest: method.params.iter().any(|param| param.is_rest),
                     is_strict: true,
@@ -1605,6 +1610,7 @@ impl Resolver {
                 &collect_dynamic_direct_eval_env_cell_names(
                     &method_params_for_lowering,
                     &method.body,
+                    true,
                 ),
                 &self.ctx.facts.heap_closure_names,
                 self.ctx.classes.class_parents.clone(),

@@ -54,7 +54,7 @@ pub fn lower_program_with_module_url(
         collect_block_object_method_mutable_captures(program)?;
     let direct_eval_env = collect_direct_eval_block_function_env(program);
     let dynamic_direct_eval_env_cell_names =
-        collect_dynamic_direct_eval_env_cell_names(&[], program);
+        collect_dynamic_direct_eval_env_cell_names(&[], program, false);
     let env_cell_names = mutable_class_capture_names
         .union(&mutable_object_method_capture_names)
         .cloned()
@@ -118,7 +118,7 @@ pub fn lower_program_with_module_url(
                 let nested_function_mutable_captures =
                     collect_block_nested_function_mutable_captures(body)?;
                 let dynamic_direct_eval_env_cell_names =
-                    collect_dynamic_direct_eval_env_cell_names(params, body);
+                    collect_dynamic_direct_eval_env_cell_names(params, body, true);
                 let function_env_cell_names = function_env_cell_names
                     .union(&arrow_mutable_captures)
                     .cloned()
@@ -216,8 +216,11 @@ pub fn lower_program_with_module_url(
                     collect_block_object_method_mutable_captures(&ctor_body)?;
                 let constructor_nested_function_mutable_captures =
                     collect_block_nested_function_mutable_captures(&ctor_body)?;
-                let dynamic_direct_eval_env_cell_names =
-                    collect_dynamic_direct_eval_env_cell_names(&ctor_params_with_this, &ctor_body);
+                let dynamic_direct_eval_env_cell_names = collect_dynamic_direct_eval_env_cell_names(
+                    &ctor_params_with_this,
+                    &ctor_body,
+                    true,
+                );
                 let constructor_env_cell_names = constructor_object_method_mutable_captures
                     .union(&constructor_nested_function_mutable_captures)
                     .cloned()
@@ -283,6 +286,7 @@ pub fn lower_program_with_module_url(
                         collect_dynamic_direct_eval_env_cell_names(
                             &method_params_for_lowering,
                             &method.body,
+                            true,
                         );
                     let method_env_cell_names = method_env_cell_names
                         .union(&method_object_method_mutable_captures)
@@ -2642,7 +2646,8 @@ fn collect_function_signatures(
                         explicit_params: params.len(),
                         needs_receiver: block_contains_this(body),
                         is_strict: function_body_is_strict(parent_is_strict, body),
-                        needs_arguments: block_contains_arguments(body)
+                        needs_arguments: (block_contains_arguments(body)
+                            || block_contains_dynamic_direct_eval(body))
                             && !params.iter().any(|param| param.name == "arguments"),
                         has_rest: params.iter().any(|param| param.is_rest),
                         metadata_length: fixed_arity_metadata_length(params),
@@ -2678,11 +2683,16 @@ fn collect_function_signatures(
                 let ctor_returns_dense_array = constructor
                     .as_ref()
                     .is_some_and(|(_, body)| block_returns_dense_array_local(body));
+                let ctor_needs_arguments = constructor.as_ref().is_some_and(|(params, body)| {
+                    (block_contains_arguments(body) || block_contains_dynamic_direct_eval(body))
+                        && !params.iter().any(|param| param.name == "arguments")
+                });
                 signatures.insert(
                     function_ids[&ctor_key],
                     FunctionSignature {
                         explicit_params: ctor_params_len,
                         needs_receiver: true,
+                        needs_arguments: ctor_needs_arguments,
                         has_rest: ctor_has_rest,
                         is_strict: true,
                         returns_heap_closure: ctor_returns_heap_closure,
@@ -2700,7 +2710,8 @@ fn collect_function_signatures(
                             explicit_params: method.params.len(),
                             needs_receiver: block_contains_this(&method.body)
                                 || (!is_static_method && block_contains_super(&method.body)),
-                            needs_arguments: block_contains_arguments(&method.body)
+                            needs_arguments: (block_contains_arguments(&method.body)
+                                || block_contains_dynamic_direct_eval(&method.body))
                                 && !method.params.iter().any(|param| param.name == "arguments"),
                             has_rest: method.params.iter().any(|param| param.is_rest),
                             is_strict: true,
@@ -2811,7 +2822,8 @@ fn function_signature_for_params_body(
         explicit_params: params.len(),
         needs_receiver: block_contains_this(body),
         is_strict: function_body_is_strict(parent_is_strict, body),
-        needs_arguments: block_contains_arguments(body)
+        needs_arguments: (block_contains_arguments(body)
+            || block_contains_dynamic_direct_eval(body))
             && !params.iter().any(|param| param.name == "arguments"),
         has_rest: params.iter().any(|param| param.is_rest),
         metadata_length: fixed_arity_metadata_length(params),

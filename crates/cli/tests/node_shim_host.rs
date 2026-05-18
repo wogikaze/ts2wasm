@@ -400,6 +400,12 @@ fn dynamic_direct_eval_writes_back_catch_binding_env_cell_through_node_shim_host
 }
 
 #[test]
+fn dynamic_direct_eval_class_method_reads_arguments_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-class-method-arguments-node-shim.ts";
+    assert_node_shim_stdout(fixture, "9:1\n");
+}
+
+#[test]
 fn dynamic_direct_eval_writes_back_string_env_cell_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-string-writeback-node-shim.ts";
     assert_node_shim_stdout(fixture, "after\nafter\n");
@@ -618,6 +624,28 @@ function decodeArray(raw) {
   return values;
 }
 
+function decodeObject(raw) {
+  if (rawTag(raw) !== TAG_OBJECT) {
+    throw new TypeError(`expected object RawValue, got ${raw}`);
+  }
+  const ptr = rawPtr(raw);
+  if (hostObjectValues.has(ptr)) return hostObjectValues.get(ptr);
+  const forwarded = view().getInt32(ptr + 8, true);
+  if (forwarded !== 0 && view().getInt32(ptr, true) === 0 && view().getInt32(ptr + 4, true) === 0) {
+    return decodeObject(forwarded | TAG_OBJECT);
+  }
+
+  const len = view().getInt32(ptr, true);
+  const object = {};
+  for (let i = 0; i < len; i += 1) {
+    const entry = ptr + OBJECT_ENTRIES_OFFSET + i * OBJECT_ENTRY_SIZE;
+    object[decodeString(view().getInt32(entry, true))] = decodeValue(
+      view().getInt32(entry + 4, true),
+    );
+  }
+  return object;
+}
+
 function decodeValue(raw) {
   switch (rawTag(raw)) {
     case TAG_UNDEFINED:
@@ -632,6 +660,10 @@ function decodeValue(raw) {
       return raw >> 3;
     case TAG_STRING:
       return decodeString(raw);
+    case TAG_ARRAY:
+      return decodeArray(raw).map(decodeValue);
+    case TAG_OBJECT:
+      return decodeObject(raw);
     default:
       throw new TypeError(`unsupported RawValue for this host-shim test: ${raw}`);
   }

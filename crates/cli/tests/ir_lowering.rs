@@ -238,15 +238,15 @@ fn lowering_initializes_direct_eval_catch_binding_env_cell() {
         })
         .expect("outer function should contain try/catch");
 
-    assert_eq!(*try_catch.0, Some(LocalId(1)));
+    assert_eq!(*try_catch.0, Some(LocalId(2)));
     let catch_body = try_catch.1.as_ref().expect("catch body should lower");
     assert!(matches!(
         catch_body.first(),
         Some(LoweredStmt::Assign(
-            LocalId(1),
+            LocalId(2),
             LoweredExpr::EnvCellNew(initial, _),
             _
-        )) if matches!(initial.as_ref(), LoweredExpr::Local(LocalId(1), _))
+        )) if matches!(initial.as_ref(), LoweredExpr::Local(LocalId(2), _))
     ));
 }
 
