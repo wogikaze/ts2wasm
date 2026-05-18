@@ -902,6 +902,7 @@ directories:
     - duplicate-function-decl-unsupported.ts
     - duplicate-local-same-scope-unsupported.ts
     - dynamic-call-assign-unsupported.ts
+    - eval-static-expression.ts
     - fncsem-arguments-object.ts
     - fncsem-builtin-call.ts
     - fncsem-call-extra-args.ts

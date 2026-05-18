@@ -345,10 +345,7 @@ fn date_deterministic_epoch_omits_wasi_realtime() {
     );
 }
 
-/// Standalone direct eval fixture — known pre-existing name resolution issue
-/// (unresolved name `value` in eval string body). Ignored until IR-level fix.
 #[test]
-#[ignore = "pre-existing: unresolved name 'value' in direct-eval-caller-local.ts"]
 fn static_direct_eval_declares_no_node_host_eval_capability() {
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")

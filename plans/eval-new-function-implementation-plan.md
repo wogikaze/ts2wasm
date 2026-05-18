@@ -539,6 +539,11 @@ Exit criteria:
   not-yet-initialized caller env bindings so the current host lane cannot bypass
   TDZ semantics. Full declaration landing and full TDZ modeling remain open.
 
+Phase 1 regression note:
+
+- Static direct eval caller-local mutation builds as standalone without
+  `host.eval.*` capability under host-deny, and the guard is no longer ignored.
+
 ### Phase 9: `$262.evalScript` / test262 ramp / cleanup
 
 目的: language eval と harness eval を分けて coverage を伸ばす。
