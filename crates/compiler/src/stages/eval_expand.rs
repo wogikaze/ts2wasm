@@ -1180,6 +1180,27 @@ fn eval_statement_completion_step(
                 body_steps: eval_completion_steps(ast_body, body, leak_var_declarations),
             }
         }
+        ResolvedStmt::Switch { expr, cases } => {
+            let ast_cases = match ast_stmt {
+                Some(Stmt::Switch { cases, .. }) => cases.as_slice(),
+                _ => &[],
+            };
+            let cases = cases
+                .into_iter()
+                .enumerate()
+                .map(|(idx, (case_expr, body))| {
+                    let ast_body = ast_cases
+                        .get(idx)
+                        .map(|(_, body)| body.as_slice())
+                        .unwrap_or(&[]);
+                    (
+                        case_expr,
+                        eval_completion_steps(ast_body, body, leak_var_declarations),
+                    )
+                })
+                .collect();
+            EvalCompletionStep::Switch { expr, cases }
+        }
         ResolvedStmt::Function {
             name,
             params,
@@ -1194,6 +1215,8 @@ fn eval_statement_completion_step(
                 is_async,
             }
         }
+        ResolvedStmt::Break { label } => EvalCompletionStep::Break { label },
+        ResolvedStmt::Continue { label } => EvalCompletionStep::Continue { label },
         ResolvedStmt::Return(expr) => EvalCompletionStep::Value(expr),
         _ => EvalCompletionStep::Empty(None),
     }

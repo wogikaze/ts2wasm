@@ -503,8 +503,47 @@ impl super::Resolver {
                     self.ctx.symbols.scopes.pop();
                     stmts.push(lowered?);
                 }
+                EvalCompletionStep::Switch { expr, cases } => {
+                    let expr = self.lower_expr(expr)?;
+                    let cases = cases
+                        .iter()
+                        .map(|(cond, body_steps)| {
+                            self.ctx.symbols.scopes.push(HashMap::new());
+                            let lowered = (|| {
+                                let cond = cond.as_ref().map(|c| self.lower_expr(c)).transpose()?;
+                                let mut body = Vec::new();
+                                self.lower_eval_completion_steps_into(
+                                    body_steps,
+                                    completion,
+                                    caller_scope_index,
+                                    &mut body,
+                                )?;
+                                Ok((cond, body))
+                            })();
+                            self.ctx.symbols.scopes.pop();
+                            lowered
+                        })
+                        .collect::<Result<Vec<_>, Diagnostic>>()?;
+                    stmts.push(LoweredStmt::Switch {
+                        expr,
+                        cases,
+                        span: Span::generated("eval_completion_switch"),
+                    });
+                }
                 EvalCompletionStep::LexicalLet { name, init } => {
                     stmts.push(self.lower_stmt(&ResolvedStmt::Let(name.clone(), init.clone()))?);
+                }
+                EvalCompletionStep::Break { label } => {
+                    stmts.push(LoweredStmt::Break {
+                        label: label.clone(),
+                        span: Span::generated("eval_completion_break"),
+                    });
+                }
+                EvalCompletionStep::Continue { label } => {
+                    stmts.push(LoweredStmt::Continue {
+                        label: label.clone(),
+                        span: Span::generated("eval_completion_continue"),
+                    });
                 }
                 EvalCompletionStep::Empty(None) => {}
             }
@@ -559,6 +598,14 @@ impl super::Resolver {
                 *is_async,
                 caller_scope_index,
             )?)),
+            EvalCompletionStep::Break { label } => Ok(Some(LoweredStmt::Break {
+                label: label.clone(),
+                span: Span::generated("eval_non_completion_break"),
+            })),
+            EvalCompletionStep::Continue { label } => Ok(Some(LoweredStmt::Continue {
+                label: label.clone(),
+                span: Span::generated("eval_non_completion_continue"),
+            })),
             EvalCompletionStep::Empty(None) => Ok(None),
             other => {
                 let temp = self.alloc_temp();

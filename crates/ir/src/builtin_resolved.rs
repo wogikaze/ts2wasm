@@ -349,6 +349,16 @@ pub enum EvalCompletionStep {
         update: Option<ResolvedExpr>,
         body_steps: Vec<EvalCompletionStep>,
     },
+    Switch {
+        expr: ResolvedExpr,
+        cases: Vec<(Option<ResolvedExpr>, Vec<EvalCompletionStep>)>,
+    },
+    Break {
+        label: Option<String>,
+    },
+    Continue {
+        label: Option<String>,
+    },
     LexicalLet {
         name: String,
         init: ResolvedExpr,
@@ -382,9 +392,12 @@ impl EvalCompletionStep {
             Self::For {
                 condition, update, ..
             } => condition.as_ref().or(update.as_ref()),
+            Self::Switch { expr, .. } => Some(expr),
             Self::HoistVars(_)
             | Self::HoistFunctions(_)
             | Self::Empty(None)
+            | Self::Break { .. }
+            | Self::Continue { .. }
             | Self::FunctionDecl { .. }
             | Self::Block(_) => None,
         }
