@@ -614,6 +614,7 @@ impl super::Resolver {
             LowerFunctionOptions {
                 current_class: self.ctx.classes.current_class.as_deref(),
                 in_constructor: false,
+                in_static_method: false,
                 next_func_id: self.ctx.functions.next_func_id,
                 self_closure,
                 capture_facts: FunctionCaptureFacts::default(),

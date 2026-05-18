@@ -298,6 +298,12 @@ fn static_direct_eval_class_private_field_preserves_completion() {
 }
 
 #[test]
+fn static_direct_eval_class_static_block_binds_this() {
+    let fixture = "fixtures/core-semantics/direct-eval-class-static-block-this.ts";
+    assert_node_shim_stdout(fixture, "7\nundefined\n");
+}
+
+#[test]
 fn static_direct_eval_recursively_expands_nested_static_eval() {
     let fixture = "fixtures/core-semantics/direct-eval-nested-static.ts";
     assert_node_shim_stdout(fixture, "3\n");

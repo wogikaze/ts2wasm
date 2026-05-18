@@ -29,6 +29,18 @@ impl super::super::Resolver {
     pub(super) fn lower_this_expr(&mut self) -> Result<LoweredExpr, Diagnostic> {
         match self.resolve_local("this") {
             Ok(local) => Ok(LoweredExpr::Local(local, Span::generated("local"))),
+            Err(_) if self.ctx.classes.static_block_this_class.is_some() => {
+                let class_name = self
+                    .ctx
+                    .classes
+                    .static_block_this_class
+                    .clone()
+                    .unwrap_or_default();
+                Ok(LoweredExpr::ClassPrototype(
+                    self.class_prototype_ref(&class_name)?,
+                    Span::generated("class_static_this"),
+                ))
+            }
             Err(_) => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
         }
     }

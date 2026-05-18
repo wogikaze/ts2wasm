@@ -55,8 +55,12 @@ pub struct ClassEnv {
     pub current_class: Option<String>,
     /// Whether the current position is inside a class constructor.
     pub in_constructor: bool,
+    /// Whether the current position is inside a static class method.
+    pub in_static_method: bool,
     /// Class constructor target visible to `new.target` in this lexical scope.
     pub new_target_class: Option<String>,
+    /// Class constructor target visible as `this` while lowering a static block.
+    pub static_block_this_class: Option<String>,
 }
 
 impl ClassEnv {
@@ -74,7 +78,9 @@ impl ClassEnv {
             object_accessor_props: HashMap::new(),
             current_class: None,
             in_constructor: false,
+            in_static_method: false,
             new_target_class: None,
+            static_block_this_class: None,
         }
     }
 
@@ -99,7 +105,9 @@ impl ClassEnv {
             object_accessor_props: HashMap::new(),
             current_class: None,
             in_constructor: false,
+            in_static_method: false,
             new_target_class: None,
+            static_block_this_class: None,
         }
     }
 

@@ -1530,6 +1530,7 @@ impl Resolver {
             LowerFunctionOptions {
                 current_class: Some(name),
                 in_constructor: true,
+                in_static_method: false,
                 next_func_id: self.ctx.functions.next_func_id,
                 self_closure: None,
                 capture_facts: FunctionCaptureFacts::default(),
@@ -1572,6 +1573,8 @@ impl Resolver {
                 method_id,
                 FunctionSignature {
                     explicit_params: method_params_with_this.len(),
+                    needs_receiver: method.name.starts_with("static::")
+                        && block_contains_this(&method.body),
                     has_rest: method.params.iter().any(|param| param.is_rest),
                     is_strict: true,
                     metadata_length: Some(method.params.len()),
@@ -1607,6 +1610,7 @@ impl Resolver {
                 LowerFunctionOptions {
                     current_class: Some(name),
                     in_constructor: false,
+                    in_static_method: method.name.starts_with("static::"),
                     next_func_id: self.ctx.functions.next_func_id,
                     self_closure: None,
                     capture_facts: FunctionCaptureFacts::default(),
@@ -1663,7 +1667,16 @@ impl Resolver {
         class_name: &str,
         block: &[ResolvedStmt],
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
-        self.with_current_class(class_name, |resolver| resolver.lower_nested_block(block))
+        self.with_current_class(class_name, |resolver| {
+            let previous = resolver
+                .ctx
+                .classes
+                .static_block_this_class
+                .replace(class_name.to_owned());
+            let lowered = resolver.lower_nested_block(block);
+            resolver.ctx.classes.static_block_this_class = previous;
+            lowered
+        })
     }
 
     fn with_current_class<T>(

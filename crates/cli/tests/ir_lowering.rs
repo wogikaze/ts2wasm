@@ -2468,7 +2468,7 @@ fn lowering_represents_static_private_accessor_access_as_same_class_user_call() 
             _,
         ) => assert!(matches!(
             args.as_slice(),
-            [LoweredExpr::Local(LocalId(0), _)]
+            [LoweredExpr::Local(LocalId(1), _)]
         )),
         other => panic!("unexpected static private setter assignment lowering: {other:?}"),
     }
@@ -2541,7 +2541,7 @@ fn lowering_represents_static_private_field_access_as_same_class_env_cell() {
 
     let read_method = &lowered.functions[1];
     match &read_method.body[0] {
-        LoweredStmt::Return(LoweredExpr::EnvCellGet(LocalId(0), _), _) => {}
+        LoweredStmt::Return(LoweredExpr::EnvCellGet(LocalId(1), _), _) => {}
         other => panic!("unexpected static private field read lowering: {other:?}"),
     }
 

@@ -150,7 +150,9 @@ impl super::Resolver {
 
     pub(super) fn is_same_class_static_private_receiver(&self, object: &ResolvedExpr) -> bool {
         match object {
-            ResolvedExpr::This { .. } => self.resolve_local("this").is_err(),
+            ResolvedExpr::This { .. } => {
+                self.ctx.classes.in_static_method || self.resolve_local("this").is_err()
+            }
             ResolvedExpr::Ident(name) => {
                 self.ctx.classes.current_class.as_deref() == Some(name.as_str())
             }

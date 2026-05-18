@@ -2810,7 +2810,12 @@ fn class_super_fixtures_match_node_output_under_iwasm() {
 
 #[test]
 fn class_static_block_fixture_matches_node_output_under_iwasm() {
-    assert_fixture_matches_node("fixtures/core-semantics/class-static-block.ts");
+    for fixture in [
+        "fixtures/core-semantics/class-static-block.ts",
+        "fixtures/core-semantics/class-static-block-this.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
 }
 
 #[test]
@@ -2899,12 +2904,10 @@ fn private_class_delete_backing_key_reports_issue_255() {
 
 #[test]
 fn class_static_block_unsupported_forms_report_issue_254() {
-    for fixture in [
-        "fixtures/core-semantics/class-static-block-this-unsupported.ts",
+    assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/class-static-block-super-unsupported.ts",
-    ] {
-        assert_build_fails_with_unsupported_syntax(fixture, "issue-254:");
-    }
+        "issue-254:",
+    );
 }
 
 #[test]
@@ -3136,6 +3139,7 @@ fn direct_eval_block_function_fixture_matches_node_output_under_iwasm() {
         "fixtures/core-semantics/direct-eval-block-var-lands-in-caller.ts",
         "fixtures/core-semantics/direct-eval-class-declaration-completion.ts",
         "fixtures/core-semantics/direct-eval-class-private-field.ts",
+        "fixtures/core-semantics/direct-eval-class-static-block-this.ts",
         "fixtures/core-semantics/direct-eval-destructuring-completion.ts",
         "fixtures/core-semantics/direct-eval-do-while-completion.ts",
         "fixtures/core-semantics/direct-eval-for-completion.ts",

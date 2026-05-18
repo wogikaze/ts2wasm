@@ -159,6 +159,7 @@ pub fn lower_program_with_module_url(
                     LowerFunctionOptions {
                         current_class: None,
                         in_constructor: false,
+                        in_static_method: false,
                         next_func_id,
                         self_closure,
                         capture_facts: FunctionCaptureFacts::default(),
@@ -243,6 +244,7 @@ pub fn lower_program_with_module_url(
                     LowerFunctionOptions {
                         current_class: Some(name),
                         in_constructor: true,
+                        in_static_method: false,
                         next_func_id,
                         self_closure: None,
                         capture_facts: FunctionCaptureFacts::default(),
@@ -323,6 +325,7 @@ pub fn lower_program_with_module_url(
                         LowerFunctionOptions {
                             current_class: Some(name),
                             in_constructor: false,
+                            in_static_method: method.name.starts_with("static::"),
                             next_func_id,
                             self_closure: None,
                             capture_facts: FunctionCaptureFacts::default(),
@@ -370,6 +373,7 @@ pub fn lower_program_with_module_url(
             LowerFunctionOptions {
                 current_class: None,
                 in_constructor: false,
+                in_static_method: false,
                 next_func_id,
                 self_closure,
                 capture_facts: FunctionCaptureFacts::default(),
@@ -2700,11 +2704,13 @@ fn collect_function_signatures(
 
                 for method in methods {
                     let method_key = class_method_key(name, &method.name);
-                    let receiver_param_count = usize::from(!method.name.starts_with("static::"));
+                    let is_static_method = method.name.starts_with("static::");
+                    let receiver_param_count = usize::from(!is_static_method);
                     signatures.insert(
                         function_ids[&method_key],
                         FunctionSignature {
                             explicit_params: method.params.len() + receiver_param_count,
+                            needs_receiver: is_static_method && block_contains_this(&method.body),
                             has_rest: method.params.iter().any(|param| param.is_rest),
                             is_strict: true,
                             returns_heap_closure: block_returns_declared_function(&method.body),
@@ -4092,6 +4098,7 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
 pub(crate) struct LowerFunctionOptions<'a> {
     pub(crate) current_class: Option<&'a str>,
     pub(crate) in_constructor: bool,
+    pub(crate) in_static_method: bool,
     pub(crate) next_func_id: usize,
     pub(crate) self_closure: Option<SelfClosureOptions<'a>>,
     pub(crate) capture_facts: FunctionCaptureFacts,
@@ -4195,6 +4202,7 @@ pub(super) fn lower_function(
         options.module_url,
         is_strict_context,
     )?;
+    resolver.ctx.classes.in_static_method = options.in_static_method;
 
     if let Some(self_closure) = options.self_closure {
         resolver.declare_self_closure(

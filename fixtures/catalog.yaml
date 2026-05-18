@@ -853,7 +853,7 @@ directories:
     - class-method-mutable-outer-capture.ts
     - class-new-expression-method-call.ts
     - class-static-block-super-unsupported.ts
-    - class-static-block-this-unsupported.ts
+    - class-static-block-this.ts
     - class-static-block.ts
     - class-value-unsupported.ts
     - closure-gc-call-frame-root.ts
@@ -887,6 +887,7 @@ directories:
     - direct-eval-caller-local.ts
     - direct-eval-class-declaration-completion.ts
     - direct-eval-class-private-field.ts
+    - direct-eval-class-static-block-this.ts
     - direct-eval-declaration-empty-completion.ts
     - direct-eval-declaration-preserves-previous-completion.ts
     - direct-eval-destructuring-completion.ts

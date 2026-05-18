@@ -837,14 +837,7 @@ impl super::super::Resolver {
         }
         if method.starts_with('#') {
             if let Some(method_id) = self.current_static_private_method_id(method) {
-                let same_class_static_receiver = match object {
-                    ResolvedExpr::This { .. } => self.resolve_local("this").is_err(),
-                    ResolvedExpr::Ident(name) => {
-                        self.ctx.classes.current_class.as_deref() == Some(name.as_str())
-                    }
-                    _ => false,
-                };
-                if same_class_static_receiver {
+                if self.is_same_class_static_private_receiver(object) {
                     let lowered_args = args
                         .iter()
                         .map(|e| self.lower_expr(e))
@@ -3691,11 +3684,8 @@ impl super::super::Resolver {
             .get(&(receiver_name.to_owned(), method.to_owned()))
             .copied()
         {
-            let lowered_args = args
-                .iter()
-                .map(|e| self.lower_expr(e))
-                .collect::<Result<Vec<_>, _>>()?;
-            let mut lowered_args = lowered_args;
+            let receiver = self.lower_expr(object)?;
+            let mut lowered_args = self.lower_function_call_args(method_id, receiver, args)?;
             self.append_class_method_captures(method_id, &mut lowered_args)?;
             return Ok(LoweredExpr::Call {
                 kind: FunctionCallKind::User(method_id),

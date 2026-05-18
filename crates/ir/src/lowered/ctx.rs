@@ -185,7 +185,9 @@ impl LoweringCtx {
     ) {
         self.classes.current_class = current_class.map(ToOwned::to_owned);
         self.classes.in_constructor = in_constructor;
+        self.classes.in_static_method = false;
         self.classes.new_target_class = new_target_class.map(ToOwned::to_owned);
+        self.classes.static_block_this_class = None;
     }
 
     pub(crate) fn is_strict_context(&self) -> bool {
