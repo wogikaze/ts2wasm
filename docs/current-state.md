@@ -373,7 +373,8 @@ The current implementation has several partial dynamic-code paths:
   declarations re-read by later direct eval calls in the same caller env. The
   env descriptor now carries resolver-owned strict-caller metadata into the
   Node shim so `var` declarations created by runtime-source direct eval remain
-  eval-local when the caller is strict.
+  eval-local when the caller is strict, and a focused strict-caller syntax edge
+  (`delete Identifier`) is bridged as a catchable `SyntaxError`.
   Direct wasm access to runtime-created bindings, full TDZ modeling,
   runtime-wide host external object contracts, and iwasm-differential coverage
   remain incomplete;

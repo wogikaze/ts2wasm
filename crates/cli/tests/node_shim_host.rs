@@ -539,6 +539,12 @@ fn dynamic_direct_eval_strict_caller_var_stays_eval_local_node_shim_host_import(
 }
 
 #[test]
+fn dynamic_direct_eval_strict_caller_delete_identifier_is_syntax_error_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-strict-caller-delete-node-shim.ts";
+    assert_node_shim_stdout(fixture, "SyntaxError\n1\n");
+}
+
+#[test]
 fn dynamic_direct_eval_rejects_tdz_env_descriptor_conflict() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-tdz-conflict-unsupported.ts";
     assert_build_fails_with(fixture, "UnsupportedEval", "TDZ-aware env descriptors");
@@ -1079,27 +1085,30 @@ function evalWithEnvDescriptor(source, envRaw) {
   }
   const formalBindings = bindings.filter((binding) => binding.name !== 'this');
   const allFormalBindings = formalBindings.concat(extraBindings);
-  const formalNames = allFormalBindings.map((binding) => binding.name);
+  const sourceReferencesStrictReservedBinding = /\b(?:arguments|eval)\b/.test(source);
+  const useStrictWrapper = callerIsStrict && !sourceReferencesStrictReservedBinding;
+  const wrapperBindings = useStrictWrapper
+    ? allFormalBindings.filter((binding) => binding.name !== 'arguments' && binding.name !== 'eval')
+    : allFormalBindings;
+  const formalNames = wrapperBindings.map((binding) => binding.name);
   const sourceName = uniqueInternalName('__ts2wasm_eval_source', names);
   const resultName = uniqueInternalName('__ts2wasm_eval_result', [...names, sourceName]);
-  const canUseStrictWrapper =
-    callerIsStrict && !formalNames.some((name) => name === 'eval' || name === 'arguments');
-  const strictPrefix = canUseStrictWrapper ? '"use strict"; ' : '';
+  const strictPrefix = useStrictWrapper ? '"use strict"; ' : '';
   const wrapper = Function(
     sourceName,
     ...formalNames,
     `${strictPrefix}let ${resultName} = eval(${sourceName}); return [${resultName}, ${formalNames.join(', ')}];`,
   );
-  const values = allFormalBindings.map((binding) => binding.value);
+  const values = wrapperBindings.map((binding) => binding.value);
   const thisValue = thisBinding === undefined ? undefined : thisBinding.value;
   const [result, ...updatedValues] = wrapper.call(thisValue, source, ...values);
 
-  for (let i = 0; i < allFormalBindings.length; i += 1) {
-    if (!Object.is(allFormalBindings[i].value, updatedValues[i])) {
-      if (allFormalBindings[i].cellRaw !== undefined) {
-        writeEnvCellRaw(allFormalBindings[i].cellRaw, encodeHostValue(updatedValues[i]));
+  for (let i = 0; i < wrapperBindings.length; i += 1) {
+    if (!Object.is(wrapperBindings[i].value, updatedValues[i])) {
+      if (wrapperBindings[i].cellRaw !== undefined) {
+        writeEnvCellRaw(wrapperBindings[i].cellRaw, encodeHostValue(updatedValues[i]));
       } else {
-        extraMap.set(allFormalBindings[i].name, updatedValues[i]);
+        extraMap.set(wrapperBindings[i].name, updatedValues[i]);
       }
     }
   }

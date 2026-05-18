@@ -559,7 +559,8 @@ Exit criteria:
   descriptor and are visible to later dynamic direct eval calls for the same
   caller env. The env descriptor also carries resolver-owned strict-caller
   metadata into the Node shim, where strict-caller runtime-source direct eval
-  keeps eval-created `var` declarations eval-local. Direct wasm access to those
+  keeps eval-created `var` declarations eval-local and bridges strict syntax
+  errors such as `delete Identifier`. Direct wasm access to those
   runtime-created bindings remains open.
   Lowering also rejects dynamic direct eval before
   not-yet-initialized caller env bindings so the current host lane cannot bypass
