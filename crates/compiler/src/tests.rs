@@ -359,11 +359,12 @@ fn compiler_lands_static_indirect_eval_var_on_global_object() {
 fn compiler_lands_static_indirect_eval_function_on_global_object() {
     let expanded = parse_resolve_and_expand_dynamic_code(
         r#"
-        let result = (0, eval)("function indirectGlobalFn() { return 7; } indirectGlobalFn()");
+        let indirectGlobalValue = "local";
+        let result = (0, eval)("function indirectGlobalFn() { return indirectGlobalValue; } indirectGlobalFn()");
         "#,
     );
     let ts2wasm_ir::ResolvedStmt::Let(_, ts2wasm_ir::ResolvedExpr::EvalCompletion(plan)) =
-        &expanded[0]
+        &expanded[1]
     else {
         panic!("expected eval completion plan: {expanded:?}");
     };
@@ -375,19 +376,31 @@ fn compiler_lands_static_indirect_eval_function_on_global_object() {
         }
     );
     assert!(plan.declarations.var_names.is_empty());
+    let [
+        ts2wasm_ir::builtin_resolved::EvalCompletionStep::GlobalFunctionDecl { name, body, .. },
+        ts2wasm_ir::builtin_resolved::EvalCompletionStep::Value(
+            ts2wasm_ir::ResolvedExpr::MethodCall { object, method, .. },
+        ),
+    ] = plan.as_slice()
+    else {
+        panic!("expected global function declaration and call: {plan:?}");
+    };
+    assert_eq!(name, "indirectGlobalFn");
+    assert_eq!(method, "indirectGlobalFn");
     assert!(matches!(
-        plan.as_slice(),
-        [
-            ts2wasm_ir::builtin_resolved::EvalCompletionStep::GlobalFunctionDecl { name, .. },
-            ts2wasm_ir::builtin_resolved::EvalCompletionStep::Value(
-                ts2wasm_ir::ResolvedExpr::MethodCall { object, method, .. }
-            )
-        ] if name == "indirectGlobalFn"
-            && matches!(
-                object.as_ref(),
-                ts2wasm_ir::ResolvedExpr::Ident(global) if global == "globalThis"
-            )
-            && method == "indirectGlobalFn"
+        object.as_ref(),
+        ts2wasm_ir::ResolvedExpr::Ident(global) if global == "globalThis"
+    ));
+    assert!(matches!(
+        body.as_slice(),
+        [ts2wasm_ir::ResolvedStmt::Return(ts2wasm_ir::ResolvedExpr::PropertyAccess {
+            object,
+            key,
+            ..
+        })] if matches!(
+            object.as_ref(),
+            ts2wasm_ir::ResolvedExpr::Ident(global) if global == "globalThis"
+        ) && key == "indirectGlobalValue"
     ));
 }
 
