@@ -1793,6 +1793,21 @@ impl NameResolver {
                 });
             }
         }
+        if is_var
+            && self
+                .predeclared_names
+                .last()
+                .is_some_and(|scope| scope.contains(name))
+        {
+            return Err(Diagnostic {
+                code: DiagCode::DuplicateLocal,
+                message: format!(
+                    "duplicate identifier: `{name}` conflicts with existing declaration"
+                ),
+                span,
+                phase: None,
+            });
+        }
         let current_scope = self.scopes.last_mut().unwrap();
         if current_scope.contains_key(name) {
             if is_var {

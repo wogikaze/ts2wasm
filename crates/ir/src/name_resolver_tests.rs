@@ -716,6 +716,24 @@ mod tests {
     }
 
     #[test]
+    fn resolver_rejects_static_direct_eval_var_conflict_with_caller_lexical() {
+        let tokens = ts2wasm_frontend::Lexer::new(
+            "function run() { let value = 1; eval(\"var value = 2\"); return value; }",
+        )
+        .tokenize()
+        .unwrap();
+        let parsed = ts2wasm_frontend::Parser::new(
+            tokens,
+            "function run() { let value = 1; eval(\"var value = 2\"); return value; }",
+        )
+        .parse_program()
+        .unwrap();
+        let err = name_resolver::resolve_names(&parsed).unwrap_err();
+        assert_eq!(err.code, DiagCode::DuplicateLocal);
+        assert!(err.message.contains("value"));
+    }
+
+    #[test]
     fn resolver_does_not_predeclare_shadowed_static_eval_var() {
         let tokens = ts2wasm_frontend::Lexer::new(
             "function run() { let eval = (source) => source; eval(\"var value = 2\"); return value; }",
