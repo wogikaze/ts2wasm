@@ -334,7 +334,8 @@ The current implementation has several partial dynamic-code paths:
   parser/lowering path;
 - runtime-source indirect eval lowers to the audited Node host lane with an
   exact `host.eval.indirect` manifest entry, host-deny rejection, and focused
-  Node WebAssembly shim execution coverage for primitive return values;
+  Node WebAssembly shim execution coverage for primitive return values and
+  string-keyed primitive object property reads;
 - runtime-source direct eval can reach the runtime eval host helper path with an
   exact `host.eval.direct` manifest entry, host-deny rejection, and focused
   Node WebAssembly shim execution coverage for primitive return values. Direct

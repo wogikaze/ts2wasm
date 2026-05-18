@@ -941,6 +941,7 @@ directories:
     - generator-function-unsupported.ts
     - indirect-eval-dynamic-host-path.ts
     - indirect-eval-dynamic-node-shim.ts
+    - indirect-eval-dynamic-object-properties-node-shim.ts
     - indirect-eval-static.ts
     - in-operator-prototype.ts
     - in-operator.ts

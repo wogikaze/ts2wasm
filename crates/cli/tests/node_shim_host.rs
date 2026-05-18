@@ -44,6 +44,12 @@ fn dynamic_indirect_eval_executes_through_node_shim_host_import() {
 }
 
 #[test]
+fn dynamic_indirect_eval_preserves_object_properties_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/indirect-eval-dynamic-object-properties-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\nok\nundefined\n");
+}
+
+#[test]
 fn dynamic_direct_eval_executes_through_node_shim_host_import() {
     let fixture = "fixtures/builtins-and-io/dynamic-eval-host-path.ts";
     assert_node_shim_stdout(fixture, "3\n");
