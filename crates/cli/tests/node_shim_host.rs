@@ -532,6 +532,13 @@ fn dynamic_direct_eval_strict_lexical_shadow_does_not_write_back_node_shim_host_
 }
 
 #[test]
+fn dynamic_direct_eval_strict_caller_var_stays_eval_local_node_shim_host_import() {
+    let fixture =
+        "fixtures/core-semantics/direct-eval-dynamic-strict-caller-var-local-node-shim.ts";
+    assert_node_shim_stdout(fixture, "7\nundefined\n");
+}
+
+#[test]
 fn dynamic_direct_eval_rejects_tdz_env_descriptor_conflict() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-tdz-conflict-unsupported.ts";
     assert_build_fails_with(fixture, "UnsupportedEval", "TDZ-aware env descriptors");
@@ -651,6 +658,7 @@ const hostArrayHandles = new WeakMap();
 const hostObjectHandles = new WeakMap();
 const hostObjectValues = new Map();
 const directEvalExtraBindings = new Map();
+const EVAL_DESCRIPTOR_CALLER_STRICT = '__ts2wasm_eval_caller_strict';
 const decoder = new TextDecoder();
 const encoder = new TextEncoder();
 let stdout = '';
@@ -1028,8 +1036,22 @@ function evalWithEnvDescriptor(source, envRaw) {
   }
 
   const pairs = decodeArray(envRaw);
+  let callerIsStrict = false;
+  let pairOffset = 0;
+  if (
+    pairs.length >= 2 &&
+    rawTag(pairs[0]) === TAG_STRING &&
+    decodeString(pairs[0]) === EVAL_DESCRIPTOR_CALLER_STRICT
+  ) {
+    callerIsStrict = decodeValue(pairs[1]) === true;
+    pairOffset = 2;
+  }
+  if ((pairs.length - pairOffset) % 2 !== 0) {
+    throw new TypeError('invalid direct eval env descriptor');
+  }
+
   const bindings = [];
-  for (let i = 0; i < pairs.length; i += 2) {
+  for (let i = pairOffset; i < pairs.length; i += 2) {
     const name = decodeString(pairs[i]);
     const cellRaw = pairs[i + 1];
     const raw = readEnvCellRaw(cellRaw);
@@ -1047,10 +1069,12 @@ function evalWithEnvDescriptor(source, envRaw) {
       names.push(name);
     }
   }
-  for (const name of collectEvalDeclarationNames(source)) {
-    if (!names.includes(name)) {
-      extraBindings.push({ name, value: undefined });
-      names.push(name);
+  if (!callerIsStrict) {
+    for (const name of collectEvalDeclarationNames(source)) {
+      if (!names.includes(name)) {
+        extraBindings.push({ name, value: undefined });
+        names.push(name);
+      }
     }
   }
   const formalBindings = bindings.filter((binding) => binding.name !== 'this');
@@ -1058,10 +1082,13 @@ function evalWithEnvDescriptor(source, envRaw) {
   const formalNames = allFormalBindings.map((binding) => binding.name);
   const sourceName = uniqueInternalName('__ts2wasm_eval_source', names);
   const resultName = uniqueInternalName('__ts2wasm_eval_result', [...names, sourceName]);
+  const canUseStrictWrapper =
+    callerIsStrict && !formalNames.some((name) => name === 'eval' || name === 'arguments');
+  const strictPrefix = canUseStrictWrapper ? '"use strict"; ' : '';
   const wrapper = Function(
     sourceName,
     ...formalNames,
-    `let ${resultName} = eval(${sourceName}); return [${resultName}, ${formalNames.join(', ')}];`,
+    `${strictPrefix}let ${resultName} = eval(${sourceName}); return [${resultName}, ${formalNames.join(', ')}];`,
   );
   const values = allFormalBindings.map((binding) => binding.value);
   const thisValue = thisBinding === undefined ? undefined : thisBinding.value;

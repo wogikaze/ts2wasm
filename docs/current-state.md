@@ -370,7 +370,10 @@ The current implementation has several partial dynamic-code paths:
   string-keyed primitive properties, enough for default object stringification
   and direct property reads. It also guards existing caller `var` landing-zone
   declaration write-back and host-lane persistence for new `var` / function
-  declarations re-read by later direct eval calls in the same caller env.
+  declarations re-read by later direct eval calls in the same caller env. The
+  env descriptor now carries resolver-owned strict-caller metadata into the
+  Node shim so `var` declarations created by runtime-source direct eval remain
+  eval-local when the caller is strict.
   Direct wasm access to runtime-created bindings, full TDZ modeling,
   runtime-wide host external object contracts, and iwasm-differential coverage
   remain incomplete;

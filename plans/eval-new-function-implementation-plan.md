@@ -557,7 +557,10 @@ Exit criteria:
   functions remain callable across eval calls. New `var` and function
   declarations created only inside the host lane are now persisted by caller env
   descriptor and are visible to later dynamic direct eval calls for the same
-  caller env. Direct wasm access to those runtime-created bindings remains open.
+  caller env. The env descriptor also carries resolver-owned strict-caller
+  metadata into the Node shim, where strict-caller runtime-source direct eval
+  keeps eval-created `var` declarations eval-local. Direct wasm access to those
+  runtime-created bindings remains open.
   Lowering also rejects dynamic direct eval before
   not-yet-initialized caller env bindings so the current host lane cannot bypass
   TDZ semantics. Full TDZ modeling remains open.

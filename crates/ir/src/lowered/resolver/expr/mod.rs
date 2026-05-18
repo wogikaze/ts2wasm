@@ -209,7 +209,10 @@ impl super::Resolver {
                     if matches!(plan.source, crate::builtin_resolved::EvalSource::Runtime(_)) {
                         self.ensure_direct_eval_env_descriptor_initialized(plan.span)?;
                     }
-                    vec![source_expr, self.lower_direct_eval_env_descriptor()]
+                    vec![
+                        source_expr,
+                        self.lower_direct_eval_env_descriptor(plan.caller_is_strict),
+                    ]
                 } else {
                     vec![source_expr]
                 };
@@ -1102,7 +1105,7 @@ impl super::Resolver {
         }
     }
 
-    fn lower_direct_eval_env_descriptor(&self) -> LoweredExpr {
+    fn lower_direct_eval_env_descriptor(&self, caller_is_strict: bool) -> LoweredExpr {
         let mut seen = HashSet::new();
         let mut elements = Vec::new();
         for scope in self.ctx.symbols.scopes.iter().rev() {
@@ -1124,13 +1127,24 @@ impl super::Resolver {
             }
         }
 
-        if elements.is_empty() {
-            LoweredExpr::Undefined(Span::generated("eval_env"))
-        } else {
-            LoweredExpr::ArrayNew {
-                elements,
-                span: Span::generated("eval_env"),
-            }
+        if elements.is_empty() && !caller_is_strict {
+            return LoweredExpr::Undefined(Span::generated("eval_env"));
+        }
+
+        elements.insert(
+            0,
+            LoweredExpr::Bool(caller_is_strict, Span::generated("eval_env_strict")),
+        );
+        elements.insert(
+            0,
+            LoweredExpr::String(
+                "__ts2wasm_eval_caller_strict".to_owned(),
+                Span::generated("eval_env_strict"),
+            ),
+        );
+        LoweredExpr::ArrayNew {
+            elements,
+            span: Span::generated("eval_env"),
         }
     }
 
