@@ -407,6 +407,14 @@ fn static_indirect_eval_declares_no_node_host_eval_capability() {
 }
 
 #[test]
+fn nested_static_direct_eval_declares_no_node_host_eval_capability() {
+    assert_standalone_category(
+        "core-semantics/direct-eval-nested-static.ts",
+        "nested static direct eval",
+    );
+}
+
+#[test]
 fn dynamic_indirect_eval_declares_node_host_eval_indirect_capability() {
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")
