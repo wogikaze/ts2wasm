@@ -70,11 +70,68 @@ fn compiler_rejects_dynamic_function_constructor_until_host_lane_exists() {
     assert!(err.message.contains("host.function"));
 }
 
+#[test]
+fn compiler_rejects_strict_body_duplicate_function_constructor_params() {
+    let err = parse_resolve_and_expand_dynamic_code_err(
+        r#"let value = Function("a", "a", "\"use strict\"; return a");"#,
+    );
+    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    assert!(err.message.contains("Duplicate parameter name"));
+}
+
+#[test]
+fn compiler_rejects_strict_body_non_simple_function_constructor_params() {
+    for source in [
+        r#"let value = Function("a = 1", "\"use strict\"; return a");"#,
+        r#"let value = Function("...a", "\"use strict\"; return a.length");"#,
+        r#"let value = Function("{a}", "\"use strict\"; return a");"#,
+    ] {
+        let err = parse_resolve_and_expand_dynamic_code_err(source);
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(
+            err.message.contains("non-simple parameter list"),
+            "unexpected diagnostic for {source}: {err:?}"
+        );
+    }
+}
+
+#[test]
+fn compiler_rejects_strict_body_eval_arguments_function_constructor_params() {
+    for source in [
+        r#"let value = Function("eval", "\"use strict\"; return eval");"#,
+        r#"let value = Function("arguments", "\"use strict\"; return arguments");"#,
+    ] {
+        let err = parse_resolve_and_expand_dynamic_code_err(source);
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(
+            err.message.contains("Unexpected eval or arguments"),
+            "unexpected diagnostic for {source}: {err:?}"
+        );
+    }
+}
+
+#[test]
+fn compiler_allows_sloppy_duplicate_function_constructor_params() {
+    let expanded =
+        parse_resolve_and_expand_dynamic_code("let value = Function(\"a\", \"a\", \"return a\");");
+    assert!(matches!(
+        &expanded[0],
+        ts2wasm_ir::ResolvedStmt::Let(_, ts2wasm_ir::ResolvedExpr::FunctionExpr { .. })
+    ));
+}
+
 fn parse_resolve_and_expand_dynamic_code(source: &str) -> Vec<ts2wasm_ir::ResolvedStmt> {
     let parsed = parse_program(source).unwrap();
     let named = ts2wasm_ir::name_resolver::resolve_names(&parsed).unwrap();
     let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&named).unwrap();
     crate::stages::eval_expand::expand_static_eval_fragments(resolved).unwrap()
+}
+
+fn parse_resolve_and_expand_dynamic_code_err(source: &str) -> Diagnostic {
+    let parsed = parse_program(source).unwrap();
+    let named = ts2wasm_ir::name_resolver::resolve_names(&parsed).unwrap();
+    let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&named).unwrap();
+    crate::stages::eval_expand::expand_static_eval_fragments(resolved).unwrap_err()
 }
 
 #[test]

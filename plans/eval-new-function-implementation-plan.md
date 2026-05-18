@@ -66,7 +66,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | indirect eval dynamic | `(0, eval)(src)` | `host.eval.indirect` manifest / host-deny slice は実装済み。node-shim 実行 pass は未完 | `host.eval.indirect` capability |
 | optional eval | `eval?.("x")` | parser diagnostic | indirect-like call semantics として classification |
 | `new eval` | `new eval("x")` | unsupported / TypeError 境界が未整理 | eval is not constructor の TypeError parity |
-| literal `Function` | `Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; zero-arg, caller-local non-capture, and direct `.name` / `.length` / `.prototype` metadata are guarded for static constructor locals | first-class static `FunctionConstructorPlan` / generated function object |
+| literal `Function` | `Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; zero-arg, caller-local non-capture, strict-body duplicate/non-simple/eval/arguments parameter early errors, and direct `.name` / `.length` / `.prototype` metadata are guarded for static constructor locals | first-class static `FunctionConstructorPlan` / generated function object |
 | literal `new Function` | `new Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; zero-arg and call output are Node differential guarded | generated function object + metadata |
 | dynamic `Function` | `new Function(body)` | 未完成 | `host.function.compile` + host function handle |
 | shadowed `eval` / `Function` | `let eval = f; eval("x")` | resolver が shadowed eval を ordinary call として保持し、parser は shadowing risk のある Function rewrite を避ける。shadowed `Function` ordinary-call fixture は Node differential guarded | ordinary user binding semantics |
@@ -333,7 +333,7 @@ Exit criteria:
   - 2+ args: all but last are parameter strings, last is body。
 - parameter strings は FormalParameters parse goal として parse する。
 - body は FunctionBody parse goal として parse する。
-- body-level `"use strict"` と non-simple params の early error を test で固定する。
+- body-level `"use strict"` と duplicate / non-simple / `eval` / `arguments` params の early error を test で固定する。compiler-stage focused tests cover the current synthetic FunctionExpr path.
 - generated function は global scope で resolve し、caller capture list が空であることを validate する。
 - function object metadata を作る。
   - `.name`

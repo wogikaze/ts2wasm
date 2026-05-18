@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_ir::builtin_resolved::{EvalKind, EvalSource, ResolvedExpr, ResolvedStmt};
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
@@ -5,7 +7,7 @@ use ts2wasm_ir::name_resolver::resolve_names;
 use ts2wasm_ir::name_resolver::{
     INTRINSIC_FUNCTION_CONSTRUCTOR_CALL, INTRINSIC_FUNCTION_CONSTRUCTOR_NEW,
 };
-use ts2wasm_syntax::FunctionExprOrigin;
+use ts2wasm_syntax::{Expr, FunctionExprOrigin, Stmt};
 /// Expand static literal dynamic-code expressions at compile time.
 ///
 /// For direct or indirect eval("literal") where the source is a compile-time string literal:
@@ -372,6 +374,7 @@ fn expand_static_function_constructor(
             span: Some(span),
             phase: None,
         })?;
+    validate_static_function_constructor_early_errors(&program, span)?;
 
     let name_resolved = resolve_names(&program)?;
     let builtin_resolved = resolve_builtins(&name_resolved)?;
@@ -406,6 +409,79 @@ fn expand_static_function_constructor(
         span: Some(span),
         phase: None,
     })
+}
+
+fn validate_static_function_constructor_early_errors(
+    program: &[Stmt],
+    span: ts2wasm_source::Span,
+) -> Result<(), Diagnostic> {
+    let Some(Stmt::Function { params, body, .. }) = program.first() else {
+        return Ok(());
+    };
+    if !block_has_use_strict_directive(body) {
+        return Ok(());
+    }
+
+    let mut seen = HashSet::new();
+    for (name, default, is_rest) in params {
+        if default.is_some() || *is_rest || !is_simple_identifier(name) {
+            return Err(function_constructor_syntax_error(
+                "Illegal 'use strict' directive in function with non-simple parameter list",
+                span,
+            ));
+        }
+        if matches!(name.as_str(), "eval" | "arguments") {
+            return Err(function_constructor_syntax_error(
+                "Unexpected eval or arguments in strict mode",
+                span,
+            ));
+        }
+        if !seen.insert(name.as_str()) {
+            return Err(function_constructor_syntax_error(
+                "Duplicate parameter name not allowed in this context",
+                span,
+            ));
+        }
+    }
+
+    Ok(())
+}
+
+fn block_has_use_strict_directive(stmts: &[Stmt]) -> bool {
+    for stmt in stmts {
+        match stmt {
+            Stmt::Expr {
+                expr: Expr::String { value, .. },
+                ..
+            } if value == "use strict" => return true,
+            Stmt::Expr {
+                expr: Expr::String { .. },
+                ..
+            } => continue,
+            _ => return false,
+        }
+    }
+    false
+}
+
+fn is_simple_identifier(text: &str) -> bool {
+    let mut chars = text.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    if !(first == '_' || first == '$' || first.is_ascii_alphabetic()) {
+        return false;
+    }
+    chars.all(|ch| ch == '_' || ch == '$' || ch.is_ascii_alphanumeric())
+}
+
+fn function_constructor_syntax_error(message: &str, span: ts2wasm_source::Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!("Function constructor source parse error: SyntaxError: {message}"),
+        span: Some(span),
+        phase: None,
+    }
 }
 
 /// Extract the completion value from a resolved program body.

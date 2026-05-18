@@ -324,7 +324,8 @@ The current implementation has several partial dynamic-code paths:
 - literal-only `Function(...)` and `new Function(...)` are classified by name
   resolution and expanded by the compiler eval-expand stage into synthetic
   function expressions, with caller-local non-capture guarded for the supported
-  `typeof` slice and direct
+  `typeof` slice, static strict-body parameter early errors guarded for
+  duplicate / non-simple / `eval` / `arguments` params, and direct
   `.name`/`.length`/`.prototype` metadata guarded for static constructor
   locals, including zero-argument `Function()` / `new Function()`;
 - shadowed `Function` bindings stay ordinary user calls in the current
@@ -339,9 +340,9 @@ The current implementation has several partial dynamic-code paths:
 The canonical implementation plan is
 `plans/eval-new-function-implementation-plan.md`. Current known gaps include
 the split parser/compiler eval expansion paths, direct eval declaration
-environment connection, Function constructor grammar/constructability
-completeness, and no `host.function.*` lane yet. Node-shim execution for dynamic indirect eval is
-not covered by the current iwasm-based differential runner.
+environment connection, remaining Function constructor grammar/constructability
+completeness, and no `host.function.*` lane yet. Node-shim execution for dynamic
+indirect eval is not covered by the current iwasm-based differential runner.
 
 ## Known compiler limitations
 
