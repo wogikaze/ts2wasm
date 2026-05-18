@@ -62,7 +62,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | static direct eval expression | `let x = eval("1 + 2")` | parser post-parse rewrite で一部対応。compiler eval-expand now resolves expression-only direct eval against visible caller bindings and preserves expression/assignment statement side effects through `Sequence` for guarded caller-local read/write slices | `EvalFragment` + completion slot で対応 |
 | static direct eval statement mutation | `eval('x = "after"')` | statement rewrite で一部対応 | caller-scope eval-code lowering で対応 |
 | static direct eval block function | `eval('{ function f(){} }')` | Annex B supported slice あり | hoist plan / mutable binding env を validation 付きで対応 |
-| direct eval with declarations | `eval('var x=1; x')` | static direct eval statement expansion now covers a guarded `var` + function declaration landing slice where the eval-defined function reads the eval-defined var. Expression completion and broader environment connection remain incomplete | eval-code environment + completion record |
+| direct eval with declarations | `eval('var x=1; x')` | static direct eval statement expansion now covers guarded `var` + function declaration landing slices, eval-defined function reads of eval-defined vars, expression completion, and function-body follow-up reads of eval-created `var` bindings. Broader lexical environment modeling remains incomplete | eval-code environment + completion record |
 | indirect eval static literal | `(0, eval)("1+2")` | resolver が direct/indirect を分類し、supported literal subset は AOT eval expansion で host import なし | global `EvalFragment` AOT |
 | indirect eval dynamic | `(0, eval)(src)` | `host.eval.indirect` manifest / host-deny slice と primitive-return / string-keyed primitive object property node-shim 実行 regression は実装済み | `host.eval.indirect` capability |
 | direct eval dynamic | `eval(src)` | `host.eval.direct` manifest / host-deny slice と primitive-return node-shim 実行 regression は実装済み。initialized env-cell descriptor 経由の primitive number caller-local / parameter / catch binding write-back、未初期化 caller env binding の TDZ-unsafe host 実行拒否、plain object result、object identity、nested object/array properties、string-keyed primitive property bridge、host-thrown error bridge、class/object method receiver、class method `arguments`、arrow lexical `this` / `arguments` / outer lexical write-back、既存 `var` landing zone への `var` / function declaration write-back、host lane 内の新規 `var` / function declaration persistence も focused node-shim guarded。wasm-native access to runtime-created bindings と full TDZ modeling は未完 | env descriptor + mutation ledger + write-back |
@@ -564,7 +564,10 @@ Phase 1 regression note:
   binding context.
 - Static direct eval expression side effects have a focused caller-local
   write/read regression (`let r = eval('x = "after"; x')`) preserved through
-  `Sequence`. Declaration completion still needs `EvalCompletionSlot`.
+  `Sequence`. Static direct eval declaration landing also covers function-body
+  follow-up reads of eval-created `var` bindings after `eval("var x = ...")`.
+  Broader lexical environment modeling still needs the canonical
+  `EvalCompletionSlot` / eval-code environment path.
 
 ### Phase 9: `$262.evalScript` / test262 ramp / cleanup
 

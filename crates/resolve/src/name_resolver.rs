@@ -377,6 +377,7 @@ impl NameResolver {
                 self.predeclare_binding(name, Some(*span))?;
             }
         }
+        self.predeclare_static_direct_eval_var_bindings(program)?;
 
         // Second pass: resolve all statements
         let mut resolved = Vec::new();
@@ -1714,9 +1715,25 @@ impl NameResolver {
                 }
             }
         }
+        self.predeclare_static_direct_eval_var_bindings(block)?;
         let result = block.iter().map(|s| self.resolve_stmt(s)).collect();
         self.exit_scope();
         result
+    }
+
+    fn predeclare_static_direct_eval_var_bindings(
+        &mut self,
+        block: &[Stmt],
+    ) -> Result<(), Diagnostic> {
+        if self.has_user_binding("eval") {
+            return Ok(());
+        }
+        let mut names = Vec::new();
+        collect_static_direct_eval_declarations_from_stmts(block, &mut names);
+        for name in names {
+            self.declare_binding(&name, None, true)?;
+        }
+        Ok(())
     }
 
     fn enter_scope(&mut self) {
@@ -2193,6 +2210,387 @@ fn unsupported_module_decl(span: Span, form: &str) -> Diagnostic {
         span: Some(span),
 
         phase: None,
+    }
+}
+
+fn collect_static_direct_eval_declarations_from_stmts(stmts: &[Stmt], names: &mut Vec<String>) {
+    for stmt in stmts {
+        collect_static_direct_eval_declarations_from_stmt(stmt, names);
+    }
+}
+
+fn collect_static_direct_eval_declarations_from_stmt(stmt: &Stmt, names: &mut Vec<String>) {
+    match stmt {
+        Stmt::Let { expr, .. }
+        | Stmt::Assign { expr, .. }
+        | Stmt::Expr { expr, .. }
+        | Stmt::Return { expr, .. }
+        | Stmt::Throw { expr, .. } => {
+            collect_static_direct_eval_declarations_from_expr(expr, names);
+        }
+        Stmt::If {
+            condition,
+            then_body,
+            else_body,
+            ..
+        } => {
+            collect_static_direct_eval_declarations_from_expr(condition, names);
+            collect_static_direct_eval_declarations_from_stmts(then_body, names);
+            collect_static_direct_eval_declarations_from_stmts(else_body, names);
+        }
+        Stmt::While {
+            condition, body, ..
+        } => {
+            collect_static_direct_eval_declarations_from_expr(condition, names);
+            collect_static_direct_eval_declarations_from_stmts(body, names);
+        }
+        Stmt::DoWhile {
+            body, condition, ..
+        } => {
+            collect_static_direct_eval_declarations_from_stmts(body, names);
+            collect_static_direct_eval_declarations_from_expr(condition, names);
+        }
+        Stmt::For {
+            init,
+            condition,
+            update,
+            body,
+            ..
+        } => {
+            if let Some(init) = init {
+                collect_static_direct_eval_declarations_from_stmt(init, names);
+            }
+            if let Some(condition) = condition {
+                collect_static_direct_eval_declarations_from_expr(condition, names);
+            }
+            if let Some(update) = update {
+                collect_static_direct_eval_declarations_from_expr(update, names);
+            }
+            collect_static_direct_eval_declarations_from_stmts(body, names);
+        }
+        Stmt::ForIn { iter, body, .. }
+        | Stmt::ForOf { iter, body, .. }
+        | Stmt::ForAwaitOf { iter, body, .. } => {
+            collect_static_direct_eval_declarations_from_expr(iter, names);
+            collect_static_direct_eval_declarations_from_stmts(body, names);
+        }
+        Stmt::Switch { expr, cases, .. } => {
+            collect_static_direct_eval_declarations_from_expr(expr, names);
+            for (_, body) in cases {
+                collect_static_direct_eval_declarations_from_stmts(body, names);
+            }
+        }
+        Stmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            collect_static_direct_eval_declarations_from_stmts(try_block, names);
+            if let Some(catch_block) = catch_block {
+                collect_static_direct_eval_declarations_from_stmts(catch_block, names);
+            }
+            if let Some(finally_block) = finally_block {
+                collect_static_direct_eval_declarations_from_stmts(finally_block, names);
+            }
+        }
+        Stmt::Block { statements, .. } => {
+            collect_static_direct_eval_declarations_from_stmts(statements, names);
+        }
+        Stmt::Labeled { body, .. } => {
+            collect_static_direct_eval_declarations_from_stmt(body, names);
+        }
+        Stmt::ExportDecl { declaration, .. } => {
+            collect_static_direct_eval_declarations_from_stmt(declaration, names);
+        }
+        Stmt::Function { .. }
+        | Stmt::ClassDecl { .. }
+        | Stmt::EnumDecl { .. }
+        | Stmt::Break { .. }
+        | Stmt::Continue { .. }
+        | Stmt::AmbientValueDecl { .. }
+        | Stmt::ImportSideEffect { .. }
+        | Stmt::ImportNamed { .. }
+        | Stmt::ImportDefault { .. }
+        | Stmt::ImportDefaultNamed { .. }
+        | Stmt::ImportNamespace { .. }
+        | Stmt::ImportDefaultNamespace { .. }
+        | Stmt::ExportNamed { .. }
+        | Stmt::ExportNamedFrom { .. }
+        | Stmt::ExportAllFrom { .. }
+        | Stmt::ExportNamespaceFrom { .. }
+        | Stmt::ExportDefault { .. }
+        | Stmt::ExportAssignment { .. } => {}
+    }
+}
+
+fn collect_static_direct_eval_declarations_from_expr(expr: &Expr, names: &mut Vec<String>) {
+    if let Some(source) = expr.direct_eval_literal_source() {
+        collect_static_eval_var_function_names(source, names);
+    }
+    match expr {
+        Expr::Await { expr, .. }
+        | Expr::Yield {
+            expr: Some(expr), ..
+        }
+        | Expr::Unary { expr, .. }
+        | Expr::Assign { expr, .. }
+        | Expr::LogicalAssign { expr, .. }
+        | Expr::TypeOf { expr, .. }
+        | Expr::Spread { expr, .. } => {
+            collect_static_direct_eval_declarations_from_expr(expr, names);
+        }
+        Expr::Binary { left, right, .. } => {
+            collect_static_direct_eval_declarations_from_expr(left, names);
+            collect_static_direct_eval_declarations_from_expr(right, names);
+        }
+        Expr::Member { object, .. } | Expr::OptionalMember { object, .. } => {
+            collect_static_direct_eval_declarations_from_expr(object, names);
+        }
+        Expr::Call { callee, args, .. }
+        | Expr::OptionalCall { callee, args, .. }
+        | Expr::New {
+            expr: callee, args, ..
+        } => {
+            collect_static_direct_eval_declarations_from_expr(callee, names);
+            for arg in args {
+                collect_static_direct_eval_declarations_from_expr(arg, names);
+            }
+        }
+        Expr::LogicalPropertyAssign {
+            object_expr,
+            computed_key,
+            expr,
+            ..
+        } => {
+            if let Some(object_expr) = object_expr {
+                collect_static_direct_eval_declarations_from_expr(object_expr, names);
+            }
+            if let Some(computed_key) = computed_key {
+                collect_static_direct_eval_declarations_from_expr(computed_key, names);
+            }
+            collect_static_direct_eval_declarations_from_expr(expr, names);
+        }
+        Expr::Array { elements, .. } => {
+            for element in elements {
+                match element {
+                    ArrayLiteralElement::Present(expr) | ArrayLiteralElement::Spread(expr) => {
+                        collect_static_direct_eval_declarations_from_expr(expr, names);
+                    }
+                    ArrayLiteralElement::Hole(_) => {}
+                }
+            }
+        }
+        Expr::Object { props, .. } => {
+            for prop in props {
+                collect_static_direct_eval_declarations_from_expr(prop.value(), names);
+            }
+        }
+        Expr::Index { object, index, .. } | Expr::OptionalIndex { object, index, .. } => {
+            collect_static_direct_eval_declarations_from_expr(object, names);
+            collect_static_direct_eval_declarations_from_expr(index, names);
+        }
+        Expr::InstanceOf {
+            expr, type_expr, ..
+        } => {
+            collect_static_direct_eval_declarations_from_expr(expr, names);
+            collect_static_direct_eval_declarations_from_expr(type_expr, names);
+        }
+        Expr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            collect_static_direct_eval_declarations_from_expr(condition, names);
+            collect_static_direct_eval_declarations_from_expr(then_expr, names);
+            collect_static_direct_eval_declarations_from_expr(else_expr, names);
+        }
+        Expr::PropertyAssign { object, value, .. } => {
+            collect_static_direct_eval_declarations_from_expr(object, names);
+            collect_static_direct_eval_declarations_from_expr(value, names);
+        }
+        Expr::IndexAssign {
+            object,
+            index,
+            value,
+            ..
+        } => {
+            collect_static_direct_eval_declarations_from_expr(object, names);
+            collect_static_direct_eval_declarations_from_expr(index, names);
+            collect_static_direct_eval_declarations_from_expr(value, names);
+        }
+        Expr::Sequence { exprs, .. } => {
+            for expr in exprs {
+                collect_static_direct_eval_declarations_from_expr(expr, names);
+            }
+        }
+        Expr::ArrowFn { .. }
+        | Expr::FunctionExpr { .. }
+        | Expr::ClassExpr { .. }
+        | Expr::Yield { expr: None, .. }
+        | Expr::Number { .. }
+        | Expr::DecimalNumber { .. }
+        | Expr::BigInt { .. }
+        | Expr::String { .. }
+        | Expr::Bool { .. }
+        | Expr::Null { .. }
+        | Expr::Undefined { .. }
+        | Expr::Ident { .. }
+        | Expr::NewTarget { .. }
+        | Expr::ImportMeta { .. }
+        | Expr::This { .. } => {}
+    }
+}
+
+fn collect_static_eval_var_function_names(source: &str, names: &mut Vec<String>) {
+    collect_keyword_bound_names(source, "var", names);
+    collect_keyword_bound_names(source, "function", names);
+}
+
+fn collect_keyword_bound_names(source: &str, keyword: &str, names: &mut Vec<String>) {
+    let mut index = 0;
+    while let Some(keyword_start) = find_keyword_outside_literals(source, keyword, index) {
+        let after_keyword = keyword_start + keyword.len();
+        let mut cursor = skip_ascii_ws(source, after_keyword);
+        if keyword == "function" && source[cursor..].starts_with('*') {
+            cursor = skip_ascii_ws(source, cursor + 1);
+        }
+        while let Some((name, next)) = parse_identifier_at(source, cursor) {
+            push_unique_name(names, name);
+            if keyword == "function" {
+                break;
+            }
+            cursor = skip_var_initializer(source, next);
+            if source[cursor..].starts_with(',') {
+                cursor = skip_ascii_ws(source, cursor + 1);
+                continue;
+            }
+            break;
+        }
+        index = after_keyword;
+    }
+}
+
+fn find_keyword_outside_literals(source: &str, keyword: &str, start: usize) -> Option<usize> {
+    let bytes = source.as_bytes();
+    let mut index = start;
+    while index < source.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => {
+                index = skip_quoted_source(source, index);
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'/') => {
+                index += 2;
+                while index < source.len() && bytes[index] != b'\n' {
+                    index += 1;
+                }
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'*') => {
+                index += 2;
+                while index + 1 < source.len()
+                    && !(bytes[index] == b'*' && bytes[index + 1] == b'/')
+                {
+                    index += 1;
+                }
+                index = (index + 2).min(source.len());
+            }
+            _ if source[index..].starts_with(keyword) => {
+                let end = index + keyword.len();
+                if is_identifier_boundary(source, index, end) {
+                    return Some(index);
+                }
+                index = end;
+            }
+            _ => index += 1,
+        }
+    }
+    None
+}
+
+fn skip_quoted_source(source: &str, start: usize) -> usize {
+    let bytes = source.as_bytes();
+    let quote = bytes[start];
+    let mut index = start + 1;
+    while index < source.len() {
+        if bytes[index] == b'\\' {
+            index = (index + 2).min(source.len());
+            continue;
+        }
+        if bytes[index] == quote {
+            return index + 1;
+        }
+        index += 1;
+    }
+    source.len()
+}
+
+fn skip_var_initializer(source: &str, start: usize) -> usize {
+    let mut cursor = start;
+    let mut depth = 0usize;
+    let bytes = source.as_bytes();
+    while cursor < source.len() {
+        let ch = bytes[cursor] as char;
+        match ch {
+            '(' | '[' | '{' => depth += 1,
+            ')' | ']' | '}' if depth > 0 => depth -= 1,
+            ',' | ';' if depth == 0 => break,
+            _ => {}
+        }
+        cursor += 1;
+    }
+    skip_ascii_ws(source, cursor)
+}
+
+fn is_identifier_boundary(source: &str, start: usize, end: usize) -> bool {
+    let before = start
+        .checked_sub(1)
+        .and_then(|pos| source.as_bytes().get(pos).copied())
+        .is_none_or(|byte| !is_ident_continue_byte(byte));
+    let after = source
+        .as_bytes()
+        .get(end)
+        .copied()
+        .is_none_or(|byte| !is_ident_continue_byte(byte));
+    before && after
+}
+
+fn parse_identifier_at(source: &str, start: usize) -> Option<(&str, usize)> {
+    let bytes = source.as_bytes();
+    let first = *bytes.get(start)?;
+    if !is_ident_start_byte(first) {
+        return None;
+    }
+    let mut end = start + 1;
+    while bytes.get(end).copied().is_some_and(is_ident_continue_byte) {
+        end += 1;
+    }
+    Some((&source[start..end], skip_ascii_ws(source, end)))
+}
+
+fn skip_ascii_ws(source: &str, mut index: usize) -> usize {
+    while source
+        .as_bytes()
+        .get(index)
+        .copied()
+        .is_some_and(|byte| byte.is_ascii_whitespace())
+    {
+        index += 1;
+    }
+    index
+}
+
+fn is_ident_start_byte(byte: u8) -> bool {
+    byte == b'_' || byte == b'$' || byte.is_ascii_alphabetic()
+}
+
+fn is_ident_continue_byte(byte: u8) -> bool {
+    is_ident_start_byte(byte) || byte.is_ascii_digit()
+}
+
+fn push_unique_name(names: &mut Vec<String>, name: &str) {
+    if !names.iter().any(|existing| existing == name) {
+        names.push(name.to_owned());
     }
 }
 

@@ -904,6 +904,7 @@ directories:
     - direct-eval-for-in-completion.ts
     - direct-eval-for-of-completion.ts
     - direct-eval-function-lands-in-caller.ts
+    - direct-eval-function-var-visible-after-eval.ts
     - direct-eval-function-hoisted-before-use.ts
     - direct-eval-if-var-hoisted-undefined.ts
     - direct-eval-if-var-lands-in-caller.ts

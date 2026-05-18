@@ -189,6 +189,12 @@ fn static_direct_eval_lands_var_and_function_declarations() {
 }
 
 #[test]
+fn static_direct_eval_function_var_is_visible_after_eval() {
+    let fixture = "fixtures/core-semantics/direct-eval-function-var-visible-after-eval.ts";
+    assert_node_shim_stdout(fixture, "2\n2\n");
+}
+
+#[test]
 fn static_direct_eval_block_var_lands_in_caller_scope() {
     let fixture = "fixtures/core-semantics/direct-eval-block-var-lands-in-caller.ts";
     assert_node_shim_stdout(fixture, "2\n2\n");

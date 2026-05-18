@@ -651,6 +651,38 @@ mod tests {
     }
 
     #[test]
+    fn resolver_predeclares_static_direct_eval_var_in_function_body() {
+        let builtins = parse_resolve_builtins(
+            "function run() { let result = eval(\"var value = 2; value\"); return value; }",
+        );
+        let crate::ResolvedStmt::Function { body, .. } = &builtins[0] else {
+            panic!("expected function statement: {builtins:?}");
+        };
+        assert!(
+            matches!(body.last(), Some(crate::ResolvedStmt::Return(crate::ResolvedExpr::Ident(name))) if name == "value"),
+            "expected eval-created var to resolve in later function body statement: {body:?}"
+        );
+    }
+
+    #[test]
+    fn resolver_does_not_predeclare_shadowed_static_eval_var() {
+        let tokens = ts2wasm_frontend::Lexer::new(
+            "function run() { let eval = (source) => source; eval(\"var value = 2\"); return value; }",
+        )
+        .tokenize()
+        .unwrap();
+        let parsed = ts2wasm_frontend::Parser::new(
+            tokens,
+            "function run() { let eval = (source) => source; eval(\"var value = 2\"); return value; }",
+        )
+        .parse_program()
+        .unwrap();
+        let err = name_resolver::resolve_names(&parsed).unwrap_err();
+        assert_eq!(err.code, DiagCode::UnresolvedName);
+        assert!(err.message.contains("value"));
+    }
+
+    #[test]
     fn resolver_preserves_typeof_unresolved_identifier_for_runtime_undefined_result() {
         let builtins = parse_resolve_builtins("let value = typeof notDeclared;");
         let crate::ResolvedStmt::Let(_, crate::ResolvedExpr::Unary { expr, .. }) = &builtins[0]

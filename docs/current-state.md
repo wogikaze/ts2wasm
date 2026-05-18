@@ -315,7 +315,8 @@ Last audited: 2026-05-18T00:00:00+09:00.
 The current implementation has several partial dynamic-code paths:
 
 - static string direct `eval(...)` can be expanded at compile time for the
-  supported expression-completion and caller-local mutation slices;
+  supported expression-completion and caller-local mutation slices, including
+  function-body follow-up reads of eval-created `var` bindings;
 - static string indirect eval shapes `(0, eval)(...)`, `globalThis.eval(...)`,
   and `globalThis["eval"](...)` are classified by resolver and expanded through
   the AOT eval lane without Node host imports for the supported literal subset;
@@ -382,8 +383,8 @@ The current implementation has several partial dynamic-code paths:
 
 The canonical implementation plan is
 `plans/eval-new-function-implementation-plan.md`. Current known gaps include
-the split parser/compiler eval expansion paths, direct eval declaration
-environment connection, remaining Function constructor grammar/constructability
+the split parser/compiler eval expansion paths, broader lexical direct-eval
+environment modeling, remaining Function constructor grammar/constructability
 completeness, runtime-wide host external object contracts, and full dynamic
 direct-eval environment semantics beyond the focused env-cell write-back slice.
 Node-shim execution for dynamic indirect eval, dynamic direct eval, and dynamic
