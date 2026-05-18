@@ -1180,6 +1180,17 @@ fn eval_statement_completion_step(
                 body_steps: eval_completion_steps(ast_body, body, leak_var_declarations),
             }
         }
+        ResolvedStmt::ForOf { var, iter, body } => {
+            let ast_body = match ast_stmt {
+                Some(Stmt::ForOf { body, .. }) => body.as_slice(),
+                _ => &[],
+            };
+            EvalCompletionStep::ForOf {
+                var,
+                iter,
+                body_steps: eval_completion_steps(ast_body, body, leak_var_declarations),
+            }
+        }
         ResolvedStmt::Switch { expr, cases } => {
             let ast_cases = match ast_stmt {
                 Some(Stmt::Switch { cases, .. }) => cases.as_slice(),

@@ -503,6 +503,49 @@ impl super::Resolver {
                     self.ctx.symbols.scopes.pop();
                     stmts.push(lowered?);
                 }
+                EvalCompletionStep::ForOf {
+                    var,
+                    iter,
+                    body_steps,
+                } => {
+                    let var_id = self.declare_local(var)?;
+                    let lowered_iter = if let ResolvedExpr::Ident(name) = iter
+                        && let Ok(local_id) = self.resolve_local(name)
+                    {
+                        let class_name = self.ctx.classes.local_classes.get(&local_id);
+                        if class_name.is_some_and(|c| c == "Set") {
+                            LoweredExpr::RuntimeCall {
+                                intrinsic: RuntimeFn::SetValuesArray,
+                                args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
+                                span: Span::generated("runtime_call"),
+                            }
+                        } else if class_name.is_some_and(|c| c == "Map") {
+                            LoweredExpr::RuntimeCall {
+                                intrinsic: RuntimeFn::MapEntryPairsArray,
+                                args: vec![LoweredExpr::Local(local_id, Span::generated("local"))],
+                                span: Span::generated("runtime_call"),
+                            }
+                        } else {
+                            self.lower_expr(iter)?
+                        }
+                    } else {
+                        self.lower_expr(iter)?
+                    };
+                    let body = self.lower_eval_completion_steps_scoped(
+                        body_steps,
+                        completion,
+                        caller_scope_index,
+                    )?;
+                    stmts.push(LoweredStmt::ForOf {
+                        var: var_id,
+                        iter: lowered_iter,
+                        iter_local: self.alloc_temp(),
+                        index_local: self.alloc_temp(),
+                        len_local: self.alloc_temp(),
+                        body,
+                        span: Span::generated("eval_completion_for_of"),
+                    });
+                }
                 EvalCompletionStep::Switch { expr, cases } => {
                     let expr = self.lower_expr(expr)?;
                     let cases = cases
