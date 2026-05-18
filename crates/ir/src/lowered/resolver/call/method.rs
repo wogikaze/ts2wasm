@@ -4256,6 +4256,14 @@ impl super::super::Resolver {
                 lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
             }
         }
+        // ArrayJoin expects a separator argument. Inject "," for toString/toLocaleString
+        // on Array-like classes when no separator was explicitly passed (prototype.call path).
+        if lowered_args.len() == 1
+            && (method == "toString" || method == "toLocaleString")
+            && (class_name == "Array" || is_typed_array_class(class_name))
+        {
+            lowered_args.push(LoweredExpr::String(",".to_owned(), Span::generated("str")));
+        }
         Ok(lowered_args)
     }
 
