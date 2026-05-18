@@ -49,6 +49,15 @@ impl super::super::Resolver {
             return self.lower_delete_expr(expr);
         }
         if *op == UnaryOp::TypeOf {
+            if let ResolvedExpr::Ident(name) = expr
+                && self.resolve_local(name).is_err()
+                && self.ctx.classes.class_constructor_ids.contains_key(name)
+            {
+                return Ok(LoweredExpr::String(
+                    "function".to_owned(),
+                    Span::generated("typeof_class_constructor"),
+                ));
+            }
             let lowered = match self.lower_expr(expr) {
                 Ok(expr) => expr,
                 Err(err)

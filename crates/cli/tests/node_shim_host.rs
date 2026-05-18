@@ -288,7 +288,7 @@ fn static_direct_eval_destructuring_preserves_completion() {
 #[test]
 fn static_direct_eval_class_declaration_preserves_completion() {
     let fixture = "fixtures/core-semantics/direct-eval-class-declaration-completion.ts";
-    assert_node_shim_stdout(fixture, "5\nundefined\n");
+    assert_node_shim_stdout(fixture, "function:5\nundefined\n");
 }
 
 #[test]
