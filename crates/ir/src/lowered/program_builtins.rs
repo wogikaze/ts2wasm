@@ -361,6 +361,8 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "unshift") => Some(RuntimeFn::ArrayUnshift),
         ("Array", "splice") => Some(RuntimeFn::ArraySplice),
         ("Object", "valueOf") => Some(RuntimeFn::ValueOf),
+        // Symbol prototype methods
+        ("Symbol", "toString") => Some(RuntimeFn::SymbolToString),
         // String prototype methods
         ("String", "charAt") => Some(RuntimeFn::StringCharAt),
         ("String", "charCodeAt") => Some(RuntimeFn::StringCharCodeAt),

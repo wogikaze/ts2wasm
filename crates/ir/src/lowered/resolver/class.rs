@@ -467,6 +467,9 @@ impl super::Resolver {
     pub(super) fn infer_class_for_expr(&self, expr: &ResolvedExpr) -> Option<String> {
         match expr {
             ResolvedExpr::New { class_name, .. } => Some(class_name.clone()),
+            ResolvedExpr::Call { callee, .. } if matches!(callee.as_ref(), ResolvedExpr::Ident(name) if name == "Symbol") => {
+                Some("Symbol".to_owned())
+            }
             ResolvedExpr::Object(_) => Some("Object".to_owned()),
             ResolvedExpr::MethodCall { object, method, .. }
                 if method == "groupBy"
@@ -508,9 +511,7 @@ impl super::Resolver {
                 Some("RegExp".to_owned())
             }
             ResolvedExpr::String(_) => Some("String".to_owned()),
-            ResolvedExpr::Number(_) | ResolvedExpr::DecimalNumber(_) => {
-                Some("Number".to_owned())
-            }
+            ResolvedExpr::Number(_) | ResolvedExpr::DecimalNumber(_) => Some("Number".to_owned()),
             ResolvedExpr::Bool(_) => Some("Boolean".to_owned()),
             ResolvedExpr::Array(_) => Some("Array".to_owned()),
             ResolvedExpr::BigIntLiteral { .. } => Some("BigInt".to_owned()),

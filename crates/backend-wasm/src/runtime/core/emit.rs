@@ -573,12 +573,13 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_symbol_to_string_tag(&self, wat: &mut String) {
+        let symbol_str = self.string_value("Symbol");
         wat.push_str(&format!(
             r#"
   (func $symbol_to_string_tag (param $value i32) (result i32)
-    (i32.const {undefined}))
+    (i32.const {symbol_str}))
 "#,
-            undefined = ValueTag::UNDEFINED,
+            symbol_str = symbol_str,
         ));
     }
 
@@ -640,12 +641,26 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_symbol_to_string(&self, wat: &mut String) {
-        wat.push_str(
+        wat.push_str(&format!(
             r#"
   (func $symbol_to_string (param $v i32) (result i32)
-    (local.get $v))
+    (local $len i32)
+    (local $ptr i32)
+    (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
+    (local.set $ptr
+      (call $alloc_heap
+        (i32.add (i32.const {string_header_size}) (local.get $len))))
+    (i32.store (local.get $ptr) (local.get $len))
+    (call $copy
+      (i32.const {scratch})
+      (i32.add (local.get $ptr) (i32.const {string_header_size}))
+      (local.get $len))
+    (i32.or (local.get $ptr) (i32.const {string_tag})))
 "#,
-        );
+            string_tag = ValueTag::STRING,
+            string_header_size = Layout::STRING_HEADER_SIZE,
+            scratch = Layout::SCRATCH_OFFSET,
+        ));
     }
 
     pub(crate) fn emit_symbol_description(&self, wat: &mut String) {
