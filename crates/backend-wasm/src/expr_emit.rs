@@ -2420,11 +2420,24 @@ impl WatEmitter<'_> {
                 }
             }
         }
-        writer.push_str(&format!("{pad}(call ${})\n", function_symbol(*constructor)));
-        writer.drop(indent);
-
         writer.push_str(&format!(
-            "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+            "{pad}(local.set {} (call ${}))\n",
+            frame.heap_value_tmp(),
+            function_symbol(*constructor)
+        ));
+        writer.push_str(&format!(
+            "{pad}(if (result i32) (i32.or\n\
+             {pad}    (i32.eq (i32.and (local.get {}) (i32.const {})) (i32.const {}))\n\
+             {pad}    (i32.eq (i32.and (local.get {}) (i32.const {})) (i32.const {})))\n\
+             {pad}  (then (local.get {}))\n\
+             {pad}  (else (i32.or (local.get {}) (i32.const {}))))\n",
+            frame.heap_value_tmp(),
+            ValueTag::TAG_MASK,
+            ValueTag::OBJECT,
+            frame.heap_value_tmp(),
+            ValueTag::TAG_MASK,
+            ValueTag::ARRAY,
+            frame.heap_value_tmp(),
             local_index(*base_local),
             ValueTag::OBJECT,
         ));

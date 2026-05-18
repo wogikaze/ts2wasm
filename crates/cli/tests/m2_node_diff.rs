@@ -1148,6 +1148,13 @@ fn function_constructor_call_fixture_builds_static_constructor() {
 }
 
 #[test]
+fn function_constructor_construct_return_object_matches_node_output() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/function-constructor-construct-return-object.ts",
+    );
+}
+
+#[test]
 fn function_constructor_does_not_capture_caller_scope() {
     assert_fixture_matches_node(
         "fixtures/core-semantics/function-constructor-no-caller-capture.ts",
