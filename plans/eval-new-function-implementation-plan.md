@@ -525,11 +525,12 @@ Exit criteria:
   host import, and the Node shim regression covers primitive number
   caller-local, parameter, and shadowed block-local write-back plus string
   result/write-back bridging, object result default stringification,
-  string-keyed primitive object property reads, and strict lexical shadow
-  isolation for local `let`. Lowering also rejects dynamic direct eval before
+  string-keyed primitive object property reads, object identity, nested array
+  properties with primitive elements, and strict lexical shadow isolation for
+  local `let`. Lowering also rejects dynamic direct eval before
   not-yet-initialized caller env bindings so the current host lane cannot bypass
-  TDZ semantics. Full declaration landing, full TDZ modeling, object identity,
-  nested/non-primitive properties, and error bridge semantics remain open.
+  TDZ semantics. Full declaration landing, full TDZ modeling, nested
+  non-primitive properties, and error bridge semantics remain open.
 
 ### Phase 9: `$262.evalScript` / test262 ramp / cleanup
 

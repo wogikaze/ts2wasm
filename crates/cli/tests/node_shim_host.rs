@@ -176,6 +176,18 @@ fn dynamic_direct_eval_preserves_object_properties_through_node_shim_host_import
 }
 
 #[test]
+fn dynamic_direct_eval_preserves_object_identity_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-object-identity-node-shim.ts";
+    assert_node_shim_stdout(fixture, "true\n7\n");
+}
+
+#[test]
+fn dynamic_direct_eval_bridges_nested_arrays_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-nested-array-node-shim.ts";
+    assert_node_shim_stdout(fixture, "2\n7\n8\nundefined\n");
+}
+
+#[test]
 fn dynamic_direct_eval_strict_lexical_shadow_does_not_write_back_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-strict-lexical-shadow-node-shim.ts";
     assert_node_shim_stdout(fixture, "2\n1\n");

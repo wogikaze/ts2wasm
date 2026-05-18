@@ -886,6 +886,8 @@ directories:
     - direct-eval-caller-local.ts
     - direct-eval-dynamic-block-shadow-writeback-node-shim.ts
     - direct-eval-dynamic-local-writeback-node-shim.ts
+    - direct-eval-dynamic-nested-array-node-shim.ts
+    - direct-eval-dynamic-object-identity-node-shim.ts
     - direct-eval-dynamic-object-properties-node-shim.ts
     - direct-eval-dynamic-object-result-node-shim.ts
     - direct-eval-dynamic-param-writeback-node-shim.ts
