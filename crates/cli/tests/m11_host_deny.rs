@@ -423,6 +423,14 @@ fn static_optional_eval_global_scope_declares_no_node_host_eval_capability() {
 }
 
 #[test]
+fn shadowed_optional_eval_declares_no_node_host_eval_capability() {
+    assert_standalone_category(
+        "core-semantics/optional-eval-shadowed-ordinary-call.ts",
+        "shadowed optional eval ordinary call",
+    );
+}
+
+#[test]
 fn nested_static_direct_eval_declares_no_node_host_eval_capability() {
     assert_standalone_category(
         "core-semantics/direct-eval-nested-static.ts",
