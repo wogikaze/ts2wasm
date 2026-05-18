@@ -431,6 +431,14 @@ fn static_indirect_eval_function_global_declares_no_node_host_eval_capability() 
 }
 
 #[test]
+fn static_indirect_eval_lexical_local_declares_no_node_host_eval_capability() {
+    assert_standalone_category(
+        "core-semantics/indirect-eval-static-lexical-local.ts",
+        "static indirect eval lexical local",
+    );
+}
+
+#[test]
 fn static_optional_eval_global_scope_declares_no_node_host_eval_capability() {
     assert_standalone_category(
         "core-semantics/optional-eval-static-global-scope.ts",
