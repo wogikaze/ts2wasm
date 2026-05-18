@@ -72,7 +72,7 @@ Related tracking: `issues/done/I-20260513-HD4K3Q.md`, `issues/done/I-20260513-B4
 | literal `new Function` | `new Function("a", "return a")` | resolver/compiler synthetic `FunctionExpr` slice; zero-arg and call output are Node differential guarded | generated function object + metadata |
 | dynamic `Function` | `new Function(body)` | `host.function.compile` manifest / host-deny slice と statically visible returned host function handle の `host.function.call` / `host.function.construct` manifest/lowering slice は実装済み。primitive/string/object-return call、discarded construct、string-keyed primitive object property reads、`.length` / `.name` / `.prototype` metadata reads、host object/array growth forwarding の node-shim regression も実装済み | `host.function.compile` + host function handle |
 | shadowed `eval` / `Function` | `let eval = f; eval("x")` | resolver が shadowed eval を ordinary call として保持し、parser は shadowing risk のある Function rewrite を避ける。shadowed `Function` ordinary-call fixture は Node differential guarded | ordinary user binding semantics |
-| `$262.evalScript` | `$262.evalScript(src)` | runtime helper exists but dynamic eval body未実装 | harness/global eval lane として別分類 |
+| `$262.evalScript` | `$262.evalScript(src)` | method lowering routes the test262 host hook through `Dollar262Eval`, which delegates to the audited `host.eval.indirect` lane; focused node-shim and host-deny regressions are guarded | broader realm / cross-realm classification |
 
 ## 4. 最終設計
 
@@ -587,6 +587,14 @@ Phase 1 regression note:
 Exit criteria:
 
 - eval / Function constructor による expected-fail は実装不能扱いではなく、realm/harness/security など明確な理由だけに残る。
+
+進捗:
+
+- `$262.evalScript(source)` method calls now lower to `Dollar262Eval`, which
+  depends on `EvalIndirectHost` and delegates to the `host.eval.indirect` helper
+  instead of trapping with a silent `unreachable`. Focused Node-shim and
+  host-deny regressions cover the host lane. Realm / cross-realm classification
+  and broader test262 burn-down remain open.
 
 ## 6. File-by-file task map
 

@@ -33,6 +33,21 @@ impl super::super::Resolver {
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
+        if matches!(object, ResolvedExpr::Ident(name) if name == "$262") && method == "evalScript" {
+            if args.len() != 1 {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!("$262.evalScript expects 1 argument, got {}", args.len()),
+                    span: Some(span),
+                    phase: None,
+                });
+            }
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::Dollar262Eval,
+                args: vec![self.lower_expr(&args[0])?],
+                span: Span::generated("runtime_call"),
+            });
+        }
         if let Some(result) = self.lower_mcall_early(object, method, args, span)? {
             return Ok(result);
         }

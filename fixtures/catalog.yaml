@@ -1137,6 +1137,7 @@ directories:
     - template-literal-legacy-octal-strict-unsupported.ts
     - template-literal-legacy-octal.ts
     - template-literal.ts
+    - test262-eval-script-node-shim.ts
     - ternary.ts
     - this-extracted-method-unsupported.ts
     - this-non-identifier-receiver-unsupported.ts

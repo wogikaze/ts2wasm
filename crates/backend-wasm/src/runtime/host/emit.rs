@@ -1852,9 +1852,9 @@ impl WatEmitter<'_> {
     pub(crate) fn emit_dollar_262_eval(&self, wat: &mut String) {
         wat.push_str(
             r#"
-  ;; Dollar262Eval: dynamic source evaluation is intentionally unsupported.
+  ;; Dollar262Eval: test262 global-script evaluation delegates to indirect eval.
   (func $dollar_262_eval (param $source i32) (result i32)
-    unreachable)
+    (call $eval_indirect_host (local.get $source)))
 "#,
         );
     }

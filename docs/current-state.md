@@ -351,7 +351,10 @@ The current implementation has several partial dynamic-code paths:
   bindings to avoid TDZ-unsafe host execution. The focused Node shim also
   bridges plain object results into wasm object cells with enumerable
   string-keyed primitive properties, enough for default object stringification
-  and direct property reads. Broader declaration landing, full TDZ modeling,
+  and direct property reads. It also guards existing caller `var` landing-zone
+  declaration write-back and host-lane persistence for new `var` / function
+  declarations re-read by later direct eval calls in the same caller env.
+  Direct wasm access to runtime-created bindings, full TDZ modeling,
   runtime-wide host external object contracts, and iwasm-differential coverage
   remain incomplete;
 - intrinsic `new eval(...)` now lowers to a catchable `TypeError` path and is
@@ -387,8 +390,11 @@ Node-shim execution for dynamic indirect eval, dynamic direct eval, and dynamic
 Function handles is covered by focused integration tests, as are primitive
 return values, local/parameter/block-shadow/catch-binding/string write-back,
 object result and primitive property bridging, strict lexical shadow isolation,
-host-thrown error bridging, and a TDZ-conflict diagnostic for dynamic direct
-eval, but not by the current iwasm-based differential runner.
+host-thrown error bridging, dynamic direct-eval declaration persistence, and a
+TDZ-conflict diagnostic for dynamic direct eval, but not by the current
+iwasm-based differential runner. The test262 `$262.evalScript(source)` host hook
+lowers to the same audited `host.eval.indirect` lane and is guarded by focused
+Node-shim and host-deny tests.
 
 ## Known compiler limitations
 

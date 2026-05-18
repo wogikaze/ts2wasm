@@ -1188,7 +1188,7 @@ match self {
             },
             Self::Dollar262Eval => RuntimeSpec {
                 symbol: "$dollar_262_eval",
-                deps: NO_DEPS,
+                deps: &[Self::EvalIndirectHost],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
