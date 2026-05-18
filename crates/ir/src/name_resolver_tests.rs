@@ -761,7 +761,9 @@ mod tests {
             assert_eq!(plan.kind, crate::builtin_resolved::EvalKind::Indirect);
             assert_eq!(
                 plan.scope_mode,
-                crate::builtin_resolved::EvalScopeMode::Global
+                crate::builtin_resolved::EvalScopeMode::Global {
+                    realm: crate::builtin_resolved::EvalRealm::Current
+                }
             );
             assert_eq!(
                 plan.host_policy,
@@ -787,7 +789,9 @@ mod tests {
         assert_eq!(plan.kind, crate::builtin_resolved::EvalKind::Indirect);
         assert_eq!(
             plan.scope_mode,
-            crate::builtin_resolved::EvalScopeMode::Global
+            crate::builtin_resolved::EvalScopeMode::Global {
+                realm: crate::builtin_resolved::EvalRealm::Current
+            }
         );
         assert_eq!(
             plan.host_policy,

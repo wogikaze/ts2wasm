@@ -467,14 +467,21 @@ pub enum EvalKind {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EvalScopeMode {
     Caller,
-    Global,
+    Global { realm: EvalRealm },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EvalRealm {
+    Current,
 }
 
 impl EvalScopeMode {
     pub fn for_kind(kind: EvalKind) -> Self {
         match kind {
             EvalKind::Direct => Self::Caller,
-            EvalKind::Indirect => Self::Global,
+            EvalKind::Indirect => Self::Global {
+                realm: EvalRealm::Current,
+            },
         }
     }
 }
