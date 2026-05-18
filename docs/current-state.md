@@ -329,7 +329,8 @@ The current implementation has several partial dynamic-code paths:
   slice, static parameter early errors are guarded for non-simple duplicate
   bound names plus strict-body duplicate / non-simple / `eval` / `arguments`
   params, default/rest/destructuring parameters execute with Node-compatible
-  `.length` metadata, constructor calls preserve explicit object returns, and direct
+  `.length` metadata, constructor calls preserve explicit object returns,
+  strict/sloppy `this` binding matches Node for the guarded slice, and direct
   `.name`/`.length`/`.prototype` metadata is guarded for static constructor
   locals, including zero-argument `Function()` / `new Function()`;
 - shadowed `Function` bindings stay ordinary user calls in the current

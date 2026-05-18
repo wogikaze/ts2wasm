@@ -1184,6 +1184,11 @@ fn function_constructor_static_construct_matches_node_output() {
 }
 
 #[test]
+fn function_constructor_this_binding_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/function-constructor-this-binding.ts");
+}
+
+#[test]
 fn function_constructor_zero_args_matches_node_output() {
     assert_fixture_matches_node("fixtures/core-semantics/function-constructor-zero-args.ts");
 }

@@ -382,6 +382,8 @@ impl super::Resolver {
             params,
             body,
             NestedFunctionOptions {
+                force_receiver: origin == FunctionExprOrigin::FunctionConstructor
+                    && block_contains_this(body),
                 is_generator,
                 suppress_captures: origin == FunctionExprOrigin::FunctionConstructor,
                 ..NestedFunctionOptions::default()

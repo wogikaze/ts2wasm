@@ -996,6 +996,7 @@ directories:
     - function-constructor-rest-params.ts
     - function-constructor-static-construct.ts
     - function-constructor-shadowed-ordinary-call.ts
+    - function-constructor-this-binding.ts
     - function-constructor-zero-args.ts
     - function-bind-call-apply.ts
     - function-expression-iife-return-this.ts
