@@ -52,9 +52,21 @@ fn dynamic_function_handle_tracks_object_shape_changes_through_node_shim_host_im
 }
 
 #[test]
+fn dynamic_function_handle_grows_object_shape_through_node_shim_host_imports() {
+    let fixture = "fixtures/core-semantics/function-constructor-dynamic-object-growth-node-shim.ts";
+    assert_node_shim_stdout(fixture, "1\n5\nundefined\n");
+}
+
+#[test]
 fn dynamic_function_handle_bridges_nested_arrays_through_node_shim_host_imports() {
     let fixture = "fixtures/core-semantics/function-constructor-dynamic-nested-array-node-shim.ts";
     assert_node_shim_stdout(fixture, "2\n7\n8\nundefined\n");
+}
+
+#[test]
+fn dynamic_function_handle_grows_nested_arrays_through_node_shim_host_imports() {
+    let fixture = "fixtures/core-semantics/function-constructor-dynamic-array-growth-node-shim.ts";
+    assert_node_shim_stdout(fixture, "4\n5\n5\nundefined\n");
 }
 
 #[test]
@@ -350,7 +362,7 @@ function encodeString(value) {
 
 function refreshHostArrayEntries(value, record) {
   if (value.length > record.capacity) {
-    throw new TypeError('unsupported host array growth for this test');
+    throw new TypeError('internal host array capacity mismatch for this test');
   }
   const ptr = rawPtr(record.raw);
   view().setInt32(ptr, value.length, true);
@@ -372,13 +384,8 @@ function refreshHostArrayEntries(value, record) {
   }
 }
 
-function encodeHostArray(value) {
-  const existing = hostArrayHandles.get(value);
-  if (existing !== undefined) {
-    refreshHostArrayEntries(value, existing);
-    return existing.raw;
-  }
-  const capacity = Math.max(value.length, 4);
+function allocateHostArrayRecord(value, requestedCapacity) {
+  const capacity = Math.max(value.length, requestedCapacity, 4);
   const presenceWords = Math.max(1, Math.ceil(capacity / 32));
   const elementsOffset = ARRAY_PRESENCE_WORDS_OFFSET + presenceWords * 4;
   const size = elementsOffset + capacity * 4;
@@ -392,14 +399,24 @@ function encodeHostArray(value) {
   const raw = ptr | TAG_ARRAY;
   const record = { raw, capacity, presenceWords, elementsOffset };
   hostArrayHandles.set(value, record);
+  return record;
+}
+
+function encodeHostArray(value) {
+  let record = hostArrayHandles.get(value);
+  if (record === undefined) {
+    record = allocateHostArrayRecord(value, value.length);
+  } else if (value.length > record.capacity) {
+    record = allocateHostArrayRecord(value, record.capacity * 2);
+  }
   refreshHostArrayEntries(value, record);
-  return raw;
+  return record.raw;
 }
 
 function refreshHostObjectEntries(value, record) {
   const keys = Object.keys(value);
   if (keys.length > record.capacity) {
-    throw new TypeError('unsupported host object shape growth for this test');
+    throw new TypeError('internal host object capacity mismatch for this test');
   }
   const ptr = rawPtr(record.raw);
   view().setInt32(ptr, keys.length, true);
@@ -411,30 +428,32 @@ function refreshHostObjectEntries(value, record) {
   record.keys = keys;
 }
 
-function encodeHostObject(value) {
-  const existing = hostObjectHandles.get(value);
-  if (existing !== undefined) {
-    refreshHostObjectEntries(value, existing);
-    return existing.raw;
-  }
-  const keys = Object.keys(value);
-  const capacity = Math.max(keys.length, 4);
+function allocateHostObjectRecord(value, requestedCapacity) {
+  const capacity = Math.max(Object.keys(value).length, requestedCapacity, 4);
   const size = OBJECT_HEADER_SIZE + capacity * OBJECT_ENTRY_SIZE;
   const base = hostAlloc(GC_HEADER_SIZE + size);
   view().setInt32(base + GC_FLAGS_AND_TYPE_OFFSET, GC_KIND_OBJECT, true);
   view().setInt32(base + GC_BODY_SIZE_OFFSET, size, true);
   const ptr = base + GC_HEADER_SIZE;
-  view().setInt32(ptr, keys.length, true);
+  view().setInt32(ptr, 0, true);
   view().setInt32(ptr + 4, 0, true);
   view().setInt32(ptr + 8, 0, true);
   const raw = ptr | TAG_OBJECT;
-  hostObjectHandles.set(value, { raw, keys, capacity });
-  for (let i = 0; i < keys.length; i += 1) {
-    const entry = ptr + OBJECT_ENTRIES_OFFSET + i * OBJECT_ENTRY_SIZE;
-    view().setInt32(entry, encodeString(keys[i]), true);
-    view().setInt32(entry + 4, encodeHostValue(value[keys[i]]), true);
+  const record = { raw, keys: [], capacity };
+  hostObjectHandles.set(value, record);
+  return record;
+}
+
+function encodeHostObject(value) {
+  const keys = Object.keys(value);
+  let record = hostObjectHandles.get(value);
+  if (record === undefined) {
+    record = allocateHostObjectRecord(value, keys.length);
+  } else if (keys.length > record.capacity) {
+    record = allocateHostObjectRecord(value, record.capacity * 2);
   }
-  return raw;
+  refreshHostObjectEntries(value, record);
+  return record.raw;
 }
 
 function encodeHostFunctionHandle(fn, index) {
