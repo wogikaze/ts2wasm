@@ -826,6 +826,12 @@ fn dynamic_direct_eval_tdz_member_reference_is_catchable_reference_error() {
 }
 
 #[test]
+fn dynamic_direct_eval_function_expression_name_is_not_predeclared_for_normal_code() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-function-expression-name-normal-code-unsupported.ts";
+    assert_build_fails_with(fixture, "UnresolvedName", "unresolved name: `hiddenProbe`");
+}
+
+#[test]
 fn static_direct_eval_rejects_return_statement() {
     let fixture = "fixtures/core-semantics/direct-eval-return-unsupported.ts";
     assert_build_fails_with(
@@ -1625,17 +1631,57 @@ function sourceMentionsIdentifier(source, name) {
 function focusedDirectEvalTdzCandidates(source) {
   if (typeof source !== 'string') return [];
   const trimmed = source.trim();
-  if (/^[A-Za-z_$][0-9A-Za-z_$]*$/.test(trimmed)) return [trimmed];
+  if (isDirectEvalTdzCandidateName(trimmed)) return [trimmed];
   const parenthesizedMatch = /^\(\s*([A-Za-z_$][0-9A-Za-z_$]*)\s*\)$/.exec(trimmed);
-  if (parenthesizedMatch !== null) return [parenthesizedMatch[1]];
+  if (parenthesizedMatch !== null && isDirectEvalTdzCandidateName(parenthesizedMatch[1])) {
+    return [parenthesizedMatch[1]];
+  }
   const typeofMatch = /^typeof\s+([A-Za-z_$][0-9A-Za-z_$]*)$/.exec(trimmed);
-  if (typeofMatch !== null) return [typeofMatch[1]];
+  if (typeofMatch !== null && isDirectEvalTdzCandidateName(typeofMatch[1])) {
+    return [typeofMatch[1]];
+  }
   const memberMatch =
     /^([A-Za-z_$][0-9A-Za-z_$]*)\s*\.\s*([A-Za-z_$][0-9A-Za-z_$]*)$/.exec(trimmed);
-  if (memberMatch !== null) return [memberMatch[1]];
+  if (memberMatch !== null && isDirectEvalTdzCandidateName(memberMatch[1])) {
+    return [memberMatch[1]];
+  }
   const templateMatch = /^`\$\{\s*([A-Za-z_$][0-9A-Za-z_$]*)\s*\}`$/.exec(trimmed);
-  return templateMatch === null ? [] : [templateMatch[1]];
+  if (templateMatch !== null && isDirectEvalTdzCandidateName(templateMatch[1])) {
+    return [templateMatch[1]];
+  }
+  return [];
 }
+
+function isDirectEvalTdzCandidateName(name) {
+  return /^[A-Za-z_$][0-9A-Za-z_$]*$/.test(name) && !KNOWN_EVAL_GLOBAL_NAMES.has(name);
+}
+
+const KNOWN_EVAL_GLOBAL_NAMES = new Set([
+  'globalThis',
+  'console',
+  'Array',
+  'BigInt',
+  'Boolean',
+  'Date',
+  'Error',
+  'Infinity',
+  'JSON',
+  'Map',
+  'Math',
+  'NaN',
+  'Number',
+  'Object',
+  'Promise',
+  'RangeError',
+  'ReferenceError',
+  'RegExp',
+  'Set',
+  'String',
+  'Symbol',
+  'SyntaxError',
+  'TypeError',
+  'undefined',
+]);
 
 function directEvalEnvKey(bindings) {
   return bindings

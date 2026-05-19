@@ -1361,7 +1361,7 @@ impl super::Resolver {
 
 fn focused_direct_eval_tdz_candidates(source: &str) -> Vec<String> {
     let trimmed = source.trim();
-    if is_ascii_js_identifier(trimmed) {
+    if is_direct_eval_tdz_candidate_name(trimmed) {
         return vec![trimmed.to_owned()];
     }
     if let Some(inner) = trimmed
@@ -1369,20 +1369,20 @@ fn focused_direct_eval_tdz_candidates(source: &str) -> Vec<String> {
         .and_then(|rest| rest.strip_suffix(')'))
     {
         let inner = inner.trim();
-        if is_ascii_js_identifier(inner) {
+        if is_direct_eval_tdz_candidate_name(inner) {
             return vec![inner.to_owned()];
         }
     }
     if let Some(inner) = trimmed.strip_prefix("typeof ") {
         let inner = inner.trim();
-        if is_ascii_js_identifier(inner) {
+        if is_direct_eval_tdz_candidate_name(inner) {
             return vec![inner.to_owned()];
         }
     }
     if let Some((base, property)) = trimmed.split_once('.') {
         let base = base.trim();
         let property = property.trim();
-        if is_ascii_js_identifier(base) && is_ascii_js_identifier(property) {
+        if is_direct_eval_tdz_candidate_name(base) && is_ascii_js_identifier(property) {
             return vec![base.to_owned()];
         }
     }
@@ -1391,11 +1391,45 @@ fn focused_direct_eval_tdz_candidates(source: &str) -> Vec<String> {
         .and_then(|rest| rest.strip_suffix("}`"))
     {
         let inner = inner.trim();
-        if is_ascii_js_identifier(inner) {
+        if is_direct_eval_tdz_candidate_name(inner) {
             return vec![inner.to_owned()];
         }
     }
     Vec::new()
+}
+
+fn is_direct_eval_tdz_candidate_name(value: &str) -> bool {
+    is_ascii_js_identifier(value) && !is_known_eval_global_name(value)
+}
+
+fn is_known_eval_global_name(value: &str) -> bool {
+    matches!(
+        value,
+        "globalThis"
+            | "console"
+            | "Array"
+            | "BigInt"
+            | "Boolean"
+            | "Date"
+            | "Error"
+            | "Infinity"
+            | "JSON"
+            | "Map"
+            | "Math"
+            | "NaN"
+            | "Number"
+            | "Object"
+            | "Promise"
+            | "RangeError"
+            | "ReferenceError"
+            | "RegExp"
+            | "Set"
+            | "String"
+            | "Symbol"
+            | "SyntaxError"
+            | "TypeError"
+            | "undefined"
+    )
 }
 
 fn is_ascii_js_identifier(value: &str) -> bool {

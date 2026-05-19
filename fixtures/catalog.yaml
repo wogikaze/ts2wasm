@@ -931,6 +931,7 @@ directories:
     - direct-eval-dynamic-class-method-this-node-shim.ts
     - direct-eval-dynamic-computed-function-property-call-node-shim.ts
     - direct-eval-dynamic-function-declaration-writeback-node-shim.ts
+    - direct-eval-dynamic-function-expression-name-normal-code-unsupported.ts
     - direct-eval-dynamic-function-expression-name-not-binding-node-shim.ts
     - direct-eval-dynamic-function-property-call-node-shim.ts
     - direct-eval-dynamic-let-initializer-node-shim.ts

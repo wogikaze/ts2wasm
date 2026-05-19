@@ -31,6 +31,10 @@ fn collect_keyword_bound_names(source: &str, keyword: &str, names: &mut Vec<Stri
             index = after_keyword;
             continue;
         }
+        if keyword == "function" && !function_keyword_is_declaration(source, keyword_start) {
+            index = after_keyword;
+            continue;
+        }
         let mut cursor = skip_ascii_ws(source, after_keyword);
         if keyword == "function" && source[cursor..].starts_with('*') {
             cursor = skip_ascii_ws(source, cursor + 1);
@@ -49,6 +53,43 @@ fn collect_keyword_bound_names(source: &str, keyword: &str, names: &mut Vec<Stri
         }
         index = after_keyword;
     }
+}
+
+fn function_keyword_is_declaration(source: &str, keyword_start: usize) -> bool {
+    let context_start = async_prefix_start(source, keyword_start).unwrap_or(keyword_start);
+    match previous_significant_byte(source, context_start) {
+        None => true,
+        Some(b';' | b'{' | b'}') => true,
+        _ => false,
+    }
+}
+
+fn async_prefix_start(source: &str, keyword_start: usize) -> Option<usize> {
+    let async_end = previous_non_ws_index(source, keyword_start)? + 1;
+    let async_start = async_end.checked_sub("async".len())?;
+    if &source[async_start..async_end] != "async" {
+        return None;
+    }
+    if !is_identifier_boundary(source, async_start, async_end) {
+        return None;
+    }
+    Some(async_start)
+}
+
+fn previous_significant_byte(source: &str, end: usize) -> Option<u8> {
+    previous_non_ws_index(source, end).map(|index| source.as_bytes()[index])
+}
+
+fn previous_non_ws_index(source: &str, end: usize) -> Option<usize> {
+    let bytes = source.as_bytes();
+    let mut index = end;
+    while index > 0 {
+        index -= 1;
+        if !bytes[index].is_ascii_whitespace() {
+            return Some(index);
+        }
+    }
+    None
 }
 
 fn read_var_declaration_text(source: &str, start: usize) -> &str {
@@ -316,5 +357,21 @@ mod tests {
     fn scans_function_declaration_names_only() {
         let names = eval_function_names("var value = 1; function run() {} function* iterate() {}");
         assert_eq!(names, ["run", "iterate"]);
+    }
+
+    #[test]
+    fn skips_function_expression_names() {
+        let names = eval_var_and_function_names(
+            "var holder = function hidden() {}; let other = async function asyncHidden() {};",
+        );
+        assert_eq!(names, ["holder"]);
+    }
+
+    #[test]
+    fn scans_async_function_declaration_names() {
+        let names = eval_function_names(
+            "async function load() {} async function* stream() {} ; async function afterSemi() {}",
+        );
+        assert_eq!(names, ["load", "stream", "afterSemi"]);
     }
 }
