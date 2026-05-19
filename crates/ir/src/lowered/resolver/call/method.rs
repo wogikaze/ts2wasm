@@ -4234,6 +4234,20 @@ impl super::super::Resolver {
             }
         }
 
+        // Route forEach with non-inline callbacks to lower_array_callback_method
+        // (which produces issue-270 error for non-arrow callbacks) instead of
+        // falling through to collection_method_runtime_fn which would silently
+        // ignore the callback in the WAT function (issue I-20260518-BZWSY6).
+        if class_name == "Array" && method == "forEach" && !args.is_empty() {
+            return self.lower_array_callback_method(
+                method,
+                LoweredExpr::Local(obj_local, Span::generated("local")),
+                object,
+                args,
+                span,
+            );
+        }
+
         if class_name == "Array"
             && (method == "forEach"
                 || method == "filter"
