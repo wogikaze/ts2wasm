@@ -92,6 +92,28 @@ fn compiler_expands_static_new_function_constructor_after_resolver_classificatio
 }
 
 #[test]
+fn compiler_rejects_function_constructor_with_inconsistent_static_metadata() {
+    let mut plan = ts2wasm_ir::builtin_resolved::FunctionConstructorPlan::new(
+        ts2wasm_ir::builtin_resolved::FunctionConstructorKind::Call,
+        vec![ts2wasm_ir::ResolvedExpr::String("return 1".to_owned())],
+        ts2wasm_source::Span::generated("function_constructor_metadata_policy_test"),
+    );
+    plan.static_source
+        .as_mut()
+        .expect("static Function constructor source should exist")
+        .generated_function
+        .name = "notAnonymous".to_owned();
+
+    let err = crate::stages::eval_expand::expand_static_eval_fragments(vec![
+        ts2wasm_ir::ResolvedStmt::Expr(ts2wasm_ir::ResolvedExpr::FunctionConstructor { plan }),
+    ])
+    .unwrap_err();
+
+    assert_eq!(err.code, DiagCode::UnsupportedEval);
+    assert!(err.message.contains("static source metadata"));
+}
+
+#[test]
 fn compiler_expands_static_function_constructor_primitive_source_args() {
     let expanded = parse_resolve_and_expand_dynamic_code(
         "let value = Function(null); let other = new Function(true);",

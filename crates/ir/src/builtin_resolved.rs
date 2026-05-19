@@ -439,6 +439,14 @@ impl FunctionConstructorPlan {
     pub fn host_policy_is_consistent(&self) -> bool {
         self.host_policy == self.expected_host_policy()
     }
+
+    pub fn static_source_is_consistent(&self) -> bool {
+        match (&self.static_source, self.host_policy) {
+            (None, FunctionConstructorHostPolicy::HostCompile) => true,
+            (Some(source), FunctionConstructorHostPolicy::AotOnly) => source.is_consistent(),
+            _ => false,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -478,6 +486,11 @@ impl StaticFunctionConstructorSource {
             "function {}({params_source}\n) {{\n{}\n}}",
             self.generated_function.name, self.body
         )
+    }
+
+    pub fn is_consistent(&self) -> bool {
+        self.parse_goals == FunctionConstructorParseGoals::default()
+            && self.generated_function.is_anonymous_constructor_base()
     }
 }
 
@@ -1117,6 +1130,13 @@ impl FunctionConstructorGeneratedFunction {
     pub fn with_length(mut self, length: usize) -> Self {
         self.length = Some(length);
         self
+    }
+
+    pub fn is_anonymous_constructor_base(&self) -> bool {
+        self.name == "anonymous"
+            && self.length.is_none()
+            && self.constructable
+            && self.suppress_captures
     }
 }
 
@@ -1913,6 +1933,47 @@ mod tests {
             FunctionConstructorHostPolicy::AotOnly
         );
         assert!(!inconsistent.host_policy_is_consistent());
+    }
+
+    #[test]
+    fn function_constructor_plan_validates_static_source_metadata() {
+        let static_plan = FunctionConstructorPlan::new(
+            FunctionConstructorKind::Call,
+            vec![ResolvedExpr::String("return 1".to_owned())],
+            Span::generated("static_function_constructor_metadata_policy_test"),
+        );
+        assert!(static_plan.static_source_is_consistent());
+
+        let runtime_plan = FunctionConstructorPlan::new(
+            FunctionConstructorKind::Call,
+            vec![ResolvedExpr::Ident("body".to_owned())],
+            Span::generated("runtime_function_constructor_metadata_policy_test"),
+        );
+        assert!(runtime_plan.static_source_is_consistent());
+
+        let mut mismatched_name = static_plan.clone();
+        mismatched_name
+            .static_source
+            .as_mut()
+            .expect("static source should exist")
+            .generated_function
+            .name = "notAnonymous".to_owned();
+        assert!(!mismatched_name.static_source_is_consistent());
+
+        let mut mismatched_length = static_plan.clone();
+        mismatched_length
+            .static_source
+            .as_mut()
+            .expect("static source should exist")
+            .generated_function
+            .length = Some(1);
+        assert!(!mismatched_length.static_source_is_consistent());
+
+        let mismatched_policy = FunctionConstructorPlan {
+            host_policy: FunctionConstructorHostPolicy::HostCompile,
+            ..static_plan
+        };
+        assert!(!mismatched_policy.static_source_is_consistent());
     }
 
     #[test]

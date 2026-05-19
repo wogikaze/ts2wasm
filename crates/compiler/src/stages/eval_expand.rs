@@ -1017,6 +1017,14 @@ fn eval_stmt_illegal_return_span(stmt: &Stmt) -> Option<ts2wasm_source::Span> {
 }
 
 fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<ResolvedExpr, Diagnostic> {
+    if !plan.static_source_is_consistent() {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedEval,
+            message: "Function constructor static source metadata does not match plan".to_owned(),
+            span: Some(plan.span),
+            phase: None,
+        });
+    }
     let FunctionConstructorPlan {
         kind,
         args,
