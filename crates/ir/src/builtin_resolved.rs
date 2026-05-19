@@ -564,6 +564,10 @@ fn function_constructor_static_source_value(
             };
             function_constructor_static_source_value(selected)
         }
+        ResolvedExpr::Sequence(exprs) => {
+            let last = exprs.last()?;
+            function_constructor_static_source_value(last)
+        }
         _ => None,
     }
 }

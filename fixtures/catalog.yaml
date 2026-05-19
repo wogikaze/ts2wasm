@@ -1075,6 +1075,7 @@ directories:
     - function-constructor-static-logical-source.ts
     - function-constructor-static-numeric-binary-source.ts
     - function-constructor-static-primitive-source.ts
+    - function-constructor-static-sequence-source.ts
     - function-constructor-static-spread-array-source.ts
     - function-constructor-static-construct.ts
     - function-constructor-static-string-unary-source.ts

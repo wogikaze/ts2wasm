@@ -1110,6 +1110,15 @@ fn static_function_constructor_typeof_source_uses_aot_lane() {
 }
 
 #[test]
+fn static_function_constructor_sequence_source_uses_aot_lane() {
+    let fixture = "fixtures/core-semantics/function-constructor-static-sequence-source.ts";
+    assert_node_shim_stdout(
+        fixture,
+        "9\n7\nundefined\nfunction anonymous(\n) {\nreturn 9\n}\nfunction anonymous(value\n) {\nreturn value + 2\n}\nfunction anonymous(\n) {\n3\n}\n",
+    );
+}
+
+#[test]
 fn static_function_constructor_numeric_binary_source_uses_aot_lane() {
     let fixture = "fixtures/core-semantics/function-constructor-static-numeric-binary-source.ts";
     assert_node_shim_stdout(
