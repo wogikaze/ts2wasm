@@ -353,7 +353,8 @@ Status: **mostly done, but keep as guard.**
 - `plans/eval-new-function-implementation-plan.md` をこの版へ更新する。
 - docs の support matrix で `host.function.callMethod` と dynamic direct eval strict/restricted-binding slice を明記する。
 - fixture 名に `unsupported` が残るものは、実際に unsupported boundary か historical name かを分ける。
-- `direct-eval-return-unsupported.ts`、`direct-eval-block-function-shadowed-unsupported.ts`、`direct-eval-dynamic-tdz-conflict-unsupported.ts` は expected diagnostic の理由をコメントで明確化する。
+- `direct-eval-return-unsupported.ts` と `direct-eval-block-function-shadowed-unsupported.ts` は expected diagnostic の理由をコメントで明確化する。
+- 旧 `direct-eval-dynamic-tdz-conflict-unsupported.ts` 境界は `direct-eval-dynamic-tdz-conflict-node-shim.ts` へ移行済みで、dynamic direct eval host descriptor lane の catchable `ReferenceError` fixture として扱う。
 
 Exit criteria:
 
