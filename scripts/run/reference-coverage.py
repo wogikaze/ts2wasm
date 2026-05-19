@@ -3134,9 +3134,6 @@ def main():
     unsupported_feature_counts = {}
     unsupported_by_phase = {}
     
-    # Semantic checks require test262 harness (only available for test262 suite)
-    if suite != "test262":
-        semantic_check = False
     semantic_enabled = bool(semantic_check and shutil.which("node") and shutil.which("iwasm"))
     server_emit_wasm = semantic_enabled and os.environ.get("TS2WASM_SERVER_EMIT_WASM", "1") != "0"
     
@@ -3212,7 +3209,6 @@ def main():
     
     def _run_semantic_check(file_path, source_code, metadata, thread_tmp, out_wasm, result_metrics):
         """Run node and iwasm for a build-pass file, updating result_metrics."""
-        t262 = _ensure_test262_runner()
         if metadata is not None and metadata.expects_negative:
             wasm_result = subprocess.run(
                 ["timeout", "8s", "iwasm", str(out_wasm)],
@@ -3234,6 +3230,31 @@ def main():
                 result_metrics["negative_compile_pass"] = True
             return
 
+        if metadata is None:
+            # Non-test262 suite (tsc/tsgo): transpile .ts->.js via ts-node-oracle,
+            # run node, and compare with iwasm output.
+            oracle_script = REPO_ROOT / "scripts" / "run" / "ts-node-oracle.js"
+            node_result = subprocess.run(
+                ["node", str(oracle_script), str(file_path)],
+                capture_output=True, text=True, timeout=8, cwd=REPO_ROOT,
+            )
+            wasm_result = subprocess.run(
+                ["timeout", "8s", "iwasm", str(out_wasm)],
+                capture_output=True, cwd=REPO_ROOT,
+            )
+
+            if node_result.returncode != 0 and wasm_result.returncode != 0:
+                # Both failed — likely a runtime incompatibility
+                result_metrics["blocked"] = True
+            elif wasm_result.returncode != 0:
+                result_metrics["runtime_error"] = True
+            elif node_result.stdout == wasm_result.stdout:
+                result_metrics["semantic_pass"] = True
+            else:
+                result_metrics["mismatch"] = True
+            return
+
+        t262 = _ensure_test262_runner()
         node_source = t262.build_test262_source(
             file_path, source_code, metadata, target="node"
         )
@@ -3250,7 +3271,7 @@ def main():
             capture_output=True,
             cwd=REPO_ROOT,
         )
-        
+
         if node_result.returncode != 0:
             result_metrics["blocked"] = True
         elif wasm_result.returncode != 0:

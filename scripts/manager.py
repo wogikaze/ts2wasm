@@ -244,20 +244,24 @@ def run_repo_smoke():
     ])
 
 def configure_reference_coverage_defaults(target, args):
-    """Apply audited defaults for manager-launched test262 semantic coverage."""
+    """Apply audited defaults for manager-launched semantic coverage."""
     if target != "reference-coverage":
         return
-    if not args or args[0] != "test262":
+    if not args:
         return
-    if "--no-semantic" in args:
-        return
-    if "--semantic" in args:
-        idx = args.index("--semantic")
-        if idx + 1 < len(args) and args[idx + 1] == "fast":
+    if args[0] == "test262":
+        if "--no-semantic" in args:
             return
-
-    os.environ.setdefault("TS2WASM_TEST262_NODE_ORACLE", "always")
-    os.environ.setdefault("TS2WASM_DISABLE_TEST262_PREPROCESSOR_STUBS", "1")
+        if "--semantic" in args:
+            idx = args.index("--semantic")
+            if idx + 1 < len(args) and args[idx + 1] == "fast":
+                return
+        os.environ.setdefault("TS2WASM_TEST262_NODE_ORACLE", "always")
+        os.environ.setdefault("TS2WASM_DISABLE_TEST262_PREPROCESSOR_STUBS", "1")
+    elif args[0] in ("tsc", "tsgo"):
+        # tsc/tsgo need explicit --semantic to enable oracle (no default)
+        if "--semantic" in args:
+            os.environ.setdefault("TS2WASM_TEST262_NODE_ORACLE", "always")
 
 def check_usage():
     parts = ", ".join(sorted(CHECK_PARTS))
