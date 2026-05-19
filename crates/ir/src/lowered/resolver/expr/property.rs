@@ -731,6 +731,10 @@ impl super::super::Resolver {
                     span,
                 )))
             }
+            ("ArrayBuffer" | "SharedArrayBuffer", "detached") => {
+                // detach not tracked at runtime — always false for non-transferred buffers
+                Ok(Some(LoweredExpr::Bool(false, span)))
+            }
             ("DataView", "byteLength") => {
                 // DataView byteLength = underlying buffer byte length, same as ArrayBuffer
                 Ok(Some(LoweredExpr::GetLength(
