@@ -20,7 +20,9 @@ pub fn eval_function_names(source: &str) -> Vec<String> {
 
 fn collect_keyword_bound_names(source: &str, keyword: &str, names: &mut Vec<String>) {
     let mut index = 0;
-    while let Some(keyword_start) = find_keyword_outside_literals(source, keyword, index) {
+    while let Some(keyword_start) =
+        find_keyword_outside_literals_and_function_bodies(source, keyword, index)
+    {
         let after_keyword = keyword_start + keyword.len();
         if keyword == "var" {
             let declaration_text = read_var_declaration_text(source, after_keyword);
@@ -32,7 +34,8 @@ fn collect_keyword_bound_names(source: &str, keyword: &str, names: &mut Vec<Stri
             continue;
         }
         if keyword == "function" && !function_keyword_is_declaration(source, keyword_start) {
-            index = after_keyword;
+            index = skip_function_or_class_body(source, keyword_start, "function")
+                .unwrap_or(after_keyword);
             continue;
         }
         let mut cursor = skip_ascii_ws(source, after_keyword);
@@ -51,7 +54,8 @@ fn collect_keyword_bound_names(source: &str, keyword: &str, names: &mut Vec<Stri
             }
             break;
         }
-        index = after_keyword;
+        index =
+            skip_function_or_class_body(source, keyword_start, "function").unwrap_or(after_keyword);
     }
 }
 
@@ -205,7 +209,11 @@ fn skip_binding_initializer(pattern: &str, start: usize) -> usize {
     index
 }
 
-fn find_keyword_outside_literals(source: &str, keyword: &str, start: usize) -> Option<usize> {
+fn find_keyword_outside_literals_and_function_bodies(
+    source: &str,
+    keyword: &str,
+    start: usize,
+) -> Option<usize> {
     let bytes = source.as_bytes();
     let mut index = start;
     while index < source.len() {
@@ -228,6 +236,21 @@ fn find_keyword_outside_literals(source: &str, keyword: &str, start: usize) -> O
                 }
                 index = (index + 2).min(source.len());
             }
+            _ if source[index..].starts_with("function")
+                && is_identifier_boundary(source, index, index + "function".len()) =>
+            {
+                if keyword == "function" {
+                    return Some(index);
+                }
+                index = skip_function_or_class_body(source, index, "function")
+                    .unwrap_or(index + "function".len());
+            }
+            _ if source[index..].starts_with("class")
+                && is_identifier_boundary(source, index, index + "class".len()) =>
+            {
+                index = skip_function_or_class_body(source, index, "class")
+                    .unwrap_or(index + "class".len());
+            }
             _ if source[index..].starts_with(keyword) => {
                 let end = index + keyword.len();
                 if is_identifier_boundary(source, index, end) {
@@ -237,6 +260,83 @@ fn find_keyword_outside_literals(source: &str, keyword: &str, start: usize) -> O
             }
             _ => index += 1,
         }
+    }
+    None
+}
+
+fn skip_function_or_class_body(source: &str, keyword_start: usize, keyword: &str) -> Option<usize> {
+    let body_start = find_next_code_byte(source, b'{', keyword_start + keyword.len())?;
+    skip_balanced_brace(source, body_start)
+}
+
+fn find_next_code_byte(source: &str, target: u8, start: usize) -> Option<usize> {
+    let bytes = source.as_bytes();
+    let mut index = start;
+    while index < source.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => index = skip_quoted_source(source, index),
+            b'/' if bytes.get(index + 1) == Some(&b'/') => {
+                index += 2;
+                while index < source.len() && bytes[index] != b'\n' {
+                    index += 1;
+                }
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'*') => {
+                index += 2;
+                while index + 1 < source.len()
+                    && !(bytes[index] == b'*' && bytes[index + 1] == b'/')
+                {
+                    index += 1;
+                }
+                index = (index + 2).min(source.len());
+            }
+            byte if byte == target => return Some(index),
+            _ => index += 1,
+        }
+    }
+    None
+}
+
+fn skip_balanced_brace(source: &str, start: usize) -> Option<usize> {
+    if source.as_bytes().get(start) != Some(&b'{') {
+        return None;
+    }
+    let bytes = source.as_bytes();
+    let mut index = start;
+    let mut depth = 0usize;
+    while index < source.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => {
+                index = skip_quoted_source(source, index);
+                continue;
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'/') => {
+                index += 2;
+                while index < source.len() && bytes[index] != b'\n' {
+                    index += 1;
+                }
+                continue;
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'*') => {
+                index += 2;
+                while index + 1 < source.len()
+                    && !(bytes[index] == b'*' && bytes[index + 1] == b'/')
+                {
+                    index += 1;
+                }
+                index = (index + 2).min(source.len());
+                continue;
+            }
+            b'{' => depth += 1,
+            b'}' => {
+                depth = depth.saturating_sub(1);
+                if depth == 0 {
+                    return Some(index + 1);
+                }
+            }
+            _ => {}
+        }
+        index += 1;
     }
     None
 }
@@ -373,5 +473,21 @@ mod tests {
             "async function load() {} async function* stream() {} ; async function afterSemi() {}",
         );
         assert_eq!(names, ["load", "stream", "afterSemi"]);
+    }
+
+    #[test]
+    fn skips_nested_function_body_declarations() {
+        let names = eval_var_and_function_names(
+            "function outer() { var hidden = 1; function inner() {} } var visible = 2;",
+        );
+        assert_eq!(names, ["visible", "outer"]);
+    }
+
+    #[test]
+    fn skips_function_expression_body_declarations() {
+        let names = eval_var_and_function_names(
+            "var holder = function hidden() { var inner = 1; function nested() {} }; function kept() {}",
+        );
+        assert_eq!(names, ["holder", "kept"]);
     }
 }
