@@ -1026,6 +1026,12 @@ fn dynamic_direct_eval_tdz_member_reference_is_catchable_reference_error() {
 }
 
 #[test]
+fn dynamic_direct_eval_tdz_computed_member_reference_is_catchable_reference_error() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-tdz-computed-member-node-shim.ts";
+    assert_node_shim_stdout(fixture, "ReferenceError\nafter\n");
+}
+
+#[test]
 fn dynamic_direct_eval_tdz_optional_member_reference_is_catchable_reference_error() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-tdz-optional-member-node-shim.ts";
     assert_node_shim_stdout(fixture, "ReferenceError\nafter\n");
