@@ -1913,6 +1913,25 @@ pub(crate) fn matches_set_prototype_object(expr: &ResolvedExpr) -> bool {
         )
 }
 
+pub(crate) fn matches_map_prototype_object(expr: &ResolvedExpr) -> bool {
+    let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
+        return false;
+    };
+    key == "prototype"
+        && matches!(
+            object.as_ref(),
+            ResolvedExpr::Ident(name) if name == "Map"
+        )
+}
+
+pub(crate) fn is_map_prototype_property(
+    object: &ResolvedExpr,
+    key: &str,
+    expected_key: &str,
+) -> bool {
+    key == expected_key && matches_map_prototype_object(object)
+}
+
 pub(crate) fn unsupported_array_map_diagnostic(span: Option<Span>) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
