@@ -592,7 +592,10 @@ fn function_constructor_static_source_value(
             function_constructor_static_source_value(selected)
         }
         ResolvedExpr::Sequence(exprs) => {
-            let last = exprs.last()?;
+            let (last, preceding) = exprs.split_last()?;
+            for expr in preceding {
+                function_constructor_static_source_value(expr)?;
+            }
             function_constructor_static_source_value(last)
         }
         _ => None,
@@ -1619,5 +1622,39 @@ mod tests {
             FunctionConstructorHostPolicy::AotOnly
         );
         assert!(!inconsistent.host_policy_is_consistent());
+    }
+
+    #[test]
+    fn function_constructor_sequence_sources_require_static_prefixes() {
+        let static_sequence = FunctionConstructorPlan::new(
+            FunctionConstructorKind::Call,
+            vec![ResolvedExpr::Sequence(vec![
+                ResolvedExpr::Number(0),
+                ResolvedExpr::String("return 1".to_owned()),
+            ])],
+            Span::generated("static_function_constructor_sequence_policy_test"),
+        );
+        assert!(static_sequence.static_source.is_some());
+        assert_eq!(
+            static_sequence.expected_host_policy(),
+            FunctionConstructorHostPolicy::AotOnly
+        );
+
+        let effectful_sequence = FunctionConstructorPlan::new(
+            FunctionConstructorKind::Call,
+            vec![ResolvedExpr::Sequence(vec![
+                ResolvedExpr::Assign {
+                    name: "side".to_owned(),
+                    expr: Box::new(ResolvedExpr::Number(1)),
+                },
+                ResolvedExpr::String("return 1".to_owned()),
+            ])],
+            Span::generated("effectful_function_constructor_sequence_policy_test"),
+        );
+        assert!(effectful_sequence.static_source.is_none());
+        assert_eq!(
+            effectful_sequence.expected_host_policy(),
+            FunctionConstructorHostPolicy::HostCompile
+        );
     }
 }
