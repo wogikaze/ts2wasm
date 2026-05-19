@@ -387,6 +387,20 @@ impl EvalFragmentPlan {
     pub fn scope_mode_is_consistent(&self) -> bool {
         self.scope_mode == self.expected_scope_mode()
     }
+
+    pub fn completion_state_is_consistent(&self) -> bool {
+        match (&self.declaration_plan, &self.completion_plan) {
+            (None, None) => self.eval_source_is_strict.is_none(),
+            (Some(declarations), Some(completion_plan)) => {
+                self.host_policy == EvalHostPolicy::AotOnly
+                    && self.scope_mode == completion_plan.scope_mode
+                    && self.caller_is_strict == completion_plan.caller_is_strict
+                    && self.eval_source_is_strict == Some(completion_plan.eval_is_strict)
+                    && declarations == &completion_plan.declarations
+            }
+            _ => false,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1587,6 +1601,61 @@ mod tests {
             }
         );
         assert!(!inconsistent.scope_mode_is_consistent());
+    }
+
+    #[test]
+    fn eval_fragment_plan_validates_embedded_completion_state() {
+        let plan = EvalFragmentPlan::new(
+            EvalKind::Direct,
+            EvalSource::StaticLiteral("1".to_owned()),
+            true,
+            Span::generated("eval_completion_state_policy_test"),
+        )
+        .with_completion_plan(
+            true,
+            true,
+            EvalDeclarationPlan {
+                var_names: vec!["value".to_owned()],
+                function_hoists: vec![],
+            },
+            vec![EvalCompletionStep::Value(ResolvedExpr::Ident(
+                "value".to_owned(),
+            ))],
+        );
+        assert!(plan.completion_state_is_consistent());
+
+        let missing_declaration_plan = EvalFragmentPlan {
+            declaration_plan: None,
+            ..plan.clone()
+        };
+        assert!(!missing_declaration_plan.completion_state_is_consistent());
+
+        let mismatched_strictness = EvalFragmentPlan {
+            eval_source_is_strict: Some(false),
+            ..plan.clone()
+        };
+        assert!(!mismatched_strictness.completion_state_is_consistent());
+
+        let mismatched_scope = EvalFragmentPlan {
+            completion_plan: plan
+                .completion_plan
+                .clone()
+                .map(|completion| EvalCompletionPlan {
+                    scope_mode: EvalScopeMode::Global {
+                        realm: EvalRealm::Current,
+                    },
+                    ..completion
+                }),
+            ..plan.clone()
+        };
+        assert!(!mismatched_scope.completion_state_is_consistent());
+
+        let runtime_with_completion = EvalFragmentPlan {
+            source: EvalSource::Runtime(Box::new(ResolvedExpr::Ident("src".to_owned()))),
+            host_policy: EvalHostPolicy::DirectHost,
+            ..plan
+        };
+        assert!(!runtime_with_completion.completion_state_is_consistent());
     }
 
     #[test]

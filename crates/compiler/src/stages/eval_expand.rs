@@ -775,6 +775,14 @@ fn validate_eval_fragment_plan(plan: &EvalFragmentPlan) -> Result<(), Diagnostic
             phase: None,
         });
     }
+    if !plan.completion_state_is_consistent() {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedEval,
+            message: "eval completion/declaration plan does not match fragment plan".to_owned(),
+            span: Some(plan.span),
+            phase: None,
+        });
+    }
     Ok(())
 }
 

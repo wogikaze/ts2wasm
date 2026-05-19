@@ -590,6 +590,39 @@ fn compiler_records_eval_declarations_in_completion_plan() {
 }
 
 #[test]
+fn compiler_rejects_eval_fragment_with_inconsistent_completion_plan() {
+    let plan = ts2wasm_ir::builtin_resolved::EvalFragmentPlan::new(
+        ts2wasm_ir::builtin_resolved::EvalKind::Direct,
+        ts2wasm_ir::builtin_resolved::EvalSource::StaticLiteral("1".to_owned()),
+        false,
+        ts2wasm_source::Span::generated("inconsistent_eval_completion_plan_test"),
+    )
+    .with_completion_plan(
+        false,
+        false,
+        ts2wasm_ir::builtin_resolved::EvalDeclarationPlan {
+            var_names: vec!["value".to_owned()],
+            function_hoists: vec![],
+        },
+        vec![ts2wasm_ir::builtin_resolved::EvalCompletionStep::Value(
+            ts2wasm_ir::ResolvedExpr::Number(1),
+        )],
+    );
+    let plan = ts2wasm_ir::builtin_resolved::EvalFragmentPlan {
+        declaration_plan: None,
+        ..plan
+    };
+
+    let err = crate::stages::eval_expand::expand_static_eval_fragments(vec![
+        ts2wasm_ir::ResolvedStmt::Expr(ts2wasm_ir::ResolvedExpr::Eval { plan }),
+    ])
+    .unwrap_err();
+
+    assert_eq!(err.code, DiagCode::UnsupportedEval);
+    assert!(err.message.contains("completion/declaration plan"));
+}
+
+#[test]
 fn compiler_records_indirect_eval_global_completion_context() {
     let expanded = parse_resolve_and_expand_dynamic_code(
         r#"
