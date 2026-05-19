@@ -16,7 +16,7 @@ use crate::builtin_resolved::{
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::{
     ArrowClosure, BoundConstructor, BoundFunction, FunctionMethodBinding, FunctionMethodKind,
-    GeneratorMethodIteratorBinding,
+    GeneratorMethodIteratorBinding, HostExternalKind,
 };
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -1230,6 +1230,13 @@ impl Resolver {
                                 if self.ctx.facts.env_cell_names.contains(param) {
                                     self.ctx.facts.env_cell_locals.insert(local_id);
                                     self.ctx.facts.initialized_env_cell_locals.insert(local_id);
+                                }
+                                if block_contains_dynamic_direct_eval(try_block) {
+                                    self.ctx.facts.mark_host_external(
+                                        local_id,
+                                        HostExternalKind::Object,
+                                        true,
+                                    );
                                 }
                                 Some(local_id)
                             } else {

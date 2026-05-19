@@ -680,6 +680,12 @@ fn dynamic_direct_eval_bridges_thrown_errors_through_node_shim_host_import() {
 }
 
 #[test]
+fn dynamic_direct_eval_bridges_thrown_object_methods_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-throw-object-method-node-shim.ts";
+    assert_node_shim_stdout(fixture, "Error\n7\n");
+}
+
+#[test]
 fn dynamic_direct_eval_applies_writeback_before_throw_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-throw-writeback-node-shim.ts";
     assert_node_shim_stdout(fixture, "Error\nafter\n");
@@ -1238,9 +1244,15 @@ function encodeHostValue(value) {
 }
 
 function encodeHostException(error) {
-  const name = error && typeof error.name === 'string' ? error.name : 'Error';
-  const message = error && typeof error.message === 'string' ? error.message : String(error);
-  const errorRaw = encodeHostObject({ name, message });
+  const errorObject = error !== null && typeof error === 'object' ? { ...error } : {};
+  if (typeof errorObject.name !== 'string') {
+    errorObject.name = error && typeof error.name === 'string' ? error.name : 'Error';
+  }
+  if (typeof errorObject.message !== 'string') {
+    errorObject.message =
+      error && typeof error.message === 'string' ? error.message : String(error);
+  }
+  const errorRaw = encodeHostObject(errorObject);
   const base = hostAlloc(GC_HEADER_SIZE + ARRAY_HEADER_SIZE + 4);
   view().setInt32(base + GC_FLAGS_AND_TYPE_OFFSET, GC_KIND_ARRAY, true);
   view().setInt32(base + GC_BODY_SIZE_OFFSET, ARRAY_HEADER_SIZE + 4, true);
