@@ -902,6 +902,21 @@ fn static_function_constructor_rejects_parameter_wrapper_injection() {
 }
 
 #[test]
+fn static_function_constructor_unary_source_uses_aot_lane() {
+    let fixture = "fixtures/core-semantics/function-constructor-static-unary-source.ts";
+    assert_node_shim_stdout(
+        fixture,
+        "undefined\nundefined\nfunction anonymous(\n) {\n-1\n}\nundefined\nfunction anonymous(\n) {\nundefined\n}\nundefined\nfunction anonymous(\n) {\ntrue\n}\n",
+    );
+}
+
+#[test]
+fn static_function_constructor_expression_source_uses_aot_lane() {
+    let fixture = "fixtures/core-semantics/function-constructor-static-expression-source.ts";
+    assert_node_shim_stdout(fixture, "1\n2\nundefined\nfunction anonymous(\n) {\n3\n}\n");
+}
+
+#[test]
 fn static_direct_eval_rejects_return_statement() {
     let fixture = "fixtures/core-semantics/direct-eval-return-unsupported.ts";
     assert_build_fails_with(

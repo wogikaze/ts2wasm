@@ -1051,8 +1051,10 @@ directories:
     - function-constructor-parameter-injection-unsupported.ts
     - function-constructor-parameter-grammar.ts
     - function-constructor-rest-params.ts
+    - function-constructor-static-expression-source.ts
     - function-constructor-static-primitive-source.ts
     - function-constructor-static-construct.ts
+    - function-constructor-static-unary-source.ts
     - function-constructor-shadowed-ordinary-call.ts
     - function-constructor-this-binding.ts
     - function-constructor-zero-args.ts

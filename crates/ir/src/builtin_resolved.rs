@@ -443,21 +443,130 @@ impl StaticFunctionConstructorSource {
 }
 
 fn function_constructor_source_string(arg: &ResolvedExpr) -> Option<String> {
-    match arg {
-        ResolvedExpr::String(value) => Some(value.clone()),
-        ResolvedExpr::Number(value) => Some(value.to_string()),
-        ResolvedExpr::DecimalNumber(value) => Some(value.clone()),
-        ResolvedExpr::BigIntLiteral { decimal, sign, .. } => {
-            if *sign < 0 {
-                Some(format!("-{decimal}"))
-            } else {
-                Some(decimal.clone())
-            }
+    function_constructor_static_source_value(arg).map(|value| value.to_js_string())
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum FunctionConstructorStaticSourceValue {
+    String(String),
+    Number(i32),
+    DecimalNumber(String),
+    BigInt(String),
+    Bool(bool),
+    Null,
+    Undefined,
+}
+
+impl FunctionConstructorStaticSourceValue {
+    fn to_js_string(&self) -> String {
+        match self {
+            Self::String(value) => value.clone(),
+            Self::Number(value) => value.to_string(),
+            Self::DecimalNumber(value) | Self::BigInt(value) => value.clone(),
+            Self::Bool(true) => "true".to_owned(),
+            Self::Bool(false) => "false".to_owned(),
+            Self::Null => "null".to_owned(),
+            Self::Undefined => "undefined".to_owned(),
         }
-        ResolvedExpr::Bool(true) => Some("true".to_owned()),
-        ResolvedExpr::Bool(false) => Some("false".to_owned()),
-        ResolvedExpr::Null => Some("null".to_owned()),
-        ResolvedExpr::Undefined => Some("undefined".to_owned()),
+    }
+}
+
+fn function_constructor_static_source_value(
+    arg: &ResolvedExpr,
+) -> Option<FunctionConstructorStaticSourceValue> {
+    match arg {
+        ResolvedExpr::String(value) => {
+            Some(FunctionConstructorStaticSourceValue::String(value.clone()))
+        }
+        ResolvedExpr::Number(value) => Some(FunctionConstructorStaticSourceValue::Number(*value)),
+        ResolvedExpr::DecimalNumber(value) => Some(
+            FunctionConstructorStaticSourceValue::DecimalNumber(value.clone()),
+        ),
+        ResolvedExpr::BigIntLiteral { decimal, sign, .. } => {
+            Some(FunctionConstructorStaticSourceValue::BigInt(if *sign < 0 {
+                format!("-{decimal}")
+            } else {
+                decimal.clone()
+            }))
+        }
+        ResolvedExpr::Bool(value) => Some(FunctionConstructorStaticSourceValue::Bool(*value)),
+        ResolvedExpr::Null => Some(FunctionConstructorStaticSourceValue::Null),
+        ResolvedExpr::Undefined => Some(FunctionConstructorStaticSourceValue::Undefined),
+        ResolvedExpr::Binary { left, op, right } if *op == BinaryOp::Add => {
+            function_constructor_static_add_source_value(left, right)
+        }
+        ResolvedExpr::Unary { op, expr } => {
+            function_constructor_static_unary_source_value(*op, expr)
+        }
+        _ => None,
+    }
+}
+
+fn function_constructor_static_unary_source_value(
+    op: UnaryOp,
+    expr: &ResolvedExpr,
+) -> Option<FunctionConstructorStaticSourceValue> {
+    let value = function_constructor_static_source_value(expr)?;
+    match op {
+        UnaryOp::Not => Some(FunctionConstructorStaticSourceValue::Bool(
+            !function_constructor_static_to_boolean(&value),
+        )),
+        UnaryOp::Void => Some(FunctionConstructorStaticSourceValue::Undefined),
+        UnaryOp::Plus => match value {
+            FunctionConstructorStaticSourceValue::Number(value) => {
+                Some(FunctionConstructorStaticSourceValue::Number(value))
+            }
+            FunctionConstructorStaticSourceValue::Bool(true) => {
+                Some(FunctionConstructorStaticSourceValue::Number(1))
+            }
+            FunctionConstructorStaticSourceValue::Bool(false)
+            | FunctionConstructorStaticSourceValue::Null => {
+                Some(FunctionConstructorStaticSourceValue::Number(0))
+            }
+            _ => None,
+        },
+        UnaryOp::Negate => match value {
+            FunctionConstructorStaticSourceValue::Number(value) => {
+                Some(FunctionConstructorStaticSourceValue::Number(-value))
+            }
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+fn function_constructor_static_to_boolean(value: &FunctionConstructorStaticSourceValue) -> bool {
+    match value {
+        FunctionConstructorStaticSourceValue::String(value) => !value.is_empty(),
+        FunctionConstructorStaticSourceValue::Number(value) => *value != 0,
+        FunctionConstructorStaticSourceValue::DecimalNumber(value)
+        | FunctionConstructorStaticSourceValue::BigInt(value) => value != "0",
+        FunctionConstructorStaticSourceValue::Bool(value) => *value,
+        FunctionConstructorStaticSourceValue::Null
+        | FunctionConstructorStaticSourceValue::Undefined => false,
+    }
+}
+
+fn function_constructor_static_add_source_value(
+    left: &ResolvedExpr,
+    right: &ResolvedExpr,
+) -> Option<FunctionConstructorStaticSourceValue> {
+    let left = function_constructor_static_source_value(left)?;
+    let right = function_constructor_static_source_value(right)?;
+    if matches!(left, FunctionConstructorStaticSourceValue::String(_))
+        || matches!(right, FunctionConstructorStaticSourceValue::String(_))
+    {
+        return Some(FunctionConstructorStaticSourceValue::String(format!(
+            "{}{}",
+            left.to_js_string(),
+            right.to_js_string()
+        )));
+    }
+    match (left, right) {
+        (
+            FunctionConstructorStaticSourceValue::Number(left),
+            FunctionConstructorStaticSourceValue::Number(right),
+        ) => Some(FunctionConstructorStaticSourceValue::Number(left + right)),
         _ => None,
     }
 }

@@ -120,6 +120,34 @@ fn compiler_expands_static_function_constructor_primitive_source_args() {
 }
 
 #[test]
+fn compiler_expands_static_function_constructor_expression_source_args() {
+    let expanded = parse_resolve_and_expand_dynamic_code(
+        r#"let value = Function("return " + "1"); let other = Function(1 + 2);"#,
+    );
+    for stmt in &expanded {
+        let ts2wasm_ir::ResolvedStmt::Let(
+            _,
+            ts2wasm_ir::ResolvedExpr::FunctionExpr {
+                origin,
+                constructor_metadata,
+                ..
+            },
+        ) = stmt
+        else {
+            panic!("expected static expression Function constructor to expand: {expanded:?}");
+        };
+        assert_eq!(
+            *origin,
+            ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor
+        );
+        assert_eq!(
+            constructor_metadata.as_ref().map(|meta| meta.name.as_str()),
+            Some("anonymous")
+        );
+    }
+}
+
+#[test]
 fn compiler_records_function_constructor_parse_goals_on_static_source() {
     let parsed = parse_program(r#"let value = Function("a", "return a");"#).unwrap();
     let named = ts2wasm_ir::name_resolver::resolve_names(&parsed).unwrap();
