@@ -1,5 +1,6 @@
 function run() {
-  eval('for (var { ["value"]: item } of [{ value: "ok" }]) {}');
+  let key = "value";
+  eval('for (var { [key]: item } of [{ value: "ok" }]) {}');
   console.log(item);
 }
 

@@ -2925,6 +2925,19 @@ fn collect_binding_names_from_pattern(pattern: &str, out: &mut Vec<String>) {
     let bytes = pattern.as_bytes();
     let mut index = 0usize;
     while index < pattern.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => {
+                index = skip_quoted_source(pattern, index);
+                continue;
+            }
+            b'[' => {
+                if let Some(after_computed_key) = skip_computed_binding_key(pattern, index) {
+                    index = after_computed_key;
+                    continue;
+                }
+            }
+            _ => {}
+        }
         if bytes[index] == b'=' {
             index = skip_binding_initializer(pattern, index + 1);
             continue;
@@ -2945,6 +2958,39 @@ fn collect_binding_names_from_pattern(pattern: &str, out: &mut Vec<String>) {
         push_unique_eval_declaration(out, &pattern[index..end]);
         index = end;
     }
+}
+
+fn skip_computed_binding_key(pattern: &str, start: usize) -> Option<usize> {
+    let close = skip_balanced_bracket(pattern, start)?;
+    let next = skip_ascii_ws(pattern, close);
+    (pattern.as_bytes().get(next) == Some(&b':')).then_some(next + 1)
+}
+
+fn skip_balanced_bracket(pattern: &str, start: usize) -> Option<usize> {
+    if pattern.as_bytes().get(start) != Some(&b'[') {
+        return None;
+    }
+    let bytes = pattern.as_bytes();
+    let mut index = start;
+    let mut depth = 0usize;
+    while index < pattern.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => {
+                index = skip_quoted_source(pattern, index);
+                continue;
+            }
+            b'[' => depth += 1,
+            b']' => {
+                depth = depth.saturating_sub(1);
+                if depth == 0 {
+                    return Some(index + 1);
+                }
+            }
+            _ => {}
+        }
+        index += 1;
+    }
+    None
 }
 
 fn skip_binding_initializer(pattern: &str, start: usize) -> usize {
