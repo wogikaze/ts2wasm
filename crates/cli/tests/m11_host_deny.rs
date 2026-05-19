@@ -464,6 +464,10 @@ fn static_indirect_eval_for_head_var_destructuring_global_declares_no_node_host_
         "core-semantics/indirect-eval-static-for-head-var-object-rest-computed-global.ts",
         "static indirect eval for-head var object rest computed global landing",
     );
+    assert_standalone_category(
+        "core-semantics/indirect-eval-static-for-init-var-global.ts",
+        "static indirect eval for-init var global landing",
+    );
 }
 
 #[test]
@@ -711,6 +715,10 @@ fn static_direct_eval_for_head_var_destructuring_declares_no_node_host_eval_capa
     assert_standalone_category(
         "core-semantics/direct-eval-for-head-var-object-rest-computed-key.ts",
         "static direct eval for-head var object rest computed key",
+    );
+    assert_standalone_category(
+        "core-semantics/direct-eval-for-init-var-lands-in-caller.ts",
+        "static direct eval for-init var landing",
     );
 }
 

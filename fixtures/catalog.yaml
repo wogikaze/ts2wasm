@@ -908,6 +908,7 @@ directories:
     - direct-eval-for-head-var-object-rest-caller.ts
     - direct-eval-for-head-var-object-rest-computed-key.ts
     - direct-eval-for-head-var-lands-in-caller.ts
+    - direct-eval-for-init-var-lands-in-caller.ts
     - direct-eval-for-in-completion.ts
     - direct-eval-for-of-completion.ts
     - direct-eval-function-lands-in-caller.ts
@@ -1095,6 +1096,7 @@ directories:
     - indirect-eval-static-for-head-var-global.ts
     - indirect-eval-static-for-head-var-object-rest-global.ts
     - indirect-eval-static-for-head-var-object-rest-computed-global.ts
+    - indirect-eval-static-for-init-var-global.ts
     - indirect-eval-static-global-scope.ts
     - indirect-eval-static-lexical-local.ts
     - indirect-eval-static-var-hoist-global.ts

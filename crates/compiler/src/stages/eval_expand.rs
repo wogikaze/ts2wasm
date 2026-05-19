@@ -2709,8 +2709,14 @@ fn collect_eval_var_declaration_names(source: &str, stmts: &[Stmt], out: &mut Ve
                 collect_eval_var_declaration_names(source, then_body, out);
                 collect_eval_var_declaration_names(source, else_body, out);
             }
-            Stmt::While { body, .. } | Stmt::DoWhile { body, .. } | Stmt::For { body, .. } => {
+            Stmt::While { body, .. } | Stmt::DoWhile { body, .. } => {
                 collect_eval_var_declaration_names(source, body, out)
+            }
+            Stmt::For { init, body, .. } => {
+                if let Some(init) = init {
+                    collect_eval_var_declaration_names(source, std::slice::from_ref(init), out);
+                }
+                collect_eval_var_declaration_names(source, body, out);
             }
             Stmt::ForIn {
                 var, body, span, ..
@@ -2777,8 +2783,14 @@ fn collect_eval_var_let_declaration_names(source: &str, stmts: &[Stmt], out: &mu
                 collect_eval_var_let_declaration_names(source, then_body, out);
                 collect_eval_var_let_declaration_names(source, else_body, out);
             }
-            Stmt::While { body, .. } | Stmt::DoWhile { body, .. } | Stmt::For { body, .. } => {
+            Stmt::While { body, .. } | Stmt::DoWhile { body, .. } => {
                 collect_eval_var_let_declaration_names(source, body, out)
+            }
+            Stmt::For { init, body, .. } => {
+                if let Some(init) = init {
+                    collect_eval_var_let_declaration_names(source, std::slice::from_ref(init), out);
+                }
+                collect_eval_var_let_declaration_names(source, body, out);
             }
             Stmt::ForIn {
                 var, body, span, ..
