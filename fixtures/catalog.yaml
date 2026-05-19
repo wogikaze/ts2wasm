@@ -990,6 +990,7 @@ directories:
     - direct-eval-dynamic-tdz-name-in-regexp-node-shim.ts
     - direct-eval-dynamic-tdz-name-in-string-node-shim.ts
     - direct-eval-dynamic-tdz-name-in-template-node-shim.ts
+    - direct-eval-dynamic-tdz-optional-computed-member-node-shim.ts
     - direct-eval-dynamic-tdz-optional-member-node-shim.ts
     - direct-eval-dynamic-tdz-parenthesized-node-shim.ts
     - direct-eval-dynamic-tdz-template-expression-node-shim.ts
