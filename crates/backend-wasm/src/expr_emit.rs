@@ -31,12 +31,21 @@ fn tagged_direct_local_token(func_id: i32) -> i32 {
 }
 
 fn is_tagged_number_sentinel(value: i32) -> bool {
-    value == tagged_number_sentinel(ValueTag::NAN_PAYLOAD)
+    if value == tagged_number_sentinel(ValueTag::NAN_PAYLOAD)
         || value == tagged_number_sentinel(ValueTag::INFINITY_PAYLOAD)
         || value == tagged_number_sentinel(ValueTag::NEG_INFINITY_PAYLOAD)
         || value == tagged_number_sentinel(ValueTag::NEG_ZERO_PAYLOAD)
         || value == ValueTag::BUILTIN_PARSE_INT_VALUE
         || value == ValueTag::BUILTIN_PARSE_FLOAT_VALUE
+    {
+        return true;
+    }
+    // NativeError constructor sentinels (Error, TypeError, etc.) occupy the payload
+    // range [NATIVE_ERROR_PAYLOAD_BASE, DIRECT_LOCAL_TOKEN_PAYLOAD_BASE).
+    // These are reserved number-tagged values that must not be re-encoded.
+    let payload = ((value as u32) >> (ValueTag::NUMBER_SHIFT as u32)) as i32;
+    payload >= ValueTag::NATIVE_ERROR_PAYLOAD_BASE
+        && payload < ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE
 }
 
 pub(super) const CLOSURE_SENTINEL: i32 = -2;

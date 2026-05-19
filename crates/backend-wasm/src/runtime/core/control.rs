@@ -184,6 +184,19 @@ impl WatEmitter<'_> {
 
       (then (return (i32.or (i32.const {str_function}) (i32.const {string_tag})))))
 
+    ;; NativeError constructor tokens (Error, TypeError, etc.) in reserved payload
+    ;; range [NATIVE_ERROR_PAYLOAD_BASE, DIRECT_LOCAL_TOKEN_PAYLOAD_BASE).
+    (if (i32.and
+          (i32.eq (local.get $tag) (i32.const {number_tag}))
+          (i32.lt_u
+            (i32.shr_u (local.get $v) (i32.const {number_shift}))
+            (i32.const {direct_local_token_payload_base})))
+      (then
+        (if (i32.ge_u
+              (i32.shr_u (local.get $v) (i32.const {number_shift}))
+              (i32.const {native_error_payload_base}))
+          (then (return (i32.or (i32.const {str_function}) (i32.const {string_tag})))))))
+
     (if (i32.and
           (i32.eq (local.get $tag) (i32.const {number_tag}))
           (i32.ge_u
@@ -265,6 +278,8 @@ impl WatEmitter<'_> {
             builtin_parse_float = ValueTag::BUILTIN_PARSE_FLOAT_VALUE,
 
             direct_local_token_payload_base = ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE,
+
+            native_error_payload_base = ValueTag::NATIVE_ERROR_PAYLOAD_BASE,
 
             string_tag = ValueTag::STRING_TAG,
 

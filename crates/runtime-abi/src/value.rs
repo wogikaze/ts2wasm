@@ -60,6 +60,9 @@ impl ValueTag {
     pub const BUILTIN_PARSE_INT_PAYLOAD: i32 = Self::NAN_PAYLOAD + 4;
     /// Reserved payload for the `parseFloat` builtin function identity token.
     pub const BUILTIN_PARSE_FLOAT_PAYLOAD: i32 = Self::NAN_PAYLOAD + 5;
+    /// Base reserved payload for NativeError constructor identity tokens (Error, TypeError, etc.).
+    /// Each NativeError gets a sequential payload starting from this base.
+    pub const NATIVE_ERROR_PAYLOAD_BASE: i32 = Self::NAN_PAYLOAD + 6;
     /// First reserved payload for direct-local user function identity tokens.
     pub const DIRECT_LOCAL_TOKEN_PAYLOAD_BASE: i32 = Self::NAN_PAYLOAD + 16;
     /// Tagged value for the `parseInt` builtin function identity token.

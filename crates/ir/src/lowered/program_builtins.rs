@@ -9,10 +9,22 @@ use ts2wasm_runtime_abi::ValueTag;
 use ts2wasm_source::Span;
 use ts2wasm_syntax::UnaryOp;
 
+fn native_error_token_value(offset: i32) -> i32 {
+    ValueTag::encode_reserved_number_payload(ValueTag::NATIVE_ERROR_PAYLOAD_BASE + offset)
+}
+
 pub(crate) fn builtin_function_token_value(name: &str) -> Option<i32> {
     match name {
         "parseInt" => Some(ValueTag::BUILTIN_PARSE_INT_VALUE),
         "parseFloat" => Some(ValueTag::BUILTIN_PARSE_FLOAT_VALUE),
+        // NativeError constructor tokens — typeof returns "function".
+        "Error" => Some(native_error_token_value(0)),
+        "EvalError" => Some(native_error_token_value(1)),
+        "RangeError" => Some(native_error_token_value(2)),
+        "ReferenceError" => Some(native_error_token_value(3)),
+        "SyntaxError" => Some(native_error_token_value(4)),
+        "TypeError" => Some(native_error_token_value(5)),
+        "URIError" => Some(native_error_token_value(6)),
         _ => None,
     }
 }
