@@ -19,6 +19,7 @@ struct NestedFunctionOptions {
     is_async: bool,
     suppress_captures: bool,
     needs_new_target: bool,
+    metadata_length: Option<usize>,
     metadata_name: Option<String>,
     source_text: Option<String>,
 }
@@ -402,6 +403,7 @@ impl super::Resolver {
                 suppress_captures: constructor_metadata.is_some_and(|meta| meta.suppress_captures)
                     || origin == FunctionExprOrigin::FunctionConstructor,
                 needs_new_target: is_function_constructor && block_contains_new_target(body),
+                metadata_length: constructor_metadata.and_then(|meta| meta.length),
                 metadata_name: constructor_metadata
                     .map(|meta| meta.name.clone())
                     .or_else(|| {
@@ -666,7 +668,9 @@ impl super::Resolver {
                     && !params.iter().any(|param| param.name == "arguments"),
                 needs_new_target: options.needs_new_target,
                 has_rest: params.iter().any(|param| param.is_rest),
-                metadata_length: Some(function_length_metadata(params)),
+                metadata_length: options
+                    .metadata_length
+                    .or_else(|| Some(function_length_metadata(params))),
                 metadata_name: options.metadata_name,
                 ..FunctionSignature::default()
             },

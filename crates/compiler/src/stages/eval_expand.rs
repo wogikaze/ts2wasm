@@ -1028,6 +1028,9 @@ fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<Resolved
             ..
         } = stmt
         {
+            let generated_function = static_source
+                .generated_function
+                .with_length(function_constructor_length_metadata(&params));
             let mut function_ctx = EvalExpansionContext::new();
             function_ctx.declare_params(&params);
             let body = expand_stmts(body, &mut function_ctx)?;
@@ -1037,7 +1040,7 @@ fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<Resolved
                 body,
                 is_generator,
                 origin: FunctionExprOrigin::FunctionConstructor,
-                constructor_metadata: Some(static_source.generated_function),
+                constructor_metadata: Some(generated_function),
                 source_text: generated_source_text,
             });
         }
@@ -1078,6 +1081,13 @@ fn function_constructor_host_lane(
     ResolvedExpr::FunctionConstructor {
         plan: FunctionConstructorPlan::new(kind, args, span),
     }
+}
+
+fn function_constructor_length_metadata(params: &[ResolvedParam]) -> usize {
+    params
+        .iter()
+        .take_while(|param| param.default.is_none() && !param.is_rest)
+        .count()
 }
 
 fn validate_static_function_constructor_early_errors(

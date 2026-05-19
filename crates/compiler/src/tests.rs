@@ -52,6 +52,10 @@ fn compiler_expands_static_function_constructor_call_after_resolver_classificati
         Some("anonymous")
     );
     assert_eq!(
+        constructor_metadata.as_ref().and_then(|meta| meta.length),
+        Some(0)
+    );
+    assert_eq!(
         source_text, "function anonymous(\n) {\nreturn 1\n}",
         "Function constructor source text should be owned by the plan representation"
     );
@@ -132,6 +136,27 @@ fn compiler_records_function_constructor_parse_goals_on_static_source() {
     assert_eq!(
         static_source.parse_goals.body,
         ts2wasm_ir::builtin_resolved::FunctionConstructorParseGoal::FunctionBody
+    );
+}
+
+#[test]
+fn compiler_records_function_constructor_length_metadata_on_generated_function() {
+    let expanded = parse_resolve_and_expand_dynamic_code(
+        r#"let value = Function("a", "b = 1", "...rest", "return a");"#,
+    );
+    let ts2wasm_ir::ResolvedStmt::Let(
+        _,
+        ts2wasm_ir::ResolvedExpr::FunctionExpr {
+            constructor_metadata,
+            ..
+        },
+    ) = &expanded[0]
+    else {
+        panic!("expected static Function constructor to expand: {expanded:?}");
+    };
+    assert_eq!(
+        constructor_metadata.as_ref().and_then(|meta| meta.length),
+        Some(1)
     );
 }
 

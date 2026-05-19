@@ -486,6 +486,7 @@ pub enum FunctionConstructorParseGoal {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FunctionConstructorGeneratedFunction {
     pub name: String,
+    pub length: Option<usize>,
     pub constructable: bool,
     pub suppress_captures: bool,
 }
@@ -494,9 +495,15 @@ impl FunctionConstructorGeneratedFunction {
     pub fn anonymous() -> Self {
         Self {
             name: "anonymous".to_owned(),
+            length: None,
             constructable: true,
             suppress_captures: true,
         }
+    }
+
+    pub fn with_length(mut self, length: usize) -> Self {
+        self.length = Some(length);
+        self
     }
 }
 
