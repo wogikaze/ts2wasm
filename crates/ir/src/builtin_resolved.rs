@@ -397,6 +397,7 @@ impl EvalFragmentPlan {
                     && self.caller_is_strict == completion_plan.caller_is_strict
                     && self.eval_source_is_strict == Some(completion_plan.eval_is_strict)
                     && declarations == &completion_plan.declarations
+                    && completion_plan.landing_state_is_consistent()
             }
             _ => false,
         }
@@ -1795,6 +1796,21 @@ mod tests {
             ..plan.clone()
         };
         assert!(!mismatched_scope.completion_state_is_consistent());
+
+        let mismatched_landing = EvalFragmentPlan {
+            completion_plan: plan
+                .completion_plan
+                .clone()
+                .map(|completion| EvalCompletionPlan {
+                    steps: vec![EvalCompletionStep::GlobalVarLet {
+                        name: "value".to_owned(),
+                        init: ResolvedExpr::Number(1),
+                    }],
+                    ..completion
+                }),
+            ..plan.clone()
+        };
+        assert!(!mismatched_landing.completion_state_is_consistent());
 
         let runtime_with_completion = EvalFragmentPlan {
             source: EvalSource::Runtime(Box::new(ResolvedExpr::Ident("src".to_owned()))),
