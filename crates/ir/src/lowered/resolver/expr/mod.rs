@@ -218,10 +218,6 @@ impl super::Resolver {
                 let source_expr = self.lower_expr(source_value_expr)?;
                 let intrinsic = match plan.host_policy {
                     crate::builtin_resolved::EvalHostPolicy::DirectHost => {
-                        self.ensure_direct_eval_env_descriptor_initialized(
-                            source_value_expr,
-                            plan.span,
-                        )?;
                         RuntimeFn::EvalDirectHost
                     }
                     crate::builtin_resolved::EvalHostPolicy::IndirectHost => {
@@ -240,7 +236,10 @@ impl super::Resolver {
                 let args = match plan.host_policy {
                     crate::builtin_resolved::EvalHostPolicy::DirectHost => vec![
                         source_expr,
-                        self.lower_direct_eval_env_descriptor(plan.caller_is_strict),
+                        self.lower_direct_eval_env_descriptor(
+                            plan.caller_is_strict,
+                            source_value_expr,
+                        ),
                     ],
                     crate::builtin_resolved::EvalHostPolicy::IndirectHost => vec![source_expr],
                     crate::builtin_resolved::EvalHostPolicy::AotOnly => unreachable!(),
@@ -1264,14 +1263,19 @@ impl super::Resolver {
         }
     }
 
-    fn lower_direct_eval_env_descriptor(&self, caller_is_strict: bool) -> LoweredExpr {
-        self.collect_direct_eval_env_descriptor(caller_is_strict)
+    fn lower_direct_eval_env_descriptor(
+        &self,
+        caller_is_strict: bool,
+        source_expr: &ResolvedExpr,
+    ) -> LoweredExpr {
+        self.collect_direct_eval_env_descriptor(caller_is_strict, source_expr)
             .into_lowered_expr()
     }
 
     fn collect_direct_eval_env_descriptor(
         &self,
         caller_is_strict: bool,
+        source_expr: &ResolvedExpr,
     ) -> DirectEvalEnvDescriptor {
         let mut seen = HashSet::new();
         let mut bindings = Vec::new();
@@ -1287,8 +1291,48 @@ impl super::Resolver {
                 {
                     bindings.push(DirectEvalEnvBinding {
                         name: name.clone(),
-                        local: *local,
-                        kind: DirectEvalEnvBindingKind::ReadWrite,
+                        kind: DirectEvalEnvBindingKind::ReadWrite { local: *local },
+                    });
+                } else {
+                    bindings.push(DirectEvalEnvBinding {
+                        name: name.clone(),
+                        kind: DirectEvalEnvBindingKind::Tdz,
+                    });
+                }
+            }
+        }
+        let mut env_cell_names = self
+            .ctx
+            .facts
+            .env_cell_names
+            .iter()
+            .cloned()
+            .collect::<Vec<_>>();
+        env_cell_names.sort();
+        for name in env_cell_names {
+            if !seen.insert(name.clone()) {
+                continue;
+            }
+            let needs_tdz_entry = match self.ctx.symbols.resolve(&name) {
+                Some(local) => {
+                    !self.ctx.facts.env_cell_locals.contains(&local)
+                        || !self.ctx.facts.initialized_env_cell_locals.contains(&local)
+                }
+                None => true,
+            };
+            if needs_tdz_entry {
+                bindings.push(DirectEvalEnvBinding {
+                    name,
+                    kind: DirectEvalEnvBindingKind::Tdz,
+                });
+            }
+        }
+        if let Some(source) = self.direct_eval_static_source_value(source_expr) {
+            for name in focused_direct_eval_tdz_candidates(&source) {
+                if seen.insert(name.clone()) {
+                    bindings.push(DirectEvalEnvBinding {
+                        name,
+                        kind: DirectEvalEnvBindingKind::Tdz,
                     });
                 }
             }
@@ -1298,46 +1342,6 @@ impl super::Resolver {
             caller_is_strict,
             bindings,
         }
-    }
-
-    fn ensure_direct_eval_env_descriptor_initialized(
-        &self,
-        source_expr: &ResolvedExpr,
-        span: Span,
-    ) -> Result<(), Diagnostic> {
-        let static_source = self.direct_eval_static_source_value(source_expr);
-        let mut names = self
-            .ctx
-            .facts
-            .env_cell_names
-            .iter()
-            .cloned()
-            .collect::<Vec<_>>();
-        names.sort();
-
-        for name in names {
-            let Some(local) = self.ctx.symbols.resolve(&name) else {
-                if static_source
-                    .as_deref()
-                    .is_none_or(|source| source_mentions_identifier(source, &name))
-                {
-                    return Err(dynamic_direct_eval_tdz_diagnostic(&name, span));
-                }
-                continue;
-            };
-            if !self.ctx.facts.env_cell_locals.contains(&local)
-                || !self.ctx.facts.initialized_env_cell_locals.contains(&local)
-            {
-                if static_source
-                    .as_deref()
-                    .is_none_or(|source| source_mentions_identifier(source, &name))
-                {
-                    return Err(dynamic_direct_eval_tdz_diagnostic(&name, span));
-                }
-            }
-        }
-
-        Ok(())
     }
 
     fn direct_eval_static_source_value(&self, source_expr: &ResolvedExpr) -> Option<String> {
@@ -1355,167 +1359,32 @@ impl super::Resolver {
     }
 }
 
-fn source_mentions_identifier(source: &str, name: &str) -> bool {
-    if name.is_empty() {
+fn focused_direct_eval_tdz_candidates(source: &str) -> Vec<String> {
+    let trimmed = source.trim();
+    if is_ascii_js_identifier(trimmed) {
+        return vec![trimmed.to_owned()];
+    }
+    if let Some(inner) = trimmed
+        .strip_prefix("`${")
+        .and_then(|rest| rest.strip_suffix("}`"))
+    {
+        let inner = inner.trim();
+        if is_ascii_js_identifier(inner) {
+            return vec![inner.to_owned()];
+        }
+    }
+    Vec::new()
+}
+
+fn is_ascii_js_identifier(value: &str) -> bool {
+    let mut chars = value.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    if !(first == '_' || first == '$' || first.is_ascii_alphabetic()) {
         return false;
     }
-    let bytes = source.as_bytes();
-    let needle = name.as_bytes();
-    let mut index = 0;
-    while index + needle.len() <= bytes.len() {
-        match bytes[index] {
-            b'\'' | b'"' => {
-                index = skip_quoted_source(bytes, index, bytes[index]);
-                continue;
-            }
-            b'`' => {
-                let (mentions, next) = template_mentions_identifier(bytes, index, name);
-                if mentions {
-                    return true;
-                }
-                index = next;
-                continue;
-            }
-            b'/' if bytes.get(index + 1) == Some(&b'/') => {
-                index += 2;
-                while index < bytes.len() && bytes[index] != b'\n' && bytes[index] != b'\r' {
-                    index += 1;
-                }
-                continue;
-            }
-            b'/' if bytes.get(index + 1) == Some(&b'*') => {
-                index += 2;
-                while index + 1 < bytes.len() && !(bytes[index] == b'*' && bytes[index + 1] == b'/')
-                {
-                    index += 1;
-                }
-                index = (index + 2).min(bytes.len());
-                continue;
-            }
-            _ => {}
-        }
-        if &bytes[index..index + needle.len()] == needle
-            && (index == 0 || !is_identifier_part(bytes[index - 1]))
-            && (index + needle.len() == bytes.len()
-                || !is_identifier_part(bytes[index + needle.len()]))
-        {
-            return true;
-        }
-        index += 1;
-    }
-    false
-}
-
-fn template_mentions_identifier(bytes: &[u8], start: usize, name: &str) -> (bool, usize) {
-    let mut index = start + 1;
-    while index < bytes.len() {
-        if bytes[index] == b'\\' {
-            index = (index + 2).min(bytes.len());
-            continue;
-        }
-        if bytes[index] == b'`' {
-            return (false, index + 1);
-        }
-        if bytes[index] == b'$'
-            && bytes.get(index + 1) == Some(&b'{')
-            && let Some(expr_end) = find_template_expr_end(bytes, index + 2)
-        {
-            if std::str::from_utf8(&bytes[index + 2..expr_end])
-                .ok()
-                .is_some_and(|expr| source_mentions_identifier(expr, name))
-            {
-                return (true, expr_end + 1);
-            }
-            index = expr_end + 1;
-            continue;
-        }
-        index += 1;
-    }
-    (false, bytes.len())
-}
-
-fn find_template_expr_end(bytes: &[u8], start: usize) -> Option<usize> {
-    let mut depth = 1usize;
-    let mut index = start;
-    while index < bytes.len() {
-        match bytes[index] {
-            b'\'' | b'"' => {
-                index = skip_quoted_source(bytes, index, bytes[index]);
-                continue;
-            }
-            b'`' => {
-                index = skip_template_source(bytes, index);
-                continue;
-            }
-            b'/' if bytes.get(index + 1) == Some(&b'/') => {
-                index += 2;
-                while index < bytes.len() && bytes[index] != b'\n' && bytes[index] != b'\r' {
-                    index += 1;
-                }
-                continue;
-            }
-            b'/' if bytes.get(index + 1) == Some(&b'*') => {
-                index += 2;
-                while index + 1 < bytes.len() && !(bytes[index] == b'*' && bytes[index + 1] == b'/')
-                {
-                    index += 1;
-                }
-                index = (index + 2).min(bytes.len());
-                continue;
-            }
-            b'{' => depth += 1,
-            b'}' => {
-                depth -= 1;
-                if depth == 0 {
-                    return Some(index);
-                }
-            }
-            _ => {}
-        }
-        index += 1;
-    }
-    None
-}
-
-fn skip_template_source(bytes: &[u8], start: usize) -> usize {
-    let mut index = start + 1;
-    while index < bytes.len() {
-        if bytes[index] == b'\\' {
-            index = (index + 2).min(bytes.len());
-            continue;
-        }
-        if bytes[index] == b'`' {
-            return index + 1;
-        }
-        if bytes[index] == b'$'
-            && bytes.get(index + 1) == Some(&b'{')
-            && let Some(expr_end) = find_template_expr_end(bytes, index + 2)
-        {
-            index = expr_end + 1;
-            continue;
-        }
-        index += 1;
-    }
-    bytes.len()
-}
-
-fn skip_quoted_source(bytes: &[u8], start: usize, quote: u8) -> usize {
-    let mut index = start + 1;
-    while index < bytes.len() {
-        if bytes[index] == b'\\' {
-            index = (index + 2).min(bytes.len());
-            continue;
-        }
-        if bytes[index] == quote {
-            return index + 1;
-        }
-        index += 1;
-    }
-    bytes.len()
-}
-
-fn is_identifier_part(byte: u8) -> bool {
-    byte == b'_' || byte == b'$' || byte.is_ascii_alphanumeric()
+    chars.all(|ch| ch == '_' || ch == '$' || ch.is_ascii_alphanumeric())
 }
 
 struct DirectEvalEnvDescriptor {
@@ -1525,18 +1394,28 @@ struct DirectEvalEnvDescriptor {
 
 struct DirectEvalEnvBinding {
     name: String,
-    local: LocalId,
     kind: DirectEvalEnvBindingKind,
 }
 
 enum DirectEvalEnvBindingKind {
-    ReadWrite,
+    ReadWrite { local: LocalId },
+    Tdz,
 }
 
 impl DirectEvalEnvBindingKind {
     fn as_descriptor_tag(&self) -> &'static str {
         match self {
-            Self::ReadWrite => "readwrite",
+            Self::ReadWrite { .. } => "readwrite",
+            Self::Tdz => "tdz",
+        }
+    }
+
+    fn target_expr(&self) -> LoweredExpr {
+        match self {
+            Self::ReadWrite { local } => {
+                LoweredExpr::Local(*local, Span::generated("eval_env_cell"))
+            }
+            Self::Tdz => LoweredExpr::Undefined(Span::generated("eval_env_tdz")),
         }
     }
 }
@@ -1589,7 +1468,7 @@ impl DirectEvalEnvBinding {
         LoweredExpr::ArrayNew {
             elements: vec![
                 LoweredExpr::String(self.name, Span::generated("eval_env_name")),
-                LoweredExpr::Local(self.local, Span::generated("eval_env_cell")),
+                self.kind.target_expr(),
                 LoweredExpr::String(
                     self.kind.as_descriptor_tag().to_owned(),
                     Span::generated("eval_env_binding_kind"),
@@ -1597,17 +1476,6 @@ impl DirectEvalEnvBinding {
             ],
             span: Span::generated("eval_env_binding"),
         }
-    }
-}
-
-fn dynamic_direct_eval_tdz_diagnostic(name: &str, span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedEval,
-        message: format!(
-            "issue-429: dynamic direct eval cannot safely run before caller binding `{name}` is initialized; TDZ-aware env descriptors are not implemented"
-        ),
-        span: Some(span),
-        phase: None,
     }
 }
 

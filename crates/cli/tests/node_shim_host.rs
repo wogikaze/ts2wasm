@@ -745,16 +745,16 @@ fn dynamic_direct_eval_strict_caller_ignores_restricted_words_in_strings_node_sh
 }
 
 #[test]
-fn dynamic_direct_eval_rejects_tdz_env_descriptor_conflict() {
-    let fixture = "fixtures/core-semantics/direct-eval-dynamic-tdz-conflict-unsupported.ts";
-    assert_build_fails_with(fixture, "UnsupportedEval", "TDZ-aware env descriptors");
+fn dynamic_direct_eval_tdz_env_descriptor_conflict_is_catchable_reference_error() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-tdz-conflict-node-shim.ts";
+    assert_node_shim_stdout(fixture, "ReferenceError\nafter\n");
 }
 
 #[test]
-fn dynamic_direct_eval_rejects_tdz_template_expression_reference() {
+fn dynamic_direct_eval_tdz_template_expression_reference_is_catchable_reference_error() {
     let fixture =
-        "fixtures/core-semantics/direct-eval-dynamic-tdz-template-expression-unsupported.ts";
-    assert_build_fails_with(fixture, "UnsupportedEval", "TDZ-aware env descriptors");
+        "fixtures/core-semantics/direct-eval-dynamic-tdz-template-expression-node-shim.ts";
+    assert_node_shim_stdout(fixture, "ReferenceError\nafter\n");
 }
 
 #[test]
@@ -1419,6 +1419,142 @@ function codeKeywordMatches(source, keyword) {
   return matches;
 }
 
+function skipQuotedSource(source, index, quote) {
+  let i = index + 1;
+  while (i < source.length) {
+    if (source[i] === '\\') {
+      i += 2;
+    } else if (source[i] === quote) {
+      return i + 1;
+    } else {
+      i += 1;
+    }
+  }
+  return source.length;
+}
+
+function findTemplateExpressionEnd(source, index) {
+  let depth = 1;
+  let i = index;
+  while (i < source.length) {
+    const ch = source[i];
+    const next = source[i + 1];
+    if (ch === '"' || ch === "'") {
+      i = skipQuotedSource(source, i, ch);
+      continue;
+    }
+    if (ch === '`') {
+      i = skipTemplateSource(source, i);
+      continue;
+    }
+    if (ch === '/' && next === '/') {
+      i += 2;
+      while (i < source.length && source[i] !== '\n' && source[i] !== '\r') i += 1;
+      continue;
+    }
+    if (ch === '/' && next === '*') {
+      i += 2;
+      while (i + 1 < source.length && !(source[i] === '*' && source[i + 1] === '/')) i += 1;
+      i = Math.min(source.length, i + 2);
+      continue;
+    }
+    if (ch === '{') depth += 1;
+    if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) return i;
+    }
+    i += 1;
+  }
+  return -1;
+}
+
+function skipTemplateSource(source, index) {
+  let i = index + 1;
+  while (i < source.length) {
+    if (source[i] === '\\') {
+      i += 2;
+      continue;
+    }
+    if (source[i] === '`') return i + 1;
+    if (source[i] === '$' && source[i + 1] === '{') {
+      const end = findTemplateExpressionEnd(source, i + 2);
+      if (end === -1) return source.length;
+      i = end + 1;
+      continue;
+    }
+    i += 1;
+  }
+  return source.length;
+}
+
+function templateMentionsIdentifier(source, index, name) {
+  let i = index + 1;
+  while (i < source.length) {
+    if (source[i] === '\\') {
+      i += 2;
+      continue;
+    }
+    if (source[i] === '`') return { mentions: false, next: i + 1 };
+    if (source[i] === '$' && source[i + 1] === '{') {
+      const end = findTemplateExpressionEnd(source, i + 2);
+      if (end === -1) return { mentions: false, next: source.length };
+      if (sourceMentionsIdentifier(source.slice(i + 2, end), name)) {
+        return { mentions: true, next: end + 1 };
+      }
+      i = end + 1;
+      continue;
+    }
+    i += 1;
+  }
+  return { mentions: false, next: source.length };
+}
+
+function sourceMentionsIdentifier(source, name) {
+  if (typeof source !== 'string' || name.length === 0) return false;
+  for (let i = 0; i + name.length <= source.length; ) {
+    const ch = source[i];
+    const next = source[i + 1];
+    if (ch === '"' || ch === "'") {
+      i = skipQuotedSource(source, i, ch);
+      continue;
+    }
+    if (ch === '`') {
+      const template = templateMentionsIdentifier(source, i, name);
+      if (template.mentions) return true;
+      i = template.next;
+      continue;
+    }
+    if (ch === '/' && next === '/') {
+      i += 2;
+      while (i < source.length && source[i] !== '\n' && source[i] !== '\r') i += 1;
+      continue;
+    }
+    if (ch === '/' && next === '*') {
+      i += 2;
+      while (i + 1 < source.length && !(source[i] === '*' && source[i + 1] === '/')) i += 1;
+      i = Math.min(source.length, i + 2);
+      continue;
+    }
+    if (
+      source.startsWith(name, i) &&
+      (i === 0 || !isIdentifierPart(source[i - 1])) &&
+      (i + name.length >= source.length || !isIdentifierPart(source[i + name.length]))
+    ) {
+      return true;
+    }
+    i += 1;
+  }
+  return false;
+}
+
+function focusedDirectEvalTdzCandidates(source) {
+  if (typeof source !== 'string') return [];
+  const trimmed = source.trim();
+  if (/^[A-Za-z_$][0-9A-Za-z_$]*$/.test(trimmed)) return [trimmed];
+  const templateMatch = /^`\$\{\s*([A-Za-z_$][0-9A-Za-z_$]*)\s*\}`$/.exec(trimmed);
+  return templateMatch === null ? [] : [templateMatch[1]];
+}
+
 function directEvalEnvKey(bindings) {
   return bindings
     .map((binding) => `${binding.name}:${binding.cellRaw}`)
@@ -1552,6 +1688,7 @@ function evalWithEnvDescriptor(source, envRaw) {
   }
 
   const bindings = [];
+  const tdzBindings = [];
   if (
     pairs.length >= pairOffset + 2 &&
     rawTag(pairs[pairOffset]) === TAG_STRING &&
@@ -1569,7 +1706,11 @@ function evalWithEnvDescriptor(source, envRaw) {
       }
       const kind = entry.length === 3 ? decodeString(entry[2]) : 'readwrite';
       if (kind !== 'readwrite') {
-        throw new TypeError(`unsupported direct eval env descriptor binding kind: ${kind}`);
+        if (kind !== 'tdz') {
+          throw new TypeError(`unsupported direct eval env descriptor binding kind: ${kind}`);
+        }
+        tdzBindings.push(decodeString(entry[0]));
+        continue;
       }
       const name = decodeString(entry[0]);
       const cellRaw = entry[1];
@@ -1585,6 +1726,11 @@ function evalWithEnvDescriptor(source, envRaw) {
       const cellRaw = pairs[i + 1];
       const raw = readEnvCellRaw(cellRaw);
       bindings.push({ name, cellRaw, raw, value: decodeValue(raw) });
+    }
+  }
+  for (const name of tdzBindings) {
+    if (sourceMentionsIdentifier(source, name)) {
+      throw new ReferenceError(`Cannot access '${name}' before initialization`);
     }
   }
 
@@ -1605,6 +1751,15 @@ function evalWithEnvDescriptor(source, envRaw) {
         extraBindings.push({ name, value: undefined });
         names.push(name);
       }
+    }
+  }
+  for (const name of focusedDirectEvalTdzCandidates(source)) {
+    if (!names.includes(name)) {
+      throw new ReferenceError(`Cannot access '${name}' before initialization`);
+    }
+    const binding = bindings.find((entry) => entry.name === name);
+    if (name !== 'undefined' && binding !== undefined && binding.value === undefined) {
+      throw new ReferenceError(`Cannot access '${name}' before initialization`);
     }
   }
   const formalBindings = bindings.filter((binding) => binding.name !== 'this');
