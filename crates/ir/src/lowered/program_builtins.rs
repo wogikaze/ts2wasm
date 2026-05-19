@@ -361,6 +361,8 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "unshift") => Some(RuntimeFn::ArrayUnshift),
         ("Array", "splice") => Some(RuntimeFn::ArraySplice),
         ("Object", "valueOf") => Some(RuntimeFn::ValueOf),
+        // Number prototype methods
+        ("Number", "toString") => Some(RuntimeFn::NumberToString),
         // Symbol prototype methods
         ("Symbol", "toString") => Some(RuntimeFn::SymbolToString),
         // String prototype methods
@@ -409,6 +411,7 @@ pub(crate) fn number_format_method_runtime_fn(method: &str) -> Option<RuntimeFn>
         "toFixed" => Some(RuntimeFn::NumberToFixed),
         "toExponential" => Some(RuntimeFn::NumberToExponential),
         "toPrecision" => Some(RuntimeFn::NumberToPrecision),
+        "toString" => Some(RuntimeFn::NumberToString),
         _ => None,
     }
 }

@@ -230,6 +230,7 @@ match self {
             Self::NumberToExponential => "number_to_exponential",
             Self::NumberToFixed => "number_to_fixed",
             Self::NumberToPrecision => "number_to_precision",
+            Self::NumberToString => "number_to_string",
             Self::NumberToI32 => "number_to_i32",
             Self::NumberIsNaN => "number_is_nan",
             Self::NumberIsFinite => "number_is_finite",

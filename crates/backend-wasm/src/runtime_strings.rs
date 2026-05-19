@@ -381,4 +381,27 @@ impl WatEmitter<'_> {
 "#,
         );
     }
+
+    pub(crate) fn emit_number_to_string(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $number_to_string (param $v i32) (result i32)
+    (local $len i32)
+    (local $ptr i32)
+    (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
+    (local.set $ptr
+      (call $alloc_heap
+        (i32.add (i32.const {string_header_size}) (local.get $len))))
+    (i32.store (local.get $ptr) (local.get $len))
+    (call $copy
+      (i32.const {scratch})
+      (i32.add (local.get $ptr) (i32.const {string_header_size}))
+      (local.get $len))
+    (i32.or (local.get $ptr) (i32.const {string_tag})))
+"#,
+            string_tag = ValueTag::STRING,
+            string_header_size = Layout::STRING_HEADER_SIZE,
+            scratch = Layout::SCRATCH_OFFSET,
+        ));
+    }
 }

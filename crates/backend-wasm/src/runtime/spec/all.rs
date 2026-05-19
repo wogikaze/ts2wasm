@@ -1760,6 +1760,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::NumberToString => RuntimeSpec {
+                symbol: "$number_to_string",
+                deps: NUMBER_TO_STRING_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::NumberToI32 => RuntimeSpec {
                 symbol: "$number_to_i32",
                 deps: NO_DEPS,

@@ -38,6 +38,7 @@ pub enum RuntimeFn {
     NumberToExponential,
     NumberToFixed,
     NumberToPrecision,
+    NumberToString,
     BigIntToString,
     BigIntToBoolean,
     BigIntFromValue,
@@ -1427,6 +1428,11 @@ const NUMBER_TO_EXPONENTIAL_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,
 ];
+const NUMBER_TO_STRING_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+];
 const NUMBER_TO_PRECISION_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ValueToStringInto,
     RuntimeFn::AllocHeap,
@@ -1895,6 +1901,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "NumberToFixed" => Some(RuntimeFn::NumberToFixed),
         "NumberToI32" => Some(RuntimeFn::NumberToI32),
         "NumberToPrecision" => Some(RuntimeFn::NumberToPrecision),
+        "NumberToString" => Some(RuntimeFn::NumberToString),
         "Or" => Some(RuntimeFn::Or),
         "PathBasename" => Some(RuntimeFn::PathBasename),
         "PathDirname" => Some(RuntimeFn::PathDirname),
@@ -2202,6 +2209,7 @@ impl RuntimeFn {
             | Self::NumberToExponential
             | Self::NumberToFixed
             | Self::NumberToPrecision
+            | Self::NumberToString
             | Self::NumberToI32
             | Self::NumberIsNaN
             | Self::NumberIsFinite
@@ -2626,6 +2634,7 @@ impl RuntimeFn {
             Self::NumberToExponential,
             Self::NumberToFixed,
             Self::NumberToPrecision,
+            Self::NumberToString,
             Self::StringEqual,
             Self::Concat,
             Self::IsString,
@@ -3106,6 +3115,7 @@ impl RuntimeFn {
             Self::NumberToExponential,
             Self::NumberToFixed,
             Self::NumberToPrecision,
+            Self::NumberToString,
             Self::StringEqual,
             Self::Concat,
             Self::IsString,
