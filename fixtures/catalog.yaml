@@ -1031,6 +1031,7 @@ directories:
     - function-constructor-dynamic-string-node-shim.ts
     - function-constructor-dynamic-syntax-error-catch-node-shim.ts
     - function-constructor-dynamic-throw-catch-node-shim.ts
+    - function-constructor-dynamic-throw-object-method-node-shim.ts
     - function-constructor-metadata.ts
     - function-constructor-new-target.ts
     - function-constructor-new-static-prototype.ts

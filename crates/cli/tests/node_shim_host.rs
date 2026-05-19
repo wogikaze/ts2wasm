@@ -65,6 +65,13 @@ fn dynamic_function_handle_bridges_thrown_errors_through_node_shim_host_imports(
 }
 
 #[test]
+fn dynamic_function_handle_bridges_thrown_object_methods_through_node_shim_host_imports() {
+    let fixture =
+        "fixtures/core-semantics/function-constructor-dynamic-throw-object-method-node-shim.ts";
+    assert_node_shim_stdout(fixture, "Error\n7\n");
+}
+
+#[test]
 fn dynamic_function_compile_bridges_syntax_errors_through_node_shim_host_imports() {
     let fixture =
         "fixtures/core-semantics/function-constructor-dynamic-syntax-error-catch-node-shim.ts";

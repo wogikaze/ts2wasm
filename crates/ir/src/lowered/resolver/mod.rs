@@ -11,7 +11,8 @@ use std::collections::{HashMap, HashSet};
 
 use crate::binding_pattern::{BindingDefault, parse_binding_pattern};
 use crate::builtin_resolved::{
-    ClassMethod, ClassMethodKind, ResolvedExpr, ResolvedParam, ResolvedStmt,
+    ClassMethod, ClassMethodKind, EvalHostPolicy, EvalSource, FunctionConstructorHostPolicy,
+    ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt,
 };
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::{
@@ -1231,7 +1232,7 @@ impl Resolver {
                                     self.ctx.facts.env_cell_locals.insert(local_id);
                                     self.ctx.facts.initialized_env_cell_locals.insert(local_id);
                                 }
-                                if block_contains_dynamic_direct_eval(try_block) {
+                                if block_may_catch_host_external_object(&self.ctx, try_block) {
                                     self.ctx.facts.mark_host_external(
                                         local_id,
                                         HostExternalKind::Object,
@@ -2195,5 +2196,229 @@ fn bigint_runtime_fn_intrinsic(name: &str) -> Option<RuntimeFn> {
         Some("BigIntAsIntN") => Some(RuntimeFn::BigIntAsIntN),
         Some("BigIntAsUintN") => Some(RuntimeFn::BigIntAsUintN),
         _ => None,
+    }
+}
+
+fn block_may_catch_host_external_object(ctx: &LoweringCtx, stmts: &[ResolvedStmt]) -> bool {
+    stmts
+        .iter()
+        .any(|stmt| stmt_may_throw_host_external_object(ctx, stmt))
+}
+
+fn stmt_may_throw_host_external_object(ctx: &LoweringCtx, stmt: &ResolvedStmt) -> bool {
+    match stmt {
+        ResolvedStmt::Let(_, expr)
+        | ResolvedStmt::Assign(_, expr)
+        | ResolvedStmt::Expr(expr)
+        | ResolvedStmt::Return(expr)
+        | ResolvedStmt::Throw(expr)
+        | ResolvedStmt::DestructureLet { expr, .. } => {
+            expr_may_throw_host_external_object(ctx, expr)
+        }
+        ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
+            expr_may_throw_host_external_object(ctx, expr)
+        }
+        ResolvedStmt::If {
+            condition,
+            then_body,
+            else_body,
+        } => {
+            expr_may_throw_host_external_object(ctx, condition)
+                || block_may_catch_host_external_object(ctx, then_body)
+                || block_may_catch_host_external_object(ctx, else_body)
+        }
+        ResolvedStmt::While { condition, body } | ResolvedStmt::DoWhile { body, condition } => {
+            expr_may_throw_host_external_object(ctx, condition)
+                || block_may_catch_host_external_object(ctx, body)
+        }
+        ResolvedStmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            block_may_catch_host_external_object(ctx, try_block)
+                || catch_block
+                    .as_ref()
+                    .is_some_and(|block| block_may_catch_host_external_object(ctx, block))
+                || finally_block
+                    .as_ref()
+                    .is_some_and(|block| block_may_catch_host_external_object(ctx, block))
+        }
+        ResolvedStmt::Switch { expr, cases } => {
+            expr_may_throw_host_external_object(ctx, expr)
+                || cases.iter().any(|(case_expr, body)| {
+                    case_expr
+                        .as_ref()
+                        .is_some_and(|expr| expr_may_throw_host_external_object(ctx, expr))
+                        || block_may_catch_host_external_object(ctx, body)
+                })
+        }
+        ResolvedStmt::For {
+            init,
+            condition,
+            update,
+            body,
+        } => {
+            init.as_ref()
+                .is_some_and(|init| stmt_may_throw_host_external_object(ctx, init))
+                || condition
+                    .as_ref()
+                    .is_some_and(|expr| expr_may_throw_host_external_object(ctx, expr))
+                || update
+                    .as_ref()
+                    .is_some_and(|expr| expr_may_throw_host_external_object(ctx, expr))
+                || block_may_catch_host_external_object(ctx, body)
+        }
+        ResolvedStmt::ForIn { iter, body, .. }
+        | ResolvedStmt::ForOf { iter, body, .. }
+        | ResolvedStmt::ForAwaitOf { iter, body, .. } => {
+            expr_may_throw_host_external_object(ctx, iter)
+                || block_may_catch_host_external_object(ctx, body)
+        }
+        ResolvedStmt::Labeled { body, .. } => stmt_may_throw_host_external_object(ctx, body),
+        ResolvedStmt::Block { statements } => block_may_catch_host_external_object(ctx, statements),
+        ResolvedStmt::AmbientValue(_)
+        | ResolvedStmt::Function { .. }
+        | ResolvedStmt::ClassDecl { .. }
+        | ResolvedStmt::Break { .. }
+        | ResolvedStmt::Continue { .. } => false,
+    }
+}
+
+fn expr_may_throw_host_external_object(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
+    if crate::lowered::resolver::expr::facts::resolved_expr_returns_host_external_object(ctx, expr)
+    {
+        return true;
+    }
+
+    match expr {
+        ResolvedExpr::Eval { plan } => match plan.host_policy {
+            EvalHostPolicy::DirectHost | EvalHostPolicy::IndirectHost => true,
+            EvalHostPolicy::AotOnly => match &plan.source {
+                EvalSource::NonStringStatic(expr) | EvalSource::Runtime(expr) => {
+                    expr_may_throw_host_external_object(ctx, expr)
+                }
+                EvalSource::StaticLiteral(_) => false,
+            },
+        },
+        ResolvedExpr::FunctionConstructor { plan } => {
+            plan.host_policy == FunctionConstructorHostPolicy::HostCompile
+                || plan
+                    .args
+                    .iter()
+                    .any(|arg| expr_may_throw_host_external_object(ctx, arg))
+        }
+        ResolvedExpr::Await { expr }
+        | ResolvedExpr::Spread(expr)
+        | ResolvedExpr::Unary { expr, .. }
+        | ResolvedExpr::Yield {
+            expr: Some(expr), ..
+        } => expr_may_throw_host_external_object(ctx, expr),
+        ResolvedExpr::Binary { left, right, .. } => {
+            expr_may_throw_host_external_object(ctx, left)
+                || expr_may_throw_host_external_object(ctx, right)
+        }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            expr_may_throw_host_external_object(ctx, condition)
+                || expr_may_throw_host_external_object(ctx, then_expr)
+                || expr_may_throw_host_external_object(ctx, else_expr)
+        }
+        ResolvedExpr::Call { callee, args, .. }
+        | ResolvedExpr::OptionalCall { callee, args, .. } => {
+            expr_may_throw_host_external_object(ctx, callee)
+                || args
+                    .iter()
+                    .any(|arg| expr_may_throw_host_external_object(ctx, arg))
+        }
+        ResolvedExpr::MethodCall { object, args, .. } => {
+            expr_may_throw_host_external_object(ctx, object)
+                || args
+                    .iter()
+                    .any(|arg| expr_may_throw_host_external_object(ctx, arg))
+        }
+        ResolvedExpr::Array(elements) => elements.iter().any(|element| {
+            matches!(element, ResolvedArrayElement::Present(expr) if expr_may_throw_host_external_object(ctx, expr))
+        }),
+        ResolvedExpr::Object(props) => props.iter().any(|prop| {
+            prop.computed_key()
+                .is_some_and(|key| expr_may_throw_host_external_object(ctx, key))
+                || expr_may_throw_host_external_object(ctx, prop.value())
+        }),
+        ResolvedExpr::ComputedIndex { object, index }
+        | ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
+            expr_may_throw_host_external_object(ctx, object)
+                || expr_may_throw_host_external_object(ctx, index)
+        }
+        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => args
+            .iter()
+            .any(|arg| expr_may_throw_host_external_object(ctx, arg)),
+        ResolvedExpr::BuiltinProperty { object, .. }
+        | ResolvedExpr::PropertyAccess { object, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object, .. } => {
+            expr_may_throw_host_external_object(ctx, object)
+        }
+        ResolvedExpr::PropertyAssign { object, value, .. } => {
+            expr_may_throw_host_external_object(ctx, object)
+                || expr_may_throw_host_external_object(ctx, value)
+        }
+        ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+            expr_may_throw_host_external_object(ctx, object)
+                || expr_may_throw_host_external_object(ctx, key)
+                || expr_may_throw_host_external_object(ctx, value)
+        }
+        ResolvedExpr::Assign { expr, .. }
+        | ResolvedExpr::LogicalAssign { expr, .. }
+        | ResolvedExpr::LogicalPropertyAssign { expr, .. } => {
+            expr_may_throw_host_external_object(ctx, expr)
+        }
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            expr_may_throw_host_external_object(ctx, object)
+                || expr_may_throw_host_external_object(ctx, expr)
+        }
+        ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
+            expr_may_throw_host_external_object(ctx, key)
+                || expr_may_throw_host_external_object(ctx, expr)
+        }
+        ResolvedExpr::LogicalComputedMemberAssign {
+            object, key, expr, ..
+        } => {
+            expr_may_throw_host_external_object(ctx, object)
+                || expr_may_throw_host_external_object(ctx, key)
+                || expr_may_throw_host_external_object(ctx, expr)
+        }
+        ResolvedExpr::Sequence(exprs) => exprs
+            .iter()
+            .any(|expr| expr_may_throw_host_external_object(ctx, expr)),
+        ResolvedExpr::EvalCompletion(steps) => steps
+            .iter()
+            .filter_map(|step| step.expr())
+            .any(|expr| expr_may_throw_host_external_object(ctx, expr)),
+        ResolvedExpr::ArrowFn {
+            body, body_stmts, ..
+        } => {
+            block_may_catch_host_external_object(ctx, body_stmts)
+                || expr_may_throw_host_external_object(ctx, body)
+        }
+        ResolvedExpr::FunctionExpr { .. }
+        | ResolvedExpr::ClassExpr { .. }
+        | ResolvedExpr::Yield { expr: None, .. }
+        | ResolvedExpr::This { .. }
+        | ResolvedExpr::NewTarget { .. }
+        | ResolvedExpr::ImportMeta { .. }
+        | ResolvedExpr::Ident(_)
+        | ResolvedExpr::ModuleLoad { .. }
+        | ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
+        | ResolvedExpr::BigIntLiteral { .. }
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined => false,
     }
 }
