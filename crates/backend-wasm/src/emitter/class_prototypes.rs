@@ -4,7 +4,7 @@ use crate::emitter::{self, WatEmitter};
 use crate::runtime_fn::RuntimeFn;
 use crate::wat_writer::WatWriter;
 use ts2wasm_ir::lowered::{BuiltinErrorConstructor, FuncId, LoweredExpr, LoweredStmt};
-use ts2wasm_runtime_abi::Layout;
+use ts2wasm_runtime_abi::{Layout, ValueTag};
 
 impl WatEmitter<'_> {
     pub(super) fn emit_class_prototype_globals(&self, writer: &mut WatWriter) {
@@ -27,6 +27,12 @@ impl WatEmitter<'_> {
                     "(global ${} (mut i32) (i32.const 0))",
                     emitter::builtin_error_prototype_global(constructor),
                 ),
+            );
+        }
+        if self.needs_aggregate_error_prototype() {
+            writer.line_fmt(
+                2,
+                format_args!("(global $error_proto_aggregate_error (mut i32) (i32.const 0))"),
             );
         }
     }
@@ -85,15 +91,22 @@ impl WatEmitter<'_> {
                 "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {})) (i32.const 0))\n",
                 Layout::OBJECT_FLAGS_OFFSET,
             ));
-            let parent_expr = constructor
-                .parent()
-                .map(|parent| {
-                    format!(
-                        "global.get ${}",
-                        emitter::builtin_error_prototype_global(parent)
-                    )
-                })
-                .unwrap_or_else(|| "i32.const 0".to_owned());
+            let parent_expr = match constructor {
+                BuiltinErrorConstructor::Error => format!(
+                    "i32.and (call {}) (i32.const {})",
+                    RuntimeFn::ObjectPrototype.symbol(),
+                    ValueTag::HEAP_MASK,
+                ),
+                _ => constructor
+                    .parent()
+                    .map(|parent| {
+                        format!(
+                            "global.get ${}",
+                            emitter::builtin_error_prototype_global(parent)
+                        )
+                    })
+                    .unwrap_or_else(|| "i32.const 0".to_owned()),
+            };
             wat.push_str(&format!(
                 "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {})) ({parent_expr}))\n",
                 Layout::OBJECT_PROTOTYPE_OFFSET,
@@ -198,6 +211,13 @@ impl WatEmitter<'_> {
             Self::collect_builtin_error_prototypes_from_stmts(&module.statements, &mut prototypes);
         }
         prototypes
+    }
+
+    /// Returns true if the AggregateError.prototype global needs to be emitted.
+    fn needs_aggregate_error_prototype(&self) -> bool {
+        self.link_plan
+            .required_runtime_functions()
+            .contains(&RuntimeFn::AggregateError)
     }
 
     fn collect_class_prototypes_from_stmts(
