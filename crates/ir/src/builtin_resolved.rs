@@ -1977,6 +1977,28 @@ mod tests {
     }
 
     #[test]
+    fn lowering_rejects_function_constructor_static_metadata_drift() {
+        let mut plan = FunctionConstructorPlan::new(
+            FunctionConstructorKind::Call,
+            vec![ResolvedExpr::String("return 1".to_owned())],
+            Span::generated("lowering_function_constructor_metadata_policy_test"),
+        );
+        plan.static_source
+            .as_mut()
+            .expect("static source should exist")
+            .generated_function
+            .name = "notAnonymous".to_owned();
+
+        let err = crate::lowered::lower_program(&[ResolvedStmt::Expr(
+            ResolvedExpr::FunctionConstructor { plan },
+        )])
+        .expect_err("lowering should reject malformed Function constructor metadata");
+
+        assert_eq!(err.code, ts2wasm_diagnostic::DiagCode::UnsupportedEval);
+        assert!(err.message.contains("static source metadata"));
+    }
+
+    #[test]
     fn function_constructor_sequence_sources_require_static_prefixes() {
         let static_sequence = FunctionConstructorPlan::new(
             FunctionConstructorKind::Call,

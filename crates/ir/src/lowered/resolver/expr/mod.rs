@@ -169,6 +169,15 @@ impl super::Resolver {
                         phase: None,
                     });
                 }
+                if !plan.static_source_is_consistent() {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedEval,
+                        message: "Function constructor static source metadata does not match plan"
+                            .to_owned(),
+                        span: Some(plan.span),
+                        phase: None,
+                    });
+                }
                 if plan.host_policy
                     == crate::builtin_resolved::FunctionConstructorHostPolicy::AotOnly
                 {
