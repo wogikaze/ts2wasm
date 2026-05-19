@@ -79,7 +79,7 @@ impl WatEmitter<'_> {
           (i32.eq
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
-    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {undefined}))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
     ;; floor is no-op for integer-backed numbers
     (local.get $v))
 "#,
@@ -88,7 +88,7 @@ impl WatEmitter<'_> {
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
-            undefined = ValueTag::UNDEFINED,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
         ));
     }
 
@@ -108,7 +108,7 @@ impl WatEmitter<'_> {
           (i32.eq
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
-    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {undefined}))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
     ;; ceil is no-op for integer-backed numbers
     (local.get $v))
 "#,
@@ -117,7 +117,7 @@ impl WatEmitter<'_> {
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
-            undefined = ValueTag::UNDEFINED,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
         ));
     }
 
@@ -137,7 +137,7 @@ impl WatEmitter<'_> {
           (i32.eq
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
-    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {undefined}))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
     ;; round is no-op for integer-backed numbers
     (local.get $v))
 "#,
@@ -146,7 +146,7 @@ impl WatEmitter<'_> {
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
-            undefined = ValueTag::UNDEFINED,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
         ));
     }
 
@@ -167,7 +167,7 @@ impl WatEmitter<'_> {
           (i32.eq
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
-    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {undefined}))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
     (local.set $n (call $number_to_i32 (local.get $v)))
     (if (i32.lt_s (local.get $n) (i32.const {zero}))
       (then (local.set $n (i32.sub (i32.const {zero}) (local.get $n)))))
@@ -179,7 +179,7 @@ impl WatEmitter<'_> {
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             zero = RuntimeConst::ZERO,
-            undefined = ValueTag::UNDEFINED,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
         ));
     }
 
@@ -213,7 +213,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.or (i32.eqz (local.get $a_is_number)) (i32.eqz (local.get $b_is_number)))
-      (then (return (i32.const {undefined}))))
+      (then (return (i32.const {nan_value}))))
     (local.set $a_n (call $number_to_i32 (local.get $a)))
     (local.set $b_n (call $number_to_i32 (local.get $b)))
     (if (i32.gt_s (local.get $a_n) (local.get $b_n))
@@ -225,7 +225,7 @@ impl WatEmitter<'_> {
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
-            undefined = ValueTag::UNDEFINED,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
         ));
     }
 
@@ -320,7 +320,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.or (i32.eqz (local.get $a_is_number)) (i32.eqz (local.get $b_is_number)))
-      (then (return (i32.const {undefined}))))
+      (then (return (i32.const {nan_value}))))
     (local.set $a_n (call $number_to_i32 (local.get $a)))
     (local.set $b_n (call $number_to_i32 (local.get $b)))
     (if (i32.lt_s (local.get $a_n) (local.get $b_n))
@@ -332,7 +332,7 @@ impl WatEmitter<'_> {
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
-            undefined = ValueTag::UNDEFINED,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
         ));
     }
 
@@ -375,7 +375,7 @@ impl WatEmitter<'_> {
           (i32.eq
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
-    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {zero}))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
     ;; trunc is no-op for integer-backed numbers
     (local.get $v))
 "#,
@@ -384,7 +384,7 @@ impl WatEmitter<'_> {
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
-            zero = RuntimeConst::ZERO,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
         ));
     }
 
@@ -405,7 +405,7 @@ impl WatEmitter<'_> {
           (i32.eq
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
-    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {zero}))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
     (local.set $n (call $number_to_i32 (local.get $v)))
     (if (i32.gt_s (local.get $n) (i32.const {zero}))
       (then (return (i32.or (i32.shl (i32.const 1) (i32.const {number_shift})) (i32.const {number_tag})))))
@@ -419,6 +419,7 @@ impl WatEmitter<'_> {
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             number_shift = ValueTag::NUMBER_SHIFT,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
             zero = RuntimeConst::ZERO,
         ));
     }
@@ -446,7 +447,7 @@ impl WatEmitter<'_> {
           (i32.eq
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
-    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {undefined}))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
     (local.set $n (call $number_to_i32 (local.get $v)))
     (if (i32.eq (local.get $n) (i32.const {zero}))
       (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
@@ -485,7 +486,7 @@ impl WatEmitter<'_> {
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             number_shift = ValueTag::NUMBER_SHIFT,
-            undefined = ValueTag::UNDEFINED,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
             zero = RuntimeConst::ZERO,
         ));
     }
@@ -509,7 +510,7 @@ impl WatEmitter<'_> {
           (i32.eq
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
-    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {undefined}))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
     (local.set $n (call $number_to_i32 (local.get $v)))
     (local.set $count (i32.const 32))
     (block $clz_done
@@ -530,7 +531,7 @@ impl WatEmitter<'_> {
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             number_shift = ValueTag::NUMBER_SHIFT,
-            undefined = ValueTag::UNDEFINED,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
             zero = RuntimeConst::ZERO,
         ));
     }
@@ -600,7 +601,7 @@ impl WatEmitter<'_> {
           (i32.eq
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
-    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {undefined}))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
     (local.set $n (call $number_to_i32 (local.get $v)))
     (if (i32.le_s (local.get $n) (i32.const {zero}))
       (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
@@ -629,7 +630,7 @@ impl WatEmitter<'_> {
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             number_shift = ValueTag::NUMBER_SHIFT,
-            undefined = ValueTag::UNDEFINED,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
             zero = RuntimeConst::ZERO,
         ));
     }
