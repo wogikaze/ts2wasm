@@ -306,7 +306,10 @@ fn top_level_loop_head_separator(header: &str, separator: &str) -> Option<usize>
             b'(' | b'[' | b'{' => depth += 1,
             b')' if depth == 0 => return None,
             b')' | b']' | b'}' => depth = depth.saturating_sub(1),
-            _ if depth == 0 && header[index..].starts_with(separator) => {
+            _ if depth == 0
+                && bytes[index].is_ascii()
+                && header[index..].starts_with(separator) =>
+            {
                 let end = index + separator.len();
                 if is_identifier_boundary(header, index, end) {
                     return Some(index);
@@ -557,6 +560,9 @@ fn find_keyword_outside_literals_and_function_bodies(
                 }
                 index = (index + 2).min(source.len());
             }
+            b'/' if is_regex_literal_start(source, index) => {
+                index = skip_regex_literal_source(source, index);
+            }
             b'=' if bytes.get(index + 1) == Some(&b'>') => {
                 let body_start = skip_ascii_ws(source, index + 2);
                 if source.as_bytes().get(body_start) == Some(&b'{') {
@@ -568,7 +574,8 @@ fn find_keyword_outside_literals_and_function_bodies(
             b'{' if is_object_method_body_start(source, index) => {
                 index = skip_balanced_brace(source, index).unwrap_or(index + 1);
             }
-            _ if source[index..].starts_with("function")
+            _ if bytes[index].is_ascii()
+                && source[index..].starts_with("function")
                 && is_identifier_boundary(source, index, index + "function".len()) =>
             {
                 if keyword == "function" {
@@ -577,13 +584,14 @@ fn find_keyword_outside_literals_and_function_bodies(
                 index = skip_function_or_class_body(source, index, "function")
                     .unwrap_or(index + "function".len());
             }
-            _ if source[index..].starts_with("class")
+            _ if bytes[index].is_ascii()
+                && source[index..].starts_with("class")
                 && is_identifier_boundary(source, index, index + "class".len()) =>
             {
                 index = skip_function_or_class_body(source, index, "class")
                     .unwrap_or(index + "class".len());
             }
-            _ if source[index..].starts_with(keyword) => {
+            _ if bytes[index].is_ascii() && source[index..].starts_with(keyword) => {
                 let end = index + keyword.len();
                 if is_identifier_boundary(source, index, end) {
                     return Some(index);
@@ -642,6 +650,10 @@ fn matching_open_paren(source: &str, close_paren: usize) -> Option<usize> {
                 index = (index + 2).min(source.len());
                 continue;
             }
+            b'/' if is_regex_literal_start(source, index) => {
+                index = skip_regex_literal_source(source, index);
+                continue;
+            }
             b'(' => stack.push(index),
             b')' if index == close_paren => return stack.pop(),
             b')' => {
@@ -693,6 +705,9 @@ fn find_next_code_byte(source: &str, target: u8, start: usize) -> Option<usize> 
                 }
                 index = (index + 2).min(source.len());
             }
+            b'/' if is_regex_literal_start(source, index) => {
+                index = skip_regex_literal_source(source, index);
+            }
             byte if byte == target => return Some(index),
             _ => index += 1,
         }
@@ -730,6 +745,10 @@ fn skip_balanced_brace(source: &str, start: usize) -> Option<usize> {
                 index = (index + 2).min(source.len());
                 continue;
             }
+            b'/' if is_regex_literal_start(source, index) => {
+                index = skip_regex_literal_source(source, index);
+                continue;
+            }
             b'{' => depth += 1,
             b'}' => {
                 depth = depth.saturating_sub(1);
@@ -757,6 +776,70 @@ fn skip_quoted_source(source: &str, start: usize) -> usize {
             return index + 1;
         }
         index += 1;
+    }
+    source.len()
+}
+
+fn is_regex_literal_start(source: &str, start: usize) -> bool {
+    let bytes = source.as_bytes();
+    if bytes
+        .get(start + 1)
+        .is_some_and(|next| matches!(next, b'/' | b'*'))
+    {
+        return false;
+    }
+    let Some(prior) = previous_non_ws_index(source, start) else {
+        return true;
+    };
+    if is_ident_continue_byte(bytes[prior]) {
+        let token_start = previous_identifier_start(source, prior);
+        return matches!(
+            &source[token_start..prior + 1],
+            "await" | "case" | "delete" | "return" | "throw" | "typeof" | "void" | "yield"
+        );
+    }
+    matches!(
+        bytes[prior],
+        b'(' | b'[' | b'{' | b'=' | b',' | b':' | b';' | b'!' | b'?'
+    )
+}
+
+fn previous_identifier_start(source: &str, end: usize) -> usize {
+    let bytes = source.as_bytes();
+    let mut index = end;
+    while index > 0 && is_ident_continue_byte(bytes[index - 1]) {
+        index -= 1;
+    }
+    index
+}
+
+fn skip_regex_literal_source(source: &str, start: usize) -> usize {
+    let bytes = source.as_bytes();
+    let mut index = start + 1;
+    let mut in_class = false;
+    while index < source.len() {
+        match bytes[index] {
+            b'\\' => {
+                index = (index + 2).min(source.len());
+            }
+            b'[' => {
+                in_class = true;
+                index += 1;
+            }
+            b']' if in_class => {
+                in_class = false;
+                index += 1;
+            }
+            b'/' if !in_class => {
+                index += 1;
+                while index < source.len() && bytes[index].is_ascii_alphabetic() {
+                    index += 1;
+                }
+                return index;
+            }
+            b'\n' | b'\r' => return index,
+            _ => index += 1,
+        }
     }
     source.len()
 }
@@ -849,6 +932,19 @@ mod tests {
             "var ignored";
             // function skipped() {}
             /* var alsoSkipped = 1; */
+            var kept = 1;
+            function run() {}
+            "#,
+        );
+        assert_eq!(names, ["kept", "run"]);
+    }
+
+    #[test]
+    fn skips_keywords_inside_regexp_literals() {
+        let names = eval_var_and_function_names(
+            r#"
+            /var ignored/.test("ignored");
+            void /function skipped/.source;
             var kept = 1;
             function run() {}
             "#,
