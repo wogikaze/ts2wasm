@@ -1083,6 +1083,15 @@ fn static_function_constructor_decimal_expression_source_uses_aot_lane() {
 }
 
 #[test]
+fn static_function_constructor_comparison_source_uses_aot_lane() {
+    let fixture = "fixtures/core-semantics/function-constructor-static-comparison-source.ts";
+    assert_node_shim_stdout(
+        fixture,
+        "undefined\nundefined\nundefined\nundefined\nundefined\nundefined\nfunction anonymous(\n) {\ntrue\n}\nfunction anonymous(\n) {\nfalse\n}\nfunction anonymous(\n) {\ntrue\n}\nfunction anonymous(\n) {\ntrue\n}\nfunction anonymous(\n) {\nfalse\n}\nfunction anonymous(\n) {\ntrue\n}\n",
+    );
+}
+
+#[test]
 fn static_function_constructor_numeric_binary_source_uses_aot_lane() {
     let fixture = "fixtures/core-semantics/function-constructor-static-numeric-binary-source.ts";
     assert_node_shim_stdout(

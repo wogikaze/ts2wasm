@@ -524,6 +524,16 @@ fn function_constructor_static_source_value(
             | BinaryOp::Power => {
                 function_constructor_static_numeric_binary_source_value(left, *op, right)
             }
+            BinaryOp::Less
+            | BinaryOp::LessEqual
+            | BinaryOp::Greater
+            | BinaryOp::GreaterEqual
+            | BinaryOp::StrictEqual
+            | BinaryOp::EqualEqual
+            | BinaryOp::BangEqual
+            | BinaryOp::StrictNotEqual => {
+                function_constructor_static_comparison_source_value(left, *op, right)
+            }
             BinaryOp::And | BinaryOp::Or | BinaryOp::NullishCoalesce => {
                 function_constructor_static_logical_source_value(left, *op, right)
             }
@@ -737,6 +747,153 @@ fn function_constructor_static_numeric_binary_source_value(
             function_constructor_static_js_number_string(result),
         )
     })
+}
+
+fn function_constructor_static_comparison_source_value(
+    left: &ResolvedExpr,
+    op: BinaryOp,
+    right: &ResolvedExpr,
+) -> Option<FunctionConstructorStaticSourceValue> {
+    let left = function_constructor_static_source_value(left)?;
+    let right = function_constructor_static_source_value(right)?;
+    let result = match op {
+        BinaryOp::Less | BinaryOp::LessEqual | BinaryOp::Greater | BinaryOp::GreaterEqual => {
+            function_constructor_static_relational_compare(&left, op, &right)?
+        }
+        BinaryOp::StrictEqual => function_constructor_static_strict_equal(&left, &right)?,
+        BinaryOp::StrictNotEqual => !function_constructor_static_strict_equal(&left, &right)?,
+        BinaryOp::EqualEqual => function_constructor_static_loose_equal(&left, &right)?,
+        BinaryOp::BangEqual => !function_constructor_static_loose_equal(&left, &right)?,
+        _ => unreachable!("comparison Function constructor source op"),
+    };
+    Some(FunctionConstructorStaticSourceValue::Bool(result))
+}
+
+fn function_constructor_static_relational_compare(
+    left: &FunctionConstructorStaticSourceValue,
+    op: BinaryOp,
+    right: &FunctionConstructorStaticSourceValue,
+) -> Option<bool> {
+    if let (
+        FunctionConstructorStaticSourceValue::String(left),
+        FunctionConstructorStaticSourceValue::String(right),
+    ) = (left, right)
+    {
+        return Some(match op {
+            BinaryOp::Less => left < right,
+            BinaryOp::LessEqual => left <= right,
+            BinaryOp::Greater => left > right,
+            BinaryOp::GreaterEqual => left >= right,
+            _ => unreachable!("relational Function constructor source op"),
+        });
+    }
+
+    let left = function_constructor_static_number_to_f64(left)?;
+    let right = function_constructor_static_number_to_f64(right)?;
+    Some(match op {
+        BinaryOp::Less => left < right,
+        BinaryOp::LessEqual => left <= right,
+        BinaryOp::Greater => left > right,
+        BinaryOp::GreaterEqual => left >= right,
+        _ => unreachable!("relational Function constructor source op"),
+    })
+}
+
+fn function_constructor_static_strict_equal(
+    left: &FunctionConstructorStaticSourceValue,
+    right: &FunctionConstructorStaticSourceValue,
+) -> Option<bool> {
+    match (left, right) {
+        (
+            FunctionConstructorStaticSourceValue::String(left),
+            FunctionConstructorStaticSourceValue::String(right),
+        )
+        | (
+            FunctionConstructorStaticSourceValue::BigInt(left),
+            FunctionConstructorStaticSourceValue::BigInt(right),
+        ) => Some(left == right),
+        (
+            FunctionConstructorStaticSourceValue::Bool(left),
+            FunctionConstructorStaticSourceValue::Bool(right),
+        ) => Some(left == right),
+        (
+            FunctionConstructorStaticSourceValue::Null,
+            FunctionConstructorStaticSourceValue::Null,
+        )
+        | (
+            FunctionConstructorStaticSourceValue::Undefined,
+            FunctionConstructorStaticSourceValue::Undefined,
+        ) => Some(true),
+        (
+            FunctionConstructorStaticSourceValue::Number(_)
+            | FunctionConstructorStaticSourceValue::DecimalNumber(_),
+            FunctionConstructorStaticSourceValue::Number(_)
+            | FunctionConstructorStaticSourceValue::DecimalNumber(_),
+        ) => Some(
+            function_constructor_static_number_to_f64(left)?
+                == function_constructor_static_number_to_f64(right)?,
+        ),
+        (
+            FunctionConstructorStaticSourceValue::Array(_),
+            FunctionConstructorStaticSourceValue::Array(_),
+        ) => None,
+        _ => Some(false),
+    }
+}
+
+fn function_constructor_static_loose_equal(
+    left: &FunctionConstructorStaticSourceValue,
+    right: &FunctionConstructorStaticSourceValue,
+) -> Option<bool> {
+    if function_constructor_static_strict_equal(left, right)? {
+        return Some(true);
+    }
+    match (left, right) {
+        (
+            FunctionConstructorStaticSourceValue::Null,
+            FunctionConstructorStaticSourceValue::Undefined,
+        )
+        | (
+            FunctionConstructorStaticSourceValue::Undefined,
+            FunctionConstructorStaticSourceValue::Null,
+        ) => Some(true),
+        (
+            FunctionConstructorStaticSourceValue::Null
+            | FunctionConstructorStaticSourceValue::Undefined,
+            _,
+        )
+        | (
+            _,
+            FunctionConstructorStaticSourceValue::Null
+            | FunctionConstructorStaticSourceValue::Undefined,
+        ) => Some(false),
+        (
+            FunctionConstructorStaticSourceValue::Bool(_),
+            FunctionConstructorStaticSourceValue::String(_)
+            | FunctionConstructorStaticSourceValue::Number(_)
+            | FunctionConstructorStaticSourceValue::DecimalNumber(_),
+        )
+        | (
+            FunctionConstructorStaticSourceValue::String(_)
+            | FunctionConstructorStaticSourceValue::Number(_)
+            | FunctionConstructorStaticSourceValue::DecimalNumber(_),
+            FunctionConstructorStaticSourceValue::Bool(_),
+        )
+        | (
+            FunctionConstructorStaticSourceValue::String(_),
+            FunctionConstructorStaticSourceValue::Number(_)
+            | FunctionConstructorStaticSourceValue::DecimalNumber(_),
+        )
+        | (
+            FunctionConstructorStaticSourceValue::Number(_)
+            | FunctionConstructorStaticSourceValue::DecimalNumber(_),
+            FunctionConstructorStaticSourceValue::String(_),
+        ) => Some(
+            function_constructor_static_number_to_f64(left)?
+                == function_constructor_static_number_to_f64(right)?,
+        ),
+        _ => Some(false),
+    }
 }
 
 fn function_constructor_static_number_to_f64(

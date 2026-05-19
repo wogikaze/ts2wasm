@@ -1067,6 +1067,7 @@ directories:
     - function-constructor-parameter-grammar.ts
     - function-constructor-rest-params.ts
     - function-constructor-static-array-source.ts
+    - function-constructor-static-comparison-source.ts
     - function-constructor-static-decimal-expression-source.ts
     - function-constructor-static-decimal-unary-source.ts
     - function-constructor-static-expression-source.ts
