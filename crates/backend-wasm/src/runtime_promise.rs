@@ -472,7 +472,7 @@ impl WatEmitter<'_> {
     (local.set $base (call $alloc_heap (i32.const {object_size})))
     (i32.store (local.get $base) (i32.const 3))
     (i32.store (i32.add (local.get $base) (i32.const {object_flags_offset})) (i32.const 0))
-    (i32.store (i32.add (local.get $base) (i32.const {object_proto_offset})) (i32.and (call {object_prototype}) (i32.const {heap_mask})))
+    (i32.store (i32.add (local.get $base) (i32.const {object_proto_offset})) (global.get $error_proto_aggregate_error))
     (i32.store (i32.add (local.get $base) (i32.const {entry0_key_offset})) (i32.const {errors_key}))
     (i32.store (i32.add (local.get $base) (i32.const {entry0_value_offset})) (local.get $errors))
     (i32.store (i32.add (local.get $base) (i32.const {entry1_key_offset})) (i32.const {message_key}))
@@ -484,9 +484,7 @@ impl WatEmitter<'_> {
             object_size = Layout::OBJECT_HEADER_SIZE + 11 * Layout::OBJECT_ENTRY_SIZE,
             object_flags_offset = Layout::OBJECT_FLAGS_OFFSET,
             object_proto_offset = Layout::OBJECT_PROTOTYPE_OFFSET,
-            heap_mask = ValueTag::HEAP_MASK,
             object_tag = ValueTag::OBJECT_TAG,
-            object_prototype = RuntimeFn::ObjectPrototype.symbol(),
             entry0_key_offset = Layout::OBJECT_ENTRIES_OFFSET,
             entry0_value_offset = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
             entry1_key_offset = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE,
