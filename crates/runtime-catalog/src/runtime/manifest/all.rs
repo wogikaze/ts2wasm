@@ -6,6 +6,7 @@ match self {
             Self::ArrayBufferNew => "arraybuffer_new",
             Self::ArrayBufferIsView => "arraybuffer_is_view",
             Self::ArrayBufferTransfer => "arraybuffer_transfer",
+            Self::ArrayBufferSlice => "arraybuffer_slice",
             Self::SharedArrayBufferNew => "shared_array_buffer_new",
             Self::ArrayPush => "array_push",
             Self::ArrayPushGrow => "array_push_grow",

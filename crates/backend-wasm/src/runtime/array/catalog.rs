@@ -58,6 +58,7 @@ pub const ARRAY_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::ArrayBufferNew,
     RuntimeFn::ArrayBufferIsView,
     RuntimeFn::ArrayBufferTransfer,
+    RuntimeFn::ArrayBufferSlice,
     RuntimeFn::SharedArrayBufferNew,
     RuntimeFn::TypedArrayFromArray,
     RuntimeFn::TypedArraySet,

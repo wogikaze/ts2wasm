@@ -198,6 +198,8 @@ pub enum RuntimeFn {
     ArrayBufferIsView,
     /// ArrayBuffer.prototype.transfer(newLength) — creates a new buffer, copies data, detaches old.
     ArrayBufferTransfer,
+    /// ArrayBuffer.prototype.slice(begin, end) — creates a new buffer with copied bytes.
+    ArrayBufferSlice,
     /// new SharedArrayBuffer(byteLength) — shared memory allocation.
     SharedArrayBufferNew,
     DataViewNew,
@@ -276,6 +278,8 @@ pub enum RuntimeFn {
     DateGetUtcFullYear,
     /// Local-tz Date getters via host shim (single shim for all 8 getters).
     DateGetLocalTimeField,
+    /// B.2.4.1 Date.prototype.getYear (annexB).
+    DateGetYear,
     /// Date.prototype.toISOString via host shim.
     DateToISOString,
     /// Date.prototype.getTimezoneOffset via host shim.
@@ -284,6 +288,8 @@ pub enum RuntimeFn {
     DateToDateString,
     /// Date.prototype.toTimeString via host shim.
     DateToTimeString,
+    /// B.2.4.3 Date.prototype.toGMTString (annexB, alias for toUTCString).
+    DateToGMTString,
     /// M10: String methods
     StringCharAt,
     /// String.prototype.at
@@ -1455,6 +1461,7 @@ const ATOMICS_VALUE_DEPS: &[RuntimeFn] = &[RuntimeFn::AtomicsElementPtr, Runtime
 const ATOMICS_NO_DEPS: &[RuntimeFn] = &[];
 const ARRAYBUFFER_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const ARRAYBUFFER_TRANSFER_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const ARRAYBUFFER_SLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const SHARED_ARRAY_BUFFER_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATAVIEW_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATAVIEW_GET_BIGINT64_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
@@ -1768,6 +1775,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayBufferNew" => Some(RuntimeFn::ArrayBufferNew),
         "ArrayBufferIsView" => Some(RuntimeFn::ArrayBufferIsView),
         "ArrayBufferTransfer" => Some(RuntimeFn::ArrayBufferTransfer),
+        "ArrayBufferSlice" => Some(RuntimeFn::ArrayBufferSlice),
         "SharedArrayBufferNew" => Some(RuntimeFn::SharedArrayBufferNew),
         "DataViewNew" => Some(RuntimeFn::DataViewNew),
         "DataViewGetInt8" => Some(RuntimeFn::DataViewGetInt8),
@@ -2621,6 +2629,7 @@ impl RuntimeFn {
             | Self::DataViewGetFloat16
             | Self::DataViewGetBigInt64
             | Self::DataViewGetBigUint64 => RuntimeSignature {
+            | Self::ArrayBufferSlice
                 params: 3,
                 results: 1,
             },
@@ -2832,6 +2841,7 @@ impl RuntimeFn {
             Self::ArrayBufferNew,
             Self::ArrayBufferIsView,
             Self::ArrayBufferTransfer,
+            Self::ArrayBufferSlice,
             Self::SharedArrayBufferNew,
             Self::DataViewNew,
             Self::DataViewGetInt8,
@@ -3316,6 +3326,7 @@ impl RuntimeFn {
             Self::ArrayBufferNew,
             Self::ArrayBufferIsView,
             Self::ArrayBufferTransfer,
+            Self::ArrayBufferSlice,
             Self::SharedArrayBufferNew,
             Self::DataViewNew,
             Self::DataViewGetInt8,

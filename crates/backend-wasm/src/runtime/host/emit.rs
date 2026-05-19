@@ -5,7 +5,6 @@ fn tagged_number_sentinel(payload: i32) -> i32 {
     ((payload as i64) << (ValueTag::NUMBER_SHIFT as u32)) as i32 | ValueTag::NUMBER
 }
 
-
 fn push_math_unary_identity(wat: &mut String, symbol: &str) {
     wat.push_str(&format!(
         r#"

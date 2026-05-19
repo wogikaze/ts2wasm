@@ -4356,6 +4356,11 @@ impl super::super::Resolver {
             while lowered_args.len() < expected_count + 1 {
                 lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
             }
+        } else if class_name == "ArrayBuffer" && method == "slice" {
+            // slice(begin?, end?) — pad missing args with undefined (3 total: receiver + begin + end)
+            while lowered_args.len() < 3 {
+                lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+            }
         } else if args.is_empty()
             && ((class_name == "ArrayBuffer" && method == "transfer")
                 || (class_name == "Number" && is_number_format_method(method)))

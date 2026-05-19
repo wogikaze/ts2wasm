@@ -41,6 +41,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ArrayBufferSlice => RuntimeSpec {
+                symbol: "$arraybuffer_slice",
+                deps: ARRAYBUFFER_SLICE_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::SharedArrayBufferNew => RuntimeSpec {
                 symbol: "$shared_array_buffer_new",
                 deps: SHARED_ARRAY_BUFFER_NEW_DEPS,

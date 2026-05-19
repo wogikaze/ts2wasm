@@ -84,6 +84,89 @@ impl WatEmitter<'_> {
         ));
     }
 
+    /// ArrayBuffer.prototype.slice(begin, end) — returns a new ArrayBuffer with copied bytes.
+    /// begin and end are tagged runtime values (undefined defaults to 0 and byteLength, respectively).
+    /// Per ES spec: clamp begin to [0, byteLen], clamp end to [0, byteLen], copy range.
+    pub(super) fn emit_arraybuffer_slice(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $arraybuffer_slice (param $buf i32) (param $begin_tagged i32) (param $end_tagged i32) (result i32)
+    (local $buf_ptr i32)
+    (local $byte_len i32)
+    (local $begin i32)
+    (local $end i32)
+    (local $first i32)
+    (local $final i32)
+    (local $new_len i32)
+    (local $new_ptr i32)
+    (local.set $buf_ptr (i32.and (local.get $buf) (i32.const {heap_mask})))
+    (local.set $byte_len (i32.load (local.get $buf_ptr)))
+    ;; Resolve begin: if undefined (tagged 0) → 0, else decode tagged number
+    (local.set $begin
+      (if (result i32) (i32.eqz (local.get $begin_tagged))
+        (then (i32.const 0))
+        (else (i32.shr_s (local.get $begin_tagged) (i32.const {num_shift})))))
+    ;; Resolve end: if undefined (tagged 0) → byte_len, else decode tagged number
+    (local.set $end
+      (if (result i32) (i32.eqz (local.get $end_tagged))
+        (then (local.get $byte_len))
+        (else (i32.shr_s (local.get $end_tagged) (i32.const {num_shift})))))
+    ;; Clamp begin: if begin < 0, max(byte_len + begin, 0); else min(begin, byte_len)
+    (if (i32.lt_s (local.get $begin) (i32.const 0))
+      (then
+        (local.set $first
+          (select
+            (i32.add (local.get $byte_len) (local.get $begin))
+            (i32.const 0)
+            (i32.gt_s (i32.add (local.get $byte_len) (local.get $begin)) (i32.const 0)))))
+      (else
+        (local.set $first
+          (select (local.get $begin) (local.get $byte_len)
+            (i32.lt_s (local.get $begin) (local.get $byte_len))))))
+    ;; Clamp end: if end < 0, max(byte_len + end, 0); else min(end, byte_len)
+    (if (i32.lt_s (local.get $end) (i32.const 0))
+      (then
+        (local.set $final
+          (select
+            (i32.add (local.get $byte_len) (local.get $end))
+            (i32.const 0)
+            (i32.gt_s (i32.add (local.get $byte_len) (local.get $end)) (i32.const 0)))))
+      (else
+        (local.set $final
+          (select (local.get $end) (local.get $byte_len)
+            (i32.lt_s (local.get $end) (local.get $byte_len))))))
+    ;; new_len = max(final - first, 0)
+    (local.set $new_len
+      (select
+        (i32.sub (local.get $final) (local.get $first))
+        (i32.const 0)
+        (i32.gt_s (i32.sub (local.get $final) (local.get $first)) (i32.const 0))))
+    ;; Allocate new buffer
+    (local.set $new_ptr
+      (call $alloc_heap
+        (i32.add (i32.const {array_header}) (local.get $new_len))))
+    (i32.store (local.get $new_ptr) (local.get $new_len))
+    ;; Zero-fill the new buffer
+    (memory.fill
+      (i32.add (local.get $new_ptr) (i32.const {array_header}))
+      (i32.const 0)
+      (local.get $new_len))
+    ;; Copy bytes from source to new buffer
+    (memory.copy
+      (i32.add (local.get $new_ptr) (i32.const {array_header}))
+      (i32.add
+        (i32.add (local.get $buf_ptr) (i32.const {array_header}))
+        (local.get $first))
+      (local.get $new_len))
+    (i32.or (local.get $new_ptr) (i32.const {array_tag})))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            num_shift = ValueTag::NUMBER_SHIFT,
+            array_tag = ValueTag::ARRAY,
+        ));
+    }
+
     /// SharedArrayBuffer constructor — allocates shared memory.
     /// Without Atomics, this is identical to ArrayBuffer allocation.
     pub(super) fn emit_shared_array_buffer_new(&self, wat: &mut String) {
@@ -1010,7 +1093,6 @@ impl WatEmitter<'_> {
         ));
     }
 
-    
     pub(super) fn emit_typed_array_ctor_with_length(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -1070,7 +1152,7 @@ impl WatEmitter<'_> {
             presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
             one = RuntimeConst::ONE,
-            tagged_zero = ValueTag::NUMBER,  // number tag with payload 0 = number 0.0
+            tagged_zero = ValueTag::NUMBER, // number tag with payload 0 = number 0.0
         ));
     }
 
