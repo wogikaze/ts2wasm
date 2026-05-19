@@ -559,7 +559,7 @@ impl WatEmitter<'_> {
         (local.set $record (call $alloc_heap (i32.const {settlement_record_size})))
         (i32.store (local.get $record) (i32.const 2))
         (i32.store (i32.add (local.get $record) (i32.const {object_flags_offset})) (i32.const 0))
-        (i32.store (i32.add (local.get $record) (i32.const {object_proto_offset})) (i32.and (call {object_prototype}) (i32.const {heap_mask})))
+        (i32.store (i32.add (local.get $record) (i32.const {object_proto_offset})) (call $object_prototype))
         (i32.store (i32.add (local.get $record) (i32.const {entry0_key_offset})) (i32.const {status_key}))
         (if (i32.eq (local.get $state) (i32.const {rejected_state}))
           (then
