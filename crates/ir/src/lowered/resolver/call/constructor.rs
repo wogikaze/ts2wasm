@@ -565,6 +565,40 @@ impl super::super::Resolver {
             return Ok(lowered);
         }
 
+        if class_name == "Number" {
+            let lowered = match args.first() {
+                None | Some(ResolvedExpr::Undefined) => {
+                    LoweredExpr::Number(0, Span::generated("num"))
+                }
+                Some(ResolvedExpr::Number(value)) => {
+                    LoweredExpr::Number(*value, Span::generated("num"))
+                }
+                Some(value) => LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::NumberCoerce,
+                    args: vec![self.lower_expr(value)?],
+                    span: Span::generated("runtime_call"),
+                },
+            };
+            return Ok(lowered);
+        }
+
+        if class_name == "Boolean" {
+            let lowered = match args.first() {
+                None | Some(ResolvedExpr::Undefined) => {
+                    LoweredExpr::Bool(false, Span::generated("bool"))
+                }
+                Some(ResolvedExpr::Bool(value)) => {
+                    LoweredExpr::Bool(*value, Span::generated("bool"))
+                }
+                Some(value) => LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::BooleanCoerce,
+                    args: vec![self.lower_expr(value)?],
+                    span: Span::generated("runtime_call"),
+                },
+            };
+            return Ok(lowered);
+        }
+
         self.lower_new_with_prototype(class_name, args, span)
     }
 

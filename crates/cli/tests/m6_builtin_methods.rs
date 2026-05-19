@@ -592,6 +592,16 @@ fn build_smoke_new_string() {
 }
 
 #[test]
+fn build_smoke_new_number_boolean() {
+    let result = run_fixture("builtins-and-io/new-number-boolean.ts");
+    assert!(
+        result.is_ok(),
+        "new Number()/new Boolean() should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_json_stringify_method() {
     let result = run_fixture("builtins-and-io/json-stringify.ts");
     assert!(
