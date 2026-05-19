@@ -1274,6 +1274,16 @@ impl EvalCompletionPlan {
     }
 
     pub fn landing_state_is_consistent(&self) -> bool {
+        if self.eval_is_strict
+            && (!self.declarations.is_empty()
+                || self
+                    .steps
+                    .iter()
+                    .any(EvalCompletionStep::has_caller_landing))
+        {
+            return false;
+        }
+
         match self.scope_mode {
             EvalScopeMode::Caller => self.steps.iter().all(|step| !step.has_global_landing()),
             EvalScopeMode::Global { .. } => {
@@ -1898,6 +1908,21 @@ mod tests {
             ])],
         );
         assert!(!global_with_caller_landing.landing_state_is_consistent());
+
+        let strict_eval_with_caller_declaration = EvalCompletionPlan::with_eval_context(
+            EvalScopeMode::Caller,
+            true,
+            true,
+            EvalDeclarationPlan {
+                var_names: vec!["value".to_owned()],
+                function_hoists: vec![],
+            },
+            vec![EvalCompletionStep::VarLet {
+                name: "value".to_owned(),
+                init: ResolvedExpr::Number(1),
+            }],
+        );
+        assert!(!strict_eval_with_caller_declaration.landing_state_is_consistent());
     }
 
     #[test]
