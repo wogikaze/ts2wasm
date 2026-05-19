@@ -1722,6 +1722,41 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_date_get_year(&self, wat: &mut String) {
+        // B.2.4.1: Date.prototype.getYear = year - 1900
+        wat.push_str(&format!(
+            r#"
+  (func $date_get_year (param $date i32) (result i32)
+    (local $year_tagged i32)
+    (local.set $year_tagged (call $date_get_utc_full_year (local.get $date)))
+    (i32.sub (local.get $year_tagged) (i32.const {year_offset})))
+"#,
+            year_offset = 1900 << ValueTag::NUMBER_SHIFT,
+        ));
+    }
+
+    pub(super) fn emit_date_set_year(&self, wat: &mut String) {
+        // B.2.4.2: Date.prototype.setYear(yearValue) — calls setFullYear(year, 0, 1)
+        // Annex B adjustment: if 0 ≤ year ≤ 99, year += 1900
+        // The IR layer handles the year adjustment, so this just delegates to setFullYear
+        wat.push_str(
+            r#"
+  (func $date_set_year (param $date i32) (param $year i32) (result i32)
+    ;; delegate to setFullYear(date, year, month=0, date=1)
+    (call $date_set_full_year (local.get $date) (local.get $year) (i32.const 4) (i32.const 12)))"#,
+        );
+    }
+
+    pub(super) fn emit_date_to_gmt_string(&self, wat: &mut String) {
+        // B.2.4.3: Date.prototype.toGMTString — same as toUTCString
+        // Delegate to $date_to_string (which outputs toUTCString format)
+        wat.push_str(
+            r#"
+  (func $date_to_gmt_string (param $date i32) (result i32)
+    (call $date_to_string (local.get $date)))"#,
+        );
+    }
+
     pub(super) fn emit_intl_date_time_format_format(&self, wat: &mut String) {
         wat.push_str(
             r#"
