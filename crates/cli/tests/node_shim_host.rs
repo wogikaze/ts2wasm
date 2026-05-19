@@ -698,6 +698,13 @@ fn dynamic_direct_eval_applies_created_function_before_throw_node_shim_host_impo
 }
 
 #[test]
+fn dynamic_direct_eval_created_function_before_throw_is_visible_to_normal_code_node_shim_host_import()
+ {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-throw-created-function-normal-code-node-shim.ts";
+    assert_node_shim_stdout(fixture, "Error\nafter\n");
+}
+
+#[test]
 fn dynamic_direct_eval_strict_lexical_shadow_does_not_write_back_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-strict-lexical-shadow-node-shim.ts";
     assert_node_shim_stdout(fixture, "2\n1\n");
