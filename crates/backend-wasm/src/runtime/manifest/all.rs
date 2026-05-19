@@ -10,6 +10,7 @@ match self {
             Self::ArrayPush => "array_push",
             Self::ArrayPushGrow => "array_push_grow",
             Self::ArrayPop => "array_pop",
+            Self::ArrayCtorWithLength => "array_ctor_with_length",
             Self::ArraySlice => "array_slice",
             Self::ArrayConcat => "array_concat",
             Self::ArrayMapValueToString => "array_map_value_to_string",

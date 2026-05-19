@@ -10,6 +10,7 @@ impl WatEmitter<'_> {
             RuntimeFn::ArrayPush => self.emit_array_push(wat),
             RuntimeFn::ArrayPushGrow => self.emit_array_push_grow(wat),
             RuntimeFn::ArrayPop => self.emit_array_pop(wat),
+            RuntimeFn::ArrayCtorWithLength => self.emit_array_ctor_with_length(wat),
             RuntimeFn::ArraySlice => self.emit_array_slice(wat),
             RuntimeFn::ArrayConcat => self.emit_array_concat(wat),
             RuntimeFn::ArrayMapValueToString => self.emit_array_map_value_to_string(wat),

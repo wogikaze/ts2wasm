@@ -353,6 +353,8 @@ pub enum RuntimeFn {
     ArrayPush,
     ArrayPushGrow,
     ArrayPop,
+    /// new Array(length) with single numeric argument — allocates an array with given length (all holes)
+    ArrayCtorWithLength,
     ArraySlice,
     ArrayConcat,
     ArrayMapValueToString,
@@ -1197,6 +1199,7 @@ const ARRAY_PUSH_DEPS: &[RuntimeFn] = &[
 ];
 const ARRAY_PUSH_GROW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_POP_DEPS: &[RuntimeFn] = &[];
+const ARRAY_CTOR_WITH_LENGTH_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const ARRAY_SLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_CONCAT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_MAP_VALUE_TO_STRING_DEPS: &[RuntimeFn] = &[
@@ -1631,6 +1634,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayPushGrow" => Some(RuntimeFn::ArrayPushGrow),
         "ArrayIndexPresent" => Some(RuntimeFn::ArrayIndexPresent),
         "ArrayPop" => Some(RuntimeFn::ArrayPop),
+        "ArrayCtorWithLength" => Some(RuntimeFn::ArrayCtorWithLength),
         "ArraySlice" => Some(RuntimeFn::ArraySlice),
         "ArrayConcat" => Some(RuntimeFn::ArrayConcat),
         "ArrayMapValueToString" => Some(RuntimeFn::ArrayMapValueToString),
@@ -1955,6 +1959,7 @@ impl RuntimeFn {
             | Self::ArrayPush
             | Self::ArrayPushGrow
             | Self::ArrayPop
+            | Self::ArrayCtorWithLength
             | Self::ArraySlice
             | Self::ArrayConcat
             | Self::ArrayMapValueToString
@@ -2870,6 +2875,7 @@ impl RuntimeFn {
             Self::ArrayPush,
             Self::ArrayPushGrow,
             Self::ArrayPop,
+            Self::ArrayCtorWithLength,
             Self::ArraySlice,
             Self::ArrayConcat,
             Self::ArrayMapValueToString,
@@ -3351,6 +3357,7 @@ impl RuntimeFn {
             Self::ArrayPush,
             Self::ArrayPushGrow,
             Self::ArrayPop,
+            Self::ArrayCtorWithLength,
             Self::ArraySlice,
             Self::ArrayConcat,
             Self::ArrayMapValueToString,

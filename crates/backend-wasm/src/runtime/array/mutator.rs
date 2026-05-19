@@ -720,4 +720,30 @@ impl WatEmitter<'_> {
             undefined = ValueTag::UNDEFINED,
         ));
     }
+
+    pub(crate) fn emit_array_ctor_with_length(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_ctor_with_length (param $len i32) (result i32)
+    (local $cap i32) (local $size i32) (local $ptr i32)
+    (local.set $cap
+      (select (local.get $len) (i32.const 4) (i32.gt_u (local.get $len) (i32.const 4))))
+    (local.set $size
+      (i32.add (i32.const {array_header_size}) (i32.shl (local.get $cap) (i32.const 2))))
+    (local.set $ptr (call $alloc_heap (local.get $size)))
+    (i32.store (local.get $ptr) (local.get $len))
+    (i32.store (i32.add (local.get $ptr) (i32.const {array_capacity_offset})) (local.get $cap))
+    (i32.store (i32.add (local.get $ptr) (i32.const {presence_word_count_offset})) (i32.const 1))
+    (i32.store (i32.add (local.get $ptr) (i32.const {elements_offset_offset})) (i32.const {array_header_size}))
+    (i32.store (i32.add (local.get $ptr) (i32.const {presence_words_offset})) (i32.const 0))
+    (i32.or (local.get $ptr) (i32.const {array_tag})))
+"#,
+            array_header_size = Layout::ARRAY_HEADER_SIZE,
+            array_capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
+            presence_word_count_offset = Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+            elements_offset_offset = Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+            array_tag = ValueTag::ARRAY,
+        ));
+    }
 }

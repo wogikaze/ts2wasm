@@ -225,37 +225,27 @@ impl super::super::Resolver {
             let [length] = args else {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "issue-405: new Array(length) currently supports exactly one small non-negative integer length".to_owned(),
+                    message: "issue-405: new Array(length) currently supports exactly one length argument".to_owned(),
                     span: None,
 
                     phase: None,
                 });
             };
-            let ResolvedExpr::Number(length) = length else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "issue-405: new Array(length) currently requires a small non-negative integer length literal"
-                            .to_owned(),
-                    span: None,
-
-                    phase: None,
-                });
-            };
-            if *length < 0 || *length > 32 {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "issue-405: new Array(length) currently supports lengths from 0 through 32"
-                            .to_owned(),
-                    span: None,
-
-                    phase: None,
+            // For small non-negative integer literals (0..=32), use compile-time sparse array
+            if let ResolvedExpr::Number(length_val) = length
+                && *length_val >= 0
+                && *length_val <= 32
+            {
+                return Ok(LoweredExpr::ArrayNewSparse {
+                    slots: vec![LoweredArraySlot::Hole; *length_val as usize],
+                    span: Span::generated("array_new_sparse"),
                 });
             }
-            return Ok(LoweredExpr::ArrayNewSparse {
-                slots: vec![LoweredArraySlot::Hole; *length as usize],
-                span: Span::generated("array_new_sparse"),
+            // For larger or non-literal lengths, use runtime ArrayCtorWithLength
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ArrayCtorWithLength,
+                args: vec![self.lower_expr(length)?],
+                span: Span::generated("runtime_call"),
             });
         }
         if class_name == "Map"

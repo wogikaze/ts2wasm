@@ -73,6 +73,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ArrayCtorWithLength => RuntimeSpec {
+                symbol: "$array_ctor_with_length",
+                deps: ARRAY_CTOR_WITH_LENGTH_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ArraySlice => RuntimeSpec {
                 symbol: "$array_slice",
                 deps: ARRAY_SLICE_DEPS,
