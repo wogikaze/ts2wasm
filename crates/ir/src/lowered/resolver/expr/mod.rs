@@ -1212,6 +1212,7 @@ impl super::Resolver {
                 for binding in bindings {
                     stmts.extend(self.lower_eval_for_head_object_binding_write(
                         binding,
+                        bindings,
                         &value,
                         landing,
                         caller_scope_index,
@@ -1261,19 +1262,19 @@ impl super::Resolver {
     fn lower_eval_for_head_object_binding_write(
         &mut self,
         binding: &ObjectBinding,
+        siblings: &[ObjectBinding],
         value: &LoweredExpr,
         landing: EvalForHeadVarLanding,
         caller_scope_index: usize,
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
         if binding.is_rest {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedEval,
-                message:
-                    "static eval for-head object rest destructuring is not supported in this slice"
-                        .to_owned(),
-                span: binding.span,
-                phase: None,
-            });
+            return self.lower_eval_for_head_object_rest_binding_write(
+                binding,
+                siblings,
+                value,
+                landing,
+                caller_scope_index,
+            );
         }
         let property_value = if binding.computed {
             let key_raw = binding.key.trim_start_matches('[').trim_end_matches(']');
@@ -1296,6 +1297,63 @@ impl super::Resolver {
             landing,
             caller_scope_index,
         )
+    }
+
+    fn lower_eval_for_head_object_rest_binding_write(
+        &mut self,
+        binding: &ObjectBinding,
+        siblings: &[ObjectBinding],
+        value: &LoweredExpr,
+        landing: EvalForHeadVarLanding,
+        caller_scope_index: usize,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        let rest_temp = self.alloc_temp();
+        let mut stmts = vec![LoweredStmt::Let(
+            rest_temp,
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ObjectAssign,
+                args: vec![
+                    LoweredExpr::ObjectNew {
+                        props: Vec::new(),
+                        non_enumerable: 0,
+                        span: Span::generated("eval_for_object_rest_empty"),
+                    },
+                    value.clone(),
+                ],
+                span: Span::generated("eval_for_object_rest_copy"),
+            },
+            Span::generated("eval_for_object_rest_temp"),
+        )];
+        for sibling in siblings.iter().filter(|sibling| !sibling.is_rest) {
+            let rest_object =
+                LoweredExpr::Local(rest_temp, Span::generated("eval_for_object_rest"));
+            let delete_expr = if sibling.computed {
+                let key_raw = sibling.key.trim_start_matches('[').trim_end_matches(']');
+                LoweredExpr::PropertyDeleteDynamic {
+                    object: Box::new(rest_object),
+                    key: Box::new(self.lower_eval_for_head_computed_key_expr(key_raw, landing)?),
+                    span: Span::generated("eval_for_object_rest_delete_dynamic"),
+                }
+            } else {
+                LoweredExpr::PropertyDelete {
+                    object: Box::new(rest_object),
+                    key: sibling.key.clone(),
+                    span: Span::generated("eval_for_object_rest_delete"),
+                }
+            };
+            stmts.push(LoweredStmt::Expr(
+                delete_expr,
+                Span::generated("eval_for_object_rest_delete_stmt"),
+            ));
+        }
+        stmts.extend(self.lower_eval_for_head_binding_target_write(
+            &binding.target,
+            LoweredExpr::Local(rest_temp, Span::generated("eval_for_object_rest")),
+            None,
+            landing,
+            caller_scope_index,
+        )?);
+        Ok(stmts)
     }
 
     fn lower_eval_for_head_computed_key_expr(

@@ -2514,6 +2514,17 @@ fn eval_statement_completion_step(
                 ),
                 _ => (&[][..], EvalForHeadVarLanding::Local, None),
             };
+            let (ast_body, strip_parser_shim) = eval_for_head_body_without_parser_shim(
+                ast_body,
+                body.as_slice(),
+                &var,
+                head_pattern.is_some(),
+            );
+            let body = if strip_parser_shim {
+                body.into_iter().skip(1).collect()
+            } else {
+                body
+            };
             EvalCompletionStep::ForOf {
                 var,
                 var_landing: head_landing,
@@ -2530,6 +2541,17 @@ fn eval_statement_completion_step(
                     eval_for_head_var_pattern(source, *span, "in"),
                 ),
                 _ => (&[][..], EvalForHeadVarLanding::Local, None),
+            };
+            let (ast_body, strip_parser_shim) = eval_for_head_body_without_parser_shim(
+                ast_body,
+                body.as_slice(),
+                &var,
+                head_pattern.is_some(),
+            );
+            let body = if strip_parser_shim {
+                body.into_iter().skip(1).collect()
+            } else {
+                body
             };
             EvalCompletionStep::ForIn {
                 var,
@@ -2848,6 +2870,29 @@ fn eval_for_head_uses_var(source: &str, span: Span, separator: &str, fallback_va
 fn eval_for_head_var_pattern(source: &str, span: Span, separator: &str) -> Option<BindingPattern> {
     let binding = eval_for_head_var_binding(source, span, separator)?;
     parse_binding_pattern(binding, Some(span)).ok().flatten()
+}
+
+fn eval_for_head_body_without_parser_shim<'ast, 'resolved>(
+    ast_body: &'ast [Stmt],
+    body: &'resolved [ResolvedStmt],
+    var: &str,
+    has_head_pattern: bool,
+) -> (&'ast [Stmt], bool) {
+    if !has_head_pattern || var != "_binding" {
+        return (ast_body, false);
+    }
+    let Some(ResolvedStmt::DestructureLet {
+        expr: ResolvedExpr::Ident(name),
+        ..
+    }) = body.first()
+    else {
+        return (ast_body, false);
+    };
+    if name != "_binding" {
+        return (ast_body, false);
+    }
+    let ast_body = ast_body.get(1..).unwrap_or(ast_body);
+    (ast_body, true)
 }
 
 fn eval_for_head_var_binding<'a>(source: &'a str, span: Span, separator: &str) -> Option<&'a str> {
