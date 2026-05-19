@@ -841,6 +841,12 @@ fn dynamic_direct_eval_strict_caller_ignores_restricted_words_in_strings_node_sh
 }
 
 #[test]
+fn dynamic_direct_eval_strict_caller_ignores_restricted_words_in_regexp_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-strict-caller-regexp-restricted-words-node-shim.ts";
+    assert_node_shim_stdout(fixture, "var arguments\nafter\n");
+}
+
+#[test]
 fn dynamic_direct_eval_tdz_env_descriptor_conflict_is_catchable_reference_error() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-tdz-conflict-node-shim.ts";
     assert_node_shim_stdout(fixture, "ReferenceError\nafter\n");

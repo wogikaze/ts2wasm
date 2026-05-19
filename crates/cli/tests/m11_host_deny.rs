@@ -1832,6 +1832,9 @@ fn host_deny_rejects_dynamic_direct_eval_strict_caller_string_restricted_words_h
     assert_host_deny_rejects(
         "core-semantics/direct-eval-dynamic-strict-caller-string-restricted-words-node-shim.ts",
     );
+    assert_host_deny_rejects(
+        "core-semantics/direct-eval-dynamic-strict-caller-regexp-restricted-words-node-shim.ts",
+    );
 }
 
 #[test]

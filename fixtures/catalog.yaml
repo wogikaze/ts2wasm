@@ -967,6 +967,7 @@ directories:
     - direct-eval-dynamic-strict-caller-delete-node-shim.ts
     - direct-eval-dynamic-strict-caller-function-eval-node-shim.ts
     - direct-eval-dynamic-strict-caller-object-binding-eval-node-shim.ts
+    - direct-eval-dynamic-strict-caller-regexp-restricted-words-node-shim.ts
     - direct-eval-dynamic-strict-caller-string-restricted-words-node-shim.ts
     - direct-eval-dynamic-strict-caller-var-local-node-shim.ts
     - direct-eval-dynamic-strict-caller-var-arguments-node-shim.ts
