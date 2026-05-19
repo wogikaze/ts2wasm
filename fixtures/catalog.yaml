@@ -1058,6 +1058,7 @@ directories:
     - function-constructor-static-expression-source.ts
     - function-constructor-static-logical-source.ts
     - function-constructor-static-primitive-source.ts
+    - function-constructor-static-spread-array-source.ts
     - function-constructor-static-construct.ts
     - function-constructor-static-ternary-source.ts
     - function-constructor-static-unary-source.ts

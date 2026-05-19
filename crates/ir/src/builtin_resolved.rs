@@ -409,10 +409,7 @@ pub struct StaticFunctionConstructorSource {
 
 impl StaticFunctionConstructorSource {
     pub fn from_args(args: &[ResolvedExpr]) -> Option<Self> {
-        let strings = args
-            .iter()
-            .map(function_constructor_source_string)
-            .collect::<Option<Vec<_>>>()?;
+        let strings = function_constructor_source_strings(args)?;
         let (body, params) = strings
             .split_last()
             .map_or(("", &[][..]), |(body, params)| (body.as_str(), params));
@@ -440,6 +437,29 @@ impl StaticFunctionConstructorSource {
             self.generated_function.name, self.body
         )
     }
+}
+
+fn function_constructor_source_strings(args: &[ResolvedExpr]) -> Option<Vec<String>> {
+    let mut strings = Vec::new();
+    for arg in args {
+        match arg {
+            ResolvedExpr::Spread(expr) => {
+                let ResolvedExpr::Array(elements) = expr.as_ref() else {
+                    return None;
+                };
+                for element in elements {
+                    match element {
+                        ResolvedArrayElement::Hole => strings.push("undefined".to_owned()),
+                        ResolvedArrayElement::Present(expr) => {
+                            strings.push(function_constructor_source_string(expr)?);
+                        }
+                    }
+                }
+            }
+            _ => strings.push(function_constructor_source_string(arg)?),
+        }
+    }
+    Some(strings)
 }
 
 fn function_constructor_source_string(arg: &ResolvedExpr) -> Option<String> {

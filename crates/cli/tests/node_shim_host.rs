@@ -945,6 +945,15 @@ fn static_function_constructor_array_source_uses_aot_lane() {
 }
 
 #[test]
+fn static_function_constructor_spread_array_source_uses_aot_lane() {
+    let fixture = "fixtures/core-semantics/function-constructor-static-spread-array-source.ts";
+    assert_node_shim_stdout(
+        fixture,
+        "11\n13\n5\nfunction anonymous(value\n) {\nreturn value + 1\n}\n",
+    );
+}
+
+#[test]
 fn static_function_constructor_ternary_source_uses_aot_lane() {
     let fixture = "fixtures/core-semantics/function-constructor-static-ternary-source.ts";
     assert_node_shim_stdout(fixture, "1\n2\nundefined\nfunction anonymous(\n) {\n3\n}\n");
