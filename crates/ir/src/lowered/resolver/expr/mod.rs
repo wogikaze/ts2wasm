@@ -1848,6 +1848,13 @@ fn focused_direct_eval_tdz_candidates(source: &str) -> Vec<String> {
             return vec![base.to_owned()];
         }
     }
+    if let Some((base, property)) = trimmed.split_once("?.") {
+        let base = base.trim();
+        let property = property.trim();
+        if is_direct_eval_tdz_candidate_name(base) && is_ascii_js_identifier(property) {
+            return vec![base.to_owned()];
+        }
+    }
     if let Some(inner) = trimmed
         .strip_prefix("`${")
         .and_then(|rest| rest.strip_suffix("}`"))

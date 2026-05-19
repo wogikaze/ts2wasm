@@ -1026,6 +1026,12 @@ fn dynamic_direct_eval_tdz_member_reference_is_catchable_reference_error() {
 }
 
 #[test]
+fn dynamic_direct_eval_tdz_optional_member_reference_is_catchable_reference_error() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-tdz-optional-member-node-shim.ts";
+    assert_node_shim_stdout(fixture, "ReferenceError\nafter\n");
+}
+
+#[test]
 fn dynamic_direct_eval_function_expression_name_is_not_predeclared_for_normal_code() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-function-expression-name-normal-code-unsupported.ts";
     assert_build_fails_with(fixture, "UnresolvedName", "unresolved name: `hiddenProbe`");
@@ -2064,7 +2070,7 @@ function focusedDirectEvalTdzCandidates(source) {
     return [typeofMatch[1]];
   }
   const memberMatch =
-    /^([A-Za-z_$][0-9A-Za-z_$]*)\s*\.\s*([A-Za-z_$][0-9A-Za-z_$]*)$/.exec(trimmed);
+    /^([A-Za-z_$][0-9A-Za-z_$]*)\s*(?:\.|\?\.)\s*([A-Za-z_$][0-9A-Za-z_$]*)$/.exec(trimmed);
   if (memberMatch !== null && isDirectEvalTdzCandidateName(memberMatch[1])) {
     return [memberMatch[1]];
   }
