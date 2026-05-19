@@ -1052,6 +1052,7 @@ directories:
     - function-constructor-parameter-grammar.ts
     - function-constructor-rest-params.ts
     - function-constructor-static-expression-source.ts
+    - function-constructor-static-logical-source.ts
     - function-constructor-static-primitive-source.ts
     - function-constructor-static-construct.ts
     - function-constructor-static-ternary-source.ts

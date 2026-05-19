@@ -492,9 +492,13 @@ fn function_constructor_static_source_value(
         ResolvedExpr::Bool(value) => Some(FunctionConstructorStaticSourceValue::Bool(*value)),
         ResolvedExpr::Null => Some(FunctionConstructorStaticSourceValue::Null),
         ResolvedExpr::Undefined => Some(FunctionConstructorStaticSourceValue::Undefined),
-        ResolvedExpr::Binary { left, op, right } if *op == BinaryOp::Add => {
-            function_constructor_static_add_source_value(left, right)
-        }
+        ResolvedExpr::Binary { left, op, right } => match op {
+            BinaryOp::Add => function_constructor_static_add_source_value(left, right),
+            BinaryOp::And | BinaryOp::Or | BinaryOp::NullishCoalesce => {
+                function_constructor_static_logical_source_value(left, *op, right)
+            }
+            _ => None,
+        },
         ResolvedExpr::Unary { op, expr } => {
             function_constructor_static_unary_source_value(*op, expr)
         }
@@ -558,6 +562,33 @@ fn function_constructor_static_to_boolean(value: &FunctionConstructorStaticSourc
         FunctionConstructorStaticSourceValue::Bool(value) => *value,
         FunctionConstructorStaticSourceValue::Null
         | FunctionConstructorStaticSourceValue::Undefined => false,
+    }
+}
+
+fn function_constructor_static_is_nullish(value: &FunctionConstructorStaticSourceValue) -> bool {
+    matches!(
+        value,
+        FunctionConstructorStaticSourceValue::Null
+            | FunctionConstructorStaticSourceValue::Undefined
+    )
+}
+
+fn function_constructor_static_logical_source_value(
+    left: &ResolvedExpr,
+    op: BinaryOp,
+    right: &ResolvedExpr,
+) -> Option<FunctionConstructorStaticSourceValue> {
+    let left_value = function_constructor_static_source_value(left)?;
+    let use_left = match op {
+        BinaryOp::And => !function_constructor_static_to_boolean(&left_value),
+        BinaryOp::Or => function_constructor_static_to_boolean(&left_value),
+        BinaryOp::NullishCoalesce => !function_constructor_static_is_nullish(&left_value),
+        _ => unreachable!("logical Function constructor source op"),
+    };
+    if use_left {
+        Some(left_value)
+    } else {
+        function_constructor_static_source_value(right)
     }
 }
 
