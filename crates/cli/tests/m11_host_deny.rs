@@ -2588,6 +2588,12 @@ fn host_deny_rejects_dynamic_function_constructor_host_lane() {
     assert_host_deny_rejects(
         "core-semantics/function-constructor-dynamic-throw-object-method-node-shim.ts",
     );
+    assert_host_deny_rejects(
+        "core-semantics/function-constructor-dynamic-optional-nested-method-node-shim.ts",
+    );
+    assert_host_deny_rejects(
+        "core-semantics/function-constructor-dynamic-optional-computed-nested-method-node-shim.ts",
+    );
 }
 
 /// Helper: typescript-directives fixtures expected to fail under --host-deny

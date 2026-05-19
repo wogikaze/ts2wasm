@@ -151,6 +151,12 @@ fn dynamic_function_handle_preserves_optional_nested_object_method_through_node_
 }
 
 #[test]
+fn dynamic_function_optional_computed_nested_method_uses_host_call_method() {
+    let fixture = "fixtures/core-semantics/function-constructor-dynamic-optional-computed-nested-method-node-shim.ts";
+    assert_node_shim_stdout(fixture, "11\n");
+}
+
+#[test]
 fn dynamic_function_handle_grows_nested_arrays_through_node_shim_host_imports() {
     let fixture = "fixtures/core-semantics/function-constructor-dynamic-array-growth-node-shim.ts";
     assert_node_shim_stdout(fixture, "4\n5\n5\nundefined\n");
