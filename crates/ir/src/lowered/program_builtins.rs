@@ -67,7 +67,6 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "exp" => Some(RuntimeFn::MathExp),
                 "expm1" => Some(RuntimeFn::MathExpm1),
                 "fround" => Some(RuntimeFn::MathFround),
-                "f16round" => Some(RuntimeFn::MathF16round),
                 "hypot" => Some(RuntimeFn::MathHypot),
                 "log" => Some(RuntimeFn::MathLog),
                 "log10" => Some(RuntimeFn::MathLog10),
@@ -125,13 +124,9 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "isSealed" => Some(RuntimeFn::ObjectIsSealed),
                 "isFrozen" => Some(RuntimeFn::ObjectIsFrozen),
                 "defineProperty" => Some(RuntimeFn::ObjectDefineProperty),
-                "defineProperties" => Some(RuntimeFn::ObjectDefineProperties),
-                "getOwnPropertyDescriptors" => Some(RuntimeFn::ObjectGetOwnPropertyDescriptors),
                 "assign" => Some(RuntimeFn::ObjectAssign),
                 "create" => Some(RuntimeFn::ObjectCreate),
                 "is" => Some(RuntimeFn::ObjectIs),
-                // test262 harness: Object.createRealm() returns a new realm object
-                "createRealm" => Some(RuntimeFn::ObjectCreate),
                 _ => None,
             };
         }
@@ -205,7 +200,6 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "compareExchange" => Some(RuntimeFn::AtomicsCompareExchange),
                 "isLockFree" => Some(RuntimeFn::AtomicsIsLockFree),
                 "wait" => Some(RuntimeFn::AtomicsWait),
-                "waitAsync" => Some(RuntimeFn::AtomicsWaitAsync),
                 "notify" => Some(RuntimeFn::AtomicsNotify),
                 _ => None,
             };
@@ -246,7 +240,6 @@ pub(crate) fn resolve_method_to_runtime_fn(
         "codePointAt" => Some(RuntimeFn::StringCodePointAt),
         "isWellFormed" => Some(RuntimeFn::StringIsWellFormed),
         "toWellFormed" => Some(RuntimeFn::StringToWellFormed),
-        "normalize" => Some(RuntimeFn::StringNormalize),
         "hasOwnProperty" => Some(RuntimeFn::ObjectHasOwnProperty),
         "propertyIsEnumerable" => Some(RuntimeFn::PropertyIsEnumerable),
         "isPrototypeOf" => Some(RuntimeFn::IsPrototypeOf),
@@ -284,19 +277,17 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("DataView", "setFloat32") => Some(RuntimeFn::DataViewSetFloat32),
         ("DataView", "getFloat64") => Some(RuntimeFn::DataViewGetFloat64),
         ("DataView", "setFloat64") => Some(RuntimeFn::DataViewSetFloat64),
-        ("DataView", "getFloat16") => Some(RuntimeFn::DataViewGetFloat16),
-        ("DataView", "setFloat16") => Some(RuntimeFn::DataViewSetFloat16),
         ("DataView", "getBigInt64") => Some(RuntimeFn::DataViewGetBigInt64),
         ("DataView", "setBigInt64") => Some(RuntimeFn::DataViewSetBigInt64),
         ("DataView", "getBigUint64") => Some(RuntimeFn::DataViewGetBigUint64),
         ("DataView", "setBigUint64") => Some(RuntimeFn::DataViewSetBigUint64),
         ("ArrayBuffer", "transfer") => Some(RuntimeFn::ArrayBufferTransfer),
-        ("ArrayBuffer", "slice") => Some(RuntimeFn::ArrayBufferSlice),
         ("Map", "get") => Some(RuntimeFn::MapGet),
         ("Map", "set") => Some(RuntimeFn::MapSet),
         ("Map", "has") => Some(RuntimeFn::MapHas),
         ("Map", "delete") => Some(RuntimeFn::MapDelete),
         ("Map", "clear") => Some(RuntimeFn::MapClear),
+        ("Map", "forEach") => Some(RuntimeFn::MapForEach),
         ("Map", "entries") => Some(RuntimeFn::MapEntryPairsArray),
         ("Map", "keys") => Some(RuntimeFn::MapKeysArray),
         ("Map", "values") => Some(RuntimeFn::MapValuesArray),
@@ -308,6 +299,7 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Set", "has") => Some(RuntimeFn::SetHas),
         ("Set", "delete") => Some(RuntimeFn::SetDelete),
         ("Set", "clear") => Some(RuntimeFn::SetClear),
+        ("Set", "forEach") => Some(RuntimeFn::SetForEach),
         ("Set", "entries") => Some(RuntimeFn::SetEntriesArray),
         ("Set", "keys") => Some(RuntimeFn::SetValuesArray),
         ("Set", "values") => Some(RuntimeFn::SetValuesArray),
@@ -329,6 +321,7 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "reduce") => Some(RuntimeFn::ArrayReduce),
         ("Array", "reduceRight") => Some(RuntimeFn::ArrayReduceRight),
         ("Array", "lastIndexOf") => Some(RuntimeFn::ArrayLastIndexOf),
+        ("Array", "forEach") => Some(RuntimeFn::ArrayForEach),
         ("Array", "map") => Some(RuntimeFn::ArrayMap),
         ("Array", "indexOf") => Some(RuntimeFn::ArrayIndexOf),
         ("Array", "includes") => Some(RuntimeFn::ArrayIncludes),
@@ -361,47 +354,10 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "unshift") => Some(RuntimeFn::ArrayUnshift),
         ("Array", "splice") => Some(RuntimeFn::ArraySplice),
         ("Object", "valueOf") => Some(RuntimeFn::ValueOf),
-        // Number prototype methods
-        ("Number", "toString") => Some(RuntimeFn::NumberToString),
-        // Symbol prototype methods
-        ("Symbol", "toString") => Some(RuntimeFn::SymbolToString),
-        ("Symbol", "valueOf") => Some(RuntimeFn::ValueOf),
-        // String prototype methods
-        ("String", "charAt") => Some(RuntimeFn::StringCharAt),
-        ("String", "charCodeAt") => Some(RuntimeFn::StringCharCodeAt),
-        ("String", "codePointAt") => Some(RuntimeFn::StringCodePointAt),
-        ("String", "at") => Some(RuntimeFn::StringAt),
-        ("String", "substring") => Some(RuntimeFn::StringSubstring),
-        ("String", "substr") => Some(RuntimeFn::StringSubstr),
-        ("String", "slice") => Some(RuntimeFn::StringSlice),
-        ("String", "indexOf") => Some(RuntimeFn::StringIndexOf),
-        ("String", "lastIndexOf") => Some(RuntimeFn::StringLastIndexOf),
-        ("String", "includes") => Some(RuntimeFn::StringIncludes),
-        ("String", "startsWith") => Some(RuntimeFn::StringStartsWith),
-        ("String", "endsWith") => Some(RuntimeFn::StringEndsWith),
-        ("String", "padStart") => Some(RuntimeFn::StringPadStart),
-        ("String", "padEnd") => Some(RuntimeFn::StringPadEnd),
-        ("String", "repeat") => Some(RuntimeFn::StringRepeat),
-        ("String", "split") => Some(RuntimeFn::StringSplit),
-        ("String", "concat") => Some(RuntimeFn::Concat),
-        ("String", "trim") => Some(RuntimeFn::StringTrim),
-        ("String", "trimStart") => Some(RuntimeFn::StringTrimStart),
-        ("String", "trimEnd") => Some(RuntimeFn::StringTrimEnd),
-        ("String", "toUpperCase") => Some(RuntimeFn::StringToUpperCase),
-        ("String", "toLowerCase") => Some(RuntimeFn::StringToLowerCase),
-        ("String", "localeCompare") => Some(RuntimeFn::StringLocaleCompare),
-        ("String", "match") => Some(RuntimeFn::StringMatch),
-        ("String", "search") => Some(RuntimeFn::StringSearch),
-        ("String", "replace") => Some(RuntimeFn::StringReplace),
-        ("String", "replaceAll") => Some(RuntimeFn::StringReplaceAll),
-        ("String", "isWellFormed") => Some(RuntimeFn::StringIsWellFormed),
-        ("String", "toWellFormed") => Some(RuntimeFn::StringToWellFormed),
-        ("String", "normalize") => Some(RuntimeFn::StringNormalize),
         // Promise prototype methods
         ("Promise", "then") => Some(RuntimeFn::PromiseThen),
         ("Promise", "catch") => Some(RuntimeFn::PromiseCatch),
         ("Promise", "finally") => Some(RuntimeFn::PromiseFinally),
-        _ if is_error_class(class_name) && method == "toString" => Some(RuntimeFn::ErrorToString),
         _ if is_typed_array_class(class_name) => typed_array_method_runtime_fn(method),
         _ => None,
     }
@@ -412,7 +368,6 @@ pub(crate) fn number_format_method_runtime_fn(method: &str) -> Option<RuntimeFn>
         "toFixed" => Some(RuntimeFn::NumberToFixed),
         "toExponential" => Some(RuntimeFn::NumberToExponential),
         "toPrecision" => Some(RuntimeFn::NumberToPrecision),
-        "toString" => Some(RuntimeFn::NumberToString),
         _ => None,
     }
 }
@@ -429,23 +384,8 @@ pub(crate) fn is_typed_array_class(class_name: &str) -> bool {
             | "Uint32Array"
             | "Float32Array"
             | "Float64Array"
-            | "Float16Array"
             | "BigInt64Array"
             | "BigUint64Array"
-    )
-}
-
-pub(crate) fn is_error_class(class_name: &str) -> bool {
-    matches!(
-        class_name,
-        "Error"
-            | "TypeError"
-            | "RangeError"
-            | "SyntaxError"
-            | "ReferenceError"
-            | "URIError"
-            | "EvalError"
-            | "AggregateError"
     )
 }
 
@@ -462,6 +402,7 @@ fn typed_array_method_runtime_fn(method: &str) -> Option<RuntimeFn> {
         "findLast" => Some(RuntimeFn::ArrayFindLast),
         "findLastIndex" => Some(RuntimeFn::ArrayFindLastIndex),
         "flat" => Some(RuntimeFn::ArrayFlat),
+        "forEach" => Some(RuntimeFn::ArrayForEach),
         "includes" => Some(RuntimeFn::ArrayIncludes),
         "indexOf" => Some(RuntimeFn::ArrayIndexOf),
         "join" => Some(RuntimeFn::ArrayJoin),
@@ -477,7 +418,6 @@ fn typed_array_method_runtime_fn(method: &str) -> Option<RuntimeFn> {
         "sort" => Some(RuntimeFn::ArraySortNumeric),
         "toReversed" => Some(RuntimeFn::ArrayToReversed),
         "toSorted" => Some(RuntimeFn::ArrayToSorted),
-        "toLocaleString" => Some(RuntimeFn::ArrayJoin),
         "toString" => Some(RuntimeFn::ArrayJoin),
         "values" => Some(RuntimeFn::ArrayValues),
         "with" => Some(RuntimeFn::ArrayWith),
@@ -490,9 +430,10 @@ pub(crate) fn collection_method_runtime_fn_arg(method: &str) -> Option<RuntimeFn
     match method {
         "every" => Some(RuntimeFn::ArrayEvery),
         "some" => Some(RuntimeFn::ArraySome),
-        // find/findIndex/findLast/findLastIndex removed from collection_method_runtime_fn_arg
-        // to avoid routing to $array_find etc. which ignore callbacks.
-        // Handled via lower_array_callback_method (IR-level While loop expansion) instead.
+        "find" => Some(RuntimeFn::ArrayFind),
+        "findIndex" => Some(RuntimeFn::ArrayFindIndex),
+        "findLast" => Some(RuntimeFn::ArrayFindLast),
+        "findLastIndex" => Some(RuntimeFn::ArrayFindLastIndex),
         "filter" => Some(RuntimeFn::ArrayFilter),
         "push" => Some(RuntimeFn::ArrayPushGrow),
         "pop" => Some(RuntimeFn::ArrayPop),
@@ -520,17 +461,16 @@ pub(crate) fn collection_method_runtime_fn_arg(method: &str) -> Option<RuntimeFn
         "values" => Some(RuntimeFn::ArrayValues),
         "keys" => Some(RuntimeFn::ArrayKeys),
         "entries" => Some(RuntimeFn::ArrayEntries),
-        // Promise prototype methods — chained call routing
-        "then" => Some(RuntimeFn::PromiseThen),
-        "catch" => Some(RuntimeFn::PromiseCatch),
-        "finally" => Some(RuntimeFn::PromiseFinally),
         _ => None,
     }
 }
 
 /// Returns true for array methods whose WASM runtime function doesn't accept user callbacks
 pub(crate) fn is_identity_array_method(method: &str) -> bool {
-    matches!(method, "some")
+    matches!(
+        method,
+        "every" | "some" | "find" | "findIndex" | "findLast" | "findLastIndex" | "filter"
+    )
 }
 
 pub(crate) fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {
@@ -966,6 +906,27 @@ pub(crate) fn is_date_now_expr(expr: &ResolvedExpr) -> bool {
     )
 }
 
+#[allow(dead_code)]
+pub(crate) fn is_annex_b_date_method(method: &str) -> bool {
+    matches!(method, "getYear" | "setYear" | "toGMTString")
+}
+
+#[allow(dead_code)]
+pub(crate) fn unsupported_annex_b_date_method_diagnostic(
+    method: &str,
+    span: Option<Span>,
+) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!(
+            "issue-241: Date.prototype.{method} is Annex B legacy Date behavior and is not supported in the deterministic Date epoch slice"
+        ),
+        span,
+
+        phase: None,
+    }
+}
+
 pub(crate) fn is_local_tz_date_method(method: &str) -> bool {
     matches!(
         method,
@@ -1293,8 +1254,7 @@ pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
                 match bytes[i + 1] {
                     b'd' | b'D' | b'w' | b'W' | b's' | b'S' | b'b' | b'B' | b'0' | b'n' | b't'
                     | b'r' | b'f' | b'v' | b'\\' | b'/' | b'.' | b'^' | b'$' | b'+' | b'*'
-                    | b'?' | b'(' | b')' | b'[' | b']' | b'{' | b'}' | b'|' | b'1' | b'2'
-                    | b'3' | b'4' | b'5' | b'6' | b'7' | b'8' | b'9' => {
+                    | b'?' | b'(' | b')' | b'[' | b']' | b'{' | b'}' | b'|' => {
                         i += 2;
                     }
                     _ => {
@@ -1346,74 +1306,12 @@ pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
                 ));
             }
             i += 1; // skip ']'
-        } else if ch == b'(' {
-            // Simple capture group: skip to matching ')'
-            // This handles basic (...), not (?...), (?!...), etc.
-            let depth = 1u32;
-            let mut j = i + 1;
-            while j < bytes.len() && depth > 0 {
-                if bytes[j] == b'\\' {
-                    j += 2; // skip escape
-                } else if bytes[j] == b'(' {
-                    // nested group
-                    // skip past it by finding its matching ')'
-                    let mut nd = 1u32;
-                    let mut k = j + 1;
-                    while k < bytes.len() && nd > 0 {
-                        if bytes[k] == b'\\' {
-                            k += 2;
-                        } else if bytes[k] == b'(' {
-                            nd += 1;
-                            k += 1;
-                        } else if bytes[k] == b')' {
-                            nd -= 1;
-                            k += 1;
-                        } else {
-                            k += 1;
-                        }
-                    }
-                    j = k;
-                } else if bytes[j] == b')' {
-                    i = j; // point to ')', will be consumed below
-                    break;
-                } else {
-                    j += 1;
-                }
-            }
-            if i < bytes.len() && bytes[i] == b')' {
-                i += 1; // consume ')'
-            } else {
-                return Err(unsupported_regexp_literal(context, raw, "unclosed group"));
-            }
-        } else if ch == b')' {
+        } else if matches!(ch, b'(' | b')' | b'{' | b'}' | b'|') {
             return Err(unsupported_regexp_literal(
                 context,
                 raw,
-                "unmatched closing parenthesis",
+                &format!("unsupported meta character `{}`", ch as char),
             ));
-        } else if ch == b'|' {
-            // Alternation: skip to end of current alternative
-            i += 1;
-        } else if ch == b'{' {
-            // Quantifier {n}, {n,}, {n,m}
-            i += 1;
-            while i < bytes.len() && bytes[i].is_ascii_digit() {
-                i += 1;
-            }
-            if i < bytes.len() && bytes[i] == b',' {
-                i += 1;
-                while i < bytes.len() && bytes[i].is_ascii_digit() {
-                    i += 1;
-                }
-            }
-            if i >= bytes.len() || bytes[i] != b'}' {
-                return Err(unsupported_regexp_literal(
-                    context,
-                    raw,
-                    "unclosed quantifier brace",
-                ));
-            }
-            i += 1; // skip '}'
         } else {
             // ^ and $ are allowed (anchors), also . + * ?
             i += 1;

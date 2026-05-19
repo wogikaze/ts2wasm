@@ -537,70 +537,9 @@ impl WatEmitter<'_> {
         (local.set $date_val (i32.add (local.get $rem_days) (i32.const 1)))
       )
     )
-    ;; negative days: walk backwards from 1970
+    ;; negative days placeholder
     (if (i32.lt_s (local.get $days) (i32.const 0))
-      (then
-        ;; walk backwards from 1970
-        (local.set $year (i32.const 1970))
-        (local.set $rem_days (local.get $days))
-        (block $year_done_neg
-          (loop $year_loop_neg
-            (local.set $year (i32.sub (local.get $year) (i32.const 1)))
-            ;; leap year check
-            (local.set $is_leap (i32.const 0))
-            (if (i32.eqz (i32.rem_s (local.get $year) (i32.const 4)))
-              (then (local.set $is_leap (i32.const 1))))
-            (if (i32.eqz (i32.rem_s (local.get $year) (i32.const 100)))
-              (then (local.set $is_leap (i32.const 0))))
-            (if (i32.eqz (i32.rem_s (local.get $year) (i32.const 400)))
-              (then (local.set $is_leap (i32.const 1))))
-            (local.set $rem_days
-              (i32.add (local.get $rem_days) (i32.add (i32.const 365) (local.get $is_leap))))
-            (if (i32.ge_s (local.get $rem_days) (i32.const 0))
-              (then (br $year_done_neg)))
-            (br $year_loop_neg)
-          )
-        )
-        ;; find month from day-of-year (rem_days is 0-indexed)
-        (local.set $month (i32.const 0))
-        (block $month_done_neg
-          (loop $month_loop_neg
-            (local.set $r (i32.const 31))
-            (if (i32.eq (local.get $month) (i32.const 1))
-              (then
-                (local.set $r (i32.const 28))
-                (if (local.get $is_leap) (then (local.set $r (i32.const 29))))
-              )
-            )
-            (if (i32.eq (local.get $month) (i32.const 2))
-              (then (local.set $r (i32.const 31))))
-            (if (i32.eq (local.get $month) (i32.const 3))
-              (then (local.set $r (i32.const 30))))
-            (if (i32.eq (local.get $month) (i32.const 4))
-              (then (local.set $r (i32.const 31))))
-            (if (i32.eq (local.get $month) (i32.const 5))
-              (then (local.set $r (i32.const 30))))
-            (if (i32.eq (local.get $month) (i32.const 6))
-              (then (local.set $r (i32.const 31))))
-            (if (i32.eq (local.get $month) (i32.const 7))
-              (then (local.set $r (i32.const 31))))
-            (if (i32.eq (local.get $month) (i32.const 8))
-              (then (local.set $r (i32.const 30))))
-            (if (i32.eq (local.get $month) (i32.const 9))
-              (then (local.set $r (i32.const 31))))
-            (if (i32.eq (local.get $month) (i32.const 10))
-              (then (local.set $r (i32.const 30))))
-            (if (i32.eq (local.get $month) (i32.const 11))
-              (then (local.set $r (i32.const 31))))
-            (if (i32.lt_u (local.get $rem_days) (local.get $r))
-              (then (br $month_done_neg)))
-            (local.set $rem_days (i32.sub (local.get $rem_days) (local.get $r)))
-            (local.set $month (i32.add (local.get $month) (i32.const 1)))
-            (br $month_loop_neg)
-          )
-        )
-        (local.set $date_val (i32.add (local.get $rem_days) (i32.const 1)))
-      )
+      (then (local.set $date_val (i32.add (i32.const 32) (local.get $days))))
     )
     (i32.or (i32.shl (local.get $date_val) (i32.const {number_shift})) (i32.const {number_tag})))
 "#,
@@ -704,69 +643,9 @@ impl WatEmitter<'_> {
         )
       )
     )
-    ;; negative days: walk backwards from 1970
+    ;; negative days: just return 11 (December, placeholder)
     (if (i32.lt_s (local.get $days) (i32.const 0))
-      (then
-        ;; walk backwards from 1970
-        (local.set $year (i32.const 1970))
-        (local.set $rem_days (local.get $days))
-        (block $year_done_neg
-          (loop $year_loop_neg
-            (local.set $year (i32.sub (local.get $year) (i32.const 1)))
-            ;; leap year check
-            (local.set $is_leap (i32.const 0))
-            (if (i32.eqz (i32.rem_s (local.get $year) (i32.const 4)))
-              (then (local.set $is_leap (i32.const 1))))
-            (if (i32.eqz (i32.rem_s (local.get $year) (i32.const 100)))
-              (then (local.set $is_leap (i32.const 0))))
-            (if (i32.eqz (i32.rem_s (local.get $year) (i32.const 400)))
-              (then (local.set $is_leap (i32.const 1))))
-            (local.set $rem_days
-              (i32.add (local.get $rem_days) (i32.add (i32.const 365) (local.get $is_leap))))
-            (if (i32.ge_s (local.get $rem_days) (i32.const 0))
-              (then (br $year_done_neg)))
-            (br $year_loop_neg)
-          )
-        )
-        ;; find month from day-of-year (rem_days is 0-indexed)
-        (local.set $month (i32.const 0))
-        (block $month_done_neg
-          (loop $month_loop_neg
-            (local.set $r (i32.const 31))
-            (if (i32.eq (local.get $month) (i32.const 1))
-              (then
-                (local.set $r (i32.const 28))
-                (if (local.get $is_leap) (then (local.set $r (i32.const 29))))
-              )
-            )
-            (if (i32.eq (local.get $month) (i32.const 2))
-              (then (local.set $r (i32.const 31))))
-            (if (i32.eq (local.get $month) (i32.const 3))
-              (then (local.set $r (i32.const 30))))
-            (if (i32.eq (local.get $month) (i32.const 4))
-              (then (local.set $r (i32.const 31))))
-            (if (i32.eq (local.get $month) (i32.const 5))
-              (then (local.set $r (i32.const 30))))
-            (if (i32.eq (local.get $month) (i32.const 6))
-              (then (local.set $r (i32.const 31))))
-            (if (i32.eq (local.get $month) (i32.const 7))
-              (then (local.set $r (i32.const 31))))
-            (if (i32.eq (local.get $month) (i32.const 8))
-              (then (local.set $r (i32.const 30))))
-            (if (i32.eq (local.get $month) (i32.const 9))
-              (then (local.set $r (i32.const 31))))
-            (if (i32.eq (local.get $month) (i32.const 10))
-              (then (local.set $r (i32.const 30))))
-            (if (i32.eq (local.get $month) (i32.const 11))
-              (then (local.set $r (i32.const 31))))
-            (if (i32.lt_u (local.get $rem_days) (local.get $r))
-              (then (br $month_done_neg)))
-            (local.set $rem_days (i32.sub (local.get $rem_days) (local.get $r)))
-            (local.set $month (i32.add (local.get $month) (i32.const 1)))
-            (br $month_loop_neg)
-          )
-        )
-      )
+      (then (local.set $month (i32.const 11)))
     )
     (i32.or (i32.shl (local.get $month) (i32.const {number_shift})) (i32.const {number_tag})))
 "#,
@@ -830,31 +709,9 @@ impl WatEmitter<'_> {
         )
       )
     )
-    ;; negative days: walk backwards from 1970
+    ;; negative days: just return 1969 (placeholder)
     (if (i32.lt_s (local.get $days) (i32.const 0))
-      (then
-        ;; walk backwards from 1970
-        (local.set $year (i32.const 1970))
-        (local.set $rem_days (local.get $days))
-        (block $year_done_neg
-          (loop $year_loop_neg
-            (local.set $year (i32.sub (local.get $year) (i32.const 1)))
-            ;; leap year check
-            (local.set $is_leap (i32.const 0))
-            (if (i32.eqz (i32.rem_s (local.get $year) (i32.const 4)))
-              (then (local.set $is_leap (i32.const 1))))
-            (if (i32.eqz (i32.rem_s (local.get $year) (i32.const 100)))
-              (then (local.set $is_leap (i32.const 0))))
-            (if (i32.eqz (i32.rem_s (local.get $year) (i32.const 400)))
-              (then (local.set $is_leap (i32.const 1))))
-            (local.set $rem_days
-              (i32.add (local.get $rem_days) (i32.add (i32.const 365) (local.get $is_leap))))
-            (if (i32.ge_s (local.get $rem_days) (i32.const 0))
-              (then (br $year_done_neg)))
-            (br $year_loop_neg)
-          )
-        )
-      )
+      (then (local.set $year (i32.const 1969)))
     )
     (i32.or (i32.shl (local.get $year) (i32.const {number_shift})) (i32.const {number_tag})))
 "#,
@@ -1723,46 +1580,88 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_date_get_year(&self, wat: &mut String) {
-        // B.2.4.1: Date.prototype.getYear = year - 1900
         wat.push_str(&format!(
             r#"
   (func $date_get_year (param $date i32) (result i32)
-    (local $year_tagged i32)
-    (local.set $year_tagged (call $date_get_utc_full_year (local.get $date)))
-    (i32.sub (local.get $year_tagged) (i32.const {year_offset})))
+    (local $full_year i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $date) (i32.const {tag_mask}))
+        (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $full_year
+      (call $date_get_utc_full_year (local.get $date)))
+    (if (i32.eq (local.get $full_year) (i32.const {undefined}))
+      (then (return (i32.const {undefined}))))
+    (i32.or
+      (i32.shl
+        (i32.sub
+          (i32.shr_s (local.get $full_year) (i32.const {number_shift}))
+          (i32.const 1900))
+        (i32.const {number_shift}))
+      (i32.const {number_tag})))
 "#,
-            year_offset = 1900 << ValueTag::NUMBER_SHIFT,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
         ));
     }
 
     pub(super) fn emit_date_set_year(&self, wat: &mut String) {
-        // B.2.4.2: Date.prototype.setYear(yearValue) — calls setFullYear(year, 0, 1)
-        // Annex B adjustment: if 0 ≤ year ≤ 99, year += 1900
-        // The IR layer handles the year adjustment, so this just delegates to setFullYear
-        wat.push_str(
+        wat.push_str(&format!(
             r#"
   (func $date_set_year (param $date i32) (param $year i32) (result i32)
-    ;; delegate to setFullYear(date, year, month=0, date=1)
-    (call $date_set_full_year (local.get $date) (local.get $year) (i32.const 4) (i32.const 12)))"#,
-        );
+    (local $year_val i32)
+    (if
+      (i32.ne
+        (i32.and (local.get $date) (i32.const {tag_mask}))
+        (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $year_val
+      (i32.or
+        (i32.shl
+          (i32.add
+            (i32.shr_s (local.get $year) (i32.const {number_shift}))
+            (i32.const 1900))
+          (i32.const {number_shift}))
+        (i32.const {number_tag})))
+    (call $date_set_utc_full_year
+      (local.get $date)
+      (local.get $year_val)
+      (i32.const {undefined})
+      (i32.const {undefined})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            undefined = ValueTag::UNDEFINED,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+        ));
     }
 
     pub(super) fn emit_date_to_gmt_string(&self, wat: &mut String) {
-        // B.2.4.3: Date.prototype.toGMTString — same as toUTCString
-        // Delegate to $date_to_string (which outputs toUTCString format)
-        wat.push_str(
+        wat.push_str(&format!(
             r#"
   (func $date_to_gmt_string (param $date i32) (result i32)
-    (call $date_to_string (local.get $date)))"#,
-        );
+    (call $host_date_to_string
+      (i32.load
+        (i32.add
+          (i32.and (local.get $date) (i32.const {heap_mask}))
+          (i32.const {epoch_offset})))))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+        ));
     }
 
     pub(super) fn emit_intl_date_time_format_format(&self, wat: &mut String) {
-        wat.push_str(
+        wat.push_str(&format!(
             r#"
   (func $intl_date_time_format_format (param $value i32) (param $options_str i32) (result i32)
     (call $host_intl_date_time_format_format (local.get $value) (local.get $options_str)))
 "#,
-        );
+        ));
     }
 }

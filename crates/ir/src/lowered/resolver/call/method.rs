@@ -1,12 +1,11 @@
 use super::super::{
     bigint_runtime_fn_intrinsic, is_array_from_call_receiver,
     is_array_prototype_every_some_call_receiver, is_array_prototype_map_call_receiver,
-    is_array_prototype_push_expr, is_error_class, is_identity_arrow_callback,
-    is_set_prototype_property_expr, is_static_date_constructor_expr, is_string_split_result_expr,
-    is_typed_array_class, numeric_ascending_sort_arrow_callback,
-    private_storage_observable_access_diagnostic, string_constructor_arrow_callback,
-    string_split_arrow_separator, unary_plus_arrow_callback, unsupported_array_map_diagnostic,
-    unsupported_array_sort_diagnostic,
+    is_array_prototype_push_expr, is_identity_arrow_callback, is_set_prototype_property_expr,
+    is_static_date_constructor_expr, is_string_split_result_expr, is_typed_array_class,
+    numeric_ascending_sort_arrow_callback, private_storage_observable_access_diagnostic,
+    string_constructor_arrow_callback, string_split_arrow_separator, unary_plus_arrow_callback,
+    unsupported_array_map_diagnostic, unsupported_array_sort_diagnostic,
 };
 use super::builtin::{is_html_wrapper_string_method, lower_html_wrapper_string_method};
 use super::receiver::extract_prototype_method_name;
@@ -16,8 +15,8 @@ use crate::builtin_resolved::{
 use crate::lowered::classes::ObjectAccessorKey;
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::{
-    GeneratorMethodIteratorBinding, GeneratorObjectResumePlan, HostExternalKind,
-    IntlDateTimeFormatOptions, IntlNumberFormatOptions, ProxyTrapKind,
+    GeneratorMethodIteratorBinding, GeneratorObjectResumePlan, IntlDateTimeFormatOptions,
+    IntlNumberFormatOptions, ProxyTrapKind,
 };
 use crate::lowered::*;
 use std::collections::HashMap;
@@ -33,28 +32,10 @@ impl super::super::Resolver {
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
-        if matches!(object, ResolvedExpr::Ident(name) if name == "$262") && method == "evalScript" {
-            if args.len() != 1 {
-                return Err(Diagnostic {
-                    code: DiagCode::ArityMismatch,
-                    message: format!("$262.evalScript expects 1 argument, got {}", args.len()),
-                    span: Some(span),
-                    phase: None,
-                });
-            }
-            return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::Dollar262Eval,
-                args: vec![self.lower_expr(&args[0])?],
-                span: Span::generated("runtime_call"),
-            });
-        }
         if let Some(result) = self.lower_mcall_early(object, method, args, span)? {
             return Ok(result);
         }
         if let Some(result) = self.lower_mcall_arraybuffer(object, method, args)? {
-            return Ok(result);
-        }
-        if let Some(result) = self.lower_mcall_typed_array(object, method, args)? {
             return Ok(result);
         }
         if let Some(result) = self.lower_mcall_intl_date_time_format(object, method, args)? {
@@ -90,33 +71,6 @@ impl super::super::Resolver {
                 source.to_owned()
             };
             return Ok(LoweredExpr::String(body, span));
-        }
-        if method == "toString"
-            && args.is_empty()
-            && let ResolvedExpr::Ident(name) = object
-            && let Ok(local_id) = self.resolve_local(name)
-            && self
-                .ctx
-                .facts
-                .is_host_external(local_id, HostExternalKind::FunctionHandle)
-        {
-            let receiver = if self.ctx.facts.env_cell_locals.contains(&local_id) {
-                LoweredExpr::EnvCellGet(local_id, Span::generated("env_cell_get"))
-            } else {
-                LoweredExpr::Local(local_id, Span::generated("local"))
-            };
-            return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::FunctionCallMethodHost,
-                args: vec![
-                    object_kernel::ordinary_get(receiver.clone(), method, span),
-                    receiver,
-                    LoweredExpr::ArrayNew {
-                        elements: Vec::new(),
-                        span: Span::generated("array"),
-                    },
-                ],
-                span: Span::generated("runtime_call"),
-            });
         }
         if let Some(result) = self.lower_mcall_date_string(object, method, args, span)? {
             return Ok(result);
@@ -879,7 +833,14 @@ impl super::super::Resolver {
         }
         if method.starts_with('#') {
             if let Some(method_id) = self.current_static_private_method_id(method) {
-                if self.is_same_class_static_private_receiver(object) {
+                let same_class_static_receiver = match object {
+                    ResolvedExpr::This { .. } => self.resolve_local("this").is_err(),
+                    ResolvedExpr::Ident(name) => {
+                        self.ctx.classes.current_class.as_deref() == Some(name.as_str())
+                    }
+                    _ => false,
+                };
+                if same_class_static_receiver {
                     let lowered_args = args
                         .iter()
                         .map(|e| self.lower_expr(e))
@@ -1087,44 +1048,9 @@ impl super::super::Resolver {
                 .transpose()?
                 .unwrap_or_else(|| LoweredExpr::Number(0, Span::generated("num")));
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::ArrayBufferTransfer,
+                intrinsic: RuntimeFn::ArrayBufferNew,
                 args: vec![new_len],
                 span: Span::generated("runtime_call"),
-            }));
-        }
-        Ok(None)
-    }
-
-    /// TypedArray static methods: TypedArray.from(source) → TypedArrayFromArray
-    fn lower_mcall_typed_array(
-        &mut self,
-        object: &ResolvedExpr,
-        method: &str,
-        args: &[ResolvedExpr],
-    ) -> Result<Option<LoweredExpr>, Diagnostic> {
-        if let ResolvedExpr::Ident(name) = object
-            && is_typed_array_class(name)
-            && method == "from"
-        {
-            let source = match args.first() {
-                Some(arg) => self.lower_expr(arg)?,
-                None => LoweredExpr::ArrayNew {
-                    elements: Vec::new(),
-                    span: Span::generated("typed_array_from"),
-                },
-            };
-            if args.len() > 1 {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "TypedArray.from with mapFn/thisArg is not supported".to_owned(),
-                    span: Some(Span::generated("typed_array_from")),
-                    phase: None,
-                });
-            }
-            return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::TypedArrayFromArray,
-                args: vec![source],
-                span: Span::generated("typed_array_from"),
             }));
         }
         Ok(None)
@@ -1397,43 +1323,18 @@ impl super::super::Resolver {
                     // Lower the new RegExp to string representation, toString returns it
                     return Ok(Some(self.lower_expr(object)?));
                 }
-                ResolvedExpr::Ident(name) => {
-                    if let Ok(local) = self.resolve_local(name)
-                        && let Some(closure) = self.ctx.facts.arrow_locals.get(&local)
-                    {
-                        let body = self
-                            .ctx
+                ResolvedExpr::Ident(name) if self.is_function_identifier(object) => {
+                    let body = if let Ok(func_id) = self.resolve_func(name) {
+                        self.ctx
                             .function_sources
-                            .get(&closure.func_id)
-                            .filter(|source| !source.is_empty())
+                            .get(&func_id)
+                            .filter(|s| !s.is_empty())
                             .cloned()
-                            .unwrap_or_else(|| {
-                                let metadata_name = self
-                                    .ctx
-                                    .facts
-                                    .function_metadata_name_locals
-                                    .get(&local)
-                                    .map(String::as_str)
-                                    .unwrap_or(name);
-                                format!("function {metadata_name}() {{ [native code] }}")
-                            });
-                        return Ok(Some(LoweredExpr::String(body, Span::generated("str"))));
-                    }
-                    if self.is_function_identifier(object) {
-                        let body = if let Ok(func_id) = self.resolve_func(name) {
-                            self.ctx
-                                .function_sources
-                                .get(&func_id)
-                                .filter(|s| !s.is_empty())
-                                .cloned()
-                                .unwrap_or_else(|| {
-                                    format!("function {}() {{ [native code] }}", name)
-                                })
-                        } else {
-                            format!("function {}() {{ [native code] }}", name)
-                        };
-                        return Ok(Some(LoweredExpr::String(body, Span::generated("str"))));
-                    }
+                            .unwrap_or_else(|| format!("function {}() {{ [native code] }}", name))
+                    } else {
+                        format!("function {}() {{ [native code] }}", name)
+                    };
+                    return Ok(Some(LoweredExpr::String(body, Span::generated("str"))));
                 }
                 ResolvedExpr::ArrowFn {
                     params,
@@ -2031,46 +1932,15 @@ impl super::super::Resolver {
                     phase: None,
                 });
             }
-            return Ok(Some(LoweredExpr::Binary {
-                left: Box::new(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeFn::DateGetLocalTimeField,
-                    args: vec![
-                        self.lower_expr(object)?,
-                        LoweredExpr::Number(0, Span::generated("num")),
-                    ],
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::DateGetYear,
+                args: vec![self.lower_expr(object)?],
 
-                    span: Span::generated("runtime_call"),
-                }),
-                op: LoweredBinaryOp::Subtract,
-                right: Box::new(LoweredExpr::Number(1900, Span::generated("num"))),
-                span: Span::generated("binary"),
-            }));
-        }
-        if method == "getYear" && self.is_date_receiver(object) {
-            if !args.is_empty() {
-                return Err(Diagnostic {
-                    code: DiagCode::ArityMismatch,
-                    message: format!(
-                        "Date.prototype.{method} expects 0 arguments, got {}",
-                        args.len()
-                    ),
-                    span: Some(span),
-                    phase: None,
-                });
-            }
-            return Ok(Some(LoweredExpr::Binary {
-                left: Box::new(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeFn::DateGetUtcFullYear,
-                    args: vec![self.lower_expr(object)?],
-                    span: Span::generated("runtime_call"),
-                }),
-                op: LoweredBinaryOp::Subtract,
-                right: Box::new(LoweredExpr::Number(1900, Span::generated("num"))),
-                span: Span::generated("binary"),
+                span: Span::generated("runtime_call"),
             }));
         }
         if method == "setYear" && self.is_date_receiver(object) {
-            if args.len() != 1 {
+            if args.is_empty() || args.len() > 1 {
                 return Err(Diagnostic {
                     code: DiagCode::ArityMismatch,
                     message: format!(
@@ -2082,37 +1952,14 @@ impl super::super::Resolver {
                     phase: None,
                 });
             }
-            // B.2.4.2: if 0 ≤ ToInteger(year) ≤ 99, add 1900
-            let year_arg = match &args[0] {
-                ResolvedExpr::Number(n) if *n >= 0 && *n <= 99 => {
-                    LoweredExpr::Number(*n + 1900, Span::generated("num"))
-                }
-                ResolvedExpr::DecimalNumber(s) => {
-                    if let Ok(n) = s.parse::<i32>() {
-                        if n >= 0 && n <= 99 {
-                            LoweredExpr::Number(n + 1900, Span::generated("num"))
-                        } else {
-                            self.lower_expr(&args[0])?
-                        }
-                    } else {
-                        self.lower_expr(&args[0])?
-                    }
-                }
-                _ => self.lower_expr(&args[0])?,
-            };
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::DateSetFullYear,
-                args: vec![
-                    self.lower_expr(object)?,
-                    year_arg,
-                    LoweredExpr::Number(0, Span::generated("num")),
-                    LoweredExpr::Number(1, Span::generated("num")),
-                ],
+                intrinsic: RuntimeFn::DateSetYear,
+                args: vec![self.lower_expr(object)?, self.lower_expr(&args[0])?],
 
                 span: Span::generated("runtime_call"),
             }));
         }
-        if self.is_date_receiver(object) && matches!(method, "toGMTString" | "toUTCString") {
+        if method == "toGMTString" && self.is_date_receiver(object) {
             if !args.is_empty() {
                 return Err(Diagnostic {
                     code: DiagCode::ArityMismatch,
@@ -2126,7 +1973,7 @@ impl super::super::Resolver {
                 });
             }
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::DateToString,
+                intrinsic: RuntimeFn::DateToGMTString,
                 args: vec![self.lower_expr(object)?],
 
                 span: Span::generated("runtime_call"),
@@ -2499,15 +2346,6 @@ impl super::super::Resolver {
                         lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
                     }
                 }
-                "fill" => {
-                    // fill(value, start?, end?) — pad missing start/end with Undefined
-                    for arg in args.iter().take(3) {
-                        lowered_args.push(self.lower_expr(arg)?);
-                    }
-                    while lowered_args.len() < 4 {
-                        lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
-                    }
-                }
                 "slice" | "subarray" => {
                     for arg in args.iter().take(2) {
                         lowered_args.push(self.lower_expr(arg)?);
@@ -2600,37 +2438,23 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
-        // Skip ObjectToString catch-all for Error/Array/BigInt locals — let class dispatch handle it
-        let is_class_dispatch_receiver = matches!(method, "toString" | "valueOf")
-            && match object {
-                ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local| {
-                    let class_name = self.ctx.classes.local_classes.get(&local);
-                    class_name.is_some_and(|c| c == "BigInt")
-                        || self.ctx.facts.bigint_locals.contains(&local)
-                }),
-                _ => crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(
-                    &self.ctx, object,
-                ),
-            };
-        // Also skip ObjectToString catch-all for Error.toString — let class dispatch route to ErrorToString
-        let is_error_to_string = method == "toString"
+        // Skip ObjectToString catch-all for BigInt locals — let class dispatch handle it
+        let is_bigint_receiver = matches!(method, "toString" | "valueOf")
             && match object {
                 ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local| {
                     self.ctx
                         .classes
                         .local_classes
                         .get(&local)
-                        .is_some_and(|c| is_error_class(c))
+                        .is_some_and(|c| c == "BigInt")
+                        || self.ctx.facts.bigint_locals.contains(&local)
                 }),
-                ResolvedExpr::New { class_name, .. } => is_error_class(class_name),
-                _ => false,
+                _ => crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(
+                    &self.ctx, object,
+                ),
             };
-        if is_class_dispatch_receiver || is_error_to_string {
+        if is_bigint_receiver {
             // fall through to class dispatch
-        } else if method == "toString"
-            && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
-        {
-            // fall through to class dispatch — Array.toString → ArrayJoin
         } else if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
             if intrinsic == RuntimeFn::JsonParse {
                 if args.is_empty() || args.len() > 2 {
@@ -2762,42 +2586,6 @@ impl super::super::Resolver {
                     Span::generated("num"),
                 )));
             }
-            // Handle single-argument case for Math.max/min: return the arg directly
-            if (intrinsic == RuntimeFn::MathMax || intrinsic == RuntimeFn::MathMin)
-                && args.len() == 1
-            {
-                return Ok(Some(self.lower_expr(&args[0])?));
-            }
-            // Handle Math.hypot edge cases
-            if intrinsic == RuntimeFn::MathHypot {
-                if args.is_empty() {
-                    return Ok(Some(LoweredExpr::Number(0, Span::generated("num"))));
-                }
-                if args.len() == 1 {
-                    // hypot(x) = abs(x) for one argument
-                    return Ok(Some(LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeFn::MathAbs,
-                        args: vec![self.lower_expr(&args[0])?],
-                        span: Span::generated("runtime_call"),
-                    }));
-                }
-                if args.len() > 2 {
-                    // Fold >2 args into nested binary calls (same as Math.max/min pattern)
-                    let mut lowered_args = Vec::new();
-                    for arg in args {
-                        lowered_args.push(self.lower_expr(arg)?);
-                    }
-                    let mut result = lowered_args[0].clone();
-                    for arg in &lowered_args[1..] {
-                        result = LoweredExpr::RuntimeCall {
-                            intrinsic,
-                            args: vec![result, arg.clone()],
-                            span: Span::generated("runtime_call"),
-                        };
-                    }
-                    return Ok(Some(result));
-                }
-            }
             let mut lowered_args = Vec::new();
             let is_static_call = matches!(
                 object,
@@ -2813,7 +2601,6 @@ impl super::super::Resolver {
                         || name == "Promise"
                         || name == "Atomics"
                         || name == "Reflect"
-                        || name == "$262"
             );
             if !is_static_call {
                 lowered_args.push(self.lower_expr(object)?);
@@ -2833,28 +2620,6 @@ impl super::super::Resolver {
                 while lowered_args.len() < 2 {
                     lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
                 }
-            }
-            // Object.assign(target, source) — pad source to undefined
-            if intrinsic == RuntimeFn::ObjectAssign && lowered_args.len() < 2 {
-                while lowered_args.len() < 2 {
-                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
-                }
-            }
-            // Object.create(proto, properties) — pad properties to undefined
-            if intrinsic == RuntimeFn::ObjectCreate && lowered_args.len() < 2 {
-                while lowered_args.len() < 2 {
-                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
-                }
-            }
-            // Object.is(a, b) — pad to 2 args
-            if intrinsic == RuntimeFn::ObjectIs && lowered_args.len() < 2 {
-                while lowered_args.len() < 2 {
-                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
-                }
-            }
-            // Object.fromEntries(entries) — pad to 1 arg
-            if intrinsic == RuntimeFn::ObjectFromEntries && lowered_args.is_empty() {
-                lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
             }
             // Reflect.get(target, key, receiver) — pad receiver to undefined
             if intrinsic == RuntimeFn::ReflectGet && lowered_args.len() < 3 {
@@ -3095,30 +2860,6 @@ impl super::super::Resolver {
             )));
         }
 
-        if matches!(object, ResolvedExpr::Ident(name) if name == "globalThis")
-            && let Some(method_id) = self
-                .ctx
-                .classes
-                .global_object_function_props
-                .get(&ObjectAccessorKey::Property(method.to_owned()))
-                .copied()
-        {
-            let lowered_args = self.lower_function_call_args(
-                method_id,
-                LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeFn::GlobalThis,
-                    args: Vec::new(),
-                    span: Span::generated("globalThis"),
-                },
-                args,
-            )?;
-            return Ok(Some(LoweredExpr::Call {
-                kind: FunctionCallKind::User(method_id),
-                args: lowered_args,
-                span: Span::generated("call"),
-            }));
-        }
-
         if let ResolvedExpr::Ident(receiver_name) = object
             && let Ok(obj_local) = self.resolve_local(receiver_name)
             && let Some(method_id) = self
@@ -3246,17 +2987,14 @@ impl super::super::Resolver {
             || method == "flatMap")
             && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
             && !args.is_empty()
-            && match &args[0] {
+            && matches!(
+                &args[0],
                 ResolvedExpr::ArrowFn { .. }
-                | ResolvedExpr::FunctionExpr {
-                    is_generator: false,
-                    ..
-                } => true,
-                ResolvedExpr::Ident(name) => {
-                    self.ctx.symbols.function_ids.contains_key(name.as_str())
-                }
-                _ => false,
-            }
+                    | ResolvedExpr::FunctionExpr {
+                        is_generator: false,
+                        ..
+                    }
+            )
         {
             let lowered_receiver = self.lower_expr(object)?;
             return Ok(Some(self.lower_array_callback_method(
@@ -3327,35 +3065,6 @@ impl super::super::Resolver {
             return Ok(None);
         }
 
-        // Array.prototype.forEach/find/findIndex/findLast/findLastIndex with
-        // ArrowFn/FunctionExpr callback — route through IR-level While loop
-        // expansion even for non-ident receivers
-        if matches!(
-            method,
-            "forEach" | "find" | "findIndex" | "findLast" | "findLastIndex"
-        ) && !args.is_empty()
-            && match &args[0] {
-                ResolvedExpr::ArrowFn { .. }
-                | ResolvedExpr::FunctionExpr {
-                    is_generator: false,
-                    ..
-                } => true,
-                ResolvedExpr::Ident(name) => {
-                    self.ctx.symbols.function_ids.contains_key(name.as_str())
-                }
-                _ => false,
-            }
-        {
-            let lowered_receiver = self.lower_expr(object)?;
-            return Ok(Some(self.lower_array_callback_method(
-                method,
-                lowered_receiver,
-                object,
-                args,
-                span,
-            )?));
-        }
-
         // this.field.method(...) — PropertyAccess with This receiver
         if let ResolvedExpr::PropertyAccess {
             object: prop_obj,
@@ -3375,26 +3084,6 @@ impl super::super::Resolver {
                     };
                     for arg in args.iter().take(max_args) {
                         lowered_args.push(self.lower_expr(arg)?);
-                    }
-                    // $array_index_of / $array_includes expect 3 params:
-                    // $arr, $search, $from_idx. Pad missing fromIndex with 0.
-                    if (method == "indexOf" || method == "includes") && lowered_args.len() < 3 {
-                        lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
-                    }
-                    // $array_fill expects 4 params: $arr, $val, $start, $end
-                    if method == "fill" && lowered_args.len() < 4 {
-                        lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
-                    }
-                    // Promise prototype methods: pad missing callbacks with undefined
-                    let promise_expected = match method {
-                        "then" => Some(3),              // receiver + onFulfilled + onRejected
-                        "catch" | "finally" => Some(2), // receiver + callback
-                        _ => None,
-                    };
-                    if let Some(expected) = promise_expected {
-                        while lowered_args.len() < expected {
-                            lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
-                        }
                     }
                 }
                 return Ok(Some(LoweredExpr::RuntimeCall {
@@ -3426,14 +3115,7 @@ impl super::super::Resolver {
                 // with ArrowFn — route through IR-level While loop expansion
                 if class_name == "Array"
                     && !call_args.is_empty()
-                    && (matches!(call_args[0], ResolvedExpr::ArrowFn { .. })
-                        || matches!(
-                            call_args[0],
-                            ResolvedExpr::FunctionExpr {
-                                is_generator: false,
-                                ..
-                            }
-                        ))
+                    && matches!(call_args[0], ResolvedExpr::ArrowFn { .. })
                     && (proto_method == "every"
                         || proto_method == "some"
                         || proto_method == "find"
@@ -3538,19 +3220,9 @@ impl super::super::Resolver {
             if method == "valueOf" {
                 return Ok(Some(receiver));
             }
-            let mut bi_args = vec![receiver];
-            bi_args.extend(
-                args.iter()
-                    .take(1)
-                    .map(|e| self.lower_expr(e))
-                    .collect::<Result<Vec<_>, _>>()?,
-            );
-            if bi_args.len() == 1 {
-                bi_args.push(LoweredExpr::Undefined(Span::generated("radix")));
-            }
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::BigIntToString,
-                args: bi_args,
+                args: vec![receiver],
                 span: Span::generated("runtime_call"),
             }));
         }
@@ -3567,62 +3239,12 @@ impl super::super::Resolver {
                 for arg in args.iter().take(max_args) {
                     lowered_args.push(self.lower_expr(arg)?);
                 }
-                // $array_index_of / $array_includes expect 3 params:
-                // $arr, $search, $from_idx. Pad missing fromIndex with 0.
-                if (method == "indexOf" || method == "includes") && lowered_args.len() < 3 {
-                    lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
-                }
-                // $array_fill expects 4 params: $arr, $val, $start, $end
-                if method == "fill" && lowered_args.len() < 4 {
-                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
-                }
-                // Promise prototype methods: pad missing callbacks with undefined
-                let promise_expected = match method {
-                    "then" => Some(3),              // receiver + onFulfilled + onRejected
-                    "catch" | "finally" => Some(2), // receiver + callback
-                    _ => None,
-                };
-                if let Some(expected) = promise_expected {
-                    while lowered_args.len() < expected {
-                        lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
-                    }
-                }
             }
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic,
                 args: lowered_args,
 
                 span: Span::generated("runtime_call"),
-            }));
-        }
-
-        if crate::lowered::resolver::expr::facts::resolved_expr_returns_host_external_object(
-            &self.ctx, object,
-        ) {
-            let receiver_temp = self.alloc_temp();
-            let receiver = LoweredExpr::Local(receiver_temp, Span::generated("local"));
-            let args_array = ResolvedExpr::Array(
-                args.iter()
-                    .cloned()
-                    .map(ResolvedArrayElement::Present)
-                    .collect(),
-            );
-            return Ok(Some(LoweredExpr::Block {
-                stmts: vec![LoweredStmt::Let(
-                    receiver_temp,
-                    self.lower_expr(object)?,
-                    Span::generated("let_stmt"),
-                )],
-                result: Box::new(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeFn::FunctionCallMethodHost,
-                    args: vec![
-                        object_kernel::ordinary_get(receiver.clone(), method, span),
-                        receiver,
-                        self.lower_expr(&args_array)?,
-                    ],
-                    span: Span::generated("runtime_call"),
-                }),
-                span: Span::generated("block"),
             }));
         }
 
@@ -3637,11 +3259,6 @@ impl super::super::Resolver {
                     .map(|e| self.lower_expr(e))
                     .collect::<Result<Vec<_>, _>>()?,
             );
-            // ArrayJoin expects a separator argument. Inject "," for toString/toLocaleString
-            // when no separator was explicitly passed.
-            if (method == "toString" || method == "toLocaleString") && lowered_args.len() == 1 {
-                lowered_args.push(LoweredExpr::String(",".to_owned(), Span::generated("str")));
-            }
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic,
                 args: lowered_args,
@@ -3667,62 +3284,6 @@ impl super::super::Resolver {
                 args: lowered_args,
 
                 span: Span::generated("call"),
-            }));
-        }
-
-        // Function.prototype.call/apply with non-Ident receiver:
-        // bypass ordinary_get("call"/"apply") and inline as HeapClosureCall
-        if method == "call" || method == "apply" {
-            let fn_temp = self.alloc_temp();
-            let fn_val = LoweredExpr::Local(fn_temp, Span::generated("local"));
-            let this_arg = match args.first() {
-                Some(receiver) => self.lower_expr(receiver)?,
-                None => LoweredExpr::Undefined(Span::generated("undef")),
-            };
-            let mut call_args = vec![fn_val.clone(), this_arg];
-            if method == "call" {
-                for arg in args.iter().skip(1) {
-                    call_args.push(self.lower_expr(arg)?);
-                }
-            } else {
-                // apply: expand argArray elements
-                match args.get(1) {
-                    None | Some(ResolvedExpr::Undefined | ResolvedExpr::Null) => {}
-                    Some(ResolvedExpr::Array(elements)) => {
-                        for element in elements {
-                            match element {
-                                ResolvedArrayElement::Present(expr) => {
-                                    call_args.push(self.lower_expr(expr)?);
-                                }
-                                ResolvedArrayElement::Hole => {
-                                    call_args
-                                        .push(LoweredExpr::Undefined(Span::generated("undef")));
-                                }
-                            }
-                        }
-                    }
-                    Some(_) => {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "issue-458: Function.prototype.apply currently supports array literals, null, or undefined argArray for non-Ident receivers".to_owned(),
-                            span: Some(span),
-                            phase: None,
-                        });
-                    }
-                }
-            }
-            return Ok(Some(LoweredExpr::Block {
-                stmts: vec![LoweredStmt::Let(
-                    fn_temp,
-                    self.lower_expr(object)?,
-                    Span::generated("let_stmt"),
-                )],
-                result: Box::new(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeFn::HeapClosureCall,
-                    args: call_args,
-                    span: Span::generated("runtime_call"),
-                }),
-                span: Span::generated("block"),
             }));
         }
 
@@ -3761,20 +3322,10 @@ impl super::super::Resolver {
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
-        // Map.forEach or Set.forEach with ArrowFn/FunctionExpr/Ident — expand at IR level
+        // Map.forEach or Set.forEach with ArrowFn — expand at IR level
         if method == "forEach"
             && !args.is_empty()
-            && match &args[0] {
-                ResolvedExpr::ArrowFn { .. }
-                | ResolvedExpr::FunctionExpr {
-                    is_generator: false,
-                    ..
-                } => true,
-                ResolvedExpr::Ident(name) => {
-                    self.ctx.symbols.function_ids.contains_key(name.as_str())
-                }
-                _ => false,
-            }
+            && matches!(&args[0], ResolvedExpr::ArrowFn { .. })
             && let Ok(obj_local) = self.resolve_local(receiver_name)
             && let Some(class_name) = self.ctx.classes.local_classes.get(&obj_local)
             && (class_name == "Map" || class_name == "Set")
@@ -3811,7 +3362,7 @@ impl super::super::Resolver {
                 .classes
                 .local_classes
                 .get(&obj_local)
-                .is_some_and(|class_name| is_intl_date_time_format_class(class_name.as_str()))
+                .is_some_and(is_intl_date_time_format_class)
             && is_intl_date_time_format_method(method)
         {
             let options = self
@@ -3857,14 +3408,6 @@ impl super::super::Resolver {
                 lowered_args.push(LoweredExpr::String(",".to_owned(), Span::generated("str")));
             } else if is_array_like_class && method == "copyWithin" {
                 // copyWithin(target, start, end) — pad missing args with undefined
-                for arg in args.iter().take(3) {
-                    lowered_args.push(self.lower_expr(arg)?);
-                }
-                while lowered_args.len() < 4 {
-                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
-                }
-            } else if is_array_like_class && method == "fill" {
-                // fill(value, start?, end?) — pad missing args with undefined
                 for arg in args.iter().take(3) {
                     lowered_args.push(self.lower_expr(arg)?);
                 }
@@ -3986,8 +3529,11 @@ impl super::super::Resolver {
             .get(&(receiver_name.to_owned(), method.to_owned()))
             .copied()
         {
-            let receiver = self.lower_expr(object)?;
-            let mut lowered_args = self.lower_function_call_args(method_id, receiver, args)?;
+            let lowered_args = args
+                .iter()
+                .map(|e| self.lower_expr(e))
+                .collect::<Result<Vec<_>, _>>()?;
+            let mut lowered_args = lowered_args;
             self.append_class_method_captures(method_id, &mut lowered_args)?;
             return Ok(LoweredExpr::Call {
                 kind: FunctionCallKind::User(method_id),
@@ -4012,11 +3558,10 @@ impl super::super::Resolver {
             "reduce",
             "flatMap",
             "join",
-            "at",
         ];
         let number_methods = ["toFixed", "toExponential", "toPrecision"];
         let promise_methods = ["then", "catch", "finally"];
-        let regexp_methods = ["test", "exec", "compile"];
+        let regexp_methods = ["test", "exec"];
         let class_name_str = match self.ctx.classes.local_classes.get(&obj_local) {
             Some(c) => c.clone(),
             None if array_like_methods.contains(&method) => "Array".to_owned(),
@@ -4060,55 +3605,13 @@ impl super::super::Resolver {
                 if receiver_name == "durationFormat" && is_intl_duration_format_method(method) {
                     return self.lower_intl_duration_format_method(method, args);
                 }
-                if self
-                    .ctx
-                    .facts
-                    .is_host_external(obj_local, HostExternalKind::Object)
-                    || (method == "toString"
-                        && self
-                            .ctx
-                            .facts
-                            .is_host_external(obj_local, HostExternalKind::FunctionHandle))
-                {
-                    let args_array = ResolvedExpr::Array(
-                        args.iter()
-                            .cloned()
-                            .map(ResolvedArrayElement::Present)
-                            .collect(),
-                    );
-                    let receiver = if self.ctx.facts.env_cell_locals.contains(&obj_local) {
-                        LoweredExpr::EnvCellGet(obj_local, Span::generated("env_cell_get"))
-                    } else {
-                        LoweredExpr::Local(obj_local, Span::generated("local"))
-                    };
-                    return Ok(LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeFn::FunctionCallMethodHost,
-                        args: vec![
-                            object_kernel::ordinary_get(receiver.clone(), method, span),
-                            receiver,
-                            self.lower_expr(&args_array)?,
-                        ],
-                        span: Span::generated("runtime_call"),
-                    });
-                }
                 // BigInt.prototype.toString/valueOf handling
                 if self.ctx.facts.bigint_locals.contains(&obj_local) {
                     match method {
                         "toString" | "toLocaleString" => {
-                            let mut bi_args =
-                                vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
-                            bi_args.extend(
-                                args.iter()
-                                    .take(1)
-                                    .map(|e| self.lower_expr(e))
-                                    .collect::<Result<Vec<_>, _>>()?,
-                            );
-                            if bi_args.len() == 1 {
-                                bi_args.push(LoweredExpr::Undefined(Span::generated("radix")));
-                            }
                             return Ok(LoweredExpr::RuntimeCall {
                                 intrinsic: RuntimeFn::BigIntToString,
-                                args: bi_args,
+                                args: vec![LoweredExpr::Local(obj_local, Span::generated("local"))],
                                 span: Span::generated("runtime_call"),
                             });
                         }
@@ -4151,43 +3654,6 @@ impl super::super::Resolver {
                         span: Span::generated("runtime_call"),
                     });
                 }
-                // Generic fallback: route known method names through
-                // resolve_method_to_runtime_fn for methods that have defined
-                // runtime functions (e.g., String methods like "substr").
-                // This allows untyped/ambient receivers to call instance methods
-                // that the runtime already supports.
-                // Skip methods that are ambiguous between String and Array
-                // (at, slice, indexOf, lastIndexOf, includes, concat) — these
-                // would be misrouted to String variants for Array receivers.
-                let is_ambiguous = matches!(
-                    method,
-                    "at" | "slice" | "indexOf" | "lastIndexOf" | "includes" | "concat"
-                );
-                if !is_ambiguous
-                    && let Some(intrinsic) = resolve_method_to_runtime_fn(
-                        &ResolvedExpr::Ident(receiver_name.to_string()),
-                        method,
-                    )
-                {
-                    let mut lowered_args =
-                        vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
-                    lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<Result<
-                        Vec<_>,
-                        _,
-                    >>(
-                    )?);
-                    return Ok(LoweredExpr::RuntimeCall {
-                        intrinsic,
-                        args: lowered_args,
-                        span: Span::generated("runtime_call"),
-                    });
-                }
-
-                // RegExp.prototype.compile — emit known-unsupported diagnostic
-                if method == "compile" {
-                    return Err(unsupported_regexp_compile_diagnostic(Some(span)));
-                }
-
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: format!(
@@ -4202,28 +3668,13 @@ impl super::super::Resolver {
         };
         let class_name = class_name_str.as_str();
 
-        // RegExp.prototype.compile — emit known-unsupported diagnostic
-        if class_name == "RegExp" && method == "compile" {
-            return Err(unsupported_regexp_compile_diagnostic(Some(span)));
-        }
-
         // BigInt.prototype.toString / valueOf
         if class_name == "BigInt" {
             match method {
                 "toString" | "toLocaleString" => {
-                    let mut bi_args = vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
-                    bi_args.extend(
-                        args.iter()
-                            .take(1)
-                            .map(|e| self.lower_expr(e))
-                            .collect::<Result<Vec<_>, _>>()?,
-                    );
-                    if bi_args.len() == 1 {
-                        bi_args.push(LoweredExpr::Undefined(Span::generated("radix")));
-                    }
                     return Ok(LoweredExpr::RuntimeCall {
                         intrinsic: RuntimeFn::BigIntToString,
-                        args: bi_args,
+                        args: vec![LoweredExpr::Local(obj_local, Span::generated("local"))],
                         span: Span::generated("runtime_call"),
                     });
                 }
@@ -4232,20 +3683,6 @@ impl super::super::Resolver {
                 }
                 _ => {}
             }
-        }
-
-        // Route forEach with non-inline callbacks to lower_array_callback_method
-        // (which produces issue-270 error for non-arrow callbacks) instead of
-        // falling through to collection_method_runtime_fn which would silently
-        // ignore the callback in the WAT function (issue I-20260518-BZWSY6).
-        if class_name == "Array" && method == "forEach" && !args.is_empty() {
-            return self.lower_array_callback_method(
-                method,
-                LoweredExpr::Local(obj_local, Span::generated("local")),
-                object,
-                args,
-                span,
-            );
         }
 
         if class_name == "Array"
@@ -4346,8 +3783,12 @@ impl super::super::Resolver {
                 phase: None,
             })?;
 
-        let receiver = LoweredExpr::Local(obj_local, Span::generated("local"));
-        let mut lowered_args = self.lower_function_call_args(method_id, receiver, args)?;
+        let mut lowered_args = vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
+        lowered_args.extend(
+            args.iter()
+                .map(|e| self.lower_expr(e))
+                .collect::<Result<Vec<_>, _>>()?,
+        );
         self.append_class_method_captures(method_id, &mut lowered_args)?;
 
         Ok(LoweredExpr::Call {
@@ -4374,23 +3815,13 @@ impl super::super::Resolver {
         if class_name == "DataView" {
             match method {
                 "getInt16" | "getUint16" | "getInt32" | "getUint32" | "getFloat32"
-                | "getFloat64" | "getFloat16" | "getBigInt64" | "getBigUint64"
+                | "getFloat64"
                     if args.len() == 1 =>
                 {
                     lowered_args.push(LoweredExpr::Bool(false, Span::generated("bool")));
                 }
-                "setInt8" | "setUint8" if args.len() == 1 => {
-                    lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
-                }
                 "setInt16" | "setUint16" | "setInt32" | "setUint32" | "setFloat32"
-                | "setFloat64" | "setFloat16" | "setBigInt64" | "setBigUint64"
-                    if args.len() == 1 =>
-                {
-                    lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
-                    lowered_args.push(LoweredExpr::Bool(false, Span::generated("bool")));
-                }
-                "setInt16" | "setUint16" | "setInt32" | "setUint32" | "setFloat32"
-                | "setFloat64" | "setFloat16" | "setBigInt64" | "setBigUint64"
+                | "setFloat64"
                     if args.len() == 2 =>
                 {
                     lowered_args.push(LoweredExpr::Bool(false, Span::generated("bool")));
@@ -4406,35 +3837,11 @@ impl super::super::Resolver {
             while lowered_args.len() < expected_count + 1 {
                 lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
             }
-        } else if class_name == "ArrayBuffer" && method == "slice" {
-            // slice(begin?, end?) — pad missing args with undefined (3 total: receiver + begin + end)
-            while lowered_args.len() < 3 {
-                lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
-            }
         } else if args.is_empty()
             && ((class_name == "ArrayBuffer" && method == "transfer")
                 || (class_name == "Number" && is_number_format_method(method)))
         {
             lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
-        } else if (class_name == "Array" || is_typed_array_class(class_name))
-            && (method == "indexOf" || method == "includes")
-        {
-            // $array_index_of / $array_includes expect 3 params: $arr, $search, $from_idx.
-            // Pad missing args: searchElement defaults to undefined, fromIndex defaults to 0.
-            if lowered_args.len() < 2 {
-                lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
-            }
-            if lowered_args.len() < 3 {
-                lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
-            }
-        }
-        // ArrayJoin expects a separator argument. Inject "," for toString/toLocaleString
-        // on Array-like classes when no separator was explicitly passed (prototype.call path).
-        if lowered_args.len() == 1
-            && (method == "toString" || method == "toLocaleString")
-            && (class_name == "Array" || is_typed_array_class(class_name))
-        {
-            lowered_args.push(LoweredExpr::String(",".to_owned(), Span::generated("str")));
         }
         Ok(lowered_args)
     }
@@ -5043,15 +4450,10 @@ impl super::super::Resolver {
                     span: Span::generated("object_is_prototype_of"),
                 })
             }
-            "toString" => Ok(LoweredExpr::String(
+            "toString" | "toLocaleString" => Ok(LoweredExpr::String(
                 "[object Object]".to_owned(),
                 Span::generated("str"),
             )),
-            "toLocaleString" => Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::ObjectToLocaleString,
-                args: vec![receiver],
-                span: Span::generated("runtime_call"),
-            }),
             "valueOf" => Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::ValueOf,
                 args: vec![receiver],
@@ -5166,8 +4568,11 @@ fn intl_list_format_part_object() -> LoweredExpr {
     }
 }
 
-fn is_intl_date_time_format_class(class_name: &str) -> bool {
-    matches!(class_name, "Intl.DateTimeFormat" | "DateTimeFormat")
+fn is_intl_date_time_format_class(class_name: &String) -> bool {
+    matches!(
+        class_name.as_str(),
+        "Intl.DateTimeFormat" | "DateTimeFormat"
+    )
 }
 
 fn static_string_expr(expr: &ResolvedExpr) -> Option<&str> {
