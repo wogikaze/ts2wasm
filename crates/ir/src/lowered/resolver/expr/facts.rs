@@ -132,7 +132,15 @@ pub(crate) fn resolved_expr_returns_host_external_object(
                 || (key == "prototype"
                     && resolved_expr_is_host_function_handle(ctx, object.as_ref()))
         }
+        ResolvedExpr::OptionalPropertyAccess { object, key, .. } => {
+            resolved_expr_is_host_external_object(ctx, object)
+                || (key == "prototype"
+                    && resolved_expr_is_host_function_handle(ctx, object.as_ref()))
+        }
         ResolvedExpr::ComputedIndex { object, .. } => {
+            resolved_expr_is_host_external_object(ctx, object)
+        }
+        ResolvedExpr::OptionalComputedIndex { object, .. } => {
             resolved_expr_is_host_external_object(ctx, object)
         }
         _ => false,

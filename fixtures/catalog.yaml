@@ -1055,6 +1055,7 @@ directories:
     - function-constructor-dynamic-object-node-shim.ts
     - function-constructor-dynamic-object-properties-node-shim.ts
     - function-constructor-dynamic-object-shape-node-shim.ts
+    - function-constructor-dynamic-optional-nested-method-node-shim.ts
     - function-constructor-dynamic-prototype-constructor-call-node-shim.ts
     - function-constructor-dynamic-prototype-identity-node-shim.ts
     - function-constructor-dynamic-sequence-prefix-node-shim.ts
