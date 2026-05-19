@@ -587,6 +587,9 @@ fn function_constructor_static_unary_source_value(
             FunctionConstructorStaticSourceValue::Number(value) => {
                 Some(FunctionConstructorStaticSourceValue::Number(value))
             }
+            FunctionConstructorStaticSourceValue::DecimalNumber(value) => {
+                Some(FunctionConstructorStaticSourceValue::DecimalNumber(value))
+            }
             FunctionConstructorStaticSourceValue::Bool(true) => {
                 Some(FunctionConstructorStaticSourceValue::Number(1))
             }
@@ -600,10 +603,22 @@ fn function_constructor_static_unary_source_value(
             FunctionConstructorStaticSourceValue::Number(value) => {
                 Some(FunctionConstructorStaticSourceValue::Number(-value))
             }
+            FunctionConstructorStaticSourceValue::DecimalNumber(value) => {
+                Some(FunctionConstructorStaticSourceValue::DecimalNumber(
+                    negate_static_numeric_string(value),
+                ))
+            }
             _ => None,
         },
         _ => None,
     }
+}
+
+fn negate_static_numeric_string(value: String) -> String {
+    value
+        .strip_prefix('-')
+        .map(str::to_owned)
+        .unwrap_or_else(|| format!("-{value}"))
 }
 
 fn function_constructor_static_to_boolean(value: &FunctionConstructorStaticSourceValue) -> bool {

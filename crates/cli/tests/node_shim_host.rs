@@ -1064,6 +1064,15 @@ fn static_function_constructor_unary_source_uses_aot_lane() {
 }
 
 #[test]
+fn static_function_constructor_decimal_unary_source_uses_aot_lane() {
+    let fixture = "fixtures/core-semantics/function-constructor-static-decimal-unary-source.ts";
+    assert_node_shim_stdout(
+        fixture,
+        "undefined\nundefined\nfunction anonymous(\n) {\n-1.5\n}\nfunction anonymous(\n) {\n2.5\n}\n",
+    );
+}
+
+#[test]
 fn static_function_constructor_expression_source_uses_aot_lane() {
     let fixture = "fixtures/core-semantics/function-constructor-static-expression-source.ts";
     assert_node_shim_stdout(fixture, "1\n2\nundefined\nfunction anonymous(\n) {\n3\n}\n");
