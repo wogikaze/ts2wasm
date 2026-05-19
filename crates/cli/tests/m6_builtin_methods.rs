@@ -572,6 +572,16 @@ fn build_smoke_number_complete() {
 }
 
 #[test]
+fn build_smoke_number_to_string() {
+    let result = run_fixture("builtins-and-io/number-to-string.ts");
+    assert!(
+        result.is_ok(),
+        "Number.toString should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_json_stringify_method() {
     let result = run_fixture("builtins-and-io/json-stringify.ts");
     assert!(
