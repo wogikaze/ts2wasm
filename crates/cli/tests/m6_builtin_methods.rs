@@ -2913,6 +2913,17 @@ fn build_smoke_dataview_complete() {
     );
 }
 
+// DataView getFloat16/setFloat16: half-precision float methods.
+#[test]
+fn build_smoke_dataview_float16() {
+    let result = run_fixture("builtins-and-io/dataview-float16.ts");
+    assert!(
+        result.is_ok(),
+        "DataView float16 should build: {:?}",
+        result.err()
+    );
+}
+
 // Well-known symbol properties — ID 211 (W5, P2)
 #[test]
 fn build_smoke_well_known_symbol_runtime() {

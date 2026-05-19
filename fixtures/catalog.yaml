@@ -200,7 +200,6 @@ directories:
     - array-to-string.ts
     - array-values.ts
     - array-with.ts
-    - array-copying-methods.ts
     - arraybuffer-dataview-basic.ts
     - arraybuffer-dataview-byte-offset.ts
     - arraybuffer-dataview-byte-offset-endian.ts
@@ -215,6 +214,7 @@ directories:
     - arraybuffer-dataview-uint16.ts
     - arraybuffer-dataview-uint32.ts
     - dataview-complete.ts
+    - dataview-float16.ts
     - arraybuffer-transfer.ts
     - async-generator-basic.ts
     - atomics-unsupported.ts
@@ -444,7 +444,6 @@ directories:
     - string-charcode-tostring-radix.ts
     - string-char-at.ts
     - string-char-code-at.ts
-    - string-charcode-tostring-radix.ts
     - string-concat.ts
     - string-constructor-call.ts
     - string-ends-with.ts
@@ -686,7 +685,6 @@ directories:
     - object-literal-method-mutable-capture.ts
     - object-literal-getter-descriptor.ts
     - object-literal-setter-descriptor.ts
-    - object-shorthand-computed-method.ts
     - optional-call.ts
     - optional-index.ts
     - optional-member.ts
@@ -1586,6 +1584,18 @@ directories:
     - reference-types-ts-ignore.ts
     - triple-slash-reference-unsupported.ts
     - type-only-import-unsupported.ts
+  qa-techniques:
+    category: semantic
+    status: pass
+    expected: QA technique examples
+    fixtures:
+    - boundary-value.ts
+    - decision-table.ts
+    - equivalence-partitioning.ts
+    - error-guessing.ts
+    - state-transition.ts
+    host_imports: allow
+
 feature_matrix:
   fixtures:
     basics-hello:
