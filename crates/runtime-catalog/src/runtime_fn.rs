@@ -275,6 +275,12 @@ pub enum RuntimeFn {
     DateToDateString,
     /// Date.prototype.toTimeString via host shim.
     DateToTimeString,
+    /// Date.prototype.getYear (Annex B legacy method).
+    DateGetYear,
+    /// Date.prototype.setYear (Annex B legacy method).
+    DateSetYear,
+    /// Date.prototype.toGMTString (Annex B legacy method).
+    DateToGMTString,
     /// M10: String methods
     StringCharAt,
     /// String.prototype.at
@@ -1955,6 +1961,9 @@ impl RuntimeFn {
             | Self::DateGetTimezoneOffset
             | Self::DateToDateString
             | Self::DateToTimeString
+            | Self::DateGetYear
+            | Self::DateSetYear
+            | Self::DateToGMTString
             | Self::DateGetUtcMilliseconds
             | Self::DateGetUtcSeconds
             | Self::DateGetUtcMinutes
