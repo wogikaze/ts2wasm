@@ -229,6 +229,12 @@ impl WatEmitter<'_> {
                 &mut prototypes,
             );
         }
+        if self.needs_aggregate_error_prototype() {
+            emitter::add_builtin_error_prototype_ref(
+                BuiltinErrorConstructor::Error,
+                &mut prototypes,
+            );
+        }
         Self::collect_builtin_error_prototypes_from_stmts(
             &self.program.top_level_statements,
             &mut prototypes,

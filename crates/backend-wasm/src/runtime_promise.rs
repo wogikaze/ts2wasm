@@ -105,7 +105,7 @@ impl WatEmitter<'_> {
         let dir_local_token_payload_base = ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE;
         for function in &self.program.functions {
             let payload = dir_local_token_payload_base + function.id.0 as i32;
-            let func_sym = function_symbol(function.id);
+            let func_sym = format!("${}", function_symbol(function.id));
 
             // NUMBER-tagged dispatch arm (DirectLocalToken, no captures)
             number_dispatch.push_str(&format!(
@@ -241,7 +241,7 @@ impl WatEmitter<'_> {
         let dir_local_token_payload_base = ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE;
         for function in &self.program.functions {
             let payload = dir_local_token_payload_base + function.id.0 as i32;
-            let func_sym = function_symbol(function.id);
+            let func_sym = format!("${}", function_symbol(function.id));
 
             number_dispatch.push_str(&format!(
                 "{pad}(if (i32.eq (local.get $payload) (i32.const {payload}))
