@@ -898,6 +898,7 @@ directories:
     - direct-eval-declaration-empty-completion.ts
     - direct-eval-declaration-preserves-previous-completion.ts
     - direct-eval-destructuring-completion.ts
+    - direct-eval-var-destructuring-lands-in-caller.ts
     - direct-eval-do-while-completion.ts
     - direct-eval-expression-caller-local.ts
     - direct-eval-expression-side-effect.ts
@@ -908,6 +909,7 @@ directories:
     - direct-eval-for-head-var-object-rest-caller.ts
     - direct-eval-for-head-var-object-rest-computed-key.ts
     - direct-eval-for-head-var-lands-in-caller.ts
+    - direct-eval-for-init-var-destructuring-caller.ts
     - direct-eval-for-init-var-lands-in-caller.ts
     - direct-eval-for-in-completion.ts
     - direct-eval-for-of-completion.ts
@@ -1096,9 +1098,11 @@ directories:
     - indirect-eval-static-for-head-var-global.ts
     - indirect-eval-static-for-head-var-object-rest-global.ts
     - indirect-eval-static-for-head-var-object-rest-computed-global.ts
+    - indirect-eval-static-for-init-var-destructuring-global.ts
     - indirect-eval-static-for-init-var-global.ts
     - indirect-eval-static-global-scope.ts
     - indirect-eval-static-lexical-local.ts
+    - indirect-eval-static-var-destructuring-global.ts
     - indirect-eval-static-var-hoist-global.ts
     - indirect-eval-static-var-global.ts
     - indirect-eval-static.ts

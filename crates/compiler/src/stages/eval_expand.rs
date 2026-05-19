@@ -2105,6 +2105,23 @@ fn rewrite_eval_step_global_collisions(
             }
             EvalCompletionStep::DestructureLet { pattern, init }
         }
+        EvalCompletionStep::DestructureVarLet {
+            pattern,
+            init,
+            var_landing,
+        } => {
+            let init = rewrite_eval_expr_global_collisions(init, collisions, scopes);
+            if var_landing == EvalForHeadVarLanding::Caller {
+                for name in pattern.names() {
+                    eval_declare_name(name, scopes);
+                }
+            }
+            EvalCompletionStep::DestructureVarLet {
+                pattern,
+                init,
+                var_landing,
+            }
+        }
         EvalCompletionStep::FunctionDecl {
             name,
             params,
@@ -2426,6 +2443,20 @@ fn eval_statement_completion_step(
             EvalCompletionStep::GlobalVarLet { name, init: expr }
         }
         ResolvedStmt::Let(name, expr) => EvalCompletionStep::LexicalLet { name, init: expr },
+        ResolvedStmt::DestructureLet { pattern, expr }
+            if matches!(ast_stmt, Some(Stmt::Let { is_var: true, .. }))
+                && matches!(var_landing, EvalVarLanding::Caller | EvalVarLanding::Global) =>
+        {
+            EvalCompletionStep::DestructureVarLet {
+                pattern,
+                init: expr,
+                var_landing: match var_landing {
+                    EvalVarLanding::Caller => EvalForHeadVarLanding::Caller,
+                    EvalVarLanding::Global => EvalForHeadVarLanding::Global,
+                    EvalVarLanding::Lexical => EvalForHeadVarLanding::Local,
+                },
+            }
+        }
         ResolvedStmt::DestructureLet { pattern, expr } => EvalCompletionStep::DestructureLet {
             pattern,
             init: expr,
@@ -2694,8 +2725,10 @@ fn collect_eval_var_declaration_names(source: &str, stmts: &[Stmt], out: &mut Ve
         match stmt {
             Stmt::Let {
                 name, is_var: true, ..
+            } => {
+                collect_eval_var_binding_names(name, out);
             }
-            | Stmt::Function { name, .. } => {
+            Stmt::Function { name, .. } => {
                 push_unique_eval_declaration(out, name);
             }
             Stmt::Block { statements, .. } => {
@@ -2770,7 +2803,7 @@ fn collect_eval_var_let_declaration_names(source: &str, stmts: &[Stmt], out: &mu
             Stmt::Let {
                 name, is_var: true, ..
             } => {
-                push_unique_eval_declaration(out, name);
+                collect_eval_var_binding_names(name, out);
             }
             Stmt::Block { statements, .. } => {
                 collect_eval_var_let_declaration_names(source, statements, out)
@@ -2835,6 +2868,14 @@ fn collect_eval_var_let_declaration_names(source: &str, stmts: &[Stmt], out: &mu
             }
             _ => {}
         }
+    }
+}
+
+fn collect_eval_var_binding_names(binding: &str, out: &mut Vec<String>) {
+    if binding.starts_with(['{', '[']) {
+        collect_binding_names_from_pattern(binding, out);
+    } else {
+        push_unique_eval_declaration(out, binding);
     }
 }
 

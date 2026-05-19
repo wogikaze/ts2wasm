@@ -436,6 +436,10 @@ fn static_indirect_eval_var_global_declares_no_node_host_eval_capability() {
         "core-semantics/indirect-eval-static-var-global.ts",
         "static indirect eval var global landing",
     );
+    assert_standalone_category(
+        "core-semantics/indirect-eval-static-var-destructuring-global.ts",
+        "static indirect eval var destructuring global landing",
+    );
 }
 
 #[test]
@@ -467,6 +471,10 @@ fn static_indirect_eval_for_head_var_destructuring_global_declares_no_node_host_
     assert_standalone_category(
         "core-semantics/indirect-eval-static-for-init-var-global.ts",
         "static indirect eval for-init var global landing",
+    );
+    assert_standalone_category(
+        "core-semantics/indirect-eval-static-for-init-var-destructuring-global.ts",
+        "static indirect eval for-init var destructuring global landing",
     );
 }
 
@@ -692,6 +700,10 @@ fn static_direct_eval_for_head_var_declares_no_node_host_eval_capability() {
         "core-semantics/direct-eval-for-head-var-lands-in-caller.ts",
         "static direct eval for-head var landing",
     );
+    assert_standalone_category(
+        "core-semantics/direct-eval-var-destructuring-lands-in-caller.ts",
+        "static direct eval var destructuring landing",
+    );
 }
 
 #[test]
@@ -719,6 +731,10 @@ fn static_direct_eval_for_head_var_destructuring_declares_no_node_host_eval_capa
     assert_standalone_category(
         "core-semantics/direct-eval-for-init-var-lands-in-caller.ts",
         "static direct eval for-init var landing",
+    );
+    assert_standalone_category(
+        "core-semantics/direct-eval-for-init-var-destructuring-caller.ts",
+        "static direct eval for-init var destructuring landing",
     );
 }
 

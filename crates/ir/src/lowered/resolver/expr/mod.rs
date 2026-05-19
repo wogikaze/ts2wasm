@@ -917,6 +917,18 @@ impl super::Resolver {
                         expr: init.clone(),
                     })?);
                 }
+                EvalCompletionStep::DestructureVarLet {
+                    pattern,
+                    init,
+                    var_landing,
+                } => {
+                    stmts.extend(self.lower_eval_destructure_var_landing(
+                        pattern,
+                        init,
+                        *var_landing,
+                        caller_scope_index,
+                    )?);
+                }
                 EvalCompletionStep::Throw(expr) => {
                     stmts.push(LoweredStmt::Throw(
                         self.lower_expr(expr)?,
@@ -1066,6 +1078,19 @@ impl super::Resolver {
                     expr: init.clone(),
                 })?))
             }
+            EvalCompletionStep::DestructureVarLet {
+                pattern,
+                init,
+                var_landing,
+            } => Ok(Some(LoweredStmt::Block(
+                self.lower_eval_destructure_var_landing(
+                    pattern,
+                    init,
+                    *var_landing,
+                    caller_scope_index,
+                )?,
+                Span::generated("eval_non_completion_destructure_var"),
+            ))),
             EvalCompletionStep::FunctionDecl {
                 name,
                 params,
@@ -1221,6 +1246,28 @@ impl super::Resolver {
                 Ok(stmts)
             }
         }
+    }
+
+    fn lower_eval_destructure_var_landing(
+        &mut self,
+        pattern: &BindingPattern,
+        init: &ResolvedExpr,
+        landing: EvalForHeadVarLanding,
+        caller_scope_index: usize,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        let temp = self.alloc_temp();
+        let mut stmts = vec![LoweredStmt::Let(
+            temp,
+            self.lower_expr(init)?,
+            Span::generated("eval_destructure_var_temp"),
+        )];
+        stmts.extend(self.lower_eval_for_head_pattern_writes(
+            pattern,
+            LoweredExpr::Local(temp, Span::generated("eval_destructure_var_temp")),
+            landing,
+            caller_scope_index,
+        )?);
+        Ok(stmts)
     }
 
     fn lower_eval_for_head_array_binding_write(
@@ -1902,6 +1949,9 @@ fn eval_completion_steps_have_caller_landings(
 
     steps.iter().any(|step| match step {
         EvalCompletionStep::VarLet { .. } | EvalCompletionStep::FunctionDecl { .. } => true,
+        EvalCompletionStep::DestructureVarLet { var_landing, .. } => {
+            *var_landing == EvalForHeadVarLanding::Caller
+        }
         EvalCompletionStep::Block(steps)
         | EvalCompletionStep::While {
             body_steps: steps, ..

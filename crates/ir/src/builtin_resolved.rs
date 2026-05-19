@@ -968,6 +968,11 @@ pub enum EvalCompletionStep {
         pattern: BindingPattern,
         init: ResolvedExpr,
     },
+    DestructureVarLet {
+        pattern: BindingPattern,
+        init: ResolvedExpr,
+        var_landing: EvalForHeadVarLanding,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -995,6 +1000,7 @@ impl EvalCompletionStep {
             | Self::VarLet { init: expr, .. }
             | Self::GlobalVarLet { init: expr, .. }
             | Self::DestructureLet { init: expr, .. }
+            | Self::DestructureVarLet { init: expr, .. }
             | Self::If {
                 condition: expr, ..
             }
