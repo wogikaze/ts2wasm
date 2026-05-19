@@ -4324,7 +4324,7 @@ impl super::super::Resolver {
         if class_name == "DataView" {
             match method {
                 "getInt16" | "getUint16" | "getInt32" | "getUint32" | "getFloat32"
-                | "getFloat64" | "getFloat16"
+                | "getFloat64" | "getFloat16" | "getBigInt64" | "getBigUint64"
                     if args.len() == 1 =>
                 {
                     lowered_args.push(LoweredExpr::Bool(false, Span::generated("bool")));
@@ -4333,14 +4333,14 @@ impl super::super::Resolver {
                     lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
                 }
                 "setInt16" | "setUint16" | "setInt32" | "setUint32" | "setFloat32"
-                | "setFloat64" | "setFloat16"
+                | "setFloat64" | "setFloat16" | "setBigInt64" | "setBigUint64"
                     if args.len() == 1 =>
                 {
                     lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
                     lowered_args.push(LoweredExpr::Bool(false, Span::generated("bool")));
                 }
                 "setInt16" | "setUint16" | "setInt32" | "setUint32" | "setFloat32"
-                | "setFloat64" | "setFloat16"
+                | "setFloat64" | "setFloat16" | "setBigInt64" | "setBigUint64"
                     if args.len() == 2 =>
                 {
                     lowered_args.push(LoweredExpr::Bool(false, Span::generated("bool")));
