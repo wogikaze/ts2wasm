@@ -311,6 +311,12 @@ fn static_direct_eval_for_of_preserves_completion() {
 }
 
 #[test]
+fn static_indirect_eval_for_head_var_lands_on_global_object() {
+    let fixture = "fixtures/core-semantics/indirect-eval-static-for-head-var-global.ts";
+    assert_node_shim_stdout(fixture, "alpha:4\ncaller\ncaller\nalpha\n4\n");
+}
+
+#[test]
 fn static_direct_eval_switch_preserves_completion() {
     let fixture = "fixtures/core-semantics/direct-eval-switch-completion.ts";
     assert_node_shim_stdout(fixture, "20\n20\n");
