@@ -920,6 +920,7 @@ directories:
     - direct-eval-strict-caller-var-local.ts
     - direct-eval-strict-lexical-assignment.ts
     - direct-eval-strict-lexical-local.ts
+    - direct-eval-dynamic-arrow-body-var-normal-code-unsupported.ts
     - direct-eval-dynamic-arrow-lexical-this-node-shim.ts
     - direct-eval-dynamic-arrow-writeback-node-shim.ts
     - direct-eval-dynamic-block-shadow-writeback-node-shim.ts

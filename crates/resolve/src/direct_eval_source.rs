@@ -236,6 +236,14 @@ fn find_keyword_outside_literals_and_function_bodies(
                 }
                 index = (index + 2).min(source.len());
             }
+            b'=' if bytes.get(index + 1) == Some(&b'>') => {
+                let body_start = skip_ascii_ws(source, index + 2);
+                if source.as_bytes().get(body_start) == Some(&b'{') {
+                    index = skip_balanced_brace(source, body_start).unwrap_or(index + 2);
+                } else {
+                    index += 2;
+                }
+            }
             _ if source[index..].starts_with("function")
                 && is_identifier_boundary(source, index, index + "function".len()) =>
             {
@@ -489,5 +497,13 @@ mod tests {
             "var holder = function hidden() { var inner = 1; function nested() {} }; function kept() {}",
         );
         assert_eq!(names, ["holder", "kept"]);
+    }
+
+    #[test]
+    fn skips_arrow_function_body_declarations() {
+        let names = eval_var_and_function_names(
+            "let holder = () => { var hidden = 1; function inner() {} }; var visible = 2;",
+        );
+        assert_eq!(names, ["visible"]);
     }
 }
