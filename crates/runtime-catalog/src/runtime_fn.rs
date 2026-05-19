@@ -1451,8 +1451,19 @@ const OBJECT_PROTOTYPE_OBJECT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const PROPERTY_IS_ENUMERABLE_DEPS: &[RuntimeFn] =
     &[RuntimeFn::ValueToStringInto, RuntimeFn::MemEqual];
 const IS_PROTOTYPE_OF_DEPS: &[RuntimeFn] = &[];
-const OBJECT_TO_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::BooleanToString];
-const OBJECT_TO_STRING_RUNTIME_STRINGS: &[&str] = &["[object Object]"];
+const OBJECT_TO_STRING_DEPS: &[RuntimeFn] = &[];
+const OBJECT_TO_STRING_RUNTIME_STRINGS: &[&str] = &[
+    "[object Undefined]",
+    "[object Null]",
+    "[object Boolean]",
+    "[object Number]",
+    "[object String]",
+    "[object Function]",
+    "[object Array]",
+    "[object BigInt]",
+    "[object Symbol]",
+    "[object Object]",
+];
 const ERROR_TO_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::PropertyGet, RuntimeFn::Concat];
 const ERROR_TO_STRING_RUNTIME_STRINGS: &[&str] = &["name", "message", "Error", ": "];
 const OBJECT_TO_LOCALE_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::ObjectToString];

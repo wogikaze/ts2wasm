@@ -937,31 +937,109 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_object_to_string(&self, wat: &mut String) {
-        let object_string = self.string_value("[object Object]");
+        let str_undefined = self.string_value("[object Undefined]");
+        let str_null = self.string_value("[object Null]");
+        let str_boolean = self.string_value("[object Boolean]");
+        let str_number = self.string_value("[object Number]");
+        let str_string = self.string_value("[object String]");
+        let str_function = self.string_value("[object Function]");
+        let str_array = self.string_value("[object Array]");
+        let str_bigint = self.string_value("[object BigInt]");
+        let str_symbol = self.string_value("[object Symbol]");
+        let str_object = self.string_value("[object Object]");
         wat.push_str(&format!(
             r#"
   (func $object_to_string (param $v i32) (result i32)
     (local $tag i32)
+    (local $base i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
-    ;; Object -> return "[object Object]"
-    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
-      (then (return (i32.const {object_string}))))
-    ;; Boolean -> delegate to $boolean_to_string
+    ;; undefined -> "[object Undefined]"
+    (if (i32.eq (local.get $v) (i32.const {undefined_val}))
+      (then (return (i32.const {str_undefined}))))
+    ;; null -> "[object Null]"
+    (if (i32.eq (local.get $v) (i32.const {null_val}))
+      (then (return (i32.const {str_null}))))
+    ;; boolean -> "[object Boolean]"
     (if (i32.eq (local.get $tag) (i32.const {false_tag}))
-      (then (return (call $boolean_to_string (local.get $v)))))
+      (then (return (i32.const {str_boolean}))))
     (if (i32.eq (local.get $tag) (i32.const {true_tag}))
-      (then (return (call $boolean_to_string (local.get $v)))))
-    ;; String -> return as-is
-    (if (call $is_string (local.get $v))
-      (then (return (local.get $v))))
-    ;; Fallback: return value unchanged
-    (local.get $v))
+      (then (return (i32.const {str_boolean}))))
+    ;; string -> "[object String]"
+    (if (i32.eq (local.get $tag) (i32.const {string_tag}))
+      (then (return (i32.const {str_string}))))
+    ;; ARRAY -> "[object Array]"
+    (if (i32.eq (local.get $tag) (i32.const {array_tag}))
+      (then (return (i32.const {str_array}))))
+    ;; number (tag=4) — may be a function token (direct-local or builtin)
+    (if (i32.eq (local.get $tag) (i32.const {number_tag}))
+      (then
+        ;; Check builtin function tokens (parseInt / parseFloat)
+        (if (i32.or
+              (i32.eq (local.get $v) (i32.const {builtin_parse_int}))
+              (i32.eq (local.get $v) (i32.const {builtin_parse_float})))
+          (then (return (i32.const {str_function}))))
+        ;; Check direct-local function tokens
+        (if (i32.ge_u
+              (i32.shr_u (local.get $v) (i32.const {number_shift}))
+              (i32.const {direct_local_payload_base}))
+          (then (return (i32.const {str_function}))))
+        ;; Plain number -> "[object Number]"
+        (return (i32.const {str_number}))))
+    ;; OBJECT tag (7) — check subtypes: BigInt, Symbol, HeapNumber, or plain Object
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $base (i32.and (local.get $v) (i32.const {heap_mask})))
+        ;; BigInt -> "[object BigInt]"
+        (if (i32.eq
+              (i32.and
+                (i32.load
+                  (i32.add
+                    (i32.sub (local.get $base) (i32.const {gc_header_size}))
+                    (i32.const {gc_flags_offset})))
+                (i32.const {gc_kind_mask}))
+              (i32.const {gc_kind_bigint}))
+          (then (return (i32.const {str_bigint}))))
+        ;; Symbol -> "[object Symbol]"
+        (if (i32.eq (i32.load (local.get $base)) (i32.const {symbol_sentinel}))
+          (then (return (i32.const {str_symbol}))))
+        ;; Heap number -> "[object Number]"
+        (if (i32.eq (i32.load (local.get $base)) (i32.const {heap_number_sentinel}))
+          (then (return (i32.const {str_number}))))
+        ;; Plain object -> "[object Object]"
+        (return (i32.const {str_object}))))
+    ;; Fallback (should not reach here)
+    (i32.const {str_object}))
 "#,
             tag_mask = ValueTag::TAG_MASK,
-            object_tag = ValueTag::OBJECT,
-            object_string = object_string,
+            undefined_val = ValueTag::UNDEFINED,
+            null_val = ValueTag::NULL,
             false_tag = ValueTag::FALSE,
             true_tag = ValueTag::TRUE,
+            string_tag = ValueTag::STRING,
+            array_tag = ValueTag::ARRAY,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            builtin_parse_int = ValueTag::BUILTIN_PARSE_INT_VALUE,
+            builtin_parse_float = ValueTag::BUILTIN_PARSE_FLOAT_VALUE,
+            direct_local_payload_base = ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE,
+            gc_header_size = Layout::GC_HEADER_SIZE,
+            gc_flags_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET,
+            gc_kind_mask = Layout::GC_KIND_MASK,
+            gc_kind_bigint = Layout::GC_KIND_BIGINT,
+            symbol_sentinel = Layout::SYMBOL_SENTINEL,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            str_undefined = str_undefined,
+            str_null = str_null,
+            str_boolean = str_boolean,
+            str_number = str_number,
+            str_string = str_string,
+            str_function = str_function,
+            str_array = str_array,
+            str_bigint = str_bigint,
+            str_symbol = str_symbol,
+            str_object = str_object,
         ));
     }
 
