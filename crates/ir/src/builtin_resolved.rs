@@ -379,6 +379,14 @@ impl EvalFragmentPlan {
     pub fn host_policy_is_consistent(&self) -> bool {
         self.host_policy == self.expected_host_policy()
     }
+
+    pub fn expected_scope_mode(&self) -> EvalScopeMode {
+        EvalScopeMode::for_kind(self.kind)
+    }
+
+    pub fn scope_mode_is_consistent(&self) -> bool {
+        self.scope_mode == self.expected_scope_mode()
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1538,6 +1546,44 @@ mod tests {
             EvalHostPolicy::DirectHost
         );
         assert!(!inconsistent.host_policy_is_consistent());
+    }
+
+    #[test]
+    fn eval_fragment_plan_derives_expected_scope_mode() {
+        let direct = EvalFragmentPlan::new(
+            EvalKind::Direct,
+            EvalSource::StaticLiteral("1".to_owned()),
+            false,
+            Span::generated("direct_eval_scope_policy_test"),
+        );
+        assert_eq!(direct.expected_scope_mode(), EvalScopeMode::Caller);
+        assert!(direct.scope_mode_is_consistent());
+
+        let indirect = EvalFragmentPlan::new(
+            EvalKind::Indirect,
+            EvalSource::StaticLiteral("1".to_owned()),
+            false,
+            Span::generated("indirect_eval_scope_policy_test"),
+        );
+        assert_eq!(
+            indirect.expected_scope_mode(),
+            EvalScopeMode::Global {
+                realm: EvalRealm::Current
+            }
+        );
+        assert!(indirect.scope_mode_is_consistent());
+
+        let inconsistent = EvalFragmentPlan {
+            scope_mode: EvalScopeMode::Caller,
+            ..indirect
+        };
+        assert_eq!(
+            inconsistent.expected_scope_mode(),
+            EvalScopeMode::Global {
+                realm: EvalRealm::Current
+            }
+        );
+        assert!(!inconsistent.scope_mode_is_consistent());
     }
 
     #[test]

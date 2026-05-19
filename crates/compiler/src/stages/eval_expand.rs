@@ -423,6 +423,7 @@ fn expand_expr(
             if plan.kind == EvalKind::Direct
                 && matches!(plan.source, EvalSource::StaticLiteral(_)) =>
         {
+            validate_eval_fragment_plan(&plan)?;
             let EvalSource::StaticLiteral(src) = &plan.source else {
                 unreachable!();
             };
@@ -438,6 +439,7 @@ fn expand_expr(
             if plan.kind == EvalKind::Indirect
                 && matches!(plan.source, EvalSource::StaticLiteral(_)) =>
         {
+            validate_eval_fragment_plan(&plan)?;
             let EvalSource::StaticLiteral(src) = &plan.source else {
                 unreachable!();
             };
@@ -456,13 +458,13 @@ fn expand_expr(
                 &global_bindings,
             ))
         }
-        ResolvedExpr::Eval {
-            plan:
-                EvalFragmentPlan {
-                    source: EvalSource::NonStringStatic(value),
-                    ..
-                },
-        } => expand_expr(*value, ctx),
+        ResolvedExpr::Eval { plan } if matches!(plan.source, EvalSource::NonStringStatic(_)) => {
+            validate_eval_fragment_plan(&plan)?;
+            let EvalSource::NonStringStatic(value) = plan.source else {
+                unreachable!();
+            };
+            expand_expr(*value, ctx)
+        }
         ResolvedExpr::Eval { .. } => {
             // Non-expandable eval (indirect or runtime source) — keep as-is.
             Ok(expr)
@@ -748,6 +750,32 @@ fn expand_expr(
         // Leaf expressions and other types — no recursive expansion needed.
         other => Ok(other),
     }
+}
+
+fn validate_eval_fragment_plan(plan: &EvalFragmentPlan) -> Result<(), Diagnostic> {
+    if !plan.scope_mode_is_consistent() {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedEval,
+            message: format!(
+                "eval scope mode {:?} does not match {:?} eval",
+                plan.scope_mode, plan.kind
+            ),
+            span: Some(plan.span),
+            phase: None,
+        });
+    }
+    if !plan.host_policy_is_consistent() {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedEval,
+            message: format!(
+                "eval host policy {:?} does not match {:?} eval source",
+                plan.host_policy, plan.kind
+            ),
+            span: Some(plan.span),
+            phase: None,
+        });
+    }
+    Ok(())
 }
 
 fn expand_object_prop(

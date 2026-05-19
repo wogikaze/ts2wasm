@@ -224,6 +224,17 @@ impl super::Resolver {
             ResolvedExpr::Sequence(exprs) => self.lower_sequence_expr(exprs),
             ResolvedExpr::EvalCompletion(plan) => self.lower_eval_completion_expr(plan),
             ResolvedExpr::Eval { plan } => {
+                if !plan.scope_mode_is_consistent() {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedEval,
+                        message: format!(
+                            "eval scope mode {:?} does not match {:?} eval",
+                            plan.scope_mode, plan.kind
+                        ),
+                        span: Some(plan.span),
+                        phase: None,
+                    });
+                }
                 if !plan.host_policy_is_consistent() {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedEval,
