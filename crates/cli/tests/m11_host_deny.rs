@@ -447,6 +447,14 @@ fn static_indirect_eval_for_head_var_global_declares_no_node_host_eval_capabilit
 }
 
 #[test]
+fn static_indirect_eval_for_head_var_destructuring_global_declares_no_node_host_eval_capability() {
+    assert_standalone_category(
+        "core-semantics/indirect-eval-static-for-head-var-destructuring-global.ts",
+        "static indirect eval for-head var destructuring global landing",
+    );
+}
+
+#[test]
 fn static_indirect_eval_var_hoist_global_declares_no_node_host_eval_capability() {
     assert_standalone_category(
         "core-semantics/indirect-eval-static-var-hoist-global.ts",
