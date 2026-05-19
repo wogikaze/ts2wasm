@@ -2532,24 +2532,13 @@ fn date_live_time_fixtures_return_epoch_ms_within_host_window() {
 }
 
 #[test]
-fn date_annex_b_fixtures_report_issue_241() {
-    for (fixture, method) in [
-        (
-            "fixtures/builtins-and-io/date-annexb-set-year-unsupported.ts",
-            "setYear",
-        ),
-        (
-            "fixtures/builtins-and-io/date-annexb-to-gmt-string-unsupported.ts",
-            "toGMTString",
-        ),
-    ] {
-        assert_build_fails_with_diagnostic(
-            fixture,
-            "[UnsupportedDate]",
-            &format!("issue-241: Date.prototype.{method} is Annex B legacy Date behavior"),
-            true,
-        );
-    }
+fn date_annex_b_set_year_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-annexb-set-year.ts");
+}
+
+#[test]
+fn date_annex_b_to_gmt_string_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-annexb-to-gmt-string.ts");
 }
 
 #[test]
