@@ -308,6 +308,8 @@ pub struct EvalFragmentPlan {
     pub source: EvalSource,
     pub scope_mode: EvalScopeMode,
     pub caller_is_strict: bool,
+    pub declaration_plan: Option<EvalDeclarationPlan>,
+    pub completion_plan: Option<EvalCompletionPlan>,
     pub host_policy: EvalHostPolicy,
     pub span: Span,
 }
@@ -321,25 +323,50 @@ impl EvalFragmentPlan {
             source,
             scope_mode,
             caller_is_strict,
+            declaration_plan: None,
+            completion_plan: None,
             host_policy,
             span,
         }
     }
 
-    pub fn completion_expr(
+    pub fn with_completion_plan(
+        &self,
+        caller_is_strict: bool,
+        eval_is_strict: bool,
+        declarations: EvalDeclarationPlan,
+        steps: Vec<EvalCompletionStep>,
+    ) -> Self {
+        let completion_plan = EvalCompletionPlan::with_eval_context(
+            self.scope_mode,
+            caller_is_strict,
+            eval_is_strict,
+            declarations.clone(),
+            steps,
+        );
+        Self {
+            declaration_plan: Some(declarations),
+            completion_plan: Some(completion_plan),
+            ..self.clone()
+        }
+    }
+
+    pub fn completion_expr(&self) -> Option<ResolvedExpr> {
+        self.completion_plan
+            .clone()
+            .map(ResolvedExpr::EvalCompletion)
+    }
+
+    pub fn completion_expr_with_context(
         &self,
         caller_is_strict: bool,
         eval_is_strict: bool,
         declarations: EvalDeclarationPlan,
         steps: Vec<EvalCompletionStep>,
     ) -> ResolvedExpr {
-        ResolvedExpr::EvalCompletion(EvalCompletionPlan::with_eval_context(
-            self.scope_mode,
-            caller_is_strict,
-            eval_is_strict,
-            declarations,
-            steps,
-        ))
+        self.with_completion_plan(caller_is_strict, eval_is_strict, declarations, steps)
+            .completion_expr()
+            .expect("EvalFragmentPlan::with_completion_plan must set completion_plan")
     }
 }
 

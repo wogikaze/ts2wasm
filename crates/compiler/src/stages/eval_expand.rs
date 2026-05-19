@@ -1232,7 +1232,7 @@ fn extract_completion_value(
         }
     }));
     steps.extend(eval_completion_steps(ast_stmts, stmts, var_landing));
-    Ok(fragment_plan.completion_expr(
+    Ok(fragment_plan.completion_expr_with_context(
         caller_is_strict,
         eval_is_strict,
         EvalDeclarationPlan {
