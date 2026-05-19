@@ -441,6 +441,10 @@ impl FunctionConstructorPlan {
     }
 
     pub fn static_source_is_consistent(&self) -> bool {
+        if self.static_source != StaticFunctionConstructorSource::from_args(&self.args) {
+            return false;
+        }
+
         match (&self.static_source, self.host_policy) {
             (None, FunctionConstructorHostPolicy::HostCompile) => true,
             (Some(source), FunctionConstructorHostPolicy::AotOnly) => source.is_consistent(),
@@ -1993,6 +1997,21 @@ mod tests {
             .generated_function
             .length = Some(1);
         assert!(!mismatched_length.static_source_is_consistent());
+
+        let mut mismatched_body = static_plan.clone();
+        mismatched_body
+            .static_source
+            .as_mut()
+            .expect("static source should exist")
+            .body = "return 2".to_owned();
+        assert!(!mismatched_body.static_source_is_consistent());
+
+        let missing_static_source = FunctionConstructorPlan {
+            static_source: None,
+            host_policy: FunctionConstructorHostPolicy::HostCompile,
+            ..static_plan.clone()
+        };
+        assert!(!missing_static_source.static_source_is_consistent());
 
         let mismatched_policy = FunctionConstructorPlan {
             host_policy: FunctionConstructorHostPolicy::HostCompile,
