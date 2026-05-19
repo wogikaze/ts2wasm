@@ -308,6 +308,7 @@ pub struct EvalFragmentPlan {
     pub source: EvalSource,
     pub scope_mode: EvalScopeMode,
     pub caller_is_strict: bool,
+    pub eval_source_is_strict: Option<bool>,
     pub declaration_plan: Option<EvalDeclarationPlan>,
     pub completion_plan: Option<EvalCompletionPlan>,
     pub host_policy: EvalHostPolicy,
@@ -323,6 +324,7 @@ impl EvalFragmentPlan {
             source,
             scope_mode,
             caller_is_strict,
+            eval_source_is_strict: None,
             declaration_plan: None,
             completion_plan: None,
             host_policy,
@@ -345,6 +347,7 @@ impl EvalFragmentPlan {
             steps,
         );
         Self {
+            eval_source_is_strict: Some(eval_is_strict),
             declaration_plan: Some(declarations),
             completion_plan: Some(completion_plan),
             ..self.clone()
@@ -1440,5 +1443,35 @@ impl ResolvedObjectProp {
             Self::ComputedKey { key, .. } => Some(key),
             _ => None,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn eval_fragment_plan_records_eval_source_strictness() {
+        let plan = EvalFragmentPlan::new(
+            EvalKind::Direct,
+            EvalSource::StaticLiteral("\"use strict\"; 1".to_owned()),
+            false,
+            Span::generated("eval_fragment_plan_test"),
+        );
+        assert_eq!(plan.eval_source_is_strict, None);
+
+        let plan = plan.with_completion_plan(
+            false,
+            true,
+            EvalDeclarationPlan::default(),
+            vec![EvalCompletionStep::Value(ResolvedExpr::Number(1))],
+        );
+
+        assert_eq!(plan.eval_source_is_strict, Some(true));
+        assert!(
+            plan.completion_plan
+                .as_ref()
+                .is_some_and(|completion| completion.eval_is_strict)
+        );
     }
 }

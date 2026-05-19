@@ -411,6 +411,9 @@ impl WatEmitter<'_> {
     (if (i32.eq (local.get $position) (i32.const {undefined}))
       (then (local.set $i (i32.const {zero})))
       (else (local.set $i (i32.shr_s (local.get $position) (i32.const {shift})))))
+    ;; Clamp position to [0, h_len] per spec
+    (if (i32.lt_s (local.get $i) (i32.const {zero})) (then (local.set $i (i32.const {zero}))))
+    (if (i32.gt_u (local.get $i) (local.get $h_len)) (then (local.set $i (local.get $h_len))))
     (if (i32.eqz (local.get $n_len)) (then (return (i32.const {true_tag}))))
     (block $not_found
       (loop $search
