@@ -533,6 +533,38 @@ impl super::super::Resolver {
             });
         }
 
+        if class_name == "String" {
+            let lowered = match args.first() {
+                None => LoweredExpr::String(String::new(), Span::generated("str")),
+                Some(ResolvedExpr::Undefined) => {
+                    LoweredExpr::String("undefined".to_owned(), Span::generated("str"))
+                }
+                Some(ResolvedExpr::String(value)) => {
+                    LoweredExpr::String(value.clone(), Span::generated("str"))
+                }
+                Some(value) => {
+                    if let Some(static_string) =
+                        super::super::string::resolved_expr_static_string_value(&self.ctx, value)
+                    {
+                        LoweredExpr::String(static_string, Span::generated("str"))
+                    } else if let Some(static_number) =
+                        super::super::string::resolved_expr_static_number_literal_value(
+                            &self.ctx, value,
+                        )
+                    {
+                        LoweredExpr::String(static_number, Span::generated("str"))
+                    } else {
+                        LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::ErrorMessage,
+                            args: vec![self.lower_expr(value)?],
+                            span: Span::generated("runtime_call"),
+                        }
+                    }
+                }
+            };
+            return Ok(lowered);
+        }
+
         self.lower_new_with_prototype(class_name, args, span)
     }
 

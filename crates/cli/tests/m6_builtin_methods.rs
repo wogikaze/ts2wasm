@@ -582,6 +582,16 @@ fn build_smoke_number_to_string() {
 }
 
 #[test]
+fn build_smoke_new_string() {
+    let result = run_fixture("builtins-and-io/new-string.ts");
+    assert!(
+        result.is_ok(),
+        "new String() should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_json_stringify_method() {
     let result = run_fixture("builtins-and-io/json-stringify.ts");
     assert!(
