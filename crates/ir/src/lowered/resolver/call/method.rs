@@ -2132,6 +2132,12 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
+        if is_annex_b_date_method(method) && self.is_date_receiver(object) {
+            return Err(unsupported_annex_b_date_method_diagnostic(
+                method,
+                Some(span),
+            ));
+        }
         if method == "toString" && self.is_date_receiver(object) {
             if !args.is_empty() {
                 return Err(Diagnostic {
