@@ -1791,6 +1791,11 @@ fn array_foreach_function_callback_matches_node() {
 }
 
 #[test]
+fn array_for_each_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-for-each.ts");
+}
+
+#[test]
 fn array_sparse_iteration_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/array-sparse-iteration.ts");
 }
