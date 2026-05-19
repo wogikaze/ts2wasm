@@ -344,6 +344,12 @@ fn static_indirect_eval_for_head_var_destructuring_lands_on_global_object() {
 }
 
 #[test]
+fn static_indirect_eval_for_head_var_computed_lands_on_global_object() {
+    let fixture = "fixtures/core-semantics/indirect-eval-static-for-head-var-computed-global.ts";
+    assert_node_shim_stdout(fixture, "ok\ncaller\ncaller\nok\n");
+}
+
+#[test]
 fn static_direct_eval_switch_preserves_completion() {
     let fixture = "fixtures/core-semantics/direct-eval-switch-completion.ts";
     assert_node_shim_stdout(fixture, "20\n20\n");

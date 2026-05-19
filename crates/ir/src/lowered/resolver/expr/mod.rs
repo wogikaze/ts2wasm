@@ -1279,7 +1279,7 @@ impl super::Resolver {
             let key_raw = binding.key.trim_start_matches('[').trim_end_matches(']');
             LoweredExpr::PropertyGetDynamic {
                 obj: Box::new(value.clone()),
-                key: Box::new(self.lower_computed_object_binding_key_expr(key_raw)?),
+                key: Box::new(self.lower_eval_for_head_computed_key_expr(key_raw, landing)?),
                 span: Span::generated("prop_get_dynamic"),
             }
         } else {
@@ -1296,6 +1296,21 @@ impl super::Resolver {
             landing,
             caller_scope_index,
         )
+    }
+
+    fn lower_eval_for_head_computed_key_expr(
+        &mut self,
+        key_raw: &str,
+        landing: EvalForHeadVarLanding,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if landing == EvalForHeadVarLanding::Global && is_eval_for_head_identifier_key(key_raw) {
+            return Ok(LoweredExpr::PropertyGet {
+                obj: Box::new(self.lower_expr(&ResolvedExpr::Ident("globalThis".to_owned()))?),
+                key: key_raw.to_owned(),
+                span: Span::generated("eval_for_pattern_global_key"),
+            });
+        }
+        self.lower_computed_object_binding_key_expr(key_raw)
     }
 
     fn lower_eval_for_head_binding_target_write(
@@ -1724,6 +1739,10 @@ fn is_ascii_js_identifier(value: &str) -> bool {
         return false;
     }
     chars.all(|ch| ch == '_' || ch == '$' || ch.is_ascii_alphanumeric())
+}
+
+fn is_eval_for_head_identifier_key(value: &str) -> bool {
+    is_ascii_js_identifier(value)
 }
 
 struct DirectEvalEnvDescriptor {

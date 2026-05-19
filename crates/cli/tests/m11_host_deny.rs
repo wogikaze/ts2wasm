@@ -452,6 +452,10 @@ fn static_indirect_eval_for_head_var_destructuring_global_declares_no_node_host_
         "core-semantics/indirect-eval-static-for-head-var-destructuring-global.ts",
         "static indirect eval for-head var destructuring global landing",
     );
+    assert_standalone_category(
+        "core-semantics/indirect-eval-static-for-head-var-computed-global.ts",
+        "static indirect eval for-head var computed global landing",
+    );
 }
 
 #[test]
