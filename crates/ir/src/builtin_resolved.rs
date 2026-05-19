@@ -681,8 +681,32 @@ fn function_constructor_static_add_source_value(
             FunctionConstructorStaticSourceValue::Number(left),
             FunctionConstructorStaticSourceValue::Number(right),
         ) => Some(FunctionConstructorStaticSourceValue::Number(left + right)),
+        (left, right) => {
+            let left = function_constructor_static_number_to_f64(&left)?;
+            let right = function_constructor_static_number_to_f64(&right)?;
+            let sum = left + right;
+            sum.is_finite().then(|| {
+                FunctionConstructorStaticSourceValue::DecimalNumber(
+                    function_constructor_static_js_number_string(sum),
+                )
+            })
+        }
+    }
+}
+
+fn function_constructor_static_number_to_f64(
+    value: &FunctionConstructorStaticSourceValue,
+) -> Option<f64> {
+    match value {
+        FunctionConstructorStaticSourceValue::Number(value) => Some(f64::from(*value)),
+        FunctionConstructorStaticSourceValue::DecimalNumber(value) => value.parse().ok(),
         _ => None,
     }
+}
+
+fn function_constructor_static_js_number_string(value: f64) -> String {
+    let text = value.to_string();
+    if text == "-0" { "0".to_owned() } else { text }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
