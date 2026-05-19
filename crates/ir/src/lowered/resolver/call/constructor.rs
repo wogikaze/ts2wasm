@@ -92,6 +92,7 @@ impl super::super::Resolver {
                             Span::generated("str"),
                         )),
                         cause: None,
+                        errors: None,
                         span: Span::generated("error_new"),
                     },
                     Span::generated("throw"),
@@ -527,6 +528,7 @@ impl super::super::Resolver {
                 constructor,
                 message: Box::new(message),
                 cause,
+                errors: None,
                 span: Span::generated("error_new"),
             });
         }

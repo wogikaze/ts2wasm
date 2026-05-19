@@ -1,0 +1,10 @@
+const v = "1.2.3";
+const dot1 = v.indexOf(".");
+const majorS = v.slice(0, dot1);
+const rest1 = v.slice(dot1 + 1);
+const dot2 = rest1.indexOf(".");
+const minorS = rest1.slice(0, dot2);
+const rest2 = rest1.slice(dot2 + 1);
+const patchS = rest2;
+const obj = { major: parseInt(majorS, 10), minor: parseInt(minorS, 10), patch: parseInt(patchS, 10) };
+console.log("r: " + obj.major + "." + obj.minor + "." + obj.patch);

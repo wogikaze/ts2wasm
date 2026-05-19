@@ -182,6 +182,7 @@ pub(super) fn mir_expr_to_lower(expr: &MirExpr) -> LoweredExpr {
             cause: cause
                 .as_ref()
                 .map(|cause| Box::new(mir_expr_to_lower(cause))),
+            errors: None,
             span: *span,
         },
         MirExpr::PropertyGet { obj, key, span } => LoweredExpr::PropertyGet {

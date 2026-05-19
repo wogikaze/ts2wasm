@@ -510,6 +510,30 @@ impl super::super::Resolver {
             });
         }
 
+        // NativeError constructor calls without `new` — route to ErrorNew.
+        if let Some(constructor) = BuiltinErrorConstructor::from_name(func_name) {
+            let message = match args.first() {
+                Some(ResolvedExpr::Undefined) => LoweredExpr::String(String::new(), Span::generated("str")),
+                Some(message) => LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::ErrorMessage,
+                    args: vec![self.lower_expr(message)?],
+                    span: Span::generated("runtime_call"),
+                },
+                None => LoweredExpr::String(String::new(), Span::generated("str")),
+            };
+            let cause = args.get(1).and_then(|options| match options {
+                ResolvedExpr::Object(props) => props.iter().find_map(|prop| {
+                    if prop.static_key() == Some("cause") { Some(prop.value()) } else { None }
+                }),
+                _ => None,
+            });
+            let cause = match cause {
+                Some(cause_expr) => self.lower_expr(cause_expr).ok().map(Box::new),
+                None => None,
+            };
+            return Ok(LoweredExpr::ErrorNew { constructor, message: Box::new(message), cause, errors: None, span: Span::generated("error_new") });
+        }
+
         let func_id = match self.resolve_func(func_name) {
             Ok(func_id) => func_id,
             Err(_) if self.resolve_local(func_name).is_ok() => {
