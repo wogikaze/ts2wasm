@@ -1,9 +1,9 @@
 use ts2wasm_runtime_abi::RuntimeString;
 
+use crate::signature::RuntimeSignature;
 use crate::Capability;
 use crate::HostImport;
 use crate::RuntimeDomain;
-use crate::signature::RuntimeSignature;
 
 pub const NATIVE_SET_ADD_SENTINEL: i32 = -4;
 
@@ -163,6 +163,30 @@ pub enum RuntimeFn {
     SetEntriesArray,
     SetPrototypeAddGet,
     SetPrototypeAddSet,
+    /// Set.prototype.has getter/setter.
+    SetPrototypeHasGet,
+    SetPrototypeHasSet,
+    /// Set.prototype.delete getter/setter.
+    SetPrototypeDeleteGet,
+    SetPrototypeDeleteSet,
+    /// Set.prototype.forEach getter/setter.
+    SetPrototypeForEachGet,
+    SetPrototypeForEachSet,
+    /// Map.prototype.get getter/setter.
+    MapPrototypeGetGet,
+    MapPrototypeGetSet,
+    /// Map.prototype.set getter/setter.
+    MapPrototypeSetGet,
+    MapPrototypeSetSet,
+    /// Map.prototype.has getter/setter.
+    MapPrototypeHasGet,
+    MapPrototypeHasSet,
+    /// Map.prototype.delete getter/setter.
+    MapPrototypeDeleteGet,
+    MapPrototypeDeleteSet,
+    /// Map.prototype.forEach getter/setter.
+    MapPrototypeForEachGet,
+    MapPrototypeForEachSet,
     /// Set.prototype.isDisjointFrom(other) — returns true if sets have no common elements.
     SetIsDisjointFrom,
     /// Set.prototype.isSubsetOf(other) — returns true if every element of this is in other.
@@ -783,6 +807,14 @@ pub enum RuntimeGlobal {
     ModuleCache,
     CurrentModuleId,
     SetPrototypeAdd,
+    SetPrototypeHas,
+    SetPrototypeDelete,
+    SetPrototypeForEach,
+    MapPrototypeGet,
+    MapPrototypeSet,
+    MapPrototypeHas,
+    MapPrototypeDelete,
+    MapPrototypeForEach,
     ExceptionPending,
     ExceptionHandlerDepth,
     GlobalThisObject,
@@ -808,6 +840,14 @@ impl RuntimeGlobal {
             Self::ModuleCache => "$module_cache",
             Self::CurrentModuleId => "$current_module_id",
             Self::SetPrototypeAdd => "$set_prototype_add",
+            Self::SetPrototypeHas => "$set_prototype_has",
+            Self::SetPrototypeDelete => "$set_prototype_delete",
+            Self::SetPrototypeForEach => "$set_prototype_for_each",
+            Self::MapPrototypeGet => "$map_prototype_get",
+            Self::MapPrototypeSet => "$map_prototype_set",
+            Self::MapPrototypeHas => "$map_prototype_has",
+            Self::MapPrototypeDelete => "$map_prototype_delete",
+            Self::MapPrototypeForEach => "$map_prototype_for_each",
             Self::ExceptionPending => "$exception_pending",
             Self::ExceptionHandlerDepth => "$exception_handler_depth",
             Self::GlobalThisObject => "$global_this_object",
@@ -832,6 +872,14 @@ impl RuntimeGlobal {
             | Self::GcCallFrameCurrent => 0,
             Self::ModuleCache | Self::CurrentModuleId => 0,
             Self::SetPrototypeAdd => NATIVE_SET_ADD_SENTINEL,
+            Self::SetPrototypeHas
+            | Self::SetPrototypeDelete
+            | Self::SetPrototypeForEach
+            | Self::MapPrototypeGet
+            | Self::MapPrototypeSet
+            | Self::MapPrototypeHas
+            | Self::MapPrototypeDelete
+            | Self::MapPrototypeForEach => NATIVE_SET_ADD_SENTINEL,
             Self::ExceptionPending | Self::ExceptionHandlerDepth => 0,
             Self::GlobalThisObject
             | Self::ObjectPrototypeObject
@@ -876,6 +924,14 @@ const GLOBALS_GLOBAL_THIS: &[RuntimeGlobal] = &[RuntimeGlobal::GlobalThisObject]
 const GLOBALS_OBJECT_PROTOTYPE: &[RuntimeGlobal] = &[RuntimeGlobal::ObjectPrototypeObject];
 const GLOBALS_SET_PROTOTYPE: &[RuntimeGlobal] = &[RuntimeGlobal::SetPrototypeObject];
 const GLOBALS_MAP_PROTOTYPE: &[RuntimeGlobal] = &[RuntimeGlobal::MapPrototypeObject];
+const GLOBALS_SET_PROTOTYPE_HAS: &[RuntimeGlobal] = &[RuntimeGlobal::SetPrototypeHas];
+const GLOBALS_SET_PROTOTYPE_DELETE: &[RuntimeGlobal] = &[RuntimeGlobal::SetPrototypeDelete];
+const GLOBALS_SET_PROTOTYPE_FOR_EACH: &[RuntimeGlobal] = &[RuntimeGlobal::SetPrototypeForEach];
+const GLOBALS_MAP_PROTOTYPE_GET: &[RuntimeGlobal] = &[RuntimeGlobal::MapPrototypeGet];
+const GLOBALS_MAP_PROTOTYPE_SET: &[RuntimeGlobal] = &[RuntimeGlobal::MapPrototypeSet];
+const GLOBALS_MAP_PROTOTYPE_HAS: &[RuntimeGlobal] = &[RuntimeGlobal::MapPrototypeHas];
+const GLOBALS_MAP_PROTOTYPE_DELETE: &[RuntimeGlobal] = &[RuntimeGlobal::MapPrototypeDelete];
+const GLOBALS_MAP_PROTOTYPE_FOR_EACH: &[RuntimeGlobal] = &[RuntimeGlobal::MapPrototypeForEach];
 pub const GLOBALS_EXCEPTION_RUNTIME: &[RuntimeGlobal] = &[
     RuntimeGlobal::ExceptionPending,
     RuntimeGlobal::ExceptionHandlerDepth,
@@ -1807,6 +1863,22 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "SetEntriesArray" => Some(RuntimeFn::SetEntriesArray),
         "SetPrototypeAddGet" => Some(RuntimeFn::SetPrototypeAddGet),
         "SetPrototypeAddSet" => Some(RuntimeFn::SetPrototypeAddSet),
+        "SetPrototypeHasGet" => Some(RuntimeFn::SetPrototypeHasGet),
+        "SetPrototypeHasSet" => Some(RuntimeFn::SetPrototypeHasSet),
+        "SetPrototypeDeleteGet" => Some(RuntimeFn::SetPrototypeDeleteGet),
+        "SetPrototypeDeleteSet" => Some(RuntimeFn::SetPrototypeDeleteSet),
+        "SetPrototypeForEachGet" => Some(RuntimeFn::SetPrototypeForEachGet),
+        "SetPrototypeForEachSet" => Some(RuntimeFn::SetPrototypeForEachSet),
+        "MapPrototypeGetGet" => Some(RuntimeFn::MapPrototypeGetGet),
+        "MapPrototypeGetSet" => Some(RuntimeFn::MapPrototypeGetSet),
+        "MapPrototypeSetGet" => Some(RuntimeFn::MapPrototypeSetGet),
+        "MapPrototypeSetSet" => Some(RuntimeFn::MapPrototypeSetSet),
+        "MapPrototypeHasGet" => Some(RuntimeFn::MapPrototypeHasGet),
+        "MapPrototypeHasSet" => Some(RuntimeFn::MapPrototypeHasSet),
+        "MapPrototypeDeleteGet" => Some(RuntimeFn::MapPrototypeDeleteGet),
+        "MapPrototypeDeleteSet" => Some(RuntimeFn::MapPrototypeDeleteSet),
+        "MapPrototypeForEachGet" => Some(RuntimeFn::MapPrototypeForEachGet),
+        "MapPrototypeForEachSet" => Some(RuntimeFn::MapPrototypeForEachSet),
         "SetIsDisjointFrom" => Some(RuntimeFn::SetIsDisjointFrom),
         "SetIsSubsetOf" => Some(RuntimeFn::SetIsSubsetOf),
         "SetIsSupersetOf" => Some(RuntimeFn::SetIsSupersetOf),
@@ -2223,6 +2295,22 @@ impl RuntimeFn {
             | Self::SetEntriesArray
             | Self::SetPrototypeAddGet
             | Self::SetPrototypeAddSet
+            | Self::SetPrototypeHasGet
+            | Self::SetPrototypeHasSet
+            | Self::SetPrototypeDeleteGet
+            | Self::SetPrototypeDeleteSet
+            | Self::SetPrototypeForEachGet
+            | Self::SetPrototypeForEachSet
+            | Self::MapPrototypeGetGet
+            | Self::MapPrototypeGetSet
+            | Self::MapPrototypeSetGet
+            | Self::MapPrototypeSetSet
+            | Self::MapPrototypeHasGet
+            | Self::MapPrototypeHasSet
+            | Self::MapPrototypeDeleteGet
+            | Self::MapPrototypeDeleteSet
+            | Self::MapPrototypeForEachGet
+            | Self::MapPrototypeForEachSet
             | Self::SetIsDisjointFrom
             | Self::SetIsSubsetOf
             | Self::SetIsSupersetOf
@@ -2508,6 +2596,22 @@ impl RuntimeFn {
             | Self::SetIntersection
             | Self::SetDifference
             | Self::SetSymmetricDifference => GLOBALS_SET_PROTOTYPE_ADD,
+            Self::SetPrototypeHasGet | Self::SetPrototypeHasSet => GLOBALS_SET_PROTOTYPE_HAS,
+            Self::SetPrototypeDeleteGet | Self::SetPrototypeDeleteSet => {
+                GLOBALS_SET_PROTOTYPE_DELETE
+            }
+            Self::SetPrototypeForEachGet | Self::SetPrototypeForEachSet => {
+                GLOBALS_SET_PROTOTYPE_FOR_EACH
+            }
+            Self::MapPrototypeGetGet | Self::MapPrototypeGetSet => GLOBALS_MAP_PROTOTYPE_GET,
+            Self::MapPrototypeSetGet | Self::MapPrototypeSetSet => GLOBALS_MAP_PROTOTYPE_SET,
+            Self::MapPrototypeHasGet | Self::MapPrototypeHasSet => GLOBALS_MAP_PROTOTYPE_HAS,
+            Self::MapPrototypeDeleteGet | Self::MapPrototypeDeleteSet => {
+                GLOBALS_MAP_PROTOTYPE_DELETE
+            }
+            Self::MapPrototypeForEachGet | Self::MapPrototypeForEachSet => {
+                GLOBALS_MAP_PROTOTYPE_FOR_EACH
+            }
             Self::SetNew | Self::WeakSetNew => GLOBALS_SET_PROTOTYPE,
             Self::MapNew | Self::WeakMapNew => GLOBALS_MAP_PROTOTYPE,
             Self::ObjectPrototype => GLOBALS_OBJECT_PROTOTYPE,
@@ -2826,6 +2930,22 @@ impl RuntimeFn {
             Self::SetEntriesArray,
             Self::SetPrototypeAddGet,
             Self::SetPrototypeAddSet,
+            Self::SetPrototypeHasGet,
+            Self::SetPrototypeHasSet,
+            Self::SetPrototypeDeleteGet,
+            Self::SetPrototypeDeleteSet,
+            Self::SetPrototypeForEachGet,
+            Self::SetPrototypeForEachSet,
+            Self::MapPrototypeGetGet,
+            Self::MapPrototypeGetSet,
+            Self::MapPrototypeSetGet,
+            Self::MapPrototypeSetSet,
+            Self::MapPrototypeHasGet,
+            Self::MapPrototypeHasSet,
+            Self::MapPrototypeDeleteGet,
+            Self::MapPrototypeDeleteSet,
+            Self::MapPrototypeForEachGet,
+            Self::MapPrototypeForEachSet,
             Self::SetIsDisjointFrom,
             Self::SetIsSubsetOf,
             Self::SetIsSupersetOf,
@@ -3314,6 +3434,22 @@ impl RuntimeFn {
             Self::SetEntriesArray,
             Self::SetPrototypeAddGet,
             Self::SetPrototypeAddSet,
+            Self::SetPrototypeHasGet,
+            Self::SetPrototypeHasSet,
+            Self::SetPrototypeDeleteGet,
+            Self::SetPrototypeDeleteSet,
+            Self::SetPrototypeForEachGet,
+            Self::SetPrototypeForEachSet,
+            Self::MapPrototypeGetGet,
+            Self::MapPrototypeGetSet,
+            Self::MapPrototypeSetGet,
+            Self::MapPrototypeSetSet,
+            Self::MapPrototypeHasGet,
+            Self::MapPrototypeHasSet,
+            Self::MapPrototypeDeleteGet,
+            Self::MapPrototypeDeleteSet,
+            Self::MapPrototypeForEachGet,
+            Self::MapPrototypeForEachSet,
             Self::SetIsDisjointFrom,
             Self::SetIsSubsetOf,
             Self::SetIsSupersetOf,

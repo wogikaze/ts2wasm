@@ -1364,6 +1364,158 @@ impl WatEmitter<'_> {
         );
     }
 
+    pub(crate) fn emit_set_prototype_has_get(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $set_prototype_has_get (result i32)
+    (global.get $set_prototype_has))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_set_prototype_has_set(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $set_prototype_has_set (param $value i32) (result i32)
+    (global.set $set_prototype_has (local.get $value))
+    (local.get $value))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_set_prototype_delete_get(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $set_prototype_delete_get (result i32)
+    (global.get $set_prototype_delete))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_set_prototype_delete_set(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $set_prototype_delete_set (param $value i32) (result i32)
+    (global.set $set_prototype_delete (local.get $value))
+    (local.get $value))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_set_prototype_for_each_get(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $set_prototype_for_each_get (result i32)
+    (global.get $set_prototype_for_each))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_set_prototype_for_each_set(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $set_prototype_for_each_set (param $value i32) (result i32)
+    (global.set $set_prototype_for_each (local.get $value))
+    (local.get $value))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_map_prototype_get_get(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $map_prototype_get_get (result i32)
+    (global.get $map_prototype_get))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_map_prototype_get_set(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $map_prototype_get_set (param $value i32) (result i32)
+    (global.set $map_prototype_get (local.get $value))
+    (local.get $value))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_map_prototype_set_get(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $map_prototype_set_get (result i32)
+    (global.get $map_prototype_set))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_map_prototype_set_set(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $map_prototype_set_set (param $value i32) (result i32)
+    (global.set $map_prototype_set (local.get $value))
+    (local.get $value))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_map_prototype_has_get(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $map_prototype_has_get (result i32)
+    (global.get $map_prototype_has))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_map_prototype_has_set(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $map_prototype_has_set (param $value i32) (result i32)
+    (global.set $map_prototype_has (local.get $value))
+    (local.get $value))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_map_prototype_delete_get(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $map_prototype_delete_get (result i32)
+    (global.get $map_prototype_delete))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_map_prototype_delete_set(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $map_prototype_delete_set (param $value i32) (result i32)
+    (global.set $map_prototype_delete (local.get $value))
+    (local.get $value))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_map_prototype_for_each_get(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $map_prototype_for_each_get (result i32)
+    (global.get $map_prototype_for_each))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_map_prototype_for_each_set(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $map_prototype_for_each_set (param $value i32) (result i32)
+    (global.set $map_prototype_for_each (local.get $value))
+    (local.get $value))
+"#,
+        );
+    }
+
     pub(crate) fn emit_set_values_array(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

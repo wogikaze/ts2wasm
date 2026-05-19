@@ -274,7 +274,7 @@ impl WatEmitter<'_> {
         self.emit_utf8_byte_to_cp_index(wat);
         wat.push_str(&format!(
             r#"
-  (func $string_index_of (param $haystack i32) (param $needle i32) (result i32)
+  (func $string_index_of (param $haystack i32) (param $needle i32) (param $position i32) (result i32)
     (local $h_obj i32)
     (local $n_obj i32)
     (local $h_len i32)
@@ -286,7 +286,17 @@ impl WatEmitter<'_> {
     (local.set $n_obj (i32.and (local.get $needle) (i32.const {heap_mask})))
     (local.set $h_len (i32.load (local.get $h_obj)))
     (local.set $n_len (i32.load (local.get $n_obj)))
-    (if (i32.eqz (local.get $n_len)) (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    ;; Decode position: undefined (0) → 0, otherwise decode tagged number
+    (if (i32.eq (local.get $position) (i32.const {undefined}))
+      (then (local.set $i (i32.const {zero})))
+      (else (local.set $i (i32.shr_s (local.get $position) (i32.const {shift})))))
+    ;; Clamp position to [0, h_len]
+    (if (i32.lt_s (local.get $i) (i32.const {zero})) (then (local.set $i (i32.const {zero}))))
+    (if (i32.gt_u (local.get $i) (local.get $h_len)) (then (local.set $i (local.get $h_len))))
+    ;; Empty needle: return clamped position (as tagged number)
+    (if (i32.eqz (local.get $n_len)) (then (return (i32.or (i32.shl (call $utf8_byte_to_cp_index (local.get $haystack) (local.get $i)) (i32.const {number_shift})) (i32.const {number_tag})))))
+    ;; Needle longer than haystack: not found
+    (if (i32.gt_u (local.get $n_len) (local.get $h_len)) (then (return (i32.or (i32.shl (i32.const {neg_one}) (i32.const {number_shift})) (i32.const {number_tag})))))
     (block $not_found
       (loop $search
         (br_if $not_found (i32.gt_u (local.get $i) (i32.sub (local.get $h_len) (local.get $n_len))))
@@ -304,17 +314,18 @@ impl WatEmitter<'_> {
             number_tag = ValueTag::NUMBER,
             heap_mask = ValueTag::HEAP_MASK,
             header = Layout::STRING_HEADER_SIZE,
+            undefined = ValueTag::UNDEFINED,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
+            shift = ValueTag::NUMBER_SHIFT,
         ));
     }
 
     pub(crate) fn emit_string_last_index_of(&self, wat: &mut String) {
         self.emit_utf8_byte_to_cp_index(wat);
-        self.emit_string_code_point_length(wat);
         wat.push_str(&format!(
             r#"
-  (func $string_last_index_of (param $haystack i32) (param $needle i32) (result i32)
+  (func $string_last_index_of (param $haystack i32) (param $needle i32) (param $position i32) (result i32)
     (local $h_obj i32)
     (local $n_obj i32)
     (local $h_len i32)
@@ -326,8 +337,20 @@ impl WatEmitter<'_> {
     (local.set $n_obj (i32.and (local.get $needle) (i32.const {heap_mask})))
     (local.set $h_len (i32.load (local.get $h_obj)))
     (local.set $n_len (i32.load (local.get $n_obj)))
-    (if (i32.eqz (local.get $n_len)) (then (return (i32.or (i32.shl (call $string_code_point_length (local.get $haystack)) (i32.const {number_shift})) (i32.const {number_tag})))))
-    (local.set $i (i32.sub (local.get $h_len) (local.get $n_len)))
+    ;; Decode position: undefined (0) → h_len (search entire string)
+    (if (i32.eq (local.get $position) (i32.const {undefined}))
+      (then (local.set $i (local.get $h_len)))
+      (else (local.set $i (i32.shr_s (local.get $position) (i32.const {shift})))))
+    ;; Clamp position to [0, h_len]
+    (if (i32.lt_s (local.get $i) (i32.const {zero})) (then (local.set $i (i32.const {zero}))))
+    (if (i32.gt_u (local.get $i) (local.get $h_len)) (then (local.set $i (local.get $h_len))))
+    ;; Empty needle: return clamped position as code point index
+    (if (i32.eqz (local.get $n_len)) (then (return (i32.or (i32.shl (call $utf8_byte_to_cp_index (local.get $haystack) (local.get $i)) (i32.const {number_shift})) (i32.const {number_tag})))))
+    ;; Needle longer than haystack: not found
+    (if (i32.gt_u (local.get $n_len) (local.get $h_len)) (then (return (i32.or (i32.shl (i32.const {neg_one}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    ;; Start from min(position, h_len - n_len)
+    (if (i32.gt_u (local.get $i) (i32.sub (local.get $h_len) (local.get $n_len)))
+      (then (local.set $i (i32.sub (local.get $h_len) (local.get $n_len)))))
     (block $not_found
       (loop $search
         (br_if $not_found (i32.lt_s (local.get $i) (i32.const {zero})))
@@ -345,8 +368,10 @@ impl WatEmitter<'_> {
             number_tag = ValueTag::NUMBER,
             heap_mask = ValueTag::HEAP_MASK,
             header = Layout::STRING_HEADER_SIZE,
+            undefined = ValueTag::UNDEFINED,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
+            shift = ValueTag::NUMBER_SHIFT,
         ));
     }
 
