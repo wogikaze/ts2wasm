@@ -311,6 +311,12 @@ fn static_direct_eval_var_destructuring_computed_rest_lands_in_caller_scope() {
 }
 
 #[test]
+fn static_direct_eval_var_destructuring_hoists_in_caller_scope() {
+    let fixture = "fixtures/core-semantics/direct-eval-var-destructuring-hoist-caller.ts";
+    assert_node_shim_stdout(fixture, "undefined\nundefined\n");
+}
+
+#[test]
 fn static_direct_eval_for_head_var_lands_in_caller_scope() {
     let fixture = "fixtures/core-semantics/direct-eval-for-head-var-lands-in-caller.ts";
     assert_node_shim_stdout(fixture, "alpha:4\nalpha\n4\n");
@@ -399,6 +405,12 @@ fn static_indirect_eval_var_destructuring_computed_rest_lands_on_global_object()
         fixture,
         "1:ok:undefined\ncaller\ncaller\n1\nok\nundefined\n",
     );
+}
+
+#[test]
+fn static_indirect_eval_var_destructuring_hoists_on_global_object() {
+    let fixture = "fixtures/core-semantics/indirect-eval-static-var-destructuring-hoist-global.ts";
+    assert_node_shim_stdout(fixture, "undefined\ncaller\nundefined\n");
 }
 
 #[test]
