@@ -1296,14 +1296,7 @@ impl super::Resolver {
         caller_scope_index: usize,
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
         let value = if let Some(default) = default {
-            let Some(default_expr) = super::lowered_binding_default(default) else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedEval,
-                    message: "static eval for-head destructuring supports only literal defaults in this slice".to_owned(),
-                    span: Some(Span::generated("eval_for_pattern_default")),
-                    phase: None,
-                });
-            };
+            let default_expr = self.lower_binding_default_expr(default)?;
             let temp = self.alloc_temp();
             return Ok({
                 let mut stmts = vec![

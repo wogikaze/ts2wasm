@@ -306,6 +306,13 @@ fn static_direct_eval_for_head_var_destructuring_lands_in_caller_scope() {
 }
 
 #[test]
+fn static_direct_eval_for_head_var_destructuring_default_reads_caller_scope() {
+    let fixture =
+        "fixtures/core-semantics/direct-eval-for-head-var-destructuring-default-caller.ts";
+    assert_node_shim_stdout(fixture, "fallback\nnext\n");
+}
+
+#[test]
 fn static_direct_eval_for_in_preserves_completion() {
     let fixture = "fixtures/core-semantics/direct-eval-for-in-completion.ts";
     assert_node_shim_stdout(fixture, "ab\nab\n");

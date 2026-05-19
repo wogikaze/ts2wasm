@@ -271,7 +271,7 @@ impl super::super::Resolver {
         ])
     }
 
-    fn lower_binding_default_expr(
+    pub(crate) fn lower_binding_default_expr(
         &mut self,
         default: &BindingDefault,
     ) -> Result<LoweredExpr, Diagnostic> {
