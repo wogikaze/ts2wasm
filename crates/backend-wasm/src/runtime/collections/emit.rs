@@ -832,28 +832,41 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_map_new(&self, wat: &mut String) {
-        self.emit_collection_new(wat, "$map_new");
+        self.emit_collection_new_with_proto(wat, "$map_new", "$map_prototype_object");
     }
 
     pub(crate) fn emit_set_new(&self, wat: &mut String) {
-        self.emit_collection_new(wat, "$set_new");
+        self.emit_collection_new_with_proto(wat, "$set_new", "$set_prototype_object");
     }
 
-    fn emit_collection_new(&self, wat: &mut String, symbol: &str) {
+    /// Allocate a new collection object with a lazily-initialized prototype object.
+    /// The prototype global is initialized on first access as an empty object
+    /// (with null prototype). The instance's prototype slot points to this object,
+    /// enabling prototype-chain operations (property_get, instanceof, etc.).
+    fn emit_collection_new_with_proto(&self, wat: &mut String, symbol: &str, proto_global: &str) {
         wat.push_str(&format!(
             r#"
   (func {symbol} (result i32)
     (local $base i32)
+    (if (i32.eqz (global.get {proto_global}))
+      (then
+        (global.set {proto_global} (call $alloc_heap (i32.const {obj_header})))
+        (i32.store (global.get {proto_global}) (i32.const {zero}))
+        (i32.store (i32.add (global.get {proto_global}) (i32.const {obj_flags})) (i32.const {zero}))
+        (i32.store (i32.add (global.get {proto_global}) (i32.const {obj_proto})) (i32.const {zero}))))
     (local.set $base (call $alloc_heap (i32.const {collection_size})))
     (i32.store (local.get $base) (i32.const {zero}))
     (i32.store (i32.add (local.get $base) (i32.const {obj_flags})) (i32.const {zero}))
-    (i32.store (i32.add (local.get $base) (i32.const {obj_proto})) (i32.const {zero}))
+    (i32.store (i32.add (local.get $base) (i32.const {obj_proto})) (i32.and (global.get {proto_global}) (i32.const {heap_mask})))
     (i32.or (local.get $base) (i32.const {object_tag})))
 "#,
             symbol = symbol,
+            proto_global = proto_global,
             collection_size = Layout::OBJECT_HEADER_SIZE + (32 * Layout::OBJECT_ENTRY_SIZE),
+            obj_header = Layout::OBJECT_HEADER_SIZE,
             obj_flags = Layout::OBJECT_FLAGS_OFFSET,
             obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            heap_mask = ValueTag::HEAP_MASK,
             zero = RuntimeConst::ZERO,
             object_tag = ValueTag::OBJECT,
         ));
@@ -2190,7 +2203,7 @@ impl WatEmitter<'_> {
     // --- WeakMap ---
 
     pub(crate) fn emit_weak_map_new(&self, wat: &mut String) {
-        self.emit_collection_new(wat, "$weak_map_new");
+        self.emit_collection_new_with_proto(wat, "$weak_map_new", "$map_prototype_object");
     }
 
     pub(crate) fn emit_weak_map_set(&self, wat: &mut String) {
@@ -2382,7 +2395,7 @@ impl WatEmitter<'_> {
     // --- WeakSet ---
 
     pub(crate) fn emit_weak_set_new(&self, wat: &mut String) {
-        self.emit_collection_new(wat, "$weak_set_new");
+        self.emit_collection_new_with_proto(wat, "$weak_set_new", "$set_prototype_object");
     }
 
     pub(crate) fn emit_weak_set_add(&self, wat: &mut String) {

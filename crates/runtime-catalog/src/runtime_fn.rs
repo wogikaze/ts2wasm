@@ -780,6 +780,8 @@ pub enum RuntimeGlobal {
     GlobalThisObject,
     ObjectPrototypeObject,
     ConsoleIndentLevel,
+    SetPrototypeObject,
+    MapPrototypeObject,
 }
 
 impl RuntimeGlobal {
@@ -803,6 +805,8 @@ impl RuntimeGlobal {
             Self::GlobalThisObject => "$global_this_object",
             Self::ObjectPrototypeObject => "$object_prototype_object",
             Self::ConsoleIndentLevel => "$console_indent_level",
+            Self::SetPrototypeObject => "$set_prototype_object",
+            Self::MapPrototypeObject => "$map_prototype_object",
         }
     }
 
@@ -821,7 +825,10 @@ impl RuntimeGlobal {
             Self::ModuleCache | Self::CurrentModuleId => 0,
             Self::SetPrototypeAdd => NATIVE_SET_ADD_SENTINEL,
             Self::ExceptionPending | Self::ExceptionHandlerDepth => 0,
-            Self::GlobalThisObject | Self::ObjectPrototypeObject => 0,
+            Self::GlobalThisObject
+            | Self::ObjectPrototypeObject
+            | Self::SetPrototypeObject
+            | Self::MapPrototypeObject => 0,
             Self::ConsoleIndentLevel => 0,
         }
     }
@@ -859,6 +866,8 @@ pub const GLOBALS_MODULE_RUNTIME: &[RuntimeGlobal] =
 const GLOBALS_SET_PROTOTYPE_ADD: &[RuntimeGlobal] = &[RuntimeGlobal::SetPrototypeAdd];
 const GLOBALS_GLOBAL_THIS: &[RuntimeGlobal] = &[RuntimeGlobal::GlobalThisObject];
 const GLOBALS_OBJECT_PROTOTYPE: &[RuntimeGlobal] = &[RuntimeGlobal::ObjectPrototypeObject];
+const GLOBALS_SET_PROTOTYPE: &[RuntimeGlobal] = &[RuntimeGlobal::SetPrototypeObject];
+const GLOBALS_MAP_PROTOTYPE: &[RuntimeGlobal] = &[RuntimeGlobal::MapPrototypeObject];
 pub const GLOBALS_EXCEPTION_RUNTIME: &[RuntimeGlobal] = &[
     RuntimeGlobal::ExceptionPending,
     RuntimeGlobal::ExceptionHandlerDepth,
@@ -2482,6 +2491,8 @@ impl RuntimeFn {
             | Self::SetIntersection
             | Self::SetDifference
             | Self::SetSymmetricDifference => GLOBALS_SET_PROTOTYPE_ADD,
+            Self::SetNew | Self::WeakSetNew => GLOBALS_SET_PROTOTYPE,
+            Self::MapNew | Self::WeakMapNew => GLOBALS_MAP_PROTOTYPE,
             Self::ObjectPrototype => GLOBALS_OBJECT_PROTOTYPE,
             Self::GlobalThis => GLOBALS_GLOBAL_THIS,
             Self::ConsoleGroupStart | Self::ConsoleGroupEndFn => GLOBALS_CONSOLE_INDENT,
