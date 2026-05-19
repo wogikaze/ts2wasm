@@ -57,6 +57,7 @@ struct NameResolver {
     breakable_depth: usize,
     function_depth: usize,
     class_method_depth: usize,
+    strict_context: bool,
 }
 
 #[derive(Clone)]
@@ -213,6 +214,7 @@ impl NameResolver {
             breakable_depth: 0,
             function_depth: 0,
             class_method_depth: 0,
+            strict_context: false,
             predeclared_names: vec![std::collections::HashSet::new()],
         }
     }
@@ -238,6 +240,7 @@ impl NameResolver {
             }
             found
         };
+        self.strict_context = strict_mode;
 
         // First pass: collect body-ful function declarations (hoisting).
         // Bodyless function declarations are TypeScript overload signatures.
@@ -552,7 +555,12 @@ impl NameResolver {
                         self.resolve_expr(default_expr)?;
                     }
                 }
-                let resolved_body = self.resolve_block(body)?;
+                let previous_strict_context = self.strict_context;
+                self.strict_context =
+                    previous_strict_context || block_has_use_strict_directive(body);
+                let resolved_body = self.resolve_block(body);
+                self.strict_context = previous_strict_context;
+                let resolved_body = resolved_body?;
                 self.function_depth -= 1;
                 self.exit_scope();
                 Ok(Stmt::Function {
@@ -962,7 +970,11 @@ impl NameResolver {
                 ))
             })
             .collect::<Result<Vec<_>, Diagnostic>>()?;
-        let resolved_body = self.resolve_block(body)?;
+        let previous_strict_context = self.strict_context;
+        self.strict_context = true;
+        let resolved_body = self.resolve_block(body);
+        self.strict_context = previous_strict_context;
+        let resolved_body = resolved_body?;
         self.class_method_depth -= 1;
         self.function_depth -= 1;
         self.exit_scope();
@@ -1092,7 +1104,12 @@ impl NameResolver {
                         self.resolve_expr(default_expr)?;
                     }
                 }
-                let resolved_body = self.resolve_block(body)?;
+                let previous_strict_context = self.strict_context;
+                self.strict_context =
+                    previous_strict_context || block_has_use_strict_directive(body);
+                let resolved_body = self.resolve_block(body);
+                self.strict_context = previous_strict_context;
+                let resolved_body = resolved_body?;
                 self.function_depth -= 1;
                 self.exit_scope();
                 Ok(Expr::FunctionExpr {
@@ -1129,11 +1146,17 @@ impl NameResolver {
                         }
                     }
                 }
-                let resolved_body = Box::new(self.resolve_expr(body)?);
+                let previous_strict_context = self.strict_context;
+                self.strict_context =
+                    previous_strict_context || block_has_use_strict_directive(body_stmts);
+                let resolved_body = self.resolve_expr(body);
                 let resolved_stmts = body_stmts
                     .iter()
                     .map(|s| self.resolve_stmt(s))
-                    .collect::<Result<Vec<_>, _>>()?;
+                    .collect::<Result<Vec<_>, _>>();
+                self.strict_context = previous_strict_context;
+                let resolved_body = Box::new(resolved_body?);
+                let resolved_stmts = resolved_stmts?;
                 self.function_depth -= 1;
                 self.exit_scope();
                 Ok(Expr::ArrowFn {
@@ -1727,6 +1750,9 @@ impl NameResolver {
         block: &[Stmt],
     ) -> Result<(), Diagnostic> {
         if self.has_user_binding("eval") {
+            return Ok(());
+        }
+        if self.strict_context {
             return Ok(());
         }
         let mut names = Vec::new();
@@ -2762,6 +2788,20 @@ fn collect_static_eval_var_function_names(source: &str, names: &mut Vec<String>)
             names.push(name);
         }
     }
+}
+
+fn block_has_use_strict_directive(stmts: &[Stmt]) -> bool {
+    for stmt in stmts {
+        match stmt {
+            Stmt::Expr {
+                expr: Expr::String { value, .. },
+                ..
+            } if value == "use strict" => return true,
+            Stmt::Expr { .. } => continue,
+            _ => return false,
+        }
+    }
+    false
 }
 
 fn is_loop_stmt(stmt: &Stmt) -> bool {

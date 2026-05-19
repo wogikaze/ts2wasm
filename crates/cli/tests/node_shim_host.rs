@@ -1913,6 +1913,7 @@ function evalWithEnvDescriptor(source, envRaw) {
   }
   for (const name of focusedDirectEvalTdzCandidates(source)) {
     if (!names.includes(name)) {
+      if (/^typeof\s+/.test(source.trim())) continue;
       throw new ReferenceError(`Cannot access '${name}' before initialization`);
     }
     const binding = bindings.find((entry) => entry.name === name);

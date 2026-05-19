@@ -1329,7 +1329,9 @@ impl super::Resolver {
         }
         if let Some(source) = self.direct_eval_static_source_value(source_expr) {
             for name in focused_direct_eval_tdz_candidates(&source) {
-                if seen.insert(name.clone()) {
+                let is_known_binding = self.ctx.symbols.resolve(&name).is_some()
+                    || self.ctx.facts.env_cell_names.contains(&name);
+                if is_known_binding && seen.insert(name.clone()) {
                     bindings.push(DirectEvalEnvBinding {
                         name,
                         kind: DirectEvalEnvBindingKind::Tdz,

@@ -834,6 +834,9 @@ fn dynamic_direct_eval_known_source<'a>(
     if plan.kind != EvalKind::Direct {
         return None;
     }
+    if plan.caller_is_strict {
+        return None;
+    }
     let EvalSource::Runtime(source) = &plan.source else {
         return None;
     };
@@ -1298,6 +1301,31 @@ mod tests {
 
         let names = collect_dynamic_direct_eval_created_function_names(&body);
         assert!(names.contains("created"));
+    }
+
+    #[test]
+    fn skips_created_names_from_strict_caller_runtime_direct_eval_source() {
+        let body = vec![
+            ResolvedStmt::Let(
+                "source".to_owned(),
+                ResolvedExpr::String("var hidden = 7; function eval() {}".to_owned()),
+            ),
+            ResolvedStmt::Expr(ResolvedExpr::Eval {
+                plan: EvalFragmentPlan::new(
+                    EvalKind::Direct,
+                    EvalSource::Runtime(Box::new(ResolvedExpr::Ident("source".to_owned()))),
+                    true,
+                    Span::generated("eval"),
+                ),
+            }),
+        ];
+
+        let binding_names = collect_dynamic_direct_eval_created_binding_names(&body);
+        assert!(!binding_names.contains("hidden"));
+        assert!(!binding_names.contains("eval"));
+
+        let function_names = collect_dynamic_direct_eval_created_function_names(&body);
+        assert!(!function_names.contains("eval"));
     }
 }
 pub(crate) fn collect_direct_eval_block_function_env_from_stmts(

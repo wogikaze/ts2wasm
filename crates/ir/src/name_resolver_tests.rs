@@ -716,6 +716,38 @@ mod tests {
     }
 
     #[test]
+    fn resolver_does_not_predeclare_static_direct_eval_var_in_strict_function_body() {
+        let tokens = ts2wasm_frontend::Lexer::new(
+            "function run() { \"use strict\"; eval(\"var value = 2; value\"); return value; }",
+        )
+        .tokenize()
+        .unwrap();
+        let parsed = ts2wasm_frontend::Parser::new(
+            tokens,
+            "function run() { \"use strict\"; eval(\"var value = 2; value\"); return value; }",
+        )
+        .parse_program()
+        .unwrap();
+        let err = name_resolver::resolve_names(&parsed).unwrap_err();
+        assert_eq!(err.code, DiagCode::UnresolvedName);
+        assert!(err.message.contains("value"));
+    }
+
+    #[test]
+    fn resolver_does_not_predeclare_known_runtime_eval_function_in_strict_script() {
+        let builtins = parse_resolve_builtins(
+            "\"use strict\"; let source = \"function eval() {}\"; try { eval(source); } catch (err) {}",
+        );
+        let crate::ResolvedStmt::TryCatch { try_block, .. } = &builtins[2] else {
+            panic!("expected try/catch statement: {builtins:?}");
+        };
+        let crate::ResolvedStmt::Expr(crate::ResolvedExpr::Eval { plan }) = &try_block[0] else {
+            panic!("expected strict runtime eval expression: {try_block:?}");
+        };
+        assert!(plan.caller_is_strict);
+    }
+
+    #[test]
     fn resolver_rejects_static_direct_eval_var_conflict_with_caller_lexical() {
         let tokens = ts2wasm_frontend::Lexer::new(
             "function run() { let value = 1; eval(\"var value = 2\"); return value; }",

@@ -5,7 +5,13 @@
 //! `EvalDeclarationPlan`. Keeping the scanner in one crate prevents resolver
 //! and lowering from drifting while they both need the same predeclared names.
 
+use ts2wasm_frontend::{Lexer, Parser};
+use ts2wasm_syntax::Stmt;
+
 pub fn eval_var_and_function_names(source: &str) -> Vec<String> {
+    if let Some(names) = parsed_eval_var_and_function_names(source, true, true) {
+        return names;
+    }
     let mut names = Vec::new();
     collect_keyword_bound_names(source, "var", &mut names);
     collect_keyword_bound_names(source, "function", &mut names);
@@ -13,9 +19,174 @@ pub fn eval_var_and_function_names(source: &str) -> Vec<String> {
 }
 
 pub fn eval_function_names(source: &str) -> Vec<String> {
+    if let Some(names) = parsed_eval_var_and_function_names(source, false, true) {
+        return names;
+    }
     let mut names = Vec::new();
     collect_keyword_bound_names(source, "function", &mut names);
     names
+}
+
+fn parsed_eval_var_and_function_names(
+    source: &str,
+    include_vars: bool,
+    include_functions: bool,
+) -> Option<Vec<String>> {
+    let tokens = Lexer::new(source).tokenize().ok()?;
+    let stmts = Parser::new(tokens, source).parse_program().ok()?;
+    let mut names = Vec::new();
+    collect_eval_declaration_names_from_stmts(&stmts, include_vars, include_functions, &mut names);
+    Some(names)
+}
+
+fn collect_eval_declaration_names_from_stmts(
+    stmts: &[Stmt],
+    include_vars: bool,
+    include_functions: bool,
+    names: &mut Vec<String>,
+) {
+    for stmt in stmts {
+        collect_eval_declaration_names_from_stmt(stmt, include_vars, include_functions, names);
+    }
+}
+
+fn collect_eval_declaration_names_from_stmt(
+    stmt: &Stmt,
+    include_vars: bool,
+    include_functions: bool,
+    names: &mut Vec<String>,
+) {
+    match stmt {
+        Stmt::Let { name, is_var, .. } if include_vars && *is_var => {
+            if name.trim_start().starts_with(['{', '[']) {
+                collect_binding_names_from_pattern(name, names);
+            } else {
+                push_unique_name(names, name);
+            }
+        }
+        Stmt::Function {
+            name, is_ambient, ..
+        } if include_functions && !is_ambient => {
+            push_unique_name(names, name);
+        }
+        Stmt::If {
+            then_body,
+            else_body,
+            ..
+        } => {
+            collect_eval_declaration_names_from_stmts(
+                then_body,
+                include_vars,
+                include_functions,
+                names,
+            );
+            collect_eval_declaration_names_from_stmts(
+                else_body,
+                include_vars,
+                include_functions,
+                names,
+            );
+        }
+        Stmt::While { body, .. }
+        | Stmt::DoWhile { body, .. }
+        | Stmt::ForIn { body, .. }
+        | Stmt::ForOf { body, .. }
+        | Stmt::ForAwaitOf { body, .. } => {
+            collect_eval_declaration_names_from_stmts(body, include_vars, include_functions, names);
+        }
+        Stmt::For { init, body, .. } => {
+            if let Some(init) = init {
+                collect_eval_declaration_names_from_stmt(
+                    init,
+                    include_vars,
+                    include_functions,
+                    names,
+                );
+            }
+            collect_eval_declaration_names_from_stmts(body, include_vars, include_functions, names);
+        }
+        Stmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            collect_eval_declaration_names_from_stmts(
+                try_block,
+                include_vars,
+                include_functions,
+                names,
+            );
+            if let Some(catch_block) = catch_block {
+                collect_eval_declaration_names_from_stmts(
+                    catch_block,
+                    include_vars,
+                    include_functions,
+                    names,
+                );
+            }
+            if let Some(finally_block) = finally_block {
+                collect_eval_declaration_names_from_stmts(
+                    finally_block,
+                    include_vars,
+                    include_functions,
+                    names,
+                );
+            }
+        }
+        Stmt::Switch { cases, .. } => {
+            for (_, stmts) in cases {
+                collect_eval_declaration_names_from_stmts(
+                    stmts,
+                    include_vars,
+                    include_functions,
+                    names,
+                );
+            }
+        }
+        Stmt::Labeled { body, .. } => {
+            collect_eval_declaration_names_from_stmt(body, include_vars, include_functions, names);
+        }
+        Stmt::Block { statements, .. } => {
+            collect_eval_declaration_names_from_stmts(
+                statements,
+                include_vars,
+                include_functions,
+                names,
+            );
+        }
+        Stmt::ExportDecl { declaration, .. } => {
+            collect_eval_declaration_names_from_stmt(
+                declaration,
+                include_vars,
+                include_functions,
+                names,
+            );
+        }
+        Stmt::Function { .. }
+        | Stmt::ClassDecl { .. }
+        | Stmt::Expr { .. }
+        | Stmt::Return { .. }
+        | Stmt::Throw { .. }
+        | Stmt::ImportSideEffect { .. }
+        | Stmt::ImportNamed { .. }
+        | Stmt::ImportDefault { .. }
+        | Stmt::ImportDefaultNamed { .. }
+        | Stmt::ImportNamespace { .. }
+        | Stmt::ImportDefaultNamespace { .. }
+        | Stmt::ExportNamed { .. }
+        | Stmt::ExportNamedFrom { .. }
+        | Stmt::ExportAllFrom { .. }
+        | Stmt::ExportNamespaceFrom { .. }
+        | Stmt::ExportDefault { .. }
+        | Stmt::ExportAssignment { .. }
+        | Stmt::AmbientValueDecl { .. }
+        | Stmt::Assign { .. }
+        | Stmt::Break { .. }
+        | Stmt::Continue { .. }
+        | Stmt::EnumDecl { .. }
+        | Stmt::Let { .. } => {}
+    }
 }
 
 fn collect_keyword_bound_names(source: &str, keyword: &str, names: &mut Vec<String>) {
@@ -562,7 +733,7 @@ mod tests {
         let names = eval_var_and_function_names(
             "function outer() { var hidden = 1; function inner() {} } var visible = 2;",
         );
-        assert_eq!(names, ["visible", "outer"]);
+        assert_eq!(names, ["outer", "visible"]);
     }
 
     #[test]
