@@ -142,6 +142,7 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("Object.fromEntries", "issue-5004"),
     ("array-grouping", "issue-5004"),
     ("coalesce-expression", "issue-245"),
+    ("source-phase-imports", "I-20260518-7TXX6T"),
 ];
 
 /// Process test262 metadata directives if present in source.
@@ -483,6 +484,25 @@ fn build_feature_stubs(features: &[String], source: &str) -> Result<String, Diag
             }
             "tail-call-optimization" => {
                 // feature marker currently used only for test262 metadata filtering.
+            }
+            "source-phase-imports" => {
+                needs_262 = true;
+                stubs.push_str(
+                    "$262.AbstractModuleSource = function AbstractModuleSource() { throw new TypeError(); };\n",
+                );
+                stubs.push_str("(function() {\n  var p = {};\n");
+                stubs.push_str(
+                    "  Object.defineProperty(p, 'constructor', { value: $262.AbstractModuleSource, writable: true, enumerable: false, configurable: true });\n",
+                );
+                stubs.push_str("  if (typeof Symbol !== 'undefined') {\n");
+                stubs.push_str(
+                    "    Object.defineProperty(p, Symbol.toStringTag, { enumerable: false, configurable: true, get: function() { return undefined; } });\n",
+                );
+                stubs.push_str("  }\n");
+                stubs.push_str(
+                    "  Object.defineProperty($262.AbstractModuleSource, 'prototype', { value: p, writable: false, enumerable: false, configurable: false });\n",
+                );
+                stubs.push_str("})();\n");
             }
             "Symbol.asyncIterator" => {
                 stubs.push_str(

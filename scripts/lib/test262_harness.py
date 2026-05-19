@@ -384,6 +384,7 @@ $262.evalScript = test262_evalScript;
 $262.createRealm = test262_createRealm;
 $262.detachArrayBuffer = test262_detachArrayBuffer;
 $262.IsHTMLDDA = undefined;
+$262.AbstractModuleSource = function AbstractModuleSource() { throw new TypeError(); };
 $262.agent = {};
 $262.agent.start = test262_agent_start;
 """
