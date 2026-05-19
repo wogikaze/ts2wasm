@@ -417,42 +417,32 @@ fn expand_expr(
     ctx: &mut EvalExpansionContext,
 ) -> Result<ResolvedExpr, Diagnostic> {
     match expr {
-        ResolvedExpr::Eval {
-            plan:
-                EvalFragmentPlan {
-                    kind: EvalKind::Direct,
-                    source: EvalSource::StaticLiteral(ref src),
-                    caller_is_strict,
-                    ..
-                },
-        } => {
-            let expanded = expand_static_eval_source(
-                src,
-                &ctx.visible_bindings(),
-                true,
-                caller_is_strict || ctx.is_strict_context(),
-            )?;
+        ResolvedExpr::Eval { plan }
+            if plan.kind == EvalKind::Direct
+                && matches!(plan.source, EvalSource::StaticLiteral(_)) =>
+        {
+            let EvalSource::StaticLiteral(src) = &plan.source else {
+                unreachable!();
+            };
+            let caller_is_strict = plan.caller_is_strict || ctx.is_strict_context();
+            let expanded =
+                expand_static_eval_source(src, &ctx.visible_bindings(), &plan, caller_is_strict)?;
             for name in &expanded.caller_var_declarations {
                 ctx.declare(name.clone());
             }
             Ok(expanded.expr)
         }
-        ResolvedExpr::Eval {
-            plan:
-                EvalFragmentPlan {
-                    kind: EvalKind::Indirect,
-                    source: EvalSource::StaticLiteral(ref src),
-                    caller_is_strict,
-                    ..
-                },
-        } => {
+        ResolvedExpr::Eval { plan }
+            if plan.kind == EvalKind::Indirect
+                && matches!(plan.source, EvalSource::StaticLiteral(_)) =>
+        {
+            let EvalSource::StaticLiteral(src) = &plan.source else {
+                unreachable!();
+            };
+            let caller_is_strict = plan.caller_is_strict || ctx.is_strict_context();
             let caller_bindings = ctx.visible_bindings();
-            let expanded = expand_static_eval_source(
-                src,
-                &caller_bindings,
-                false,
-                caller_is_strict || ctx.is_strict_context(),
-            )?;
+            let expanded =
+                expand_static_eval_source(src, &caller_bindings, &plan, caller_is_strict)?;
             let mut global_bindings = caller_bindings;
             for name in &expanded.global_declaration_names {
                 if !global_bindings.contains(name) {
@@ -802,7 +792,7 @@ enum EvalVarLanding {
 fn expand_static_eval_source(
     src: &str,
     outer_bindings: &[String],
-    direct_caller_scope: bool,
+    fragment_plan: &EvalFragmentPlan,
     caller_is_strict: bool,
 ) -> Result<StaticEvalExpansion, Diagnostic> {
     let tokens = if caller_is_strict {
@@ -841,6 +831,7 @@ fn expand_static_eval_source(
         collect_eval_var_let_declaration_names(&program, &mut global_var_hoists);
         collect_eval_var_declaration_names(&program, &mut global_declaration_names);
     }
+    let direct_caller_scope = fragment_plan.kind == EvalKind::Direct;
     let var_landing = match (direct_caller_scope, leak_var_declarations) {
         (true, true) => EvalVarLanding::Caller,
         (false, true) => EvalVarLanding::Global,
@@ -891,15 +882,9 @@ fn expand_static_eval_source(
 
     Ok(StaticEvalExpansion {
         expr: extract_completion_value(
+            fragment_plan,
             &program,
             builtin_resolved,
-            if direct_caller_scope {
-                ts2wasm_ir::builtin_resolved::EvalScopeMode::Caller
-            } else {
-                ts2wasm_ir::builtin_resolved::EvalScopeMode::Global {
-                    realm: ts2wasm_ir::builtin_resolved::EvalRealm::Current,
-                }
-            },
             caller_is_strict,
             eval_is_strict,
             var_landing,
@@ -1215,9 +1200,9 @@ fn function_constructor_syntax_error(message: &str, span: ts2wasm_source::Span) 
 /// Produces a completion-plan expression so lower IR can evaluate all eval-code
 /// side effects while preserving the last non-empty completion value exactly once.
 fn extract_completion_value(
+    fragment_plan: &EvalFragmentPlan,
     ast_stmts: &[Stmt],
     stmts: Vec<ResolvedStmt>,
-    scope_mode: ts2wasm_ir::builtin_resolved::EvalScopeMode,
     caller_is_strict: bool,
     eval_is_strict: bool,
     var_landing: EvalVarLanding,
@@ -1247,17 +1232,14 @@ fn extract_completion_value(
         }
     }));
     steps.extend(eval_completion_steps(ast_stmts, stmts, var_landing));
-    Ok(ResolvedExpr::EvalCompletion(
-        EvalCompletionPlan::with_eval_context(
-            scope_mode,
-            caller_is_strict,
-            eval_is_strict,
-            EvalDeclarationPlan {
-                var_names: eval_declarations.to_vec(),
-                function_hoists: function_hoists.clone(),
-            },
-            steps,
-        ),
+    Ok(fragment_plan.completion_expr(
+        caller_is_strict,
+        eval_is_strict,
+        EvalDeclarationPlan {
+            var_names: eval_declarations.to_vec(),
+            function_hoists: function_hoists.clone(),
+        },
+        steps,
     ))
 }
 

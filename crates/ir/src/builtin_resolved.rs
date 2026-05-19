@@ -325,6 +325,22 @@ impl EvalFragmentPlan {
             span,
         }
     }
+
+    pub fn completion_expr(
+        &self,
+        caller_is_strict: bool,
+        eval_is_strict: bool,
+        declarations: EvalDeclarationPlan,
+        steps: Vec<EvalCompletionStep>,
+    ) -> ResolvedExpr {
+        ResolvedExpr::EvalCompletion(EvalCompletionPlan::with_eval_context(
+            self.scope_mode,
+            caller_is_strict,
+            eval_is_strict,
+            declarations,
+            steps,
+        ))
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
