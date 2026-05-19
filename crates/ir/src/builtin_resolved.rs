@@ -534,6 +534,14 @@ fn function_constructor_static_source_value(
             | BinaryOp::StrictNotEqual => {
                 function_constructor_static_comparison_source_value(left, *op, right)
             }
+            BinaryOp::BitwiseAnd
+            | BinaryOp::BitwiseOr
+            | BinaryOp::BitwiseXor
+            | BinaryOp::LeftShift
+            | BinaryOp::RightShift
+            | BinaryOp::UnsignedRightShift => {
+                function_constructor_static_bitwise_source_value(left, *op, right)
+            }
             BinaryOp::And | BinaryOp::Or | BinaryOp::NullishCoalesce => {
                 function_constructor_static_logical_source_value(left, *op, right)
             }
@@ -641,6 +649,10 @@ fn function_constructor_static_unary_source_value(
             }
             _ => None,
         },
+        UnaryOp::BitwiseNot => {
+            let value = function_constructor_static_to_int32(&value)?;
+            Some(FunctionConstructorStaticSourceValue::Number(!value))
+        }
         _ => None,
     }
 }
@@ -747,6 +759,44 @@ fn function_constructor_static_numeric_binary_source_value(
             function_constructor_static_js_number_string(result),
         )
     })
+}
+
+fn function_constructor_static_bitwise_source_value(
+    left: &ResolvedExpr,
+    op: BinaryOp,
+    right: &ResolvedExpr,
+) -> Option<FunctionConstructorStaticSourceValue> {
+    let left = function_constructor_static_source_value(left)?;
+    let right = function_constructor_static_source_value(right)?;
+    let result = match op {
+        BinaryOp::BitwiseAnd => FunctionConstructorStaticSourceValue::Number(
+            function_constructor_static_to_int32(&left)?
+                & function_constructor_static_to_int32(&right)?,
+        ),
+        BinaryOp::BitwiseOr => FunctionConstructorStaticSourceValue::Number(
+            function_constructor_static_to_int32(&left)?
+                | function_constructor_static_to_int32(&right)?,
+        ),
+        BinaryOp::BitwiseXor => FunctionConstructorStaticSourceValue::Number(
+            function_constructor_static_to_int32(&left)?
+                ^ function_constructor_static_to_int32(&right)?,
+        ),
+        BinaryOp::LeftShift => FunctionConstructorStaticSourceValue::Number(
+            function_constructor_static_to_int32(&left)?
+                .wrapping_shl(function_constructor_static_shift_count(&right)?),
+        ),
+        BinaryOp::RightShift => FunctionConstructorStaticSourceValue::Number(
+            function_constructor_static_to_int32(&left)?
+                >> function_constructor_static_shift_count(&right)?,
+        ),
+        BinaryOp::UnsignedRightShift => {
+            let shifted = function_constructor_static_to_uint32(&left)?
+                >> function_constructor_static_shift_count(&right)?;
+            FunctionConstructorStaticSourceValue::DecimalNumber(shifted.to_string())
+        }
+        _ => unreachable!("bitwise Function constructor source op"),
+    };
+    Some(result)
 }
 
 fn function_constructor_static_comparison_source_value(
@@ -894,6 +944,34 @@ fn function_constructor_static_loose_equal(
         ),
         _ => Some(false),
     }
+}
+
+fn function_constructor_static_shift_count(
+    value: &FunctionConstructorStaticSourceValue,
+) -> Option<u32> {
+    Some(function_constructor_static_to_uint32(value)? & 0x1f)
+}
+
+fn function_constructor_static_to_int32(
+    value: &FunctionConstructorStaticSourceValue,
+) -> Option<i32> {
+    let value = function_constructor_static_to_uint32(value)?;
+    if value >= 0x8000_0000 {
+        Some((i64::from(value) - 0x1_0000_0000) as i32)
+    } else {
+        Some(value as i32)
+    }
+}
+
+fn function_constructor_static_to_uint32(
+    value: &FunctionConstructorStaticSourceValue,
+) -> Option<u32> {
+    let value = function_constructor_static_number_to_f64(value)?;
+    if !value.is_finite() || value == 0.0 {
+        return Some(0);
+    }
+    let integer = value.trunc();
+    Some(integer.rem_euclid(4_294_967_296.0) as u32)
 }
 
 fn function_constructor_static_number_to_f64(

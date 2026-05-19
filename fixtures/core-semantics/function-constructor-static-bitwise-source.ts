@@ -1,0 +1,25 @@
+let bitAnd = Function(5 & 3);
+let bitOr = Function(5 | 2);
+let bitXor = Function(5 ^ 1);
+let leftShift = Function(1 << 3);
+let rightShift = Function(8 >> 1);
+let unsignedShift = Function(-1 >>> 1);
+let bitNot = Function(~5);
+let coerced = Function("5" & true);
+
+console.log(bitAnd());
+console.log(bitOr());
+console.log(bitXor());
+console.log(leftShift());
+console.log(rightShift());
+console.log(unsignedShift());
+console.log(bitNot());
+console.log(coerced());
+console.log(bitAnd.toString());
+console.log(bitOr.toString());
+console.log(bitXor.toString());
+console.log(leftShift.toString());
+console.log(rightShift.toString());
+console.log(unsignedShift.toString());
+console.log(bitNot.toString());
+console.log(coerced.toString());

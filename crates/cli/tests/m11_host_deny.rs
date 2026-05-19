@@ -2615,6 +2615,7 @@ fn standalone_fixtures_pass_host_deny() {
         "core-semantics/function-constructor-parameter-grammar.ts",
         "core-semantics/function-constructor-rest-params.ts",
         "core-semantics/function-constructor-static-array-source.ts",
+        "core-semantics/function-constructor-static-bitwise-source.ts",
         "core-semantics/function-constructor-static-comparison-source.ts",
         "core-semantics/function-constructor-static-decimal-expression-source.ts",
         "core-semantics/function-constructor-static-decimal-unary-source.ts",

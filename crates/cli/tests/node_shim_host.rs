@@ -1092,6 +1092,15 @@ fn static_function_constructor_comparison_source_uses_aot_lane() {
 }
 
 #[test]
+fn static_function_constructor_bitwise_source_uses_aot_lane() {
+    let fixture = "fixtures/core-semantics/function-constructor-static-bitwise-source.ts";
+    assert_node_shim_stdout(
+        fixture,
+        "undefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nfunction anonymous(\n) {\n1\n}\nfunction anonymous(\n) {\n7\n}\nfunction anonymous(\n) {\n4\n}\nfunction anonymous(\n) {\n8\n}\nfunction anonymous(\n) {\n4\n}\nfunction anonymous(\n) {\n2147483647\n}\nfunction anonymous(\n) {\n-6\n}\nfunction anonymous(\n) {\n1\n}\n",
+    );
+}
+
+#[test]
 fn static_function_constructor_numeric_binary_source_uses_aot_lane() {
     let fixture = "fixtures/core-semantics/function-constructor-static-numeric-binary-source.ts";
     assert_node_shim_stdout(
