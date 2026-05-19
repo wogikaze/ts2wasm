@@ -142,7 +142,6 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("Object.fromEntries", "issue-5004"),
     ("array-grouping", "issue-5004"),
     ("coalesce-expression", "issue-245"),
-    ("source-phase-imports", "I-20260518-7TXX6T"),
 ];
 
 /// Process test262 metadata directives if present in source.

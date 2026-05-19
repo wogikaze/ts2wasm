@@ -38,6 +38,8 @@ pub enum RuntimeFn {
     NumberToExponential,
     NumberToFixed,
     NumberToPrecision,
+    NumberToString,
+    NumberToStringRadix,
     BigIntToString,
     BigIntToBoolean,
     BigIntFromValue,
@@ -88,6 +90,9 @@ pub enum RuntimeFn {
     GreaterEqual,
     GreaterEqualFast,
     StrictEqual,
+    /// SameValueZero (used by Set.add/has/delete and Array.includes).
+    /// Like StrictEqual but NaN equals NaN.
+    SameValueZero,
     EqualEqual,
     BangEqual,
     StrictNotEqual,
@@ -127,14 +132,14 @@ pub enum RuntimeFn {
     SetDelete,
     SetSize,
     SetClear,
-    SetForEach,
     MapClear,
     MapSize,
-    MapForEach,
     MapEntriesArray,
     MapEntryPairsArray,
     /// TypedArray constructor from array: new Uint8Array([1,2,3]), etc.
     TypedArrayFromArray,
+    /// TypedArray constructor from length: new Uint8Array(length), etc.
+    TypedArrayCtorWithLength,
     /// TypedArray.prototype.set(source, offset?) for the array-backed TypedArray subset.
     TypedArraySet,
     /// Atomics helpers for the array-backed Int32Array subset.
@@ -150,12 +155,38 @@ pub enum RuntimeFn {
     AtomicsCompareExchange,
     AtomicsIsLockFree,
     AtomicsWait,
+    /// Atomics.waitAsync(typedArray, index, value) — non-threaded stub returns tagged zero.
+    AtomicsWaitAsync,
     AtomicsNotify,
     SetFromArray,
     SetValuesArray,
     SetEntriesArray,
     SetPrototypeAddGet,
     SetPrototypeAddSet,
+    /// Set.prototype.has getter/setter.
+    SetPrototypeHasGet,
+    SetPrototypeHasSet,
+    /// Set.prototype.delete getter/setter.
+    SetPrototypeDeleteGet,
+    SetPrototypeDeleteSet,
+    /// Set.prototype.forEach getter/setter.
+    SetPrototypeForEachGet,
+    SetPrototypeForEachSet,
+    /// Map.prototype.get getter/setter.
+    MapPrototypeGetGet,
+    MapPrototypeGetSet,
+    /// Map.prototype.set getter/setter.
+    MapPrototypeSetGet,
+    MapPrototypeSetSet,
+    /// Map.prototype.has getter/setter.
+    MapPrototypeHasGet,
+    MapPrototypeHasSet,
+    /// Map.prototype.delete getter/setter.
+    MapPrototypeDeleteGet,
+    MapPrototypeDeleteSet,
+    /// Map.prototype.forEach getter/setter.
+    MapPrototypeForEachGet,
+    MapPrototypeForEachSet,
     /// Set.prototype.isDisjointFrom(other) — returns true if sets have no common elements.
     SetIsDisjointFrom,
     /// Set.prototype.isSubsetOf(other) — returns true if every element of this is in other.
@@ -191,6 +222,8 @@ pub enum RuntimeFn {
     ArrayBufferIsView,
     /// ArrayBuffer.prototype.transfer(newLength) — creates a new buffer, copies data, detaches old.
     ArrayBufferTransfer,
+    /// ArrayBuffer.prototype.slice(begin, end) — creates a new buffer with copied bytes.
+    ArrayBufferSlice,
     /// new SharedArrayBuffer(byteLength) — shared memory allocation.
     SharedArrayBufferNew,
     DataViewNew,
@@ -210,6 +243,8 @@ pub enum RuntimeFn {
     DataViewSetFloat32,
     DataViewGetFloat64,
     DataViewSetFloat64,
+    DataViewGetFloat16,
+    DataViewSetFloat16,
     DataViewGetBigInt64,
     DataViewSetBigInt64,
     DataViewGetBigUint64,
@@ -250,6 +285,8 @@ pub enum RuntimeFn {
     DateSetSeconds,
     /// Date.prototype.setMilliseconds.
     DateSetMilliseconds,
+    /// B.2.4.2 Date.prototype.setYear (annexB).
+    DateSetYear,
     /// Date.parse via host shim.
     DateParse,
     /// Date.UTC via host shim.
@@ -267,6 +304,8 @@ pub enum RuntimeFn {
     DateGetUtcFullYear,
     /// Local-tz Date getters via host shim (single shim for all 8 getters).
     DateGetLocalTimeField,
+    /// B.2.4.1 Date.prototype.getYear (annexB).
+    DateGetYear,
     /// Date.prototype.toISOString via host shim.
     DateToISOString,
     /// Date.prototype.getTimezoneOffset via host shim.
@@ -275,11 +314,7 @@ pub enum RuntimeFn {
     DateToDateString,
     /// Date.prototype.toTimeString via host shim.
     DateToTimeString,
-    /// Annex B: Date.prototype.getYear (local year - 1900).
-    DateGetYear,
-    /// Annex B: Date.prototype.setYear (setFullYear with year+1900).
-    DateSetYear,
-    /// Annex B: Date.prototype.toGMTString (= toUTCString in GMT).
+    /// B.2.4.3 Date.prototype.toGMTString (annexB, alias for toUTCString).
     DateToGMTString,
     /// M10: String methods
     StringCharAt,
@@ -353,6 +388,8 @@ pub enum RuntimeFn {
     ArrayPush,
     ArrayPushGrow,
     ArrayPop,
+    /// new Array(length) with single numeric argument — allocates an array with given length (all holes)
+    ArrayCtorWithLength,
     ArraySlice,
     ArrayConcat,
     ArrayMapValueToString,
@@ -454,6 +491,10 @@ pub enum RuntimeFn {
     ObjectIsFrozen,
     /// Object.defineProperty(obj, prop, descriptor)
     ObjectDefineProperty,
+    /// Object.defineProperties(obj, props) — defines properties from a descriptors object
+    ObjectDefineProperties,
+    /// Object.getOwnPropertyDescriptors(obj) — returns own property descriptors as an object
+    ObjectGetOwnPropertyDescriptors,
     /// Object.assign(target, ...sources) — copies own enumerable properties
     ObjectAssign,
     /// Object.create(proto, propertiesObject)
@@ -470,6 +511,8 @@ pub enum RuntimeFn {
     IsPrototypeOf,
     /// Object.prototype.toString — returns "[object Object]" for objects, delegates to type-specific toString otherwise
     ObjectToString,
+    /// Error.prototype.toString — returns "name: message" per spec
+    ErrorToString,
     /// Object.prototype.toLocaleString — returns result of toString() for objects
     ObjectToLocaleString,
     /// Object.prototype.valueOf — returns the value unchanged (identity)
@@ -542,6 +585,8 @@ pub enum RuntimeFn {
     MathExpm1,
     /// Math.fround - no-op for integer-backed numbers.
     MathFround,
+    /// Math.f16round - round to half-precision.
+    MathF16round,
     /// Math.hypot - integer square root of summed squares.
     MathHypot,
     /// Math.log - exact integer-backed cases.
@@ -637,6 +682,31 @@ pub enum RuntimeFn {
     /// ECMAScript IteratorNext(iterator) — calls iterator.next() and returns
     /// the result object { value, done }.
     IteratorNext,
+    /// ECMAScript Iterator.from(iterable) — wraps GetIterator as a static method
+    /// on the Iterator constructor.
+    IteratorFrom,
+    IteratorMap,
+    IteratorFilter,
+    IteratorTake,
+    IteratorDrop,
+    IteratorToArray,
+    IteratorReduce,
+    IteratorForEach,
+    IteratorSome,
+    IteratorEvery,
+    IteratorFind,
+    /// Host-eval: direct eval with runtime source.
+    EvalDirectHost,
+    /// Host-eval: indirect eval with runtime source.
+    EvalIndirectHost,
+    /// Host Function constructor compile with runtime params/body.
+    FunctionCompileHost,
+    /// Host function-handle call produced by dynamic Function constructor compile.
+    FunctionCallHost,
+    /// Host function-handle method call with an explicit receiver.
+    FunctionCallMethodHost,
+    /// Host function-handle construct produced by dynamic Function constructor compile.
+    FunctionConstructHost,
     /// GeneratorYield(values) — creates a generator state object from collected yield values.
     GeneratorYield,
     /// GeneratorReturn(value) — creates a completed generator result object.
@@ -737,11 +807,21 @@ pub enum RuntimeGlobal {
     ModuleCache,
     CurrentModuleId,
     SetPrototypeAdd,
+    SetPrototypeHas,
+    SetPrototypeDelete,
+    SetPrototypeForEach,
+    MapPrototypeGet,
+    MapPrototypeSet,
+    MapPrototypeHas,
+    MapPrototypeDelete,
+    MapPrototypeForEach,
     ExceptionPending,
     ExceptionHandlerDepth,
     GlobalThisObject,
     ObjectPrototypeObject,
     ConsoleIndentLevel,
+    SetPrototypeObject,
+    MapPrototypeObject,
 }
 
 impl RuntimeGlobal {
@@ -760,11 +840,21 @@ impl RuntimeGlobal {
             Self::ModuleCache => "$module_cache",
             Self::CurrentModuleId => "$current_module_id",
             Self::SetPrototypeAdd => "$set_prototype_add",
+            Self::SetPrototypeHas => "$set_prototype_has",
+            Self::SetPrototypeDelete => "$set_prototype_delete",
+            Self::SetPrototypeForEach => "$set_prototype_for_each",
+            Self::MapPrototypeGet => "$map_prototype_get",
+            Self::MapPrototypeSet => "$map_prototype_set",
+            Self::MapPrototypeHas => "$map_prototype_has",
+            Self::MapPrototypeDelete => "$map_prototype_delete",
+            Self::MapPrototypeForEach => "$map_prototype_for_each",
             Self::ExceptionPending => "$exception_pending",
             Self::ExceptionHandlerDepth => "$exception_handler_depth",
             Self::GlobalThisObject => "$global_this_object",
             Self::ObjectPrototypeObject => "$object_prototype_object",
             Self::ConsoleIndentLevel => "$console_indent_level",
+            Self::SetPrototypeObject => "$set_prototype_object",
+            Self::MapPrototypeObject => "$map_prototype_object",
         }
     }
 
@@ -782,8 +872,19 @@ impl RuntimeGlobal {
             | Self::GcCallFrameCurrent => 0,
             Self::ModuleCache | Self::CurrentModuleId => 0,
             Self::SetPrototypeAdd => NATIVE_SET_ADD_SENTINEL,
+            Self::SetPrototypeHas
+            | Self::SetPrototypeDelete
+            | Self::SetPrototypeForEach
+            | Self::MapPrototypeGet
+            | Self::MapPrototypeSet
+            | Self::MapPrototypeHas
+            | Self::MapPrototypeDelete
+            | Self::MapPrototypeForEach => NATIVE_SET_ADD_SENTINEL,
             Self::ExceptionPending | Self::ExceptionHandlerDepth => 0,
-            Self::GlobalThisObject | Self::ObjectPrototypeObject => 0,
+            Self::GlobalThisObject
+            | Self::ObjectPrototypeObject
+            | Self::SetPrototypeObject
+            | Self::MapPrototypeObject => 0,
             Self::ConsoleIndentLevel => 0,
         }
     }
@@ -821,6 +922,16 @@ pub const GLOBALS_MODULE_RUNTIME: &[RuntimeGlobal] =
 const GLOBALS_SET_PROTOTYPE_ADD: &[RuntimeGlobal] = &[RuntimeGlobal::SetPrototypeAdd];
 const GLOBALS_GLOBAL_THIS: &[RuntimeGlobal] = &[RuntimeGlobal::GlobalThisObject];
 const GLOBALS_OBJECT_PROTOTYPE: &[RuntimeGlobal] = &[RuntimeGlobal::ObjectPrototypeObject];
+const GLOBALS_SET_PROTOTYPE: &[RuntimeGlobal] = &[RuntimeGlobal::SetPrototypeObject];
+const GLOBALS_MAP_PROTOTYPE: &[RuntimeGlobal] = &[RuntimeGlobal::MapPrototypeObject];
+const GLOBALS_SET_PROTOTYPE_HAS: &[RuntimeGlobal] = &[RuntimeGlobal::SetPrototypeHas];
+const GLOBALS_SET_PROTOTYPE_DELETE: &[RuntimeGlobal] = &[RuntimeGlobal::SetPrototypeDelete];
+const GLOBALS_SET_PROTOTYPE_FOR_EACH: &[RuntimeGlobal] = &[RuntimeGlobal::SetPrototypeForEach];
+const GLOBALS_MAP_PROTOTYPE_GET: &[RuntimeGlobal] = &[RuntimeGlobal::MapPrototypeGet];
+const GLOBALS_MAP_PROTOTYPE_SET: &[RuntimeGlobal] = &[RuntimeGlobal::MapPrototypeSet];
+const GLOBALS_MAP_PROTOTYPE_HAS: &[RuntimeGlobal] = &[RuntimeGlobal::MapPrototypeHas];
+const GLOBALS_MAP_PROTOTYPE_DELETE: &[RuntimeGlobal] = &[RuntimeGlobal::MapPrototypeDelete];
+const GLOBALS_MAP_PROTOTYPE_FOR_EACH: &[RuntimeGlobal] = &[RuntimeGlobal::MapPrototypeForEach];
 pub const GLOBALS_EXCEPTION_RUNTIME: &[RuntimeGlobal] = &[
     RuntimeGlobal::ExceptionPending,
     RuntimeGlobal::ExceptionHandlerDepth,
@@ -898,6 +1009,13 @@ const STRICT_EQUAL_DEPS: &[RuntimeFn] = &[
     RuntimeFn::MemEqual,
     RuntimeFn::NumberToI32,
 ];
+const SAME_VALUE_ZERO_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::IsString,
+    RuntimeFn::StringEqual,
+    RuntimeFn::BigIntCompare,
+    RuntimeFn::MemEqual,
+    RuntimeFn::NumberToI32,
+];
 const EQUAL_EQUAL_DEPS: &[RuntimeFn] = &[
     RuntimeFn::StrictEqual,
     RuntimeFn::NumberFromI32,
@@ -921,10 +1039,6 @@ const DATE_SET_UTC_FULL_YEAR_DEPS: &[RuntimeFn] = &[
     RuntimeFn::DateGetUtcSeconds,
     RuntimeFn::DateGetUtcMilliseconds,
 ];
-
-const DATE_GET_YEAR_DEPS: &[RuntimeFn] = &[RuntimeFn::DateGetUtcFullYear];
-
-const DATE_SET_YEAR_DEPS: &[RuntimeFn] = &[RuntimeFn::DateSetUTCFullYear];
 
 const IMPORT_FD_READ: &[HostImport] = &[HostImport::FdRead];
 const IMPORT_FD_WRITE: &[HostImport] = &[HostImport::FdWrite];
@@ -959,6 +1073,24 @@ const IMPORT_DATE_TO_DATE_STRING: &[HostImport] = &[HostImport::DateToDateString
 const IMPORT_DATE_TO_TIME_STRING: &[HostImport] = &[HostImport::DateToTimeString];
 const IMPORT_DATE_PARSE: &[HostImport] = &[HostImport::DateParse];
 const IMPORT_DATE_UTC: &[HostImport] = &[HostImport::DateUTC];
+const IMPORT_MATH_ACOS: &[HostImport] = &[HostImport::MathAcos];
+const IMPORT_MATH_ACOSH: &[HostImport] = &[HostImport::MathAcosh];
+const IMPORT_MATH_ASIN: &[HostImport] = &[HostImport::MathAsin];
+const IMPORT_MATH_ASINH: &[HostImport] = &[HostImport::MathAsinh];
+const IMPORT_MATH_ATAN: &[HostImport] = &[HostImport::MathAtan];
+const IMPORT_MATH_ATANH: &[HostImport] = &[HostImport::MathAtanh];
+const IMPORT_MATH_COS: &[HostImport] = &[HostImport::MathCos];
+const IMPORT_MATH_COSH: &[HostImport] = &[HostImport::MathCosh];
+const IMPORT_MATH_EXP: &[HostImport] = &[HostImport::MathExp];
+const IMPORT_MATH_EXPM1: &[HostImport] = &[HostImport::MathExpm1];
+const IMPORT_MATH_LOG: &[HostImport] = &[HostImport::MathLog];
+const IMPORT_MATH_LOG10: &[HostImport] = &[HostImport::MathLog10];
+const IMPORT_MATH_LOG1P: &[HostImport] = &[HostImport::MathLog1p];
+const IMPORT_MATH_LOG2: &[HostImport] = &[HostImport::MathLog2];
+const IMPORT_MATH_SIN: &[HostImport] = &[HostImport::MathSin];
+const IMPORT_MATH_SINH: &[HostImport] = &[HostImport::MathSinh];
+const IMPORT_MATH_TAN: &[HostImport] = &[HostImport::MathTan];
+const IMPORT_MATH_TANH: &[HostImport] = &[HostImport::MathTanh];
 const IMPORT_STRING_NORMALIZE: &[HostImport] = &[HostImport::StringNormalize];
 const IMPORT_INTL_NUMBER_FORMAT_FORMAT: &[HostImport] = &[HostImport::IntlNumberFormatFormat];
 const IMPORT_INTL_DATE_TIME_FORMAT_FORMAT: &[HostImport] = &[HostImport::IntlDateTimeFormatFormat];
@@ -996,8 +1128,32 @@ const CAP_HOST_DATE_TO_DATE_STRING: &[Capability] = &[Capability::HostDateToDate
 const CAP_HOST_DATE_TO_TIME_STRING: &[Capability] = &[Capability::HostDateToTimeString];
 const CAP_HOST_DATE_PARSE: &[Capability] = &[Capability::HostDateParse];
 const CAP_HOST_DATE_UTC: &[Capability] = &[Capability::HostDateUTC];
+const CAP_HOST_MATH_ACOS: &[Capability] = &[Capability::HostMathAcos];
+const CAP_HOST_MATH_ACOSH: &[Capability] = &[Capability::HostMathAcosh];
+const CAP_HOST_MATH_ASIN: &[Capability] = &[Capability::HostMathAsin];
+const CAP_HOST_MATH_ASINH: &[Capability] = &[Capability::HostMathAsinh];
+const CAP_HOST_MATH_ATAN: &[Capability] = &[Capability::HostMathAtan];
+const CAP_HOST_MATH_ATANH: &[Capability] = &[Capability::HostMathAtanh];
+const CAP_HOST_MATH_COS: &[Capability] = &[Capability::HostMathCos];
+const CAP_HOST_MATH_COSH: &[Capability] = &[Capability::HostMathCosh];
+const CAP_HOST_MATH_EXP: &[Capability] = &[Capability::HostMathExp];
+const CAP_HOST_MATH_EXPM1: &[Capability] = &[Capability::HostMathExpm1];
+const CAP_HOST_MATH_LOG: &[Capability] = &[Capability::HostMathLog];
+const CAP_HOST_MATH_LOG10: &[Capability] = &[Capability::HostMathLog10];
+const CAP_HOST_MATH_LOG1P: &[Capability] = &[Capability::HostMathLog1p];
+const CAP_HOST_MATH_LOG2: &[Capability] = &[Capability::HostMathLog2];
+const CAP_HOST_MATH_SIN: &[Capability] = &[Capability::HostMathSin];
+const CAP_HOST_MATH_SINH: &[Capability] = &[Capability::HostMathSinh];
+const CAP_HOST_MATH_TAN: &[Capability] = &[Capability::HostMathTan];
+const CAP_HOST_MATH_TANH: &[Capability] = &[Capability::HostMathTanh];
 const CAP_HOST_REFLECT_APPLY: &[Capability] = &[Capability::HostReflectApply];
 const CAP_HOST_REFLECT_CONSTRUCT: &[Capability] = &[Capability::HostReflectConstruct];
+const CAP_HOST_EVAL_DIRECT: &[Capability] = &[Capability::HostEvalDirect];
+const CAP_HOST_EVAL_INDIRECT: &[Capability] = &[Capability::HostEvalIndirect];
+const CAP_HOST_FUNCTION_COMPILE: &[Capability] = &[Capability::HostFunctionCompile];
+const CAP_HOST_FUNCTION_CALL: &[Capability] = &[Capability::HostFunctionCall];
+const CAP_HOST_FUNCTION_CALL_METHOD: &[Capability] = &[Capability::HostFunctionCallMethod];
+const CAP_HOST_FUNCTION_CONSTRUCT: &[Capability] = &[Capability::HostFunctionConstruct];
 const CAP_STRING_NORMALIZE: &[Capability] = &[Capability::HostStringNormalize];
 const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::UNDEFINED,
@@ -1081,6 +1237,9 @@ const STRING_SPLIT_DEPS: &[RuntimeFn] = &[
     RuntimeFn::Copy,
     RuntimeFn::IsString,
     RuntimeFn::MemEqual,
+    RuntimeFn::RegexpMatchInner,
+    RuntimeFn::RegexpParseFlags,
+    RuntimeFn::StringSubstring,
 ];
 const STRING_TRIM_DEPS: &[RuntimeFn] =
     &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
@@ -1152,6 +1311,7 @@ const ARRAY_PUSH_DEPS: &[RuntimeFn] = &[
 ];
 const ARRAY_PUSH_GROW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_POP_DEPS: &[RuntimeFn] = &[];
+const ARRAY_CTOR_WITH_LENGTH_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const ARRAY_SLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_CONCAT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_MAP_VALUE_TO_STRING_DEPS: &[RuntimeFn] = &[
@@ -1178,7 +1338,7 @@ const ARRAY_JOIN_DEPS: &[RuntimeFn] = &[
 ];
 const ARRAY_REVERSE_DEPS: &[RuntimeFn] = &[];
 const ARRAY_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
-const ARRAY_INCLUDES_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
+const ARRAY_INCLUDES_DEPS: &[RuntimeFn] = &[RuntimeFn::SameValueZero];
 const ARRAY_FIND_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 const ARRAY_FIND_INDEX_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 const ARRAY_FIND_LAST_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
@@ -1269,6 +1429,18 @@ const OBJECT_DEFINE_PROPERTY_DEPS: &[RuntimeFn] = &[
     RuntimeFn::PropertyGet,
     RuntimeFn::PropertySet,
 ];
+const OBJECT_DEFINE_PROPERTIES_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ObjectKeys,
+    RuntimeFn::PropertyGet,
+    RuntimeFn::ObjectDefineProperty,
+];
+const OBJECT_GET_OWN_PROPERTY_DESCRIPTORS_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ReflectOwnKeys,
+    RuntimeFn::ObjectGetOwnPropertyDescriptor,
+    RuntimeFn::AllocHeap,
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::PropertySet,
+];
 const OBJECT_ASSIGN_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ObjectKeys,
     RuntimeFn::PropertyGet,
@@ -1281,6 +1453,8 @@ const PROPERTY_IS_ENUMERABLE_DEPS: &[RuntimeFn] =
 const IS_PROTOTYPE_OF_DEPS: &[RuntimeFn] = &[];
 const OBJECT_TO_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::BooleanToString];
 const OBJECT_TO_STRING_RUNTIME_STRINGS: &[&str] = &["[object Object]"];
+const ERROR_TO_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::PropertyGet, RuntimeFn::Concat];
+const ERROR_TO_STRING_RUNTIME_STRINGS: &[&str] = &["name", "message", "Error", ": "];
 const OBJECT_TO_LOCALE_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::ObjectToString];
 const GLOBAL_THIS_DEPS: &[RuntimeFn] = &[RuntimeFn::ObjectCreate];
 const INDEX_DEPS: &[RuntimeFn] = &[
@@ -1291,19 +1465,38 @@ const INDEX_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ArrayGet,
 ];
 const MAP_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
-const MAP_GET_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyGet];
-const MAP_SET_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertySet];
-const MAP_HAS_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyHas];
-const MAP_DELETE_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyDelete];
+/// Map.get uses SameValueZero for key equality (per ECMAScript spec).
+const MAP_GET_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::PropertyGet,
+    RuntimeFn::SameValueZero,
+];
+/// Map.set uses SameValueZero for key equality (per ECMAScript spec).
+const MAP_SET_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::PropertySet,
+    RuntimeFn::SameValueZero,
+];
+/// Map.has uses SameValueZero for key equality (per ECMAScript spec).
+const MAP_HAS_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::PropertyHas,
+    RuntimeFn::SameValueZero,
+];
+/// Map.delete uses SameValueZero for key equality (per ECMAScript spec).
+const MAP_DELETE_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::PropertyDelete,
+    RuntimeFn::SameValueZero,
+];
 const SET_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
-const SET_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
-const SET_HAS_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
-const SET_DELETE_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
+const SET_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::SameValueZero];
+const SET_HAS_DEPS: &[RuntimeFn] = &[RuntimeFn::SameValueZero];
+const SET_DELETE_DEPS: &[RuntimeFn] = &[RuntimeFn::SameValueZero];
 const SET_SIZE_DEPS: &[RuntimeFn] = &[];
 const SET_CLEAR_DEPS: &[RuntimeFn] = &[];
 const SET_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::SetNew, RuntimeFn::SetAdd];
 const SET_VALUES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
-const SET_FOR_EACH_DEPS: &[RuntimeFn] = &[];
 const SET_IS_DISJOINT_FROM_DEPS: &[RuntimeFn] = &[RuntimeFn::SetHas];
 const SET_IS_SUBSET_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::SetHas];
 const SET_IS_SUPERSET_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::SetHas];
@@ -1317,15 +1510,16 @@ const SET_SYMMETRIC_DIFFERENCE_DEPS: &[RuntimeFn] =
 const MAP_VALUES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const MAP_CLEAR_DEPS: &[RuntimeFn] = &[];
 const MAP_SIZE_DEPS: &[RuntimeFn] = &[];
-const MAP_FOR_EACH_DEPS: &[RuntimeFn] = &[];
 const MAP_ENTRIES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const MAP_ENTRY_PAIRS_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const TYPED_ARRAY_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Index];
+const TYPED_ARRAY_CTOR_WITH_LENGTH_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const TYPED_ARRAY_SET_DEPS: &[RuntimeFn] = &[RuntimeFn::GetLength, RuntimeFn::Index];
 const ATOMICS_VALUE_DEPS: &[RuntimeFn] = &[RuntimeFn::AtomicsElementPtr, RuntimeFn::NumberFromI32];
 const ATOMICS_NO_DEPS: &[RuntimeFn] = &[];
 const ARRAYBUFFER_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const ARRAYBUFFER_TRANSFER_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const ARRAYBUFFER_SLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const SHARED_ARRAY_BUFFER_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATAVIEW_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATAVIEW_GET_BIGINT64_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
@@ -1348,6 +1542,16 @@ const NUMBER_TO_FIXED_DEPS: &[RuntimeFn] = &[
 ];
 const NUMBER_TO_EXPONENTIAL_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ValueToStringInto,
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+];
+const NUMBER_TO_STRING_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+];
+const NUMBER_TO_STRING_RADIX_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::NumberToI32,
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,
 ];
@@ -1392,6 +1596,13 @@ const SYMBOL_FOR_RUNTIME_STRINGS: &[&str] = &[];
 
 pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
     match name {
+        "EvalDirectHost" => Some(RuntimeFn::EvalDirectHost),
+        "EvalIndirectHost" => Some(RuntimeFn::EvalIndirectHost),
+        "FunctionCompileHost" => Some(RuntimeFn::FunctionCompileHost),
+        "FunctionCallHost" => Some(RuntimeFn::FunctionCallHost),
+        "FunctionCallMethodHost" => Some(RuntimeFn::FunctionCallMethodHost),
+        "FunctionConstructHost" => Some(RuntimeFn::FunctionConstructHost),
+        "e" => Some(RuntimeFn::EvalDirectHost),
         "MathFloor" => Some(RuntimeFn::MathFloor),
         "MathCeil" => Some(RuntimeFn::MathCeil),
         "MathRound" => Some(RuntimeFn::MathRound),
@@ -1417,6 +1628,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MathExp" => Some(RuntimeFn::MathExp),
         "MathExpm1" => Some(RuntimeFn::MathExpm1),
         "MathFround" => Some(RuntimeFn::MathFround),
+        "MathF16round" => Some(RuntimeFn::MathF16round),
         "MathHypot" => Some(RuntimeFn::MathHypot),
         "MathLog" => Some(RuntimeFn::MathLog),
         "MathLog10" => Some(RuntimeFn::MathLog10),
@@ -1473,6 +1685,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ObjectIsSealed" => Some(RuntimeFn::ObjectIsSealed),
         "ObjectIsFrozen" => Some(RuntimeFn::ObjectIsFrozen),
         "ObjectDefineProperty" => Some(RuntimeFn::ObjectDefineProperty),
+        "ObjectDefineProperties" => Some(RuntimeFn::ObjectDefineProperties),
+        "ObjectGetOwnPropertyDescriptors" => Some(RuntimeFn::ObjectGetOwnPropertyDescriptors),
         "ReflectDefineProperty" => Some(RuntimeFn::ReflectDefineProperty),
         "ReflectDeleteProperty" => Some(RuntimeFn::ReflectDeleteProperty),
         "ReflectGet" => Some(RuntimeFn::ReflectGet),
@@ -1491,6 +1705,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "PropertyIsEnumerable" => Some(RuntimeFn::PropertyIsEnumerable),
         "IsPrototypeOf" => Some(RuntimeFn::IsPrototypeOf),
         "ObjectToString" => Some(RuntimeFn::ObjectToString),
+        "ErrorToString" => Some(RuntimeFn::ErrorToString),
         "ObjectToLocaleString" => Some(RuntimeFn::ObjectToLocaleString),
         "ValueOf" => Some(RuntimeFn::ValueOf),
         "$instanceof" => Some(RuntimeFn::InstanceOf),
@@ -1538,6 +1753,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayPushGrow" => Some(RuntimeFn::ArrayPushGrow),
         "ArrayIndexPresent" => Some(RuntimeFn::ArrayIndexPresent),
         "ArrayPop" => Some(RuntimeFn::ArrayPop),
+        "ArrayCtorWithLength" => Some(RuntimeFn::ArrayCtorWithLength),
         "ArraySlice" => Some(RuntimeFn::ArraySlice),
         "ArrayConcat" => Some(RuntimeFn::ArrayConcat),
         "ArrayMapValueToString" => Some(RuntimeFn::ArrayMapValueToString),
@@ -1593,13 +1809,12 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "SetDelete" => Some(RuntimeFn::SetDelete),
         "SetSize" => Some(RuntimeFn::SetSize),
         "SetClear" => Some(RuntimeFn::SetClear),
-        "SetForEach" => Some(RuntimeFn::SetForEach),
         "MapClear" => Some(RuntimeFn::MapClear),
         "MapSize" => Some(RuntimeFn::MapSize),
-        "MapForEach" => Some(RuntimeFn::MapForEach),
         "MapEntriesArray" => Some(RuntimeFn::MapEntriesArray),
         "MapEntryPairsArray" => Some(RuntimeFn::MapEntryPairsArray),
         "TypedArrayFromArray" => Some(RuntimeFn::TypedArrayFromArray),
+        "TypedArrayCtorWithLength" => Some(RuntimeFn::TypedArrayCtorWithLength),
         "TypedArraySet" => Some(RuntimeFn::TypedArraySet),
         "AtomicsElementPtr" => Some(RuntimeFn::AtomicsElementPtr),
         "AtomicsLoad" => Some(RuntimeFn::AtomicsLoad),
@@ -1613,10 +1828,12 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "AtomicsCompareExchange" => Some(RuntimeFn::AtomicsCompareExchange),
         "AtomicsIsLockFree" => Some(RuntimeFn::AtomicsIsLockFree),
         "AtomicsWait" => Some(RuntimeFn::AtomicsWait),
+        "AtomicsWaitAsync" => Some(RuntimeFn::AtomicsWaitAsync),
         "AtomicsNotify" => Some(RuntimeFn::AtomicsNotify),
         "ArrayBufferNew" => Some(RuntimeFn::ArrayBufferNew),
         "ArrayBufferIsView" => Some(RuntimeFn::ArrayBufferIsView),
         "ArrayBufferTransfer" => Some(RuntimeFn::ArrayBufferTransfer),
+        "ArrayBufferSlice" => Some(RuntimeFn::ArrayBufferSlice),
         "SharedArrayBufferNew" => Some(RuntimeFn::SharedArrayBufferNew),
         "DataViewNew" => Some(RuntimeFn::DataViewNew),
         "DataViewGetInt8" => Some(RuntimeFn::DataViewGetInt8),
@@ -1635,6 +1852,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DataViewSetFloat32" => Some(RuntimeFn::DataViewSetFloat32),
         "DataViewGetFloat64" => Some(RuntimeFn::DataViewGetFloat64),
         "DataViewSetFloat64" => Some(RuntimeFn::DataViewSetFloat64),
+        "DataViewGetFloat16" => Some(RuntimeFn::DataViewGetFloat16),
+        "DataViewSetFloat16" => Some(RuntimeFn::DataViewSetFloat16),
         "DataViewGetBigInt64" => Some(RuntimeFn::DataViewGetBigInt64),
         "DataViewSetBigInt64" => Some(RuntimeFn::DataViewSetBigInt64),
         "DataViewGetBigUint64" => Some(RuntimeFn::DataViewGetBigUint64),
@@ -1644,6 +1863,22 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "SetEntriesArray" => Some(RuntimeFn::SetEntriesArray),
         "SetPrototypeAddGet" => Some(RuntimeFn::SetPrototypeAddGet),
         "SetPrototypeAddSet" => Some(RuntimeFn::SetPrototypeAddSet),
+        "SetPrototypeHasGet" => Some(RuntimeFn::SetPrototypeHasGet),
+        "SetPrototypeHasSet" => Some(RuntimeFn::SetPrototypeHasSet),
+        "SetPrototypeDeleteGet" => Some(RuntimeFn::SetPrototypeDeleteGet),
+        "SetPrototypeDeleteSet" => Some(RuntimeFn::SetPrototypeDeleteSet),
+        "SetPrototypeForEachGet" => Some(RuntimeFn::SetPrototypeForEachGet),
+        "SetPrototypeForEachSet" => Some(RuntimeFn::SetPrototypeForEachSet),
+        "MapPrototypeGetGet" => Some(RuntimeFn::MapPrototypeGetGet),
+        "MapPrototypeGetSet" => Some(RuntimeFn::MapPrototypeGetSet),
+        "MapPrototypeSetGet" => Some(RuntimeFn::MapPrototypeSetGet),
+        "MapPrototypeSetSet" => Some(RuntimeFn::MapPrototypeSetSet),
+        "MapPrototypeHasGet" => Some(RuntimeFn::MapPrototypeHasGet),
+        "MapPrototypeHasSet" => Some(RuntimeFn::MapPrototypeHasSet),
+        "MapPrototypeDeleteGet" => Some(RuntimeFn::MapPrototypeDeleteGet),
+        "MapPrototypeDeleteSet" => Some(RuntimeFn::MapPrototypeDeleteSet),
+        "MapPrototypeForEachGet" => Some(RuntimeFn::MapPrototypeForEachGet),
+        "MapPrototypeForEachSet" => Some(RuntimeFn::MapPrototypeForEachSet),
         "SetIsDisjointFrom" => Some(RuntimeFn::SetIsDisjointFrom),
         "SetIsSubsetOf" => Some(RuntimeFn::SetIsSubsetOf),
         "SetIsSupersetOf" => Some(RuntimeFn::SetIsSupersetOf),
@@ -1724,6 +1959,17 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "Dollar262Eval" => Some(RuntimeFn::Dollar262Eval),
         "GetIterator" => Some(RuntimeFn::GetIterator),
         "IteratorNext" => Some(RuntimeFn::IteratorNext),
+        "IteratorFrom" => Some(RuntimeFn::IteratorFrom),
+        "IteratorFind" => Some(RuntimeFn::IteratorFind),
+        "IteratorEvery" => Some(RuntimeFn::IteratorEvery),
+        "IteratorSome" => Some(RuntimeFn::IteratorSome),
+        "IteratorForEach" => Some(RuntimeFn::IteratorForEach),
+        "IteratorReduce" => Some(RuntimeFn::IteratorReduce),
+        "IteratorToArray" => Some(RuntimeFn::IteratorToArray),
+        "IteratorDrop" => Some(RuntimeFn::IteratorDrop),
+        "IteratorTake" => Some(RuntimeFn::IteratorTake),
+        "IteratorFilter" => Some(RuntimeFn::IteratorFilter),
+        "IteratorMap" => Some(RuntimeFn::IteratorMap),
         "GeneratorYield" => Some(RuntimeFn::GeneratorYield),
         "GeneratorReturn" => Some(RuntimeFn::GeneratorReturn),
         "GeneratorNext" => Some(RuntimeFn::GeneratorNext),
@@ -1799,6 +2045,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "NumberToFixed" => Some(RuntimeFn::NumberToFixed),
         "NumberToI32" => Some(RuntimeFn::NumberToI32),
         "NumberToPrecision" => Some(RuntimeFn::NumberToPrecision),
+        "NumberToString" => Some(RuntimeFn::NumberToString),
+        "NumberToStringRadix" => Some(RuntimeFn::NumberToStringRadix),
         "Or" => Some(RuntimeFn::Or),
         "PathBasename" => Some(RuntimeFn::PathBasename),
         "PathDirname" => Some(RuntimeFn::PathDirname),
@@ -1820,6 +2068,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ReadStdinBytes" => Some(RuntimeFn::ReadStdinBytes),
         "RegexpMatchInner" => Some(RuntimeFn::RegexpMatchInner),
         "StrictEqual" => Some(RuntimeFn::StrictEqual),
+        "SameValueZero" => Some(RuntimeFn::SameValueZero),
         "StrictNotEqual" => Some(RuntimeFn::StrictNotEqual),
         "StringEqual" => Some(RuntimeFn::StringEqual),
         "Sub" => Some(RuntimeFn::Sub),
@@ -1847,10 +2096,12 @@ impl RuntimeFn {
             | Self::ArrayBufferNew
             | Self::ArrayBufferIsView
             | Self::ArrayBufferTransfer
+            | Self::ArrayBufferSlice
             | Self::SharedArrayBufferNew
             | Self::ArrayPush
             | Self::ArrayPushGrow
             | Self::ArrayPop
+            | Self::ArrayCtorWithLength
             | Self::ArraySlice
             | Self::ArrayConcat
             | Self::ArrayMapValueToString
@@ -1960,16 +2211,16 @@ impl RuntimeFn {
             | Self::DateSetMinutes
             | Self::DateSetSeconds
             | Self::DateSetMilliseconds
+            | Self::DateSetYear
             | Self::DateParse
             | Self::DateUTC
             | Self::DateToString
             | Self::DateGetLocalTimeField
+            | Self::DateGetYear
             | Self::DateToISOString
             | Self::DateGetTimezoneOffset
             | Self::DateToDateString
             | Self::DateToTimeString
-            | Self::DateGetYear
-            | Self::DateSetYear
             | Self::DateToGMTString
             | Self::DateGetUtcMilliseconds
             | Self::DateGetUtcSeconds
@@ -1998,9 +2249,26 @@ impl RuntimeFn {
             | Self::PathDirname
             | Self::CryptoRandomBytes
             | Self::Dollar262Global
-            | Self::Dollar262Eval => RuntimeDomain::Host,
+            | Self::Dollar262Eval
+            | Self::FunctionCompileHost
+            | Self::FunctionCallHost
+            | Self::FunctionCallMethodHost
+            | Self::FunctionConstructHost => RuntimeDomain::Host,
             Self::GetIterator
             | Self::IteratorNext
+            | Self::IteratorFrom
+            | Self::IteratorMap
+            | Self::IteratorFilter
+            | Self::IteratorTake
+            | Self::IteratorDrop
+            | Self::IteratorToArray
+            | Self::IteratorReduce
+            | Self::IteratorForEach
+            | Self::IteratorSome
+            | Self::IteratorEvery
+            | Self::IteratorFind
+            | Self::EvalDirectHost
+            | Self::EvalIndirectHost
             | Self::GeneratorYield
             | Self::GeneratorReturn
             | Self::GeneratorNext => RuntimeDomain::Iterator,
@@ -2018,10 +2286,8 @@ impl RuntimeFn {
             | Self::SetDelete
             | Self::SetSize
             | Self::SetClear
-            | Self::SetForEach
             | Self::MapClear
             | Self::MapSize
-            | Self::MapForEach
             | Self::MapEntriesArray
             | Self::MapEntryPairsArray
             | Self::SetFromArray
@@ -2029,6 +2295,22 @@ impl RuntimeFn {
             | Self::SetEntriesArray
             | Self::SetPrototypeAddGet
             | Self::SetPrototypeAddSet
+            | Self::SetPrototypeHasGet
+            | Self::SetPrototypeHasSet
+            | Self::SetPrototypeDeleteGet
+            | Self::SetPrototypeDeleteSet
+            | Self::SetPrototypeForEachGet
+            | Self::SetPrototypeForEachSet
+            | Self::MapPrototypeGetGet
+            | Self::MapPrototypeGetSet
+            | Self::MapPrototypeSetGet
+            | Self::MapPrototypeSetSet
+            | Self::MapPrototypeHasGet
+            | Self::MapPrototypeHasSet
+            | Self::MapPrototypeDeleteGet
+            | Self::MapPrototypeDeleteSet
+            | Self::MapPrototypeForEachGet
+            | Self::MapPrototypeForEachSet
             | Self::SetIsDisjointFrom
             | Self::SetIsSubsetOf
             | Self::SetIsSupersetOf
@@ -2076,6 +2358,7 @@ impl RuntimeFn {
             | Self::MathExp
             | Self::MathExpm1
             | Self::MathFround
+            | Self::MathF16round
             | Self::MathHypot
             | Self::MathLog
             | Self::MathLog10
@@ -2092,6 +2375,8 @@ impl RuntimeFn {
             | Self::NumberToExponential
             | Self::NumberToFixed
             | Self::NumberToPrecision
+            | Self::NumberToString
+            | Self::NumberToStringRadix
             | Self::NumberToI32
             | Self::NumberIsNaN
             | Self::NumberIsFinite
@@ -2120,6 +2405,8 @@ impl RuntimeFn {
             | Self::ObjectIsSealed
             | Self::ObjectIsFrozen
             | Self::ObjectDefineProperty
+            | Self::ObjectDefineProperties
+            | Self::ObjectGetOwnPropertyDescriptors
             | Self::ObjectAssign
             | Self::ObjectCreate
             | Self::ObjectPrototype
@@ -2128,6 +2415,7 @@ impl RuntimeFn {
             | Self::PropertyIsEnumerable
             | Self::IsPrototypeOf
             | Self::ObjectToString
+            | Self::ErrorToString
             | Self::ObjectToLocaleString
             | Self::ReflectDefineProperty
             | Self::ReflectDeleteProperty
@@ -2163,6 +2451,7 @@ impl RuntimeFn {
             | Self::GreaterEqual
             | Self::GreaterEqualFast
             | Self::StrictEqual
+            | Self::SameValueZero
             | Self::EqualEqual
             | Self::BangEqual
             | Self::StrictNotEqual
@@ -2245,6 +2534,7 @@ impl RuntimeFn {
             | Self::BooleanToString
             | Self::NumberCoerce => RuntimeDomain::TypeCoercion,
             Self::TypedArrayFromArray
+            | Self::TypedArrayCtorWithLength
             | Self::TypedArraySet
             | Self::AtomicsElementPtr
             | Self::AtomicsLoad
@@ -2258,6 +2548,7 @@ impl RuntimeFn {
             | Self::AtomicsCompareExchange
             | Self::AtomicsIsLockFree
             | Self::AtomicsWait
+            | Self::AtomicsWaitAsync
             | Self::AtomicsNotify
             | Self::DataViewNew
             | Self::DataViewGetInt8
@@ -2276,6 +2567,8 @@ impl RuntimeFn {
             | Self::DataViewSetFloat32
             | Self::DataViewGetFloat64
             | Self::DataViewSetFloat64
+            | Self::DataViewGetFloat16
+            | Self::DataViewSetFloat16
             | Self::DataViewGetBigInt64
             | Self::DataViewSetBigInt64
             | Self::DataViewGetBigUint64
@@ -2303,6 +2596,24 @@ impl RuntimeFn {
             | Self::SetIntersection
             | Self::SetDifference
             | Self::SetSymmetricDifference => GLOBALS_SET_PROTOTYPE_ADD,
+            Self::SetPrototypeHasGet | Self::SetPrototypeHasSet => GLOBALS_SET_PROTOTYPE_HAS,
+            Self::SetPrototypeDeleteGet | Self::SetPrototypeDeleteSet => {
+                GLOBALS_SET_PROTOTYPE_DELETE
+            }
+            Self::SetPrototypeForEachGet | Self::SetPrototypeForEachSet => {
+                GLOBALS_SET_PROTOTYPE_FOR_EACH
+            }
+            Self::MapPrototypeGetGet | Self::MapPrototypeGetSet => GLOBALS_MAP_PROTOTYPE_GET,
+            Self::MapPrototypeSetGet | Self::MapPrototypeSetSet => GLOBALS_MAP_PROTOTYPE_SET,
+            Self::MapPrototypeHasGet | Self::MapPrototypeHasSet => GLOBALS_MAP_PROTOTYPE_HAS,
+            Self::MapPrototypeDeleteGet | Self::MapPrototypeDeleteSet => {
+                GLOBALS_MAP_PROTOTYPE_DELETE
+            }
+            Self::MapPrototypeForEachGet | Self::MapPrototypeForEachSet => {
+                GLOBALS_MAP_PROTOTYPE_FOR_EACH
+            }
+            Self::SetNew | Self::WeakSetNew => GLOBALS_SET_PROTOTYPE,
+            Self::MapNew | Self::WeakMapNew => GLOBALS_MAP_PROTOTYPE,
             Self::ObjectPrototype => GLOBALS_OBJECT_PROTOTYPE,
             Self::GlobalThis => GLOBALS_GLOBAL_THIS,
             Self::ConsoleGroupStart | Self::ConsoleGroupEndFn => GLOBALS_CONSOLE_INDENT,
@@ -2385,6 +2696,7 @@ impl RuntimeFn {
             | Self::ParseInt
             | Self::JsonParse
             | Self::AggregateError
+            | Self::SameValueZero
             | Self::StrictEqual
             | Self::ValueToStringInto
             | Self::NumberToExponential
@@ -2398,7 +2710,8 @@ impl RuntimeFn {
             | Self::DataViewGetUint8
             | Self::SymbolToPrimitive
             | Self::SymbolHasInstance
-            | Self::AtomicsLoad => RuntimeSignature {
+            | Self::AtomicsLoad
+            | Self::NumberToStringRadix => RuntimeSignature {
                 params: 2,
                 results: 1,
             },
@@ -2415,6 +2728,7 @@ impl RuntimeFn {
             | Self::AtomicsOr
             | Self::AtomicsXor
             | Self::AtomicsExchange
+            | Self::AtomicsWaitAsync
             | Self::AtomicsNotify
             | Self::JsonStringify
             | Self::TypedArraySet
@@ -2425,8 +2739,10 @@ impl RuntimeFn {
             | Self::DataViewGetUint32
             | Self::DataViewGetFloat32
             | Self::DataViewGetFloat64
+            | Self::DataViewGetFloat16
             | Self::DataViewGetBigInt64
-            | Self::DataViewGetBigUint64 => RuntimeSignature {
+            | Self::DataViewGetBigUint64
+            | Self::ArrayBufferSlice => RuntimeSignature {
                 params: 3,
                 results: 1,
             },
@@ -2454,6 +2770,7 @@ impl RuntimeFn {
             | Self::DataViewSetUint32
             | Self::DataViewSetFloat32
             | Self::DataViewSetFloat64
+            | Self::DataViewSetFloat16
             | Self::DataViewSetBigInt64
             | Self::DataViewSetBigUint64 => RuntimeSignature {
                 params: 4,
@@ -2505,6 +2822,8 @@ impl RuntimeFn {
             Self::NumberToExponential,
             Self::NumberToFixed,
             Self::NumberToPrecision,
+            Self::NumberToString,
+            Self::NumberToStringRadix,
             Self::StringEqual,
             Self::Concat,
             Self::IsString,
@@ -2532,6 +2851,7 @@ impl RuntimeFn {
             Self::GreaterFast,
             Self::GreaterEqual,
             Self::GreaterEqualFast,
+            Self::SameValueZero,
             Self::StrictEqual,
             Self::EqualEqual,
             Self::BangEqual,
@@ -2584,13 +2904,12 @@ impl RuntimeFn {
             Self::SetDelete,
             Self::SetSize,
             Self::SetClear,
-            Self::SetForEach,
             Self::MapClear,
             Self::MapSize,
-            Self::MapForEach,
             Self::MapEntriesArray,
             Self::MapEntryPairsArray,
             Self::TypedArrayFromArray,
+            Self::TypedArrayCtorWithLength,
             Self::TypedArraySet,
             Self::AtomicsElementPtr,
             Self::AtomicsLoad,
@@ -2604,12 +2923,29 @@ impl RuntimeFn {
             Self::AtomicsCompareExchange,
             Self::AtomicsIsLockFree,
             Self::AtomicsWait,
+            Self::AtomicsWaitAsync,
             Self::AtomicsNotify,
             Self::SetFromArray,
             Self::SetValuesArray,
             Self::SetEntriesArray,
             Self::SetPrototypeAddGet,
             Self::SetPrototypeAddSet,
+            Self::SetPrototypeHasGet,
+            Self::SetPrototypeHasSet,
+            Self::SetPrototypeDeleteGet,
+            Self::SetPrototypeDeleteSet,
+            Self::SetPrototypeForEachGet,
+            Self::SetPrototypeForEachSet,
+            Self::MapPrototypeGetGet,
+            Self::MapPrototypeGetSet,
+            Self::MapPrototypeSetGet,
+            Self::MapPrototypeSetSet,
+            Self::MapPrototypeHasGet,
+            Self::MapPrototypeHasSet,
+            Self::MapPrototypeDeleteGet,
+            Self::MapPrototypeDeleteSet,
+            Self::MapPrototypeForEachGet,
+            Self::MapPrototypeForEachSet,
             Self::SetIsDisjointFrom,
             Self::SetIsSubsetOf,
             Self::SetIsSupersetOf,
@@ -2634,6 +2970,7 @@ impl RuntimeFn {
             Self::ArrayBufferNew,
             Self::ArrayBufferIsView,
             Self::ArrayBufferTransfer,
+            Self::ArrayBufferSlice,
             Self::SharedArrayBufferNew,
             Self::DataViewNew,
             Self::DataViewGetInt8,
@@ -2652,6 +2989,8 @@ impl RuntimeFn {
             Self::DataViewSetFloat32,
             Self::DataViewGetFloat64,
             Self::DataViewSetFloat64,
+            Self::DataViewGetFloat16,
+            Self::DataViewSetFloat16,
             Self::DataViewGetBigInt64,
             Self::DataViewSetBigInt64,
             Self::DataViewGetBigUint64,
@@ -2677,16 +3016,16 @@ impl RuntimeFn {
             Self::DateSetMinutes,
             Self::DateSetSeconds,
             Self::DateSetMilliseconds,
+            Self::DateSetYear,
             Self::DateParse,
             Self::DateUTC,
             Self::DateToString,
             Self::DateGetLocalTimeField,
+            Self::DateGetYear,
             Self::DateToISOString,
             Self::DateGetTimezoneOffset,
             Self::DateToDateString,
             Self::DateToTimeString,
-            Self::DateGetYear,
-            Self::DateSetYear,
             Self::DateToGMTString,
             Self::DateGetUtcMilliseconds,
             Self::DateGetUtcSeconds,
@@ -2741,6 +3080,7 @@ impl RuntimeFn {
             Self::ArrayPush,
             Self::ArrayPushGrow,
             Self::ArrayPop,
+            Self::ArrayCtorWithLength,
             Self::ArraySlice,
             Self::ArrayConcat,
             Self::ArrayMapValueToString,
@@ -2803,6 +3143,8 @@ impl RuntimeFn {
             Self::ObjectIsSealed,
             Self::ObjectIsFrozen,
             Self::ObjectDefineProperty,
+            Self::ObjectDefineProperties,
+            Self::ObjectGetOwnPropertyDescriptors,
             Self::ObjectAssign,
             Self::ObjectCreate,
             Self::ObjectPrototype,
@@ -2811,6 +3153,7 @@ impl RuntimeFn {
             Self::PropertyIsEnumerable,
             Self::IsPrototypeOf,
             Self::ObjectToString,
+            Self::ErrorToString,
             Self::ObjectToLocaleString,
             // Reflect methods
             Self::ReflectDefineProperty,
@@ -2853,6 +3196,7 @@ impl RuntimeFn {
             Self::MathExp,
             Self::MathExpm1,
             Self::MathFround,
+            Self::MathF16round,
             Self::MathHypot,
             Self::MathLog,
             Self::MathLog10,
@@ -2903,6 +3247,23 @@ impl RuntimeFn {
             Self::DecodeURIComponent,
             Self::GetIterator,
             Self::IteratorNext,
+            Self::IteratorFrom,
+            Self::IteratorMap,
+            Self::IteratorFilter,
+            Self::IteratorTake,
+            Self::IteratorDrop,
+            Self::IteratorToArray,
+            Self::IteratorReduce,
+            Self::IteratorForEach,
+            Self::IteratorSome,
+            Self::IteratorEvery,
+            Self::IteratorFind,
+            Self::EvalDirectHost,
+            Self::EvalIndirectHost,
+            Self::FunctionCompileHost,
+            Self::FunctionCallHost,
+            Self::FunctionCallMethodHost,
+            Self::FunctionConstructHost,
             Self::GeneratorYield,
             Self::GeneratorReturn,
             Self::GeneratorNext,
@@ -2965,6 +3326,8 @@ impl RuntimeFn {
             Self::NumberToExponential,
             Self::NumberToFixed,
             Self::NumberToPrecision,
+            Self::NumberToString,
+            Self::NumberToStringRadix,
             Self::StringEqual,
             Self::Concat,
             Self::IsString,
@@ -2992,6 +3355,7 @@ impl RuntimeFn {
             Self::GreaterFast,
             Self::GreaterEqual,
             Self::GreaterEqualFast,
+            Self::SameValueZero,
             Self::StrictEqual,
             Self::EqualEqual,
             Self::BangEqual,
@@ -3044,13 +3408,12 @@ impl RuntimeFn {
             Self::SetDelete,
             Self::SetSize,
             Self::SetClear,
-            Self::SetForEach,
             Self::MapClear,
             Self::MapSize,
-            Self::MapForEach,
             Self::MapEntriesArray,
             Self::MapEntryPairsArray,
             Self::TypedArrayFromArray,
+            Self::TypedArrayCtorWithLength,
             Self::TypedArraySet,
             Self::AtomicsElementPtr,
             Self::AtomicsLoad,
@@ -3064,12 +3427,29 @@ impl RuntimeFn {
             Self::AtomicsCompareExchange,
             Self::AtomicsIsLockFree,
             Self::AtomicsWait,
+            Self::AtomicsWaitAsync,
             Self::AtomicsNotify,
             Self::SetFromArray,
             Self::SetValuesArray,
             Self::SetEntriesArray,
             Self::SetPrototypeAddGet,
             Self::SetPrototypeAddSet,
+            Self::SetPrototypeHasGet,
+            Self::SetPrototypeHasSet,
+            Self::SetPrototypeDeleteGet,
+            Self::SetPrototypeDeleteSet,
+            Self::SetPrototypeForEachGet,
+            Self::SetPrototypeForEachSet,
+            Self::MapPrototypeGetGet,
+            Self::MapPrototypeGetSet,
+            Self::MapPrototypeSetGet,
+            Self::MapPrototypeSetSet,
+            Self::MapPrototypeHasGet,
+            Self::MapPrototypeHasSet,
+            Self::MapPrototypeDeleteGet,
+            Self::MapPrototypeDeleteSet,
+            Self::MapPrototypeForEachGet,
+            Self::MapPrototypeForEachSet,
             Self::SetIsDisjointFrom,
             Self::SetIsSubsetOf,
             Self::SetIsSupersetOf,
@@ -3094,6 +3474,7 @@ impl RuntimeFn {
             Self::ArrayBufferNew,
             Self::ArrayBufferIsView,
             Self::ArrayBufferTransfer,
+            Self::ArrayBufferSlice,
             Self::SharedArrayBufferNew,
             Self::DataViewNew,
             Self::DataViewGetInt8,
@@ -3112,6 +3493,8 @@ impl RuntimeFn {
             Self::DataViewSetFloat32,
             Self::DataViewGetFloat64,
             Self::DataViewSetFloat64,
+            Self::DataViewGetFloat16,
+            Self::DataViewSetFloat16,
             Self::DataViewGetBigInt64,
             Self::DataViewSetBigInt64,
             Self::DataViewGetBigUint64,
@@ -3137,16 +3520,16 @@ impl RuntimeFn {
             Self::DateSetMinutes,
             Self::DateSetSeconds,
             Self::DateSetMilliseconds,
+            Self::DateSetYear,
             Self::DateParse,
             Self::DateUTC,
             Self::DateToString,
             Self::DateGetLocalTimeField,
+            Self::DateGetYear,
             Self::DateToISOString,
             Self::DateGetTimezoneOffset,
             Self::DateToDateString,
             Self::DateToTimeString,
-            Self::DateGetYear,
-            Self::DateSetYear,
             Self::DateToGMTString,
             Self::DateGetUtcMilliseconds,
             Self::DateGetUtcSeconds,
@@ -3201,6 +3584,7 @@ impl RuntimeFn {
             Self::ArrayPush,
             Self::ArrayPushGrow,
             Self::ArrayPop,
+            Self::ArrayCtorWithLength,
             Self::ArraySlice,
             Self::ArrayConcat,
             Self::ArrayMapValueToString,
@@ -3263,6 +3647,8 @@ impl RuntimeFn {
             Self::ObjectIsSealed,
             Self::ObjectIsFrozen,
             Self::ObjectDefineProperty,
+            Self::ObjectDefineProperties,
+            Self::ObjectGetOwnPropertyDescriptors,
             Self::ObjectAssign,
             Self::ObjectCreate,
             Self::ObjectPrototype,
@@ -3271,6 +3657,7 @@ impl RuntimeFn {
             Self::PropertyIsEnumerable,
             Self::IsPrototypeOf,
             Self::ObjectToString,
+            Self::ErrorToString,
             Self::ObjectToLocaleString,
             // Reflect methods
             Self::ReflectDefineProperty,
@@ -3313,6 +3700,7 @@ impl RuntimeFn {
             Self::MathExp,
             Self::MathExpm1,
             Self::MathFround,
+            Self::MathF16round,
             Self::MathHypot,
             Self::MathLog,
             Self::MathLog10,
@@ -3352,6 +3740,12 @@ impl RuntimeFn {
             Self::BooleanCoerce,
             Self::BooleanToString,
             Self::NumberCoerce,
+            Self::EvalDirectHost,
+            Self::EvalIndirectHost,
+            Self::FunctionCompileHost,
+            Self::FunctionCallHost,
+            Self::FunctionCallMethodHost,
+            Self::FunctionConstructHost,
             Self::NumberIsNaN,
             Self::NumberIsFinite,
             Self::NumberIsInteger,
@@ -3361,6 +3755,17 @@ impl RuntimeFn {
             Self::EncodeURIComponent,
             Self::GetIterator,
             Self::IteratorNext,
+            Self::IteratorFrom,
+            Self::IteratorMap,
+            Self::IteratorFilter,
+            Self::IteratorTake,
+            Self::IteratorDrop,
+            Self::IteratorToArray,
+            Self::IteratorReduce,
+            Self::IteratorForEach,
+            Self::IteratorSome,
+            Self::IteratorEvery,
+            Self::IteratorFind,
             Self::GeneratorYield,
             Self::GeneratorReturn,
             Self::GeneratorNext,
