@@ -67,7 +67,7 @@ try {
   const { spawnSync } = require("child_process");
   const child = spawnSync("node", [jsFile], {
     encoding: "utf-8",
-    timeout: 30000,
+    timeout: 5000,
     stdio: ["ignore", "pipe", "pipe"],
   });
   process.stdout.write(child.stdout);
