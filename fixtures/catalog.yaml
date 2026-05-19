@@ -951,6 +951,7 @@ directories:
     - direct-eval-dynamic-new-var-declaration-node-shim.ts
     - direct-eval-dynamic-new-var-normal-code-node-shim.ts
     - direct-eval-dynamic-nested-function-var-normal-code-unsupported.ts
+    - direct-eval-dynamic-object-method-var-normal-code-unsupported.ts
     - direct-eval-dynamic-object-identity-node-shim.ts
     - direct-eval-dynamic-object-method-this-node-shim.ts
     - direct-eval-dynamic-object-properties-node-shim.ts

@@ -244,6 +244,9 @@ fn find_keyword_outside_literals_and_function_bodies(
                     index += 2;
                 }
             }
+            b'{' if is_object_method_body_start(source, index) => {
+                index = skip_balanced_brace(source, index).unwrap_or(index + 1);
+            }
             _ if source[index..].starts_with("function")
                 && is_identifier_boundary(source, index, index + "function".len()) =>
             {
@@ -270,6 +273,77 @@ fn find_keyword_outside_literals_and_function_bodies(
         }
     }
     None
+}
+
+fn is_object_method_body_start(source: &str, brace_index: usize) -> bool {
+    let Some(close_paren) = previous_non_ws_index(source, brace_index) else {
+        return false;
+    };
+    if source.as_bytes().get(close_paren) != Some(&b')') {
+        return false;
+    }
+    let Some(open_paren) = matching_open_paren(source, close_paren) else {
+        return false;
+    };
+    let Some(token) = previous_identifier_before(source, open_paren) else {
+        return true;
+    };
+    !matches!(token, "catch" | "for" | "if" | "switch" | "while" | "with")
+}
+
+fn matching_open_paren(source: &str, close_paren: usize) -> Option<usize> {
+    let bytes = source.as_bytes();
+    if bytes.get(close_paren) != Some(&b')') {
+        return None;
+    }
+    let mut stack = Vec::new();
+    let mut index = 0usize;
+    while index <= close_paren && index < source.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => {
+                index = skip_quoted_source(source, index);
+                continue;
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'/') => {
+                index += 2;
+                while index < source.len() && bytes[index] != b'\n' {
+                    index += 1;
+                }
+                continue;
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'*') => {
+                index += 2;
+                while index + 1 < source.len()
+                    && !(bytes[index] == b'*' && bytes[index + 1] == b'/')
+                {
+                    index += 1;
+                }
+                index = (index + 2).min(source.len());
+                continue;
+            }
+            b'(' => stack.push(index),
+            b')' if index == close_paren => return stack.pop(),
+            b')' => {
+                stack.pop();
+            }
+            _ => {}
+        }
+        index += 1;
+    }
+    None
+}
+
+fn previous_identifier_before(source: &str, end: usize) -> Option<&str> {
+    let bytes = source.as_bytes();
+    let mut index = previous_non_ws_index(source, end)?;
+    if !is_ident_continue_byte(bytes[index]) {
+        return None;
+    }
+    let ident_end = index + 1;
+    while index > 0 && is_ident_continue_byte(bytes[index - 1]) {
+        index -= 1;
+    }
+    is_ident_start_byte(bytes[index]).then_some(&source[index..ident_end])
 }
 
 fn skip_function_or_class_body(source: &str, keyword_start: usize, keyword: &str) -> Option<usize> {
@@ -504,6 +578,20 @@ mod tests {
         let names = eval_var_and_function_names(
             "let holder = () => { var hidden = 1; function inner() {} }; var visible = 2;",
         );
+        assert_eq!(names, ["visible"]);
+    }
+
+    #[test]
+    fn skips_object_method_body_declarations() {
+        let names = eval_var_and_function_names(
+            "let obj = { method() { var hidden = 1; function inner() {} } }; var visible = 2;",
+        );
+        assert_eq!(names, ["visible"]);
+    }
+
+    #[test]
+    fn keeps_block_var_declarations() {
+        let names = eval_var_and_function_names("if (flag) { var visible = 1; }");
         assert_eq!(names, ["visible"]);
     }
 }

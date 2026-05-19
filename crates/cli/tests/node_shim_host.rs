@@ -845,6 +845,13 @@ fn dynamic_direct_eval_arrow_body_var_is_not_predeclared_for_normal_code() {
 }
 
 #[test]
+fn dynamic_direct_eval_object_method_var_is_not_predeclared_for_normal_code() {
+    let fixture =
+        "fixtures/core-semantics/direct-eval-dynamic-object-method-var-normal-code-unsupported.ts";
+    assert_build_fails_with(fixture, "UnresolvedName", "unresolved name: `hidden`");
+}
+
+#[test]
 fn static_direct_eval_rejects_return_statement() {
     let fixture = "fixtures/core-semantics/direct-eval-return-unsupported.ts";
     assert_build_fails_with(
