@@ -215,6 +215,12 @@ fn dynamic_indirect_eval_bridges_thrown_errors_through_node_shim_host_import() {
 }
 
 #[test]
+fn dynamic_indirect_eval_bridges_thrown_object_methods_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/indirect-eval-dynamic-throw-object-method-node-shim.ts";
+    assert_node_shim_stdout(fixture, "Error\n7\n");
+}
+
+#[test]
 fn dynamic_direct_eval_executes_through_node_shim_host_import() {
     let fixture = "fixtures/builtins-and-io/dynamic-eval-host-path.ts";
     assert_node_shim_stdout(fixture, "3\n");

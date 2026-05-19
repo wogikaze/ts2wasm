@@ -1059,6 +1059,7 @@ directories:
     - indirect-eval-dynamic-node-shim.ts
     - indirect-eval-dynamic-object-properties-node-shim.ts
     - indirect-eval-dynamic-throw-catch-node-shim.ts
+    - indirect-eval-dynamic-throw-object-method-node-shim.ts
     - indirect-eval-static-function-global.ts
     - indirect-eval-static-function-hoist-global.ts
     - indirect-eval-static-global-scope.ts

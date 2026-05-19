@@ -754,6 +754,57 @@ fn dynamic_indirect_eval_declares_node_host_eval_indirect_capability() {
 }
 
 #[test]
+fn dynamic_indirect_eval_throw_object_method_declares_exact_host_capabilities() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../fixtures")
+        .join("core-semantics/indirect-eval-dynamic-throw-object-method-node-shim.ts");
+
+    let output_wasm = std::env::temp_dir().join(format!(
+        "ts2wasm-dynamic-indirect-eval-throw-object-method-{}.wasm",
+        std::process::id()
+    ));
+    let output_manifest = std::env::temp_dir().join(format!(
+        "ts2wasm-dynamic-indirect-eval-throw-object-method-{}.json",
+        std::process::id()
+    ));
+
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture)
+        .arg("-o")
+        .arg(&output_wasm)
+        .arg("--emit-manifest")
+        .arg(&output_manifest)
+        .output()
+        .expect("Failed to execute ts2wasm");
+
+    assert!(
+        output.status.success(),
+        "dynamic indirect eval thrown object method call should compile through the exact Node host lane: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let manifest_content =
+        std::fs::read_to_string(&output_manifest).expect("Failed to read manifest");
+    let manifest: serde_json::Value =
+        serde_json::from_str(&manifest_content).expect("Manifest should be valid JSON");
+    assert_eq!(manifest["standalone"], false);
+    assert_eq!(manifest["node_host"]["required"], true);
+    assert_eq!(
+        manifest["node_host"]["imports"],
+        serde_json::json!(["host.eval.indirect", "host.function.callMethod"])
+    );
+    for import in ["host.eval.indirect", "host.function.callMethod"] {
+        assert!(
+            manifest["capability_reasons"][import]
+                .as_array()
+                .is_some_and(|reasons| !reasons.is_empty()),
+            "{import} must carry an auditable reason: {manifest}"
+        );
+    }
+}
+
+#[test]
 fn test262_eval_script_declares_node_host_eval_indirect_capability() {
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")
@@ -807,6 +858,9 @@ fn test262_eval_script_declares_node_host_eval_indirect_capability() {
 #[test]
 fn host_deny_rejects_dynamic_indirect_eval_host_lane() {
     assert_host_deny_rejects("core-semantics/indirect-eval-dynamic-host-path.ts");
+    assert_host_deny_rejects(
+        "core-semantics/indirect-eval-dynamic-throw-object-method-node-shim.ts",
+    );
 }
 
 #[test]
