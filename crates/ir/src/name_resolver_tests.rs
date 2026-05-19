@@ -841,6 +841,24 @@ mod tests {
     }
 
     #[test]
+    fn resolver_marks_static_non_string_object_eval_as_aot_eval() {
+        let builtins = parse_resolve_builtins("let value = eval({ value: 1 });");
+        let crate::ResolvedStmt::Let(_, crate::ResolvedExpr::Eval { plan }) = &builtins[0] else {
+            panic!("expected eval object argument to become AOT non-string eval: {builtins:?}");
+        };
+
+        assert_eq!(
+            plan.host_policy,
+            crate::builtin_resolved::EvalHostPolicy::AotOnly
+        );
+        assert!(matches!(
+            &plan.source,
+            crate::builtin_resolved::EvalSource::NonStringStatic(value)
+                if matches!(value.as_ref(), crate::ResolvedExpr::Object(_))
+        ));
+    }
+
+    #[test]
     fn resolver_keeps_shadowed_optional_eval_as_ordinary_optional_call() {
         let builtins = parse_resolve_builtins(
             "let eval = (source) => source; let value = eval?.(\"not intrinsic\");",

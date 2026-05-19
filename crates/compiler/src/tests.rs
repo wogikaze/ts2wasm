@@ -351,6 +351,26 @@ fn compiler_expands_static_non_string_eval_to_argument_value() {
 }
 
 #[test]
+fn compiler_expands_static_non_string_object_eval_to_argument_value() {
+    let expanded = parse_resolve_and_expand_dynamic_code(
+        r#"
+        let direct = eval({ value: 1 });
+        let indirect = (0, eval)([1, 2]);
+        "#,
+    );
+    assert!(matches!(
+        &expanded[0],
+        ts2wasm_ir::ResolvedStmt::Let(name, ts2wasm_ir::ResolvedExpr::Object(_))
+            if name == "direct"
+    ));
+    assert!(matches!(
+        &expanded[1],
+        ts2wasm_ir::ResolvedStmt::Let(name, ts2wasm_ir::ResolvedExpr::Array(_))
+            if name == "indirect"
+    ));
+}
+
+#[test]
 fn compiler_expands_direct_eval_expression_with_caller_binding_context() {
     let expanded = parse_resolve_and_expand_dynamic_code(
         r#"

@@ -353,7 +353,12 @@ fn eval_source_from_resolved_arg(arg: ResolvedExpr) -> EvalSource {
         | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::Bool(_)
         | ResolvedExpr::Null
-        | ResolvedExpr::Undefined => EvalSource::NonStringStatic(Box::new(arg)),
+        | ResolvedExpr::Undefined
+        | ResolvedExpr::Array(_)
+        | ResolvedExpr::Object(_)
+        | ResolvedExpr::ArrowFn { .. }
+        | ResolvedExpr::FunctionExpr { .. }
+        | ResolvedExpr::FunctionConstructor { .. } => EvalSource::NonStringStatic(Box::new(arg)),
         _ => EvalSource::Runtime(Box::new(arg)),
     }
 }

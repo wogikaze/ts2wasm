@@ -1235,6 +1235,11 @@ fn static_non_string_eval_matches_node_output() {
 }
 
 #[test]
+fn static_non_string_object_eval_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/eval-static-non-string-object.ts");
+}
+
+#[test]
 fn static_indirect_eval_fixture_matches_node_output() {
     assert_fixture_matches_node("fixtures/core-semantics/indirect-eval-static.ts");
 }

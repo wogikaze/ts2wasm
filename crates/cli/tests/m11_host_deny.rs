@@ -407,6 +407,14 @@ fn static_non_string_eval_declares_no_node_host_eval_capability() {
 }
 
 #[test]
+fn static_non_string_object_eval_declares_no_node_host_eval_capability() {
+    assert_standalone_category(
+        "core-semantics/eval-static-non-string-object.ts",
+        "static non-string object eval",
+    );
+}
+
+#[test]
 fn static_indirect_eval_declares_no_node_host_eval_capability() {
     assert_standalone_category(
         "core-semantics/indirect-eval-static.ts",
