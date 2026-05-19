@@ -1087,7 +1087,7 @@ impl super::super::Resolver {
                 .transpose()?
                 .unwrap_or_else(|| LoweredExpr::Number(0, Span::generated("num")));
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::ArrayBufferNew,
+                intrinsic: RuntimeFn::ArrayBufferTransfer,
                 args: vec![new_len],
                 span: Span::generated("runtime_call"),
             }));
