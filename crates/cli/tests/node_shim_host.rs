@@ -875,6 +875,7 @@ const directEvalExtraBindings = new Map();
 const EVAL_DESCRIPTOR_VERSION = '__ts2wasm_eval_descriptor_v2';
 const EVAL_DESCRIPTOR_CALLER_STRICT = '__ts2wasm_eval_caller_strict';
 const EVAL_DESCRIPTOR_BINDINGS = '__ts2wasm_eval_bindings';
+const DIRECT_EVAL_MUTATION_LEDGER_VERSION = 1;
 const decoder = new TextDecoder();
 const encoder = new TextEncoder();
 let stdout = '';
@@ -1782,9 +1783,11 @@ function evalWithEnvDescriptor(source, envRaw) {
   const thisValue = thisBinding === undefined ? undefined : thisBinding.value;
   const [result, ...updatedValues] = wrapper.call(thisValue, source, ...values);
   const ledger = {
+    version: DIRECT_EVAL_MUTATION_LEDGER_VERSION,
     result,
     writes: [],
     createdBindings: [],
+    abrupt: null,
   };
 
   for (let i = 0; i < wrapperBindings.length; i += 1) {
@@ -1812,10 +1815,25 @@ function applyDirectEvalMutationLedger(envKey, extraMap, ledger) {
   if (ledger === null || typeof ledger !== 'object') {
     throw new TypeError(`invalid direct eval mutation ledger for ${envKey}`);
   }
-  for (const write of ledger.writes ?? []) {
+  if (ledger.version !== DIRECT_EVAL_MUTATION_LEDGER_VERSION) {
+    throw new TypeError(`unsupported direct eval mutation ledger version for ${envKey}`);
+  }
+  if (ledger.abrupt !== null) {
+    throw new TypeError(`unsupported direct eval abrupt completion ledger for ${envKey}`);
+  }
+  if (!Array.isArray(ledger.writes) || !Array.isArray(ledger.createdBindings)) {
+    throw new TypeError(`invalid direct eval mutation ledger entries for ${envKey}`);
+  }
+  for (const write of ledger.writes) {
+    if (write === null || typeof write !== 'object' || write.cellRaw === undefined) {
+      throw new TypeError(`invalid direct eval mutation ledger write for ${envKey}`);
+    }
     writeEnvCellRaw(write.cellRaw, encodeHostValue(write.value));
   }
-  for (const binding of ledger.createdBindings ?? []) {
+  for (const binding of ledger.createdBindings) {
+    if (binding === null || typeof binding !== 'object' || typeof binding.name !== 'string') {
+      throw new TypeError(`invalid direct eval mutation ledger binding for ${envKey}`);
+    }
     extraMap.set(binding.name, binding.value);
   }
 }
