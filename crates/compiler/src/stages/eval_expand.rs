@@ -39,6 +39,7 @@ pub fn expand_static_eval_fragments(
 struct EvalExpansionContext {
     scopes: Vec<HashSet<String>>,
     strict_contexts: Vec<bool>,
+    global_eval_bindings: HashSet<String>,
 }
 
 impl EvalExpansionContext {
@@ -46,6 +47,7 @@ impl EvalExpansionContext {
         Self {
             scopes: vec![HashSet::new()],
             strict_contexts: vec![false],
+            global_eval_bindings: HashSet::new(),
         }
     }
 
@@ -86,6 +88,14 @@ impl EvalExpansionContext {
         for param in params {
             self.declare(param.name.clone());
         }
+    }
+
+    fn declare_global_eval_binding(&mut self, name: impl Into<String>) {
+        self.global_eval_bindings.insert(name.into());
+    }
+
+    fn is_global_eval_binding(&self, name: &str) -> bool {
+        self.global_eval_bindings.contains(name)
     }
 
     fn visible_bindings(&self) -> Vec<String> {
@@ -452,6 +462,7 @@ fn expand_expr(
                 if !global_bindings.contains(name) {
                     global_bindings.push(name.clone());
                 }
+                ctx.declare_global_eval_binding(name.clone());
             }
             Ok(rewrite_indirect_eval_caller_binding_collisions(
                 expanded.expr,
@@ -470,6 +481,9 @@ fn expand_expr(
             Ok(expr)
         }
         ResolvedExpr::FunctionConstructor { plan } => expand_function_constructor(plan),
+        ResolvedExpr::Ident(name) if ctx.is_global_eval_binding(&name) => {
+            Ok(eval_global_property(name))
+        }
         // Recursively expand eval in sub-expressions.
         ResolvedExpr::Unary { op, expr: inner } => Ok(ResolvedExpr::Unary {
             op,

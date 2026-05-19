@@ -18,12 +18,9 @@ Added focused coverage for optional eval static declaration landing.
 
 - PASS: `node fixtures/core-semantics/optional-eval-static-declaration-global.ts`
   - observed stdout: `8`, `7`, `8`, `number`, `caller`
-- PASS/SKIP: `CARGO_TARGET_DIR=/tmp/ts2wasm-optional-eval-global-target cargo test -p ts2wasm-cli --test m2_node_diff static_optional_eval_declaration_global_fixture_matches_node_output -- --nocapture`
-  - test harness passed but skipped the Node/iwasm differential assertion because `TS2WASM_RUN_M2_NODE_DIFF=1` was not set.
-- BLOCKED: `CARGO_TARGET_DIR=/tmp/ts2wasm-optional-eval-global-target cargo test -p ts2wasm-cli --test m11_host_deny static_optional_eval_declaration_global_declares_no_node_host_eval_capability -- --nocapture`
-  - compile failed in unrelated dirty `crates/ir/src/lowered/resolver/array.rs` with missing `func_id`, `captures`, and `param_count`.
-- BLOCKED: `/tmp/ts2wasm-optional-eval-global-target/debug/ts2wasm build fixtures/core-semantics/optional-eval-static-declaration-global.ts -o /tmp/optional-eval-static-declaration-global.wasm --emit-manifest /tmp/optional-eval-static-declaration-global.json`
-  - current dirty backend emitted WAT referencing undefined `$object_prototype`.
+- PASS: `TS2WASM_RUN_M2_NODE_DIFF=1 CARGO_TARGET_DIR=/tmp/ts2wasm-eval-clean-verify-target cargo test -p ts2wasm-cli --test m2_node_diff static_optional_eval_declaration_global_fixture_matches_node_output -- --nocapture`
+- PASS: `CARGO_TARGET_DIR=/tmp/ts2wasm-eval-clean-verify-target cargo test -p ts2wasm-cli --test m11_host_deny static_optional_eval_declaration_global_declares_no_node_host_eval_capability -- --nocapture`
+  - run from clean worktree `/tmp/ts2wasm-eval-clean-verify` because the main worktree had unrelated dirty backend/array changes.
 - PASS: scoped `git diff --check`
 
 ## Remaining
