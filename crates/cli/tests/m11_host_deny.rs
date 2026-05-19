@@ -515,6 +515,14 @@ fn static_indirect_eval_function_hoist_global_declares_no_node_host_eval_capabil
 }
 
 #[test]
+fn static_indirect_eval_declaration_global_typeof_declares_no_node_host_eval_capability() {
+    assert_standalone_category(
+        "core-semantics/indirect-eval-static-declaration-global-typeof.ts",
+        "static indirect eval declaration global typeof",
+    );
+}
+
+#[test]
 fn static_indirect_eval_lexical_local_declares_no_node_host_eval_capability() {
     assert_standalone_category(
         "core-semantics/indirect-eval-static-lexical-local.ts",

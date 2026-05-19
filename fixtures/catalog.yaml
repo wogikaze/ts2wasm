@@ -1108,6 +1108,7 @@ directories:
     - indirect-eval-dynamic-object-properties-node-shim.ts
     - indirect-eval-dynamic-throw-catch-node-shim.ts
     - indirect-eval-dynamic-throw-object-method-node-shim.ts
+    - indirect-eval-static-declaration-global-typeof.ts
     - indirect-eval-static-function-global.ts
     - indirect-eval-static-function-hoist-global.ts
     - indirect-eval-static-for-head-var-computed-global.ts
