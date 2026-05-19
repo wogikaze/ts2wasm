@@ -490,10 +490,9 @@ pub(crate) fn collection_method_runtime_fn_arg(method: &str) -> Option<RuntimeFn
     match method {
         "every" => Some(RuntimeFn::ArrayEvery),
         "some" => Some(RuntimeFn::ArraySome),
-        "find" => Some(RuntimeFn::ArrayFind),
-        "findIndex" => Some(RuntimeFn::ArrayFindIndex),
-        "findLast" => Some(RuntimeFn::ArrayFindLast),
-        "findLastIndex" => Some(RuntimeFn::ArrayFindLastIndex),
+        // find/findIndex/findLast/findLastIndex removed from collection_method_runtime_fn_arg
+        // to avoid routing to $array_find etc. which ignore callbacks.
+        // Handled via lower_array_callback_method (IR-level While loop expansion) instead.
         "filter" => Some(RuntimeFn::ArrayFilter),
         "push" => Some(RuntimeFn::ArrayPushGrow),
         "pop" => Some(RuntimeFn::ArrayPop),

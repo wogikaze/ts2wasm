@@ -3331,9 +3331,7 @@ impl super::super::Resolver {
             if let Some(intrinsic) = collection_method_runtime_fn_arg(method) {
                 let receiver_expr = self.lower_expr(object)?;
                 let mut lowered_args = vec![receiver_expr];
-                if !is_identity_array_method(method)
-                    && !matches!(method, "find" | "findIndex" | "findLast" | "findLastIndex")
-                {
+                if !is_identity_array_method(method) {
                     let max_args = if method == "indexOf" || method == "includes" {
                         1
                     } else {
@@ -3524,9 +3522,7 @@ impl super::super::Resolver {
         if let Some(intrinsic) = collection_method_runtime_fn_arg(method) {
             let receiver_expr = self.lower_expr(object)?;
             let mut lowered_args = vec![receiver_expr];
-            if !is_identity_array_method(method)
-                && !matches!(method, "find" | "findIndex" | "findLast" | "findLastIndex")
-            {
+            if !is_identity_array_method(method) {
                 let max_args = if method == "indexOf" || method == "includes" {
                     2
                 } else {
