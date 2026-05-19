@@ -397,15 +397,23 @@ impl super::super::Resolver {
                 });
             };
             if let ResolvedExpr::Number(length) = arg {
-                if *length < 0 || *length > 32 {
+                if *length < 0 {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: format!(
-                            "issue-419: new {class_name}(length) currently supports lengths from 0 through 32"
+                            "issue-419: new {class_name}(length) must be non-negative"
                         ),
                         span: Some(span),
-
                         phase: None,
+                    });
+                }
+                if *length > 32 {
+                    // Large lengths route to a runtime function that allocates
+                    // a typed array with the given length and zero-fills it.
+                    return Ok(LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::TypedArrayCtorWithLength,
+                        args: vec![self.lower_expr(arg)?],
+                        span: Span::generated("runtime_call"),
                     });
                 }
                 let dense = LoweredExpr::ArrayNew {

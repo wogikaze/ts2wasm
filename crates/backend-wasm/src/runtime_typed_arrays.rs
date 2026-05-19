@@ -1010,6 +1010,63 @@ impl WatEmitter<'_> {
         ));
     }
 
+    
+    pub(super) fn emit_typed_array_ctor_with_length(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func \ (param \ i32) (result i32)
+    (local \ i32) (local \ i32) (local \ i32)
+    (local \ i32) (local \ i32) (local \ i32)
+    (local.set \ (i32.shr_s (local.get \) (i32.const {number_shift})))
+    ;; presence_word_count = ceil(len / 32)
+    (local.set       (i32.shr_u (i32.add (local.get \) (i32.const 31)) (i32.const 5)))
+    ;; elements_offset = ARRAY_HEADER_SIZE + max(0, num_words - 1) * 4
+    (local.set \ (i32.const {array_header}))
+    (if (i32.gt_u (local.get \) (i32.const 1))
+      (then
+        (local.set           (i32.add
+            (i32.const {array_header})
+            (i32.shl (i32.sub (local.get \) (i32.const 1)) (i32.const 2))))))
+    ;; size = elements_offset + len * 4
+    (local.set       (i32.add (local.get \) (i32.shl (local.get \) (i32.const 2))))
+    (local.set \ (call \ (local.get \)))
+    ;; Header fields
+    (i32.store (local.get \) (local.get \))
+    (i32.store (i32.add (local.get \) (i32.const 4)) (local.get \))
+    (i32.store (i32.add (local.get \) (i32.const 8)) (local.get \))
+    (i32.store (i32.add (local.get \) (i32.const 12)) (local.get \))
+    ;; Presence bits: set all words to all-ones (every slot is present/initialized)
+    (local.set \ (i32.const 0))
+    (block       (loop         (br_if \ (i32.ge_u (local.get \) (local.get \)))
+        (i32.store
+          (i32.add
+            (local.get \)
+            (i32.add (i32.const {presence_words_offset}) (i32.shl (local.get \) (i32.const 2))))
+          (i32.const -1))
+        (local.set \ (i32.add (local.get \) (i32.const {one})))
+        (br \)))
+    ;; Zero-fill elements: store tagged 0.0 for each slot
+    (local.set \ (i32.const 0))
+    (block       (loop         (br_if \ (i32.ge_u (local.get \) (local.get \)))
+        (i32.store
+          (i32.add
+            (local.get \)
+            (i32.add (local.get \) (i32.shl (local.get \) (i32.const {elem_shift}))))
+          (i32.const {tagged_zero}))
+        (local.set \ (i32.add (local.get \) (i32.const {one})))
+        (br \)))
+    (i32.or (local.get \) (i32.const {array_tag})))
+"#,
+            array_tag = ValueTag::ARRAY,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            one = RuntimeConst::ONE,
+            tagged_zero = ValueTag::NUMBER,
+        ));
+    }
+
     pub(super) fn emit_typed_array_set(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
