@@ -1155,6 +1155,7 @@ directories:
     - number-stringify.ts
     - optional-eval-dynamic-node-shim.ts
     - optional-eval-shadowed-ordinary-call.ts
+    - optional-eval-static-declaration-global.ts
     - optional-eval-static-global-scope.ts
     - optional-eval-static-non-string.ts
     - optional-chaining-call.ts

@@ -1282,6 +1282,13 @@ fn static_optional_eval_global_scope_fixture_matches_node_output() {
 }
 
 #[test]
+fn static_optional_eval_declaration_global_fixture_matches_node_output() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/optional-eval-static-declaration-global.ts",
+    );
+}
+
+#[test]
 fn static_optional_eval_non_string_matches_node_output() {
     assert_fixture_matches_node("fixtures/core-semantics/optional-eval-static-non-string.ts");
 }
