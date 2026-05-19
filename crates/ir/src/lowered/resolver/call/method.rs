@@ -2961,14 +2961,25 @@ impl super::super::Resolver {
             || method == "flatMap")
             && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
             && !args.is_empty()
-            && matches!(
-                &args[0],
-                ResolvedExpr::ArrowFn { .. }
-                    | ResolvedExpr::FunctionExpr {
-                        is_generator: false,
-                        ..
-                    }
-            )
+            && (method != "forEach"
+                || matches!(
+                    &args[0],
+                    ResolvedExpr::ArrowFn { .. }
+                        | ResolvedExpr::FunctionExpr {
+                            is_generator: false,
+                            ..
+                        }
+                        | ResolvedExpr::Ident(_)
+                ))
+            && (method == "forEach"
+                || matches!(
+                    &args[0],
+                    ResolvedExpr::ArrowFn { .. }
+                        | ResolvedExpr::FunctionExpr {
+                            is_generator: false,
+                            ..
+                        }
+                ))
         {
             let lowered_receiver = self.lower_expr(object)?;
             return Ok(Some(self.lower_array_callback_method(
@@ -3673,14 +3684,25 @@ impl super::super::Resolver {
                 || method == "map"
                 || method == "flatMap")
             && !args.is_empty()
-            && matches!(
-                &args[0],
-                ResolvedExpr::ArrowFn { .. }
-                    | ResolvedExpr::FunctionExpr {
-                        is_generator: false,
-                        ..
-                    }
-            )
+            && (method != "forEach"
+                || matches!(
+                    &args[0],
+                    ResolvedExpr::ArrowFn { .. }
+                        | ResolvedExpr::FunctionExpr {
+                            is_generator: false,
+                            ..
+                        }
+                        | ResolvedExpr::Ident(_)
+                ))
+            && (method == "forEach"
+                || matches!(
+                    &args[0],
+                    ResolvedExpr::ArrowFn { .. }
+                        | ResolvedExpr::FunctionExpr {
+                            is_generator: false,
+                            ..
+                        }
+                ))
         {
             return self.lower_array_callback_method(
                 method,

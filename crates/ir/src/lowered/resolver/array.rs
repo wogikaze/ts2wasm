@@ -801,6 +801,18 @@ impl super::Resolver {
     ) -> Result<LoweredExpr, Diagnostic> {
         let callback = &args[0];
 
+        // Array.forEach with a variable-held callback: expand at IR level
+        // with WhileLoop + HeapClosureCall, because the WAT $array_for_each
+        // function accepts a callback parameter but never invokes it.
+        if method == "forEach" && matches!(callback, ResolvedExpr::Ident(_)) {
+            let receiver_local = match &receiver {
+                LoweredExpr::Local(id, _) => *id,
+                _ => self.alloc_temp(),
+            };
+            let callback_expr = self.lower_expr(callback)?;
+            return self.lower_array_foreach_dynamic(receiver_local, callback_expr);
+        }
+
         let (func_id, captures, param_count) = match callback {
             ResolvedExpr::ArrowFn {
                 params,
@@ -1686,6 +1698,102 @@ impl super::Resolver {
 
         let result_expr = LoweredExpr::Undefined(Span::generated("undef"));
         Ok((Vec::new(), while_body, result_expr))
+    }
+
+    /// Lower Array.forEach with a dynamic callback (variable-held function).
+    /// Generates a While loop that calls the callback via HeapClosureCall.
+    fn lower_array_foreach_dynamic(
+        &mut self,
+        receiver_local: LocalId,
+        callback_expr: LoweredExpr,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let i = self.alloc_temp();
+        let len_local = self.alloc_temp();
+        let callback_local = self.alloc_temp();
+        let elem = self.alloc_temp();
+        let arr_ref =
+            || -> LoweredExpr { LoweredExpr::Local(receiver_local, Span::generated("local")) };
+
+        let mut stmts = Vec::new();
+
+        // let(len, GetLength(arr))
+        stmts.push(LoweredStmt::Let(
+            len_local,
+            LoweredExpr::GetLength(Box::new(arr_ref()), Span::generated("get_length")),
+            Span::generated("Let"),
+        ));
+
+        // let(i, 0)
+        stmts.push(LoweredStmt::Let(
+            i,
+            LoweredExpr::Number(0, Span::generated("num")),
+            Span::generated("Let"),
+        ));
+
+        // let(cb, callback_expr)
+        stmts.push(LoweredStmt::Let(
+            callback_local,
+            callback_expr,
+            Span::generated("Let"),
+        ));
+
+        let mut while_body = Vec::new();
+
+        // let(elem, ArrayGet(arr, i))
+        while_body.push(LoweredStmt::Let(
+            elem,
+            LoweredExpr::ArrayGet {
+                arr: Box::new(arr_ref()),
+                index: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                span: Span::generated("array_get"),
+            },
+            Span::generated("Let"),
+        ));
+
+        // HeapClosureCall(cb, elem, i, arr)
+        let heap_closure_call = LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::HeapClosureCall,
+            args: vec![
+                LoweredExpr::Local(callback_local, Span::generated("local")),
+                LoweredExpr::Local(elem, Span::generated("local")),
+                LoweredExpr::Local(i, Span::generated("local")),
+                arr_ref(),
+            ],
+            span: Span::generated("runtime_call"),
+        };
+        while_body.push(LoweredStmt::Expr(
+            heap_closure_call,
+            Span::generated("expr_stmt"),
+        ));
+
+        // i = i + 1
+        while_body.push(LoweredStmt::Assign(
+            i,
+            LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                op: LoweredBinaryOp::Add,
+                right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                span: Span::generated("binary"),
+            },
+            Span::generated("Assign"),
+        ));
+
+        stmts.push(LoweredStmt::While {
+            condition: LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(i, Span::generated("local"))),
+                op: LoweredBinaryOp::Less,
+                right: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
+                span: Span::generated("binary"),
+            },
+            body: while_body,
+            span: Span::generated("while"),
+        });
+
+        Ok(LoweredExpr::Block {
+            stmts,
+            result: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+            span: Span::generated("block"),
+        })
     }
 
     fn lower_array_filter_callback(
