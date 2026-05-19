@@ -1955,6 +1955,58 @@ fn dynamic_function_constructor_declares_node_host_function_compile_capability()
 }
 
 #[test]
+fn dynamic_function_constructor_spread_array_declares_exact_host_capabilities() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../fixtures")
+        .join("core-semantics/function-constructor-dynamic-spread-array-node-shim.ts");
+
+    let output_wasm = std::env::temp_dir().join(format!(
+        "ts2wasm-dynamic-function-spread-array-{}.wasm",
+        std::process::id()
+    ));
+
+    let output_manifest = std::env::temp_dir().join(format!(
+        "ts2wasm-dynamic-function-spread-array-{}.json",
+        std::process::id()
+    ));
+
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture)
+        .arg("-o")
+        .arg(&output_wasm)
+        .arg("--emit-manifest")
+        .arg(&output_manifest)
+        .output()
+        .expect("Failed to execute ts2wasm");
+
+    assert!(
+        output.status.success(),
+        "dynamic Function spread array should compile through the Node host lane: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let manifest_content =
+        std::fs::read_to_string(&output_manifest).expect("Failed to read manifest");
+    let manifest: serde_json::Value =
+        serde_json::from_str(&manifest_content).expect("Manifest should be valid JSON");
+    assert_eq!(manifest["standalone"], false);
+    assert_eq!(manifest["node_host"]["required"], true);
+    assert_eq!(
+        manifest["node_host"]["imports"],
+        serde_json::json!(["host.function.call", "host.function.compile"])
+    );
+    for import in ["host.function.call", "host.function.compile"] {
+        assert!(
+            manifest["capability_reasons"][import]
+                .as_array()
+                .is_some_and(|reasons| !reasons.is_empty()),
+            "{import} must carry an auditable reason: {manifest}"
+        );
+    }
+}
+
+#[test]
 fn dynamic_function_prototype_identity_declares_exact_host_capabilities() {
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")
@@ -2351,6 +2403,9 @@ fn host_deny_rejects_dynamic_function_constructor_host_lane() {
     );
     assert_host_deny_rejects(
         "core-semantics/function-constructor-dynamic-prototype-identity-node-shim.ts",
+    );
+    assert_host_deny_rejects(
+        "core-semantics/function-constructor-dynamic-spread-array-node-shim.ts",
     );
     assert_host_deny_rejects(
         "core-semantics/function-constructor-dynamic-call-construct-host-path.ts",

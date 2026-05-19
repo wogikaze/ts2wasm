@@ -1048,6 +1048,7 @@ directories:
     - function-constructor-dynamic-prototype-identity-node-shim.ts
     - function-constructor-dynamic-string-node-shim.ts
     - function-constructor-dynamic-syntax-error-catch-node-shim.ts
+    - function-constructor-dynamic-spread-array-node-shim.ts
     - function-constructor-dynamic-throw-catch-node-shim.ts
     - function-constructor-dynamic-throw-object-method-node-shim.ts
     - function-constructor-metadata.ts
