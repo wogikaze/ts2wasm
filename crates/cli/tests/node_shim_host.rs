@@ -331,6 +331,12 @@ fn static_direct_eval_for_head_var_object_rest_lands_in_caller_scope() {
 }
 
 #[test]
+fn static_direct_eval_for_head_var_object_rest_computed_key() {
+    let fixture = "fixtures/core-semantics/direct-eval-for-head-var-object-rest-computed-key.ts";
+    assert_node_shim_stdout(fixture, "1\nok\nundefined\n");
+}
+
+#[test]
 fn static_direct_eval_for_in_preserves_completion() {
     let fixture = "fixtures/core-semantics/direct-eval-for-in-completion.ts";
     assert_node_shim_stdout(fixture, "ab\nab\n");
@@ -365,6 +371,16 @@ fn static_indirect_eval_for_head_var_computed_lands_on_global_object() {
 fn static_indirect_eval_for_head_var_object_rest_lands_on_global_object() {
     let fixture = "fixtures/core-semantics/indirect-eval-static-for-head-var-object-rest-global.ts";
     assert_node_shim_stdout(fixture, "ok:2:1\ncaller\ncaller\n1\nok\n2\n");
+}
+
+#[test]
+fn static_indirect_eval_for_head_var_object_rest_computed_lands_on_global_object() {
+    let fixture =
+        "fixtures/core-semantics/indirect-eval-static-for-head-var-object-rest-computed-global.ts";
+    assert_node_shim_stdout(
+        fixture,
+        "1:ok:undefined\ncaller\ncaller\ncaller\n1\nok\nundefined\n",
+    );
 }
 
 #[test]

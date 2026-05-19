@@ -783,8 +783,9 @@ impl WatEmitter<'_> {
     (local $obj i32)
     (local $proto_ptr i32)
     (local $proto_tag i32)
-    ;; Allocate object with 0 initial entries
-    (local.set $obj (call $alloc_heap (i32.const {obj_header})))
+    ;; Allocate object with 0 initial entries plus the same append headroom
+    ;; used by object literals. `$property_set` appends in-place.
+    (local.set $obj (call $alloc_heap (i32.const {obj_create_size})))
     (i32.store (local.get $obj) (i32.const {zero}))
     (i32.store (i32.add (local.get $obj) (i32.const {obj_flags})) (i32.const {zero}))
     ;; Set prototype
@@ -798,7 +799,7 @@ impl WatEmitter<'_> {
     (i32.store (i32.add (local.get $obj) (i32.const {obj_proto})) (local.get $proto_ptr))
     (i32.or (local.get $obj) (i32.const {object_tag})))
 "#,
-            obj_header = Layout::OBJECT_HEADER_SIZE,
+            obj_create_size = Layout::OBJECT_HEADER_SIZE + 8 * Layout::OBJECT_ENTRY_SIZE,
             obj_flags = Layout::OBJECT_FLAGS_OFFSET,
             obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             zero = RuntimeConst::ZERO,
