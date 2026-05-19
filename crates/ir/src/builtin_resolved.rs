@@ -597,6 +597,13 @@ fn function_constructor_static_unary_source_value(
             | FunctionConstructorStaticSourceValue::Null => {
                 Some(FunctionConstructorStaticSourceValue::Number(0))
             }
+            FunctionConstructorStaticSourceValue::String(value) => {
+                Some(FunctionConstructorStaticSourceValue::DecimalNumber(
+                    function_constructor_static_js_number_string(
+                        function_constructor_static_string_to_number(&value)?,
+                    ),
+                ))
+            }
             _ => None,
         },
         UnaryOp::Negate => match value {
@@ -606,6 +613,13 @@ fn function_constructor_static_unary_source_value(
             FunctionConstructorStaticSourceValue::DecimalNumber(value) => {
                 Some(FunctionConstructorStaticSourceValue::DecimalNumber(
                     negate_static_numeric_string(value),
+                ))
+            }
+            FunctionConstructorStaticSourceValue::String(value) => {
+                Some(FunctionConstructorStaticSourceValue::DecimalNumber(
+                    function_constructor_static_js_number_string(
+                        -function_constructor_static_string_to_number(&value)?,
+                    ),
                 ))
             }
             _ => None,
@@ -702,6 +716,15 @@ fn function_constructor_static_number_to_f64(
         FunctionConstructorStaticSourceValue::DecimalNumber(value) => value.parse().ok(),
         _ => None,
     }
+}
+
+fn function_constructor_static_string_to_number(value: &str) -> Option<f64> {
+    let trimmed = value.trim();
+    if trimmed.is_empty() {
+        return Some(0.0);
+    }
+    let parsed = trimmed.parse::<f64>().ok()?;
+    parsed.is_finite().then_some(parsed)
 }
 
 fn function_constructor_static_js_number_string(value: f64) -> String {

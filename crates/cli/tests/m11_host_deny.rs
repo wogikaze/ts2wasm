@@ -2622,6 +2622,7 @@ fn standalone_fixtures_pass_host_deny() {
         "core-semantics/function-constructor-static-primitive-source.ts",
         "core-semantics/function-constructor-static-spread-array-source.ts",
         "core-semantics/function-constructor-static-construct.ts",
+        "core-semantics/function-constructor-static-string-unary-source.ts",
         "core-semantics/function-constructor-static-ternary-source.ts",
         "core-semantics/function-constructor-static-unary-source.ts",
         "core-semantics/function-constructor-this-binding.ts",
