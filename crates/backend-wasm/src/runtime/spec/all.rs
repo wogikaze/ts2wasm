@@ -1690,7 +1690,7 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
-            Self::MathAcos => RuntimeSpec { symbol: "$math_acos", deps: MATH_DEPS, imports: NO_IMPORTS, capability: NO_CAPS, runtime_strings: NO_RUNTIME_STRINGS, result: RuntimeResult::Value },
+            Self::MathAcos => RuntimeSpec { symbol: "$math_acos", deps: MATH_DEPS, imports: IMPORT_MATH_ACOS, capability: CAP_HOST_MATH_ACOS, runtime_strings: NO_RUNTIME_STRINGS, result: RuntimeResult::Value },
             Self::MathAcosh => RuntimeSpec { symbol: "$math_acosh", deps: MATH_DEPS, imports: NO_IMPORTS, capability: NO_CAPS, runtime_strings: NO_RUNTIME_STRINGS, result: RuntimeResult::Value },
             Self::MathAsin => RuntimeSpec { symbol: "$math_asin", deps: MATH_DEPS, imports: NO_IMPORTS, capability: NO_CAPS, runtime_strings: NO_RUNTIME_STRINGS, result: RuntimeResult::Value },
             Self::MathAsinh => RuntimeSpec { symbol: "$math_asinh", deps: MATH_DEPS, imports: NO_IMPORTS, capability: NO_CAPS, runtime_strings: NO_RUNTIME_STRINGS, result: RuntimeResult::Value },

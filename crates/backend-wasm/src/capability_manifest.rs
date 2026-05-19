@@ -147,6 +147,7 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
             | Capability::HostDateToTimeString
             | Capability::HostDateParse
             | Capability::HostDateUTC
+            | Capability::HostMathAcos
             | Capability::HostStringNormalize
             | Capability::HostIntlNumberFormatFormat
             | Capability::HostIntlDateTimeFormatFormat
