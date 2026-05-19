@@ -993,6 +993,7 @@ fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<Resolved
         return Ok(function_constructor_host_lane(kind, args, span));
     };
     let function_name = static_source.generated_function.name.clone();
+    let generated_source_text = static_source.generated_source_text();
     let function_source = static_source.synthetic_function_source();
 
     let tokens = ts2wasm_frontend::Lexer::new(&function_source)
@@ -1021,7 +1022,7 @@ fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<Resolved
             params,
             body,
             is_generator,
-            source_text,
+            source_text: _,
             ..
         } = stmt
         {
@@ -1035,7 +1036,7 @@ fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<Resolved
                 is_generator,
                 origin: FunctionExprOrigin::FunctionConstructor,
                 constructor_metadata: Some(static_source.generated_function),
-                source_text,
+                source_text: generated_source_text,
             });
         }
     }

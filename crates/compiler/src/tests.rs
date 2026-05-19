@@ -35,6 +35,7 @@ fn compiler_expands_static_function_constructor_call_after_resolver_classificati
             origin,
             name,
             constructor_metadata,
+            source_text,
             ..
         },
     ) = &expanded[0]
@@ -49,6 +50,10 @@ fn compiler_expands_static_function_constructor_call_after_resolver_classificati
     assert_eq!(
         constructor_metadata.as_ref().map(|meta| meta.name.as_str()),
         Some("anonymous")
+    );
+    assert_eq!(
+        source_text, "function anonymous(\n) {\nreturn 1\n}",
+        "Function constructor source text should be owned by the plan representation"
     );
 }
 

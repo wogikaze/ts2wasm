@@ -425,6 +425,10 @@ impl StaticFunctionConstructorSource {
     }
 
     pub fn synthetic_function_source(&self) -> String {
+        self.generated_source_text()
+    }
+
+    pub fn generated_source_text(&self) -> String {
         let params_source = self
             .params
             .iter()
