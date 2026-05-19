@@ -653,10 +653,32 @@ impl super::Resolver {
                 }
                 EvalCompletionStep::ForOf {
                     var,
+                    var_landing,
                     iter,
                     body_steps,
                 } => {
-                    let var_id = self.declare_local(var)?;
+                    let should_land_global = matches!(
+                        var_landing,
+                        crate::builtin_resolved::EvalForHeadVarLanding::Global
+                    );
+                    let var_id = match var_landing {
+                        crate::builtin_resolved::EvalForHeadVarLanding::Caller => {
+                            let (local, existed) =
+                                self.declare_eval_var_in_caller_scope(var, caller_scope_index)?;
+                            if !existed {
+                                stmts.push(LoweredStmt::Let(
+                                    local,
+                                    LoweredExpr::Undefined(Span::generated("eval_for_var_hoist")),
+                                    Span::generated("eval_for_var_hoist_let"),
+                                ));
+                            }
+                            local
+                        }
+                        crate::builtin_resolved::EvalForHeadVarLanding::Local
+                        | crate::builtin_resolved::EvalForHeadVarLanding::Global => {
+                            self.declare_local(var)?
+                        }
+                    };
                     let lowered_iter = if let ResolvedExpr::Ident(name) = iter
                         && let Ok(local_id) = self.resolve_local(name)
                     {
@@ -693,13 +715,44 @@ impl super::Resolver {
                         body,
                         span: Span::generated("eval_completion_for_of"),
                     });
+                    if should_land_global {
+                        stmts.push(LoweredStmt::Expr(
+                            self.lower_static_global_eval_var_landing(
+                                var,
+                                &ResolvedExpr::Ident(var.clone()),
+                            )?,
+                            Span::generated("eval_for_global_var"),
+                        ));
+                    }
                 }
                 EvalCompletionStep::ForIn {
                     var,
+                    var_landing,
                     iter,
                     body_steps,
                 } => {
-                    let var_id = self.declare_local(var)?;
+                    let should_land_global = matches!(
+                        var_landing,
+                        crate::builtin_resolved::EvalForHeadVarLanding::Global
+                    );
+                    let var_id = match var_landing {
+                        crate::builtin_resolved::EvalForHeadVarLanding::Caller => {
+                            let (local, existed) =
+                                self.declare_eval_var_in_caller_scope(var, caller_scope_index)?;
+                            if !existed {
+                                stmts.push(LoweredStmt::Let(
+                                    local,
+                                    LoweredExpr::Undefined(Span::generated("eval_for_var_hoist")),
+                                    Span::generated("eval_for_var_hoist_let"),
+                                ));
+                            }
+                            local
+                        }
+                        crate::builtin_resolved::EvalForHeadVarLanding::Local
+                        | crate::builtin_resolved::EvalForHeadVarLanding::Global => {
+                            self.declare_local(var)?
+                        }
+                    };
                     let iter = self.lower_expr(iter)?;
                     let body = self.lower_eval_completion_steps_scoped(
                         body_steps,
@@ -715,6 +768,15 @@ impl super::Resolver {
                         body,
                         span: Span::generated("eval_completion_for_in"),
                     });
+                    if should_land_global {
+                        stmts.push(LoweredStmt::Expr(
+                            self.lower_static_global_eval_var_landing(
+                                var,
+                                &ResolvedExpr::Ident(var.clone()),
+                            )?,
+                            Span::generated("eval_for_global_var"),
+                        ));
+                    }
                 }
                 EvalCompletionStep::Switch { expr, cases } => {
                     let expr = self.lower_expr(expr)?;

@@ -719,11 +719,13 @@ pub enum EvalCompletionStep {
     },
     ForOf {
         var: String,
+        var_landing: EvalForHeadVarLanding,
         iter: ResolvedExpr,
         body_steps: Vec<EvalCompletionStep>,
     },
     ForIn {
         var: String,
+        var_landing: EvalForHeadVarLanding,
         iter: ResolvedExpr,
         body_steps: Vec<EvalCompletionStep>,
     },
@@ -766,6 +768,13 @@ pub struct EvalFunctionHoist {
     pub is_generator: bool,
     pub is_async: bool,
     pub source_text: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EvalForHeadVarLanding {
+    Local,
+    Caller,
+    Global,
 }
 
 impl EvalCompletionStep {

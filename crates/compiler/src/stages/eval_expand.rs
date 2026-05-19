@@ -2,11 +2,11 @@ use std::collections::HashSet;
 
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_ir::builtin_resolved::{
-    ClassMethod, EvalCompletionPlan, EvalCompletionStep, EvalDeclarationPlan, EvalFragmentPlan,
-    EvalFunctionHoist, EvalKind, EvalSource, FunctionConstructorHostPolicy,
-    FunctionConstructorKind, FunctionConstructorParseGoal, FunctionConstructorParseGoals,
-    FunctionConstructorPlan, ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedParam,
-    ResolvedStmt,
+    ClassMethod, EvalCompletionPlan, EvalCompletionStep, EvalDeclarationPlan,
+    EvalForHeadVarLanding, EvalFragmentPlan, EvalFunctionHoist, EvalKind, EvalSource,
+    FunctionConstructorHostPolicy, FunctionConstructorKind, FunctionConstructorParseGoal,
+    FunctionConstructorParseGoals, FunctionConstructorPlan, ResolvedArrayElement, ResolvedExpr,
+    ResolvedObjectProp, ResolvedParam, ResolvedStmt,
 };
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
 use ts2wasm_ir::name_resolver::resolve_names;
@@ -828,9 +828,9 @@ fn expand_static_eval_source(
     let mut global_var_hoists = Vec::new();
     let mut global_declaration_names = Vec::new();
     if leak_var_declarations {
-        collect_eval_var_declaration_names(&program, &mut caller_landing_declarations);
-        collect_eval_var_let_declaration_names(&program, &mut global_var_hoists);
-        collect_eval_var_declaration_names(&program, &mut global_declaration_names);
+        collect_eval_var_declaration_names(src, &program, &mut caller_landing_declarations);
+        collect_eval_var_let_declaration_names(src, &program, &mut global_var_hoists);
+        collect_eval_var_declaration_names(src, &program, &mut global_declaration_names);
     }
     let direct_caller_scope = fragment_plan.kind == EvalKind::Direct;
     let var_landing = match (direct_caller_scope, leak_var_declarations) {
@@ -883,6 +883,7 @@ fn expand_static_eval_source(
 
     Ok(StaticEvalExpansion {
         expr: extract_completion_value(
+            src,
             fragment_plan,
             &program,
             builtin_resolved,
@@ -1246,6 +1247,7 @@ fn function_constructor_syntax_error(message: &str, span: ts2wasm_source::Span) 
 /// Produces a completion-plan expression so lower IR can evaluate all eval-code
 /// side effects while preserving the last non-empty completion value exactly once.
 fn extract_completion_value(
+    source: &str,
     fragment_plan: &EvalFragmentPlan,
     ast_stmts: &[Stmt],
     stmts: Vec<ResolvedStmt>,
@@ -1277,7 +1279,7 @@ fn extract_completion_value(
             source_text: hoist.source_text,
         }
     }));
-    steps.extend(eval_completion_steps(ast_stmts, stmts, var_landing));
+    steps.extend(eval_completion_steps(source, ast_stmts, stmts, var_landing));
     Ok(fragment_plan.completion_expr_with_context(
         caller_is_strict,
         eval_is_strict,
@@ -2265,6 +2267,7 @@ fn rewrite_eval_step_global_collisions(
         }
         EvalCompletionStep::ForOf {
             var,
+            var_landing,
             iter,
             body_steps,
         } => {
@@ -2275,12 +2278,14 @@ fn rewrite_eval_step_global_collisions(
             scopes.pop();
             EvalCompletionStep::ForOf {
                 var,
+                var_landing,
                 iter,
                 body_steps,
             }
         }
         EvalCompletionStep::ForIn {
             var,
+            var_landing,
             iter,
             body_steps,
         } => {
@@ -2291,6 +2296,7 @@ fn rewrite_eval_step_global_collisions(
             scopes.pop();
             EvalCompletionStep::ForIn {
                 var,
+                var_landing,
                 iter,
                 body_steps,
             }
@@ -2376,6 +2382,7 @@ fn eval_global_property(name: String) -> ResolvedExpr {
 }
 
 fn eval_completion_steps(
+    source: &str,
     ast_stmts: &[Stmt],
     stmts: Vec<ResolvedStmt>,
     var_landing: EvalVarLanding,
@@ -2383,11 +2390,14 @@ fn eval_completion_steps(
     stmts
         .into_iter()
         .enumerate()
-        .map(|(idx, stmt)| eval_statement_completion_step(ast_stmts.get(idx), stmt, var_landing))
+        .map(|(idx, stmt)| {
+            eval_statement_completion_step(source, ast_stmts.get(idx), stmt, var_landing)
+        })
         .collect()
 }
 
 fn eval_statement_completion_step(
+    source: &str,
     ast_stmt: Option<&Stmt>,
     stmt: ResolvedStmt,
     var_landing: EvalVarLanding,
@@ -2421,6 +2431,7 @@ fn eval_statement_completion_step(
                 _ => &[],
             };
             EvalCompletionStep::Block(eval_completion_steps(
+                source,
                 ast_statements,
                 statements,
                 var_landing,
@@ -2441,8 +2452,8 @@ fn eval_statement_completion_step(
             };
             EvalCompletionStep::If {
                 condition,
-                then_steps: eval_completion_steps(ast_then, then_body, var_landing),
-                else_steps: eval_completion_steps(ast_else, else_body, var_landing),
+                then_steps: eval_completion_steps(source, ast_then, then_body, var_landing),
+                else_steps: eval_completion_steps(source, ast_else, else_body, var_landing),
             }
         }
         ResolvedStmt::While { condition, body } => {
@@ -2452,7 +2463,7 @@ fn eval_statement_completion_step(
             };
             EvalCompletionStep::While {
                 condition,
-                body_steps: eval_completion_steps(ast_body, body, var_landing),
+                body_steps: eval_completion_steps(source, ast_body, body, var_landing),
             }
         }
         ResolvedStmt::DoWhile { body, condition } => {
@@ -2461,7 +2472,7 @@ fn eval_statement_completion_step(
                 _ => &[],
             };
             EvalCompletionStep::DoWhile {
-                body_steps: eval_completion_steps(ast_body, body, var_landing),
+                body_steps: eval_completion_steps(source, ast_body, body, var_landing),
                 condition,
             }
         }
@@ -2477,33 +2488,46 @@ fn eval_statement_completion_step(
             };
             EvalCompletionStep::For {
                 init: init.map(|stmt| {
-                    Box::new(eval_statement_completion_step(ast_init, *stmt, var_landing))
+                    Box::new(eval_statement_completion_step(
+                        source,
+                        ast_init,
+                        *stmt,
+                        var_landing,
+                    ))
                 }),
                 condition,
                 update,
-                body_steps: eval_completion_steps(ast_body, body, var_landing),
+                body_steps: eval_completion_steps(source, ast_body, body, var_landing),
             }
         }
         ResolvedStmt::ForOf { var, iter, body } => {
-            let ast_body = match ast_stmt {
-                Some(Stmt::ForOf { body, .. }) => body.as_slice(),
-                _ => &[],
+            let (ast_body, head_landing) = match ast_stmt {
+                Some(Stmt::ForOf { body, span, .. }) => (
+                    body.as_slice(),
+                    eval_for_head_var_landing(source, *span, "of", &var, var_landing),
+                ),
+                _ => (&[][..], EvalForHeadVarLanding::Local),
             };
             EvalCompletionStep::ForOf {
                 var,
+                var_landing: head_landing,
                 iter,
-                body_steps: eval_completion_steps(ast_body, body, var_landing),
+                body_steps: eval_completion_steps(source, ast_body, body, var_landing),
             }
         }
         ResolvedStmt::ForIn { var, iter, body } => {
-            let ast_body = match ast_stmt {
-                Some(Stmt::ForIn { body, .. }) => body.as_slice(),
-                _ => &[],
+            let (ast_body, head_landing) = match ast_stmt {
+                Some(Stmt::ForIn { body, span, .. }) => (
+                    body.as_slice(),
+                    eval_for_head_var_landing(source, *span, "in", &var, var_landing),
+                ),
+                _ => (&[][..], EvalForHeadVarLanding::Local),
             };
             EvalCompletionStep::ForIn {
                 var,
+                var_landing: head_landing,
                 iter,
-                body_steps: eval_completion_steps(ast_body, body, var_landing),
+                body_steps: eval_completion_steps(source, ast_body, body, var_landing),
             }
         }
         ResolvedStmt::Switch { expr, cases } => {
@@ -2521,7 +2545,7 @@ fn eval_statement_completion_step(
                         .unwrap_or(&[]);
                     (
                         case_expr,
-                        eval_completion_steps(ast_body, body, var_landing),
+                        eval_completion_steps(source, ast_body, body, var_landing),
                     )
                 })
                 .collect();
@@ -2547,13 +2571,13 @@ fn eval_statement_completion_step(
                 _ => (&[][..], None, None),
             };
             EvalCompletionStep::TryCatch {
-                try_steps: eval_completion_steps(ast_try, try_block, var_landing),
+                try_steps: eval_completion_steps(source, ast_try, try_block, var_landing),
                 catch_param,
                 catch_steps: catch_block.map(|block| {
-                    eval_completion_steps(ast_catch.unwrap_or(&[]), block, var_landing)
+                    eval_completion_steps(source, ast_catch.unwrap_or(&[]), block, var_landing)
                 }),
                 finally_steps: finally_block.map(|block| {
-                    eval_completion_steps(ast_finally.unwrap_or(&[]), block, var_landing)
+                    eval_completion_steps(source, ast_finally.unwrap_or(&[]), block, var_landing)
                 }),
             }
         }
@@ -2564,7 +2588,12 @@ fn eval_statement_completion_step(
             };
             EvalCompletionStep::Labeled {
                 label,
-                body: Box::new(eval_statement_completion_step(ast_body, *body, var_landing)),
+                body: Box::new(eval_statement_completion_step(
+                    source,
+                    ast_body,
+                    *body,
+                    var_landing,
+                )),
             }
         }
         ResolvedStmt::Function {
@@ -2629,35 +2658,47 @@ fn eval_statement_completion_step(
     }
 }
 
-fn collect_eval_var_declaration_names(stmts: &[Stmt], out: &mut Vec<String>) {
+fn collect_eval_var_declaration_names(source: &str, stmts: &[Stmt], out: &mut Vec<String>) {
     for stmt in stmts {
         match stmt {
             Stmt::Let {
                 name, is_var: true, ..
             }
             | Stmt::Function { name, .. } => {
-                if !out.contains(name) {
-                    out.push(name.clone());
-                }
+                push_unique_eval_declaration(out, name);
             }
-            Stmt::Block { statements, .. } => collect_eval_var_declaration_names(statements, out),
+            Stmt::Block { statements, .. } => {
+                collect_eval_var_declaration_names(source, statements, out)
+            }
             Stmt::If {
                 then_body,
                 else_body,
                 ..
             } => {
-                collect_eval_var_declaration_names(then_body, out);
-                collect_eval_var_declaration_names(else_body, out);
+                collect_eval_var_declaration_names(source, then_body, out);
+                collect_eval_var_declaration_names(source, else_body, out);
             }
-            Stmt::While { body, .. }
-            | Stmt::DoWhile { body, .. }
-            | Stmt::For { body, .. }
-            | Stmt::ForIn { body, .. }
-            | Stmt::ForOf { body, .. }
-            | Stmt::ForAwaitOf { body, .. } => collect_eval_var_declaration_names(body, out),
+            Stmt::While { body, .. } | Stmt::DoWhile { body, .. } | Stmt::For { body, .. } => {
+                collect_eval_var_declaration_names(source, body, out)
+            }
+            Stmt::ForIn {
+                var, body, span, ..
+            } => {
+                collect_eval_for_head_var_declaration(source, *span, "in", var, out);
+                collect_eval_var_declaration_names(source, body, out);
+            }
+            Stmt::ForOf {
+                var, body, span, ..
+            }
+            | Stmt::ForAwaitOf {
+                var, body, span, ..
+            } => {
+                collect_eval_for_head_var_declaration(source, *span, "of", var, out);
+                collect_eval_var_declaration_names(source, body, out);
+            }
             Stmt::Switch { cases, .. } => {
                 for (_, body) in cases {
-                    collect_eval_var_declaration_names(body, out);
+                    collect_eval_var_declaration_names(source, body, out);
                 }
             }
             Stmt::TryCatch {
@@ -2666,52 +2707,66 @@ fn collect_eval_var_declaration_names(stmts: &[Stmt], out: &mut Vec<String>) {
                 finally_block,
                 ..
             } => {
-                collect_eval_var_declaration_names(try_block, out);
+                collect_eval_var_declaration_names(source, try_block, out);
                 if let Some(catch_block) = catch_block {
-                    collect_eval_var_declaration_names(catch_block, out);
+                    collect_eval_var_declaration_names(source, catch_block, out);
                 }
                 if let Some(finally_block) = finally_block {
-                    collect_eval_var_declaration_names(finally_block, out);
+                    collect_eval_var_declaration_names(source, finally_block, out);
                 }
             }
             Stmt::Labeled { body, .. } => {
-                collect_eval_var_declaration_names(std::slice::from_ref(body.as_ref()), out);
+                collect_eval_var_declaration_names(
+                    source,
+                    std::slice::from_ref(body.as_ref()),
+                    out,
+                );
             }
             _ => {}
         }
     }
 }
 
-fn collect_eval_var_let_declaration_names(stmts: &[Stmt], out: &mut Vec<String>) {
+fn collect_eval_var_let_declaration_names(source: &str, stmts: &[Stmt], out: &mut Vec<String>) {
     for stmt in stmts {
         match stmt {
             Stmt::Let {
                 name, is_var: true, ..
             } => {
-                if !out.contains(name) {
-                    out.push(name.clone());
-                }
+                push_unique_eval_declaration(out, name);
             }
             Stmt::Block { statements, .. } => {
-                collect_eval_var_let_declaration_names(statements, out)
+                collect_eval_var_let_declaration_names(source, statements, out)
             }
             Stmt::If {
                 then_body,
                 else_body,
                 ..
             } => {
-                collect_eval_var_let_declaration_names(then_body, out);
-                collect_eval_var_let_declaration_names(else_body, out);
+                collect_eval_var_let_declaration_names(source, then_body, out);
+                collect_eval_var_let_declaration_names(source, else_body, out);
             }
-            Stmt::While { body, .. }
-            | Stmt::DoWhile { body, .. }
-            | Stmt::For { body, .. }
-            | Stmt::ForIn { body, .. }
-            | Stmt::ForOf { body, .. }
-            | Stmt::ForAwaitOf { body, .. } => collect_eval_var_let_declaration_names(body, out),
+            Stmt::While { body, .. } | Stmt::DoWhile { body, .. } | Stmt::For { body, .. } => {
+                collect_eval_var_let_declaration_names(source, body, out)
+            }
+            Stmt::ForIn {
+                var, body, span, ..
+            } => {
+                collect_eval_for_head_var_declaration(source, *span, "in", var, out);
+                collect_eval_var_let_declaration_names(source, body, out);
+            }
+            Stmt::ForOf {
+                var, body, span, ..
+            }
+            | Stmt::ForAwaitOf {
+                var, body, span, ..
+            } => {
+                collect_eval_for_head_var_declaration(source, *span, "of", var, out);
+                collect_eval_var_let_declaration_names(source, body, out);
+            }
             Stmt::Switch { cases, .. } => {
                 for (_, body) in cases {
-                    collect_eval_var_let_declaration_names(body, out);
+                    collect_eval_var_let_declaration_names(source, body, out);
                 }
             }
             Stmt::TryCatch {
@@ -2720,19 +2775,250 @@ fn collect_eval_var_let_declaration_names(stmts: &[Stmt], out: &mut Vec<String>)
                 finally_block,
                 ..
             } => {
-                collect_eval_var_let_declaration_names(try_block, out);
+                collect_eval_var_let_declaration_names(source, try_block, out);
                 if let Some(catch_block) = catch_block {
-                    collect_eval_var_let_declaration_names(catch_block, out);
+                    collect_eval_var_let_declaration_names(source, catch_block, out);
                 }
                 if let Some(finally_block) = finally_block {
-                    collect_eval_var_let_declaration_names(finally_block, out);
+                    collect_eval_var_let_declaration_names(source, finally_block, out);
                 }
             }
             Stmt::Labeled { body, .. } => {
-                collect_eval_var_let_declaration_names(std::slice::from_ref(body.as_ref()), out);
+                collect_eval_var_let_declaration_names(
+                    source,
+                    std::slice::from_ref(body.as_ref()),
+                    out,
+                );
             }
             _ => {}
         }
+    }
+}
+
+fn collect_eval_for_head_var_declaration(
+    source: &str,
+    span: Span,
+    separator: &str,
+    fallback_var: &str,
+    out: &mut Vec<String>,
+) {
+    let Some(loop_source) = source.get(span.start..) else {
+        return;
+    };
+    let Some(open_paren) = loop_source.find('(') else {
+        return;
+    };
+    let header = &loop_source[open_paren + 1..];
+    let Some(separator_start) = top_level_loop_head_separator(header, separator) else {
+        return;
+    };
+    let binding = header[..separator_start].trim();
+    let Some(binding) = binding.strip_prefix("var") else {
+        return;
+    };
+    if !binding
+        .as_bytes()
+        .first()
+        .is_none_or(|byte| byte.is_ascii_whitespace() || matches!(byte, b'{' | b'['))
+    {
+        return;
+    }
+    let binding = strip_top_level_type_annotation(binding.trim());
+    if binding.starts_with(['{', '[']) {
+        collect_binding_names_from_pattern(binding, out);
+    } else if fallback_var != "_binding" {
+        push_unique_eval_declaration(out, fallback_var);
+    }
+}
+
+fn eval_for_head_var_landing(
+    source: &str,
+    span: Span,
+    separator: &str,
+    fallback_var: &str,
+    var_landing: EvalVarLanding,
+) -> EvalForHeadVarLanding {
+    if !eval_for_head_uses_var(source, span, separator, fallback_var) {
+        return EvalForHeadVarLanding::Local;
+    }
+    match var_landing {
+        EvalVarLanding::Caller => EvalForHeadVarLanding::Caller,
+        EvalVarLanding::Global => EvalForHeadVarLanding::Global,
+        EvalVarLanding::Lexical => EvalForHeadVarLanding::Local,
+    }
+}
+
+fn eval_for_head_uses_var(source: &str, span: Span, separator: &str, fallback_var: &str) -> bool {
+    let Some(loop_source) = source.get(span.start..) else {
+        return false;
+    };
+    let Some(open_paren) = loop_source.find('(') else {
+        return false;
+    };
+    let header = &loop_source[open_paren + 1..];
+    let Some(separator_start) = top_level_loop_head_separator(header, separator) else {
+        return false;
+    };
+    let binding = header[..separator_start].trim();
+    let Some(binding) = binding.strip_prefix("var") else {
+        return false;
+    };
+    if !binding
+        .as_bytes()
+        .first()
+        .is_none_or(|byte| byte.is_ascii_whitespace() || matches!(byte, b'{' | b'['))
+    {
+        return false;
+    }
+    fallback_var != "_binding" || binding.trim_start().starts_with(['{', '['])
+}
+
+fn top_level_loop_head_separator(header: &str, separator: &str) -> Option<usize> {
+    let bytes = header.as_bytes();
+    let mut index = 0usize;
+    let mut depth = 0usize;
+    while index < header.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => {
+                index = skip_quoted_source(header, index);
+                continue;
+            }
+            b'(' | b'[' | b'{' => depth += 1,
+            b')' if depth == 0 => return None,
+            b')' | b']' | b'}' => depth = depth.saturating_sub(1),
+            _ if depth == 0 && header[index..].starts_with(separator) => {
+                let end = index + separator.len();
+                if is_identifier_boundary(header, index, end) {
+                    return Some(index);
+                }
+            }
+            _ => {}
+        }
+        index += 1;
+    }
+    None
+}
+
+fn strip_top_level_type_annotation(binding: &str) -> &str {
+    let bytes = binding.as_bytes();
+    let mut index = 0usize;
+    let mut depth = 0usize;
+    while index < binding.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => {
+                index = skip_quoted_source(binding, index);
+                continue;
+            }
+            b'(' | b'[' | b'{' => depth += 1,
+            b')' | b']' | b'}' => depth = depth.saturating_sub(1),
+            b':' if depth == 0 => return binding[..index].trim(),
+            _ => {}
+        }
+        index += 1;
+    }
+    binding.trim()
+}
+
+fn collect_binding_names_from_pattern(pattern: &str, out: &mut Vec<String>) {
+    let bytes = pattern.as_bytes();
+    let mut index = 0usize;
+    while index < pattern.len() {
+        if bytes[index] == b'=' {
+            index = skip_binding_initializer(pattern, index + 1);
+            continue;
+        }
+        if !is_ident_start_byte(bytes[index]) {
+            index += 1;
+            continue;
+        }
+        let mut end = index + 1;
+        while bytes.get(end).copied().is_some_and(is_ident_continue_byte) {
+            end += 1;
+        }
+        let next = skip_ascii_ws(pattern, end);
+        if pattern.as_bytes().get(next) == Some(&b':') {
+            index = next + 1;
+            continue;
+        }
+        push_unique_eval_declaration(out, &pattern[index..end]);
+        index = end;
+    }
+}
+
+fn skip_binding_initializer(pattern: &str, start: usize) -> usize {
+    let mut index = start;
+    let mut depth = 0usize;
+    let bytes = pattern.as_bytes();
+    while index < pattern.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => {
+                index = skip_quoted_source(pattern, index);
+                continue;
+            }
+            b'{' | b'[' | b'(' => depth += 1,
+            b'}' | b']' | b')' if depth == 0 => return index,
+            b'}' | b']' | b')' => depth -= 1,
+            b',' if depth == 0 => return index,
+            _ => {}
+        }
+        index += 1;
+    }
+    index
+}
+
+fn skip_quoted_source(source: &str, start: usize) -> usize {
+    let bytes = source.as_bytes();
+    let quote = bytes[start];
+    let mut index = start + 1;
+    while index < source.len() {
+        if bytes[index] == b'\\' {
+            index = (index + 2).min(source.len());
+            continue;
+        }
+        if bytes[index] == quote {
+            return index + 1;
+        }
+        index += 1;
+    }
+    source.len()
+}
+
+fn is_identifier_boundary(source: &str, start: usize, end: usize) -> bool {
+    let before = start
+        .checked_sub(1)
+        .and_then(|pos| source.as_bytes().get(pos).copied())
+        .is_none_or(|byte| !is_ident_continue_byte(byte));
+    let after = source
+        .as_bytes()
+        .get(end)
+        .copied()
+        .is_none_or(|byte| !is_ident_continue_byte(byte));
+    before && after
+}
+
+fn skip_ascii_ws(source: &str, mut index: usize) -> usize {
+    while source
+        .as_bytes()
+        .get(index)
+        .copied()
+        .is_some_and(|byte| byte.is_ascii_whitespace())
+    {
+        index += 1;
+    }
+    index
+}
+
+fn is_ident_start_byte(byte: u8) -> bool {
+    byte == b'_' || byte == b'$' || byte.is_ascii_alphabetic()
+}
+
+fn is_ident_continue_byte(byte: u8) -> bool {
+    is_ident_start_byte(byte) || byte.is_ascii_digit()
+}
+
+fn push_unique_eval_declaration(out: &mut Vec<String>, name: &str) {
+    if !out.iter().any(|existing| existing == name) {
+        out.push(name.to_owned());
     }
 }
 

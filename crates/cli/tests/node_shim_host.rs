@@ -293,6 +293,12 @@ fn static_direct_eval_for_preserves_completion() {
 }
 
 #[test]
+fn static_direct_eval_for_head_var_lands_in_caller_scope() {
+    let fixture = "fixtures/core-semantics/direct-eval-for-head-var-lands-in-caller.ts";
+    assert_node_shim_stdout(fixture, "alpha:4\nalpha\n4\n");
+}
+
+#[test]
 fn static_direct_eval_for_in_preserves_completion() {
     let fixture = "fixtures/core-semantics/direct-eval-for-in-completion.ts";
     assert_node_shim_stdout(fixture, "ab\nab\n");
