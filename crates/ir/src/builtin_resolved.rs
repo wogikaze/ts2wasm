@@ -498,6 +498,20 @@ fn function_constructor_static_source_value(
         ResolvedExpr::Unary { op, expr } => {
             function_constructor_static_unary_source_value(*op, expr)
         }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            let condition = function_constructor_static_source_value(condition)?;
+            let selected = if function_constructor_static_to_boolean(&condition) {
+                then_expr
+            } else {
+                else_expr
+            };
+            function_constructor_static_source_value(selected)
+        }
         _ => None,
     }
 }
