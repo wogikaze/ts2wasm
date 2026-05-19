@@ -1,0 +1,22 @@
+let product = Function(2 * 3);
+let difference = Function(5 - 2);
+let quotient = Function(5 / 2);
+let remainder = Function(7 % 4);
+let power = Function(2 ** 3);
+let stringCoerced = Function("4" - true);
+let nullCoerced = Function(null * 7);
+
+console.log(product());
+console.log(difference());
+console.log(quotient());
+console.log(remainder());
+console.log(power());
+console.log(stringCoerced());
+console.log(nullCoerced());
+console.log(product.toString());
+console.log(difference.toString());
+console.log(quotient.toString());
+console.log(remainder.toString());
+console.log(power.toString());
+console.log(stringCoerced.toString());
+console.log(nullCoerced.toString());

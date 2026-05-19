@@ -517,6 +517,13 @@ fn function_constructor_static_source_value(
         ResolvedExpr::Array(elements) => function_constructor_static_array_source_value(elements),
         ResolvedExpr::Binary { left, op, right } => match op {
             BinaryOp::Add => function_constructor_static_add_source_value(left, right),
+            BinaryOp::Subtract
+            | BinaryOp::Multiply
+            | BinaryOp::Divide
+            | BinaryOp::Modulo
+            | BinaryOp::Power => {
+                function_constructor_static_numeric_binary_source_value(left, *op, right)
+            }
             BinaryOp::And | BinaryOp::Or | BinaryOp::NullishCoalesce => {
                 function_constructor_static_logical_source_value(left, *op, right)
             }
@@ -708,12 +715,42 @@ fn function_constructor_static_add_source_value(
     }
 }
 
+fn function_constructor_static_numeric_binary_source_value(
+    left: &ResolvedExpr,
+    op: BinaryOp,
+    right: &ResolvedExpr,
+) -> Option<FunctionConstructorStaticSourceValue> {
+    let left = function_constructor_static_source_value(left)?;
+    let right = function_constructor_static_source_value(right)?;
+    let left = function_constructor_static_number_to_f64(&left)?;
+    let right = function_constructor_static_number_to_f64(&right)?;
+    let result = match op {
+        BinaryOp::Subtract => left - right,
+        BinaryOp::Multiply => left * right,
+        BinaryOp::Divide => left / right,
+        BinaryOp::Modulo => left % right,
+        BinaryOp::Power => left.powf(right),
+        _ => unreachable!("numeric Function constructor source op"),
+    };
+    result.is_finite().then(|| {
+        FunctionConstructorStaticSourceValue::DecimalNumber(
+            function_constructor_static_js_number_string(result),
+        )
+    })
+}
+
 fn function_constructor_static_number_to_f64(
     value: &FunctionConstructorStaticSourceValue,
 ) -> Option<f64> {
     match value {
         FunctionConstructorStaticSourceValue::Number(value) => Some(f64::from(*value)),
         FunctionConstructorStaticSourceValue::DecimalNumber(value) => value.parse().ok(),
+        FunctionConstructorStaticSourceValue::Bool(true) => Some(1.0),
+        FunctionConstructorStaticSourceValue::Bool(false)
+        | FunctionConstructorStaticSourceValue::Null => Some(0.0),
+        FunctionConstructorStaticSourceValue::String(value) => {
+            function_constructor_static_string_to_number(value)
+        }
         _ => None,
     }
 }
