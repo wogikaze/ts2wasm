@@ -680,6 +680,12 @@ fn dynamic_direct_eval_bridges_thrown_errors_through_node_shim_host_import() {
 }
 
 #[test]
+fn dynamic_direct_eval_applies_writeback_before_throw_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-throw-writeback-node-shim.ts";
+    assert_node_shim_stdout(fixture, "Error\nafter\n");
+}
+
+#[test]
 fn dynamic_direct_eval_strict_lexical_shadow_does_not_write_back_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-strict-lexical-shadow-node-shim.ts";
     assert_node_shim_stdout(fixture, "2\n1\n");
@@ -1773,21 +1779,26 @@ function evalWithEnvDescriptor(source, envRaw) {
   const formalNames = wrapperBindings.map((binding) => binding.name);
   const sourceName = uniqueInternalName('__ts2wasm_eval_source', names);
   const resultName = uniqueInternalName('__ts2wasm_eval_result', [...names, sourceName]);
+  const abruptName = uniqueInternalName('__ts2wasm_eval_abrupt', [
+    ...names,
+    sourceName,
+    resultName,
+  ]);
   const strictPrefix = useStrictWrapper ? '"use strict"; ' : '';
   const wrapper = Function(
     sourceName,
     ...formalNames,
-    `${strictPrefix}let ${resultName} = eval(${sourceName}); return [${resultName}, ${formalNames.join(', ')}];`,
+    `${strictPrefix}let ${resultName}; let ${abruptName} = null; try { ${resultName} = eval(${sourceName}); } catch (error) { ${abruptName} = { kind: "throw", value: error }; } return [${resultName}, ${abruptName}, ${formalNames.join(', ')}];`,
   );
   const values = wrapperBindings.map((binding) => binding.value);
   const thisValue = thisBinding === undefined ? undefined : thisBinding.value;
-  const [result, ...updatedValues] = wrapper.call(thisValue, source, ...values);
+  const [result, abrupt, ...updatedValues] = wrapper.call(thisValue, source, ...values);
   const ledger = {
     version: DIRECT_EVAL_MUTATION_LEDGER_VERSION,
     result,
     writes: [],
     createdBindings: [],
-    abrupt: null,
+    abrupt,
   };
 
   for (let i = 0; i < wrapperBindings.length; i += 1) {
@@ -1818,9 +1829,6 @@ function applyDirectEvalMutationLedger(envKey, extraMap, ledger) {
   if (ledger.version !== DIRECT_EVAL_MUTATION_LEDGER_VERSION) {
     throw new TypeError(`unsupported direct eval mutation ledger version for ${envKey}`);
   }
-  if (ledger.abrupt !== null) {
-    throw new TypeError(`unsupported direct eval abrupt completion ledger for ${envKey}`);
-  }
   if (!Array.isArray(ledger.writes) || !Array.isArray(ledger.createdBindings)) {
     throw new TypeError(`invalid direct eval mutation ledger entries for ${envKey}`);
   }
@@ -1835,6 +1843,16 @@ function applyDirectEvalMutationLedger(envKey, extraMap, ledger) {
       throw new TypeError(`invalid direct eval mutation ledger binding for ${envKey}`);
     }
     extraMap.set(binding.name, binding.value);
+  }
+  if (ledger.abrupt !== null) {
+    if (
+      ledger.abrupt === null ||
+      typeof ledger.abrupt !== 'object' ||
+      ledger.abrupt.kind !== 'throw'
+    ) {
+      throw new TypeError(`invalid direct eval abrupt completion ledger for ${envKey}`);
+    }
+    throw ledger.abrupt.value;
   }
 }
 
