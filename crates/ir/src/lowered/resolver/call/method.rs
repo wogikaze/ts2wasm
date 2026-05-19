@@ -2762,6 +2762,42 @@ impl super::super::Resolver {
                     Span::generated("num"),
                 )));
             }
+            // Handle single-argument case for Math.max/min: return the arg directly
+            if (intrinsic == RuntimeFn::MathMax || intrinsic == RuntimeFn::MathMin)
+                && args.len() == 1
+            {
+                return Ok(Some(self.lower_expr(&args[0])?));
+            }
+            // Handle Math.hypot edge cases
+            if intrinsic == RuntimeFn::MathHypot {
+                if args.is_empty() {
+                    return Ok(Some(LoweredExpr::Number(0, Span::generated("num"))));
+                }
+                if args.len() == 1 {
+                    // hypot(x) = abs(x) for one argument
+                    return Ok(Some(LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::MathAbs,
+                        args: vec![self.lower_expr(&args[0])?],
+                        span: Span::generated("runtime_call"),
+                    }));
+                }
+                if args.len() > 2 {
+                    // Fold >2 args into nested binary calls (same as Math.max/min pattern)
+                    let mut lowered_args = Vec::new();
+                    for arg in args {
+                        lowered_args.push(self.lower_expr(arg)?);
+                    }
+                    let mut result = lowered_args[0].clone();
+                    for arg in &lowered_args[1..] {
+                        result = LoweredExpr::RuntimeCall {
+                            intrinsic,
+                            args: vec![result, arg.clone()],
+                            span: Span::generated("runtime_call"),
+                        };
+                    }
+                    return Ok(Some(result));
+                }
+            }
             let mut lowered_args = Vec::new();
             let is_static_call = matches!(
                 object,
