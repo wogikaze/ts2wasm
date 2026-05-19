@@ -852,6 +852,16 @@ fn dynamic_direct_eval_object_method_var_is_not_predeclared_for_normal_code() {
 }
 
 #[test]
+fn static_function_constructor_rejects_parameter_wrapper_injection() {
+    let fixture = "fixtures/core-semantics/function-constructor-parameter-injection-unsupported.ts";
+    assert_build_fails_with(
+        fixture,
+        "UnsupportedSyntax",
+        "Function constructor parameters must parse as a single FormalParameters list",
+    );
+}
+
+#[test]
 fn static_direct_eval_rejects_return_statement() {
     let fixture = "fixtures/core-semantics/direct-eval-return-unsupported.ts";
     assert_build_fails_with(

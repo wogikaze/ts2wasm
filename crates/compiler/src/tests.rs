@@ -253,6 +253,18 @@ fn compiler_rejects_non_simple_duplicate_function_constructor_params() {
 }
 
 #[test]
+fn compiler_rejects_function_constructor_parameter_wrapper_injection() {
+    let err = parse_resolve_and_expand_dynamic_code_err(
+        r#"let value = Function("a) { return 1; } function injected(", "return 2");"#,
+    );
+    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    assert!(
+        err.message.contains("single FormalParameters list"),
+        "unexpected diagnostic: {err:?}"
+    );
+}
+
+#[test]
 fn compiler_rejects_strict_body_eval_arguments_function_constructor_params() {
     for source in [
         r#"let value = Function("eval", "\"use strict\"; return eval");"#,

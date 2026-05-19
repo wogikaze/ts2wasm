@@ -1014,6 +1014,7 @@ fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<Resolved
             span: Some(span),
             phase: None,
         })?;
+    validate_static_function_constructor_wrapper_shape(&program, span)?;
     validate_static_function_constructor_early_errors(&program, span)?;
 
     let name_resolved = resolve_names(&program)?;
@@ -1052,6 +1053,19 @@ fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<Resolved
         span: Some(span),
         phase: None,
     })
+}
+
+fn validate_static_function_constructor_wrapper_shape(
+    program: &[Stmt],
+    span: ts2wasm_source::Span,
+) -> Result<(), Diagnostic> {
+    if !matches!(program, [Stmt::Function { .. }]) {
+        return Err(function_constructor_syntax_error(
+            "Function constructor parameters must parse as a single FormalParameters list",
+            span,
+        ));
+    }
+    Ok(())
 }
 
 fn validate_function_constructor_parse_goals(

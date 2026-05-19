@@ -1043,6 +1043,7 @@ directories:
     - function-constructor-new-target.ts
     - function-constructor-new-static-prototype.ts
     - function-constructor-no-caller-capture.ts
+    - function-constructor-parameter-injection-unsupported.ts
     - function-constructor-parameter-grammar.ts
     - function-constructor-rest-params.ts
     - function-constructor-static-primitive-source.ts
