@@ -433,7 +433,9 @@ impl FunctionConstructorPlan {
     }
 
     pub fn expected_host_policy(&self) -> FunctionConstructorHostPolicy {
-        FunctionConstructorHostPolicy::for_static_source(&self.static_source)
+        FunctionConstructorHostPolicy::for_static_source(
+            &StaticFunctionConstructorSource::from_args(&self.args),
+        )
     }
 
     pub fn host_policy_is_consistent(&self) -> bool {
@@ -441,7 +443,8 @@ impl FunctionConstructorPlan {
     }
 
     pub fn static_source_is_consistent(&self) -> bool {
-        if self.static_source != StaticFunctionConstructorSource::from_args(&self.args) {
+        let expected_static_source = StaticFunctionConstructorSource::from_args(&self.args);
+        if self.static_source != expected_static_source {
             return false;
         }
 
@@ -2011,6 +2014,7 @@ mod tests {
             host_policy: FunctionConstructorHostPolicy::HostCompile,
             ..static_plan.clone()
         };
+        assert!(!missing_static_source.host_policy_is_consistent());
         assert!(!missing_static_source.static_source_is_consistent());
 
         let mismatched_policy = FunctionConstructorPlan {
