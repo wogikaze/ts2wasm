@@ -1365,6 +1365,21 @@ fn focused_direct_eval_tdz_candidates(source: &str) -> Vec<String> {
         return vec![trimmed.to_owned()];
     }
     if let Some(inner) = trimmed
+        .strip_prefix('(')
+        .and_then(|rest| rest.strip_suffix(')'))
+    {
+        let inner = inner.trim();
+        if is_ascii_js_identifier(inner) {
+            return vec![inner.to_owned()];
+        }
+    }
+    if let Some(inner) = trimmed.strip_prefix("typeof ") {
+        let inner = inner.trim();
+        if is_ascii_js_identifier(inner) {
+            return vec![inner.to_owned()];
+        }
+    }
+    if let Some(inner) = trimmed
         .strip_prefix("`${")
         .and_then(|rest| rest.strip_suffix("}`"))
     {

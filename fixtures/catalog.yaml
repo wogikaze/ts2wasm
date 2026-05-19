@@ -967,7 +967,9 @@ directories:
     - direct-eval-dynamic-tdz-conflict-node-shim.ts
     - direct-eval-dynamic-tdz-name-in-string-node-shim.ts
     - direct-eval-dynamic-tdz-name-in-template-node-shim.ts
+    - direct-eval-dynamic-tdz-parenthesized-node-shim.ts
     - direct-eval-dynamic-tdz-template-expression-node-shim.ts
+    - direct-eval-dynamic-tdz-typeof-node-shim.ts
     - direct-eval-dynamic-throw-catch-node-shim.ts
     - direct-eval-dynamic-throw-created-binding-node-shim.ts
     - direct-eval-dynamic-throw-created-function-node-shim.ts
