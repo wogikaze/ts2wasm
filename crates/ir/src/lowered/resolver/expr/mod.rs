@@ -201,6 +201,17 @@ impl super::Resolver {
             ResolvedExpr::Sequence(exprs) => self.lower_sequence_expr(exprs),
             ResolvedExpr::EvalCompletion(plan) => self.lower_eval_completion_expr(plan),
             ResolvedExpr::Eval { plan } => {
+                if !plan.host_policy_is_consistent() {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedEval,
+                        message: format!(
+                            "eval host policy {:?} does not match {:?} eval source",
+                            plan.host_policy, plan.kind
+                        ),
+                        span: Some(plan.span),
+                        phase: None,
+                    });
+                }
                 if let crate::builtin_resolved::EvalSource::NonStringStatic(source_expr) =
                     &plan.source
                 {

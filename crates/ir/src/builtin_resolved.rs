@@ -371,6 +371,14 @@ impl EvalFragmentPlan {
             .completion_expr()
             .expect("EvalFragmentPlan::with_completion_plan must set completion_plan")
     }
+
+    pub fn expected_host_policy(&self) -> EvalHostPolicy {
+        EvalHostPolicy::for_kind_and_source(self.kind, &self.source)
+    }
+
+    pub fn host_policy_is_consistent(&self) -> bool {
+        self.host_policy == self.expected_host_policy()
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1473,5 +1481,54 @@ mod tests {
                 .as_ref()
                 .is_some_and(|completion| completion.eval_is_strict)
         );
+    }
+
+    #[test]
+    fn eval_fragment_plan_derives_expected_host_policy() {
+        let static_direct = EvalFragmentPlan::new(
+            EvalKind::Direct,
+            EvalSource::StaticLiteral("1".to_owned()),
+            false,
+            Span::generated("static_direct_eval_policy_test"),
+        );
+        assert_eq!(
+            static_direct.expected_host_policy(),
+            EvalHostPolicy::AotOnly
+        );
+        assert!(static_direct.host_policy_is_consistent());
+
+        let runtime_direct = EvalFragmentPlan::new(
+            EvalKind::Direct,
+            EvalSource::Runtime(Box::new(ResolvedExpr::Ident("source".to_owned()))),
+            false,
+            Span::generated("runtime_direct_eval_policy_test"),
+        );
+        assert_eq!(
+            runtime_direct.expected_host_policy(),
+            EvalHostPolicy::DirectHost
+        );
+        assert!(runtime_direct.host_policy_is_consistent());
+
+        let runtime_indirect = EvalFragmentPlan::new(
+            EvalKind::Indirect,
+            EvalSource::Runtime(Box::new(ResolvedExpr::Ident("source".to_owned()))),
+            false,
+            Span::generated("runtime_indirect_eval_policy_test"),
+        );
+        assert_eq!(
+            runtime_indirect.expected_host_policy(),
+            EvalHostPolicy::IndirectHost
+        );
+        assert!(runtime_indirect.host_policy_is_consistent());
+
+        let inconsistent = EvalFragmentPlan {
+            host_policy: EvalHostPolicy::AotOnly,
+            ..runtime_direct
+        };
+        assert_eq!(
+            inconsistent.expected_host_policy(),
+            EvalHostPolicy::DirectHost
+        );
+        assert!(!inconsistent.host_policy_is_consistent());
     }
 }
