@@ -197,6 +197,12 @@ fn test262_eval_script_routes_to_indirect_eval_through_node_shim_host_import() {
 }
 
 #[test]
+fn test262_eval_script_bridges_thrown_object_methods_through_node_shim_host_import() {
+    let fixture = "fixtures/core-semantics/test262-eval-script-throw-object-method-node-shim.ts";
+    assert_node_shim_stdout(fixture, "Error\n7\n");
+}
+
+#[test]
 fn new_eval_throws_type_error() {
     let fixture = "fixtures/core-semantics/new-eval-type-error.ts";
     assert_node_shim_stdout(fixture, "TypeError\n");

@@ -1196,6 +1196,7 @@ directories:
     - template-literal-legacy-octal.ts
     - template-literal.ts
     - test262-eval-script-node-shim.ts
+    - test262-eval-script-throw-object-method-node-shim.ts
     - ternary.ts
     - this-extracted-method-unsupported.ts
     - this-non-identifier-receiver-unsupported.ts

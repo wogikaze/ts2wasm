@@ -2336,7 +2336,17 @@ fn expr_may_throw_host_external_object(ctx: &LoweringCtx, expr: &ResolvedExpr) -
                     .iter()
                     .any(|arg| expr_may_throw_host_external_object(ctx, arg))
         }
-        ResolvedExpr::MethodCall { object, args, .. } => {
+        ResolvedExpr::MethodCall {
+            object,
+            method,
+            args,
+            ..
+        } => {
+            if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "$262")
+                && method == "evalScript"
+            {
+                return true;
+            }
             expr_may_throw_host_external_object(ctx, object)
                 || args
                     .iter()
