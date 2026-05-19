@@ -720,12 +720,14 @@ pub enum EvalCompletionStep {
     ForOf {
         var: String,
         var_landing: EvalForHeadVarLanding,
+        var_pattern: Option<BindingPattern>,
         iter: ResolvedExpr,
         body_steps: Vec<EvalCompletionStep>,
     },
     ForIn {
         var: String,
         var_landing: EvalForHeadVarLanding,
+        var_pattern: Option<BindingPattern>,
         iter: ResolvedExpr,
         body_steps: Vec<EvalCompletionStep>,
     },

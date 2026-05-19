@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
+use ts2wasm_ir::binding_pattern::{BindingPattern, parse_binding_pattern};
 use ts2wasm_ir::builtin_resolved::{
     ClassMethod, EvalCompletionPlan, EvalCompletionStep, EvalDeclarationPlan,
     EvalForHeadVarLanding, EvalFragmentPlan, EvalFunctionHoist, EvalKind, EvalSource,
@@ -2268,6 +2269,7 @@ fn rewrite_eval_step_global_collisions(
         EvalCompletionStep::ForOf {
             var,
             var_landing,
+            var_pattern,
             iter,
             body_steps,
         } => {
@@ -2279,6 +2281,7 @@ fn rewrite_eval_step_global_collisions(
             EvalCompletionStep::ForOf {
                 var,
                 var_landing,
+                var_pattern,
                 iter,
                 body_steps,
             }
@@ -2286,6 +2289,7 @@ fn rewrite_eval_step_global_collisions(
         EvalCompletionStep::ForIn {
             var,
             var_landing,
+            var_pattern,
             iter,
             body_steps,
         } => {
@@ -2297,6 +2301,7 @@ fn rewrite_eval_step_global_collisions(
             EvalCompletionStep::ForIn {
                 var,
                 var_landing,
+                var_pattern,
                 iter,
                 body_steps,
             }
@@ -2501,31 +2506,35 @@ fn eval_statement_completion_step(
             }
         }
         ResolvedStmt::ForOf { var, iter, body } => {
-            let (ast_body, head_landing) = match ast_stmt {
+            let (ast_body, head_landing, head_pattern) = match ast_stmt {
                 Some(Stmt::ForOf { body, span, .. }) => (
                     body.as_slice(),
                     eval_for_head_var_landing(source, *span, "of", &var, var_landing),
+                    eval_for_head_var_pattern(source, *span, "of"),
                 ),
-                _ => (&[][..], EvalForHeadVarLanding::Local),
+                _ => (&[][..], EvalForHeadVarLanding::Local, None),
             };
             EvalCompletionStep::ForOf {
                 var,
                 var_landing: head_landing,
+                var_pattern: head_pattern,
                 iter,
                 body_steps: eval_completion_steps(source, ast_body, body, var_landing),
             }
         }
         ResolvedStmt::ForIn { var, iter, body } => {
-            let (ast_body, head_landing) = match ast_stmt {
+            let (ast_body, head_landing, head_pattern) = match ast_stmt {
                 Some(Stmt::ForIn { body, span, .. }) => (
                     body.as_slice(),
                     eval_for_head_var_landing(source, *span, "in", &var, var_landing),
+                    eval_for_head_var_pattern(source, *span, "in"),
                 ),
-                _ => (&[][..], EvalForHeadVarLanding::Local),
+                _ => (&[][..], EvalForHeadVarLanding::Local, None),
             };
             EvalCompletionStep::ForIn {
                 var,
                 var_landing: head_landing,
+                var_pattern: head_pattern,
                 iter,
                 body_steps: eval_completion_steps(source, ast_body, body, var_landing),
             }
@@ -2802,28 +2811,9 @@ fn collect_eval_for_head_var_declaration(
     fallback_var: &str,
     out: &mut Vec<String>,
 ) {
-    let Some(loop_source) = source.get(span.start..) else {
+    let Some(binding) = eval_for_head_var_binding(source, span, separator) else {
         return;
     };
-    let Some(open_paren) = loop_source.find('(') else {
-        return;
-    };
-    let header = &loop_source[open_paren + 1..];
-    let Some(separator_start) = top_level_loop_head_separator(header, separator) else {
-        return;
-    };
-    let binding = header[..separator_start].trim();
-    let Some(binding) = binding.strip_prefix("var") else {
-        return;
-    };
-    if !binding
-        .as_bytes()
-        .first()
-        .is_none_or(|byte| byte.is_ascii_whitespace() || matches!(byte, b'{' | b'['))
-    {
-        return;
-    }
-    let binding = strip_top_level_type_annotation(binding.trim());
     if binding.starts_with(['{', '[']) {
         collect_binding_names_from_pattern(binding, out);
     } else if fallback_var != "_binding" {
@@ -2849,28 +2839,40 @@ fn eval_for_head_var_landing(
 }
 
 fn eval_for_head_uses_var(source: &str, span: Span, separator: &str, fallback_var: &str) -> bool {
-    let Some(loop_source) = source.get(span.start..) else {
+    let Some(binding) = eval_for_head_var_binding(source, span, separator) else {
         return false;
     };
+    fallback_var != "_binding" || binding.starts_with(['{', '['])
+}
+
+fn eval_for_head_var_pattern(source: &str, span: Span, separator: &str) -> Option<BindingPattern> {
+    let binding = eval_for_head_var_binding(source, span, separator)?;
+    parse_binding_pattern(binding, Some(span)).ok().flatten()
+}
+
+fn eval_for_head_var_binding<'a>(source: &'a str, span: Span, separator: &str) -> Option<&'a str> {
+    let Some(loop_source) = source.get(span.start..) else {
+        return None;
+    };
     let Some(open_paren) = loop_source.find('(') else {
-        return false;
+        return None;
     };
     let header = &loop_source[open_paren + 1..];
     let Some(separator_start) = top_level_loop_head_separator(header, separator) else {
-        return false;
+        return None;
     };
     let binding = header[..separator_start].trim();
     let Some(binding) = binding.strip_prefix("var") else {
-        return false;
+        return None;
     };
     if !binding
         .as_bytes()
         .first()
         .is_none_or(|byte| byte.is_ascii_whitespace() || matches!(byte, b'{' | b'['))
     {
-        return false;
+        return None;
     }
-    fallback_var != "_binding" || binding.trim_start().starts_with(['{', '['])
+    Some(strip_top_level_type_annotation(binding.trim()))
 }
 
 fn top_level_loop_head_separator(header: &str, separator: &str) -> Option<usize> {

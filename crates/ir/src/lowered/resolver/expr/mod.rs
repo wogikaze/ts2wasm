@@ -9,7 +9,8 @@ mod property;
 mod ternary;
 mod unary;
 
-use crate::builtin_resolved::{ResolvedExpr, ResolvedStmt};
+use crate::binding_pattern::{ArrayBinding, BindingPattern, BindingTarget, ObjectBinding};
+use crate::builtin_resolved::{EvalForHeadVarLanding, ResolvedExpr, ResolvedStmt};
 use crate::lowered::facts::ArrowClosure;
 use std::collections::{HashMap, HashSet};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -654,29 +655,32 @@ impl super::Resolver {
                 EvalCompletionStep::ForOf {
                     var,
                     var_landing,
+                    var_pattern,
                     iter,
                     body_steps,
                 } => {
-                    let should_land_global = matches!(
-                        var_landing,
-                        crate::builtin_resolved::EvalForHeadVarLanding::Global
-                    );
-                    let var_id = match var_landing {
-                        crate::builtin_resolved::EvalForHeadVarLanding::Caller => {
-                            let (local, existed) =
-                                self.declare_eval_var_in_caller_scope(var, caller_scope_index)?;
-                            if !existed {
-                                stmts.push(LoweredStmt::Let(
-                                    local,
-                                    LoweredExpr::Undefined(Span::generated("eval_for_var_hoist")),
-                                    Span::generated("eval_for_var_hoist_let"),
-                                ));
+                    let should_land_global = matches!(var_landing, EvalForHeadVarLanding::Global);
+                    let var_id = if var_pattern.is_some() {
+                        self.declare_local(var)?
+                    } else {
+                        match var_landing {
+                            EvalForHeadVarLanding::Caller => {
+                                let (local, existed) =
+                                    self.declare_eval_var_in_caller_scope(var, caller_scope_index)?;
+                                if !existed {
+                                    stmts.push(LoweredStmt::Let(
+                                        local,
+                                        LoweredExpr::Undefined(Span::generated(
+                                            "eval_for_var_hoist",
+                                        )),
+                                        Span::generated("eval_for_var_hoist_let"),
+                                    ));
+                                }
+                                local
                             }
-                            local
-                        }
-                        crate::builtin_resolved::EvalForHeadVarLanding::Local
-                        | crate::builtin_resolved::EvalForHeadVarLanding::Global => {
-                            self.declare_local(var)?
+                            EvalForHeadVarLanding::Local | EvalForHeadVarLanding::Global => {
+                                self.declare_local(var)?
+                            }
                         }
                     };
                     let lowered_iter = if let ResolvedExpr::Ident(name) = iter
@@ -701,11 +705,20 @@ impl super::Resolver {
                     } else {
                         self.lower_expr(iter)?
                     };
-                    let body = self.lower_eval_completion_steps_scoped(
+                    let mut body = self.lower_eval_completion_steps_scoped(
                         body_steps,
                         completion,
                         caller_scope_index,
                     )?;
+                    if let Some(pattern) = var_pattern {
+                        let writes = self.lower_eval_for_head_pattern_writes(
+                            pattern,
+                            LoweredExpr::Local(var_id, Span::generated("eval_for_pattern_value")),
+                            *var_landing,
+                            caller_scope_index,
+                        )?;
+                        body.splice(0..0, writes);
+                    }
                     stmts.push(LoweredStmt::ForOf {
                         var: var_id,
                         iter: lowered_iter,
@@ -715,7 +728,7 @@ impl super::Resolver {
                         body,
                         span: Span::generated("eval_completion_for_of"),
                     });
-                    if should_land_global {
+                    if should_land_global && var_pattern.is_none() {
                         stmts.push(LoweredStmt::Expr(
                             self.lower_static_global_eval_var_landing(
                                 var,
@@ -728,37 +741,49 @@ impl super::Resolver {
                 EvalCompletionStep::ForIn {
                     var,
                     var_landing,
+                    var_pattern,
                     iter,
                     body_steps,
                 } => {
-                    let should_land_global = matches!(
-                        var_landing,
-                        crate::builtin_resolved::EvalForHeadVarLanding::Global
-                    );
-                    let var_id = match var_landing {
-                        crate::builtin_resolved::EvalForHeadVarLanding::Caller => {
-                            let (local, existed) =
-                                self.declare_eval_var_in_caller_scope(var, caller_scope_index)?;
-                            if !existed {
-                                stmts.push(LoweredStmt::Let(
-                                    local,
-                                    LoweredExpr::Undefined(Span::generated("eval_for_var_hoist")),
-                                    Span::generated("eval_for_var_hoist_let"),
-                                ));
+                    let should_land_global = matches!(var_landing, EvalForHeadVarLanding::Global);
+                    let var_id = if var_pattern.is_some() {
+                        self.declare_local(var)?
+                    } else {
+                        match var_landing {
+                            EvalForHeadVarLanding::Caller => {
+                                let (local, existed) =
+                                    self.declare_eval_var_in_caller_scope(var, caller_scope_index)?;
+                                if !existed {
+                                    stmts.push(LoweredStmt::Let(
+                                        local,
+                                        LoweredExpr::Undefined(Span::generated(
+                                            "eval_for_var_hoist",
+                                        )),
+                                        Span::generated("eval_for_var_hoist_let"),
+                                    ));
+                                }
+                                local
                             }
-                            local
-                        }
-                        crate::builtin_resolved::EvalForHeadVarLanding::Local
-                        | crate::builtin_resolved::EvalForHeadVarLanding::Global => {
-                            self.declare_local(var)?
+                            EvalForHeadVarLanding::Local | EvalForHeadVarLanding::Global => {
+                                self.declare_local(var)?
+                            }
                         }
                     };
                     let iter = self.lower_expr(iter)?;
-                    let body = self.lower_eval_completion_steps_scoped(
+                    let mut body = self.lower_eval_completion_steps_scoped(
                         body_steps,
                         completion,
                         caller_scope_index,
                     )?;
+                    if let Some(pattern) = var_pattern {
+                        let writes = self.lower_eval_for_head_pattern_writes(
+                            pattern,
+                            LoweredExpr::Local(var_id, Span::generated("eval_for_pattern_value")),
+                            *var_landing,
+                            caller_scope_index,
+                        )?;
+                        body.splice(0..0, writes);
+                    }
                     stmts.push(LoweredStmt::ForIn {
                         var: var_id,
                         iter,
@@ -768,7 +793,7 @@ impl super::Resolver {
                         body,
                         span: Span::generated("eval_completion_for_in"),
                     });
-                    if should_land_global {
+                    if should_land_global && var_pattern.is_none() {
                         stmts.push(LoweredStmt::Expr(
                             self.lower_static_global_eval_var_landing(
                                 var,
@@ -1152,6 +1177,196 @@ impl super::Resolver {
         self.ctx.symbols.locals.push(local);
         scope.insert(name.to_owned(), local);
         Ok((local, false))
+    }
+
+    fn lower_eval_for_head_pattern_writes(
+        &mut self,
+        pattern: &BindingPattern,
+        value: LoweredExpr,
+        landing: EvalForHeadVarLanding,
+        caller_scope_index: usize,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        if landing == EvalForHeadVarLanding::Local {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedEval,
+                message: "static eval for-head destructuring currently requires caller or global var landing".to_owned(),
+                span: Some(Span::generated("eval_for_pattern_landing")),
+                phase: None,
+            });
+        }
+        match pattern {
+            BindingPattern::Array(bindings) => {
+                let mut stmts = Vec::new();
+                for binding in bindings {
+                    stmts.extend(self.lower_eval_for_head_array_binding_write(
+                        binding,
+                        &value,
+                        landing,
+                        caller_scope_index,
+                    )?);
+                }
+                Ok(stmts)
+            }
+            BindingPattern::Object(bindings) => {
+                let mut stmts = Vec::new();
+                for binding in bindings {
+                    stmts.extend(self.lower_eval_for_head_object_binding_write(
+                        binding,
+                        &value,
+                        landing,
+                        caller_scope_index,
+                    )?);
+                }
+                Ok(stmts)
+            }
+        }
+    }
+
+    fn lower_eval_for_head_array_binding_write(
+        &mut self,
+        binding: &ArrayBinding,
+        value: &LoweredExpr,
+        landing: EvalForHeadVarLanding,
+        caller_scope_index: usize,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        let element_value = if binding.is_rest {
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ArraySlice,
+                args: vec![
+                    value.clone(),
+                    LoweredExpr::Number(binding.index as i32, Span::generated("num")),
+                    LoweredExpr::GetLength(Box::new(value.clone()), Span::generated("get_length")),
+                ],
+                span: Span::generated("runtime_call"),
+            }
+        } else {
+            LoweredExpr::Index {
+                object: Box::new(value.clone()),
+                index: Box::new(LoweredExpr::Number(
+                    binding.index as i32,
+                    Span::generated("num"),
+                )),
+                span: Span::generated("index"),
+            }
+        };
+        self.lower_eval_for_head_binding_target_write(
+            &binding.target,
+            element_value,
+            binding.default.as_ref(),
+            landing,
+            caller_scope_index,
+        )
+    }
+
+    fn lower_eval_for_head_object_binding_write(
+        &mut self,
+        binding: &ObjectBinding,
+        value: &LoweredExpr,
+        landing: EvalForHeadVarLanding,
+        caller_scope_index: usize,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        if binding.is_rest || binding.computed {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedEval,
+                message: "static eval for-head object rest/computed destructuring is not supported in this slice".to_owned(),
+                span: binding.span,
+                phase: None,
+            });
+        }
+        let property_value = LoweredExpr::PropertyGet {
+            obj: Box::new(value.clone()),
+            key: binding.key.clone(),
+            span: Span::generated("prop_get"),
+        };
+        self.lower_eval_for_head_binding_target_write(
+            &binding.target,
+            property_value,
+            binding.default.as_ref(),
+            landing,
+            caller_scope_index,
+        )
+    }
+
+    fn lower_eval_for_head_binding_target_write(
+        &mut self,
+        target: &BindingTarget,
+        value: LoweredExpr,
+        default: Option<&crate::binding_pattern::BindingDefault>,
+        landing: EvalForHeadVarLanding,
+        caller_scope_index: usize,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        let value = if let Some(default) = default {
+            let Some(default_expr) = super::lowered_binding_default(default) else {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedEval,
+                    message: "static eval for-head destructuring supports only literal defaults in this slice".to_owned(),
+                    span: Some(Span::generated("eval_for_pattern_default")),
+                    phase: None,
+                });
+            };
+            let temp = self.alloc_temp();
+            return Ok({
+                let mut stmts = vec![
+                    LoweredStmt::Let(temp, value, Span::generated("eval_for_pattern_temp")),
+                    LoweredStmt::If {
+                        condition: LoweredExpr::Binary {
+                            left: Box::new(LoweredExpr::Local(
+                                temp,
+                                Span::generated("eval_for_pattern_temp"),
+                            )),
+                            op: LoweredBinaryOp::StrictEqual,
+                            right: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+                            span: Span::generated("binary"),
+                        },
+                        then_body: vec![LoweredStmt::Assign(
+                            temp,
+                            default_expr,
+                            Span::generated("eval_for_pattern_default"),
+                        )],
+                        else_body: vec![],
+                        span: Span::generated("eval_for_pattern_default_if"),
+                    },
+                ];
+                stmts.extend(self.lower_eval_for_head_binding_target_write(
+                    target,
+                    LoweredExpr::Local(temp, Span::generated("eval_for_pattern_temp")),
+                    None,
+                    landing,
+                    caller_scope_index,
+                )?);
+                stmts
+            });
+        } else {
+            value
+        };
+        match target {
+            BindingTarget::Identifier(name) => match landing {
+                EvalForHeadVarLanding::Caller => {
+                    let (local, _) =
+                        self.declare_eval_var_in_caller_scope(name, caller_scope_index)?;
+                    Ok(vec![LoweredStmt::Assign(
+                        local,
+                        value,
+                        Span::generated("eval_for_pattern_assign"),
+                    )])
+                }
+                EvalForHeadVarLanding::Global => Ok(vec![LoweredStmt::Expr(
+                    LoweredExpr::PropertySet {
+                        object: Box::new(
+                            self.lower_expr(&ResolvedExpr::Ident("globalThis".to_owned()))?,
+                        ),
+                        key: name.clone(),
+                        value: Box::new(value),
+                        span: Span::generated("eval_for_pattern_global_assign"),
+                    },
+                    Span::generated("eval_for_pattern_global_assign"),
+                )]),
+                EvalForHeadVarLanding::Local => unreachable!("local landing rejected above"),
+            },
+            BindingTarget::Pattern(pattern) => {
+                self.lower_eval_for_head_pattern_writes(pattern, value, landing, caller_scope_index)
+            }
+        }
     }
 
     fn lower_static_global_eval_var_landing(
