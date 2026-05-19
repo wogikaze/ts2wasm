@@ -1212,6 +1212,13 @@ fn host_deny_rejects_dynamic_direct_eval_throw_writeback_host_lane() {
 }
 
 #[test]
+fn host_deny_rejects_dynamic_direct_eval_throw_created_binding_host_lane() {
+    assert_host_deny_rejects(
+        "core-semantics/direct-eval-dynamic-throw-created-binding-node-shim.ts",
+    );
+}
+
+#[test]
 fn host_deny_rejects_dynamic_direct_eval_new_var_declaration_host_lane() {
     assert_host_deny_rejects("core-semantics/direct-eval-dynamic-new-var-declaration-node-shim.ts");
 }
