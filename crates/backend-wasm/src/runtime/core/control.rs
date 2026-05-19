@@ -148,6 +148,7 @@ impl WatEmitter<'_> {
         let str_bigint = self.intern_string("bigint");
 
         let str_function = self.intern_string("function");
+        let str_symbol = self.intern_string("symbol");
 
         wat.push_str(&format!(
 
@@ -225,6 +226,10 @@ impl WatEmitter<'_> {
 
           (then (return (i32.or (i32.const {str_bigint}) (i32.const {string_tag})))))
 
+        (if (i32.eq (i32.load (i32.and (local.get $v) (i32.const {heap_mask}))) (i32.const {symbol_sentinel}))
+
+          (then (return (i32.or (i32.const {str_symbol}) (i32.const {string_tag})))))
+
         (if (i32.eq (i32.load (i32.and (local.get $v) (i32.const {heap_mask}))) (i32.const {heap_number_sentinel}))
 
           (then (return (i32.or (i32.const {str_number}) (i32.const {string_tag})))))))
@@ -292,6 +297,10 @@ impl WatEmitter<'_> {
             str_bigint = str_bigint + Layout::STRING_HEADER_SIZE,
 
             str_function = str_function + Layout::STRING_HEADER_SIZE,
+
+            symbol_sentinel = Layout::SYMBOL_SENTINEL,
+
+            str_symbol = str_symbol + Layout::STRING_HEADER_SIZE,
 
         ));
     }

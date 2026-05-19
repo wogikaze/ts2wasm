@@ -366,6 +366,7 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Number", "toString") => Some(RuntimeFn::NumberToString),
         // Symbol prototype methods
         ("Symbol", "toString") => Some(RuntimeFn::SymbolToString),
+        ("Symbol", "valueOf") => Some(RuntimeFn::ValueOf),
         // String prototype methods
         ("String", "charAt") => Some(RuntimeFn::StringCharAt),
         ("String", "charCodeAt") => Some(RuntimeFn::StringCharCodeAt),
