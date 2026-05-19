@@ -4,8 +4,9 @@ use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_ir::builtin_resolved::{
     ClassMethod, EvalCompletionPlan, EvalCompletionStep, EvalDeclarationPlan, EvalFragmentPlan,
     EvalFunctionHoist, EvalKind, EvalSource, FunctionConstructorHostPolicy,
-    FunctionConstructorKind, FunctionConstructorPlan, ResolvedArrayElement, ResolvedExpr,
-    ResolvedObjectProp, ResolvedParam, ResolvedStmt,
+    FunctionConstructorKind, FunctionConstructorParseGoal, FunctionConstructorParseGoals,
+    FunctionConstructorPlan, ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp, ResolvedParam,
+    ResolvedStmt,
 };
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
 use ts2wasm_ir::name_resolver::resolve_names;
@@ -992,6 +993,7 @@ fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<Resolved
     let Some(static_source) = static_source else {
         return Ok(function_constructor_host_lane(kind, args, span));
     };
+    validate_function_constructor_parse_goals(static_source.parse_goals, span)?;
     let function_name = static_source.generated_function.name.clone();
     let generated_source_text = static_source.generated_source_text();
     let function_source = static_source.synthetic_function_source();
@@ -1047,6 +1049,25 @@ fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<Resolved
         span: Some(span),
         phase: None,
     })
+}
+
+fn validate_function_constructor_parse_goals(
+    parse_goals: FunctionConstructorParseGoals,
+    span: ts2wasm_source::Span,
+) -> Result<(), Diagnostic> {
+    if parse_goals.params != FunctionConstructorParseGoal::FormalParameters {
+        return Err(function_constructor_syntax_error(
+            "Function constructor parameters must use the FormalParameters parse goal",
+            span,
+        ));
+    }
+    if parse_goals.body != FunctionConstructorParseGoal::FunctionBody {
+        return Err(function_constructor_syntax_error(
+            "Function constructor body must use the FunctionBody parse goal",
+            span,
+        ));
+    }
+    Ok(())
 }
 
 fn function_constructor_host_lane(

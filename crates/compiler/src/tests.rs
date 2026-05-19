@@ -112,6 +112,30 @@ fn compiler_expands_static_function_constructor_primitive_source_args() {
 }
 
 #[test]
+fn compiler_records_function_constructor_parse_goals_on_static_source() {
+    let parsed = parse_program(r#"let value = Function("a", "return a");"#).unwrap();
+    let named = ts2wasm_ir::name_resolver::resolve_names(&parsed).unwrap();
+    let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&named).unwrap();
+    let ts2wasm_ir::ResolvedStmt::Let(_, ts2wasm_ir::ResolvedExpr::FunctionConstructor { plan }) =
+        &resolved[0]
+    else {
+        panic!("expected static Function constructor plan before expansion: {resolved:?}");
+    };
+    let static_source = plan
+        .static_source
+        .as_ref()
+        .expect("literal Function constructor should have a static source plan");
+    assert_eq!(
+        static_source.parse_goals.params,
+        ts2wasm_ir::builtin_resolved::FunctionConstructorParseGoal::FormalParameters
+    );
+    assert_eq!(
+        static_source.parse_goals.body,
+        ts2wasm_ir::builtin_resolved::FunctionConstructorParseGoal::FunctionBody
+    );
+}
+
+#[test]
 fn compiler_rejects_static_function_constructor_primitive_parameter_source() {
     let err = parse_resolve_and_expand_dynamic_code_err("let value = Function(1, \"return 1\");");
     assert_eq!(err.code, DiagCode::UnsupportedSyntax);
