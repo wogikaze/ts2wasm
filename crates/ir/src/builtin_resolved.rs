@@ -408,6 +408,14 @@ impl FunctionConstructorPlan {
             span,
         }
     }
+
+    pub fn expected_host_policy(&self) -> FunctionConstructorHostPolicy {
+        FunctionConstructorHostPolicy::for_static_source(&self.static_source)
+    }
+
+    pub fn host_policy_is_consistent(&self) -> bool {
+        self.host_policy == self.expected_host_policy()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -1528,6 +1536,41 @@ mod tests {
         assert_eq!(
             inconsistent.expected_host_policy(),
             EvalHostPolicy::DirectHost
+        );
+        assert!(!inconsistent.host_policy_is_consistent());
+    }
+
+    #[test]
+    fn function_constructor_plan_derives_expected_host_policy() {
+        let static_plan = FunctionConstructorPlan::new(
+            FunctionConstructorKind::Call,
+            vec![ResolvedExpr::String("return 1".to_owned())],
+            Span::generated("static_function_constructor_policy_test"),
+        );
+        assert_eq!(
+            static_plan.expected_host_policy(),
+            FunctionConstructorHostPolicy::AotOnly
+        );
+        assert!(static_plan.host_policy_is_consistent());
+
+        let runtime_plan = FunctionConstructorPlan::new(
+            FunctionConstructorKind::Call,
+            vec![ResolvedExpr::Ident("body".to_owned())],
+            Span::generated("runtime_function_constructor_policy_test"),
+        );
+        assert_eq!(
+            runtime_plan.expected_host_policy(),
+            FunctionConstructorHostPolicy::HostCompile
+        );
+        assert!(runtime_plan.host_policy_is_consistent());
+
+        let inconsistent = FunctionConstructorPlan {
+            host_policy: FunctionConstructorHostPolicy::HostCompile,
+            ..static_plan
+        };
+        assert_eq!(
+            inconsistent.expected_host_policy(),
+            FunctionConstructorHostPolicy::AotOnly
         );
         assert!(!inconsistent.host_policy_is_consistent());
     }

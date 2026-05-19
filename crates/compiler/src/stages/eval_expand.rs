@@ -988,6 +988,17 @@ fn expand_function_constructor(plan: FunctionConstructorPlan) -> Result<Resolved
         host_policy,
         span,
     } = plan;
+    let expected_host_policy = FunctionConstructorHostPolicy::for_static_source(&static_source);
+    if host_policy != expected_host_policy {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedEval,
+            message: format!(
+                "Function constructor host policy {host_policy:?} does not match source classification"
+            ),
+            span: Some(span),
+            phase: None,
+        });
+    }
     if host_policy != FunctionConstructorHostPolicy::AotOnly {
         return Ok(function_constructor_host_lane(kind, args, span));
     }

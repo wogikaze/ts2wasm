@@ -158,6 +158,29 @@ impl super::Resolver {
                 span,
             } => self.lower_new_expr(class_name, args, *span),
             ResolvedExpr::FunctionConstructor { plan } => {
+                if !plan.host_policy_is_consistent() {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedEval,
+                        message: format!(
+                            "Function constructor host policy {:?} does not match source classification",
+                            plan.host_policy
+                        ),
+                        span: Some(plan.span),
+                        phase: None,
+                    });
+                }
+                if plan.host_policy
+                    == crate::builtin_resolved::FunctionConstructorHostPolicy::AotOnly
+                {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedEval,
+                        message:
+                            "static Function constructor reached lowering without AOT expansion"
+                                .to_owned(),
+                        span: Some(plan.span),
+                        phase: None,
+                    });
+                }
                 self.lower_dynamic_function_constructor_host_compile(&plan.args, plan.span)
             }
             ResolvedExpr::ModuleLoad {
