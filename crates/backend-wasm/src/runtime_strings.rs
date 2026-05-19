@@ -1,6 +1,10 @@
 use super::emitter::WatEmitter;
 use ts2wasm_runtime_abi::{consts::RuntimeConst, layout::Layout, value::ValueTag};
 
+fn tagged_number_sentinel(payload: i32) -> i32 {
+    (payload << ValueTag::NUMBER_SHIFT) | ValueTag::NUMBER
+}
+
 impl WatEmitter<'_> {
     /// Must be emitted before any function that calls them.
     pub(super) fn emit_utf8_helpers(&self, wat: &mut String) {
@@ -385,23 +389,150 @@ impl WatEmitter<'_> {
     pub(crate) fn emit_number_to_string(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $number_to_string (param $v i32) (result i32)
+  (func $number_to_string (param $v i32) (param $radix_arg i32) (result i32)
+    (local $radix i32)
+    (local $n i32)
+    (local $abs i32)
+    (local $sign i32)
+    (local $i i32)
+    (local $d i32)
+    (local $byte i32)
     (local $len i32)
     (local $ptr i32)
-    (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
+    (local $out i32)
+    ;; Extract radix, default 10
+    (local.set $radix (i32.const {ten}))
+    (if
+      (i32.and
+        (i32.ne (local.get $radix_arg) (i32.const {undefined}))
+        (i32.eq (i32.and (local.get $radix_arg) (i32.const {tag_mask})) (i32.const {number_tag})))
+      (then
+        (local.set $radix (i32.shr_s (local.get $radix_arg) (i32.const {number_shift})))
+        (if (i32.lt_s (local.get $radix) (i32.const 2)) (then (local.set $radix (i32.const {ten}))))
+        (if (i32.gt_s (local.get $radix) (i32.const 36)) (then (local.set $radix (i32.const {ten}))))))
+    ;; If radix is 10, use the efficient value_to_string_into path
+    (if (i32.eq (local.get $radix) (i32.const {ten}))
+      (then
+        (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
+        (local.set $ptr
+          (call $alloc_heap
+            (i32.add (i32.const {string_header_size}) (local.get $len))))
+        (i32.store (local.get $ptr) (local.get $len))
+        (call $copy
+          (i32.const {scratch})
+          (i32.add (local.get $ptr) (i32.const {string_header_size}))
+          (local.get $len))
+        (return (i32.or (local.get $ptr) (i32.const {string_tag})))))
+    ;; Handle special values: NaN, Infinity, -Infinity, -0
+    ;; These must return the same string regardless of radix per spec
+    (if (i32.eq (local.get $v) (i32.const {nan_value}))
+      (then
+        (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
+        (local.set $ptr
+          (call $alloc_heap
+            (i32.add (i32.const {string_header_size}) (local.get $len))))
+        (i32.store (local.get $ptr) (local.get $len))
+        (call $copy
+          (i32.const {scratch})
+          (i32.add (local.get $ptr) (i32.const {string_header_size}))
+          (local.get $len))
+        (return (i32.or (local.get $ptr) (i32.const {string_tag})))))
+    (if (i32.eq (local.get $v) (i32.const {infinity_value}))
+      (then
+        (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
+        (local.set $ptr
+          (call $alloc_heap
+            (i32.add (i32.const {string_header_size}) (local.get $len))))
+        (i32.store (local.get $ptr) (local.get $len))
+        (call $copy
+          (i32.const {scratch})
+          (i32.add (local.get $ptr) (i32.const {string_header_size}))
+          (local.get $len))
+        (return (i32.or (local.get $ptr) (i32.const {string_tag})))))
+    (if (i32.eq (local.get $v) (i32.const {neg_infinity_value}))
+      (then
+        (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
+        (local.set $ptr
+          (call $alloc_heap
+            (i32.add (i32.const {string_header_size}) (local.get $len))))
+        (i32.store (local.get $ptr) (local.get $len))
+        (call $copy
+          (i32.const {scratch})
+          (i32.add (local.get $ptr) (i32.const {string_header_size}))
+          (local.get $len))
+        (return (i32.or (local.get $ptr) (i32.const {string_tag})))))
+    ;; Extract i32 payload from tagged number
+    (local.set $n (i32.shr_s (local.get $v) (i32.const {number_shift})))
+    ;; Handle zero
+    (if (i32.eq (local.get $n) (i32.const {zero}))
+      (then
+        (local.set $ptr
+          (call $alloc_heap
+            (i32.add (i32.const {string_header_size}) (i32.const {one}))))
+        (i32.store (local.get $ptr) (i32.const {one}))
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const {string_header_size}))
+          (i32.const {ascii_zero}))
+        (return (i32.or (local.get $ptr) (i32.const {string_tag})))))
+    ;; Handle sign
+    (if (i32.lt_s (local.get $n) (i32.const {zero}))
+      (then
+        (local.set $sign (i32.const {one}))
+        (local.set $abs (i32.sub (i32.const {zero}) (local.get $n))))
+      (else
+        (local.set $abs (local.get $n))))
+    ;; Extract digits in reverse, store as ASCII bytes on scratch
+    (local.set $i (i32.const {zero}))
+    (block $extract_done
+      (loop $extract
+        (br_if $extract_done (i32.eqz (local.get $abs)))
+        (local.set $d (i32.rem_u (local.get $abs) (local.get $radix)))
+        (local.set $abs (i32.div_u (local.get $abs) (local.get $radix)))
+        (if (i32.lt_u (local.get $d) (i32.const 10))
+          (then (local.set $byte (i32.add (local.get $d) (i32.const {ascii_zero}))))
+          (else (local.set $byte (i32.add (local.get $d) (i32.const 87)))))
+        (i32.store8
+          (i32.add (i32.const {scratch}) (local.get $i))
+          (local.get $byte))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $extract)))
+    ;; Build result string with sign prefix and reversed digits
+    (local.set $len (i32.add (local.get $sign) (local.get $i)))
     (local.set $ptr
       (call $alloc_heap
         (i32.add (i32.const {string_header_size}) (local.get $len))))
     (i32.store (local.get $ptr) (local.get $len))
-    (call $copy
-      (i32.const {scratch})
-      (i32.add (local.get $ptr) (i32.const {string_header_size}))
-      (local.get $len))
+    (local.set $out (i32.add (local.get $ptr) (i32.const {string_header_size})))
+    (if (i32.eq (local.get $sign) (i32.const {one}))
+      (then
+        (i32.store8 (local.get $out) (i32.const {ascii_minus}))
+        (local.set $out (i32.add (local.get $out) (i32.const {one})))))
+    (block $write_done
+      (loop $write
+        (br_if $write_done (i32.eqz (local.get $i)))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (i32.store8
+          (local.get $out)
+          (i32.load8_u (i32.add (i32.const {scratch}) (local.get $i))))
+        (local.set $out (i32.add (local.get $out) (i32.const {one})))
+        (br $write)))
     (i32.or (local.get $ptr) (i32.const {string_tag})))
 "#,
+            undefined = ValueTag::UNDEFINED,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+            infinity_value = tagged_number_sentinel(ValueTag::INFINITY_PAYLOAD),
+            neg_infinity_value = tagged_number_sentinel(ValueTag::NEG_INFINITY_PAYLOAD),
             string_tag = ValueTag::STRING,
             string_header_size = Layout::STRING_HEADER_SIZE,
             scratch = Layout::SCRATCH_OFFSET,
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            ascii_minus = RuntimeConst::ASCII_MINUS,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            ten = RuntimeConst::TEN,
         ));
     }
 }

@@ -519,6 +519,7 @@ directories:
     - math-complete.ts
     - math-non-integer-trig.ts
     - number-format-precision.ts
+    - number-to-string.ts
     - object-from-entries.ts
     - object-static.ts
     - object-super-bracket-access-unsupported.ts
