@@ -642,6 +642,9 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_regexp_match_from(&self, wat: &mut String) {
+        if wat.contains("$regexp_match_from") {
+            return;
+        }
         wat.push_str(&format!(
             r#"
   (func $regexp_match_from (param $pattern i32) (param $input i32) (param $start_pos i32) (result i32)
