@@ -970,6 +970,7 @@ directories:
     - direct-eval-dynamic-tdz-template-expression-node-shim.ts
     - direct-eval-dynamic-throw-catch-node-shim.ts
     - direct-eval-dynamic-throw-created-binding-node-shim.ts
+    - direct-eval-dynamic-throw-created-function-node-shim.ts
     - direct-eval-dynamic-throw-writeback-node-shim.ts
     - direct-eval-dynamic-var-declaration-writeback-node-shim.ts
     - direct-eval-dynamic-host-path.ts
