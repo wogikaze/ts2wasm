@@ -39,6 +39,7 @@ pub enum RuntimeFn {
     NumberToFixed,
     NumberToPrecision,
     NumberToString,
+    NumberToStringRadix,
     BigIntToString,
     BigIntToBoolean,
     BigIntFromValue,
@@ -137,6 +138,8 @@ pub enum RuntimeFn {
     MapEntryPairsArray,
     /// TypedArray constructor from array: new Uint8Array([1,2,3]), etc.
     TypedArrayFromArray,
+    /// TypedArray constructor from length: new Uint8Array(length), etc.
+    TypedArrayCtorWithLength,
     /// TypedArray.prototype.set(source, offset?) for the array-backed TypedArray subset.
     TypedArraySet,
     /// Atomics helpers for the array-backed Int32Array subset.
@@ -998,6 +1001,23 @@ const IMPORT_DATE_TO_TIME_STRING: &[HostImport] = &[HostImport::DateToTimeString
 const IMPORT_DATE_PARSE: &[HostImport] = &[HostImport::DateParse];
 const IMPORT_DATE_UTC: &[HostImport] = &[HostImport::DateUTC];
 const IMPORT_MATH_ACOS: &[HostImport] = &[HostImport::MathAcos];
+const IMPORT_MATH_ACOSH: &[HostImport] = &[HostImport::MathAcosh];
+const IMPORT_MATH_ASIN: &[HostImport] = &[HostImport::MathAsin];
+const IMPORT_MATH_ASINH: &[HostImport] = &[HostImport::MathAsinh];
+const IMPORT_MATH_ATAN: &[HostImport] = &[HostImport::MathAtan];
+const IMPORT_MATH_ATANH: &[HostImport] = &[HostImport::MathAtanh];
+const IMPORT_MATH_COS: &[HostImport] = &[HostImport::MathCos];
+const IMPORT_MATH_COSH: &[HostImport] = &[HostImport::MathCosh];
+const IMPORT_MATH_EXP: &[HostImport] = &[HostImport::MathExp];
+const IMPORT_MATH_EXPM1: &[HostImport] = &[HostImport::MathExpm1];
+const IMPORT_MATH_LOG: &[HostImport] = &[HostImport::MathLog];
+const IMPORT_MATH_LOG10: &[HostImport] = &[HostImport::MathLog10];
+const IMPORT_MATH_LOG1P: &[HostImport] = &[HostImport::MathLog1p];
+const IMPORT_MATH_LOG2: &[HostImport] = &[HostImport::MathLog2];
+const IMPORT_MATH_SIN: &[HostImport] = &[HostImport::MathSin];
+const IMPORT_MATH_SINH: &[HostImport] = &[HostImport::MathSinh];
+const IMPORT_MATH_TAN: &[HostImport] = &[HostImport::MathTan];
+const IMPORT_MATH_TANH: &[HostImport] = &[HostImport::MathTanh];
 const IMPORT_STRING_NORMALIZE: &[HostImport] = &[HostImport::StringNormalize];
 const IMPORT_INTL_NUMBER_FORMAT_FORMAT: &[HostImport] = &[HostImport::IntlNumberFormatFormat];
 const IMPORT_INTL_DATE_TIME_FORMAT_FORMAT: &[HostImport] = &[HostImport::IntlDateTimeFormatFormat];
@@ -1036,6 +1056,23 @@ const CAP_HOST_DATE_TO_TIME_STRING: &[Capability] = &[Capability::HostDateToTime
 const CAP_HOST_DATE_PARSE: &[Capability] = &[Capability::HostDateParse];
 const CAP_HOST_DATE_UTC: &[Capability] = &[Capability::HostDateUTC];
 const CAP_HOST_MATH_ACOS: &[Capability] = &[Capability::HostMathAcos];
+const CAP_HOST_MATH_ACOSH: &[Capability] = &[Capability::HostMathAcosh];
+const CAP_HOST_MATH_ASIN: &[Capability] = &[Capability::HostMathAsin];
+const CAP_HOST_MATH_ASINH: &[Capability] = &[Capability::HostMathAsinh];
+const CAP_HOST_MATH_ATAN: &[Capability] = &[Capability::HostMathAtan];
+const CAP_HOST_MATH_ATANH: &[Capability] = &[Capability::HostMathAtanh];
+const CAP_HOST_MATH_COS: &[Capability] = &[Capability::HostMathCos];
+const CAP_HOST_MATH_COSH: &[Capability] = &[Capability::HostMathCosh];
+const CAP_HOST_MATH_EXP: &[Capability] = &[Capability::HostMathExp];
+const CAP_HOST_MATH_EXPM1: &[Capability] = &[Capability::HostMathExpm1];
+const CAP_HOST_MATH_LOG: &[Capability] = &[Capability::HostMathLog];
+const CAP_HOST_MATH_LOG10: &[Capability] = &[Capability::HostMathLog10];
+const CAP_HOST_MATH_LOG1P: &[Capability] = &[Capability::HostMathLog1p];
+const CAP_HOST_MATH_LOG2: &[Capability] = &[Capability::HostMathLog2];
+const CAP_HOST_MATH_SIN: &[Capability] = &[Capability::HostMathSin];
+const CAP_HOST_MATH_SINH: &[Capability] = &[Capability::HostMathSinh];
+const CAP_HOST_MATH_TAN: &[Capability] = &[Capability::HostMathTan];
+const CAP_HOST_MATH_TANH: &[Capability] = &[Capability::HostMathTanh];
 const CAP_HOST_REFLECT_APPLY: &[Capability] = &[Capability::HostReflectApply];
 const CAP_HOST_REFLECT_CONSTRUCT: &[Capability] = &[Capability::HostReflectConstruct];
 const CAP_HOST_EVAL_DIRECT: &[Capability] = &[Capability::HostEvalDirect];
@@ -1403,6 +1440,7 @@ const MAP_SIZE_DEPS: &[RuntimeFn] = &[];
 const MAP_ENTRIES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const MAP_ENTRY_PAIRS_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const TYPED_ARRAY_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Index];
+const TYPED_ARRAY_CTOR_WITH_LENGTH_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const TYPED_ARRAY_SET_DEPS: &[RuntimeFn] = &[RuntimeFn::GetLength, RuntimeFn::Index];
 const ATOMICS_VALUE_DEPS: &[RuntimeFn] = &[RuntimeFn::AtomicsElementPtr, RuntimeFn::NumberFromI32];
 const ATOMICS_NO_DEPS: &[RuntimeFn] = &[];
@@ -1435,6 +1473,11 @@ const NUMBER_TO_EXPONENTIAL_DEPS: &[RuntimeFn] = &[
 ];
 const NUMBER_TO_STRING_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ValueToStringInto,
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+];
+const NUMBER_TO_STRING_RADIX_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::NumberToI32,
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,
 ];
@@ -1697,6 +1740,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MapEntriesArray" => Some(RuntimeFn::MapEntriesArray),
         "MapEntryPairsArray" => Some(RuntimeFn::MapEntryPairsArray),
         "TypedArrayFromArray" => Some(RuntimeFn::TypedArrayFromArray),
+        "TypedArrayCtorWithLength" => Some(RuntimeFn::TypedArrayCtorWithLength),
         "TypedArraySet" => Some(RuntimeFn::TypedArraySet),
         "AtomicsElementPtr" => Some(RuntimeFn::AtomicsElementPtr),
         "AtomicsLoad" => Some(RuntimeFn::AtomicsLoad),
@@ -1908,6 +1952,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "NumberToI32" => Some(RuntimeFn::NumberToI32),
         "NumberToPrecision" => Some(RuntimeFn::NumberToPrecision),
         "NumberToString" => Some(RuntimeFn::NumberToString),
+        "NumberToStringRadix" => Some(RuntimeFn::NumberToStringRadix),
         "Or" => Some(RuntimeFn::Or),
         "PathBasename" => Some(RuntimeFn::PathBasename),
         "PathDirname" => Some(RuntimeFn::PathDirname),
@@ -2217,6 +2262,7 @@ impl RuntimeFn {
             | Self::NumberToFixed
             | Self::NumberToPrecision
             | Self::NumberToString
+            | Self::NumberToStringRadix
             | Self::NumberToI32
             | Self::NumberIsNaN
             | Self::NumberIsFinite
@@ -2374,6 +2420,7 @@ impl RuntimeFn {
             | Self::BooleanToString
             | Self::NumberCoerce => RuntimeDomain::TypeCoercion,
             Self::TypedArrayFromArray
+            | Self::TypedArrayCtorWithLength
             | Self::TypedArraySet
             | Self::AtomicsElementPtr
             | Self::AtomicsLoad
@@ -2531,7 +2578,8 @@ impl RuntimeFn {
             | Self::DataViewGetUint8
             | Self::SymbolToPrimitive
             | Self::SymbolHasInstance
-            | Self::AtomicsLoad => RuntimeSignature {
+            | Self::AtomicsLoad
+            | Self::NumberToStringRadix => RuntimeSignature {
                 params: 2,
                 results: 1,
             },
@@ -2642,6 +2690,7 @@ impl RuntimeFn {
             Self::NumberToFixed,
             Self::NumberToPrecision,
             Self::NumberToString,
+            Self::NumberToStringRadix,
             Self::StringEqual,
             Self::Concat,
             Self::IsString,
@@ -2727,6 +2776,7 @@ impl RuntimeFn {
             Self::MapEntriesArray,
             Self::MapEntryPairsArray,
             Self::TypedArrayFromArray,
+            Self::TypedArrayCtorWithLength,
             Self::TypedArraySet,
             Self::AtomicsElementPtr,
             Self::AtomicsLoad,
@@ -3124,6 +3174,7 @@ impl RuntimeFn {
             Self::NumberToFixed,
             Self::NumberToPrecision,
             Self::NumberToString,
+            Self::NumberToStringRadix,
             Self::StringEqual,
             Self::Concat,
             Self::IsString,
@@ -3209,6 +3260,7 @@ impl RuntimeFn {
             Self::MapEntriesArray,
             Self::MapEntryPairsArray,
             Self::TypedArrayFromArray,
+            Self::TypedArrayCtorWithLength,
             Self::TypedArraySet,
             Self::AtomicsElementPtr,
             Self::AtomicsLoad,

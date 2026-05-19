@@ -5,37 +5,6 @@ fn tagged_number_sentinel(payload: i32) -> i32 {
     ((payload as i64) << (ValueTag::NUMBER_SHIFT as u32)) as i32 | ValueTag::NUMBER
 }
 
-fn push_math_unary_exact(wat: &mut String, symbol: &str, exact_input: i32, exact_output: i32) {
-    wat.push_str(&format!(
-        r#"
-  (func ${symbol} (param $v i32) (result i32)
-    (local $tag i32)
-    (local $obj i32)
-    (local $is_number i32)
-    (local $n i32)
-    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
-    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
-    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
-      (then
-        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
-        (local.set $is_number
-          (i32.eq
-            (i32.load (local.get $obj))
-            (i32.const {heap_number_sentinel})))))
-    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (if (i32.eq (local.get $n) (i32.const {exact_input}))
-      (then (return (call $number_from_i32 (i32.const {exact_output})))))
-    (i32.const {nan_value}))
-"#,
-        tag_mask = ValueTag::TAG_MASK,
-        number_tag = ValueTag::NUMBER,
-        object_tag = ValueTag::OBJECT,
-        heap_mask = ValueTag::HEAP_MASK,
-        heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
-        nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
-    ));
-}
 
 fn push_math_unary_identity(wat: &mut String, symbol: &str) {
     wat.push_str(&format!(
@@ -697,39 +666,273 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_math_acosh(&self, wat: &mut String) {
-        push_math_unary_exact(wat, "math_acosh", 1, 0);
+        wat.push_str(&format!(
+            r#"
+  (func $math_acosh (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (return (call $host_math_acosh (local.get $n))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+        ));
     }
 
     pub(crate) fn emit_math_asin(&self, wat: &mut String) {
-        push_math_unary_exact(wat, "math_asin", 0, 0);
+        wat.push_str(&format!(
+            r#"
+  (func $math_asin (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (return (call $host_math_asin (local.get $n))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+        ));
     }
 
     pub(crate) fn emit_math_asinh(&self, wat: &mut String) {
-        push_math_unary_exact(wat, "math_asinh", 0, 0);
+        wat.push_str(&format!(
+            r#"
+  (func $math_asinh (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (return (call $host_math_asinh (local.get $n))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+        ));
     }
 
     pub(crate) fn emit_math_atan(&self, wat: &mut String) {
-        push_math_unary_exact(wat, "math_atan", 0, 0);
+        wat.push_str(&format!(
+            r#"
+  (func $math_atan (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (return (call $host_math_atan (local.get $n))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+        ));
     }
 
     pub(crate) fn emit_math_atanh(&self, wat: &mut String) {
-        push_math_unary_exact(wat, "math_atanh", 0, 0);
+        wat.push_str(&format!(
+            r#"
+  (func $math_atanh (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (return (call $host_math_atanh (local.get $n))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+        ));
     }
 
     pub(crate) fn emit_math_cos(&self, wat: &mut String) {
-        push_math_unary_exact(wat, "math_cos", 0, 1);
+        wat.push_str(&format!(
+            r#"
+  (func $math_cos (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (return (call $host_math_cos (local.get $n))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+        ));
     }
 
     pub(crate) fn emit_math_cosh(&self, wat: &mut String) {
-        push_math_unary_exact(wat, "math_cosh", 0, 1);
+        wat.push_str(&format!(
+            r#"
+  (func $math_cosh (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (return (call $host_math_cosh (local.get $n))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+        ));
     }
 
     pub(crate) fn emit_math_exp(&self, wat: &mut String) {
-        push_math_unary_exact(wat, "math_exp", 0, 1);
+        wat.push_str(&format!(
+            r#"
+  (func $math_exp (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (return (call $host_math_exp (local.get $n))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+        ));
     }
 
     pub(crate) fn emit_math_expm1(&self, wat: &mut String) {
-        push_math_unary_exact(wat, "math_expm1", 0, 0);
+        wat.push_str(&format!(
+            r#"
+  (func $math_expm1 (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (return (call $host_math_expm1 (local.get $n))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+        ));
     }
 
     pub(crate) fn emit_math_fround(&self, wat: &mut String) {
@@ -868,35 +1071,243 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_math_log(&self, wat: &mut String) {
-        push_math_unary_exact(wat, "math_log", 1, 0);
+        wat.push_str(&format!(
+            r#"
+  (func $math_log (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (return (call $host_math_log (local.get $n))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+        ));
     }
 
     pub(crate) fn emit_math_log10(&self, wat: &mut String) {
-        push_math_unary_exact(wat, "math_log10", 1, 0);
+        wat.push_str(&format!(
+            r#"
+  (func $math_log10 (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (return (call $host_math_log10 (local.get $n))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+        ));
     }
 
     pub(crate) fn emit_math_log1p(&self, wat: &mut String) {
-        push_math_unary_exact(wat, "math_log1p", 0, 0);
+        wat.push_str(&format!(
+            r#"
+  (func $math_log1p (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (return (call $host_math_log1p (local.get $n))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+        ));
     }
 
     pub(crate) fn emit_math_log2(&self, wat: &mut String) {
-        push_math_unary_exact(wat, "math_log2", 1, 0);
+        wat.push_str(&format!(
+            r#"
+  (func $math_log2 (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (return (call $host_math_log2 (local.get $n))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+        ));
     }
 
     pub(crate) fn emit_math_sin(&self, wat: &mut String) {
-        push_math_unary_exact(wat, "math_sin", 0, 0);
+        wat.push_str(&format!(
+            r#"
+  (func $math_sin (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (return (call $host_math_sin (local.get $n))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+        ));
     }
 
     pub(crate) fn emit_math_sinh(&self, wat: &mut String) {
-        push_math_unary_exact(wat, "math_sinh", 0, 0);
+        wat.push_str(&format!(
+            r#"
+  (func $math_sinh (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (return (call $host_math_sinh (local.get $n))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+        ));
     }
 
     pub(crate) fn emit_math_tan(&self, wat: &mut String) {
-        push_math_unary_exact(wat, "math_tan", 0, 0);
+        wat.push_str(&format!(
+            r#"
+  (func $math_tan (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (return (call $host_math_tan (local.get $n))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+        ));
     }
 
     pub(crate) fn emit_math_tanh(&self, wat: &mut String) {
-        push_math_unary_exact(wat, "math_tanh", 0, 0);
+        wat.push_str(&format!(
+            r#"
+  (func $math_tanh (param $v i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $is_number i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (local.set $is_number
+          (i32.eq
+            (i32.load (local.get $obj))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
+    (local.set $n (call $number_to_i32 (local.get $v)))
+    (return (call $host_math_tanh (local.get $n))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+        ));
     }
 
     pub(crate) fn emit_math_atan2(&self, wat: &mut String) {

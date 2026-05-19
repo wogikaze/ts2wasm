@@ -148,6 +148,23 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
             | Capability::HostDateParse
             | Capability::HostDateUTC
             | Capability::HostMathAcos
+            | Capability::HostMathAcosh
+            | Capability::HostMathAsin
+            | Capability::HostMathAsinh
+            | Capability::HostMathAtan
+            | Capability::HostMathAtanh
+            | Capability::HostMathCos
+            | Capability::HostMathCosh
+            | Capability::HostMathExp
+            | Capability::HostMathExpm1
+            | Capability::HostMathLog
+            | Capability::HostMathLog10
+            | Capability::HostMathLog1p
+            | Capability::HostMathLog2
+            | Capability::HostMathSin
+            | Capability::HostMathSinh
+            | Capability::HostMathTan
+            | Capability::HostMathTanh
             | Capability::HostStringNormalize
             | Capability::HostIntlNumberFormatFormat
             | Capability::HostIntlDateTimeFormatFormat

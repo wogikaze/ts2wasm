@@ -367,6 +367,23 @@ fn node_shim_import_to_capability(import: &HostImport) -> Option<Capability> {
         HostImport::DateParse => Some(Capability::HostDateParse),
         HostImport::DateUTC => Some(Capability::HostDateUTC),
         HostImport::MathAcos => Some(Capability::HostMathAcos),
+        HostImport::MathAcosh => Some(Capability::HostMathAcosh),
+        HostImport::MathAsin => Some(Capability::HostMathAsin),
+        HostImport::MathAsinh => Some(Capability::HostMathAsinh),
+        HostImport::MathAtan => Some(Capability::HostMathAtan),
+        HostImport::MathAtanh => Some(Capability::HostMathAtanh),
+        HostImport::MathCos => Some(Capability::HostMathCos),
+        HostImport::MathCosh => Some(Capability::HostMathCosh),
+        HostImport::MathExp => Some(Capability::HostMathExp),
+        HostImport::MathExpm1 => Some(Capability::HostMathExpm1),
+        HostImport::MathLog => Some(Capability::HostMathLog),
+        HostImport::MathLog10 => Some(Capability::HostMathLog10),
+        HostImport::MathLog1p => Some(Capability::HostMathLog1p),
+        HostImport::MathLog2 => Some(Capability::HostMathLog2),
+        HostImport::MathSin => Some(Capability::HostMathSin),
+        HostImport::MathSinh => Some(Capability::HostMathSinh),
+        HostImport::MathTan => Some(Capability::HostMathTan),
+        HostImport::MathTanh => Some(Capability::HostMathTanh),
         HostImport::IntlNumberFormatFormat => Some(Capability::HostIntlNumberFormatFormat),
         HostImport::ReflectApply => Some(Capability::HostReflectApply),
         HostImport::ReflectConstruct => Some(Capability::HostReflectConstruct),
@@ -408,6 +425,23 @@ fn cap_is_host(cap: &Capability) -> bool {
             | Capability::HostDateParse
             | Capability::HostDateUTC
             | Capability::HostMathAcos
+            | Capability::HostMathAcosh
+            | Capability::HostMathAsin
+            | Capability::HostMathAsinh
+            | Capability::HostMathAtan
+            | Capability::HostMathAtanh
+            | Capability::HostMathCos
+            | Capability::HostMathCosh
+            | Capability::HostMathExp
+            | Capability::HostMathExpm1
+            | Capability::HostMathLog
+            | Capability::HostMathLog10
+            | Capability::HostMathLog1p
+            | Capability::HostMathLog2
+            | Capability::HostMathSin
+            | Capability::HostMathSinh
+            | Capability::HostMathTan
+            | Capability::HostMathTanh
             | Capability::HostIntlNumberFormatFormat
             | Capability::HostIntlDateTimeFormatFormat
             | Capability::HostStringNormalize
