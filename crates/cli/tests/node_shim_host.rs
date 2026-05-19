@@ -566,6 +566,13 @@ fn dynamic_direct_eval_for_head_var_is_visible_to_normal_code_through_node_shim_
 }
 
 #[test]
+fn dynamic_direct_eval_for_head_var_destructuring_is_visible_to_normal_code_through_node_shim_host_import()
+ {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-for-head-var-destructuring-normal-code-node-shim.ts";
+    assert_node_shim_stdout(fixture, "6\n8\n9\n");
+}
+
+#[test]
 fn dynamic_direct_eval_new_function_declaration_is_visible_to_later_eval_through_node_shim_host_import()
  {
     let fixture =

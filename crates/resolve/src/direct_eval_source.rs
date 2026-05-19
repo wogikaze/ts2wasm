@@ -923,4 +923,12 @@ mod tests {
         );
         assert_eq!(names, ["key", "value"]);
     }
+
+    #[test]
+    fn scans_for_in_of_var_head_destructuring_declarations() {
+        let names = eval_var_and_function_names(
+            "for (var {item} of list) {} for (var [first, ...rest] of entries) {}",
+        );
+        assert_eq!(names, ["item", "first", "rest"]);
+    }
 }

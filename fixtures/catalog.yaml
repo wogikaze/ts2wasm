@@ -935,6 +935,7 @@ directories:
     - direct-eval-dynamic-function-expression-name-normal-code-unsupported.ts
     - direct-eval-dynamic-function-expression-name-not-binding-node-shim.ts
     - direct-eval-dynamic-function-property-call-node-shim.ts
+    - direct-eval-dynamic-for-head-var-destructuring-normal-code-node-shim.ts
     - direct-eval-dynamic-for-head-var-normal-code-node-shim.ts
     - direct-eval-dynamic-let-initializer-node-shim.ts
     - direct-eval-dynamic-local-writeback-node-shim.ts
