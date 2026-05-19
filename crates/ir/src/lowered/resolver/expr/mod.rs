@@ -1265,18 +1265,29 @@ impl super::Resolver {
         landing: EvalForHeadVarLanding,
         caller_scope_index: usize,
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
-        if binding.is_rest || binding.computed {
+        if binding.is_rest {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedEval,
-                message: "static eval for-head object rest/computed destructuring is not supported in this slice".to_owned(),
+                message:
+                    "static eval for-head object rest destructuring is not supported in this slice"
+                        .to_owned(),
                 span: binding.span,
                 phase: None,
             });
         }
-        let property_value = LoweredExpr::PropertyGet {
-            obj: Box::new(value.clone()),
-            key: binding.key.clone(),
-            span: Span::generated("prop_get"),
+        let property_value = if binding.computed {
+            let key_raw = binding.key.trim_start_matches('[').trim_end_matches(']');
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(value.clone()),
+                key: Box::new(self.lower_computed_object_binding_key_expr(key_raw)?),
+                span: Span::generated("prop_get_dynamic"),
+            }
+        } else {
+            LoweredExpr::PropertyGet {
+                obj: Box::new(value.clone()),
+                key: binding.key.clone(),
+                span: Span::generated("prop_get"),
+            }
         };
         self.lower_eval_for_head_binding_target_write(
             &binding.target,

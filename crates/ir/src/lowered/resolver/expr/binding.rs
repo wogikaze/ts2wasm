@@ -132,10 +132,22 @@ impl super::super::Resolver {
         )
     }
 
-    fn lower_computed_object_binding_key_expr(
+    pub(crate) fn lower_computed_object_binding_key_expr(
         &mut self,
         key_raw: &str,
     ) -> Result<LoweredExpr, Diagnostic> {
+        if let Some(value) = computed_key_quoted_string_value(key_raw) {
+            return Ok(LoweredExpr::String(
+                value.to_owned(),
+                Span::generated("string"),
+            ));
+        }
+        if let Some(value) = computed_key_string_value(key_raw) {
+            return Ok(LoweredExpr::String(
+                value.to_owned(),
+                Span::generated("string"),
+            ));
+        }
         if let Some(callee) = computed_key_call_name(key_raw) {
             return self.lower_expr(&ResolvedExpr::Call {
                 callee: Box::new(ResolvedExpr::Ident(callee.to_owned())),
@@ -451,6 +463,19 @@ fn computed_key_identifier_name(key_raw: &str) -> Option<&str> {
     let after_start = &key_raw[start + 7..];
     let end = after_start.find('"')?;
     Some(&after_start[..end])
+}
+
+fn computed_key_string_value(key_raw: &str) -> Option<&str> {
+    let start = key_raw.find("value: \"")?;
+    let after_start = &key_raw[start + 8..];
+    let end = after_start.find('"')?;
+    Some(&after_start[..end])
+}
+
+fn computed_key_quoted_string_value(key_raw: &str) -> Option<&str> {
+    key_raw
+        .strip_prefix('"')
+        .and_then(|value| value.strip_suffix('"'))
 }
 
 fn is_binding_key_identifier(text: &str) -> bool {

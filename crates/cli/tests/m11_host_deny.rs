@@ -688,6 +688,10 @@ fn static_direct_eval_for_head_var_destructuring_declares_no_node_host_eval_capa
         "core-semantics/direct-eval-for-head-var-destructuring-default-caller.ts",
         "static direct eval for-head var destructuring default",
     );
+    assert_standalone_category(
+        "core-semantics/direct-eval-for-head-var-destructuring-computed-key.ts",
+        "static direct eval for-head var destructuring computed key",
+    );
 }
 
 #[test]
