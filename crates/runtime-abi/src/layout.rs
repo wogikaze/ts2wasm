@@ -219,12 +219,12 @@ impl Layout {
 
     // ---- Well-known symbol cache layout ------------------------------------
     /// Number of well-known symbols that can be cached.
-    pub const WELL_KNOWN_SYMBOL_COUNT: u32 = 11;
+    pub const WELL_KNOWN_SYMBOL_COUNT: u32 = 15;
     /// Cache entries start after the symbol registry table.
     /// Each entry is 4 bytes (i32 symbol_value or 0 if not yet created).
     pub const WELL_KNOWN_SYMBOL_CACHE_OFFSET: u32 = 192;
     /// Total bytes reserved for well-known symbol cache.
-    pub const WELL_KNOWN_SYMBOL_CACHE_SIZE: u32 = 44; // 11 * 4
+    pub const WELL_KNOWN_SYMBOL_CACHE_SIZE: u32 = 60; // 15 * 4
     /// Well-known symbol index for Symbol.iterator
     pub const WK_SYMBOL_ITERATOR: u32 = 0;
     /// Well-known symbol index for Symbol.species
@@ -247,6 +247,14 @@ impl Layout {
     pub const WK_SYMBOL_SPLIT: u32 = 9;
     /// Well-known symbol index for Symbol.unscopables
     pub const WK_SYMBOL_UNSCOPABLES: u32 = 10;
+    /// Well-known symbol index for Symbol.asyncIterator
+    pub const WK_SYMBOL_ASYNC_ITERATOR: u32 = 11;
+    /// Well-known symbol index for Symbol.asyncDispose
+    pub const WK_SYMBOL_ASYNC_DISPOSE: u32 = 12;
+    /// Well-known symbol index for Symbol.dispose
+    pub const WK_SYMBOL_DISPOSE: u32 = 13;
+    /// Well-known symbol index for Symbol.matchAll
+    pub const WK_SYMBOL_MATCH_ALL: u32 = 14;
 }
 
 #[cfg(test)]

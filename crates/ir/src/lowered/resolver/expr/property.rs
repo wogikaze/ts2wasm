@@ -929,6 +929,10 @@ fn well_known_symbol_index(key: &str) -> Option<u32> {
         "search" => Some(8),
         "split" => Some(9),
         "unscopables" => Some(10),
+        "asyncIterator" => Some(11),
+        "asyncDispose" => Some(12),
+        "dispose" => Some(13),
+        "matchAll" => Some(14),
         _ => None,
     }
 }
@@ -947,6 +951,10 @@ fn well_known_symbol_description(key: &str) -> String {
         "search" => "Symbol.search",
         "split" => "Symbol.split",
         "unscopables" => "Symbol.unscopables",
+        "asyncIterator" => "Symbol.asyncIterator",
+        "asyncDispose" => "Symbol.asyncDispose",
+        "dispose" => "Symbol.dispose",
+        "matchAll" => "Symbol.matchAll",
         _ => key,
     }
     .to_owned()
