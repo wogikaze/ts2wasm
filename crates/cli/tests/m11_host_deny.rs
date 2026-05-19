@@ -1743,6 +1743,7 @@ fn host_deny_rejects_dynamic_direct_eval_tdz_template_expression_host_lane() {
     );
     assert_host_deny_rejects("core-semantics/direct-eval-dynamic-tdz-typeof-node-shim.ts");
     assert_host_deny_rejects("core-semantics/direct-eval-dynamic-tdz-parenthesized-node-shim.ts");
+    assert_host_deny_rejects("core-semantics/direct-eval-dynamic-tdz-member-node-shim.ts");
 }
 
 #[test]

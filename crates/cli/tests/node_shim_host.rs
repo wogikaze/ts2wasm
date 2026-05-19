@@ -820,6 +820,12 @@ fn dynamic_direct_eval_tdz_parenthesized_reference_is_catchable_reference_error(
 }
 
 #[test]
+fn dynamic_direct_eval_tdz_member_reference_is_catchable_reference_error() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-tdz-member-node-shim.ts";
+    assert_node_shim_stdout(fixture, "ReferenceError\nafter\n");
+}
+
+#[test]
 fn static_direct_eval_rejects_return_statement() {
     let fixture = "fixtures/core-semantics/direct-eval-return-unsupported.ts";
     assert_build_fails_with(
@@ -1624,6 +1630,9 @@ function focusedDirectEvalTdzCandidates(source) {
   if (parenthesizedMatch !== null) return [parenthesizedMatch[1]];
   const typeofMatch = /^typeof\s+([A-Za-z_$][0-9A-Za-z_$]*)$/.exec(trimmed);
   if (typeofMatch !== null) return [typeofMatch[1]];
+  const memberMatch =
+    /^([A-Za-z_$][0-9A-Za-z_$]*)\s*\.\s*([A-Za-z_$][0-9A-Za-z_$]*)$/.exec(trimmed);
+  if (memberMatch !== null) return [memberMatch[1]];
   const templateMatch = /^`\$\{\s*([A-Za-z_$][0-9A-Za-z_$]*)\s*\}`$/.exec(trimmed);
   return templateMatch === null ? [] : [templateMatch[1]];
 }
