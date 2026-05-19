@@ -1306,6 +1306,16 @@ fn shadowed_optional_eval_is_ordinary_optional_call() {
 }
 
 #[test]
+fn optional_eval_nullish_callee_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/optional-eval-nullish-callee.ts");
+}
+
+#[test]
+fn optional_eval_short_circuit_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/optional-eval-short-circuit.ts");
+}
+
+#[test]
 fn direct_eval_dynamic_fixture_matches_node_output() {
     assert_fixture_matches_node("fixtures/core-semantics/direct-eval-dynamic-host-path.ts");
 }

@@ -2203,6 +2203,14 @@ impl WatEmitter<'_> {
                 self.emit_expr(writer, arg, indent, frame);
             }
             writer.push_str(&format!("{pad}(i32.const 0)\n")); // undefined
+        } else if (*intrinsic == RuntimeFn::StringSlice || *intrinsic == RuntimeFn::StringSubstring)
+            && args.len() == 2
+        {
+            // No end specified: pad with undefined (0) → WAT function defaults to cp_len
+            for arg in args {
+                self.emit_expr(writer, arg, indent, frame);
+            }
+            writer.push_str(&format!("{pad}(i32.const 0)\n")); // undefined end
         } else {
             for arg in args {
                 self.emit_expr(writer, arg, indent, frame);

@@ -4,7 +4,7 @@ use crate::emitter::{self, WatEmitter};
 use crate::runtime_fn::RuntimeFn;
 use crate::wat_writer::WatWriter;
 use ts2wasm_ir::lowered::{BuiltinErrorConstructor, FuncId, LoweredExpr, LoweredStmt};
-use ts2wasm_runtime_abi::{Layout, ValueTag};
+use ts2wasm_runtime_abi::Layout;
 
 impl WatEmitter<'_> {
     pub(super) fn emit_class_prototype_globals(&self, writer: &mut WatWriter) {
@@ -91,22 +91,15 @@ impl WatEmitter<'_> {
                 "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {})) (i32.const 0))\n",
                 Layout::OBJECT_FLAGS_OFFSET,
             ));
-            let parent_expr = match constructor {
-                BuiltinErrorConstructor::Error => format!(
-                    "i32.and (call {}) (i32.const {})",
-                    RuntimeFn::ObjectPrototype.symbol(),
-                    ValueTag::HEAP_MASK,
-                ),
-                _ => constructor
-                    .parent()
-                    .map(|parent| {
-                        format!(
-                            "global.get ${}",
-                            emitter::builtin_error_prototype_global(parent)
-                        )
-                    })
-                    .unwrap_or_else(|| "i32.const 0".to_owned()),
-            };
+            let parent_expr = constructor
+                .parent()
+                .map(|parent| {
+                    format!(
+                        "global.get ${}",
+                        emitter::builtin_error_prototype_global(parent)
+                    )
+                })
+                .unwrap_or_else(|| "i32.const 0".to_owned());
             wat.push_str(&format!(
                 "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {})) ({parent_expr}))\n",
                 Layout::OBJECT_PROTOTYPE_OFFSET,
@@ -119,6 +112,42 @@ impl WatEmitter<'_> {
             ));
             wat.push_str(&format!(
                 "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {})) (i32.const {name_value}))\n",
+                Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
+            ));
+            wat.push_str(&format!("{pad}  )\n{pad})\n"));
+        }
+        // AggregateError.prototype -- initialized separately since AggregateError is
+        // handled via RuntimeFn::AggregateError, not BuiltinErrorConstructor.
+        if self.needs_aggregate_error_prototype() {
+            wat.push_str(&format!(
+                "{pad}(if (i32.eqz (global.get $error_proto_aggregate_error))\n{pad}  (then\n"
+            ));
+            wat.push_str(&format!(
+                "{pad}    (global.set $error_proto_aggregate_error (call {} (i32.const {})))\n",
+                RuntimeFn::AllocHeap.symbol(),
+                Layout::OBJECT_HEADER_SIZE + Layout::OBJECT_ENTRY_SIZE,
+            ));
+            wat.push_str(&format!(
+                "{pad}    (i32.store (global.get $error_proto_aggregate_error) (i32.const 1))\n"
+            ));
+            wat.push_str(&format!(
+                "{pad}    (i32.store (i32.add (global.get $error_proto_aggregate_error) (i32.const {})) (i32.const 0))\n",
+                Layout::OBJECT_FLAGS_OFFSET,
+            ));
+            // Parent = Error.prototype (raw pointer)
+            wat.push_str(&format!(
+                "{pad}    (i32.store (i32.add (global.get $error_proto_aggregate_error) (i32.const {})) (global.get $error_proto_error))\n",
+                Layout::OBJECT_PROTOTYPE_OFFSET,
+            ));
+            // "name" = "AggregateError"
+            let name_key = self.string_value("name");
+            let name_value = self.string_value("AggregateError");
+            wat.push_str(&format!(
+                "{pad}    (i32.store (i32.add (global.get $error_proto_aggregate_error) (i32.const {})) (i32.const {name_key}))\n",
+                Layout::OBJECT_ENTRIES_OFFSET,
+            ));
+            wat.push_str(&format!(
+                "{pad}    (i32.store (i32.add (global.get $error_proto_aggregate_error) (i32.const {})) (i32.const {name_value}))\n",
                 Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
             ));
             wat.push_str(&format!("{pad}  )\n{pad})\n"));

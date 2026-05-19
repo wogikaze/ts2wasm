@@ -173,8 +173,8 @@ dynamic direct eval は、runtime source を `host.eval.direct(source, env)` に
 | static direct eval lexical/class completion | `eval('class C{}; typeof C')` | class / lexical / destructuring completion fixtures あり | eval lexical env、TDZ、class binding lifecycle を canonical 化 |
 | Annex B block function in eval | `eval('{ function f(){} }')` | parser splice なしで `EvalCompletionStep` + direct-eval helpers により focused fixtures が残る | `EvalBlockFunctionPlan` と Annex B validation |
 | static direct eval abrupt completion | `eval('throw e')`, invalid `return` | throw/break/continue step は存在。`return` は static eval source validation で reject | Completion Record と invalid abrupt completion diagnostics の体系化 |
-| static indirect eval | `(0, eval)("x")` | supported static literal subset は AOT で host import なし。caller collision rewrite helper あり | global eval environment plan |
-| optional eval | `eval?.(src)` | unshadowed optional eval は indirect/global lane へ流れる slice あり | optional nullish / shadowed / call-reference semantics の拡張 |
+| static indirect eval | `(0, eval)("x")` | supported static literal subset は AOT で host import なし。global lexical binding fixture あり (compile-only, Node.js module scope diff)。caller collision rewrite helper あり | global eval environment plan |
+| optional eval | `eval?.(src)` | unshadowed optional eval は indirect/global lane へ流れる slice あり。nullish callee / short-circuit edge fixtures あり。member expression short-circuit (`null?.eval?.()`) は issue-253 保留 | optional nullish / shadowed / call-reference semantics の拡張 |
 | dynamic indirect eval | `(0, eval)(src)` | `host.eval.indirect` manifest / host-deny / focused Node shim | audited host lane + broader object/error/realm coverage |
 | dynamic direct eval | `eval(src)` | `host.eval.direct` env descriptor、strict metadata、write-back、declaration persistence、object/function handle bridge の focused slice | full env descriptor + mutation ledger + TDZ + wasm-visible runtime bindings |
 | `new eval` | `new eval("x")` | catchable TypeError parity fixture あり | broader non-constructor builtin audit |
@@ -439,14 +439,21 @@ Exit criteria:
 
 Status: **supported literal subset implemented; global env model still open.**
 
-作業:
+追加した fixtures:
+
+- `indirect-eval-static-global-lexical-binding.ts` — global lexical binding vs global object property (compile-only, Node.js module scope diff)
+- `optional-eval-nullish-callee.ts` — nullish callee short-circuit
+- `optional-eval-short-circuit.ts` — optional eval result is `undefined` on nullish callee
+- `optional-eval-shadowed-ordinary-call.ts` — 既存 (prior archive), covers both shadowed and null callee
+
+Remaining work:
 
 - `EvalKind::Indirect` を `EvalScopeMode::Global` と結びつける。
 - `(0, eval)(...)`, `globalThis.eval(...)`, `globalThis["eval"](...)`, optional eval の分類を plan に記録する。
 - static source は global eval fragment として parse / resolve / lower する。
 - caller lexical binding collision rewrite を global env lookup に置き換える。
-- global lexical vs global object property vs module top-level lexical の違いを fixture 化する。
-- optional eval について、nullish callee, shadowed eval, optional chaining short-circuit の edge を追加する。
+- module top-level lexical の fixture 化は module support 完了後。
+- optional chaining short-circuit (`null?.eval?.(src)`) は member expression callee に依存するため issue-253 解除後に追加。
 
 Exit criteria:
 

@@ -812,6 +812,7 @@ fn dump_mir_error_new() {
                 constructor: BuiltinErrorConstructor::TypeError,
                 message: Box::new(LoweredExpr::String("msg".to_string(), make_span())),
                 cause: None,
+                errors: None,
                 span: make_span(),
             },
             make_span(),

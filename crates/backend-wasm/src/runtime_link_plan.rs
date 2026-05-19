@@ -54,6 +54,22 @@ pub fn build_runtime_link_plan(program: &LoweredProgram) -> RuntimeLinkPlan {
         // is selected. Declare them here to keep WAT emission valid.
         plan.add_required_globals(GLOBALS_MODULE_RUNTIME);
     }
+    // Error.prototype initializer references RuntimeFn::ObjectPrototype.
+    // When builtin_error_prototypes() would include Error (via any runtime
+    // error function that triggers error prototype creation), ensure the
+    // ObjectPrototype function is available in the emitted WASM.
+    if plan
+        .required_runtime
+        .contains(&RuntimeFn::PrivateBrandTypeError)
+        || plan
+            .required_runtime
+            .contains(&RuntimeFn::BigIntMixedArithmeticTypeError)
+        || plan
+            .required_runtime
+            .contains(&RuntimeFn::BigIntDivisionByZeroRangeError)
+    {
+        plan.add_required_runtime(RuntimeFn::ObjectPrototype);
+    }
     plan.populate_derived_sets();
     plan
 }
@@ -471,6 +487,7 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
         LoweredExpr::ErrorNew { message, cause, .. } => {
             plan.add_required_runtime(RuntimeFn::AllocHeap);
             plan.add_required_runtime(RuntimeFn::Concat);
+            plan.add_required_runtime(RuntimeFn::ObjectPrototype);
             collect_required_runtime_expr(plan, message);
             if let Some(cause) = cause {
                 collect_required_runtime_expr(plan, cause);
@@ -532,6 +549,7 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
         }
         LoweredExpr::BuiltinErrorPrototype(_, _) => {
             plan.add_required_runtime(RuntimeFn::AllocHeap);
+            plan.add_required_runtime(RuntimeFn::ObjectPrototype);
         }
         LoweredExpr::Block { stmts, result, .. } => {
             for stmt in stmts {

@@ -1,17 +1,19 @@
 // Global lexical binding vs global object property in indirect eval.
-// `let` at global scope creates a global lexical binding (not on globalThis).
-// Indirect eval reads from the global lexical environment, so both work.
-// But `var` declarations inside indirect eval create globalThis properties,
-// while `let` declarations inside indirect eval do not.
-let lexicalGlobal = "lexical-value";
-var varGlobal = "var-value";
+// var at top level creates a globalThis property, let does not.
+// Indirect eval can read globalThis properties.
+var globalVar = "global-var-value";
 
-console.log((0, eval)("lexicalGlobal"));
-console.log((0, eval)("varGlobal"));
+// var is readable through indirect eval (becomes globalThis property)
+console.log((0, eval)("globalVar"));
 
-(0, eval)("var indirectVar = 'from-var'");
-console.log(globalThis.indirectVar);
+// let at top level does NOT create globalThis property
+let globalLet = "global-let-value";
+console.log(typeof globalThis.globalLet);
 
-(0, eval)("let indirectLet = 'from-let'");
-console.log(typeof globalThis.indirectLet);
-console.log((0, eval)("indirectLet"));
+// var inside indirect eval creates globalThis property
+(0, eval)("var evalVar = 'from-var'");
+console.log(globalThis.evalVar);
+
+// let inside indirect eval does NOT create globalThis property
+(0, eval)("let evalLet = 'from-let';");
+console.log(typeof globalThis.evalLet);

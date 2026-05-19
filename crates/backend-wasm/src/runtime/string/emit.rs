@@ -102,6 +102,9 @@ impl WatEmitter<'_> {
     (local.set $cp_len (call $string_code_point_length (local.get $s)))
     (local.set $s_pos (i32.shr_s (local.get $start) (i32.const {number_shift})))
     (local.set $e_pos (i32.shr_s (local.get $end) (i32.const {number_shift})))
+    ;; if $end is undefined (ValueTag::UNDEFINED == 0), default to cp_len
+    (if (i32.eqz (local.get $end))
+      (then (local.set $e_pos (local.get $cp_len))))
     ;; clamp to [0, cp_len]
     (if (i32.lt_s (local.get $s_pos) (i32.const {zero})) (then (local.set $s_pos (i32.const {zero}))))
     (if (i32.gt_u (local.get $s_pos) (local.get $cp_len)) (then (local.set $s_pos (local.get $cp_len))))
@@ -223,6 +226,9 @@ impl WatEmitter<'_> {
     (local.set $cp_len (call $string_code_point_length (local.get $s)))
     (local.set $s_pos (i32.shr_s (local.get $start) (i32.const {number_shift})))
     (local.set $e_pos (i32.shr_s (local.get $end) (i32.const {number_shift})))
+    ;; if $end is undefined (ValueTag::UNDEFINED == 0), default to cp_len
+    (if (i32.eqz (local.get $end))
+      (then (local.set $e_pos (local.get $cp_len))))
     ;; handle negative indices using code point length
     (if (i32.lt_s (local.get $s_pos) (i32.const {zero}))
       (then (local.set $s_pos (i32.add (local.get $cp_len) (local.get $s_pos)))))
