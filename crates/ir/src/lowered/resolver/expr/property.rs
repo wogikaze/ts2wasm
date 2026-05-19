@@ -1,6 +1,6 @@
 use super::super::{
-    is_array_prototype_push_property, is_map_prototype_property, is_private_field_storage_key,
-    is_set_prototype_property, private_storage_observable_access_diagnostic,
+    is_array_prototype_push_property, is_private_field_storage_key, is_set_prototype_property,
+    private_storage_observable_access_diagnostic,
 };
 use super::{is_global_builtin_function_name, lower_global_builtin_function_metadata_property};
 use crate::builtin::BuiltinPropertyId;
@@ -240,62 +240,6 @@ impl super::super::Resolver {
         if is_set_prototype_property(object, key, "add") {
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::SetPrototypeAddGet,
-                args: Vec::new(),
-                span: Span::generated("runtime_call"),
-            });
-        }
-        if is_set_prototype_property(object, key, "has") {
-            return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::SetPrototypeHasGet,
-                args: Vec::new(),
-                span: Span::generated("runtime_call"),
-            });
-        }
-        if is_set_prototype_property(object, key, "delete") {
-            return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::SetPrototypeDeleteGet,
-                args: Vec::new(),
-                span: Span::generated("runtime_call"),
-            });
-        }
-        if is_set_prototype_property(object, key, "forEach") {
-            return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::SetPrototypeForEachGet,
-                args: Vec::new(),
-                span: Span::generated("runtime_call"),
-            });
-        }
-        if is_map_prototype_property(object, key, "get") {
-            return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::MapPrototypeGetGet,
-                args: Vec::new(),
-                span: Span::generated("runtime_call"),
-            });
-        }
-        if is_map_prototype_property(object, key, "set") {
-            return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::MapPrototypeSetGet,
-                args: Vec::new(),
-                span: Span::generated("runtime_call"),
-            });
-        }
-        if is_map_prototype_property(object, key, "has") {
-            return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::MapPrototypeHasGet,
-                args: Vec::new(),
-                span: Span::generated("runtime_call"),
-            });
-        }
-        if is_map_prototype_property(object, key, "delete") {
-            return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::MapPrototypeDeleteGet,
-                args: Vec::new(),
-                span: Span::generated("runtime_call"),
-            });
-        }
-        if is_map_prototype_property(object, key, "forEach") {
-            return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::MapPrototypeForEachGet,
                 args: Vec::new(),
                 span: Span::generated("runtime_call"),
             });
