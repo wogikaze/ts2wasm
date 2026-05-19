@@ -2189,7 +2189,9 @@ impl WatEmitter<'_> {
         }
         if (*intrinsic == RuntimeFn::StringIncludes
             || *intrinsic == RuntimeFn::StringStartsWith
-            || *intrinsic == RuntimeFn::StringEndsWith)
+            || *intrinsic == RuntimeFn::StringEndsWith
+            || *intrinsic == RuntimeFn::StringIndexOf
+            || *intrinsic == RuntimeFn::StringLastIndexOf)
             && args.len() == 2
         {
             // No position specified, default to 0 (undefined → start from beginning)

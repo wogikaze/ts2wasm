@@ -1,9 +1,9 @@
 use ts2wasm_runtime_abi::RuntimeString;
 
-use crate::signature::RuntimeSignature;
 use crate::Capability;
 use crate::HostImport;
 use crate::RuntimeDomain;
+use crate::signature::RuntimeSignature;
 
 pub const NATIVE_SET_ADD_SENTINEL: i32 = -4;
 
