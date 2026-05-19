@@ -85,6 +85,13 @@ fn dynamic_function_compile_flattens_spread_array_args_through_node_shim_host_im
 }
 
 #[test]
+fn dynamic_function_sequence_prefix_preserves_side_effect_through_node_shim_host_imports() {
+    let fixture =
+        "fixtures/core-semantics/function-constructor-dynamic-sequence-prefix-node-shim.ts";
+    assert_node_shim_stdout(fixture, "1\n7\n");
+}
+
+#[test]
 fn dynamic_function_handle_preserves_object_identity_through_node_shim_host_imports() {
     let fixture =
         "fixtures/core-semantics/function-constructor-dynamic-object-identity-node-shim.ts";

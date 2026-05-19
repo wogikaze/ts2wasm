@@ -2464,6 +2464,9 @@ fn host_deny_rejects_dynamic_function_constructor_host_lane() {
         "core-semantics/function-constructor-dynamic-spread-array-node-shim.ts",
     );
     assert_host_deny_rejects(
+        "core-semantics/function-constructor-dynamic-sequence-prefix-node-shim.ts",
+    );
+    assert_host_deny_rejects(
         "core-semantics/function-constructor-dynamic-call-construct-host-path.ts",
     );
     assert_host_deny_rejects(
