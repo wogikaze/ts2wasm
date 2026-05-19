@@ -393,6 +393,7 @@ impl EvalFragmentPlan {
             (None, None) => self.eval_source_is_strict.is_none(),
             (Some(declarations), Some(completion_plan)) => {
                 self.host_policy == EvalHostPolicy::AotOnly
+                    && matches!(self.source, EvalSource::StaticLiteral(_))
                     && self.scope_mode == completion_plan.scope_mode
                     && self.caller_is_strict == completion_plan.caller_is_strict
                     && self.eval_source_is_strict == Some(completion_plan.eval_is_strict)
@@ -1792,12 +1793,12 @@ mod tests {
         let plan = EvalFragmentPlan::new(
             EvalKind::Direct,
             EvalSource::StaticLiteral("1".to_owned()),
-            true,
+            false,
             Span::generated("eval_completion_state_policy_test"),
         )
         .with_completion_plan(
-            true,
-            true,
+            false,
+            false,
             EvalDeclarationPlan {
                 var_names: vec!["value".to_owned()],
                 function_hoists: vec![],
@@ -1815,7 +1816,7 @@ mod tests {
         assert!(!missing_declaration_plan.completion_state_is_consistent());
 
         let mismatched_strictness = EvalFragmentPlan {
-            eval_source_is_strict: Some(false),
+            eval_source_is_strict: Some(true),
             ..plan.clone()
         };
         assert!(!mismatched_strictness.completion_state_is_consistent());
@@ -1852,9 +1853,15 @@ mod tests {
         let runtime_with_completion = EvalFragmentPlan {
             source: EvalSource::Runtime(Box::new(ResolvedExpr::Ident("src".to_owned()))),
             host_policy: EvalHostPolicy::DirectHost,
-            ..plan
+            ..plan.clone()
         };
         assert!(!runtime_with_completion.completion_state_is_consistent());
+
+        let non_string_static_with_completion = EvalFragmentPlan {
+            source: EvalSource::NonStringStatic(Box::new(ResolvedExpr::Object(vec![]))),
+            ..plan
+        };
+        assert!(!non_string_static_with_completion.completion_state_is_consistent());
     }
 
     #[test]
