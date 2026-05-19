@@ -847,6 +847,13 @@ fn dynamic_direct_eval_strict_caller_ignores_restricted_words_in_regexp_node_shi
 }
 
 #[test]
+fn dynamic_direct_eval_strict_caller_ignores_restricted_words_in_keyword_regexp_node_shim_host_import()
+ {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-strict-caller-regexp-after-keyword-node-shim.ts";
+    assert_node_shim_stdout(fixture, "true\nafter\n");
+}
+
+#[test]
 fn dynamic_direct_eval_tdz_env_descriptor_conflict_is_catchable_reference_error() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-tdz-conflict-node-shim.ts";
     assert_node_shim_stdout(fixture, "ReferenceError\nafter\n");
@@ -1643,6 +1650,20 @@ function isRegexLiteralStart(source, index) {
   let prior = index - 1;
   while (prior >= 0 && /\s/.test(source[prior])) prior -= 1;
   if (prior < 0) return true;
+  if (isIdentifierPart(source[prior])) {
+    let tokenStart = prior;
+    while (tokenStart > 0 && isIdentifierPart(source[tokenStart - 1])) tokenStart -= 1;
+    return [
+      'await',
+      'case',
+      'delete',
+      'return',
+      'throw',
+      'typeof',
+      'void',
+      'yield',
+    ].includes(source.slice(tokenStart, prior + 1));
+  }
   return '([{=,:;!?'.includes(source[prior]);
 }
 
