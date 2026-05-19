@@ -455,6 +455,7 @@ enum FunctionConstructorStaticSourceValue {
     Bool(bool),
     Null,
     Undefined,
+    Array(Vec<Option<FunctionConstructorStaticSourceValue>>),
 }
 
 impl FunctionConstructorStaticSourceValue {
@@ -467,6 +468,7 @@ impl FunctionConstructorStaticSourceValue {
             Self::Bool(false) => "false".to_owned(),
             Self::Null => "null".to_owned(),
             Self::Undefined => "undefined".to_owned(),
+            Self::Array(elements) => function_constructor_static_array_to_string(elements),
         }
     }
 }
@@ -492,6 +494,7 @@ fn function_constructor_static_source_value(
         ResolvedExpr::Bool(value) => Some(FunctionConstructorStaticSourceValue::Bool(*value)),
         ResolvedExpr::Null => Some(FunctionConstructorStaticSourceValue::Null),
         ResolvedExpr::Undefined => Some(FunctionConstructorStaticSourceValue::Undefined),
+        ResolvedExpr::Array(elements) => function_constructor_static_array_source_value(elements),
         ResolvedExpr::Binary { left, op, right } => match op {
             BinaryOp::Add => function_constructor_static_add_source_value(left, right),
             BinaryOp::And | BinaryOp::Or | BinaryOp::NullishCoalesce => {
@@ -518,6 +521,36 @@ fn function_constructor_static_source_value(
         }
         _ => None,
     }
+}
+
+fn function_constructor_static_array_source_value(
+    elements: &[ResolvedArrayElement],
+) -> Option<FunctionConstructorStaticSourceValue> {
+    let mut values = Vec::with_capacity(elements.len());
+    for element in elements {
+        match element {
+            ResolvedArrayElement::Hole => values.push(None),
+            ResolvedArrayElement::Present(expr) => {
+                values.push(Some(function_constructor_static_source_value(expr)?));
+            }
+        }
+    }
+    Some(FunctionConstructorStaticSourceValue::Array(values))
+}
+
+fn function_constructor_static_array_to_string(
+    elements: &[Option<FunctionConstructorStaticSourceValue>],
+) -> String {
+    elements
+        .iter()
+        .map(|element| match element {
+            Some(FunctionConstructorStaticSourceValue::Null)
+            | Some(FunctionConstructorStaticSourceValue::Undefined)
+            | None => String::new(),
+            Some(value) => value.to_js_string(),
+        })
+        .collect::<Vec<_>>()
+        .join(",")
 }
 
 fn function_constructor_static_unary_source_value(
@@ -560,6 +593,7 @@ fn function_constructor_static_to_boolean(value: &FunctionConstructorStaticSourc
         FunctionConstructorStaticSourceValue::DecimalNumber(value)
         | FunctionConstructorStaticSourceValue::BigInt(value) => value != "0",
         FunctionConstructorStaticSourceValue::Bool(value) => *value,
+        FunctionConstructorStaticSourceValue::Array(_) => true,
         FunctionConstructorStaticSourceValue::Null
         | FunctionConstructorStaticSourceValue::Undefined => false,
     }

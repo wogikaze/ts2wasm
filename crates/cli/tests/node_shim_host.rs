@@ -936,6 +936,15 @@ fn static_function_constructor_expression_source_uses_aot_lane() {
 }
 
 #[test]
+fn static_function_constructor_array_source_uses_aot_lane() {
+    let fixture = "fixtures/core-semantics/function-constructor-static-array-source.ts";
+    assert_node_shim_stdout(
+        fixture,
+        "7\nx,y\nundefined\nfunction anonymous(\n) {\nconsole.log(\"x,y\")\n}\nundefined\nfunction anonymous(\n) {\n\n}\n",
+    );
+}
+
+#[test]
 fn static_function_constructor_ternary_source_uses_aot_lane() {
     let fixture = "fixtures/core-semantics/function-constructor-static-ternary-source.ts";
     assert_node_shim_stdout(fixture, "1\n2\nundefined\nfunction anonymous(\n) {\n3\n}\n");

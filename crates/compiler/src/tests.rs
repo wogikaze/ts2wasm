@@ -148,6 +148,34 @@ fn compiler_expands_static_function_constructor_expression_source_args() {
 }
 
 #[test]
+fn compiler_expands_static_function_constructor_array_source_args() {
+    let expanded = parse_resolve_and_expand_dynamic_code(
+        r#"let value = Function(["return 7"]); let other = Function(["console.log(\"x", "y\")"]);"#,
+    );
+    for stmt in &expanded {
+        let ts2wasm_ir::ResolvedStmt::Let(
+            _,
+            ts2wasm_ir::ResolvedExpr::FunctionExpr {
+                origin,
+                constructor_metadata,
+                ..
+            },
+        ) = stmt
+        else {
+            panic!("expected static array Function constructor to expand: {expanded:?}");
+        };
+        assert_eq!(
+            *origin,
+            ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor
+        );
+        assert_eq!(
+            constructor_metadata.as_ref().map(|meta| meta.name.as_str()),
+            Some("anonymous")
+        );
+    }
+}
+
+#[test]
 fn compiler_expands_static_function_constructor_ternary_source_args() {
     let expanded = parse_resolve_and_expand_dynamic_code(
         r#"let value = Function(true ? "return 1" : "return 2"); let other = Function("" ? "return 1" : 1 + 2);"#,
