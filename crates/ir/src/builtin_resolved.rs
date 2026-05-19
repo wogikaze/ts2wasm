@@ -1251,6 +1251,16 @@ impl EvalCompletionPlan {
     pub fn last(&self) -> Option<&EvalCompletionStep> {
         self.steps.last()
     }
+
+    pub fn landing_state_is_consistent(&self) -> bool {
+        match self.scope_mode {
+            EvalScopeMode::Caller => self.steps.iter().all(|step| !step.has_global_landing()),
+            EvalScopeMode::Global { .. } => {
+                self.declarations.is_empty()
+                    && self.steps.iter().all(|step| !step.has_caller_landing())
+            }
+        }
+    }
 }
 
 impl<'a> IntoIterator for &'a EvalCompletionPlan {
@@ -1397,6 +1407,142 @@ pub enum EvalForHeadVarLanding {
 }
 
 impl EvalCompletionStep {
+    pub fn has_caller_landing(&self) -> bool {
+        match self {
+            Self::VarLet { .. } | Self::FunctionDecl { .. } => true,
+            Self::DestructureVarLet { var_landing, .. } => {
+                *var_landing == EvalForHeadVarLanding::Caller
+            }
+            Self::Block(steps) => steps.iter().any(Self::has_caller_landing),
+            Self::If {
+                then_steps,
+                else_steps,
+                ..
+            } => {
+                then_steps.iter().any(Self::has_caller_landing)
+                    || else_steps.iter().any(Self::has_caller_landing)
+            }
+            Self::While { body_steps, .. } | Self::DoWhile { body_steps, .. } => {
+                body_steps.iter().any(Self::has_caller_landing)
+            }
+            Self::ForOf {
+                var_landing,
+                body_steps,
+                ..
+            }
+            | Self::ForIn {
+                var_landing,
+                body_steps,
+                ..
+            } => {
+                *var_landing == EvalForHeadVarLanding::Caller
+                    || body_steps.iter().any(Self::has_caller_landing)
+            }
+            Self::For {
+                init, body_steps, ..
+            } => {
+                init.as_deref().is_some_and(Self::has_caller_landing)
+                    || body_steps.iter().any(Self::has_caller_landing)
+            }
+            Self::Switch { cases, .. } => cases
+                .iter()
+                .any(|(_, steps)| steps.iter().any(Self::has_caller_landing)),
+            Self::TryCatch {
+                try_steps,
+                catch_steps,
+                finally_steps,
+                ..
+            } => {
+                try_steps.iter().any(Self::has_caller_landing)
+                    || catch_steps
+                        .as_deref()
+                        .is_some_and(|steps| steps.iter().any(Self::has_caller_landing))
+                    || finally_steps
+                        .as_deref()
+                        .is_some_and(|steps| steps.iter().any(Self::has_caller_landing))
+            }
+            Self::Labeled { body, .. } => body.has_caller_landing(),
+            Self::Value(_)
+            | Self::Empty(_)
+            | Self::GlobalVarLet { .. }
+            | Self::GlobalFunctionDecl { .. }
+            | Self::ClassDecl { .. }
+            | Self::Throw(_)
+            | Self::Break { .. }
+            | Self::Continue { .. }
+            | Self::LexicalLet { .. }
+            | Self::DestructureLet { .. } => false,
+        }
+    }
+
+    pub fn has_global_landing(&self) -> bool {
+        match self {
+            Self::GlobalVarLet { .. } | Self::GlobalFunctionDecl { .. } => true,
+            Self::DestructureVarLet { var_landing, .. } => {
+                *var_landing == EvalForHeadVarLanding::Global
+            }
+            Self::Block(steps) => steps.iter().any(Self::has_global_landing),
+            Self::If {
+                then_steps,
+                else_steps,
+                ..
+            } => {
+                then_steps.iter().any(Self::has_global_landing)
+                    || else_steps.iter().any(Self::has_global_landing)
+            }
+            Self::While { body_steps, .. } | Self::DoWhile { body_steps, .. } => {
+                body_steps.iter().any(Self::has_global_landing)
+            }
+            Self::ForOf {
+                var_landing,
+                body_steps,
+                ..
+            }
+            | Self::ForIn {
+                var_landing,
+                body_steps,
+                ..
+            } => {
+                *var_landing == EvalForHeadVarLanding::Global
+                    || body_steps.iter().any(Self::has_global_landing)
+            }
+            Self::For {
+                init, body_steps, ..
+            } => {
+                init.as_deref().is_some_and(Self::has_global_landing)
+                    || body_steps.iter().any(Self::has_global_landing)
+            }
+            Self::Switch { cases, .. } => cases
+                .iter()
+                .any(|(_, steps)| steps.iter().any(Self::has_global_landing)),
+            Self::TryCatch {
+                try_steps,
+                catch_steps,
+                finally_steps,
+                ..
+            } => {
+                try_steps.iter().any(Self::has_global_landing)
+                    || catch_steps
+                        .as_deref()
+                        .is_some_and(|steps| steps.iter().any(Self::has_global_landing))
+                    || finally_steps
+                        .as_deref()
+                        .is_some_and(|steps| steps.iter().any(Self::has_global_landing))
+            }
+            Self::Labeled { body, .. } => body.has_global_landing(),
+            Self::Value(_)
+            | Self::Empty(_)
+            | Self::VarLet { .. }
+            | Self::FunctionDecl { .. }
+            | Self::ClassDecl { .. }
+            | Self::Throw(_)
+            | Self::Break { .. }
+            | Self::Continue { .. }
+            | Self::LexicalLet { .. }
+            | Self::DestructureLet { .. } => false,
+        }
+    }
+
     pub fn expr(&self) -> Option<&ResolvedExpr> {
         match self {
             Self::Value(expr)
@@ -1656,6 +1802,66 @@ mod tests {
             ..plan
         };
         assert!(!runtime_with_completion.completion_state_is_consistent());
+    }
+
+    #[test]
+    fn eval_completion_plan_validates_scope_landing_state() {
+        let caller_plan = EvalCompletionPlan::with_eval_context(
+            EvalScopeMode::Caller,
+            false,
+            false,
+            EvalDeclarationPlan {
+                var_names: vec!["value".to_owned()],
+                function_hoists: vec![],
+            },
+            vec![EvalCompletionStep::VarLet {
+                name: "value".to_owned(),
+                init: ResolvedExpr::Number(1),
+            }],
+        );
+        assert!(caller_plan.landing_state_is_consistent());
+
+        let caller_with_global_landing = EvalCompletionPlan::with_eval_context(
+            EvalScopeMode::Caller,
+            false,
+            false,
+            EvalDeclarationPlan::default(),
+            vec![EvalCompletionStep::GlobalVarLet {
+                name: "value".to_owned(),
+                init: ResolvedExpr::Number(1),
+            }],
+        );
+        assert!(!caller_with_global_landing.landing_state_is_consistent());
+
+        let global_plan = EvalCompletionPlan::with_eval_context(
+            EvalScopeMode::Global {
+                realm: EvalRealm::Current,
+            },
+            false,
+            false,
+            EvalDeclarationPlan::default(),
+            vec![EvalCompletionStep::GlobalVarLet {
+                name: "value".to_owned(),
+                init: ResolvedExpr::Number(1),
+            }],
+        );
+        assert!(global_plan.landing_state_is_consistent());
+
+        let global_with_caller_landing = EvalCompletionPlan::with_eval_context(
+            EvalScopeMode::Global {
+                realm: EvalRealm::Current,
+            },
+            false,
+            false,
+            EvalDeclarationPlan::default(),
+            vec![EvalCompletionStep::Block(vec![
+                EvalCompletionStep::VarLet {
+                    name: "value".to_owned(),
+                    init: ResolvedExpr::Number(1),
+                },
+            ])],
+        );
+        assert!(!global_with_caller_landing.landing_state_is_consistent());
     }
 
     #[test]
