@@ -1,4 +1,8 @@
-use super::emitter::WatEmitter;
+use super::emitter::{WatEmitter, function_symbol};
+use super::expr_emit::{
+    CLOSURE_CAPTURE_COUNT_OFFSET, CLOSURE_CAPTURE_SLOT_SIZE, CLOSURE_CAPTURE_SLOTS_OFFSET,
+    CLOSURE_CODE_ID_OFFSET, CLOSURE_SENTINEL, CLOSURE_SUBTYPE_OFFSET,
+};
 use super::runtime_fn::RuntimeFn;
 use ts2wasm_runtime_abi::{layout::Layout, value::ValueTag};
 
@@ -93,65 +97,251 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_promise_then(&self, wat: &mut String) {
+        // Build dispatch table for callback invocation
+        let pad = "            ";
+        let mut number_dispatch = String::new();
+        let mut object_dispatch = String::new();
+
+        let dir_local_token_payload_base = ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE;
+        for function in &self.program.functions {
+            let payload = dir_local_token_payload_base + function.id.0 as i32;
+            let func_sym = function_symbol(function.id);
+
+            // NUMBER-tagged dispatch arm (DirectLocalToken, no captures)
+            number_dispatch.push_str(&format!(
+                "{pad}(if (i32.eq (local.get $payload) (i32.const {payload}))
+{pad}  (then
+{pad}    (local.set $call_result (call {func_sym} (local.get $value)))
+{pad}    (br $dispatch_done)))
+"
+            ));
+
+            // OBJECT-tagged dispatch arms (heap closures with captures)
+            for capture_count in 0..=function.params.len() {
+                let user_param_count = function.params.len() - capture_count;
+                // Emit arm for any user_param_count (callback may have extra params)
+                let mut call_args = String::new();
+                for param_index in 0..user_param_count {
+                    if param_index == 0 {
+                        call_args.push_str(&format!("{pad}      (local.get $value)\n"));
+                    } else {
+                        call_args
+                            .push_str(&format!("{pad}      (i32.const {})\n", ValueTag::UNDEFINED));
+                    }
+                }
+                for cap_idx in 0..capture_count {
+                    let cap_off =
+                        CLOSURE_CAPTURE_SLOTS_OFFSET + cap_idx as u32 * CLOSURE_CAPTURE_SLOT_SIZE;
+                    call_args.push_str(&format!(
+                        "{pad}      (i32.load (i32.add (local.get $payload) (i32.const {cap_off})))\n"
+                    ));
+                }
+                object_dispatch.push_str(&format!(
+                    "{pad}(if (i32.and
+{pad}      (i32.eq (i32.load (i32.add (local.get $payload) (i32.const {code_id_off}))) (i32.const {func_id}))
+{pad}      (i32.eq (i32.load (i32.add (local.get $payload) (i32.const {cap_cnt_off}))) (i32.const {capture_count})))
+{pad}  (then
+{pad}    (local.set $call_result (call {func_sym}
+{call_args}{pad}    ))
+{pad}    (br $dispatch_done)))
+",
+                    code_id_off = CLOSURE_CODE_ID_OFFSET,
+                    func_id = function.id.0,
+                    cap_cnt_off = CLOSURE_CAPTURE_COUNT_OFFSET,
+                    capture_count = capture_count,
+                    func_sym = func_sym,
+                    call_args = call_args,
+                ));
+            }
+        }
+
         wat.push_str(&format!(
             r#"
   (func $promise_then (param $promise i32) (param $on_fulfilled i32) (param $on_rejected i32) (result i32)
     (local $base i32)
     (local $state i32)
+    (local $value i32)
+    (local $call_result i32)
+    (local $payload i32)
     (local.set $base (i32.and (local.get $promise) (i32.const {heap_mask})))
     (local.set $state (i32.load (i32.add (local.get $base) (i32.const {slot0_offset}))))
-    (if (result i32)
-      (i32.eq (local.get $state) (i32.const {fulfilled}))
+    (local.set $value (i32.load (i32.add (local.get $base) (i32.const {slot1_offset}))))
+    ;; Fulfilled: synchronously invoke onFulfilled callback if callable
+    (if (i32.eq (local.get $state) (i32.const {fulfilled}))
       (then
-        (i32.store (i32.add (local.get $base) (i32.const {slot2_offset})) (local.get $on_fulfilled))
-        (local.get $promise))
-      (else
-        (if (result i32)
-          (i32.eq (local.get $state) (i32.const {rejected}))
+        (if (i32.eq (i32.and (local.get $on_fulfilled) (i32.const {tag_mask})) (i32.const {number_tag}))
           (then
-            (i32.store (i32.add (local.get $base) (i32.const {slot3_offset})) (local.get $on_rejected))
-            (local.get $promise))
-          (else
-            (i32.store (i32.add (local.get $base) (i32.const {slot2_offset})) (local.get $on_fulfilled))
-            (i32.store (i32.add (local.get $base) (i32.const {slot3_offset})) (local.get $on_rejected))
-            (local.get $promise))))))
+            (local.set $payload (i32.shr_u (local.get $on_fulfilled) (i32.const {num_shift})))
+            (local.set $call_result
+              (block $dispatch_done (result i32)
+{number_dispatch}                (i32.const {undefined})))
+            (return (call $promise_resolve (local.get $call_result)))))
+        (if (i32.ne (i32.and (local.get $on_fulfilled) (i32.const {tag_mask})) (i32.const {object_tag}))
+          (then
+            ;; Not a callable value — pass-through resolve with the value
+            (return (call $promise_resolve (local.get $value)))))
+        (local.set $payload (i32.and (local.get $on_fulfilled) (i32.const {heap_mask})))
+        (if (i32.ne (i32.load (i32.add (local.get $payload) (i32.const {closure_subtype_offset}))) (i32.const {closure_sentinel}))
+          (then
+            (return (call $promise_resolve (local.get $value)))))
+        (local.set $call_result
+          (block $dispatch_done (result i32)
+{object_dispatch}            (i32.const {undefined})))
+        (return (call $promise_resolve (local.get $call_result)))))
+    ;; Rejected: synchronously invoke onRejected callback if callable
+    (if (i32.eq (local.get $state) (i32.const {rejected}))
+      (then
+        (if (i32.eq (i32.and (local.get $on_rejected) (i32.const {tag_mask})) (i32.const {number_tag}))
+          (then
+            (local.set $payload (i32.shr_u (local.get $on_rejected) (i32.const {num_shift})))
+            (local.set $call_result
+              (block $dispatch_done (result i32)
+{number_dispatch}                (i32.const {undefined})))
+            (return (call $promise_resolve (local.get $call_result)))))
+        (if (i32.ne (i32.and (local.get $on_rejected) (i32.const {tag_mask})) (i32.const {object_tag}))
+          (then
+            ;; Not callable — re-throw by returning a rejected promise
+            (return (call $promise_reject (local.get $value)))))
+        (local.set $payload (i32.and (local.get $on_rejected) (i32.const {heap_mask})))
+        (if (i32.ne (i32.load (i32.add (local.get $payload) (i32.const {closure_subtype_offset}))) (i32.const {closure_sentinel}))
+          (then
+            (return (call $promise_reject (local.get $value)))))
+        (local.set $call_result
+          (block $dispatch_done (result i32)
+{object_dispatch}            (i32.const {undefined})))
+        (return (call $promise_resolve (local.get $call_result)))))
+    ;; Pending: store callbacks for later (existing behavior)
+    (i32.store (i32.add (local.get $base) (i32.const {slot2_offset})) (local.get $on_fulfilled))
+    (i32.store (i32.add (local.get $base) (i32.const {slot3_offset})) (local.get $on_rejected))
+    (local.get $promise))
 "#,
             slot0_offset = Layout::ARRAY_HEADER_SIZE,
+            slot1_offset = Layout::ARRAY_HEADER_SIZE + 4,
             slot2_offset = Layout::ARRAY_HEADER_SIZE + 8,
             slot3_offset = Layout::ARRAY_HEADER_SIZE + 12,
             fulfilled = 1,
             rejected = 2,
             heap_mask = ValueTag::HEAP_MASK,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            num_shift = ValueTag::NUMBER_SHIFT,
+            object_tag = ValueTag::OBJECT_TAG,
+            undefined = ValueTag::UNDEFINED,
+            closure_subtype_offset = CLOSURE_SUBTYPE_OFFSET,
+            closure_sentinel = CLOSURE_SENTINEL,
         ));
     }
 
     pub(super) fn emit_promise_catch(&self, wat: &mut String) {
+        // Reuse dispatch tables built by emit_promise_then
+        let pad = "            ";
+        let mut number_dispatch = String::new();
+        let mut object_dispatch = String::new();
+
+        let dir_local_token_payload_base = ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE;
+        for function in &self.program.functions {
+            let payload = dir_local_token_payload_base + function.id.0 as i32;
+            let func_sym = function_symbol(function.id);
+
+            number_dispatch.push_str(&format!(
+                "{pad}(if (i32.eq (local.get $payload) (i32.const {payload}))
+{pad}  (then
+{pad}    (local.set $call_result (call {func_sym} (local.get $value)))
+{pad}    (br $dispatch_done)))
+"
+            ));
+
+            for capture_count in 0..=function.params.len() {
+                let user_param_count = function.params.len() - capture_count;
+                let mut call_args = String::new();
+                for param_index in 0..user_param_count {
+                    if param_index == 0 {
+                        call_args.push_str(&format!("{pad}      (local.get $value)\n"));
+                    } else {
+                        call_args
+                            .push_str(&format!("{pad}      (i32.const {})\n", ValueTag::UNDEFINED));
+                    }
+                }
+                for cap_idx in 0..capture_count {
+                    let cap_off =
+                        CLOSURE_CAPTURE_SLOTS_OFFSET + cap_idx as u32 * CLOSURE_CAPTURE_SLOT_SIZE;
+                    call_args.push_str(&format!(
+                        "{pad}      (i32.load (i32.add (local.get $payload) (i32.const {cap_off})))\n"
+                    ));
+                }
+                object_dispatch.push_str(&format!(
+                    "{pad}(if (i32.and
+{pad}      (i32.eq (i32.load (i32.add (local.get $payload) (i32.const {code_id_off}))) (i32.const {func_id}))
+{pad}      (i32.eq (i32.load (i32.add (local.get $payload) (i32.const {cap_cnt_off}))) (i32.const {capture_count})))
+{pad}  (then
+{pad}    (local.set $call_result (call {func_sym}
+{call_args}{pad}    ))
+{pad}    (br $dispatch_done)))
+",
+                    code_id_off = CLOSURE_CODE_ID_OFFSET,
+                    func_id = function.id.0,
+                    cap_cnt_off = CLOSURE_CAPTURE_COUNT_OFFSET,
+                    capture_count = capture_count,
+                    func_sym = func_sym,
+                    call_args = call_args,
+                ));
+            }
+        }
+
         wat.push_str(&format!(
             r#"
   (func $promise_catch (param $promise i32) (param $on_rejected i32) (result i32)
     (local $base i32)
     (local $state i32)
+    (local $value i32)
+    (local $call_result i32)
+    (local $payload i32)
     (local.set $base (i32.and (local.get $promise) (i32.const {heap_mask})))
     (local.set $state (i32.load (i32.add (local.get $base) (i32.const {slot0_offset}))))
-    (if (result i32)
-      (i32.eq (local.get $state) (i32.const {rejected}))
+    (local.set $value (i32.load (i32.add (local.get $base) (i32.const {slot1_offset}))))
+    ;; Rejected: synchronously invoke onRejected callback if callable
+    (if (i32.eq (local.get $state) (i32.const {rejected}))
       (then
-        (i32.store (i32.add (local.get $base) (i32.const {slot3_offset})) (local.get $on_rejected))
-        (local.get $promise))
-      (else
-        (if (result i32)
-          (i32.eq (local.get $state) (i32.const {pending}))
+        (if (i32.eq (i32.and (local.get $on_rejected) (i32.const {tag_mask})) (i32.const {number_tag}))
           (then
-            (i32.store (i32.add (local.get $base) (i32.const {slot3_offset})) (local.get $on_rejected))
-            (local.get $promise))
-          (else
-            (local.get $promise))))))
+            (local.set $payload (i32.shr_u (local.get $on_rejected) (i32.const {num_shift})))
+            (local.set $call_result
+              (block $dispatch_done (result i32)
+{number_dispatch}                (i32.const {undefined})))
+            (return (call $promise_resolve (local.get $call_result)))))
+        (if (i32.ne (i32.and (local.get $on_rejected) (i32.const {tag_mask})) (i32.const {object_tag}))
+          (then
+            ;; Not callable — re-throw by returning a rejected promise
+            (return (call $promise_reject (local.get $value)))))
+        (local.set $payload (i32.and (local.get $on_rejected) (i32.const {heap_mask})))
+        (if (i32.ne (i32.load (i32.add (local.get $payload) (i32.const {closure_subtype_offset}))) (i32.const {closure_sentinel}))
+          (then
+            (return (call $promise_reject (local.get $value)))))
+        (local.set $call_result
+          (block $dispatch_done (result i32)
+{object_dispatch}            (i32.const {undefined})))
+        (return (call $promise_resolve (local.get $call_result)))))
+    ;; Fulfilled: pass-through (resolve with value, no callback needed)
+    (if (i32.eq (local.get $state) (i32.const {fulfilled}))
+      (then
+        (return (call $promise_resolve (local.get $value)))))
+    ;; Pending: store callback for later
+    (i32.store (i32.add (local.get $base) (i32.const {slot3_offset})) (local.get $on_rejected))
+    (local.get $promise))
 "#,
             slot0_offset = Layout::ARRAY_HEADER_SIZE,
+            slot1_offset = Layout::ARRAY_HEADER_SIZE + 4,
             slot3_offset = Layout::ARRAY_HEADER_SIZE + 12,
             rejected = 2,
-            pending = 0,
+            fulfilled = 1,
             heap_mask = ValueTag::HEAP_MASK,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            num_shift = ValueTag::NUMBER_SHIFT,
+            object_tag = ValueTag::OBJECT_TAG,
+            undefined = ValueTag::UNDEFINED,
+            closure_subtype_offset = CLOSURE_SUBTYPE_OFFSET,
+            closure_sentinel = CLOSURE_SENTINEL,
         ));
     }
 

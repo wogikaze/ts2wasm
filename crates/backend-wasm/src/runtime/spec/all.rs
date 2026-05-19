@@ -2335,7 +2335,12 @@ match self {
             },
             Self::PromiseThen => RuntimeSpec {
                 symbol: "$promise_then",
-                deps: &[Self::AllocHeap, Self::StrictEqual],
+                deps: &[
+                    Self::AllocHeap,
+                    Self::StrictEqual,
+                    Self::PromiseResolve,
+                    Self::PromiseReject,
+                ],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -2343,7 +2348,11 @@ match self {
             },
             Self::PromiseCatch => RuntimeSpec {
                 symbol: "$promise_catch",
-                deps: &[Self::StrictEqual],
+                deps: &[
+                    Self::StrictEqual,
+                    Self::PromiseResolve,
+                    Self::PromiseReject,
+                ],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
