@@ -1101,6 +1101,15 @@ fn static_function_constructor_bitwise_source_uses_aot_lane() {
 }
 
 #[test]
+fn static_function_constructor_typeof_source_uses_aot_lane() {
+    let fixture = "fixtures/core-semantics/function-constructor-static-typeof-source.ts";
+    assert_node_shim_stdout(
+        fixture,
+        "number\nstring\nboolean\nundefined\nobject\nobject\nbigint\nfunction anonymous(\n) {\nreturn 'number'\n}\nfunction anonymous(\n) {\nreturn 'string'\n}\nfunction anonymous(\n) {\nreturn 'boolean'\n}\nfunction anonymous(\n) {\nreturn 'undefined'\n}\nfunction anonymous(\n) {\nreturn 'object'\n}\nfunction anonymous(\n) {\nreturn 'object'\n}\nfunction anonymous(\n) {\nreturn 'bigint'\n}\n",
+    );
+}
+
+#[test]
 fn static_function_constructor_numeric_binary_source_uses_aot_lane() {
     let fixture = "fixtures/core-semantics/function-constructor-static-numeric-binary-source.ts";
     assert_node_shim_stdout(

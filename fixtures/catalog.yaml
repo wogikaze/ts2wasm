@@ -1079,6 +1079,7 @@ directories:
     - function-constructor-static-construct.ts
     - function-constructor-static-string-unary-source.ts
     - function-constructor-static-ternary-source.ts
+    - function-constructor-static-typeof-source.ts
     - function-constructor-static-unary-source.ts
     - function-constructor-shadowed-ordinary-call.ts
     - function-constructor-this-binding.ts

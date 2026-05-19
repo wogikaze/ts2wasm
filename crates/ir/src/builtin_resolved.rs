@@ -602,6 +602,9 @@ fn function_constructor_static_unary_source_value(
     op: UnaryOp,
     expr: &ResolvedExpr,
 ) -> Option<FunctionConstructorStaticSourceValue> {
+    if op == UnaryOp::TypeOf {
+        return function_constructor_static_typeof_source_value(expr);
+    }
     let value = function_constructor_static_source_value(expr)?;
     match op {
         UnaryOp::Not => Some(FunctionConstructorStaticSourceValue::Bool(
@@ -655,6 +658,25 @@ fn function_constructor_static_unary_source_value(
         }
         _ => None,
     }
+}
+
+fn function_constructor_static_typeof_source_value(
+    expr: &ResolvedExpr,
+) -> Option<FunctionConstructorStaticSourceValue> {
+    let value = function_constructor_static_source_value(expr)?;
+    let typeof_result = match value {
+        FunctionConstructorStaticSourceValue::String(_) => "string",
+        FunctionConstructorStaticSourceValue::Number(_)
+        | FunctionConstructorStaticSourceValue::DecimalNumber(_) => "number",
+        FunctionConstructorStaticSourceValue::BigInt(_) => "bigint",
+        FunctionConstructorStaticSourceValue::Bool(_) => "boolean",
+        FunctionConstructorStaticSourceValue::Undefined => "undefined",
+        FunctionConstructorStaticSourceValue::Null
+        | FunctionConstructorStaticSourceValue::Array(_) => "object",
+    };
+    Some(FunctionConstructorStaticSourceValue::String(
+        typeof_result.to_owned(),
+    ))
 }
 
 fn negate_static_numeric_string(value: String) -> String {

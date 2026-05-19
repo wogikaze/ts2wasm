@@ -1,0 +1,22 @@
+let numberBody = Function("return '" + typeof 1 + "'");
+let stringBody = Function("return '" + typeof "x" + "'");
+let booleanBody = Function("return '" + typeof true + "'");
+let undefinedBody = Function("return '" + typeof undefined + "'");
+let nullBody = Function("return '" + typeof null + "'");
+let arrayBody = Function("return '" + typeof [1] + "'");
+let bigintBody = Function("return '" + typeof 1n + "'");
+
+console.log(numberBody());
+console.log(stringBody());
+console.log(booleanBody());
+console.log(undefinedBody());
+console.log(nullBody());
+console.log(arrayBody());
+console.log(bigintBody());
+console.log(numberBody.toString());
+console.log(stringBody.toString());
+console.log(booleanBody.toString());
+console.log(undefinedBody.toString());
+console.log(nullBody.toString());
+console.log(arrayBody.toString());
+console.log(bigintBody.toString());
