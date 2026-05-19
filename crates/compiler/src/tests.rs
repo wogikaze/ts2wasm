@@ -56,6 +56,10 @@ fn compiler_expands_static_function_constructor_call_after_resolver_classificati
         Some(0)
     );
     assert_eq!(
+        constructor_metadata.as_ref().map(|meta| meta.constructable),
+        Some(true)
+    );
+    assert_eq!(
         source_text, "function anonymous(\n) {\nreturn 1\n}",
         "Function constructor source text should be owned by the plan representation"
     );

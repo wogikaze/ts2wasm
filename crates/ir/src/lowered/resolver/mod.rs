@@ -534,7 +534,7 @@ impl Resolver {
                             .function_metadata_name_locals
                             .remove(&local_id);
                     }
-                    if static_function_constructor_expr(expr) {
+                    if static_function_constructable_for_expr(expr) {
                         self.ctx
                             .facts
                             .constructable_function_locals
@@ -816,7 +816,7 @@ impl Resolver {
                             .function_metadata_name_locals
                             .remove(&local_id);
                     }
-                    if static_function_constructor_expr(expr) {
+                    if static_function_constructable_for_expr(expr) {
                         self.ctx
                             .facts
                             .constructable_function_locals
@@ -2164,17 +2164,17 @@ pub(crate) fn static_function_metadata_name_for_expr(
     }
 }
 
-pub(crate) fn static_function_constructor_expr(expr: &ResolvedExpr) -> bool {
-    matches!(
-        expr,
+pub(crate) fn static_function_constructable_for_expr(expr: &ResolvedExpr) -> bool {
+    match expr {
         ResolvedExpr::FunctionExpr {
-            constructor_metadata,
-            origin,
+            constructor_metadata: Some(metadata),
             ..
+        } => metadata.constructable,
+        ResolvedExpr::FunctionExpr { origin, .. } => {
+            *origin == ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor
         }
-            if constructor_metadata.is_some()
-                || *origin == ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor
-    )
+        _ => false,
+    }
 }
 
 fn static_accessor_key_metadata_name(
