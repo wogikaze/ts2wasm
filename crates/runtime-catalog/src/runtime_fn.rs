@@ -261,6 +261,8 @@ pub enum RuntimeFn {
     DateSetSeconds,
     /// Date.prototype.setMilliseconds.
     DateSetMilliseconds,
+    /// B.2.4.2 Date.prototype.setYear (annexB).
+    DateSetYear,
     /// Date.parse via host shim.
     DateParse,
     /// Date.UTC via host shim.
@@ -2019,6 +2021,7 @@ impl RuntimeFn {
             | Self::ArrayBufferNew
             | Self::ArrayBufferIsView
             | Self::ArrayBufferTransfer
+            | Self::ArrayBufferSlice
             | Self::SharedArrayBufferNew
             | Self::ArrayPush
             | Self::ArrayPushGrow
@@ -2133,14 +2136,17 @@ impl RuntimeFn {
             | Self::DateSetMinutes
             | Self::DateSetSeconds
             | Self::DateSetMilliseconds
+            | Self::DateSetYear
             | Self::DateParse
             | Self::DateUTC
             | Self::DateToString
             | Self::DateGetLocalTimeField
+            | Self::DateGetYear
             | Self::DateToISOString
             | Self::DateGetTimezoneOffset
             | Self::DateToDateString
             | Self::DateToTimeString
+            | Self::DateToGMTString
             | Self::DateGetUtcMilliseconds
             | Self::DateGetUtcSeconds
             | Self::DateGetUtcMinutes
@@ -2628,8 +2634,8 @@ impl RuntimeFn {
             | Self::DataViewGetFloat64
             | Self::DataViewGetFloat16
             | Self::DataViewGetBigInt64
-            | Self::DataViewGetBigUint64 => RuntimeSignature {
-            | Self::ArrayBufferSlice
+            | Self::DataViewGetBigUint64
+            | Self::ArrayBufferSlice => RuntimeSignature {
                 params: 3,
                 results: 1,
             },
