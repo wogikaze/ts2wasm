@@ -974,6 +974,7 @@ directories:
     - direct-eval-dynamic-string-writeback-node-shim.ts
     - direct-eval-dynamic-tdz-conflict-node-shim.ts
     - direct-eval-dynamic-tdz-member-node-shim.ts
+    - direct-eval-dynamic-tdz-name-in-regexp-node-shim.ts
     - direct-eval-dynamic-tdz-name-in-string-node-shim.ts
     - direct-eval-dynamic-tdz-name-in-template-node-shim.ts
     - direct-eval-dynamic-tdz-parenthesized-node-shim.ts

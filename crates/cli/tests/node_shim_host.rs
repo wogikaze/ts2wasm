@@ -727,6 +727,12 @@ fn dynamic_direct_eval_ignores_later_binding_name_inside_source_template_raw_tex
 }
 
 #[test]
+fn dynamic_direct_eval_ignores_later_binding_name_inside_source_regexp_literal() {
+    let fixture = "fixtures/core-semantics/direct-eval-dynamic-tdz-name-in-regexp-node-shim.ts";
+    assert_node_shim_stdout(fixture, "true\nafter\n");
+}
+
+#[test]
 fn dynamic_direct_eval_bridges_nested_objects_through_node_shim_host_import() {
     let fixture = "fixtures/core-semantics/direct-eval-dynamic-nested-object-node-shim.ts";
     assert_node_shim_stdout(fixture, "7\nok\nundefined\n");
@@ -1593,6 +1599,10 @@ function codeKeywordMatches(source, keyword) {
       i = Math.min(source.length, i + 2);
       continue;
     }
+    if (ch === '/' && isRegexLiteralStart(source, i)) {
+      i = skipRegexLiteralSource(source, i);
+      continue;
+    }
     if (
       source.startsWith(keyword, i) &&
       (i === 0 || !isIdentifierPart(source[i - 1])) &&
@@ -1621,6 +1631,45 @@ function skipQuotedSource(source, index, quote) {
   return source.length;
 }
 
+function isRegexLiteralStart(source, index) {
+  const next = source[index + 1];
+  if (next === '/' || next === '*') return false;
+  let prior = index - 1;
+  while (prior >= 0 && /\s/.test(source[prior])) prior -= 1;
+  if (prior < 0) return true;
+  return '([{=,:;!?'.includes(source[prior]);
+}
+
+function skipRegexLiteralSource(source, index) {
+  let i = index + 1;
+  let inClass = false;
+  while (i < source.length) {
+    const ch = source[i];
+    if (ch === '\\') {
+      i += 2;
+      continue;
+    }
+    if (ch === '[') {
+      inClass = true;
+      i += 1;
+      continue;
+    }
+    if (ch === ']' && inClass) {
+      inClass = false;
+      i += 1;
+      continue;
+    }
+    if (ch === '/' && !inClass) {
+      i += 1;
+      while (i < source.length && /[A-Za-z]/.test(source[i])) i += 1;
+      return i;
+    }
+    if (ch === '\n' || ch === '\r') return i;
+    i += 1;
+  }
+  return source.length;
+}
+
 function findTemplateExpressionEnd(source, index) {
   let depth = 1;
   let i = index;
@@ -1644,6 +1693,10 @@ function findTemplateExpressionEnd(source, index) {
       i += 2;
       while (i + 1 < source.length && !(source[i] === '*' && source[i + 1] === '/')) i += 1;
       i = Math.min(source.length, i + 2);
+      continue;
+    }
+    if (ch === '/' && isRegexLiteralStart(source, i)) {
+      i = skipRegexLiteralSource(source, i);
       continue;
     }
     if (ch === '{') depth += 1;
@@ -1721,6 +1774,10 @@ function sourceMentionsIdentifier(source, name) {
       i += 2;
       while (i + 1 < source.length && !(source[i] === '*' && source[i + 1] === '/')) i += 1;
       i = Math.min(source.length, i + 2);
+      continue;
+    }
+    if (ch === '/' && isRegexLiteralStart(source, i)) {
+      i = skipRegexLiteralSource(source, i);
       continue;
     }
     if (
