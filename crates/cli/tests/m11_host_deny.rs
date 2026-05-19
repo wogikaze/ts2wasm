@@ -1435,6 +1435,13 @@ fn host_deny_rejects_dynamic_direct_eval_new_var_array_destructuring_normal_code
 }
 
 #[test]
+fn host_deny_rejects_dynamic_direct_eval_for_head_var_normal_code_host_lane() {
+    assert_host_deny_rejects(
+        "core-semantics/direct-eval-dynamic-for-head-var-normal-code-node-shim.ts",
+    );
+}
+
+#[test]
 fn host_deny_rejects_dynamic_direct_eval_new_function_declaration_host_lane() {
     assert_host_deny_rejects(
         "core-semantics/direct-eval-dynamic-new-function-declaration-node-shim.ts",

@@ -559,6 +559,13 @@ fn dynamic_direct_eval_new_var_array_destructuring_is_visible_to_normal_code_thr
 }
 
 #[test]
+fn dynamic_direct_eval_for_head_var_is_visible_to_normal_code_through_node_shim_host_import() {
+    let fixture =
+        "fixtures/core-semantics/direct-eval-dynamic-for-head-var-normal-code-node-shim.ts";
+    assert_node_shim_stdout(fixture, "alpha\n4\n");
+}
+
+#[test]
 fn dynamic_direct_eval_new_function_declaration_is_visible_to_later_eval_through_node_shim_host_import()
  {
     let fixture =
@@ -1355,6 +1362,13 @@ function isIdentifierPart(ch) {
   return /[0-9A-Za-z_$]/.test(ch);
 }
 
+function isIdentifierBoundary(source, start, end) {
+  return (
+    (start === 0 || !isIdentifierPart(source[start - 1])) &&
+    (end >= source.length || !isIdentifierPart(source[end]))
+  );
+}
+
 function skipWhitespace(text, index) {
   let i = index;
   while (i < text.length && /\s/.test(text[i])) i += 1;
@@ -1726,7 +1740,9 @@ function collectVariableDeclarationBindingNames(source, keyword) {
     if (!names.includes(name)) names.push(name);
   };
   for (const keywordIndex of codeKeywordMatches(source, keyword)) {
-    const declarationText = readVarDeclarationText(source, keywordIndex + keyword.length);
+    const declarationText =
+      readForHeadVariableDeclarationText(source, keywordIndex, keyword) ??
+      readVarDeclarationText(source, keywordIndex + keyword.length);
     for (const declarator of splitTopLevelComma(declarationText)) {
       const equalsIndex = topLevelEqualsIndex(declarator);
       const pattern = (equalsIndex === -1 ? declarator : declarator.slice(0, equalsIndex)).trim();
@@ -1734,6 +1750,35 @@ function collectVariableDeclarationBindingNames(source, keyword) {
     }
   }
   return names;
+}
+
+function readForHeadVariableDeclarationText(source, keywordIndex, keyword) {
+  let prior = keywordIndex - 1;
+  while (prior >= 0 && /\s/.test(source[prior])) prior -= 1;
+  if (source[prior] !== '(') return null;
+  let cursor = keywordIndex + keyword.length;
+  let depth = 0;
+  while (cursor < source.length) {
+    const ch = source[cursor];
+    if (ch === '"' || ch === "'" || ch === '`') {
+      cursor = skipQuotedSource(source, cursor, ch);
+      continue;
+    }
+    if (ch === '(' || ch === '[' || ch === '{') {
+      depth += 1;
+    } else if ((ch === ')' || ch === ']' || ch === '}') && depth > 0) {
+      depth -= 1;
+    } else if (depth === 0) {
+      if (source.startsWith('in', cursor) && isIdentifierBoundary(source, cursor, cursor + 2)) {
+        return source.slice(keywordIndex + keyword.length, cursor);
+      }
+      if (source.startsWith('of', cursor) && isIdentifierBoundary(source, cursor, cursor + 2)) {
+        return source.slice(keywordIndex + keyword.length, cursor);
+      }
+    }
+    cursor += 1;
+  }
+  return null;
 }
 
 function asyncFunctionDeclarationStart(source, functionIndex) {

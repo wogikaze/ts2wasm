@@ -35,22 +35,36 @@ fn parsed_eval_var_and_function_names(
     let tokens = Lexer::new(source).tokenize().ok()?;
     let stmts = Parser::new(tokens, source).parse_program().ok()?;
     let mut names = Vec::new();
-    collect_eval_declaration_names_from_stmts(&stmts, include_vars, include_functions, &mut names);
+    collect_eval_declaration_names_from_stmts(
+        source,
+        &stmts,
+        include_vars,
+        include_functions,
+        &mut names,
+    );
     Some(names)
 }
 
 fn collect_eval_declaration_names_from_stmts(
+    source: &str,
     stmts: &[Stmt],
     include_vars: bool,
     include_functions: bool,
     names: &mut Vec<String>,
 ) {
     for stmt in stmts {
-        collect_eval_declaration_names_from_stmt(stmt, include_vars, include_functions, names);
+        collect_eval_declaration_names_from_stmt(
+            source,
+            stmt,
+            include_vars,
+            include_functions,
+            names,
+        );
     }
 }
 
 fn collect_eval_declaration_names_from_stmt(
+    source: &str,
     stmt: &Stmt,
     include_vars: bool,
     include_functions: bool,
@@ -75,35 +89,77 @@ fn collect_eval_declaration_names_from_stmt(
             ..
         } => {
             collect_eval_declaration_names_from_stmts(
+                source,
                 then_body,
                 include_vars,
                 include_functions,
                 names,
             );
             collect_eval_declaration_names_from_stmts(
+                source,
                 else_body,
                 include_vars,
                 include_functions,
                 names,
             );
         }
-        Stmt::While { body, .. }
-        | Stmt::DoWhile { body, .. }
-        | Stmt::ForIn { body, .. }
-        | Stmt::ForOf { body, .. }
-        | Stmt::ForAwaitOf { body, .. } => {
-            collect_eval_declaration_names_from_stmts(body, include_vars, include_functions, names);
+        Stmt::While { body, .. } | Stmt::DoWhile { body, .. } => {
+            collect_eval_declaration_names_from_stmts(
+                source,
+                body,
+                include_vars,
+                include_functions,
+                names,
+            );
+        }
+        Stmt::ForIn {
+            var, body, span, ..
+        } => {
+            if include_vars {
+                collect_for_in_of_var_head_binding(source, *span, "in", var, names);
+            }
+            collect_eval_declaration_names_from_stmts(
+                source,
+                body,
+                include_vars,
+                include_functions,
+                names,
+            );
+        }
+        Stmt::ForOf {
+            var, body, span, ..
+        }
+        | Stmt::ForAwaitOf {
+            var, body, span, ..
+        } => {
+            if include_vars {
+                collect_for_in_of_var_head_binding(source, *span, "of", var, names);
+            }
+            collect_eval_declaration_names_from_stmts(
+                source,
+                body,
+                include_vars,
+                include_functions,
+                names,
+            );
         }
         Stmt::For { init, body, .. } => {
             if let Some(init) = init {
                 collect_eval_declaration_names_from_stmt(
+                    source,
                     init,
                     include_vars,
                     include_functions,
                     names,
                 );
             }
-            collect_eval_declaration_names_from_stmts(body, include_vars, include_functions, names);
+            collect_eval_declaration_names_from_stmts(
+                source,
+                body,
+                include_vars,
+                include_functions,
+                names,
+            );
         }
         Stmt::TryCatch {
             try_block,
@@ -112,6 +168,7 @@ fn collect_eval_declaration_names_from_stmt(
             ..
         } => {
             collect_eval_declaration_names_from_stmts(
+                source,
                 try_block,
                 include_vars,
                 include_functions,
@@ -119,6 +176,7 @@ fn collect_eval_declaration_names_from_stmt(
             );
             if let Some(catch_block) = catch_block {
                 collect_eval_declaration_names_from_stmts(
+                    source,
                     catch_block,
                     include_vars,
                     include_functions,
@@ -127,6 +185,7 @@ fn collect_eval_declaration_names_from_stmt(
             }
             if let Some(finally_block) = finally_block {
                 collect_eval_declaration_names_from_stmts(
+                    source,
                     finally_block,
                     include_vars,
                     include_functions,
@@ -137,6 +196,7 @@ fn collect_eval_declaration_names_from_stmt(
         Stmt::Switch { cases, .. } => {
             for (_, stmts) in cases {
                 collect_eval_declaration_names_from_stmts(
+                    source,
                     stmts,
                     include_vars,
                     include_functions,
@@ -145,10 +205,17 @@ fn collect_eval_declaration_names_from_stmt(
             }
         }
         Stmt::Labeled { body, .. } => {
-            collect_eval_declaration_names_from_stmt(body, include_vars, include_functions, names);
+            collect_eval_declaration_names_from_stmt(
+                source,
+                body,
+                include_vars,
+                include_functions,
+                names,
+            );
         }
         Stmt::Block { statements, .. } => {
             collect_eval_declaration_names_from_stmts(
+                source,
                 statements,
                 include_vars,
                 include_functions,
@@ -157,6 +224,7 @@ fn collect_eval_declaration_names_from_stmt(
         }
         Stmt::ExportDecl { declaration, .. } => {
             collect_eval_declaration_names_from_stmt(
+                source,
                 declaration,
                 include_vars,
                 include_functions,
@@ -187,6 +255,88 @@ fn collect_eval_declaration_names_from_stmt(
         | Stmt::EnumDecl { .. }
         | Stmt::Let { .. } => {}
     }
+}
+
+fn collect_for_in_of_var_head_binding(
+    source: &str,
+    span: ts2wasm_source::Span,
+    separator: &str,
+    fallback_var: &str,
+    names: &mut Vec<String>,
+) {
+    let Some(loop_source) = source.get(span.start..) else {
+        return;
+    };
+    let Some(open_paren) = loop_source.find('(') else {
+        return;
+    };
+    let header = &loop_source[open_paren + 1..];
+    let Some(separator_start) = top_level_loop_head_separator(header, separator) else {
+        return;
+    };
+    let binding = header[..separator_start].trim();
+    let Some(binding) = binding.strip_prefix("var") else {
+        return;
+    };
+    if !binding
+        .as_bytes()
+        .first()
+        .is_none_or(|byte| byte.is_ascii_whitespace() || matches!(byte, b'{' | b'['))
+    {
+        return;
+    }
+    let binding = strip_top_level_type_annotation(binding.trim());
+    if binding.starts_with(['{', '[']) {
+        collect_binding_names_from_pattern(binding, names);
+    } else if fallback_var != "_binding" {
+        push_unique_name(names, fallback_var);
+    }
+}
+
+fn top_level_loop_head_separator(header: &str, separator: &str) -> Option<usize> {
+    let bytes = header.as_bytes();
+    let mut index = 0usize;
+    let mut depth = 0usize;
+    while index < header.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => {
+                index = skip_quoted_source(header, index);
+                continue;
+            }
+            b'(' | b'[' | b'{' => depth += 1,
+            b')' if depth == 0 => return None,
+            b')' | b']' | b'}' => depth = depth.saturating_sub(1),
+            _ if depth == 0 && header[index..].starts_with(separator) => {
+                let end = index + separator.len();
+                if is_identifier_boundary(header, index, end) {
+                    return Some(index);
+                }
+            }
+            _ => {}
+        }
+        index += 1;
+    }
+    None
+}
+
+fn strip_top_level_type_annotation(binding: &str) -> &str {
+    let bytes = binding.as_bytes();
+    let mut index = 0usize;
+    let mut depth = 0usize;
+    while index < binding.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => {
+                index = skip_quoted_source(binding, index);
+                continue;
+            }
+            b'(' | b'[' | b'{' => depth += 1,
+            b')' | b']' | b'}' => depth = depth.saturating_sub(1),
+            b':' if depth == 0 => return binding[..index].trim(),
+            _ => {}
+        }
+        index += 1;
+    }
+    binding.trim()
 }
 
 fn collect_keyword_bound_names(source: &str, keyword: &str, names: &mut Vec<String>) {
@@ -764,5 +914,13 @@ mod tests {
     fn keeps_block_var_declarations() {
         let names = eval_var_and_function_names("if (flag) { var visible = 1; }");
         assert_eq!(names, ["visible"]);
+    }
+
+    #[test]
+    fn scans_for_in_of_var_head_declarations() {
+        let names = eval_var_and_function_names(
+            "for (var key in obj) {} for (var value of list) {} for (let local of list) {}",
+        );
+        assert_eq!(names, ["key", "value"]);
     }
 }
