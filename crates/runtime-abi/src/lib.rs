@@ -47,4 +47,5 @@ impl StackEffect {
 // Re-export commonly used types for convenience
 pub use consts::{RuntimeConst, RuntimeString};
 pub use layout::Layout;
+pub use layout_snapshot::{check_abi_snapshot_compat, dump_runtime_abi_snapshot, LayoutSnapshot};
 pub use value::{HeapPtr, LocalRawValue, TaggedValue, ValueTag, WasmTaggedJsWire};
