@@ -2615,9 +2615,12 @@ impl super::super::Resolver {
                     class_name.is_some_and(|c| c == "BigInt" || c == "Symbol")
                         || self.ctx.facts.bigint_locals.contains(&local)
                 }),
-                _ => crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(
-                    &self.ctx, object,
-                ),
+                _ => {
+                    crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(
+                        &self.ctx, object,
+                    ) || matches!(object, ResolvedExpr::Call { callee, .. }
+                        if matches!(callee.as_ref(), ResolvedExpr::Ident(name) if name == "Symbol"))
+                }
             };
         // Also skip ObjectToString catch-all for Error.toString — let class dispatch route to ErrorToString
         let is_error_to_string = method == "toString"
