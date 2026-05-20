@@ -314,29 +314,19 @@ fn parity_abi_custom_section_binary() {
     let bytes = ts2wasm_backend_wasm::emit_wasm_module_binary(&module);
     assert!(!bytes.is_empty(), "binary output should not be empty");
     validate_binary(&bytes);
-}
-
-#[test]
-fn parity_abi_custom_section_binary() {
-    let module = fixture_abi_custom_section();
-    let bytes = ts2wasm_backend_wasm::emit_wasm_module_binary(&module);
-    assert!(!bytes.is_empty(), "binary output should not be empty");
-    validate_binary(&bytes);
     // Check that the custom section name appears in the binary
-    let wat = String::from_utf8_lossy(
-        &std::process::Command::new("wasm2wat")
-            .arg("-o")
-            .arg("/dev/stdout")
-            .arg("-")
-            .stdin(std::process::Stdio::piped())
-            .stdout(std::process::Stdio::piped())
-            .stderr(std::process::Stdio::null())
-            .spawn()
-            .expect("wasm2wat")
-            .wait_with_output()
-            .expect("wait")
-            .stdout,
-    );
+    let output = std::process::Command::new("wasm2wat")
+        .arg("-o")
+        .arg("/dev/stdout")
+        .arg("-")
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+        .expect("wasm2wat")
+        .wait_with_output()
+        .expect("wait");
+    let wat = String::from_utf8_lossy(&output.stdout);
     assert!(
         wat.contains("ts2wasm.abi"),
         "binary round-trip should preserve ABI custom section"

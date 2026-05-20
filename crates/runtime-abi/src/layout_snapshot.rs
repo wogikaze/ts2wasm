@@ -73,9 +73,91 @@ impl LayoutSnapshot {
     }
 }
 
+/// Produce a compact textual ABI snapshot string covering all key runtime
+/// constants.  This is the canonical snapshot used by the backward-compat
+/// archive gate (`compat/v{RUNTIME_ABI_VERSION}-snapshot.txt`).
+pub fn dump_runtime_abi_snapshot() -> String {
+    format!(
+        "\
+ABI_VERSION={abi_version}
+WASM_PAGE_SIZE={wasm_page}
+MEMORY_MIN_PAGES={min_pages} MEMORY_MAX_PAGES={max_pages}
+DATA_START={data_start} HEAP_START={heap_start}
+SCRATCH_OFFSET={scratch_off} SCRATCH_SIZE={scratch_sz}
+STDIN_BUFFER_OFFSET={stdin_buf_off} STDIN_BUFFER_SIZE={stdin_buf_sz}
+STDIN_IOVEC_OFFSET={iovec_off} STDIN_NREAD_OFFSET={nread_off}
+GC_HEADER_SIZE={gc_hdr} GC_THRESHOLD={gc_thresh}
+GC_HEADROOM_PAGES={gc_headroom} HEAP_GROW_MIN_PAGES={heap_grow}
+ARRAY_HEADER_SIZE={arr_hdr} OBJECT_HEADER_SIZE={obj_hdr}
+ALIGN={align}
+TAG_SHIFT={tag_shift} TAG_MASK={tag_mask}
+HEAP_MASK={hm}",
+        abi_version = RuntimeConst::ABI_VERSION,
+        wasm_page = Layout::WASM_PAGE_SIZE,
+        min_pages = Layout::MEMORY_MIN_PAGES,
+        max_pages = Layout::MEMORY_MAX_PAGES,
+        data_start = Layout::DATA_START,
+        heap_start = Layout::HEAP_START,
+        scratch_off = Layout::SCRATCH_OFFSET,
+        scratch_sz = Layout::SCRATCH_SIZE,
+        stdin_buf_off = Layout::STDIN_BUFFER_OFFSET,
+        stdin_buf_sz = Layout::STDIN_BUFFER_SIZE,
+        iovec_off = Layout::STDIN_IOVEC_OFFSET,
+        nread_off = Layout::STDIN_NREAD_OFFSET,
+        gc_hdr = Layout::GC_HEADER_SIZE,
+        gc_thresh = Layout::GC_THRESHOLD,
+        gc_headroom = Layout::GC_HEADROOM_PAGES,
+        heap_grow = Layout::HEAP_GROW_MIN_PAGES,
+        arr_hdr = Layout::ARRAY_HEADER_SIZE,
+        obj_hdr = Layout::OBJECT_HEADER_SIZE,
+        align = Layout::ALIGN,
+        tag_shift = ValueTag::NUMBER_SHIFT,
+        tag_mask = ValueTag::TAG_MASK,
+        hm = ValueTag::HEAP_MASK,
+    )
+}
+
+/// Compare the current ABI snapshot against the compat archive for the
+/// current `RUNTIME_ABI_VERSION`.  Fails with a clear message when the
+/// constants have changed without bumping the version or updating the archive.
+pub fn check_abi_snapshot_compat() -> Result<String, String> {
+    let snapshot = dump_runtime_abi_snapshot();
+    let compat_path = format!(
+        "{}/compat/v{}-snapshot.txt",
+        env!("CARGO_MANIFEST_DIR"),
+        RuntimeConst::ABI_VERSION
+    );
+    match std::fs::read_to_string(&compat_path) {
+        Ok(archive) => {
+            let archive_trimmed = archive.trim_end();
+            let snapshot_trimmed = snapshot.trim_end();
+            if snapshot_trimmed != archive_trimmed {
+                return Err(format!(
+                    "\
+ABI constants differ from compat archive at {compat_path}!
+
+If you intentionally changed ABI constants, bump RuntimeConst::ABI_VERSION
+and create a new compat archive at compat/v{{new-version}}-snapshot.txt.
+
+--- current snapshot ---
+{snapshot_trimmed}
+
+--- archive ---
+{archive_trimmed}"
+                ));
+            }
+            Ok(snapshot)
+        }
+        Err(_) => Err(format!(
+            "no compat archive found at {compat_path}; \
+             create one with the current snapshot:\n\n{snapshot}"
+        )),
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::LayoutSnapshot;
+    use super::{check_abi_snapshot_compat, LayoutSnapshot};
 
     #[test]
     fn layout_json_snapshot_matches_current() {
