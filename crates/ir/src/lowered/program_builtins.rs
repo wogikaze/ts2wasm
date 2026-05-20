@@ -112,7 +112,7 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "fromEntries" => Some(RuntimeFn::ObjectFromEntries),
                 "hasOwnProperty" => Some(RuntimeFn::ObjectHasOwnProperty),
                 "hasOwn" => Some(RuntimeFn::ObjectHasOwn),
-                "getOwnPropertyNames" => Some(RuntimeFn::ObjectKeys),
+                "getOwnPropertyNames" => Some(RuntimeFn::ObjectGetOwnPropertyNames),
                 "getOwnPropertySymbols" => Some(RuntimeFn::ObjectGetOwnPropertySymbols),
                 "getOwnPropertyDescriptor" => Some(RuntimeFn::ObjectGetOwnPropertyDescriptor),
                 "getPrototypeOf" => Some(RuntimeFn::ObjectGetPrototypeOf),
