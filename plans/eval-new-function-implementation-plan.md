@@ -1,5 +1,21 @@
 # eval / `Function` constructor 完全実装計画（archive15 反映版）
 
+## Historical Archive Notice
+
+This file is preserved as historical planning or run evidence. It is not the canonical current design for ts2wasm.
+
+## Current routing
+
+- Project map: `docs/INDEX.md`
+- Current state: `docs/current-state.md`
+- Compiler architecture: `docs/04-compiler-architecture-and-runtime.md`
+- IR/runtime contracts: `docs/13-ir-contracts.md`, `docs/14-runtime-abi.md`
+- Tests/coverage: `docs/06-testing-and-coverage.md`, `docs/15-coverage-matrix.md`
+
+## Archived original content
+
+# eval / `Function` constructor 完全実装計画（archive15 反映版）
+
 Last audited: 2026-05-18 (`archive(15).zip`)
 
 Previous plan: `plans/eval-new-function-implementation-plan.md`
