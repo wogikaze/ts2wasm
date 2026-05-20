@@ -2607,12 +2607,12 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
-        // Skip ObjectToString catch-all for Error/Array/BigInt locals — let class dispatch handle it
+        // Skip ObjectToString catch-all for Error/Array/BigInt/Symbol locals — let class dispatch handle it
         let is_class_dispatch_receiver = matches!(method, "toString" | "valueOf")
             && match object {
                 ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local| {
                     let class_name = self.ctx.classes.local_classes.get(&local);
-                    class_name.is_some_and(|c| c == "BigInt")
+                    class_name.is_some_and(|c| c == "BigInt" || c == "Symbol")
                         || self.ctx.facts.bigint_locals.contains(&local)
                 }),
                 _ => crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(
@@ -3559,6 +3559,22 @@ impl super::super::Resolver {
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::BigIntToString,
                 args: bi_args,
+                span: Span::generated("runtime_call"),
+            }));
+        }
+
+        // Symbol non-ident receiver (e.g. Symbol("desc").toString()) - route to SymbolToString
+        if matches!(method, "toString" | "valueOf")
+            && matches!(object, ResolvedExpr::Call { callee, .. }
+                if matches!(callee.as_ref(), ResolvedExpr::Ident(name) if name == "Symbol"))
+        {
+            let receiver = self.lower_expr(object)?;
+            if method == "valueOf" {
+                return Ok(Some(receiver));
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::SymbolToString,
+                args: vec![receiver],
                 span: Span::generated("runtime_call"),
             }));
         }
