@@ -4270,14 +4270,25 @@ impl super::super::Resolver {
                 || method == "map"
                 || method == "flatMap")
             && !args.is_empty()
-            && matches!(
-                &args[0],
-                ResolvedExpr::ArrowFn { .. }
-                    | ResolvedExpr::FunctionExpr {
-                        is_generator: false,
-                        ..
-                    }
-            )
+            && (method != "forEach"
+                || matches!(
+                    &args[0],
+                    ResolvedExpr::ArrowFn { .. }
+                        | ResolvedExpr::FunctionExpr {
+                            is_generator: false,
+                            ..
+                        }
+                        | ResolvedExpr::Ident(_)
+                ))
+            && (method == "forEach"
+                || matches!(
+                    &args[0],
+                    ResolvedExpr::ArrowFn { .. }
+                        | ResolvedExpr::FunctionExpr {
+                            is_generator: false,
+                            ..
+                        }
+                ))
         {
             return self.lower_array_callback_method(
                 method,
