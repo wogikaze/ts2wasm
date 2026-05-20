@@ -13,6 +13,17 @@ fn native_error_token_value(offset: i32) -> i32 {
     ValueTag::encode_reserved_number_payload(ValueTag::NATIVE_ERROR_PAYLOAD_BASE + offset)
 }
 
+/// Base offset for TypedArray constructor identity tokens.
+/// Chosen well beyond existing static reserved payloads (max offset 15)
+/// and dynamically-assigned direct-local tokens to avoid collision.
+const TYPED_ARRAY_CTOR_TOKEN_OFFSET: i32 = 100;
+
+fn typed_array_ctor_token_value(offset: i32) -> i32 {
+    ValueTag::encode_reserved_number_payload(
+        ValueTag::NATIVE_ERROR_PAYLOAD_BASE + TYPED_ARRAY_CTOR_TOKEN_OFFSET + offset,
+    )
+}
+
 pub(crate) fn builtin_function_token_value(name: &str) -> Option<i32> {
     match name {
         "parseInt" => Some(ValueTag::BUILTIN_PARSE_INT_VALUE),
@@ -37,6 +48,22 @@ pub(crate) fn builtin_function_token_value(name: &str) -> Option<i32> {
         "SyntaxError" => Some(native_error_token_value(4)),
         "TypeError" => Some(native_error_token_value(5)),
         "URIError" => Some(native_error_token_value(6)),
+        // TypedArray constructor tokens — typeof returns "function".
+        // These use payloads at NATIVE_ERROR_PAYLOAD_BASE + 100 + offset, which
+        // are >= DIRECT_LOCAL_TOKEN_PAYLOAD_BASE so the runtime $typeof identifies
+        // them as "function" via the second payload range check.
+        "Int8Array" => Some(typed_array_ctor_token_value(0)),
+        "Uint8Array" => Some(typed_array_ctor_token_value(1)),
+        "Uint8ClampedArray" => Some(typed_array_ctor_token_value(2)),
+        "Int16Array" => Some(typed_array_ctor_token_value(3)),
+        "Uint16Array" => Some(typed_array_ctor_token_value(4)),
+        "Int32Array" => Some(typed_array_ctor_token_value(5)),
+        "Uint32Array" => Some(typed_array_ctor_token_value(6)),
+        "Float32Array" => Some(typed_array_ctor_token_value(7)),
+        "Float64Array" => Some(typed_array_ctor_token_value(8)),
+        "Float16Array" => Some(typed_array_ctor_token_value(9)),
+        "BigInt64Array" => Some(typed_array_ctor_token_value(10)),
+        "BigUint64Array" => Some(typed_array_ctor_token_value(11)),
         _ => None,
     }
 }
