@@ -4811,6 +4811,24 @@ impl super::super::Resolver {
                     span: Span::generated("array_new"),
                 })
             }
+            "formatRangeToParts" => {
+                let parts = format_intl_datetime_range_parts(args.first(), args.get(1), options);
+                Ok(LoweredExpr::ArrayNew {
+                    elements: parts
+                        .into_iter()
+                        .map(|(source, part_type, value)| LoweredExpr::ObjectNew {
+                            props: vec![
+                                ("source".to_owned(), string_lit(source)),
+                                ("type".to_owned(), string_lit(part_type)),
+                                ("value".to_owned(), string_lit(value)),
+                            ],
+                            non_enumerable: 0,
+                            span: Span::generated("object_new"),
+                        })
+                        .collect(),
+                    span: Span::generated("array_new"),
+                })
+            }
             "resolvedOptions" => Ok(LoweredExpr::ObjectNew {
                 props: vec![
                     ("locale".to_owned(), string_lit(options.locale.clone())),
@@ -5509,6 +5527,72 @@ fn format_intl_datetime_parts(
         ("literal".to_owned(), "/".to_owned()),
         ("year".to_owned(), year.to_string()),
     ]
+}
+
+fn format_intl_datetime_range_arg(
+    first: Option<&ResolvedExpr>,
+    second: Option<&ResolvedExpr>,
+    options: &IntlDateTimeFormatOptions,
+) -> String {
+    let start = format_intl_datetime_arg(first, options);
+    let end = format_intl_datetime_arg(second, options);
+    format!("{start} \u{2013} {end}")
+}
+
+fn format_intl_datetime_range_parts(
+    first: Option<&ResolvedExpr>,
+    second: Option<&ResolvedExpr>,
+    options: &IntlDateTimeFormatOptions,
+) -> Vec<(&'static str, String, String)> {
+    let (y1, m1, d1) = static_epoch_ms_date(first)
+        .map(epoch_ms_to_utc_ymd)
+        .unwrap_or((1970, 1, 1));
+    let (y2, m2, d2) = static_epoch_ms_date(second)
+        .map(epoch_ms_to_utc_ymd)
+        .unwrap_or((1970, 1, 1));
+    let start_parts = if options.locale == "en-GB" {
+        vec![
+            ("day".to_owned(), format!("{d1:02}")),
+            ("literal".to_owned(), "/".to_owned()),
+            ("month".to_owned(), format!("{m1:02}")),
+            ("literal".to_owned(), "/".to_owned()),
+            ("year".to_owned(), format!("{y1:04}")),
+        ]
+    } else {
+        vec![
+            ("month".to_owned(), m1.to_string()),
+            ("literal".to_owned(), "/".to_owned()),
+            ("day".to_owned(), d1.to_string()),
+            ("literal".to_owned(), "/".to_owned()),
+            ("year".to_owned(), y1.to_string()),
+        ]
+    };
+    let end_parts = if options.locale == "en-GB" {
+        vec![
+            ("day".to_owned(), format!("{d2:02}")),
+            ("literal".to_owned(), "/".to_owned()),
+            ("month".to_owned(), format!("{m2:02}")),
+            ("literal".to_owned(), "/".to_owned()),
+            ("year".to_owned(), format!("{y2:04}")),
+        ]
+    } else {
+        vec![
+            ("month".to_owned(), m2.to_string()),
+            ("literal".to_owned(), "/".to_owned()),
+            ("day".to_owned(), d2.to_string()),
+            ("literal".to_owned(), "/".to_owned()),
+            ("year".to_owned(), y2.to_string()),
+        ]
+    };
+    let mut result: Vec<(&'static str, String, String)> = Vec::new();
+    for (part_type, value) in start_parts {
+        result.push(("startRange", part_type, value));
+    }
+    result.push(("shared", "literal".to_owned(), " \u{2013} ".to_owned()));
+    for (part_type, value) in end_parts {
+        result.push(("endRange", part_type, value));
+    }
+    result
 }
 
 fn static_epoch_ms_date(expr: Option<&ResolvedExpr>) -> Option<i64> {
