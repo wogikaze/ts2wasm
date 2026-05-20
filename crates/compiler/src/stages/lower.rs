@@ -376,15 +376,10 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                     })?;
                 let exports = collect_literal_named_exports(dependency.resolved_path())?;
 
-                let default_expr = exports.get("default").ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-233: module `{}` does not have a default export",
-                        source.value
-                    ),
-                    span: Some(source.span),
-                    phase: None,
-                })?;
+                let default_expr = match exports.get("default") {
+                    Some(e) => e.clone(),
+                    None => Expr::Undefined { span: source.span },
+                };
                 let default_binding = StaticNamedImportBinding {
                     source_specifier: source.value.clone(),
                     source_module_id: dependency.resolved_module_id(),
@@ -489,15 +484,10 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                     })?;
                 let exports = collect_literal_named_exports(dependency.resolved_path())?;
                 for specifier in specifiers {
-                    let expr = exports.get(&specifier.imported).ok_or_else(|| Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-233: module `{}` does not export named binding `{}`",
-                            source.value, specifier.imported
-                        ),
-                        span: Some(specifier.imported_span),
-                        phase: None,
-                    })?;
+                    let expr = match exports.get(&specifier.imported) {
+                        Some(e) => e.clone(),
+                        None => Expr::Undefined { span: source.span },
+                    };
                     let local_name = format!("__ts2wasm_re_{}", specifier.exported);
                     rewritten.push(Stmt::Let {
                         name: local_name.clone(),
@@ -584,15 +574,10 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                     })?;
                 let exports = collect_literal_named_exports(dependency.resolved_path())?;
 
-                let default_expr = exports.get("default").ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-233: module `{}` does not have a default export",
-                        source.value
-                    ),
-                    span: Some(source.span),
-                    phase: None,
-                })?;
+                let default_expr = match exports.get("default") {
+                    Some(e) => e.clone(),
+                    None => Expr::Undefined { span: source.span },
+                };
                 let default_binding = StaticNamedImportBinding {
                     source_specifier: source.value.clone(),
                     source_module_id: dependency.resolved_module_id(),
@@ -1412,15 +1397,10 @@ fn rewrite_static_module_body_for_build(
                             phase: None,
                         });
                     }
-                    let expr = exports.get(&specifier.imported).ok_or_else(|| Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-233: module `{}` does not export named binding `{}`",
-                            source.value, specifier.imported
-                        ),
-                        span: Some(specifier.imported_span),
-                        phase: None,
-                    })?;
+                    let expr = match exports.get(&specifier.imported) {
+                        Some(e) => e.clone(),
+                        None => Expr::Undefined { span: source.span },
+                    };
                     let local_name = format!("__ts2wasm_re_{}", specifier.exported);
                     rewritten.push(Stmt::Let {
                         name: local_name.clone(),
