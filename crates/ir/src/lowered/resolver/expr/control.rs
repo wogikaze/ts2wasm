@@ -149,6 +149,12 @@ impl super::super::Resolver {
             || name == "asyncTest"
             || name == "$MAX_ITERATIONS"
             || name == "__assert_throws"
+            || name == "TypeError"
+            || name == "SyntaxError"
+            || name == "RangeError"
+            || name == "ReferenceError"
+            || name == "URIError"
+            || name == "EvalError"
         {
             return Ok(LoweredExpr::Undefined(Span::generated("undef")));
         }
