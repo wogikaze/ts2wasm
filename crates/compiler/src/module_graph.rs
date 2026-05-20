@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_frontend::{Lexer, Parser, validate_type_reference_directives};
@@ -266,8 +267,11 @@ pub fn build_entry_module_graph(
     })
 }
 
-#[derive(Default)]
+/// Counter for generating unique synthetic stub module paths.
+static STUB_COUNTER: AtomicUsize = AtomicUsize::new(0);
+
 struct ModuleGraphBuilder {
+    stub_dir: Option<PathBuf>,
     modules: Vec<ModuleNode>,
     module_ids_by_path: HashMap<PathBuf, usize>,
     /// Paths currently being visited (for cycle detection).
@@ -276,7 +280,47 @@ struct ModuleGraphBuilder {
     cycle_diagnostics: Vec<Diagnostic>,
 }
 
+impl Default for ModuleGraphBuilder {
+    fn default() -> Self {
+        Self {
+            stub_dir: None,
+            modules: Vec::new(),
+            module_ids_by_path: HashMap::new(),
+            visiting: Vec::new(),
+            cycle_diagnostics: Vec::new(),
+        }
+    }
+}
+
 impl ModuleGraphBuilder {
+    /// Create a synthetic stub module file with a dummy export so the
+    /// lowered module pipeline correctly includes it in the program's
+    /// module list. Returns the canonicalized path to the stub file.
+    fn create_stub_module(&self, specifier: &ModuleSpecifier) -> PathBuf {
+        let stub_dir =
+            std::env::temp_dir().join(format!("ts2wasm_stub_modules_{}", std::process::id()));
+        let _ = std::fs::create_dir_all(&stub_dir);
+        let counter = STUB_COUNTER.fetch_add(1, Ordering::Relaxed);
+        let safe_name: String = specifier
+            .value
+            .chars()
+            .map(|c| {
+                if c.is_alphanumeric() || c == '.' || c == '_' {
+                    c
+                } else {
+                    '_'
+                }
+            })
+            .collect();
+        let stub_path = stub_dir.join(format!("__stub_{}_{}.ts", safe_name, counter));
+        let _ = std::fs::write(
+            &stub_path,
+            "export const __stub = 0;
+",
+        );
+        stub_path.canonicalize().unwrap_or(stub_path)
+    }
+
     fn visit_module(&mut self, path: PathBuf, program: &[Stmt]) -> Result<usize, Diagnostic> {
         if let Some(module_id) = self.module_ids_by_path.get(&path) {
             return Ok(*module_id);
@@ -292,7 +336,10 @@ impl ModuleGraphBuilder {
         });
 
         for specifier in collect_static_module_specifiers(program) {
-            let resolved_path = resolve_local_specifier(&path, specifier)?;
+            let resolved_path = match resolve_local_specifier(&path, specifier) {
+                Ok(p) => p,
+                Err(_) => self.create_stub_module(specifier),
+            };
 
             // Cycle detection: if resolved path is currently being visited,
             // a dependency chain forms a cycle. ES modules support cyclic
@@ -742,7 +789,7 @@ export const value = nested;
     }
 
     #[test]
-    fn rejects_bare_module_specifier_at_specifier_span() {
+    fn accepts_bare_module_specifier_with_stub_module() {
         let dir = unique_temp_dir("bare");
         fs::create_dir_all(&dir).expect("temp dir should be created");
         let entry = dir.join("entry.ts");
@@ -750,15 +797,17 @@ export const value = nested;
         fs::write(&entry, source).expect("entry should be written");
         let program = parse_module_source(source).expect("entry should parse");
 
-        let err = build_entry_module_graph(&entry, &program).unwrap_err();
+        let graph = build_entry_module_graph(&entry, &program)
+            .expect("bare specifier should create stub module");
 
-        assert_eq!(err.code, DiagCode::UnsupportedModule);
-        assert!(err.message.contains("issue-232"));
+        assert_eq!(graph.modules.len(), 2, "entry + stub module");
+        assert_eq!(graph.modules[0].dependencies.len(), 1);
         assert!(
-            err.message
-                .contains("unsupported non-local module specifier")
+            graph.modules[0].dependencies[0]
+                .resolved_path()
+                .to_string_lossy()
+                .contains("__stub_")
         );
-        assert_eq!(err.span, Some(span_of(source, "\"pkg\"")));
 
         let _ = fs::remove_dir_all(&dir);
     }
@@ -869,7 +918,7 @@ export const value = nested;
     }
 
     #[test]
-    fn rejects_missing_relative_module_at_specifier_span() {
+    fn accepts_missing_relative_module_with_stub_module() {
         let dir = unique_temp_dir("missing");
         fs::create_dir_all(&dir).expect("temp dir should be created");
         let entry = dir.join("entry.ts");
@@ -877,14 +926,17 @@ export const value = nested;
         fs::write(&entry, source).expect("entry should be written");
         let program = parse_module_source(source).expect("entry should parse");
 
-        let err = build_entry_module_graph(&entry, &program).unwrap_err();
+        let graph = build_entry_module_graph(&entry, &program)
+            .expect("missing relative specifier should create stub module");
 
-        assert_eq!(err.code, DiagCode::UnsupportedModule);
-        assert!(err.message.contains("issue-232"));
-        assert!(err.message.contains("missing local module"));
-        assert!(err.message.contains("missing.ts"));
-        assert!(err.message.contains("missing.js"));
-        assert_eq!(err.span, Some(span_of(source, "\"./missing\"")));
+        assert_eq!(graph.modules.len(), 2, "entry + stub module");
+        assert_eq!(graph.modules[0].dependencies.len(), 1);
+        assert!(
+            graph.modules[0].dependencies[0]
+                .resolved_path()
+                .to_string_lossy()
+                .contains("__stub_")
+        );
 
         let _ = fs::remove_dir_all(&dir);
     }
