@@ -1,3 +1,4 @@
+pub mod catalog;
 pub mod emit;
 pub mod error;
 pub mod parser;
