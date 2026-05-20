@@ -360,6 +360,24 @@ impl super::super::Resolver {
                     span: Span::generated("array_new"),
                 });
             }
+            // Buffer-backed constructor: new Int8Array(buffer, byteOffset?, length?)
+            if args.len() >= 2 || is_buffer_arg(self, &args[0]) {
+                let buf = self.lower_expr(&args[0])?;
+                let byte_offset = match args.get(1) {
+                    Some(off) => self.lower_expr(off)?,
+                    None => LoweredExpr::Number(0, Span::generated("num")),
+                };
+                let length = match args.get(2) {
+                    Some(len) => self.lower_expr(len)?,
+                    None => LoweredExpr::Number(0, Span::generated("num")),
+                };
+                // byteOffset=0 and length=0 are the sentinel values meaning "use defaults"
+                return Ok(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::TypedArrayCtorFromBuffer,
+                    args: vec![buf, byte_offset, length],
+                    span: Span::generated("runtime_call"),
+                });
+            }
             let [arg] = args else {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
@@ -690,5 +708,24 @@ fn is_typed_array_constructor(class_name: &str) -> bool {
             | "Float16Array"
             | "BigInt64Array"
             | "BigUint64Array"
+    )
+}
+
+/// Returns true if the expression is known to be an ArrayBuffer (or SharedArrayBuffer) reference.
+fn is_buffer_arg(resolver: &super::super::Resolver, arg: &ResolvedExpr) -> bool {
+    let ResolvedExpr::Ident(name) = arg else {
+        return false;
+    };
+    let Ok(obj_local) = resolver.resolve_local(name) else {
+        return false;
+    };
+    matches!(
+        resolver
+            .ctx
+            .classes
+            .local_classes
+            .get(&obj_local)
+            .map(|s| s.as_str()),
+        Some("ArrayBuffer" | "SharedArrayBuffer")
     )
 }

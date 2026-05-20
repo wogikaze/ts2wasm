@@ -673,7 +673,6 @@ impl HostImport {
             },
             Self::EvalDirect => HostImportSpec {
                 module: "host",
-<<<<<<< HEAD
                 name: "eval.direct",
                 wat_symbol: "$host_eval_direct",
                 abi: HostAbi::NodeShim,
@@ -686,21 +685,6 @@ impl HostImport {
                 wat_symbol: "$host_eval_indirect",
                 abi: HostAbi::NodeShim,
                 params: "param i32 i32",
-||||||| parent of 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
-=======
-                name: "evalDirect",
-                wat_symbol: "$host_eval_direct",
-                abi: HostAbi::NodeShim,
-                params: "param i32",
-                result: "result i32",
-            },
-            Self::EvalIndirect => HostImportSpec {
-                module: "host",
-                name: "evalIndirect",
-                wat_symbol: "$host_eval_indirect",
-                abi: HostAbi::NodeShim,
-                params: "param i32",
->>>>>>> 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
                 result: "result i32",
             },
             Self::FunctionCompile => HostImportSpec {
@@ -811,14 +795,8 @@ impl HostImport {
             Self::ReflectConstruct => "host.reflectConstruct",
             Self::GetIterator => "host.getIterator",
             Self::IteratorNext => "host.iteratorNext",
-<<<<<<< HEAD
             Self::EvalDirect => "host.eval.direct",
             Self::EvalIndirect => "host.eval.indirect",
-||||||| parent of 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
-=======
-            Self::EvalDirect => "host.evalDirect",
-            Self::EvalIndirect => "host.evalIndirect",
->>>>>>> 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
             Self::FunctionCompile => "host.function.compile",
             Self::FunctionCall => "host.function.call",
             Self::FunctionCallMethod => "host.function.callMethod",

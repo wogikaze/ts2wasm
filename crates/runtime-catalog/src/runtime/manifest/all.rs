@@ -439,6 +439,7 @@ match self {
             Self::TypedArrayCtorWithLength => "typed_array_ctor_with_length",
             Self::TypedArrayFromArray => "typed_array_from_array",
             Self::TypedArraySet => "typed_array_set",
+            Self::TypedArrayCtorFromBuffer => "typed_array_ctor_from_buffer",
             Self::AtomicsElementPtr => "atomics_element_ptr",
             Self::AtomicsLoad => "atomics_load",
             Self::AtomicsStore => "atomics_store",
@@ -489,15 +490,11 @@ match self {
             Self::PrivateFieldGet => "pseudo_private_field_get",
             Self::PrivateFieldSet => "pseudo_private_field_set",
             Self::PrivateBrandCheck => "pseudo_private_brand_check",
-<<<<<<< HEAD
-            _ => "$unimplemented",
-||||||| parent of 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
-=======
             Self::EvalDirectHost => "eval_direct_host",
             Self::EvalIndirectHost => "eval_indirect_host",
             Self::FunctionCompileHost => "function_compile_host",
             Self::FunctionCallHost => "function_call_host",
             Self::FunctionCallMethodHost => "function_call_method_host",
             Self::FunctionConstructHost => "function_construct_host",
->>>>>>> 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
+            _ => "$unimplemented",
         }

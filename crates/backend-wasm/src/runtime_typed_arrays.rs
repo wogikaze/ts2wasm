@@ -1324,6 +1324,99 @@ pub(super) fn emit_typed_array_from_array(&self, wat: &mut String) {
         ));
     }
 
+
+    /// TypedArray constructor from ArrayBuffer: new Int8Array(buffer, byteOffset?, length?).
+    /// Creates an array-backed TypedArray by copying elements from the buffer data region.
+    /// Each element in the buffer is stored as a 4-byte tagged runtime value.
+    /// Args: (buffer, byteOffset_tagged, length_tagged) — byteOffset and length are tagged numbers.
+    pub(super) fn emit_typed_array_ctor_from_buffer(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $typed_array_ctor_from_buffer (param $buf i32) (param $byte_off_tagged i32) (param $len_tagged i32) (result i32)
+    (local $buf_ptr i32)
+    (local $buf_len i32)
+    (local $byte_off i32)
+    (local $elem_count i32)
+    (local $num_words i32) (local $elem_off i32)
+    (local $size i32) (local $ptr i32) (local $i i32)
+    (local $src_elem i32)
+    ;; Get buffer ptr and length
+    (local.set $buf_ptr (i32.and (local.get $buf) (i32.const {heap_mask})))
+    (local.set $buf_len (i32.load (local.get $buf_ptr)))
+    ;; Decode byteOffset: if undefined/zero -> 0, else tagged number
+    (local.set $byte_off
+      (if (result i32) (i32.eqz (local.get $byte_off_tagged))
+        (then (i32.const 0))
+        (else (i32.shr_s (local.get $byte_off_tagged) (i32.const {num_shift})))))
+    ;; Clamp byteOffset to buffer length
+    (if (i32.gt_u (local.get $byte_off) (local.get $buf_len))
+      (then (local.set $byte_off (local.get $buf_len))))
+    ;; Decode length: if undefined/zero -> remaining elements, else tagged number
+    (local.set $elem_count
+      (if (result i32) (i32.eqz (local.get $len_tagged))
+        (then
+          (i32.shr_u (i32.sub (local.get $buf_len) (local.get $byte_off)) (i32.const 2)))
+        (else (i32.shr_s (local.get $len_tagged) (i32.const {num_shift})))))
+    ;; Presence word count = ceil(elem_count / 32)
+    (local.set $num_words
+      (i32.shr_u (i32.add (local.get $elem_count) (i32.const 31)) (i32.const 5)))
+    (local.set $elem_off (i32.const {array_header}))
+    (if (i32.gt_u (local.get $num_words) (i32.const 1))
+      (then
+        (local.set $elem_off
+          (i32.add
+            (i32.const {array_header})
+            (i32.shl (i32.sub (local.get $num_words) (i32.const 1)) (i32.const 2))))))
+    ;; size = elem_off + elem_count * 4
+    (local.set $size
+      (i32.add (local.get $elem_off) (i32.shl (local.get $elem_count) (i32.const 2))))
+    (local.set $ptr (call $alloc_heap (local.get $size)))
+    ;; Header fields
+    (i32.store (local.get $ptr) (local.get $elem_count))
+    (i32.store (i32.add (local.get $ptr) (i32.const 4)) (local.get $elem_count))
+    (i32.store (i32.add (local.get $ptr) (i32.const 8)) (local.get $num_words))
+    (i32.store (i32.add (local.get $ptr) (i32.const 12)) (local.get $elem_off))
+    ;; Presence bits: all ones
+    (local.set $i (i32.const 0))
+    (block $pres_done
+      (loop $pres_loop
+        (br_if $pres_done (i32.ge_u (local.get $i) (local.get $num_words)))
+        (i32.store
+          (i32.add
+            (local.get $ptr)
+            (i32.add (i32.const {presence_words_offset}) (i32.shl (local.get $i) (i32.const 2))))
+          (i32.const -1))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $pres_loop)))
+    ;; Copy elements from buffer data region to typed array elements
+    (local.set $i (i32.const 0))
+    (block $copy_done
+      (loop $copy_loop
+        (br_if $copy_done (i32.ge_u (local.get $i) (local.get $elem_count)))
+        (local.set $src_elem
+          (i32.load
+            (i32.add
+              (local.get $buf_ptr)
+              (i32.add
+                (i32.const {array_header})
+                (i32.add (local.get $byte_off) (i32.shl (local.get $i) (i32.const 2)))))))
+        (i32.store
+          (i32.add
+            (local.get $ptr)
+            (i32.add (local.get $elem_off) (i32.shl (local.get $i) (i32.const 2))))
+          (local.get $src_elem))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $copy_loop)))
+    (i32.or (local.get $ptr) (i32.const {array_tag})))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            num_shift = ValueTag::NUMBER_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+            array_tag = ValueTag::ARRAY,
+        ));
+    }
+
     pub(super) fn emit_typed_array_set(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

@@ -3494,6 +3494,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::TypedArrayCtorFromBuffer => RuntimeSpec {
+                symbol: "$typed_array_ctor_from_buffer",
+                deps: TYPED_ARRAY_CTOR_WITH_LENGTH_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::AtomicsElementPtr => RuntimeSpec {
                 symbol: "$atomics_element_ptr",
                 deps: ATOMICS_NO_DEPS,

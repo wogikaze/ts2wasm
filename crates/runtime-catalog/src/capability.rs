@@ -57,24 +57,12 @@ pub enum Capability {
     HostIntlDateTimeFormatFormat,
     HostReflectApply,
     HostReflectConstruct,
-<<<<<<< HEAD
     HostEvalDirect,
     HostEvalIndirect,
     HostFunctionCompile,
     HostFunctionCall,
     HostFunctionCallMethod,
     HostFunctionConstruct,
-||||||| parent of 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
-=======
-    HostFunctionCompile,
-    HostFunctionCall,
-    HostFunctionCallMethod,
-    HostFunctionConstruct,
-    #[allow(dead_code)]
-    HostEvalDirect,
-    #[allow(dead_code)]
-    HostEvalIndirect,
->>>>>>> 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
 }
 
 impl Capability {
@@ -135,22 +123,12 @@ impl Capability {
             Self::HostIntlDateTimeFormatFormat => "host.intlDateTimeFormatFormat",
             Self::HostReflectApply => "host.reflectApply",
             Self::HostReflectConstruct => "host.reflectConstruct",
-<<<<<<< HEAD
             Self::HostEvalDirect => "host.eval.direct",
             Self::HostEvalIndirect => "host.eval.indirect",
             Self::HostFunctionCompile => "host.function.compile",
             Self::HostFunctionCall => "host.function.call",
             Self::HostFunctionCallMethod => "host.function.callMethod",
             Self::HostFunctionConstruct => "host.function.construct",
-||||||| parent of 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
-=======
-            Self::HostFunctionCompile => "host.function.compile",
-            Self::HostFunctionCall => "host.function.call",
-            Self::HostFunctionCallMethod => "host.function.callMethod",
-            Self::HostFunctionConstruct => "host.function.construct",
-            Self::HostEvalDirect => "host.evalDirect",
-            Self::HostEvalIndirect => "host.evalIndirect",
->>>>>>> 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
         }
     }
 }

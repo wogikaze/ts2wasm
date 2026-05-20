@@ -15,6 +15,7 @@ Large, entangled files make both human review and agent work brittle. The reposi
 ## File sizing guidance
 
 - Prefer modules with one stable responsibility.
+- Prefer real submodule paths over pseudo-hierarchical underscores in `src/` filenames; e.g. move `mir_dump.rs` toward `mir/dump.rs` when the structure permits it. Test files are exempt.
 - If a docs file grows beyond a few hundred lines, split by task/phase and update `docs/INDEX.md`.
 - If a Rust module grows by mixing declarations, emission, validation, and tests, split by phase or domain.
 

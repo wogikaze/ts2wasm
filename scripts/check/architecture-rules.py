@@ -29,6 +29,7 @@ Current checks:
   - Error when a module has more than 30 public API items (coupling gate, with allowlist).
   - Error when a crate has more than 10 [dependencies] (module fan-out gate).
   - Error when a match has more than 50 arms unless allowlisted.
+  - Warn when non-test Rust source filenames use `_` to encode pseudo-hierarchy; prefer real submodules/directories.
 
 """
 
@@ -181,7 +182,6 @@ FILE_SIZE_ALLOWLIST_1200 = {
     "crates/compiler/src/lib.rs": "compiler pipeline — phased refactor",
     "crates/compiler/src/stages/lower.rs": "compiler pipeline — phased refactor",
     # Auto-generated spec / catalog tables
-    "crates/backend-wasm/src/runtime/spec/all.rs": "auto-generated spec",
     "crates/runtime-catalog/src/runtime/spec/all.rs": "auto-generated spec",
     "crates/runtime-catalog/src/runtime_fn.rs": "runtime catalog registry",
     # Test files (naturally large, not a concern)
@@ -334,9 +334,6 @@ HIGH_PUBLIC_API_COUNT_ALLOWLIST = {
 LARGE_MATCH_ALLOWLIST = {
     "crates/backend-wasm/src/emitter/strings.rs": "string escape dispatch",
     "crates/backend-wasm/src/expr_emit.rs": "expression emitter dispatches many runtime calls",
-    "crates/backend-wasm/src/runtime/manifest/all.rs": "manifest table covers all RuntimeFn variants",
-    "crates/backend-wasm/src/runtime/spec/all.rs": "spec table covers all RuntimeFn variants",
-    "crates/backend-wasm/src/runtime/spec/manifest_map.rs": "manifest mapping for all RuntimeFn variants",
     "crates/backend-wasm/src/runtime_dispatch_array.rs": "array domain dispatch",
     "crates/backend-wasm/src/runtime_dispatch_collections.rs": "collections domain dispatch",
     "crates/backend-wasm/src/runtime_dispatch_core.rs": "core domain dispatch",
@@ -1202,6 +1199,38 @@ def check_runtime_push_str() -> list[str]:
     return violations
 
 
+def check_src_filename_pseudo_hierarchy() -> list[str]:
+    """Warn on underscored non-test Rust source filenames under src/.
+
+    Names like `mir_dump.rs` or `runtime_async.rs` often indicate a flat file
+    layout encoding hierarchy in the filename instead of using directory-backed
+    modules such as `mir/dump.rs` or `runtime/async/mod.rs`.
+    """
+    violations = []
+
+    for path in sorted(iter_repo_files(".rs")):
+        rel = path.relative_to(REPO_ROOT)
+        if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
+            continue
+        if "src" not in rel.parts:
+            continue
+        if "tests" in rel.parts:
+            continue
+        if rel.name == "tests.rs" or rel.stem.endswith("_tests"):
+            continue
+        if rel.name in {"lib.rs", "main.rs", "mod.rs"}:
+            continue
+        if "_" not in rel.stem:
+            continue
+
+        violations.append(
+            f"check_architecture_rules: WARN {rel}: "
+            f"underscored src filename suggests pseudo-hierarchy; prefer real submodules/directories"
+        )
+
+    return violations
+
+
 # Files allowed to use `include!` outside test modules (known legitimate pattern).
 INCLUDE_ALLOWLIST = {
     "crates/ir/src/lowered.rs",  # HIR/MIR module embedding is a valid use of include!
@@ -1483,12 +1512,20 @@ def check_validated_backend_contract() -> list[str]:
 def check_runtimefn_capability() -> list[str]:
     """Check that every RuntimeFn variant with host imports has explicit capability marker.
 
-    Parses backend-wasm's runtime/spec/all.rs and ensures:
+    Parses runtime-catalog's runtime/spec/all.rs and ensures:
     - Any variant with imports != NO_IMPORTS also has capability != NO_CAPS.
     - Any variant with capability != NO_CAPS also has imports != NO_IMPORTS.
     """
     violations = []
-    spec_path = REPO_ROOT / "crates" / "backend-wasm" / "src" / "runtime" / "spec" / "all.rs"
+    spec_path = (
+        REPO_ROOT
+        / "crates"
+        / "runtime-catalog"
+        / "src"
+        / "runtime"
+        / "spec"
+        / "all.rs"
+    )
     if not spec_path.exists():
         return violations
 
@@ -1502,7 +1539,7 @@ def check_runtimefn_capability() -> list[str]:
     if not blocks:
         violations.append(
             "check_architecture_rules: ERROR cannot parse RuntimeSpec blocks from "
-            "crates/backend-wasm/src/runtime/spec/all.rs"
+            "crates/runtime-catalog/src/runtime/spec/all.rs"
         )
         return violations
 
@@ -1531,7 +1568,7 @@ def check_host_import_manifest() -> list[str]:
     Then verifies that each manifest_name appears in:
     - crates/backend-wasm/tests/runtime_link_plan.rs
     - crates/compiler/tests/manifest_snapshot.rs
-    - crates/backend-wasm/src/runtime/manifest/all.rs (manifest mapping)
+    - crates/runtime-catalog/src/runtime/manifest/all.rs (manifest mapping)
 
     Missing entries indicate untested host import bindings.
     """
@@ -1589,9 +1626,7 @@ def check_host_import_manifest() -> list[str]:
     check_files = [
         REPO_ROOT / "crates" / "backend-wasm" / "tests" / "runtime_link_plan.rs",
         REPO_ROOT / "crates" / "compiler" / "tests" / "manifest_snapshot.rs",
-        REPO_ROOT / "crates" / "backend-wasm" / "src" / "runtime" / "manifest" / "all.rs",
         REPO_ROOT / "crates" / "runtime-catalog" / "src" / "runtime" / "manifest" / "all.rs",
-        REPO_ROOT / "crates" / "backend-wasm" / "src" / "runtime" / "spec" / "all.rs",
         REPO_ROOT / "crates" / "runtime-catalog" / "src" / "runtime" / "spec" / "all.rs",
         REPO_ROOT / "crates" / "runtime-catalog" / "src" / "runtime_fn.rs",
     ]
@@ -1871,11 +1906,12 @@ def main():
     # Existing checks
     violations.extend(check_use_super_star())
     violations.extend(check_runtime_push_str())
+    violations.extend(check_src_filename_pseudo_hierarchy())
     violations.extend(check_include_in_src())
     violations.extend(check_validated_backend_contract())
 
     for v in violations:
-        if ": ERROR " in v:
+        if ": WARN " in v or ": ERROR " in v:
             print(v, file=sys.stderr)
     if any(": ERROR " in v for v in violations):
         errors += 1

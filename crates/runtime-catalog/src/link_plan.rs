@@ -387,12 +387,6 @@ fn node_shim_import_to_capability(import: &HostImport) -> Option<Capability> {
         HostImport::IntlNumberFormatFormat => Some(Capability::HostIntlNumberFormatFormat),
         HostImport::ReflectApply => Some(Capability::HostReflectApply),
         HostImport::ReflectConstruct => Some(Capability::HostReflectConstruct),
-<<<<<<< HEAD
-||||||| parent of 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
-=======
-        HostImport::GetIterator => None,
-        HostImport::IteratorNext => None,
->>>>>>> 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
         HostImport::EvalDirect => Some(Capability::HostEvalDirect),
         HostImport::EvalIndirect => Some(Capability::HostEvalIndirect),
         HostImport::FunctionCompile => Some(Capability::HostFunctionCompile),
@@ -453,22 +447,12 @@ fn cap_is_host(cap: &Capability) -> bool {
             | Capability::HostStringNormalize
             | Capability::HostReflectApply
             | Capability::HostReflectConstruct
-<<<<<<< HEAD
             | Capability::HostEvalDirect
             | Capability::HostEvalIndirect
             | Capability::HostFunctionCompile
             | Capability::HostFunctionCall
             | Capability::HostFunctionCallMethod
             | Capability::HostFunctionConstruct
-||||||| parent of 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
-=======
-            | Capability::HostFunctionCompile
-            | Capability::HostFunctionCall
-            | Capability::HostFunctionCallMethod
-            | Capability::HostFunctionConstruct
-            | Capability::HostEvalDirect
-            | Capability::HostEvalIndirect
->>>>>>> 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
     )
 }
 

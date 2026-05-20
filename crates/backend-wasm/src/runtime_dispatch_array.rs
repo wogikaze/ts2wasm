@@ -61,6 +61,7 @@ impl WatEmitter<'_> {
             RuntimeFn::TypedArrayFromArray => self.emit_typed_array_from_array(wat),
             RuntimeFn::TypedArrayCtorWithLength => self.emit_typed_array_ctor_with_length(wat),
             RuntimeFn::TypedArraySet => self.emit_typed_array_set(wat),
+            RuntimeFn::TypedArrayCtorFromBuffer => self.emit_typed_array_ctor_from_buffer(wat),
             RuntimeFn::AtomicsElementPtr => self.emit_atomics_element_ptr(wat),
             RuntimeFn::AtomicsLoad => self.emit_atomics_load(wat),
             RuntimeFn::AtomicsStore => self.emit_atomics_store(wat),
