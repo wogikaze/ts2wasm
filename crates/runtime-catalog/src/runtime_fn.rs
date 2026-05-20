@@ -377,6 +377,8 @@ pub enum RuntimeFn {
     StringEndsWith,
     /// String.prototype.match
     StringMatch,
+    /// String.prototype.matchAll
+    StringMatchAll,
     /// String.prototype.search
     StringSearch,
     /// Issue 051: RegExp.prototype.test for literal-backed plain byte patterns.
@@ -1307,6 +1309,7 @@ const REGEXP_SEARCH_DEPS: &[RuntimeFn] = &[
     RuntimeFn::RegexpParseFlags,
 ];
 const STRING_MATCH_DEPS: &[RuntimeFn] = &[RuntimeFn::RegExpMatch];
+const STRING_MATCH_ALL_DEPS: &[RuntimeFn] = &[RuntimeFn::RegExpMatch];
 const STRING_SEARCH_DEPS: &[RuntimeFn] = &[RuntimeFn::RegExpSearch];
 
 // Array method dependencies
@@ -1406,7 +1409,7 @@ const ARRAY_SPLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy]
 
 // Object method dependencies
 const OBJECT_KEYS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
-const OBJECT_GET_OWN_PROPERTY_NAMES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const OBJECT_GET_OWN_PROPERTY_NAMES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::ObjectKeys];
 const OBJECT_GET_OWN_PROPERTY_SYMBOLS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const OBJECT_SPREAD_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ObjectKeys,
@@ -1770,6 +1773,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringStartsWith" => Some(RuntimeFn::StringStartsWith),
         "StringEndsWith" => Some(RuntimeFn::StringEndsWith),
         "StringMatch" => Some(RuntimeFn::StringMatch),
+        "StringMatchAll" => Some(RuntimeFn::StringMatchAll),
         "StringSearch" => Some(RuntimeFn::StringSearch),
         "RegExpTest" => Some(RuntimeFn::RegExpTest),
         "RegExpMatch" => Some(RuntimeFn::RegExpMatch),
@@ -2528,6 +2532,7 @@ impl RuntimeFn {
             | Self::StringStartsWith
             | Self::StringEndsWith
             | Self::StringMatch
+            | Self::StringMatchAll
             | Self::StringSearch
             | Self::StringToUpperCase
             | Self::StringToLowerCase

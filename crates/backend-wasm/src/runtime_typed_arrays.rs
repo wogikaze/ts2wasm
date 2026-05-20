@@ -1575,7 +1575,7 @@ pub(super) fn emit_typed_array_from_array(&self, wat: &mut String) {
                 (if (i32.le_s (local.get $bias) (i32.const 30))
                   (then (br $overflow_gt)))
                 (local.set $raw (i32.or (local.get $sign) (i32.const 0x7C00)))
-                (br $convert_done))))
+                (br $convert_done)))
           (block $round_ties
             (if (i32.ne (local.get $dropped) (local.get $halfway))
               (then (br $round_ties)))
@@ -1592,8 +1592,10 @@ pub(super) fn emit_typed_array_from_array(&self, wat: &mut String) {
                   (if (i32.le_s (local.get $bias) (i32.const 30))
                     (then (br $overflow_ties)))
                   (local.set $raw (i32.or (local.get $sign) (i32.const 0x7C00)))
-                  (br $convert_done)))))
-              (else (nop)))
+                  (br $convert_done))))
+        )
+        (else (nop))
+        )
       (local.set $raw (i32.or (local.get $sign) (i32.or (i32.shl (local.get $bias) (i32.const 10)) (local.get $mant)))))
     ;; Write 2 bytes with endianness
     (if (i32.eq (local.get $little_endian) (i32.const {true_tag}))

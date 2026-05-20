@@ -2250,7 +2250,7 @@ match self {
             },
             Self::ObjectGetOwnPropertyNames => RuntimeSpec {
                 symbol: "$object_get_own_property_names",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -2362,7 +2362,7 @@ match self {
             },
             Self::ObjectPreventExtensions => RuntimeSpec {
                 symbol: "$object_prevent_extensions",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -2370,7 +2370,7 @@ match self {
             },
             Self::ObjectIsExtensible => RuntimeSpec {
                 symbol: "$object_is_extensible",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -2378,7 +2378,7 @@ match self {
             },
             Self::ObjectIsSealed => RuntimeSpec {
                 symbol: "$object_is_sealed",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -2386,7 +2386,7 @@ match self {
             },
             Self::ObjectIsFrozen => RuntimeSpec {
                 symbol: "$object_is_frozen",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -2864,7 +2864,7 @@ match self {
             },
             Self::PromiseFinally => RuntimeSpec {
                 symbol: "$promise_finally",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -2944,7 +2944,7 @@ match self {
             },
             Self::RegexpMatchInner => RuntimeSpec {
                 symbol: "$regexp_match_inner",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -2952,7 +2952,7 @@ match self {
             },
             Self::RegexpParseFlags => RuntimeSpec {
                 symbol: "$regexp_parse_flags",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3126,6 +3126,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::StringMatchAll => RuntimeSpec {
+                symbol: "$string_match_all",
+                deps: STRING_MATCH_ALL_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::StringSearch => RuntimeSpec {
                 symbol: "$string_search",
                 deps: STRING_SEARCH_DEPS,
@@ -3168,7 +3176,7 @@ match self {
             },
             Self::StringIsWellFormed => RuntimeSpec {
                 symbol: "$string_is_well_formed",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3176,7 +3184,7 @@ match self {
             },
             Self::StringToWellFormed => RuntimeSpec {
                 symbol: "$string_to_well_formed",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3184,7 +3192,7 @@ match self {
             },
             Self::StringNormalize => RuntimeSpec {
                 symbol: "$string_normalize",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: IMPORT_STRING_NORMALIZE,
                 capability: CAP_STRING_NORMALIZE,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3192,7 +3200,7 @@ match self {
             },
             Self::IntlNumberFormatFormat => RuntimeSpec {
                 symbol: "$intl_number_format_format",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: IMPORT_INTL_NUMBER_FORMAT_FORMAT,
                 capability: CAP_INTL_NUMBER_FORMAT_FORMAT,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3200,7 +3208,7 @@ match self {
             },
             Self::IntlDateTimeFormatFormat => RuntimeSpec {
                 symbol: "$intl_date_time_format_format",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: IMPORT_INTL_DATE_TIME_FORMAT_FORMAT,
                 capability: CAP_INTL_DATE_TIME_FORMAT_FORMAT,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3217,6 +3225,14 @@ match self {
             Self::StringFromCodePoint => RuntimeSpec {
                 symbol: "$string_from_code_point",
                 deps: STRING_FROM_CODE_POINT_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::StringMatchAll => RuntimeSpec {
+                symbol: "$string_match_all",
+                deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3280,7 +3296,7 @@ match self {
             },
             Self::SymbolToPrimitive => RuntimeSpec {
                 symbol: "$symbol_to_primitive",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3288,7 +3304,7 @@ match self {
             },
             Self::SymbolToStringTag => RuntimeSpec {
                 symbol: "$symbol_to_string_tag",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3304,7 +3320,7 @@ match self {
             },
             Self::SymbolToString => RuntimeSpec {
                 symbol: "$symbol_to_string",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3312,7 +3328,7 @@ match self {
             },
             Self::SymbolDescription => RuntimeSpec {
                 symbol: "$symbol_description",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3328,7 +3344,7 @@ match self {
             },
             Self::TaskPoll => RuntimeSpec {
                 symbol: "$task_poll",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3336,7 +3352,7 @@ match self {
             },
             Self::TaskResult => RuntimeSpec {
                 symbol: "$task_result",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3352,7 +3368,7 @@ match self {
             },
             Self::TruthyBool => RuntimeSpec {
                 symbol: "$truthy_bool",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3368,7 +3384,7 @@ match self {
             },
             Self::TypeOf => RuntimeSpec {
                 symbol: "$typeof",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: TYPEOF_RUNTIME_STRINGS,
@@ -3376,7 +3392,7 @@ match self {
             },
             Self::IsString => RuntimeSpec {
                 symbol: "$is_string",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3384,7 +3400,7 @@ match self {
             },
             Self::ValueOf => RuntimeSpec {
                 symbol: "$value_of",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3400,7 +3416,7 @@ match self {
             },
             Self::IsNaN => RuntimeSpec {
                 symbol: "$is_nan",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3416,7 +3432,7 @@ match self {
             },
             Self::ParseFloat => RuntimeSpec {
                 symbol: "$parse_float",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3424,7 +3440,7 @@ match self {
             },
             Self::IsFinite => RuntimeSpec {
                 symbol: "$is_finite",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3432,7 +3448,7 @@ match self {
             },
             Self::BooleanCoerce => RuntimeSpec {
                 symbol: "$boolean_coerce",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3440,7 +3456,7 @@ match self {
             },
             Self::BooleanToString => RuntimeSpec {
                 symbol: "$boolean_to_string",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: BOOLEAN_TO_STRING_RUNTIME_STRINGS,
@@ -3576,7 +3592,7 @@ match self {
             },
             Self::AtomicsWaitAsync => RuntimeSpec {
                 symbol: "$atomics_wait_async",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3776,7 +3792,7 @@ match self {
             },
             Self::DataViewGetBuffer => RuntimeSpec {
                 symbol: "$dataview_get_buffer",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3784,7 +3800,7 @@ match self {
             },
             Self::DataViewGetByteOffset => RuntimeSpec {
                 symbol: "$dataview_get_byte_offset",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3792,7 +3808,7 @@ match self {
             },
             Self::ArrayPushMany => RuntimeSpec {
                 symbol: "$pseudo_array_push_many",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3857,7 +3873,7 @@ match self {
             },
             Self::PrivateFieldGet => RuntimeSpec {
                 symbol: "$pseudo_private_field_get",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3865,7 +3881,7 @@ match self {
             },
             Self::PrivateFieldSet => RuntimeSpec {
                 symbol: "$pseudo_private_field_set",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3873,7 +3889,7 @@ match self {
             },
             Self::PrivateBrandCheck => RuntimeSpec {
                 symbol: "$pseudo_private_brand_check",
-                deps: NO_DEPS,
+                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
