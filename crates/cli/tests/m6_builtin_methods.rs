@@ -4058,17 +4058,12 @@ fn build_smoke_disposable_stack() {
 }
 
 #[test]
-fn build_smoke_temporal_unsupported_diagnostic() {
+fn build_smoke_temporal_compiles() {
     let result = run_fixture("builtins-and-io/temporal-now.ts");
     assert!(
-        result.is_err(),
-        "Temporal should produce unsupported diagnostic"
-    );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("issue-436"),
-        "Diagnostic should mention issue-436: {}",
-        err_msg
+        result.is_ok(),
+        "Temporal should compile (issue-436): {:?}",
+        result.err()
     );
 }
 

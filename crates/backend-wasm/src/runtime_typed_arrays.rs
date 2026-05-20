@@ -1415,7 +1415,7 @@ impl WatEmitter<'_> {
     (local $arg_offset i32) (local $addr i32)
     (local $lo i32) (local $hi i32) (local $bits i32)
     (local $sign i32) (local $exp i32) (local $mant i32) (local $n i32) (local $shift_amount i32)
-    (local $result i32) (local $rem i32)
+    (local $result i32) (local $rem i32) (local $halfway i32)
     (local.set $dv_base (i32.and (local.get $dv) (i32.const {heap_mask})))
     (local.set $byte_len (i32.load (local.get $dv_base)))
     (local.set $buf_base (i32.load (i32.add (local.get $dv_base) (i32.const 4))))
@@ -1465,12 +1465,26 @@ impl WatEmitter<'_> {
         (local.set $shift_amount (i32.sub (i32.const 25) (local.get $exp)))
         (local.set $result (i32.shr_u (local.get $n) (local.get $shift_amount)))
         (local.set $rem (i32.and (local.get $n) (i32.sub (i32.shl (i32.const 1) (local.get $shift_amount)) (i32.const 1))))
+        (local.set $halfway (i32.shl (i32.const 1) (i32.sub (local.get $shift_amount) (i32.const 1))))
         (if (i32.eq (local.get $rem) (i32.const 0))
           (then
             (local.set $result (select (i32.sub (i32.const 0) (local.get $result)) (local.get $result) (local.get $sign)))
             (return (i32.or (i32.shl (local.get $result) (i32.const {num_shift})) (i32.const {num_tag}))))
-          (else (return (i32.const {nan_value}))))))
-    (unreachable))
+          (else
+            ;; Round-to-nearest, ties-to-even
+            (if (i32.lt_u (local.get $rem) (local.get $halfway))
+              (then (nop))
+              (else
+                (if (i32.gt_u (local.get $rem) (local.get $halfway))
+                  (then (local.set $result (i32.add (local.get $result) (i32.const 1))))
+                  (else
+                    ;; Tie: round to even
+                    (if (i32.and (local.get $result) (i32.const 1))
+                      (then (local.set $result (i32.add (local.get $result) (i32.const 1))))
+                      (else (nop)))))))
+            (local.set $result (select (i32.sub (i32.const 0) (local.get $result)) (local.get $result) (local.get $sign)))
+            (return (i32.or (i32.shl (local.get $result) (i32.const {num_shift})) (i32.const {num_tag})))))
+    (unreachable)
 "#,
             heap_mask = ValueTag::HEAP_MASK,
             array_header = Layout::ARRAY_HEADER_SIZE,

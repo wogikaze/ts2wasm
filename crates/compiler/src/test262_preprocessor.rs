@@ -523,6 +523,22 @@ fn build_feature_stubs(features: &[String], source: &str) -> Result<String, Diag
                 stubs.push_str(&format!("    Symbol.{name} = 'Symbol.{name}';\n"));
                 stubs.push_str("  }\n}");
             }
+            "Temporal" => {
+                if !source_has_binding(source, "Temporal") {
+                    stubs.push_str("var Temporal = {};\n");
+                    stubs.push_str("Temporal.Now = {};\n");
+                    stubs.push_str("Temporal.Instant = function Instant() {};\n");
+                    stubs.push_str("Temporal.PlainDate = function PlainDate() {};\n");
+                    stubs.push_str("Temporal.PlainTime = function PlainTime() {};\n");
+                    stubs.push_str("Temporal.PlainDateTime = function PlainDateTime() {};\n");
+                    stubs.push_str("Temporal.PlainYearMonth = function PlainYearMonth() {};\n");
+                    stubs.push_str("Temporal.PlainMonthDay = function PlainMonthDay() {};\n");
+                    stubs.push_str("Temporal.ZonedDateTime = function ZonedDateTime() {};\n");
+                    stubs.push_str("Temporal.Duration = function Duration() {};\n");
+                    stubs.push_str("Temporal.TimeZone = function TimeZone() {};\n");
+                    stubs.push_str("Temporal.Calendar = function Calendar() {};\n");
+                }
+            }
             _ => {
                 // Check if this is a known-but-not-stubbed feature (tracked but
                 // the functionality may partially work). Only error on truly

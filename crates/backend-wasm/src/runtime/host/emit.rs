@@ -1268,6 +1268,7 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
+    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -1296,6 +1297,7 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
+    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -1322,6 +1324,7 @@ impl WatEmitter<'_> {
             r#"
   (func $math_log2 (param $v i32) (result i32)
     (local $tag i32)
+    (local $n i32)
     (local $obj i32)
     (local $is_number i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
