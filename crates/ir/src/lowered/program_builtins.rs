@@ -17,6 +17,18 @@ pub(crate) fn builtin_function_token_value(name: &str) -> Option<i32> {
     match name {
         "parseInt" => Some(ValueTag::BUILTIN_PARSE_INT_VALUE),
         "parseFloat" => Some(ValueTag::BUILTIN_PARSE_FLOAT_VALUE),
+        "isNaN" => Some(ValueTag::encode_reserved_number_payload(
+            ValueTag::BUILTIN_NUMBER_IS_NAN_PAYLOAD,
+        )),
+        "isFinite" => Some(ValueTag::encode_reserved_number_payload(
+            ValueTag::BUILTIN_NUMBER_IS_FINITE_PAYLOAD,
+        )),
+        "isInteger" => Some(ValueTag::encode_reserved_number_payload(
+            ValueTag::BUILTIN_NUMBER_IS_INTEGER_PAYLOAD,
+        )),
+        "isSafeInteger" => Some(ValueTag::encode_reserved_number_payload(
+            ValueTag::BUILTIN_NUMBER_IS_SAFE_INTEGER_PAYLOAD,
+        )),
         // NativeError constructor tokens — typeof returns "function".
         "Error" => Some(native_error_token_value(0)),
         "EvalError" => Some(native_error_token_value(1)),

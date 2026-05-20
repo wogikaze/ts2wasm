@@ -60,6 +60,14 @@ impl ValueTag {
     pub const BUILTIN_PARSE_INT_PAYLOAD: i32 = Self::NAN_PAYLOAD + 4;
     /// Reserved payload for the `parseFloat` builtin function identity token.
     pub const BUILTIN_PARSE_FLOAT_PAYLOAD: i32 = Self::NAN_PAYLOAD + 5;
+    /// Reserved payload for the Number.isNaN builtin function identity token.
+    pub const BUILTIN_NUMBER_IS_NAN_PAYLOAD: i32 = Self::NAN_PAYLOAD + 12;
+    /// Reserved payload for the Number.isFinite builtin function identity token.
+    pub const BUILTIN_NUMBER_IS_FINITE_PAYLOAD: i32 = Self::NAN_PAYLOAD + 13;
+    /// Reserved payload for the Number.isInteger builtin function identity token.
+    pub const BUILTIN_NUMBER_IS_INTEGER_PAYLOAD: i32 = Self::NAN_PAYLOAD + 14;
+    /// Reserved payload for the Number.isSafeInteger builtin function identity token.
+    pub const BUILTIN_NUMBER_IS_SAFE_INTEGER_PAYLOAD: i32 = Self::NAN_PAYLOAD + 15;
     /// Base reserved payload for NativeError constructor identity tokens (Error, TypeError, etc.).
     /// Each NativeError gets a sequential payload starting from this base.
     pub const NATIVE_ERROR_PAYLOAD_BASE: i32 = Self::NAN_PAYLOAD + 6;
