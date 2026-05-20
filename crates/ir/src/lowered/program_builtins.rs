@@ -281,13 +281,16 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("DataView", "setBigInt64") => Some(RuntimeFn::DataViewSetBigInt64),
         ("DataView", "getBigUint64") => Some(RuntimeFn::DataViewGetBigUint64),
         ("DataView", "setBigUint64") => Some(RuntimeFn::DataViewSetBigUint64),
+        ("DataView", "buffer") => Some(RuntimeFn::DataViewGetBuffer),
+        ("DataView", "byteOffset") => Some(RuntimeFn::DataViewGetByteOffset),
         ("ArrayBuffer", "transfer") => Some(RuntimeFn::ArrayBufferTransfer),
+        ("SharedArrayBuffer", "slice") => Some(RuntimeFn::ArrayBufferSlice),
         ("Map", "get") => Some(RuntimeFn::MapGet),
         ("Map", "set") => Some(RuntimeFn::MapSet),
         ("Map", "has") => Some(RuntimeFn::MapHas),
         ("Map", "delete") => Some(RuntimeFn::MapDelete),
         ("Map", "clear") => Some(RuntimeFn::MapClear),
-        ("Map", "forEach") => Some(RuntimeFn::MapForEach),
+        ("Map", "forEach") => Some(RuntimeFn::MapPrototypeForEach),
         ("Map", "entries") => Some(RuntimeFn::MapEntryPairsArray),
         ("Map", "keys") => Some(RuntimeFn::MapKeysArray),
         ("Map", "values") => Some(RuntimeFn::MapValuesArray),
@@ -299,7 +302,7 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Set", "has") => Some(RuntimeFn::SetHas),
         ("Set", "delete") => Some(RuntimeFn::SetDelete),
         ("Set", "clear") => Some(RuntimeFn::SetClear),
-        ("Set", "forEach") => Some(RuntimeFn::SetForEach),
+        ("Set", "forEach") => Some(RuntimeFn::SetPrototypeForEach),
         ("Set", "entries") => Some(RuntimeFn::SetEntriesArray),
         ("Set", "keys") => Some(RuntimeFn::SetValuesArray),
         ("Set", "values") => Some(RuntimeFn::SetValuesArray),
@@ -415,8 +418,22 @@ pub(crate) fn is_typed_array_class(class_name: &str) -> bool {
             | "Uint32Array"
             | "Float32Array"
             | "Float64Array"
+            | "Float16Array"
             | "BigInt64Array"
             | "BigUint64Array"
+    )
+}
+
+pub(crate) fn is_error_class(class_name: &str) -> bool {
+    matches!(
+        class_name,
+        "Error"
+            | "TypeError"
+            | "RangeError"
+            | "SyntaxError"
+            | "ReferenceError"
+            | "URIError"
+            | "EvalError"
     )
 }
 
