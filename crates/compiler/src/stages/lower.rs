@@ -1653,10 +1653,17 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
                 resolve_static_re_export_source_path(path, &source.value, source.span)?;
             let source_exports = collect_literal_named_exports(&source_path)?;
             for specifier in specifiers {
-                let expr = match source_exports.get(&specifier.imported) {
-                    Some(e) => e.clone(),
-                    None => Expr::Undefined { span: source.span },
-                };
+                let expr = source_exports
+                    .get(&specifier.imported)
+                    .ok_or_else(|| Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-233: module `{}` does not export named binding `{}`",
+                            source.value, specifier.imported
+                        ),
+                        span: Some(specifier.imported_span),
+                        phase: None,
+                    })?;
                 exports.insert(specifier.exported.clone(), expr.clone());
             }
         } else if let Stmt::ExportNamespaceFrom {

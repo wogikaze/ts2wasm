@@ -170,33 +170,53 @@ fn static_module_named_import_repeated_source_build_smoke() {
 }
 
 #[test]
-fn static_module_named_import_missing_export_build_smoke() {
-    assert_fixture_build_smoke("module-system/static-missing-named-export.ts");
+fn static_module_named_import_missing_export_reports_issue_233_at_imported_name() {
+    assert_build_fails_with_diagnostic_span_at(
+        "module-system/static-missing-named-export.ts",
+        "UnsupportedModule",
+        "issue-233: module `./static-entry-source` does not export named binding `missing`",
+        "missing",
+    );
 }
 
 #[test]
-fn static_named_import_unsupported_build_smoke() {
-    assert_fixture_build_smoke("module-system/static-named-import-unsupported.ts");
+fn static_named_import_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
+        "module-system/static-named-import-unsupported.ts",
+        "issue-232: missing local module `./module-source`",
+    );
 }
 
 #[test]
-fn static_side_effect_import_unsupported_build_smoke() {
-    assert_fixture_build_smoke("module-system/static-side-effect-import-unsupported.ts");
+fn static_side_effect_import_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
+        "module-system/static-side-effect-import-unsupported.ts",
+        "issue-232: missing local module `./module-source`",
+    );
 }
 
 #[test]
-fn static_namespace_import_unsupported_build_smoke() {
-    assert_fixture_build_smoke("module-system/static-namespace-import-unsupported.ts");
+fn static_namespace_import_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
+        "module-system/static-namespace-import-unsupported.ts",
+        "issue-232: missing local module `./module-source`",
+    );
 }
 
 #[test]
-fn static_default_import_unsupported_build_smoke() {
-    assert_fixture_build_smoke("module-system/static-default-import-unsupported.ts");
+fn static_default_import_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
+        "module-system/static-default-import-unsupported.ts",
+        "issue-232: missing local module `./module-source`",
+    );
 }
 
 #[test]
-fn static_combined_named_import_unsupported_build_smoke() {
-    assert_fixture_build_smoke("module-system/static-combined-named-import-unsupported.ts");
+fn static_combined_named_import_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
+        "module-system/static-combined-named-import-unsupported.ts",
+        "issue-232: missing local module `./module-source`",
+    );
 }
 
 #[test]
@@ -225,8 +245,11 @@ fn static_default_namespace_import_entry_build_smoke() {
 }
 
 #[test]
-fn static_combined_namespace_import_unsupported_build_smoke() {
-    assert_fixture_build_smoke("module-system/static-combined-namespace-import-unsupported.ts");
+fn static_combined_namespace_import_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
+        "module-system/static-combined-namespace-import-unsupported.ts",
+        "issue-232: missing local module `./module-source`",
+    );
 }
 
 #[test]
@@ -275,23 +298,35 @@ fn static_side_effect_import_entry_build_smoke() {
 }
 
 #[test]
-fn static_re_export_unsupported_build_smoke() {
-    assert_fixture_build_smoke("module-system/static-re-export-unsupported.ts");
+fn static_re_export_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
+        "module-system/static-re-export-unsupported.ts",
+        "issue-232: missing local module `./module-source`",
+    );
 }
 
 #[test]
-fn static_named_re_export_unsupported_build_smoke() {
-    assert_fixture_build_smoke("module-system/static-named-re-export-unsupported.ts");
+fn static_named_re_export_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
+        "module-system/static-named-re-export-unsupported.ts",
+        "issue-232: missing local module `./module-source`",
+    );
 }
 
 #[test]
-fn static_namespace_re_export_unsupported_build_smoke() {
-    assert_fixture_build_smoke("module-system/static-namespace-re-export-unsupported.ts");
+fn static_namespace_re_export_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
+        "module-system/static-namespace-re-export-unsupported.ts",
+        "issue-232: missing local module `./module-source`",
+    );
 }
 
 #[test]
-fn static_bare_import_unsupported_build_smoke() {
-    assert_fixture_build_smoke("module-system/static-bare-import-unsupported.ts");
+fn static_bare_module_import_reports_issue_232_unsupported_specifier() {
+    assert_build_fails_with_module_graph_diagnostic(
+        "module-system/static-bare-import-unsupported.ts",
+        "issue-232: unsupported non-local module specifier `pkg`",
+    );
 }
 
 #[test]
