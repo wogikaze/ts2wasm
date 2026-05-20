@@ -353,32 +353,6 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             });
         }
-        if class_name == "AggregateError" {
-            let errors = args
-                .first()
-                .map(|arg| self.lower_expr(arg))
-                .transpose()?
-                .unwrap_or_else(|| LoweredExpr::ArrayNew {
-                    elements: Vec::new(),
-                    span: Span::generated("array_new"),
-                });
-            let message = match args.get(1) {
-                Some(ResolvedExpr::Undefined) => {
-                    LoweredExpr::String(String::new(), Span::generated("str"))
-                }
-                Some(message) => LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeFn::ErrorMessage,
-                    args: vec![self.lower_expr(message)?],
-                    span: Span::generated("runtime_call"),
-                },
-                None => LoweredExpr::String(String::new(), Span::generated("str")),
-            };
-            return Ok(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::AggregateError,
-                args: vec![errors, message],
-                span: Span::generated("runtime_call"),
-            });
-        }
         if is_typed_array_constructor(class_name) {
             if args.is_empty() {
                 return Ok(LoweredExpr::ArrayNew {
@@ -435,7 +409,7 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             });
         }
-        if matches!(class_name, "ArrayBuffer" | "SharedArrayBuffer") {
+        if class_name == "ArrayBuffer" {
             let mut lowered_args = Vec::new();
             for arg in args {
                 lowered_args.push(self.lower_expr(arg)?);
@@ -493,19 +467,43 @@ impl super::super::Resolver {
             });
         }
         if let Some(constructor) = BuiltinErrorConstructor::from_name(class_name) {
-            let message = match args.first() {
-                Some(ResolvedExpr::Undefined) => {
-                    LoweredExpr::String(String::new(), Span::generated("str"))
-                }
-                Some(message) => LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeFn::ErrorMessage,
-                    args: vec![self.lower_expr(message)?],
-
-                    span: Span::generated("runtime_call"),
-                },
-                None => LoweredExpr::String(String::new(), Span::generated("str")),
-            };
-            let cause = args.get(1).and_then(|options| match options {
+            let (errors, message, cause_index) =
+                if constructor == BuiltinErrorConstructor::AggregateError {
+                    let errors = args
+                        .first()
+                        .map(|arg| self.lower_expr(arg))
+                        .transpose()?
+                        .unwrap_or_else(|| LoweredExpr::ArrayNew {
+                            elements: Vec::new(),
+                            span: Span::generated("array_new"),
+                        });
+                    let message = match args.get(1) {
+                        Some(ResolvedExpr::Undefined) => {
+                            LoweredExpr::String(String::new(), Span::generated("str"))
+                        }
+                        Some(message) => LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::ErrorMessage,
+                            args: vec![self.lower_expr(message)?],
+                            span: Span::generated("runtime_call"),
+                        },
+                        None => LoweredExpr::String(String::new(), Span::generated("str")),
+                    };
+                    (Some(Box::new(errors)), message, 2usize)
+                } else {
+                    let message = match args.first() {
+                        Some(ResolvedExpr::Undefined) => {
+                            LoweredExpr::String(String::new(), Span::generated("str"))
+                        }
+                        Some(message) => LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::ErrorMessage,
+                            args: vec![self.lower_expr(message)?],
+                            span: Span::generated("runtime_call"),
+                        },
+                        None => LoweredExpr::String(String::new(), Span::generated("str")),
+                    };
+                    (None, message, 1usize)
+                };
+            let cause = args.get(cause_index).and_then(|options| match options {
                 ResolvedExpr::Object(props) => props.iter().find_map(|prop| {
                     if prop.static_key() == Some("cause") {
                         Some(prop.value())
@@ -528,7 +526,7 @@ impl super::super::Resolver {
                 constructor,
                 message: Box::new(message),
                 cause,
-                errors: None,
+                errors,
                 span: Span::generated("error_new"),
             });
         }
