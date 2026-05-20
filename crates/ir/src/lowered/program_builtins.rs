@@ -222,6 +222,21 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 _ => None,
             };
         }
+        if name == "globalThis" {
+            return match method {
+                "parseInt" => Some(RuntimeFn::ParseInt),
+                "parseFloat" => Some(RuntimeFn::ParseFloat),
+                "isNaN" => Some(RuntimeFn::IsNaN),
+                "isFinite" => Some(RuntimeFn::IsFinite),
+                "encodeURI" => Some(RuntimeFn::EncodeURI),
+                "encodeURIComponent" => Some(RuntimeFn::EncodeURIComponent),
+                "decodeURI" => Some(RuntimeFn::DecodeURI),
+                "decodeURIComponent" => Some(RuntimeFn::DecodeURIComponent),
+                "escape" => Some(RuntimeFn::Escape),
+                "unescape" => Some(RuntimeFn::Unescape),
+                _ => None,
+            };
+        }
     }
     match method {
         "concat" => Some(RuntimeFn::Concat),

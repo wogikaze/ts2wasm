@@ -605,7 +605,6 @@ impl WatEmitter<'_> {
             entry1_value_offset = Layout::OBJECT_ENTRIES_OFFSET
                 + Layout::OBJECT_ENTRY_SIZE
                 + Layout::OBJECT_VALUE_OFFSET,
-            object_prototype = RuntimeFn::ObjectPrototype.symbol(),
             status_key = self.string_value("status"),
             value_key = self.string_value("value"),
             reason_key = self.string_value("reason"),

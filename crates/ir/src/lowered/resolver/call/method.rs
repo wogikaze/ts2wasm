@@ -2821,6 +2821,7 @@ impl super::super::Resolver {
                         || name == "Atomics"
                         || name == "Reflect"
                         || name == "$262"
+                        || name == "globalThis"
             );
             if !is_static_call {
                 lowered_args.push(self.lower_expr(object)?);
