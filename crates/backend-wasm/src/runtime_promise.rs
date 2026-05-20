@@ -19,10 +19,20 @@ impl WatEmitter<'_> {
     (i32.store (i32.add (local.get $base) (i32.const {slot0_offset})) (i32.const {pending}))
     ;; Slot 1: result = undefined (0)
     (i32.store (i32.add (local.get $base) (i32.const {slot1_offset})) (i32.const {undefined}))
-    ;; Slot 2: onFulfilled = undefined (0)
+    ;; Slot 2: onFulfilled = undefined (0) — reserved for resolve stub
     (i32.store (i32.add (local.get $base) (i32.const {slot2_offset})) (i32.const {undefined}))
-    ;; Slot 3: onRejected = undefined (0)
+    ;; Slot 3: onRejected = undefined (0) — reserved for reject stub
     (i32.store (i32.add (local.get $base) (i32.const {slot3_offset})) (i32.const {undefined}))
+    ;; If executor is provided (not undefined/null), store placeholder resolve/reject
+    (if (i32.and
+          (i32.ne (local.get $executor) (i32.const {undefined}))
+          (i32.ne (local.get $executor) (i32.const {null})))
+      (then
+        ;; Store resolve/reject placeholders in slots 2/3
+        (i32.store (i32.add (local.get $base) (i32.const {slot2_offset}))
+          (call $promise_resolve (i32.const {undefined})))
+        (i32.store (i32.add (local.get $base) (i32.const {slot3_offset}))
+          (call $promise_reject (i32.const {undefined})))))
     ;; Return tagged as ARRAY
     (i32.or (local.get $base) (i32.const {array_tag})))
 "#,
@@ -34,6 +44,7 @@ impl WatEmitter<'_> {
             slot3_offset = Layout::ARRAY_HEADER_SIZE + 12,
             pending = 0,
             undefined = ValueTag::UNDEFINED,
+            null = ValueTag::NULL,
             array_tag = ValueTag::ARRAY,
         ));
     }
@@ -381,6 +392,9 @@ impl WatEmitter<'_> {
     (local $state i32)
     (local $result_promise i32)
     (local $result_arr i32)
+    ;; Validate input: must be array-tagged
+    (if (i32.ne (i32.and (local.get $iterable) (i32.const {tag_mask})) (i32.const {array_tag}))
+      (then (return (call $promise_reject (i32.const {undefined})))))
     (local.set $base (i32.and (local.get $iterable) (i32.const {heap_mask})))
     (local.set $len (i32.load (local.get $base)))
     ;; Allocate result promise: header(20) + 4 slots(16) = 36 bytes
@@ -438,6 +452,7 @@ impl WatEmitter<'_> {
             undefined = ValueTag::UNDEFINED,
             heap_mask = ValueTag::HEAP_MASK,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            tag_mask = ValueTag::TAG_MASK,
             array_tag = ValueTag::ARRAY_TAG,
         ));
     }
@@ -452,6 +467,9 @@ impl WatEmitter<'_> {
     (local $elem i32)
     (local $elem_base i32)
     (local $state i32)
+    ;; Validate input: must be array-tagged
+    (if (i32.ne (i32.and (local.get $iterable) (i32.const {tag_mask})) (i32.const {array_tag}))
+      (then (return (call $promise_reject (i32.const {undefined})))))
     (local.set $base (i32.and (local.get $iterable) (i32.const {heap_mask})))
     (local.set $len (i32.load (local.get $base)))
     (local.set $i (i32.const 0))
@@ -478,6 +496,8 @@ impl WatEmitter<'_> {
             undefined = ValueTag::UNDEFINED,
             heap_mask = ValueTag::HEAP_MASK,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
         ));
     }
 
@@ -491,6 +511,9 @@ impl WatEmitter<'_> {
     (local $elem i32)
     (local $elem_base i32)
     (local $state i32)
+    ;; Validate input: must be array-tagged
+    (if (i32.ne (i32.and (local.get $iterable) (i32.const {tag_mask})) (i32.const {array_tag}))
+      (then (return (call $promise_reject (i32.const {undefined})))))
     (local.set $base (i32.and (local.get $iterable) (i32.const {heap_mask})))
     (local.set $len (i32.load (local.get $base)))
     (local.set $i (i32.const 0))
@@ -515,6 +538,9 @@ impl WatEmitter<'_> {
             fulfilled = 1,
             heap_mask = ValueTag::HEAP_MASK,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            undefined = ValueTag::UNDEFINED,
             all_rejected_message = self.string_value("All promises were rejected"),
         ));
     }
@@ -533,6 +559,9 @@ impl WatEmitter<'_> {
     (local $result_promise i32)
     (local $result_arr i32)
     (local $record i32)
+    ;; Validate input: must be array-tagged
+    (if (i32.ne (i32.and (local.get $iterable) (i32.const {tag_mask})) (i32.const {array_tag}))
+      (then (return (call $promise_reject (i32.const {undefined})))))
     (local.set $base (i32.and (local.get $iterable) (i32.const {heap_mask})))
     (local.set $len (i32.load (local.get $base)))
     (local.set $result_promise (call $alloc_heap (i32.const {promise_size})))
@@ -592,6 +621,7 @@ impl WatEmitter<'_> {
             undefined = ValueTag::UNDEFINED,
             heap_mask = ValueTag::HEAP_MASK,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            tag_mask = ValueTag::TAG_MASK,
             array_tag = ValueTag::ARRAY_TAG,
             object_tag = ValueTag::OBJECT_TAG,
             settlement_record_size =

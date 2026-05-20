@@ -1390,7 +1390,11 @@ const PROMISE_WITH_RESOLVERS_DEPS: &[RuntimeFn] = &[
     RuntimeFn::PromiseConstructor,
 ];
 const PROMISE_ANY_DEPS: &[RuntimeFn] = &[RuntimeFn::PromiseReject, RuntimeFn::AggregateError];
-const PROMISE_ALL_SETTLED_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::ObjectPrototype];
+const PROMISE_ALL_SETTLED_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::ObjectPrototype,
+    RuntimeFn::PromiseReject,
+];
 const PROMISE_WITH_RESOLVERS_RUNTIME_STRINGS: &[&str] = &["promise", "resolve", "reject"];
 const PROMISE_ALL_SETTLED_RUNTIME_STRINGS: &[&str] =
     &["status", "value", "reason", "fulfilled", "rejected"];

@@ -2824,7 +2824,7 @@ match self {
             },
             Self::PromiseConstructor => RuntimeSpec {
                 symbol: "$promise_constructor",
-                deps: &[Self::AllocHeap],
+                deps: &[Self::AllocHeap, Self::PromiseResolve, Self::PromiseReject],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -2872,7 +2872,7 @@ match self {
             },
             Self::PromiseAll => RuntimeSpec {
                 symbol: "$promise_all",
-                deps: &[Self::AllocHeap],
+                deps: &[Self::AllocHeap, Self::PromiseReject],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -2896,7 +2896,7 @@ match self {
             },
             Self::PromiseRace => RuntimeSpec {
                 symbol: "$promise_race",
-                deps: NO_DEPS,
+                deps: &[Self::PromiseReject],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
