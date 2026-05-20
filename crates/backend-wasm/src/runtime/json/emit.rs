@@ -41,7 +41,7 @@ impl WatEmitter<'_> {
     (local.set $s_len (i32.load (local.get $s_obj)))
     (local.set $pos (call $json_skip_whitespace (local.get $s_obj) (local.get $s_len) (i32.const {zero})))
     (if (i32.ge_u (local.get $pos) (local.get $s_len))
-      (then (call $json_parse_syntax_error)))
+      (then (return (call $json_parse_syntax_error))))
     (local.set $ch
       (i32.load8_u
         (i32.add
@@ -52,21 +52,21 @@ impl WatEmitter<'_> {
         (then
           (local.set $value (call $json_parse_object (local.get $s_obj) (local.get $s_len) (local.get $pos)))
           (if (i32.eq (local.get $value) (i32.const {undefined}))
-            (then (call $json_parse_syntax_error)))
+            (then (return (call $json_parse_syntax_error))))
           (local.set $pos (call $json_skip_container (local.get $s_obj) (local.get $s_len) (local.get $pos)))
           (br $parsed_value)))
       (if (i32.eq (local.get $ch) (i32.const {lbracket}))
         (then
           (local.set $value (call $json_parse_array (local.get $s_obj) (local.get $s_len) (local.get $pos)))
           (if (i32.eq (local.get $value) (i32.const {undefined}))
-            (then (call $json_parse_syntax_error)))
+            (then (return (call $json_parse_syntax_error))))
           (local.set $pos (call $json_skip_container (local.get $s_obj) (local.get $s_len) (local.get $pos)))
           (br $parsed_value)))
       (if (i32.eq (local.get $ch) (i32.const {quote}))
         (then
           (local.set $value (call $json_parse_string (local.get $s_obj) (local.get $s_len) (local.get $pos)))
           (if (i32.eq (local.get $value) (i32.const {undefined}))
-            (then (call $json_parse_syntax_error)))
+            (then (return (call $json_parse_syntax_error))))
           (local.set $pos (call $json_skip_string (local.get $s_obj) (local.get $s_len) (local.get $pos)))
           (if (i32.gt_u (local.get $pos) (local.get $s_len))
             (then (return (i32.const {undefined}))))
@@ -113,14 +113,14 @@ impl WatEmitter<'_> {
           (br $parsed_value)))
       (local.set $value (call $json_parse_number_value (local.get $s_obj) (local.get $s_len) (local.get $pos)))
       (if (i32.eq (local.get $value) (i32.const {undefined}))
-        (then (call $json_parse_syntax_error)))
+        (then (return (call $json_parse_syntax_error))))
       (local.set $pos (call $json_skip_number (local.get $s_obj) (local.get $s_len) (local.get $pos)))
       (if (i32.gt_u (local.get $pos) (local.get $s_len))
         (then (return (i32.const {undefined}))))
       (br $parsed_value))
     (local.set $pos (call $json_skip_whitespace (local.get $s_obj) (local.get $s_len) (local.get $pos)))
     (if (i32.ne (local.get $pos) (local.get $s_len))
-      (then (call $json_parse_syntax_error)))
+      (then (return (call $json_parse_syntax_error))))
     ;; If reviver provided, wrap + walk
     (if
       (i32.or

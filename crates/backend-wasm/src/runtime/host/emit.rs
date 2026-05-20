@@ -1685,6 +1685,23 @@ impl WatEmitter<'_> {
         (br $indent_loop)))
     (local.get $len))
 
+  (func $json_write_hex_pair (param $byte i32) (param $ptr i32) (result i32)
+    (local $hi i32)
+    (local $lo i32)
+    (local.set $hi (i32.shr_u (local.get $byte) (i32.const 4)))
+    (local.set $lo (i32.and (local.get $byte) (i32.const 15)))
+    (if (i32.lt_u (local.get $hi) (i32.const 10))
+      (then
+        (i32.store8 (local.get $ptr) (i32.add (local.get $hi) (i32.const {ascii_zero}))))
+      (else
+        (i32.store8 (local.get $ptr) (i32.add (i32.sub (local.get $hi) (i32.const 10)) (i32.const {ascii_lower_a})))))
+    (if (i32.lt_u (local.get $lo) (i32.const 10))
+      (then
+        (i32.store8 (i32.add (local.get $ptr) (i32.const 1)) (i32.add (local.get $lo) (i32.const {ascii_zero}))))
+      (else
+        (i32.store8 (i32.add (local.get $ptr) (i32.const 1)) (i32.add (i32.sub (local.get $lo) (i32.const 10)) (i32.const {ascii_lower_a})))))
+    (i32.const 2))
+
   (func $json_write_escaped_string (param $v i32) (param $ptr i32) (result i32)
     (local $base i32)
     (local $len i32)
@@ -1752,6 +1769,19 @@ impl WatEmitter<'_> {
             (local.set $out (i32.add (local.get $out) (i32.const {one})))
             (i32.store8 (i32.add (local.get $ptr) (local.get $out)) (i32.const {letter_t}))
             (local.set $out (i32.add (local.get $out) (i32.const {one})))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $string_loop)))
+        (if (i32.lt_u (local.get $ch) (i32.const {ctrlesc_max}))
+          (then
+            (i32.store8 (i32.add (local.get $ptr) (local.get $out)) (i32.const {backslash}))
+            (local.set $out (i32.add (local.get $out) (i32.const {one})))
+            (i32.store8 (i32.add (local.get $ptr) (local.get $out)) (i32.const {letter_u}))
+            (local.set $out (i32.add (local.get $out) (i32.const {one})))
+            (i32.store8 (i32.add (local.get $ptr) (local.get $out)) (i32.const {ascii_zero}))
+            (local.set $out (i32.add (local.get $out) (i32.const {one})))
+            (i32.store8 (i32.add (local.get $ptr) (local.get $out)) (i32.const {ascii_zero}))
+            (local.set $out (i32.add (local.get $out) (i32.const {one})))
+            (local.set $out (i32.add (local.get $out) (call $json_write_hex_pair (local.get $ch) (i32.add (local.get $ptr) (local.get $out)))))
             (local.set $i (i32.add (local.get $i) (i32.const {one})))
             (br $string_loop)))
         (i32.store8 (i32.add (local.get $ptr) (local.get $out)) (local.get $ch))
@@ -2057,6 +2087,7 @@ impl WatEmitter<'_> {
             letter_n = 110,
             letter_r = 114,
             letter_t = 116,
+            letter_u = 117,
             quote = 34,
             colon = 58,
             comma = 44,
@@ -2064,6 +2095,9 @@ impl WatEmitter<'_> {
             rbrace = 125,
             lbracket = 91,
             rbracket = 93,
+            ctrlesc_max = 0x20,
+            ascii_lower_a = 97,
+            ascii_zero = RuntimeConst::ASCII_ZERO,
         ));
     }
 
