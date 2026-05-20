@@ -1361,7 +1361,16 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
+    ;; log2(0) = -Infinity, log2(-0) = -Infinity
+    (if (i32.eq (local.get $tag) (i32.const {number_tag}))
+      (then
+        (local.set $n (i32.shr_s (local.get $v) (i32.const {number_shift})))
+        (if (i32.eq (local.get $n) (i32.const {zero}))
+          (then (return (i32.const {neg_infinity_value})))))
+      (else
+        (local.set $n (call $number_to_i32 (local.get $v)))
+        (if (i32.eq (local.get $n) (i32.const {zero}))
+          (then (return (i32.const {neg_infinity_value}))))))
     (return (call $host_math_log2 (local.get $n))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
@@ -1369,7 +1378,10 @@ impl WatEmitter<'_> {
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            number_shift = ValueTag::NUMBER_SHIFT,
             nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+            neg_infinity_value = tagged_number_sentinel(ValueTag::NEG_INFINITY_PAYLOAD),
+            zero = RuntimeConst::ZERO,
         ));
     }
 
