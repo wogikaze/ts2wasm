@@ -1968,13 +1968,11 @@ impl WatEmitter<'_> {
                 constructor,
                 message,
                 cause,
-                errors,
                 ..
             } => {
                 let base_prop_count = 2u32;
                 let cause_prop_count = if cause.is_some() { 1 } else { 0 };
-                let errors_prop_count = if errors.is_some() { 1 } else { 0 };
-                let prop_count = base_prop_count + cause_prop_count + errors_prop_count;
+                let prop_count = base_prop_count + cause_prop_count;
                 let prop_capacity = prop_count + 8;
                 let size = Layout::OBJECT_HEADER_SIZE + prop_capacity * Layout::OBJECT_ENTRY_SIZE;
                 writer.push_str(&format!(
@@ -2076,31 +2074,6 @@ impl WatEmitter<'_> {
                         "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
                         frame.heap_base_tmp(),
                         cause_entry_offset + Layout::OBJECT_VALUE_OFFSET,
-                        frame.heap_value_tmp(),
-                    ));
-                }
-                if let Some(errors) = errors {
-                    let errors_entry_offset = Layout::OBJECT_ENTRIES_OFFSET
-                        + (base_prop_count + cause_prop_count) * Layout::OBJECT_ENTRY_SIZE;
-                    let errors_key_raw = self.string_value("errors");
-                    writer.push_str(&format!(
-                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
-                        frame.heap_base_tmp(),
-                        errors_entry_offset,
-                        errors_key_raw,
-                    ));
-                    self.emit_expr(writer, errors, indent, frame);
-                    writer.local_set(indent, frame.heap_value_tmp());
-                    self.emit_gc_root_mirror_index(
-                        writer.output_mut(),
-                        &pad,
-                        frame.heap_value_tmp(),
-                        frame,
-                    );
-                    writer.push_str(&format!(
-                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
-                        frame.heap_base_tmp(),
-                        errors_entry_offset + Layout::OBJECT_VALUE_OFFSET,
                         frame.heap_value_tmp(),
                     ));
                 }
