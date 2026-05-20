@@ -1479,11 +1479,13 @@ impl WatEmitter<'_> {
                       (i32.add (local.get $start) (i32.const 2)))))
                 (if (i32.and (i32.eq (local.get $ch2) (i32.const 0x80))
                       (i32.or
-                        (i32.and
-                          (i32.ge_u (local.get $ch3) (i32.const 0x80))
-                          (i32.le_u (local.get $ch3) (i32.const 0x8A)))
-                        (i32.eq (local.get $ch3) (i32.const 0xA8))
-                        (i32.eq (local.get $ch3) (i32.const 0xA9))
+                        (i32.or
+                          (i32.or
+                            (i32.and
+                              (i32.ge_u (local.get $ch3) (i32.const 0x80))
+                              (i32.le_u (local.get $ch3) (i32.const 0x8A)))
+                            (i32.eq (local.get $ch3) (i32.const 0xA8)))
+                          (i32.eq (local.get $ch3) (i32.const 0xA9)))
                         (i32.eq (local.get $ch3) (i32.const 0xAF))))
                   (then
                     (local.set $start (i32.add (local.get $start) (i32.const 3)))
@@ -1599,11 +1601,13 @@ impl WatEmitter<'_> {
                   (i32.eq (local.get $ch2) (i32.const 0x80)))
               (then
                 (if (i32.or
-                      (i32.and
-                        (i32.ge_u (local.get $ch) (i32.const 0x80))
-                        (i32.le_u (local.get $ch) (i32.const 0x8A)))
-                      (i32.eq (local.get $ch) (i32.const 0xA8))
-                      (i32.eq (local.get $ch) (i32.const 0xA9))
+                      (i32.or
+                        (i32.or
+                          (i32.and
+                            (i32.ge_u (local.get $ch) (i32.const 0x80))
+                            (i32.le_u (local.get $ch) (i32.const 0x8A)))
+                          (i32.eq (local.get $ch) (i32.const 0xA8)))
+                        (i32.eq (local.get $ch) (i32.const 0xA9)))
                       (i32.eq (local.get $ch) (i32.const 0xAF)))
                   (then
                     (local.set $end (i32.sub (local.get $end) (i32.const 3)))
@@ -1750,11 +1754,13 @@ impl WatEmitter<'_> {
                       (i32.add (local.get $start) (i32.const 2)))))
                 (if (i32.and (i32.eq (local.get $ch2) (i32.const 0x80))
                       (i32.or
-                        (i32.and
-                          (i32.ge_u (local.get $ch3) (i32.const 0x80))
-                          (i32.le_u (local.get $ch3) (i32.const 0x8A)))
-                        (i32.eq (local.get $ch3) (i32.const 0xA8))
-                        (i32.eq (local.get $ch3) (i32.const 0xA9))
+                        (i32.or
+                          (i32.or
+                            (i32.and
+                              (i32.ge_u (local.get $ch3) (i32.const 0x80))
+                              (i32.le_u (local.get $ch3) (i32.const 0x8A)))
+                            (i32.eq (local.get $ch3) (i32.const 0xA8)))
+                          (i32.eq (local.get $ch3) (i32.const 0xA9)))
                         (i32.eq (local.get $ch3) (i32.const 0xAF))))
                   (then
                     (local.set $start (i32.add (local.get $start) (i32.const 3)))
@@ -1909,11 +1915,13 @@ impl WatEmitter<'_> {
                   (i32.eq (local.get $ch2) (i32.const 0x80)))
               (then
                 (if (i32.or
-                      (i32.and
-                        (i32.ge_u (local.get $ch) (i32.const 0x80))
-                        (i32.le_u (local.get $ch) (i32.const 0x8A)))
-                      (i32.eq (local.get $ch) (i32.const 0xA8))
-                      (i32.eq (local.get $ch) (i32.const 0xA9))
+                      (i32.or
+                        (i32.or
+                          (i32.and
+                            (i32.ge_u (local.get $ch) (i32.const 0x80))
+                            (i32.le_u (local.get $ch) (i32.const 0x8A)))
+                          (i32.eq (local.get $ch) (i32.const 0xA8)))
+                        (i32.eq (local.get $ch) (i32.const 0xA9)))
                       (i32.eq (local.get $ch) (i32.const 0xAF)))
                   (then
                     (local.set $end (i32.sub (local.get $end) (i32.const 3)))

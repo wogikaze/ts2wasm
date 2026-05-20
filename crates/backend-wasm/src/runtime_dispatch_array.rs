@@ -98,6 +98,8 @@ impl WatEmitter<'_> {
             RuntimeFn::DataViewSetBigInt64 => self.emit_dataview_set_bigint64(wat),
             RuntimeFn::DataViewGetBigUint64 => self.emit_dataview_get_biguint64(wat),
             RuntimeFn::DataViewSetBigUint64 => self.emit_dataview_set_biguint64(wat),
+            RuntimeFn::DataViewGetBuffer => self.emit_dataview_get_buffer(wat),
+            RuntimeFn::DataViewGetByteOffset => self.emit_dataview_get_byte_offset(wat),
             _ => unreachable!("non-array RuntimeFn routed to array dispatch"),
         }
     }
