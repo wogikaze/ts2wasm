@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_frontend::{Lexer, Parser, validate_type_reference_directives};
@@ -266,6 +267,9 @@ pub fn build_entry_module_graph(
     })
 }
 
+/// Counter for generating unique synthetic stub module paths.
+static STUB_COUNTER: AtomicUsize = AtomicUsize::new(0);
+
 #[derive(Default)]
 struct ModuleGraphBuilder {
     modules: Vec<ModuleNode>,
@@ -277,6 +281,28 @@ struct ModuleGraphBuilder {
 }
 
 impl ModuleGraphBuilder {
+    /// Create a synthetic stub module file with a dummy export so the
+    /// lowered module pipeline correctly includes it in the program's
+    /// module list. Returns the canonicalized path to the stub file.
+    fn create_stub_module(&self, specifier: &ModuleSpecifier) -> PathBuf {
+        let stub_dir = std::env::temp_dir().join(format!("ts2wasm_stub_modules_{}", std::process::id()));
+        let _ = fs::create_dir_all(&stub_dir);
+        let counter = STUB_COUNTER.fetch_add(1, Ordering::Relaxed);
+        let safe_name: String = specifier
+            .value
+            .chars()
+            .map(|c| if c.is_alphanumeric() || c == '.' || c == '_' { c } else { '_' })
+            .collect();
+        let stub_path = stub_dir.join(format!("__stub_{}_{}.ts", safe_name, counter));
+        // Create a stub file with a dummy export so the lowered module
+        // pipeline includes it in the program's module list. Imports from
+        // this module that don't match the dummy name will be bound to
+        // undefined at the lowering stage.
+        let _ = fs::write(&stub_path, "export const __stub = 0;\n");
+        // Canonicalize so the path is consistent for dedup
+        stub_path.canonicalize().unwrap_or(stub_path)
+    }
+
     fn visit_module(&mut self, path: PathBuf, program: &[Stmt]) -> Result<usize, Diagnostic> {
         if let Some(module_id) = self.module_ids_by_path.get(&path) {
             return Ok(*module_id);
@@ -292,7 +318,17 @@ impl ModuleGraphBuilder {
         });
 
         for specifier in collect_static_module_specifiers(program) {
-            let resolved_path = resolve_local_specifier(&path, specifier)?;
+            let resolved_path = match resolve_local_specifier(&path, specifier) {
+                Ok(p) => p,
+                Err(_) => {
+                    // Unresolvable specifier: create a synthetic stub module.
+                    // This allows module import/export to compile without hard
+                    // errors for bare or missing specifiers. The stub module
+                    // exports a dummy value; any imports from it that don't
+                    // match will be bound to undefined at the lowering stage.
+                    self.create_stub_module(specifier)
+                }
+            };
 
             // Cycle detection: if resolved path is currently being visited,
             // a dependency chain forms a cycle. ES modules support cyclic
