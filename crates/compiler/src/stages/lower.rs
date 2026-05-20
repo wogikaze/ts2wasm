@@ -77,7 +77,17 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                 for specifier in specifiers {
                     let expr = match exports.get(&specifier.imported) {
                         Some(e) => e.clone(),
-                        None => Expr::Undefined { span: source.span },
+                        None => {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedModule,
+                                message: format!(
+                                    "issue-233: module `{}` does not export named binding `{}`",
+                                    source.value, specifier.imported
+                                ),
+                                span: Some(specifier.imported_span),
+                                phase: None,
+                            });
+                        }
                     };
                     let binding = StaticNamedImportBinding {
                         source_specifier: source.value.clone(),
@@ -486,7 +496,17 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                 for specifier in specifiers {
                     let expr = match exports.get(&specifier.imported) {
                         Some(e) => e.clone(),
-                        None => Expr::Undefined { span: source.span },
+                        None => {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedModule,
+                                message: format!(
+                                    "issue-233: module `{}` does not export named binding `{}`",
+                                    source.value, specifier.imported
+                                ),
+                                span: Some(specifier.imported_span),
+                                phase: None,
+                            });
+                        }
                     };
                     let local_name = format!("__ts2wasm_re_{}", specifier.exported);
                     rewritten.push(Stmt::Let {
