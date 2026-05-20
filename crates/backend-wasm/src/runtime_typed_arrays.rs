@@ -1202,7 +1202,7 @@ impl WatEmitter<'_> {
             true_tag = ValueTag::TRUE,
         ));
     }
-pub(super) fn emit_typed_array_from_array(&self, wat: &mut String) {
+    pub(super) fn emit_typed_array_from_array(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
   (func $typed_array_from_array (param $source i32) (result i32)
@@ -1323,7 +1323,6 @@ pub(super) fn emit_typed_array_from_array(&self, wat: &mut String) {
             tagged_zero = ValueTag::NUMBER, // number tag with payload 0 = number 0.0
         ));
     }
-
 
     /// TypedArray constructor from ArrayBuffer: new Int8Array(buffer, byteOffset?, length?).
     /// Creates an array-backed TypedArray by copying elements from the buffer data region.

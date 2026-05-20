@@ -1419,7 +1419,8 @@ const ARRAY_SPLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy]
 
 // Object method dependencies
 const OBJECT_KEYS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
-const OBJECT_GET_OWN_PROPERTY_NAMES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::ObjectKeys];
+const OBJECT_GET_OWN_PROPERTY_NAMES_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::ObjectKeys];
 const OBJECT_GET_OWN_PROPERTY_SYMBOLS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const OBJECT_SPREAD_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ObjectKeys,

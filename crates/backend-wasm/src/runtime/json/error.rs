@@ -1,11 +1,7 @@
 use crate::emitter::WatEmitter;
 use crate::emitter::builtin_error_prototype_global;
 use ts2wasm_ir::lowered::BuiltinErrorConstructor;
-use ts2wasm_runtime_abi::{
-    consts::RuntimeString,
-    layout::Layout,
-    value::ValueTag,
-};
+use ts2wasm_runtime_abi::{consts::RuntimeString, layout::Layout, value::ValueTag};
 
 impl WatEmitter<'_> {
     /// Emit the `$json_parse_syntax_error` WAT function.

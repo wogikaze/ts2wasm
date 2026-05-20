@@ -4154,5 +4154,4 @@ impl WatEmitter<'_> {
             object_tag = ValueTag::OBJECT,
         ));
     }
-
 }
