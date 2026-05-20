@@ -257,15 +257,20 @@ impl WatEmitter<'_> {
                 constructor,
                 message,
                 cause,
+                errors,
                 ..
             } => {
                 self.intern_string("message");
                 self.intern_string("stack");
                 self.intern_string("cause");
+                self.intern_string("errors");
                 self.intern_string(super::builtin_error_stack_prefix(*constructor));
                 self.collect_expr_strings(message);
                 if let Some(cause) = cause {
                     self.collect_expr_strings(cause);
+                }
+                if let Some(errors) = errors {
+                    self.collect_expr_strings(errors);
                 }
             }
             LoweredExpr::PropertyGet { obj, key, .. } => {

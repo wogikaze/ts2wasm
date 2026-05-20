@@ -29,12 +29,6 @@ impl WatEmitter<'_> {
                 ),
             );
         }
-        if self.needs_aggregate_error_prototype() {
-            writer.line_fmt(
-                2,
-                format_args!("(global $error_proto_aggregate_error (mut i32) (i32.const 0))"),
-            );
-        }
     }
 
     pub(super) fn emit_class_prototype_initializers(&self, wat: &mut String, indent: usize) {
@@ -116,42 +110,6 @@ impl WatEmitter<'_> {
             ));
             wat.push_str(&format!("{pad}  )\n{pad})\n"));
         }
-        // AggregateError.prototype -- initialized separately since AggregateError is
-        // handled via RuntimeFn::AggregateError, not BuiltinErrorConstructor.
-        if self.needs_aggregate_error_prototype() {
-            wat.push_str(&format!(
-                "{pad}(if (i32.eqz (global.get $error_proto_aggregate_error))\n{pad}  (then\n"
-            ));
-            wat.push_str(&format!(
-                "{pad}    (global.set $error_proto_aggregate_error (call {} (i32.const {})))\n",
-                RuntimeFn::AllocHeap.symbol(),
-                Layout::OBJECT_HEADER_SIZE + Layout::OBJECT_ENTRY_SIZE,
-            ));
-            wat.push_str(&format!(
-                "{pad}    (i32.store (global.get $error_proto_aggregate_error) (i32.const 1))\n"
-            ));
-            wat.push_str(&format!(
-                "{pad}    (i32.store (i32.add (global.get $error_proto_aggregate_error) (i32.const {})) (i32.const 0))\n",
-                Layout::OBJECT_FLAGS_OFFSET,
-            ));
-            // Parent = Error.prototype (raw pointer)
-            wat.push_str(&format!(
-                "{pad}    (i32.store (i32.add (global.get $error_proto_aggregate_error) (i32.const {})) (global.get $error_proto_error))\n",
-                Layout::OBJECT_PROTOTYPE_OFFSET,
-            ));
-            // "name" = "AggregateError"
-            let name_key = self.string_value("name");
-            let name_value = self.string_value("AggregateError");
-            wat.push_str(&format!(
-                "{pad}    (i32.store (i32.add (global.get $error_proto_aggregate_error) (i32.const {})) (i32.const {name_key}))\n",
-                Layout::OBJECT_ENTRIES_OFFSET,
-            ));
-            wat.push_str(&format!(
-                "{pad}    (i32.store (i32.add (global.get $error_proto_aggregate_error) (i32.const {})) (i32.const {name_value}))\n",
-                Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
-            ));
-            wat.push_str(&format!("{pad}  )\n{pad})\n"));
-        }
     }
 
     fn ordered_class_prototypes(&self) -> Vec<(FuncId, Option<FuncId>)> {
@@ -229,12 +187,6 @@ impl WatEmitter<'_> {
                 &mut prototypes,
             );
         }
-        if self.needs_aggregate_error_prototype() {
-            emitter::add_builtin_error_prototype_ref(
-                BuiltinErrorConstructor::Error,
-                &mut prototypes,
-            );
-        }
         if self.needs_json_syntax_error_prototype() {
             emitter::add_builtin_error_prototype_ref(
                 BuiltinErrorConstructor::SyntaxError,
@@ -251,14 +203,14 @@ impl WatEmitter<'_> {
         for module in &self.program.modules {
             Self::collect_builtin_error_prototypes_from_stmts(&module.statements, &mut prototypes);
         }
+        // Ensure Error parent prototype is available when AggregateError is used.
+        if prototypes.contains(&BuiltinErrorConstructor::AggregateError) {
+            emitter::add_builtin_error_prototype_ref(
+                BuiltinErrorConstructor::Error,
+                &mut prototypes,
+            );
+        }
         prototypes
-    }
-
-    /// Returns true if the AggregateError.prototype global needs to be emitted.
-    fn needs_aggregate_error_prototype(&self) -> bool {
-        self.link_plan
-            .required_runtime_functions()
-            .contains(&RuntimeFn::AggregateError)
     }
 
     /// Returns true if the SyntaxError.prototype global needs to be emitted for JSON.parse.
@@ -647,12 +599,16 @@ impl WatEmitter<'_> {
                 constructor,
                 message,
                 cause,
+                errors,
                 ..
             } => {
                 emitter::add_builtin_error_prototype_ref(*constructor, prototypes);
                 Self::collect_builtin_error_prototypes_from_expr(message, prototypes);
                 if let Some(cause) = cause {
                     Self::collect_builtin_error_prototypes_from_expr(cause, prototypes);
+                }
+                if let Some(errors) = errors {
+                    Self::collect_builtin_error_prototypes_from_expr(errors, prototypes);
                 }
             }
             LoweredExpr::Unary { expr, .. }

@@ -316,7 +316,9 @@ fn parity_abi_custom_section_binary() {
     validate_binary(&bytes);
     // Check that the custom section name appears in the raw binary
     assert!(
-        bytes.windows(b"ts2wasm.abi".len()).any(|w| w == b"ts2wasm.abi"),
+        bytes
+            .windows(b"ts2wasm.abi".len())
+            .any(|w| w == b"ts2wasm.abi"),
         "binary output should preserve ABI custom section name in raw bytes"
     );
 }

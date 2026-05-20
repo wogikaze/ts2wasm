@@ -1765,5 +1765,4 @@ impl WatEmitter<'_> {
 "#,
         );
     }
-
 }

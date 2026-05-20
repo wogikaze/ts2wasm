@@ -114,7 +114,6 @@ impl super::super::Resolver {
             || name == "console"
             || name == "process"
             || name == "Buffer"
-            || name == "AggregateError"
             || name == "WeakMap"
             || name == "WeakSet"
             || name == "Atomics"

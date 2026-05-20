@@ -5,7 +5,6 @@
 /// Ownership: this module belongs to the frontend crate. It records what the
 /// parser could recognize and what was erased or rejected. It does NOT assign
 /// runtime policy or call backend types.
-
 use crate::ast::Stmt;
 use crate::diagnostic::Span;
 
@@ -74,7 +73,10 @@ pub fn collect_erasure_report(program: &[Stmt]) -> ErasureReport {
         collect_from_stmt(stmt, &mut erased, &mut unsupported);
     }
 
-    ErasureReport { erased, unsupported }
+    ErasureReport {
+        erased,
+        unsupported,
+    }
 }
 
 fn collect_from_stmt(
@@ -88,27 +90,39 @@ fn collect_from_stmt(
         // so no EnumDecl statements are produced. When the parser is
         // updated to emit EnumDecl nodes, this arm can be enabled.
         // Stmt::EnumDecl { span, .. } => { }
-
         Stmt::AmbientValueDecl { span, .. } => {
             erased.push(ErasedSyntax {
                 kind: ErasureKind::AmbientDecl,
                 span: to_span_record(*span),
             });
         }
-        Stmt::Function { is_ambient: true, span, .. } => {
+        Stmt::Function {
+            is_ambient: true,
+            span,
+            ..
+        } => {
             erased.push(ErasedSyntax {
                 kind: ErasureKind::AmbientDecl,
                 span: to_span_record(*span),
             });
         }
-        Stmt::ImportNamed { import_type: true, span, .. } => {
+        Stmt::ImportNamed {
+            import_type: true,
+            span,
+            ..
+        } => {
             erased.push(ErasedSyntax {
                 kind: ErasureKind::TypeOnlyImport,
                 span: to_span_record(*span),
             });
         }
         Stmt::ExportDecl { declaration, .. } => {
-            if let Stmt::Function { is_ambient: true, span, .. } = declaration.as_ref() {
+            if let Stmt::Function {
+                is_ambient: true,
+                span,
+                ..
+            } = declaration.as_ref()
+            {
                 erased.push(ErasedSyntax {
                     kind: ErasureKind::AmbientDecl,
                     span: to_span_record(*span),

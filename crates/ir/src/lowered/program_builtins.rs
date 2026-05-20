@@ -48,6 +48,7 @@ pub(crate) fn builtin_function_token_value(name: &str) -> Option<i32> {
         "SyntaxError" => Some(native_error_token_value(4)),
         "TypeError" => Some(native_error_token_value(5)),
         "URIError" => Some(native_error_token_value(6)),
+        "AggregateError" => Some(native_error_token_value(7)),
         // TypedArray constructor tokens — typeof returns "function".
         // These use payloads at NATIVE_ERROR_PAYLOAD_BASE + 100 + offset, which
         // are >= DIRECT_LOCAL_TOKEN_PAYLOAD_BASE so the runtime $typeof identifies
@@ -324,6 +325,10 @@ pub(crate) fn resolve_method_to_runtime_fn(
         "toFixed" => Some(RuntimeFn::NumberToFixed),
         "toExponential" => Some(RuntimeFn::NumberToExponential),
         "toPrecision" => Some(RuntimeFn::NumberToPrecision),
+        // Function.prototype.call on any receiver: route through HeapClosureCall
+        // which dispatches at runtime based on the value's tag. For function values
+        // this calls the function; for non-functions it throws a TypeError.
+        "call" => Some(RuntimeFn::HeapClosureCall),
         _ => None,
     }
 }
@@ -432,6 +437,9 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Object", "hasOwnProperty") => Some(RuntimeFn::ObjectHasOwnProperty),
         ("Object", "isPrototypeOf") => Some(RuntimeFn::IsPrototypeOf),
         ("Object", "propertyIsEnumerable") => Some(RuntimeFn::PropertyIsEnumerable),
+        // Function prototype methods
+        ("Function", "call") => Some(RuntimeFn::HeapClosureCall),
+        ("Function", "toString") => Some(RuntimeFn::ObjectToString),
         // Number prototype methods
         ("Number", "toString") => Some(RuntimeFn::NumberToString),
         // Symbol prototype methods

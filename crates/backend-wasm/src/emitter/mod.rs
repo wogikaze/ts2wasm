@@ -516,6 +516,7 @@ pub(super) fn builtin_error_prototype_global(constructor: BuiltinErrorConstructo
         BuiltinErrorConstructor::SyntaxError => "error_proto_syntax_error",
         BuiltinErrorConstructor::TypeError => "error_proto_type_error",
         BuiltinErrorConstructor::URIError => "error_proto_uri_error",
+        BuiltinErrorConstructor::AggregateError => "error_proto_aggregate_error",
     }
 }
 
@@ -528,6 +529,7 @@ pub(super) fn builtin_error_stack_prefix(constructor: BuiltinErrorConstructor) -
         BuiltinErrorConstructor::SyntaxError => "SyntaxError: ",
         BuiltinErrorConstructor::TypeError => "TypeError: ",
         BuiltinErrorConstructor::URIError => "URIError: ",
+        BuiltinErrorConstructor::AggregateError => "AggregateError: ",
     }
 }
 

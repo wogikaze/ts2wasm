@@ -157,7 +157,7 @@ and create a new compat archive at compat/v{{new-version}}-snapshot.txt.
 
 #[cfg(test)]
 mod tests {
-    use super::{check_abi_snapshot_compat, LayoutSnapshot};
+    use super::{LayoutSnapshot, check_abi_snapshot_compat};
 
     #[test]
     fn layout_json_snapshot_matches_current() {

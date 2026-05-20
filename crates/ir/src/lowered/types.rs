@@ -42,6 +42,7 @@ pub enum BuiltinErrorConstructor {
     SyntaxError,
     EvalError,
     URIError,
+    AggregateError,
 }
 
 impl BuiltinErrorConstructor {
@@ -54,6 +55,7 @@ impl BuiltinErrorConstructor {
             "SyntaxError" => Some(Self::SyntaxError),
             "TypeError" => Some(Self::TypeError),
             "URIError" => Some(Self::URIError),
+            "AggregateError" => Some(Self::AggregateError),
             _ => None,
         }
     }
@@ -67,6 +69,7 @@ impl BuiltinErrorConstructor {
             Self::SyntaxError => "SyntaxError",
             Self::TypeError => "TypeError",
             Self::URIError => "URIError",
+            Self::AggregateError => "AggregateError",
         }
     }
 
@@ -78,7 +81,8 @@ impl BuiltinErrorConstructor {
             | Self::ReferenceError
             | Self::SyntaxError
             | Self::TypeError
-            | Self::URIError => Some(Self::Error),
+            | Self::URIError
+            | Self::AggregateError => Some(Self::Error),
         }
     }
 }

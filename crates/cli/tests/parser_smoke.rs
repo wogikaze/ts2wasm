@@ -1,16 +1,19 @@
+use std::path::Path;
 /// Parser smoke tests: verify that TypeScript constructs parse successfully
 /// (or fail with expected diagnostics) without running the full build pipeline.
 ///
 /// These tests are the first-class non-semantic fixture class for parser-level
 /// coverage. They do NOT build wasm or run runtime code — they only validate
 /// that the frontend parser accepts or rejects input as expected.
-
 use std::process::Command;
-use std::path::Path;
 
 /// Helper: run ts2wasm with --dump --ast and check that it succeeds (exit 0).
 fn run_parser_smoke(fixture: &str) {
-    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
     let fixture_path = repo_root.join("fixtures").join(fixture);
 
     let output = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
@@ -82,5 +85,8 @@ fn parser_smoke_missing_fixture_reports_error() {
         .arg("/nonexistent/file.ts")
         .output()
         .expect("failed to run ts2wasm");
-    assert!(!output.status.success(), "expected failure for missing file");
+    assert!(
+        !output.status.success(),
+        "expected failure for missing file"
+    );
 }
