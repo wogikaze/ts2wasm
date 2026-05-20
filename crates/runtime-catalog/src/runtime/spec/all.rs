@@ -3357,6 +3357,22 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::EffectOnly,
             },
+            Self::DataViewGetBuffer => RuntimeSpec {
+                symbol: "$dataview_get_buffer",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::DataViewGetByteOffset => RuntimeSpec {
+                symbol: "$dataview_get_byte_offset",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ArrayPushMany => RuntimeSpec {
                 symbol: "$pseudo_array_push_many",
                 deps: NO_DEPS,

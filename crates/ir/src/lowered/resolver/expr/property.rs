@@ -690,12 +690,28 @@ impl super::super::Resolver {
                 }
             }
             (cn, "byteOffset") if is_typed_array_or_dataview(cn) => {
-                // Non-buffer-backed typed arrays and DataViews have byteOffset = 0
-                Ok(Some(LoweredExpr::Number(0, Span::generated("num"))))
+                if cn == "DataView" {
+                    Ok(Some(LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::DataViewGetByteOffset,
+                        args: vec![self.lower_expr(object)?],
+                        span,
+                    }))
+                } else {
+                    // TypedArray: byteOffset = 0 (non-buffer-backed)
+                    Ok(Some(LoweredExpr::Number(0, Span::generated("num"))))
+                }
             }
             (cn, "buffer") if is_typed_array_or_dataview(cn) => {
-                // No proper ArrayBuffer backing yet; return undefined
-                Ok(Some(LoweredExpr::Undefined(span)))
+                if cn == "DataView" {
+                    Ok(Some(LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::DataViewGetBuffer,
+                        args: vec![self.lower_expr(object)?],
+                        span,
+                    }))
+                } else {
+                    // TypedArray: no proper ArrayBuffer backing yet; return undefined
+                    Ok(Some(LoweredExpr::Undefined(span)))
+                }
             }
             _ => Ok(None),
         }

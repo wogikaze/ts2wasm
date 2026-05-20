@@ -428,6 +428,8 @@ match self {
             Self::DataViewSetBigInt64 => "dataview_set_bigint64",
             Self::DataViewGetBigUint64 => "dataview_get_biguint64",
             Self::DataViewSetBigUint64 => "dataview_set_biguint64",
+            Self::DataViewGetBuffer => "dataview_get_buffer",
+            Self::DataViewGetByteOffset => "dataview_get_byte_offset",
             Self::ConsoleGroupStart => "console_group_start",
             Self::ConsoleGroupEndFn => "console_group_end",
             Self::ConsoleTimeStart => "console_time_start",

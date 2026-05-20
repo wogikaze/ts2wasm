@@ -214,6 +214,10 @@ pub enum RuntimeFn {
     DataViewSetBigInt64,
     DataViewGetBigUint64,
     DataViewSetBigUint64,
+    /// DataView.prototype.buffer — returns the underlying ArrayBuffer/SharedArrayBuffer.
+    DataViewGetBuffer,
+    /// DataView.prototype.byteOffset — returns the byte offset of the DataView.
+    DataViewGetByteOffset,
     /// Issue 050: Date epoch slices.
     DateNew,
     DateNewLive,
@@ -1629,6 +1633,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DataViewSetBigInt64" => Some(RuntimeFn::DataViewSetBigInt64),
         "DataViewGetBigUint64" => Some(RuntimeFn::DataViewGetBigUint64),
         "DataViewSetBigUint64" => Some(RuntimeFn::DataViewSetBigUint64),
+        "DataViewGetBuffer" => Some(RuntimeFn::DataViewGetBuffer),
+        "DataViewGetByteOffset" => Some(RuntimeFn::DataViewGetByteOffset),
         "SetFromArray" => Some(RuntimeFn::SetFromArray),
         "SetValuesArray" => Some(RuntimeFn::SetValuesArray),
         "SetEntriesArray" => Some(RuntimeFn::SetEntriesArray),
@@ -2263,7 +2269,9 @@ impl RuntimeFn {
             | Self::DataViewGetBigInt64
             | Self::DataViewSetBigInt64
             | Self::DataViewGetBigUint64
-            | Self::DataViewSetBigUint64 => RuntimeDomain::TypedArray,
+            | Self::DataViewSetBigUint64
+            | Self::DataViewGetBuffer
+            | Self::DataViewGetByteOffset => RuntimeDomain::TypedArray,
         }
     }
 
@@ -2640,6 +2648,8 @@ impl RuntimeFn {
             Self::DataViewSetBigInt64,
             Self::DataViewGetBigUint64,
             Self::DataViewSetBigUint64,
+            Self::DataViewGetBuffer,
+            Self::DataViewGetByteOffset,
             // Atomics operations
             Self::DateNew,
             Self::DateEpochMsNowNumber,
@@ -3097,6 +3107,8 @@ impl RuntimeFn {
             Self::DataViewSetBigInt64,
             Self::DataViewGetBigUint64,
             Self::DataViewSetBigUint64,
+            Self::DataViewGetBuffer,
+            Self::DataViewGetByteOffset,
             // Atomics operations
             Self::DateNew,
             Self::DateEpochMsNowNumber,
