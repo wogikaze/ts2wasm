@@ -3,7 +3,8 @@
 ## Structure
 
 ```
-issues/<id>.md              # 正本: 1 issue = 1 ファイル
+issues/<id>.md              # open / doing / blocked / newly-done issues
+issues/done/<id>.md         # archived done / dropped issues
 issue-views/index.json      # 生成キャッシュ (commitしない)
 ```
 
@@ -80,8 +81,14 @@ mise run issue-status <id> blocked --reason "API未確定"
 mise run issue-status <id> done --evidence "mise run gate: exit 0"
 
 mise run issue-lint                # 必須チェック
-mise run issue-index               # index.json 再生成 (commit禁止)
+mise run issue-index               # index.json 再生成 + close済み issue の done/ archive (commit禁止)
 ```
+
+`mise run issue-index` は `issues/` 直下の `Status: done|dropped` issue を `issues/done/` へ移す。
+ただし次の条件を満たさない issue は移動しない。
+
+- 本文に未完了の `- [ ]` が残っていない
+- `## Test-Requirements` の `Test command` / `Test command(s)` がすべて exit 0
 
 Active IR layer completion work is summarized in `docs/27-ir-layer-completion.md`.
 

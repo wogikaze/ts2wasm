@@ -5,6 +5,7 @@ import os, sys, re
 from datetime import datetime
 
 ISSUES_DIR = "issues"
+DONE_DIR = os.path.join(ISSUES_DIR, "done")
 ALLOWED_STATUS = {"open", "doing", "blocked", "done", "dropped"}
 ALLOWED_PRIORITY = {"P0", "P1", "P2", "P3", "P4"}
 KNOWN_FIELDS = {"Id", "LegacyId", "Status", "Priority", "Labels", "DependsOn",
@@ -35,12 +36,19 @@ seen_legacy = set()
 all_parsed = []
 check_test_refs = []
 
-for fn in sorted(os.listdir(ISSUES_DIR)):
-    if fn in ("README.md",):
-        continue
-    if not fn.endswith(".md"):
-        continue
-    path = os.path.join(ISSUES_DIR, fn)
+def iter_issue_files():
+    for root in (ISSUES_DIR, DONE_DIR):
+        if not os.path.isdir(root):
+            continue
+        for fn in sorted(os.listdir(root)):
+            if fn in ("README.md",):
+                continue
+            if not fn.endswith(".md"):
+                continue
+            yield root, fn, os.path.join(root, fn)
+
+
+for root, fn, path in iter_issue_files():
 
     with open(path) as f:
         content = f.read()
@@ -121,7 +129,7 @@ for fn in sorted(os.listdir(ISSUES_DIR)):
                     m2 = re.match(r"cargo (nextest )?run.*?\s(build_smoke_\w+)", line)
                     if m2:
                         test_name = m2.group(2)
-                        cmd = f"cargo nextest run -p ts2wasm-cli --test m6_builtin_methods {test_name} --no-fail-fast"
+                        cmd = f"cargo nextest run -p ts2wasm-cli --test builtin_methods {test_name} --no-fail-fast"
                         check_test_refs.append({"test": test_name, "cmd": cmd, "fn": fn})
         if status == "dropped":
             if not header.get("BlockedReason", "") and "## Notes" not in body:
@@ -168,22 +176,22 @@ for fn in sorted(os.listdir(ISSUES_DIR)):
     if iid in deps.split():
         error(f"Depends on self", fn)
 
-    all_parsed.append({"id": iid, "status": status, "deps": deps.split(), "fn": fn})
+    all_parsed.append({"id": iid, "status": status, "deps": deps.split(), "fn": fn, "root": root})
 
 # Verify evidence test references are runnable
 for ref in check_test_refs:
     test = ref["test"]
     fn = ref["fn"]
     # Check that test file exists via grep for the test fn name
-    test_files = ["crates/cli/tests/m6_builtin_methods.rs",
-                  "crates/cli/tests/m7_control_flow.rs",
-                  "crates/cli/tests/m8_oop_classes.rs",
-                  "crates/cli/tests/m9_modules.rs",
-                  "crates/cli/tests/m10_node_apis.rs",
-                  "crates/cli/tests/m11_host_deny.rs",
-                  "crates/cli/tests/m12_async_await.rs",
-                  "crates/cli/tests/m2_node_diff.rs",
-                  "crates/cli/tests/m2_node_diff_fixture_tests.rs",
+    test_files = ["crates/cli/tests/builtin_methods.rs",
+                  "crates/cli/tests/control_flow.rs",
+                  "crates/cli/tests/classes.rs",
+                  "crates/cli/tests/modules.rs",
+                  "crates/cli/tests/node_apis.rs",
+                  "crates/cli/tests/host_deny.rs",
+                  "crates/cli/tests/async_await.rs",
+                  "crates/cli/tests/node_diff.rs",
+                  "crates/cli/tests/common/node_diff_fixture_tests.rs",
                   "crates/cli/tests/parser_ast_structures.rs"]
     found = False
     for tf in test_files:
@@ -205,10 +213,7 @@ for d in all_parsed:
         if not dep:
             continue
         if dep not in id_map:
-            # Check if the dependency is in issues/done/
-            done_path = os.path.join(ISSUES_DIR, "done", f"{dep}.md")
-            if not os.path.exists(done_path):
-                error(f"DependsOn unknown: {dep}", d["fn"])
+            error(f"DependsOn unknown: {dep}", d["fn"])
     # Cycle detect (BFS, depth limited)
     visited = set()
     queue = [(iid, 0)]

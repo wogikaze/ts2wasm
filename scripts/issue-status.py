@@ -5,20 +5,25 @@ import os, re, sys
 from datetime import datetime, timezone, timedelta
 
 ISSUES_DIR = "issues"
+DONE_DIR = os.path.join(ISSUES_DIR, "done")
 JST = timezone(timedelta(hours=9))
 ALLOWED = {"open", "doing", "blocked", "done", "dropped"}
 
 def find_file(query):
     if query.startswith("#"):
         query = query[1:]
-    path = os.path.join(ISSUES_DIR, f"{query}.md")
-    if os.path.exists(path):
-        return path
-    for fn in os.listdir(ISSUES_DIR):
-        if not fn.endswith(".md") or fn == "README.md":
+    for base in (ISSUES_DIR, DONE_DIR):
+        path = os.path.join(base, f"{query}.md")
+        if os.path.exists(path):
+            return path
+    for base in (ISSUES_DIR, DONE_DIR):
+        if not os.path.isdir(base):
             continue
-        if query in fn:
-            return os.path.join(ISSUES_DIR, fn)
+        for fn in os.listdir(base):
+            if not fn.endswith(".md") or fn == "README.md":
+                continue
+            if query in fn:
+                return os.path.join(base, fn)
     return None
 
 def has_test_requirements(body):
@@ -114,5 +119,10 @@ if __name__ == "__main__":
         f.write("\n---\n\n")
         f.write(body.strip())
         f.write("\n")
+
+    if os.path.dirname(path) == DONE_DIR and new_status not in ("done", "dropped"):
+        new_path = os.path.join(ISSUES_DIR, os.path.basename(path))
+        os.replace(path, new_path)
+        path = new_path
 
     print(f"Status: {new_status}")
