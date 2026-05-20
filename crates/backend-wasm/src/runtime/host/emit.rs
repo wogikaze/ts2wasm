@@ -825,7 +825,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -836,8 +835,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (return (call $host_math_acos (local.get $n))))
+    (return (call $host_math_acos (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -855,7 +853,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -866,8 +863,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (return (call $host_math_acosh (local.get $n))))
+    (return (call $host_math_acosh (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -885,7 +881,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -896,8 +891,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (return (call $host_math_asin (local.get $n))))
+    (return (call $host_math_asin (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -915,7 +909,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -926,8 +919,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (return (call $host_math_asinh (local.get $n))))
+    (return (call $host_math_asinh (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -945,7 +937,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -956,8 +947,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (return (call $host_math_atan (local.get $n))))
+    (return (call $host_math_atan (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -975,7 +965,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -986,8 +975,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (return (call $host_math_atanh (local.get $n))))
+    (return (call $host_math_atanh (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -1005,7 +993,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -1016,8 +1003,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (return (call $host_math_cos (local.get $n))))
+    (return (call $host_math_cos (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -1035,7 +1021,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -1046,8 +1031,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (return (call $host_math_cosh (local.get $n))))
+    (return (call $host_math_cosh (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -1065,7 +1049,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -1076,8 +1059,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (return (call $host_math_exp (local.get $n))))
+    (return (call $host_math_exp (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -1095,7 +1077,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -1106,8 +1087,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (return (call $host_math_expm1 (local.get $n))))
+    (return (call $host_math_expm1 (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -1260,7 +1240,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -1271,8 +1250,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (return (call $host_math_log (local.get $n))))
+    (return (call $host_math_log (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -1290,7 +1268,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -1301,8 +1278,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (return (call $host_math_log10 (local.get $n))))
+    (return (call $host_math_log10 (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -1320,7 +1296,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -1331,8 +1306,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (return (call $host_math_log1p (local.get $n))))
+    (return (call $host_math_log1p (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -1350,7 +1324,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -1368,10 +1341,9 @@ impl WatEmitter<'_> {
         (if (i32.eq (local.get $n) (i32.const {zero}))
           (then (return (i32.const {neg_infinity_value})))))
       (else
-        (local.set $n (call $number_to_i32 (local.get $v)))
         (if (i32.eq (local.get $n) (i32.const {zero}))
           (then (return (i32.const {neg_infinity_value}))))))
-    (return (call $host_math_log2 (local.get $n))))
+    (return (call $host_math_log2 (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -1392,7 +1364,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -1403,8 +1374,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (return (call $host_math_sin (local.get $n))))
+    (return (call $host_math_sin (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -1422,7 +1392,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -1433,8 +1402,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (return (call $host_math_sinh (local.get $n))))
+    (return (call $host_math_sinh (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -1452,7 +1420,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -1463,8 +1430,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (return (call $host_math_tan (local.get $n))))
+    (return (call $host_math_tan (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -1482,7 +1448,6 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
-    (local $n i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -1493,8 +1458,7 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (return (call $host_math_tanh (local.get $n))))
+    (return (call $host_math_tanh (local.get $v))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
