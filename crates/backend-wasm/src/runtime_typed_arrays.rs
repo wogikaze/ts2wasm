@@ -1202,44 +1202,7 @@ impl WatEmitter<'_> {
             true_tag = ValueTag::TRUE,
         ));
     }
-
-    /// Reads buf_base (offset 4) from the DataView struct and tags it with ARRAY.
-    /// DataView struct: [byte_length@0, buf_base@4, byte_offset@8]
-    pub(super) fn emit_dataview_get_buffer(&self, wat: &mut String) {
-        wat.push_str(&format!(
-            r#"
-  (func $dataview_get_buffer (param $dv i32) (result i32)
-    (local $dv_base i32)
-    (local.set $dv_base (i32.and (local.get $dv) (i32.const {heap_mask})))
-    (i32.or
-      (i32.load (i32.add (local.get $dv_base) (i32.const 4)))
-      (i32.const {array_tag})))
-"#,
-            heap_mask = ValueTag::HEAP_MASK,
-            array_tag = ValueTag::ARRAY,
-        ));
-    }
-
-    /// DataView.prototype.byteOffset — returns the byteOffset of the DataView.
-    /// Reads byte_offset (offset 8) from the DataView struct and returns as tagged number.
-    /// DataView struct: [byte_length@0, buf_base@4, byte_offset@8]
-    pub(super) fn emit_dataview_get_byte_offset(&self, wat: &mut String) {
-        wat.push_str(&format!(
-            r#"
-  (func $dataview_get_byte_offset (param $dv i32) (result i32)
-    (local $dv_base i32)
-    (local $offset i32)
-    (local.set $dv_base (i32.and (local.get $dv) (i32.const {heap_mask})))
-    (local.set $offset (i32.load (i32.add (local.get $dv_base) (i32.const 8))))
-    (i32.or (i32.shl (local.get $offset) (i32.const {num_shift})) (i32.const {num_tag})))
-"#,
-            heap_mask = ValueTag::HEAP_MASK,
-            num_shift = ValueTag::NUMBER_SHIFT,
-            num_tag = ValueTag::NUMBER,
-        ));
-    }
-
-    pub(super) fn emit_typed_array_from_array(&self, wat: &mut String) {
+pub(super) fn emit_typed_array_from_array(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
   (func $typed_array_from_array (param $source i32) (result i32)
@@ -1629,7 +1592,7 @@ impl WatEmitter<'_> {
                   (if (i32.le_s (local.get $bias) (i32.const 30))
                     (then (br $overflow_ties)))
                   (local.set $raw (i32.or (local.get $sign) (i32.const 0x7C00)))
-                  (br $convert_done))))))
+                  (br $convert_done)))))
               (else (nop)))
       (local.set $raw (i32.or (local.get $sign) (i32.or (i32.shl (local.get $bias) (i32.const 10)) (local.get $mant)))))
     ;; Write 2 bytes with endianness
