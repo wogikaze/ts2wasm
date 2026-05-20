@@ -2492,6 +2492,16 @@ fn build_smoke_function_bind_call_apply() {
 }
 
 #[test]
+fn build_smoke_function_call_on_local() {
+    let result = run_fixture("core-semantics/function-call-on-local.ts");
+    assert!(
+        result.is_ok(),
+        "Function.prototype.call on local should build successfully: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_function_prototype() {
     let result = run_fixture("core-semantics/function-object-metadata.ts");
     assert!(

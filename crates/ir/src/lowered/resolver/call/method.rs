@@ -762,48 +762,104 @@ impl super::super::Resolver {
         if method != "call" && method != "apply" {
             return Ok(None);
         }
-        let ResolvedExpr::Ident(func_name) = object else {
-            return Ok(None);
-        };
-        let Ok(func_id) = self.resolve_func(func_name) else {
-            return Ok(None);
-        };
+        // First try compile-time-known function (ResolvedExpr::Ident that resolves to a FuncId).
+        if let ResolvedExpr::Ident(func_name) = object {
+            if let Ok(func_id) = self.resolve_func(func_name) {
+                let receiver = match args.first() {
+                    Some(receiver) => self.lower_expr(receiver)?,
+                    None => LoweredExpr::Undefined(Span::generated("undef")),
+                };
+                let explicit_args = if method == "call" {
+                    args.iter().skip(1).cloned().collect::<Vec<_>>()
+                } else {
+                    match args.get(1) {
+                        None | Some(ResolvedExpr::Undefined | ResolvedExpr::Null) => Vec::new(),
+                        Some(ResolvedExpr::Array(elements)) => elements
+                            .iter()
+                            .map(|element| match element {
+                                ResolvedArrayElement::Present(expr) => expr.clone(),
+                                ResolvedArrayElement::Hole => ResolvedExpr::Undefined,
+                            })
+                            .collect(),
+                        Some(ResolvedExpr::Ident(name)) => {
+                            vec![ResolvedExpr::Spread(Box::new(ResolvedExpr::Ident(
+                                name.clone(),
+                            )))]
+                        }
+                        Some(_) => {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: "issue-458: Function.prototype.apply currently supports array literals, dense array locals, null, or undefined argArray".to_owned(),
+                                span: Some(span),
+                                phase: None,
+                            });
+                        }
+                    }
+                };
+                let lowered_args =
+                    self.lower_function_call_args(func_id, receiver, &explicit_args)?;
+                return Ok(Some(LoweredExpr::Call {
+                    kind: FunctionCallKind::User(func_id),
+                    args: lowered_args,
+                    span: Span::generated("call"),
+                }));
+            }
+        }
+
+        // Runtime function value: the function is stored in a local variable (e.g.,
+        // `let g = f; g.call(...)`).  Emit a HeapClosureCall that dispatches at
+        // runtime based on the value's tag.  The first HeapClosureCall arg is the
+        // function value itself (used for dispatch); the thisArg and explicit
+        // arguments follow as user args.
+        let func_value = self.lower_expr(object)?;
         let receiver = match args.first() {
             Some(receiver) => self.lower_expr(receiver)?,
             None => LoweredExpr::Undefined(Span::generated("undef")),
         };
-        let explicit_args = if method == "call" {
-            args.iter().skip(1).cloned().collect::<Vec<_>>()
+        let mut heap_args = vec![func_value, receiver];
+        if method == "call" {
+            for arg in args.iter().skip(1) {
+                heap_args.push(self.lower_expr(arg)?);
+            }
         } else {
-            match args.get(1) {
-                None | Some(ResolvedExpr::Undefined | ResolvedExpr::Null) => Vec::new(),
-                Some(ResolvedExpr::Array(elements)) => elements
-                    .iter()
-                    .map(|element| match element {
-                        ResolvedArrayElement::Present(expr) => expr.clone(),
-                        ResolvedArrayElement::Hole => ResolvedExpr::Undefined,
-                    })
-                    .collect(),
+            // apply: unpack the second argument as an arg array
+            let apply_arg = args.get(1);
+            match apply_arg {
+                None | Some(ResolvedExpr::Undefined | ResolvedExpr::Null) => {}
+                Some(ResolvedExpr::Array(elements)) => {
+                    for element in elements {
+                        match element {
+                            ResolvedArrayElement::Present(expr) => {
+                                heap_args.push(self.lower_expr(expr)?);
+                            }
+                            ResolvedArrayElement::Hole => {
+                                heap_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                            }
+                        }
+                    }
+                }
                 Some(ResolvedExpr::Ident(name)) => {
-                    vec![ResolvedExpr::Spread(Box::new(ResolvedExpr::Ident(
-                        name.clone(),
-                    )))]
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "issue-458: Function.prototype.apply on a runtime function value currently supports array literals, null, or undefined argArray (ident references not yet supported)".to_owned(),
+                        span: Some(span),
+                        phase: None,
+                    });
                 }
                 Some(_) => {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
-                        message: "issue-458: Function.prototype.apply currently supports array literals, dense array locals, null, or undefined argArray".to_owned(),
+                        message: "issue-458: Function.prototype.apply on a runtime function value currently supports array literals, null, or undefined argArray".to_owned(),
                         span: Some(span),
                         phase: None,
                     });
                 }
             }
-        };
-        let lowered_args = self.lower_function_call_args(func_id, receiver, &explicit_args)?;
-        Ok(Some(LoweredExpr::Call {
-            kind: FunctionCallKind::User(func_id),
-            args: lowered_args,
-            span: Span::generated("call"),
+        }
+        Ok(Some(LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::HeapClosureCall,
+            args: heap_args,
+            span: Span::generated("runtime_call"),
         }))
     }
 
@@ -2017,7 +2073,12 @@ impl super::super::Resolver {
                     phase: None,
                 });
             }
-            return Ok(Some(LoweredExpr::Number(0, Span::generated("num"))));
+            use ts2wasm_runtime_abi::ValueTag;
+            let nan_tagged = ValueTag::NAN_PAYLOAD << ValueTag::NUMBER_SHIFT | ValueTag::NUMBER;
+            return Ok(Some(LoweredExpr::Number(
+                nan_tagged,
+                Span::generated("nan"),
+            )));
         }
         if method == "getYear" && self.is_date_receiver(object) {
             if !args.is_empty() {
@@ -2047,6 +2108,7 @@ impl super::super::Resolver {
                 span: Span::generated("binary"),
             }));
         }
+        // B.2.4.1: Date.prototype.getYear — UTC-based path (dead code kept for clarity)
         if method == "getYear" && self.is_date_receiver(object) {
             if !args.is_empty() {
                 return Err(Diagnostic {
@@ -2071,17 +2133,43 @@ impl super::super::Resolver {
             }));
         }
         if method == "setYear" && self.is_date_receiver(object) {
-            if args.len() != 1 {
+            if args.len() > 1 {
                 return Err(Diagnostic {
                     code: DiagCode::ArityMismatch,
                     message: format!(
-                        "Date.prototype.{method} expects 1 argument, got {}",
+                        "Date.prototype.{method} expects 0 to 1 argument, got {}",
                         args.len()
                     ),
                     span: Some(span),
 
                     phase: None,
                 });
+            }
+            use ts2wasm_runtime_abi::ValueTag;
+            let nan_tagged = ValueTag::NAN_PAYLOAD << ValueTag::NUMBER_SHIFT | ValueTag::NUMBER;
+            // B.2.4.2 Step 3-4: if no year arg or year is NaN, set to NaN and return NaN
+            if args.is_empty() {
+                return Ok(Some(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::DateSetTime,
+                    args: vec![
+                        self.lower_expr(object)?,
+                        LoweredExpr::Number(nan_tagged, Span::generated("nan")),
+                    ],
+                    span: Span::generated("runtime_call"),
+                }));
+            }
+            // Compile-time NaN detection
+            if matches!(&args[0], ResolvedExpr::Ident(name) if name == "NaN")
+                || matches!(&args[0], ResolvedExpr::String(s) if s.parse::<f64>().is_err())
+            {
+                return Ok(Some(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::DateSetTime,
+                    args: vec![
+                        self.lower_expr(object)?,
+                        LoweredExpr::Number(nan_tagged, Span::generated("nan")),
+                    ],
+                    span: Span::generated("runtime_call"),
+                }));
             }
             // B.2.4.2: if 0 ≤ ToInteger(year) ≤ 99, add 1900
             let year_arg = match &args[0] {
@@ -5099,10 +5187,11 @@ impl super::super::Resolver {
                     span: Span::generated("object_is_prototype_of"),
                 })
             }
-            "toString" => Ok(LoweredExpr::String(
-                "[object Object]".to_owned(),
-                Span::generated("str"),
-            )),
+            "toString" => Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ObjectToString,
+                args: vec![receiver],
+                span: Span::generated("runtime_call"),
+            }),
             "toLocaleString" => Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::ObjectToLocaleString,
                 args: vec![receiver],

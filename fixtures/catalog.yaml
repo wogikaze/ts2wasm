@@ -1091,6 +1091,7 @@ directories:
     - function-constructor-this-binding.ts
     - function-constructor-zero-args.ts
     - function-bind-call-apply.ts
+    - function-call-on-local.ts
     - function-expression-iife-return-this.ts
     - function-let-conflict-unsupported.ts
     - function-object-metadata.ts
