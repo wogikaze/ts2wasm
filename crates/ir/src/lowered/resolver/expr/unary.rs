@@ -60,10 +60,7 @@ impl super::super::Resolver {
             }
             let lowered = match self.lower_expr(expr) {
                 Ok(expr) => expr,
-                Err(err)
-                    if matches!(expr, ResolvedExpr::Ident(_))
-                        && err.code == DiagCode::UnresolvedName =>
-                {
+                Err(err) if err.code == DiagCode::UnresolvedName => {
                     return Ok(LoweredExpr::String(
                         "undefined".to_owned(),
                         Span::generated("typeof_undeclared"),

@@ -8,6 +8,9 @@ use ts2wasm_runtime_abi::{
 };
 
 impl WatEmitter<'_> {
+    /// Emit the `$json_parse_syntax_error` WAT function.
+    /// When a try/catch handler is active, creates a SyntaxError object
+    /// and sets $exception_pending instead of trapping.
     pub(crate) fn emit_json_parse_syntax_error(&self, wat: &mut String, syntax_error: i32) {
         let message_value = self.string_value(RuntimeString::JSON_PARSE_SYNTAX_ERROR);
         let message_key = self.string_value("message");

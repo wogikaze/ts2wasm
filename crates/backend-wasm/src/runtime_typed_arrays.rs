@@ -1484,7 +1484,7 @@ impl WatEmitter<'_> {
                       (else (nop)))))))
             (local.set $result (select (i32.sub (i32.const 0) (local.get $result)) (local.get $result) (local.get $sign)))
             (return (i32.or (i32.shl (local.get $result) (i32.const {num_shift})) (i32.const {num_tag})))))
-    (unreachable)
+    (unreachable))))
 "#,
             heap_mask = ValueTag::HEAP_MASK,
             array_header = Layout::ARRAY_HEADER_SIZE,
