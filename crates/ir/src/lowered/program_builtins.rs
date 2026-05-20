@@ -427,6 +427,11 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "unshift") => Some(RuntimeFn::ArrayUnshift),
         ("Array", "splice") => Some(RuntimeFn::ArraySplice),
         ("Object", "valueOf") => Some(RuntimeFn::ValueOf),
+        ("Object", "toString") => Some(RuntimeFn::ObjectToString),
+        ("Object", "toLocaleString") => Some(RuntimeFn::ObjectToLocaleString),
+        ("Object", "hasOwnProperty") => Some(RuntimeFn::ObjectHasOwnProperty),
+        ("Object", "isPrototypeOf") => Some(RuntimeFn::IsPrototypeOf),
+        ("Object", "propertyIsEnumerable") => Some(RuntimeFn::PropertyIsEnumerable),
         // Number prototype methods
         ("Number", "toString") => Some(RuntimeFn::NumberToString),
         // Symbol prototype methods

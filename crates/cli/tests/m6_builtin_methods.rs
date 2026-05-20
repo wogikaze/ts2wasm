@@ -622,6 +622,16 @@ fn build_smoke_json_parse_method() {
 }
 
 #[test]
+fn build_smoke_json_basic_method() {
+    let result = run_fixture("builtins-and-io/json-basic.ts");
+    assert!(
+        result.is_ok(),
+        "JSON basic should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_string_char_at_method() {
     let result = run_fixture("builtins-and-io/string-char-at.ts");
     assert!(

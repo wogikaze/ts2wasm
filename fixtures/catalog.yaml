@@ -350,6 +350,7 @@ directories:
     - json-stringify-space-string.ts
     - json-stringify-space.ts
     - json-stringify.ts
+    - json-basic.ts
     - map-forEach.ts
     - map-iteration.ts
     - map-nan-minus0-key-equality.ts
