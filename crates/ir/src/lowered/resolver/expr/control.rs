@@ -155,6 +155,7 @@ impl super::super::Resolver {
             || name == "ReferenceError"
             || name == "URIError"
             || name == "EvalError"
+            || name == "AggregateError"
         {
             return Ok(LoweredExpr::Undefined(Span::generated("undef")));
         }
