@@ -235,6 +235,12 @@ impl WatEmitter<'_> {
                 &mut prototypes,
             );
         }
+        if self.needs_json_syntax_error_prototype() {
+            emitter::add_builtin_error_prototype_ref(
+                BuiltinErrorConstructor::SyntaxError,
+                &mut prototypes,
+            );
+        }
         Self::collect_builtin_error_prototypes_from_stmts(
             &self.program.top_level_statements,
             &mut prototypes,
@@ -253,6 +259,13 @@ impl WatEmitter<'_> {
         self.link_plan
             .required_runtime_functions()
             .contains(&RuntimeFn::AggregateError)
+    }
+
+    /// Returns true if the SyntaxError.prototype global needs to be emitted for JSON.parse.
+    fn needs_json_syntax_error_prototype(&self) -> bool {
+        self.link_plan
+            .required_runtime_functions()
+            .contains(&RuntimeFn::JsonParse)
     }
 
     fn collect_class_prototypes_from_stmts(

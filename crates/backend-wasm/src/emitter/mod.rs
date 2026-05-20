@@ -196,6 +196,9 @@ impl<'a> WatEmitter<'a> {
             emitter.collect_program_strings(&module.statements);
         }
         emitter.intern_builtin_error_prototype_strings();
+        // Used by JSON.parse error handling at runtime.
+        emitter.intern_string("message");
+        emitter.intern_string("JSON.parse invalid JSON");
         emitter
     }
 
