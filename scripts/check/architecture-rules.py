@@ -124,6 +124,8 @@ EXCLUDED_PATH_PARTS = {
     "reports",
     "target",
     "_worktrees",
+    ".venv",
+    "venv",
 }
 EXCLUDED_FILENAMES = {
     "Cargo.lock",
