@@ -140,6 +140,8 @@ pub enum RuntimeFn {
     MapEntryPairsArray,
     /// TypedArray constructor from array: new Uint8Array([1,2,3]), etc.
     TypedArrayFromArray,
+    /// TypedArray constructor from ArrayBuffer: new Uint8Array(buffer, byteOffset?, length?).
+    TypedArrayCtorFromBuffer,
     /// TypedArray constructor from length: new Uint8Array(length), etc.
     TypedArrayCtorWithLength,
     /// TypedArray.prototype.set(source, offset?) for the array-backed TypedArray subset.
@@ -793,24 +795,6 @@ pub enum RuntimeFn {
     /// Pseudo-intrinsic: class private brand check.
     /// Not a real runtime function.
     PrivateBrandCheck,
-    /// Eval direct call via host
-    EvalDirectHost,
-    /// Eval indirect call via host
-    EvalIndirectHost,
-    /// Function compile via host
-    FunctionCompileHost,
-    /// Function call via host
-    FunctionCallHost,
-    /// Function call method via host
-    FunctionCallMethodHost,
-    /// Function construct via host
-    FunctionConstructHost,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum RuntimeResult {
-    Value,
-    EffectOnly,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -843,6 +827,12 @@ pub enum RuntimeGlobal {
     ConsoleIndentLevel,
     SetPrototypeObject,
     MapPrototypeObject,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RuntimeResult {
+    Value,
+    EffectOnly,
 }
 
 impl RuntimeGlobal {
@@ -1177,24 +1167,12 @@ const CAP_HOST_MATH_TAN: &[Capability] = &[Capability::HostMathTan];
 const CAP_HOST_MATH_TANH: &[Capability] = &[Capability::HostMathTanh];
 const CAP_HOST_REFLECT_APPLY: &[Capability] = &[Capability::HostReflectApply];
 const CAP_HOST_REFLECT_CONSTRUCT: &[Capability] = &[Capability::HostReflectConstruct];
-<<<<<<< HEAD
 const CAP_HOST_EVAL_DIRECT: &[Capability] = &[Capability::HostEvalDirect];
 const CAP_HOST_EVAL_INDIRECT: &[Capability] = &[Capability::HostEvalIndirect];
 const CAP_HOST_FUNCTION_COMPILE: &[Capability] = &[Capability::HostFunctionCompile];
 const CAP_HOST_FUNCTION_CALL: &[Capability] = &[Capability::HostFunctionCall];
 const CAP_HOST_FUNCTION_CALL_METHOD: &[Capability] = &[Capability::HostFunctionCallMethod];
 const CAP_HOST_FUNCTION_CONSTRUCT: &[Capability] = &[Capability::HostFunctionConstruct];
-||||||| parent of 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
-=======
-const CAP_HOST_FUNCTION_COMPILE: &[Capability] = &[Capability::HostFunctionCompile];
-const CAP_HOST_FUNCTION_CALL: &[Capability] = &[Capability::HostFunctionCall];
-const CAP_HOST_FUNCTION_CALL_METHOD: &[Capability] = &[Capability::HostFunctionCallMethod];
-const CAP_HOST_FUNCTION_CONSTRUCT: &[Capability] = &[Capability::HostFunctionConstruct];
-#[allow(dead_code)]
-const CAP_HOST_EVAL_DIRECT: &[Capability] = &[Capability::HostEvalDirect];
-#[allow(dead_code)]
-const CAP_HOST_EVAL_INDIRECT: &[Capability] = &[Capability::HostEvalIndirect];
->>>>>>> 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
 const CAP_STRING_NORMALIZE: &[Capability] = &[Capability::HostStringNormalize];
 const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::UNDEFINED,
@@ -1878,6 +1856,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MapEntriesArray" => Some(RuntimeFn::MapEntriesArray),
         "MapEntryPairsArray" => Some(RuntimeFn::MapEntryPairsArray),
         "TypedArrayFromArray" => Some(RuntimeFn::TypedArrayFromArray),
+        "TypedArrayCtorFromBuffer" => Some(RuntimeFn::TypedArrayCtorFromBuffer),
         "TypedArrayCtorWithLength" => Some(RuntimeFn::TypedArrayCtorWithLength),
         "TypedArraySet" => Some(RuntimeFn::TypedArraySet),
         "AtomicsElementPtr" => Some(RuntimeFn::AtomicsElementPtr),
@@ -2023,12 +2002,6 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "Unescape" => Some(RuntimeFn::Unescape),
         "Dollar262Global" => Some(RuntimeFn::Dollar262Global),
         "Dollar262Eval" => Some(RuntimeFn::Dollar262Eval),
-        "EvalDirectHost" => Some(RuntimeFn::EvalDirectHost),
-        "EvalIndirectHost" => Some(RuntimeFn::EvalIndirectHost),
-        "FunctionCompileHost" => Some(RuntimeFn::FunctionCompileHost),
-        "FunctionCallHost" => Some(RuntimeFn::FunctionCallHost),
-        "FunctionCallMethodHost" => Some(RuntimeFn::FunctionCallMethodHost),
-        "FunctionConstructHost" => Some(RuntimeFn::FunctionConstructHost),
         "GetIterator" => Some(RuntimeFn::GetIterator),
         "IteratorNext" => Some(RuntimeFn::IteratorNext),
         "IteratorFrom" => Some(RuntimeFn::IteratorFrom),
@@ -2322,13 +2295,8 @@ impl RuntimeFn {
             | Self::CryptoRandomBytes
             | Self::Dollar262Global
             | Self::Dollar262Eval
-<<<<<<< HEAD
-||||||| parent of 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
-            | Self::Dollar262Eval => RuntimeDomain::Host,
-=======
             | Self::EvalDirectHost
             | Self::EvalIndirectHost
->>>>>>> 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
             | Self::FunctionCompileHost
             | Self::FunctionCallHost
             | Self::FunctionCallMethodHost
@@ -2346,8 +2314,6 @@ impl RuntimeFn {
             | Self::IteratorSome
             | Self::IteratorEvery
             | Self::IteratorFind
-            | Self::EvalDirectHost
-            | Self::EvalIndirectHost
             | Self::GeneratorYield
             | Self::GeneratorReturn
             | Self::GeneratorNext => RuntimeDomain::Iterator,
@@ -2617,6 +2583,7 @@ impl RuntimeFn {
             | Self::BooleanToString
             | Self::NumberCoerce => RuntimeDomain::TypeCoercion,
             Self::TypedArrayFromArray
+            | Self::TypedArrayCtorFromBuffer
             | Self::TypedArrayCtorWithLength
             | Self::TypedArraySet
             | Self::AtomicsElementPtr
@@ -2997,6 +2964,7 @@ impl RuntimeFn {
             Self::MapEntriesArray,
             Self::MapEntryPairsArray,
             Self::TypedArrayFromArray,
+            Self::TypedArrayCtorFromBuffer,
             Self::TypedArrayCtorWithLength,
             Self::TypedArraySet,
             Self::AtomicsElementPtr,
@@ -3161,6 +3129,7 @@ impl RuntimeFn {
             Self::RegexpParseFlags,
             Self::StringReplace,
             Self::StringReplaceAll,
+            Self::StringMatchAll,
             Self::StringRaw,
             Self::StringToLocaleString,
             Self::RegExpTest,
@@ -3512,6 +3481,7 @@ impl RuntimeFn {
             Self::MapEntriesArray,
             Self::MapEntryPairsArray,
             Self::TypedArrayFromArray,
+            Self::TypedArrayCtorFromBuffer,
             Self::TypedArrayCtorWithLength,
             Self::TypedArraySet,
             Self::AtomicsElementPtr,
@@ -3676,6 +3646,7 @@ impl RuntimeFn {
             Self::RegexpParseFlags,
             Self::StringReplace,
             Self::StringReplaceAll,
+            Self::StringMatchAll,
             Self::StringRaw,
             Self::StringToLocaleString,
             Self::RegExpTest,

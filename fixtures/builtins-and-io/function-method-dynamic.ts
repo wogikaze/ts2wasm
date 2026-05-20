@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 // Dynamic function.call/apply/bind on known function declarations
 function add(a: number, b: number) {
     return a + b;
@@ -27,10 +26,8 @@ console.log(bound(8));
 // Function.bind with this context
 var boundBase = addBase.bind(ctx, 5);
 console.log(boundBase());
-||||||| Stash base
-=======
+
 const obj = { foo: 42 };
 const hasOwn = Object.prototype.hasOwnProperty.call(obj, "foo");
 console.log(hasOwn);
 console.log(Object.prototype.hasOwnProperty.call(obj, "bar"));
->>>>>>> Stashed changes
