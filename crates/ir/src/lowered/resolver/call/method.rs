@@ -1,11 +1,12 @@
 use super::super::{
-    bigint_runtime_fn_intrinsic, is_array_from_call_receiver,
+    bigint_runtime_fn_intrinsic, is_annex_b_date_method, is_array_from_call_receiver,
     is_array_prototype_every_some_call_receiver, is_array_prototype_map_call_receiver,
     is_array_prototype_push_expr, is_error_class, is_identity_arrow_callback,
     is_set_prototype_property_expr, is_static_date_constructor_expr, is_string_split_result_expr,
     is_typed_array_class, numeric_ascending_sort_arrow_callback,
     private_storage_observable_access_diagnostic, string_constructor_arrow_callback,
-    string_split_arrow_separator, unary_plus_arrow_callback, unsupported_array_map_diagnostic,
+    string_split_arrow_separator, unary_plus_arrow_callback,
+    unsupported_annex_b_date_method_diagnostic, unsupported_array_map_diagnostic,
     unsupported_array_sort_diagnostic,
 };
 use super::builtin::{is_html_wrapper_string_method, lower_html_wrapper_string_method};

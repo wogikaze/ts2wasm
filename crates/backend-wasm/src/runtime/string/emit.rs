@@ -1399,6 +1399,8 @@ impl WatEmitter<'_> {
     (local $start i32)
     (local $end i32)
     (local $ch i32)
+    (local $ch2 i32)
+    (local $ch3 i32)
     (local $result_len i32)
     (local $result_ptr i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
@@ -1413,6 +1415,7 @@ impl WatEmitter<'_> {
             (i32.add
               (i32.add (local.get $obj) (i32.const {header}))
               (local.get $start))))
+        ;; Check ASCII whitespace (0x09-0x0D, 0x20)
         (if
           (i32.or
             (i32.eq (local.get $ch) (i32.const {ascii_space}))
@@ -1421,8 +1424,119 @@ impl WatEmitter<'_> {
               (i32.le_u (local.get $ch) (i32.const {ascii_cr}))))
           (then
             (local.set $start (i32.add (local.get $start) (i32.const {one})))
-            (br $trim_leading))
-          (else (br $trim_leading_done)))))
+            (br $trim_leading)))
+        ;; Check 0xC2 prefix: U+0085 (NEL), U+00A0 (NBSP) — 2-byte UTF-8
+        (if (i32.eq (local.get $ch) (i32.const 0xC2))
+          (then
+            (if (i32.lt_u (i32.add (local.get $start) (i32.const 2)) (local.get $end))
+              (then
+                (local.set $ch2
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const {one})))))
+                (if (i32.or
+                      (i32.eq (local.get $ch2) (i32.const 0x85))
+                      (i32.eq (local.get $ch2) (i32.const 0xA0)))
+                  (then
+                    (local.set $start (i32.add (local.get $start) (i32.const 2)))
+                    (br $trim_leading)))))))
+        ;; Check 0xE1 prefix: U+1680 (OGHAM SPACE MARK) — 3-byte UTF-8
+        (if (i32.eq (local.get $ch) (i32.const 0xE1))
+          (then
+            (if (i32.lt_u (i32.add (local.get $start) (i32.const 3)) (local.get $end))
+              (then
+                (local.set $ch2
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const {one})))))
+                (local.set $ch3
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const 2)))))
+                (if (i32.and
+                      (i32.eq (local.get $ch2) (i32.const 0x9A))
+                      (i32.eq (local.get $ch3) (i32.const 0x80)))
+                  (then
+                    (local.set $start (i32.add (local.get $start) (i32.const 3)))
+                    (br $trim_leading)))))))
+        ;; Check 0xE2 prefix: U+2000-U+200A, U+2028, U+2029, U+202F, U+205F — 3-byte UTF-8
+        (if (i32.eq (local.get $ch) (i32.const 0xE2))
+          (then
+            (if (i32.lt_u (i32.add (local.get $start) (i32.const 3)) (local.get $end))
+              (then
+                (local.set $ch2
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const {one})))))
+                (local.set $ch3
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const 2)))))
+                (if (i32.and (i32.eq (local.get $ch2) (i32.const 0x80))
+                      (i32.or
+                        (i32.and
+                          (i32.ge_u (local.get $ch3) (i32.const 0x80))
+                          (i32.le_u (local.get $ch3) (i32.const 0x8A)))
+                        (i32.eq (local.get $ch3) (i32.const 0xA8))
+                        (i32.eq (local.get $ch3) (i32.const 0xA9))
+                        (i32.eq (local.get $ch3) (i32.const 0xAF))))
+                  (then
+                    (local.set $start (i32.add (local.get $start) (i32.const 3)))
+                    (br $trim_leading)))
+                (if (i32.and
+                      (i32.eq (local.get $ch2) (i32.const 0x81))
+                      (i32.eq (local.get $ch3) (i32.const 0x9F)))
+                  (then
+                    (local.set $start (i32.add (local.get $start) (i32.const 3)))
+                    (br $trim_leading)))))))
+        ;; Check 0xE3 prefix: U+3000 (IDEOGRAPHIC SPACE) — 3-byte UTF-8
+        (if (i32.eq (local.get $ch) (i32.const 0xE3))
+          (then
+            (if (i32.lt_u (i32.add (local.get $start) (i32.const 3)) (local.get $end))
+              (then
+                (local.set $ch2
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const {one})))))
+                (local.set $ch3
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const 2)))))
+                (if (i32.and
+                      (i32.eq (local.get $ch2) (i32.const 0x80))
+                      (i32.eq (local.get $ch3) (i32.const 0x80)))
+                  (then
+                    (local.set $start (i32.add (local.get $start) (i32.const 3)))
+                    (br $trim_leading)))))))
+        ;; Check 0xEF prefix: U+FEFF (BOM / ZWNBSP) — 3-byte UTF-8
+        (if (i32.eq (local.get $ch) (i32.const 0xEF))
+          (then
+            (if (i32.lt_u (i32.add (local.get $start) (i32.const 3)) (local.get $end))
+              (then
+                (local.set $ch2
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const {one})))))
+                (local.set $ch3
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const 2)))))
+                (if (i32.and
+                      (i32.eq (local.get $ch2) (i32.const 0xBB))
+                      (i32.eq (local.get $ch3) (i32.const 0xBF)))
+                  (then
+                    (local.set $start (i32.add (local.get $start) (i32.const 3)))
+                    (br $trim_leading)))))))
+        (br $trim_leading_done)))
     (block $trim_trailing_done
       (loop $trim_trailing
         (br_if $trim_trailing_done (i32.le_u (local.get $end) (local.get $start)))
@@ -1431,6 +1545,7 @@ impl WatEmitter<'_> {
             (i32.add
               (i32.add (local.get $obj) (i32.const {header}))
               (i32.sub (local.get $end) (i32.const {one})))))
+        ;; Check ASCII whitespace (0x09-0x0D, 0x20)
         (if
           (i32.or
             (i32.eq (local.get $ch) (i32.const {ascii_space}))
@@ -1439,8 +1554,88 @@ impl WatEmitter<'_> {
               (i32.le_u (local.get $ch) (i32.const {ascii_cr}))))
           (then
             (local.set $end (i32.sub (local.get $end) (i32.const {one})))
-            (br $trim_trailing))
-          (else (br $trim_trailing_done)))))
+            (br $trim_trailing)))
+        ;; Check 2-byte trailing: prev byte 0xC2 + current 0x85 or 0xA0
+        (if (i32.and
+              (i32.ge_u (local.get $end) (i32.const 2))
+              (i32.or
+                (i32.eq (local.get $ch) (i32.const 0x85))
+                (i32.eq (local.get $ch) (i32.const 0xA0))))
+          (then
+            (local.set $ch2
+              (i32.load8_u
+                (i32.add
+                  (i32.add (local.get $obj) (i32.const {header}))
+                  (i32.sub (local.get $end) (i32.const 2)))))
+            (if (i32.eq (local.get $ch2) (i32.const 0xC2))
+              (then
+                (local.set $end (i32.sub (local.get $end) (i32.const 2)))
+                (br $trim_trailing)))))
+        ;; Check 3-byte trailing: load bytes at end-3, end-2, end-1
+        (if (i32.ge_u (local.get $end) (i32.const 3))
+          (then
+            (local.set $ch2
+              (i32.load8_u
+                (i32.add
+                  (i32.add (local.get $obj) (i32.const {header}))
+                  (i32.sub (local.get $end) (i32.const 2)))))
+            (local.set $ch3
+              (i32.load8_u
+                (i32.add
+                  (i32.add (local.get $obj) (i32.const {header}))
+                  (i32.sub (local.get $end) (i32.const 3)))))
+            ;; 0xE1 0x9A 0x80 (U+1680)
+            (if (i32.and
+                  (i32.eq (local.get $ch3) (i32.const 0xE1))
+                  (i32.and
+                    (i32.eq (local.get $ch2) (i32.const 0x9A))
+                    (i32.eq (local.get $ch) (i32.const 0x80))))
+              (then
+                (local.set $end (i32.sub (local.get $end) (i32.const 3)))
+                (br $trim_trailing)))
+            ;; 0xE2 0x80 [0x80-0x8A, 0xA8, 0xA9, 0xAF] (U+2000-U+200A, U+2028, U+2029, U+202F)
+            (if (i32.and
+                  (i32.eq (local.get $ch3) (i32.const 0xE2))
+                  (i32.eq (local.get $ch2) (i32.const 0x80)))
+              (then
+                (if (i32.or
+                      (i32.and
+                        (i32.ge_u (local.get $ch) (i32.const 0x80))
+                        (i32.le_u (local.get $ch) (i32.const 0x8A)))
+                      (i32.eq (local.get $ch) (i32.const 0xA8))
+                      (i32.eq (local.get $ch) (i32.const 0xA9))
+                      (i32.eq (local.get $ch) (i32.const 0xAF)))
+                  (then
+                    (local.set $end (i32.sub (local.get $end) (i32.const 3)))
+                    (br $trim_trailing)))))
+            ;; 0xE2 0x81 0x9F (U+205F)
+            (if (i32.and
+                  (i32.eq (local.get $ch3) (i32.const 0xE2))
+                  (i32.and
+                    (i32.eq (local.get $ch2) (i32.const 0x81))
+                    (i32.eq (local.get $ch) (i32.const 0x9F))))
+              (then
+                (local.set $end (i32.sub (local.get $end) (i32.const 3)))
+                (br $trim_trailing)))
+            ;; 0xE3 0x80 0x80 (U+3000)
+            (if (i32.and
+                  (i32.eq (local.get $ch3) (i32.const 0xE3))
+                  (i32.and
+                    (i32.eq (local.get $ch2) (i32.const 0x80))
+                    (i32.eq (local.get $ch) (i32.const 0x80))))
+              (then
+                (local.set $end (i32.sub (local.get $end) (i32.const 3)))
+                (br $trim_trailing)))
+            ;; 0xEF 0xBB 0xBF (U+FEFF)
+            (if (i32.and
+                  (i32.eq (local.get $ch3) (i32.const 0xEF))
+                  (i32.and
+                    (i32.eq (local.get $ch2) (i32.const 0xBB))
+                    (i32.eq (local.get $ch) (i32.const 0xBF))))
+              (then
+                (local.set $end (i32.sub (local.get $end) (i32.const 3)))
+                (br $trim_trailing)))))
+        (br $trim_trailing_done)))
     (if
       (i32.and
         (i32.eqz (local.get $start))
@@ -1476,6 +1671,8 @@ impl WatEmitter<'_> {
     (local $len i32)
     (local $start i32)
     (local $ch i32)
+    (local $ch2 i32)
+    (local $ch3 i32)
     (local $result_len i32)
     (local $result_ptr i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
@@ -1489,6 +1686,7 @@ impl WatEmitter<'_> {
             (i32.add
               (i32.add (local.get $obj) (i32.const {header}))
               (local.get $start))))
+        ;; Check ASCII whitespace (0x09-0x0D, 0x20)
         (if
           (i32.or
             (i32.eq (local.get $ch) (i32.const {ascii_space}))
@@ -1497,8 +1695,119 @@ impl WatEmitter<'_> {
               (i32.le_u (local.get $ch) (i32.const {ascii_cr}))))
           (then
             (local.set $start (i32.add (local.get $start) (i32.const {one})))
-            (br $trim_leading))
-          (else (br $trim_leading_done)))))
+            (br $trim_leading)))
+        ;; Check 0xC2 prefix: U+0085 (NEL), U+00A0 (NBSP)
+        (if (i32.eq (local.get $ch) (i32.const 0xC2))
+          (then
+            (if (i32.lt_u (i32.add (local.get $start) (i32.const 2)) (local.get $len))
+              (then
+                (local.set $ch2
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const {one})))))
+                (if (i32.or
+                      (i32.eq (local.get $ch2) (i32.const 0x85))
+                      (i32.eq (local.get $ch2) (i32.const 0xA0)))
+                  (then
+                    (local.set $start (i32.add (local.get $start) (i32.const 2)))
+                    (br $trim_leading)))))))
+        ;; Check 0xE1 prefix: U+1680
+        (if (i32.eq (local.get $ch) (i32.const 0xE1))
+          (then
+            (if (i32.lt_u (i32.add (local.get $start) (i32.const 3)) (local.get $len))
+              (then
+                (local.set $ch2
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const {one})))))
+                (local.set $ch3
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const 2)))))
+                (if (i32.and
+                      (i32.eq (local.get $ch2) (i32.const 0x9A))
+                      (i32.eq (local.get $ch3) (i32.const 0x80)))
+                  (then
+                    (local.set $start (i32.add (local.get $start) (i32.const 3)))
+                    (br $trim_leading)))))))
+        ;; Check 0xE2 prefix: U+2000-U+200A, U+2028, U+2029, U+202F, U+205F
+        (if (i32.eq (local.get $ch) (i32.const 0xE2))
+          (then
+            (if (i32.lt_u (i32.add (local.get $start) (i32.const 3)) (local.get $len))
+              (then
+                (local.set $ch2
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const {one})))))
+                (local.set $ch3
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const 2)))))
+                (if (i32.and (i32.eq (local.get $ch2) (i32.const 0x80))
+                      (i32.or
+                        (i32.and
+                          (i32.ge_u (local.get $ch3) (i32.const 0x80))
+                          (i32.le_u (local.get $ch3) (i32.const 0x8A)))
+                        (i32.eq (local.get $ch3) (i32.const 0xA8))
+                        (i32.eq (local.get $ch3) (i32.const 0xA9))
+                        (i32.eq (local.get $ch3) (i32.const 0xAF))))
+                  (then
+                    (local.set $start (i32.add (local.get $start) (i32.const 3)))
+                    (br $trim_leading)))
+                (if (i32.and
+                      (i32.eq (local.get $ch2) (i32.const 0x81))
+                      (i32.eq (local.get $ch3) (i32.const 0x9F)))
+                  (then
+                    (local.set $start (i32.add (local.get $start) (i32.const 3)))
+                    (br $trim_leading)))))))
+        ;; Check 0xE3 prefix: U+3000
+        (if (i32.eq (local.get $ch) (i32.const 0xE3))
+          (then
+            (if (i32.lt_u (i32.add (local.get $start) (i32.const 3)) (local.get $len))
+              (then
+                (local.set $ch2
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const {one})))))
+                (local.set $ch3
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const 2)))))
+                (if (i32.and
+                      (i32.eq (local.get $ch2) (i32.const 0x80))
+                      (i32.eq (local.get $ch3) (i32.const 0x80)))
+                  (then
+                    (local.set $start (i32.add (local.get $start) (i32.const 3)))
+                    (br $trim_leading)))))))
+        ;; Check 0xEF prefix: U+FEFF
+        (if (i32.eq (local.get $ch) (i32.const 0xEF))
+          (then
+            (if (i32.lt_u (i32.add (local.get $start) (i32.const 3)) (local.get $len))
+              (then
+                (local.set $ch2
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const {one})))))
+                (local.set $ch3
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {header}))
+                      (i32.add (local.get $start) (i32.const 2)))))
+                (if (i32.and
+                      (i32.eq (local.get $ch2) (i32.const 0xBB))
+                      (i32.eq (local.get $ch3) (i32.const 0xBF)))
+                  (then
+                    (local.set $start (i32.add (local.get $start) (i32.const 3)))
+                    (br $trim_leading)))))))
+        (br $trim_leading_done)))
     (if (i32.eqz (local.get $start)) (then (return (local.get $s))))
     (local.set $result_len (i32.sub (local.get $len) (local.get $start)))
     (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $result_len))))
@@ -1530,6 +1839,8 @@ impl WatEmitter<'_> {
     (local $len i32)
     (local $end i32)
     (local $ch i32)
+    (local $ch2 i32)
+    (local $ch3 i32)
     (local $result_len i32)
     (local $result_ptr i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
@@ -1544,6 +1855,7 @@ impl WatEmitter<'_> {
             (i32.add
               (i32.add (local.get $obj) (i32.const {header}))
               (i32.sub (local.get $end) (i32.const {one})))))
+        ;; Check ASCII whitespace (0x09-0x0D, 0x20)
         (if
           (i32.or
             (i32.eq (local.get $ch) (i32.const {ascii_space}))
@@ -1552,8 +1864,88 @@ impl WatEmitter<'_> {
               (i32.le_u (local.get $ch) (i32.const {ascii_cr}))))
           (then
             (local.set $end (i32.sub (local.get $end) (i32.const {one})))
-            (br $trim_trailing))
-          (else (br $trim_trailing_done)))))
+            (br $trim_trailing)))
+        ;; Check 2-byte trailing: prev byte 0xC2 + current 0x85 or 0xA0
+        (if (i32.and
+              (i32.ge_u (local.get $end) (i32.const 2))
+              (i32.or
+                (i32.eq (local.get $ch) (i32.const 0x85))
+                (i32.eq (local.get $ch) (i32.const 0xA0))))
+          (then
+            (local.set $ch2
+              (i32.load8_u
+                (i32.add
+                  (i32.add (local.get $obj) (i32.const {header}))
+                  (i32.sub (local.get $end) (i32.const 2)))))
+            (if (i32.eq (local.get $ch2) (i32.const 0xC2))
+              (then
+                (local.set $end (i32.sub (local.get $end) (i32.const 2)))
+                (br $trim_trailing)))))
+        ;; Check 3-byte trailing: load bytes at end-3, end-2, end-1
+        (if (i32.ge_u (local.get $end) (i32.const 3))
+          (then
+            (local.set $ch2
+              (i32.load8_u
+                (i32.add
+                  (i32.add (local.get $obj) (i32.const {header}))
+                  (i32.sub (local.get $end) (i32.const 2)))))
+            (local.set $ch3
+              (i32.load8_u
+                (i32.add
+                  (i32.add (local.get $obj) (i32.const {header}))
+                  (i32.sub (local.get $end) (i32.const 3)))))
+            ;; 0xE1 0x9A 0x80 (U+1680)
+            (if (i32.and
+                  (i32.eq (local.get $ch3) (i32.const 0xE1))
+                  (i32.and
+                    (i32.eq (local.get $ch2) (i32.const 0x9A))
+                    (i32.eq (local.get $ch) (i32.const 0x80))))
+              (then
+                (local.set $end (i32.sub (local.get $end) (i32.const 3)))
+                (br $trim_trailing)))
+            ;; 0xE2 0x80 [0x80-0x8A, 0xA8, 0xA9, 0xAF]
+            (if (i32.and
+                  (i32.eq (local.get $ch3) (i32.const 0xE2))
+                  (i32.eq (local.get $ch2) (i32.const 0x80)))
+              (then
+                (if (i32.or
+                      (i32.and
+                        (i32.ge_u (local.get $ch) (i32.const 0x80))
+                        (i32.le_u (local.get $ch) (i32.const 0x8A)))
+                      (i32.eq (local.get $ch) (i32.const 0xA8))
+                      (i32.eq (local.get $ch) (i32.const 0xA9))
+                      (i32.eq (local.get $ch) (i32.const 0xAF)))
+                  (then
+                    (local.set $end (i32.sub (local.get $end) (i32.const 3)))
+                    (br $trim_trailing)))))
+            ;; 0xE2 0x81 0x9F (U+205F)
+            (if (i32.and
+                  (i32.eq (local.get $ch3) (i32.const 0xE2))
+                  (i32.and
+                    (i32.eq (local.get $ch2) (i32.const 0x81))
+                    (i32.eq (local.get $ch) (i32.const 0x9F))))
+              (then
+                (local.set $end (i32.sub (local.get $end) (i32.const 3)))
+                (br $trim_trailing)))
+            ;; 0xE3 0x80 0x80 (U+3000)
+            (if (i32.and
+                  (i32.eq (local.get $ch3) (i32.const 0xE3))
+                  (i32.and
+                    (i32.eq (local.get $ch2) (i32.const 0x80))
+                    (i32.eq (local.get $ch) (i32.const 0x80))))
+              (then
+                (local.set $end (i32.sub (local.get $end) (i32.const 3)))
+                (br $trim_trailing)))
+            ;; 0xEF 0xBB 0xBF (U+FEFF)
+            (if (i32.and
+                  (i32.eq (local.get $ch3) (i32.const 0xEF))
+                  (i32.and
+                    (i32.eq (local.get $ch2) (i32.const 0xBB))
+                    (i32.eq (local.get $ch) (i32.const 0xBF))))
+              (then
+                (local.set $end (i32.sub (local.get $end) (i32.const 3)))
+                (br $trim_trailing)))))
+        (br $trim_trailing_done)))
     (if (i32.eq (local.get $end) (local.get $len)) (then (return (local.get $s))))
     (local.set $result_len (local.get $end))
     (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $result_len))))
@@ -2086,6 +2478,14 @@ impl WatEmitter<'_> {
         (local.set $result_ptr (call $alloc_heap (i32.const {header})))
         (i32.store (local.get $result_ptr) (i32.const {zero}))
         (return (i32.or (local.get $result_ptr) (i32.const {string_tag})))))
+    ;; Guard against overflow: if len > 0 && cnt > i32::MAX / len, return empty string
+    (if (i32.and
+          (i32.gt_u (local.get $len) (i32.const {zero}))
+          (i32.gt_u (local.get $cnt) (i32.div_u (i32.const {i32_max}) (local.get $len))))
+      (then
+        (local.set $result_ptr (call $alloc_heap (i32.const {header})))
+        (i32.store (local.get $result_ptr) (i32.const {zero}))
+        (return (i32.or (local.get $result_ptr) (i32.const {string_tag})))))
     (local.set $total_len (i32.mul (local.get $len) (local.get $cnt)))
     (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $total_len))))
     (i32.store (local.get $result_ptr) (local.get $total_len))
@@ -2107,6 +2507,7 @@ impl WatEmitter<'_> {
             number_shift = ValueTag::NUMBER_SHIFT,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
+            i32_max = i32::MAX,
         ));
     }
 

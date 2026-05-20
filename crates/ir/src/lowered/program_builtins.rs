@@ -992,6 +992,22 @@ pub(crate) fn is_local_tz_date_method(method: &str) -> bool {
     )
 }
 
+pub(crate) fn is_annex_b_date_method(method: &str) -> bool {
+    matches!(method, "getYear" | "setYear" | "toGMTString")
+}
+
+pub(crate) fn unsupported_annex_b_date_method_diagnostic(
+    method: &str,
+    span: Option<Span>,
+) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!("issue-241: Date.prototype.{method} is not supported"),
+        span,
+        phase: None,
+    }
+}
+
 pub(crate) fn regexp_constructor_literal(
     ctx: &LoweringCtx,
     args: &[ResolvedExpr],
