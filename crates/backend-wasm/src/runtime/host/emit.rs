@@ -128,6 +128,14 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
+    (local $n i32)
+    (local $ptr i32)
+    (local $len i32)
+    (local $i i32)
+    (local $sign i32)
+    (local $ch i32)
+    (local $has_dot i32)
+    (local $frac_digit i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -138,15 +146,81 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    ;; round is no-op for integer-backed numbers
-    (local.get $v))
+    ;; For tagged integers, rounding is a no-op (already integral)
+    (if (i32.eq (local.get $tag) (i32.const {number_tag}))
+      (then (return (local.get $v))))
+    ;; Handle heap number (decimal string). Parse integer part and first fractional digit.
+    (local.set $ptr (i32.add (local.get $obj) (i32.const {heap_number_data})))
+    (local.set $len (i32.load (i32.add (local.get $obj) (i32.const {heap_number_len}))))
+    (local.set $sign (i32.const {one}))
+    (if (i32.gt_u (local.get $len) (i32.const {zero}))
+      (then
+        (local.set $ch (i32.load8_u (local.get $ptr)))
+        (if (i32.eq (local.get $ch) (i32.const {ascii_minus}))
+          (then
+            (local.set $sign (i32.const -1))
+            (local.set $i (i32.const {one}))))))
+    (block $round_parse_done
+      (loop $round_parse
+        (br_if $round_parse_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $ch (i32.load8_u (i32.add (local.get $ptr) (local.get $i))))
+        (if (i32.eq (local.get $ch) (i32.const {ascii_dot}))
+          (then
+            (local.set $has_dot (i32.const {one}))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br_if $round_parse_done (i32.ge_u (local.get $i) (local.get $len)))
+            (local.set $ch (i32.load8_u (i32.add (local.get $ptr) (local.get $i))))
+            (local.set $frac_digit
+              (i32.sub (local.get $ch) (i32.const {ascii_zero})))
+            (br $round_parse_done)))
+        (if (i32.lt_u (local.get $ch) (i32.const {ascii_zero}))
+          (then unreachable))
+        (if (i32.gt_u (local.get $ch) (i32.const {ascii_nine}))
+          (then unreachable))
+        (local.set $n
+          (i32.add
+            (i32.mul (local.get $n) (i32.const 10))
+            (i32.sub (local.get $ch) (i32.const {ascii_zero}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $round_parse)))
+    ;; If no decimal point, value is already integral
+    (if (i32.eqz (local.get $has_dot))
+      (then (return (local.get $v))))
+    ;; Apply rounding: if first fractional digit >= 5, round away from +∞ for ties
+    (if (i32.ge_u (local.get $frac_digit) (i32.const 5))
+      (then
+        (if (i32.lt_s (local.get $sign) (i32.const {zero}))
+          (then
+            ;; Negative: round toward +∞ (i.e., toward zero for ties)
+            (return (call $number_from_i32
+              (if (result i32)
+                (i32.eqz (local.get $n))
+                (then (i32.const {zero}))
+                (else (i32.sub (i32.const {zero}) (local.get $n)))))))
+          (else
+            ;; Non-negative: round up (away from zero)
+            (return (call $number_from_i32
+              (i32.add (local.get $n) (i32.const {one}))))))))
+    ;; Fractional digit < 5: truncate
+    (if (i32.lt_s (local.get $sign) (i32.const {zero}))
+      (then (return (call $number_from_i32
+        (i32.sub (i32.const {zero}) (local.get $n)))))
+      (else (return (call $number_from_i32 (local.get $n))))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            heap_number_data = Layout::HEAP_NUMBER_DECIMAL_DATA_OFFSET,
+            heap_number_len = Layout::HEAP_NUMBER_DECIMAL_LEN_OFFSET,
             nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+            ascii_minus = RuntimeConst::ASCII_MINUS,
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            ascii_nine = b'9',
+            ascii_dot = b'.',
+            one = RuntimeConst::ONE,
+            zero = RuntimeConst::ZERO,
         ));
     }
 
@@ -366,6 +440,13 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $obj i32)
     (local $is_number i32)
+    (local $n i32)
+    (local $ptr i32)
+    (local $len i32)
+    (local $i i32)
+    (local $sign i32)
+    (local $ch i32)
+    (local $has_dot i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -376,15 +457,61 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    ;; trunc is no-op for integer-backed numbers
-    (local.get $v))
+    ;; For tagged integers, trunc is a no-op (already integral)
+    (if (i32.eq (local.get $tag) (i32.const {number_tag}))
+      (then (return (local.get $v))))
+    ;; Heap number: parse decimal string, extract integer part
+    (local.set $ptr (i32.add (local.get $obj) (i32.const {heap_number_data})))
+    (local.set $len (i32.load (i32.add (local.get $obj) (i32.const {heap_number_len}))))
+    (local.set $sign (i32.const {one}))
+    (if (i32.gt_u (local.get $len) (i32.const {zero}))
+      (then
+        (local.set $ch (i32.load8_u (local.get $ptr)))
+        (if (i32.eq (local.get $ch) (i32.const {ascii_minus}))
+          (then
+            (local.set $sign (i32.const -1))
+            (local.set $i (i32.const {one}))))))
+    (block $trunc_parse_done
+      (loop $trunc_parse
+        (br_if $trunc_parse_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $ch (i32.load8_u (i32.add (local.get $ptr) (local.get $i))))
+        (if (i32.eq (local.get $ch) (i32.const {ascii_dot}))
+          (then
+            (local.set $has_dot (i32.const {one}))
+            (br $trunc_parse_done)))
+        (if (i32.lt_u (local.get $ch) (i32.const {ascii_zero}))
+          (then unreachable))
+        (if (i32.gt_u (local.get $ch) (i32.const {ascii_nine}))
+          (then unreachable))
+        (local.set $n
+          (i32.add
+            (i32.mul (local.get $n) (i32.const 10))
+            (i32.sub (local.get $ch) (i32.const {ascii_zero}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $trunc_parse)))
+    ;; No decimal point: value already integral, return unchanged (preserves -0)
+    (if (i32.eqz (local.get $has_dot))
+      (then (return (local.get $v))))
+    ;; Has fractional part: truncate toward zero
+    (if (i32.lt_s (local.get $sign) (i32.const {zero}))
+      (then (return (call $number_from_i32
+        (i32.sub (i32.const {zero}) (local.get $n)))))
+      (else (return (call $number_from_i32 (local.get $n))))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            heap_number_data = Layout::HEAP_NUMBER_DECIMAL_DATA_OFFSET,
+            heap_number_len = Layout::HEAP_NUMBER_DECIMAL_LEN_OFFSET,
             nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+            ascii_minus = RuntimeConst::ASCII_MINUS,
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            ascii_nine = b'9',
+            ascii_dot = b'.',
+            one = RuntimeConst::ONE,
+            zero = RuntimeConst::ZERO,
         ));
     }
 
@@ -396,6 +523,11 @@ impl WatEmitter<'_> {
     (local $obj i32)
     (local $is_number i32)
     (local $n i32)
+    (local $ptr i32)
+    (local $len i32)
+    (local $i i32)
+    (local $ch i32)
+    (local $all_zero i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (local.set $is_number (i32.eq (local.get $tag) (i32.const {number_tag})))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -406,20 +538,71 @@ impl WatEmitter<'_> {
             (i32.load (local.get $obj))
             (i32.const {heap_number_sentinel})))))
     (if (i32.eqz (local.get $is_number)) (then (return (i32.const {nan_value}))))
-    (local.set $n (call $number_to_i32 (local.get $v)))
-    (if (i32.gt_s (local.get $n) (i32.const {zero}))
-      (then (return (i32.or (i32.shl (i32.const 1) (i32.const {number_shift})) (i32.const {number_tag})))))
-    (if (i32.lt_s (local.get $n) (i32.const {zero}))
-      (then (return (i32.or (i32.shl (i32.const -1) (i32.const {number_shift})) (i32.const {number_tag})))))
-    (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag}))))
+    ;; For tagged integers, use direct sign comparison
+    (if (i32.eq (local.get $tag) (i32.const {number_tag}))
+      (then
+        (local.set $n (i32.shr_s (local.get $v) (i32.const {number_shift})))
+        (if (i32.gt_s (local.get $n) (i32.const {zero}))
+          (then (return (i32.or (i32.shl (i32.const 1) (i32.const {number_shift})) (i32.const {number_tag})))))
+        (if (i32.lt_s (local.get $n) (i32.const {zero}))
+          (then (return (i32.or (i32.shl (i32.const -1) (i32.const {number_shift})) (i32.const {number_tag})))))
+        (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    ;; Heap number: parse decimal string to detect -0
+    (local.set $ptr (i32.add (local.get $obj) (i32.const {heap_number_data})))
+    (local.set $len (i32.load (i32.add (local.get $obj) (i32.const {heap_number_len}))))
+    (local.set $all_zero (i32.const {one}))
+    (local.set $i (i32.const {zero}))
+    (local.set $ch (i32.load8_u (local.get $ptr)))
+    (if (i32.eq (local.get $ch) (i32.const {ascii_minus}))
+      (then
+        ;; Negative: scan remaining chars for non-zero digits
+        (local.set $i (i32.const {one}))
+        (block $sign_neg_done
+          (loop $sign_neg_scan
+            (br_if $sign_neg_done (i32.ge_u (local.get $i) (local.get $len)))
+            (local.set $ch (i32.load8_u (i32.add (local.get $ptr) (local.get $i))))
+            (if (i32.eq (local.get $ch) (i32.const {ascii_dot}))
+              (then
+                (local.set $i (i32.add (local.get $i) (i32.const {one})))
+                (br $sign_neg_scan)))
+            (if (i32.ne (local.get $ch) (i32.const {ascii_zero}))
+              (then (local.set $all_zero (i32.const {zero})) (br $sign_neg_done)))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $sign_neg_scan)))
+        (if (local.get $all_zero)
+          (then (return (local.get $v)))  ;; Preserve -0
+          (else (return (i32.or (i32.shl (i32.const -1) (i32.const {number_shift})) (i32.const {number_tag}))))))
+      (else
+        ;; Non-negative: scan for non-zero digits
+        (block $sign_pos_done
+          (loop $sign_pos_scan
+            (br_if $sign_pos_done (i32.ge_u (local.get $i) (local.get $len)))
+            (local.set $ch (i32.load8_u (i32.add (local.get $ptr) (local.get $i))))
+            (if (i32.eq (local.get $ch) (i32.const {ascii_dot}))
+              (then
+                (local.set $i (i32.add (local.get $i) (i32.const {one})))
+                (br $sign_pos_scan)))
+            (if (i32.ne (local.get $ch) (i32.const {ascii_zero}))
+              (then (local.set $all_zero (i32.const {zero})) (br $sign_pos_done)))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $sign_pos_scan)))
+        (if (local.get $all_zero)
+          (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag}))))
+          (else (return (i32.or (i32.shl (i32.const 1) (i32.const {number_shift})) (i32.const {number_tag}))))))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            heap_number_data = Layout::HEAP_NUMBER_DECIMAL_DATA_OFFSET,
+            heap_number_len = Layout::HEAP_NUMBER_DECIMAL_LEN_OFFSET,
             number_shift = ValueTag::NUMBER_SHIFT,
             nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
+            ascii_minus = RuntimeConst::ASCII_MINUS,
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            ascii_dot = b'.',
+            one = RuntimeConst::ONE,
             zero = RuntimeConst::ZERO,
         ));
     }

@@ -177,7 +177,7 @@ impl WatEmitter<'_> {
       (then
         (local.set $digits (i32.shr_s (local.get $digits_arg) (i32.const {number_shift})))
         (if (i32.lt_s (local.get $digits) (i32.const 0)) (then (local.set $digits (i32.const 0))))
-        (if (i32.gt_s (local.get $digits) (i32.const 20)) (then (local.set $digits (i32.const 20))))))
+        (if (i32.gt_s (local.get $digits) (i32.const 100)) (then (local.set $digits (i32.const 100))))))
     (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
     (if (i32.gt_s (local.get $digits) (i32.const 0))
       (then (local.set $extra (i32.add (local.get $digits) (i32.const 1)))))
@@ -244,7 +244,7 @@ impl WatEmitter<'_> {
       (then
         (local.set $digits (i32.shr_s (local.get $digits_arg) (i32.const {number_shift})))
         (if (i32.lt_s (local.get $digits) (i32.const 0)) (then (local.set $digits (i32.const 0))))
-        (if (i32.gt_s (local.get $digits) (i32.const 20)) (then (local.set $digits (i32.const 20))))))
+        (if (i32.gt_s (local.get $digits) (i32.const 100)) (then (local.set $digits (i32.const 100))))))
     (local.set $exp_len (i32.const 1))
     (if (i32.ge_s (local.get $exp) (i32.const 10)) (then (local.set $exp_len (i32.const 2))))
     (local.set $out_len
@@ -324,7 +324,7 @@ impl WatEmitter<'_> {
           (then
             (local.set $digits (i32.shr_s (local.get $digits_arg) (i32.const {number_shift})))
             (if (i32.lt_s (local.get $digits) (i32.const 1)) (then (local.set $digits (i32.const 1))))
-            (if (i32.gt_s (local.get $digits) (i32.const 21)) (then (local.set $digits (i32.const 21)))))
+            (if (i32.gt_s (local.get $digits) (i32.const 100)) (then (local.set $digits (i32.const 100)))))
           (else (local.set $digits (local.get $len))))))
     (if (i32.eq (i32.load8_u (i32.const {scratch})) (i32.const 45))
       (then (local.set $sign_len (i32.const 1))))

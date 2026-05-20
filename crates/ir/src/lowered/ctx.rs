@@ -231,6 +231,7 @@ impl LoweringCtx {
     }
 
     pub fn resolve_local(&self, name: &str) -> Result<LocalId, Diagnostic> {
+        if name == "globalThis" { eprintln!("DBG: resolve_local globalThis"); }
         self.symbols.resolve(name).ok_or_else(|| Diagnostic {
             code: DiagCode::UnresolvedName,
             message: format!("unresolved name: `{name}`"),

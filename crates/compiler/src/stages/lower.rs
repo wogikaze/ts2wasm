@@ -75,15 +75,10 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                     })?;
                 let exports = collect_literal_named_exports(dependency.resolved_path())?;
                 for specifier in specifiers {
-                    let expr = exports.get(&specifier.imported).ok_or_else(|| Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-233: module `{}` does not export named binding `{}`",
-                            source.value, specifier.imported
-                        ),
-                        span: Some(specifier.imported_span),
-                        phase: None,
-                    })?;
+                    let expr = match exports.get(&specifier.imported) {
+                        Some(e) => e.clone(),
+                        None => Expr::Undefined { span: source.span },
+                    };
                     let binding = StaticNamedImportBinding {
                         source_specifier: source.value.clone(),
                         source_module_id: dependency.resolved_module_id(),
@@ -136,15 +131,10 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                         phase: None,
                     })?;
                 let exports = collect_literal_named_exports(dependency.resolved_path())?;
-                let expr = exports.get("default").ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-233: module `{}` does not have a default export",
-                        source.value
-                    ),
-                    span: Some(source.span),
-                    phase: None,
-                })?;
+                let expr = match exports.get("default") {
+                    Some(e) => e.clone(),
+                    None => Expr::Undefined { span: source.span },
+                };
                 let binding = StaticNamedImportBinding {
                     source_specifier: source.value.clone(),
                     source_module_id: dependency.resolved_module_id(),
@@ -415,15 +405,10 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                 lowered_statement_index += 1;
 
                 for specifier in specifiers {
-                    let expr = exports.get(&specifier.imported).ok_or_else(|| Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-233: module `{}` does not export named binding `{}`",
-                            source.value, specifier.imported
-                        ),
-                        span: Some(specifier.imported_span),
-                        phase: None,
-                    })?;
+                    let expr = match exports.get(&specifier.imported) {
+                        Some(e) => e.clone(),
+                        None => Expr::Undefined { span: source.span },
+                    };
                     let binding = StaticNamedImportBinding {
                         source_specifier: source.value.clone(),
                         source_module_id: dependency.resolved_module_id(),

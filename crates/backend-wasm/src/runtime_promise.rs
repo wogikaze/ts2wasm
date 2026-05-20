@@ -3,7 +3,6 @@ use super::expr_emit::{
     CLOSURE_CAPTURE_COUNT_OFFSET, CLOSURE_CAPTURE_SLOT_SIZE, CLOSURE_CAPTURE_SLOTS_OFFSET,
     CLOSURE_CODE_ID_OFFSET, CLOSURE_SENTINEL, CLOSURE_SUBTYPE_OFFSET,
 };
-use super::runtime_fn::RuntimeFn;
 use ts2wasm_runtime_abi::{layout::Layout, value::ValueTag};
 
 impl WatEmitter<'_> {
