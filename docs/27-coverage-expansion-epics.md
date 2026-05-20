@@ -1,70 +1,27 @@
 # Coverage Expansion Epics
 
-This document defines the 2026-05-12 coverage expansion wave. It is a contributor workflow document for splitting independent coverage work across parent/child worktrees.
+This document groups coverage expansion work into lanes. Individual executable tasks remain in `issues/`.
 
-The source of truth for individual work remains `issues/`. This document records the wave-level grouping, expected coverage movement, and focused gates.
+## Active lanes
 
-## Epics
+| Lane | Goal | Evidence |
+|---|---|---|
+| Builtin API expansion | Reduce unsupported builtin classifications across Array/Object/String/Math/JSON/Date/RegExp/etc. | fixture + reference coverage deltas |
+| Name resolution | Reduce unresolved-name/function classifications without over-allowing globals. | resolver snapshots, reference unsupported table |
+| Classes/prototypes | Improve class fields, private members, prototype/descriptor behavior. | class fixtures and object kernel tests |
+| Async/Promise | Improve async-await and Promise helper semantics. | async fixtures and `m12_async_await` |
+| Modules | Improve static imports/exports, module graph, require/export runtime. | module fixtures and module graph tests |
+| TypeScript erasure | Parse/erase supported TS syntax and reject unsupported forms precisely. | type-erasure fixtures, tsc/tsgo coverage |
 
-| Epic | Issue | Roadmap lane | Coverage gap |
-|---|---|---|---|
-| Builtin API Coverage Expansion | `I-20260512-BTAP7K` | W4 | `builtin-api`, `array-builtin` |
-| Class Implementation Completion | `I-20260512-CA5S2K` | W5 | `class` |
-| Async/Await Support | `I-20260512-ASYNC3` | W5 | `async` |
-| Import/Export Module System | `I-20260512-MD7EX4` | W5 | `import-export` |
-| TypeScript Erased Features + tsc/tsgo Ramp | `I-20260512-TSG6R2` | W2/W6 | `tsc`, `tsgo`, TypeScript erasure |
-| Name Resolution Improvements | `I-20260512-NAM3R5` | W3 | `name-resolution` |
+## Execution model
 
-## Parent/Child Execution
+1. Read `docs/current-state.md` and generated coverage matrix.
+2. Pick a small `issues/` item or create one with acceptance commands.
+3. Add focused fixtures/tests first when possible.
+4. Run focused gate, then relevant coverage slice.
+5. Update docs only for changed contracts.
 
-Run the standard issue checks before spawning children:
+## Do not do
 
-```bash
-mise run issue-lint
-mise run issue-index
-```
-
-Spawn one child worktree per independent epic:
-
-```bash
-mise run spawn-worktrees -- \
-  --base master \
-  --prefix covexp \
-  issues/I-20260512-BTAP7K.md \
-  issues/I-20260512-CA5S2K.md \
-  issues/I-20260512-ASYNC3.md \
-  issues/I-20260512-MD7EX4.md \
-  issues/I-20260512-TSG6R2.md \
-  issues/I-20260512-NAM3R5.md
-```
-
-Each child reads this document and its assigned issue file before implementation. Parent merge review owns conflict resolution, coverage artifact regeneration, and final gate selection.
-
-## Focused Gates
-
-Builtin, class, async, module, and name-resolution work should use the smallest command set that proves the changed semantic surface:
-
-```bash
-cargo test -p ts2wasm-cli --test m2_node_diff
-cargo test -p ts2wasm-cli --test m6_builtin_methods
-mise run reference-coverage -- test262 --jsonl --sample 50 --jobs 4 --no-dashboard-data
-```
-
-TypeScript erased-feature and ramp work should include TypeScript reference coverage:
-
-```bash
-mise run reference-coverage -- tsc --limit 30
-mise run reference-coverage -- tsgo --limit 20
-```
-
-When a command is unavailable because a reference corpus or external runtime is missing, record the unavailable tool and the nearest focused command in issue evidence.
-
-## Merge Criteria
-
-Before a child branch is merged:
-
-- issue acceptance commands pass or have explicit blocker evidence;
-- no unsupported label is reduced by hiding failures as skips;
-- semantic pass, mismatch, runtime error, and build-only counts are reported separately;
-- coverage dashboard artifacts are regenerated only by the parent integration pass;
-- new docs point to `issues/` for future work instead of embedding TODO lists.
+- Do not auto-create dozens of issues from one coverage table without triage.
+- Do not mark semantic support complete from build coverage only.

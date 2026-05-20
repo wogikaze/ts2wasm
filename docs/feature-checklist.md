@@ -1,71 +1,40 @@
 # Feature Implementation Checklist
 
-新機能を追加する際は、以下の checklist を 1 項目ずつ確認する。
-各項目は「終わった」ではなく「証拠がある」で判断する。
+Use this checklist for any new JS/TS semantic feature.
 
-## 1. Syntax Impact
+## 1. Ownership
 
-- [ ] Parser 変更が必要か？（AST variant / token / grammar）
-- [ ] 必要な場合、parse snapshot を更新した
-- [ ] 不要な場合、既存構文で表現できることを確認した
+- [ ] Identify owner: frontend, resolve, semantics, IR, runtime, backend, CLI, or tooling.
+- [ ] Update `docs/28-frontend-syntax-ownership.md` if syntax ownership changes.
+- [ ] Update `docs/13-ir-contracts.md` if HIR/MIR/Lowered shape changes.
 
-## 2. Name Resolution
+## 2. Parser and diagnostics
 
-- [ ] 新しい global name が必要か？（default_allowed_globals に追加）
-- [ ] 新しい scope / binding rule が必要か？
+- [ ] Parser accepts or rejects the syntax intentionally.
+- [ ] Unsupported forms produce specific `DiagCode`.
+- [ ] Parser snapshots or negative tests are updated.
 
-## 3. Builtin Resolution
+## 3. Resolution and semantics
 
-- [ ] source pattern （console.log / Math.* / obj.method 等）を定義した
-- [ ] arity / result contract を定義した
-- [ ] unsupported diagnostics を追加した
-- [ ] negative test （誤認識防止）を追加した
+- [ ] Name/binding rules are explicit.
+- [ ] Builtin identity or host API classification is added if needed.
+- [ ] Semantic validation rejects impossible states.
 
-## 4. HIR / Lowered IR
+## 4. IR and runtime
 
-- [ ] semantic op / LoweredExpr variant の定義
-- [ ] validator の更新
-- [ ] debug / snapshot printer の更新
-- [ ] parse snapshot の更新
-- [ ] semantic snapshot の更新
-- [ ] lowered snapshot の更新
+- [ ] IR variants or semantic operations are validated.
+- [ ] RuntimeFn spec includes deps/imports/capabilities/strings/signature.
+- [ ] Runtime ABI constants/types are used instead of magic numbers.
 
-## 5. Runtime Catalog
+## 5. Backend and capability
 
-- [ ] RuntimeFn variant を追加した
-- [ ] RuntimeSpec （deps / imports / capabilities / runtime_strings / result）を定義した
-- [ ] emission_order / all に追加した
-- [ ] emit function を追加した
-- [ ] linker structure test を追加した
+- [ ] Backend emission consumes validated IR/Lowered state.
+- [ ] Capability manifest changes are tested.
+- [ ] `--host-deny` behavior is covered when host imports are involved.
 
-## 6. Capability / Host Import
+## 6. Tests and docs
 
-- [ ] 新しい host import が必要か？（HostImport enum に追加）
-- [ ] 新しい capability が必要か？（Capability enum に追加）
-- [ ] capability manifest test を追加した
-- [ ] host import が必要時だけ WAT に出る test を追加した
-- [ ] host import が不要時に WAT に出ない test を追加した
-
-## 7. Differential Test
-
-- [ ] Node vs iwasm の差分テスト（semantic_diff）を追加した
-- [ ] fixture を作成し console.log で観測可能にした
-
-## 8. Negative Tests
-
-- [ ] unsupported callback shape の診断 test
-- [ ] unsupported receiver の診断 test
-- [ ] arity mismatch の診断 test
-
-## 9. Documentation
-
-- [ ] docs/05-compatibility-and-semantics.md を更新した
-- [ ] docs/language-reference/ の該当機能表を更新した
-- [ ] current-state.md を更新した
-- [ ] 設計判断を docs/ に残した（ADR または該当 design doc）
-
-## 10. Coverage
-
-- [ ] reference coverage の diagnostic 分類が改善した
-- [ ] build_pass が増えた（または既存件数が維持された）
-- [ ] semantic_pass が増えた（または既存件数が維持された）
+- [ ] Focused unit/snapshot/differential/negative test exists.
+- [ ] Fixture catalog and feature matrix are updated.
+- [ ] Relevant docs are updated with Why and constraints.
+- [ ] Final report lists validation command and result.

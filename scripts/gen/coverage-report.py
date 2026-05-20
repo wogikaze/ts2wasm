@@ -113,6 +113,8 @@ def generate_markdown_report():
 
     lang_ref_dir = REPO_ROOT / "docs/language-reference"
     for file_path in sorted(lang_ref_dir.glob("*.md")):
+        if file_path.name == "INDEX.md":
+            continue
         basename = file_path.stem
         print(f"## {basename}")
         print()
@@ -229,6 +231,8 @@ def generate_text_report():
     status_rows = []
 
     for file_path in sorted(lang_ref_dir.glob("*.md")):
+        if file_path.name == "INDEX.md":
+            continue
         basename = file_path.stem
 
         with open(file_path) as f:
@@ -263,6 +267,8 @@ def generate_text_report():
     priority_rows = []
 
     for file_path in sorted(lang_ref_dir.glob("*.md")):
+        if file_path.name == "INDEX.md":
+            continue
         basename = file_path.stem
 
         with open(file_path) as f:
