@@ -251,6 +251,10 @@ pub(crate) fn resolve_method_to_runtime_fn(
         "toFixed" => Some(RuntimeFn::NumberToFixed),
         "toExponential" => Some(RuntimeFn::NumberToExponential),
         "toPrecision" => Some(RuntimeFn::NumberToPrecision),
+        // Function.prototype.call/apply on any receiver: route through HeapClosureCall
+        // which dispatches at runtime based on the value's tag.
+        "call" => Some(RuntimeFn::HeapClosureCall),
+        "apply" => Some(RuntimeFn::FunctionCallMethodHost),
         _ => None,
     }
 }
@@ -359,6 +363,10 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "unshift") => Some(RuntimeFn::ArrayUnshift),
         ("Array", "splice") => Some(RuntimeFn::ArraySplice),
         ("Object", "valueOf") => Some(RuntimeFn::ValueOf),
+        // Function prototype methods
+        ("Function", "call") => Some(RuntimeFn::HeapClosureCall),
+        ("Function", "toString") => Some(RuntimeFn::ObjectToString),
+        ("Function", "apply") => Some(RuntimeFn::FunctionCallMethodHost),
         // Promise prototype methods
         ("Promise", "then") => Some(RuntimeFn::PromiseThen),
         ("Promise", "catch") => Some(RuntimeFn::PromiseCatch),

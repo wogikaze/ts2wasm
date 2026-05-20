@@ -4154,4 +4154,58 @@ impl WatEmitter<'_> {
             object_tag = ValueTag::OBJECT,
         ));
     }
+
+    pub(crate) fn emit_eval_direct_host(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $eval_direct_host (param $source i32) (result i32)
+    (call $host_eval_direct (local.get $source)))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_eval_indirect_host(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $eval_indirect_host (param $source i32) (result i32)
+    (call $host_eval_indirect (local.get $source)))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_function_compile_host(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $function_compile_host (param $source i32) (result i32)
+    (call $host_function_compile (local.get $source)))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_function_call_host(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $function_call_host (param $handle i32) (param $args i32) (result i32)
+    (call $host_function_call (local.get $handle) (local.get $args)))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_function_call_method_host(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $function_call_method_host (param $handle i32) (param $receiver i32) (param $args i32) (result i32)
+    (call $host_function_call_method (local.get $handle) (local.get $receiver) (local.get $args)))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_function_construct_host(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $function_construct_host (param $handle i32) (param $args i32) (result i32)
+    (call $host_function_construct (local.get $handle) (local.get $args)))
+"#,
+        );
+    }
 }

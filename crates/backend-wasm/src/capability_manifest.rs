@@ -170,6 +170,7 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
             | Capability::HostIntlDateTimeFormatFormat
             | Capability::HostReflectApply
             | Capability::HostReflectConstruct
+<<<<<<< HEAD
             | Capability::HostEvalDirect
             | Capability::HostEvalIndirect
             | Capability::HostFunctionCompile
@@ -177,6 +178,18 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
             | Capability::HostFunctionCallMethod
             | Capability::HostFunctionConstruct => {
                 // Node host capabilities for URI encoding/decoding, Date, String, Reflect, eval, and Function handles
+||||||| parent of 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
+            | Capability::HostReflectConstruct => {
+                // Node host capabilities for URI encoding/decoding, Date, String, and Reflect
+=======
+            | Capability::HostFunctionCompile
+            | Capability::HostFunctionCall
+            | Capability::HostFunctionCallMethod
+            | Capability::HostFunctionConstruct
+            | Capability::HostEvalDirect
+            | Capability::HostEvalIndirect => {
+                // Node host capabilities for URI encoding/decoding, Date, String, Reflect, Function, and Eval
+>>>>>>> 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
             }
         }
     }

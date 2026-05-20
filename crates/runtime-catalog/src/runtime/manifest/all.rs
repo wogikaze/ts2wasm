@@ -408,6 +408,7 @@ match self {
             Self::StringFromCodePoint => "string_from_code_point",
             Self::StringReplace => "string_replace",
             Self::StringReplaceAll => "string_replace_all",
+            Self::StringMatchAll => "string_match_all",
             Self::StringRaw => "string_raw",
             Self::StringToLocaleString => "string_to_locale_string",
             Self::SymbolNew => "symbol_new",
@@ -488,5 +489,15 @@ match self {
             Self::PrivateFieldGet => "pseudo_private_field_get",
             Self::PrivateFieldSet => "pseudo_private_field_set",
             Self::PrivateBrandCheck => "pseudo_private_brand_check",
+<<<<<<< HEAD
             _ => "$unimplemented",
+||||||| parent of 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
+=======
+            Self::EvalDirectHost => "eval_direct_host",
+            Self::EvalIndirectHost => "eval_indirect_host",
+            Self::FunctionCompileHost => "function_compile_host",
+            Self::FunctionCallHost => "function_call_host",
+            Self::FunctionCallMethodHost => "function_call_method_host",
+            Self::FunctionConstructHost => "function_construct_host",
+>>>>>>> 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
         }

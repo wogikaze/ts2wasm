@@ -793,6 +793,18 @@ pub enum RuntimeFn {
     /// Pseudo-intrinsic: class private brand check.
     /// Not a real runtime function.
     PrivateBrandCheck,
+    /// Eval direct call via host
+    EvalDirectHost,
+    /// Eval indirect call via host
+    EvalIndirectHost,
+    /// Function compile via host
+    FunctionCompileHost,
+    /// Function call via host
+    FunctionCallHost,
+    /// Function call method via host
+    FunctionCallMethodHost,
+    /// Function construct via host
+    FunctionConstructHost,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -1105,6 +1117,14 @@ const IMPORT_INTL_NUMBER_FORMAT_FORMAT: &[HostImport] = &[HostImport::IntlNumber
 const IMPORT_INTL_DATE_TIME_FORMAT_FORMAT: &[HostImport] = &[HostImport::IntlDateTimeFormatFormat];
 const IMPORT_REFLECT_APPLY: &[HostImport] = &[HostImport::ReflectApply];
 const IMPORT_REFLECT_CONSTRUCT: &[HostImport] = &[HostImport::ReflectConstruct];
+const IMPORT_GET_ITERATOR: &[HostImport] = &[HostImport::GetIterator];
+const IMPORT_ITERATOR_NEXT: &[HostImport] = &[HostImport::IteratorNext];
+const IMPORT_EVAL_DIRECT: &[HostImport] = &[HostImport::EvalDirect];
+const IMPORT_EVAL_INDIRECT: &[HostImport] = &[HostImport::EvalIndirect];
+const IMPORT_FUNCTION_COMPILE: &[HostImport] = &[HostImport::FunctionCompile];
+const IMPORT_FUNCTION_CALL: &[HostImport] = &[HostImport::FunctionCall];
+const IMPORT_FUNCTION_CALL_METHOD: &[HostImport] = &[HostImport::FunctionCallMethod];
+const IMPORT_FUNCTION_CONSTRUCT: &[HostImport] = &[HostImport::FunctionConstruct];
 const CAP_INTL_NUMBER_FORMAT_FORMAT: &[Capability] = &[Capability::HostIntlNumberFormatFormat];
 const CAP_INTL_DATE_TIME_FORMAT_FORMAT: &[Capability] = &[Capability::HostIntlDateTimeFormatFormat];
 const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
@@ -1157,12 +1177,24 @@ const CAP_HOST_MATH_TAN: &[Capability] = &[Capability::HostMathTan];
 const CAP_HOST_MATH_TANH: &[Capability] = &[Capability::HostMathTanh];
 const CAP_HOST_REFLECT_APPLY: &[Capability] = &[Capability::HostReflectApply];
 const CAP_HOST_REFLECT_CONSTRUCT: &[Capability] = &[Capability::HostReflectConstruct];
+<<<<<<< HEAD
 const CAP_HOST_EVAL_DIRECT: &[Capability] = &[Capability::HostEvalDirect];
 const CAP_HOST_EVAL_INDIRECT: &[Capability] = &[Capability::HostEvalIndirect];
 const CAP_HOST_FUNCTION_COMPILE: &[Capability] = &[Capability::HostFunctionCompile];
 const CAP_HOST_FUNCTION_CALL: &[Capability] = &[Capability::HostFunctionCall];
 const CAP_HOST_FUNCTION_CALL_METHOD: &[Capability] = &[Capability::HostFunctionCallMethod];
 const CAP_HOST_FUNCTION_CONSTRUCT: &[Capability] = &[Capability::HostFunctionConstruct];
+||||||| parent of 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
+=======
+const CAP_HOST_FUNCTION_COMPILE: &[Capability] = &[Capability::HostFunctionCompile];
+const CAP_HOST_FUNCTION_CALL: &[Capability] = &[Capability::HostFunctionCall];
+const CAP_HOST_FUNCTION_CALL_METHOD: &[Capability] = &[Capability::HostFunctionCallMethod];
+const CAP_HOST_FUNCTION_CONSTRUCT: &[Capability] = &[Capability::HostFunctionConstruct];
+#[allow(dead_code)]
+const CAP_HOST_EVAL_DIRECT: &[Capability] = &[Capability::HostEvalDirect];
+#[allow(dead_code)]
+const CAP_HOST_EVAL_INDIRECT: &[Capability] = &[Capability::HostEvalIndirect];
+>>>>>>> 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
 const CAP_STRING_NORMALIZE: &[Capability] = &[Capability::HostStringNormalize];
 const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::UNDEFINED,
@@ -1991,6 +2023,12 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "Unescape" => Some(RuntimeFn::Unescape),
         "Dollar262Global" => Some(RuntimeFn::Dollar262Global),
         "Dollar262Eval" => Some(RuntimeFn::Dollar262Eval),
+        "EvalDirectHost" => Some(RuntimeFn::EvalDirectHost),
+        "EvalIndirectHost" => Some(RuntimeFn::EvalIndirectHost),
+        "FunctionCompileHost" => Some(RuntimeFn::FunctionCompileHost),
+        "FunctionCallHost" => Some(RuntimeFn::FunctionCallHost),
+        "FunctionCallMethodHost" => Some(RuntimeFn::FunctionCallMethodHost),
+        "FunctionConstructHost" => Some(RuntimeFn::FunctionConstructHost),
         "GetIterator" => Some(RuntimeFn::GetIterator),
         "IteratorNext" => Some(RuntimeFn::IteratorNext),
         "IteratorFrom" => Some(RuntimeFn::IteratorFrom),
@@ -2284,6 +2322,13 @@ impl RuntimeFn {
             | Self::CryptoRandomBytes
             | Self::Dollar262Global
             | Self::Dollar262Eval
+<<<<<<< HEAD
+||||||| parent of 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
+            | Self::Dollar262Eval => RuntimeDomain::Host,
+=======
+            | Self::EvalDirectHost
+            | Self::EvalIndirectHost
+>>>>>>> 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
             | Self::FunctionCompileHost
             | Self::FunctionCallHost
             | Self::FunctionCallMethodHost
@@ -3345,6 +3390,12 @@ impl RuntimeFn {
             Self::PrivateFieldGet,
             Self::PrivateFieldSet,
             Self::PrivateBrandCheck,
+            Self::EvalDirectHost,
+            Self::EvalIndirectHost,
+            Self::FunctionCompileHost,
+            Self::FunctionCallHost,
+            Self::FunctionCallMethodHost,
+            Self::FunctionConstructHost,
         ]
     }
 
@@ -3854,6 +3905,12 @@ impl RuntimeFn {
             Self::PrivateFieldGet,
             Self::PrivateFieldSet,
             Self::PrivateBrandCheck,
+            Self::EvalDirectHost,
+            Self::EvalIndirectHost,
+            Self::FunctionCompileHost,
+            Self::FunctionCallHost,
+            Self::FunctionCallMethodHost,
+            Self::FunctionConstructHost,
         ]
     }
 }
