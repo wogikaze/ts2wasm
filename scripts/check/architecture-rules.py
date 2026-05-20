@@ -107,6 +107,7 @@ EXCLUDED_PATH_PARTS = {
     "__pycache__",
     "artifacts",
     "node_modules",
+    "plans",
     "reference",
     "reports",
     "target",
@@ -150,6 +151,7 @@ FILE_SIZE_ALLOWLIST_1200 = {
     "crates/backend-wasm/src/runtime_strings.rs": "P4: runtime domain split",
     # P7: Resolver decomposition
     "crates/ir/src/lowered/program.rs": "P7: resolver decomposition",
+    "crates/ir/src/lowered/program_builtins.rs": "P7: resolver decomposition -- 1228 lines",
     "crates/ir/src/lowered/resolver/array.rs": "P7: resolver decomposition",
     "crates/ir/src/lowered/resolver/call/method.rs": "P7: resolver decomposition",
     "crates/ir/src/lowered/resolver/mod.rs": "I-20260513-HGGTXF: resolver facade pending domain export split",
@@ -1565,6 +1567,150 @@ def check_host_import_manifest() -> list[str]:
     return violations
 
 
+# --- #380: Frontend syntax ownership contract checks ---
+
+FRONTEND_DIR = "crates/frontend/src"
+
+# Runtime crate/type imports that frontend must not depend on.
+# These belong to backend/runtime layers and would create circular coupling.
+FRONTEND_FORBIDDEN_IMPORTS = (
+    "ts2wasm_runtime_abi",
+    "ts2wasm_runtime_catalog",
+    "ts2wasm_backend_wasm",
+    "ts2wasm_backend_core",
+)
+
+# Runtime type names that must not appear in frontend source (non-test).
+FRONTEND_FORBIDDEN_TYPES = (
+    "RuntimeFn",
+    "HostImport",
+    "CapabilityManifest",
+    "RawValue",
+    "HeapKind",
+)
+
+# WAT instruction patterns that must not appear in frontend or IR source.
+WAT_INSTRUCTION_PATTERNS = (
+    "i32.load",
+    "i32.store",
+    "i64.load",
+    "i64.store",
+    "wat!",
+    "(module",
+    "(func",
+)
+
+
+def check_frontend_no_runtime_import() -> list[str]:
+    """Check that frontend crate does not import from runtime/backend crates."""
+    violations = []
+    frontend_src = REPO_ROOT / FRONTEND_DIR
+    if not frontend_src.exists():
+        return violations
+
+    for path in sorted(frontend_src.rglob("*.rs")):
+        rel = path.relative_to(REPO_ROOT)
+        text = path.read_text()
+        lines = text.split('\n')
+        in_cfg_test = False
+        cfg_test_brace_depth = 0
+        for i, line in enumerate(lines, 1):
+            stripped = line.strip()
+            if stripped == '#[cfg(test)]':
+                in_cfg_test = True
+                cfg_test_brace_depth = 0
+                continue
+            if in_cfg_test:
+                cfg_test_brace_depth += line.count('{') - line.count('}')
+                if cfg_test_brace_depth <= 0:
+                    in_cfg_test = False
+                    cfg_test_brace_depth = 0
+                continue
+            for forbidden in FRONTEND_FORBIDDEN_IMPORTS:
+                if re.match(rf'^\s*use\s+{re.escape(forbidden)}', line):
+                    violations.append(
+                        f"check_architecture_rules: ERROR {rel}:{i}: "
+                        f"frontend module imports from {forbidden}"
+                    )
+
+    return violations
+
+
+def check_frontend_no_runtime_type_ref() -> list[str]:
+    """Check that frontend crate does not reference runtime type names."""
+    violations = []
+    frontend_src = REPO_ROOT / FRONTEND_DIR
+    if not frontend_src.exists():
+        return violations
+
+    for path in sorted(frontend_src.rglob("*.rs")):
+        rel = path.relative_to(REPO_ROOT)
+        lines = path.read_text().split('\n')
+        in_cfg_test = False
+        cfg_test_brace_depth = 0
+        for i, line in enumerate(lines, 1):
+            stripped = line.strip()
+            if stripped == '#[cfg(test)]':
+                in_cfg_test = True
+                cfg_test_brace_depth = 0
+                continue
+            if in_cfg_test:
+                cfg_test_brace_depth += line.count('{') - line.count('}')
+                if cfg_test_brace_depth <= 0:
+                    in_cfg_test = False
+                    cfg_test_brace_depth = 0
+                continue
+            # Skip comments and string literals
+            if stripped.startswith('//') or stripped.startswith('#'):
+                continue
+            for forbidden in FRONTEND_FORBIDDEN_TYPES:
+                pattern = rf'\b{re.escape(forbidden)}\b'
+                if re.search(pattern, line) and forbidden not in line.split('//')[0]:
+                    violations.append(
+                        f"check_architecture_rules: ERROR {rel}:{i}: "
+                        f"frontend references runtime type `{forbidden}`"
+                    )
+
+    return violations
+
+
+def check_ir_no_wat_instructions() -> list[str]:
+    """Check that IR crate does not contain raw WAT instruction patterns outside tests."""
+    violations = []
+    ir_dirs = ["crates/ir/src", "crates/resolve/src"]
+    for ir_dir in ir_dirs:
+        ir_src = REPO_ROOT / ir_dir
+        if not ir_src.exists():
+            continue
+        for path in sorted(ir_src.rglob("*.rs")):
+            rel = path.relative_to(REPO_ROOT)
+            lines = path.read_text().split('\n')
+            in_cfg_test = False
+            cfg_test_brace_depth = 0
+            for i, line in enumerate(lines, 1):
+                stripped = line.strip()
+                if stripped == '#[cfg(test)]':
+                    in_cfg_test = True
+                    cfg_test_brace_depth = 0
+                    continue
+                if in_cfg_test:
+                    cfg_test_brace_depth += line.count('{') - line.count('}')
+                    if cfg_test_brace_depth <= 0:
+                        in_cfg_test = False
+                        cfg_test_brace_depth = 0
+                    continue
+                if stripped.startswith('//'):
+                    continue
+                for pattern in WAT_INSTRUCTION_PATTERNS:
+                    if pattern in line and pattern not in line.split('//')[0]:
+                        violations.append(
+                            f"check_architecture_rules: ERROR {rel}:{i}: "
+                            f"IR module contains raw WAT instruction `{pattern}`"
+                        )
+                        break
+    return violations
+
+
 def main():
     args = sys.argv[1:]
     max_file_lines = parse_max_file_lines(args)
@@ -1664,6 +1810,10 @@ def main():
     # #309 checks
     violations.extend(check_runtimefn_capability())
     violations.extend(check_host_import_manifest())
+    # #380 checks (frontend syntax ownership contract)
+    violations.extend(check_frontend_no_runtime_import())
+    violations.extend(check_frontend_no_runtime_type_ref())
+    violations.extend(check_ir_no_wat_instructions())
     # Existing checks
     violations.extend(check_use_super_star())
     violations.extend(check_runtime_push_str())

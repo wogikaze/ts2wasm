@@ -4,6 +4,7 @@ pub mod lexer;
 pub mod parser;
 pub mod resolver;
 pub mod type_reference_directive;
+pub mod typescript_erasure;
 pub mod typescript_oracle;
 
 // Re-export commonly used types for convenience
