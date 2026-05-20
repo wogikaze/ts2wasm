@@ -134,10 +134,15 @@ impl WatEmitter<'_> {
             let pad = " ".repeat(indent);
             self.emit_gc_root_mirror_index(writer.output_mut(), &pad, pushed_value, &child_frame);
         }
+        // Array.prototype.push returns the new length per ECMAScript spec.
+        // $array_push_grow returns the array pointer; wrap with $get_length.
         writer.push_str(&format!(
-            "{pad}(local.get {old_array})\n\
-             {pad}(local.get {pushed_value})\n\
-             {pad}(call {})\n",
+            "{pad}(call {}\n\
+             {pad}  (call {}\n\
+             {pad}    (local.get {old_array})\n\
+             {pad}    (local.get {pushed_value}))\n\
+             {pad})\n",
+            RuntimeFn::GetLength.symbol(),
             RuntimeFn::ArrayPushGrow.symbol(),
             pad = " ".repeat(indent),
         ));
