@@ -2643,7 +2643,7 @@ fn date_to_string_no_timezone_fixture_builds_successfully() {
 fn date_methods_matches_node_output() {
     // Date string/timezone methods use Node host shims. The default test command
     // records this fixture in the node-diff suite while only running the full
-    // iwasm differential when TS2WASM_RUN_M2_NODE_DIFF=1 is explicitly set.
+    // iwasm differential when TS2WASM_RUN_NODE_DIFF=1 is explicitly set.
     assert_fixture_matches_node("fixtures/builtins-and-io/date-complete.ts");
 }
 
@@ -3176,7 +3176,7 @@ fn direct_eval_block_function_shadowed_eval_stays_ordinary_call() {
 
 #[test]
 fn indirect_eval_dynamic_fixture_builds_for_host_lane() {
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
     let fixture = "fixtures/core-semantics/indirect-eval-dynamic-host-path.ts";

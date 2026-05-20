@@ -1,6 +1,6 @@
 /// Integration tests for Array iteration methods (forEach, find, filter, every, some)
 ///
-/// Category: m6 (semantic build_smoke and node_diff).
+/// Category: semantic build_smoke and node_diff.
 /// These tests verify that Array iteration methods compile and produce correct output.
 /// ForEach with ArrowFn callbacks uses IR-level While loop expansion (lower_array_callback_method).
 /// Find/filter/every/some with identity arrow callbacks use identity WAT runtime functions.

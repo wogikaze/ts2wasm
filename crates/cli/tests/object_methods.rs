@@ -2,7 +2,7 @@
 ///
 /// Category: build_smoke.
 /// These tests confirm the compiler can emit Wasm for object static method invocations.
-/// Runtime semantics are validated in m2_node_diff.rs where supported.
+/// Runtime semantics are validated in node_diff.rs where supported.
 use std::path::Path;
 
 /// Build a fixture with the compiler and return stdout on success.

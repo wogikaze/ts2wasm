@@ -2,7 +2,7 @@
 ///
 /// These tests verify that official test cases can be parsed and compiled to WASM.
 /// They do NOT verify runtime semantics - execution behavior is not tested.
-/// Use differential tests (m2_node_diff.rs) for semantic verification.
+/// Use differential tests (node_diff.rs) for semantic verification.
 ///
 /// Test classification:
 /// - build_smoke: Tests that compilation succeeds (syntax parsing, name resolution, lowering)
@@ -284,7 +284,7 @@ fn block_scoped_namespace_multisection_reports_focused_section_diagnostic() {
 fn strict_official_corpora_samples_must_build_successfully() {
     // NOTE: This is a BUILD smoke test, not a semantic compatibility test.
     // Build success does NOT imply semantic compatibility with Node.js.
-    // See m2_node_diff.rs for semantic differential tests.
+    // See node_diff.rs for semantic differential tests.
     let records = OFFICIAL_SAMPLE_CASES
         .iter()
         .map(|(suite, case)| classify_build_case(suite, case))

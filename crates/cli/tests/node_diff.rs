@@ -22,17 +22,15 @@ use ts2wasm_shared::TestStatus;
 use ts2wasm_shared::test_helpers::{temp_wasm_path, unique_temp_dir};
 #[path = "common/differential_runner.rs"]
 mod differential_runner;
-#[path = "common/m2_node_diff_fixture_tests.rs"]
-mod m2_node_diff_fixture_tests;
+#[path = "common/node_diff_fixture_tests.rs"]
+mod node_diff_fixture_tests;
 use differential_runner::run_differential_test;
 
-fn skip_m2_node_diff_by_default() -> bool {
-    if std::env::var_os("TS2WASM_RUN_M2_NODE_DIFF").is_some() {
+fn skip_node_diff_by_default() -> bool {
+    if std::env::var_os("TS2WASM_RUN_NODE_DIFF").is_some() {
         return false;
     }
-    eprintln!(
-        "skipping m2 Node/iwasm differential assertion; set TS2WASM_RUN_M2_NODE_DIFF=1 to run"
-    );
+    eprintln!("skipping Node/iwasm differential assertion; set TS2WASM_RUN_NODE_DIFF=1 to run");
     true
 }
 
@@ -41,7 +39,7 @@ fn assert_fixture_matches_node(fixture: &str) {
 }
 
 fn assert_fixture_matches_node_with_iwasm_timeout(fixture: &str, iwasm_timeout: Duration) {
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -95,7 +93,7 @@ fn assert_fixture_matches_node_with_iwasm_timeout(fixture: &str, iwasm_timeout: 
 }
 
 fn assert_fixture_iwasm_traps(fixture: &str) {
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -144,7 +142,7 @@ fn assert_fixture_iwasm_traps(fixture: &str) {
 }
 
 fn assert_fixture_iwasm_trap(fixture: &str) {
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -193,7 +191,7 @@ fn assert_fixture_iwasm_trap(fixture: &str) {
 }
 
 fn assert_fixture_node_bigint_syntaxerror_and_iwasm_trap(fixture: &str) {
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -216,7 +214,7 @@ fn assert_fixture_node_bigint_syntaxerror_and_iwasm_trap(fixture: &str) {
 }
 
 fn assert_fixture_node_rangeerror_and_iwasm_reports_rangeerror(fixture: &str) {
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -276,7 +274,7 @@ fn assert_fixture_node_rangeerror_and_iwasm_reports_rangeerror(fixture: &str) {
 }
 
 fn assert_fixture_node_typeerror_and_iwasm_reports_typeerror(fixture: &str) {
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -341,7 +339,7 @@ fn assert_fixture_node_typeerror_and_iwasm_reports_typeerror_containing(
     node_expected: &str,
     iwasm_expected: &str,
 ) {
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -404,7 +402,7 @@ fn assert_fixture_node_typeerror_and_iwasm_reports_typeerror_containing(
 }
 
 fn assert_live_time_fixture_in_host_window(fixture: &str) {
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -462,7 +460,7 @@ fn host_epoch_ms() -> u128 {
 }
 
 fn assert_fixture_rejected_by_node_and_iwasm(fixture: &str) {
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -524,7 +522,7 @@ fn assert_fixture_rejected_by_node_and_iwasm(fixture: &str) {
 }
 
 fn assert_fixture_node_fails_and_iwasm_traps_after_stdout(fixture: &str, expected_stdout: &str) {
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -581,7 +579,7 @@ fn assert_fixture_node_fails_and_iwasm_traps_after_stdout(fixture: &str, expecte
 }
 
 fn assert_fixture_matches_js_baseline(fixture: &str, js_baseline: &str) {
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -647,7 +645,7 @@ fn assert_static_module_fixture_matches_node_variant_with_sources(
     node_entry_source: &str,
     node_sources: &[(&str, &str)],
 ) {
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -737,7 +735,7 @@ fn assert_build_fails_with_diagnostic(
     expected: &str,
     require_span: bool,
 ) {
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -775,7 +773,7 @@ fn assert_build_fails_with_diagnostic(
 }
 
 fn assert_build_fails_with_issue_diagnostic(fixture: &str, expected: &str, require_span: bool) {
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -867,7 +865,7 @@ const NODE_API_SEMANTIC_GAP_FIXTURES: &[&str] = &[
 ];
 
 fn assert_fixture_not_semantically_pass(area: &str, fixture: &str) {
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -1337,7 +1335,7 @@ fn assert_stdin_fixture_matches_node_baseline(
 ) {
     use std::io::Write;
 
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
 
@@ -1407,7 +1405,7 @@ fn assert_stdin_fixture_matches_node_baseline(
 fn assert_stdin_fixture_matches_node(fixture: &str, stdin_input: &[u8]) {
     use std::io::Write;
 
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
 
@@ -1501,7 +1499,7 @@ fn assert_stdin_fixture_matches_node(fixture: &str, stdin_input: &[u8]) {
 fn assert_stdin_fixture_node_succeeds_and_iwasm_traps(fixture: &str, stdin_input: &[u8]) {
     use std::io::Write;
 
-    if skip_m2_node_diff_by_default() {
+    if skip_node_diff_by_default() {
         return;
     }
 

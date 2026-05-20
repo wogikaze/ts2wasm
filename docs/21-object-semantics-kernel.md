@@ -20,4 +20,4 @@ Objects use a header with property count, flags, prototype pointer, and property
 
 ## Tests
 
-Relevant tests include `crates/cli/tests/m6_object_kernel.rs`, `m6_object_methods.rs`, `m6_object_descriptors.rs`, and object fixtures in `fixtures/arrays-objects` and `fixtures/builtins-and-io`.
+Relevant tests include `crates/cli/tests/object_kernel.rs`, `object_methods.rs`, `object_descriptors.rs`, and object fixtures in `fixtures/arrays-objects` and `fixtures/builtins-and-io`.

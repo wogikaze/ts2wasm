@@ -23,7 +23,7 @@ Relevant RuntimeFn families include:
 Start with:
 
 ```bash
-cargo nextest run -p ts2wasm-cli --test m12_async_await
+cargo nextest run -p ts2wasm-cli --test async_await
 ```
 
 Then use fixture/differential gates as needed.

@@ -1,5 +1,5 @@
 // Category: build_smoke.
-// Runtime semantics are tracked by dedicated semantic_diff tests in m2_node_diff.rs.
+// Runtime semantics are tracked by dedicated semantic_diff tests in node_diff.rs.
 use std::path::Path;
 use std::process::Command;
 

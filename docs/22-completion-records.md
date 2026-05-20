@@ -58,5 +58,5 @@ Async/generator lowering may suspend and resume execution, but it must preserve 
 - `crates/ir/src/semantic.rs` completion unit tests.
 - `fixtures/control-flow-and-exceptions`.
 - `tests/fixtures/completion_record`.
-- `crates/cli/tests/m7_control_flow.rs`.
+- `crates/cli/tests/control_flow.rs`.
 - Eval completion tests in `crates/compiler/src/tests.rs`.

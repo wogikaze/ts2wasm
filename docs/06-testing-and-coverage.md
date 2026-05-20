@@ -6,7 +6,7 @@
 |---|---|---|
 | Unit tests | crate-local invariants and small behavior | `crates/runtime-abi/tests`, `crates/runtime-catalog/tests` |
 | Snapshot tests | AST/HIR/MIR/lowered/manifest/link-plan stability | `crates/frontend/tests/parser_snapshot.rs`, `crates/ir/tests/*snapshot*` |
-| Differential tests | Node.js vs generated wasm output | `crates/cli/tests/m2_node_diff.rs`, catalog fixtures |
+| Differential tests | Node.js vs generated wasm output | `crates/cli/tests/node_diff.rs`, catalog fixtures |
 | Negative tests | expected diagnostics for invalid or unsupported input | `fixtures/negative`, parser/diagnostic tests |
 | Reference coverage | larger suite execution and classification | `python scripts/manager.py reference-coverage ...` |
 | Dashboard data | visualization of coverage/result history | `python scripts/manager.py coverage-dashboard-data` |
