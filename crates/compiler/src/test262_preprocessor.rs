@@ -144,6 +144,30 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("coalesce-expression", "issue-245"),
     ("source-phase-imports", "I-20260518-7TXX6T"),
     ("dynamic-import", "I-20260519-VCSBRP"),
+    // --- standard/mature features (essential for test262, widely referenced) ---
+    ("destructuring-binding", "issue-5000"),
+    ("destructuring-assignment", "issue-5000"),
+    ("async-iteration", "issue-5004"),
+    ("default-parameters", "issue-5000"),
+    ("class-methods-private", "issue-421"),
+    ("class-static-methods-private", "issue-421"),
+    ("Intl.Era-monthcode", "issue-436"),
+    ("Intl.DurationFormat", "issue-436"),
+    ("const", "issue-5000"),
+    ("regexp-unicode-property-escapes", "issue-5024"),
+    ("regexp-modifiers", "issue-5024"),
+    ("regexp-v-flag", "issue-5024"),
+    ("explicit-resource-management", "issue-436"),
+    ("object-rest", "issue-5000"),
+    ("object-spread", "issue-5000"),
+    ("top-level-await", "issue-5004"),
+    ("import-defer", "issue-5004"),
+    ("set-methods", "issue-436"),
+    (
+        "align-detached-buffer-semantics-with-web-reality",
+        "issue-408",
+    ),
+    ("globalThis", "issue-5000"),
 ];
 
 /// Process test262 metadata directives if present in source.
