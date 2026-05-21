@@ -492,7 +492,9 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $base i32)
     (local $count i32)
+    (local $flags i32)
     (local $i i32)
+    (local $write_i i32)
     (local $entry_base i32)
     (local $value i32)
     (local $result_ptr i32)
@@ -500,43 +502,54 @@ impl WatEmitter<'_> {
     (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
     (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
     (local.set $count (i32.load (local.get $base)))
-    ;; Allocate result array
+    (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
+    ;; Allocate result array (max size = count)
     (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.shl (local.get $count) (i32.const {elem_shift})))))
-    (i32.store (local.get $result_ptr) (local.get $count))
     (i32.store (i32.add (local.get $result_ptr) (i32.const {array_capacity_offset})) (local.get $count))
     (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_word_count_offset})) (i32.const {one}))
     (i32.store (i32.add (local.get $result_ptr) (i32.const {array_elements_offset_offset})) (i32.const {array_header}))
-    (block $values_presence
-      (if (i32.eqz (local.get $count))
-        (then
-          (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const 0))
-          (br $values_presence)))
-      (if (i32.gt_u (local.get $count) (i32.const 31))
-        (then
-          (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const -1))
-          (br $values_presence)))
-      (i32.store
-        (i32.add (local.get $result_ptr) (i32.const {presence_words_offset}))
-        (i32.sub (i32.shl (i32.const 1) (local.get $count)) (i32.const 1))))
-    ;; Extract all values
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const 0))
+    (local.set $write_i (i32.const {zero}))
+    ;; Extract only enumerable own property values
     (local.set $i (i32.const {zero}))
     (block $values_done
       (loop $values_loop
         (br_if $values_done (i32.ge_u (local.get $i) (local.get $count)))
-        (local.set $entry_base
-          (i32.add (local.get $base)
-            (i32.add (i32.const {obj_header})
-              (i32.shl (local.get $i) (i32.const {entry_shift})))))
-        (local.set $value (i32.load (i32.add (local.get $entry_base) (i32.const {value_off}))))
-        ;; Store value in result array
-        (i32.store (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header}) (i32.shl (local.get $i) (i32.const {elem_shift})))) (local.get $value))
+        (if (i32.eqz (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_enum_shift})))))
+          (then
+            (local.set $entry_base
+              (i32.add (local.get $base)
+                (i32.add (i32.const {obj_header})
+                  (i32.shl (local.get $i) (i32.const {entry_shift})))))
+            (local.set $value (i32.load (i32.add (local.get $entry_base) (i32.const {value_off}))))
+            (i32.store (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header}) (i32.shl (local.get $write_i) (i32.const {elem_shift})))) (local.get $value))
+            (local.set $write_i (i32.add (local.get $write_i) (i32.const {one})))))
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
         (br $values_loop)))
+    ;; Update array length to actual enumerable count
+    (i32.store (local.get $result_ptr) (local.get $write_i))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {array_capacity_offset})) (local.get $count))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_word_count_offset})) (i32.const {one}))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {array_elements_offset_offset})) (i32.const {array_header}))
+    (block $presence
+      (if (i32.eqz (local.get $write_i))
+        (then
+          (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const 0))
+          (br $presence)))
+      (if (i32.gt_u (local.get $write_i) (i32.const 31))
+        (then
+          (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const -1))
+          (br $presence)))
+      (i32.store
+        (i32.add (local.get $result_ptr) (i32.const {presence_words_offset}))
+        (i32.sub (i32.shl (i32.const 1) (local.get $write_i)) (i32.const 1))))
     (i32.or (local.get $result_ptr) (i32.const {array_tag})))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            non_enum_shift = Layout::OBJECT_NON_ENUM_SHIFT,
             array_header = Layout::ARRAY_HEADER_SIZE,
             array_capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
             presence_word_count_offset = Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
@@ -560,7 +573,9 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $base i32)
     (local $count i32)
+    (local $flags i32)
     (local $i i32)
+    (local $write_i i32)
     (local $entry_base i32)
     (local $key i32)
     (local $value i32)
@@ -570,53 +585,65 @@ impl WatEmitter<'_> {
     (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
     (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
     (local.set $count (i32.load (local.get $base)))
-    ;; Allocate result array (count entries)
+    (local.set $flags (i32.load (i32.add (local.get $base) (i32.const {obj_flags}))))
+    ;; Allocate result array (max size = count)
     (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.shl (local.get $count) (i32.const {elem_shift})))))
-    (i32.store (local.get $result_ptr) (local.get $count))
     (i32.store (i32.add (local.get $result_ptr) (i32.const {array_capacity_offset})) (local.get $count))
     (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_word_count_offset})) (i32.const {one}))
     (i32.store (i32.add (local.get $result_ptr) (i32.const {array_elements_offset_offset})) (i32.const {array_header}))
-    (block $entries_presence
-      (if (i32.eqz (local.get $count))
-        (then
-          (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const 0))
-          (br $entries_presence)))
-      (if (i32.gt_u (local.get $count) (i32.const 31))
-        (then
-          (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const -1))
-          (br $entries_presence)))
-      (i32.store
-        (i32.add (local.get $result_ptr) (i32.const {presence_words_offset}))
-        (i32.sub (i32.shl (i32.const 1) (local.get $count)) (i32.const 1))))
-    ;; Extract all [key, value] pairs
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const 0))
+    (local.set $write_i (i32.const {zero}))
+    ;; Extract only enumerable own property [key, value] pairs
     (local.set $i (i32.const {zero}))
     (block $entries_done
       (loop $entries_loop
         (br_if $entries_done (i32.ge_u (local.get $i) (local.get $count)))
-        (local.set $entry_base
-          (i32.add (local.get $base)
-            (i32.add (i32.const {obj_header})
-              (i32.shl (local.get $i) (i32.const {entry_shift})))))
-        (local.set $key (i32.load (local.get $entry_base)))
-        (local.set $value (i32.load (i32.add (local.get $entry_base) (i32.const {value_off}))))
-        ;; Allocate 2-element pair array
-        (local.set $pair_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.const {pair_size}))))
-        (i32.store (local.get $pair_ptr) (i32.const {two}))
-        (i32.store (i32.add (local.get $pair_ptr) (i32.const {array_capacity_offset})) (i32.const {two}))
-        (i32.store (i32.add (local.get $pair_ptr) (i32.const {presence_word_count_offset})) (i32.const {one}))
-        (i32.store (i32.add (local.get $pair_ptr) (i32.const {array_elements_offset_offset})) (i32.const {array_header}))
-        (i32.store (i32.add (local.get $pair_ptr) (i32.const {presence_words_offset})) (i32.const 3))
-        (i32.store (i32.add (local.get $pair_ptr) (i32.const {array_header})) (local.get $key))
-        (i32.store (i32.add (local.get $pair_ptr) (i32.const {array_header_plus_4})) (local.get $value))
-        ;; Store pair in result array
-        (i32.store (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header}) (i32.shl (local.get $i) (i32.const {elem_shift})))) (i32.or (local.get $pair_ptr) (i32.const {array_tag})))
+        (if (i32.eqz (i32.and (local.get $flags) (i32.shl (i32.const 1) (i32.add (local.get $i) (i32.const {non_enum_shift})))))
+          (then
+            (local.set $entry_base
+              (i32.add (local.get $base)
+                (i32.add (i32.const {obj_header})
+                  (i32.shl (local.get $i) (i32.const {entry_shift})))))
+            (local.set $key (i32.load (local.get $entry_base)))
+            (local.set $value (i32.load (i32.add (local.get $entry_base) (i32.const {value_off}))))
+            ;; Allocate 2-element pair array
+            (local.set $pair_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.const {pair_size}))))
+            (i32.store (local.get $pair_ptr) (i32.const {two}))
+            (i32.store (i32.add (local.get $pair_ptr) (i32.const {array_capacity_offset})) (i32.const {two}))
+            (i32.store (i32.add (local.get $pair_ptr) (i32.const {presence_word_count_offset})) (i32.const {one}))
+            (i32.store (i32.add (local.get $pair_ptr) (i32.const {array_elements_offset_offset})) (i32.const {array_header}))
+            (i32.store (i32.add (local.get $pair_ptr) (i32.const {presence_words_offset})) (i32.const 3))
+            (i32.store (i32.add (local.get $pair_ptr) (i32.const {array_header})) (local.get $key))
+            (i32.store (i32.add (local.get $pair_ptr) (i32.const {array_header_plus_4})) (local.get $value))
+            ;; Store pair in result array
+            (i32.store (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header}) (i32.shl (local.get $write_i) (i32.const {elem_shift})))) (i32.or (local.get $pair_ptr) (i32.const {array_tag})))
+            (local.set $write_i (i32.add (local.get $write_i) (i32.const {one})))))
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
         (br $entries_loop)))
+    ;; Update array length to actual enumerable count
+    (i32.store (local.get $result_ptr) (local.get $write_i))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {array_capacity_offset})) (local.get $count))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_word_count_offset})) (i32.const {one}))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {array_elements_offset_offset})) (i32.const {array_header}))
+    (block $presence
+      (if (i32.eqz (local.get $write_i))
+        (then
+          (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const 0))
+          (br $presence)))
+      (if (i32.gt_u (local.get $write_i) (i32.const 31))
+        (then
+          (i32.store (i32.add (local.get $result_ptr) (i32.const {presence_words_offset})) (i32.const -1))
+          (br $presence)))
+      (i32.store
+        (i32.add (local.get $result_ptr) (i32.const {presence_words_offset}))
+        (i32.sub (i32.shl (i32.const 1) (local.get $write_i)) (i32.const 1))))
     (i32.or (local.get $result_ptr) (i32.const {array_tag})))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            non_enum_shift = Layout::OBJECT_NON_ENUM_SHIFT,
             array_header = Layout::ARRAY_HEADER_SIZE,
             array_capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
             presence_word_count_offset = Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
