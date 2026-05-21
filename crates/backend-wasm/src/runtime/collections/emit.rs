@@ -1305,6 +1305,46 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(crate) fn emit_map_for_each(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $map_for_each (param $map i32) (param $callback i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local.set $tag (i32.and (local.get $map) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $base (i32.and (local.get $map) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (i32.const {undefined}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(crate) fn emit_set_for_each(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $set_for_each (param $set i32) (param $callback i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local.set $tag (i32.and (local.get $set) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $base (i32.and (local.get $set) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (i32.const {undefined}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
     pub(crate) fn emit_set_from_array(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
