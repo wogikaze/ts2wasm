@@ -1383,6 +1383,7 @@ def main():
     sample = None
     category_pattern = None
     sample_seed = os.environ.get("TS2WASM_SAMPLE_SEED")  # deterministic seed for sampling
+    source_profile = False
     server_mode = True
     suite_detail_rows = []
     suite_detail_counter = [0]
@@ -1476,6 +1477,9 @@ def main():
                 sys.exit(1)
             sample_seed = args[i + 1]
             i += 2
+        elif args[i] == "--source-profile":
+            source_profile = True
+            i += 1
         elif args[i] == "--no-server":
             server_mode = False
             i += 1
@@ -1563,14 +1567,15 @@ def main():
         sys.exit(1)
 
     denominator = len(files)
-    sample_seed = os.environ.get("TS2WASM_SAMPLE_SEED")  # deterministic seed for sampling
-
     evidence = evidence_command(
         suite, limit, paths_file, path_filters,
         sample=sample, category=category_pattern,
         semantic_check=semantic_check, server_mode=server_mode,
         jsonl_output=jsonl_output,
         sample_seed=sample_seed,
+        semantic_mode=semantic_mode,
+        dashboard_data=web_ui,
+        source_profile=source_profile,
     )
 
     if sample is not None and sample < 1:
@@ -1700,6 +1705,9 @@ def main():
         jsonl_output=jsonl_output,
         selected_files=files,
         sample_seed=sample_seed,
+        semantic_mode=semantic_mode,
+        dashboard_data=web_ui,
+        source_profile=source_profile,
     )
 
     # JSONL output mode (test262 only) uses the full differential harness.
@@ -1768,6 +1776,68 @@ def main():
             "dashboard_ms": 0,
             "server_fallback_batches": 0,
         }
+        source_profile_compiled = False
+        source_profile_enabled = False
+        source_profile_records = {}
+
+        def merge_source_profile_meta(meta):
+            nonlocal source_profile_compiled, source_profile_enabled
+            if not isinstance(meta, dict):
+                return
+            source_meta = meta.get("source_profile")
+            if not isinstance(source_meta, dict):
+                return
+            source_profile_compiled = source_profile_compiled or bool(source_meta.get("compiled"))
+            source_profile_enabled = source_profile_enabled or bool(source_meta.get("enabled"))
+            records = source_meta.get("records") or []
+            if not isinstance(records, list):
+                return
+            for record in records:
+                if not isinstance(record, dict):
+                    continue
+                key = (
+                    record.get("name") or "",
+                    record.get("file") or "",
+                    int(record.get("line") or 0),
+                    record.get("module_path") or "",
+                )
+                current = source_profile_records.setdefault(
+                    key,
+                    {
+                        "name": key[0],
+                        "file": key[1],
+                        "line": key[2],
+                        "module_path": key[3],
+                        "count": 0,
+                        "total_ns": 0,
+                        "max_ns": 0,
+                    },
+                )
+                count = int(record.get("count") or 0)
+                total_ns = int(record.get("total_ns") or 0)
+                max_ns = int(record.get("max_ns") or 0)
+                current["count"] += count
+                current["total_ns"] += total_ns
+                current["max_ns"] = max(current["max_ns"], max_ns)
+
+        def render_source_profile_records():
+            records = []
+            for record in source_profile_records.values():
+                count = record["count"]
+                total_ns = record["total_ns"]
+                max_ns = record["max_ns"]
+                avg_ns = total_ns // count if count else 0
+                rendered = dict(record)
+                rendered.update({
+                    "total_ms": total_ns / 1_000_000,
+                    "max_ms": max_ns / 1_000_000,
+                    "avg_ns": avg_ns,
+                    "avg_ms": avg_ns / 1_000_000,
+                })
+                records.append(rendered)
+            records.sort(key=lambda item: (-item["total_ns"], item["name"], item["file"], item["line"]))
+            return records
+
         include_jsonl_source = os.environ.get("TS2WASM_JSONL_SOURCE", "0") not in ("0", "false", "False", "no", "NO")
         # P4: semantic_mode controls oracle policy
         if semantic_mode == "strict":
@@ -2583,12 +2653,16 @@ def main():
                 shutil.rmtree(thread_tmp, ignore_errors=True)
 
         def start_jsonl_server():
+            env = os.environ.copy()
+            if source_profile:
+                env["TS2WASM_SOURCE_PROFILE"] = "1"
             return subprocess.Popen(
                 [str(ts2wasm_binary()), "server"],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=sys.stderr,
                 cwd=REPO_ROOT,
+                env=env,
             )
 
         def stop_jsonl_server(proc):
@@ -2901,6 +2975,7 @@ def main():
                             if isinstance(build_resp_raw, dict):
                                 build_results = build_resp_raw.get("items", [])
                                 meta = build_resp_raw.get("meta", {})
+                                merge_source_profile_meta(meta)
                                 fb = meta.get("wat2wasm_fallback_count", 0)
                                 if fb:
                                     phase_timers["wat2wasm_fallback_count"] = fb
@@ -3046,6 +3121,17 @@ def main():
         # Write phase profile for performance analysis
         profile_path = results_dir / f"{suite}-profile.json"
         profile_rec = dict(phase_timers)
+        profile_rec["source_profile"] = {
+            "requested": bool(source_profile),
+            "compiled": bool(source_profile_compiled),
+            "enabled": bool(source_profile_enabled),
+            "records": render_source_profile_records(),
+        }
+        if source_profile and not source_profile_compiled:
+            print(
+                "WARNING: --source-profile requested but ts2wasm binary was not built with feature source-profiler",
+                file=sys.stderr,
+            )
         # Add derived averages to prevent misreading cumulative vs wall
         iwasm_procs = profile_rec.get("iwasm_processes", 0)
         if iwasm_procs > 0:

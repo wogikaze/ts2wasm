@@ -1173,6 +1173,9 @@ impl WatEmitter<'_> {
         ;; Symbol -> "[object Symbol]"
         (if (i32.eq (i32.load (local.get $base)) (i32.const {symbol_sentinel}))
           (then (return (i32.const {str_symbol}))))
+        ;; HeapClosure -> "[object Function]"
+        (if (i32.eq (i32.load (local.get $base)) (i32.const {closure_sentinel}))
+          (then (return (i32.const {str_function}))))
         ;; Heap number -> "[object Number]"
         (if (i32.eq (i32.load (local.get $base)) (i32.const {heap_number_sentinel}))
           (then (return (i32.const {str_number}))))
