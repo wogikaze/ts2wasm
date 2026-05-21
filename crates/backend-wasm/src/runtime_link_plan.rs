@@ -1,6 +1,6 @@
 use ts2wasm_ir::lowered::{
     ClosureRepresentation, FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp,
-    LoweredProgram, LoweredStmt, LoweredUnaryOp, Validated,
+    LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleLoadKind, Validated,
 };
 use ts2wasm_runtime_abi::ValueTag;
 use ts2wasm_runtime_abi::consts::RuntimeString;
@@ -566,8 +566,11 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
             collect_required_runtime_expr(plan, result);
         }
         LoweredExpr::MethodCall { .. } => {}
-        LoweredExpr::ModuleLoad { .. } => {
+        LoweredExpr::ModuleLoad { kind, .. } => {
             plan.add_required_runtime(RuntimeFn::ModuleRequire);
+            if *kind == ModuleLoadKind::DynamicImport {
+                plan.add_required_runtime(RuntimeFn::PromiseResolve);
+            }
         }
         LoweredExpr::RuntimeCall {
             intrinsic, args, ..

@@ -9,6 +9,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use ts2wasm_ir::lowered::{
     BuiltinErrorConstructor, ClosureRepresentation, FunctionCallKind, InferredType, LocalId,
     LoweredArraySlot, LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp, LoweredUnaryOp,
+    ModuleLoadKind,
 };
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
@@ -286,12 +287,22 @@ impl WatEmitter<'_> {
             LoweredExpr::PropertySet { .. } | LoweredExpr::PropertySetDynamic { .. } => {
                 self.emit_property_set_expr(writer, expr, indent, frame)
             }
-            LoweredExpr::ModuleLoad { module_id, .. } => {
-                writer.push_str(&format!(
-                    "{pad}(call {} (i32.const {}))\n",
-                    RuntimeFn::ModuleRequire.symbol(),
-                    module_id,
-                ));
+            LoweredExpr::ModuleLoad {
+                module_id, kind, ..
+            } => {
+                if *kind == ModuleLoadKind::DynamicImport {
+                    writer.push_str(&format!(
+                        "{pad}(call $promise_resolve (call {} (i32.const {})))\n",
+                        RuntimeFn::ModuleRequire.symbol(),
+                        module_id,
+                    ));
+                } else {
+                    writer.push_str(&format!(
+                        "{pad}(call {} (i32.const {}))\n",
+                        RuntimeFn::ModuleRequire.symbol(),
+                        module_id,
+                    ));
+                }
             }
             LoweredExpr::New { .. } => self.emit_new_expr(writer, expr, indent, frame),
             LoweredExpr::ClassPrototype(..) | LoweredExpr::BuiltinErrorPrototype(..) => {

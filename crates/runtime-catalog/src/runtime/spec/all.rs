@@ -2840,7 +2840,7 @@ match self {
             },
             Self::PromiseFinally => RuntimeSpec {
                 symbol: "$promise_finally",
-                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
+                deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
