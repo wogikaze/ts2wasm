@@ -1515,7 +1515,19 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
     let mut exports = BTreeMap::new();
     let mut literal_locals = BTreeMap::new();
     for stmt in &program {
-        if let Stmt::ExportDecl {
+        process_collected_export_stmt(path, &mut exports, &mut literal_locals, stmt)?;
+    }
+
+    Ok(exports)
+}
+
+fn process_collected_export_stmt(
+    path: &Path,
+    exports: &mut BTreeMap<String, Expr>,
+    literal_locals: &mut BTreeMap<String, Expr>,
+    stmt: &Stmt,
+) -> Result<(), Diagnostic> {
+if let Stmt::ExportDecl {
             declaration,
             specifier,
             ..
@@ -1687,9 +1699,8 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
                 Expr::Object { props, span: *span },
             );
         }
-    }
 
-    Ok(exports)
+    Ok(())
 }
 
 fn named_function_export_expr(

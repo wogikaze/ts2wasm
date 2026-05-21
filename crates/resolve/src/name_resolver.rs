@@ -1451,47 +1451,8 @@ impl NameResolver {
                     span: *span,
                 })
             }
-            Expr::Array { elements, span } => Ok(Expr::Array {
-                elements: elements
-                    .iter()
-                    .map(|element| match element {
-                        ArrayLiteralElement::Present(expr) => {
-                            Ok(ArrayLiteralElement::Present(self.resolve_expr(expr)?))
-                        }
-                        ArrayLiteralElement::Spread(expr) => {
-                            Ok(ArrayLiteralElement::Spread(self.resolve_expr(expr)?))
-                        }
-                        ArrayLiteralElement::Hole(span) => Ok(ArrayLiteralElement::Hole(*span)),
-                    })
-                    .collect::<Result<Vec<_>, _>>()?,
-                span: *span,
-            }),
-            Expr::Object { props, span } => Ok(Expr::Object {
-                props: props
-                    .iter()
-                    .map(|prop| match prop {
-                        ObjectProp::KeyValue { key, value } => Ok(ObjectProp::KeyValue {
-                            key: key.clone(),
-                            value: self.resolve_expr(value)?,
-                        }),
-                        ObjectProp::Shorthand { key, value } => Ok(ObjectProp::Shorthand {
-                            key: key.clone(),
-                            value: self.resolve_expr(value)?,
-                        }),
-                        ObjectProp::ComputedKey { key, value } => Ok(ObjectProp::ComputedKey {
-                            key: Box::new(self.resolve_expr(key)?),
-                            value: self.resolve_expr(value)?,
-                        }),
-                        ObjectProp::MethodShorthand { key, value } => {
-                            Ok(ObjectProp::MethodShorthand {
-                                key: key.clone(),
-                                value: self.resolve_expr(value)?,
-                            })
-                        }
-                    })
-                    .collect::<Result<Vec<_>, _>>()?,
-                span: *span,
-            }),
+            Expr::Array { elements, span } => self.resolve_array_literal(elements, *span),
+            Expr::Object { props, span } => self.resolve_object_literal(props, *span),
             Expr::Index {
                 object,
                 index,
@@ -1618,6 +1579,63 @@ impl NameResolver {
         }
     }
 
+
+    /// Resolve an array literal, resolving each element recursively.
+    fn resolve_array_literal(
+        &mut self,
+        elements: &[ArrayLiteralElement],
+        span: Span,
+    ) -> Result<Expr, Diagnostic> {
+        Ok(Expr::Array {
+            elements: elements
+                .iter()
+                .map(|element| match element {
+                    ArrayLiteralElement::Present(expr) => {
+                        self.resolve_expr(expr).map(ArrayLiteralElement::Present)
+                    }
+                    ArrayLiteralElement::Spread(expr) => {
+                        self.resolve_expr(expr).map(ArrayLiteralElement::Spread)
+                    }
+                    ArrayLiteralElement::Hole(_) => Ok(ArrayLiteralElement::Hole(span)),
+                })
+                .collect::<Result<Vec<_>, _>>()?,
+            span,
+        })
+    }
+
+    /// Resolve an object literal, resolving each property value recursively.
+    fn resolve_object_literal(
+        &mut self,
+        props: &[ObjectProp],
+        span: Span,
+    ) -> Result<Expr, Diagnostic> {
+        Ok(Expr::Object {
+            props: props
+                .iter()
+                .map(|prop| match prop {
+                    ObjectProp::KeyValue { key, value } => Ok(ObjectProp::KeyValue {
+                        key: key.clone(),
+                        value: self.resolve_expr(value)?,
+                    }),
+                    ObjectProp::Shorthand { key, value } => Ok(ObjectProp::Shorthand {
+                        key: key.clone(),
+                        value: self.resolve_expr(value)?,
+                    }),
+                    ObjectProp::ComputedKey { key, value } => Ok(ObjectProp::ComputedKey {
+                        key: Box::new(self.resolve_expr(key)?),
+                        value: self.resolve_expr(value)?,
+                    }),
+                    ObjectProp::MethodShorthand { key, value } => {
+                        Ok(ObjectProp::MethodShorthand {
+                            key: key.clone(),
+                            value: self.resolve_expr(value)?,
+                        })
+                    }
+                })
+                .collect::<Result<Vec<_>, _>>()?,
+            span,
+        })
+    }
     fn resolve_binary_chain(
         &mut self,
         left: &Expr,
