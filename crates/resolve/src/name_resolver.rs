@@ -1038,6 +1038,10 @@ impl NameResolver {
                 span: *span,
             }),
             Expr::This { span } => Ok(Expr::This { span: *span }),
+            Expr::PrivateIdent { name, span } => Ok(Expr::PrivateIdent {
+                name: name.clone(),
+                span: *span,
+            }),
             Expr::NewTarget { span } => Ok(Expr::NewTarget { span: *span }),
             Expr::ImportMeta { span } => Ok(Expr::ImportMeta { span: *span }),
             Expr::ClassExpr {
@@ -2778,6 +2782,7 @@ fn collect_static_direct_eval_declarations_from_expr(expr: &Expr, names: &mut Ve
         | Expr::Ident { .. }
         | Expr::NewTarget { .. }
         | Expr::ImportMeta { .. }
+        | Expr::PrivateIdent { .. }
         | Expr::This { .. } => {}
     }
 }
@@ -2907,6 +2912,7 @@ fn expr_contains_bigint_literal(expr: &Expr) -> bool {
         | Expr::Undefined { .. }
         | Expr::This { .. }
         | Expr::ImportMeta { .. }
+        | Expr::PrivateIdent { .. }
         | Expr::Ident { .. } => false,
         Expr::NewTarget { .. } => false,
         Expr::Sequence { exprs, .. } => exprs.iter().any(expr_contains_bigint_literal),

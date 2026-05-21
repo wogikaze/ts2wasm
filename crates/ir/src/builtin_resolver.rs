@@ -1154,6 +1154,7 @@ impl BigIntStaticBuiltinFolder {
             | Expr::Undefined { .. }
             | Expr::This { .. }
             | Expr::NewTarget { .. }
+            | Expr::PrivateIdent { .. }
             | Expr::Ident { .. } => expr.clone(),
         }
     }
@@ -1854,6 +1855,14 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::Null { .. } => Ok(ResolvedExpr::Null),
         Expr::Undefined { .. } => Ok(ResolvedExpr::Undefined),
         Expr::This { span } => Ok(ResolvedExpr::This { span: *span }),
+        Expr::PrivateIdent { name, span } => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!(
+                "private identifier `#{name}` is only valid as the left operand of the `in` operator or as a member access target (`obj.#<name>`)"
+            ),
+            span: Some(*span),
+            phase: None,
+        }),
         Expr::NewTarget { span } => Ok(ResolvedExpr::NewTarget { span: *span }),
         Expr::ImportMeta { span } => Ok(ResolvedExpr::ImportMeta { span: *span }),
         Expr::Await { expr, .. } => {
@@ -1945,6 +1954,23 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             right: first_right,
             span: first_span,
         } => {
+            // Handle PrivateIdentifier `in` check: `#x in obj`
+            // This must be checked before the left-spine flattening to avoid
+            // trying to resolve PrivateIdent as a standalone expression.
+            if *first_op == BinaryOp::In && matches!(left.as_ref(), Expr::PrivateIdent { .. }) {
+                let Expr::PrivateIdent { name, .. } = left.as_ref() else {
+                    unreachable!()
+                };
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-255: private field `in` check (`#{name} in obj`) is not yet supported"
+                    ),
+                    span: Some(*first_span),
+                    phase: None,
+                });
+            }
+
             // Iterative left-spine flattening to avoid stack overflow.
             // Collect all (op, right, span) tuples from the left spine,
             // resolve the leaf, then process each level from leaf outward.

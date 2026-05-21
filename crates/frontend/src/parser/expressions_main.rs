@@ -1917,6 +1917,10 @@ impl Parser {
                 span,
             }) => Ok(Expr::This { span }),
             Some(SpannedToken {
+                kind: Token::PrivateIdentifier(name),
+                span,
+            }) => Ok(Expr::PrivateIdent { name, span }),
+            Some(SpannedToken {
                 kind: Token::Super,
                 span,
             }) => Ok(Expr::Ident {
@@ -2698,6 +2702,7 @@ fn parser_expr_is_bigint_literal_operand(expr: &Expr) -> bool {
         | Expr::Await { .. }
         | Expr::Yield { .. }
         | Expr::Spread { .. }
+        | Expr::PrivateIdent { .. }
         | Expr::Sequence { .. } => false,
     }
 }

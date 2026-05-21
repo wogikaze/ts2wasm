@@ -600,6 +600,10 @@ pub enum Expr {
     This {
         span: Span,
     },
+    PrivateIdent {
+        name: String,
+        span: Span,
+    },
     Sequence {
         exprs: Vec<Expr>,
         span: Span,
@@ -708,6 +712,7 @@ impl Expr {
             | Self::NewTarget { span }
             | Self::ImportMeta { span }
             | Self::This { span }
+            | Self::PrivateIdent { span, .. }
             | Self::Sequence { span, .. } => *span,
         }
     }
