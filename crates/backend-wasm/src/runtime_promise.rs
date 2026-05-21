@@ -19,20 +19,10 @@ impl WatEmitter<'_> {
     (i32.store (i32.add (local.get $base) (i32.const {slot0_offset})) (i32.const {pending}))
     ;; Slot 1: result = undefined (0)
     (i32.store (i32.add (local.get $base) (i32.const {slot1_offset})) (i32.const {undefined}))
-    ;; Slot 2: onFulfilled = undefined (0) — reserved for resolve stub
+    ;; Slot 2: onFulfilled = undefined (0)
     (i32.store (i32.add (local.get $base) (i32.const {slot2_offset})) (i32.const {undefined}))
-    ;; Slot 3: onRejected = undefined (0) — reserved for reject stub
+    ;; Slot 3: onRejected = undefined (0)
     (i32.store (i32.add (local.get $base) (i32.const {slot3_offset})) (i32.const {undefined}))
-    ;; If executor is provided (not undefined/null), store placeholder resolve/reject
-    (if (i32.and
-          (i32.ne (local.get $executor) (i32.const {undefined}))
-          (i32.ne (local.get $executor) (i32.const {null})))
-      (then
-        ;; Store resolve/reject placeholders in slots 2/3
-        (i32.store (i32.add (local.get $base) (i32.const {slot2_offset}))
-          (call $promise_resolve (i32.const {undefined})))
-        (i32.store (i32.add (local.get $base) (i32.const {slot3_offset}))
-          (call $promise_reject (i32.const {undefined})))))
     ;; Return tagged as ARRAY
     (i32.or (local.get $base) (i32.const {array_tag})))
 "#,
@@ -44,7 +34,6 @@ impl WatEmitter<'_> {
             slot3_offset = Layout::ARRAY_HEADER_SIZE + 12,
             pending = 0,
             undefined = ValueTag::UNDEFINED,
-            null = ValueTag::NULL,
             array_tag = ValueTag::ARRAY,
         ));
     }
