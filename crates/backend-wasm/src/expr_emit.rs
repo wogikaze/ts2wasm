@@ -7,8 +7,8 @@ use super::emitter::WatEmitter;
 use expr_emit_helpers::*;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use ts2wasm_ir::lowered::{
-    ClosureRepresentation, FunctionCallKind, InferredType, LocalId, LoweredArraySlot,
-    LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp, LoweredUnaryOp,
+    BuiltinErrorConstructor, ClosureRepresentation, FunctionCallKind, InferredType, LocalId,
+    LoweredArraySlot, LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp, LoweredUnaryOp,
 };
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
@@ -1896,222 +1896,269 @@ impl WatEmitter<'_> {
         indent: usize,
         frame: &LocalFrame,
     ) {
-        let pad = " ".repeat(indent);
         match expr {
             LoweredExpr::ObjectNew {
                 props,
                 non_enumerable,
                 ..
-            } => {
-                let prop_count = props.len();
-                let prop_capacity = prop_count + 8;
-                let size =
-                    Layout::OBJECT_HEADER_SIZE + (prop_capacity as u32) * Layout::OBJECT_ENTRY_SIZE;
-                writer.push_str(&format!(
-                    "{pad}(local.set {} (call {} (i32.const {})))\n",
-                    frame.heap_base_tmp(),
-                    RuntimeFn::AllocHeap.symbol(),
-                    size,
-                ));
-                self.emit_gc_root_mirror_index(
-                    writer.output_mut(),
-                    &pad,
-                    frame.heap_base_tmp(),
-                    frame,
-                );
-                writer.push_str(&format!(
-                    "{pad}(i32.store (local.get {}) (i32.const {}))\n",
-                    frame.heap_base_tmp(),
-                    prop_count,
-                ));
-                let flags = non_enumerable << Layout::OBJECT_NON_ENUM_SHIFT;
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
-                    frame.heap_base_tmp(),
-                    Layout::OBJECT_FLAGS_OFFSET,
-                    flags,
-                ));
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.and (call {}) (i32.const {})))\n",
-                    frame.heap_base_tmp(),
-                    Layout::OBJECT_PROTOTYPE_OFFSET,
-                    RuntimeFn::ObjectPrototype.symbol(),
-                    ValueTag::HEAP_MASK,
-                ));
-                let child_frame = frame.child_temp_frame();
-                for (i, (key, val)) in props.iter().enumerate() {
-                    let entry_offset =
-                        Layout::OBJECT_ENTRIES_OFFSET + (i as u32) * Layout::OBJECT_ENTRY_SIZE;
-                    let key_raw = self.string_value(key);
-                    writer.push_str(&format!(
-                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
-                        frame.heap_base_tmp(),
-                        entry_offset,
-                        key_raw,
-                    ));
-                    self.emit_expr(writer, val, indent, &child_frame);
-                    writer.local_set(indent, child_frame.heap_value_tmp());
-                    writer.push_str(&format!(
-                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
-                        frame.heap_base_tmp(),
-                        entry_offset + Layout::OBJECT_VALUE_OFFSET,
-                        child_frame.heap_value_tmp(),
-                    ));
-                }
-                writer.push_str(&format!(
-                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
-                    frame.heap_base_tmp(),
-                    ValueTag::OBJECT_TAG,
-                ));
-            }
+            } => self.emit_object_new_expr(writer, props, *non_enumerable, indent, frame),
             LoweredExpr::ErrorNew {
                 constructor,
                 message,
                 cause,
                 errors,
                 ..
-            } => {
-                let base_prop_count = 2u32;
-                let cause_prop_count = if cause.is_some() { 1 } else { 0 };
-                let errors_prop_count = if errors.is_some() { 1 } else { 0 };
-                let prop_count = base_prop_count + cause_prop_count + errors_prop_count;
-                let prop_capacity = prop_count + 8;
-                let size = Layout::OBJECT_HEADER_SIZE + prop_capacity * Layout::OBJECT_ENTRY_SIZE;
-                writer.push_str(&format!(
-                    "{pad}(local.set {} (call {} (i32.const {})))\n",
-                    frame.heap_base_tmp(),
-                    RuntimeFn::AllocHeap.symbol(),
-                    size,
-                ));
-                self.emit_gc_root_mirror_index(
-                    writer.output_mut(),
-                    &pad,
-                    frame.heap_base_tmp(),
-                    frame,
-                );
-                writer.push_str(&format!(
-                    "{pad}(i32.store (local.get {}) (i32.const {}))\n",
-                    frame.heap_base_tmp(),
-                    prop_count,
-                ));
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 0))\n",
-                    frame.heap_base_tmp(),
-                    Layout::OBJECT_FLAGS_OFFSET,
-                ));
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (global.get ${}))\n",
-                    frame.heap_base_tmp(),
-                    Layout::OBJECT_PROTOTYPE_OFFSET,
-                    builtin_error_prototype_global(*constructor),
-                ));
-                let key_raw = self.string_value("message");
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
-                    frame.heap_base_tmp(),
-                    Layout::OBJECT_ENTRIES_OFFSET,
-                    key_raw,
-                ));
-                self.emit_expr(writer, message, indent, frame);
-                writer.local_set(indent, frame.heap_value_tmp());
-                self.emit_gc_root_mirror_index(
-                    writer.output_mut(),
-                    &pad,
-                    frame.heap_value_tmp(),
-                    frame,
-                );
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
-                    frame.heap_base_tmp(),
-                    Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
-                    frame.heap_value_tmp(),
-                ));
-                let stack_entry_offset = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE;
-                let stack_key_raw = self.string_value("stack");
-                let stack_prefix_raw = self.string_value(builtin_error_stack_prefix(*constructor));
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
-                    frame.heap_base_tmp(),
-                    stack_entry_offset,
-                    stack_key_raw,
-                ));
-                writer.i32_const(indent, stack_prefix_raw as i32);
-                writer.local_get(indent, frame.heap_value_tmp());
-                writer.line_fmt(
-                    indent,
-                    format_args!("(call {})", RuntimeFn::Concat.symbol()),
-                );
-                writer.local_set(indent, frame.heap_value_tmp());
-                self.emit_gc_root_mirror_index(
-                    writer.output_mut(),
-                    &pad,
-                    frame.heap_value_tmp(),
-                    frame,
-                );
-                writer.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
-                    frame.heap_base_tmp(),
-                    stack_entry_offset + Layout::OBJECT_VALUE_OFFSET,
-                    frame.heap_value_tmp(),
-                ));
-                if let Some(cause) = cause {
-                    let cause_entry_offset =
-                        Layout::OBJECT_ENTRIES_OFFSET + base_prop_count * Layout::OBJECT_ENTRY_SIZE;
-                    let cause_key_raw = self.string_value("cause");
-                    writer.push_str(&format!(
-                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
-                        frame.heap_base_tmp(),
-                        cause_entry_offset,
-                        cause_key_raw,
-                    ));
-                    self.emit_expr(writer, cause, indent, frame);
-                    writer.local_set(indent, frame.heap_value_tmp());
-                    self.emit_gc_root_mirror_index(
-                        writer.output_mut(),
-                        &pad,
-                        frame.heap_value_tmp(),
-                        frame,
-                    );
-                    writer.push_str(&format!(
-                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
-                        frame.heap_base_tmp(),
-                        cause_entry_offset + Layout::OBJECT_VALUE_OFFSET,
-                        frame.heap_value_tmp(),
-                    ));
-                }
-                if let Some(errors) = errors {
-                    let errors_entry_offset = Layout::OBJECT_ENTRIES_OFFSET
-                        + (base_prop_count + cause_prop_count) * Layout::OBJECT_ENTRY_SIZE;
-                    let errors_key_raw = self.string_value("errors");
-                    writer.push_str(&format!(
-                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
-                        frame.heap_base_tmp(),
-                        errors_entry_offset,
-                        errors_key_raw,
-                    ));
-                    self.emit_expr(writer, errors, indent, frame);
-                    writer.local_set(indent, frame.heap_value_tmp());
-                    self.emit_gc_root_mirror_index(
-                        writer.output_mut(),
-                        &pad,
-                        frame.heap_value_tmp(),
-                        frame,
-                    );
-                    writer.push_str(&format!(
-                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
-                        frame.heap_base_tmp(),
-                        errors_entry_offset + Layout::OBJECT_VALUE_OFFSET,
-                        frame.heap_value_tmp(),
-                    ));
-                }
-                writer.push_str(&format!(
-                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
-                    frame.heap_base_tmp(),
-                    ValueTag::OBJECT_TAG,
-                ));
-            }
+            } => self.emit_error_new_expr(
+                writer,
+                *constructor,
+                message,
+                cause,
+                errors,
+                indent,
+                frame,
+            ),
             _ => writer.unreachable(indent),
         }
+    }
+
+    fn emit_object_new_expr(
+        &self,
+        writer: &mut WatWriter,
+        props: &[(String, LoweredExpr)],
+        non_enumerable: u32,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let prop_count = props.len();
+        let prop_capacity = prop_count + 8;
+        let size = Layout::OBJECT_HEADER_SIZE + (prop_capacity as u32) * Layout::OBJECT_ENTRY_SIZE;
+        writer.push_str(&format!(
+            "{pad}(local.set {} (call {} (i32.const {})))\n",
+            frame.heap_base_tmp(),
+            RuntimeFn::AllocHeap.symbol(),
+            size,
+        ));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, frame.heap_base_tmp(), frame);
+        writer.push_str(&format!(
+            "{pad}(i32.store (local.get {}) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            prop_count,
+        ));
+        let flags = non_enumerable << Layout::OBJECT_NON_ENUM_SHIFT;
+        writer.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            Layout::OBJECT_FLAGS_OFFSET,
+            flags,
+        ));
+        writer.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.and (call {}) (i32.const {})))\n",
+            frame.heap_base_tmp(),
+            Layout::OBJECT_PROTOTYPE_OFFSET,
+            RuntimeFn::ObjectPrototype.symbol(),
+            ValueTag::HEAP_MASK,
+        ));
+        let child_frame = frame.child_temp_frame();
+        for (i, (key, val)) in props.iter().enumerate() {
+            self.emit_object_entry(writer, key, val, i, indent, frame, &child_frame);
+        }
+        writer.push_str(&format!(
+            "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            ValueTag::OBJECT_TAG,
+        ));
+    }
+
+    fn emit_object_entry(
+        &self,
+        writer: &mut WatWriter,
+        key: &str,
+        val: &LoweredExpr,
+        index: usize,
+        indent: usize,
+        frame: &LocalFrame,
+        child_frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let entry_offset =
+            Layout::OBJECT_ENTRIES_OFFSET + (index as u32) * Layout::OBJECT_ENTRY_SIZE;
+        let key_raw = self.string_value(key);
+        writer.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            entry_offset,
+            key_raw,
+        ));
+        self.emit_expr(writer, val, indent, child_frame);
+        writer.local_set(indent, child_frame.heap_value_tmp());
+        writer.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
+            frame.heap_base_tmp(),
+            entry_offset + Layout::OBJECT_VALUE_OFFSET,
+            child_frame.heap_value_tmp(),
+        ));
+    }
+
+    fn emit_error_new_expr(
+        &self,
+        writer: &mut WatWriter,
+        constructor: BuiltinErrorConstructor,
+        message: &LoweredExpr,
+        cause: &Option<Box<LoweredExpr>>,
+        errors: &Option<Box<LoweredExpr>>,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let base_prop_count = 2u32;
+        let cause_prop_count = if cause.is_some() { 1 } else { 0 };
+        let errors_prop_count = if errors.is_some() { 1 } else { 0 };
+        let prop_count = base_prop_count + cause_prop_count + errors_prop_count;
+        let prop_capacity = prop_count + 8;
+        let size = Layout::OBJECT_HEADER_SIZE + prop_capacity * Layout::OBJECT_ENTRY_SIZE;
+        writer.push_str(&format!(
+            "{pad}(local.set {} (call {} (i32.const {})))\n",
+            frame.heap_base_tmp(),
+            RuntimeFn::AllocHeap.symbol(),
+            size,
+        ));
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, frame.heap_base_tmp(), frame);
+        writer.push_str(&format!(
+            "{pad}(i32.store (local.get {}) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            prop_count,
+        ));
+        writer.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 0))\n",
+            frame.heap_base_tmp(),
+            Layout::OBJECT_FLAGS_OFFSET,
+        ));
+        writer.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (global.get ${}))\n",
+            frame.heap_base_tmp(),
+            Layout::OBJECT_PROTOTYPE_OFFSET,
+            builtin_error_prototype_global(constructor),
+        ));
+        self.emit_error_message_entry(writer, constructor, message, indent, frame);
+        if let Some(cause) = cause {
+            let cause_entry_offset =
+                Layout::OBJECT_ENTRIES_OFFSET + base_prop_count * Layout::OBJECT_ENTRY_SIZE;
+            self.emit_error_optional_entry(
+                writer,
+                "cause",
+                cause,
+                cause_entry_offset,
+                indent,
+                frame,
+            );
+        }
+        if let Some(errors) = errors {
+            let errors_entry_offset = Layout::OBJECT_ENTRIES_OFFSET
+                + (base_prop_count + cause_prop_count) * Layout::OBJECT_ENTRY_SIZE;
+            self.emit_error_optional_entry(
+                writer,
+                "errors",
+                errors,
+                errors_entry_offset,
+                indent,
+                frame,
+            );
+        }
+        writer.push_str(&format!(
+            "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            ValueTag::OBJECT_TAG,
+        ));
+    }
+
+    fn emit_error_message_entry(
+        &self,
+        writer: &mut WatWriter,
+        constructor: BuiltinErrorConstructor,
+        message: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let key_raw = self.string_value("message");
+        writer.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            Layout::OBJECT_ENTRIES_OFFSET,
+            key_raw,
+        ));
+        self.emit_expr(writer, message, indent, frame);
+        writer.local_set(indent, frame.heap_value_tmp());
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, frame.heap_value_tmp(), frame);
+        writer.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
+            frame.heap_base_tmp(),
+            Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
+            frame.heap_value_tmp(),
+        ));
+        self.emit_error_stack_entry(writer, constructor, indent, frame);
+    }
+
+    fn emit_error_stack_entry(
+        &self,
+        writer: &mut WatWriter,
+        constructor: BuiltinErrorConstructor,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let stack_entry_offset = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE;
+        let stack_key_raw = self.string_value("stack");
+        let stack_prefix_raw = self.string_value(builtin_error_stack_prefix(constructor));
+        writer.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            stack_entry_offset,
+            stack_key_raw,
+        ));
+        writer.i32_const(indent, stack_prefix_raw as i32);
+        writer.local_get(indent, frame.heap_value_tmp());
+        writer.line_fmt(
+            indent,
+            format_args!("(call {})", RuntimeFn::Concat.symbol()),
+        );
+        writer.local_set(indent, frame.heap_value_tmp());
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, frame.heap_value_tmp(), frame);
+        writer.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
+            frame.heap_base_tmp(),
+            stack_entry_offset + Layout::OBJECT_VALUE_OFFSET,
+            frame.heap_value_tmp(),
+        ));
+    }
+
+    fn emit_error_optional_entry(
+        &self,
+        writer: &mut WatWriter,
+        key: &str,
+        value: &LoweredExpr,
+        entry_offset: u32,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let key_raw = self.string_value(key);
+        writer.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            entry_offset,
+            key_raw,
+        ));
+        self.emit_expr(writer, value, indent, frame);
+        writer.local_set(indent, frame.heap_value_tmp());
+        self.emit_gc_root_mirror_index(writer.output_mut(), &pad, frame.heap_value_tmp(), frame);
+        writer.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
+            frame.heap_base_tmp(),
+            entry_offset + Layout::OBJECT_VALUE_OFFSET,
+            frame.heap_value_tmp(),
+        ));
     }
 
     fn emit_property_access_expr(

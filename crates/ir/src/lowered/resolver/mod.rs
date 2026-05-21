@@ -1226,7 +1226,7 @@ impl Resolver {
                     let (catch_var, catch_body) = if let Some(block) = catch_block {
                         self.ctx.symbols.scopes.push(HashMap::new());
                         let lowered = (|| {
-                            let catch_var = if let Some(param) = catch_param {
+                            let catch_var = if let Some(param) = catch_param.as_deref() {
                                 let local_id = self.declare_local(param)?;
                                 if self.ctx.facts.env_cell_names.contains(param) {
                                     self.ctx.facts.env_cell_locals.insert(local_id);

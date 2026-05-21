@@ -9,3 +9,4 @@ pub mod object;
 pub mod promise;
 pub mod regexp;
 pub mod string;
+pub mod typed_array;

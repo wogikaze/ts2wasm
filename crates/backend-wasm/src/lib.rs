@@ -26,7 +26,6 @@ mod runtime_objects;
 mod runtime_promise;
 mod runtime_regexp;
 mod runtime_strings;
-mod runtime_typed_arrays;
 mod stmt_emit;
 mod string_intern;
 mod wasm_binary;

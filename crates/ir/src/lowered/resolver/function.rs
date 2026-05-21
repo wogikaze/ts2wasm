@@ -24,6 +24,50 @@ struct NestedFunctionOptions {
     source_text: Option<String>,
 }
 
+fn validate_nested_function_receiver_support(
+    name: &str,
+    params: &[ResolvedParam],
+    body: &[ResolvedStmt],
+    options: &NestedFunctionOptions,
+    strict_context: bool,
+) -> Result<(), Diagnostic> {
+    if params.iter().any(|param| param.is_rest) && !options.suppress_captures {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!(
+                "issue-062e: nested function `{name}` closure rest parameters are not supported in this slice"
+            ),
+            span: None,
+            phase: None,
+        });
+    }
+    if !block_contains_this(body) && !block_contains_arguments(body) {
+        return Ok(());
+    }
+    if block_contains_arguments(body) && !block_contains_this(body) {
+        return Ok(());
+    }
+    if options.force_receiver || params.iter().any(|p| p.name == "this") {
+        return Ok(());
+    }
+    if block_contains_this(body)
+        && crate::lowered::program::function_body_is_strict(strict_context, body)
+    {
+        return Ok(());
+    }
+    if block_contains_this(body) {
+        return Ok(());
+    }
+    Err(Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!(
+            "issue-062e: nested function `{name}` closures with `this` or `arguments` are not supported in this slice"
+        ),
+        span: None,
+        phase: None,
+    })
+}
+
 impl super::Resolver {
     pub(super) fn lower_arrow_fn(
         &mut self,
@@ -537,48 +581,13 @@ impl super::Resolver {
         body: &[ResolvedStmt],
         options: NestedFunctionOptions,
     ) -> Result<LoweredExpr, Diagnostic> {
-        if params.iter().any(|param| param.is_rest) && !options.suppress_captures {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-062e: nested function `{name}` closure rest parameters are not supported in this slice"
-                ),
-                span: None,
-
-                phase: None,
-            });
-        }
-        if block_contains_this(body) || block_contains_arguments(body) {
-            if block_contains_arguments(body) && !block_contains_this(body) {
-                // `arguments` is handled by needs_arguments in the function signature;
-                // the function already inserts the signature unconditionally below.
-            } else if options.force_receiver {
-                // Object literal method shorthand has an implicit receiver.
-            } else if block_contains_this(body) && params.iter().any(|p| p.name == "this") {
-                // Explicit `this` parameter: this is a receiver function, not a closure issue.
-            } else if block_contains_this(body)
-                && crate::lowered::program::function_body_is_strict(
-                    self.ctx.is_strict_context(),
-                    body,
-                )
-            {
-                // Strict functions do not substitute globalThis for direct calls;
-                // unresolved `this` lowers to undefined in this resolver scope.
-            } else if block_contains_this(body) {
-                // No explicit `this` parameter — unresolved `this` lowers to `undefined`
-                // via lower_this_expr (both strict and non-strict).
-            } else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-062e: nested function `{name}` closures with `this` or `arguments` are not supported in this slice"
-                    ),
-                    span: None,
-
-                    phase: None,
-                });
-            }
-        }
+        validate_nested_function_receiver_support(
+            name,
+            params,
+            body,
+            &options,
+            self.ctx.is_strict_context(),
+        )?;
 
         let capture_names = if options.suppress_captures {
             Vec::new()

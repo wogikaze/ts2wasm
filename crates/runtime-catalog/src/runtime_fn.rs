@@ -1107,14 +1107,6 @@ const IMPORT_INTL_NUMBER_FORMAT_FORMAT: &[HostImport] = &[HostImport::IntlNumber
 const IMPORT_INTL_DATE_TIME_FORMAT_FORMAT: &[HostImport] = &[HostImport::IntlDateTimeFormatFormat];
 const IMPORT_REFLECT_APPLY: &[HostImport] = &[HostImport::ReflectApply];
 const IMPORT_REFLECT_CONSTRUCT: &[HostImport] = &[HostImport::ReflectConstruct];
-const IMPORT_GET_ITERATOR: &[HostImport] = &[HostImport::GetIterator];
-const IMPORT_ITERATOR_NEXT: &[HostImport] = &[HostImport::IteratorNext];
-const IMPORT_EVAL_DIRECT: &[HostImport] = &[HostImport::EvalDirect];
-const IMPORT_EVAL_INDIRECT: &[HostImport] = &[HostImport::EvalIndirect];
-const IMPORT_FUNCTION_COMPILE: &[HostImport] = &[HostImport::FunctionCompile];
-const IMPORT_FUNCTION_CALL: &[HostImport] = &[HostImport::FunctionCall];
-const IMPORT_FUNCTION_CALL_METHOD: &[HostImport] = &[HostImport::FunctionCallMethod];
-const IMPORT_FUNCTION_CONSTRUCT: &[HostImport] = &[HostImport::FunctionConstruct];
 const CAP_INTL_NUMBER_FORMAT_FORMAT: &[Capability] = &[Capability::HostIntlNumberFormatFormat];
 const CAP_INTL_DATE_TIME_FORMAT_FORMAT: &[Capability] = &[Capability::HostIntlDateTimeFormatFormat];
 const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
@@ -3360,12 +3352,6 @@ impl RuntimeFn {
             Self::PrivateFieldGet,
             Self::PrivateFieldSet,
             Self::PrivateBrandCheck,
-            Self::EvalDirectHost,
-            Self::EvalIndirectHost,
-            Self::FunctionCompileHost,
-            Self::FunctionCallHost,
-            Self::FunctionCallMethodHost,
-            Self::FunctionConstructHost,
         ]
     }
 
@@ -3877,12 +3863,6 @@ impl RuntimeFn {
             Self::PrivateFieldGet,
             Self::PrivateFieldSet,
             Self::PrivateBrandCheck,
-            Self::EvalDirectHost,
-            Self::EvalIndirectHost,
-            Self::FunctionCompileHost,
-            Self::FunctionCallHost,
-            Self::FunctionCallMethodHost,
-            Self::FunctionConstructHost,
         ]
     }
 }

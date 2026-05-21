@@ -202,10 +202,12 @@ impl WatEmitter<'_> {
             (return (call $number_from_i32
               (i32.add (local.get $n) (i32.const {one}))))))))
     ;; Fractional digit < 5: truncate
-    (if (i32.lt_s (local.get $sign) (i32.const {zero}))
-      (then (return (call $number_from_i32
-        (i32.sub (i32.const {zero}) (local.get $n)))))
-      (else (return (call $number_from_i32 (local.get $n))))))
+    (call $number_from_i32
+      (if (result i32)
+        (i32.lt_s (local.get $sign) (i32.const {zero}))
+        (then (i32.sub (i32.const {zero}) (local.get $n)))
+        (else (local.get $n))))
+  )
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -496,7 +498,8 @@ impl WatEmitter<'_> {
     (if (i32.lt_s (local.get $sign) (i32.const {zero}))
       (then (return (call $number_from_i32
         (i32.sub (i32.const {zero}) (local.get $n)))))
-      (else (return (call $number_from_i32 (local.get $n))))))
+      (else (return (call $number_from_i32 (local.get $n)))))
+    (unreachable))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -588,7 +591,8 @@ impl WatEmitter<'_> {
             (br $sign_pos_scan)))
         (if (local.get $all_zero)
           (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag}))))
-          (else (return (i32.or (i32.shl (i32.const 1) (i32.const {number_shift})) (i32.const {number_tag}))))))))
+          (else (return (i32.or (i32.shl (i32.const 1) (i32.const {number_shift})) (i32.const {number_tag})))))))
+    (unreachable))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,

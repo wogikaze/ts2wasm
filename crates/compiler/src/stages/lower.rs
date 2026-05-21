@@ -6,7 +6,7 @@ use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_frontend::validate_type_reference_directives;
 use ts2wasm_ir::{OptimizationLevel, builtin_resolver, lowered, name_resolver};
 use ts2wasm_source::Span;
-use ts2wasm_syntax::{Expr, ImportPhase, ObjectProp, Stmt};
+use ts2wasm_syntax::{ClassPrivateElement, ClassStaticBlock, Expr, ImportPhase, ObjectProp, Stmt};
 
 use crate::module_graph::ModuleGraph;
 use crate::stages::parse::{self, parse_program, validate_ast};
@@ -1547,15 +1547,7 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
                 ..
             } = declaration.as_ref()
             {
-                let func_expr = Expr::FunctionExpr {
-                    name: name.clone(),
-                    params: params.clone(),
-                    body: body.clone(),
-                    is_generator: false,
-                    origin: ts2wasm_syntax::FunctionExprOrigin::User,
-                    span: *span,
-                    source_text: String::new(),
-                };
+                let func_expr = named_function_export_expr(name, params, body, *span);
                 exports.insert(specifier.exported.clone(), func_expr.clone());
                 literal_locals.insert(name.clone(), func_expr);
             } else if let Stmt::ClassDecl {
@@ -1569,16 +1561,16 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
                 span,
             } = declaration.as_ref()
             {
-                let class_expr = Expr::ClassExpr {
-                    name: name.clone(),
-                    extends: extends.clone(),
-                    body: body.clone(),
-                    static_blocks: static_blocks.clone(),
-                    private_elements: private_elements.clone(),
-                    ts_private_field_names: ts_private_field_names.clone(),
-                    interface_heritage: interface_heritage.clone(),
-                    span: *span,
-                };
+                let class_expr = named_class_export_expr(
+                    name,
+                    extends,
+                    body,
+                    static_blocks,
+                    private_elements,
+                    ts_private_field_names,
+                    interface_heritage,
+                    *span,
+                );
                 exports.insert(specifier.exported.clone(), class_expr.clone());
                 literal_locals.insert(name.clone(), class_expr);
             }
@@ -1612,15 +1604,7 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
         {
             literal_locals.insert(
                 name.clone(),
-                Expr::FunctionExpr {
-                    name: name.clone(),
-                    params: params.clone(),
-                    body: body.clone(),
-                    is_generator: false,
-                    origin: ts2wasm_syntax::FunctionExprOrigin::User,
-                    span: *span,
-                    source_text: String::new(),
-                },
+                named_function_export_expr(name, params, body, *span),
             );
         } else if let Stmt::ClassDecl {
             name,
@@ -1635,16 +1619,16 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
         {
             literal_locals.insert(
                 name.clone(),
-                Expr::ClassExpr {
-                    name: name.clone(),
-                    extends: extends.clone(),
-                    body: body.clone(),
-                    static_blocks: static_blocks.clone(),
-                    private_elements: private_elements.clone(),
-                    ts_private_field_names: ts_private_field_names.clone(),
-                    interface_heritage: interface_heritage.clone(),
-                    span: *span,
-                },
+                named_class_export_expr(
+                    name,
+                    extends,
+                    body,
+                    static_blocks,
+                    private_elements,
+                    ts_private_field_names,
+                    interface_heritage,
+                    *span,
+                ),
             );
         } else if let Stmt::ExportNamed { specifiers, .. } = stmt {
             for specifier in specifiers {
@@ -1706,6 +1690,45 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
     }
 
     Ok(exports)
+}
+
+fn named_function_export_expr(
+    name: &str,
+    params: &[(String, Option<Expr>, bool)],
+    body: &[Stmt],
+    span: Span,
+) -> Expr {
+    Expr::FunctionExpr {
+        name: name.to_owned(),
+        params: params.to_vec(),
+        body: body.to_vec(),
+        is_generator: false,
+        origin: ts2wasm_syntax::FunctionExprOrigin::User,
+        span,
+        source_text: String::new(),
+    }
+}
+
+fn named_class_export_expr(
+    name: &str,
+    extends: &Option<Box<Expr>>,
+    body: &[Stmt],
+    static_blocks: &[ClassStaticBlock],
+    private_elements: &[ClassPrivateElement],
+    ts_private_field_names: &[String],
+    interface_heritage: &[Expr],
+    span: Span,
+) -> Expr {
+    Expr::ClassExpr {
+        name: name.to_owned(),
+        extends: extends.clone(),
+        body: body.to_vec(),
+        static_blocks: static_blocks.to_vec(),
+        private_elements: private_elements.to_vec(),
+        ts_private_field_names: ts_private_field_names.to_vec(),
+        interface_heritage: interface_heritage.to_vec(),
+        span,
+    }
 }
 
 fn resolve_static_re_export_source_path(

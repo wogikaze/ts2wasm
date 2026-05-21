@@ -3237,9 +3237,9 @@ fn collect_class_method_mutable_captures(
                 let mut mutable = Vec::new();
                 for capture in &method.captures {
                     if is_static_private_field_local_name(capture)
-                        || block_assigns_any_name(&method.body, std::slice::from_ref(capture))
+                        || block_assigns_any_name(&method.body, &[capture.to_string()])
                     {
-                        mutable.push(capture.clone());
+                        mutable.push(capture.to_string());
                     }
                 }
                 if mutable.is_empty() {
@@ -3263,9 +3263,9 @@ fn collect_mutable_class_capture_names(program: &[ResolvedStmt]) -> HashSet<Stri
             for method in methods {
                 for capture in &method.captures {
                     if is_static_private_field_local_name(capture)
-                        || block_assigns_any_name(&method.body, std::slice::from_ref(capture))
+                        || block_assigns_any_name(&method.body, &[capture.to_string()])
                     {
-                        names.insert(capture.clone());
+                        names.insert(capture.to_string());
                     }
                 }
             }
@@ -4977,150 +4977,22 @@ fn lower_function_with_resolved_params(
         }
     }
 
-    // Insert default parameter assignments at the start of the body.
-    let mut body_with_defaults = Vec::new();
-    for param in &lowered_params {
-        if let Some(pattern) = parse_binding_pattern(&param.name, param.span)? {
-            if param.is_rest {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-251: rest parameter binding patterns are not supported"
-                        .to_owned(),
-                    span: param.span,
-
-                    phase: None,
-                });
-            }
-            let param_local = resolver.resolve_local(&param.name)?;
-            if let Some(default) = &param.default {
-                let lowered_default = resolver.lower_expr(default)?;
-                body_with_defaults.push(LoweredStmt::If {
-                    condition: LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(param_local, Span::generated("local"))),
-                        op: LoweredBinaryOp::StrictEqual,
-                        right: Box::new(LoweredExpr::Undefined(Span::generated("undefined"))),
-                        span: Span::generated("binary"),
-                    },
-                    then_body: vec![LoweredStmt::Assign(
-                        param_local,
-                        lowered_default,
-                        Span::generated("assign"),
-                    )],
-                    else_body: vec![],
-                    span: Span::generated("if_stmt"),
-                });
-            }
-            body_with_defaults.extend(resolver.lower_binding_pattern_declarations(
-                &pattern,
-                LoweredExpr::Local(param_local, Span::generated("local")),
-                None,
-            )?);
-            continue;
-        }
-        if param.is_rest {
-            // Rest parameters are populated by call lowering/emission.
-            // For rest params with binding patterns like (...[value]),
-            // also generate destructuring code to extract inner bindings.
-            if let Some(inner) = param.name.strip_prefix("...")
-                && let Some(rest_pattern) = parse_binding_pattern(inner, param.span)?
-            {
-                let param_local = resolver.resolve_local(inner)?;
-                body_with_defaults.extend(resolver.lower_binding_pattern_declarations(
-                    &rest_pattern,
-                    LoweredExpr::Local(param_local, Span::generated("local")),
-                    None,
-                )?);
-            }
-            continue;
-        } else if let Some(default) = &param.default {
-            let param_local = resolver.resolve_local(&param.name)?;
-            let lowered_default = resolver.lower_expr(default)?;
-            // Generate: if (param === undefined) { param = default; }
-            body_with_defaults.push(LoweredStmt::If {
-                condition: LoweredExpr::Binary {
-                    left: Box::new(LoweredExpr::Local(param_local, Span::generated("local"))),
-                    op: LoweredBinaryOp::StrictEqual,
-                    right: Box::new(LoweredExpr::Undefined(Span::generated("undefined"))),
-                    span: Span::generated("binary"),
-                },
-                then_body: vec![LoweredStmt::Assign(
-                    param_local,
-                    lowered_default,
-                    Span::generated("assign"),
-                )],
-                else_body: vec![],
-                span: Span::generated("if_stmt"),
-            });
-        }
-    }
     let capture_param_names = function_captures
         .get(&id)
         .into_iter()
         .chain(class_method_captures.get(&id))
         .flat_map(|names| names.iter())
         .collect::<HashSet<_>>();
-    for (param, param_id) in lowered_params.iter().zip(param_ids.iter().copied()) {
-        let clean_name = param.name.strip_prefix("...").unwrap_or(&param.name);
-        if capture_param_names.contains(&clean_name.to_owned()) {
-            continue;
-        }
-        if resolver.ctx.facts.env_cell_locals.contains(&param_id) {
-            body_with_defaults.push(LoweredStmt::Assign(
-                param_id,
-                LoweredExpr::EnvCellNew(
-                    Box::new(LoweredExpr::Local(param_id, Span::generated("local"))),
-                    Span::generated("env_cell_new"),
-                ),
-                Span::generated("assign"),
-            ));
-        }
-    }
-    // First pass: pre-declare all let/var/const names so forward references
-    // (e.g., using a var before its declaration) work in the lowered resolver.
-    for stmt in body {
-        if let ResolvedStmt::Let(name, _) = stmt {
-            resolver.declare_local(name)?;
-        }
-    }
-    let eval_created_function_names = collect_dynamic_direct_eval_created_function_names(body);
-    let mut eval_created_names = collect_dynamic_direct_eval_created_binding_names(body)
-        .into_iter()
-        .collect::<Vec<_>>();
-    eval_created_names.sort();
-    for name in eval_created_names {
-        if resolver.ctx.symbols.resolve(&name).is_some() {
-            continue;
-        }
-        let local_id = resolver.declare_local(&name)?;
-        if eval_created_function_names.contains(&name) {
-            resolver
-                .ctx
-                .facts
-                .mark_host_external(local_id, HostExternalKind::FunctionHandle, true);
-        }
-        if resolver.ctx.facts.env_cell_names.contains(&name) {
-            resolver.ctx.facts.env_cell_locals.insert(local_id);
-            resolver
-                .ctx
-                .facts
-                .initialized_env_cell_locals
-                .insert(local_id);
-            body_with_defaults.push(LoweredStmt::Let(
-                local_id,
-                LoweredExpr::EnvCellNew(
-                    Box::new(LoweredExpr::Undefined(Span::generated("undefined"))),
-                    Span::generated("env_cell_new"),
-                ),
-                Span::generated("direct_eval_created_binding"),
-            ));
-        } else {
-            body_with_defaults.push(LoweredStmt::Let(
-                local_id,
-                LoweredExpr::Undefined(Span::generated("undefined")),
-                Span::generated("direct_eval_created_binding"),
-            ));
-        }
-    }
+    let mut body_with_defaults = lower_function_param_initializers(&lowered_params, &mut resolver)?;
+    lower_function_param_env_cells(
+        &lowered_params,
+        &param_ids,
+        &capture_param_names,
+        &mut resolver,
+        &mut body_with_defaults,
+    );
+    predeclare_function_body_locals(body, &mut resolver)?;
+    lower_dynamic_direct_eval_created_bindings(body, &mut resolver, &mut body_with_defaults)?;
     body_with_defaults.extend(resolver.lower_block(body)?);
     let generator_state = if is_generator {
         Some(generator_state_for_body(&body_with_defaults))
@@ -5147,6 +5019,170 @@ fn lower_function_with_resolved_params(
         generated_functions: resolver.ctx.functions.generated_functions,
         next_func_id: resolver.ctx.functions.next_func_id,
     })
+}
+
+fn lower_function_param_initializers(
+    lowered_params: &[ResolvedParam],
+    resolver: &mut crate::lowered::resolver::Resolver,
+) -> Result<Vec<LoweredStmt>, Diagnostic> {
+    let mut stmts = Vec::new();
+    for param in lowered_params {
+        if let Some(pattern) = parse_binding_pattern(&param.name, param.span)? {
+            if param.is_rest {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-251: rest parameter binding patterns are not supported"
+                        .to_owned(),
+                    span: param.span,
+                    phase: None,
+                });
+            }
+            let param_local = resolver.resolve_local(&param.name)?;
+            if let Some(default) = &param.default {
+                stmts.push(default_param_assignment(
+                    param_local,
+                    resolver.lower_expr(default)?,
+                ));
+            }
+            stmts.extend(resolver.lower_binding_pattern_declarations(
+                &pattern,
+                LoweredExpr::Local(param_local, Span::generated("local")),
+                None,
+            )?);
+            continue;
+        }
+        if param.is_rest {
+            if let Some(inner) = param.name.strip_prefix("...")
+                && let Some(rest_pattern) = parse_binding_pattern(inner, param.span)?
+            {
+                let param_local = resolver.resolve_local(inner)?;
+                stmts.extend(resolver.lower_binding_pattern_declarations(
+                    &rest_pattern,
+                    LoweredExpr::Local(param_local, Span::generated("local")),
+                    None,
+                )?);
+            }
+            continue;
+        }
+        if let Some(default) = &param.default {
+            let param_local = resolver.resolve_local(&param.name)?;
+            stmts.push(default_param_assignment(
+                param_local,
+                resolver.lower_expr(default)?,
+            ));
+        }
+    }
+    Ok(stmts)
+}
+
+fn default_param_assignment(param_local: LocalId, lowered_default: LoweredExpr) -> LoweredStmt {
+    LoweredStmt::If {
+        condition: LoweredExpr::Binary {
+            left: Box::new(LoweredExpr::Local(param_local, Span::generated("local"))),
+            op: LoweredBinaryOp::StrictEqual,
+            right: Box::new(LoweredExpr::Undefined(Span::generated("undefined"))),
+            span: Span::generated("binary"),
+        },
+        then_body: vec![LoweredStmt::Assign(
+            param_local,
+            lowered_default,
+            Span::generated("assign"),
+        )],
+        else_body: vec![],
+        span: Span::generated("if_stmt"),
+    }
+}
+
+fn lower_function_param_env_cells(
+    lowered_params: &[ResolvedParam],
+    param_ids: &[LocalId],
+    capture_param_names: &HashSet<&String>,
+    resolver: &mut crate::lowered::resolver::Resolver,
+    stmts: &mut Vec<LoweredStmt>,
+) {
+    for (param, param_id) in lowered_params.iter().zip(param_ids.iter().copied()) {
+        let clean_name = param.name.strip_prefix("...").unwrap_or(&param.name);
+        if capture_param_names.contains(&clean_name.to_owned()) {
+            continue;
+        }
+        if resolver.ctx.facts.env_cell_locals.contains(&param_id) {
+            stmts.push(LoweredStmt::Assign(
+                param_id,
+                LoweredExpr::EnvCellNew(
+                    Box::new(LoweredExpr::Local(param_id, Span::generated("local"))),
+                    Span::generated("env_cell_new"),
+                ),
+                Span::generated("assign"),
+            ));
+        }
+    }
+}
+
+fn predeclare_function_body_locals(
+    body: &[ResolvedStmt],
+    resolver: &mut crate::lowered::resolver::Resolver,
+) -> Result<(), Diagnostic> {
+    for stmt in body {
+        if let ResolvedStmt::Let(name, _) = stmt {
+            resolver.declare_local(name)?;
+        }
+    }
+    Ok(())
+}
+
+fn lower_dynamic_direct_eval_created_bindings(
+    body: &[ResolvedStmt],
+    resolver: &mut crate::lowered::resolver::Resolver,
+    stmts: &mut Vec<LoweredStmt>,
+) -> Result<(), Diagnostic> {
+    let eval_created_function_names = collect_dynamic_direct_eval_created_function_names(body);
+    let mut eval_created_names = collect_dynamic_direct_eval_created_binding_names(body)
+        .into_iter()
+        .collect::<Vec<_>>();
+    eval_created_names.sort();
+    for name in eval_created_names {
+        if resolver.ctx.symbols.resolve(&name).is_some() {
+            continue;
+        }
+        let local_id = resolver.declare_local(&name)?;
+        if eval_created_function_names.contains(&name) {
+            resolver
+                .ctx
+                .facts
+                .mark_host_external(local_id, HostExternalKind::FunctionHandle, true);
+        }
+        stmts.push(dynamic_eval_created_binding_let(&name, local_id, resolver));
+    }
+    Ok(())
+}
+
+fn dynamic_eval_created_binding_let(
+    name: &str,
+    local_id: LocalId,
+    resolver: &mut crate::lowered::resolver::Resolver,
+) -> LoweredStmt {
+    if resolver.ctx.facts.env_cell_names.contains(name) {
+        resolver.ctx.facts.env_cell_locals.insert(local_id);
+        resolver
+            .ctx
+            .facts
+            .initialized_env_cell_locals
+            .insert(local_id);
+        LoweredStmt::Let(
+            local_id,
+            LoweredExpr::EnvCellNew(
+                Box::new(LoweredExpr::Undefined(Span::generated("undefined"))),
+                Span::generated("env_cell_new"),
+            ),
+            Span::generated("direct_eval_created_binding"),
+        )
+    } else {
+        LoweredStmt::Let(
+            local_id,
+            LoweredExpr::Undefined(Span::generated("undefined")),
+            Span::generated("direct_eval_created_binding"),
+        )
+    }
 }
 
 fn generator_state_for_body(body: &[LoweredStmt]) -> GeneratorState {

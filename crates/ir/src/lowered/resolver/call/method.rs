@@ -838,7 +838,7 @@ impl super::super::Resolver {
                         }
                     }
                 }
-                Some(ResolvedExpr::Ident(name)) => {
+                Some(ResolvedExpr::Ident(_name)) => {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: "issue-458: Function.prototype.apply on a runtime function value currently supports array literals, null, or undefined argArray (ident references not yet supported)".to_owned(),
@@ -1128,8 +1128,9 @@ impl super::super::Resolver {
             let is_view = args
                 .first()
                 .and_then(|arg| self.infer_class_for_expr(arg))
+                .as_deref()
                 .is_some_and(|class_name| {
-                    class_name == "DataView" || is_typed_array_class(&class_name)
+                    class_name == "DataView" || is_typed_array_class(class_name)
                 });
             return Ok(Some(LoweredExpr::Bool(is_view, Span::generated("bool"))));
         }
@@ -5635,16 +5636,6 @@ fn format_intl_datetime_parts(
         ("literal".to_owned(), "/".to_owned()),
         ("year".to_owned(), year.to_string()),
     ]
-}
-
-fn format_intl_datetime_range_arg(
-    first: Option<&ResolvedExpr>,
-    second: Option<&ResolvedExpr>,
-    options: &IntlDateTimeFormatOptions,
-) -> String {
-    let start = format_intl_datetime_arg(first, options);
-    let end = format_intl_datetime_arg(second, options);
-    format!("{start} \u{2013} {end}")
 }
 
 fn format_intl_datetime_range_parts(

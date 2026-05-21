@@ -19,6 +19,7 @@
     "equal_equal",
     "alloc_heap",
     "mem_equal",
+    "object_keys",
     "object_prototype"
   ],
   "globals": [

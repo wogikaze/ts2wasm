@@ -12,6 +12,7 @@
     "add",
     "add_fast",
     "alloc_heap",
+    "object_keys",
     "object_prototype"
   ],
   "globals": [

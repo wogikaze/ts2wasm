@@ -143,7 +143,7 @@ mod tests {
 
     /// Helper: parse a source string and return the resulting statements.
     fn parse_source(source: &str) -> Vec<Stmt> {
-        let mut lexer = Lexer::new(source);
+        let lexer = Lexer::new(source);
         let tokens = lexer.tokenize().expect("tokenize failed");
         let mut parser = Parser::new(tokens, source);
         parser.parse_program().expect("parse failed")
