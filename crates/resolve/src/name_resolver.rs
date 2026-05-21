@@ -253,7 +253,7 @@ impl NameResolver {
                 overload_signature,
                 span,
                 ..
-            } = stmt
+            } = unwrapped_stmt(stmt)
             {
                 if self.functions.contains_key(name) && !overload_signature && strict_mode {
                     return Err(Diagnostic {
@@ -274,7 +274,7 @@ impl NameResolver {
         // are exempt since they are erased at compile time.
         let concrete_names: std::collections::HashSet<&str> = program
             .iter()
-            .filter_map(|s| match s {
+            .filter_map(|s| match unwrapped_stmt(s) {
                 Stmt::Function {
                     name,
                     overload_signature,
@@ -290,7 +290,7 @@ impl NameResolver {
                 is_ambient,
                 span,
                 ..
-            } = stmt
+            } = unwrapped_stmt(stmt)
                 && *overload_signature
                 && !*is_ambient
                 && !concrete_names.contains(name.as_str())
@@ -308,7 +308,7 @@ impl NameResolver {
         }
         // First pass: collect all class declarations (hoisting)
         for stmt in program {
-            if let Stmt::ClassDecl { name, span, .. } = stmt {
+            if let Stmt::ClassDecl { name, span, .. } = unwrapped_stmt(stmt) {
                 if self.classes.contains_key(name) {
                     return Err(Diagnostic {
                         code: DiagCode::DuplicateLocal,
@@ -331,12 +331,12 @@ impl NameResolver {
                 is_ambient,
                 overload_signature,
                 ..
-            } = stmt
+            } = unwrapped_stmt(stmt)
                 && *is_ambient
                 && *overload_signature
             {
                 self.declare_binding(name, Some(*span), false)?;
-            } else if let Stmt::AmbientValueDecl { name, span, is_var } = stmt {
+            } else if let Stmt::AmbientValueDecl { name, span, is_var } = unwrapped_stmt(stmt) {
                 // TS2403: ambient declarations must not conflict with known builtin globals.
                 // TypeScript's lib declarations reserve names like `console`, `Array`, etc.
                 if self.allowed_globals.contains(name.as_str()) {
@@ -357,7 +357,7 @@ impl NameResolver {
 
         // First pass: register enum names so they can be looked up as identifiers
         for stmt in program {
-            if let Stmt::EnumDecl { name, span } = stmt {
+            if let Stmt::EnumDecl { name, span } = unwrapped_stmt(stmt) {
                 self.declare_variable(name, Some(*span), false)?;
             }
         }
@@ -367,7 +367,7 @@ impl NameResolver {
         for stmt in program {
             if let Stmt::Let {
                 name, is_var: true, ..
-            } = stmt
+            } = unwrapped_stmt(stmt)
             {
                 self.declare_binding(name, None, true)?;
             }
@@ -376,7 +376,7 @@ impl NameResolver {
                 is_var: false,
                 span,
                 ..
-            } = stmt
+            } = unwrapped_stmt(stmt)
             {
                 self.predeclare_binding(name, Some(*span))?;
             }
@@ -433,9 +433,13 @@ impl NameResolver {
             }
             Stmt::ExportDecl {
                 declaration,
-                span: _span,
-                ..
-            } => self.resolve_stmt(declaration),
+                specifier,
+                span,
+            } => Ok(Stmt::ExportDecl {
+                declaration: Box::new(self.resolve_stmt(declaration)?),
+                specifier: specifier.clone(),
+                span: *span,
+            }),
             Stmt::ExportDefault { span, .. } => {
                 Err(unsupported_module_decl(*span, "default export"))
             }
@@ -1722,19 +1726,19 @@ impl NameResolver {
                 span,
                 overload_signature,
                 ..
-            } = stmt
+            } = unwrapped_stmt(stmt)
             {
                 // Skip bodyless overload signatures when pre-declaring
                 if !overload_signature {
                     self.declare_variable(name, Some(*span), false)?;
                 }
             }
-            if let Stmt::ClassDecl { name, span, .. } = stmt {
+            if let Stmt::ClassDecl { name, span, .. } = unwrapped_stmt(stmt) {
                 self.declare_variable(name, Some(*span), false)?;
             }
             if let Stmt::Let {
                 name, is_var, span, ..
-            } = stmt
+            } = unwrapped_stmt(stmt)
             {
                 if *is_var {
                     self.declare_binding(name, None, true)?;
@@ -2211,6 +2215,17 @@ impl NameResolver {
         } else {
             self.predeclare_name(binding, span)
         }
+    }
+}
+
+/// Peek through an ExportDecl wrapper to reach the inner declaration statement.
+/// ExportDecl is a compile-time erasure wrapper that should not affect
+/// name resolution visibility. Used in first-pass collection loops.
+fn unwrapped_stmt(stmt: &Stmt) -> &Stmt {
+    if let Stmt::ExportDecl { declaration, .. } = stmt {
+        declaration.as_ref()
+    } else {
+        stmt
     }
 }
 

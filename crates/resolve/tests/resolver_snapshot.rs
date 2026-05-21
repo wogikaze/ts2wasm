@@ -473,3 +473,73 @@ fn resolver_resolves_prototype_call_usage() {
         result.err()
     );
 }
+
+// ---------------------------------------------------------------------------
+// ExportDecl unwrapping in first-pass collection
+// ---------------------------------------------------------------------------
+
+#[test]
+fn resolver_export_function_is_hoisted() {
+    // export function f() {} should make f visible to later calls
+    let result = resolve_names(&parse("export function f() { return 42; } f();"));
+    assert!(
+        result.is_ok(),
+        "export function should hoist f: {:?}",
+        result.err()
+    );
+    let stmts = result.unwrap();
+    assert_eq!(stmts.len(), 2);
+}
+
+#[test]
+fn resolver_export_class_is_hoisted() {
+    // export class A {} should make A visible to later expressions
+    let result = resolve_names(&parse("export class A {} let a = A;"));
+    assert!(
+        result.is_ok(),
+        "export class should make A visible: {:?}",
+        result.err()
+    );
+    let stmts = result.unwrap();
+    assert_eq!(stmts.len(), 2);
+}
+
+#[test]
+fn resolver_export_var_is_visible() {
+    // export const x = 1 should make x visible
+    let result = resolve_names(&parse("export const x = 1; let y = x;"));
+    assert!(
+        result.is_ok(),
+        "export const should make x visible: {:?}",
+        result.err()
+    );
+    let stmts = result.unwrap();
+    assert_eq!(stmts.len(), 2);
+}
+
+#[test]
+fn resolver_export_var_is_rejected_as_duplicate() {
+    // export const x = 1; export function x(){} should be caught as duplicate
+    let result = resolve_names(&parse("export const x = 1; export function x(){}"));
+    assert!(
+        result.is_err(),
+        "duplicate export identifier should be rejected"
+    );
+}
+
+#[test]
+fn resolver_export_decl_wrapper_is_preserved() {
+    // The ExportDecl wrapper should survive name resolution
+    let stmts = resolve_names(&parse("export function f() { return 42; }")).unwrap();
+    assert_eq!(stmts.len(), 1);
+    // The resolved output should still be wrapped in ExportDecl
+    match &stmts[0] {
+        Stmt::ExportDecl { declaration, .. } => {
+            assert!(matches!(
+                declaration.as_ref(),
+                Stmt::Function { name, .. } if name == "f"
+            ));
+        }
+        other => panic!("expected ExportDecl wrapper, got: {other:?}"),
+    }
+}
