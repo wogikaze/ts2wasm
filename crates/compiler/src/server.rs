@@ -161,6 +161,7 @@ pub fn run_server() -> Result<(), String> {
             let meta = serde_json::json!({
                 "wat2wasm_fallback_count": crate::io::write_output::WAT2WASM_FALLBACK_COUNT
                     .load(std::sync::atomic::Ordering::Relaxed),
+                "source_profile": source_profile_meta(),
             });
             let batch_resp = BatchResponse {
                 items: results,
@@ -430,6 +431,25 @@ fn emit_response(stdout: &io::Stdout, resp: &ServerResponse) -> Result<(), Strin
     Ok(())
 }
 
+fn source_profile_meta() -> serde_json::Value {
+    #[cfg(feature = "source-profiler")]
+    {
+        serde_json::json!({
+            "compiled": true,
+            "enabled": crate::source_profiler::enabled(),
+            "records": crate::source_profiler::snapshot_and_reset(),
+        })
+    }
+    #[cfg(not(feature = "source-profiler"))]
+    {
+        serde_json::json!({
+            "compiled": false,
+            "enabled": false,
+            "records": [],
+        })
+    }
+}
+
 /// Run the full compiler pipeline for a single file, but stop before emitting
 /// WAT/WASM. Returns `Ok(())` if compilation succeeds, or the first
 /// `Diagnostic` if it fails.
@@ -464,31 +484,45 @@ fn compile_source_text_with_emit(
     id: i64,
     emit_mode: EmitMode,
 ) -> Result<Option<PathBuf>, Diagnostic> {
+    crate::source_profile_scope!("server.compile_source_text_with_emit");
     // `module_graph::build_entry_module_graph` canonicalizes the entry path.
     // The server compiles from the in-memory JSON payload, but the virtual
     // entry still has to exist on disk for canonicalization and relative
     // import bookkeeping.  Create an empty placeholder instead of writing the
     // full source and reading it back.
-    fs::File::create(path).map_err(|error| Diagnostic {
-        code: ts2wasm_frontend::DiagCode::BackendIo,
-        message: format!("failed to create virtual entry {}: {error}", path.display()),
-        span: None,
-        phase: None,
-    })?;
+    {
+        crate::source_profile_scope!("server.virtual_entry_create");
+        fs::File::create(path).map_err(|error| Diagnostic {
+            code: ts2wasm_frontend::DiagCode::BackendIo,
+            message: format!("failed to create virtual entry {}: {error}", path.display()),
+            span: None,
+            phase: None,
+        })?;
+    }
 
     let lowered = lower_source_text(path, source)?;
-    ensure_runtime_feature_gates(&lowered).map_err(|d| d.with_phase("runtime-gate"))?;
+    {
+        crate::source_profile_scope!("server.runtime_feature_gates");
+        ensure_runtime_feature_gates(&lowered).map_err(|d| d.with_phase("runtime-gate"))?;
+    }
 
     match emit_mode {
         EmitMode::Check => Ok(None),
         EmitMode::Wasm => {
-            let (validated, _) = ts2wasm_ir::lowered::Validated::new(lowered)
-                .map_err(|d| d.with_phase("backend"))?;
+            let (validated, _) = {
+                crate::source_profile_scope!("server.lowered_validate_for_backend");
+                ts2wasm_ir::lowered::Validated::new(lowered)
+                    .map_err(|d| d.with_phase("backend"))?
+            };
             let output = tmpdir.join(format!("{}.wasm", id));
-            ts2wasm_backend_wasm::emit_wat(&validated)
-                .map_err(|d| d.with_phase("backend"))
-                .and_then(|wat| write_wasm_from_wat(&wat, &output))
-                .map_err(|d| d.with_phase("backend"))?;
+            let wat = {
+                crate::source_profile_scope!("server.backend_emit_wat");
+                ts2wasm_backend_wasm::emit_wat(&validated).map_err(|d| d.with_phase("backend"))?
+            };
+            {
+                crate::source_profile_scope!("server.write_wasm_from_wat");
+                write_wasm_from_wat(&wat, &output).map_err(|d| d.with_phase("backend"))?;
+            }
             Ok(Some(output))
         }
     }
@@ -497,53 +531,97 @@ fn compile_source_text_with_emit(
 fn lower_source_text(path: &Path, source: &str) -> Result<LoweredProgram, Diagnostic> {
     use ts2wasm_frontend::DiagCode;
 
-    let tokens = Lexer::new(source)
-        .tokenize()
-        .map_err(|d| d.with_phase("lexer"))?;
-    let program = Parser::new(tokens, source)
-        .parse_program()
-        .map_err(|d| d.with_phase("parser"))?;
-    validate_ast(&program).map_err(|d| d.with_phase("ast-validator"))?;
-    let module_graph = module_graph::build_entry_module_graph(path, &program)
-        .map_err(|d| d.with_phase("module-resolver"))?;
+    crate::source_profile_scope!("server.lower_source_text");
+
+    let tokens = {
+        crate::source_profile_scope!("server.lexer_tokenize");
+        Lexer::new(source)
+            .tokenize()
+            .map_err(|d| d.with_phase("lexer"))?
+    };
+    let program = {
+        crate::source_profile_scope!("server.parser_parse_program");
+        Parser::new(tokens, source)
+            .parse_program()
+            .map_err(|d| d.with_phase("parser"))?
+    };
+    {
+        crate::source_profile_scope!("server.ast_validate");
+        validate_ast(&program).map_err(|d| d.with_phase("ast-validator"))?;
+    }
+    let module_graph = {
+        crate::source_profile_scope!("server.module_graph_build");
+        module_graph::build_entry_module_graph(path, &program)
+            .map_err(|d| d.with_phase("module-resolver"))?
+    };
     // Surface cycle diagnostics: report first cycle diagnostic as error.
     if let Some(cycle_diag) = module_graph.cycle_diagnostics().first() {
         return Err(cycle_diag.clone().with_phase("module-resolver"));
     }
     // Validate dependency-first initialization order.
-    module_graph::validate_init_order(&module_graph)
-        .map_err(|d| d.with_phase("module-resolver"))?;
-    let static_module_binding =
+    {
+        crate::source_profile_scope!("server.module_graph_validate_init_order");
+        module_graph::validate_init_order(&module_graph)
+            .map_err(|d| d.with_phase("module-resolver"))?;
+    }
+    let static_module_binding = {
+        crate::source_profile_scope!("server.static_import_bindings");
         lower_static_named_import_bindings_for_build(&program, &module_graph)
-            .map_err(|d| d.with_phase("module-resolver"))?;
-    let name_resolved = name_resolver::resolve_names(&static_module_binding.rewritten_program)
-        .map_err(|d| d.with_phase("name-resolver"))?;
-    let resolved = builtin_resolver::resolve_builtins(&name_resolved)
-        .map_err(|d| d.with_phase("builtin-resolver"))?;
-    let resolved =
-        expand_static_eval_fragments(resolved).map_err(|d| d.with_phase("eval-expand"))?;
-    super::validate_typescript_semantics_for_path(path, &resolved)
-        .map_err(|d| d.with_phase("semantic-validator"))?;
-    validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)
-        .map_err(|d| d.with_phase("hir-validator"))?;
-    let lowered = lowered::lower_program(&resolved).map_err(|d| d.with_phase("lowering"))?;
-    let lowered =
+            .map_err(|d| d.with_phase("module-resolver"))?
+    };
+    let name_resolved = {
+        crate::source_profile_scope!("server.name_resolve");
+        name_resolver::resolve_names(&static_module_binding.rewritten_program)
+            .map_err(|d| d.with_phase("name-resolver"))?
+    };
+    let resolved = {
+        crate::source_profile_scope!("server.builtin_resolve");
+        builtin_resolver::resolve_builtins(&name_resolved)
+            .map_err(|d| d.with_phase("builtin-resolver"))?
+    };
+    let resolved = {
+        crate::source_profile_scope!("server.static_eval_expand");
+        expand_static_eval_fragments(resolved).map_err(|d| d.with_phase("eval-expand"))?
+    };
+    {
+        crate::source_profile_scope!("server.semantic_validate");
+        super::validate_typescript_semantics_for_path(path, &resolved)
+            .map_err(|d| d.with_phase("semantic-validator"))?;
+    }
+    {
+        crate::source_profile_scope!("server.hir_slice_validate");
+        validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)
+            .map_err(|d| d.with_phase("hir-validator"))?;
+    }
+    let lowered = {
+        crate::source_profile_scope!("server.lower_program");
+        lowered::lower_program(&resolved).map_err(|d| d.with_phase("lowering"))?
+    };
+    let lowered = {
+        crate::source_profile_scope!("server.static_import_reads");
         lower_static_named_import_reads_for_build(lowered, &static_module_binding.named_imports)
-            .map_err(|d| d.with_phase("module-resolver"))?;
-    let lowered = populate_static_module_exports_for_build(
-        lowered,
-        &module_graph,
-        &static_module_binding.module_exports,
-    )?;
+            .map_err(|d| d.with_phase("module-resolver"))?
+    };
+    let lowered = {
+        crate::source_profile_scope!("server.static_module_exports");
+        populate_static_module_exports_for_build(
+            lowered,
+            &module_graph,
+            &static_module_binding.module_exports,
+        )?
+    };
 
-    lowered::validate_lowered(&lowered).map_err(|errs| {
-        errs.into_iter().next().unwrap_or(Diagnostic {
-            code: DiagCode::InvariantViolation,
-            message: "validate_lowered failed with empty diagnostic list".to_owned(),
-            span: None,
-            phase: None,
+    {
+        crate::source_profile_scope!("server.lowered_validate");
+        lowered::validate_lowered(&lowered).map_err(|errs| {
+            errs.into_iter().next().unwrap_or(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: "validate_lowered failed with empty diagnostic list".to_owned(),
+                span: None,
+                phase: None,
+            })
         })
-    })?;
+    }?;
 
     Ok(lowered)
 }

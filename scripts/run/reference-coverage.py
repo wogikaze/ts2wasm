@@ -4,7 +4,7 @@
 Usage:
   python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]
       [--paths-file PATH] [--path-filter TEXT] [--dashboard-data]
-      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--sample-seed SEED] [--category PATTERN] [--no-server] [--no-semantic]
+      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--sample-seed SEED] [--category PATTERN] [--source-profile] [--no-server] [--no-semantic]
 
 Suites:
   test262   -> reference/test262/test/**/*.js
@@ -27,6 +27,8 @@ Notes:
   - --no-semantic: skip Node/iwasm semantic comparison (compile-only, faster for local full runs)
   - --jobs N: number of parallel jobs (default: CPU count)
   - --sample N: max files per category (test262 only, uses category-based sampling)
+   - --source-profile: collect source-level Rust profiler records when the
+    ts2wasm binary was built with feature `source-profiler`
    - --category PATTERN: regex filter for test categories (test262 only, used with --sample)
    - --no-server: use legacy subprocess mode (default: server mode with batch parallel build)
    - TS2WASM_REFERENCE_ROOT may point at an external reference/ directory for
@@ -327,7 +329,7 @@ def usage():
     print("Usage:")
     print("  python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]")
     print("      [--paths-file PATH] [--path-filter TEXT] [--dashboard-data] [--no-dashboard-data]")
-    print("      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--sample-seed SEED] [--category PATTERN] [--no-server] [--no-semantic]")
+    print("      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--sample-seed SEED] [--category PATTERN] [--source-profile] [--no-server] [--no-semantic]")
     print("      [--check-prerequisites]")
     print()
     print("Suites:")
@@ -344,6 +346,7 @@ def usage():
     print("                   'fast' (oracle_skip for silent positive tests)")
     print("  --sample N       Max files per category (test262 only, uses category-based sampling)")
     print("  --sample-seed SEED  Deterministic seed for sample selection (default: $TS2WASM_SAMPLE_SEED or empty)")
+    print("  --source-profile    Collect source-level Rust profiler records (requires feature source-profiler)")
     print("  --category PATTERN  Regex filter for test categories (test262 only, used with --sample)")
     print("  --check-prerequisites  Validate prerequisites and exit (no coverage run)")
 
@@ -499,7 +502,8 @@ def apply_path_filters(files, path_filters):
 def evidence_command(suite, limit, paths_file, path_filters, sample=None,
                      category=None, semantic_check=None, server_mode=None,
                      jsonl_output=None, metadata_cache_sig=None,
-                     selected_files=None, sample_seed=None):
+                     selected_files=None, sample_seed=None, semantic_mode=None,
+                     dashboard_data=None, source_profile=False):
     """Build a reproducible evidence dict for reports and coverage artifacts.
 
     Returns a structured dict with argv, selection parameters, and
@@ -524,8 +528,16 @@ def evidence_command(suite, limit, paths_file, path_filters, sample=None,
         argv.extend(["--category", category])
     if semantic_check is False:
         argv.append("--no-semantic")
+    elif semantic_mode:
+        argv.extend(["--semantic", semantic_mode])
+    if sample_seed:
+        argv.extend(["--sample-seed", sample_seed])
+    if dashboard_data is False:
+        argv.append("--no-dashboard-data")
     if server_mode is False:
         argv.append("--no-server")
+    if source_profile:
+        argv.append("--source-profile")
     if jsonl_output:
         argv.append("--jsonl")
 
@@ -591,7 +603,10 @@ def evidence_command(suite, limit, paths_file, path_filters, sample=None,
         "mode": selection_mode,
         "oracle_policy": os.environ.get("TS2WASM_TEST262_NODE_ORACLE", "auto"),
         "semantic_check": semantic_check if semantic_check is not None else True,
+        "semantic_mode": semantic_mode,
         "server_mode": server_mode if server_mode is not None else True,
+        "dashboard_data": dashboard_data,
+        "source_profile": bool(source_profile),
         "sample": sample,
         "sample_seed": sample_seed,
         "category": category,
