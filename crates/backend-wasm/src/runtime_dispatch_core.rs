@@ -43,6 +43,7 @@ impl WatEmitter<'_> {
             RuntimeFn::NumberToFixed => self.emit_number_to_fixed(wat),
             RuntimeFn::NumberToPrecision => self.emit_number_to_precision(wat),
             RuntimeFn::NumberToString => self.emit_number_to_string(wat),
+            RuntimeFn::NumberToStringRadix => self.emit_number_to_string(wat),
             RuntimeFn::NumberIsNaN => self.emit_number_is_nan(wat),
             RuntimeFn::NumberIsFinite => self.emit_number_is_finite(wat),
             RuntimeFn::NumberIsInteger => self.emit_number_is_integer(wat),
