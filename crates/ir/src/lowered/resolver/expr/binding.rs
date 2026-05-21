@@ -201,47 +201,84 @@ impl super::super::Resolver {
         siblings: &[ObjectBinding],
         value: &LoweredExpr,
         source: Option<&ResolvedExpr>,
-        span: Option<Span>,
+        _span: Option<Span>,
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
-        let Some(ResolvedExpr::Object(props)) = source else {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-251: object rest binding currently requires a static object literal source in this runtime slice"
-                        .to_owned(),
-                span,
-                phase: None,
-            });
-        };
-        let excluded_keys = siblings
-            .iter()
-            .filter(|binding| !binding.is_rest)
-            .map(|binding| binding.key.as_str())
-            .collect::<HashSet<_>>();
-        let rest_props = props
-            .iter()
-            .filter_map(|prop| prop.static_key())
-            .filter(|key| !excluded_keys.contains(key))
-            .map(|key| {
-                (
-                    key.to_owned(),
-                    LoweredExpr::PropertyGet {
-                        obj: Box::new(value.clone()),
-                        key: key.to_owned(),
-                        span: Span::generated("prop_get"),
+        // Fast path: when the source is a static object literal, enumerate its
+        // properties at compile time and build the rest object directly.
+        if let Some(ResolvedExpr::Object(props)) = source {
+            let excluded_keys = siblings
+                .iter()
+                .filter(|binding| !binding.is_rest)
+                .map(|binding| binding.key.as_str())
+                .collect::<HashSet<_>>();
+            let rest_props = props
+                .iter()
+                .filter_map(|prop| prop.static_key())
+                .filter(|key| !excluded_keys.contains(key))
+                .map(|key| {
+                    (
+                        key.to_owned(),
+                        LoweredExpr::PropertyGet {
+                            obj: Box::new(value.clone()),
+                            key: key.to_owned(),
+                            span: Span::generated("prop_get"),
+                        },
+                    )
+                })
+                .collect();
+            return Ok(vec![LoweredStmt::Let(
+                local_id,
+                LoweredExpr::ObjectNew {
+                    props: rest_props,
+                    non_enumerable: 0,
+                    span: Span::generated("object_new"),
+                },
+                Span::generated("let_stmt"),
+            )]);
+        }
+
+        // Dynamic path: copy via ObjectAssign({}, source), then delete excluded keys.
+        let rest_temp = self.alloc_temp();
+        let mut statements = vec![LoweredStmt::Let(
+            rest_temp,
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ObjectAssign,
+                args: vec![
+                    LoweredExpr::ObjectNew {
+                        props: Vec::new(),
+                        non_enumerable: 0,
+                        span: Span::generated("object_rest_empty"),
                     },
-                )
-            })
-            .collect();
-        Ok(vec![LoweredStmt::Let(
-            local_id,
-            LoweredExpr::ObjectNew {
-                props: rest_props,
-                non_enumerable: 0,
-                span: Span::generated("object_new"),
+                    value.clone(),
+                ],
+                span: Span::generated("object_rest_assign"),
             },
             Span::generated("let_stmt"),
-        )])
+        )];
+        for sibling in siblings.iter().filter(|sibling| !sibling.is_rest) {
+            let rest_object = LoweredExpr::Local(rest_temp, Span::generated("object_rest_local"));
+            let delete_expr = if sibling.computed {
+                let key_raw = sibling.key.trim_start_matches('[').trim_end_matches(']');
+                LoweredExpr::PropertyDeleteDynamic {
+                    object: Box::new(rest_object),
+                    key: Box::new(self.lower_computed_object_binding_key_expr(key_raw)?),
+                    span: Span::generated("object_rest_delete_dynamic"),
+                }
+            } else {
+                LoweredExpr::PropertyDelete {
+                    object: Box::new(rest_object),
+                    key: sibling.key.clone(),
+                    span: Span::generated("object_rest_delete"),
+                }
+            };
+            statements.push(LoweredStmt::Expr(delete_expr, Span::generated("expr_stmt")));
+        }
+        statements.push(LoweredStmt::Let(
+            local_id,
+            LoweredExpr::Local(rest_temp, Span::generated("object_rest_local")),
+            Span::generated("let_stmt"),
+        ));
+        Ok(statements)
     }
 
     pub(crate) fn lower_binding_declaration_with_default(
