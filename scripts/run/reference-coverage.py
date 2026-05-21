@@ -4,7 +4,7 @@
 Usage:
   python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]
       [--paths-file PATH] [--path-filter TEXT] [--dashboard-data]
-      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--sample-seed SEED] [--category PATTERN] [--source-profile] [--no-server] [--no-semantic]
+      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--daily] [--sample-seed SEED] [--category PATTERN] [--source-profile] [--no-server] [--no-semantic]
 
 Suites:
   test262   -> reference/test262/test/**/*.js
@@ -27,6 +27,7 @@ Notes:
   - --no-semantic: skip Node/iwasm semantic comparison (compile-only, faster for local full runs)
   - --jobs N: number of parallel jobs (default: CPU count)
   - --sample N: max files per category (test262 only, uses category-based sampling)
+  - --daily: daily quick-feedback profile (~500-1000 cases, deterministic seed by date)
    - --source-profile: collect source-level Rust profiler records when the
     ts2wasm binary was built with feature `source-profiler`
    - --category PATTERN: regex filter for test categories (test262 only, used with --sample)
@@ -329,7 +330,7 @@ def usage():
     print("Usage:")
     print("  python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]")
     print("      [--paths-file PATH] [--path-filter TEXT] [--dashboard-data] [--no-dashboard-data]")
-    print("      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--sample-seed SEED] [--category PATTERN] [--source-profile] [--no-server] [--no-semantic]")
+    print("      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--daily] [--sample-seed SEED] [--category PATTERN] [--source-profile] [--no-server] [--no-semantic]")
     print("      [--check-prerequisites]")
     print()
     print("Suites:")
@@ -345,6 +346,7 @@ def usage():
     print("  --semantic MODE  Semantic mode: 'strict' (Node/iwasm exact diff, default) or")
     print("                   'fast' (oracle_skip for silent positive tests)")
     print("  --sample N       Max files per category (test262 only, uses category-based sampling)")
+    print("  --daily          Daily quick-feedback profile (~500-1000 cases, deterministic seed by date)")
     print("  --sample-seed SEED  Deterministic seed for sample selection (default: $TS2WASM_SAMPLE_SEED or empty)")
     print("  --source-profile    Collect source-level Rust profiler records (requires feature source-profiler)")
     print("  --category PATTERN  Regex filter for test categories (test262 only, used with --sample)")
@@ -503,7 +505,7 @@ def evidence_command(suite, limit, paths_file, path_filters, sample=None,
                      category=None, semantic_check=None, server_mode=None,
                      jsonl_output=None, metadata_cache_sig=None,
                      selected_files=None, sample_seed=None, semantic_mode=None,
-                     dashboard_data=None, source_profile=False):
+                     dashboard_data=None, source_profile=False, daily=False):
     """Build a reproducible evidence dict for reports and coverage artifacts.
 
     Returns a structured dict with argv, selection parameters, and
@@ -532,6 +534,8 @@ def evidence_command(suite, limit, paths_file, path_filters, sample=None,
         argv.extend(["--semantic", semantic_mode])
     if sample_seed:
         argv.extend(["--sample-seed", sample_seed])
+    if daily:
+        argv.append("--daily")
     if dashboard_data is False:
         argv.append("--no-dashboard-data")
     if server_mode is False:
@@ -607,6 +611,7 @@ def evidence_command(suite, limit, paths_file, path_filters, sample=None,
         "server_mode": server_mode if server_mode is not None else True,
         "dashboard_data": dashboard_data,
         "source_profile": bool(source_profile),
+        "daily": bool(daily),
         "sample": sample,
         "sample_seed": sample_seed,
         "category": category,
@@ -1381,6 +1386,7 @@ def main():
     jobs = None
     semantic_mode = "fast"  # "strict" | "fast" | "none"
     sample = None
+    daily_mode = False
     category_pattern = None
     sample_seed = os.environ.get("TS2WASM_SAMPLE_SEED")  # deterministic seed for sampling
     source_profile = False
@@ -1480,6 +1486,9 @@ def main():
         elif args[i] == "--source-profile":
             source_profile = True
             i += 1
+        elif args[i] == "--daily":
+            daily_mode = True
+            i += 1
         elif args[i] == "--no-server":
             server_mode = False
             i += 1
@@ -1541,6 +1550,16 @@ def main():
     if force_jsonl:
         jsonl_output = True
 
+    # --daily: predictable daily sampled run for quick feedback (~500-1000 cases)
+    if daily_mode:
+        if sample is None:
+            sample = 125  # 6 categories * 125 ≈ 750 files
+        if sample_seed is None:
+            sample_seed = "daily-" + datetime.now().strftime("%Y-%m-%d")
+        web_ui = False
+        print(f"Daily mode: sample={sample} per category, seed={sample_seed}",
+              file=sys.stderr)
+
     # Derive boolean semantic_check from tri-state semantic_mode
     semantic_check = (semantic_mode != "none")
 
@@ -1576,6 +1595,7 @@ def main():
         semantic_mode=semantic_mode,
         dashboard_data=web_ui,
         source_profile=source_profile,
+        daily=daily_mode,
     )
 
     if sample is not None and sample < 1:
@@ -1708,6 +1728,7 @@ def main():
         semantic_mode=semantic_mode,
         dashboard_data=web_ui,
         source_profile=source_profile,
+        daily=daily_mode,
     )
 
     # JSONL output mode (test262 only) uses the full differential harness.

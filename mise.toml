@@ -132,6 +132,10 @@ run = "python scripts/manager.py benchmark-tracker"
 description = "Alias for 'reference-coverage test262 --jsonl' (detailed JSONL output)"
 run = "python scripts/manager.py reference-coverage test262 --jsonl"
 
+[tasks."test262-daily"]
+description = "Daily quick-feedback test262 sampled run (~500-1000 cases, deterministic seed by date)"
+run = "python scripts/manager.py reference-coverage test262 --daily"
+
 [tasks."test-differential-reporter"]
 description = "HTML/Md report from test262 JSONL (stdin; optional file args)"
 run = "python scripts/manager.py test-differential-reporter"
