@@ -917,7 +917,7 @@ impl WatEmitter<'_> {
                 (local.set $i (i32.add (local.get $i) (i32.const {one})))
                 (br $scan_flags)))
             (if (i32.eqz (local.get $has_g))
-              (then (unreachable)))))))
+              (then (return (local.get $s))))))))
     (if (i32.eqz (local.get $search_len))
       (then
         (local.set $result_len
