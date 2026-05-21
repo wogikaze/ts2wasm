@@ -67,6 +67,7 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "exp" => Some(RuntimeFn::MathExp),
                 "expm1" => Some(RuntimeFn::MathExpm1),
                 "fround" => Some(RuntimeFn::MathFround),
+                "f16round" => Some(RuntimeFn::MathF16round),
                 "hypot" => Some(RuntimeFn::MathHypot),
                 "log" => Some(RuntimeFn::MathLog),
                 "log10" => Some(RuntimeFn::MathLog10),
