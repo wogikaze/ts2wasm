@@ -401,6 +401,8 @@ const NODE_SHIM_IMPORT_CAPABILITIES: &[(HostImport, Capability)] = &[
     (HostImport::MathSinh, Capability::HostMathSinh),
     (HostImport::MathTan, Capability::HostMathTan),
     (HostImport::MathTanh, Capability::HostMathTanh),
+    (HostImport::MathAtan2, Capability::HostMathAtan2),
+    (HostImport::MathHypot, Capability::HostMathHypot),
     (
         HostImport::IntlNumberFormatFormat,
         Capability::HostIntlNumberFormatFormat,

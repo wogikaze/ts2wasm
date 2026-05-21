@@ -165,6 +165,8 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
             | Capability::HostMathSinh
             | Capability::HostMathTan
             | Capability::HostMathTanh
+            | Capability::HostMathAtan2
+            | Capability::HostMathHypot
             | Capability::HostStringNormalize
             | Capability::HostIntlNumberFormatFormat
             | Capability::HostIntlDateTimeFormatFormat

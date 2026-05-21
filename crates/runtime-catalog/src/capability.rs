@@ -52,6 +52,8 @@ pub enum Capability {
     HostMathSinh,
     HostMathTan,
     HostMathTanh,
+    HostMathAtan2,
+    HostMathHypot,
     HostStringNormalize,
     HostIntlNumberFormatFormat,
     HostIntlDateTimeFormatFormat,
@@ -120,6 +122,8 @@ const CAPABILITY_MANIFEST_NAMES: &[(Capability, &str)] = &[
     (Capability::HostMathSinh, "host.mathSinh"),
     (Capability::HostMathTan, "host.mathTan"),
     (Capability::HostMathTanh, "host.mathTanh"),
+    (Capability::HostMathAtan2, "host.mathAtan2"),
+    (Capability::HostMathHypot, "host.mathHypot"),
     (Capability::HostStringNormalize, "host.stringNormalize"),
     (
         Capability::HostIntlNumberFormatFormat,

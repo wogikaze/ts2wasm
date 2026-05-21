@@ -1492,8 +1492,6 @@ impl WatEmitter<'_> {
     (local $obj i32)
     (local $y_is_number i32)
     (local $x_is_number i32)
-    (local $y_n i32)
-    (local $x_n i32)
     (local.set $y_tag (i32.and (local.get $y) (i32.const {tag_mask})))
     (local.set $x_tag (i32.and (local.get $x) (i32.const {tag_mask})))
     (local.set $y_is_number (i32.eq (local.get $y_tag) (i32.const {number_tag})))
@@ -1514,11 +1512,7 @@ impl WatEmitter<'_> {
             (i32.const {heap_number_sentinel})))))
     (if (i32.or (i32.eqz (local.get $y_is_number)) (i32.eqz (local.get $x_is_number)))
       (then (return (i32.const {nan_value}))))
-    (local.set $y_n (call $number_to_i32 (local.get $y)))
-    (local.set $x_n (call $number_to_i32 (local.get $x)))
-    (if (i32.and (i32.eqz (local.get $y_n)) (i32.eq (local.get $x_n) (i32.const 1)))
-      (then (return (call $number_from_i32 (i32.const {zero})))))
-    (i32.const {nan_value}))
+    (return (call $host_math_atan2 (local.get $y) (local.get $x))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -1526,7 +1520,6 @@ impl WatEmitter<'_> {
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
-            zero = RuntimeConst::ZERO,
         ));
     }
 
@@ -1539,13 +1532,6 @@ impl WatEmitter<'_> {
     (local $obj i32)
     (local $a_is_number i32)
     (local $b_is_number i32)
-    (local $a_n i32)
-    (local $b_n i32)
-    (local $sum i32)
-    (local $lo i32)
-    (local $hi i32)
-    (local $mid i32)
-    (local $sq i32)
     (local.set $a_tag (i32.and (local.get $a) (i32.const {tag_mask})))
     (local.set $b_tag (i32.and (local.get $b) (i32.const {tag_mask})))
     (local.set $a_is_number (i32.eq (local.get $a_tag) (i32.const {number_tag})))
@@ -1566,30 +1552,7 @@ impl WatEmitter<'_> {
             (i32.const {heap_number_sentinel})))))
     (if (i32.or (i32.eqz (local.get $a_is_number)) (i32.eqz (local.get $b_is_number)))
       (then (return (i32.const {nan_value}))))
-    (local.set $a_n (call $number_to_i32 (local.get $a)))
-    (local.set $b_n (call $number_to_i32 (local.get $b)))
-    (local.set $sum
-      (i32.add
-        (i32.mul (local.get $a_n) (local.get $a_n))
-        (i32.mul (local.get $b_n) (local.get $b_n))))
-    (local.set $lo (i32.const {zero}))
-    (local.set $hi (i32.const 46340))
-    (block $hypot_done
-      (loop $hypot_loop
-        (br_if $hypot_done (i32.gt_s (local.get $lo) (local.get $hi)))
-        (local.set $mid (i32.shr_s (i32.add (local.get $lo) (local.get $hi)) (i32.const 1)))
-        (local.set $sq (i32.mul (local.get $mid) (local.get $mid)))
-        (if (i32.eq (local.get $sq) (local.get $sum))
-          (then
-            (local.set $lo (local.get $mid))
-            (br $hypot_done)))
-        (if (i32.lt_s (local.get $sq) (local.get $sum))
-          (then (local.set $lo (i32.add (local.get $mid) (i32.const 1))))
-          (else (local.set $hi (i32.sub (local.get $mid) (i32.const 1)))))
-        (br $hypot_loop)))
-    (if (i32.gt_s (i32.mul (local.get $lo) (local.get $lo)) (local.get $sum))
-      (then (local.set $lo (i32.sub (local.get $lo) (i32.const 1)))))
-    (call $number_from_i32 (local.get $lo)))
+    (return (call $host_math_hypot (local.get $a) (local.get $b))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -1597,7 +1560,6 @@ impl WatEmitter<'_> {
             heap_mask = ValueTag::HEAP_MASK,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
-            zero = RuntimeConst::ZERO,
         ));
     }
 

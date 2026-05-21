@@ -108,6 +108,8 @@ pub enum HostImport {
     MathSinh,
     MathTan,
     MathTanh,
+    MathAtan2,
+    MathHypot,
     StringNormalize,
     IntlNumberFormatFormat,
     IntlDateTimeFormatFormat,
@@ -800,6 +802,28 @@ const HOST_IMPORT_SPECS: &[(HostImport, HostImportSpec)] = &[
         },
     ),
     (
+        HostImport::MathAtan2,
+        HostImportSpec {
+            module: "host",
+            name: "mathAtan2",
+            wat_symbol: "$host_math_atan2",
+            abi: HostAbi::NodeShim,
+            params: "param i32 i32",
+            result: "result i32",
+        },
+    ),
+    (
+        HostImport::MathHypot,
+        HostImportSpec {
+            module: "host",
+            name: "mathHypot",
+            wat_symbol: "$host_math_hypot",
+            abi: HostAbi::NodeShim,
+            params: "param i32 i32",
+            result: "result i32",
+        },
+    ),
+    (
         HostImport::StringNormalize,
         HostImportSpec {
             module: "host",
@@ -1048,6 +1072,8 @@ const HOST_IMPORT_MANIFEST_NAMES: &[(HostImport, &str)] = &[
     (HostImport::MathSinh, "host.mathSinh"),
     (HostImport::MathTan, "host.mathTan"),
     (HostImport::MathTanh, "host.mathTanh"),
+    (HostImport::MathAtan2, "host.mathAtan2"),
+    (HostImport::MathHypot, "host.mathHypot"),
     (HostImport::StringNormalize, "host.stringNormalize"),
     (
         HostImport::IntlNumberFormatFormat,
