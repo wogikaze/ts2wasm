@@ -2926,7 +2926,7 @@ impl super::super::Resolver {
             if is_number_format_runtime_fn(intrinsic) && args.is_empty() {
                 lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
             }
-            if intrinsic == RuntimeFn::ParseInt && args.len() == 1 {
+            if intrinsic == RuntimeFn::GlobalParseInt && args.len() == 1 {
                 lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
             }
             if intrinsic == RuntimeFn::ObjectGetOwnPropertyDescriptor {
@@ -5240,13 +5240,19 @@ fn is_intl_list_format_method(method: &str) -> bool {
 }
 
 fn is_number_format_method(method: &str) -> bool {
-    matches!(method, "toFixed" | "toExponential" | "toPrecision")
+    matches!(
+        method,
+        "toFixed" | "toExponential" | "toPrecision" | "toString"
+    )
 }
 
 fn is_number_format_runtime_fn(intrinsic: RuntimeFn) -> bool {
     matches!(
         intrinsic,
-        RuntimeFn::NumberToFixed | RuntimeFn::NumberToExponential | RuntimeFn::NumberToPrecision
+        RuntimeFn::NumberToFixed
+            | RuntimeFn::NumberToExponential
+            | RuntimeFn::NumberToPrecision
+            | RuntimeFn::NumberToString
     )
 }
 

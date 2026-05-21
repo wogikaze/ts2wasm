@@ -75,8 +75,8 @@ pub const CORE_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::InstanceOf,
     // Number coercion / helpers
     RuntimeFn::IsNaN,
-    RuntimeFn::ParseInt,
-    RuntimeFn::ParseFloat,
+    RuntimeFn::GlobalParseInt,
+    RuntimeFn::GlobalParseFloat,
     RuntimeFn::IsFinite,
     RuntimeFn::BooleanCoerce,
     RuntimeFn::NumberCoerce,
