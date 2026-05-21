@@ -70,7 +70,7 @@ impl Parser {
                 message: format!("expected identifier, got {other:?}"),
                 span: self.peek_span(),
 
-                phase: None,}),
+                phase: Some("parser"),}),
         }
     }
 
@@ -120,7 +120,7 @@ impl Parser {
                 message: format!("expected identifier or string literal, got {other:?}"),
                 span: self.peek_span(),
 
-                phase: None,}),
+                phase: Some("parser"),}),
         }
     }
 
@@ -190,7 +190,7 @@ impl Parser {
                             message: format!("expected property name, got {kind:?}"),
                             span: self.peek_span(),
 
-                            phase: None,});
+                            phase: Some("parser"),});
                     }
                 };
                 Ok((name.to_string(), span))
@@ -198,9 +198,9 @@ impl Parser {
             None => Err(Diagnostic {
                 code: DiagCode::SyntaxError,
                 message: "expected property name, got end of input".to_owned(),
-                span: None,
+                span: Some(Span::generated("parser")),
 
-                phase: None,}),
+                phase: Some("parser"),}),
         }
     }
 
@@ -215,7 +215,7 @@ impl Parser {
                 message: format!("issue-248: expected private identifier, got {other:?}"),
                 span: self.peek_span(),
 
-                phase: None,}),
+                phase: Some("parser"),}),
         }
     }
 
@@ -230,7 +230,7 @@ impl Parser {
                 message: format!("expected `{keyword}`, got {:?}", self.peek()),
                 span: self.peek_span(),
 
-                phase: None,})
+                phase: Some("parser"),})
         }
     }
 
@@ -267,7 +267,7 @@ impl Parser {
                         message: format!("expected member property name, got {kind:?}"),
                         span: self.peek_span(),
 
-                        phase: None,})
+                        phase: Some("parser"),})
                 }
             }
             None => Err(Diagnostic {
@@ -275,7 +275,7 @@ impl Parser {
                 message: "expected member property name, got None".to_owned(),
                 span: self.peek_span(),
 
-                phase: None,}),
+                phase: Some("parser"),}),
         }
     }
 
@@ -320,7 +320,7 @@ impl Parser {
                 ),
                 span: self.peek_span(),
 
-                phase: None,}),
+                phase: Some("parser"),}),
             Some(token) if keyword_to_property_name(token).is_some() => {
                 let key = keyword_to_property_name(token).unwrap().to_owned();
                 let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
@@ -334,7 +334,7 @@ impl Parser {
                 ),
                 span: self.peek_span(),
 
-                phase: None,}),
+                phase: Some("parser"),}),
         }
     }
 
@@ -432,7 +432,7 @@ impl Parser {
                 message: format!("expected {kind:?}, got {:?}", self.peek()),
                 span: self.peek_span(),
 
-                phase: None,})
+                phase: Some("parser"),})
         }
     }
 
@@ -440,6 +440,7 @@ impl Parser {
         let mut paren_depth = 0usize;
         let mut bracket_depth = 0usize;
         let mut brace_depth = 0usize;
+        let mut angle_depth = 0usize;
         let mut consumed_type_token = false;
         while !self.is_at_end() {
             // When `{` is a stop token but no type tokens have been consumed yet,
@@ -455,7 +456,8 @@ impl Parser {
                 continue;
             }
 
-            let at_top_level = paren_depth == 0 && bracket_depth == 0 && brace_depth == 0;
+            let at_top_level =
+                paren_depth == 0 && bracket_depth == 0 && brace_depth == 0 && angle_depth == 0;
             if at_top_level
                 && self
                     .peek()
@@ -468,6 +470,14 @@ impl Parser {
                 Some(Token::LeftParen) => paren_depth += 1,
                 Some(Token::LeftBracket) => bracket_depth += 1,
                 Some(Token::LeftBrace) => brace_depth += 1,
+                Some(Token::Less) => angle_depth += 1,
+                Some(Token::Greater) if angle_depth > 0 => angle_depth -= 1,
+                Some(Token::RightShift) if angle_depth > 0 => {
+                    angle_depth = angle_depth.saturating_sub(2);
+                }
+                Some(Token::UnsignedRightShift) if angle_depth > 0 => {
+                    angle_depth = angle_depth.saturating_sub(3);
+                }
                 Some(Token::RightParen) => {
                     if paren_depth == 0 {
                         return Ok(());
@@ -493,7 +503,12 @@ impl Parser {
             consumed_type_token = true;
         }
 
-        if consumed_type_token && paren_depth == 0 && bracket_depth == 0 && brace_depth == 0 {
+        if consumed_type_token
+            && paren_depth == 0
+            && bracket_depth == 0
+            && brace_depth == 0
+            && angle_depth == 0
+        {
             Ok(())
         } else {
             Err(Diagnostic {

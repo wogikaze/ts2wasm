@@ -737,6 +737,7 @@ pub(super) fn span_of_expr(expr: &Expr) -> Option<Span> {
         | Expr::Await { span, .. }
         | Expr::Yield { span, .. }
         | Expr::Ident { span, .. }
+        | Expr::PrivateIdent { span, .. }
         | Expr::Unary { span, .. }
         | Expr::Binary { span, .. }
         | Expr::Member { span, .. }

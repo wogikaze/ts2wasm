@@ -657,7 +657,7 @@ pub(super) fn first_outer_local_reference_in_expr(
         | Expr::Null { .. }
         | Expr::Undefined { .. }
         | Expr::This { .. } => None,
-        Expr::NewTarget { .. } | Expr::ImportMeta { .. } => None,
+        Expr::NewTarget { .. } | Expr::ImportMeta { .. } | Expr::PrivateIdent { .. } => None,
     }
 }
 

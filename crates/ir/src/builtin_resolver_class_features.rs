@@ -621,6 +621,7 @@ pub(super) fn validate_static_block_expr(expr: &Expr) -> Result<(), Diagnostic> 
         | Expr::Bool { .. }
         | Expr::Null { .. }
         | Expr::Undefined { .. }
+        | Expr::PrivateIdent { .. }
         | Expr::Ident { .. } => Ok(()),
     }
 }

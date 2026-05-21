@@ -1082,6 +1082,7 @@ impl BigIntRuntimeGuard {
                 info.runtime_needed = true;
                 info
             })),
+            Expr::PrivateIdent { .. } => Ok(None),
             Expr::Unary { op, expr, span } => {
                 let info = self.expr_bigint_info(expr)?;
                 if let Some(info) = info {

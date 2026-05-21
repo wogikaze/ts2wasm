@@ -630,6 +630,7 @@ pub(crate) fn unparse_expr(expr: &Expr) -> String {
         Expr::This { .. } => "this".to_owned(),
         Expr::NewTarget { .. } => "new.target".to_owned(),
         Expr::ImportMeta { .. } => "import.meta".to_owned(),
+        Expr::PrivateIdent { name, .. } => format!("#{name}"),
         Expr::Sequence { exprs, .. } => {
             let parts: Vec<String> = exprs.iter().map(unparse_expr).collect();
             parts.join(", ")
