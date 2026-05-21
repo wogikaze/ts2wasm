@@ -652,7 +652,7 @@ impl WatEmitter<'_> {
     (local.set $base (call $alloc_heap (i32.const {object_size})))
     (i32.store (local.get $base) (i32.const 3))
     (i32.store (i32.add (local.get $base) (i32.const {object_flags_offset})) (i32.const 0))
-    (i32.store (i32.add (local.get $base) (i32.const {object_proto_offset})) (global.get $error_proto_aggregate_error))
+    (i32.store (i32.add (local.get $base) (i32.const {object_proto_offset})) (call $object_prototype))
     (i32.store (i32.add (local.get $base) (i32.const {entry0_key_offset})) (i32.const {promise_key}))
     (i32.store (i32.add (local.get $base) (i32.const {entry0_value_offset})) (local.get $promise))
     (i32.store (i32.add (local.get $base) (i32.const {entry1_key_offset})) (i32.const {resolve_key}))

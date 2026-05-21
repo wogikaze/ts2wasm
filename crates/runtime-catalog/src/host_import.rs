@@ -121,6 +121,10 @@ pub enum HostImport {
     FunctionCall,
     FunctionCallMethod,
     FunctionConstruct,
+    /// Convert a tagged JS value to f64, returning its IEEE-754 bits as i64.
+    TaggedToF64,
+    /// Convert f64 IEEE-754 bits (as i64) to a tagged JS value.
+    F64ToTagged,
 }
 
 const HOST_IMPORT_SPECS: &[(HostImport, HostImportSpec)] = &[
