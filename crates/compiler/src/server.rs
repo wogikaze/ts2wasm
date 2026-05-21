@@ -511,8 +511,7 @@ fn compile_source_text_with_emit(
         EmitMode::Wasm => {
             let (validated, _) = {
                 crate::source_profile_scope!("server.lowered_validate_for_backend");
-                ts2wasm_ir::lowered::Validated::new(lowered)
-                    .map_err(|d| d.with_phase("backend"))?
+                ts2wasm_ir::lowered::Validated::new(lowered).map_err(|d| d.with_phase("backend"))?
             };
             let output = tmpdir.join(format!("{}.wasm", id));
             let wat = {

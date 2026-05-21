@@ -70,7 +70,9 @@ impl Drop for Scope {
             return;
         };
         let elapsed = self.started_at.elapsed().as_nanos();
-        let mut guard = profile_map().lock().expect("source profiler mutex poisoned");
+        let mut guard = profile_map()
+            .lock()
+            .expect("source profiler mutex poisoned");
         let entry = guard.entry(key).or_default();
         entry.count += 1;
         entry.total_ns += elapsed;
@@ -95,7 +97,9 @@ pub fn snapshot_and_reset() -> Vec<ProfileRecord> {
     if !enabled() {
         return Vec::new();
     }
-    let mut guard = profile_map().lock().expect("source profiler mutex poisoned");
+    let mut guard = profile_map()
+        .lock()
+        .expect("source profiler mutex poisoned");
     let mut records: Vec<ProfileRecord> = guard
         .drain()
         .map(|(key, aggregate)| {
@@ -143,11 +147,7 @@ fn profile_map() -> &'static Mutex<HashMap<ProfileKey, ProfileAggregate>> {
 macro_rules! source_profile_scope {
     ($name:literal) => {
         #[cfg(feature = "source-profiler")]
-        let _ts2wasm_source_profile_scope = $crate::source_profiler::Scope::new(
-            $name,
-            file!(),
-            line!(),
-            module_path!(),
-        );
+        let _ts2wasm_source_profile_scope =
+            $crate::source_profiler::Scope::new($name, file!(), line!(), module_path!());
     };
 }

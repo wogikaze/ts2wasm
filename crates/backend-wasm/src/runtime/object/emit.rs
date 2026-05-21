@@ -1205,6 +1205,7 @@ impl WatEmitter<'_> {
             gc_kind_mask = Layout::GC_KIND_MASK,
             gc_kind_bigint = Layout::GC_KIND_BIGINT,
             symbol_sentinel = Layout::SYMBOL_SENTINEL,
+            closure_sentinel = CLOSURE_SENTINEL,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             str_undefined = str_undefined,
             str_null = str_null,

@@ -35,6 +35,17 @@ python scripts/manager.py update-coverage-matrix -- --check
 
 `artifacts/coverage/reference-coverage-matrix.md` is generated. It contains per-suite denominator, executed count, build/semantic coverage, unsupported reason tables, and evidence commands. Update with the manager script rather than manual edits.
 
+## Source-Level Profiling
+
+test262 runner profiling can collect Rust source-level timing records from the compiler server. The profiler is compiled out by default; build a profiling binary explicitly:
+
+```bash
+cargo build -p ts2wasm-cli --release --features source-profiler
+TS2WASM_BINARY=target/release/ts2wasm mise run reference-coverage -- test262 --semantic fast --sample 2000 --source-profile --no-dashboard-data
+```
+
+The runner writes aggregate phase timing and source-level records to `artifacts/coverage/results/test262-profile.json`. Source records include `name`, `file`, `line`, `module_path`, `count`, `total_ms`, `avg_ms`, and `max_ms`.
+
 ## Evidence standard
 
 A feature/change is done when the final report names:
