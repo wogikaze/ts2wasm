@@ -2870,7 +2870,7 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
-            Self::ParseInt => RuntimeSpec {
+            Self::GlobalParseInt => RuntimeSpec {
                 symbol: "$parse_int",
                 deps: &[RuntimeFn::NumberFromI32],
                 imports: NO_IMPORTS,
@@ -2878,7 +2878,7 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
-            Self::ParseFloat => RuntimeSpec {
+            Self::GlobalParseFloat => RuntimeSpec {
                 symbol: "$parse_float",
                 deps: NO_DEPS,
                 imports: NO_IMPORTS,
@@ -2912,7 +2912,7 @@ match self {
             },
             Self::NumberCoerce => RuntimeSpec {
                 symbol: "$number_coerce",
-                deps: &[RuntimeFn::ParseInt],
+                deps: &[RuntimeFn::GlobalParseInt],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,

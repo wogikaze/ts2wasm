@@ -654,9 +654,9 @@ pub enum RuntimeFn {
     /// Global isNaN function
     IsNaN,
     /// Global parseInt function
-    ParseInt,
+    GlobalParseInt,
     /// Global parseFloat function
-    ParseFloat,
+    GlobalParseFloat,
     /// Global isFinite function
     IsFinite,
     /// Boolean.prototype.toString — returns "true" or "false" as a tagged string
@@ -2005,8 +2005,10 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DateSetYear" => Some(RuntimeFn::DateSetYear),
         "DateToGMTString" => Some(RuntimeFn::DateToGMTString),
         "IsNaN" => Some(RuntimeFn::IsNaN),
-        "ParseInt" => Some(RuntimeFn::ParseInt),
-        "ParseFloat" => Some(RuntimeFn::ParseFloat),
+        "GlobalParseInt" => Some(RuntimeFn::GlobalParseInt),
+        "ParseInt" => Some(RuntimeFn::GlobalParseInt),
+        "GlobalParseFloat" => Some(RuntimeFn::GlobalParseFloat),
+        "ParseFloat" => Some(RuntimeFn::GlobalParseFloat),
         "IsFinite" => Some(RuntimeFn::IsFinite),
         "BooleanCoerce" => Some(RuntimeFn::BooleanCoerce),
         "BooleanToString" => Some(RuntimeFn::BooleanToString),
@@ -2610,8 +2612,8 @@ impl RuntimeFn {
             | Self::ValueOf
             | Self::InstanceOf
             | Self::IsNaN
-            | Self::ParseInt
-            | Self::ParseFloat
+            | Self::GlobalParseInt
+            | Self::GlobalParseFloat
             | Self::IsFinite
             | Self::BooleanCoerce
             | Self::BooleanToString
@@ -2779,7 +2781,7 @@ impl RuntimeFn {
             | Self::MathImul
             | Self::MathAtan2
             | Self::MathHypot
-            | Self::ParseInt
+            | Self::GlobalParseInt
             | Self::JsonParse
             | Self::AggregateError
             | Self::SameValueZero
@@ -3320,8 +3322,8 @@ impl RuntimeFn {
             Self::Dollar262Eval,
             // Global number functions (341a)
             Self::IsNaN,
-            Self::ParseInt,
-            Self::ParseFloat,
+            Self::GlobalParseInt,
+            Self::GlobalParseFloat,
             Self::IsFinite,
             // Boolean/Number coercion (341b/341c)
             Self::BooleanCoerce,
@@ -3835,8 +3837,8 @@ impl RuntimeFn {
             Self::Dollar262Eval,
             // Global number functions (341a)
             Self::IsNaN,
-            Self::ParseInt,
-            Self::ParseFloat,
+            Self::GlobalParseInt,
+            Self::GlobalParseFloat,
             Self::IsFinite,
             // Boolean/Number coercion (341b/341c)
             Self::BooleanCoerce,

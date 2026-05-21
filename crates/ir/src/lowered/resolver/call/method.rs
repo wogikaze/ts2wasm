@@ -2926,7 +2926,7 @@ impl super::super::Resolver {
             if is_number_format_runtime_fn(intrinsic) && args.is_empty() {
                 lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
             }
-            if intrinsic == RuntimeFn::ParseInt && args.len() == 1 {
+            if intrinsic == RuntimeFn::GlobalParseInt && args.len() == 1 {
                 lowered_args.push(LoweredExpr::Number(0, Span::generated("num")));
             }
             if intrinsic == RuntimeFn::ObjectGetOwnPropertyDescriptor {
