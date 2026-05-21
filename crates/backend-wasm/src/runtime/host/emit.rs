@@ -186,17 +186,24 @@ impl WatEmitter<'_> {
     ;; If no decimal point, value is already integral
     (if (i32.eqz (local.get $has_dot))
       (then (return (local.get $v))))
-    ;; Apply rounding: if first fractional digit >= 5, round away from +∞ for ties
+    ;; Apply rounding: Math.round(x) = floor(x + 0.5)
     (if (i32.ge_u (local.get $frac_digit) (i32.const 5))
       (then
         (if (i32.lt_s (local.get $sign) (i32.const {zero}))
           (then
-            ;; Negative: round toward +∞ (i.e., toward zero for ties)
-            (return (call $number_from_i32
-              (if (result i32)
-                (i32.eqz (local.get $n))
-                (then (i32.const {zero}))
-                (else (i32.sub (i32.const {zero}) (local.get $n)))))))
+            ;; Negative: floor(x + 0.5)
+            ;; frac_digit 5 -> -n (round toward +inf for ties, e.g. -3.5 -> -3)
+            ;; frac_digit > 5 -> -(n+1) (round toward -inf, e.g. -3.6 -> -4)
+            (if (i32.eq (local.get $frac_digit) (i32.const 5))
+              (then
+                (return (call $number_from_i32
+                  (if (result i32)
+                    (i32.eqz (local.get $n))
+                    (then (i32.const {zero}))
+                    (else (i32.sub (i32.const {zero}) (local.get $n)))))))
+              (else
+                (return (call $number_from_i32
+                  (i32.sub (i32.const {zero}) (i32.add (local.get $n) (i32.const {one}))))))))
           (else
             ;; Non-negative: round up (away from zero)
             (return (call $number_from_i32
