@@ -4,7 +4,7 @@
 Usage:
   python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]
       [--paths-file PATH] [--path-filter TEXT] [--dashboard-data]
-      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--daily] [--sample-seed SEED] [--category PATTERN] [--source-profile] [--no-server] [--no-semantic]
+      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--sample-total N] [--daily] [--sample-seed SEED] [--category PATTERN] [--source-profile] [--no-server] [--no-semantic]
 
 Suites:
   test262   -> reference/test262/test/**/*.js
@@ -27,7 +27,8 @@ Notes:
   - --no-semantic: skip Node/iwasm semantic comparison (compile-only, faster for local full runs)
   - --jobs N: number of parallel jobs (default: CPU count)
   - --sample N: max files per category (test262 only, uses category-based sampling)
-  - --daily: daily quick-feedback profile (~500-1000 cases, deterministic seed by date)
+  - --sample-total N: total files across all categories (test262 only, predictable case count)
+  - --daily: daily quick-feedback profile (~400 cases, deterministic seed by date, uses --sample-total)
    - --source-profile: collect source-level Rust profiler records when the
     ts2wasm binary was built with feature `source-profiler`
    - --category PATTERN: regex filter for test categories (test262 only, used with --sample)
@@ -330,7 +331,7 @@ def usage():
     print("Usage:")
     print("  python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]")
     print("      [--paths-file PATH] [--path-filter TEXT] [--dashboard-data] [--no-dashboard-data]")
-    print("      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--daily] [--sample-seed SEED] [--category PATTERN] [--source-profile] [--no-server] [--no-semantic]")
+    print("      [--jsonl] [--output-jsonl PATH] [--jobs N] [--sample N] [--sample-total N] [--daily] [--sample-seed SEED] [--category PATTERN] [--source-profile] [--no-server] [--no-semantic]")
     print("      [--check-prerequisites]")
     print()
     print("Suites:")
@@ -346,7 +347,8 @@ def usage():
     print("  --semantic MODE  Semantic mode: 'strict' (Node/iwasm exact diff, default) or")
     print("                   'fast' (oracle_skip for silent positive tests)")
     print("  --sample N       Max files per category (test262 only, uses category-based sampling)")
-    print("  --daily          Daily quick-feedback profile (~500-1000 cases, deterministic seed by date)")
+    print("  --sample-total N Total files across all categories (test262 only, predictable case count)")
+    print("  --daily          Daily quick-feedback profile (~400 cases, deterministic seed by date)")
     print("  --sample-seed SEED  Deterministic seed for sample selection (default: $TS2WASM_SAMPLE_SEED or empty)")
     print("  --source-profile    Collect source-level Rust profiler records (requires feature source-profiler)")
     print("  --category PATTERN  Regex filter for test categories (test262 only, used with --sample)")
@@ -501,7 +503,7 @@ def apply_path_filters(files, path_filters):
 
     return selected
 
-def evidence_command(suite, limit, paths_file, path_filters, sample=None,
+def evidence_command(suite, limit, paths_file, path_filters, sample=None, sample_total=None,
                      category=None, semantic_check=None, server_mode=None,
                      jsonl_output=None, metadata_cache_sig=None,
                      selected_files=None, sample_seed=None, semantic_mode=None,
@@ -526,6 +528,8 @@ def evidence_command(suite, limit, paths_file, path_filters, sample=None,
         argv.extend(["--path-filter", pf])
     if sample is not None:
         argv.extend(["--sample", str(sample)])
+    if sample_total is not None:
+        argv.extend(["--sample-total", str(sample_total)])
     if category:
         argv.extend(["--category", category])
     if semantic_check is False:
@@ -583,7 +587,11 @@ def evidence_command(suite, limit, paths_file, path_filters, sample=None,
             pass
 
     selection_mode = "all"
-    if sample is not None:
+    if daily:
+        selection_mode = "daily"
+    elif sample_total is not None:
+        selection_mode = "sample-total"
+    elif sample is not None:
         selection_mode = "sample"
     elif paths_file:
         selection_mode = "paths-file"
@@ -613,6 +621,7 @@ def evidence_command(suite, limit, paths_file, path_filters, sample=None,
         "source_profile": bool(source_profile),
         "daily": bool(daily),
         "sample": sample,
+        "sample_total": sample_total,
         "sample_seed": sample_seed,
         "category": category,
         "limit": limit,
@@ -1386,6 +1395,7 @@ def main():
     jobs = None
     semantic_mode = "fast"  # "strict" | "fast" | "none"
     sample = None
+    sample_total = None
     daily_mode = False
     category_pattern = None
     sample_seed = os.environ.get("TS2WASM_SAMPLE_SEED")  # deterministic seed for sampling
@@ -1471,6 +1481,16 @@ def main():
                 print("ERROR: --sample must be a non-negative integer", file=sys.stderr)
                 sys.exit(1)
             i += 2
+        elif args[i] == "--sample-total":
+            if i + 1 >= len(args):
+                print("ERROR: --sample-total requires a value", file=sys.stderr)
+                sys.exit(1)
+            try:
+                sample_total = int(args[i + 1])
+            except ValueError:
+                print("ERROR: --sample-total must be a non-negative integer", file=sys.stderr)
+                sys.exit(1)
+            i += 2
         elif args[i] == "--category":
             if i + 1 >= len(args):
                 print("ERROR: --category requires a value", file=sys.stderr)
@@ -1550,14 +1570,14 @@ def main():
     if force_jsonl:
         jsonl_output = True
 
-    # --daily: predictable daily sampled run for quick feedback (~500-1000 cases)
+    # --daily: predictable daily sampled run for quick feedback (~400 cases)
     if daily_mode:
-        if sample is None:
-            sample = 125  # 6 categories * 125 ≈ 750 files
-        if sample_seed is None:
-            sample_seed = "daily-" + datetime.now().strftime("%Y-%m-%d")
+        sample_seed = "daily-" + datetime.now().strftime("%Y-%m-%d")
+        if sample is None and sample_total is None:
+            sample_total = 400  # total files across all categories
         web_ui = False
-        print(f"Daily mode: sample={sample} per category, seed={sample_seed}",
+        detail = f"sample_total={sample_total}" if sample_total else f"sample={sample} per category"
+        print(f"Daily mode: {detail}, seed={sample_seed}",
               file=sys.stderr)
 
     # Derive boolean semantic_check from tri-state semantic_mode
@@ -1588,7 +1608,8 @@ def main():
     denominator = len(files)
     evidence = evidence_command(
         suite, limit, paths_file, path_filters,
-        sample=sample, category=category_pattern,
+        sample=sample, sample_total=sample_total,
+        category=category_pattern,
         semantic_check=semantic_check, server_mode=server_mode,
         jsonl_output=jsonl_output,
         sample_seed=sample_seed,
@@ -1598,9 +1619,9 @@ def main():
         daily=daily_mode,
     )
 
-    if sample is not None and sample < 1:
+    if (sample is not None and sample < 1) or (sample_total is not None and sample_total < 1):
         if jsonl_output:
-            print(f"Sample mode: 0 files selected", file=sys.stderr)
+            print(f"Sample mode: 0 files selected (sample={sample}, sample_total={sample_total})", file=sys.stderr)
             if suite == "test262":
                 print(f"=== {suite} Summary ===", file=sys.stderr)
                 print("Pass: 0", file=sys.stderr)
@@ -1717,10 +1738,59 @@ def main():
         non_sampled_files = [f for f in _all_test262_files if str(f) not in sampled_paths]
         print(f"Sample mode: {len(files)} files selected (max {sample} per category, seed={seed or 'none'}, {len(non_sampled_files)} non-sampled)", file=sys.stderr)
 
+    elif sample_total is not None and suite == "test262":
+        # --sample-total: select N total files across all categories.
+        _all_test262_files = list(files)
+        files = sorted(files, key=lambda f: str(f))
+        seed = sample_seed or ""
+        # Build per-category file lists.
+        cat_files = {}
+        for f in files:
+            cat_match = re.search(r'test/([^/]+)/', str(f))
+            cat = cat_match.group(1) if cat_match else "default"
+            if category_pattern and not re.search(category_pattern, cat):
+                continue
+            cat_files.setdefault(cat, []).append(f)
+        num_categories = len(cat_files)
+        # Shuffle within each category if seed is set.
+        for cat, fs in cat_files.items():
+            if seed:
+                def _sample_total_sort_key(f, _s=seed):
+                    import hashlib
+                    return hashlib.sha256((str(f) + _s).encode()).hexdigest()
+                fs.sort(key=_sample_total_sort_key)
+        # Distribute total across categories: at least 1 per category, then
+        # fill remaining proportionally by category size.
+        if sample_total > 0 and num_categories > 0:
+            per_cat = max(1, sample_total // num_categories)
+            sampled = []
+            for cat, fs in cat_files.items():
+                sampled.extend(fs[:per_cat])
+            filled = {cat: min(per_cat, len(fs)) for cat, fs in cat_files.items()}
+            remaining = sample_total - len(sampled)
+            if remaining > 0:
+                cat_order = sorted(cat_files.keys())
+                for cat in cat_order:
+                    if remaining <= 0:
+                        break
+                    fs = cat_files[cat]
+                    extra = min(remaining, len(fs) - filled[cat])
+                    if extra > 0:
+                        sampled.extend(fs[filled[cat]:filled[cat] + extra])
+                        filled[cat] += extra
+                        remaining -= extra
+            files = sampled[:sample_total]
+        else:
+            files = []
+        sampled_paths = {str(f) for f in files}
+        non_sampled_files = [f for f in _all_test262_files if str(f) not in sampled_paths]
+        print(f"Sample-total mode: {len(files)} files selected (target {sample_total}, seed={seed or 'none'}, {len(non_sampled_files)} non-sampled)", file=sys.stderr)
+
     # Update evidence with selected files info (path_sha256, case_count)
     evidence = evidence_command(
         suite, limit, paths_file, path_filters,
-        sample=sample, category=category_pattern,
+        sample=sample, sample_total=sample_total,
+        category=category_pattern,
         semantic_check=semantic_check, server_mode=server_mode,
         jsonl_output=jsonl_output,
         selected_files=files,
@@ -3153,6 +3223,22 @@ def main():
                 "WARNING: --source-profile requested but ts2wasm binary was not built with feature source-profiler",
                 file=sys.stderr,
             )
+        # Add wall-clock metadata to distinguish cumulative from wall-clock timers
+        if wall_duration_ms > 0:
+            profile_rec["wall_clock_ms"] = wall_duration_ms
+        profile_rec["_timer_meta"] = {
+            "prepare_ms": "wall-clock: metadata parse + build_source",
+            "server_wasm_emit_ms": "wall-clock: server wasm-emit + wat2wasm",
+            "iwasm_wall_ms": "cumulative: sum of all iwasm invocation durations",
+            "wamr_wall_ms": "cumulative: sum of all WAMR runner durations (subset of iwasm_wall_ms)",
+            "node_wall_ms": "cumulative: sum of all node oracle invocation durations",
+            "non_sample_ms": "wall-clock: non-sampled skip record writing",
+            "wasm_emit_count": "count: successful wasm emissions (via wat crate)",
+            "iwasm_processes": "count: iwasm invocations (total, including fallback)",
+            "node_processes": "count: node oracle invocations",
+            "wall_clock_ms": "wall-clock: total JSONL run duration from start to summary",
+            "server_fallback_batches": "count: server fallback batches",
+        }
         # Add derived averages to prevent misreading cumulative vs wall
         iwasm_procs = profile_rec.get("iwasm_processes", 0)
         if iwasm_procs > 0:
