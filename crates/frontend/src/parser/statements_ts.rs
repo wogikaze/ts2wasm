@@ -71,8 +71,12 @@ impl Parser {
                 end: self.cursor,
             });
             self.advance(); // consume 'enum'
-            self.expect_ident()?; // consume enum name (erased)
+            let (name, name_span) = self.expect_ident()?; // capture enum name
             self.skip_balanced_brace_block(enum_span)?; // skip { ... } body
+            self.pending_statements.push(Stmt::EnumDecl {
+                name,
+                span: name_span,
+            });
             return Ok(true);
         }
 
@@ -82,8 +86,12 @@ impl Parser {
                 end: self.cursor,
             });
             self.advance(); // consume 'enum'
-            self.expect_ident()?; // consume enum name (erased)
+            let (name, name_span) = self.expect_ident()?; // capture enum name
             self.skip_balanced_brace_block(enum_span)?; // skip { ... } body
+            self.pending_statements.push(Stmt::EnumDecl {
+                name,
+                span: name_span,
+            });
             return Ok(true);
         }
 
@@ -96,8 +104,12 @@ impl Parser {
                 end: self.cursor,
             });
             self.advance(); // consume 'enum'
-            self.expect_ident()?; // consume enum name (erased)
+            let (name, name_span) = self.expect_ident()?; // capture enum name
             self.skip_balanced_brace_block(enum_span)?; // skip { ... } body
+            self.pending_statements.push(Stmt::EnumDecl {
+                name,
+                span: name_span,
+            });
             return Ok(true);
         }
 
@@ -626,9 +638,13 @@ impl Parser {
 
     fn consume_ambient_enum_declaration(&mut self, declare_span: Span) -> Result<(), Diagnostic> {
         self.expect_contextual_keyword("enum")?;
-        self.expect_ident()?;
+        let (name, name_span) = self.expect_ident()?;
         self.skip_balanced_brace_block(declare_span)?;
         self.consume(TokenKind::Semicolon);
+        self.pending_statements.push(Stmt::EnumDecl {
+            name,
+            span: name_span,
+        });
         Ok(())
     }
 

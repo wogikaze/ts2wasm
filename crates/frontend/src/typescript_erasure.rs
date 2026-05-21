@@ -21,6 +21,7 @@ pub enum ErasureKind {
     Satisfies,
     ConstAssertion,
     TypeOnlyImport,
+    EnumDecl,
 }
 
 /// A serialization-friendly span representation.
@@ -85,11 +86,12 @@ fn collect_from_stmt(
     unsupported: &mut Vec<UnsupportedTsSyntax>,
 ) {
     match stmt {
-        // Note: Stmt::EnumDecl exists in the AST but the current parser
-        // erases enums at the token level (see parser/statements_ts.rs),
-        // so no EnumDecl statements are produced. When the parser is
-        // updated to emit EnumDecl nodes, this arm can be enabled.
-        // Stmt::EnumDecl { span, .. } => { }
+        Stmt::EnumDecl { span, .. } => {
+            erased.push(ErasedSyntax {
+                kind: ErasureKind::EnumDecl,
+                span: to_span_record(*span),
+            });
+        }
         Stmt::AmbientValueDecl { span, .. } => {
             erased.push(ErasedSyntax {
                 kind: ErasureKind::AmbientDecl,
@@ -169,14 +171,12 @@ mod tests {
     }
 
     #[test]
-    fn erasure_report_enum_erased_at_parser_level() {
-        // The parser currently erases enums at the token level (no Stmt produced).
-        // When the parser emits EnumDecl nodes, update this test.
+    fn erasure_report_enum_decl() {
         let source = "enum Color { Red, Green, Blue }";
         let stmts = parse_source(source);
         let report = collect_erasure_report(&stmts);
-        // Enums are fully consumed by the parser without producing Stmt nodes
-        assert_eq!(report.erased.len(), 0);
+        assert_eq!(report.erased.len(), 1, "should erase enum declaration");
+        assert_eq!(report.erased[0].kind, ErasureKind::EnumDecl);
         assert_eq!(report.unsupported.len(), 0);
     }
 

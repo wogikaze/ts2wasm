@@ -472,7 +472,8 @@ mod tests {
             let runtimeValue = 1;
         "#;
         let program = parse_program(source).unwrap();
-        assert_eq!(program.len(), 4);
+        // declare enum AmbientEnum now produces Stmt::EnumDecl
+        assert_eq!(program.len(), 5);
         assert!(
             program
                 .iter()
@@ -487,6 +488,11 @@ mod tests {
                 .any(|stmt| matches!(stmt, Stmt::ClassDecl { .. }))
         );
         assert!(program.iter().any(|stmt| matches!(stmt, Stmt::Let { .. })));
+        assert!(
+            program
+                .iter()
+                .any(|stmt| matches!(stmt, Stmt::EnumDecl { name, .. } if name == "AmbientEnum"))
+        );
 
         let Some(Stmt::ClassDecl { body, .. }) = program
             .iter()
@@ -1820,27 +1826,31 @@ class Foo {
     #[test]
     fn parses_enum_declarations_as_erased_syntax() {
         let stmts = parse_program("enum E { A, B, C }").unwrap();
-        // Enum should be erased — no statements emitted
-        assert!(stmts.is_empty());
+        // Enum should produce an EnumDecl node (erased at the type level)
+        assert_eq!(stmts.len(), 1);
+        assert!(matches!(&stmts[0], Stmt::EnumDecl { name, .. } if name == "E"));
     }
 
     #[test]
     fn parses_enum_with_values_as_erased_syntax() {
         let stmts = parse_program("enum E { A = 1, B, C }").unwrap();
-        assert!(stmts.is_empty());
+        assert_eq!(stmts.len(), 1);
+        assert!(matches!(&stmts[0], Stmt::EnumDecl { name, .. } if name == "E"));
     }
 
     #[test]
     fn parses_enum_with_trailing_comma_as_erased_syntax() {
         let stmts = parse_program("enum E { A, B, }").unwrap();
-        assert!(stmts.is_empty());
+        assert_eq!(stmts.len(), 1);
+        assert!(matches!(&stmts[0], Stmt::EnumDecl { name, .. } if name == "E"));
     }
 
     #[test]
     fn parses_enum_followed_by_let_declaration() {
         let stmts = parse_program("enum E { A, B }\nlet x = 1;").unwrap();
-        assert_eq!(stmts.len(), 1);
-        assert!(matches!(&stmts[0], Stmt::Let { name, .. } if name == "x"));
+        assert_eq!(stmts.len(), 2);
+        assert!(matches!(&stmts[0], Stmt::EnumDecl { name, .. } if name == "E"));
+        assert!(matches!(&stmts[1], Stmt::Let { name, .. } if name == "x"));
     }
 
     #[test]
@@ -4670,8 +4680,9 @@ b /* parameter b */,
     #[test]
     fn parses_const_enum_erased_no_bogus_binding() {
         let stmts = parse_program("const enum E { A }\nlet x = 1;").unwrap();
-        assert_eq!(stmts.len(), 1);
-        assert!(matches!(&stmts[0], Stmt::Let { name, .. } if name == "x"));
+        assert_eq!(stmts.len(), 2);
+        assert!(matches!(&stmts[0], Stmt::EnumDecl { name, .. } if name == "E"));
+        assert!(matches!(&stmts[1], Stmt::Let { name, .. } if name == "x"));
     }
 
     #[test]
@@ -4704,8 +4715,9 @@ b /* parameter b */,
     #[test]
     fn parses_export_enum_followed_by_let() {
         let stmts = parse_program("export enum E { A }\nlet x = 1;").unwrap();
-        assert_eq!(stmts.len(), 1);
-        assert!(matches!(&stmts[0], Stmt::Let { name, .. } if name == "x"));
+        assert_eq!(stmts.len(), 2);
+        assert!(matches!(&stmts[0], Stmt::EnumDecl { name, .. } if name == "E"));
+        assert!(matches!(&stmts[1], Stmt::Let { name, .. } if name == "x"));
     }
 
     #[test]
