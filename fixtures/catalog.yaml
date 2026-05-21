@@ -287,6 +287,7 @@ directories:
     - global-names-well-known-symbols.ts
     - global-parsefloat.ts
     - global-parseint-i32-boundary.ts
+    - global-parseint-edge.ts
     - global-parseint-radix.ts
     - global-parseint.ts
     - global-unescape-value.ts

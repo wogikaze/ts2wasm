@@ -2599,7 +2599,10 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local.set $tag (i32.and (local.get $s) (i32.const {tag_mask})))
     (if (i32.eq (local.get $tag) (i32.const {number_tag}))
-      (then (return (local.get $s))))
+      (then
+        ;; Convert number to string per spec step 1 (ToString), then parse
+        (local.set $s (call $number_to_string (local.get $s) (i32.const {undefined})))
+        (local.set $tag (i32.const {string_tag}))))
     (if (i32.ne (local.get $tag) (i32.const {string_tag}))
       (then (return (i32.const {nan_value}))))
     (call $parse_int_string (local.get $s) (local.get $radix)))
@@ -2607,6 +2610,7 @@ impl WatEmitter<'_> {
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
             string_tag = ValueTag::STRING,
+            undefined = ValueTag::UNDEFINED,
             nan_value = tagged_number_sentinel(ValueTag::NAN_PAYLOAD),
         ));
         wat.push_str(&format!(
@@ -4125,6 +4129,28 @@ impl WatEmitter<'_> {
             done_key = done_key,
             true = ValueTag::TRUE,
             object_tag = ValueTag::OBJECT,
+        ));
+    }
+
+    /// Convert a tagged JS value to its IEEE-754 f64 representation (as i64 bits).
+    /// Delegates to host shim which handles SMI, heap-number, and sentinel decoding.
+    pub(crate) fn emit_tagged_to_f64(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $tagged_to_f64 (param $v i32) (result i64)
+    (return (call $host_tagged_to_f64 (local.get $v))))
+"#,
+        ));
+    }
+
+    /// Convert IEEE-754 f64 bits (as i64) to a tagged JS value.
+    /// Delegates to host shim which handles encoding/boxing decisions.
+    pub(crate) fn emit_f64_to_tagged(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $f64_to_tagged (param $bits i64) (result i32)
+    (return (call $host_f64_to_tagged (local.get $bits))))
+"#,
         ));
     }
 }
