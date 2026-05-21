@@ -276,16 +276,21 @@ impl WatEmitter<'_> {
             r#"
   (func $string_index_of (param $haystack i32) (param $needle i32) (param $position i32) (result i32)
     (local $h_obj i32)
-    (local $n_obj i32)
     (local $h_len i32)
+    (local $n_data i32)
     (local $n_len i32)
     (local $i i32)
     (if (i32.eqz (call $is_string (local.get $haystack))) (then (return (i32.or (i32.shl (i32.const {neg_one}) (i32.const {number_shift})) (i32.const {number_tag})))))
-    (if (i32.eqz (call $is_string (local.get $needle))) (then (return (i32.or (i32.shl (i32.const {neg_one}) (i32.const {number_shift})) (i32.const {number_tag})))))
     (local.set $h_obj (i32.and (local.get $haystack) (i32.const {heap_mask})))
-    (local.set $n_obj (i32.and (local.get $needle) (i32.const {heap_mask})))
     (local.set $h_len (i32.load (local.get $h_obj)))
-    (local.set $n_len (i32.load (local.get $n_obj)))
+    ;; Coerce needle to string; use scratch buffer for non-string values
+    (if (call $is_string (local.get $needle))
+      (then
+        (local.set $n_data (i32.add (i32.and (local.get $needle) (i32.const {heap_mask})) (i32.const {header})))
+        (local.set $n_len (i32.load (i32.and (local.get $needle) (i32.const {heap_mask})))))
+      (else
+        (local.set $n_data (i32.const {scratch}))
+        (local.set $n_len (call $value_to_string_into (local.get $needle) (local.get $n_data)))))
     ;; Decode position: undefined (0) -> 0, otherwise decode tagged number
     (if (i32.eq (local.get $position) (i32.const {undefined}))
       (then (local.set $i (i32.const {zero})))
@@ -303,7 +308,7 @@ impl WatEmitter<'_> {
         (br_if $not_found (i32.gt_u (local.get $i) (i32.sub (local.get $h_len) (local.get $n_len))))
         (if (call $mem_equal
               (i32.add (i32.add (local.get $h_obj) (i32.const {header})) (local.get $i))
-              (i32.add (local.get $n_obj) (i32.const {header}))
+              (local.get $n_data)
               (local.get $n_len))
           (then (return (i32.or (i32.shl (call $utf8_byte_to_cp_index (local.get $haystack) (local.get $i)) (i32.const {number_shift})) (i32.const {number_tag})))))
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
@@ -319,6 +324,7 @@ impl WatEmitter<'_> {
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             shift = ValueTag::NUMBER_SHIFT,
+            scratch = Layout::SCRATCH_OFFSET,
         ));
     }
 
