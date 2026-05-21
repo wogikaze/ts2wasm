@@ -13,6 +13,10 @@ path = "src/main.rs"
 name = "ts2wasm_cli"
 path = "src/lib.rs"
 
+[features]
+default = []
+source-profiler = ["ts2wasm-compiler/source-profiler"]
+
 [dependencies]
 ts2wasm-compiler = { path = "../compiler" }
 ts2wasm-frontend = { path = "../frontend" }

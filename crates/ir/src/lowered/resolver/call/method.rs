@@ -3309,8 +3309,19 @@ impl super::super::Resolver {
             && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
         {
             if args.is_empty() {
+                // TypedArray.prototype.sort() defaults to numeric comparison per spec,
+                // while Array.prototype.sort() defaults to lexicographic (string) comparison.
+                let is_typed_array =
+                    crate::lowered::resolver::expr::facts::is_known_typed_array_expr(
+                        &self.ctx, object,
+                    );
+                let intrinsic = if is_typed_array {
+                    RuntimeFn::ArraySortNumeric
+                } else {
+                    RuntimeFn::ArraySortLexicographic
+                };
                 return Ok(Some(LoweredExpr::RuntimeCall {
-                    intrinsic: RuntimeFn::ArraySortLexicographic,
+                    intrinsic,
                     args: vec![self.lower_expr(object)?],
 
                     span: Span::generated("runtime_call"),

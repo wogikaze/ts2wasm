@@ -3,8 +3,16 @@
 mod dump;
 mod module_graph;
 pub mod server;
+#[cfg(feature = "source-profiler")]
+pub mod source_profiler;
 pub mod stages;
 mod test262_preprocessor;
+
+#[cfg(not(feature = "source-profiler"))]
+#[macro_export]
+macro_rules! source_profile_scope {
+    ($name:literal) => {};
+}
 
 pub use stages::parse::parse_program;
 

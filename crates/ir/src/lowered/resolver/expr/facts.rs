@@ -727,6 +727,23 @@ pub(crate) fn is_known_array_expr(ctx: &LoweringCtx, expr: &ResolvedExpr) -> boo
     }
 }
 
+/// Returns true if the expression refers to a known TypedArray (e.g., Int8Array, Uint8Array, etc.).
+/// Unlike `is_known_array_expr`, this returns false for regular `Array` expressions and
+/// `ResolvedExpr::Array(_)` literals.
+pub(crate) fn is_known_typed_array_expr(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
+    match expr {
+        ResolvedExpr::Array(_) => false,
+        ResolvedExpr::New { class_name, .. } if is_typed_array_class(class_name) => true,
+        ResolvedExpr::Ident(name) => ctx.resolve_local(name).ok().is_some_and(|local_id| {
+            ctx.classes
+                .local_classes
+                .get(&local_id)
+                .is_some_and(|class_name| is_typed_array_class(class_name))
+        }),
+        _ => false,
+    }
+}
+
 pub(crate) fn resolved_expr_static_array_slots(
     ctx: &LoweringCtx,
     expr: &ResolvedExpr,

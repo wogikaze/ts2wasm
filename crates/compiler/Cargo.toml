@@ -9,6 +9,10 @@ repository.workspace = true
 name = "ts2wasm_compiler"
 path = "src/lib.rs"
 
+[features]
+default = []
+source-profiler = []
+
 [dependencies]
 ts2wasm-frontend = { path = "../frontend" }
 ts2wasm-source = { path = "../source" }
