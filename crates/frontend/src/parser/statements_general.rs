@@ -253,6 +253,11 @@ impl Parser {
             self.class_export_statement(export_span)
         } else if matches!(self.peek(), Some(Token::Function)) {
             self.function_export_statement(export_span)
+        } else if matches!(self.peek(), Some(Token::Async))
+            && matches!(self.peek_n(1), Some(Token::Function))
+        {
+            self.advance(); // consume 'async'
+            self.function_export_statement(export_span)
         } else if matches!(self.peek(), Some(Token::Equal)) {
             self.advance(); // consume '='
             let expr = self.expression()?;
@@ -295,7 +300,17 @@ impl Parser {
     ) -> Result<Stmt, Diagnostic> {
         match self.peek() {
             Some(Token::Function) => {
-                return self.unsupported_module_form(export_span, "default function export");
+                let fn_span = self.expect(TokenKind::Function)?;
+                let expr = self.function_expression(fn_span)?;
+                let end = self.statement_terminator_end(expr.span().end)?;
+                return Ok(Stmt::ExportDefault {
+                    expr,
+                    default_span,
+                    span: Span {
+                        start: export_span.start,
+                        end,
+                    },
+                });
             }
             Some(Token::Class) => {
                 self.advance(); // consume 'class'

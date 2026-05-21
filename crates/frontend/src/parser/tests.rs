@@ -3473,16 +3473,37 @@ b /* parameter b */,
     }
 
     #[test]
-    fn keeps_default_function_exports_unsupported_for_narrow_slice() {
-        let function_err = parse_program("export default function value() {};").unwrap_err();
-        assert_eq!(function_err.code, DiagCode::UnsupportedSyntax);
-        assert!(function_err.message.contains("issue-055"));
-        assert!(
-            function_err
-                .message
-                .contains("unsupported default function export")
-        );
-        assert_eq!(function_err.span, Some(Span { start: 0, end: 6 }));
+    fn parses_default_function_export() {
+        let program = parse_program("export default function value() {};").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::ExportDefault {
+                expr: Expr::FunctionExpr { name, params, body, .. },
+                ..
+            } => {
+                assert_eq!(name, "value");
+                assert!(params.is_empty());
+                assert!(body.is_empty());
+            }
+            other => panic!("expected ExportDefault with FunctionExpr, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_default_anonymous_function_export() {
+        let program = parse_program("export default function() {};").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::ExportDefault {
+                expr: Expr::FunctionExpr { name, params, body, .. },
+                ..
+            } => {
+                assert_eq!(name, "");
+                assert!(params.is_empty());
+                assert!(body.is_empty());
+            }
+            other => panic!("expected ExportDefault with FunctionExpr, got {other:?}"),
+        }
     }
 
     #[test]
