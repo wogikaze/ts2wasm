@@ -1755,6 +1755,7 @@ fn resolve_static_re_export_source_path(
         vec![
             raw_candidate.with_extension("ts"),
             raw_candidate.with_extension("js"),
+            raw_candidate.with_extension("d.ts"),
         ]
     };
 

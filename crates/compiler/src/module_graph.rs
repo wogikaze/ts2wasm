@@ -5,8 +5,7 @@ use std::path::{Path, PathBuf};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_frontend::{Lexer, Parser, validate_type_reference_directives};
 use ts2wasm_syntax::{
-    ArrayLiteralElement, ClassPrivateElement, ClassStaticBlock, Expr, ModuleSpecifier, ObjectProp,
-    Stmt,
+    ArrayLiteralElement, ClassPrivateElement, Expr, ModuleSpecifier, ObjectProp, Stmt,
 };
 
 #[derive(Debug, Clone)]
@@ -491,8 +490,12 @@ fn collect_dynamic_import_specifiers_stmt(stmt: &Stmt, specifiers: &mut Vec<Modu
                 collect_dynamic_import_specifiers_stmt(child, specifiers);
             }
         }
-        Stmt::While { condition, body, .. }
-        | Stmt::DoWhile { condition, body, .. } => {
+        Stmt::While {
+            condition, body, ..
+        }
+        | Stmt::DoWhile {
+            condition, body, ..
+        } => {
             collect_dynamic_import_specifiers_expr(condition, specifiers);
             for child in body {
                 collect_dynamic_import_specifiers_stmt(child, specifiers);
@@ -806,6 +809,7 @@ fn collect_dynamic_import_specifiers_expr(expr: &Expr, specifiers: &mut Vec<Modu
         | Expr::Null { .. }
         | Expr::Undefined { .. }
         | Expr::Ident { .. }
+        | Expr::PrivateIdent { .. }
         | Expr::This { .. }
         | Expr::NewTarget { .. }
         | Expr::ImportMeta { .. } => {}
