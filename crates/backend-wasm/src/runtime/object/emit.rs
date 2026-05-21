@@ -1118,6 +1118,8 @@ impl WatEmitter<'_> {
         let str_bigint = self.string_value("[object BigInt]");
         let str_symbol = self.string_value("[object Symbol]");
         let str_object = self.string_value("[object Object]");
+        // CLOSURE_SENTINEL = -2, stored at offset 0 of the heap object payload
+        const CLOSURE_SENTINEL: i32 = -2;
         wat.push_str(&format!(
             r#"
   (func $object_to_string (param $v i32) (result i32)
@@ -1156,7 +1158,7 @@ impl WatEmitter<'_> {
           (then (return (i32.const {str_function}))))
         ;; Plain number -> "[object Number]"
         (return (i32.const {str_number}))))
-    ;; OBJECT tag (7) — check subtypes: BigInt, Symbol, HeapNumber, or plain Object
+    ;; OBJECT tag (7) — check subtypes: BigInt, Symbol, HeapClosure, HeapNumber, or plain Object
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
       (then
         (local.set $base (i32.and (local.get $v) (i32.const {heap_mask})))
