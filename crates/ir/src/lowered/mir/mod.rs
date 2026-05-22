@@ -8,12 +8,17 @@
 // types rather than creating separate Mir* aliases. The original type names
 // are already publicly available from `crate::lowered::*`.
 
+use std::collections::HashMap;
+
+use crate::lowered::LocalId;
+
 pub mod escape;
 pub mod induction_var;
 mod lower;
 mod raise;
 pub mod scalar_replace;
 pub mod types;
+pub mod value_range;
 pub mod value_rep;
 
 pub use induction_var::{InductionVarDirection, InductionVarInfo};
@@ -355,6 +360,11 @@ pub fn run_value_rep_consumer(program: &mut MirProgram) {
 /// 6. **Value representation consumer** (`run_value_rep_consumer`) —
 ///    reads value_reps and produces optimization_hints per local.
 ///    Must run after step 5.
+///
+/// 7. **Value range analysis** (`run_value_range_analysis`) — computes
+///    known i32 value ranges for each local via forward dataflow. Uses
+///    induction variable bounds to seed initial ranges. Read-only pass;
+///    results are returned as a `HashMap`.
 pub fn run_all_mir_analyses(program: &mut MirProgram) {
     run_escape_analysis(program);
     run_scalar_replacement(program);
@@ -362,6 +372,31 @@ pub fn run_all_mir_analyses(program: &mut MirProgram) {
     run_value_rep_analysis(program);
     run_induction_var_consumer(program);
     run_value_rep_consumer(program);
+    // Value range analysis is a read-only pass; its return value can be
+    // consumed by later optimizations (e.g., loop unrolling, DCE).
+    let _value_ranges = run_value_range_analysis(program);
+}
+
+// ---------------------------------------------------------------------------
+// Value range analysis pass
+// ---------------------------------------------------------------------------
+
+/// Run value range analysis on all functions in a `MirProgram`.
+///
+/// Returns a map from `FuncId` to `HashMap<LocalId, ValueRange>` describing
+/// the known i32 value range for each local at every function's exit point.
+///
+/// This pass is independent of other analyses and can be called at any point
+/// in the pipeline.
+pub fn run_value_range_analysis(
+    program: &MirProgram,
+) -> HashMap<crate::lowered::FuncId, HashMap<LocalId, value_range::ValueRange>> {
+    let mut results = HashMap::new();
+    for func in &program.functions {
+        let ranges = value_range::run_value_range_analysis(func);
+        results.insert(func.id, ranges);
+    }
+    results
 }
 
 // ---------------------------------------------------------------------------
