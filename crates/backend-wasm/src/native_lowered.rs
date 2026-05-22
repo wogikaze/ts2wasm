@@ -71,6 +71,7 @@ struct FunctionCtx {
     local_types: HashMap<LocalId, InferredType>,
     static_locals: HashMap<LocalId, StaticValue>,
     static_arrays: HashMap<LocalId, Vec<usize>>,
+    static_objects: HashMap<LocalId, HashMap<String, usize>>,
     switch_value_local: usize,
     returns_value: bool,
     module_id: Option<usize>,
@@ -86,6 +87,12 @@ enum StaticValue {
 #[derive(Default)]
 struct StaticArrayPlan {
     group_lengths: Vec<usize>,
+    local_groups: HashMap<LocalId, usize>,
+}
+
+#[derive(Default)]
+struct StaticObjectPlan {
+    group_keys: Vec<Vec<String>>,
     local_groups: HashMap<LocalId, usize>,
 }
 
@@ -229,6 +236,10 @@ impl<'a> NativeLoweredEmitter<'a> {
         let (next_wasm, static_arrays) =
             append_static_array_locals(wasm, function.params.len(), &static_array_plan);
         wasm = next_wasm;
+        let static_object_plan = collect_static_object_plan(&function.body);
+        let (next_wasm, static_objects) =
+            append_static_object_locals(wasm, function.params.len(), &static_object_plan);
+        wasm = next_wasm;
         let switch_value_local = function.params.len() + wasm.locals.len();
         wasm = wasm.local(WasmValType::I32);
 
@@ -237,6 +248,7 @@ impl<'a> NativeLoweredEmitter<'a> {
             local_types: infer_local_types(&function.body),
             static_locals: infer_static_locals(&function.body),
             static_arrays,
+            static_objects,
             switch_value_local,
             returns_value,
             module_id: None,
@@ -261,6 +273,9 @@ impl<'a> NativeLoweredEmitter<'a> {
         let static_array_plan = collect_static_array_plan(&self.program.top_level_statements);
         let (next_wasm, static_arrays) = append_static_array_locals(wasm, 0, &static_array_plan);
         wasm = next_wasm;
+        let static_object_plan = collect_static_object_plan(&self.program.top_level_statements);
+        let (next_wasm, static_objects) = append_static_object_locals(wasm, 0, &static_object_plan);
+        wasm = next_wasm;
         let switch_value_local = wasm.locals.len();
         wasm = wasm.local(WasmValType::I32);
         let ctx = FunctionCtx {
@@ -268,6 +283,7 @@ impl<'a> NativeLoweredEmitter<'a> {
             local_types: infer_local_types(&self.program.top_level_statements),
             static_locals: infer_static_locals(&self.program.top_level_statements),
             static_arrays,
+            static_objects,
             switch_value_local,
             returns_value: false,
             module_id: None,
@@ -291,6 +307,9 @@ impl<'a> NativeLoweredEmitter<'a> {
         let static_array_plan = collect_static_array_plan(&module_info.statements);
         let (next_wasm, static_arrays) = append_static_array_locals(wasm, 0, &static_array_plan);
         wasm = next_wasm;
+        let static_object_plan = collect_static_object_plan(&module_info.statements);
+        let (next_wasm, static_objects) = append_static_object_locals(wasm, 0, &static_object_plan);
+        wasm = next_wasm;
         let switch_value_local = wasm.locals.len();
         wasm = wasm.local(WasmValType::I32);
         let ctx = FunctionCtx {
@@ -298,6 +317,7 @@ impl<'a> NativeLoweredEmitter<'a> {
             local_types: infer_local_types(&module_info.statements),
             static_locals: infer_static_locals(&module_info.statements),
             static_arrays,
+            static_objects,
             switch_value_local,
             returns_value: false,
             module_id: Some(module_info.id),
@@ -330,6 +350,9 @@ impl<'a> NativeLoweredEmitter<'a> {
         match stmt {
             LoweredStmt::Block(stmts, _) => self.emit_stmts(stmts, ctx, out),
             LoweredStmt::Let(local, expr, _) | LoweredStmt::Assign(local, expr, _) => {
+                if self.try_emit_static_object_init(*local, expr, ctx, out)? {
+                    return Ok(());
+                }
                 if self.try_emit_static_array_init(*local, expr, ctx, out)? {
                     return Ok(());
                 }
@@ -601,6 +624,33 @@ impl<'a> NativeLoweredEmitter<'a> {
         Ok(true)
     }
 
+    fn try_emit_static_object_init(
+        &mut self,
+        local: LocalId,
+        expr: &LoweredExpr,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<bool, Diagnostic> {
+        let Some(slots) = ctx.static_objects.get(&local) else {
+            return Ok(false);
+        };
+        let LoweredExpr::ObjectNew { props, .. } = expr else {
+            return Ok(false);
+        };
+        for (key, value) in props {
+            let Some(slot) = slots.get(key).copied() else {
+                return Err(unsupported(
+                    "native LoweredProgram emitter static object slot mismatch",
+                ));
+            };
+            self.emit_expr(value, ctx, out)?;
+            out.push(WasmInstr::LocalSet(slot));
+        }
+        out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
+        out.push(WasmInstr::LocalSet(local_index(ctx, local)?));
+        Ok(true)
+    }
+
     fn emit_expr(
         &mut self,
         expr: &LoweredExpr,
@@ -689,6 +739,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                     out.push(WasmInstr::GlobalGet(symbol.clone()));
                     return Ok(());
                 }
+                if let Some(slot) = static_object_slot(ctx, obj, key) {
+                    out.push(WasmInstr::LocalGet(slot));
+                    return Ok(());
+                }
                 if let Some(expr) = static_object_property(ctx, obj, key) {
                     return self.emit_expr(expr, ctx, out);
                 }
@@ -697,11 +751,27 @@ impl<'a> NativeLoweredEmitter<'a> {
                 ))
             }
             LoweredExpr::OptionalPropertyGet { obj, key, .. } => {
+                if let Some(slot) = static_object_slot(ctx, obj, key) {
+                    out.push(WasmInstr::LocalGet(slot));
+                    return Ok(());
+                }
                 if let Some(expr) = static_object_property(ctx, obj, key) {
                     return self.emit_expr(expr, ctx, out);
                 }
                 Err(unsupported(
                     "native LoweredProgram emitter does not support this optional property get",
+                ))
+            }
+            LoweredExpr::PropertySet {
+                object, key, value, ..
+            } => {
+                if let Some(slot) = static_object_slot(ctx, object, key) {
+                    self.emit_expr(value, ctx, out)?;
+                    out.push(WasmInstr::LocalTee(slot));
+                    return Ok(());
+                }
+                Err(unsupported(
+                    "native LoweredProgram emitter does not support this property set",
                 ))
             }
             LoweredExpr::PropertyGetDynamic { obj, key, .. }
@@ -1119,6 +1189,35 @@ fn append_static_array_locals(
     (wasm, local_slots)
 }
 
+fn append_static_object_locals(
+    mut wasm: WasmFunction,
+    param_count: usize,
+    plan: &StaticObjectPlan,
+) -> (WasmFunction, HashMap<LocalId, HashMap<String, usize>>) {
+    let mut group_slots = Vec::new();
+    for keys in &plan.group_keys {
+        let mut slots = HashMap::new();
+        for key in keys {
+            let index = param_count + wasm.locals.len();
+            wasm = wasm.local(WasmValType::I32);
+            slots.insert(key.clone(), index);
+        }
+        group_slots.push(slots);
+    }
+
+    let local_slots = plan
+        .local_groups
+        .iter()
+        .filter_map(|(local, group)| {
+            group_slots
+                .get(*group)
+                .cloned()
+                .map(|slots| (*local, slots))
+        })
+        .collect();
+    (wasm, local_slots)
+}
+
 enum BranchKind {
     Break,
     Continue,
@@ -1325,6 +1424,107 @@ fn collect_static_arrays_from_expr(expr: &LoweredExpr, plan: &mut StaticArrayPla
     }
 }
 
+fn collect_static_object_plan(stmts: &[LoweredStmt]) -> StaticObjectPlan {
+    let mut plan = StaticObjectPlan::default();
+    collect_static_objects_from_stmts(stmts, &mut plan);
+    plan
+}
+
+fn collect_static_objects_from_stmts(stmts: &[LoweredStmt], plan: &mut StaticObjectPlan) {
+    for stmt in stmts {
+        match stmt {
+            LoweredStmt::Let(local, expr, _) | LoweredStmt::Assign(local, expr, _) => {
+                collect_static_objects_from_assignment(*local, expr, plan);
+            }
+            LoweredStmt::Expr(expr, _)
+            | LoweredStmt::Yield(expr, _)
+            | LoweredStmt::Return(expr, _) => collect_static_objects_from_expr(expr, plan),
+            LoweredStmt::Block(stmts, _) => collect_static_objects_from_stmts(stmts, plan),
+            _ => {}
+        }
+    }
+}
+
+fn collect_static_objects_from_assignment(
+    local: LocalId,
+    expr: &LoweredExpr,
+    plan: &mut StaticObjectPlan,
+) {
+    collect_static_objects_from_expr(expr, plan);
+    match expr {
+        LoweredExpr::ObjectNew { props, .. } => {
+            let group = plan.group_keys.len();
+            plan.group_keys
+                .push(props.iter().map(|(key, _)| key.clone()).collect());
+            plan.local_groups.insert(local, group);
+        }
+        LoweredExpr::Local(source, _) => {
+            if let Some(group) = plan.local_groups.get(source).copied() {
+                plan.local_groups.insert(local, group);
+            } else {
+                plan.local_groups.remove(&local);
+            }
+        }
+        _ => {
+            plan.local_groups.remove(&local);
+        }
+    }
+}
+
+fn collect_static_objects_from_expr(expr: &LoweredExpr, plan: &mut StaticObjectPlan) {
+    match expr {
+        LoweredExpr::Block { stmts, result, .. } => {
+            collect_static_objects_from_stmts(stmts, plan);
+            collect_static_objects_from_expr(result, plan);
+        }
+        LoweredExpr::Call { args, .. } => {
+            for arg in args {
+                collect_static_objects_from_expr(arg, plan);
+            }
+        }
+        LoweredExpr::Binary { left, right, .. } => {
+            collect_static_objects_from_expr(left, plan);
+            collect_static_objects_from_expr(right, plan);
+        }
+        LoweredExpr::Unary { expr, .. } => collect_static_objects_from_expr(expr, plan),
+        LoweredExpr::Assign { expr, .. } | LoweredExpr::LogicalAssign { expr, .. } => {
+            collect_static_objects_from_expr(expr, plan);
+        }
+        LoweredExpr::PropertyGet { obj, .. } | LoweredExpr::OptionalPropertyGet { obj, .. } => {
+            collect_static_objects_from_expr(obj, plan);
+        }
+        LoweredExpr::PropertySet { object, value, .. } => {
+            collect_static_objects_from_expr(object, plan);
+            collect_static_objects_from_expr(value, plan);
+        }
+        LoweredExpr::PropertyGetDynamic { obj, key, .. }
+        | LoweredExpr::OptionalIndex {
+            object: obj,
+            index: key,
+            ..
+        }
+        | LoweredExpr::Index {
+            object: obj,
+            index: key,
+            ..
+        } => {
+            collect_static_objects_from_expr(obj, plan);
+            collect_static_objects_from_expr(key, plan);
+        }
+        LoweredExpr::PropertySetDynamic {
+            object,
+            index,
+            value,
+            ..
+        } => {
+            collect_static_objects_from_expr(object, plan);
+            collect_static_objects_from_expr(index, plan);
+            collect_static_objects_from_expr(value, plan);
+        }
+        _ => {}
+    }
+}
+
 fn infer_static_locals(stmts: &[LoweredStmt]) -> HashMap<LocalId, StaticValue> {
     let mut locals = HashMap::new();
     collect_static_locals(stmts, &mut locals);
@@ -1374,6 +1574,10 @@ fn collect_static_locals_from_expr(expr: &LoweredExpr, locals: &mut HashMap<Loca
         }
         LoweredExpr::PropertyGet { obj, .. } | LoweredExpr::OptionalPropertyGet { obj, .. } => {
             collect_static_locals_from_expr(obj, locals);
+        }
+        LoweredExpr::PropertySet { object, value, .. } => {
+            collect_static_locals_from_expr(object, locals);
+            collect_static_locals_from_expr(value, locals);
         }
         LoweredExpr::PropertyGetDynamic { obj, key, .. }
         | LoweredExpr::OptionalIndex {
@@ -1460,6 +1664,13 @@ fn static_array_slot(ctx: &FunctionCtx, obj: &LoweredExpr, key: &LoweredExpr) ->
         return None;
     };
     slots.get(*index as usize).copied()
+}
+
+fn static_object_slot(ctx: &FunctionCtx, obj: &LoweredExpr, key: &str) -> Option<usize> {
+    let LoweredExpr::Local(local, _) = obj else {
+        return None;
+    };
+    ctx.static_objects.get(local)?.get(key).copied()
 }
 
 fn module_export_global(ctx: &FunctionCtx, name: &str) -> Result<String, Diagnostic> {
