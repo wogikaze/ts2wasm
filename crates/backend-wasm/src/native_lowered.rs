@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use ts2wasm_ir::builtin::BuiltinId;
 use ts2wasm_ir::lowered::{
     ClosureRepresentation, FuncId, FunctionCallKind, InferredType, LocalId, LoweredBinaryOp,
-    LoweredExpr, LoweredFunction, LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo,
-    Validated,
+    LoweredExpr, LoweredFunction, LoweredLogicalAssignOp, LoweredProgram, LoweredStmt,
+    LoweredUnaryOp, ModuleInfo, Validated,
 };
 use ts2wasm_runtime_abi::consts::RuntimeConst;
 use ts2wasm_runtime_abi::{Layout, ValueTag};
@@ -555,6 +555,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
                 Ok(())
             }
+            LoweredExpr::Null(_) => {
+                out.push(WasmInstr::I32Const(ValueTag::NULL));
+                Ok(())
+            }
             LoweredExpr::Local(local, _) => {
                 out.push(WasmInstr::LocalGet(local_index(ctx, *local)?));
                 Ok(())
@@ -564,6 +568,9 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out.push(WasmInstr::LocalTee(local_index(ctx, *local)?));
                 Ok(())
             }
+            LoweredExpr::LogicalAssign {
+                local, op, expr, ..
+            } => self.emit_logical_assign(*local, *op, expr, ctx, out),
             LoweredExpr::Binary {
                 left, op, right, ..
             } => {
@@ -642,6 +649,74 @@ impl<'a> NativeLoweredEmitter<'a> {
                 "native LoweredProgram emitter does not support this expression",
             )),
         }
+    }
+
+    fn emit_logical_assign(
+        &mut self,
+        local: LocalId,
+        op: LoweredLogicalAssignOp,
+        expr: &LoweredExpr,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<(), Diagnostic> {
+        let local = local_index(ctx, local)?;
+        match op {
+            LoweredLogicalAssignOp::And => {
+                out.push(WasmInstr::LocalGet(local));
+                out.push(WasmInstr::If {
+                    result_ty: Some("i32".to_owned()),
+                });
+                out.push(WasmInstr::Then);
+                self.emit_logical_assign_rhs(local, expr, ctx, out)?;
+                out.push(WasmInstr::Else);
+                out.push(WasmInstr::LocalGet(local));
+                out.push(WasmInstr::End);
+                Ok(())
+            }
+            LoweredLogicalAssignOp::Or => {
+                out.push(WasmInstr::LocalGet(local));
+                out.push(WasmInstr::I32Eqz);
+                out.push(WasmInstr::If {
+                    result_ty: Some("i32".to_owned()),
+                });
+                out.push(WasmInstr::Then);
+                self.emit_logical_assign_rhs(local, expr, ctx, out)?;
+                out.push(WasmInstr::Else);
+                out.push(WasmInstr::LocalGet(local));
+                out.push(WasmInstr::End);
+                Ok(())
+            }
+            LoweredLogicalAssignOp::Nullish => {
+                out.push(WasmInstr::LocalGet(local));
+                out.push(WasmInstr::I32Const(ValueTag::NULL));
+                out.push(WasmInstr::I32Eq);
+                out.push(WasmInstr::LocalGet(local));
+                out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
+                out.push(WasmInstr::I32Eq);
+                out.push(WasmInstr::I32Or);
+                out.push(WasmInstr::If {
+                    result_ty: Some("i32".to_owned()),
+                });
+                out.push(WasmInstr::Then);
+                self.emit_logical_assign_rhs(local, expr, ctx, out)?;
+                out.push(WasmInstr::Else);
+                out.push(WasmInstr::LocalGet(local));
+                out.push(WasmInstr::End);
+                Ok(())
+            }
+        }
+    }
+
+    fn emit_logical_assign_rhs(
+        &mut self,
+        local: usize,
+        expr: &LoweredExpr,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<(), Diagnostic> {
+        self.emit_expr(expr, ctx, out)?;
+        out.push(WasmInstr::LocalTee(local));
+        Ok(())
     }
 
     fn try_emit_console_log(

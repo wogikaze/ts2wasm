@@ -912,6 +912,11 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
         ("../../fixtures/core-expressions/binary.ts", "3\n"),
         ("../../fixtures/core-expressions/bool.ts", "true\nfalse\n"),
         ("../../fixtures/core-expressions/call.ts", "hi\n"),
+        ("../../fixtures/core-expressions/arrow-fn.ts", "42\n"),
+        (
+            "../../fixtures/core-expressions/logical-assign.ts",
+            "42\n99\n7\n",
+        ),
         ("../../fixtures/core-expressions/number.ts", "42\n"),
         ("../../fixtures/core-expressions/string.ts", "hello\n"),
         ("../../fixtures/core-expressions/ternary.ts", "1\n"),

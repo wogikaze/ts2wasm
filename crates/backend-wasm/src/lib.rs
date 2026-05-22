@@ -229,8 +229,8 @@ mod tests {
     use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{
         ClassPrototypeRef, ClosureRepresentation, FuncId, FunctionCallKind, LocalId,
-        LoweredBinaryOp, LoweredExpr, LoweredFunction, LoweredProgram, LoweredStmt, LoweredUnaryOp,
-        ModuleInfo, ModuleLoadKind, RuntimeFn, Validated,
+        LoweredBinaryOp, LoweredExpr, LoweredFunction, LoweredLogicalAssignOp, LoweredProgram,
+        LoweredStmt, LoweredUnaryOp, ModuleInfo, ModuleLoadKind, RuntimeFn, Validated,
     };
     use ts2wasm_runtime_abi::{Layout, ValueTag};
     use ts2wasm_shared::abi::{ABI_CUSTOM_SECTION_NAME, AbiMetadata};
@@ -995,6 +995,82 @@ mod tests {
         fs::write(&wasm_path, wasm).expect("native wasm should be written");
 
         assert_eq!(run_iwasm(&wasm_path), "-5\nfalse\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_logical_assign_runs_without_wat_conversion() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(LocalId(0), LoweredExpr::Number(0, span), span),
+                LoweredStmt::Expr(
+                    LoweredExpr::LogicalAssign {
+                        local: LocalId(0),
+                        op: LoweredLogicalAssignOp::Or,
+                        expr: Box::new(LoweredExpr::Number(42, span)),
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Local(LocalId(0), span)],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Let(LocalId(1), LoweredExpr::Number(1, span), span),
+                LoweredStmt::Expr(
+                    LoweredExpr::LogicalAssign {
+                        local: LocalId(1),
+                        op: LoweredLogicalAssignOp::And,
+                        expr: Box::new(LoweredExpr::Number(99, span)),
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Local(LocalId(1), span)],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Let(LocalId(2), LoweredExpr::Null(span), span),
+                LoweredStmt::Expr(
+                    LoweredExpr::LogicalAssign {
+                        local: LocalId(2),
+                        op: LoweredLogicalAssignOp::Nullish,
+                        expr: Box::new(LoweredExpr::Number(7, span)),
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Local(LocalId(2), span)],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![LocalId(0), LocalId(1), LocalId(2)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native logical assign binary should emit");
+        let temp_dir = unique_temp_dir("native-lowered-logical-assign");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "42\n99\n7\n");
         let _ = fs::remove_dir_all(temp_dir);
     }
 
