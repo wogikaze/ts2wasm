@@ -463,6 +463,65 @@ fn lower_program_inner(
         module_url.as_str(),
         program_is_strict,
     );
+
+    // Register synthetic FuncIds for known builtin classes that appear as
+    // extends targets (e.g., RegExp in `class MyRegExp extends RegExp {}`).
+    // This lets class_prototype_ref find builtin constructors for instanceof
+    // checks, and the backend can set up prototype chain links via synthetic
+    // ClassDecl statements emitted below.
+    let builtin_class_parents: &[(&str, Option<&str>)] = &[
+        ("Object", None),
+        ("RegExp", Some("Object")),
+        ("Array", Some("Object")),
+        ("Date", Some("Object")),
+        ("Map", Some("Object")),
+        ("Set", Some("Object")),
+        ("WeakMap", Some("Object")),
+        ("WeakSet", Some("Object")),
+        ("Promise", Some("Object")),
+        ("Error", Some("Object")),
+        ("TypeError", Some("Error")),
+        ("RangeError", Some("Error")),
+        ("ReferenceError", Some("Error")),
+        ("SyntaxError", Some("Error")),
+        ("EvalError", Some("Error")),
+        ("URIError", Some("Error")),
+        ("AggregateError", Some("Error")),
+    ];
+    // Collect builtin names that are actually referenced as extends targets
+    // in the user program (or are ancestors of such targets).
+    let needed_builtins = collect_needed_builtins(&class_parents, builtin_class_parents);
+    let builtin_ctor_base = function_ids.len();
+    let mut builtin_class_decls: Vec<LoweredStmt> = Vec::new();
+    for (name, parent_name) in builtin_class_parents {
+        if !needed_builtins.contains(*name) {
+            continue;
+        }
+        let idx = builtin_class_parents
+            .iter()
+            .position(|(n, _)| n == name)
+            .expect("builtin name in list");
+        let ctor_id = FuncId(builtin_ctor_base + idx);
+        resolver
+            .ctx
+            .classes
+            .class_constructor_ids
+            .insert(name.to_string(), ctor_id);
+        resolver
+            .ctx
+            .classes
+            .class_parents
+            .insert(name.to_string(), parent_name.map(|s| s.to_string()));
+        builtin_class_decls.push(LoweredStmt::ClassDecl {
+            name: name.to_string(),
+            extends: parent_name.map(|s| s.to_string()),
+            constructor: Some(ctor_id),
+            methods: Vec::new(),
+            static_methods: Vec::new(),
+            private_fields: Vec::new(),
+            span: Span::generated("synthetic"),
+        });
+    }
     // Pre-populate module IDs from the module graph so that dynamic import()
     // expressions during lowering get the correct module graph IDs, not
     // synthetic placeholder IDs that conflict with populate_static_module_exports_for_build.
@@ -623,6 +682,40 @@ fn lower_program_inner(
         }
     }
     generated_functions.extend(resolver.ctx.functions.generated_functions);
+
+    // Emit synthetic ClassDecl for builtin classes so the backend creates
+    // prototype globals and sets up extends-based prototype chain links.
+    top_level_statements.extend(builtin_class_decls);
+
+    // Add stub function entries for synthetic builtin constructors so that
+    // FuncIds referenced by ClassDecl and ClassPrototypeRef pass validation.
+    let needed_count = needed_builtins.len();
+    if needed_count > 0 {
+        functions_by_id.resize(function_ids.len() + needed_count, None);
+        let mut fill_idx = 0;
+        for (name, _parent_name) in builtin_class_parents.iter() {
+            if !needed_builtins.contains(*name) {
+                continue;
+            }
+            let ctor_id = FuncId(builtin_ctor_base + fill_idx);
+            functions_by_id[builtin_ctor_base + fill_idx] = Some(LoweredFunction {
+                id: ctor_id,
+                params: Vec::new(),
+                uses_receiver: false,
+                min_required_params: 0,
+                rest_param_index: None,
+                metadata_length: None,
+                metadata_name: None,
+                locals: Vec::new(),
+                body: Vec::new(),
+                recursion_depth: 0,
+                is_async: false,
+                is_generator: false,
+                generator_state: None,
+            });
+            fill_idx += 1;
+        }
+    }
 
     let mut functions = functions_by_id
         .into_iter()
@@ -5375,4 +5468,39 @@ pub(super) fn lower_unary_op(op: UnaryOp) -> Result<LoweredUnaryOp, Diagnostic> 
         }),
         UnaryOp::Void => Ok(LoweredUnaryOp::Void),
     }
+}
+
+/// Collect the set of builtin class names that are needed as extends targets.
+/// Includes all names that appear as a parent class in `class_parents` and
+/// are known builtins, plus all of their transitive ancestors (e.g., if
+/// "RegExp" is needed, "Object" is also needed because RegExp extends Object).
+fn collect_needed_builtins(
+    class_parents: &HashMap<String, Option<String>>,
+    builtin_class_parents: &[(&str, Option<&str>)],
+) -> HashSet<String> {
+    let builtin_names: HashSet<&str> = builtin_class_parents.iter().map(|(n, _)| *n).collect();
+    let mut needed: HashSet<String> = HashSet::new();
+    // Find builtins that appear as extends targets.
+    for (_, extends) in class_parents {
+        if let Some(parent) = extends {
+            if builtin_names.contains(parent.as_str()) {
+                needed.insert(parent.clone());
+            }
+        }
+    }
+    // Add transitive ancestors.
+    let builtin_parent_map: HashMap<&str, Option<&str>> = builtin_class_parents
+        .iter()
+        .map(|(n, p)| (*n, *p))
+        .collect();
+    let mut queue: Vec<String> = needed.iter().cloned().collect();
+    while let Some(name) = queue.pop() {
+        if let Some(Some(parent)) = builtin_parent_map.get(name.as_str()) {
+            let parent_str = parent.to_string();
+            if needed.insert(parent_str.clone()) {
+                queue.push(parent_str);
+            }
+        }
+    }
+    needed
 }
