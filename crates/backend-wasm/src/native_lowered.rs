@@ -22,6 +22,7 @@ const WRITE_BUF_SYMBOL: &str = "$native_write_buf";
 const WRITE_NEWLINE_SYMBOL: &str = "$native_write_newline";
 const WRITE_I32_SYMBOL: &str = "$native_write_i32_small";
 const START_SYMBOL: &str = "$_start";
+const STATIC_REF_TOKEN: i32 = 1024;
 
 pub fn emit_wasm_module_native(
     program: &Validated<LoweredProgram>,
@@ -68,10 +69,17 @@ struct NativeLoweredEmitter<'a> {
 struct FunctionCtx {
     locals: HashMap<LocalId, usize>,
     local_types: HashMap<LocalId, InferredType>,
+    static_locals: HashMap<LocalId, StaticValue>,
     switch_value_local: usize,
     returns_value: bool,
     module_id: Option<usize>,
     controls: Vec<ControlFrame>,
+}
+
+#[derive(Clone)]
+enum StaticValue {
+    Object(HashMap<String, LoweredExpr>),
+    Array(Vec<LoweredExpr>),
 }
 
 #[derive(Clone)]
@@ -216,6 +224,7 @@ impl<'a> NativeLoweredEmitter<'a> {
         let ctx = FunctionCtx {
             locals,
             local_types: infer_local_types(&function.body),
+            static_locals: infer_static_locals(&function.body),
             switch_value_local,
             returns_value,
             module_id: None,
@@ -242,6 +251,7 @@ impl<'a> NativeLoweredEmitter<'a> {
         let ctx = FunctionCtx {
             locals,
             local_types: infer_local_types(&self.program.top_level_statements),
+            static_locals: infer_static_locals(&self.program.top_level_statements),
             switch_value_local,
             returns_value: false,
             module_id: None,
@@ -267,6 +277,7 @@ impl<'a> NativeLoweredEmitter<'a> {
         let ctx = FunctionCtx {
             locals,
             local_types: infer_local_types(&module_info.statements),
+            static_locals: infer_static_locals(&module_info.statements),
             switch_value_local,
             returns_value: false,
             module_id: Some(module_info.id),
@@ -359,6 +370,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                     self.emit_expr(expr, ctx, out)?;
                 }
                 out.push(WasmInstr::Return);
+                Ok(())
+            }
+            LoweredStmt::Throw(_, _) => {
+                out.push(WasmInstr::Unreachable);
                 Ok(())
             }
             LoweredStmt::Export { name, expr, .. } => {
@@ -609,6 +624,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out.push(WasmInstr::I32Const(func_id.0 as i32));
                 Ok(())
             }
+            LoweredExpr::ObjectNew { .. } | LoweredExpr::ArrayNew { .. } => {
+                out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
+                Ok(())
+            }
             LoweredExpr::PropertyGet { obj, key, .. } => {
                 if let LoweredExpr::ModuleLoad { module_id, .. } = obj.as_ref() {
                     let symbol = self
@@ -620,8 +639,32 @@ impl<'a> NativeLoweredEmitter<'a> {
                     out.push(WasmInstr::GlobalGet(symbol.clone()));
                     return Ok(());
                 }
+                if let Some(expr) = static_object_property(ctx, obj, key) {
+                    return self.emit_expr(expr, ctx, out);
+                }
                 Err(unsupported(
                     "native LoweredProgram emitter does not support this property get",
+                ))
+            }
+            LoweredExpr::OptionalPropertyGet { obj, key, .. } => {
+                if let Some(expr) = static_object_property(ctx, obj, key) {
+                    return self.emit_expr(expr, ctx, out);
+                }
+                Err(unsupported(
+                    "native LoweredProgram emitter does not support this optional property get",
+                ))
+            }
+            LoweredExpr::PropertyGetDynamic { obj, key, .. }
+            | LoweredExpr::Index {
+                object: obj,
+                index: key,
+                ..
+            } => {
+                if let Some(expr) = static_array_element(ctx, obj, key) {
+                    return self.emit_expr(expr, ctx, out);
+                }
+                Err(unsupported(
+                    "native LoweredProgram emitter does not support this dynamic property get",
                 ))
             }
             LoweredExpr::Call { kind, args, .. } => {
@@ -1081,6 +1124,117 @@ fn native_console_arg_type(expr: &LoweredExpr, ctx: &FunctionCtx) -> InferredTyp
             .unwrap_or(InferredType::Unknown),
         _ => expr.inferred_type(),
     }
+}
+
+fn infer_static_locals(stmts: &[LoweredStmt]) -> HashMap<LocalId, StaticValue> {
+    let mut locals = HashMap::new();
+    collect_static_locals(stmts, &mut locals);
+    locals
+}
+
+fn collect_static_locals(stmts: &[LoweredStmt], locals: &mut HashMap<LocalId, StaticValue>) {
+    for stmt in stmts {
+        match stmt {
+            LoweredStmt::Let(local, expr, _) | LoweredStmt::Assign(local, expr, _) => {
+                collect_static_locals_from_expr(expr, locals);
+                if let Some(value) = static_value_from_expr(expr, locals) {
+                    locals.insert(*local, value);
+                } else {
+                    locals.remove(local);
+                }
+            }
+            LoweredStmt::Expr(expr, _)
+            | LoweredStmt::Yield(expr, _)
+            | LoweredStmt::Return(expr, _) => {
+                collect_static_locals_from_expr(expr, locals);
+            }
+            LoweredStmt::Block(stmts, _) => collect_static_locals(stmts, locals),
+            _ => {}
+        }
+    }
+}
+
+fn collect_static_locals_from_expr(expr: &LoweredExpr, locals: &mut HashMap<LocalId, StaticValue>) {
+    match expr {
+        LoweredExpr::Block { stmts, result, .. } => {
+            collect_static_locals(stmts, locals);
+            collect_static_locals_from_expr(result, locals);
+        }
+        LoweredExpr::Call { args, .. } => {
+            for arg in args {
+                collect_static_locals_from_expr(arg, locals);
+            }
+        }
+        LoweredExpr::Binary { left, right, .. } => {
+            collect_static_locals_from_expr(left, locals);
+            collect_static_locals_from_expr(right, locals);
+        }
+        LoweredExpr::Unary { expr, .. } => collect_static_locals_from_expr(expr, locals),
+        LoweredExpr::Assign { expr, .. } | LoweredExpr::LogicalAssign { expr, .. } => {
+            collect_static_locals_from_expr(expr, locals);
+        }
+        LoweredExpr::PropertyGet { obj, .. } | LoweredExpr::OptionalPropertyGet { obj, .. } => {
+            collect_static_locals_from_expr(obj, locals);
+        }
+        LoweredExpr::PropertyGetDynamic { obj, key, .. }
+        | LoweredExpr::Index {
+            object: obj,
+            index: key,
+            ..
+        } => {
+            collect_static_locals_from_expr(obj, locals);
+            collect_static_locals_from_expr(key, locals);
+        }
+        _ => {}
+    }
+}
+
+fn static_value_from_expr(
+    expr: &LoweredExpr,
+    locals: &HashMap<LocalId, StaticValue>,
+) -> Option<StaticValue> {
+    match expr {
+        LoweredExpr::Local(local, _) => locals.get(local).cloned(),
+        LoweredExpr::ObjectNew { props, .. } => Some(StaticValue::Object(
+            props
+                .iter()
+                .map(|(key, value)| (key.clone(), value.clone()))
+                .collect(),
+        )),
+        LoweredExpr::ArrayNew { elements, .. } => Some(StaticValue::Array(elements.clone())),
+        _ => None,
+    }
+}
+
+fn static_object_property<'a>(
+    ctx: &'a FunctionCtx,
+    obj: &'a LoweredExpr,
+    key: &str,
+) -> Option<&'a LoweredExpr> {
+    let LoweredExpr::Local(local, _) = obj else {
+        return None;
+    };
+    let Some(StaticValue::Object(props)) = ctx.static_locals.get(local) else {
+        return None;
+    };
+    props.get(key)
+}
+
+fn static_array_element<'a>(
+    ctx: &'a FunctionCtx,
+    obj: &'a LoweredExpr,
+    key: &'a LoweredExpr,
+) -> Option<&'a LoweredExpr> {
+    let LoweredExpr::Local(local, _) = obj else {
+        return None;
+    };
+    let Some(StaticValue::Array(elements)) = ctx.static_locals.get(local) else {
+        return None;
+    };
+    let LoweredExpr::Number(index, _) = key else {
+        return None;
+    };
+    elements.get(*index as usize)
 }
 
 fn module_export_global(ctx: &FunctionCtx, name: &str) -> Result<String, Diagnostic> {

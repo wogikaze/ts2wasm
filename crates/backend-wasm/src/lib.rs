@@ -1075,6 +1075,85 @@ mod tests {
     }
 
     #[test]
+    fn native_lowered_static_object_and_array_reads_run_without_wat_conversion() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(
+                    LocalId(0),
+                    LoweredExpr::ObjectNew {
+                        props: vec![
+                            ("a".to_owned(), LoweredExpr::Number(1, span)),
+                            ("b".to_owned(), LoweredExpr::Number(2, span)),
+                        ],
+                        non_enumerable: 0,
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Let(
+                    LocalId(1),
+                    LoweredExpr::ArrayNew {
+                        elements: vec![LoweredExpr::Number(3, span), LoweredExpr::Number(4, span)],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::PropertyGet {
+                            obj: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                            key: "a".to_owned(),
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::OptionalPropertyGet {
+                            obj: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                            key: "b".to_owned(),
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::PropertyGetDynamic {
+                            obj: Box::new(LoweredExpr::Local(LocalId(1), span)),
+                            key: Box::new(LoweredExpr::Number(0, span)),
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![LocalId(0), LocalId(1)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm =
+            emit_wasm_binary_native(&v).expect("native static object and array binary should emit");
+        let temp_dir = unique_temp_dir("native-lowered-static-object-array");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "1\n2\n3\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
     fn native_lowered_block_expr_runs_without_wat_conversion() {
         let span = Span::generated("test");
         let program = LoweredProgram {
