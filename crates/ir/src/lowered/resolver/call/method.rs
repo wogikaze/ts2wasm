@@ -4430,7 +4430,18 @@ impl super::super::Resolver {
                     method,
                     "at" | "slice" | "indexOf" | "lastIndexOf" | "includes" | "concat"
                 );
-                if !is_ambiguous
+                // Interface-typed receiver: if the method is defined in a known
+                // interface definition, skip resolve_method_to_runtime_fn to
+                // prevent misrouting interface methods to String/Array runtime
+                // functions, and fall through to HeapClosureCall.
+                let is_interface_method = self
+                    .ctx
+                    .classes
+                    .local_type_aliases
+                    .get(&obj_local)
+                    .and_then(|iface_name| self.ctx.lookup_interface_properties(iface_name))
+                    .is_some_and(|props| props.iter().any(|(pn, _)| pn == method));
+                if !is_interface_method && !is_ambiguous
                     && let Some(intrinsic) = resolve_method_to_runtime_fn(
                         &ResolvedExpr::Ident(receiver_name.to_string()),
                         method,

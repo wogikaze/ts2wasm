@@ -522,4 +522,43 @@ impl super::Resolver {
             _ => None,
         }
     }
+
+    /// Infer a type alias or interface name for an expression.
+    ///
+    /// Checks:
+    /// 1. Whether the expression's inferred class name matches a type alias or interface.
+    /// 2. Whether an object literal's property keys match an interface definition.
+    /// 3. Whether a local identifier already has a tracked type alias.
+    pub(super) fn infer_type_alias_for_expr(&self, expr: &ResolvedExpr) -> Option<String> {
+        // 1. Check if the expression's inferred class name matches a type alias or interface.
+        if let Some(class_name) = self.infer_class_for_expr(expr) {
+            if self.resolve_type_alias(&class_name).is_some()
+                || self.lookup_interface_properties(&class_name).is_some()
+            {
+                return Some(class_name);
+            }
+        }
+        // 2. Object literal: try to match its property keys against interface definitions.
+        if let ResolvedExpr::Object(props) = expr {
+            let prop_keys: Vec<&str> = props.iter().filter_map(|p| p.static_key()).collect();
+            if !prop_keys.is_empty() {
+                for (iface_name, iface_props) in &self.ctx.interface_definitions {
+                    let iface_keys: Vec<&str> =
+                        iface_props.iter().map(|(k, _)| k.as_str()).collect();
+                    if prop_keys.iter().all(|k| iface_keys.contains(k)) {
+                        return Some(iface_name.clone());
+                    }
+                }
+            }
+        }
+        // 3. Ident: follow the chain if the local has an existing type alias.
+        if let ResolvedExpr::Ident(name) = expr {
+            if let Ok(local_id) = self.resolve_local(name) {
+                if let Some(type_alias) = self.ctx.classes.local_type_aliases.get(&local_id) {
+                    return Some(type_alias.clone());
+                }
+            }
+        }
+        None
+    }
 }

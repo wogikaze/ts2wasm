@@ -640,6 +640,13 @@ impl Resolver {
                         .local_classes
                         .insert(local_id, class_name.clone());
                 }
+                // Track type alias info for optimization of subsequent property
+                // access and method call lowering on this local.
+                if let Some(type_alias) = self.infer_type_alias_for_expr(expr) {
+                    self.ctx.classes.local_type_aliases.insert(local_id, type_alias);
+                } else {
+                    self.ctx.classes.local_type_aliases.remove(&local_id);
+                }
                 let mut function_props = self.function_props_for_object_expr(expr);
                 let bound_function = self.bound_function_for_expr(expr)?;
                 let function_method = self.function_method_binding_for_expr(expr)?;
@@ -968,6 +975,13 @@ impl Resolver {
                         .insert(local_id, class_name.clone());
                 } else {
                     self.ctx.classes.local_classes.remove(&local_id);
+                }
+                // Track type alias info for optimization of subsequent property
+                // access and method call lowering on this local.
+                if let Some(type_alias) = self.infer_type_alias_for_expr(expr) {
+                    self.ctx.classes.local_type_aliases.insert(local_id, type_alias);
+                } else {
+                    self.ctx.classes.local_type_aliases.remove(&local_id);
                 }
                 let mut function_props = self.function_props_for_object_expr(expr);
                 let bound_function = self.bound_function_for_expr(expr)?;
