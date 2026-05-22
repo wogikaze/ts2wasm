@@ -618,6 +618,14 @@ impl super::super::Resolver {
                 index: Box::new(lowered_index),
                 span: Span::generated("array_get"),
             })
+        } else if crate::lowered::resolver::expr::facts::is_known_typed_array_expr(
+            &self.ctx, object,
+        ) {
+            Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::TypedArrayLoad,
+                args: vec![lowered_object, lowered_index],
+                span: Span::generated("typed_array_load"),
+            })
         } else {
             Ok(object_kernel::ordinary_get_dynamic(
                 lowered_object,
@@ -883,6 +891,21 @@ impl super::super::Resolver {
                 .map(|size| LoweredExpr::Number(size, Span::generated("num"))));
         }
         Ok(None)
+    }
+
+    /// Returns true if the resolved expression refers to a typed array local.
+    fn expr_is_typed_array(&self, object: &ResolvedExpr) -> bool {
+        let ResolvedExpr::Ident(name) = object else {
+            return false;
+        };
+        let Ok(obj_local) = self.resolve_local(name) else {
+            return false;
+        };
+        self.ctx
+            .classes
+            .local_classes
+            .get(&obj_local)
+            .is_some_and(|cn| crate::lowered::program_builtins::is_typed_array_class(cn))
     }
 
     pub(crate) fn lower_proxy_trap_call(

@@ -442,6 +442,8 @@ match self {
             Self::TypedArrayCtorWithLength => "typed_array_ctor_with_length",
             Self::TypedArrayFromArray => "typed_array_from_array",
             Self::TypedArraySet => "typed_array_set",
+            Self::TypedArrayLoad => "typed_array_load",
+            Self::TypedArrayStore => "typed_array_store",
             Self::TypedArrayCtorFromBuffer => "typed_array_ctor_from_buffer",
             Self::AtomicsElementPtr => "atomics_element_ptr",
             Self::AtomicsLoad => "atomics_load",

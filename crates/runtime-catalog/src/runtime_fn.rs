@@ -146,6 +146,10 @@ pub enum RuntimeFn {
     TypedArrayCtorWithLength,
     /// TypedArray.prototype.set(source, offset?) for the array-backed TypedArray subset.
     TypedArraySet,
+    /// TypedArray indexed load: arr[idx].
+    TypedArrayLoad,
+    /// TypedArray indexed store: arr[idx] = value.
+    TypedArrayStore,
     /// Atomics helpers for the array-backed Int32Array subset.
     AtomicsElementPtr,
     AtomicsLoad,
@@ -1550,6 +1554,8 @@ const MAP_ENTRY_PAIRS_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const TYPED_ARRAY_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Index];
 const TYPED_ARRAY_CTOR_WITH_LENGTH_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const TYPED_ARRAY_SET_DEPS: &[RuntimeFn] = &[RuntimeFn::GetLength, RuntimeFn::Index];
+const TYPED_ARRAY_LOAD_DEPS: &[RuntimeFn] = &[RuntimeFn::Index];
+const TYPED_ARRAY_STORE_DEPS: &[RuntimeFn] = &[];
 const ATOMICS_VALUE_DEPS: &[RuntimeFn] = &[RuntimeFn::AtomicsElementPtr, RuntimeFn::NumberFromI32];
 const ATOMICS_NO_DEPS: &[RuntimeFn] = &[];
 const ARRAYBUFFER_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
@@ -1856,6 +1862,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "TypedArrayCtorFromBuffer" => Some(RuntimeFn::TypedArrayCtorFromBuffer),
         "TypedArrayCtorWithLength" => Some(RuntimeFn::TypedArrayCtorWithLength),
         "TypedArraySet" => Some(RuntimeFn::TypedArraySet),
+        "TypedArrayLoad" => Some(RuntimeFn::TypedArrayLoad),
+        "TypedArrayStore" => Some(RuntimeFn::TypedArrayStore),
         "AtomicsElementPtr" => Some(RuntimeFn::AtomicsElementPtr),
         "AtomicsLoad" => Some(RuntimeFn::AtomicsLoad),
         "AtomicsStore" => Some(RuntimeFn::AtomicsStore),
@@ -2585,6 +2593,8 @@ impl RuntimeFn {
             | Self::TypedArrayCtorFromBuffer
             | Self::TypedArrayCtorWithLength
             | Self::TypedArraySet
+            | Self::TypedArrayLoad
+            | Self::TypedArrayStore
             | Self::AtomicsElementPtr
             | Self::AtomicsLoad
             | Self::AtomicsStore
@@ -2725,6 +2735,7 @@ impl RuntimeFn {
 
             // 2 params, 1 result
             Self::ArrayGet
+            | Self::TypedArrayLoad
             | Self::Index
             | Self::AddFast
             | Self::Add
@@ -2800,12 +2811,13 @@ impl RuntimeFn {
             },
 
             // 3 params, 0 results
-            Self::ModuleExportsSet | Self::DataViewSetInt8 | Self::DataViewSetUint8 => {
-                RuntimeSignature {
-                    params: 3,
-                    results: 0,
-                }
-            }
+            Self::ModuleExportsSet
+            | Self::DataViewSetInt8
+            | Self::DataViewSetUint8
+            | Self::TypedArrayStore => RuntimeSignature {
+                params: 3,
+                results: 0,
+            },
 
             // 4 params, 1 result
             Self::PropertySet | Self::AtomicsCompareExchange | Self::AtomicsWait => {
@@ -2966,6 +2978,8 @@ impl RuntimeFn {
             Self::TypedArrayCtorFromBuffer,
             Self::TypedArrayCtorWithLength,
             Self::TypedArraySet,
+            Self::TypedArrayLoad,
+            Self::TypedArrayStore,
             Self::AtomicsElementPtr,
             Self::AtomicsLoad,
             Self::AtomicsStore,
@@ -3477,6 +3491,8 @@ impl RuntimeFn {
             Self::TypedArrayCtorFromBuffer,
             Self::TypedArrayCtorWithLength,
             Self::TypedArraySet,
+            Self::TypedArrayLoad,
+            Self::TypedArrayStore,
             Self::AtomicsElementPtr,
             Self::AtomicsLoad,
             Self::AtomicsStore,

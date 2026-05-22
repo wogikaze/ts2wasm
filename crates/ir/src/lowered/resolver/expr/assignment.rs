@@ -418,6 +418,25 @@ impl super::super::Resolver {
                 span: Span::generated("call"),
             });
         }
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(obj_local) = self.resolve_local(name)
+            && self
+                .ctx
+                .classes
+                .local_classes
+                .get(&obj_local)
+                .is_some_and(|cn| crate::lowered::program_builtins::is_typed_array_class(cn))
+        {
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::TypedArrayStore,
+                args: vec![
+                    self.lower_expr(object)?,
+                    self.lower_expr(key)?,
+                    self.lower_expr(value)?,
+                ],
+                span: Span::generated("typed_array_store"),
+            });
+        }
         Ok(object_kernel::ordinary_set_dynamic(
             self.lower_property_assignment_object(object)?,
             self.lower_expr(key)?,

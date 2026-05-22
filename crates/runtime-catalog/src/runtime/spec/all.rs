@@ -3462,6 +3462,22 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::TypedArrayLoad => RuntimeSpec {
+                symbol: "$typed_array_load",
+                deps: TYPED_ARRAY_LOAD_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::TypedArrayStore => RuntimeSpec {
+                symbol: "$typed_array_store",
+                deps: TYPED_ARRAY_STORE_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::TypedArrayCtorFromBuffer => RuntimeSpec {
                 symbol: "$typed_array_ctor_from_buffer",
                 deps: TYPED_ARRAY_CTOR_WITH_LENGTH_DEPS,
