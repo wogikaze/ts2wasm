@@ -1293,6 +1293,7 @@ fn well_known_symbol_index(key: &str) -> Option<u32> {
         "asyncDispose" => Some(12),
         "dispose" => Some(13),
         "matchAll" => Some(14),
+        "metadata" => Some(15),
         _ => None,
     }
 }
@@ -1315,6 +1316,7 @@ fn well_known_symbol_description(key: &str) -> String {
         "asyncDispose" => "Symbol.asyncDispose",
         "dispose" => "Symbol.dispose",
         "matchAll" => "Symbol.matchAll",
+        "metadata" => "Symbol.metadata",
         _ => key,
     }
     .to_owned()
