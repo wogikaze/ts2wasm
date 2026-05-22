@@ -34,6 +34,49 @@ pub type MirLogicalAssignOp = LoweredLogicalAssignOp;
 pub type MirModuleInfo = ModuleInfo;
 pub type MirUnaryOp = LoweredUnaryOp;
 
+// ---------------------------------------------------------------------------
+// Value representation types
+// ---------------------------------------------------------------------------
+
+/// Represents the concrete value representation a local variable can hold.
+///
+/// Each variant describes a specific WAT-level representation that avoids
+/// the overhead of full JsVal boxing. The representation is determined by
+/// static analysis of how the value is produced and consumed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ValueRep {
+    /// Full JS value — the default/fallback representation.
+    JsVal,
+    /// Small signed integer fitting in an i32 (SMI range).
+    SmiI32,
+    /// Boolean encoded as 0/1 i32.
+    BoolI32,
+    /// Reference to a Wasm string (non-null).
+    StringRef,
+    /// Reference to a Wasm object (non-null).
+    ObjectRef,
+    /// Reference to a Wasm array (non-null).
+    ArrayRef,
+    /// Raw untagged i32 value.
+    RawI32,
+}
+
+/// Describes how a value representation was proven.
+///
+/// Stronger proofs enable more aggressive optimizations without runtime
+/// representation checks.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum RepProof {
+    /// No proof available — representation is an assumption.
+    None,
+    /// Proven from a literal expression (e.g., `Number(42)`).
+    Literal,
+    /// Proven by local dataflow from a definition site.
+    LocalFlow,
+    /// Proven by a runtime check that guards the representation.
+    GuardedRuntimeCheck,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MirArraySlot {
     Present(MirExpr),
@@ -399,6 +442,9 @@ pub struct MirFunction {
     /// Per-local escape analysis result. Indexed by `LocalId.0`.
     /// `None` means not yet analyzed (Unknown).
     pub escape_status: Vec<Option<EscapeStatus>>,
+    /// Per-local value representation inference. Indexed by `LocalId.0`.
+    /// `None` means not yet inferred (JsVal fallback).
+    pub value_reps: Vec<Option<(ValueRep, RepProof)>>,
 }
 
 // ---------------------------------------------------------------------------

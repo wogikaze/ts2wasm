@@ -34,6 +34,7 @@ fn function(id: usize) -> MirFunction {
         generator_state: None,
         induction_vars: vec![],
         escape_status: vec![],
+        value_reps: vec![],
     }
 }
 

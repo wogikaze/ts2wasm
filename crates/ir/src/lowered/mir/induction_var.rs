@@ -527,6 +527,7 @@ mod tests {
             is_generator: false,
             generator_state: None,
             induction_vars: vec![],
+            value_reps: vec![],
             escape_status: vec![],
         };
 
@@ -578,6 +579,7 @@ mod tests {
             is_generator: false,
             generator_state: None,
             induction_vars: vec![],
+            value_reps: vec![],
             escape_status: vec![],
         };
 
@@ -630,6 +632,7 @@ mod tests {
             is_generator: false,
             generator_state: None,
             induction_vars: vec![],
+            value_reps: vec![],
             escape_status: vec![],
         };
 
@@ -681,6 +684,7 @@ mod tests {
             is_generator: false,
             generator_state: None,
             induction_vars: vec![],
+            value_reps: vec![],
             escape_status: vec![],
         };
 
@@ -735,6 +739,7 @@ mod tests {
             is_generator: false,
             generator_state: None,
             induction_vars: vec![],
+            value_reps: vec![],
             escape_status: vec![],
         };
 
@@ -787,6 +792,7 @@ mod tests {
             is_generator: false,
             generator_state: None,
             induction_vars: vec![],
+            value_reps: vec![],
             escape_status: vec![],
         };
 
@@ -832,6 +838,7 @@ mod tests {
             is_generator: false,
             generator_state: None,
             induction_vars: vec![],
+            value_reps: vec![],
             escape_status: vec![],
         };
 
@@ -877,6 +884,7 @@ mod tests {
             is_generator: false,
             generator_state: None,
             induction_vars: vec![],
+            value_reps: vec![],
             escape_status: vec![],
         };
 
@@ -899,6 +907,7 @@ mod tests {
             is_generator: false,
             generator_state: None,
             induction_vars: vec![],
+            value_reps: vec![],
             escape_status: vec![],
         };
 
@@ -965,6 +974,7 @@ mod tests {
             is_generator: false,
             generator_state: None,
             induction_vars: vec![],
+            value_reps: vec![],
             escape_status: vec![],
         };
 
@@ -1025,6 +1035,7 @@ mod tests {
             is_generator: false,
             generator_state: None,
             induction_vars: vec![],
+            value_reps: vec![],
             escape_status: vec![],
         };
 
@@ -1074,6 +1085,7 @@ mod tests {
             is_generator: false,
             generator_state: None,
             induction_vars: vec![],
+            value_reps: vec![],
             escape_status: vec![],
         };
 

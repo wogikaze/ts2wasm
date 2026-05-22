@@ -12,13 +12,15 @@ pub mod escape;
 pub mod induction_var;
 mod lower;
 mod raise;
+pub mod scalar_replace;
 pub mod types;
+pub mod value_rep;
 
 pub use induction_var::{InductionVarDirection, InductionVarInfo};
 pub use types::{
     EscapeStatus, MirArraySlot, MirBinaryOp, MirBuiltinErrorConstructor, MirClassPrototypeRef,
     MirClosureRepresentation, MirExpr, MirFunction, MirFunctionCallKind, MirLogicalAssignOp,
-    MirModuleInfo, MirProgram, MirStmt, MirUnaryOp,
+    MirModuleInfo, MirProgram, MirStmt, MirUnaryOp, RepProof, ValueRep,
 };
 
 // ---------------------------------------------------------------------------
