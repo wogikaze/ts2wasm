@@ -27,6 +27,7 @@ use crate::lowered::types::{
 };
 use crate::lowered::{FuncId, LocalId, LoweredFunction, ModuleInfo};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
+use ts2wasm_syntax::TypeRef;
 
 /// Combined lowering context wrapping all sub-contexts.
 ///
@@ -58,6 +59,10 @@ pub struct LoweringCtx {
     pub strict_mode: StrictModeContext,
     /// Function source text map (FuncId → source) for Function.prototype.toString.
     pub function_sources: HashMap<FuncId, String>,
+    /// Type alias map (name → TypeRef) carried from name resolution.
+    pub type_aliases: HashMap<String, TypeRef>,
+    /// Interface definition map (name → property list) carried from name resolution.
+    pub interface_definitions: HashMap<String, Vec<(String, TypeRef)>>,
 }
 
 /// Strict-mode state and checks that affect lowering decisions.
@@ -117,6 +122,8 @@ impl LoweringCtx {
             current_module_url: "<entry>".to_owned(),
             strict_mode: StrictModeContext::default(),
             function_sources: HashMap::new(),
+            type_aliases: HashMap::new(),
+            interface_definitions: HashMap::new(),
         }
     }
 
@@ -141,6 +148,8 @@ impl LoweringCtx {
         next_func_id: usize,
         current_module_url: &str,
         is_strict_context: bool,
+        type_aliases: HashMap<String, TypeRef>,
+        interface_definitions: HashMap<String, Vec<(String, TypeRef)>>,
     ) -> Self {
         Self {
             symbols: SymbolEnv::with_functions(function_ids.clone(), function_signatures.clone()),
@@ -174,6 +183,8 @@ impl LoweringCtx {
             current_module_url: current_module_url.to_owned(),
             strict_mode: StrictModeContext { is_strict_context },
             function_sources,
+            type_aliases,
+            interface_definitions,
         }
     }
 
@@ -258,6 +269,18 @@ impl LoweringCtx {
 
     pub fn declare(&mut self, name: &str) -> LocalId {
         self.symbols.declare(name)
+    }
+
+    /// Resolve a type alias name to its underlying TypeRef, if it exists.
+    /// Returns `None` if the name is not a known type alias.
+    pub fn resolve_type_alias(&self, name: &str) -> Option<&TypeRef> {
+        self.type_aliases.get(name)
+    }
+
+    /// Look up the property signatures of an interface by name.
+    /// Returns `None` if the name is not a known interface definition.
+    pub fn lookup_interface_properties(&self, name: &str) -> Option<&[(String, TypeRef)]> {
+        self.interface_definitions.get(name).map(|v| v.as_slice())
     }
 }
 

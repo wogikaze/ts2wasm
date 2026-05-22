@@ -226,6 +226,8 @@ impl super::Resolver {
                 new_target_class: self.ctx.classes.new_target_class.as_deref(),
                 module_url: self.ctx.current_module_url.as_str(),
                 strict_context: self.ctx.is_strict_context(),
+                type_aliases: &self.ctx.type_aliases,
+                interface_definitions: &self.ctx.interface_definitions,
             },
         )?;
         self.ctx.functions.next_func_id = lowered.next_func_id;
@@ -380,6 +382,8 @@ impl super::Resolver {
                 new_target_class: None,
                 module_url: self.ctx.current_module_url.as_str(),
                 strict_context: self.ctx.is_strict_context(),
+                type_aliases: &self.ctx.type_aliases,
+                interface_definitions: &self.ctx.interface_definitions,
             },
         )?;
         self.ctx.functions.next_func_id = lowered.next_func_id;
@@ -714,6 +718,8 @@ impl super::Resolver {
                 new_target_class: None,
                 module_url: self.ctx.current_module_url.as_str(),
                 strict_context: self.ctx.is_strict_context(),
+                type_aliases: &self.ctx.type_aliases,
+                interface_definitions: &self.ctx.interface_definitions,
             },
         )?;
         self.ctx.functions.next_func_id = lowered.next_func_id;
@@ -1077,6 +1083,7 @@ fn stmt_contains_super_ref(stmt: &ResolvedStmt) -> bool {
         ResolvedStmt::ModuleExportsAssign { expr } => expr_contains_super_ref(expr),
         ResolvedStmt::ClassDecl { .. }
         | ResolvedStmt::DestructureLet { .. }
+        | ResolvedStmt::DestructureAssign { .. }
         | ResolvedStmt::AmbientValue(_)
         | ResolvedStmt::Function { .. }
         | ResolvedStmt::Break { label: _ }

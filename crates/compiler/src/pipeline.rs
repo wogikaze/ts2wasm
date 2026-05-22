@@ -131,7 +131,14 @@ fn build_file_impl(
             .map_err(|d| d.with_phase("module-resolver"))?;
 
     let name_resolved = resolve_names(&static_module_binding.rewritten_program)?;
-    let resolved = resolve_builtins(&name_resolved)?;
+    let builtin_resolved = resolve_builtins(
+        &name_resolved.program,
+        name_resolved.type_aliases,
+        name_resolved.interface_definitions,
+    )?;
+    let type_aliases = builtin_resolved.type_aliases;
+    let interface_definitions = builtin_resolved.interface_definitions;
+    let resolved = builtin_resolved.program;
 
     // Stage: expand static literal eval(...) calls at compile time.
     let resolved = expand_static_eval_fragments(resolved)?;
@@ -148,6 +155,8 @@ fn build_file_impl(
                 &module_graph,
                 capability_manifest_output,
                 options.host_deny,
+                &type_aliases,
+                &interface_definitions,
             )?;
             (legacy.wat, legacy.wasm_encoder_bytes, legacy.diagnostics)
         }
@@ -162,6 +171,8 @@ fn build_file_impl(
                         &module_graph,
                         capability_manifest_output,
                         options.host_deny,
+                        &type_aliases,
+                        &interface_definitions,
                     ) {
                         Ok(legacy) => {
                             let mut diagnostics = vec![hir_mir_comparison_diagnostic(
@@ -194,6 +205,8 @@ fn build_file_impl(
                         &module_graph,
                         capability_manifest_output,
                         options.host_deny,
+                        &type_aliases,
+                        &interface_definitions,
                     )?;
                     let mut diagnostics = vec![hir_mir_fallback_diagnostic(&error)];
                     diagnostics.extend(legacy.diagnostics);
@@ -239,6 +252,8 @@ fn emit_legacy_wat_for_resolved(
     module_graph: &ModuleGraph,
     capability_manifest_output: Option<&Path>,
     host_deny: bool,
+    type_aliases: &HashMap<String, ts2wasm_syntax::TypeRef>,
+    interface_definitions: &HashMap<String, Vec<(String, ts2wasm_syntax::TypeRef)>>,
 ) -> Result<LegacyWat, Diagnostic> {
     // Build specifier-to-module-id map from the module graph so that dynamic
     // import() expressions in function bodies get correct module graph IDs
@@ -260,8 +275,11 @@ fn emit_legacy_wat_for_resolved(
         specs
     };
 
-    let lowered = lowered::lower_program_with_module_specs(resolved, "<entry>", module_specs)
-        .map_err(|d| d.with_phase("lowering"))?;
+    let type_maps = Some((type_aliases.clone(), interface_definitions.clone()));
+
+    let lowered =
+        lowered::lower_program_with_module_specs(resolved, "<entry>", module_specs, type_maps)
+            .map_err(|d| d.with_phase("lowering"))?;
 
     let lowered = static_imports::lower_static_named_import_reads_for_build(
         lowered,

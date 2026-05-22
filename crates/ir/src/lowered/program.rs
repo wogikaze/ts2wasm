@@ -33,7 +33,7 @@ pub fn lower_program_with_module_url(
     program: &[ResolvedStmt],
     module_url: impl Into<String>,
 ) -> Result<LoweredProgram, Diagnostic> {
-    lower_program_inner(program, module_url, None)
+    lower_program_inner(program, module_url, None, None)
 }
 
 /// Like `lower_program_with_module_url`, but pre-populates the module environment
@@ -46,14 +46,22 @@ pub fn lower_program_with_module_specs(
     program: &[ResolvedStmt],
     module_url: impl Into<String>,
     module_specs: HashMap<String, usize>,
+    type_maps: Option<(
+        HashMap<String, ts2wasm_syntax::TypeRef>,
+        HashMap<String, Vec<(String, ts2wasm_syntax::TypeRef)>>,
+    )>,
 ) -> Result<LoweredProgram, Diagnostic> {
-    lower_program_inner(program, module_url, Some(module_specs))
+    lower_program_inner(program, module_url, Some(module_specs), type_maps)
 }
 
 fn lower_program_inner(
     program: &[ResolvedStmt],
     module_url: impl Into<String>,
     module_specs: Option<HashMap<String, usize>>,
+    type_maps: Option<(
+        HashMap<String, ts2wasm_syntax::TypeRef>,
+        HashMap<String, Vec<(String, ts2wasm_syntax::TypeRef)>>,
+    )>,
 ) -> Result<LoweredProgram, Diagnostic> {
     let module_url = module_url.into();
     let program_is_strict = block_has_use_strict_directive(program);
@@ -118,9 +126,7 @@ fn lower_program_inner(
     let mut functions_by_id = vec![None; function_ids.len()];
     let mut generated_functions = Vec::new();
 
-    let type_aliases: HashMap<String, ts2wasm_syntax::TypeRef> = HashMap::new();
-    let interface_definitions: HashMap<String, Vec<(String, ts2wasm_syntax::TypeRef)>> =
-        HashMap::new();
+    let (type_aliases, interface_definitions) = type_maps.unwrap_or_default();
 
     for stmt in program {
         match stmt {
@@ -213,6 +219,8 @@ fn lower_program_inner(
                         new_target_class: None,
                         module_url: module_url.as_str(),
                         strict_context: program_is_strict,
+                        type_aliases: &type_aliases,
+                        interface_definitions: &interface_definitions,
                     },
                 )?;
                 next_func_id = lowered.next_func_id;
@@ -313,6 +321,8 @@ fn lower_program_inner(
                         new_target_class: Some(name),
                         module_url: module_url.as_str(),
                         strict_context: true,
+                        type_aliases: &type_aliases,
+                        interface_definitions: &interface_definitions,
                     },
                 )?;
                 next_func_id = lowered.next_func_id;
@@ -396,6 +406,8 @@ fn lower_program_inner(
                             new_target_class: None,
                             module_url: module_url.as_str(),
                             strict_context: true,
+                            type_aliases: &type_aliases,
+                            interface_definitions: &interface_definitions,
                         },
                     )?;
                     next_func_id = lowered.next_func_id;
@@ -442,6 +454,8 @@ fn lower_program_inner(
                 new_target_class: None,
                 module_url: module_url.as_str(),
                 strict_context: program_is_strict,
+                type_aliases: &type_aliases,
+                interface_definitions: &interface_definitions,
             },
         )?;
         next_func_id = lowered.next_func_id;
@@ -4882,6 +4896,8 @@ pub(crate) struct LowerFunctionOptions<'a> {
     pub(crate) new_target_class: Option<&'a str>,
     pub(crate) module_url: &'a str,
     pub(crate) strict_context: bool,
+    pub(crate) type_aliases: &'a HashMap<String, ts2wasm_syntax::TypeRef>,
+    pub(crate) interface_definitions: &'a HashMap<String, Vec<(String, ts2wasm_syntax::TypeRef)>>,
 }
 
 pub(crate) struct SelfClosureOptions<'a> {
@@ -5074,8 +5090,8 @@ fn lower_function_with_resolved_params(
         options.next_func_id,
         options.module_url,
         is_strict_context,
-        HashMap::new(),
-        HashMap::new(),
+        options.type_aliases.clone(),
+        options.interface_definitions.clone(),
     )?;
     resolver.ctx.classes.in_static_method = options.in_static_method;
 

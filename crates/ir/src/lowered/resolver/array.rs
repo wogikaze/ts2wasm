@@ -622,6 +622,8 @@ impl super::Resolver {
                 new_target_class: None,
                 module_url: self.ctx.current_module_url.as_str(),
                 strict_context: self.ctx.is_strict_context(),
+                type_aliases: &self.ctx.type_aliases,
+                interface_definitions: &self.ctx.interface_definitions,
             },
         )?;
         self.ctx.functions.next_func_id = lowered.next_func_id;

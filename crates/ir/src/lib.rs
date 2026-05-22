@@ -27,4 +27,4 @@ pub use semantic::{
 };
 
 // Re-export from external crates for backward compatibility
-pub use ts2wasm_resolve::{binding_pattern, name_resolver};
+pub use ts2wasm_resolve::{ResolveNamesOutput, binding_pattern, name_resolver};

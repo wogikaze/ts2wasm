@@ -11,12 +11,32 @@ pub const INTRINSIC_FUNCTION_CONSTRUCTOR_CALL: &str =
     "__ts2wasm_intrinsic_function_constructor_call";
 pub const INTRINSIC_FUNCTION_CONSTRUCTOR_NEW: &str = "__ts2wasm_intrinsic_function_constructor_new";
 
+/// Output of `resolve_names_with_types`, including the resolved program and
+/// type alias/interface definition maps collected during name resolution.
+pub struct ResolveNamesOutput {
+    pub program: Vec<Stmt>,
+    pub type_aliases: std::collections::HashMap<String, TypeRef>,
+    pub interface_definitions: std::collections::HashMap<String, Vec<(String, TypeRef)>>,
+}
+
 /// Resolves variable and function names in lexical scope.
 /// This pass runs before builtin resolution to catch unresolved names early.
 /// It validates names but does not transform the AST - that's done by builtin_resolver.
 pub fn resolve_names(program: &[Stmt]) -> Result<Vec<Stmt>, Diagnostic> {
     let mut resolver = NameResolver::new();
     resolver.resolve_program(program)
+}
+
+/// Like `resolve_names` but also returns the collected type alias and interface
+/// definition maps needed for IR lowering.
+pub fn resolve_names_with_types(program: &[Stmt]) -> Result<ResolveNamesOutput, Diagnostic> {
+    let mut resolver = NameResolver::new();
+    let program = resolver.resolve_program(program)?;
+    Ok(ResolveNamesOutput {
+        program,
+        type_aliases: resolver.type_aliases,
+        interface_definitions: resolver.interface_definitions,
+    })
 }
 
 /// Resolve a dynamic-code fragment with bindings supplied by its caller.
