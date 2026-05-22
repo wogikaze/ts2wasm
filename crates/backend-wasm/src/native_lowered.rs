@@ -293,10 +293,7 @@ impl<'a> NativeLoweredEmitter<'a> {
         let ctx = FunctionCtx {
             locals,
             local_types: infer_local_types(&function.body),
-            static_locals: infer_static_locals_with_functions(
-                &function.body,
-                &self.program.functions,
-            ),
+            static_locals: HashMap::new(),
             static_arrays,
             static_objects,
             switch_value_local,
@@ -332,10 +329,7 @@ impl<'a> NativeLoweredEmitter<'a> {
         let ctx = FunctionCtx {
             locals,
             local_types: infer_local_types(&self.program.top_level_statements),
-            static_locals: infer_static_locals_with_functions(
-                &self.program.top_level_statements,
-                &self.program.functions,
-            ),
+            static_locals: HashMap::new(),
             static_arrays,
             static_objects,
             switch_value_local,
@@ -370,10 +364,7 @@ impl<'a> NativeLoweredEmitter<'a> {
         let ctx = FunctionCtx {
             locals,
             local_types: infer_local_types(&module_info.statements),
-            static_locals: infer_static_locals_with_functions(
-                &module_info.statements,
-                &self.program.functions,
-            ),
+            static_locals: HashMap::new(),
             static_arrays,
             static_objects,
             switch_value_local,
@@ -392,10 +383,26 @@ impl<'a> NativeLoweredEmitter<'a> {
         ctx: &FunctionCtx,
         out: &mut Vec<WasmInstr>,
     ) -> Result<(), Diagnostic> {
+        self.emit_stmts_with_static_state(stmts, ctx, out)
+            .map(|_| ())
+    }
+
+    fn emit_stmts_with_static_state(
+        &mut self,
+        stmts: &[LoweredStmt],
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<FunctionCtx, Diagnostic> {
+        let mut current_ctx = ctx.clone();
         for stmt in stmts {
-            self.emit_stmt_with_label(stmt, ctx, out, None)?;
+            self.emit_stmt_with_label(stmt, &current_ctx, out, None)?;
+            collect_static_locals_with_functions(
+                std::slice::from_ref(stmt),
+                &mut current_ctx.static_locals,
+                &self.program.functions,
+            );
         }
-        Ok(())
+        Ok(current_ctx)
     }
 
     fn emit_stmt_with_label(
@@ -556,7 +563,8 @@ impl<'a> NativeLoweredEmitter<'a> {
         out.push(WasmInstr::Block(loop_break_symbol(label, "while")));
         let break_ctx = push_control(ctx, ControlFrame::break_target(label, true));
         out.push(WasmInstr::Loop(loop_continue_symbol(label, "while")));
-        let loop_ctx = push_control(&break_ctx, ControlFrame::continue_target(label, true));
+        let mut loop_ctx = push_control(&break_ctx, ControlFrame::continue_target(label, true));
+        remove_assigned_static_locals(body, &mut loop_ctx.static_locals);
         self.emit_expr(condition, &loop_ctx, out)?;
         out.push(WasmInstr::I32Eqz);
         out.push(WasmInstr::BrIfDepth(1));
@@ -578,7 +586,8 @@ impl<'a> NativeLoweredEmitter<'a> {
         out.push(WasmInstr::Block(loop_break_symbol(label, "do")));
         let break_ctx = push_control(ctx, ControlFrame::break_target(label, true));
         out.push(WasmInstr::Loop(loop_continue_symbol(label, "do_loop")));
-        let loop_ctx = push_control(&break_ctx, ControlFrame::plain());
+        let mut loop_ctx = push_control(&break_ctx, ControlFrame::plain());
+        remove_assigned_static_locals(body, &mut loop_ctx.static_locals);
         out.push(WasmInstr::Block(loop_continue_symbol(label, "do_continue")));
         let body_ctx = push_control(&loop_ctx, ControlFrame::continue_target(label, true));
         self.emit_stmts(body, &body_ctx, out)?;
@@ -607,7 +616,11 @@ impl<'a> NativeLoweredEmitter<'a> {
         out.push(WasmInstr::Block(loop_break_symbol(label, "for")));
         let break_ctx = push_control(ctx, ControlFrame::break_target(label, true));
         out.push(WasmInstr::Loop(loop_continue_symbol(label, "for_loop")));
-        let loop_ctx = push_control(&break_ctx, ControlFrame::plain());
+        let mut loop_ctx = push_control(&break_ctx, ControlFrame::plain());
+        remove_assigned_static_locals(body, &mut loop_ctx.static_locals);
+        if let Some(update) = update {
+            remove_assigned_static_locals_from_expr(update, &mut loop_ctx.static_locals);
+        }
         if let Some(condition) = condition {
             self.emit_expr(condition, &loop_ctx, out)?;
             out.push(WasmInstr::I32Eqz);
@@ -959,8 +972,8 @@ impl<'a> NativeLoweredEmitter<'a> {
                 }
             }
             LoweredExpr::Block { stmts, result, .. } => {
-                self.emit_stmts(stmts, ctx, out)?;
-                self.emit_expr(result, ctx, out)
+                let result_ctx = self.emit_stmts_with_static_state(stmts, ctx, out)?;
+                self.emit_expr(result, &result_ctx, out)
             }
             LoweredExpr::ArrowFn {
                 func_id,
@@ -1354,6 +1367,13 @@ impl<'a> NativeLoweredEmitter<'a> {
                         call_ctx.static_locals.insert(*local, value);
                     } else {
                         call_ctx.static_locals.remove(local);
+                    }
+                }
+                LoweredStmt::Expr(LoweredExpr::EnvCellSet { cell, expr, .. }, _) => {
+                    if let Some(value) = static_value_from_expr(expr, &call_ctx.static_locals) {
+                        call_ctx.static_locals.insert(*cell, value);
+                    } else {
+                        call_ctx.static_locals.remove(cell);
                     }
                 }
                 LoweredStmt::Expr(
@@ -2434,9 +2454,20 @@ fn collect_static_locals_from_expr_with_functions(
             collect_static_locals_with_functions(stmts, locals, functions);
             collect_static_locals_from_expr_with_functions(result, locals, functions);
         }
-        LoweredExpr::Call { args, .. } => {
+        LoweredExpr::Call { kind, args, .. } => {
             for arg in args {
                 collect_static_locals_from_expr_with_functions(arg, locals, functions);
+            }
+            if let FunctionCallKind::User(func_id) = kind {
+                apply_static_user_function_env_effects(functions, *func_id, args, locals);
+            }
+        }
+        LoweredExpr::EnvCellSet { cell, expr, .. } => {
+            collect_static_locals_from_expr_with_functions(expr, locals, functions);
+            if let Some(value) = static_value_from_expr_with_functions(expr, locals, functions) {
+                locals.insert(*cell, value);
+            } else {
+                locals.remove(cell);
             }
         }
         LoweredExpr::RuntimeCall {
@@ -2584,6 +2615,14 @@ fn static_value_from_expr_with_functions(
         | LoweredExpr::Null(_)
         | LoweredExpr::Undefined(_)
         | LoweredExpr::ArrowFn { .. } => Some(StaticValue::Primitive(expr.clone())),
+        LoweredExpr::EnvCellNew(value, _) => {
+            static_value_from_expr_with_functions(value, locals, functions)
+        }
+        LoweredExpr::EnvCellGet(local, _) => locals.get(local).cloned(),
+        LoweredExpr::EnvCellSet { cell, expr, .. } => {
+            static_value_from_expr_with_functions(expr, locals, functions)
+                .or_else(|| locals.get(cell).cloned())
+        }
         LoweredExpr::ObjectNew { props, .. } => {
             Some(StaticValue::Object(StaticObjectValue::from_props(props)))
         }
@@ -2800,6 +2839,69 @@ fn static_user_function_call_value(
     }
 
     Some(StaticValue::Primitive(LoweredExpr::Undefined(span)))
+}
+
+fn apply_static_user_function_env_effects(
+    functions: &[LoweredFunction],
+    func_id: FuncId,
+    args: &[LoweredExpr],
+    locals: &mut HashMap<LocalId, StaticValue>,
+) -> bool {
+    let Some(function) = functions.iter().find(|function| function.id == func_id) else {
+        return false;
+    };
+    if args.len() < function.params.len() {
+        return false;
+    }
+
+    let mut call_locals = HashMap::new();
+    let mut caller_cells = HashMap::new();
+    for (param, arg) in function.params.iter().zip(args.iter()) {
+        let Some(value) = static_value_from_expr_with_functions(arg, locals, functions) else {
+            return false;
+        };
+        if let LoweredExpr::Local(caller_local, _) = arg {
+            caller_cells.insert(*param, *caller_local);
+        }
+        call_locals.insert(*param, value);
+    }
+
+    for stmt in &function.body {
+        match stmt {
+            LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args,
+                    ..
+                },
+                _,
+            ) if args.iter().all(|arg| {
+                static_value_from_expr_with_functions(arg, &call_locals, functions).is_some()
+            }) => {}
+            LoweredStmt::Expr(LoweredExpr::EnvCellSet { cell, expr, .. }, _) => {
+                let Some(value) =
+                    static_value_from_expr_with_functions(expr, &call_locals, functions)
+                else {
+                    return false;
+                };
+                call_locals.insert(*cell, value.clone());
+                if let Some(caller_cell) = caller_cells.get(cell) {
+                    locals.insert(*caller_cell, value);
+                }
+            }
+            LoweredStmt::Let(local, expr, _) | LoweredStmt::Assign(local, expr, _) => {
+                if let Some(value) =
+                    static_value_from_expr_with_functions(expr, &call_locals, functions)
+                {
+                    call_locals.insert(*local, value);
+                } else {
+                    return false;
+                }
+            }
+            _ => return false,
+        }
+    }
+    true
 }
 
 fn static_binary_value_from_expr_with_functions(
@@ -3442,6 +3544,14 @@ fn static_stmt_expr_folded(
             ..
         } if static_accessor_set_key(functions, *func_id).is_some() => {
             static_accessor_receiver_is_static_object(args, static_locals)
+        }
+        LoweredExpr::Call {
+            kind: FunctionCallKind::User(func_id),
+            args,
+            ..
+        } => {
+            let mut locals = static_locals.clone();
+            apply_static_user_function_env_effects(functions, *func_id, args, &mut locals)
         }
         _ => static_value_from_expr_with_functions(expr, static_locals, functions).is_some(),
     }

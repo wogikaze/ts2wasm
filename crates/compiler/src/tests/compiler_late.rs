@@ -1003,6 +1003,10 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "7\n15\n",
         ),
         (
+            "../../fixtures/core-expressions/object-literal-method-mutable-capture.ts",
+            "42\n1\n",
+        ),
+        (
             "../../fixtures/core-expressions/object-literal-method-shorthand.ts",
             "Hello test\n42\n",
         ),
@@ -1021,6 +1025,10 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
         (
             "../../fixtures/core-expressions/object-literal-proto.ts",
             "7\n3\ntrue\n",
+        ),
+        (
+            "../../fixtures/core-expressions/object-literal-proto-accessor-descriptor.ts",
+            "33\n44\n",
         ),
         (
             "../../fixtures/core-expressions/object-literal-setter-descriptor.ts",
@@ -1073,6 +1081,35 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
 
         let _ = fs::remove_dir_all(temp_dir);
     }
+}
+
+#[test]
+fn native_lowered_static_env_cell_reads_follow_statement_order() {
+    let dir = unique_temp_dir("native-static-env-cell-order");
+    fs::create_dir_all(&dir).expect("temp dir should be created");
+    let input = dir.join("entry.ts");
+    let output = dir.join("out.wasm");
+    fs::write(
+        &input,
+        r#"
+var callCount = 0;
+var obj = {
+  method(a: number) {
+    console.log(a);
+    callCount = callCount + 1;
+  },
+};
+console.log(callCount);
+obj.method(42);
+console.log(callCount);
+"#,
+    )
+    .expect("source should be written");
+
+    build_file(&input, &output).expect("env-cell ordering fixture should build");
+    assert_eq!(run_iwasm(&output), "0\n42\n1\n");
+
+    let _ = fs::remove_dir_all(&dir);
 }
 
 #[test]
