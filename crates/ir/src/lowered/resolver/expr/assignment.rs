@@ -268,6 +268,29 @@ impl super::super::Resolver {
         if key.starts_with('#') {
             return self.lower_private_field_assign(object, key, value, span);
         }
+        // Interface-typed property assignment: if the object local has an
+        // interface type that defines this property, bypass proxy checks and
+        // go directly to ordinary_set to avoid misrouting proxy traps.
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(obj_local) = self.resolve_local(name)
+            && let Some(iface_name) = self
+                .ctx
+                .classes
+                .local_type_aliases
+                .get(&obj_local)
+                .or_else(|| self.ctx.classes.local_classes.get(&obj_local))
+            && let Some(props) = self.ctx.lookup_interface_properties(iface_name)
+            && props.iter().any(|(pn, _)| pn == key)
+        {
+            let lowered_object = self.lower_property_assignment_object(object)?;
+            let lowered_value = self.lower_expr(value)?;
+            return Ok(self.lower_property_set_with_null_guard(
+                lowered_object,
+                key,
+                lowered_value,
+                span,
+            ));
+        }
         if let Some(proxy) =
             crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(&self.ctx, object)
         {

@@ -6017,9 +6017,18 @@ fn static_generator_first_yield_value(body: &[LoweredStmt]) -> Option<LoweredExp
     for stmt in body {
         match stmt {
             LoweredStmt::Yield(expr, _) => return Some(expr.clone()),
-            LoweredStmt::Block(stmts, _) => {
+            LoweredStmt::Block(stmts, _)
+            | LoweredStmt::While { body: stmts, .. } => {
                 if let Some(expr) = static_generator_first_yield_value(stmts) {
                     return Some(expr);
+                }
+            }
+            LoweredStmt::Switch { cases, .. } => {
+                // Look inside the first case (case 0 / initial state)
+                if let Some((_, case_body)) = cases.first() {
+                    if let Some(expr) = static_generator_first_yield_value(case_body) {
+                        return Some(expr);
+                    }
                 }
             }
             LoweredStmt::Let(_, expr, _)

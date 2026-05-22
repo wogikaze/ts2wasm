@@ -302,9 +302,16 @@ impl super::super::Resolver {
         }
         // Interface-typed property access: use interface definition to resolve
         // property type before falling through to proxy checks.
+        // Also fall back to local_classes when local_type_aliases hasn't been
+        // populated (e.g. for built-in class names that match interface names).
         if let ResolvedExpr::Ident(name) = object
             && let Ok(obj_local) = self.resolve_local(name)
-            && let Some(iface_name) = self.ctx.classes.local_type_aliases.get(&obj_local)
+            && let Some(iface_name) = self
+                .ctx
+                .classes
+                .local_type_aliases
+                .get(&obj_local)
+                .or_else(|| self.ctx.classes.local_classes.get(&obj_local))
             && let Some(props) = self.ctx.lookup_interface_properties(iface_name)
             && props.iter().any(|(pn, _)| pn == key)
         {
@@ -689,6 +696,26 @@ impl super::super::Resolver {
         if is_private_field_storage_key(key) {
             return Err(private_storage_observable_access_diagnostic(None));
         }
+        // Interface-typed optional property access: use interface definition to
+        // determine whether the property is known at compile time, falling through
+        // to the generic optional get path for unknown properties.
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(obj_local) = self.resolve_local(name)
+            && let Some(iface_name) = self
+                .ctx
+                .classes
+                .local_type_aliases
+                .get(&obj_local)
+                .or_else(|| self.ctx.classes.local_classes.get(&obj_local))
+            && let Some(props) = self.ctx.lookup_interface_properties(iface_name)
+            && props.iter().any(|(pn, _)| pn == key)
+        {
+            return Ok(object_kernel::ordinary_get(
+                self.lower_expr(object)?,
+                key,
+                Span::generated("opt_prop_get"),
+            ));
+        }
         Ok(object_kernel::ordinary_get_optional(
             self.lower_expr(object)?,
             key,
@@ -753,6 +780,28 @@ impl super::super::Resolver {
         if self.should_lower_static_index_as_property(object, index)
             && let Some(static_key) =
                 super::super::string::resolved_expr_static_property_key_value(&self.ctx, index)
+        {
+            return Ok(object_kernel::ordinary_get(
+                self.lower_expr(object)?,
+                &static_key,
+                Span::generated("index"),
+            ));
+        }
+        // Interface-typed computed access: if the index is a static string that
+        // matches an interface property, bypass proxy checks and go directly to
+        // ordinary_get to avoid misrouting proxy traps.
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(obj_local) = self.resolve_local(name)
+            && let Some(iface_name) = self
+                .ctx
+                .classes
+                .local_type_aliases
+                .get(&obj_local)
+                .or_else(|| self.ctx.classes.local_classes.get(&obj_local))
+            && let Some(props) = self.ctx.lookup_interface_properties(iface_name)
+            && let Some(static_key) =
+                super::super::string::resolved_expr_static_property_key_value(&self.ctx, index)
+            && props.iter().any(|(pn, _)| pn == &static_key)
         {
             return Ok(object_kernel::ordinary_get(
                 self.lower_expr(object)?,
