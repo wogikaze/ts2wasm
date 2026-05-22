@@ -47,6 +47,10 @@ pub enum WasmInstr {
     Br(String),
     /// `(br_if $label)`
     BrIf(String),
+    /// `(br N)` — branch by structured control-flow depth.
+    BrDepth(u32),
+    /// `(br_if N)` — conditional branch by structured control-flow depth.
+    BrIfDepth(u32),
     Select,
 
     /// `(if` or `(if (result $ty))` — result_ty is Some when an if-result.
@@ -105,6 +109,11 @@ pub enum WasmInstr {
     },
     /// `(i32.store align=$0 offset=$1)`
     I32Store {
+        align: u32,
+        offset: u32,
+    },
+    /// `(i32.store8 align=$0 offset=$1)`
+    I32Store8 {
         align: u32,
         offset: u32,
     },

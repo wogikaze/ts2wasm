@@ -265,6 +265,12 @@ fn build_single_function(
                 let depth = func_name_indices.get(name).copied().unwrap_or(0);
                 func.instruction(&I::BrIf(depth));
             }
+            WasmInstr::BrDepth(depth) => {
+                func.instruction(&I::Br(*depth));
+            }
+            WasmInstr::BrIfDepth(depth) => {
+                func.instruction(&I::BrIf(*depth));
+            }
             WasmInstr::Select => {
                 func.instruction(&I::Select);
             }
@@ -384,6 +390,13 @@ fn build_single_function(
             }
             WasmInstr::I32Store { align, offset } => {
                 func.instruction(&I::I32Store(MemArg {
+                    offset: *offset as u64,
+                    align: *align,
+                    memory_index: 0,
+                }));
+            }
+            WasmInstr::I32Store8 { align, offset } => {
+                func.instruction(&I::I32Store8(MemArg {
                     offset: *offset as u64,
                     align: *align,
                     memory_index: 0,

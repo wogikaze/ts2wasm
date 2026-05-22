@@ -3,6 +3,7 @@ mod capability_manifest;
 mod emitter;
 mod expr_emit;
 mod mir_emit;
+mod native_lowered;
 mod runtime;
 mod runtime_arrays;
 mod runtime_async;
@@ -83,6 +84,16 @@ pub fn emit_wasm_binary_mvp(program: &Validated<LoweredProgram>) -> Result<Vec<u
     binary_mvp::emit_wasm_binary_mvp(program.as_ref())
 }
 
+pub fn emit_wasm_module_native(
+    program: &Validated<LoweredProgram>,
+) -> Result<wasm_ir::WasmModule, Diagnostic> {
+    native_lowered::emit_wasm_module_native(program)
+}
+
+pub fn emit_wasm_binary_native(program: &Validated<LoweredProgram>) -> Result<Vec<u8>, Diagnostic> {
+    native_lowered::emit_wasm_binary_native(program)
+}
+
 /// Emit a validated lowered program to WASM binary.
 ///
 /// This is the high-level entry point: emits WAT text, then converts to binary
@@ -136,7 +147,8 @@ pub(crate) fn wat_bytes(bytes: &[u8]) -> String {
 mod tests {
     use super::runtime_link_plan::build_validated_runtime_link_plan;
     use super::{
-        emit_canonical_manifest_json, emit_wasm_binary_mvp, emit_wat, emitter::LocalFrame,
+        emit_canonical_manifest_json, emit_wasm_binary_mvp, emit_wasm_binary_native,
+        emit_wasm_module_binary, emit_wasm_module_native, emit_wat, emitter::LocalFrame,
     };
     use std::fs;
     use std::path::Path;
@@ -416,6 +428,171 @@ mod tests {
         let wat_out = run_iwasm(&wat_wasm_path);
         assert_eq!(direct_out, "hello\n42\n");
         assert_eq!(direct_out, wat_out);
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_module_builds_typed_wasm_module_sections() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::String(
+                        "hello".to_owned(),
+                        Span::generated("test"),
+                    )],
+                    span: Span::generated("test"),
+                },
+                Span::generated("test"),
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native module should emit");
+
+        assert!(
+            module
+                .imports
+                .iter()
+                .any(|import| import.name == "fd_write"),
+            "native module should import fd_write"
+        );
+        assert!(
+            module.memory.is_some(),
+            "native module should declare memory"
+        );
+        assert!(
+            module.exports.iter().any(|export| export.name == "_start"),
+            "native module should export _start"
+        );
+        assert!(
+            module
+                .data_segments
+                .iter()
+                .any(|segment| segment.data == b"hello"),
+            "native module should carry string data"
+        );
+        assert!(
+            module
+                .functions
+                .iter()
+                .any(|function| function.symbol == "$native_write_buf"),
+            "native module should build runtime helpers as typed functions"
+        );
+        assert!(!emit_wasm_module_binary(&module).is_empty());
+    }
+
+    #[test]
+    fn native_lowered_binary_runs_locals_arithmetic_if_while_and_function_call() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(LocalId(0), LoweredExpr::Number(0, span), span),
+                LoweredStmt::Let(LocalId(1), LoweredExpr::Number(0, span), span),
+                LoweredStmt::While {
+                    condition: LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                        op: LoweredBinaryOp::Less,
+                        right: Box::new(LoweredExpr::Number(3, span)),
+                        span,
+                    },
+                    body: vec![
+                        LoweredStmt::Assign(
+                            LocalId(0),
+                            LoweredExpr::Binary {
+                                left: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                                op: LoweredBinaryOp::Add,
+                                right: Box::new(LoweredExpr::Number(1, span)),
+                                span,
+                            },
+                            span,
+                        ),
+                        LoweredStmt::If {
+                            condition: LoweredExpr::Binary {
+                                left: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                                op: LoweredBinaryOp::StrictEqual,
+                                right: Box::new(LoweredExpr::Number(2, span)),
+                                span,
+                            },
+                            then_body: vec![LoweredStmt::Assign(
+                                LocalId(1),
+                                LoweredExpr::Binary {
+                                    left: Box::new(LoweredExpr::Local(LocalId(1), span)),
+                                    op: LoweredBinaryOp::Add,
+                                    right: Box::new(LoweredExpr::Call {
+                                        kind: FunctionCallKind::User(FuncId(0)),
+                                        args: vec![
+                                            LoweredExpr::Local(LocalId(0), span),
+                                            LoweredExpr::Number(3, span),
+                                        ],
+                                        span,
+                                    }),
+                                    span,
+                                },
+                                span,
+                            )],
+                            else_body: vec![LoweredStmt::Assign(
+                                LocalId(1),
+                                LoweredExpr::Binary {
+                                    left: Box::new(LoweredExpr::Local(LocalId(1), span)),
+                                    op: LoweredBinaryOp::Add,
+                                    right: Box::new(LoweredExpr::Number(1, span)),
+                                    span,
+                                },
+                                span,
+                            )],
+                            span,
+                        },
+                    ],
+                    span,
+                },
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Local(LocalId(1), span)],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![LocalId(0), LocalId(1)],
+            functions: vec![LoweredFunction {
+                id: FuncId(0),
+                params: vec![LocalId(0), LocalId(1)],
+                uses_receiver: false,
+                min_required_params: 2,
+                rest_param_index: None,
+                metadata_length: None,
+                metadata_name: None,
+                locals: vec![],
+                body: vec![LoweredStmt::Return(
+                    LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                        op: LoweredBinaryOp::Add,
+                        right: Box::new(LoweredExpr::Local(LocalId(1), span)),
+                        span,
+                    },
+                    span,
+                )],
+                recursion_depth: 0,
+                is_async: false,
+                is_generator: false,
+                generator_state: None,
+            }],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native binary should emit");
+        let temp_dir = unique_temp_dir("native-lowered-control-flow");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "7\n");
         let _ = fs::remove_dir_all(temp_dir);
     }
 

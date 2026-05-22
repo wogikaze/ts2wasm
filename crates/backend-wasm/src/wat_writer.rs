@@ -524,6 +524,8 @@ impl WatWriter {
             WasmInstr::Return => self.return_(indent),
             WasmInstr::Br(target) => self.r#br(indent, target),
             WasmInstr::BrIf(target) => self.br_if(indent, target),
+            WasmInstr::BrDepth(depth) => self.line(indent, &format!("(br {depth})")),
+            WasmInstr::BrIfDepth(depth) => self.line(indent, &format!("(br_if {depth})")),
             WasmInstr::Select => self.select(indent),
             WasmInstr::If { result_ty } => match result_ty {
                 Some(ty) => self.if_result(indent, ty),
@@ -564,6 +566,12 @@ impl WatWriter {
             WasmInstr::MemoryGrow => self.memory_grow(indent),
             WasmInstr::I32Load { align, offset } => self.i32_load(indent, *align, *offset),
             WasmInstr::I32Store { align, offset } => self.i32_store(indent, *align, *offset),
+            WasmInstr::I32Store8 { align, offset } => {
+                self.line(
+                    indent,
+                    &format!("(i32.store8 align={align} offset={offset})"),
+                );
+            }
             WasmInstr::Raw(content) => self.line(indent, content),
         }
     }
