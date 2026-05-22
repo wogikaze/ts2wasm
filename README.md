@@ -60,8 +60,7 @@ source text
   -> semantic validation
   -> legacy LoweredProgram or experimental HIR/MIR
   -> runtime gate + link plan + capability manifest
-  -> WAT emission
-  -> wasm binary + ABI metadata custom section
+  -> wasm binary emission + ABI metadata custom section
 ```
 
 Workspace crates:

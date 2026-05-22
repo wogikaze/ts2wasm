@@ -35,15 +35,15 @@ The canonical implementation anchor is `crates/compiler/src/pipeline.rs`.
 | Resolution/semantics | `resolve`, `semantics` | binding/name resolution, builtin domain identity, host API classification |
 | IR | `ir` | builtin-resolved AST, HIR, MIR, legacy LoweredProgram, optimizer |
 | Runtime/ABI | `runtime-abi`, `runtime-catalog` | value layout, runtime functions, link plans, host imports, capabilities |
-| Backend | `backend-core`, `backend-wasm` | WAT/WASM emission, runtime templates, MIR emission subset |
+| Backend | `backend-core`, `backend-wasm` | wasm binary emission, WAT debug emission, runtime templates, MIR emission subset |
 | Orchestration | `compiler`, `cli` | end-to-end build/check/dump/server API |
 
 ## Legacy and HIR/MIR paths
 
-- Default build path lowers builtin-resolved statements to legacy `LoweredProgram` and requires wasm bytes from the backend.
+- Default build path lowers builtin-resolved statements to legacy `LoweredProgram` and requires native wasm bytes from the backend.
 - Strict HIR/MIR path uses `lower_to_hir`, validates HIR, lowers to native MIR, validates MIR, then calls MIR emission.
 - Compat fallback tries HIR/MIR first and falls back to legacy when unsupported, but the final build artifact still comes from wasm bytes rather than an external WAT conversion command.
-- WAT remains available through dump/debug APIs.
+- WAT remains available through dump/debug APIs and HIR/MIR comparison diagnostics; it is not the default build success path.
 - Docs and tests should identify which path a behavior uses.
 
 ## Runtime shape

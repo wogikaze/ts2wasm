@@ -1,6 +1,6 @@
 # Current State
 
-Last audited: 2026-05-21.
+Last audited: 2026-05-23.
 
 This page records what is true now. Final-state design contracts live in the other `docs/` files. Do not turn this page into a roadmap or issue backlog.
 
@@ -64,8 +64,8 @@ Known but unimplemented targets: `wasm32-wasi-gc`, `wasm32-component`.
 
 ## Current Implementation Notes
 
-- The default compiler path still lowers through legacy `LoweredProgram`, but build writes backend-provided wasm bytes and no longer uses a `wat2wasm` CLI fallback.
-- `backend-wasm` has an explicit native `LoweredProgram -> WasmModule -> wasm bytes` subset API for simple numeric/string console output, locals, arithmetic, `if`, `while`, direct user-function calls, and ABI custom-section emission. The default compiler `LoweredProgram` build path asks backend-wasm for ABI-bearing bytes; the public `emit_wasm_binary` entrypoint still falls back to WAT conversion for unsupported native shapes, and native coverage still does not cover the full runtime helper catalog.
+- The default compiler path still lowers through legacy `LoweredProgram`, but build writes backend-provided wasm bytes and no longer uses a `wat2wasm` CLI fallback or build-facing WAT conversion fallback.
+- `backend-wasm` has an explicit native `LoweredProgram -> WasmModule -> wasm bytes` subset API for simple numeric/string console output, locals, arithmetic, `if`, `while`, direct user-function calls, static module export reads, and ABI custom-section emission. The default compiler `LoweredProgram` build path asks backend-wasm for ABI-bearing bytes; the public `emit_wasm_binary` entrypoint reports unsupported native shapes instead of falling back to WAT conversion, and native coverage still does not cover the full runtime helper catalog.
 - `--experimental-hir-mir` and `--experimental-hir-mir-compat-fallback` are migration modes and must not be described as default parity.
 - Static named ES module import/export has a narrow local differential slice; broader module semantics are not complete.
 - Class, Node API, and broader module fixtures include build-smoke coverage that must not be reported as semantic parity.

@@ -560,7 +560,10 @@ fn module_init_symbol(module_id: usize) -> String {
 }
 
 fn module_export_global_symbol(module_id: usize, name: &str) -> String {
-    format!("$native_module_{module_id}_export_{}", sanitize_symbol(name))
+    format!(
+        "$native_module_{module_id}_export_{}",
+        sanitize_symbol(name)
+    )
 }
 
 fn sanitize_symbol(name: &str) -> String {

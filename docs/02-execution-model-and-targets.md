@@ -22,7 +22,7 @@ Do not document reserved targets as usable until `ExecutionTarget::is_implemente
 
 ## Build output
 
-`ts2wasm build` emits a wasm binary. The compiler asks the backend for wasm bytes, writes those bytes directly, and attaches ABI metadata derived from the selected `ExecutionTarget`. The current backend still uses Rust `wat` parsing as an internal lowering step for the legacy `LoweredProgram` path, but build output no longer shells out to `wat2wasm` as a fallback.
+`ts2wasm build` emits a wasm binary. The compiler asks the backend for wasm bytes, writes those bytes directly, and attaches ABI metadata derived from the selected `ExecutionTarget`. Build success is determined by the backend binary emitter; unsupported binary shapes fail the build instead of succeeding through WAT conversion. WAT remains a dump/debug format and is not the build artifact.
 
 When `--emit-manifest` is passed, the compiler emits a canonical capability manifest from the validated runtime link plan.
 
