@@ -357,6 +357,9 @@ impl<'a> NativeLoweredEmitter<'a> {
                 if self.try_emit_static_array_init(*local, expr, ctx, out)? {
                     return Ok(());
                 }
+                if self.try_emit_static_array_value_init(*local, expr, ctx, out)? {
+                    return Ok(());
+                }
                 if self.try_emit_static_object_value_init(*local, expr, ctx, out)? {
                     return Ok(());
                 }
@@ -630,6 +633,38 @@ impl<'a> NativeLoweredEmitter<'a> {
         for (slot, element) in slots.iter().zip(elements.iter()) {
             self.emit_expr(element, ctx, out)?;
             out.push(WasmInstr::LocalSet(*slot));
+        }
+        out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
+        out.push(WasmInstr::LocalSet(local_index(ctx, local)?));
+        Ok(true)
+    }
+
+    fn try_emit_static_array_value_init(
+        &mut self,
+        local: LocalId,
+        expr: &LoweredExpr,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<bool, Diagnostic> {
+        if !matches!(
+            expr,
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ArrayConcat,
+                ..
+            }
+        ) {
+            return Ok(false);
+        }
+        let Some(StaticValue::Array(elements)) = static_value_from_expr(expr, &ctx.static_locals)
+        else {
+            return Ok(false);
+        };
+
+        if let Some(slots) = ctx.static_arrays.get(&local) {
+            for (slot, element) in slots.iter().zip(elements.iter()) {
+                self.emit_expr(element, ctx, out)?;
+                out.push(WasmInstr::LocalSet(*slot));
+            }
         }
         out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
         out.push(WasmInstr::LocalSet(local_index(ctx, local)?));
@@ -2158,6 +2193,15 @@ fn static_value_from_expr(
                 .collect(),
         )),
         LoweredExpr::ArrayNew { elements, .. } => Some(StaticValue::Array(elements.clone())),
+        LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::ArrayConcat,
+            args,
+            ..
+        } if args.len() == 2 => {
+            let mut merged = static_array_from_expr(&args[0], locals)?;
+            merged.extend(static_array_from_expr(&args[1], locals)?);
+            Some(StaticValue::Array(merged))
+        }
         LoweredExpr::Block { stmts, result, .. } => {
             let mut nested_locals = locals.clone();
             collect_static_locals(stmts, &mut nested_locals);
@@ -2191,6 +2235,16 @@ fn static_value_from_expr(
                 .then(|| StaticValue::Primitive(LoweredExpr::Undefined(*span)))
         }
         _ => None,
+    }
+}
+
+fn static_array_from_expr(
+    expr: &LoweredExpr,
+    locals: &HashMap<LocalId, StaticValue>,
+) -> Option<Vec<LoweredExpr>> {
+    match static_value_from_expr(expr, locals)? {
+        StaticValue::Array(elements) => Some(elements),
+        StaticValue::Object(_) | StaticValue::Primitive(_) => None,
     }
 }
 
