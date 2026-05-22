@@ -22,7 +22,7 @@ use crate::lowered::facts::{
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
-use ts2wasm_syntax::{BinaryOp, UnaryOp};
+use ts2wasm_syntax::{BinaryOp, UnaryOp, SYMBOL_ITERATOR_OBJECT_KEY};
 
 /// New Resolver with ctx: LoweringCtx.
 /// All mutable state is owned by ctx. Borrowed function maps are cloned into ctx on construction.
@@ -248,6 +248,147 @@ impl Resolver {
         lowered
     }
 
+    /// Lower `yield* iterable` (with optional target local for the return value).
+    ///
+    /// Produces lowered IR equivalent to:
+    /// ```text
+    /// let iter_fn = iterable["@@iterator"];
+    /// let iter = iter_fn();
+    /// loop {
+    ///   let next_fn = iter["next"];
+    ///   let result = next_fn();
+    ///   let done = result["done"];
+    ///   if (!done) { yield result["value"]; }
+    ///   if (done) break;
+    /// }
+    /// // if target_local is Some(id): let id = result["value"];
+    /// ```
+    fn lower_yield_star_stmt(
+        &mut self,
+        iterable_expr: &ResolvedExpr,
+        target_local: Option<LocalId>,
+    ) -> Result<LoweredStmt, Diagnostic> {
+        let span = Span::generated("yield_star");
+        let sentinel_key = SYMBOL_ITERATOR_OBJECT_KEY.to_owned();
+        let iterable = self.lower_expr(iterable_expr)?;
+        let iter_fn = self.alloc_temp();
+        let iterator = self.alloc_temp();
+        let next_fn = self.alloc_temp();
+        let result = self.alloc_temp();
+        let done_val = self.alloc_temp();
+
+        // let iter_fn = iterable["@@iterator"]
+        // let iterator = iter_fn()
+        let mut stmts = vec![
+            LoweredStmt::Let(
+                iter_fn,
+                LoweredExpr::PropertyGetDynamic {
+                    obj: Box::new(iterable),
+                    key: Box::new(LoweredExpr::String(sentinel_key, Span::generated("str"))),
+                    span,
+                },
+                span,
+            ),
+            LoweredStmt::Let(
+                iterator,
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::HeapClosureCall,
+                    args: vec![LoweredExpr::Local(iter_fn, Span::generated("local"))],
+                    span,
+                },
+                span,
+            ),
+        ];
+
+        // Loop body
+        let mut body = Vec::new();
+
+        // let next_fn = iterator["next"]
+        body.push(LoweredStmt::Let(
+            next_fn,
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(LoweredExpr::Local(iterator, Span::generated("local"))),
+                key: Box::new(LoweredExpr::String("next".to_owned(), Span::generated("str"))),
+                span,
+            },
+            span,
+        ));
+
+        // let result = next_fn()
+        body.push(LoweredStmt::Let(
+            result,
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::HeapClosureCall,
+                args: vec![LoweredExpr::Local(next_fn, Span::generated("local"))],
+                span,
+            },
+            span,
+        ));
+
+        // let done_val = result["done"]
+        body.push(LoweredStmt::Let(
+            done_val,
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(LoweredExpr::Local(result, Span::generated("local"))),
+                key: Box::new(LoweredExpr::String("done".to_owned(), Span::generated("str"))),
+                span,
+            },
+            span,
+        ));
+
+        // if (!done_val) { yield result["value"]; }
+        let if_body = vec![LoweredStmt::Yield(
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(LoweredExpr::Local(result, Span::generated("local"))),
+                key: Box::new(LoweredExpr::String(
+                    "value".to_owned(),
+                    Span::generated("str"),
+                )),
+                span,
+            },
+            span,
+        )];
+        body.push(LoweredStmt::If {
+            condition: LoweredExpr::Unary {
+                op: LoweredUnaryOp::Not,
+                expr: Box::new(LoweredExpr::Local(done_val, Span::generated("local"))),
+                span,
+            },
+            then_body: if_body,
+            else_body: vec![],
+            span,
+        });
+
+        // do { ... } while (!done_val)
+        stmts.push(LoweredStmt::DoWhile {
+            body,
+            condition: LoweredExpr::Unary {
+                op: LoweredUnaryOp::Not,
+                expr: Box::new(LoweredExpr::Local(done_val, Span::generated("local"))),
+                span,
+            },
+            span,
+        });
+
+        // If a target local was provided, assign the inner iterator's return value.
+        if let Some(target) = target_local {
+            stmts.push(LoweredStmt::Let(
+                target,
+                LoweredExpr::PropertyGetDynamic {
+                    obj: Box::new(LoweredExpr::Local(result, Span::generated("local"))),
+                    key: Box::new(LoweredExpr::String(
+                        "value".to_owned(),
+                        Span::generated("str"),
+                    )),
+                    span,
+                },
+                span,
+            ));
+        }
+
+        Ok(LoweredStmt::Block(stmts, span))
+    }
+
     fn bound_function_for_expr(
         &self,
         expr: &ResolvedExpr,
@@ -407,12 +548,13 @@ impl Resolver {
             }
             ResolvedStmt::Expr(ResolvedExpr::Yield { expr, delegate }) => {
                 if *delegate {
-                    return Err(Diagnostic {
+                    let inner = expr.as_ref().ok_or_else(|| Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
-                        message: "yield* delegation is parsed but not lowered yet".to_owned(),
+                        message: "yield* requires an expression".to_owned(),
                         span: Some(Span::generated("yield_star")),
                         phase: None,
-                    });
+                    })?;
+                    return self.lower_yield_star_stmt(inner, None);
                 }
                 Ok(LoweredStmt::Yield(
                     expr.as_ref()
@@ -424,11 +566,24 @@ impl Resolver {
             }
             ResolvedStmt::DestructureLet { pattern, expr } => {
                 let value_local = self.alloc_temp();
-                let mut statements = vec![LoweredStmt::Let(
-                    value_local,
-                    self.lower_expr(expr)?,
-                    Span::generated("let_stmt"),
-                )];
+                let mut statements = if let ResolvedExpr::Yield {
+                    expr: Some(inner),
+                    delegate: true,
+                } = expr
+                {
+                    // `let [a, b] = yield* iterable;` — yield* loop first,
+                    // then destructure the return value.
+                    match self.lower_yield_star_stmt(inner, Some(value_local))? {
+                        LoweredStmt::Block(s, _) => s,
+                        other => vec![other],
+                    }
+                } else {
+                    vec![LoweredStmt::Let(
+                        value_local,
+                        self.lower_expr(expr)?,
+                        Span::generated("let_stmt"),
+                    )]
+                };
                 statements.extend(self.lower_binding_pattern_declarations(
                     pattern,
                     LoweredExpr::Local(value_local, Span::generated("local")),
@@ -438,6 +593,11 @@ impl Resolver {
             }
             ResolvedStmt::Let(name, expr) => {
                 let local_id = self.declare_local(name)?;
+                // Handle `let x = yield* iterable;` — delegate to yield* lowering
+                // with a target local to receive the inner iterator's return value.
+                if let ResolvedExpr::Yield { expr: Some(inner), delegate: true } = expr {
+                    return self.lower_yield_star_stmt(inner, Some(local_id));
+                }
                 // Infer class before lowering so closures inside the initializer
                 // can resolve the class of this local (e.g. `new Howl(...)` with a
                 // callback that calls `instance.once(...)`).
@@ -743,6 +903,21 @@ impl Resolver {
             }
             ResolvedStmt::Assign(name, expr) => {
                 let local_id = self.resolve_local(name)?;
+                // Handle `x = yield* iterable;` — delegate to yield* lowering,
+                // then assign the inner iterator's return value to x.
+                if let ResolvedExpr::Yield { expr: Some(inner), delegate: true } = expr {
+                    let result_local = self.alloc_temp();
+                    let mut stmts = match self.lower_yield_star_stmt(inner, Some(result_local))? {
+                        LoweredStmt::Block(s, _) => s,
+                        other => vec![other],
+                    };
+                    stmts.push(LoweredStmt::Assign(
+                        local_id,
+                        LoweredExpr::Local(result_local, Span::generated("local")),
+                        Span::generated("assign_stmt"),
+                    ));
+                    return Ok(LoweredStmt::Block(stmts, Span::generated("block")));
+                }
                 crate::lowered::resolver::expr::facts::invalidate_static_object_literal_local(
                     &mut self.ctx,
                     local_id,
@@ -1137,6 +1312,20 @@ impl Resolver {
                         ));
                     }
                     return Ok(LoweredStmt::Return(lowered, Span::generated("return_stmt")));
+                }
+                // Handle `return yield* iterable;` — delegate yield* then return the result.
+                if let ResolvedExpr::Yield { expr: Some(inner), delegate: true } = expr {
+                    let result_local = self.alloc_temp();
+                    let stmts = match self.lower_yield_star_stmt(inner, Some(result_local))? {
+                        LoweredStmt::Block(s, _) => s,
+                        other => vec![other],
+                    };
+                    let mut all_stmts = stmts;
+                    all_stmts.push(LoweredStmt::Return(
+                        LoweredExpr::Local(result_local, Span::generated("local")),
+                        Span::generated("return_stmt"),
+                    ));
+                    return Ok(LoweredStmt::Block(all_stmts, Span::generated("block")));
                 }
                 Ok(LoweredStmt::Return(
                     self.lower_expr(expr)?,

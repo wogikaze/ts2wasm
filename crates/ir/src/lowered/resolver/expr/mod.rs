@@ -51,7 +51,7 @@ impl super::Resolver {
                 if *delegate {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
-                        message: "yield* delegation is parsed but not lowered yet".to_owned(),
+                        message: "yield* delegation is not supported in expression context (only as statement or let initializer)".to_owned(),
                         span: Some(Span::generated("yield_star")),
                         phase: None,
                     });
