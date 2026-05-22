@@ -1035,6 +1035,14 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "no_getter\nhas_setter\nenumerable\nconfigurable\n1\n",
         ),
         (
+            "../../fixtures/core-expressions/object-literal-symbol-accessor-invocation.ts",
+            "first\nsecond\ndifferent\n",
+        ),
+        (
+            "../../fixtures/core-expressions/object-literal-symbol-method-call.ts",
+            "A\nsymbol first\nC\nsymbol second\ndifferent\n",
+        ),
+        (
             "../../fixtures/core-expressions/object-shorthand-computed-method.ts",
             "7\n11\n",
         ),

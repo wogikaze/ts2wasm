@@ -775,7 +775,9 @@ impl<'a> NativeLoweredEmitter<'a> {
             let Some(slot) = slots.get(key).copied() else {
                 continue;
             };
-            self.emit_expr(value, ctx, out)?;
+            if !self.try_emit_static_primitive_value(value, ctx, out)? {
+                self.emit_expr(value, ctx, out)?;
+            }
             out.push(WasmInstr::LocalSet(slot));
         }
         out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
@@ -804,7 +806,9 @@ impl<'a> NativeLoweredEmitter<'a> {
         if let Some(slots) = ctx.static_objects.get(&local) {
             for (key, slot) in slots {
                 if let Some(value) = object.get(key) {
-                    self.emit_expr(value, ctx, out)?;
+                    if !self.try_emit_static_primitive_value(value, ctx, out)? {
+                        self.emit_expr(value, ctx, out)?;
+                    }
                 } else {
                     out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
                 }
@@ -1410,6 +1414,18 @@ impl<'a> NativeLoweredEmitter<'a> {
                     }
                 }
                 LoweredStmt::Expr(
+                    expr @ (LoweredExpr::Block { .. }
+                    | LoweredExpr::PropertySet { .. }
+                    | LoweredExpr::PropertySetDynamic { .. }),
+                    _,
+                ) => {
+                    collect_static_locals_from_expr_with_functions(
+                        expr,
+                        &mut call_ctx.static_locals,
+                        &self.program.functions,
+                    );
+                }
+                LoweredStmt::Expr(
                     LoweredExpr::Call {
                         kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
                         args,
@@ -1467,6 +1483,16 @@ impl<'a> NativeLoweredEmitter<'a> {
             return Ok(false);
         }
         let Some(slot) = static_object_slot(ctx, &args[0], &key) else {
+            if static_accessor_receiver_is_static_object(args, &ctx.static_locals)
+                && static_value_from_expr_with_functions(
+                    &args[1],
+                    &ctx.static_locals,
+                    &self.program.functions,
+                )
+                .is_some()
+            {
+                return Ok(true);
+            }
             return Ok(false);
         };
         self.emit_expr(&args[1], ctx, out)?;
@@ -1494,6 +1520,13 @@ impl<'a> NativeLoweredEmitter<'a> {
         let Some(receiver) = args.first() else {
             return Ok(false);
         };
+        if let Some(value) = static_object_property(ctx, receiver, &key)
+            && let Some(bytes) =
+                static_console_arg_bytes_with_functions(value, ctx, &self.program.functions)
+        {
+            self.emit_static_bytes(&bytes, out);
+            return Ok(true);
+        }
         let Some(slot) = static_object_slot(ctx, receiver, &key) else {
             return Ok(false);
         };
@@ -2956,6 +2989,14 @@ fn apply_static_user_function_env_effects(
                     locals.insert(*caller_cell, value);
                 }
             }
+            LoweredStmt::Expr(
+                expr @ (LoweredExpr::Block { .. }
+                | LoweredExpr::PropertySet { .. }
+                | LoweredExpr::PropertySetDynamic { .. }),
+                _,
+            ) => {
+                collect_static_locals_from_expr_with_functions(expr, &mut call_locals, functions);
+            }
             LoweredStmt::Let(local, expr, _) | LoweredStmt::Assign(local, expr, _) => {
                 if let Some(value) =
                     static_value_from_expr_with_functions(expr, &call_locals, functions)
@@ -2966,6 +3007,11 @@ fn apply_static_user_function_env_effects(
                 }
             }
             _ => return false,
+        }
+    }
+    for (param, caller_cell) in caller_cells {
+        if let Some(StaticValue::Object(object)) = call_locals.get(&param).cloned() {
+            locals.insert(caller_cell, StaticValue::Object(object));
         }
     }
     true
@@ -3336,8 +3382,11 @@ fn static_property_key_from_locals_with_functions(
             static_property_key_from_locals_with_functions(locals, &args[0], functions)
         }
         _ => static_property_key(key).or_else(|| {
-            let value = static_primitive_expr_from_expr_with_functions(key, locals, functions)?;
-            static_property_key(&value)
+            match static_value_from_expr_with_functions(key, locals, functions)? {
+                StaticValue::Primitive(value) => static_property_key(&value),
+                StaticValue::Symbol(symbol) => Some(static_symbol_property_key(symbol)),
+                _ => None,
+            }
         }),
     }
 }
