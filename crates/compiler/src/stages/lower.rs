@@ -5,6 +5,7 @@ use ts2wasm_backend_wasm as backend;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_frontend::validate_type_reference_directives;
 use ts2wasm_ir::{OptimizationLevel, builtin_resolver, lowered, name_resolver};
+use ts2wasm_shared::abi::AbiMetadata;
 use ts2wasm_source::Span;
 use ts2wasm_syntax::{ClassPrivateElement, ClassStaticBlock, Expr, ImportPhase, ObjectProp, Stmt};
 
@@ -834,6 +835,7 @@ pub(crate) fn build_multi_section_file(
     output: &Path,
     capability_manifest_output: Option<&Path>,
     host_deny: bool,
+    abi_metadata: Option<&AbiMetadata>,
 ) -> Result<crate::CompileReport<()>, Diagnostic> {
     let mut modules = Vec::new();
     let mut all_functions = Vec::new();
@@ -887,7 +889,12 @@ pub(crate) fn build_multi_section_file(
         let manifest = backend::emit_canonical_manifest_json(&validated_plan);
         crate::io::write_manifest::write_manifest_json(path, &manifest)?;
     }
-    let wasm = backend::emit_wasm_binary(&validated).map_err(|d| d.with_phase("backend"))?;
+    let wasm = if let Some(abi_metadata) = abi_metadata {
+        backend::emit_wasm_binary_with_abi(&validated, abi_metadata)
+    } else {
+        backend::emit_wasm_binary(&validated)
+    }
+    .map_err(|d| d.with_phase("backend"))?;
     crate::io::write_output::write_wasm_bytes_with_abi(&wasm, output, None)
         .map_err(|d| d.with_phase("backend"))?;
     Ok(crate::CompileReport {

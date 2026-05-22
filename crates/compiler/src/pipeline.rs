@@ -104,12 +104,14 @@ fn build_file_impl(
     // Check for @fileName: multi-section file -- compile each section as its own module.
     let sections = split_file_name_sections(&source);
     if !sections.is_empty() {
+        let abi_meta = abi_metadata_for_target(options.target);
         return build_multi_section_file(
             input,
             &sections,
             output,
             capability_manifest_output,
             options.host_deny,
+            Some(&abi_meta),
         );
     }
 

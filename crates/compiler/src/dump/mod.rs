@@ -116,7 +116,8 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
             DumpPhase::All | DumpPhase::Lowered | DumpPhase::Wat
         )
     {
-        let cr = build_multi_section_file(input, &sections, Path::new("/dev/null"), None, false)?;
+        let cr =
+            build_multi_section_file(input, &sections, Path::new("/dev/null"), None, false, None)?;
         if options.phase == DumpPhase::All {
             return Ok(format!(
                 "\n== multi-section build ==\n{}\nbuild: ok\n",
