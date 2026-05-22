@@ -320,6 +320,7 @@ match self {
             Self::ReflectApply => "reflect_apply",
             Self::ReflectConstruct => "reflect_construct",
             Self::ObjectAssign => "object_assign",
+            Self::RestObject => "rest_object",
             Self::ObjectCreate => "object_create",
             Self::ObjectPrototype => "object_prototype",
             Self::GlobalThis => "global_this",

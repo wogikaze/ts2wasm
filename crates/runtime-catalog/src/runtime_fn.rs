@@ -482,6 +482,9 @@ pub enum RuntimeFn {
     ObjectGetOwnPropertyNames,
     ObjectGetOwnPropertySymbols,
     ObjectSpread,
+    /// RestObject(source, ...excluded_keys) — creates a new object with own properties
+    /// from source, excluding properties whose keys are in the excluded list.
+    RestObject,
     SpreadViaIterator,
     ObjectValues,
     ObjectEntries,
@@ -1427,6 +1430,13 @@ const OBJECT_SPREAD_DEPS: &[RuntimeFn] = &[
     RuntimeFn::PropertyGet,
     RuntimeFn::PropertySet,
 ];
+const REST_OBJECT_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+    RuntimeFn::ObjectKeys,
+    RuntimeFn::PropertyGet,
+    RuntimeFn::PropertySet,
+];
 const OBJECT_VALUES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const OBJECT_ENTRIES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const OBJECT_FROM_ENTRIES_DEPS: &[RuntimeFn] = &[
@@ -1711,6 +1721,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ObjectGetOwnPropertyNames" => Some(RuntimeFn::ObjectGetOwnPropertyNames),
         "ObjectGetOwnPropertySymbols" => Some(RuntimeFn::ObjectGetOwnPropertySymbols),
         "ObjectSpread" => Some(RuntimeFn::ObjectSpread),
+        "RestObject" => Some(RuntimeFn::RestObject),
         "SpreadViaIterator" => Some(RuntimeFn::SpreadViaIterator),
         "ObjectValues" => Some(RuntimeFn::ObjectValues),
         "ObjectEntries" => Some(RuntimeFn::ObjectEntries),
@@ -2444,6 +2455,7 @@ impl RuntimeFn {
             | Self::ObjectGetOwnPropertyNames
             | Self::ObjectGetOwnPropertySymbols
             | Self::ObjectSpread
+            | Self::RestObject
             | Self::SpreadViaIterator
             | Self::ObjectValues
             | Self::ObjectEntries
@@ -3200,6 +3212,7 @@ impl RuntimeFn {
             Self::ObjectGetOwnPropertyNames,
             Self::ObjectGetOwnPropertySymbols,
             Self::ObjectSpread,
+            Self::RestObject,
             Self::SpreadViaIterator,
             Self::ObjectValues,
             Self::ObjectEntries,
@@ -3713,6 +3726,7 @@ impl RuntimeFn {
             Self::ObjectGetOwnPropertyNames,
             Self::ObjectGetOwnPropertySymbols,
             Self::ObjectSpread,
+            Self::RestObject,
             Self::SpreadViaIterator,
             Self::ObjectValues,
             Self::ObjectEntries,

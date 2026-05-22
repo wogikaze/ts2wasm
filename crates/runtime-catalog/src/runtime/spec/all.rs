@@ -2248,6 +2248,15 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::RestObject => RuntimeSpec {
+                symbol: "$rest_object",
+                deps: REST_OBJECT_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+
             Self::SpreadViaIterator => RuntimeSpec {
                 symbol: "$spread_via_iterator",
                 deps: &[],

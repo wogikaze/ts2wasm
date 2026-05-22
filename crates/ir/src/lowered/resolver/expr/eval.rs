@@ -951,44 +951,27 @@ impl super::super::Resolver {
         caller_scope_index: usize,
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
         let rest_temp = self.alloc_temp();
+        let mut rest_args = vec![value.clone()];
+        for sibling in siblings.iter().filter(|sibling| !sibling.is_rest) {
+            if sibling.computed {
+                let key_raw = sibling.key.trim_start_matches('[').trim_end_matches(']');
+                rest_args.push(self.lower_eval_for_head_computed_key_expr(key_raw, landing)?);
+            } else {
+                rest_args.push(LoweredExpr::String(
+                    sibling.key.clone(),
+                    Span::generated("str"),
+                ));
+            }
+        }
         let mut stmts = vec![LoweredStmt::Let(
             rest_temp,
             LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::ObjectAssign,
-                args: vec![
-                    LoweredExpr::ObjectNew {
-                        props: Vec::new(),
-                        non_enumerable: 0,
-                        span: Span::generated("eval_for_object_rest_empty"),
-                    },
-                    value.clone(),
-                ],
-                span: Span::generated("eval_for_object_rest_copy"),
+                intrinsic: RuntimeFn::RestObject,
+                args: rest_args,
+                span: Span::generated("eval_for_object_rest"),
             },
             Span::generated("eval_for_object_rest_temp"),
         )];
-        for sibling in siblings.iter().filter(|sibling| !sibling.is_rest) {
-            let rest_object =
-                LoweredExpr::Local(rest_temp, Span::generated("eval_for_object_rest"));
-            let delete_expr = if sibling.computed {
-                let key_raw = sibling.key.trim_start_matches('[').trim_end_matches(']');
-                LoweredExpr::PropertyDeleteDynamic {
-                    object: Box::new(rest_object),
-                    key: Box::new(self.lower_eval_for_head_computed_key_expr(key_raw, landing)?),
-                    span: Span::generated("eval_for_object_rest_delete_dynamic"),
-                }
-            } else {
-                LoweredExpr::PropertyDelete {
-                    object: Box::new(rest_object),
-                    key: sibling.key.clone(),
-                    span: Span::generated("eval_for_object_rest_delete"),
-                }
-            };
-            stmts.push(LoweredStmt::Expr(
-                delete_expr,
-                Span::generated("eval_for_object_rest_delete_stmt"),
-            ));
-        }
         stmts.extend(self.lower_eval_for_head_binding_target_write(
             &binding.target,
             LoweredExpr::Local(rest_temp, Span::generated("eval_for_object_rest")),

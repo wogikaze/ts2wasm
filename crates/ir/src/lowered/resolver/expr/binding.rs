@@ -237,48 +237,28 @@ impl super::super::Resolver {
             )]);
         }
 
-        // Dynamic path: copy via ObjectAssign({}, source), then delete excluded keys.
-        let rest_temp = self.alloc_temp();
-        let mut statements = vec![LoweredStmt::Let(
-            rest_temp,
+        // Dynamic path: use RestObject runtime function directly.
+        let mut rest_args = vec![value.clone()];
+        for sibling in siblings.iter().filter(|sibling| !sibling.is_rest) {
+            if sibling.computed {
+                let key_raw = sibling.key.trim_start_matches('[').trim_end_matches(']');
+                rest_args.push(self.lower_computed_object_binding_key_expr(key_raw)?);
+            } else {
+                rest_args.push(LoweredExpr::String(
+                    sibling.key.clone(),
+                    Span::generated("str"),
+                ));
+            }
+        }
+        Ok(vec![LoweredStmt::Let(
+            local_id,
             LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::ObjectAssign,
-                args: vec![
-                    LoweredExpr::ObjectNew {
-                        props: Vec::new(),
-                        non_enumerable: 0,
-                        span: Span::generated("object_rest_empty"),
-                    },
-                    value.clone(),
-                ],
-                span: Span::generated("object_rest_assign"),
+                intrinsic: RuntimeFn::RestObject,
+                args: rest_args,
+                span: Span::generated("runtime_call"),
             },
             Span::generated("let_stmt"),
-        )];
-        for sibling in siblings.iter().filter(|sibling| !sibling.is_rest) {
-            let rest_object = LoweredExpr::Local(rest_temp, Span::generated("object_rest_local"));
-            let delete_expr = if sibling.computed {
-                let key_raw = sibling.key.trim_start_matches('[').trim_end_matches(']');
-                LoweredExpr::PropertyDeleteDynamic {
-                    object: Box::new(rest_object),
-                    key: Box::new(self.lower_computed_object_binding_key_expr(key_raw)?),
-                    span: Span::generated("object_rest_delete_dynamic"),
-                }
-            } else {
-                LoweredExpr::PropertyDelete {
-                    object: Box::new(rest_object),
-                    key: sibling.key.clone(),
-                    span: Span::generated("object_rest_delete"),
-                }
-            };
-            statements.push(LoweredStmt::Expr(delete_expr, Span::generated("expr_stmt")));
-        }
-        statements.push(LoweredStmt::Let(
-            local_id,
-            LoweredExpr::Local(rest_temp, Span::generated("object_rest_local")),
-            Span::generated("let_stmt"),
-        ));
-        Ok(statements)
+        )])
     }
 
     pub(crate) fn lower_binding_declaration_with_default(
@@ -474,12 +454,9 @@ impl super::super::Resolver {
             BindingPattern::Object(bindings) => {
                 let mut statements = Vec::new();
                 for binding in bindings {
-                    statements.extend(self.lower_object_binding_assignment(
-                        binding,
-                        bindings,
-                        &value,
-                        source,
-                    )?);
+                    statements.extend(
+                        self.lower_object_binding_assignment(binding, bindings, &value, source)?,
+                    );
                 }
                 Ok(statements)
             }
@@ -701,51 +678,28 @@ impl super::super::Resolver {
             )]);
         }
 
-        // Dynamic path: copy via ObjectAssign({}, source), then delete excluded keys.
-        let rest_temp = self.alloc_temp();
-        let mut statements = vec![LoweredStmt::Let(
-            rest_temp,
-            LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::ObjectAssign,
-                args: vec![
-                    LoweredExpr::ObjectNew {
-                        props: Vec::new(),
-                        non_enumerable: 0,
-                        span: Span::generated("object_rest_empty"),
-                    },
-                    value.clone(),
-                ],
-                span: Span::generated("object_rest_assign"),
-            },
-            Span::generated("let_stmt"),
-        )];
+        // Dynamic path: use RestObject runtime function directly.
+        let mut rest_args = vec![value.clone()];
         for sibling in siblings.iter().filter(|sibling| !sibling.is_rest) {
-            let rest_object = LoweredExpr::Local(rest_temp, Span::generated("object_rest_local"));
-            let delete_expr = if sibling.computed {
+            if sibling.computed {
                 let key_raw = sibling.key.trim_start_matches('[').trim_end_matches(']');
-                LoweredExpr::PropertyDeleteDynamic {
-                    object: Box::new(rest_object),
-                    key: Box::new(self.lower_computed_object_binding_key_expr(key_raw)?),
-                    span: Span::generated("object_rest_delete_dynamic"),
-                }
+                rest_args.push(self.lower_computed_object_binding_key_expr(key_raw)?);
             } else {
-                LoweredExpr::PropertyDelete {
-                    object: Box::new(rest_object),
-                    key: sibling.key.clone(),
-                    span: Span::generated("object_rest_delete"),
-                }
-            };
-            statements.push(LoweredStmt::Expr(
-                delete_expr,
-                Span::generated("expr_stmt"),
-            ));
+                rest_args.push(LoweredExpr::String(
+                    sibling.key.clone(),
+                    Span::generated("str"),
+                ));
+            }
         }
-        statements.push(LoweredStmt::Assign(
+        Ok(vec![LoweredStmt::Assign(
             local_id,
-            LoweredExpr::Local(rest_temp, Span::generated("object_rest_local")),
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::RestObject,
+                args: rest_args,
+                span: Span::generated("runtime_call"),
+            },
             Span::generated("assign"),
-        ));
-        Ok(statements)
+        )])
     }
 
     fn lower_identifier_binding_default_expr(
