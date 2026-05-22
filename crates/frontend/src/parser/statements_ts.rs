@@ -957,27 +957,53 @@ impl Parser {
 
     /// Parse a simple type reference from the current token stream.
     /// Returns a best-effort TypeRef, falling back to TypeRef::Any for complex types.
-    fn try_parse_type_ref(&self) -> TypeRef {
+    ///
+    /// Handles generic type arguments: if the identifier is followed by `<`,
+    /// parses `Name<Arg1, Arg2, ...>` and returns `TypeRef::Generic`.
+    fn try_parse_type_ref(&mut self) -> TypeRef {
         let Some(token) = self.peek() else {
             return TypeRef::Any;
         };
-        match token {
+        let (base, name) = match token {
             Token::Ident(name) => match name.as_str() {
-                "string" => TypeRef::String,
-                "number" => TypeRef::Number,
-                "boolean" => TypeRef::Boolean,
-                "bigint" => TypeRef::BigInt,
-                "symbol" => TypeRef::Symbol,
-                "undefined" => TypeRef::Undefined,
-                "null" => TypeRef::Null,
-                "void" => TypeRef::Void,
-                "any" => TypeRef::Any,
-                "never" => TypeRef::Never,
-                "object" => TypeRef::Object,
-                _ => TypeRef::Named(name.clone()),
+                "string" => (TypeRef::String, None),
+                "number" => (TypeRef::Number, None),
+                "boolean" => (TypeRef::Boolean, None),
+                "bigint" => (TypeRef::BigInt, None),
+                "symbol" => (TypeRef::Symbol, None),
+                "undefined" => (TypeRef::Undefined, None),
+                "null" => (TypeRef::Null, None),
+                "void" => (TypeRef::Void, None),
+                "any" => (TypeRef::Any, None),
+                "never" => (TypeRef::Never, None),
+                "object" => (TypeRef::Object, None),
+                _ => (TypeRef::Named(name.clone()), Some(name.clone())),
             },
-            _ => TypeRef::Any,
+            _ => return TypeRef::Any,
+        };
+        self.advance();
+
+        if matches!(self.peek(), Some(Token::Less)) {
+            self.advance();
+            let mut args = Vec::new();
+            loop {
+                let arg = self.try_parse_type_ref();
+                args.push(arg);
+                if matches!(self.peek(), Some(Token::Greater)) {
+                    break;
+                }
+                if matches!(self.peek(), Some(Token::Comma)) {
+                    self.advance();
+                    continue;
+                }
+                break;
+            }
+            if let Some(generic_name) = name {
+                return TypeRef::Generic { name: generic_name, args };
+            }
+            return base;
         }
+        base
     }
 
     /// Try to parse a single interface member of the form `name: type`.

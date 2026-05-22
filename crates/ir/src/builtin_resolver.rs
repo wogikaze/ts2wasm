@@ -43,8 +43,291 @@ const BIGINT_AS_INT_N_RUNTIME_CALL: &str = "__ts2wasm_bigint_as_int_n";
 const BIGINT_AS_UINT_N_RUNTIME_CALL: &str = "__ts2wasm_bigint_as_uint_n";
 const BIGINT_RUNTIME_OBJECT: &str = "__ts2wasm_bigint_runtime";
 
+/// Desugar `using x = expr` and `await using x = expr` declarations into `let` +
+/// try-finally blocks that call `x[Symbol.dispose]()` / `x[Symbol.asyncDispose]()`.
+///
+/// For each `using` declaration in a block, all subsequent sibling statements are
+/// wrapped in a try-finally. Multiple `using` declarations produce nested try-finally
+/// blocks, ensuring reverse-order disposal on exit.
+fn desugar_using_declarations(stmts: &[Stmt]) -> Vec<Stmt> {
+    let mut result: Vec<Stmt> = Vec::new();
+    let mut i = 0;
+    while i < stmts.len() {
+        match &stmts[i] {
+            Stmt::Using {
+                name,
+                expr,
+                span,
+                is_async,
+            } => {
+                // Step 1: `let name = expr;`
+                result.push(Stmt::Let {
+                    name: name.clone(),
+                    expr: expr.clone(),
+                    span: *span,
+                    is_var: false,
+                });
+
+                // Step 2: Collect and desugar remaining sibling statements
+                let remaining: Vec<Stmt> = stmts[i + 1..].to_vec();
+                let desugared_remaining = desugar_using_declarations(&remaining);
+
+                // Step 3: Build the dispose call: `name[Symbol.dispose]()` or
+                // `await name[Symbol.asyncDispose]()` for async
+                let dispose_property = if *is_async {
+                    "asyncDispose"
+                } else {
+                    "dispose"
+                };
+                let dispose_call = Expr::Call {
+                    callee: Box::new(Expr::Index {
+                        object: Box::new(Expr::Ident {
+                            name: name.clone(),
+                            span: *span,
+                        }),
+                        index: Box::new(Expr::Member {
+                            object: Box::new(Expr::Ident {
+                                name: "Symbol".to_string(),
+                                span: *span,
+                            }),
+                            property: dispose_property.to_string(),
+                            span: *span,
+                        }),
+                        span: *span,
+                    }),
+                    args: Vec::new(),
+                    span: *span,
+                };
+                let dispose_stmt = Stmt::Expr {
+                    expr: if *is_async {
+                        Expr::Await {
+                            expr: Box::new(dispose_call),
+                            span: *span,
+                        }
+                    } else {
+                        dispose_call
+                    },
+                    span: *span,
+                };
+
+                // Step 4: `if (name !== null && name !== undefined) { dispose_stmt }`
+                let dispose_if = Stmt::If {
+                    condition: Expr::Binary {
+                        left: Box::new(Expr::Binary {
+                            left: Box::new(Expr::Ident {
+                                name: name.clone(),
+                                span: *span,
+                            }),
+                            op: BinaryOp::StrictNotEqual,
+                            right: Box::new(Expr::Null { span: *span }),
+                            span: *span,
+                        }),
+                        op: BinaryOp::And,
+                        right: Box::new(Expr::Binary {
+                            left: Box::new(Expr::Ident {
+                                name: name.clone(),
+                                span: *span,
+                            }),
+                            op: BinaryOp::StrictNotEqual,
+                            right: Box::new(Expr::Undefined { span: *span }),
+                            span: *span,
+                        }),
+                        span: *span,
+                    },
+                    then_body: vec![dispose_stmt],
+                    else_body: Vec::new(),
+                    span: *span,
+                };
+
+                // Step 5: `try { remaining } finally { dispose_if }`
+                result.push(Stmt::TryCatch {
+                    try_block: desugared_remaining,
+                    catch_param: None,
+                    catch_block: None,
+                    finally_block: Some(vec![dispose_if]),
+                    span: *span,
+                });
+
+                // All remaining statements are inside the try block
+                break;
+            }
+            other => {
+                result.push(desugar_stmt_inner(other));
+                i += 1;
+            }
+        }
+    }
+    result
+}
+
+/// Recursively walk into nested statement containers and desugar `Stmt::Using`
+/// declarations found inside them.
+fn desugar_stmt_inner(stmt: &Stmt) -> Stmt {
+    match stmt {
+        Stmt::Block { statements, span } => Stmt::Block {
+            statements: desugar_using_declarations(statements),
+            span: *span,
+        },
+        Stmt::If {
+            condition,
+            then_body,
+            else_body,
+            span,
+        } => Stmt::If {
+            condition: condition.clone(),
+            then_body: desugar_using_declarations(then_body),
+            else_body: desugar_using_declarations(else_body),
+            span: *span,
+        },
+        Stmt::While { condition, body, span } => Stmt::While {
+            condition: condition.clone(),
+            body: desugar_using_declarations(body),
+            span: *span,
+        },
+        Stmt::DoWhile { body, condition, span } => Stmt::DoWhile {
+            body: desugar_using_declarations(body),
+            condition: condition.clone(),
+            span: *span,
+        },
+        Stmt::For {
+            init,
+            condition,
+            update,
+            body,
+            span,
+        } => Stmt::For {
+            init: init.as_ref().map(|i| Box::new(desugar_stmt_inner(i))),
+            condition: condition.clone(),
+            update: update.clone(),
+            body: desugar_using_declarations(body),
+            span: *span,
+        },
+        Stmt::ForIn {
+            var,
+            iter,
+            body,
+            span,
+        } => Stmt::ForIn {
+            var: var.clone(),
+            iter: iter.clone(),
+            body: desugar_using_declarations(body),
+            span: *span,
+        },
+        Stmt::ForOf {
+            var,
+            iter,
+            body,
+            span,
+        } => Stmt::ForOf {
+            var: var.clone(),
+            iter: iter.clone(),
+            body: desugar_using_declarations(body),
+            span: *span,
+        },
+        Stmt::ForAwaitOf {
+            var,
+            iter,
+            body,
+            span,
+        } => Stmt::ForAwaitOf {
+            var: var.clone(),
+            iter: iter.clone(),
+            body: desugar_using_declarations(body),
+            span: *span,
+        },
+        Stmt::Switch { expr, cases, span } => Stmt::Switch {
+            expr: expr.clone(),
+            cases: cases
+                .iter()
+                .map(|(case_expr, body)| {
+                    (case_expr.clone(), desugar_using_declarations(body))
+                })
+                .collect(),
+            span: *span,
+        },
+        Stmt::TryCatch {
+            try_block,
+            catch_param,
+            catch_block,
+            finally_block,
+            span,
+        } => Stmt::TryCatch {
+            try_block: desugar_using_declarations(try_block),
+            catch_param: catch_param.clone(),
+            catch_block: catch_block
+                .as_ref()
+                .map(|body| desugar_using_declarations(body)),
+            finally_block: finally_block
+                .as_ref()
+                .map(|body| desugar_using_declarations(body)),
+            span: *span,
+        },
+        Stmt::Labeled { label, body, span } => Stmt::Labeled {
+            label: label.clone(),
+            body: Box::new(desugar_stmt_inner(body)),
+            span: *span,
+        },
+        Stmt::ExportDecl {
+            declaration,
+            specifier,
+            span,
+        } => Stmt::ExportDecl {
+            declaration: Box::new(desugar_stmt_inner(declaration)),
+            specifier: specifier.clone(),
+            span: *span,
+        },
+        Stmt::Function {
+            name,
+            params,
+            body,
+            is_generator,
+            is_async,
+            is_ambient,
+            overload_signature,
+            span,
+            source_text,
+        } => Stmt::Function {
+            name: name.clone(),
+            params: params.clone(),
+            body: desugar_using_declarations(body),
+            is_generator: *is_generator,
+            is_async: *is_async,
+            is_ambient: *is_ambient,
+            overload_signature: *overload_signature,
+            span: *span,
+            source_text: source_text.clone(),
+        },
+        Stmt::ClassDecl { .. }
+        | Stmt::EnumDecl { .. }
+        | Stmt::TypeAlias { .. }
+        | Stmt::InterfaceDecl { .. }
+        | Stmt::Using { .. }
+        | Stmt::Let { .. }
+        | Stmt::AmbientValueDecl { .. }
+        | Stmt::Assign { .. }
+        | Stmt::Expr { .. }
+        | Stmt::Return { .. }
+        | Stmt::Throw { .. }
+        | Stmt::Break { .. }
+        | Stmt::Continue { .. }
+        | Stmt::ImportSideEffect { .. }
+        | Stmt::ImportNamed { .. }
+        | Stmt::ImportDefault { .. }
+        | Stmt::ImportDefaultNamed { .. }
+        | Stmt::ImportNamespace { .. }
+        | Stmt::ImportDefaultNamespace { .. }
+        | Stmt::ExportNamed { .. }
+        | Stmt::ExportNamedFrom { .. }
+        | Stmt::ExportAllFrom { .. }
+        | Stmt::ExportNamespaceFrom { .. }
+        | Stmt::ExportDefault { .. }
+        | Stmt::ExportAssignment { .. } => stmt.clone(),
+    }
+}
+
 pub fn resolve_builtins(program: &[Stmt]) -> Result<Vec<ResolvedStmt>, Diagnostic> {
-    let program = BigIntStaticBuiltinFolder::default().fold_stmts(program);
+    let program = desugar_using_declarations(program);
+    let program = BigIntStaticBuiltinFolder::default().fold_stmts(&program);
     BigIntRuntimeGuard::default().visit_stmts(&program)?;
     let outer_bindings = collect_top_level_bindings(&program)?;
     let class_names = collect_top_level_class_names(&program);
@@ -753,7 +1036,8 @@ impl BigIntStaticBuiltinFolder {
             | Stmt::TypeAlias { .. }
             | Stmt::InterfaceDecl { .. }
             | Stmt::Break { .. }
-            | Stmt::Continue { .. } => stmt.clone(),
+            | Stmt::Continue { .. }
+            | Stmt::Using { .. } => stmt.clone(),
         }
     }
 

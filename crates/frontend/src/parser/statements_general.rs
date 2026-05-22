@@ -15,6 +15,10 @@ impl Parser {
             Some(Token::Let) => self.let_statement(),
             Some(Token::Const) => self.let_statement(), // const is treated like let for now
             Some(Token::Var) => self.let_statement(),   // var is treated like let for now
+            Some(Token::Using) => self.using_statement(false),
+            Some(Token::Await) if matches!(self.peek_n(1), Some(Token::Using)) => {
+                self.using_statement(true)
+            }
             Some(Token::Function) => self.function_statement(),
             Some(Token::If) => self.if_statement(),
             Some(Token::While) => self.while_statement(),
@@ -1239,6 +1243,32 @@ impl Parser {
             is_var: kind == Token::Var,
         };
         Ok((stmt, binding.text, binding.span))
+    }
+
+    fn using_statement(&mut self, is_async: bool) -> Result<Stmt, Diagnostic> {
+        if !is_async {
+            self.advance(); // consume `using` token
+        } else {
+            self.advance(); // consume `await` token
+            self.advance(); // consume `using` token
+        }
+        let (name, name_span) = self.expect_binding_ident()?;
+        if !self.consume(TokenKind::Equal) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "using declarations require an initializer".to_owned(),
+                span: Some(name_span),
+                phase: None,
+            });
+        }
+        let expr = self.expression()?;
+        let end = self.statement_terminator_end(expr.span().end)?;
+        Ok(Stmt::Using {
+            name,
+            expr,
+            span: Span { start: name_span.start, end },
+            is_async,
+        })
     }
 
     fn assign_statement(&mut self) -> Result<Stmt, Diagnostic> {

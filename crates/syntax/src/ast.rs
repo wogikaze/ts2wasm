@@ -30,6 +30,7 @@ pub enum BinaryOp {
     UnsignedRightShift,
     In,
     InstanceOf,
+    Pipeline,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -337,6 +338,12 @@ pub enum Stmt {
         expr: Expr,
         span: Span,
     },
+    Using {
+        name: String,
+        expr: Expr,
+        span: Span,
+        is_async: bool,
+    },
     Switch {
         expr: Expr,
         cases: Vec<(Option<Expr>, Vec<Stmt>)>,
@@ -409,6 +416,13 @@ pub enum TypeRef {
     Array(Box<TypeRef>),
     Union(Vec<TypeRef>),
     Named(String),
+    /// A generic type instantiation, e.g. `Map<string, number>` or `Promise<void>`.
+    /// The `name` is the generic type name (e.g. "Map", "Set", "Promise"),
+    /// and `args` are the concrete type arguments.
+    Generic {
+        name: String,
+        args: Vec<TypeRef>,
+    },
     Function {
         params: Vec<TypeRef>,
         return_type: Box<TypeRef>,
@@ -655,6 +669,9 @@ pub enum Expr {
         exprs: Vec<Expr>,
         span: Span,
     },
+    Topic {
+        span: Span,
+    },
 }
 
 impl Stmt {
@@ -696,6 +713,7 @@ impl Stmt {
             | Self::Labeled { span, .. }
             | Self::Break { span, .. }
             | Self::Continue { span, .. }
+            | Self::Using { span, .. }
             | Self::Block { span, .. } => *span,
         }
     }
@@ -762,7 +780,8 @@ impl Expr {
             | Self::ImportMeta { span }
             | Self::This { span }
             | Self::PrivateIdent { span, .. }
-            | Self::Sequence { span, .. } => *span,
+            | Self::Sequence { span, .. }
+            | Self::Topic { span } => *span,
         }
     }
 }

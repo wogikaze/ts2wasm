@@ -5465,7 +5465,8 @@ pub(super) fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnosti
         | BinaryOp::RightShift
         | BinaryOp::UnsignedRightShift
         | BinaryOp::In
-        | BinaryOp::InstanceOf => Err(Diagnostic {
+        | BinaryOp::InstanceOf
+        | BinaryOp::Pipeline => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!("binary operator {:?} not yet supported", op),
             span: None,

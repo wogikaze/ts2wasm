@@ -56,6 +56,7 @@ pub enum Token {
     Break,
     Continue,
     With,
+    Using,
     Plus,
     Minus,
     Less,
@@ -101,6 +102,7 @@ pub enum Token {
     OptionalChain,
     NullishCoalesce,
     NullishCoalesceEqual,
+    Pipeline,
     LeftParen,
     RightParen,
     LeftBrace,
@@ -159,6 +161,7 @@ pub enum TokenKind {
     Break,
     Continue,
     With,
+    Using,
     Plus,
     Minus,
     Less,
@@ -204,6 +207,7 @@ pub enum TokenKind {
     OptionalChain,
     NullishCoalesce,
     NullishCoalesceEqual,
+    Pipeline,
     LeftParen,
     RightParen,
     LeftBrace,
@@ -261,6 +265,7 @@ impl TokenKind {
                 | (Self::Break, Token::Break)
                 | (Self::Continue, Token::Continue)
                 | (Self::With, Token::With)
+                | (Self::Using, Token::Using)
                 | (Self::Plus, Token::Plus)
                 | (Self::Minus, Token::Minus)
                 | (Self::Less, Token::Less)
@@ -306,6 +311,7 @@ impl TokenKind {
                 | (Self::OptionalChain, Token::OptionalChain)
                 | (Self::NullishCoalesce, Token::NullishCoalesce)
                 | (Self::NullishCoalesceEqual, Token::NullishCoalesceEqual)
+                | (Self::Pipeline, Token::Pipeline)
                 | (Self::LeftParen, Token::LeftParen)
                 | (Self::RightParen, Token::RightParen)
                 | (Self::LeftBrace, Token::LeftBrace)

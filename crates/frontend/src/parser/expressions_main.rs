@@ -554,7 +554,7 @@ impl Parser {
     }
 
     fn ternary(&mut self) -> Result<Expr, Diagnostic> {
-        let mut expr = self.coalesce()?;
+        let mut expr = self.pipeline()?;
         if self.consume(TokenKind::Question) {
             // In ternary then-branches, arrow functions should not consume `:` as a
             // return type annotation if that `:` is the ternary's else-branch separator.
@@ -696,6 +696,16 @@ impl Parser {
             span: Span::generated("arrow"),
             source_text: self.source[start_span.start..end].to_owned(),
         })
+    }
+
+    fn pipeline(&mut self) -> Result<Expr, Diagnostic> {
+        let mut expr = self.coalesce()?;
+        while self.consume(TokenKind::Pipeline) {
+            let right = self.coalesce()?;
+            let span = Span { start: expr.span().start, end: right.span().end };
+            expr = Expr::Binary { left: Box::new(expr), op: BinaryOp::Pipeline, right: Box::new(right), span };
+        }
+        Ok(expr)
     }
 
     fn coalesce(&mut self) -> Result<Expr, Diagnostic> {
@@ -1974,6 +1984,10 @@ impl Parser {
                 span,
             }) => Ok(Expr::This { span }),
             Some(SpannedToken {
+                kind: Token::Percent,
+                span,
+            }) => Ok(Expr::Topic { span }),
+            Some(SpannedToken {
                 kind: Token::PrivateIdentifier(name),
                 span,
             }) => Ok(Expr::PrivateIdent { name, span }),
@@ -2796,6 +2810,7 @@ fn parser_expr_is_bigint_literal_operand(expr: &Expr) -> bool {
         | Expr::Yield { .. }
         | Expr::Spread { .. }
         | Expr::PrivateIdent { .. }
+        | Expr::Topic { .. }
         | Expr::Sequence { .. } => false,
     }
 }

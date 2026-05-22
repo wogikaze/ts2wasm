@@ -98,6 +98,7 @@ impl<'a> Lexer<'a> {
                 "break" => Token::Break,
                 "continue" => Token::Continue,
                 "with" => Token::With,
+                "using" => Token::Using,
                 ident => Token::Ident(ident.to_owned()),
             }
         };

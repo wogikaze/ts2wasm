@@ -255,7 +255,8 @@ fn collect_eval_declaration_names_from_stmt(
         | Stmt::Break { .. }
         | Stmt::Continue { .. }
         | Stmt::EnumDecl { .. }
-        | Stmt::Let { .. } => {}
+        | Stmt::Let { .. }
+        | Stmt::Using { .. } => {}
     }
 }
 

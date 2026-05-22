@@ -616,6 +616,18 @@ impl<'a> Lexer<'a> {
                             },
                         );
                     }
+                } else if self.peek_char() == Some('>') {
+                    self.advance_char();
+                    self.add_token(
+                        tokens,
+                        SpannedToken {
+                            kind: Token::Pipeline,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        },
+                    );
                 } else if self.peek_char() == Some('=') {
                     self.advance_char();
                     self.add_token(

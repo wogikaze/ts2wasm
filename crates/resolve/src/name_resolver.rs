@@ -998,6 +998,20 @@ impl NameResolver {
                     span: *span,
                 })
             }
+            Stmt::Using {
+                name,
+                expr,
+                span,
+                ..
+            } => {
+                // Binding already declared in forward pass (resolve_block)
+                Ok(Stmt::Using {
+                    name: name.clone(),
+                    expr: self.resolve_expr(expr)?,
+                    span: *span,
+                    is_async: false,
+                })
+            }
         }
     }
 
@@ -1117,6 +1131,7 @@ impl NameResolver {
                 span: *span,
             }),
             Expr::This { span } => Ok(Expr::This { span: *span }),
+            Expr::Topic { span } => Ok(Expr::Topic { span: *span }),
             Expr::PrivateIdent { name, span } => Ok(Expr::PrivateIdent {
                 name: name.clone(),
                 span: *span,
@@ -1322,7 +1337,12 @@ impl NameResolver {
                 op,
                 right,
                 span,
-            } => self.resolve_binary_chain(left, *op, right, *span),
+            } => {
+                if *op == BinaryOp::Pipeline {
+                    return self.resolve_pipeline(left, right, *span);
+                }
+                self.resolve_binary_chain(left, *op, right, *span)
+            }
             Expr::Call { callee, args, span } => {
                 if self.is_test262_assert_reference_error_probe(callee, args)
                     || self.is_test262_assert_comparison_probe(callee, args)
@@ -1816,6 +1836,34 @@ impl NameResolver {
         }
     }
 
+
+    fn resolve_pipeline(&mut self, left: &Expr, right: &Expr, span: Span) -> Result<Expr, Diagnostic> {
+        let left = self.resolve_expr(left)?;
+        match right {
+            Expr::Call { callee, args, span: call_span } => {
+                let resolved_callee = self.resolve_expr(callee)?;
+                let mut resolved_args: Vec<Expr> = Vec::with_capacity(args.len() + 1);
+                let mut topic_seen = false;
+                for arg in args {
+                    if matches!(arg, Expr::Topic { .. }) {
+                        resolved_args.push(left.clone());
+                        topic_seen = true;
+                    } else {
+                        resolved_args.push(self.resolve_expr(arg)?);
+                    }
+                }
+                if !topic_seen {
+                    resolved_args.insert(0, left);
+                }
+                Ok(Expr::Call { callee: Box::new(resolved_callee), args: resolved_args, span: *call_span })
+            }
+            _ => {
+                let resolved_callee = self.resolve_expr(right)?;
+                Ok(Expr::Call { callee: Box::new(resolved_callee), args: vec![left], span })
+            }
+        }
+    }
+
     fn resolve_block(&mut self, block: &[Stmt]) -> Result<Vec<Stmt>, Diagnostic> {
         self.enter_scope();
         for stmt in block {
@@ -1843,6 +1891,12 @@ impl NameResolver {
                 } else {
                     self.predeclare_binding(name, Some(*span))?;
                 }
+            }
+            if let Stmt::Using {
+                name, span, ..
+            } = unwrapped_stmt(stmt)
+            {
+                self.predeclare_binding(name, Some(*span))?;
             }
         }
         self.predeclare_static_direct_eval_var_bindings(block)?;
@@ -2778,7 +2832,8 @@ fn collect_static_direct_eval_declarations_from_stmt(stmt: &Stmt, names: &mut Ve
         | Stmt::ExportAllFrom { .. }
         | Stmt::ExportNamespaceFrom { .. }
         | Stmt::ExportDefault { .. }
-        | Stmt::ExportAssignment { .. } => {}
+        | Stmt::ExportAssignment { .. }
+        | Stmt::Using { .. } => {}
     }
 }
 
@@ -2898,7 +2953,8 @@ fn collect_static_direct_eval_declarations_from_expr(expr: &Expr, names: &mut Ve
         | Expr::NewTarget { .. }
         | Expr::ImportMeta { .. }
         | Expr::PrivateIdent { .. }
-        | Expr::This { .. } => {}
+        | Expr::This { .. }
+        | Expr::Topic { .. } => {}
     }
 }
 
@@ -3026,6 +3082,7 @@ fn expr_contains_bigint_literal(expr: &Expr) -> bool {
         | Expr::Null { .. }
         | Expr::Undefined { .. }
         | Expr::This { .. }
+        | Expr::Topic { .. }
         | Expr::ImportMeta { .. }
         | Expr::PrivateIdent { .. }
         | Expr::Ident { .. } => false,

@@ -69,6 +69,8 @@ pub struct LoweringCtx {
     /// uses only property NAME matching, so non-generic interfaces work.
     /// Generic resolution (parameter storage + substitution) is future work.
     pub interface_definitions: HashMap<String, Vec<(String, TypeRef)>>,
+    /// Generic type instantiations encountered during lowering.
+    pub generic_instantiations: HashMap<String, Vec<TypeRef>>,
 }
 
 /// Strict-mode state and checks that affect lowering decisions.
@@ -130,6 +132,7 @@ impl LoweringCtx {
             function_sources: HashMap::new(),
             type_aliases: HashMap::new(),
             interface_definitions: HashMap::new(),
+            generic_instantiations: HashMap::new(),
         }
     }
 
@@ -191,6 +194,7 @@ impl LoweringCtx {
             function_sources,
             type_aliases,
             interface_definitions,
+            generic_instantiations: HashMap::new(),
         }
     }
 
@@ -296,6 +300,16 @@ impl LoweringCtx {
     /// matching is reliable. Full generic resolution is future work.
     pub fn lookup_interface_properties(&self, name: &str) -> Option<&[(String, TypeRef)]> {
         self.interface_definitions.get(name).map(|v| v.as_slice())
+    }
+
+    /// Record a generic type instantiation encountered during lowering.
+    pub fn record_generic_instantiation(&mut self, name: String, args: Vec<TypeRef>) {
+        self.generic_instantiations.insert(name, args);
+    }
+
+    /// Retrieve recorded type arguments for a generic type name.
+    pub fn get_generic_instantiation(&self, name: &str) -> Option<&Vec<TypeRef>> {
+        self.generic_instantiations.get(name)
     }
 }
 

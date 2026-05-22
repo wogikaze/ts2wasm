@@ -852,6 +852,13 @@ impl BigIntRuntimeGuard {
             | Stmt::Continue { .. } => Ok(()),
             Stmt::Block { .. } => Ok(()),
             Stmt::EnumDecl { .. } | Stmt::TypeAlias { .. } | Stmt::InterfaceDecl { .. } => Ok(()),
+            Stmt::Using { span, .. } => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "using declarations not yet supported".to_string(),
+                span: Some(*span),
+
+                phase: None,
+            }),
         }
     }
 
@@ -1483,7 +1490,8 @@ impl BigIntRuntimeGuard {
             | Expr::Undefined { .. }
             | Expr::NewTarget { .. }
             | Expr::ImportMeta { .. }
-            | Expr::This { .. } => Ok(None),
+            | Expr::This { .. }
+            | Expr::Topic { .. } => Ok(None),
         }
     }
 

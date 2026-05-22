@@ -295,6 +295,7 @@ pub(super) fn collect_assigned_names_in_stmt(stmt: &Stmt, names: &mut HashSet<St
         | Stmt::Continue { .. } => {}
         Stmt::Block { .. } => {}
         Stmt::EnumDecl { .. } | Stmt::TypeAlias { .. } | Stmt::InterfaceDecl { .. } => {}
+        Stmt::Using { .. } => {}
     }
 }
 
@@ -427,7 +428,8 @@ pub(super) fn collect_assigned_names_in_expr(expr: &Expr, names: &mut HashSet<St
         | Expr::NewTarget { .. }
         | Expr::ImportMeta { .. }
         | Expr::PrivateIdent { .. }
-        | Expr::Ident { .. } => {}
+        | Expr::Ident { .. }
+        | Expr::Topic { .. } => {}
     }
 }
 
@@ -905,6 +907,6 @@ pub(super) fn expr_contains_bigint(expr: &Expr) -> bool {
         | Expr::Undefined { .. }
         | Expr::PrivateIdent { .. }
         | Expr::Ident { .. } => false,
-        Expr::NewTarget { .. } | Expr::ImportMeta { .. } => false,
+        Expr::NewTarget { .. } | Expr::ImportMeta { .. } | Expr::Topic { .. } => false,
     }
 }
