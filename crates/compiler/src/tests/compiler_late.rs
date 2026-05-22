@@ -112,6 +112,30 @@ fn build_file_writes_binary_without_wat2wasm_fallback() {
 }
 
 #[test]
+fn build_file_fails_when_native_binary_backend_rejects_program() {
+    let dir = unique_temp_dir("build-native-backend-rejects");
+    std::fs::create_dir_all(&dir).expect("temp dir should be created");
+    let input = dir.join("entry.ts");
+    let output = dir.join("out.wasm");
+    std::fs::write(&input, "\"side-effect-free\";\n").expect("source should be written");
+
+    let err = build_file(&input, &output).expect_err("build should not accept WAT fallback");
+    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    assert_eq!(err.phase.as_deref(), Some("backend"));
+    assert!(
+        err.message
+            .contains("native LoweredProgram emitter does not support this expression"),
+        "unexpected backend error: {err:?}"
+    );
+    assert!(
+        !output.exists(),
+        "native backend rejection should not write a wasm output"
+    );
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn parses_program_with_line_comment_prefix() {
     let program = parse_program("// lead comment\nconsole.log(1);").unwrap();
     assert_eq!(program.len(), 1);
@@ -1026,6 +1050,7 @@ fn array_push_grow_emits_dedicated_helper_boundary() {
     assert!(wat.contains("(call $alloc_heap"));
     assert!(wat.contains("(call $copy"));
 
-    let wasm_bytes = backend::emit_wasm_binary(&v).expect("array push helper should emit wasm");
+    let wasm_bytes = backend::emit_wasm_binary_with_wat_debug_fallback(&v)
+        .expect("array push helper should emit debug fallback wasm");
     assert_eq!(&wasm_bytes[..4], b"\0asm");
 }

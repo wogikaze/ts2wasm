@@ -119,10 +119,18 @@ pub fn emit_wasm_binary_native_with_abi(
 
 /// Emit a validated lowered program to WASM binary.
 ///
-/// This is the high-level entry point: it uses the native `WasmModule`
-/// backend for supported `LoweredProgram` shapes and keeps the WAT parser
-/// path as the explicit compatibility fallback while native coverage grows.
+/// This is the build-facing entry point: it uses the native `WasmModule`
+/// backend and reports unsupported native shapes instead of accepting a WAT
+/// conversion fallback as build success.
 pub fn emit_wasm_binary(program: &Validated<LoweredProgram>) -> Result<Vec<u8>, Diagnostic> {
+    emit_wasm_binary_native(program)
+}
+
+/// Debug-only WAT fallback for tests and dump-style probes that intentionally
+/// inspect legacy WAT coverage while native binary coverage grows.
+pub fn emit_wasm_binary_with_wat_debug_fallback(
+    program: &Validated<LoweredProgram>,
+) -> Result<Vec<u8>, Diagnostic> {
     match emit_wasm_binary_native(program) {
         Ok(bytes) => return Ok(bytes),
         Err(err)
@@ -146,6 +154,15 @@ pub fn emit_wasm_binary_with_abi(
     program: &Validated<LoweredProgram>,
     abi_metadata: &AbiMetadata,
 ) -> Result<Vec<u8>, Diagnostic> {
+    emit_wasm_binary_native_with_abi(program, abi_metadata)
+}
+
+/// Debug-only WAT fallback variant that appends ABI metadata after legacy WAT
+/// conversion. Build paths should use `emit_wasm_binary_with_abi`.
+pub fn emit_wasm_binary_with_abi_wat_debug_fallback(
+    program: &Validated<LoweredProgram>,
+    abi_metadata: &AbiMetadata,
+) -> Result<Vec<u8>, Diagnostic> {
     match emit_wasm_binary_native_with_abi(program, abi_metadata) {
         Ok(bytes) => return Ok(bytes),
         Err(err)
@@ -156,7 +173,8 @@ pub fn emit_wasm_binary_with_abi(
         Err(err) => return Err(err),
     }
 
-    emit_wasm_binary(program).map(|bytes| append_abi_custom_section(&bytes, abi_metadata))
+    emit_wasm_binary_with_wat_debug_fallback(program)
+        .map(|bytes| append_abi_custom_section(&bytes, abi_metadata))
 }
 
 pub fn program_requires_read_stdin_bytes_runtime(program: &LoweredProgram) -> bool {
@@ -200,6 +218,7 @@ mod tests {
     use super::{
         emit_canonical_manifest_json, emit_wasm_binary, emit_wasm_binary_mvp,
         emit_wasm_binary_native, emit_wasm_binary_native_with_abi, emit_wasm_binary_with_abi,
+        emit_wasm_binary_with_abi_wat_debug_fallback, emit_wasm_binary_with_wat_debug_fallback,
         emit_wasm_module_binary, emit_wasm_module_native, emit_wasm_module_native_with_abi,
         emit_wat, emitter::LocalFrame,
     };
@@ -796,7 +815,27 @@ mod tests {
     }
 
     #[test]
-    fn emit_wasm_binary_falls_back_to_wat_for_unsupported_native_shape() {
+    fn emit_wasm_binary_rejects_unsupported_native_shape_without_wat_fallback() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::String("side-effect-free".to_owned(), span),
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let native_err = emit_wasm_binary_native(&v).expect_err("native subset should reject");
+        assert_eq!(native_err.code, DiagCode::UnsupportedSyntax);
+        let public_err = emit_wasm_binary(&v).expect_err("public binary API should reject");
+        assert_eq!(public_err.code, DiagCode::UnsupportedSyntax);
+    }
+
+    #[test]
+    fn emit_wasm_binary_wat_debug_fallback_accepts_unsupported_native_shape() {
         let span = Span::generated("test");
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(
@@ -813,13 +852,16 @@ mod tests {
         assert_eq!(native_err.code, DiagCode::UnsupportedSyntax);
         assert!(
             wasmparser::Validator::new()
-                .validate_all(&emit_wasm_binary(&v).expect("main binary should fall back"))
+                .validate_all(
+                    &emit_wasm_binary_with_wat_debug_fallback(&v)
+                        .expect("debug fallback should emit")
+                )
                 .is_ok()
         );
     }
 
     #[test]
-    fn emit_wasm_binary_with_abi_embeds_section_for_native_and_fallback_paths() {
+    fn emit_wasm_binary_with_abi_embeds_section_for_native_path() {
         let span = Span::generated("test");
         let native_program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(
@@ -834,6 +876,25 @@ mod tests {
             functions: vec![],
             modules: vec![],
         };
+        let (native, _) = Validated::new(native_program).expect("native program should validate");
+        let abi_metadata = AbiMetadata::default();
+        let expected_payload = abi_metadata.to_custom_section_payload();
+
+        let native_wasm =
+            emit_wasm_binary_native_with_abi(&native, &abi_metadata).expect("native should emit");
+        let public_native_wasm =
+            emit_wasm_binary_with_abi(&native, &abi_metadata).expect("public native should emit");
+
+        assert_eq!(public_native_wasm, native_wasm);
+        assert_eq!(
+            wasm_custom_section_payload(&public_native_wasm, ABI_CUSTOM_SECTION_NAME),
+            Some(expected_payload.as_slice())
+        );
+    }
+
+    #[test]
+    fn emit_wasm_binary_with_abi_debug_fallback_embeds_section() {
+        let span = Span::generated("test");
         let fallback_program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(
                 LoweredExpr::String("side-effect-free".to_owned(), span),
@@ -843,26 +904,20 @@ mod tests {
             functions: vec![],
             modules: vec![],
         };
-        let (native, _) = Validated::new(native_program).expect("native program should validate");
         let (fallback, _) =
             Validated::new(fallback_program).expect("fallback program should validate");
         let abi_metadata = AbiMetadata::default();
         let expected_payload = abi_metadata.to_custom_section_payload();
 
-        let native_wasm =
-            emit_wasm_binary_native_with_abi(&native, &abi_metadata).expect("native should emit");
-        let public_native_wasm =
-            emit_wasm_binary_with_abi(&native, &abi_metadata).expect("public native should emit");
-        let public_fallback_wasm =
-            emit_wasm_binary_with_abi(&fallback, &abi_metadata).expect("fallback should emit");
+        let public_err =
+            emit_wasm_binary_with_abi(&fallback, &abi_metadata).expect_err("native should reject");
+        assert_eq!(public_err.code, DiagCode::UnsupportedSyntax);
+        let debug_fallback_wasm =
+            emit_wasm_binary_with_abi_wat_debug_fallback(&fallback, &abi_metadata)
+                .expect("debug fallback should emit");
 
-        assert_eq!(public_native_wasm, native_wasm);
         assert_eq!(
-            wasm_custom_section_payload(&public_native_wasm, ABI_CUSTOM_SECTION_NAME),
-            Some(expected_payload.as_slice())
-        );
-        assert_eq!(
-            wasm_custom_section_payload(&public_fallback_wasm, ABI_CUSTOM_SECTION_NAME),
+            wasm_custom_section_payload(&debug_fallback_wasm, ABI_CUSTOM_SECTION_NAME),
             Some(expected_payload.as_slice())
         );
     }
