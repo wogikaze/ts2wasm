@@ -3443,7 +3443,14 @@ impl super::super::Resolver {
         // expansion even for non-ident receivers
         if matches!(
             method,
-            "forEach" | "find" | "findIndex" | "findLast" | "findLastIndex"
+            "forEach"
+                | "find"
+                | "findIndex"
+                | "findLast"
+                | "findLastIndex"
+                | "every"
+                | "some"
+                | "filter"
         ) && !args.is_empty()
             && match &args[0] {
                 ResolvedExpr::ArrowFn { .. }
