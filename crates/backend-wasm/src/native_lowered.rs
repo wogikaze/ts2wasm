@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use ts2wasm_ir::builtin::BuiltinId;
 use ts2wasm_ir::lowered::{
     FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredFunction,
-    LoweredProgram, LoweredStmt, Validated,
+    LoweredProgram, LoweredStmt, ModuleInfo, Validated,
 };
 use ts2wasm_runtime_abi::consts::RuntimeConst;
 use ts2wasm_runtime_abi::{Layout, ValueTag};
@@ -59,11 +59,14 @@ struct NativeLoweredEmitter<'a> {
     next_data_offset: u32,
     newline_offset: u32,
     function_results: HashMap<FuncId, bool>,
+    module_export_globals: HashMap<(usize, String), String>,
+    module_export_global_order: Vec<String>,
 }
 
 struct FunctionCtx {
     locals: HashMap<LocalId, usize>,
     returns_value: bool,
+    module_id: Option<usize>,
 }
 
 impl<'a> NativeLoweredEmitter<'a> {
@@ -79,16 +82,12 @@ impl<'a> NativeLoweredEmitter<'a> {
             next_data_offset: Layout::DATA_START + 1,
             newline_offset: Layout::DATA_START,
             function_results,
+            module_export_globals: HashMap::new(),
+            module_export_global_order: Vec::new(),
         }
     }
 
     fn emit(mut self) -> Result<WasmModule, Diagnostic> {
-        if !self.program.modules.is_empty() {
-            return Err(unsupported(
-                "native LoweredProgram emitter does not support modules yet",
-            ));
-        }
-
         let mut module = WasmModule::new()
             .import(wasm_import_from_host_spec(&HostImport::FdWrite.spec()))
             .memory(WasmMemory::exported(
@@ -98,12 +97,19 @@ impl<'a> NativeLoweredEmitter<'a> {
             ))
             .global(WasmGlobal::i32_mut("$heap", Layout::HEAP_START as i32));
 
+        self.collect_module_exports();
+        for symbol in &self.module_export_global_order {
+            module = module.global(WasmGlobal::i32_mut(symbol, ValueTag::UNDEFINED));
+        }
         module = module.function(self.build_write_buf());
         module = module.function(self.build_write_newline());
         module = module.function(self.build_write_i32_small());
 
         for function in &self.program.functions {
             module = module.function(self.emit_function(function)?);
+        }
+        for module_info in &self.program.modules {
+            module = module.function(self.emit_module_init(module_info)?);
         }
 
         let start = self.emit_start()?;
@@ -117,6 +123,25 @@ impl<'a> NativeLoweredEmitter<'a> {
         }
 
         Ok(module)
+    }
+
+    fn collect_module_exports(&mut self) {
+        for module in &self.program.modules {
+            for stmt in &module.statements {
+                match stmt {
+                    LoweredStmt::Export { name, .. }
+                    | LoweredStmt::ModuleExportsUpdate { name, .. } => {
+                        let key = (module.id, name.clone());
+                        if !self.module_export_globals.contains_key(&key) {
+                            let symbol = module_export_global_symbol(module.id, name);
+                            self.module_export_globals.insert(key, symbol.clone());
+                            self.module_export_global_order.push(symbol);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
     }
 
     fn emit_function(&mut self, function: &LoweredFunction) -> Result<WasmFunction, Diagnostic> {
@@ -147,6 +172,7 @@ impl<'a> NativeLoweredEmitter<'a> {
         let ctx = FunctionCtx {
             locals,
             returns_value,
+            module_id: None,
         };
         let mut body = Vec::new();
         self.emit_stmts(&function.body, &ctx, &mut body)?;
@@ -167,9 +193,30 @@ impl<'a> NativeLoweredEmitter<'a> {
         let ctx = FunctionCtx {
             locals,
             returns_value: false,
+            module_id: None,
         };
         let mut body = Vec::new();
+        for module_info in &self.program.modules {
+            body.push(WasmInstr::Call(module_init_symbol(module_info.id)));
+        }
         self.emit_stmts(&self.program.top_level_statements, &ctx, &mut body)?;
+        Ok(wasm.body(body))
+    }
+
+    fn emit_module_init(&mut self, module_info: &ModuleInfo) -> Result<WasmFunction, Diagnostic> {
+        let mut wasm = WasmFunction::new(module_init_symbol(module_info.id));
+        let mut locals = HashMap::new();
+        for index in 0..module_info.locals_count {
+            locals.insert(LocalId(index), index);
+            wasm = wasm.local(WasmValType::I32);
+        }
+        let ctx = FunctionCtx {
+            locals,
+            returns_value: false,
+            module_id: Some(module_info.id),
+        };
+        let mut body = Vec::new();
+        self.emit_stmts(&module_info.statements, &ctx, &mut body)?;
         Ok(wasm.body(body))
     }
 
@@ -247,6 +294,16 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out.push(WasmInstr::Return);
                 Ok(())
             }
+            LoweredStmt::Export { name, expr, .. } => {
+                self.emit_expr(expr, ctx, out)?;
+                out.push(WasmInstr::GlobalSet(module_export_global(ctx, name)?));
+                Ok(())
+            }
+            LoweredStmt::ModuleExportsUpdate { name, local, .. } => {
+                out.push(WasmInstr::LocalGet(local_index(ctx, *local)?));
+                out.push(WasmInstr::GlobalSet(module_export_global(ctx, name)?));
+                Ok(())
+            }
             _ => Err(unsupported(
                 "native LoweredProgram emitter does not support this statement",
             )),
@@ -288,6 +345,21 @@ impl<'a> NativeLoweredEmitter<'a> {
                 self.emit_expr(right, ctx, out)?;
                 out.push(binary_op_instr(*op)?);
                 Ok(())
+            }
+            LoweredExpr::PropertyGet { obj, key, .. } => {
+                if let LoweredExpr::ModuleLoad { module_id, .. } = obj.as_ref() {
+                    let symbol = self
+                        .module_export_globals
+                        .get(&(*module_id, key.clone()))
+                        .ok_or_else(|| {
+                            unsupported("native LoweredProgram emitter missing module export")
+                        })?;
+                    out.push(WasmInstr::GlobalGet(symbol.clone()));
+                    return Ok(());
+                }
+                Err(unsupported(
+                    "native LoweredProgram emitter does not support this property get",
+                ))
             }
             LoweredExpr::Call { kind, args, .. } => {
                 match kind {
@@ -481,6 +553,36 @@ impl<'a> NativeLoweredEmitter<'a> {
                 WasmInstr::Call(WRITE_BUF_SYMBOL.to_owned()),
             ])
     }
+}
+
+fn module_init_symbol(module_id: usize) -> String {
+    format!("$native_module_init_{module_id}")
+}
+
+fn module_export_global_symbol(module_id: usize, name: &str) -> String {
+    format!("$native_module_{module_id}_export_{}", sanitize_symbol(name))
+}
+
+fn sanitize_symbol(name: &str) -> String {
+    let mut out = String::new();
+    for ch in name.chars() {
+        if ch.is_ascii_alphanumeric() || ch == '_' {
+            out.push(ch);
+        } else {
+            out.push('_');
+        }
+    }
+    if out.is_empty() {
+        out.push_str("empty");
+    }
+    out
+}
+
+fn module_export_global(ctx: &FunctionCtx, name: &str) -> Result<String, Diagnostic> {
+    let module_id = ctx.module_id.ok_or_else(|| {
+        unsupported("native LoweredProgram emitter cannot export outside module initializer")
+    })?;
+    Ok(module_export_global_symbol(module_id, name))
 }
 
 fn binary_op_instr(op: LoweredBinaryOp) -> Result<WasmInstr, Diagnostic> {
