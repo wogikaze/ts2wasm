@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use ts2wasm_ir::builtin::BuiltinId;
 use ts2wasm_ir::lowered::{
-    FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredFunction,
-    LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo, Validated,
+    ClosureRepresentation, FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr,
+    LoweredFunction, LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo, Validated,
 };
 use ts2wasm_runtime_abi::consts::RuntimeConst;
 use ts2wasm_runtime_abi::{Layout, ValueTag};
@@ -584,6 +584,14 @@ impl<'a> NativeLoweredEmitter<'a> {
             LoweredExpr::Block { stmts, result, .. } => {
                 self.emit_stmts(stmts, ctx, out)?;
                 self.emit_expr(result, ctx, out)
+            }
+            LoweredExpr::ArrowFn {
+                func_id,
+                representation: ClosureRepresentation::DirectLocalToken,
+                ..
+            } => {
+                out.push(WasmInstr::I32Const(func_id.0 as i32));
+                Ok(())
             }
             LoweredExpr::PropertyGet { obj, key, .. } => {
                 if let LoweredExpr::ModuleLoad { module_id, .. } = obj.as_ref() {

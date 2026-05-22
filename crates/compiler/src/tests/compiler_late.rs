@@ -929,6 +929,7 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
         ("../../fixtures/core-statements/while.ts", "0\n1\n2\n"),
         ("../../fixtures/core-statements/for.ts", "0\n1\n2\n"),
         ("../../fixtures/core-statements/do-while.ts", "0\n1\n2\n"),
+        ("../../fixtures/core-statements/function.ts", "42\n"),
         ("../../fixtures/core-statements/labeled.ts", "1\n"),
         ("../../fixtures/core-statements/switch.ts", "1\n"),
     ] {

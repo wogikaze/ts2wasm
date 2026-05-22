@@ -228,9 +228,9 @@ mod tests {
     use ts2wasm_diagnostic::DiagCode;
     use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{
-        ClassPrototypeRef, FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr,
-        LoweredFunction, LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo, ModuleLoadKind,
-        RuntimeFn, Validated,
+        ClassPrototypeRef, ClosureRepresentation, FuncId, FunctionCallKind, LocalId,
+        LoweredBinaryOp, LoweredExpr, LoweredFunction, LoweredProgram, LoweredStmt, LoweredUnaryOp,
+        ModuleInfo, ModuleLoadKind, RuntimeFn, Validated,
     };
     use ts2wasm_runtime_abi::{Layout, ValueTag};
     use ts2wasm_shared::abi::{ABI_CUSTOM_SECTION_NAME, AbiMetadata};
@@ -749,6 +749,64 @@ mod tests {
         fs::write(&wasm_path, wasm).expect("native wasm should be written");
 
         assert_eq!(run_iwasm(&wasm_path), "7\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_direct_function_binding_runs_without_wat_conversion() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(
+                    LocalId(0),
+                    LoweredExpr::ArrowFn {
+                        func_id: FuncId(0),
+                        captures: vec![],
+                        representation: ClosureRepresentation::DirectLocalToken,
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Call {
+                            kind: FunctionCallKind::User(FuncId(0)),
+                            args: vec![],
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![LoweredFunction {
+                id: FuncId(0),
+                params: vec![],
+                uses_receiver: false,
+                min_required_params: 0,
+                rest_param_index: None,
+                metadata_length: None,
+                metadata_name: Some("f".to_owned()),
+                locals: vec![],
+                body: vec![LoweredStmt::Return(LoweredExpr::Number(42, span), span)],
+                recursion_depth: 0,
+                is_async: false,
+                is_generator: false,
+                generator_state: None,
+            }],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native function binding should emit");
+        let temp_dir = unique_temp_dir("native-lowered-function-binding");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "42\n");
         let _ = fs::remove_dir_all(temp_dir);
     }
 
