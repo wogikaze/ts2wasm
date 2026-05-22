@@ -24,7 +24,6 @@ impl Parser {
             loop_depth: 0,
             switch_depth: 0,
             has_default_export: false,
-            in_class_field_init: false,
             class_private_fields: HashMap::new(),
             namespace_names_encountered: HashSet::new(),
             namespace_stub_counter: 0,

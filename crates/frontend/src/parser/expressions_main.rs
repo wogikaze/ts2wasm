@@ -669,9 +669,7 @@ impl Parser {
         self.expect(TokenKind::Arrow)?;
         let mut body_stmts = Vec::new();
         let body = if matches!(self.peek(), Some(Token::LeftBrace)) {
-            self.fn_depth += 1;
             let block_stmts = self.block()?;
-            self.fn_depth -= 1;
             match block_stmts.split_last() {
                 Some((Stmt::Return { expr, .. }, rest)) => {
                     body_stmts.extend_from_slice(rest);
@@ -1302,13 +1300,13 @@ impl Parser {
                     },
                 })
             } else {
-                if (self.fn_depth > 0 || self.in_class_field_init) && !self.in_async_fn {
+                if self.fn_depth > 0 && !self.in_async_fn {
                     return Err(Diagnostic {
-                        code: DiagCode::SyntaxError,
+                        code: DiagCode::UnsupportedSyntax,
                         message: "'await' expressions are only allowed within async functions and at the top levels of modules".to_owned(),
                         span: Some(await_span),
 
-                        phase: Some("parser"),});
+                        phase: None,});
                 }
                 let expr = self.unary()?;
                 let end = expr.span().end;
@@ -1334,11 +1332,10 @@ impl Parser {
                 self.advance(); // consume '.'
                 self.advance(); // consume 'target' ident
                 let end = self.prev_span().map(|s| s.end).unwrap_or(new_span.end);
-                if self.fn_depth == 0 && !self.in_class_field_init {
+                if self.fn_depth == 0 {
                     return Err(Diagnostic {
                         code: DiagCode::SyntaxError,
-                        message: "'new.target' is only valid inside functions and class constructors"
-                            .to_owned(),
+                        message: "'new.target' is only valid inside functions and class constructors".to_owned(),
                         span: Some(Span { start: new_span.start, end }),
                         phase: Some("parser"),
                     });
