@@ -955,6 +955,10 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "2.999232\n2.999232\ntrue\ntrue\ntrue\ntrue\n",
         ),
         (
+            "../../fixtures/core-expressions/object-literal-computed-function-keys.ts",
+            "fn\nfn\narrow\narrow\nasync\nasync\nundefined\nundefined\ngenerator\ngenerator\n",
+        ),
+        (
             "../../fixtures/core-expressions/object-literal-computed-identity-method-call.ts",
             "A\nD\n",
         ),
