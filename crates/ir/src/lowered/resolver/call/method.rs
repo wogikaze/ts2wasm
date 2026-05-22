@@ -3438,9 +3438,8 @@ impl super::super::Resolver {
             return Ok(None);
         }
 
-        // Array.prototype.forEach/find/findIndex/findLast/findLastIndex with
-        // ArrowFn/FunctionExpr callback — route through IR-level While loop
-        // expansion even for non-ident receivers
+        // Array.prototype callback methods with ArrowFn/FunctionExpr callback —
+        // route through IR-level While loop expansion even for non-ident receivers
         if matches!(
             method,
             "forEach"
@@ -3451,6 +3450,8 @@ impl super::super::Resolver {
                 | "every"
                 | "some"
                 | "filter"
+                | "reduce"
+                | "reduceRight"
         ) && !args.is_empty()
             && match &args[0] {
                 ResolvedExpr::ArrowFn { .. }
