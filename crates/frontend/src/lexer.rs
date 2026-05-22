@@ -98,11 +98,33 @@ impl<'a> Lexer<'a> {
         let mut escaped = false;
         let mut in_class = false;
         let mut terminated = false;
+        let mut named_capture_groups: Vec<String> = Vec::new();
 
         while let Some(ch) = self.peek_char() {
             if escaped {
                 pattern.push(ch);
                 escaped = false;
+
+                // After \\p or \\P, consume {...} as a Unicode property escape
+                if matches!(ch, 'p' | 'P') && self.peek_char() == Some('{') {
+                    pattern.push('{');
+                    self.advance_char();
+                    loop {
+                        match self.peek_char() {
+                            Some('}') => {
+                                pattern.push('}');
+                                self.advance_char();
+                                break;
+                            }
+                            Some(c) => {
+                                pattern.push(c);
+                                self.advance_char();
+                            }
+                            None => break,
+                        }
+                    }
+                    continue;
+                }
             } else if ch == '\\' {
                 pattern.push(ch);
                 escaped = true;
@@ -131,6 +153,39 @@ impl<'a> Lexer<'a> {
                     terminated = true;
                     break;
                 }
+            } else if ch == '(' && !in_class && self.starts_with("(?<") {
+                // Named capture group (?<name>...) or lookbehind (?<=...)/(?<!...)
+                pattern.push('(');
+                self.advance_char();
+                pattern.push('?');
+                self.advance_char();
+                pattern.push('<');
+                self.advance_char();
+                if let Some(next) = self.peek_char() {
+                    if matches!(next, '=' | '!') {
+                        pattern.push(next);
+                        self.advance_char();
+                    } else {
+                        let mut name = String::new();
+                        loop {
+                            match self.peek_char() {
+                                Some('>') => {
+                                    pattern.push('>');
+                                    self.advance_char();
+                                    break;
+                                }
+                                Some(c) => {
+                                    name.push(c);
+                                    pattern.push(c);
+                                    self.advance_char();
+                                }
+                                None => break,
+                            }
+                        }
+                        named_capture_groups.push(name);
+                    }
+                }
+                continue;
             } else {
                 pattern.push(ch);
             }
@@ -197,6 +252,7 @@ impl<'a> Lexer<'a> {
                 pattern,
                 flags,
                 raw,
+                named_capture_groups,
             },
             span: Span {
                 start,
