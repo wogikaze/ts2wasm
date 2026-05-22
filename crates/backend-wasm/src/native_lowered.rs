@@ -753,6 +753,14 @@ impl<'a> NativeLoweredEmitter<'a> {
             return Ok(false);
         };
         match value {
+            LoweredExpr::Number(_, _)
+            | LoweredExpr::Bool(_, _)
+            | LoweredExpr::Null(_)
+            | LoweredExpr::Undefined(_) => {
+                self.emit_expr(&value, ctx, out)?;
+                out.push(WasmInstr::LocalSet(local_index(ctx, local)?));
+                Ok(true)
+            }
             LoweredExpr::String(_, _)
             | LoweredExpr::DecimalNumber(_, _)
             | LoweredExpr::BigIntLiteral { .. } => {
@@ -775,6 +783,13 @@ impl<'a> NativeLoweredEmitter<'a> {
             return Ok(false);
         };
         match value {
+            LoweredExpr::Number(_, _)
+            | LoweredExpr::Bool(_, _)
+            | LoweredExpr::Null(_)
+            | LoweredExpr::Undefined(_) => {
+                self.emit_expr(&value, ctx, out)?;
+                Ok(true)
+            }
             LoweredExpr::String(_, _)
             | LoweredExpr::DecimalNumber(_, _)
             | LoweredExpr::BigIntLiteral { .. } => {
@@ -2202,6 +2217,9 @@ fn static_value_from_expr(
             merged.extend(static_array_from_expr(&args[1], locals)?);
             Some(StaticValue::Array(merged))
         }
+        LoweredExpr::PromiseGetValue { promise, .. } => {
+            static_promise_resolve_value_from_expr(promise, locals)
+        }
         LoweredExpr::Block { stmts, result, .. } => {
             let mut nested_locals = locals.clone();
             collect_static_locals(stmts, &mut nested_locals);
@@ -2236,6 +2254,24 @@ fn static_value_from_expr(
         }
         _ => None,
     }
+}
+
+fn static_promise_resolve_value_from_expr(
+    expr: &LoweredExpr,
+    locals: &HashMap<LocalId, StaticValue>,
+) -> Option<StaticValue> {
+    let LoweredExpr::RuntimeCall {
+        intrinsic: RuntimeFn::PromiseResolve,
+        args,
+        ..
+    } = expr
+    else {
+        return None;
+    };
+    if args.len() != 1 {
+        return None;
+    }
+    static_value_from_expr(&args[0], locals)
 }
 
 fn static_array_from_expr(
