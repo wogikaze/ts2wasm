@@ -26,6 +26,7 @@ impl Parser {
             has_default_export: false,
             class_private_fields: HashMap::new(),
             namespace_names_encountered: HashSet::new(),
+            namespace_stub_counter: 0,
             source: source.to_owned(),
         }
     }

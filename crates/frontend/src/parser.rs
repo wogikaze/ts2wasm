@@ -30,6 +30,8 @@ pub struct Parser {
     /// Maps class names to their TypeScript-`private` field names (erased at runtime).
     class_private_fields: HashMap<String, Vec<String>>,
     namespace_names_encountered: HashSet<String>,
+    /// Counter for generating unique namespace stub names.
+    namespace_stub_counter: u32,
     /// The original source text (used for Function.prototype.toString etc.).
     source: String,
 }

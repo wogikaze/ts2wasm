@@ -448,6 +448,13 @@ impl Parser {
                 self.advance(); // consume 'module' (or reuse outer advance)
                 self.advance(); // consume string literal name
                 if matches!(self.peek(), Some(Token::LeftBrace)) {
+                    // Push an AmbientValueDecl so the multi-section pipeline
+                    // sees a non-empty program and skips the namespace-only check
+                    self.pending_statements.push(Stmt::AmbientValueDecl {
+                        name: "__ts_module_augmentation_stub".to_owned(),
+                        span: declare_span,
+                        is_var: false,
+                    });
                     self.skip_balanced_brace_block(declare_span)?;
                 } else if matches!(self.peek(), Some(Token::Semicolon)) {
                     self.advance();
@@ -676,7 +683,8 @@ impl Parser {
                 return Ok(false);
             }
         }
-        // if left brace follows, skip balanced brace block
+        // if left brace follows, emit a stub let-binding for the namespace name
+        // so the multi-section pipeline does not reject the section as empty
         if matches!(self.peek(), Some(Token::LeftBrace)) {
             let span = self.peek_span().unwrap_or(Span {
                 start: self.cursor,
@@ -684,6 +692,16 @@ impl Parser {
             });
             self.validate_erased_namespace_implements(span)?;
             self.validate_erased_namespace_typed_locals(span)?;
+            // Push a Let with a unique stub name so it survives the pipeline
+            // and prevents the "namespace-only declarations" error
+            let stub_idx = self.namespace_stub_counter;
+            self.namespace_stub_counter += 1;
+            self.pending_statements.push(Stmt::Let {
+                name: format!("__ts_ns_stub_{stub_idx}"),
+                expr: Expr::Undefined { span },
+                span,
+                is_var: false,
+            });
             self.skip_balanced_brace_block(span)?;
         } else if matches!(self.peek(), Some(Token::Semicolon)) {
             self.consume(TokenKind::Semicolon);

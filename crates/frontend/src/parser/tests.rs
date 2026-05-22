@@ -505,16 +505,19 @@ mod tests {
 
     #[test]
     fn parses_ambient_module_declarations_as_erased_syntax() {
-        // `declare namespace Foo.Bar { }` pushes AmbientValueDecl { name: "Foo" } for name registration (issue 5370).
+        // `declare namespace Foo.Bar { }` pushes AmbientValueDecl { name: "Foo" } for name registration (issue 5370)
+        // followed by a Stmt::Let stub so the multi-section pipeline sees a non-empty section.
         let program = parse_program("declare namespace Foo.Bar { export var foo; };")
             .expect("ambient namespace should be erased");
-        assert_eq!(program.len(), 1);
+        assert_eq!(program.len(), 2);
         assert!(matches!(&program[0], Stmt::AmbientValueDecl { name, .. } if name == "Foo"));
+        assert!(matches!(&program[1], Stmt::Let { name, .. } if name.starts_with("__ts_ns_stub_")));
 
         let program = parse_program("declare namespace Single { }")
             .expect("ambient simple namespace should be erased");
-        assert_eq!(program.len(), 1);
+        assert_eq!(program.len(), 2);
         assert!(matches!(&program[0], Stmt::AmbientValueDecl { name, .. } if name == "Single"));
+        assert!(matches!(&program[1], Stmt::Let { name, .. } if name.starts_with("__ts_ns_stub_")));
     }
 
     #[test]
@@ -537,17 +540,23 @@ mod tests {
             let stmts = parse_program(source).unwrap_or_else(|e| {
                 panic!("namespace/internal module declarations should be erased: {source}: {e:?}")
             });
+            assert_eq!(
+                stmts.len(),
+                1,
+                "expected one stub let-binding for {source}"
+            );
             assert!(
-                stmts.is_empty(),
-                "expected no runtime statements for {source}"
+                matches!(&stmts[0], Stmt::Let { name, .. } if name.starts_with("__ts_ns_stub_")),
+                "expected __ts_ns_stub_ let-binding for {source}"
             );
         }
 
         // Verify that runtime statements after erasure still parse correctly
         let program = parse_program("namespace M { } let x = 1;")
             .expect("namespace followed by runtime code should parse");
-        assert_eq!(program.len(), 1);
-        assert!(matches!(program[0], Stmt::Let { .. }));
+        assert_eq!(program.len(), 2);
+        assert!(matches!(&program[0], Stmt::Let { name, .. } if name.starts_with("__ts_ns_stub_")));
+        assert!(matches!(program[1], Stmt::Let { .. }));
     }
 
     #[test]
@@ -564,7 +573,8 @@ mod tests {
         let program =
             parse_program("namespace M { interface I {} export class C implements I {} }")
                 .expect("local namespace interface should satisfy erased implements reference");
-        assert!(program.is_empty());
+        assert_eq!(program.len(), 1);
+        assert!(matches!(&program[0], Stmt::Let { name, .. } if name.starts_with("__ts_ns_stub_")));
     }
 
     #[test]
@@ -587,7 +597,8 @@ mod tests {
         let stmts =
             parse_program("namespace Test { export class Bug { bug() { var name = null; } } }")
                 .expect("untyped null in erased namespace should not report TS2322");
-        assert!(stmts.is_empty());
+        assert_eq!(stmts.len(), 1);
+        assert!(matches!(&stmts[0], Stmt::Let { name, .. } if name.starts_with("__ts_ns_stub_")));
     }
 
     #[test]

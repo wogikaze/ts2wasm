@@ -31,16 +31,6 @@ fn validate_nested_function_receiver_support(
     options: &NestedFunctionOptions,
     strict_context: bool,
 ) -> Result<(), Diagnostic> {
-    if params.iter().any(|param| param.is_rest) && !options.suppress_captures {
-        return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!(
-                "issue-062e: nested function `{name}` closure rest parameters are not supported in this slice"
-            ),
-            span: None,
-            phase: None,
-        });
-    }
     if !block_contains_this(body) && !block_contains_arguments(body) {
         return Ok(());
     }
@@ -264,17 +254,6 @@ impl super::Resolver {
         body: &[ResolvedStmt],
         is_async: bool,
     ) -> Result<LoweredExpr, Diagnostic> {
-        if params.iter().any(|param| param.is_rest) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-062e: nested function `{name}` closure rest parameters are not supported in this slice"
-                ),
-                span: None,
-
-                phase: None,
-            });
-        }
         if block_contains_this(body) {
             // If the function has an explicit `this` parameter (TypeScript syntax),
             // the `this` references are valid receiver accesses, not closure captures.
@@ -353,6 +332,7 @@ impl super::Resolver {
                 needs_arguments: (block_contains_arguments(body)
                     || block_contains_dynamic_direct_eval(body))
                     && !params.iter().any(|param| param.name == "arguments"),
+                has_rest: params.iter().any(|param| param.is_rest),
                 ..FunctionSignature::default()
             },
         );
