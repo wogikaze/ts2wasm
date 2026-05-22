@@ -639,9 +639,7 @@ impl<'a> NativeLoweredEmitter<'a> {
         };
         for (key, value) in props {
             let Some(slot) = slots.get(key).copied() else {
-                return Err(unsupported(
-                    "native LoweredProgram emitter static object slot mismatch",
-                ));
+                continue;
             };
             self.emit_expr(value, ctx, out)?;
             out.push(WasmInstr::LocalSet(slot));
@@ -999,6 +997,10 @@ impl<'a> NativeLoweredEmitter<'a> {
             if index > 0 {
                 self.emit_static_bytes(b" ", out);
             }
+            if let Some(bytes) = self.try_emit_static_console_arg(arg, ctx, out)? {
+                self.emit_static_bytes(&bytes, out);
+                continue;
+            }
             match arg {
                 LoweredExpr::String(value, _) => self.emit_static_bytes(value.as_bytes(), out),
                 LoweredExpr::Unary {
@@ -1035,6 +1037,22 @@ impl<'a> NativeLoweredEmitter<'a> {
         }
         out.push(WasmInstr::Call(WRITE_NEWLINE_SYMBOL.to_owned()));
         Ok(true)
+    }
+
+    fn try_emit_static_console_arg(
+        &mut self,
+        expr: &LoweredExpr,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<Option<Vec<u8>>, Diagnostic> {
+        if let LoweredExpr::Block { stmts, result, .. } = expr {
+            if let Some(bytes) = static_console_arg_bytes(result, ctx) {
+                self.emit_stmts(stmts, ctx, out)?;
+                return Ok(Some(bytes));
+            }
+            return Ok(None);
+        }
+        Ok(static_console_arg_bytes(expr, ctx))
     }
 
     fn emit_static_bytes(&mut self, bytes: &[u8], out: &mut Vec<WasmInstr>) {
@@ -1402,6 +1420,33 @@ fn native_console_arg_type(expr: &LoweredExpr, ctx: &FunctionCtx) -> InferredTyp
     }
 }
 
+fn static_console_arg_bytes(expr: &LoweredExpr, ctx: &FunctionCtx) -> Option<Vec<u8>> {
+    match expr {
+        LoweredExpr::Number(value, _) => Some(value.to_string().into_bytes()),
+        LoweredExpr::String(value, _) => Some(value.as_bytes().to_vec()),
+        LoweredExpr::Bool(value, _) => {
+            Some(if *value { &b"true"[..] } else { &b"false"[..] }.to_vec())
+        }
+        LoweredExpr::Null(_) => Some(b"null".to_vec()),
+        LoweredExpr::Undefined(_) => Some(b"undefined".to_vec()),
+        LoweredExpr::PropertyGet { obj, key, .. }
+        | LoweredExpr::OptionalPropertyGet { obj, key, .. } => {
+            if static_object_slot(ctx, obj, key).is_some() {
+                return None;
+            }
+            if let Some(value) = static_object_property(ctx, obj, key) {
+                return static_console_arg_bytes(value, ctx);
+            }
+            static_object_known(ctx, obj).then(|| b"undefined".to_vec())
+        }
+        _ => None,
+    }
+}
+
+fn static_object_slot_expr_supported(expr: &LoweredExpr) -> bool {
+    matches!(expr, LoweredExpr::Number(_, _))
+}
+
 fn collect_static_array_plan(stmts: &[LoweredStmt]) -> StaticArrayPlan {
     let mut plan = StaticArrayPlan::default();
     collect_static_arrays_from_stmts(stmts, &mut plan);
@@ -1528,8 +1573,14 @@ fn collect_static_objects_from_assignment(
     match expr {
         LoweredExpr::ObjectNew { props, .. } => {
             let group = plan.group_keys.len();
-            plan.group_keys
-                .push(props.iter().map(|(key, _)| key.clone()).collect());
+            plan.group_keys.push(
+                props
+                    .iter()
+                    .filter_map(|(key, value)| {
+                        static_object_slot_expr_supported(value).then(|| key.clone())
+                    })
+                    .collect(),
+            );
             plan.local_groups.insert(local, group);
         }
         LoweredExpr::Local(source, _) => {
@@ -1736,6 +1787,13 @@ fn static_object_property<'a>(
         return None;
     };
     props.get(key)
+}
+
+fn static_object_known(ctx: &FunctionCtx, obj: &LoweredExpr) -> bool {
+    let LoweredExpr::Local(local, _) = obj else {
+        return false;
+    };
+    matches!(ctx.static_locals.get(local), Some(StaticValue::Object(_)))
 }
 
 fn static_array_element<'a>(

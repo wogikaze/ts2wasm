@@ -926,6 +926,14 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
         ("../../fixtures/core-expressions/member.ts", "42\n"),
         ("../../fixtures/core-expressions/number.ts", "42\n"),
         ("../../fixtures/core-expressions/object.ts", "1\n2\n"),
+        (
+            "../../fixtures/core-expressions/object-literal-mixed-types.ts",
+            "42\nhello\ntrue\nundefined\nnull\n",
+        ),
+        (
+            "../../fixtures/core-expressions/object-literal-numeric-keys.ts",
+            "zero\none\ntwo\n",
+        ),
         ("../../fixtures/core-expressions/optional-index.ts", "20\n"),
         ("../../fixtures/core-expressions/optional-member.ts", "42\n"),
         ("../../fixtures/core-expressions/property-assign.ts", "2\n"),
