@@ -22,6 +22,21 @@ impl super::super::Resolver {
         if let Some(result) = self.lower_bigint_binary_expr(left, op, right)? {
             return Ok(result);
         }
+        // Per ECMAScript spec (13.15.3, 7.2.21):
+        // The `+` operator: If either operand is a String, the result is string concatenation.
+        // For literal string operands, emit $concat directly (which handles ToString conversion
+        // of non-string operands internally via $value_to_string_into), matching the spec
+        // evaluation order where concatenation takes priority over numeric addition.
+        if *op == BinaryOp::Add
+            && (matches!(left, ResolvedExpr::String(_))
+                || matches!(right, ResolvedExpr::String(_)))
+        {
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::Concat,
+                args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
+                span: Span::generated("runtime_call"),
+            });
+        }
         Ok(LoweredExpr::Binary {
             left: Box::new(self.lower_expr(left)?),
             op: lower_binary_op(*op)?,
