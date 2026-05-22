@@ -793,18 +793,6 @@ pub enum RuntimeFn {
     /// Pseudo-intrinsic: class private brand check.
     /// Not a real runtime function.
     PrivateBrandCheck,
-    /// Eval direct call via host
-    EvalDirectHost,
-    /// Eval indirect call via host
-    EvalIndirectHost,
-    /// Function compile via host
-    FunctionCompileHost,
-    /// Function call via host
-    FunctionCallHost,
-    /// Function call method via host
-    FunctionCallMethodHost,
-    /// Function construct via host
-    FunctionConstructHost,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -1177,24 +1165,12 @@ const CAP_HOST_MATH_TAN: &[Capability] = &[Capability::HostMathTan];
 const CAP_HOST_MATH_TANH: &[Capability] = &[Capability::HostMathTanh];
 const CAP_HOST_REFLECT_APPLY: &[Capability] = &[Capability::HostReflectApply];
 const CAP_HOST_REFLECT_CONSTRUCT: &[Capability] = &[Capability::HostReflectConstruct];
-<<<<<<< HEAD
 const CAP_HOST_EVAL_DIRECT: &[Capability] = &[Capability::HostEvalDirect];
 const CAP_HOST_EVAL_INDIRECT: &[Capability] = &[Capability::HostEvalIndirect];
 const CAP_HOST_FUNCTION_COMPILE: &[Capability] = &[Capability::HostFunctionCompile];
 const CAP_HOST_FUNCTION_CALL: &[Capability] = &[Capability::HostFunctionCall];
 const CAP_HOST_FUNCTION_CALL_METHOD: &[Capability] = &[Capability::HostFunctionCallMethod];
 const CAP_HOST_FUNCTION_CONSTRUCT: &[Capability] = &[Capability::HostFunctionConstruct];
-||||||| parent of 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
-=======
-const CAP_HOST_FUNCTION_COMPILE: &[Capability] = &[Capability::HostFunctionCompile];
-const CAP_HOST_FUNCTION_CALL: &[Capability] = &[Capability::HostFunctionCall];
-const CAP_HOST_FUNCTION_CALL_METHOD: &[Capability] = &[Capability::HostFunctionCallMethod];
-const CAP_HOST_FUNCTION_CONSTRUCT: &[Capability] = &[Capability::HostFunctionConstruct];
-#[allow(dead_code)]
-const CAP_HOST_EVAL_DIRECT: &[Capability] = &[Capability::HostEvalDirect];
-#[allow(dead_code)]
-const CAP_HOST_EVAL_INDIRECT: &[Capability] = &[Capability::HostEvalIndirect];
->>>>>>> 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
 const CAP_STRING_NORMALIZE: &[Capability] = &[Capability::HostStringNormalize];
 const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::UNDEFINED,
@@ -2322,13 +2298,6 @@ impl RuntimeFn {
             | Self::CryptoRandomBytes
             | Self::Dollar262Global
             | Self::Dollar262Eval
-<<<<<<< HEAD
-||||||| parent of 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
-            | Self::Dollar262Eval => RuntimeDomain::Host,
-=======
-            | Self::EvalDirectHost
-            | Self::EvalIndirectHost
->>>>>>> 6f94a1f73 (fix(runtime): Function built-in apply routing and host infrastructure)
             | Self::FunctionCompileHost
             | Self::FunctionCallHost
             | Self::FunctionCallMethodHost

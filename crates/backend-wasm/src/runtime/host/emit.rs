@@ -4155,57 +4155,25 @@ impl WatEmitter<'_> {
         ));
     }
 
-    pub(crate) fn emit_eval_direct_host(&self, wat: &mut String) {
-        wat.push_str(
+    /// Convert a tagged JS value to its IEEE-754 f64 representation (as i64 bits).
+    /// Delegates to host shim which handles SMI, heap-number, and sentinel decoding.
+    pub(crate) fn emit_tagged_to_f64(&self, wat: &mut String) {
+        wat.push_str(&format!(
             r#"
-  (func $eval_direct_host (param $source i32) (result i32)
-    (call $host_eval_direct (local.get $source)))
+  (func $tagged_to_f64 (param $v i32) (result i64)
+    (return (call $host_tagged_to_f64 (local.get $v))))
 "#,
-        );
+        ));
     }
 
-    pub(crate) fn emit_eval_indirect_host(&self, wat: &mut String) {
-        wat.push_str(
+    /// Convert IEEE-754 f64 bits (as i64) to a tagged JS value.
+    /// Delegates to host shim which handles encoding/boxing decisions.
+    pub(crate) fn emit_f64_to_tagged(&self, wat: &mut String) {
+        wat.push_str(&format!(
             r#"
-  (func $eval_indirect_host (param $source i32) (result i32)
-    (call $host_eval_indirect (local.get $source)))
+  (func $f64_to_tagged (param $bits i64) (result i32)
+    (return (call $host_f64_to_tagged (local.get $bits))))
 "#,
-        );
-    }
-
-    pub(crate) fn emit_function_compile_host(&self, wat: &mut String) {
-        wat.push_str(
-            r#"
-  (func $function_compile_host (param $source i32) (result i32)
-    (call $host_function_compile (local.get $source)))
-"#,
-        );
-    }
-
-    pub(crate) fn emit_function_call_host(&self, wat: &mut String) {
-        wat.push_str(
-            r#"
-  (func $function_call_host (param $handle i32) (param $args i32) (result i32)
-    (call $host_function_call (local.get $handle) (local.get $args)))
-"#,
-        );
-    }
-
-    pub(crate) fn emit_function_call_method_host(&self, wat: &mut String) {
-        wat.push_str(
-            r#"
-  (func $function_call_method_host (param $handle i32) (param $receiver i32) (param $args i32) (result i32)
-    (call $host_function_call_method (local.get $handle) (local.get $receiver) (local.get $args)))
-"#,
-        );
-    }
-
-    pub(crate) fn emit_function_construct_host(&self, wat: &mut String) {
-        wat.push_str(
-            r#"
-  (func $function_construct_host (param $handle i32) (param $args i32) (result i32)
-    (call $host_function_construct (local.get $handle) (local.get $args)))
-"#,
-        );
+        ));
     }
 }

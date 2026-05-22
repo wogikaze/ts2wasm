@@ -541,6 +541,10 @@ pub(super) fn lower_function_to_mir(func: &LoweredFunction) -> MirFunction {
         is_async: func.is_async,
         is_generator: func.is_generator,
         generator_state: func.generator_state.clone(),
+        induction_vars: Vec::new(),
+        escape_status: Vec::new(),
+        value_reps: Vec::new(),
+        optimization_hints: Vec::new(),
     }
 }
 
@@ -559,6 +563,7 @@ impl From<LoweredProgram> for MirProgram {
                 .map(lower_function_to_mir)
                 .collect(),
             modules: program.modules,
+            escape_status: Vec::new(),
         }
     }
 }

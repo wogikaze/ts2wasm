@@ -5,6 +5,26 @@ use crate::lowered::{
 };
 use ts2wasm_source::Span;
 
+use super::induction_var::InductionVarInfo;
+
+// ---------------------------------------------------------------------------
+// Escape analysis types
+// ---------------------------------------------------------------------------
+
+/// Result of escape analysis for a single local variable.
+///
+/// Determines whether the value held by a local (e.g., an object or array)
+/// can be referenced from outside the current function scope.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EscapeStatus {
+    /// Object/array escapes — must be heap-allocated.
+    Escaped,
+    /// Object/array does not escape current function.
+    NotEscaped,
+    /// Not yet analyzed.
+    Unknown,
+}
+
 pub type MirBinaryOp = LoweredBinaryOp;
 pub type MirBuiltinErrorConstructor = BuiltinErrorConstructor;
 pub type MirClassPrototypeRef = ClassPrototypeRef;
@@ -13,6 +33,104 @@ pub type MirFunctionCallKind = FunctionCallKind;
 pub type MirLogicalAssignOp = LoweredLogicalAssignOp;
 pub type MirModuleInfo = ModuleInfo;
 pub type MirUnaryOp = LoweredUnaryOp;
+
+// ---------------------------------------------------------------------------
+// Value representation types
+// ---------------------------------------------------------------------------
+
+/// Represents the concrete value representation a local variable can hold.
+///
+/// Each variant describes a specific WAT-level representation that avoids
+/// the overhead of full JsVal boxing. The representation is determined by
+/// static analysis of how the value is produced and consumed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ValueRep {
+    /// Full JS value — the default/fallback representation.
+    JsVal,
+    /// Small signed integer fitting in an i32 (SMI range).
+    SmiI32,
+    /// Boolean encoded as 0/1 i32.
+    BoolI32,
+    /// Reference to a Wasm string (non-null).
+    StringRef,
+    /// Reference to a Wasm object (non-null).
+    ObjectRef,
+    /// Reference to a Wasm array (non-null).
+    ArrayRef,
+    /// Raw untagged i32 value.
+    RawI32,
+}
+
+/// Describes how a value representation was proven.
+///
+/// Stronger proofs enable more aggressive optimizations without runtime
+/// representation checks.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum RepProof {
+    /// No proof available — representation is an assumption.
+    None,
+    /// Proven from a literal expression (e.g., `Number(42)`).
+    Literal,
+    /// Proven by local dataflow from a definition site.
+    LocalFlow,
+    /// Proven by a runtime check that guards the representation.
+    GuardedRuntimeCheck,
+}
+
+// ---------------------------------------------------------------------------
+// Optimization hint types
+// ---------------------------------------------------------------------------
+
+/// Optimization hint for a local variable, derived from its inferred ValueRep.
+///
+/// These hints tell the backend how to efficiently represent and operate on
+/// the local's value without requiring re-analysis of the expression tree.
+/// The hint is computed by `run_value_rep_consumer` after value rep inference.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum OptimizationHint {
+    /// Default no optimization hint available; use full JsVal.
+    None,
+    /// Value is a small signed integer fitting in SMI range ([-2^30, 2^30-1]).
+    /// Can be stored and operated on as plain i32 without tagged-value boxing.
+    UnboxedSmi,
+    /// Value is a boolean encoded as 0/1 i32.
+    /// Can be stored as plain i32; branches can use i32.eqz directly.
+    UnboxedBool,
+    /// Value is a non-null string reference.
+    /// Can use direct string reference operations without null checks.
+    DirectStringRef,
+    /// Value is a non-null object reference.
+    /// Can use direct object reference operations without null checks.
+    DirectObjectRef,
+    /// Value is a non-null array reference.
+    /// Can use direct array reference operations without null checks.
+    DirectArrayRef,
+    /// Value is a raw untagged i32 (e.g., a non-SMI integer literal).
+    /// Can be stored as plain i32; skip tagged-value encoding/decoding.
+    UnboxedRawI32,
+}
+
+impl OptimizationHint {
+    /// Returns true if this hint indicates an unboxed (non-reference) value.
+    pub fn is_unboxed(self) -> bool {
+        matches!(
+            self,
+            OptimizationHint::UnboxedSmi
+                | OptimizationHint::UnboxedBool
+                | OptimizationHint::UnboxedRawI32
+        )
+    }
+
+    /// Returns true if this hint indicates a reference type (string/object/array).
+    pub fn is_direct_ref(self) -> bool {
+        matches!(
+            self,
+            OptimizationHint::DirectStringRef
+                | OptimizationHint::DirectObjectRef
+                | OptimizationHint::DirectArrayRef
+        )
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MirArraySlot {
@@ -374,6 +492,17 @@ pub struct MirFunction {
     pub is_async: bool,
     pub is_generator: bool,
     pub generator_state: Option<GeneratorState>,
+    /// Induction variables detected by `induction_var::analyze_function`.
+    pub induction_vars: Vec<InductionVarInfo>,
+    /// Per-local escape analysis result. Indexed by `LocalId.0`.
+    /// `None` means not yet analyzed (Unknown).
+    pub escape_status: Vec<Option<EscapeStatus>>,
+    /// Per-local value representation inference. Indexed by `LocalId.0`.
+    /// `None` means not yet inferred (JsVal fallback).
+    pub value_reps: Vec<Option<(ValueRep, RepProof)>>,
+    /// Per-local optimization hints derived from value representation inference.
+    /// Indexed by `LocalId.0`. Populated by `run_value_rep_consumer`.
+    pub optimization_hints: Vec<OptimizationHint>,
 }
 
 // ---------------------------------------------------------------------------
@@ -395,4 +524,7 @@ pub struct MirProgram {
     pub functions: Vec<MirFunction>,
     /// Module graph lowering information.
     pub modules: Vec<ModuleInfo>,
+    /// Per-local escape analysis result for top-level locals.
+    /// Indexed by `top_level_locals` order.
+    pub escape_status: Vec<Option<EscapeStatus>>,
 }
