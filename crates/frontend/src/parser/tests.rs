@@ -5100,4 +5100,28 @@ b /* parameter b */,
         .unwrap();
         assert_eq!(program.len(), 1);
     }
+
+    #[test]
+    fn parses_regexp_with_unicode_property_escapes() {
+        let program = parse_program(
+            "let a = /\\p{L}/; let b = /\\p{Letter}/; let c = /\\p{General_Category=Lu}/; let d = /\\P{Nd}/;",
+        )
+        .unwrap();
+        assert_eq!(program.len(), 4);
+    }
+
+    #[test]
+    fn parses_regexp_with_named_capture_group() {
+        let program = parse_program(
+            "let a = /(?<name>.)/; let b = /(?<year>\\d{4})-(?<month>\\d{2})/;",
+        )
+        .unwrap();
+        assert_eq!(program.len(), 2);
+    }
+
+    #[test]
+    fn parses_regexp_with_named_backreference() {
+        let program = parse_program("let a = /(?<word>\\w+)\\s+\\k<word>/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
 }
