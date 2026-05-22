@@ -91,6 +91,7 @@ enum StaticValue {
 struct StaticObjectValue {
     props: HashMap<String, LoweredExpr>,
     key_order: Vec<String>,
+    prototype: Option<LocalId>,
 }
 
 impl StaticObjectValue {
@@ -98,6 +99,7 @@ impl StaticObjectValue {
         let mut value = Self {
             props: HashMap::new(),
             key_order: Vec::new(),
+            prototype: None,
         };
         for (key, expr) in props {
             value.set(key.clone(), expr.clone());
@@ -114,6 +116,10 @@ impl StaticObjectValue {
             self.key_order.push(key.clone());
         }
         self.props.insert(key, value);
+    }
+
+    fn set_prototype(&mut self, prototype: LocalId) {
+        self.prototype = Some(prototype);
     }
 
     fn keys(&self) -> Vec<String> {
@@ -2331,6 +2337,25 @@ fn collect_static_locals_from_expr_with_functions(
                 collect_static_locals_from_expr_with_functions(arg, locals, functions);
             }
         }
+        LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::ObjectSetPrototypeOf,
+            args,
+            ..
+        } if args.len() == 2 => {
+            collect_static_locals_from_expr_with_functions(&args[0], locals, functions);
+            collect_static_locals_from_expr_with_functions(&args[1], locals, functions);
+            let (LoweredExpr::Local(object, _), LoweredExpr::Local(prototype, _)) =
+                (&args[0], &args[1])
+            else {
+                return;
+            };
+            if !matches!(locals.get(prototype), Some(StaticValue::Object(_))) {
+                return;
+            }
+            if let Some(StaticValue::Object(object)) = locals.get_mut(object) {
+                object.set_prototype(*prototype);
+            }
+        }
         LoweredExpr::Binary { left, right, .. } => {
             collect_static_locals_from_expr_with_functions(left, locals, functions);
             collect_static_locals_from_expr_with_functions(right, locals, functions);
@@ -2526,6 +2551,11 @@ fn static_value_from_expr_with_functions(
                 _ => None,
             }
         }
+        LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::ObjectSetPrototypeOf,
+            args,
+            ..
+        } if args.len() == 2 => static_value_from_expr_with_functions(&args[0], locals, functions),
         LoweredExpr::PromiseGetValue { promise, .. } => {
             static_promise_resolve_value_from_expr_with_functions(promise, locals, functions)
         }
@@ -2657,13 +2687,13 @@ fn static_binary_value_from_expr_with_functions(
         }
         LoweredBinaryOp::StrictEqual | LoweredBinaryOp::EqualEqual => {
             Some(StaticValue::Primitive(LoweredExpr::Bool(
-                static_primitive_equal_with_functions(left, right, locals, functions)?,
+                static_equal_with_functions(left, right, locals, functions)?,
                 span,
             )))
         }
         LoweredBinaryOp::StrictNotEqual | LoweredBinaryOp::BangEqual => {
             Some(StaticValue::Primitive(LoweredExpr::Bool(
-                !static_primitive_equal_with_functions(left, right, locals, functions)?,
+                !static_equal_with_functions(left, right, locals, functions)?,
                 span,
             )))
         }
@@ -2735,6 +2765,53 @@ fn static_primitive_equal_with_functions(
     }
 }
 
+fn static_equal_with_functions(
+    left: &LoweredExpr,
+    right: &LoweredExpr,
+    locals: &HashMap<LocalId, StaticValue>,
+    functions: &[LoweredFunction],
+) -> Option<bool> {
+    static_primitive_equal_with_functions(left, right, locals, functions)
+        .or_else(|| static_object_identity_equal(left, right, locals))
+}
+
+fn static_object_identity_equal(
+    left: &LoweredExpr,
+    right: &LoweredExpr,
+    locals: &HashMap<LocalId, StaticValue>,
+) -> Option<bool> {
+    let left = static_object_identity(left, locals)?;
+    let right = static_object_identity(right, locals)?;
+    Some(left == right)
+}
+
+fn static_object_identity(
+    expr: &LoweredExpr,
+    locals: &HashMap<LocalId, StaticValue>,
+) -> Option<LocalId> {
+    match expr {
+        LoweredExpr::Local(local, _)
+            if matches!(locals.get(local), Some(StaticValue::Object(_))) =>
+        {
+            Some(*local)
+        }
+        LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::ObjectGetPrototypeOf,
+            args,
+            ..
+        } if args.len() == 1 => {
+            let LoweredExpr::Local(local, _) = &args[0] else {
+                return None;
+            };
+            let Some(StaticValue::Object(object)) = locals.get(local) else {
+                return None;
+            };
+            object.prototype
+        }
+        _ => None,
+    }
+}
+
 fn static_primitive_expr_equal(left: &LoweredExpr, right: &LoweredExpr) -> Option<bool> {
     match (left, right) {
         (LoweredExpr::Number(left, _), LoweredExpr::Number(right, _)) => Some(left == right),
@@ -2796,7 +2873,26 @@ fn static_object_property_from_locals<'a>(
     let Some(StaticValue::Object(props)) = locals.get(local) else {
         return None;
     };
-    props.get(key)
+    static_object_property_from_value(locals, props, key, &mut HashSet::new())
+}
+
+fn static_object_property_from_value<'a>(
+    locals: &'a HashMap<LocalId, StaticValue>,
+    object: &'a StaticObjectValue,
+    key: &str,
+    visited: &mut HashSet<LocalId>,
+) -> Option<&'a LoweredExpr> {
+    if let Some(value) = object.get(key) {
+        return Some(value);
+    }
+    let prototype = object.prototype?;
+    if !visited.insert(prototype) {
+        return None;
+    }
+    let Some(StaticValue::Object(prototype)) = locals.get(&prototype) else {
+        return None;
+    };
+    static_object_property_from_value(locals, prototype, key, visited)
 }
 
 fn static_object_dynamic_property<'a>(
@@ -2971,6 +3067,67 @@ fn static_object_initializer_supported_with_functions(
                                 object: object.clone(),
                                 index: index.clone(),
                                 value: value.clone(),
+                                span: *span,
+                            },
+                            &mut nested,
+                            functions,
+                        );
+                    }
+                    LoweredStmt::Expr(
+                        LoweredExpr::PropertySet {
+                            object,
+                            value,
+                            key,
+                            span,
+                            ..
+                        },
+                        _,
+                    ) => {
+                        if static_primitive_expr_from_expr_with_functions(value, &nested, functions)
+                            .is_none()
+                        {
+                            return false;
+                        }
+                        let LoweredExpr::Local(local, _) = object.as_ref() else {
+                            return false;
+                        };
+                        if !matches!(nested.get(local), Some(StaticValue::Object(_))) {
+                            return false;
+                        }
+                        collect_static_locals_from_expr_with_functions(
+                            &LoweredExpr::PropertySet {
+                                object: object.clone(),
+                                key: key.clone(),
+                                value: value.clone(),
+                                span: *span,
+                            },
+                            &mut nested,
+                            functions,
+                        );
+                    }
+                    LoweredStmt::Expr(
+                        LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::ObjectSetPrototypeOf,
+                            args,
+                            span,
+                            ..
+                        },
+                        _,
+                    ) if args.len() == 2 => {
+                        let (LoweredExpr::Local(object, _), LoweredExpr::Local(prototype, _)) =
+                            (&args[0], &args[1])
+                        else {
+                            return false;
+                        };
+                        if !matches!(nested.get(object), Some(StaticValue::Object(_)))
+                            || !matches!(nested.get(prototype), Some(StaticValue::Object(_)))
+                        {
+                            return false;
+                        }
+                        collect_static_locals_from_expr_with_functions(
+                            &LoweredExpr::RuntimeCall {
+                                intrinsic: RuntimeFn::ObjectSetPrototypeOf,
+                                args: args.clone(),
                                 span: *span,
                             },
                             &mut nested,

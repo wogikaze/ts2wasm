@@ -1007,6 +1007,10 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "zero\none\ntwo\n",
         ),
         (
+            "../../fixtures/core-expressions/object-literal-proto.ts",
+            "7\n3\ntrue\n",
+        ),
+        (
             "../../fixtures/core-expressions/object-shorthand-computed-method.ts",
             "7\n11\n",
         ),
