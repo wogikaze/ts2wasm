@@ -22,7 +22,7 @@ use crate::lowered::facts::{
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
-use ts2wasm_syntax::{BinaryOp, UnaryOp, SYMBOL_ITERATOR_OBJECT_KEY};
+use ts2wasm_syntax::{BinaryOp, SYMBOL_ITERATOR_OBJECT_KEY, TypeRef, UnaryOp};
 
 /// New Resolver with ctx: LoweringCtx.
 /// All mutable state is owned by ctx. Borrowed function maps are cloned into ctx on construction.
@@ -103,6 +103,8 @@ impl Resolver {
         next_func_id: usize,
         current_module_url: &str,
         is_strict_context: bool,
+        type_aliases: HashMap<String, ts2wasm_syntax::TypeRef>,
+        interface_definitions: HashMap<String, Vec<(String, ts2wasm_syntax::TypeRef)>>,
     ) -> Self {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
             class_maps(function_ids);
@@ -127,6 +129,8 @@ impl Resolver {
                 next_func_id,
                 current_module_url,
                 is_strict_context,
+                type_aliases,
+                interface_definitions,
             ),
         }
     }
@@ -153,6 +157,8 @@ impl Resolver {
         next_func_id: usize,
         current_module_url: &str,
         is_strict_context: bool,
+        type_aliases: HashMap<String, ts2wasm_syntax::TypeRef>,
+        interface_definitions: HashMap<String, Vec<(String, ts2wasm_syntax::TypeRef)>>,
     ) -> Result<(Self, Vec<LocalId>), Diagnostic> {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
             class_maps(function_ids);
@@ -177,6 +183,8 @@ impl Resolver {
                 next_func_id,
                 current_module_url,
                 is_strict_context,
+                type_aliases,
+                interface_definitions,
             ),
         };
         resolver
@@ -308,7 +316,10 @@ impl Resolver {
             next_fn,
             LoweredExpr::PropertyGetDynamic {
                 obj: Box::new(LoweredExpr::Local(iterator, Span::generated("local"))),
-                key: Box::new(LoweredExpr::String("next".to_owned(), Span::generated("str"))),
+                key: Box::new(LoweredExpr::String(
+                    "next".to_owned(),
+                    Span::generated("str"),
+                )),
                 span,
             },
             span,
@@ -330,7 +341,10 @@ impl Resolver {
             done_val,
             LoweredExpr::PropertyGetDynamic {
                 obj: Box::new(LoweredExpr::Local(result, Span::generated("local"))),
-                key: Box::new(LoweredExpr::String("done".to_owned(), Span::generated("str"))),
+                key: Box::new(LoweredExpr::String(
+                    "done".to_owned(),
+                    Span::generated("str"),
+                )),
                 span,
             },
             span,
@@ -591,11 +605,29 @@ impl Resolver {
                 )?);
                 Ok(LoweredStmt::Block(statements, Span::generated("block")))
             }
+            ResolvedStmt::DestructureAssign { pattern, expr } => {
+                let value_local = self.alloc_temp();
+                let mut statements = vec![LoweredStmt::Let(
+                    value_local,
+                    self.lower_expr(expr)?,
+                    Span::generated("let_stmt"),
+                )];
+                statements.extend(self.lower_binding_pattern_assignments(
+                    pattern,
+                    LoweredExpr::Local(value_local, Span::generated("local")),
+                    Some(expr),
+                )?);
+                Ok(LoweredStmt::Block(statements, Span::generated("block")))
+            }
             ResolvedStmt::Let(name, expr) => {
                 let local_id = self.declare_local(name)?;
                 // Handle `let x = yield* iterable;` — delegate to yield* lowering
                 // with a target local to receive the inner iterator's return value.
-                if let ResolvedExpr::Yield { expr: Some(inner), delegate: true } = expr {
+                if let ResolvedExpr::Yield {
+                    expr: Some(inner),
+                    delegate: true,
+                } = expr
+                {
                     return self.lower_yield_star_stmt(inner, Some(local_id));
                 }
                 // Infer class before lowering so closures inside the initializer
@@ -905,7 +937,11 @@ impl Resolver {
                 let local_id = self.resolve_local(name)?;
                 // Handle `x = yield* iterable;` — delegate to yield* lowering,
                 // then assign the inner iterator's return value to x.
-                if let ResolvedExpr::Yield { expr: Some(inner), delegate: true } = expr {
+                if let ResolvedExpr::Yield {
+                    expr: Some(inner),
+                    delegate: true,
+                } = expr
+                {
                     let result_local = self.alloc_temp();
                     let mut stmts = match self.lower_yield_star_stmt(inner, Some(result_local))? {
                         LoweredStmt::Block(s, _) => s,
@@ -1314,7 +1350,11 @@ impl Resolver {
                     return Ok(LoweredStmt::Return(lowered, Span::generated("return_stmt")));
                 }
                 // Handle `return yield* iterable;` — delegate yield* then return the result.
-                if let ResolvedExpr::Yield { expr: Some(inner), delegate: true } = expr {
+                if let ResolvedExpr::Yield {
+                    expr: Some(inner),
+                    delegate: true,
+                } = expr
+                {
                     let result_local = self.alloc_temp();
                     let stmts = match self.lower_yield_star_stmt(inner, Some(result_local))? {
                         LoweredStmt::Block(s, _) => s,
@@ -1904,6 +1944,20 @@ impl Resolver {
         self.ctx.classes.current_class = previous;
         result
     }
+
+    /// Resolve a type alias name to its underlying TypeRef, delegating to
+    /// `LoweringCtx::resolve_type_alias`. Returns `None` if the name is not
+    /// a known type alias.
+    pub(crate) fn resolve_type_alias(&self, name: &str) -> Option<&TypeRef> {
+        self.ctx.resolve_type_alias(name)
+    }
+
+    /// Look up the property signatures of an interface by name, delegating to
+    /// `LoweringCtx::lookup_interface_properties`. Returns `None` if the name
+    /// is not a known interface definition.
+    pub(crate) fn lookup_interface_properties(&self, name: &str) -> Option<&[(String, TypeRef)]> {
+        self.ctx.lookup_interface_properties(name)
+    }
 }
 
 fn eval_class_constructor_key(class_name: &str) -> String {
@@ -2420,7 +2474,8 @@ fn stmt_may_throw_host_external_object(ctx: &LoweringCtx, stmt: &ResolvedStmt) -
         | ResolvedStmt::Expr(expr)
         | ResolvedStmt::Return(expr)
         | ResolvedStmt::Throw(expr)
-        | ResolvedStmt::DestructureLet { expr, .. } => {
+        | ResolvedStmt::DestructureLet { expr, .. }
+        | ResolvedStmt::DestructureAssign { expr, .. } => {
             expr_may_throw_host_external_object(ctx, expr)
         }
         ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {

@@ -546,6 +546,7 @@ fn collect_dynamic_direct_eval_created_binding_names_from_stmts(
             | ResolvedStmt::ClassDecl { .. }
             | ResolvedStmt::AmbientValue(_)
             | ResolvedStmt::DestructureLet { .. }
+            | ResolvedStmt::DestructureAssign { .. }
             | ResolvedStmt::Break { .. }
             | ResolvedStmt::Continue { .. }
             | ResolvedStmt::Export { .. } => {}

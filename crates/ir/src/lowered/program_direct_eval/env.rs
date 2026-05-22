@@ -198,6 +198,7 @@ pub(super) fn collect_block_declared_names(stmts: &[ResolvedStmt], names: &mut H
                 }
             }
             ResolvedStmt::DestructureLet { .. }
+            | ResolvedStmt::DestructureAssign { .. }
             | ResolvedStmt::Expr(_)
             | ResolvedStmt::Return(_)
             | ResolvedStmt::Throw(_)
@@ -219,7 +220,8 @@ pub(super) fn stmt_contains_dynamic_direct_eval(stmt: &ResolvedStmt) -> bool {
         | ResolvedStmt::Expr(expr)
         | ResolvedStmt::Return(expr)
         | ResolvedStmt::Throw(expr)
-        | ResolvedStmt::DestructureLet { expr, .. } => expr_contains_dynamic_direct_eval(expr),
+        | ResolvedStmt::DestructureLet { expr, .. }
+        | ResolvedStmt::DestructureAssign { expr, .. } => expr_contains_dynamic_direct_eval(expr),
         ResolvedStmt::If {
             condition,
             then_body,
@@ -582,6 +584,7 @@ pub(crate) fn collect_direct_eval_block_function_env_from_stmts(
             | ResolvedStmt::ClassDecl { .. }
             | ResolvedStmt::Let(_, _)
             | ResolvedStmt::DestructureLet { .. }
+            | ResolvedStmt::DestructureAssign { .. }
             | ResolvedStmt::Assign(_, _)
             | ResolvedStmt::Expr(_)
             | ResolvedStmt::Return(_)
@@ -707,7 +710,9 @@ pub(crate) fn collect_direct_eval_function_assignment_env(
                     env,
                 );
             }
-            ResolvedStmt::Let(_, expr) | ResolvedStmt::DestructureLet { expr, .. } => {
+            ResolvedStmt::Let(_, expr)
+            | ResolvedStmt::DestructureLet { expr, .. }
+            | ResolvedStmt::DestructureAssign { expr, .. } => {
                 collect_direct_eval_function_assignment_expr(function_name, expr, env);
             }
             ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {

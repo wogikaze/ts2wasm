@@ -260,6 +260,10 @@ fn expand_stmt(
             }
             Ok(ResolvedStmt::DestructureLet { pattern, expr })
         }
+        ResolvedStmt::DestructureAssign { pattern, expr } => {
+            let expr = expand_expr(expr, ctx)?;
+            Ok(ResolvedStmt::DestructureAssign { pattern, expr })
+        }
         ResolvedStmt::Export { name, expr } => Ok(ResolvedStmt::Export {
             name,
             expr: Box::new(expand_expr(*expr, ctx)?),

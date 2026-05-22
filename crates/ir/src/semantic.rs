@@ -368,7 +368,8 @@ impl TypeScriptCallArityValidator {
             | ResolvedStmt::Expr(expr)
             | ResolvedStmt::Return(expr)
             | ResolvedStmt::Throw(expr) => self.validate_expr(expr)?,
-            ResolvedStmt::DestructureLet { expr, .. } => self.validate_expr(expr)?,
+            ResolvedStmt::DestructureLet { expr, .. }
+            | ResolvedStmt::DestructureAssign { expr, .. } => self.validate_expr(expr)?,
             ResolvedStmt::If {
                 condition,
                 then_body,
@@ -708,7 +709,8 @@ fn stmt_contains_arguments(stmt: &ResolvedStmt) -> bool {
         | ResolvedStmt::Expr(expr)
         | ResolvedStmt::Return(expr)
         | ResolvedStmt::Throw(expr)
-        | ResolvedStmt::DestructureLet { expr, .. } => expr_contains_arguments(expr),
+        | ResolvedStmt::DestructureLet { expr, .. }
+        | ResolvedStmt::DestructureAssign { expr, .. } => expr_contains_arguments(expr),
         ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
             expr_contains_arguments(expr)
         }

@@ -230,6 +230,7 @@ pub(crate) fn collect_declared_names_in_stmts(stmts: &[ResolvedStmt], names: &mu
                 names.insert(name.clone());
             }
             ResolvedStmt::AmbientValue(_)
+            | ResolvedStmt::DestructureAssign { .. }
             | ResolvedStmt::Assign(_, _)
             | ResolvedStmt::Expr(_)
             | ResolvedStmt::Return(_)
@@ -255,6 +256,7 @@ pub(crate) fn collect_stmt_captures(
         match stmt {
             ResolvedStmt::Let(_, expr)
             | ResolvedStmt::DestructureLet { expr, .. }
+            | ResolvedStmt::DestructureAssign { expr, .. }
             | ResolvedStmt::Expr(expr)
             | ResolvedStmt::Return(expr)
             | ResolvedStmt::Throw(expr) => collect_expr_captures(expr, excluded, captures),
@@ -364,6 +366,7 @@ pub(crate) fn stmt_assigns_any_name(stmt: &ResolvedStmt, names: &[String]) -> bo
         }
         ResolvedStmt::Let(_, expr)
         | ResolvedStmt::DestructureLet { expr, .. }
+        | ResolvedStmt::DestructureAssign { expr, .. }
         | ResolvedStmt::Expr(expr)
         | ResolvedStmt::Return(expr)
         | ResolvedStmt::Throw(expr) => expr_assigns_any_name(expr, names),

@@ -492,6 +492,10 @@ pub(super) fn rewrite_eval_stmt_global_collisions(
             }
             ResolvedStmt::DestructureLet { pattern, expr }
         }
+        ResolvedStmt::DestructureAssign { pattern, expr } => {
+            let expr = rewrite_eval_expr_global_collisions(expr, collisions, scopes);
+            ResolvedStmt::DestructureAssign { pattern, expr }
+        }
         ResolvedStmt::Assign(name, expr) => ResolvedStmt::Assign(
             name,
             rewrite_eval_expr_global_collisions(expr, collisions, scopes),

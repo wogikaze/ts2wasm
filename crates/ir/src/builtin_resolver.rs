@@ -62,6 +62,7 @@ fn mark_eval_strict_contexts_in_stmts(stmts: &mut [ResolvedStmt], strict_context
         match stmt {
             ResolvedStmt::Let(_, expr)
             | ResolvedStmt::DestructureLet { expr, .. }
+            | ResolvedStmt::DestructureAssign { expr, .. }
             | ResolvedStmt::Assign(_, expr)
             | ResolvedStmt::Expr(expr)
             | ResolvedStmt::Return(expr)
@@ -1422,6 +1423,15 @@ fn resolve_stmt_with_outer_bindings(
                 if name == "module" && property == "exports" {
                     return Ok(ResolvedStmt::ModuleExportsAssign {
                         expr: Box::new(resolve_expr(value)?),
+                    });
+                }
+            }
+            // Detect destructuring assignment: [a, b] = expr or {x, y} = expr
+            if let Expr::Assign { name, expr: value, span } = expr {
+                if let Some(pattern) = parse_binding_pattern(name, Some(*span))? {
+                    return Ok(ResolvedStmt::DestructureAssign {
+                        pattern,
+                        expr: resolve_expr(value)?,
                     });
                 }
             }

@@ -118,6 +118,10 @@ fn lower_program_inner(
     let mut functions_by_id = vec![None; function_ids.len()];
     let mut generated_functions = Vec::new();
 
+    let type_aliases: HashMap<String, ts2wasm_syntax::TypeRef> = HashMap::new();
+    let interface_definitions: HashMap<String, Vec<(String, ts2wasm_syntax::TypeRef)>> =
+        HashMap::new();
+
     for stmt in program {
         match stmt {
             ResolvedStmt::Function {
@@ -462,6 +466,8 @@ fn lower_program_inner(
         next_func_id,
         module_url.as_str(),
         program_is_strict,
+        type_aliases.clone(),
+        interface_definitions.clone(),
     );
 
     // Register synthetic FuncIds for known builtin classes that appear as
@@ -1063,7 +1069,8 @@ impl GeneratorStepCollector {
             ResolvedStmt::Assign(..)
             | ResolvedStmt::Expr(..)
             | ResolvedStmt::Return(..)
-            | ResolvedStmt::DestructureLet { .. } => {
+            | ResolvedStmt::DestructureLet { .. }
+            | ResolvedStmt::DestructureAssign { .. } => {
                 self.pending.push(stmt.clone());
                 Some(())
             }
@@ -1236,7 +1243,8 @@ fn stmt_contains_generator_yield_expr(stmt: &ResolvedStmt) -> bool {
         | ResolvedStmt::Expr(expr)
         | ResolvedStmt::Return(expr)
         | ResolvedStmt::Throw(expr) => contains_generator_yield_expr(expr),
-        ResolvedStmt::DestructureLet { expr, .. } => contains_generator_yield_expr(expr),
+        ResolvedStmt::DestructureLet { expr, .. }
+        | ResolvedStmt::DestructureAssign { expr, .. } => contains_generator_yield_expr(expr),
         ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
             contains_generator_yield_expr(expr)
         }
@@ -1603,6 +1611,7 @@ pub(crate) fn collect_nested_function_captures_in_stmts(
         match stmt {
             ResolvedStmt::Let(_, expr)
             | ResolvedStmt::DestructureLet { expr, .. }
+            | ResolvedStmt::DestructureAssign { expr, .. }
             | ResolvedStmt::Assign(_, expr)
             | ResolvedStmt::Expr(expr)
             | ResolvedStmt::Return(expr)
@@ -1937,6 +1946,7 @@ fn collect_direct_function_call_targets_in_stmts(
         match stmt {
             ResolvedStmt::Let(_, expr)
             | ResolvedStmt::DestructureLet { expr, .. }
+            | ResolvedStmt::DestructureAssign { expr, .. }
             | ResolvedStmt::Assign(_, expr)
             | ResolvedStmt::Expr(expr)
             | ResolvedStmt::Return(expr)
@@ -2339,6 +2349,7 @@ fn collect_block_arrow_fn_mutable_captures(stmts: &[ResolvedStmt]) -> HashSet<St
             }
             ResolvedStmt::Assign(..)
             | ResolvedStmt::DestructureLet { .. }
+            | ResolvedStmt::DestructureAssign { .. }
             | ResolvedStmt::AmbientValue(..)
             | ResolvedStmt::Function { .. }
             | ResolvedStmt::ClassDecl { .. }
@@ -2372,6 +2383,7 @@ fn collect_stmt_nested_function_mutable_captures(
         }
         ResolvedStmt::Let(_, expr)
         | ResolvedStmt::DestructureLet { expr, .. }
+        | ResolvedStmt::DestructureAssign { expr, .. }
         | ResolvedStmt::Expr(expr)
         | ResolvedStmt::Return(expr)
         | ResolvedStmt::Throw(expr)
@@ -2708,6 +2720,7 @@ fn collect_stmt_object_method_mutable_captures(
     match stmt {
         ResolvedStmt::Let(_, expr)
         | ResolvedStmt::DestructureLet { expr, .. }
+        | ResolvedStmt::DestructureAssign { expr, .. }
         | ResolvedStmt::Expr(expr)
         | ResolvedStmt::Return(expr)
         | ResolvedStmt::Throw(expr)
@@ -3551,6 +3564,7 @@ fn scan_dense_array_returns(
             ResolvedStmt::AmbientValue(_)
             | ResolvedStmt::Function { .. }
             | ResolvedStmt::DestructureLet { .. }
+            | ResolvedStmt::DestructureAssign { .. }
             | ResolvedStmt::Throw(_)
             | ResolvedStmt::Export { .. }
             | ResolvedStmt::ModuleExportsAssign { .. }
@@ -3818,7 +3832,8 @@ fn collect_call_targets_in_stmts(stmts: &[ResolvedStmt], targets: &mut HashSet<S
             ResolvedStmt::Block { statements, .. } => {
                 collect_call_targets_in_stmts(statements, targets);
             }
-            ResolvedStmt::DestructureLet { expr, .. } => {
+            ResolvedStmt::DestructureLet { expr, .. }
+            | ResolvedStmt::DestructureAssign { expr, .. } => {
                 collect_call_targets_in_expr(expr, targets);
             }
             ResolvedStmt::Function { body, .. } => {
@@ -4049,6 +4064,7 @@ fn collect_declared_function_names(stmts: &[ResolvedStmt], names: &mut HashSet<S
             ResolvedStmt::AmbientValue(_)
             | ResolvedStmt::Let(_, _)
             | ResolvedStmt::DestructureLet { .. }
+            | ResolvedStmt::DestructureAssign { .. }
             | ResolvedStmt::Assign(_, _)
             | ResolvedStmt::Expr(_)
             | ResolvedStmt::Return(_)
@@ -4107,6 +4123,7 @@ fn stmt_returns_any_name(stmt: &ResolvedStmt, names: &HashSet<String>) -> bool {
         | ResolvedStmt::Function { .. }
         | ResolvedStmt::Let(_, _)
         | ResolvedStmt::DestructureLet { .. }
+        | ResolvedStmt::DestructureAssign { .. }
         | ResolvedStmt::Assign(_, _)
         | ResolvedStmt::Expr(_)
         | ResolvedStmt::Return(_)
@@ -4123,6 +4140,7 @@ fn stmt_contains_this(stmt: &ResolvedStmt) -> bool {
     match stmt {
         ResolvedStmt::Let(_, expr)
         | ResolvedStmt::DestructureLet { expr, .. }
+        | ResolvedStmt::DestructureAssign { expr, .. }
         | ResolvedStmt::Assign(_, expr)
         | ResolvedStmt::Expr(expr)
         | ResolvedStmt::Return(expr)
@@ -4338,7 +4356,8 @@ fn stmt_contains_super(stmt: &ResolvedStmt) -> bool {
                     .is_some_and(|block| block_contains_super(block))
         }
         ResolvedStmt::Labeled { body, .. } => stmt_contains_super(body),
-        ResolvedStmt::DestructureLet { expr, .. } => expr_contains_super(expr),
+        ResolvedStmt::DestructureLet { expr, .. }
+        | ResolvedStmt::DestructureAssign { expr, .. } => expr_contains_super(expr),
         ResolvedStmt::AmbientValue(_)
         | ResolvedStmt::Function { .. }
         | ResolvedStmt::ClassDecl { .. }
@@ -4500,6 +4519,7 @@ fn stmt_has_direct_return(stmt: &ResolvedStmt) -> bool {
         | ResolvedStmt::ClassDecl { .. }
         | ResolvedStmt::Let(_, _)
         | ResolvedStmt::DestructureLet { .. }
+        | ResolvedStmt::DestructureAssign { .. }
         | ResolvedStmt::Assign(_, _)
         | ResolvedStmt::Expr(_)
         | ResolvedStmt::Throw(_)
@@ -4514,6 +4534,7 @@ fn stmt_contains_arguments(stmt: &ResolvedStmt) -> bool {
     match stmt {
         ResolvedStmt::Let(_, expr)
         | ResolvedStmt::DestructureLet { expr, .. }
+        | ResolvedStmt::DestructureAssign { expr, .. }
         | ResolvedStmt::Assign(_, expr)
         | ResolvedStmt::Expr(expr)
         | ResolvedStmt::Return(expr)
@@ -4585,6 +4606,7 @@ fn stmt_contains_new_target(stmt: &ResolvedStmt) -> bool {
     match stmt {
         ResolvedStmt::Let(_, expr)
         | ResolvedStmt::DestructureLet { expr, .. }
+        | ResolvedStmt::DestructureAssign { expr, .. }
         | ResolvedStmt::Assign(_, expr)
         | ResolvedStmt::Expr(expr)
         | ResolvedStmt::Return(expr)
@@ -5052,6 +5074,8 @@ fn lower_function_with_resolved_params(
         options.next_func_id,
         options.module_url,
         is_strict_context,
+        HashMap::new(),
+        HashMap::new(),
     )?;
     resolver.ctx.classes.in_static_method = options.in_static_method;
 

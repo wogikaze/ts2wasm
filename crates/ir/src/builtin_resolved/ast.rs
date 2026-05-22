@@ -25,6 +25,10 @@ pub enum ResolvedStmt {
         pattern: BindingPattern,
         expr: ResolvedExpr,
     },
+    DestructureAssign {
+        pattern: BindingPattern,
+        expr: ResolvedExpr,
+    },
     Assign(String, ResolvedExpr),
     Expr(ResolvedExpr),
     If {

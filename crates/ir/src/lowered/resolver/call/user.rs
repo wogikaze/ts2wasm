@@ -1483,6 +1483,7 @@ fn stmt_contains_return_statement(stmt: &ResolvedStmt) -> bool {
         ResolvedStmt::Labeled { body, .. } => stmt_contains_return_statement(body),
         ResolvedStmt::Let(_, _)
         | ResolvedStmt::DestructureLet { .. }
+        | ResolvedStmt::DestructureAssign { .. }
         | ResolvedStmt::Assign(_, _)
         | ResolvedStmt::Expr(_)
         | ResolvedStmt::Throw(_)

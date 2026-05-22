@@ -457,6 +457,297 @@ impl super::super::Resolver {
         })
     }
 
+    pub(crate) fn lower_binding_pattern_assignments(
+        &mut self,
+        pattern: &BindingPattern,
+        value: LoweredExpr,
+        source: Option<&ResolvedExpr>,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        match pattern {
+            BindingPattern::Array(bindings) => {
+                let mut statements = Vec::new();
+                for binding in bindings {
+                    statements.extend(self.lower_array_binding_assignment(binding, &value)?);
+                }
+                Ok(statements)
+            }
+            BindingPattern::Object(bindings) => {
+                let mut statements = Vec::new();
+                for binding in bindings {
+                    statements.extend(self.lower_object_binding_assignment(
+                        binding,
+                        bindings,
+                        &value,
+                        source,
+                    )?);
+                }
+                Ok(statements)
+            }
+        }
+    }
+
+    pub(crate) fn lower_array_binding_assignment(
+        &mut self,
+        binding: &ArrayBinding,
+        value: &LoweredExpr,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        let element_value = if binding.is_rest {
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ArraySlice,
+                args: vec![
+                    value.clone(),
+                    LoweredExpr::Number(binding.index as i32, Span::generated("num")),
+                    LoweredExpr::GetLength(Box::new(value.clone()), Span::generated("get_length")),
+                ],
+                span: Span::generated("runtime_call"),
+            }
+        } else {
+            LoweredExpr::Index {
+                object: Box::new(value.clone()),
+                index: Box::new(LoweredExpr::Number(
+                    binding.index as i32,
+                    Span::generated("num"),
+                )),
+                span: Span::generated("index"),
+            }
+        };
+        let Some(name) = binding.target.identifier() else {
+            if let Some(pattern) = binding.target.pattern() {
+                return self.lower_nested_binding_pattern_assignment(
+                    pattern,
+                    element_value,
+                    binding.default.as_ref(),
+                );
+            }
+            unreachable!("binding target must be identifier or pattern");
+        };
+        let local_id = self.resolve_local(name)?;
+        if binding.is_rest {
+            return Ok(vec![LoweredStmt::Assign(
+                local_id,
+                element_value,
+                Span::generated("assign"),
+            )]);
+        }
+        self.lower_binding_assignment_with_default(
+            local_id,
+            element_value,
+            binding.default.as_ref(),
+        )
+    }
+
+    pub(crate) fn lower_object_binding_assignment(
+        &mut self,
+        binding: &ObjectBinding,
+        siblings: &[ObjectBinding],
+        value: &LoweredExpr,
+        source: Option<&ResolvedExpr>,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        let property_value = if binding.computed {
+            let key_raw = binding.key.trim_start_matches('[').trim_end_matches(']');
+            LoweredExpr::PropertyGetDynamic {
+                obj: Box::new(value.clone()),
+                key: Box::new(self.lower_computed_object_binding_key_expr(key_raw)?),
+                span: Span::generated("prop_get_dynamic"),
+            }
+        } else {
+            LoweredExpr::PropertyGet {
+                obj: Box::new(value.clone()),
+                key: binding.key.clone(),
+                span: Span::generated("prop_get"),
+            }
+        };
+        let Some(name) = binding.target.identifier() else {
+            if let Some(pattern) = binding.target.pattern() {
+                return self.lower_nested_binding_pattern_assignment(
+                    pattern,
+                    property_value,
+                    binding.default.as_ref(),
+                );
+            }
+            unreachable!("binding target must be identifier or pattern");
+        };
+        let local_id = self.resolve_local(name)?;
+        if binding.is_rest {
+            return self.lower_object_rest_binding_assignment_with_local(
+                local_id,
+                siblings,
+                value,
+                source,
+                binding.span,
+            );
+        }
+        self.lower_binding_assignment_with_default(
+            local_id,
+            property_value,
+            binding.default.as_ref(),
+        )
+    }
+
+    fn lower_nested_binding_pattern_assignment(
+        &mut self,
+        pattern: &BindingPattern,
+        value: LoweredExpr,
+        default: Option<&BindingDefault>,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        let Some(default) = default else {
+            return self.lower_binding_pattern_assignments(pattern, value, None);
+        };
+        let temp_id = self.alloc_temp();
+        let mut statements = vec![
+            LoweredStmt::Let(temp_id, value, Span::generated("let_stmt")),
+            LoweredStmt::If {
+                condition: LoweredExpr::Binary {
+                    left: Box::new(LoweredExpr::Local(temp_id, Span::generated("local"))),
+                    op: LoweredBinaryOp::StrictEqual,
+                    right: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+                    span: Span::generated("binary"),
+                },
+                then_body: vec![LoweredStmt::Assign(
+                    temp_id,
+                    self.lower_binding_default_expr(default)?,
+                    Span::generated("assign"),
+                )],
+                else_body: vec![],
+                span: Span::generated("If"),
+            },
+        ];
+        statements.extend(self.lower_binding_pattern_assignments(
+            pattern,
+            LoweredExpr::Local(temp_id, Span::generated("local")),
+            None,
+        )?);
+        Ok(statements)
+    }
+
+    pub(crate) fn lower_binding_assignment_with_default(
+        &mut self,
+        local_id: LocalId,
+        value: LoweredExpr,
+        default: Option<&BindingDefault>,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        let Some(default) = default else {
+            return Ok(vec![LoweredStmt::Assign(
+                local_id,
+                value,
+                Span::generated("assign"),
+            )]);
+        };
+        let temp_id = self.alloc_temp();
+        Ok(vec![
+            LoweredStmt::Let(temp_id, value, Span::generated("let_stmt")),
+            LoweredStmt::Assign(
+                local_id,
+                LoweredExpr::Local(temp_id, Span::generated("local")),
+                Span::generated("assign"),
+            ),
+            LoweredStmt::If {
+                condition: LoweredExpr::Binary {
+                    left: Box::new(LoweredExpr::Local(temp_id, Span::generated("local"))),
+                    op: LoweredBinaryOp::StrictEqual,
+                    right: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+                    span: Span::generated("binary"),
+                },
+                then_body: vec![LoweredStmt::Assign(
+                    local_id,
+                    self.lower_binding_default_expr(default)?,
+                    Span::generated("assign"),
+                )],
+                else_body: vec![],
+                span: Span::generated("If"),
+            },
+        ])
+    }
+
+    pub(crate) fn lower_object_rest_binding_assignment_with_local(
+        &mut self,
+        local_id: LocalId,
+        siblings: &[ObjectBinding],
+        value: &LoweredExpr,
+        source: Option<&ResolvedExpr>,
+        _span: Option<Span>,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        // Fast path: when the source is a static object literal, enumerate its
+        // properties at compile time and build the rest object directly.
+        if let Some(ResolvedExpr::Object(props)) = source {
+            let excluded_keys = siblings
+                .iter()
+                .filter(|binding| !binding.is_rest)
+                .map(|binding| binding.key.as_str())
+                .collect::<HashSet<_>>();
+            let rest_props = props
+                .iter()
+                .filter_map(|prop| prop.static_key())
+                .filter(|key| !excluded_keys.contains(key))
+                .map(|key| {
+                    (
+                        key.to_owned(),
+                        LoweredExpr::PropertyGet {
+                            obj: Box::new(value.clone()),
+                            key: key.to_owned(),
+                            span: Span::generated("prop_get"),
+                        },
+                    )
+                })
+                .collect();
+            return Ok(vec![LoweredStmt::Assign(
+                local_id,
+                LoweredExpr::ObjectNew {
+                    props: rest_props,
+                    non_enumerable: 0,
+                    span: Span::generated("object_new"),
+                },
+                Span::generated("assign"),
+            )]);
+        }
+
+        // Dynamic path: copy via ObjectAssign({}, source), then delete excluded keys.
+        let rest_temp = self.alloc_temp();
+        let mut statements = vec![LoweredStmt::Let(
+            rest_temp,
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ObjectAssign,
+                args: vec![
+                    LoweredExpr::ObjectNew {
+                        props: Vec::new(),
+                        non_enumerable: 0,
+                        span: Span::generated("object_rest_empty"),
+                    },
+                    value.clone(),
+                ],
+                span: Span::generated("object_rest_assign"),
+            },
+            Span::generated("let_stmt"),
+        )];
+        for sibling in siblings.iter().filter(|sibling| !sibling.is_rest) {
+            let rest_object = LoweredExpr::Local(rest_temp, Span::generated("object_rest_local"));
+            let delete_expr = if sibling.computed {
+                let key_raw = sibling.key.trim_start_matches('[').trim_end_matches(']');
+                LoweredExpr::PropertyDeleteDynamic {
+                    object: Box::new(rest_object),
+                    key: Box::new(self.lower_computed_object_binding_key_expr(key_raw)?),
+                    span: Span::generated("object_rest_delete_dynamic"),
+                }
+            } else {
+                LoweredExpr::PropertyDelete {
+                    object: Box::new(rest_object),
+                    key: sibling.key.clone(),
+                    span: Span::generated("object_rest_delete"),
+                }
+            };
+            statements.push(LoweredStmt::Expr(
+                delete_expr,
+                Span::generated("expr_stmt"),
+            ));
+        }
+        statements.push(LoweredStmt::Assign(
+            local_id,
+            LoweredExpr::Local(rest_temp, Span::generated("object_rest_local")),
+            Span::generated("assign"),
+        ));
+        Ok(statements)
+    }
+
     fn lower_identifier_binding_default_expr(
         &mut self,
         name: &str,
