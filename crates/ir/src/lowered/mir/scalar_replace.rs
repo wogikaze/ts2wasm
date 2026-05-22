@@ -92,7 +92,7 @@ fn scalar_replace_body(
     escape: &mut Vec<Option<EscapeStatus>>,
 ) {
     // Phase 1: collect candidate object/array locals and their keys.
-    let candidates = collect_candidates(stmts, escape_status);
+    let mut candidates = collect_candidates(stmts, escape_status);
     if candidates.is_empty() {
         return;
     }
