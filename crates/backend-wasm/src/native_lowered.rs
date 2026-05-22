@@ -82,6 +82,7 @@ struct FunctionCtx {
 enum StaticValue {
     Object(HashMap<String, LoweredExpr>),
     Array(Vec<LoweredExpr>),
+    Primitive(LoweredExpr),
 }
 
 #[derive(Default)]
@@ -751,6 +752,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                 if let Some(expr) = static_object_property(ctx, obj, key) {
                     return self.emit_expr(expr, ctx, out);
                 }
+                if static_object_known(ctx, obj) {
+                    out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
+                    return Ok(());
+                }
                 Err(unsupported(
                     "native LoweredProgram emitter does not support this property get",
                 ))
@@ -762,6 +767,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                 }
                 if let Some(expr) = static_object_property(ctx, obj, key) {
                     return self.emit_expr(expr, ctx, out);
+                }
+                if static_object_known(ctx, obj) {
+                    out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
+                    return Ok(());
                 }
                 Err(unsupported(
                     "native LoweredProgram emitter does not support this optional property get",
@@ -803,6 +812,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                 }
                 if let Some(expr) = static_object_dynamic_property(ctx, obj, key) {
                     return self.emit_expr(expr, ctx, out);
+                }
+                if static_object_known(ctx, obj) {
+                    out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
+                    return Ok(());
                 }
                 Err(unsupported(
                     "native LoweredProgram emitter does not support this dynamic property get",
@@ -1053,7 +1066,9 @@ impl<'a> NativeLoweredEmitter<'a> {
         out: &mut Vec<WasmInstr>,
     ) -> Result<Option<Vec<u8>>, Diagnostic> {
         if let LoweredExpr::Block { stmts, result, .. } = expr {
-            if let Some(bytes) = static_console_arg_bytes(result, ctx) {
+            let mut nested_ctx = ctx.clone();
+            collect_static_locals(stmts, &mut nested_ctx.static_locals);
+            if let Some(bytes) = static_console_arg_bytes(result, &nested_ctx) {
                 self.emit_stmts(stmts, ctx, out)?;
                 return Ok(Some(bytes));
             }
@@ -1436,6 +1451,12 @@ fn static_console_arg_bytes(expr: &LoweredExpr, ctx: &FunctionCtx) -> Option<Vec
         }
         LoweredExpr::Null(_) => Some(b"null".to_vec()),
         LoweredExpr::Undefined(_) => Some(b"undefined".to_vec()),
+        LoweredExpr::Local(local, _) => {
+            let Some(StaticValue::Primitive(value)) = ctx.static_locals.get(local) else {
+                return None;
+            };
+            static_console_arg_bytes(value, ctx)
+        }
         LoweredExpr::PropertyGet { obj, key, .. }
         | LoweredExpr::OptionalPropertyGet { obj, key, .. } => {
             if static_object_slot(ctx, obj, key).is_some() {
@@ -1725,9 +1746,125 @@ fn collect_static_locals(stmts: &[LoweredStmt], locals: &mut HashMap<LocalId, St
             | LoweredStmt::Return(expr, _) => {
                 collect_static_locals_from_expr(expr, locals);
             }
+            LoweredStmt::If {
+                condition,
+                then_body,
+                else_body,
+                ..
+            } => {
+                collect_static_locals_from_expr(condition, locals);
+                match condition {
+                    LoweredExpr::Bool(true, _) => collect_static_locals(then_body, locals),
+                    LoweredExpr::Bool(false, _) => collect_static_locals(else_body, locals),
+                    _ => {}
+                }
+            }
+            LoweredStmt::While {
+                condition, body, ..
+            } => {
+                collect_static_locals_from_expr(condition, locals);
+                remove_assigned_static_locals(body, locals);
+            }
+            LoweredStmt::DoWhile {
+                body, condition, ..
+            } => {
+                remove_assigned_static_locals(body, locals);
+                collect_static_locals_from_expr(condition, locals);
+            }
+            LoweredStmt::For {
+                init,
+                condition,
+                update,
+                body,
+                ..
+            } => {
+                if let Some(init) = init {
+                    collect_static_locals(std::slice::from_ref(init), locals);
+                }
+                if let Some(condition) = condition {
+                    collect_static_locals_from_expr(condition, locals);
+                }
+                if let Some(update) = update {
+                    remove_assigned_static_locals_from_expr(update, locals);
+                }
+                remove_assigned_static_locals(body, locals);
+            }
             LoweredStmt::Block(stmts, _) => collect_static_locals(stmts, locals),
             _ => {}
         }
+    }
+}
+
+fn remove_assigned_static_locals(
+    stmts: &[LoweredStmt],
+    locals: &mut HashMap<LocalId, StaticValue>,
+) {
+    for stmt in stmts {
+        match stmt {
+            LoweredStmt::Let(local, _, _) | LoweredStmt::Assign(local, _, _) => {
+                locals.remove(local);
+            }
+            LoweredStmt::Expr(expr, _)
+            | LoweredStmt::Yield(expr, _)
+            | LoweredStmt::Return(expr, _) => {
+                remove_assigned_static_locals_from_expr(expr, locals);
+            }
+            LoweredStmt::Block(stmts, _) => remove_assigned_static_locals(stmts, locals),
+            LoweredStmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                remove_assigned_static_locals(then_body, locals);
+                remove_assigned_static_locals(else_body, locals);
+            }
+            LoweredStmt::While { body, .. }
+            | LoweredStmt::DoWhile { body, .. }
+            | LoweredStmt::For { body, .. } => remove_assigned_static_locals(body, locals),
+            _ => {}
+        }
+    }
+}
+
+fn remove_assigned_static_locals_from_expr(
+    expr: &LoweredExpr,
+    locals: &mut HashMap<LocalId, StaticValue>,
+) {
+    match expr {
+        LoweredExpr::Assign { local, expr, .. }
+        | LoweredExpr::LogicalAssign { local, expr, .. } => {
+            locals.remove(local);
+            remove_assigned_static_locals_from_expr(expr, locals);
+        }
+        LoweredExpr::Block { stmts, result, .. } => {
+            remove_assigned_static_locals(stmts, locals);
+            remove_assigned_static_locals_from_expr(result, locals);
+        }
+        LoweredExpr::Binary { left, right, .. } => {
+            remove_assigned_static_locals_from_expr(left, locals);
+            remove_assigned_static_locals_from_expr(right, locals);
+        }
+        LoweredExpr::Unary { expr, .. } => remove_assigned_static_locals_from_expr(expr, locals),
+        LoweredExpr::Call { args, .. } => {
+            for arg in args {
+                remove_assigned_static_locals_from_expr(arg, locals);
+            }
+        }
+        LoweredExpr::PropertySet { object, value, .. } => {
+            remove_assigned_static_locals_from_expr(object, locals);
+            remove_assigned_static_locals_from_expr(value, locals);
+        }
+        LoweredExpr::PropertySetDynamic {
+            object,
+            index,
+            value,
+            ..
+        } => {
+            remove_assigned_static_locals_from_expr(object, locals);
+            remove_assigned_static_locals_from_expr(index, locals);
+            remove_assigned_static_locals_from_expr(value, locals);
+        }
+        _ => {}
     }
 }
 
@@ -1747,8 +1884,17 @@ fn collect_static_locals_from_expr(expr: &LoweredExpr, locals: &mut HashMap<Loca
             collect_static_locals_from_expr(right, locals);
         }
         LoweredExpr::Unary { expr, .. } => collect_static_locals_from_expr(expr, locals),
-        LoweredExpr::Assign { expr, .. } | LoweredExpr::LogicalAssign { expr, .. } => {
+        LoweredExpr::Assign { local, expr, .. } => {
             collect_static_locals_from_expr(expr, locals);
+            if let Some(value) = static_value_from_expr(expr, locals) {
+                locals.insert(*local, value);
+            } else {
+                locals.remove(local);
+            }
+        }
+        LoweredExpr::LogicalAssign { local, expr, .. } => {
+            collect_static_locals_from_expr(expr, locals);
+            locals.remove(local);
         }
         LoweredExpr::LogicalPropertyAssign { expr, .. } => {
             collect_static_locals_from_expr(expr, locals);
@@ -1794,6 +1940,11 @@ fn static_value_from_expr(
 ) -> Option<StaticValue> {
     match expr {
         LoweredExpr::Local(local, _) => locals.get(local).cloned(),
+        LoweredExpr::Number(_, _)
+        | LoweredExpr::String(_, _)
+        | LoweredExpr::Bool(_, _)
+        | LoweredExpr::Null(_)
+        | LoweredExpr::Undefined(_) => Some(StaticValue::Primitive(expr.clone())),
         LoweredExpr::ObjectNew { props, .. } => Some(StaticValue::Object(
             props
                 .iter()
@@ -1801,6 +1952,38 @@ fn static_value_from_expr(
                 .collect(),
         )),
         LoweredExpr::ArrayNew { elements, .. } => Some(StaticValue::Array(elements.clone())),
+        LoweredExpr::Block { stmts, result, .. } => {
+            let mut nested_locals = locals.clone();
+            collect_static_locals(stmts, &mut nested_locals);
+            static_value_from_expr(result, &nested_locals)
+        }
+        LoweredExpr::PropertyGet { obj, key, span }
+        | LoweredExpr::OptionalPropertyGet { obj, key, span } => {
+            if let Some(value) = static_object_property_from_locals(locals, obj, key) {
+                return static_value_from_expr(value, locals);
+            }
+            static_object_known_in_locals(locals, obj)
+                .then(|| StaticValue::Primitive(LoweredExpr::Undefined(*span)))
+        }
+        LoweredExpr::PropertyGetDynamic { obj, key, span }
+        | LoweredExpr::OptionalIndex {
+            object: obj,
+            index: key,
+            span,
+        }
+        | LoweredExpr::Index {
+            object: obj,
+            index: key,
+            span,
+        } => {
+            if let Some(value) = static_array_element_from_locals(locals, obj, key)
+                .or_else(|| static_object_dynamic_property_from_locals(locals, obj, key))
+            {
+                return static_value_from_expr(value, locals);
+            }
+            static_object_known_in_locals(locals, obj)
+                .then(|| StaticValue::Primitive(LoweredExpr::Undefined(*span)))
+        }
         _ => None,
     }
 }
@@ -1810,10 +1993,18 @@ fn static_object_property<'a>(
     obj: &'a LoweredExpr,
     key: &str,
 ) -> Option<&'a LoweredExpr> {
+    static_object_property_from_locals(&ctx.static_locals, obj, key)
+}
+
+fn static_object_property_from_locals<'a>(
+    locals: &'a HashMap<LocalId, StaticValue>,
+    obj: &'a LoweredExpr,
+    key: &str,
+) -> Option<&'a LoweredExpr> {
     let LoweredExpr::Local(local, _) = obj else {
         return None;
     };
-    let Some(StaticValue::Object(props)) = ctx.static_locals.get(local) else {
+    let Some(StaticValue::Object(props)) = locals.get(local) else {
         return None;
     };
     props.get(key)
@@ -1825,14 +2016,30 @@ fn static_object_dynamic_property<'a>(
     key: &'a LoweredExpr,
 ) -> Option<&'a LoweredExpr> {
     let key = static_property_key(key)?;
-    static_object_property(ctx, obj, &key)
+    static_object_property_from_locals(&ctx.static_locals, obj, &key)
+}
+
+fn static_object_dynamic_property_from_locals<'a>(
+    locals: &'a HashMap<LocalId, StaticValue>,
+    obj: &'a LoweredExpr,
+    key: &'a LoweredExpr,
+) -> Option<&'a LoweredExpr> {
+    let key = static_property_key(key)?;
+    static_object_property_from_locals(locals, obj, &key)
 }
 
 fn static_object_known(ctx: &FunctionCtx, obj: &LoweredExpr) -> bool {
+    static_object_known_in_locals(&ctx.static_locals, obj)
+}
+
+fn static_object_known_in_locals(
+    locals: &HashMap<LocalId, StaticValue>,
+    obj: &LoweredExpr,
+) -> bool {
     let LoweredExpr::Local(local, _) = obj else {
         return false;
     };
-    matches!(ctx.static_locals.get(local), Some(StaticValue::Object(_)))
+    matches!(locals.get(local), Some(StaticValue::Object(_)))
 }
 
 fn static_property_key(key: &LoweredExpr) -> Option<String> {
@@ -1848,10 +2055,18 @@ fn static_array_element<'a>(
     obj: &'a LoweredExpr,
     key: &'a LoweredExpr,
 ) -> Option<&'a LoweredExpr> {
+    static_array_element_from_locals(&ctx.static_locals, obj, key)
+}
+
+fn static_array_element_from_locals<'a>(
+    locals: &'a HashMap<LocalId, StaticValue>,
+    obj: &'a LoweredExpr,
+    key: &'a LoweredExpr,
+) -> Option<&'a LoweredExpr> {
     let LoweredExpr::Local(local, _) = obj else {
         return None;
     };
-    let Some(StaticValue::Array(elements)) = ctx.static_locals.get(local) else {
+    let Some(StaticValue::Array(elements)) = locals.get(local) else {
         return None;
     };
     let LoweredExpr::Number(index, _) = key else {
