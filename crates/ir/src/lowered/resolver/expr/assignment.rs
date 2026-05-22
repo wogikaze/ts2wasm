@@ -351,7 +351,7 @@ impl super::super::Resolver {
                     .insert(ObjectAccessorKey::Property(key.to_owned()), *func_id);
             }
         }
-        Ok(object_kernel::ordinary_set(
+        Ok(self.lower_property_set_with_null_guard(
             lowered_object,
             key,
             lowered_value,
@@ -437,10 +437,13 @@ impl super::super::Resolver {
                 span: Span::generated("typed_array_store"),
             });
         }
-        Ok(object_kernel::ordinary_set_dynamic(
-            self.lower_property_assignment_object(object)?,
-            self.lower_expr(key)?,
-            self.lower_expr(value)?,
+        let lowered_object = self.lower_property_assignment_object(object)?;
+        let lowered_key = self.lower_expr(key)?;
+        let lowered_value = self.lower_expr(value)?;
+        Ok(self.lower_property_set_dynamic_with_null_guard(
+            lowered_object,
+            lowered_key,
+            lowered_value,
             Span::generated("prop_set_dyn"),
         ))
     }

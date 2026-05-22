@@ -300,6 +300,17 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             });
         }
+        // Interface-typed property access: use interface definition to resolve
+        // property type before falling through to proxy checks.
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(obj_local) = self.resolve_local(name)
+            && let Some(iface_name) = self.ctx.classes.local_type_aliases.get(&obj_local)
+            && let Some(props) = self.ctx.lookup_interface_properties(iface_name)
+            && props.iter().any(|(pn, _)| pn == key)
+        {
+            let lowered_object = self.lower_expr(object)?;
+            return Ok(object_kernel::ordinary_get(lowered_object, key, span));
+        }
         if let Some(proxy) =
             crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(&self.ctx, object)
         {
@@ -314,7 +325,7 @@ impl super::super::Resolver {
         if let Some(function) = self.lowered_object_arrow_fn_property(&lowered_object, key) {
             return Ok(function);
         }
-        Ok(object_kernel::ordinary_get(lowered_object, key, span))
+        Ok(self.lower_property_get_with_null_guard(lowered_object, key, span))
     }
 
     fn lowered_object_arrow_fn_property(
@@ -332,6 +343,174 @@ impl super::super::Resolver {
             .and_then(|(_, value)| {
                 matches!(value, LoweredExpr::ArrowFn { .. }).then(|| value.clone())
             })
+    }
+
+    fn lower_property_get_with_null_guard(
+        &mut self,
+        object: LoweredExpr,
+        key: &str,
+        span: Span,
+    ) -> LoweredExpr {
+        let temp = self.alloc_temp();
+        let error_msg = format!("Cannot read properties of undefined (reading '{}')", key);
+        LoweredExpr::Block {
+            stmts: vec![
+                LoweredStmt::Let(temp, object, Span::generated("let_stmt")),
+                LoweredStmt::If {
+                    condition: LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(temp, Span::generated("local"))),
+                        op: LoweredBinaryOp::EqualEqual,
+                        right: Box::new(LoweredExpr::Null(Span::generated("null"))),
+                        span: Span::generated("null_check"),
+                    },
+                    then_body: vec![LoweredStmt::Throw(
+                        LoweredExpr::ErrorNew {
+                            constructor: BuiltinErrorConstructor::TypeError,
+                            message: Box::new(LoweredExpr::String(error_msg, Span::generated("str"))),
+                            cause: None,
+                            errors: None,
+                            span: Span::generated("error_new"),
+                        },
+                        Span::generated("throw"),
+                    )],
+                    else_body: vec![],
+                    span: Span::generated("if"),
+                },
+            ],
+            result: Box::new(object_kernel::ordinary_get(
+                LoweredExpr::Local(temp, Span::generated("local")),
+                key,
+                span,
+            )),
+            span,
+        }
+    }
+
+    pub(super) fn lower_property_set_with_null_guard(
+        &mut self,
+        object: LoweredExpr,
+        key: &str,
+        value: LoweredExpr,
+        span: Span,
+    ) -> LoweredExpr {
+        let temp = self.alloc_temp();
+        let error_msg = format!("Cannot set properties of undefined (setting '{}')", key);
+        LoweredExpr::Block {
+            stmts: vec![
+                LoweredStmt::Let(temp, object, Span::generated("let_stmt")),
+                LoweredStmt::If {
+                    condition: LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(temp, Span::generated("local"))),
+                        op: LoweredBinaryOp::EqualEqual,
+                        right: Box::new(LoweredExpr::Null(Span::generated("null"))),
+                        span: Span::generated("null_check"),
+                    },
+                    then_body: vec![LoweredStmt::Throw(
+                        LoweredExpr::ErrorNew {
+                            constructor: BuiltinErrorConstructor::TypeError,
+                            message: Box::new(LoweredExpr::String(error_msg, Span::generated("str"))),
+                            cause: None,
+                            errors: None,
+                            span: Span::generated("error_new"),
+                        },
+                        Span::generated("throw"),
+                    )],
+                    else_body: vec![],
+                    span: Span::generated("if"),
+                },
+            ],
+            result: Box::new(object_kernel::ordinary_set(
+                LoweredExpr::Local(temp, Span::generated("local")),
+                key,
+                value,
+                span,
+            )),
+            span,
+        }
+    }
+
+    pub(super) fn lower_property_get_dynamic_with_null_guard(
+        &mut self,
+        object: LoweredExpr,
+        index: LoweredExpr,
+        span: Span,
+    ) -> LoweredExpr {
+        let temp = self.alloc_temp();
+        let error_msg = "Cannot read properties of undefined (reading '<computed>')".to_owned();
+        LoweredExpr::Block {
+            stmts: vec![
+                LoweredStmt::Let(temp, object, Span::generated("let_stmt")),
+                LoweredStmt::If {
+                    condition: LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(temp, Span::generated("local"))),
+                        op: LoweredBinaryOp::EqualEqual,
+                        right: Box::new(LoweredExpr::Null(Span::generated("null"))),
+                        span: Span::generated("null_check"),
+                    },
+                    then_body: vec![LoweredStmt::Throw(
+                        LoweredExpr::ErrorNew {
+                            constructor: BuiltinErrorConstructor::TypeError,
+                            message: Box::new(LoweredExpr::String(error_msg, Span::generated("str"))),
+                            cause: None,
+                            errors: None,
+                            span: Span::generated("error_new"),
+                        },
+                        Span::generated("throw"),
+                    )],
+                    else_body: vec![],
+                    span: Span::generated("if"),
+                },
+            ],
+            result: Box::new(object_kernel::ordinary_get_dynamic(
+                LoweredExpr::Local(temp, Span::generated("local")),
+                index,
+                span,
+            )),
+            span,
+        }
+    }
+
+    pub(super) fn lower_property_set_dynamic_with_null_guard(
+        &mut self,
+        object: LoweredExpr,
+        index: LoweredExpr,
+        value: LoweredExpr,
+        span: Span,
+    ) -> LoweredExpr {
+        let temp = self.alloc_temp();
+        let error_msg = "Cannot set properties of undefined (setting '<computed>')".to_owned();
+        LoweredExpr::Block {
+            stmts: vec![
+                LoweredStmt::Let(temp, object, Span::generated("let_stmt")),
+                LoweredStmt::If {
+                    condition: LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(temp, Span::generated("local"))),
+                        op: LoweredBinaryOp::EqualEqual,
+                        right: Box::new(LoweredExpr::Null(Span::generated("null"))),
+                        span: Span::generated("null_check"),
+                    },
+                    then_body: vec![LoweredStmt::Throw(
+                        LoweredExpr::ErrorNew {
+                            constructor: BuiltinErrorConstructor::TypeError,
+                            message: Box::new(LoweredExpr::String(error_msg, Span::generated("str"))),
+                            cause: None,
+                            errors: None,
+                            span: Span::generated("error_new"),
+                        },
+                        Span::generated("throw"),
+                    )],
+                    else_body: vec![],
+                    span: Span::generated("if"),
+                },
+            ],
+            result: Box::new(object_kernel::ordinary_set_dynamic(
+                LoweredExpr::Local(temp, Span::generated("local")),
+                index,
+                value,
+                span,
+            )),
+            span,
+        }
     }
 
     fn object_function_property(
@@ -627,7 +806,7 @@ impl super::super::Resolver {
                 span: Span::generated("typed_array_load"),
             })
         } else {
-            Ok(object_kernel::ordinary_get_dynamic(
+            Ok(self.lower_property_get_dynamic_with_null_guard(
                 lowered_object,
                 lowered_index,
                 Span::generated("index"),
