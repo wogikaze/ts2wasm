@@ -63,10 +63,49 @@ struct NativeLoweredEmitter<'a> {
     module_export_global_order: Vec<String>,
 }
 
+#[derive(Clone)]
 struct FunctionCtx {
     locals: HashMap<LocalId, usize>,
     returns_value: bool,
     module_id: Option<usize>,
+    controls: Vec<ControlFrame>,
+}
+
+#[derive(Clone)]
+struct ControlFrame {
+    break_label: Option<String>,
+    allow_unlabeled_break: bool,
+    continue_label: Option<String>,
+    allow_unlabeled_continue: bool,
+}
+
+impl ControlFrame {
+    fn plain() -> Self {
+        Self {
+            break_label: None,
+            allow_unlabeled_break: false,
+            continue_label: None,
+            allow_unlabeled_continue: false,
+        }
+    }
+
+    fn break_target(label: Option<&str>, allow_unlabeled: bool) -> Self {
+        Self {
+            break_label: label.map(str::to_owned),
+            allow_unlabeled_break: allow_unlabeled,
+            continue_label: None,
+            allow_unlabeled_continue: false,
+        }
+    }
+
+    fn continue_target(label: Option<&str>, allow_unlabeled: bool) -> Self {
+        Self {
+            break_label: None,
+            allow_unlabeled_break: false,
+            continue_label: label.map(str::to_owned),
+            allow_unlabeled_continue: allow_unlabeled,
+        }
+    }
 }
 
 impl<'a> NativeLoweredEmitter<'a> {
@@ -173,6 +212,7 @@ impl<'a> NativeLoweredEmitter<'a> {
             locals,
             returns_value,
             module_id: None,
+            controls: Vec::new(),
         };
         let mut body = Vec::new();
         self.emit_stmts(&function.body, &ctx, &mut body)?;
@@ -194,6 +234,7 @@ impl<'a> NativeLoweredEmitter<'a> {
             locals,
             returns_value: false,
             module_id: None,
+            controls: Vec::new(),
         };
         let mut body = Vec::new();
         for module_info in &self.program.modules {
@@ -214,6 +255,7 @@ impl<'a> NativeLoweredEmitter<'a> {
             locals,
             returns_value: false,
             module_id: Some(module_info.id),
+            controls: Vec::new(),
         };
         let mut body = Vec::new();
         self.emit_stmts(&module_info.statements, &ctx, &mut body)?;
@@ -227,16 +269,17 @@ impl<'a> NativeLoweredEmitter<'a> {
         out: &mut Vec<WasmInstr>,
     ) -> Result<(), Diagnostic> {
         for stmt in stmts {
-            self.emit_stmt(stmt, ctx, out)?;
+            self.emit_stmt_with_label(stmt, ctx, out, None)?;
         }
         Ok(())
     }
 
-    fn emit_stmt(
+    fn emit_stmt_with_label(
         &mut self,
         stmt: &LoweredStmt,
         ctx: &FunctionCtx,
         out: &mut Vec<WasmInstr>,
+        active_label: Option<&str>,
     ) -> Result<(), Diagnostic> {
         match stmt {
             LoweredStmt::Block(stmts, _) => self.emit_stmts(stmts, ctx, out),
@@ -265,28 +308,36 @@ impl<'a> NativeLoweredEmitter<'a> {
                 self.emit_expr(condition, ctx, out)?;
                 out.push(WasmInstr::If { result_ty: None });
                 out.push(WasmInstr::Then);
-                self.emit_stmts(then_body, ctx, out)?;
+                let nested_ctx = push_control(ctx, ControlFrame::plain());
+                self.emit_stmts(then_body, &nested_ctx, out)?;
                 if !else_body.is_empty() {
                     out.push(WasmInstr::Else);
-                    self.emit_stmts(else_body, ctx, out)?;
+                    self.emit_stmts(else_body, &nested_ctx, out)?;
                 }
                 out.push(WasmInstr::End);
                 Ok(())
             }
             LoweredStmt::While {
                 condition, body, ..
-            } => {
-                out.push(WasmInstr::Block("$while_exit".to_owned()));
-                out.push(WasmInstr::Loop("$while_loop".to_owned()));
-                self.emit_expr(condition, ctx, out)?;
-                out.push(WasmInstr::I32Eqz);
-                out.push(WasmInstr::BrIfDepth(1));
-                self.emit_stmts(body, ctx, out)?;
-                out.push(WasmInstr::BrDepth(0));
-                out.push(WasmInstr::End);
-                out.push(WasmInstr::End);
-                Ok(())
-            }
+            } => self.emit_while(condition, body, ctx, out, active_label),
+            LoweredStmt::DoWhile {
+                body, condition, ..
+            } => self.emit_do_while(body, condition, ctx, out, active_label),
+            LoweredStmt::For {
+                init,
+                condition,
+                update,
+                body,
+                ..
+            } => self.emit_for(
+                init.as_deref(),
+                condition.as_ref(),
+                update.as_ref(),
+                body,
+                ctx,
+                out,
+                active_label,
+            ),
             LoweredStmt::Return(expr, _) => {
                 if ctx.returns_value {
                     self.emit_expr(expr, ctx, out)?;
@@ -304,10 +355,123 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out.push(WasmInstr::GlobalSet(module_export_global(ctx, name)?));
                 Ok(())
             }
+            LoweredStmt::Labeled { label, body, .. } => {
+                if stmt_accepts_continue_label(body) {
+                    return self.emit_stmt_with_label(body, ctx, out, Some(label));
+                }
+                out.push(WasmInstr::Block(label_block_symbol(label)));
+                let nested_ctx = push_control(ctx, ControlFrame::break_target(Some(label), false));
+                self.emit_stmt_with_label(body, &nested_ctx, out, None)?;
+                out.push(WasmInstr::End);
+                Ok(())
+            }
+            LoweredStmt::Break { label, .. } => {
+                out.push(WasmInstr::BrDepth(branch_depth(
+                    ctx,
+                    BranchKind::Break,
+                    label.as_deref(),
+                )?));
+                Ok(())
+            }
+            LoweredStmt::Continue { label, .. } => {
+                out.push(WasmInstr::BrDepth(branch_depth(
+                    ctx,
+                    BranchKind::Continue,
+                    label.as_deref(),
+                )?));
+                Ok(())
+            }
             _ => Err(unsupported(
                 "native LoweredProgram emitter does not support this statement",
             )),
         }
+    }
+
+    fn emit_while(
+        &mut self,
+        condition: &LoweredExpr,
+        body: &[LoweredStmt],
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+        label: Option<&str>,
+    ) -> Result<(), Diagnostic> {
+        out.push(WasmInstr::Block(loop_break_symbol(label, "while")));
+        let break_ctx = push_control(ctx, ControlFrame::break_target(label, true));
+        out.push(WasmInstr::Loop(loop_continue_symbol(label, "while")));
+        let loop_ctx = push_control(&break_ctx, ControlFrame::continue_target(label, true));
+        self.emit_expr(condition, &loop_ctx, out)?;
+        out.push(WasmInstr::I32Eqz);
+        out.push(WasmInstr::BrIfDepth(1));
+        self.emit_stmts(body, &loop_ctx, out)?;
+        out.push(WasmInstr::BrDepth(0));
+        out.push(WasmInstr::End);
+        out.push(WasmInstr::End);
+        Ok(())
+    }
+
+    fn emit_do_while(
+        &mut self,
+        body: &[LoweredStmt],
+        condition: &LoweredExpr,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+        label: Option<&str>,
+    ) -> Result<(), Diagnostic> {
+        out.push(WasmInstr::Block(loop_break_symbol(label, "do")));
+        let break_ctx = push_control(ctx, ControlFrame::break_target(label, true));
+        out.push(WasmInstr::Loop(loop_continue_symbol(label, "do_loop")));
+        let loop_ctx = push_control(&break_ctx, ControlFrame::plain());
+        out.push(WasmInstr::Block(loop_continue_symbol(label, "do_continue")));
+        let body_ctx = push_control(&loop_ctx, ControlFrame::continue_target(label, true));
+        self.emit_stmts(body, &body_ctx, out)?;
+        out.push(WasmInstr::End);
+        self.emit_expr(condition, &loop_ctx, out)?;
+        out.push(WasmInstr::BrIfDepth(0));
+        out.push(WasmInstr::End);
+        out.push(WasmInstr::End);
+        Ok(())
+    }
+
+    fn emit_for(
+        &mut self,
+        init: Option<&LoweredStmt>,
+        condition: Option<&LoweredExpr>,
+        update: Option<&LoweredExpr>,
+        body: &[LoweredStmt],
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+        label: Option<&str>,
+    ) -> Result<(), Diagnostic> {
+        if let Some(init) = init {
+            self.emit_stmt_with_label(init, ctx, out, None)?;
+        }
+
+        out.push(WasmInstr::Block(loop_break_symbol(label, "for")));
+        let break_ctx = push_control(ctx, ControlFrame::break_target(label, true));
+        out.push(WasmInstr::Loop(loop_continue_symbol(label, "for_loop")));
+        let loop_ctx = push_control(&break_ctx, ControlFrame::plain());
+        if let Some(condition) = condition {
+            self.emit_expr(condition, &loop_ctx, out)?;
+            out.push(WasmInstr::I32Eqz);
+            out.push(WasmInstr::BrIfDepth(1));
+        }
+        out.push(WasmInstr::Block(loop_continue_symbol(
+            label,
+            "for_continue",
+        )));
+        let body_ctx = push_control(&loop_ctx, ControlFrame::continue_target(label, true));
+        self.emit_stmts(body, &body_ctx, out)?;
+        out.push(WasmInstr::End);
+        if let Some(update) = update {
+            self.emit_expr(update, &loop_ctx, out)?;
+            if expr_produces_value(update, &self.function_results) {
+                out.push(WasmInstr::Drop);
+            }
+        }
+        out.push(WasmInstr::BrDepth(0));
+        out.push(WasmInstr::End);
+        out.push(WasmInstr::End);
+        Ok(())
     }
 
     fn emit_expr(
@@ -579,6 +743,69 @@ fn sanitize_symbol(name: &str) -> String {
         out.push_str("empty");
     }
     out
+}
+
+fn label_block_symbol(label: &str) -> String {
+    format!("$native_label_{}", sanitize_symbol(label))
+}
+
+fn loop_break_symbol(label: Option<&str>, kind: &str) -> String {
+    match label {
+        Some(label) => format!("$native_{}_{}_break", sanitize_symbol(label), kind),
+        None => format!("$native_{kind}_break"),
+    }
+}
+
+fn loop_continue_symbol(label: Option<&str>, kind: &str) -> String {
+    match label {
+        Some(label) => format!("$native_{}_{}_continue", sanitize_symbol(label), kind),
+        None => format!("$native_{kind}_continue"),
+    }
+}
+
+fn push_control(ctx: &FunctionCtx, frame: ControlFrame) -> FunctionCtx {
+    let mut nested = ctx.clone();
+    nested.controls.push(frame);
+    nested
+}
+
+enum BranchKind {
+    Break,
+    Continue,
+}
+
+fn branch_depth(
+    ctx: &FunctionCtx,
+    kind: BranchKind,
+    label: Option<&str>,
+) -> Result<u32, Diagnostic> {
+    for (depth, frame) in ctx.controls.iter().rev().enumerate() {
+        let matches = match kind {
+            BranchKind::Break => match label {
+                Some(label) => frame.break_label.as_deref() == Some(label),
+                None => frame.allow_unlabeled_break,
+            },
+            BranchKind::Continue => match label {
+                Some(label) => frame.continue_label.as_deref() == Some(label),
+                None => frame.allow_unlabeled_continue,
+            },
+        };
+        if matches {
+            return Ok(depth as u32);
+        }
+    }
+
+    Err(unsupported(match kind {
+        BranchKind::Break => "native LoweredProgram emitter cannot resolve break target",
+        BranchKind::Continue => "native LoweredProgram emitter cannot resolve continue target",
+    }))
+}
+
+fn stmt_accepts_continue_label(stmt: &LoweredStmt) -> bool {
+    matches!(
+        stmt,
+        LoweredStmt::While { .. } | LoweredStmt::DoWhile { .. } | LoweredStmt::For { .. }
+    )
 }
 
 fn module_export_global(ctx: &FunctionCtx, name: &str) -> Result<String, Diagnostic> {

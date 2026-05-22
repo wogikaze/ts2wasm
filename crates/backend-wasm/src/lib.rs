@@ -791,6 +791,191 @@ mod tests {
     }
 
     #[test]
+    fn native_lowered_for_break_continue_runs_without_wat_conversion() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(LocalId(0), LoweredExpr::Number(0, span), span),
+                LoweredStmt::Let(LocalId(1), LoweredExpr::Number(0, span), span),
+                LoweredStmt::For {
+                    init: Some(Box::new(LoweredStmt::Assign(
+                        LocalId(0),
+                        LoweredExpr::Number(0, span),
+                        span,
+                    ))),
+                    condition: Some(LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                        op: LoweredBinaryOp::Less,
+                        right: Box::new(LoweredExpr::Number(6, span)),
+                        span,
+                    }),
+                    update: Some(LoweredExpr::Assign {
+                        local: LocalId(0),
+                        expr: Box::new(LoweredExpr::Binary {
+                            left: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                            op: LoweredBinaryOp::Add,
+                            right: Box::new(LoweredExpr::Number(1, span)),
+                            span,
+                        }),
+                        span,
+                    }),
+                    body: vec![
+                        LoweredStmt::If {
+                            condition: LoweredExpr::Binary {
+                                left: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                                op: LoweredBinaryOp::StrictEqual,
+                                right: Box::new(LoweredExpr::Number(2, span)),
+                                span,
+                            },
+                            then_body: vec![LoweredStmt::Continue { label: None, span }],
+                            else_body: vec![],
+                            span,
+                        },
+                        LoweredStmt::If {
+                            condition: LoweredExpr::Binary {
+                                left: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                                op: LoweredBinaryOp::StrictEqual,
+                                right: Box::new(LoweredExpr::Number(5, span)),
+                                span,
+                            },
+                            then_body: vec![LoweredStmt::Break { label: None, span }],
+                            else_body: vec![],
+                            span,
+                        },
+                        LoweredStmt::Assign(
+                            LocalId(1),
+                            LoweredExpr::Binary {
+                                left: Box::new(LoweredExpr::Local(LocalId(1), span)),
+                                op: LoweredBinaryOp::Add,
+                                right: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                                span,
+                            },
+                            span,
+                        ),
+                    ],
+                    span,
+                },
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Local(LocalId(1), span)],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![LocalId(0), LocalId(1)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native for binary should emit");
+        let temp_dir = unique_temp_dir("native-lowered-for-break-continue");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "8\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_labeled_do_while_break_continue_runs_without_wat_conversion() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(LocalId(0), LoweredExpr::Number(0, span), span),
+                LoweredStmt::Let(LocalId(1), LoweredExpr::Number(0, span), span),
+                LoweredStmt::Labeled {
+                    label: "outer".to_owned(),
+                    body: Box::new(LoweredStmt::DoWhile {
+                        body: vec![
+                            LoweredStmt::Assign(
+                                LocalId(0),
+                                LoweredExpr::Binary {
+                                    left: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                                    op: LoweredBinaryOp::Add,
+                                    right: Box::new(LoweredExpr::Number(1, span)),
+                                    span,
+                                },
+                                span,
+                            ),
+                            LoweredStmt::If {
+                                condition: LoweredExpr::Binary {
+                                    left: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                                    op: LoweredBinaryOp::StrictEqual,
+                                    right: Box::new(LoweredExpr::Number(2, span)),
+                                    span,
+                                },
+                                then_body: vec![LoweredStmt::Continue {
+                                    label: Some("outer".to_owned()),
+                                    span,
+                                }],
+                                else_body: vec![],
+                                span,
+                            },
+                            LoweredStmt::If {
+                                condition: LoweredExpr::Binary {
+                                    left: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                                    op: LoweredBinaryOp::StrictEqual,
+                                    right: Box::new(LoweredExpr::Number(4, span)),
+                                    span,
+                                },
+                                then_body: vec![LoweredStmt::Break {
+                                    label: Some("outer".to_owned()),
+                                    span,
+                                }],
+                                else_body: vec![],
+                                span,
+                            },
+                            LoweredStmt::Assign(
+                                LocalId(1),
+                                LoweredExpr::Binary {
+                                    left: Box::new(LoweredExpr::Local(LocalId(1), span)),
+                                    op: LoweredBinaryOp::Add,
+                                    right: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                                    span,
+                                },
+                                span,
+                            ),
+                        ],
+                        condition: LoweredExpr::Binary {
+                            left: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                            op: LoweredBinaryOp::Less,
+                            right: Box::new(LoweredExpr::Number(10, span)),
+                            span,
+                        },
+                        span,
+                    }),
+                    span,
+                },
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Local(LocalId(1), span)],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![LocalId(0), LocalId(1)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native labeled loop binary should emit");
+        let temp_dir = unique_temp_dir("native-lowered-labeled-loop");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "4\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
     fn native_lowered_static_module_export_runs_without_wat_conversion() {
         let span = Span::generated("test");
         let program = LoweredProgram {
