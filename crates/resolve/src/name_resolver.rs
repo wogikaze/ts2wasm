@@ -554,11 +554,19 @@ impl NameResolver {
                         }
                     }
                 }
-                for (_, default, _) in params {
-                    if let Some(default_expr) = default {
-                        self.resolve_expr(default_expr)?;
-                    }
-                }
+                let resolved_params = params
+                    .iter()
+                    .map(|(param_name, default, is_rest)| {
+                        Ok((
+                            param_name.clone(),
+                            default
+                                .as_ref()
+                                .map(|expr| self.resolve_expr(expr))
+                                .transpose()?,
+                            *is_rest,
+                        ))
+                    })
+                    .collect::<Result<Vec<_>, Diagnostic>>()?;
                 let previous_strict_context = self.strict_context;
                 self.strict_context =
                     previous_strict_context || block_has_use_strict_directive(body);
@@ -569,7 +577,7 @@ impl NameResolver {
                 self.exit_scope();
                 Ok(Stmt::Function {
                     name: name.clone(),
-                    params: params.clone(),
+                    params: resolved_params,
                     body: resolved_body,
                     is_generator: *is_generator,
                     is_async: *is_async,
@@ -1107,11 +1115,19 @@ impl NameResolver {
                         }
                     }
                 }
-                for (_, default, _) in params {
-                    if let Some(default_expr) = default {
-                        self.resolve_expr(default_expr)?;
-                    }
-                }
+                let resolved_params = params
+                    .iter()
+                    .map(|(param_name, default, is_rest)| {
+                        Ok((
+                            param_name.clone(),
+                            default
+                                .as_ref()
+                                .map(|expr| self.resolve_expr(expr))
+                                .transpose()?,
+                            *is_rest,
+                        ))
+                    })
+                    .collect::<Result<Vec<_>, Diagnostic>>()?;
                 let previous_strict_context = self.strict_context;
                 self.strict_context =
                     previous_strict_context || block_has_use_strict_directive(body);
@@ -1122,7 +1138,7 @@ impl NameResolver {
                 self.exit_scope();
                 Ok(Expr::FunctionExpr {
                     name: name.clone(),
-                    params: params.clone(),
+                    params: resolved_params,
                     body: resolved_body,
                     is_generator: *is_generator,
                     origin: *origin,
@@ -1579,7 +1595,6 @@ impl NameResolver {
         }
     }
 
-
     /// Resolve an array literal, resolving each element recursively.
     fn resolve_array_literal(
         &mut self,
@@ -1625,12 +1640,10 @@ impl NameResolver {
                         key: Box::new(self.resolve_expr(key)?),
                         value: self.resolve_expr(value)?,
                     }),
-                    ObjectProp::MethodShorthand { key, value } => {
-                        Ok(ObjectProp::MethodShorthand {
-                            key: key.clone(),
-                            value: self.resolve_expr(value)?,
-                        })
-                    }
+                    ObjectProp::MethodShorthand { key, value } => Ok(ObjectProp::MethodShorthand {
+                        key: key.clone(),
+                        value: self.resolve_expr(value)?,
+                    }),
                 })
                 .collect::<Result<Vec<_>, _>>()?,
             span,

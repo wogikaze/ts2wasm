@@ -2,7 +2,9 @@ impl Parser {
     fn statement(&mut self) -> Result<Stmt, Diagnostic> {
         match self.peek() {
             Some(Token::Semicolon) => {
-                let semi = self.consume_span(TokenKind::Semicolon).unwrap_or(Span::generated("semi"));
+                let semi = self
+                    .consume_span(TokenKind::Semicolon)
+                    .unwrap_or(Span::generated("semi"));
                 Ok(Stmt::Expr {
                     expr: Expr::Undefined { span: semi },
                     span: semi,
@@ -27,19 +29,21 @@ impl Parser {
             Some(Token::Break) => self.break_statement(),
             Some(Token::Continue) => self.continue_statement(),
             Some(Token::Abstract) => {
-            self.advance();
-            self.class_statement()
-        }
+                self.advance();
+                self.class_statement()
+            }
             Some(Token::Class) => self.class_statement(),
             Some(Token::Static) => {
                 let span = self.peek_span();
                 self.advance();
                 Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "static declarations are not valid in constructor/function bodies".to_owned(),
+                    message: "static declarations are not valid in constructor/function bodies"
+                        .to_owned(),
                     span,
 
-                    phase: None,})
+                    phase: None,
+                })
             }
             Some(Token::Return) => self.return_statement(),
             Some(Token::Ident(name)) if self.in_generator_fn && name == "yield" => {
@@ -88,19 +92,12 @@ impl Parser {
     /// `(...)`, then proceeds to parse the decorated declaration normally.
     /// This effectively erases TypeScript decorator syntax at the parser level.
     fn decorator_before_class_declaration(&mut self) -> Result<Stmt, Diagnostic> {
-        let at_span = self
-            .peek_span()
-            .unwrap_or(Span {
-                start: 0,
-                end: 0,
-            });
+        let at_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
         self.advance(); // consume @
 
         // Consume optional decorator identifier
         let _decorator_end = if matches!(self.peek(), Some(Token::Ident(_))) {
-            let ident_span = self
-                .peek_span()
-                .unwrap_or(at_span);
+            let ident_span = self.peek_span().unwrap_or(at_span);
             self.advance(); // consume decorator name
 
             // Consume optional call arguments: @decorator(args...)
@@ -126,9 +123,7 @@ impl Parser {
                         None => break,
                     }
                 }
-                self.prev_span()
-                    .map(|s| s.end)
-                    .unwrap_or(ident_span.end)
+                self.prev_span().map(|s| s.end).unwrap_or(ident_span.end)
             } else {
                 ident_span.end
             }
@@ -193,14 +188,20 @@ impl Parser {
                         source,
                         attributes: Vec::new(),
                         phase: ImportPhase::Evaluation,
-                        span: Span { start: import_span.start, end },
+                        span: Span {
+                            start: import_span.start,
+                            end,
+                        },
                     });
                 }
                 // `import X = N[.M. ...]` — local alias, skip (erased at runtime)
                 self.skip_to_semicolon()?;
                 Ok(Stmt::Expr {
                     expr: crate::Expr::Undefined { span: import_span },
-                    span: Span { start: import_span.start, end: import_span.start },
+                    span: Span {
+                        start: import_span.start,
+                        end: import_span.start,
+                    },
                 })
             }
             Some(Token::Ident(_)) => self.default_import_statement(import_span),
@@ -273,7 +274,9 @@ impl Parser {
             match self.peek() {
                 Some(Token::LeftBrace) => self.named_export_statement(export_span),
                 Some(Token::Star) => self.star_re_export_statement(export_span),
-                Some(Token::Const | Token::Let | Token::Var) => self.variable_export_statement(export_span),
+                Some(Token::Const | Token::Let | Token::Var) => {
+                    self.variable_export_statement(export_span)
+                }
                 _ => {
                     let form = match self.peek() {
                         Some(Token::Const | Token::Let | Token::Var) => "variable export",
@@ -287,7 +290,8 @@ impl Parser {
                         ),
                         span: Some(export_span),
 
-                        phase: None,})
+                        phase: None,
+                    })
                 }
             }
         }
@@ -333,9 +337,7 @@ impl Parser {
                 // Consume optional implements clause (no extends clause case)
                 if self.peek_contextual_keyword("implements") {
                     self.advance();
-                    while !self.is_at_end()
-                        && !matches!(self.peek(), Some(Token::LeftBrace))
-                    {
+                    while !self.is_at_end() && !matches!(self.peek(), Some(Token::LeftBrace)) {
                         self.advance();
                     }
                 }
@@ -403,11 +405,13 @@ impl Parser {
             _ => {
                 return Err(Diagnostic {
                     code: DiagCode::InvariantViolation,
-                    message: "function_export_statement: function_statement did not return a Function"
-                        .to_owned(),
+                    message:
+                        "function_export_statement: function_statement did not return a Function"
+                            .to_owned(),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
         };
         let specifier = ExportNamedSpecifier {
@@ -439,7 +443,8 @@ impl Parser {
                         .to_owned(),
                     span: None,
 
-                    phase: None,});
+                    phase: None,
+                });
             }
         };
         let specifier = ExportNamedSpecifier {
@@ -509,7 +514,11 @@ impl Parser {
         })
     }
 
-    fn named_import_statement(&mut self, import_span: Span, import_type: bool) -> Result<Stmt, Diagnostic> {
+    fn named_import_statement(
+        &mut self,
+        import_span: Span,
+        import_type: bool,
+    ) -> Result<Stmt, Diagnostic> {
         let specifiers = self.parse_import_named_specifiers()?;
         self.expect_contextual_keyword("from")?;
         let source = self.expect_module_specifier()?;
@@ -829,7 +838,8 @@ impl Parser {
                 message: format!("expected module specifier string literal, got {other:?}"),
                 span: self.peek_span(),
 
-                phase: None,}),
+                phase: None,
+            }),
         }
     }
 
@@ -841,7 +851,8 @@ impl Parser {
             ),
             span: Some(span),
 
-            phase: None,})
+            phase: None,
+        })
     }
 
     fn expression_statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -923,7 +934,8 @@ impl Parser {
                         ),
                         span: Some(expr.span()),
 
-                        phase: None,});
+                        phase: None,
+                    });
                 }
             }
         }
@@ -1016,7 +1028,8 @@ impl Parser {
                         ),
                         span: Some(expr.span()),
 
-                        phase: None,});
+                        phase: None,
+                    });
                 }
             }
         }
@@ -1085,9 +1098,7 @@ impl Parser {
             return Ok(fallback_end);
         }
         if self.is_at_end()
-            || self
-                .peek()
-                .is_some_and(is_statement_boundary_token)
+            || self.peek().is_some_and(is_statement_boundary_token)
             || self.next_token_has_preceding_newline()
         {
             return Ok(fallback_end);
@@ -1097,7 +1108,8 @@ impl Parser {
             message: format!("expected Semicolon, got {:?}", self.peek()),
             span: self.peek_span(),
 
-            phase: None,})
+            phase: None,
+        })
     }
 
     fn let_statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -1124,7 +1136,8 @@ impl Parser {
                     message: format!("expected let/const/var, got {other:?}"),
                     span: self.peek_span(),
 
-                    phase: None,});
+                    phase: None,
+                });
             }
         };
         let binding = self.parse_binding_pattern()?;
@@ -1150,14 +1163,16 @@ impl Parser {
                 message: "issue-247: binding patterns require an initializer".to_owned(),
                 span: Some(binding.span),
 
-                phase: None,});
+                phase: None,
+            });
         } else if is_const {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "const declarations require an initializer".to_owned(),
                 span: Some(binding.span),
 
-                phase: None,});
+                phase: None,
+            });
         } else {
             Expr::Undefined { span: binding.span }
         };
@@ -1179,14 +1194,16 @@ impl Parser {
                     message: "issue-247: binding patterns require an initializer".to_owned(),
                     span: Some(extra_binding.span),
 
-                    phase: None,});
+                    phase: None,
+                });
             } else if is_const {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "const declarations require an initializer".to_owned(),
                     span: Some(extra_binding.span),
 
-                    phase: None,});
+                    phase: None,
+                });
             } else {
                 Expr::Undefined {
                     span: extra_binding.span,
@@ -1244,7 +1261,8 @@ impl Parser {
                     message: "expected assignment operator".to_owned(),
                     span: self.peek_span(),
 
-                    phase: None,});
+                    phase: None,
+                });
             };
             let right = self.expression()?;
             let end = right.span().end;
@@ -1501,7 +1519,10 @@ impl Parser {
                 self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
             }
             self.skip_balanced_brace_block(async_span)?;
-            let end = self.peek_span().map(|span| span.start).unwrap_or(async_span.end);
+            let end = self
+                .peek_span()
+                .map(|span| span.start)
+                .unwrap_or(async_span.end);
             return Ok(Stmt::Function {
                 name,
                 params,
@@ -1554,7 +1575,10 @@ impl Parser {
         let body = self.block()?;
         self.strict_mode = prev_strict_mode;
         self.in_async_fn = prev_in_async_fn;
-        let end = body.last().map(|stmt| stmt.span().end).unwrap_or(async_span.end);
+        let end = body
+            .last()
+            .map(|stmt| stmt.span().end)
+            .unwrap_or(async_span.end);
         let source_end = self.prev_span().map(|s| s.end).unwrap_or(end);
         Ok(Stmt::Function {
             name,
@@ -1630,10 +1654,7 @@ impl Parser {
             },
             _ => unreachable!("yield expression parser must return a yield expression"),
         };
-        Ok(Stmt::Expr {
-            expr,
-            span,
-        })
+        Ok(Stmt::Expr { expr, span })
     }
 
     fn break_statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -1759,6 +1780,10 @@ impl Parser {
 
         // Try to parse a simple identifier or variable declaration
         let is_for_in_of = if matches!(self.peek(), Some(Token::Var | Token::Let | Token::Const)) {
+            eprintln!(
+                "DBG: var/let/const lookahead START, saved_cursor={}",
+                saved_cursor
+            );
             self.advance();
             match self.peek() {
                 Some(Token::Ident(_) | Token::LeftBracket | Token::LeftBrace) => {
@@ -1772,10 +1797,18 @@ impl Parser {
                             loop {
                                 match self.peek() {
                                     Some(Token::In | Token::Of) if depth_paren == 0 => break,
-                                    Some(Token::LeftParen) => { depth_paren += 1; self.advance(); },
-                                    Some(Token::RightParen) if depth_paren > 0 => { depth_paren -= 1; self.advance(); },
+                                    Some(Token::LeftParen) => {
+                                        depth_paren += 1;
+                                        self.advance();
+                                    }
+                                    Some(Token::RightParen) if depth_paren > 0 => {
+                                        depth_paren -= 1;
+                                        self.advance();
+                                    }
                                     Some(Token::RightParen) => break, // `)` at depth 0 = end of for header
-                                    Some(_) => { self.advance(); },
+                                    Some(_) => {
+                                        self.advance();
+                                    }
                                     None => break,
                                 }
                             }
@@ -1790,42 +1823,241 @@ impl Parser {
                     if self.consume(TokenKind::Colon) {
                         let _ = self.skip_type_annotation_until(&[TokenKind::In, TokenKind::Of]);
                     }
-                    matches!(self.peek(), Some(Token::In | Token::Of))
+                    match self.peek() {
+                        Some(Token::In) => true,
+                        Some(Token::Of) => true,
+                        _ => false,
+                    }
                 }
                 _ => false,
             }
         } else if matches!(self.peek(), Some(Token::Ident(_))) {
+            // Skip past identifier and optional member expression chain (.id or [expr])
             self.advance();
-            matches!(self.peek(), Some(Token::In | Token::Of))
+            loop {
+                match self.peek() {
+                    Some(Token::Dot) => {
+                        self.advance();
+                        if matches!(self.peek(), Some(Token::Ident(_))) {
+                            self.advance();
+                        } else {
+                            break;
+                        }
+                    }
+                    Some(Token::LeftBracket) => {
+                        let _ = self.skip_balanced_bracket_block();
+                    }
+                    _ => break,
+                }
+            }
+            // Skip optional TypeScript type annotation (`: Type`) in for-in/of
+            if self.consume(TokenKind::Colon) {
+                let _ = self.skip_type_annotation_until(&[TokenKind::In, TokenKind::Of]);
+            }
+            let is_in_of = match self.peek() {
+                Some(Token::In) => true,
+                Some(Token::Of) => true,
+                _ => false,
+            };
+            is_in_of
+        } else if match self.peek() {
+            Some(Token::LeftParen) => true,
+            _ => false,
+        } {
+            // Skip past balanced parenthesized expression
+            self.advance();
+            let mut depth: usize = 1;
+            while depth > 0 {
+                match self.peek() {
+                    Some(Token::LeftParen) => {
+                        depth += 1;
+                        self.advance();
+                    }
+                    Some(Token::RightParen) => {
+                        depth -= 1;
+                        self.advance();
+                    }
+                    Some(_) => {
+                        self.advance();
+                    }
+                    None => break,
+                }
+            }
+            match self.peek() {
+                Some(Token::In) => true,
+                Some(Token::Of) => true,
+                _ => false,
+            }
+        } else if match self.peek() {
+            Some(Token::LeftBracket) => true,
+            _ => false,
+        } {
+            let _ = self.skip_balanced_bracket_block();
+            match self.peek() {
+                Some(Token::In) => true,
+                Some(Token::Of) => true,
+                _ => false,
+            }
+        } else if match self.peek() {
+            Some(Token::LeftBrace) => true,
+            _ => false,
+        } {
+            let start_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+            let _ = self.skip_balanced_brace_block(start_span);
+            match self.peek() {
+                Some(Token::In) => true,
+                Some(Token::Of) => true,
+                _ => false,
+            }
         } else {
             false
         };
 
         self.cursor = saved_cursor;
 
+        eprintln!("DBG: is_for_in_of={}", is_for_in_of);
+
         if is_for_in_of {
             // Parse for-in or for-of
             if matches!(self.peek(), Some(Token::Var | Token::Let | Token::Const)) {
                 self.advance();
             }
+            // Check if we have a var/let/const declaration
+            let has_decl = matches!(self.peek(), Some(Token::Var | Token::Let | Token::Const));
+            if has_decl {
+                self.advance();
+            }
+
             let mut destructuring_binding = None;
-            let var_name = if matches!(self.peek(), Some(Token::LeftBracket | Token::LeftBrace)) {
+            let mut member_assign = None; // For a.b or a[b] LHS in non-var case
+            let var_name: String;
+
+            if matches!(self.peek(), Some(Token::LeftBracket | Token::LeftBrace)) {
+                // Destructuring pattern
                 let pattern = self.parse_binding_pattern()?;
                 destructuring_binding = Some(pattern);
-                "_binding".to_owned()
-            } else {
-                let (name, name_span) = self.expect_binding_ident()?;
-                // Cover initializer: `for (var x = expr in obj)` — reject and skip `= expr`
-                if self.consume(TokenKind::Equal) {
-                    return Err(Diagnostic {
-                        code: DiagCode::SyntaxError,
-                        message: "for-in/of loop variable declaration may not have an initializer".to_owned(),
-                        span: Some(name_span),
-                        phase: Some("parser"),
-                    });
+                var_name = "_binding".to_owned();
+            } else if !has_decl && matches!(self.peek(), Some(Token::LeftParen)) {
+                // Parenthesized LHS expression: for ((x) in obj) or for ((a.b) in obj)
+                let paren_span = self.expect(TokenKind::LeftParen)?;
+                let inner = self.expression()?;
+                let right_paren_span = self.expect(TokenKind::RightParen)?;
+                match inner {
+                    Expr::Ident { name, .. } => {
+                        var_name = name;
+                    }
+                    Expr::Member {
+                        object,
+                        property,
+                        span,
+                    } => {
+                        var_name = "_binding".to_owned();
+                        member_assign = Some(Expr::PropertyAssign {
+                            object,
+                            property,
+                            value: Box::new(Expr::Ident {
+                                name: "_binding".to_owned(),
+                                span,
+                            }),
+                            span,
+                        });
+                    }
+                    Expr::Index {
+                        object,
+                        index,
+                        span,
+                    } => {
+                        var_name = "_binding".to_owned();
+                        member_assign = Some(Expr::IndexAssign {
+                            object,
+                            index,
+                            value: Box::new(Expr::Ident {
+                                name: "_binding".to_owned(),
+                                span,
+                            }),
+                            span,
+                        });
+                    }
+                    _ => {
+                        return Err(Diagnostic {
+                            code: DiagCode::SyntaxError,
+                            message: "invalid left-hand side in for-in/of loop".to_owned(),
+                            span: Some(Span {
+                                start: paren_span.start,
+                                end: right_paren_span.end,
+                            }),
+                            phase: Some("parser"),
+                        });
+                    }
                 }
-                name
-            };
+            } else if matches!(self.peek(), Some(Token::Ident(_))) {
+                // Simple identifier or member expression (a.b, a[b])
+                let (name, name_span) = self.expect_binding_ident()?;
+
+                // Check for member access chain
+                if self.consume(TokenKind::Dot) {
+                    let (property, prop_span) = self.expect_member_property_name()?;
+                    let member_expr = Expr::Member {
+                        object: Box::new(Expr::Ident {
+                            name: name.clone(),
+                            span: name_span,
+                        }),
+                        property,
+                        span: Span {
+                            start: name_span.start,
+                            end: prop_span.end,
+                        },
+                    };
+                    // Continue parsing further member chain
+                    let expr = self.finish_call_member(member_expr, false)?;
+                    var_name = "_binding".to_owned();
+                    // The last element of the chain determines the assign type
+                    member_assign = Some(Self::expr_to_assign(expr, "_binding")?);
+                } else if self.consume(TokenKind::LeftBracket) {
+                    let index = self.expression()?;
+                    let rb_span = self.expect(TokenKind::RightBracket)?;
+                    let span = Span {
+                        start: name_span.start,
+                        end: rb_span.end,
+                    };
+                    let index_expr = Expr::Index {
+                        object: Box::new(Expr::Ident {
+                            name: name.clone(),
+                            span: name_span,
+                        }),
+                        index: Box::new(index),
+                        span,
+                    };
+                    // Continue parsing further member chain
+                    let expr = self.finish_call_member(index_expr, false)?;
+                    var_name = "_binding".to_owned();
+                    member_assign = Some(Self::expr_to_assign(expr, "_binding")?);
+                } else {
+                    // Simple identifier — use as var
+                    var_name = name;
+                    // Cover initializer: `for (var x = expr in obj)` — reject and skip `= expr`
+                    if has_decl && self.consume(TokenKind::Equal) {
+                        return Err(Diagnostic {
+                            code: DiagCode::SyntaxError,
+                            message:
+                                "for-in/of loop variable declaration may not have an initializer"
+                                    .to_owned(),
+                            span: Some(name_span),
+                            phase: Some("parser"),
+                        });
+                    }
+                }
+            } else {
+                // Invalid LHS expression
+                let error_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+                return Err(Diagnostic {
+                    code: DiagCode::SyntaxError,
+                    message: "invalid left-hand side in for-in/of loop".to_owned(),
+                    span: Some(error_span),
+                    phase: Some("parser"),
+                });
+            }
+
             // Skip optional TypeScript type annotation (`: Type`) in for-in/of
             if self.consume(TokenKind::Colon) {
                 self.skip_type_annotation_until(&[TokenKind::In, TokenKind::Of])?;
@@ -1837,6 +2069,16 @@ impl Parser {
                 let mut body = self.statement_body()?;
                 if let Some(binding) = &destructuring_binding {
                     body.insert(0, for_head_destructuring_let(binding, &var_name));
+                }
+                if let Some(assign_expr) = member_assign {
+                    let span = assign_expr.span();
+                    body.insert(
+                        0,
+                        Stmt::Expr {
+                            expr: assign_expr,
+                            span,
+                        },
+                    );
                 }
                 let end = body.last().map(|s| s.span().end).unwrap_or(start.end);
                 Ok(Stmt::ForIn {
@@ -1855,6 +2097,16 @@ impl Parser {
                 if let Some(binding) = &destructuring_binding {
                     body.insert(0, for_head_destructuring_let(binding, &var_name));
                 }
+                if let Some(assign_expr) = member_assign {
+                    let span = assign_expr.span();
+                    body.insert(
+                        0,
+                        Stmt::Expr {
+                            expr: assign_expr,
+                            span,
+                        },
+                    );
+                }
                 let end = body.last().map(|s| s.span().end).unwrap_or(start.end);
                 Ok(Stmt::ForOf {
                     var: var_name,
@@ -1871,7 +2123,8 @@ impl Parser {
                     message: "expected 'in' or 'of' in for loop".to_owned(),
                     span: self.peek_span(),
 
-                    phase: None,})
+                    phase: None,
+                })
             }
         } else {
             // Parse traditional for loop
@@ -1979,7 +2232,8 @@ impl Parser {
                     message: "expected 'case' or 'default' in switch statement".to_owned(),
                     span: self.peek_span(),
 
-                    phase: None,});
+                    phase: None,
+                });
             }
         }
 
@@ -2031,7 +2285,8 @@ impl Parser {
                     end: start.end,
                 }),
 
-                phase: None,});
+                phase: None,
+            });
         }
 
         let end = finally_block
@@ -2065,7 +2320,6 @@ impl Parser {
         })
     }
 
-
     fn block(&mut self) -> Result<Vec<Stmt>, Diagnostic> {
         self.expect(TokenKind::LeftBrace)?;
         let mut statements = Vec::new();
@@ -2080,7 +2334,8 @@ impl Parser {
                     message: "unterminated block".to_owned(),
                     span: self.prev_span().or_else(|| self.peek_span()),
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             if self.consume(TokenKind::Semicolon) {
                 continue;
@@ -2112,7 +2367,8 @@ impl Parser {
                     message: "unterminated block".to_owned(),
                     span: self.prev_span().or_else(|| self.peek_span()),
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             if self.consume(TokenKind::Semicolon) {
                 continue;
@@ -2211,5 +2467,51 @@ fn for_head_destructuring_let(binding: &ParsedBindingPattern, temp_name: &str) -
         },
         span: binding.span,
         is_var: false,
+    }
+}
+
+/// Convert a member expression chain (Member or Index) into the corresponding
+/// PropertyAssign or IndexAssign, using `_binding` as the source value.
+/// Used to desugar `for (a.b in obj) stmt` into:
+///   for (_binding in obj) { a.b = _binding; stmt }
+impl Parser {
+    #[allow(dead_code)]
+    fn expr_to_assign(expr: Expr, temp_name: &str) -> Result<Expr, Diagnostic> {
+        let span = expr.span();
+        let value = Box::new(Expr::Ident {
+            name: temp_name.to_owned(),
+            span,
+        });
+        match expr {
+            Expr::Member {
+                object,
+                property,
+                span,
+            } => Ok(Expr::PropertyAssign {
+                object,
+                property,
+                value,
+                span,
+            }),
+            Expr::Index {
+                object,
+                index,
+                span,
+            } => Ok(Expr::IndexAssign {
+                object,
+                index,
+                value,
+                span,
+            }),
+            other => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "expected member expression in for-in/of loop head, got {:?}",
+                    std::mem::discriminant(&other)
+                ),
+                span: Some(other.span()),
+                phase: None,
+            }),
+        }
     }
 }
