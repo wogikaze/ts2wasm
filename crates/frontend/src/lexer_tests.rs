@@ -659,4 +659,36 @@ mod tests {
             "[A-Za-z0-9_-]"
         );
     }
+
+    // --- RegExp lookahead/lookbehind assertions ---
+
+    #[test]
+    fn regex_lookahead_positive() {
+        assert_eq!(extract_regex_pattern(r"/x(?=y)/"), "x(?=y)");
+    }
+
+    #[test]
+    fn regex_lookahead_negative() {
+        assert_eq!(extract_regex_pattern(r"/x(?!y)/"), "x(?!y)");
+    }
+
+    #[test]
+    fn regex_lookbehind_positive() {
+        assert_eq!(extract_regex_pattern(r"/x(?<=y)/"), "x(?<=y)");
+    }
+
+    #[test]
+    fn regex_lookbehind_negative() {
+        assert_eq!(extract_regex_pattern(r"/x(?<!y)/"), "x(?<!y)");
+    }
+
+    #[test]
+    fn regex_lookahead_with_alternation() {
+        assert_eq!(extract_regex_pattern(r"/x(?=y|z)/"), "x(?=y|z)");
+    }
+
+    #[test]
+    fn regex_lookbehind_abc() {
+        assert_eq!(extract_regex_pattern(r"/x(?<=abc)/"), "x(?<=abc)");
+    }
 }
