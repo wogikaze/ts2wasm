@@ -83,6 +83,7 @@ enum StaticValue {
     Object(StaticObjectValue),
     Array(Vec<LoweredExpr>),
     Primitive(LoweredExpr),
+    DateObject(Option<i32>),
 }
 
 #[derive(Clone)]
@@ -401,6 +402,9 @@ impl<'a> NativeLoweredEmitter<'a> {
                     return Ok(());
                 }
                 if self.try_emit_static_primitive_init(*local, expr, ctx, out)? {
+                    return Ok(());
+                }
+                if self.try_emit_static_opaque_init(*local, expr, ctx, out)? {
                     return Ok(());
                 }
                 self.emit_expr(expr, ctx, out)?;
@@ -828,6 +832,23 @@ impl<'a> NativeLoweredEmitter<'a> {
             | LoweredExpr::DecimalNumber(_, _)
             | LoweredExpr::BigIntLiteral { .. } => {
                 self.emit_static_primitive_token(&value, out);
+                Ok(true)
+            }
+            _ => Ok(false),
+        }
+    }
+
+    fn try_emit_static_opaque_init(
+        &mut self,
+        local: LocalId,
+        expr: &LoweredExpr,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<bool, Diagnostic> {
+        match static_value_from_expr(expr, &ctx.static_locals) {
+            Some(StaticValue::DateObject(_)) => {
+                out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
+                out.push(WasmInstr::LocalSet(local_index(ctx, local)?));
                 Ok(true)
             }
             _ => Ok(false),
@@ -1721,7 +1742,14 @@ fn static_console_arg_bytes(expr: &LoweredExpr, ctx: &FunctionCtx) -> Option<Vec
             }
             static_object_known(ctx, obj).then(|| b"undefined".to_vec())
         }
-        _ => None,
+        _ => {
+            let Some(StaticValue::Primitive(value)) =
+                static_value_from_expr(expr, &ctx.static_locals)
+            else {
+                return None;
+            };
+            static_console_arg_bytes(&value, ctx)
+        }
     }
 }
 
@@ -2257,6 +2285,43 @@ fn static_value_from_expr(
                 .map(|key| LoweredExpr::String(key, *span))
                 .collect(),
         )),
+        LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::DateNew,
+            args,
+            ..
+        } if args.len() == 1 => {
+            let LoweredExpr::Number(epoch_ms, _) = args.first()? else {
+                return None;
+            };
+            Some(StaticValue::DateObject(Some(*epoch_ms)))
+        }
+        LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::DateNewLive,
+            args,
+            ..
+        } if args.is_empty() => Some(StaticValue::DateObject(None)),
+        LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::DateGetTime,
+            args,
+            span,
+            ..
+        } if args.len() == 1 => match static_value_from_expr(&args[0], locals)? {
+            StaticValue::DateObject(Some(epoch_ms)) => {
+                Some(StaticValue::Primitive(LoweredExpr::Number(epoch_ms, *span)))
+            }
+            _ => None,
+        },
+        LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::SymbolHasInstance,
+            args,
+            span,
+            ..
+        } if args.len() == 2 => match static_value_from_expr(&args[1], locals)? {
+            StaticValue::DateObject(_) => {
+                Some(StaticValue::Primitive(LoweredExpr::Bool(true, *span)))
+            }
+            _ => None,
+        },
         LoweredExpr::PromiseGetValue { promise, .. } => {
             static_promise_resolve_value_from_expr(promise, locals)
         }
@@ -2320,7 +2385,7 @@ fn static_array_from_expr(
 ) -> Option<Vec<LoweredExpr>> {
     match static_value_from_expr(expr, locals)? {
         StaticValue::Array(elements) => Some(elements),
-        StaticValue::Object(_) | StaticValue::Primitive(_) => None,
+        StaticValue::Object(_) | StaticValue::Primitive(_) | StaticValue::DateObject(_) => None,
     }
 }
 
@@ -2330,7 +2395,7 @@ fn static_object_keys_from_expr(
 ) -> Option<Vec<String>> {
     match static_value_from_expr(expr, locals)? {
         StaticValue::Object(object) => Some(object.keys()),
-        StaticValue::Array(_) | StaticValue::Primitive(_) => None,
+        StaticValue::Array(_) | StaticValue::Primitive(_) | StaticValue::DateObject(_) => None,
     }
 }
 
@@ -2436,7 +2501,7 @@ fn static_primitive_expr_from_expr(
 ) -> Option<LoweredExpr> {
     match static_value_from_expr(expr, locals)? {
         StaticValue::Primitive(expr) => Some(expr),
-        StaticValue::Object(_) | StaticValue::Array(_) => None,
+        StaticValue::Object(_) | StaticValue::Array(_) | StaticValue::DateObject(_) => None,
     }
 }
 

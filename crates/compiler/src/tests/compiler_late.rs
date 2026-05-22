@@ -916,6 +916,7 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
         ("../../fixtures/core-expressions/call.ts", "hi\n"),
         ("../../fixtures/core-expressions/array.ts", "1\n2\n3\n"),
         ("../../fixtures/core-expressions/index-assign.ts", "99\n"),
+        ("../../fixtures/core-expressions/instanceof.ts", "true\n"),
         ("../../fixtures/core-expressions/arrow-fn.ts", "42\n"),
         (
             "../../fixtures/core-expressions/logical-assign.ts",
@@ -926,6 +927,7 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "42\n",
         ),
         ("../../fixtures/core-expressions/member.ts", "42\n"),
+        ("../../fixtures/core-expressions/new.ts", "0\n"),
         ("../../fixtures/core-expressions/number.ts", "42\n"),
         ("../../fixtures/core-expressions/object.ts", "1\n2\n"),
         (
