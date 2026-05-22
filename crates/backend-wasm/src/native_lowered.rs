@@ -648,6 +648,18 @@ impl<'a> NativeLoweredEmitter<'a> {
             }
             match arg {
                 LoweredExpr::String(value, _) => self.emit_static_bytes(value.as_bytes(), out),
+                LoweredExpr::Unary {
+                    op: LoweredUnaryOp::TypeOf,
+                    expr,
+                    ..
+                } => {
+                    let Some(bytes) = static_typeof_bytes(expr) else {
+                        return Err(unsupported(
+                            "native LoweredProgram emitter does not support dynamic typeof",
+                        ));
+                    };
+                    self.emit_static_bytes(bytes, out);
+                }
                 LoweredExpr::Bool(value, _) => {
                     self.emit_static_bytes(if *value { b"true" } else { b"false" }, out)
                 }
@@ -925,6 +937,18 @@ fn binary_op_instr(op: LoweredBinaryOp) -> Result<WasmInstr, Diagnostic> {
         _ => Err(unsupported(
             "native LoweredProgram emitter does not support this binary operator",
         )),
+    }
+}
+
+fn static_typeof_bytes(expr: &LoweredExpr) -> Option<&'static [u8]> {
+    match expr {
+        LoweredExpr::Number(_, _) | LoweredExpr::DecimalNumber(_, _) => Some(b"number"),
+        LoweredExpr::BigIntLiteral { .. } => Some(b"bigint"),
+        LoweredExpr::String(_, _) => Some(b"string"),
+        LoweredExpr::Bool(_, _) => Some(b"boolean"),
+        LoweredExpr::Undefined(_) => Some(b"undefined"),
+        LoweredExpr::Null(_) => Some(b"object"),
+        _ => None,
     }
 }
 

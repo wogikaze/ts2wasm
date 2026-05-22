@@ -908,9 +908,24 @@ fn direct_wasm_binary_mvp_runs_basics_hello_without_wat_conversion() {
 fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
     for (fixture, expected_stdout) in [
         ("../../fixtures/basics-hello/hello.ts", "hi\n"),
+        ("../../fixtures/core-expressions/assign.ts", "2\n"),
+        ("../../fixtures/core-expressions/binary.ts", "3\n"),
+        ("../../fixtures/core-expressions/bool.ts", "true\nfalse\n"),
+        ("../../fixtures/core-expressions/call.ts", "hi\n"),
         ("../../fixtures/core-expressions/number.ts", "42\n"),
+        ("../../fixtures/core-expressions/string.ts", "hello\n"),
         ("../../fixtures/core-expressions/ternary.ts", "1\n"),
+        (
+            "../../fixtures/core-expressions/typeof.ts",
+            "number\nstring\n",
+        ),
+        ("../../fixtures/core-expressions/type-assertion.ts", "42\n"),
+        (
+            "../../fixtures/core-expressions/undefined.ts",
+            "undefined\n",
+        ),
         ("../../fixtures/core-statements/if.ts", "1\n"),
+        ("../../fixtures/core-statements/let.ts", "1\n"),
         ("../../fixtures/core-statements/while.ts", "0\n1\n2\n"),
         ("../../fixtures/core-statements/for.ts", "0\n1\n2\n"),
         ("../../fixtures/core-statements/do-while.ts", "0\n1\n2\n"),
