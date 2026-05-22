@@ -1313,6 +1313,44 @@ pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
                     | b'?' | b'(' | b')' | b'[' | b']' | b'{' | b'}' | b'|' => {
                         i += 2;
                     }
+                    b'1'..=b'9' => {
+                        // Decimal backreference \1 through \9
+                        i += 2;
+                    }
+                    b'k' => {
+                        // Named backreference: \k<name>
+                        i += 2; // skip past \k
+                        if i < bytes.len() && bytes[i] == b'<' {
+                            i += 1; // skip <
+                            let mut found_close = false;
+                            while i < bytes.len() {
+                                if bytes[i] == b'>' {
+                                    i += 1;
+                                    found_close = true;
+                                    break;
+                                }
+                                if !bytes[i].is_ascii_alphanumeric()
+                                    && bytes[i] != b'_'
+                                {
+                                    break;
+                                }
+                                i += 1;
+                            }
+                            if !found_close {
+                                return Err(unsupported_regexp_literal(
+                                    context,
+                                    raw,
+                                    "incomplete named backreference `\\k<...`",
+                                ));
+                            }
+                        } else {
+                            return Err(unsupported_regexp_literal(
+                                context,
+                                raw,
+                                "malformed named backreference `\\k` without `<`",
+                            ));
+                        }
+                    }
                     _ => {
                         return Err(unsupported_regexp_literal(
                             context,
