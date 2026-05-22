@@ -12,6 +12,7 @@ use std::collections::HashMap;
 
 use crate::lowered::LocalId;
 
+pub mod dce;
 pub mod escape;
 pub mod induction_var;
 mod lower;
@@ -347,27 +348,33 @@ pub fn run_value_rep_consumer(program: &mut MirProgram) {
 ///    non-escaping objects with per-property locals. Depends on escape
 ///    analysis results.
 ///
-/// 3. **Induction variable analysis** (`run_induction_var_analysis`) —
-///    detects for-loop induction variables. Independent of 1 and 2.
+/// 3. **Dead store elimination** (`run_dead_store_elimination`) — removes
+///    `Assign` statements whose value is never read and `Let` statements
+///    for unused locals. Runs after scalar replacement so newly created
+///    scalar locals can also benefit.
 ///
-/// 4. **Value representation inference** (`run_value_rep_analysis`) —
-///    infers per-local value representations. Independent of 1-3.
+/// 4. **Induction variable analysis** (`run_induction_var_analysis`) —
+///    detects for-loop induction variables. Independent of 1-3.
 ///
-/// 5. **Induction variable consumer** (`run_induction_var_consumer`) —
+/// 5. **Value representation inference** (`run_value_rep_analysis`) —
+///    infers per-local value representations. Independent of 1-4.
+///
+/// 6. **Induction variable consumer** (`run_induction_var_consumer`) —
 ///    reads induction_vars and sets SMI value_reps for bounded loop
-///    counters. Must run after steps 3 and 4.
+///    counters. Must run after steps 4 and 5.
 ///
-/// 6. **Value representation consumer** (`run_value_rep_consumer`) —
+/// 7. **Value representation consumer** (`run_value_rep_consumer`) —
 ///    reads value_reps and produces optimization_hints per local.
-///    Must run after step 5.
+///    Must run after step 6.
 ///
-/// 7. **Value range analysis** (`run_value_range_analysis`) — computes
+/// 8. **Value range analysis** (`run_value_range_analysis`) — computes
 ///    known i32 value ranges for each local via forward dataflow. Uses
 ///    induction variable bounds to seed initial ranges. Read-only pass;
 ///    results are returned as a `HashMap`.
 pub fn run_all_mir_analyses(program: &mut MirProgram) {
     run_escape_analysis(program);
     run_scalar_replacement(program);
+    dce::run_dead_store_elimination(program);
     run_induction_var_analysis(program);
     run_value_rep_analysis(program);
     run_induction_var_consumer(program);
