@@ -45,6 +45,18 @@ impl Parser {
             } else if matches!(self.peek(), Some(Token::Ident(_))) {
                 self.advance();
                 self.consume(TokenKind::Arrow)
+            } else if matches!(self.peek(), Some(Token::Less)) {
+                // async <T>(params) => expr — generic async arrow function
+                let probe = self.cursor;
+                let has_generic = self
+                    .consume_typescript_generic_parameter_list()
+                    .unwrap_or(false);
+                if has_generic && matches!(self.peek(), Some(Token::LeftParen)) {
+                    self.probe_parenthesized_arrow_params().unwrap_or(false)
+                } else {
+                    self.cursor = probe;
+                    false
+                }
             } else {
                 false
             }

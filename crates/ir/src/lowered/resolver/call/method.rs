@@ -650,7 +650,7 @@ impl super::super::Resolver {
                 code: DiagCode::UnsupportedSyntax,
                 message: "generator method iterator binding points at an unknown function"
                     .to_owned(),
-                span: Some(Span::generated("generator-method")),
+                span: None,
                 phase: None,
             })?;
         let result_local = self.alloc_temp();
@@ -4278,6 +4278,45 @@ impl super::super::Resolver {
                         span: Span::generated("runtime_call"),
                     });
                 }
+                // Date prototype local-tz getter methods for untyped receivers.
+                // These methods uniquely identify Date (no other built-in has them),
+                // so they can be safely routed without knowing the receiver class.
+                let date_getter_methods = [
+                    "getFullYear", "getMonth", "getDate", "getHours",
+                    "getMinutes", "getSeconds", "getMilliseconds", "getDay",
+                ];
+                if date_getter_methods.contains(&method) {
+                    if !args.is_empty() {
+                        return Err(Diagnostic {
+                            code: DiagCode::ArityMismatch,
+                            message: format!(
+                                "Date.prototype.{method} expects 0 arguments, got {}",
+                                args.len()
+                            ),
+                            span: Some(span),
+                            phase: None,
+                        });
+                    }
+                    let field_index: i32 = match method {
+                        "getFullYear" => 0,
+                        "getMonth" => 1,
+                        "getDate" => 2,
+                        "getHours" => 3,
+                        "getMinutes" => 4,
+                        "getSeconds" => 5,
+                        "getMilliseconds" => 6,
+                        "getDay" => 7,
+                        _ => unreachable!(),
+                    };
+                    return Ok(LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::DateGetLocalTimeField,
+                        args: vec![
+                            LoweredExpr::Local(obj_local, Span::generated("local")),
+                            LoweredExpr::Number(field_index, Span::generated("num")),
+                        ],
+                        span: Span::generated("runtime_call"),
+                    });
+                }
                 // Generic fallback: route known method names through
                 // resolve_method_to_runtime_fn for methods that have defined
                 // runtime functions (e.g., String methods like "substr").
@@ -4315,16 +4354,34 @@ impl super::super::Resolver {
                     return Err(unsupported_regexp_compile_diagnostic(Some(span)));
                 }
 
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-211: unknown receiver class for method `{}` (receiver `{}` is an untyped or ambient variable; issue-5261: the method may be a static member or not exist on the instance type)",
-                        method, receiver_name
-                    ),
-                    span: Some(span),
+                // RegExp.prototype.compile — emit known-unsupported diagnostic
+                if method == "compile" {
+                    return Err(unsupported_regexp_compile_diagnostic(Some(span)));
+                }
 
-                    phase: None,
+                let recv_temp = self.alloc_temp();
+                let receiver_expr = LoweredExpr::Local(recv_temp, Span::generated("local"));
+                let callee = object_kernel::ordinary_get(receiver_expr.clone(), method, span);
+                let mut heap_args = vec![callee, receiver_expr];
+                heap_args.extend(
+                    args.iter()
+                        .map(|arg| self.lower_expr(arg))
+                        .collect::<Result<Vec<_>, _>>()?,
+                );
+                return Ok(LoweredExpr::Block {
+                    stmts: vec![LoweredStmt::Let(
+                        recv_temp,
+                        LoweredExpr::Local(obj_local, Span::generated("local")),
+                        Span::generated("let_stmt"),
+                    )],
+                    result: Box::new(LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::HeapClosureCall,
+                        args: heap_args,
+                        span: Span::generated("runtime_call"),
+                    }),
+                    span: Span::generated("block"),
                 });
+
             }
         };
         let class_name = class_name_str.as_str();
@@ -4728,7 +4785,7 @@ impl super::super::Resolver {
                 let lowered_arg = self.lower_expr(args.first().ok_or_else(|| Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "Intl.NumberFormat.format requires an argument".to_owned(),
-                    span: Some(Span::generated("intl")),
+                    span: None,
                     phase: None,
                 })?)?;
                 let options_json = serialize_intl_options(options);
@@ -4762,7 +4819,7 @@ impl super::super::Resolver {
                 let lowered_arg = self.lower_expr(args.first().ok_or_else(|| Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "Intl.NumberFormat.formatToParts requires an argument".to_owned(),
-                    span: Some(Span::generated("intl")),
+                    span: None,
                     phase: None,
                 })?)?;
                 let options_json = serialize_intl_options(options);
@@ -4903,7 +4960,7 @@ impl super::super::Resolver {
                 let lowered_arg = self.lower_expr(args.first().ok_or_else(|| Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "Intl.DateTimeFormat.format requires an argument".to_owned(),
-                    span: Some(Span::generated("intl-dtf")),
+                    span: None,
                     phase: None,
                 })?)?;
                 let options_json = serialize_intl_date_time_options(options);
