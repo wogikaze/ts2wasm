@@ -41,7 +41,7 @@ fn merge_constructor_parameter_property_assignments(
         assignments,
         body,
         has_extends,
-        "issue-226: parameter properties in derived constructors require a leading super(...) call",
+        "Parameter properties in derived constructors require a leading super(...) call",
     )
 }
 
@@ -284,7 +284,7 @@ fn parse_template_literal(
             if source.is_empty() {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "issue-213: empty template interpolation expression".to_owned(),
+                    message: "Empty template interpolation expression".to_owned(),
                     span: Some(span),
 
                     phase: None,});
@@ -319,7 +319,7 @@ fn parse_template_expression(
     if !parser.is_at_end() {
         return Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
-            message: "issue-213: unsupported template interpolation expression".to_owned(),
+            message: "Unsupported template interpolation expression".to_owned(),
             span: Some(span),
 
             phase: None,});
@@ -390,7 +390,7 @@ fn find_template_expr_end(raw: &str, start: usize, span: Span) -> Result<usize, 
 
     Err(Diagnostic {
         code: DiagCode::UnsupportedSyntax,
-        message: "issue-213: unterminated template interpolation".to_owned(),
+        message: "Unterminated template interpolation".to_owned(),
         span: Some(span),
 
         phase: None,})
@@ -431,7 +431,7 @@ fn cook_template_segment(raw: &str, span: Span) -> Result<String, Diagnostic> {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message:
-                                "issue-229: legacy octal escapes are not allowed in template literal text"
+                                "Legacy octal escapes are not allowed in template literal text"
                                     .to_owned(),
                             span: Some(span),
 
@@ -443,7 +443,7 @@ fn cook_template_segment(raw: &str, span: Span) -> Result<String, Diagnostic> {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message:
-                            "issue-229: legacy octal escapes are not allowed in template literal text"
+                            "Legacy octal escapes are not allowed in template literal text"
                                 .to_owned(),
                         span: Some(span),
 

@@ -1175,7 +1175,7 @@ impl<'a> Lexer<'a> {
                 if comment_content.starts_with("/ <reference") {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
-                        message: "issue-5253: TypeScript triple-slash directives are not supported"
+                        message: "TypeScript triple-slash directives are not supported"
                             .to_string(),
                         span: Some(Span {
                             start: self

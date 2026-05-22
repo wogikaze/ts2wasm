@@ -286,7 +286,7 @@ impl Parser {
                     Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: format!(
-                            "issue-055: unsupported {form}; module resolution and loading are not implemented"
+                            "Unsupported {form}; module resolution and loading are not implemented"
                         ),
                         span: Some(export_span),
 
@@ -339,7 +339,7 @@ impl Parser {
                         .map_err(|_| {
                             self.unsupported_typescript_syntax(
                                 export_span,
-                                "issue-5300: unterminated default class export extends clause",
+                                "Unterminated default class export extends clause",
                             )
                         })?;
                 }
@@ -856,7 +856,7 @@ impl Parser {
         Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!(
-                "issue-055: unsupported {form}; module resolution and loading are not implemented"
+                "Unsupported {form}; module resolution and loading are not implemented"
             ),
             span: Some(span),
 
@@ -1169,7 +1169,7 @@ impl Parser {
         } else if !binding.is_identifier {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "issue-247: binding patterns require an initializer".to_owned(),
+                message: "Binding patterns require an initializer".to_owned(),
                 span: Some(binding.span),
 
                 phase: None,
@@ -1200,7 +1200,7 @@ impl Parser {
             } else if !extra_binding.is_identifier {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "issue-247: binding patterns require an initializer".to_owned(),
+                    message: "Binding patterns require an initializer".to_owned(),
                     span: Some(extra_binding.span),
 
                     phase: None,
@@ -1426,9 +1426,11 @@ impl Parser {
             self.strict_mode = true;
         }
         self.check_duplicate_params(&params)?;
+        let prev_labels = std::mem::take(&mut self.labels_in_scope);
         self.fn_depth += 1;
         let mut body = self.block()?;
         self.fn_depth -= 1;
+        self.labels_in_scope = prev_labels;
         self.strict_mode = prev_strict_mode;
         desugar_destructured_params(&mut params, &mut body);
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
@@ -1481,9 +1483,11 @@ impl Parser {
         if self.peek_function_body_use_strict() {
             self.strict_mode = true;
         }
+        let prev_labels = std::mem::take(&mut self.labels_in_scope);
         self.fn_depth += 1;
         let mut body = self.block()?;
         self.fn_depth -= 1;
+        self.labels_in_scope = prev_labels;
         self.strict_mode = prev_strict_mode;
         self.in_generator_fn = prev_in_generator_fn;
         desugar_destructured_params(&mut params, &mut body);
@@ -1589,9 +1593,11 @@ impl Parser {
         if self.peek_function_body_use_strict() {
             self.strict_mode = true;
         }
+        let prev_labels = std::mem::take(&mut self.labels_in_scope);
         self.fn_depth += 1;
         let mut body = self.block()?;
         self.fn_depth -= 1;
+        self.labels_in_scope = prev_labels;
         self.strict_mode = prev_strict_mode;
         self.in_async_fn = prev_in_async_fn;
         desugar_destructured_params(&mut params, &mut body);
@@ -1739,6 +1745,28 @@ impl Parser {
 
     fn labeled_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let (label, label_span) = self.expect_binding_ident()?;
+
+        // ES2015 §13.13: LabelIdentifier cannot be a reserved word (even in non-strict mode).
+        if is_reserved_word(&label) {
+            return Err(Diagnostic {
+                code: DiagCode::SyntaxError,
+                message: format!("`{label}` is a reserved word and cannot be used as a label"),
+                span: Some(label_span),
+                phase: Some("parser"),
+            });
+        }
+
+        // ES2015 §13.13: duplicate labels in the same function scope produce a SyntaxError.
+        if self.labels_in_scope.contains(&label) {
+            return Err(Diagnostic {
+                code: DiagCode::SyntaxError,
+                message: format!("duplicate label `{label}`"),
+                span: Some(label_span),
+                phase: Some("parser"),
+            });
+        }
+        self.labels_in_scope.push(label.clone());
+
         self.expect(TokenKind::Colon)?;
         let body = self.statement()?;
         let end = body.span().end;

@@ -603,7 +603,7 @@ mod tests {
         let err = parse_program("declare global { interface Window { value: string; } }")
             .expect_err("declare global is outside the erasure slice");
         assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
-        assert!(err.message.contains("issue-400"));
+        assert!(err.message.contains("Ambient global declarations"));
         assert_eq!(err.span, Some(Span { start: 8, end: 14 }));
 
         parse_program("declare const runtimeValue = 1;")
@@ -1434,7 +1434,7 @@ mod tests {
         let err = parse_program("\"use strict\"; let message = `${'\\07'}`;").unwrap_err();
 
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-229"));
+        assert!(err.message.contains("Legacy octal escape"));
     }
 
     #[test]
@@ -1442,7 +1442,7 @@ mod tests {
         let err = parse_program("let message = `\\07`;").unwrap_err();
 
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-229"));
+        assert!(err.message.contains("Legacy octal escape"));
     }
 
     #[test]
@@ -2174,7 +2174,6 @@ b /* parameter b */,
         let err = parse_program("class C { # = 1; }").unwrap_err();
 
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-248"), "{err:?}");
         assert!(
             err.message.contains("invalid private identifier"),
             "{err:?}"
@@ -2261,7 +2260,6 @@ b /* parameter b */,
     fn rejects_non_final_rest_in_binding_patterns() {
         let err = parse_program("let [...a, b] = arr;").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-247"));
         assert!(
             err.message
                 .contains("rest binding must be the final element")
@@ -2325,7 +2323,6 @@ b /* parameter b */,
     fn rejects_non_final_rest_in_assignment_patterns() {
         let err = parse_program("[...a, b] = arr;").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-252"));
         assert!(
             err.message
                 .contains("rest assignment target must be the final element")
@@ -2337,7 +2334,6 @@ b /* parameter b */,
     fn rejects_invalid_destructuring_assignment_targets() {
         let err = parse_program("({ x: call() } = obj);").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-252"));
         assert!(
             err.message
                 .contains("invalid destructuring assignment target")
@@ -2936,7 +2932,6 @@ b /* parameter b */,
         for source in ["obj?.x = 1;", "obj?.x++;"] {
             let err = parse_program(source).unwrap_err();
             assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-            assert!(err.message.contains("issue-246"), "{err:?}");
             assert!(
                 err.message.contains("assignment or update target"),
                 "{err:?}"
@@ -3006,7 +3001,6 @@ b /* parameter b */,
     fn rejects_unsupported_regexp_flag_with_issue_linked_diagnostic() {
         let err = parse_program("let r = /abc/z;").unwrap_err();
         assert_eq!(err.code, DiagCode::SyntaxError);
-        assert!(err.message.contains("issue-202"));
         assert!(err.message.contains("unsupported RegExp flag `z`"));
         assert!(err.span.is_some());
     }
@@ -3015,7 +3009,6 @@ b /* parameter b */,
     fn rejects_duplicate_regexp_flag_with_issue_linked_diagnostic() {
         let err = parse_program("let r = /abc/gg;").unwrap_err();
         assert_eq!(err.code, DiagCode::SyntaxError);
-        assert!(err.message.contains("issue-202"));
         assert!(err.message.contains("duplicate RegExp flag `g`"));
         assert!(err.span.is_some());
     }
@@ -3466,7 +3459,6 @@ b /* parameter b */,
     fn keeps_default_function_exports_unsupported_for_narrow_slice() {
         let function_err = parse_program("export default function value() {};").unwrap_err();
         assert_eq!(function_err.code, DiagCode::UnsupportedSyntax);
-        assert!(function_err.message.contains("issue-055"));
         assert!(
             function_err
                 .message
@@ -3687,7 +3679,6 @@ b /* parameter b */,
     fn rejects_dynamic_import_with_issue_linked_diagnostic() {
         let err = parse_program("import('./module-source');").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-055"));
         assert!(err.message.contains("unsupported dynamic import"));
         assert!(
             err.message

@@ -50,6 +50,18 @@ enum ParsedObjectKey {
     ComputedKey { key: Expr },
 }
 
+/// Returns `true` if `name` is a reserved word in all ECMAScript contexts
+/// (both strict and non-strict code). Keyword tokens like `if`, `while`,
+/// `let` are their own `Token` variants and never reach identifier-based
+/// checks; this function covers reserved identifiers that are tokenized
+/// as `Token::Ident`.
+pub(super) fn is_reserved_word(name: &str) -> bool {
+    matches!(
+        name,
+        "implements" | "interface" | "package" | "private" | "protected" | "public" | "yield" | "enum"
+    )
+}
+
 /// Per ES2015 §11.6.2.1, these identifiers are reserved words in strict mode code.
 pub(super) fn is_strict_reserved_word(name: &str) -> bool {
     matches!(
@@ -242,7 +254,7 @@ impl Parser {
             }) => Ok((name, span)),
             other => Err(Diagnostic {
                 code: DiagCode::SyntaxError,
-                message: format!("issue-248: expected private identifier, got {other:?}"),
+                message: format!("Expected private identifier, got {other:?}"),
                 span: self.peek_span(),
 
                 phase: Some("parser"),}),
@@ -346,7 +358,7 @@ impl Parser {
             Some(Token::PrivateIdentifier(_)) => Err(Diagnostic {
                 code: DiagCode::SyntaxError,
                 message: format!(
-                    "issue-5168: a private identifier cannot be used as an object literal property name, got {:?}",
+                    "A private identifier cannot be used as an object literal property name, got {:?}",
                     self.peek()
                 ),
                 span: self.peek_span(),
@@ -378,7 +390,7 @@ impl Parser {
             let end = self.expect(TokenKind::RightBracket)?;
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "issue-5168: a computed property name must be of type 'string', 'number', 'symbol', or 'any', got 'bigint'".to_string(),
+                message: "A computed property name must be of type 'string', 'number', 'symbol', or 'any', got 'bigint'".to_string(),
                 span: Some(Span {
                     start: start.start,
                     end: end.end,

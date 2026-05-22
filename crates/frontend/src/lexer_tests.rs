@@ -107,8 +107,8 @@ mod tests {
             .tokenize()
             .unwrap_err();
 
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-229"));
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.contains("Legacy octal escape"));
     }
 
     #[test]
@@ -328,7 +328,6 @@ mod tests {
         let err = Lexer::new("let value = 1e-3;").tokenize().unwrap_err();
 
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-294"), "{err:?}");
         assert!(err.message.contains("fractional number"), "{err:?}");
     }
 
@@ -338,7 +337,6 @@ mod tests {
             let err = Lexer::new(source).tokenize().unwrap_err();
 
             assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-            assert!(err.message.contains("issue-244"), "{source}: {err:?}");
             assert!(
                 err.message.contains("fractions or exponents"),
                 "{source}: {err:?}"
@@ -358,7 +356,6 @@ mod tests {
             let err = Lexer::new(source).tokenize().unwrap_err();
 
             assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-            assert!(err.message.contains("issue-244"), "{source}: {err:?}");
         }
     }
 

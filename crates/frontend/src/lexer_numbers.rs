@@ -33,7 +33,7 @@ impl<'a> Lexer<'a> {
                 self.advance_char();
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "issue-244: BigInt literal cannot use decimal fractions or exponents"
+                    message: "BigInt literal cannot use decimal fractions or exponents"
                         .to_owned(),
                     span: Some(Span { start, end }),
 
@@ -44,7 +44,7 @@ impl<'a> Lexer<'a> {
             if digits.len() > 1 && self.source[start..].starts_with('0') {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "issue-244: decimal BigInt literal cannot have a leading zero"
+                    message: "Decimal BigInt literal cannot have a leading zero"
                         .to_owned(),
                     span: Some(Span {
                         start,
@@ -217,7 +217,7 @@ impl<'a> Lexer<'a> {
             if negative_exponent {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "issue-294: negative decimal exponent numeric literals require fractional number support"
+                    message: "Negative decimal exponent numeric literals require fractional number support"
                         .to_owned(),
                     span: Some(Span {
                         start,
@@ -403,7 +403,7 @@ impl<'a> Lexer<'a> {
             if self.char_at(cursor) == Some('n') {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: format!("issue-244: invalid {radix_name} BigInt literal"),
+                    message: format!("Invalid {radix_name} BigInt literal"),
                     span: Some(Span {
                         start,
                         end: cursor + 1,
@@ -415,7 +415,7 @@ impl<'a> Lexer<'a> {
             if let Some(end) = self.invalid_prefixed_bigint_end(cursor) {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: format!("issue-244: invalid {radix_name} BigInt literal"),
+                    message: format!("Invalid {radix_name} BigInt literal"),
                     span: Some(Span { start, end }),
 
                     phase: None,
@@ -435,7 +435,7 @@ impl<'a> Lexer<'a> {
             if let Some(end) = self.invalid_prefixed_bigint_end(cursor) {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: format!("issue-244: invalid {radix_name} BigInt literal"),
+                    message: format!("Invalid {radix_name} BigInt literal"),
                     span: Some(Span { start, end }),
 
                     phase: None,
@@ -525,7 +525,7 @@ impl<'a> Lexer<'a> {
         if saw_fraction_or_exponent && self.char_at(cursor) == Some('n') {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "issue-244: BigInt literal cannot use decimal fractions or exponents"
+                message: "BigInt literal cannot use decimal fractions or exponents"
                     .to_owned(),
                 span: Some(Span {
                     start,

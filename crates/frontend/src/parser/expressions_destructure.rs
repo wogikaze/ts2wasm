@@ -144,7 +144,7 @@ impl Parser {
             if self.is_at_end() {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "issue-252: unterminated array assignment pattern".to_owned(),
+                    message: "Unterminated array assignment pattern".to_owned(),
                     span: Some(start),
 
                     phase: None,});
@@ -203,7 +203,7 @@ impl Parser {
             if self.is_at_end() {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "issue-252: unterminated object assignment pattern".to_owned(),
+                    message: "Unterminated object assignment pattern".to_owned(),
                     span: Some(start),
 
                     phase: None,});
@@ -227,7 +227,7 @@ impl Parser {
             } else {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "issue-252: literal object assignment keys require a target after `:`"
+                    message: "Literal object assignment keys require a target after `:`"
                         .to_owned(),
                     span: self.peek_span(),
 
@@ -274,7 +274,7 @@ impl Parser {
             Some(Token::LeftBrace) => self.parse_object_assignment_pattern(),
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: format!("issue-252: expected assignment target or pattern, got {other:?}"),
+                message: format!("Expected assignment target or pattern, got {other:?}"),
                 span: self.peek_span(),
 
                 phase: None,}),
@@ -300,7 +300,7 @@ impl Parser {
             }
             _ => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "issue-252: invalid destructuring assignment target".to_owned(),
+                message: "Invalid destructuring assignment target".to_owned(),
                 span: Some(span),
 
                 phase: None,}),
@@ -311,7 +311,7 @@ impl Parser {
         Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message:
-                "issue-252: rest assignment target must be the final element in an assignment pattern"
+                "Rest assignment target must be the final element in an assignment pattern"
                     .to_owned(),
             span: Some(span),
 

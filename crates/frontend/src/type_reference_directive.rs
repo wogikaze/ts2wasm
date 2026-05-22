@@ -27,7 +27,7 @@ pub fn validate_type_reference_directives(source: &str) -> Result<(), Diagnostic
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!(
-                    "issue-227: triple-slash reference types directive for `{package_name}` requires type package resolution, which is not supported in this milestone"
+                    "Triple-slash reference types directive for `{package_name}` requires type package resolution, which is not supported in this milestone"
                 ),
                 span: Some(Span {
                     start: package_start,
@@ -87,7 +87,7 @@ mod tests {
         .unwrap_err();
 
         assert_eq!(error.code, DiagCode::UnsupportedSyntax);
-        assert!(error.message.contains("issue-227"));
+        assert!(error.message.contains("Triple-slash reference types directive"));
         assert!(error.message.contains("cookie-session"));
         assert_eq!(error.span, Some(Span { start: 22, end: 36 }));
     }

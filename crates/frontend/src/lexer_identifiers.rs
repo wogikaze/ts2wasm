@@ -231,7 +231,7 @@ impl<'a> Lexer<'a> {
         if !matches!(self.peek_char(), Some('a'..='z' | 'A'..='Z' | '_' | '$')) {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "issue-248: invalid private identifier".to_owned(),
+                message: "Invalid private identifier".to_owned(),
                 span: Some(Span {
                     start,
                     end: self.cursor,

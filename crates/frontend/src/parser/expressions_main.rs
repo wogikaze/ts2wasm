@@ -280,7 +280,7 @@ impl Parser {
             }
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "issue-236: compound assignment expressions currently support only identifier, member, and computed member targets"
+                message: "Compound assignment expressions currently support only identifier, member, and computed member targets"
                     .to_owned(),
                 span: Some(target_span),
 
@@ -416,7 +416,7 @@ impl Parser {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message:
-                    "issue-236: logical assignment currently supports only identifier, member, and string-literal computed member targets"
+                    "Logical assignment currently supports only identifier, member, and string-literal computed member targets"
                         .to_owned(),
                 span: Some(target_span),
 
@@ -482,9 +482,11 @@ impl Parser {
         // Body can be an expression or a block with statements.
         let mut body_stmts = Vec::new();
         let body = if matches!(self.peek(), Some(Token::LeftBrace)) {
+            let prev_labels = std::mem::take(&mut self.labels_in_scope);
             self.fn_depth += 1;
             let block_stmts = self.block()?;
             self.fn_depth -= 1;
+            self.labels_in_scope = prev_labels;
             match block_stmts.split_last() {
                 Some((Stmt::Return { expr, .. }, rest)) => {
                     body_stmts = rest.to_vec();
@@ -669,9 +671,11 @@ impl Parser {
         self.expect(TokenKind::Arrow)?;
         let mut body_stmts = Vec::new();
         let body = if matches!(self.peek(), Some(Token::LeftBrace)) {
+            let prev_labels = std::mem::take(&mut self.labels_in_scope);
             self.fn_depth += 1;
             let block_stmts = self.block()?;
             self.fn_depth -= 1;
+            self.labels_in_scope = prev_labels;
             match block_stmts.split_last() {
                 Some((Stmt::Return { expr, .. }, rest)) => {
                     body_stmts.extend_from_slice(rest);
@@ -1519,7 +1523,7 @@ impl Parser {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message:
-                            "issue-5150: empty element access `expr[]` requires an index expression"
+                            "Empty element access `expr[]` requires an index expression"
                                 .to_owned(),
                         span: Some(self.prev_span().unwrap_or(Span::generated("parser"))),
 
@@ -1610,7 +1614,7 @@ impl Parser {
         Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message:
-                "issue-246: optional chaining cannot be used as an assignment or update target"
+                "Optional chaining cannot be used as an assignment or update target"
                     .to_owned(),
             span: Some(span),
 
@@ -2248,7 +2252,7 @@ impl Parser {
                     Err(Diagnostic {
                         code: DiagCode::UnsupportedTypeScriptSyntax,
                         message:
-                            "issue-5253: decorator syntax is not supported outside class expressions"
+                            "Decorator syntax is not supported outside class expressions"
                                 .to_owned(),
                         span: Some(at_span),
 
@@ -2433,9 +2437,11 @@ impl Parser {
                 .ok();
         }
         let body = if matches!(self.peek(), Some(Token::LeftBrace)) {
+            let prev_labels = std::mem::take(&mut self.labels_in_scope);
             self.fn_depth += 1;
             let b = self.block()?;
             self.fn_depth -= 1;
+            self.labels_in_scope = prev_labels;
             b
         } else {
             Vec::new()
@@ -2538,9 +2544,11 @@ impl Parser {
 
         let prev_in_generator_fn = self.in_generator_fn;
         self.in_generator_fn = is_generator;
+        let prev_labels = std::mem::take(&mut self.labels_in_scope);
         self.fn_depth += 1;
         let mut body = self.block()?;
         self.fn_depth -= 1;
+        self.labels_in_scope = prev_labels;
         self.in_generator_fn = prev_in_generator_fn;
         desugar_destructured_params(&mut params, &mut body);
         let end = body
@@ -2626,9 +2634,11 @@ impl Parser {
         }
         let ns = name_span.unwrap_or(Span { start: start.start, end: start.start });
         self.validate_strict_mode_fn_params(&name, ns, &params)?;
+        let prev_labels = std::mem::take(&mut self.labels_in_scope);
         self.fn_depth += 1;
         let mut body = self.block()?;
         self.fn_depth -= 1;
+        self.labels_in_scope = prev_labels;
         self.strict_mode = prev_strict_mode;
         desugar_destructured_params(&mut params, &mut body);
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
@@ -2734,7 +2744,7 @@ fn bigint_fractional_number_diagnostic(value: &str, span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: format!(
-            "issue-281: BigInt/Number comparison with fractional number `{value}` requires broader number-model support"
+            "BigInt/Number comparison with fractional number `{value}` requires broader number-model support"
         ),
         span: Some(span),
 

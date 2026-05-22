@@ -115,7 +115,7 @@ impl<'a> Lexer<'a> {
             } else if ch == '\n' || ch == '\r' {
                 return Err(Diagnostic {
                     code: DiagCode::SyntaxError,
-                    message: "issue-202: unterminated RegExp literal".to_owned(),
+                    message: "Unterminated RegExp literal".to_owned(),
                     span: Some(Span {
                         start,
                         end: self.cursor,
@@ -188,7 +188,7 @@ impl<'a> Lexer<'a> {
         if !terminated {
             return Err(Diagnostic {
                 code: DiagCode::SyntaxError,
-                message: "issue-202: unterminated RegExp literal".to_owned(),
+                message: "Unterminated RegExp literal".to_owned(),
                 span: Some(Span {
                     start,
                     end: self.cursor,
@@ -208,7 +208,7 @@ impl<'a> Lexer<'a> {
             if !matches!(ch, 'd' | 'g' | 'i' | 'm' | 's' | 'u' | 'v' | 'y') {
                 return Err(Diagnostic {
                     code: DiagCode::SyntaxError,
-                    message: format!("issue-202: unsupported RegExp flag `{ch}`"),
+                    message: format!("Unsupported RegExp flag `{ch}`"),
                     span: Some(Span {
                         start: self.cursor,
                         end: self.cursor + ch.len_utf8(),
@@ -220,7 +220,7 @@ impl<'a> Lexer<'a> {
             if flags.contains(ch) {
                 return Err(Diagnostic {
                     code: DiagCode::SyntaxError,
-                    message: format!("issue-202: duplicate RegExp flag `{ch}`"),
+                    message: format!("Duplicate RegExp flag `{ch}`"),
                     span: Some(Span {
                         start: self.cursor,
                         end: self.cursor + ch.len_utf8(),
@@ -293,7 +293,7 @@ impl<'a> Lexer<'a> {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: format!(
-                                "issue-229: legacy decimal escape \\{ch} is not allowed in strict mode"
+                                "Legacy decimal escape \\{ch} is not allowed in strict mode"
                             ),
                             span: Some(Span {
                                 start: self.cursor.saturating_sub(2),
@@ -365,8 +365,8 @@ impl<'a> Lexer<'a> {
         let escape_start = self.cursor.saturating_sub(2);
         if self.strict_mode {
             return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-229: legacy octal escape sequences are not allowed in strict mode"
+                code: DiagCode::SyntaxError,
+                message: "Legacy octal escape sequences are not allowed in strict mode"
                     .to_owned(),
                 span: Some(Span {
                     start: escape_start,
@@ -391,7 +391,7 @@ impl<'a> Lexer<'a> {
 
         let value = u32::from_str_radix(&digits, 8).map_err(|error| Diagnostic {
             code: DiagCode::UnsupportedSyntax,
-            message: format!("issue-229: invalid legacy octal escape sequence: {error}"),
+            message: format!("Invalid legacy octal escape sequence: {error}"),
             span: Some(Span {
                 start: string_start,
                 end: self.cursor,
@@ -400,7 +400,7 @@ impl<'a> Lexer<'a> {
             phase: None,})?;
         char::from_u32(value).ok_or(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
-            message: "issue-229: invalid legacy octal escape scalar value".to_owned(),
+            message: "Invalid legacy octal escape scalar value".to_owned(),
             span: Some(Span {
                 start: escape_start,
                 end: self.cursor,

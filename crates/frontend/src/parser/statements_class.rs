@@ -171,7 +171,7 @@ impl Parser {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedTypeScriptSyntax,
                             message: format!(
-                                "issue-5263: `{name}` is a primitive, \
+                                "`{name}` is a primitive, \
                                  not a valid class implements type"
                             ),
                             span: Some(span),
@@ -352,7 +352,7 @@ impl Parser {
                 .map_err(|_| {
                     self.unsupported_typescript_syntax(
                         method_span,
-                        "issue-400: unterminated class field declaration type annotation",
+                        "Unterminated class field declaration type annotation",
                     )
                 })?;
                 if has_private_modifier {
@@ -599,7 +599,7 @@ impl Parser {
                     public_field_initializers,
                     std::mem::take(method_body),
                     extends.is_some(),
-                    "issue-237: public fields in derived constructors require a leading super(...) call",
+                    "Public fields in derived constructors require a leading super(...) call",
                 )?;
                 *method_body = merged;
             } else {
@@ -685,13 +685,13 @@ impl Parser {
             .map_err(|_| {
                 self.unsupported_typescript_syntax(
                     declare_span,
-                    "issue-400: unterminated ambient class element declaration",
+                    "Unterminated ambient class element declaration",
                 )
             })?;
         if let Some(equal_span) = self.consume_span(TokenKind::Equal) {
             return Err(self.unsupported_typescript_syntax(
                 equal_span,
-                "issue-400: ambient class element initializers would affect runtime bindings",
+                "Ambient class element initializers would affect runtime bindings",
             ));
         }
         self.expect(TokenKind::Semicolon)?;

@@ -205,14 +205,22 @@ impl Parser {
                 phase: None,});
         }
 
-        // Emit InterfaceDecl with empty properties (body parsing deferred).
-        // The interface body is still consumed by skip_balanced_brace_block.
+        // Parse the interface body to extract property signatures.
+        // NOTE: This currently only parses non-generic interface members.
+        // Generic interfaces (e.g. Array<T>, Promise<T>) have type parameters
+        // consumed at line 154 but discarded because TypeRef has no
+        // generic-instantiation variant. Their property types may reference
+        // unresolvable TypeRef::Named("T"), but the property NAME matching
+        // still works in the type alias bridge; full generic resolution is
+        // future work.
+        self.expect(TokenKind::LeftBrace)?;
+        let properties = self.try_parse_interface_body();
+        self.expect(TokenKind::RightBrace)?;
         self.pending_statements.push(Stmt::InterfaceDecl {
             name: interface_name.map(|(n, _)| n).unwrap_or_default(),
-            properties: Vec::new(),
+            properties,
             span: interface_span,
         });
-        self.skip_balanced_brace_block(interface_span)?;
         self.consume(TokenKind::Semicolon);
         Ok(())
     }
@@ -491,7 +499,7 @@ impl Parser {
         if self.peek_contextual_keyword("global") {
             return Err(self.unsupported_typescript_syntax(
                 self.peek_span().unwrap_or(declare_span),
-                "issue-400: ambient global declarations are not supported in this erasure slice",
+                "Ambient global declarations are not supported in this erasure slice",
             ));
         }
 
@@ -516,7 +524,7 @@ impl Parser {
             }
             _ => Err(self.unsupported_typescript_syntax(
                 self.peek_span().unwrap_or(declare_span),
-                "issue-400: unsupported ambient declaration form",
+                "Unsupported ambient declaration form",
             )),
         }
     }
@@ -530,7 +538,7 @@ impl Parser {
                 .map_err(|_| {
                     self.unsupported_typescript_syntax(
                         declare_span,
-                        "issue-400: unterminated ambient class extends clause",
+                        "Unterminated ambient class extends clause",
                     )
                 })?;
         }
@@ -559,7 +567,7 @@ impl Parser {
                 let param = self.parse_param(false, params.is_empty()).map_err(|_| {
                     self.unsupported_typescript_syntax(
                         declare_span,
-                        "issue-400: unterminated ambient function declaration",
+                        "Unterminated ambient function declaration",
                     )
                 })?;
                 let is_rest = param.is_rest;
@@ -583,7 +591,7 @@ impl Parser {
                 .map_err(|_| {
                     self.unsupported_typescript_syntax(
                         declare_span,
-                        "issue-400: unterminated ambient function declaration",
+                        "Unterminated ambient function declaration",
                     )
                 })?;
         }
@@ -614,7 +622,7 @@ impl Parser {
             let (name, name_span) = self.expect_ident().map_err(|_| {
                 self.unsupported_typescript_syntax(
                     declare_span,
-                    "issue-400: expected ambient variable declaration name",
+                    "Expected ambient variable declaration name",
                 )
             })?;
             if self.consume(TokenKind::Colon) {
@@ -626,7 +634,7 @@ impl Parser {
                 .map_err(|_| {
                     self.unsupported_typescript_syntax(
                         declare_span,
-                        "issue-400: unterminated ambient variable declaration type",
+                        "Unterminated ambient variable declaration type",
                     )
                 })?;
             }
@@ -651,7 +659,7 @@ impl Parser {
             }
             return Err(self.unsupported_typescript_syntax(
                 declare_span,
-                "issue-400: unterminated ambient variable declaration",
+                "Unterminated ambient variable declaration",
             ));
         }
     }

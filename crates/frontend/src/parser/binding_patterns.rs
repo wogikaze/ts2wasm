@@ -27,7 +27,7 @@ impl Parser {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message:
-                        "issue-071: parameter property modifiers are only allowed in constructor parameters"
+                        "Parameter property modifiers are only allowed in constructor parameters"
                             .to_owned(),
                     span: Some(span),
 
@@ -70,7 +70,7 @@ impl Parser {
             if !allow_this_parameter || is_rest || is_parameter_property {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "issue-247: TypeScript this parameters must be the leading parameter"
+                    message: "TypeScript this parameters must be the leading parameter"
                         .to_owned(),
                     span: Some(span),
 
@@ -79,7 +79,7 @@ impl Parser {
             if !self.consume(TokenKind::Colon) {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "issue-247: TypeScript this parameters require a type annotation"
+                    message: "TypeScript this parameters require a type annotation"
                         .to_owned(),
                     span: Some(span),
 
@@ -104,7 +104,7 @@ let binding = self.parse_binding_pattern()?;
         if is_parameter_property && !binding.is_identifier {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "issue-247: parameter properties require identifier bindings".to_owned(),
+                message: "Parameter properties require identifier bindings".to_owned(),
                 span: Some(binding.span),
 
                 phase: None,});
@@ -129,7 +129,7 @@ let binding = self.parse_binding_pattern()?;
         if is_rest && is_parameter_property {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "issue-226: rest parameter properties are not supported".to_owned(),
+                message: "Rest parameter properties are not supported".to_owned(),
                 span: Some(binding.span),
 
                 phase: None,});
@@ -204,7 +204,7 @@ let binding = self.parse_binding_pattern()?;
             Some(Token::LeftBrace) => self.parse_object_binding_pattern(),
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: format!("issue-247: expected binding identifier or pattern, got {other:?}"),
+                message: format!("Expected binding identifier or pattern, got {other:?}"),
                 span: self.peek_span(),
 
                 phase: None,}),
@@ -219,7 +219,7 @@ let binding = self.parse_binding_pattern()?;
             if self.is_at_end() {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "issue-247: unterminated array binding pattern".to_owned(),
+                    message: "Unterminated array binding pattern".to_owned(),
                     span: Some(start),
 
                     phase: None,});
@@ -289,7 +289,7 @@ let binding = self.parse_binding_pattern()?;
             if self.is_at_end() {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "issue-247: unterminated object binding pattern".to_owned(),
+                    message: "Unterminated object binding pattern".to_owned(),
                     span: Some(start),
 
                     phase: None,});
@@ -298,7 +298,7 @@ let binding = self.parse_binding_pattern()?;
             if let Some(rest_span) = self.consume_span(TokenKind::DotDotDot) {
                 let (name, name_span) = self.expect_ident().map_err(|_| Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "issue-247: object rest binding requires an identifier".to_owned(),
+                    message: "Object rest binding requires an identifier".to_owned(),
                     span: self.peek_span(),
 
                     phase: None,})?;
@@ -326,7 +326,7 @@ let binding = self.parse_binding_pattern()?;
             } else {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "issue-247: literal object binding keys require a target after `:`"
+                    message: "Literal object binding keys require a target after `:`"
                         .to_owned(),
                     span: self.peek_span(),
 
@@ -395,7 +395,7 @@ let binding = self.parse_binding_pattern()?;
             }) => Ok((bigint_literal_property_key(&raw), false)),
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: format!("issue-247: expected object binding property key, got {other:?}"),
+                message: format!("Expected object binding property key, got {other:?}"),
                 span: self.peek_span(),
 
                 phase: None,}),
@@ -405,7 +405,7 @@ let binding = self.parse_binding_pattern()?;
     fn invalid_rest_binding_diagnostic(&self, span: Span) -> Diagnostic {
         Diagnostic {
             code: DiagCode::UnsupportedSyntax,
-            message: "issue-247: rest binding must be the final element in a binding pattern"
+            message: "Rest binding must be the final element in a binding pattern"
                 .to_owned(),
             span: Some(span),
 
