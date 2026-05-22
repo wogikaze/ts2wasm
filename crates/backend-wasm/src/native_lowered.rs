@@ -80,9 +80,43 @@ struct FunctionCtx {
 
 #[derive(Clone)]
 enum StaticValue {
-    Object(HashMap<String, LoweredExpr>),
+    Object(StaticObjectValue),
     Array(Vec<LoweredExpr>),
     Primitive(LoweredExpr),
+}
+
+#[derive(Clone)]
+struct StaticObjectValue {
+    props: HashMap<String, LoweredExpr>,
+    key_order: Vec<String>,
+}
+
+impl StaticObjectValue {
+    fn from_props(props: &[(String, LoweredExpr)]) -> Self {
+        let mut value = Self {
+            props: HashMap::new(),
+            key_order: Vec::new(),
+        };
+        for (key, expr) in props {
+            value.set(key.clone(), expr.clone());
+        }
+        value
+    }
+
+    fn get(&self, key: &str) -> Option<&LoweredExpr> {
+        self.props.get(key)
+    }
+
+    fn set(&mut self, key: String, value: LoweredExpr) {
+        if !self.props.contains_key(&key) {
+            self.key_order.push(key.clone());
+        }
+        self.props.insert(key, value);
+    }
+
+    fn keys(&self) -> Vec<String> {
+        self.key_order.clone()
+    }
 }
 
 #[derive(Default)]
@@ -649,7 +683,7 @@ impl<'a> NativeLoweredEmitter<'a> {
         if !matches!(
             expr,
             LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::ArrayConcat,
+                intrinsic: RuntimeFn::ArrayConcat | RuntimeFn::ObjectKeys,
                 ..
             }
         ) {
@@ -706,14 +740,14 @@ impl<'a> NativeLoweredEmitter<'a> {
         if !static_object_initializer_supported(expr, &ctx.static_locals) {
             return Ok(false);
         }
-        let Some(StaticValue::Object(props)) = static_value_from_expr(expr, &ctx.static_locals)
+        let Some(StaticValue::Object(object)) = static_value_from_expr(expr, &ctx.static_locals)
         else {
             return Ok(false);
         };
 
         if let Some(slots) = ctx.static_objects.get(&local) {
             for (key, slot) in slots {
-                if let Some(value) = props.get(key) {
+                if let Some(value) = object.get(key) {
                     self.emit_expr(value, ctx, out)?;
                 } else {
                     out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
@@ -2136,11 +2170,11 @@ fn collect_static_locals_from_expr(expr: &LoweredExpr, locals: &mut HashMap<Loca
             collect_static_locals_from_expr(object, locals);
             collect_static_locals_from_expr(value, locals);
             let value = static_primitive_expr_from_expr(value, locals);
-            if let LoweredExpr::Local(local, _) = object.as_ref()
-                && let Some(StaticValue::Object(props)) = locals.get_mut(local)
-            {
+            if let LoweredExpr::Local(local, _) = object.as_ref() {
                 if let Some(value) = value {
-                    props.insert(key.clone(), value);
+                    if let Some(StaticValue::Object(props)) = locals.get_mut(local) {
+                        props.set(key.clone(), value);
+                    }
                 } else {
                     locals.remove(local);
                 }
@@ -2171,12 +2205,10 @@ fn collect_static_locals_from_expr(expr: &LoweredExpr, locals: &mut HashMap<Loca
             collect_static_locals_from_expr(value, locals);
             let key = static_property_key_from_locals(locals, index);
             let value = static_primitive_expr_from_expr(value, locals);
-            if let LoweredExpr::Local(local, _) = object.as_ref()
-                && let Some(StaticValue::Object(props)) = locals.get_mut(local)
-            {
-                match (key, value) {
-                    (Some(key), Some(value)) => {
-                        props.insert(key, value);
+            if let LoweredExpr::Local(local, _) = object.as_ref() {
+                match (key, value, locals.get_mut(local)) {
+                    (Some(key), Some(value), Some(StaticValue::Object(props))) => {
+                        props.set(key, value);
                     }
                     _ => {
                         locals.remove(local);
@@ -2201,12 +2233,9 @@ fn static_value_from_expr(
         | LoweredExpr::Bool(_, _)
         | LoweredExpr::Null(_)
         | LoweredExpr::Undefined(_) => Some(StaticValue::Primitive(expr.clone())),
-        LoweredExpr::ObjectNew { props, .. } => Some(StaticValue::Object(
-            props
-                .iter()
-                .map(|(key, value)| (key.clone(), value.clone()))
-                .collect(),
-        )),
+        LoweredExpr::ObjectNew { props, .. } => {
+            Some(StaticValue::Object(StaticObjectValue::from_props(props)))
+        }
         LoweredExpr::ArrayNew { elements, .. } => Some(StaticValue::Array(elements.clone())),
         LoweredExpr::RuntimeCall {
             intrinsic: RuntimeFn::ArrayConcat,
@@ -2217,6 +2246,17 @@ fn static_value_from_expr(
             merged.extend(static_array_from_expr(&args[1], locals)?);
             Some(StaticValue::Array(merged))
         }
+        LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::ObjectKeys,
+            args,
+            span,
+            ..
+        } if args.len() == 1 => Some(StaticValue::Array(
+            static_object_keys_from_expr(&args[0], locals)?
+                .into_iter()
+                .map(|key| LoweredExpr::String(key, *span))
+                .collect(),
+        )),
         LoweredExpr::PromiseGetValue { promise, .. } => {
             static_promise_resolve_value_from_expr(promise, locals)
         }
@@ -2281,6 +2321,16 @@ fn static_array_from_expr(
     match static_value_from_expr(expr, locals)? {
         StaticValue::Array(elements) => Some(elements),
         StaticValue::Object(_) | StaticValue::Primitive(_) => None,
+    }
+}
+
+fn static_object_keys_from_expr(
+    expr: &LoweredExpr,
+    locals: &HashMap<LocalId, StaticValue>,
+) -> Option<Vec<String>> {
+    match static_value_from_expr(expr, locals)? {
+        StaticValue::Object(object) => Some(object.keys()),
+        StaticValue::Array(_) | StaticValue::Primitive(_) => None,
     }
 }
 

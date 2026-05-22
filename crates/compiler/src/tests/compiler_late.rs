@@ -961,6 +961,10 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "A\n2\nC\n",
         ),
         (
+            "../../fixtures/core-expressions/object-literal-computed-method.ts",
+            "a\nb\n",
+        ),
+        (
             "../../fixtures/core-expressions/object-literal-computed-number-method-call.ts",
             "A\nB\nC\nD\n",
         ),
