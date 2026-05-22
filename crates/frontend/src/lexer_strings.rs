@@ -31,16 +31,61 @@ impl<'a> Lexer<'a> {
         let mut in_class = false;
         let mut terminated = false;
 
+        /// Tracks position within a character class for proper `-` handling.
+        /// Inside `[...]`, `-` is a range operator between two characters but a
+        /// literal hyphen at the start or end of the class.
+        enum ClassState {
+            /// Right after `[` or `[^]` — `-` is a literal hyphen.
+            Start,
+            /// After a character or range end — `-` may be a range operator.
+            AfterChar,
+            /// After a range operator `-` — next character is the range end.
+            AfterRangeOp,
+        }
+        let mut class_state: Option<ClassState> = None;
+
         while let Some(ch) = self.peek_char() {
             if escaped {
                 // After backslash: accept any character (backreference `\1`,
                 // named backreference `\k`, escaped metacharacters, etc.)
                 pattern.push(ch);
                 escaped = false;
+
+                // After \p or \P, consume {...} as a Unicode property escape
+                // (e.g., \p{L}, \p{Letter}, \P{Nd}, \P{General_Category=Lu}).
+                if matches!(ch, 'p' | 'P') && self.peek_char() == Some('{') {
+                    pattern.push('{');
+                    self.advance_char();
+                    loop {
+                        match self.peek_char() {
+                            Some('}') => {
+                                pattern.push('}');
+                                self.advance_char();
+                                break;
+                            }
+                            Some(c) => {
+                                pattern.push(c);
+                                self.advance_char();
+                            }
+                            None => break,
+                        }
+                    }
+                    // Update class state after consuming the escape
+                    if let Some(ref mut s) = class_state {
+                        *s = ClassState::AfterChar;
+                    }
+                    // Already advanced past `}`, skip the per-iteration advance
+                    continue;
+                }
+
+                // Update character class position tracking
+                if let Some(ref mut s) = class_state {
+                    *s = ClassState::AfterChar;
+                }
             } else if ch == '\\' {
                 pattern.push(ch);
                 escaped = true;
-            } else if ch == '[' {
+            } else if ch == '[' && !in_class {
                 // Enter a character class. Inside `[...]`, metacharacters
                 // like `.`, `*`, `+`, `?`, `(`, `)`, `{`, `}`, `^`, `$`,
                 // `|`, `\` lose their special meaning (except `\` for
@@ -49,9 +94,13 @@ impl<'a> Lexer<'a> {
                 // the regex literal.
                 pattern.push(ch);
                 in_class = true;
-            } else if ch == ']' {
+                class_state = Some(ClassState::Start);
+            } else if ch == ']' && in_class {
+                // Exit a character class. `]` is only a metacharacter when
+                // it closes an open class; otherwise it is a literal.
                 pattern.push(ch);
                 in_class = false;
+                class_state = None;
             } else if ch == '\n' || ch == '\r' {
                 return Err(Diagnostic {
                     code: DiagCode::SyntaxError,
@@ -71,6 +120,40 @@ impl<'a> Lexer<'a> {
                     terminated = true;
                     break;
                 }
+            } else if ch == '-' && in_class {
+                // Inside a character class, `-` is a range operator between
+                // two characters (e.g., `a-z`, `0-9`), but a literal hyphen
+                // at the start (after `[` or `[^]`) or at the end (before `]`).
+                match class_state {
+                    Some(ClassState::Start) => {
+                        // `-` at start of class: literal hyphen
+                        pattern.push(ch);
+                        class_state = Some(ClassState::AfterChar);
+                    }
+                    Some(ClassState::AfterChar) => {
+                        // After a regular character: check if `-` is a range
+                        // operator or a literal hyphen.
+                        if self.peek_next_char() == Some(']') {
+                            // Right before `]`: literal hyphen at end of class
+                            pattern.push(ch);
+                        } else {
+                            // Between two characters: range operator
+                            pattern.push(ch);
+                            class_state = Some(ClassState::AfterRangeOp);
+                        }
+                    }
+                    Some(ClassState::AfterRangeOp) => {
+                        // After a previous range operator: this `-` is the
+                        // range end (literal hyphen as range endpoint).
+                        pattern.push(ch);
+                        class_state = Some(ClassState::AfterChar);
+                    }
+                    None => {
+                        // Not in a character class — should not happen due to
+                        // the `in_class` guard, but handle gracefully.
+                        pattern.push(ch);
+                    }
+                }
             } else {
                 // All other characters are part of the pattern verbatim:
                 // - Quantifier delimiters: `{`, `}`, `,`
@@ -81,8 +164,12 @@ impl<'a> Lexer<'a> {
                 // - Wildcard: `.`
                 // - Repetition: `*`, `+`, `?`
                 // - Flags inside `(?...)`: `:`, `=`, `!`
-                // - Class ranges: `-`
+                // - Literal `[` inside a character class
+                // - Literal `]` outside a character class
                 pattern.push(ch);
+                if let Some(ref mut s) = class_state {
+                    *s = ClassState::AfterChar;
+                }
             }
             self.advance_char();
         }

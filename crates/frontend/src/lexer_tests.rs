@@ -528,4 +528,135 @@ mod tests {
         let kinds: Vec<&Token> = tokens.iter().map(|t| &t.kind).collect();
         assert_eq!(kinds, [&Token::At]);
     }
+
+    // --- RegExp character class range improvements ---
+
+    fn extract_regex_pattern(source: &str) -> String {
+        let tokens = Lexer::new(source).tokenize().unwrap();
+        for t in &tokens {
+            if let Token::RegExp { pattern, .. } = &t.kind {
+                return pattern.clone();
+            }
+        }
+        panic!("no RegExp token found in: {source}");
+    }
+
+    #[test]
+    fn regex_basic_range_a_to_z() {
+        assert_eq!(extract_regex_pattern(r"/[a-z]/"), "[a-z]");
+    }
+
+    #[test]
+    fn regex_basic_range_0_to_9() {
+        assert_eq!(extract_regex_pattern(r"/[0-9]/"), "[0-9]");
+    }
+
+    #[test]
+    fn regex_basic_range_multiple_contiguous() {
+        assert_eq!(extract_regex_pattern(r"/[A-Za-z0-9]/"), "[A-Za-z0-9]");
+    }
+
+    #[test]
+    fn regex_hyphen_at_start_is_literal() {
+        assert_eq!(extract_regex_pattern(r"/[-abc]/"), "[-abc]");
+    }
+
+    #[test]
+    fn regex_hyphen_at_start_after_caret_is_literal() {
+        assert_eq!(extract_regex_pattern(r"/[^-abc]/"), "[^-abc]");
+    }
+
+    #[test]
+    fn regex_hyphen_at_end_is_literal() {
+        assert_eq!(extract_regex_pattern(r"/[abc-]/"), "[abc-]");
+    }
+
+    #[test]
+    fn regex_hyphen_at_end_after_caret_is_literal() {
+        assert_eq!(extract_regex_pattern(r"/[^abc-]/"), "[^abc-]");
+    }
+
+    #[test]
+    fn regex_hyphen_as_range_endpoint() {
+        // `[---]`: first `-` literal (at start), second `-` range op,
+        // third `-` range end (literal). Equivalent to range `-` to `-`.
+        assert_eq!(extract_regex_pattern(r"/[---]/"), "[---]");
+    }
+
+    #[test]
+    fn regex_range_from_hyphen_to_char() {
+        // `[--b]`: first `-` literal (at start), second `-` range op,
+        // `b` range end. Class contains: literal `-`, range `-` to `b`.
+        assert_eq!(extract_regex_pattern(r"/[--b]/"), "[--b]");
+    }
+
+    #[test]
+    fn regex_range_from_char_to_hyphen() {
+        // `[a--b]`: `a`, range op, `-` as range end, `b`.
+        // Class contains: range `a` to `-`, literal `b`.
+        assert_eq!(extract_regex_pattern(r"/[a--b]/"), "[a--b]");
+    }
+
+    #[test]
+    fn regex_escaped_hyphen_in_class() {
+        // `\-` is always a literal hyphen regardless of position.
+        assert_eq!(extract_regex_pattern(r"/[a\-z]/"), "[a\\-z]");
+    }
+
+    #[test]
+    fn regex_unicode_property_escape_lowercase_l() {
+        assert_eq!(extract_regex_pattern(r"/\p{L}/"), "\\p{L}");
+    }
+
+    #[test]
+    fn regex_unicode_property_escape_uppercase_p() {
+        assert_eq!(extract_regex_pattern(r"/\P{Nd}/"), "\\P{Nd}");
+    }
+
+    #[test]
+    fn regex_unicode_property_in_char_class() {
+        assert_eq!(extract_regex_pattern(r"/[\p{L}]/"), "[\\p{L}]");
+    }
+
+    #[test]
+    fn regex_unicode_property_negated_in_char_class() {
+        assert_eq!(extract_regex_pattern(r"/[\P{Nd}]/"), "[\\P{Nd}]");
+    }
+
+    #[test]
+    fn regex_unicode_property_with_long_name() {
+        assert_eq!(
+            extract_regex_pattern(r"/\p{General_Category=Lu}/"),
+            "\\p{General_Category=Lu}"
+        );
+    }
+
+    #[test]
+    fn regex_unicode_property_with_range() {
+        // Character class with a range and a Unicode property escape
+        assert_eq!(extract_regex_pattern(r"/[a-z\p{L}]/"), "[a-z\\p{L}]");
+    }
+
+    #[test]
+    fn regex_unicode_properties_with_ranges() {
+        assert_eq!(
+            extract_regex_pattern(r"/[\p{L}--\p{Nd}]/"),
+            "[\\p{L}--\\p{Nd}]"
+        );
+    }
+
+    #[test]
+    fn regex_char_class_with_brackets_inside() {
+        // `[` inside a character class is a literal character.
+        // The first `]` closes the class.
+        assert_eq!(extract_regex_pattern(r"/[a[b]c]/"), "[a[b]c]");
+    }
+
+    #[test]
+    fn regex_multiple_contiguous_ranges_and_literals() {
+        assert_eq!(
+            extract_regex_pattern(r"/[A-Za-z0-9_-]/"),
+            "[A-Za-z0-9_-]"
+        );
+    }
 }
