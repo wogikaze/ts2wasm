@@ -1397,8 +1397,7 @@ impl super::super::Resolver {
             // Use compile-time expansion for static string receivers; fall through to
             // class-dispatched RuntimeFn::StringMatchAll for dynamic receivers.
             if crate::lowered::resolver::string::resolved_expr_static_string_value(
-                &self.ctx,
-                object,
+                &self.ctx, object,
             )
             .is_some()
             {
@@ -3870,8 +3869,7 @@ impl super::super::Resolver {
             }));
         }
 
-        let error_msg =
-            format!("Cannot read properties of undefined (reading '{}')", method);
+        let error_msg = format!("Cannot read properties of undefined (reading '{}')", method);
         let receiver_temp = self.alloc_temp();
         let receiver = LoweredExpr::Local(receiver_temp, Span::generated("local"));
         let callee = object_kernel::ordinary_get(receiver.clone(), method, span);
@@ -3890,10 +3888,7 @@ impl super::super::Resolver {
                 ),
                 LoweredStmt::If {
                     condition: LoweredExpr::Binary {
-                        left: Box::new(LoweredExpr::Local(
-                            receiver_temp,
-                            Span::generated("local"),
-                        )),
+                        left: Box::new(LoweredExpr::Local(receiver_temp, Span::generated("local"))),
                         op: LoweredBinaryOp::EqualEqual,
                         right: Box::new(LoweredExpr::Null(Span::generated("null"))),
                         span: Span::generated("null_check"),
@@ -4259,10 +4254,8 @@ impl super::super::Resolver {
                             .facts
                             .is_host_external(obj_local, HostExternalKind::FunctionHandle))
                 {
-                    let error_msg = format!(
-                        "Cannot read properties of undefined (reading '{}')",
-                        method
-                    );
+                    let error_msg =
+                        format!("Cannot read properties of undefined (reading '{}')", method);
                     let args_array = ResolvedExpr::Array(
                         args.iter()
                             .cloned()
@@ -4278,11 +4271,7 @@ impl super::super::Resolver {
                     };
                     return Ok(LoweredExpr::Block {
                         stmts: vec![
-                            LoweredStmt::Let(
-                                host_temp,
-                                lowered_obj,
-                                Span::generated("let_stmt"),
-                            ),
+                            LoweredStmt::Let(host_temp, lowered_obj, Span::generated("let_stmt")),
                             LoweredStmt::If {
                                 condition: LoweredExpr::Binary {
                                     left: Box::new(LoweredExpr::Local(
@@ -4450,7 +4439,8 @@ impl super::super::Resolver {
                     .get(&obj_local)
                     .and_then(|iface_name| self.ctx.lookup_interface_properties(iface_name))
                     .is_some_and(|props| props.iter().any(|(pn, _)| pn == method));
-                if !is_interface_method && !is_ambiguous
+                if !is_interface_method
+                    && !is_ambiguous
                     && let Some(intrinsic) = resolve_method_to_runtime_fn(
                         &ResolvedExpr::Ident(receiver_name.to_string()),
                         method,
@@ -6017,8 +6007,7 @@ fn static_generator_first_yield_value(body: &[LoweredStmt]) -> Option<LoweredExp
     for stmt in body {
         match stmt {
             LoweredStmt::Yield(expr, _) => return Some(expr.clone()),
-            LoweredStmt::Block(stmts, _)
-            | LoweredStmt::While { body: stmts, .. } => {
+            LoweredStmt::Block(stmts, _) | LoweredStmt::While { body: stmts, .. } => {
                 if let Some(expr) = static_generator_first_yield_value(stmts) {
                     return Some(expr);
                 }

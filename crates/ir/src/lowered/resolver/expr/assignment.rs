@@ -374,12 +374,7 @@ impl super::super::Resolver {
                     .insert(ObjectAccessorKey::Property(key.to_owned()), *func_id);
             }
         }
-        Ok(self.lower_property_set_with_null_guard(
-            lowered_object,
-            key,
-            lowered_value,
-            span,
-        ))
+        Ok(self.lower_property_set_with_null_guard(lowered_object, key, lowered_value, span))
     }
 
     pub(super) fn lower_property_assign_dynamic_expr(

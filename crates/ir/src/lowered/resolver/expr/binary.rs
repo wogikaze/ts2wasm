@@ -185,10 +185,7 @@ impl super::super::Resolver {
             if let (ResolvedExpr::String(l), ResolvedExpr::String(r)) = (left, right) {
                 let mut result = l.clone();
                 result.push_str(r);
-                return Ok(LoweredExpr::String(
-                    result,
-                    Span::generated("const_fold"),
-                ));
+                return Ok(LoweredExpr::String(result, Span::generated("const_fold")));
             }
         }
 
@@ -198,8 +195,7 @@ impl super::super::Resolver {
         // of non-string operands internally via $value_to_string_into), matching the spec
         // evaluation order where concatenation takes priority over numeric addition.
         if *op == BinaryOp::Add
-            && (matches!(left, ResolvedExpr::String(_))
-                || matches!(right, ResolvedExpr::String(_)))
+            && (matches!(left, ResolvedExpr::String(_)) || matches!(right, ResolvedExpr::String(_)))
         {
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::Concat,
@@ -233,7 +229,10 @@ impl super::super::Resolver {
             && !crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, right)
         {
             let span = Span::generated("unary_plus_to_number");
-            (wrap_to_number(lowered_left, span), wrap_to_number(lowered_right, span))
+            (
+                wrap_to_number(lowered_left, span),
+                wrap_to_number(lowered_right, span),
+            )
         } else {
             (lowered_left, lowered_right)
         };

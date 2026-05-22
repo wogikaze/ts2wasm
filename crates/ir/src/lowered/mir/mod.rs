@@ -645,7 +645,7 @@ mod tests {
 
     // -- Induction variable consumer tests -----------------------------------
 
-    use super::{infer_value_reps_in_stmts, InductionVarDirection, InductionVarInfo};
+    use super::{InductionVarDirection, InductionVarInfo, infer_value_reps_in_stmts};
     use super::{run_induction_var_consumer, run_value_rep_consumer};
 
     #[test]

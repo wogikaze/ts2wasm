@@ -654,10 +654,7 @@ mod tests {
 
     #[test]
     fn regex_multiple_contiguous_ranges_and_literals() {
-        assert_eq!(
-            extract_regex_pattern(r"/[A-Za-z0-9_-]/"),
-            "[A-Za-z0-9_-]"
-        );
+        assert_eq!(extract_regex_pattern(r"/[A-Za-z0-9_-]/"), "[A-Za-z0-9_-]");
     }
 
     // --- RegExp lookahead/lookbehind assertions ---

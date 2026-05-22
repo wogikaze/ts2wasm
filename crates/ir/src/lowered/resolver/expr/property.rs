@@ -373,7 +373,10 @@ impl super::super::Resolver {
                     then_body: vec![LoweredStmt::Throw(
                         LoweredExpr::ErrorNew {
                             constructor: BuiltinErrorConstructor::TypeError,
-                            message: Box::new(LoweredExpr::String(error_msg, Span::generated("str"))),
+                            message: Box::new(LoweredExpr::String(
+                                error_msg,
+                                Span::generated("str"),
+                            )),
                             cause: None,
                             errors: None,
                             span: Span::generated("error_new"),
@@ -415,7 +418,10 @@ impl super::super::Resolver {
                     then_body: vec![LoweredStmt::Throw(
                         LoweredExpr::ErrorNew {
                             constructor: BuiltinErrorConstructor::TypeError,
-                            message: Box::new(LoweredExpr::String(error_msg, Span::generated("str"))),
+                            message: Box::new(LoweredExpr::String(
+                                error_msg,
+                                Span::generated("str"),
+                            )),
                             cause: None,
                             errors: None,
                             span: Span::generated("error_new"),
@@ -457,7 +463,10 @@ impl super::super::Resolver {
                     then_body: vec![LoweredStmt::Throw(
                         LoweredExpr::ErrorNew {
                             constructor: BuiltinErrorConstructor::TypeError,
-                            message: Box::new(LoweredExpr::String(error_msg, Span::generated("str"))),
+                            message: Box::new(LoweredExpr::String(
+                                error_msg,
+                                Span::generated("str"),
+                            )),
                             cause: None,
                             errors: None,
                             span: Span::generated("error_new"),
@@ -499,7 +508,10 @@ impl super::super::Resolver {
                     then_body: vec![LoweredStmt::Throw(
                         LoweredExpr::ErrorNew {
                             constructor: BuiltinErrorConstructor::TypeError,
-                            message: Box::new(LoweredExpr::String(error_msg, Span::generated("str"))),
+                            message: Box::new(LoweredExpr::String(
+                                error_msg,
+                                Span::generated("str"),
+                            )),
                             cause: None,
                             errors: None,
                             span: Span::generated("error_new"),

@@ -643,7 +643,10 @@ impl Resolver {
                 // Track type alias info for optimization of subsequent property
                 // access and method call lowering on this local.
                 if let Some(type_alias) = self.infer_type_alias_for_expr(expr) {
-                    self.ctx.classes.local_type_aliases.insert(local_id, type_alias);
+                    self.ctx
+                        .classes
+                        .local_type_aliases
+                        .insert(local_id, type_alias);
                 } else {
                     self.ctx.classes.local_type_aliases.remove(&local_id);
                 }
@@ -979,7 +982,10 @@ impl Resolver {
                 // Track type alias info for optimization of subsequent property
                 // access and method call lowering on this local.
                 if let Some(type_alias) = self.infer_type_alias_for_expr(expr) {
-                    self.ctx.classes.local_type_aliases.insert(local_id, type_alias);
+                    self.ctx
+                        .classes
+                        .local_type_aliases
+                        .insert(local_id, type_alias);
                 } else {
                     self.ctx.classes.local_type_aliases.remove(&local_id);
                 }
