@@ -951,6 +951,10 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "subtract\nsubtract\nsubtract\nbitwise or\n",
         ),
         (
+            "../../fixtures/core-expressions/object-literal-computed-fractional-math-key.ts",
+            "2.999232\n2.999232\ntrue\ntrue\ntrue\ntrue\n",
+        ),
+        (
             "../../fixtures/core-expressions/object-literal-computed-identity-method-call.ts",
             "A\nD\n",
         ),

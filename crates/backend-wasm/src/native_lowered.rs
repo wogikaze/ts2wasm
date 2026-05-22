@@ -8,6 +8,7 @@ use ts2wasm_ir::lowered::{
 };
 use ts2wasm_runtime_abi::consts::RuntimeConst;
 use ts2wasm_runtime_abi::{Layout, ValueTag};
+use ts2wasm_shared::Span;
 use ts2wasm_shared::abi::{ABI_CUSTOM_SECTION_NAME, AbiMetadata};
 
 use crate::runtime_fn::{HostImport, RuntimeFn};
@@ -413,6 +414,9 @@ impl<'a> NativeLoweredEmitter<'a> {
             }
             LoweredStmt::Expr(expr, _) | LoweredStmt::Yield(expr, _) => {
                 if self.try_emit_console_log(expr, ctx, out)? {
+                    return Ok(());
+                }
+                if self.try_emit_static_user_function_call_stmt(expr, ctx, out)? {
                     return Ok(());
                 }
                 let produces_value = expr_produces_value(expr, &self.function_results);
@@ -1265,6 +1269,93 @@ impl<'a> NativeLoweredEmitter<'a> {
             }
         }
         out.push(WasmInstr::Call(WRITE_NEWLINE_SYMBOL.to_owned()));
+        Ok(true)
+    }
+
+    fn try_emit_static_user_function_call_stmt(
+        &mut self,
+        expr: &LoweredExpr,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<bool, Diagnostic> {
+        let LoweredExpr::Call {
+            kind: FunctionCallKind::User(func_id),
+            args,
+            ..
+        } = expr
+        else {
+            return Ok(false);
+        };
+        let Some(function) = self
+            .program
+            .functions
+            .iter()
+            .find(|function| function.id == *func_id)
+        else {
+            return Ok(false);
+        };
+        if args.len() < function.params.len() {
+            return Ok(false);
+        }
+
+        let mut call_ctx = FunctionCtx {
+            locals: HashMap::new(),
+            local_types: infer_local_types(&function.body),
+            static_locals: HashMap::new(),
+            static_arrays: HashMap::new(),
+            static_objects: HashMap::new(),
+            switch_value_local: 0,
+            returns_value: false,
+            module_id: None,
+            controls: Vec::new(),
+        };
+        for (param, arg) in function.params.iter().zip(args.iter()) {
+            let Some(value) = static_value_from_expr(arg, &ctx.static_locals) else {
+                return Ok(false);
+            };
+            call_ctx.static_locals.insert(*param, value);
+        }
+
+        let mut output_lines = Vec::new();
+        for stmt in &function.body {
+            match stmt {
+                LoweredStmt::Let(local, expr, _) | LoweredStmt::Assign(local, expr, _) => {
+                    if let Some(value) = static_value_from_expr(expr, &call_ctx.static_locals) {
+                        call_ctx.static_locals.insert(*local, value);
+                    } else {
+                        call_ctx.static_locals.remove(local);
+                    }
+                }
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args,
+                        ..
+                    },
+                    _,
+                ) => {
+                    let mut line = Vec::new();
+                    for arg in args {
+                        let Some(bytes) = static_console_arg_bytes(arg, &call_ctx) else {
+                            return Ok(false);
+                        };
+                        line.push(bytes);
+                    }
+                    output_lines.push(line);
+                }
+                _ => return Ok(false),
+            }
+        }
+
+        for line in output_lines {
+            for (index, bytes) in line.iter().enumerate() {
+                if index > 0 {
+                    self.emit_static_bytes(b" ", out);
+                }
+                self.emit_static_bytes(bytes, out);
+            }
+            out.push(WasmInstr::Call(WRITE_NEWLINE_SYMBOL.to_owned()));
+        }
         Ok(true)
     }
 
@@ -2265,6 +2356,12 @@ fn static_value_from_expr(
             Some(StaticValue::Object(StaticObjectValue::from_props(props)))
         }
         LoweredExpr::ArrayNew { elements, .. } => Some(StaticValue::Array(elements.clone())),
+        LoweredExpr::Binary {
+            left,
+            op,
+            right,
+            span,
+        } => static_binary_value_from_expr(left, *op, right, *span, locals),
         LoweredExpr::RuntimeCall {
             intrinsic: RuntimeFn::ArrayConcat,
             args,
@@ -2379,6 +2476,96 @@ fn static_promise_resolve_value_from_expr(
     static_value_from_expr(&args[0], locals)
 }
 
+fn static_binary_value_from_expr(
+    left: &LoweredExpr,
+    op: LoweredBinaryOp,
+    right: &LoweredExpr,
+    span: Span,
+    locals: &HashMap<LocalId, StaticValue>,
+) -> Option<StaticValue> {
+    match op {
+        LoweredBinaryOp::Add
+        | LoweredBinaryOp::Subtract
+        | LoweredBinaryOp::Multiply
+        | LoweredBinaryOp::Divide => {
+            let left = static_numeric_value(left, locals)?;
+            let right = static_numeric_value(right, locals)?;
+            let value = match op {
+                LoweredBinaryOp::Add => left + right,
+                LoweredBinaryOp::Subtract => left - right,
+                LoweredBinaryOp::Multiply => left * right,
+                LoweredBinaryOp::Divide => left / right,
+                _ => unreachable!(),
+            };
+            static_number_expr_from_f64(value, span).map(StaticValue::Primitive)
+        }
+        LoweredBinaryOp::StrictEqual | LoweredBinaryOp::EqualEqual => Some(StaticValue::Primitive(
+            LoweredExpr::Bool(static_primitive_equal(left, right, locals)?, span),
+        )),
+        LoweredBinaryOp::StrictNotEqual | LoweredBinaryOp::BangEqual => {
+            Some(StaticValue::Primitive(LoweredExpr::Bool(
+                !static_primitive_equal(left, right, locals)?,
+                span,
+            )))
+        }
+        _ => None,
+    }
+}
+
+fn static_numeric_value(expr: &LoweredExpr, locals: &HashMap<LocalId, StaticValue>) -> Option<f64> {
+    match static_value_from_expr(expr, locals)? {
+        StaticValue::Primitive(LoweredExpr::Number(value, _)) => Some(value as f64),
+        StaticValue::Primitive(LoweredExpr::DecimalNumber(value, _)) => value.parse().ok(),
+        _ => None,
+    }
+}
+
+fn static_number_expr_from_f64(value: f64, span: Span) -> Option<LoweredExpr> {
+    if !value.is_finite() {
+        return None;
+    }
+    if value.fract() == 0.0 && value >= i32::MIN as f64 && value <= i32::MAX as f64 {
+        Some(LoweredExpr::Number(value as i32, span))
+    } else {
+        Some(LoweredExpr::DecimalNumber(value.to_string(), span))
+    }
+}
+
+fn static_primitive_equal(
+    left: &LoweredExpr,
+    right: &LoweredExpr,
+    locals: &HashMap<LocalId, StaticValue>,
+) -> Option<bool> {
+    let left = static_value_from_expr(left, locals)?;
+    let right = static_value_from_expr(right, locals)?;
+    match (left, right) {
+        (StaticValue::Primitive(left), StaticValue::Primitive(right)) => {
+            static_primitive_expr_equal(&left, &right)
+        }
+        _ => None,
+    }
+}
+
+fn static_primitive_expr_equal(left: &LoweredExpr, right: &LoweredExpr) -> Option<bool> {
+    match (left, right) {
+        (LoweredExpr::Number(left, _), LoweredExpr::Number(right, _)) => Some(left == right),
+        (LoweredExpr::Number(left, _), LoweredExpr::DecimalNumber(right, _)) => {
+            Some((*left as f64) == right.parse::<f64>().ok()?)
+        }
+        (LoweredExpr::DecimalNumber(left, _), LoweredExpr::Number(right, _)) => {
+            Some(left.parse::<f64>().ok()? == (*right as f64))
+        }
+        (LoweredExpr::DecimalNumber(left, _), LoweredExpr::DecimalNumber(right, _)) => {
+            Some(left.parse::<f64>().ok()? == right.parse::<f64>().ok()?)
+        }
+        (LoweredExpr::String(left, _), LoweredExpr::String(right, _)) => Some(left == right),
+        (LoweredExpr::Bool(left, _), LoweredExpr::Bool(right, _)) => Some(left == right),
+        (LoweredExpr::Null(_), LoweredExpr::Null(_)) => Some(true),
+        (LoweredExpr::Undefined(_), LoweredExpr::Undefined(_)) => Some(true),
+        _ => Some(false),
+    }
+}
+
 fn static_array_from_expr(
     expr: &LoweredExpr,
     locals: &HashMap<LocalId, StaticValue>,
@@ -2457,6 +2644,7 @@ fn static_property_key(key: &LoweredExpr) -> Option<String> {
     match key {
         LoweredExpr::String(value, _) => Some(value.clone()),
         LoweredExpr::Number(value, _) => Some(static_number_property_key(*value)),
+        LoweredExpr::DecimalNumber(value, _) => Some(value.clone()),
         _ => None,
     }
 }
