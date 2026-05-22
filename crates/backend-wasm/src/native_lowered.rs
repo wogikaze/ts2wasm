@@ -655,6 +655,11 @@ impl<'a> NativeLoweredEmitter<'a> {
                 ))
             }
             LoweredExpr::PropertyGetDynamic { obj, key, .. }
+            | LoweredExpr::OptionalIndex {
+                object: obj,
+                index: key,
+                ..
+            }
             | LoweredExpr::Index {
                 object: obj,
                 index: key,
@@ -1177,6 +1182,11 @@ fn collect_static_locals_from_expr(expr: &LoweredExpr, locals: &mut HashMap<Loca
             collect_static_locals_from_expr(obj, locals);
         }
         LoweredExpr::PropertyGetDynamic { obj, key, .. }
+        | LoweredExpr::OptionalIndex {
+            object: obj,
+            index: key,
+            ..
+        }
         | LoweredExpr::Index {
             object: obj,
             index: key,
