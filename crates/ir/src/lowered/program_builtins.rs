@@ -348,7 +348,7 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "map") => Some(RuntimeFn::ArrayMap),
         ("Array", "indexOf") => Some(RuntimeFn::ArrayIndexOf),
         ("Array", "includes") => Some(RuntimeFn::ArrayIncludes),
-        ("Array", "sort") => Some(RuntimeFn::ArraySortNumeric),
+        ("Array", "sort") => Some(RuntimeFn::ArraySortLexicographic),
         ("Array", "slice") => Some(RuntimeFn::ArraySlice),
         ("Array", "join") => Some(RuntimeFn::ArrayJoin),
         ("Array", "every") => Some(RuntimeFn::ArrayEvery),

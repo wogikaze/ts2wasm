@@ -3958,6 +3958,21 @@ impl super::super::Resolver {
             let class_name = class_name.clone();
             let class_name = class_name.as_str();
             let is_array_like_class = class_name == "Array" || is_typed_array_class(class_name);
+            // Guard: identity array methods (every, some, find, etc.) at this dispatch
+            // level do NOT invoke user callbacks — they were expanded at IR level only
+            // when `is_known_array_expr` was true and the callback matched the expansion
+            // pattern. If we reach here with non-empty args, callbacks would be silently
+            // dropped, producing wrong output.
+            if is_array_like_class && is_identity_array_method(method) && !args.is_empty() {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-270: {class_name}.prototype.{method} callback requires a known function reference"
+                    ),
+                    span: Some(span),
+                    phase: None,
+                });
+            }
             if class_name == "Array"
                 && method == "push"
                 && let [ResolvedExpr::Spread(spread_expr)] = args
