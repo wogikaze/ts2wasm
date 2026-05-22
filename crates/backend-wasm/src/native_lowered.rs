@@ -282,7 +282,8 @@ impl<'a> NativeLoweredEmitter<'a> {
         let (next_wasm, static_arrays) =
             append_static_array_locals(wasm, function.params.len(), &static_array_plan);
         wasm = next_wasm;
-        let static_object_plan = collect_static_object_plan(&function.body);
+        let static_object_plan =
+            collect_static_object_plan(&function.body, &self.program.functions);
         let (next_wasm, static_objects) =
             append_static_object_locals(wasm, function.params.len(), &static_object_plan);
         wasm = next_wasm;
@@ -322,7 +323,8 @@ impl<'a> NativeLoweredEmitter<'a> {
         let static_array_plan = collect_static_array_plan(&self.program.top_level_statements);
         let (next_wasm, static_arrays) = append_static_array_locals(wasm, 0, &static_array_plan);
         wasm = next_wasm;
-        let static_object_plan = collect_static_object_plan(&self.program.top_level_statements);
+        let static_object_plan =
+            collect_static_object_plan(&self.program.top_level_statements, &self.program.functions);
         let (next_wasm, static_objects) = append_static_object_locals(wasm, 0, &static_object_plan);
         wasm = next_wasm;
         let switch_value_local = wasm.locals.len();
@@ -359,7 +361,8 @@ impl<'a> NativeLoweredEmitter<'a> {
         let static_array_plan = collect_static_array_plan(&module_info.statements);
         let (next_wasm, static_arrays) = append_static_array_locals(wasm, 0, &static_array_plan);
         wasm = next_wasm;
-        let static_object_plan = collect_static_object_plan(&module_info.statements);
+        let static_object_plan =
+            collect_static_object_plan(&module_info.statements, &self.program.functions);
         let (next_wasm, static_objects) = append_static_object_locals(wasm, 0, &static_object_plan);
         wasm = next_wasm;
         let switch_value_local = wasm.locals.len();
@@ -435,6 +438,9 @@ impl<'a> NativeLoweredEmitter<'a> {
                     return Ok(());
                 }
                 if self.try_emit_static_user_function_call_stmt(expr, ctx, out)? {
+                    return Ok(());
+                }
+                if self.try_emit_static_accessor_set_call_stmt(expr, ctx, out)? {
                     return Ok(());
                 }
                 let produces_value = expr_produces_value(expr, &self.function_results);
@@ -1251,6 +1257,9 @@ impl<'a> NativeLoweredEmitter<'a> {
             if index > 0 {
                 self.emit_static_bytes(b" ", out);
             }
+            if self.try_emit_static_accessor_get_console_arg(arg, ctx, out)? {
+                continue;
+            }
             if let Some(bytes) = self.try_emit_static_console_arg(arg, ctx, out)? {
                 self.emit_static_bytes(&bytes, out);
                 continue;
@@ -1381,6 +1390,62 @@ impl<'a> NativeLoweredEmitter<'a> {
             }
             out.push(WasmInstr::Call(WRITE_NEWLINE_SYMBOL.to_owned()));
         }
+        Ok(true)
+    }
+
+    fn try_emit_static_accessor_set_call_stmt(
+        &mut self,
+        expr: &LoweredExpr,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<bool, Diagnostic> {
+        let LoweredExpr::Call {
+            kind: FunctionCallKind::User(func_id),
+            args,
+            ..
+        } = expr
+        else {
+            return Ok(false);
+        };
+        let Some(key) = static_accessor_set_key(&self.program.functions, *func_id) else {
+            return Ok(false);
+        };
+        if args.len() < 2 {
+            return Ok(false);
+        }
+        let Some(slot) = static_object_slot(ctx, &args[0], &key) else {
+            return Ok(false);
+        };
+        self.emit_expr(&args[1], ctx, out)?;
+        out.push(WasmInstr::LocalSet(slot));
+        Ok(true)
+    }
+
+    fn try_emit_static_accessor_get_console_arg(
+        &mut self,
+        expr: &LoweredExpr,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<bool, Diagnostic> {
+        let LoweredExpr::Call {
+            kind: FunctionCallKind::User(func_id),
+            args,
+            ..
+        } = expr
+        else {
+            return Ok(false);
+        };
+        let Some(key) = static_accessor_get_key(&self.program.functions, *func_id) else {
+            return Ok(false);
+        };
+        let Some(receiver) = args.first() else {
+            return Ok(false);
+        };
+        let Some(slot) = static_object_slot(ctx, receiver, &key) else {
+            return Ok(false);
+        };
+        out.push(WasmInstr::LocalGet(slot));
+        out.push(WasmInstr::Call(WRITE_I32_SYMBOL.to_owned()));
         Ok(true)
     }
 
@@ -1970,6 +2035,15 @@ fn collect_static_arrays_from_assignment(
                 plan.local_groups.remove(&local);
             }
         }
+        LoweredExpr::Block { result, .. } => {
+            if let LoweredExpr::Local(source, _) = result.as_ref()
+                && let Some(group) = plan.local_groups.get(source).copied()
+            {
+                plan.local_groups.insert(local, group);
+            } else {
+                plan.local_groups.remove(&local);
+            }
+        }
         _ => {
             plan.local_groups.remove(&local);
         }
@@ -2026,22 +2100,33 @@ fn collect_static_arrays_from_expr(expr: &LoweredExpr, plan: &mut StaticArrayPla
     }
 }
 
-fn collect_static_object_plan(stmts: &[LoweredStmt]) -> StaticObjectPlan {
+fn collect_static_object_plan(
+    stmts: &[LoweredStmt],
+    functions: &[LoweredFunction],
+) -> StaticObjectPlan {
     let mut plan = StaticObjectPlan::default();
-    collect_static_objects_from_stmts(stmts, &mut plan);
+    collect_static_objects_from_stmts(stmts, &mut plan, functions);
     plan
 }
 
-fn collect_static_objects_from_stmts(stmts: &[LoweredStmt], plan: &mut StaticObjectPlan) {
+fn collect_static_objects_from_stmts(
+    stmts: &[LoweredStmt],
+    plan: &mut StaticObjectPlan,
+    functions: &[LoweredFunction],
+) {
     for stmt in stmts {
         match stmt {
             LoweredStmt::Let(local, expr, _) | LoweredStmt::Assign(local, expr, _) => {
-                collect_static_objects_from_assignment(*local, expr, plan);
+                collect_static_objects_from_assignment(*local, expr, plan, functions);
             }
             LoweredStmt::Expr(expr, _)
             | LoweredStmt::Yield(expr, _)
-            | LoweredStmt::Return(expr, _) => collect_static_objects_from_expr(expr, plan),
-            LoweredStmt::Block(stmts, _) => collect_static_objects_from_stmts(stmts, plan),
+            | LoweredStmt::Return(expr, _) => {
+                collect_static_objects_from_expr(expr, plan, functions)
+            }
+            LoweredStmt::Block(stmts, _) => {
+                collect_static_objects_from_stmts(stmts, plan, functions)
+            }
             _ => {}
         }
     }
@@ -2051,8 +2136,9 @@ fn collect_static_objects_from_assignment(
     local: LocalId,
     expr: &LoweredExpr,
     plan: &mut StaticObjectPlan,
+    functions: &[LoweredFunction],
 ) {
-    collect_static_objects_from_expr(expr, plan);
+    collect_static_objects_from_expr(expr, plan, functions);
     match expr {
         LoweredExpr::ObjectNew { props, .. } => {
             let group = plan.group_keys.len();
@@ -2073,45 +2159,65 @@ fn collect_static_objects_from_assignment(
                 plan.local_groups.remove(&local);
             }
         }
+        LoweredExpr::Block { result, .. } => {
+            if let LoweredExpr::Local(source, _) = result.as_ref()
+                && let Some(group) = plan.local_groups.get(source).copied()
+            {
+                plan.local_groups.insert(local, group);
+            } else {
+                plan.local_groups.remove(&local);
+            }
+        }
         _ => {
             plan.local_groups.remove(&local);
         }
     }
 }
 
-fn collect_static_objects_from_expr(expr: &LoweredExpr, plan: &mut StaticObjectPlan) {
+fn collect_static_objects_from_expr(
+    expr: &LoweredExpr,
+    plan: &mut StaticObjectPlan,
+    functions: &[LoweredFunction],
+) {
     match expr {
         LoweredExpr::Block { stmts, result, .. } => {
-            collect_static_objects_from_stmts(stmts, plan);
-            collect_static_objects_from_expr(result, plan);
+            collect_static_objects_from_stmts(stmts, plan, functions);
+            collect_static_objects_from_expr(result, plan, functions);
         }
-        LoweredExpr::Call { args, .. } => {
+        LoweredExpr::Call { kind, args, .. } => {
             for arg in args {
-                collect_static_objects_from_expr(arg, plan);
+                collect_static_objects_from_expr(arg, plan, functions);
+            }
+            if let FunctionCallKind::User(func_id) = kind {
+                let key = static_accessor_set_key(functions, *func_id)
+                    .or_else(|| static_accessor_get_key(functions, *func_id));
+                if let (Some(key), Some(LoweredExpr::Local(object, _))) = (key, args.first()) {
+                    add_static_object_key(plan, *object, &key);
+                }
             }
         }
         LoweredExpr::Binary { left, right, .. } => {
-            collect_static_objects_from_expr(left, plan);
-            collect_static_objects_from_expr(right, plan);
+            collect_static_objects_from_expr(left, plan, functions);
+            collect_static_objects_from_expr(right, plan, functions);
         }
-        LoweredExpr::Unary { expr, .. } => collect_static_objects_from_expr(expr, plan),
+        LoweredExpr::Unary { expr, .. } => collect_static_objects_from_expr(expr, plan, functions),
         LoweredExpr::Assign { expr, .. } | LoweredExpr::LogicalAssign { expr, .. } => {
-            collect_static_objects_from_expr(expr, plan);
+            collect_static_objects_from_expr(expr, plan, functions);
         }
         LoweredExpr::LogicalPropertyAssign {
             object, key, expr, ..
         } => {
-            collect_static_objects_from_expr(expr, plan);
+            collect_static_objects_from_expr(expr, plan, functions);
             add_static_object_key(plan, *object, key);
         }
         LoweredExpr::PropertyGet { obj, .. } | LoweredExpr::OptionalPropertyGet { obj, .. } => {
-            collect_static_objects_from_expr(obj, plan);
+            collect_static_objects_from_expr(obj, plan, functions);
         }
         LoweredExpr::PropertySet {
             object, key, value, ..
         } => {
-            collect_static_objects_from_expr(object, plan);
-            collect_static_objects_from_expr(value, plan);
+            collect_static_objects_from_expr(object, plan, functions);
+            collect_static_objects_from_expr(value, plan, functions);
             if let LoweredExpr::Local(local, _) = object.as_ref() {
                 add_static_object_key(plan, *local, key);
             }
@@ -2127,8 +2233,8 @@ fn collect_static_objects_from_expr(expr: &LoweredExpr, plan: &mut StaticObjectP
             index: key,
             ..
         } => {
-            collect_static_objects_from_expr(obj, plan);
-            collect_static_objects_from_expr(key, plan);
+            collect_static_objects_from_expr(obj, plan, functions);
+            collect_static_objects_from_expr(key, plan, functions);
         }
         LoweredExpr::PropertySetDynamic {
             object,
@@ -2136,9 +2242,9 @@ fn collect_static_objects_from_expr(expr: &LoweredExpr, plan: &mut StaticObjectP
             value,
             ..
         } => {
-            collect_static_objects_from_expr(object, plan);
-            collect_static_objects_from_expr(index, plan);
-            collect_static_objects_from_expr(value, plan);
+            collect_static_objects_from_expr(object, plan, functions);
+            collect_static_objects_from_expr(index, plan, functions);
+            collect_static_objects_from_expr(value, plan, functions);
         }
         _ => {}
     }
@@ -3066,6 +3172,101 @@ fn static_array_element_from_locals<'a>(
     elements.get(*index as usize)
 }
 
+fn static_accessor_get_key(functions: &[LoweredFunction], func_id: FuncId) -> Option<String> {
+    let function = functions.iter().find(|function| function.id == func_id)?;
+    let receiver = *function.params.first()?;
+    let returns = function.body.iter().find_map(|stmt| match stmt {
+        LoweredStmt::Return(expr, _) => Some(expr),
+        _ => None,
+    })?;
+    receiver_property_get_key(returns, receiver)
+}
+
+fn static_accessor_set_key(functions: &[LoweredFunction], func_id: FuncId) -> Option<String> {
+    let function = functions.iter().find(|function| function.id == func_id)?;
+    let receiver = *function.params.first()?;
+    for stmt in &function.body {
+        if let Some(key) = receiver_property_set_key_from_stmt(stmt, receiver) {
+            return Some(key);
+        }
+    }
+    None
+}
+
+fn receiver_property_get_key(expr: &LoweredExpr, receiver: LocalId) -> Option<String> {
+    match expr {
+        LoweredExpr::PropertyGet { obj, key, .. } if receiver_expr_matches(obj, receiver) => {
+            Some(key.clone())
+        }
+        LoweredExpr::Block { stmts, result, .. } => {
+            let aliases = receiver_aliases(stmts, receiver);
+            let LoweredExpr::PropertyGet { obj, key, .. } = result.as_ref() else {
+                return None;
+            };
+            receiver_or_alias_expr_matches(obj, receiver, &aliases).then(|| key.clone())
+        }
+        _ => None,
+    }
+}
+
+fn receiver_property_set_key_from_stmt(stmt: &LoweredStmt, receiver: LocalId) -> Option<String> {
+    match stmt {
+        LoweredStmt::Expr(expr, _) => receiver_property_set_key(expr, receiver),
+        LoweredStmt::Block(stmts, _) => {
+            for stmt in stmts {
+                if let Some(key) = receiver_property_set_key_from_stmt(stmt, receiver) {
+                    return Some(key);
+                }
+            }
+            None
+        }
+        _ => None,
+    }
+}
+
+fn receiver_property_set_key(expr: &LoweredExpr, receiver: LocalId) -> Option<String> {
+    match expr {
+        LoweredExpr::PropertySet { object, key, .. } if receiver_expr_matches(object, receiver) => {
+            Some(key.clone())
+        }
+        LoweredExpr::Block { stmts, result, .. } => {
+            let aliases = receiver_aliases(stmts, receiver);
+            let LoweredExpr::PropertySet { object, key, .. } = result.as_ref() else {
+                return None;
+            };
+            receiver_or_alias_expr_matches(object, receiver, &aliases).then(|| key.clone())
+        }
+        _ => None,
+    }
+}
+
+fn receiver_aliases(stmts: &[LoweredStmt], receiver: LocalId) -> HashSet<LocalId> {
+    let mut aliases = HashSet::new();
+    for stmt in stmts {
+        if let LoweredStmt::Let(local, expr, _) | LoweredStmt::Assign(local, expr, _) = stmt
+            && receiver_or_alias_expr_matches(expr, receiver, &aliases)
+        {
+            aliases.insert(*local);
+        }
+    }
+    aliases
+}
+
+fn receiver_expr_matches(expr: &LoweredExpr, receiver: LocalId) -> bool {
+    matches!(expr, LoweredExpr::Local(local, _) if *local == receiver)
+}
+
+fn receiver_or_alias_expr_matches(
+    expr: &LoweredExpr,
+    receiver: LocalId,
+    aliases: &HashSet<LocalId>,
+) -> bool {
+    match expr {
+        LoweredExpr::Local(local, _) => *local == receiver || aliases.contains(local),
+        _ => false,
+    }
+}
+
 fn collect_runtime_required_functions(program: &LoweredProgram) -> HashSet<FuncId> {
     let mut required = HashSet::new();
     let mut visiting = HashSet::new();
@@ -3230,11 +3431,47 @@ fn static_stmt_expr_folded(
             ..
         } => {
             let ctx = static_analysis_ctx(static_locals.clone());
-            args.iter()
-                .all(|arg| static_console_arg_bytes_with_functions(arg, &ctx, functions).is_some())
+            args.iter().all(|arg| {
+                static_console_arg_bytes_with_functions(arg, &ctx, functions).is_some()
+                    || static_accessor_get_call_folded(arg, functions, static_locals)
+            })
+        }
+        LoweredExpr::Call {
+            kind: FunctionCallKind::User(func_id),
+            args,
+            ..
+        } if static_accessor_set_key(functions, *func_id).is_some() => {
+            static_accessor_receiver_is_static_object(args, static_locals)
         }
         _ => static_value_from_expr_with_functions(expr, static_locals, functions).is_some(),
     }
+}
+
+fn static_accessor_get_call_folded(
+    expr: &LoweredExpr,
+    functions: &[LoweredFunction],
+    static_locals: &HashMap<LocalId, StaticValue>,
+) -> bool {
+    let LoweredExpr::Call {
+        kind: FunctionCallKind::User(func_id),
+        args,
+        ..
+    } = expr
+    else {
+        return false;
+    };
+    static_accessor_get_key(functions, *func_id).is_some()
+        && static_accessor_receiver_is_static_object(args, static_locals)
+}
+
+fn static_accessor_receiver_is_static_object(
+    args: &[LoweredExpr],
+    static_locals: &HashMap<LocalId, StaticValue>,
+) -> bool {
+    let Some(LoweredExpr::Local(local, _)) = args.first() else {
+        return false;
+    };
+    matches!(static_locals.get(local), Some(StaticValue::Object(_)))
 }
 
 fn collect_runtime_required_from_expr(

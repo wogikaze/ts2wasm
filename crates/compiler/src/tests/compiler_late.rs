@@ -947,6 +947,10 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "awaited\nawaited\n",
         ),
         (
+            "../../fixtures/core-expressions/object-literal-computed-accessor-invocation.ts",
+            "42\n",
+        ),
+        (
             "../../fixtures/core-expressions/object-literal-computed-constant-number-expression-key.ts",
             "subtract\nsubtract\nsubtract\nbitwise or\n",
         ),
@@ -1005,6 +1009,10 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
         (
             "../../fixtures/core-expressions/object-literal-getter-descriptor.ts",
             "has_getter\nno_setter\nenumerable\nconfigurable\n7\n",
+        ),
+        (
+            "../../fixtures/core-expressions/object-literal-getter-setter.ts",
+            "10\n42\n",
         ),
         (
             "../../fixtures/core-expressions/object-literal-numeric-keys.ts",
