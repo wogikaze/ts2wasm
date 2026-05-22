@@ -147,7 +147,8 @@ fn build_file_impl(
     semantic_validate::validate_semantics(input, &resolved)
         .map_err(|d| d.with_phase("semantic-validator"))?;
 
-    let (_debug_wat, wasm_bytes, pipeline_diagnostics) = match options.hir_mir_mode {
+    let abi_meta = abi_metadata_for_target(options.target);
+    let (_debug_wat, wasm_bytes, pipeline_diagnostics, abi_embedded) = match options.hir_mir_mode {
         HirMirBuildMode::Disabled => {
             let legacy = emit_legacy_wat_for_resolved(
                 &resolved,
@@ -157,8 +158,9 @@ fn build_file_impl(
                 options.host_deny,
                 &type_aliases,
                 &interface_definitions,
+                Some(&abi_meta),
             )?;
-            (legacy.wat, legacy.wasm_bytes, legacy.diagnostics)
+            (legacy.wat, legacy.wasm_bytes, legacy.diagnostics, true)
         }
         HirMirBuildMode::Strict | HirMirBuildMode::CompatFallback => {
             match emit_hir_mir_wat_for_resolved(&resolved) {
@@ -175,6 +177,7 @@ fn build_file_impl(
                                     options.host_deny,
                                     &type_aliases,
                                     &interface_definitions,
+                                    None,
                                 )?;
                                 let mut diagnostics = vec![hir_mir_fallback_diagnostic(&error)];
                                 diagnostics.extend(legacy.diagnostics);
@@ -195,6 +198,7 @@ fn build_file_impl(
                         options.host_deny,
                         &type_aliases,
                         &interface_definitions,
+                        None,
                     ) {
                         Ok(legacy) => {
                             let mut diagnostics = vec![hir_mir_comparison_diagnostic(
@@ -206,7 +210,7 @@ fn build_file_impl(
                                 mir_wasm_encoder_bytes.len(),
                             ));
                             diagnostics.extend(legacy.diagnostics);
-                            (mir_wat, mir_wasm_encoder_bytes, diagnostics)
+                            (mir_wat, mir_wasm_encoder_bytes, diagnostics, false)
                         }
                         Err(error) => {
                             if capability_manifest_output.is_some() {
@@ -216,6 +220,7 @@ fn build_file_impl(
                                 mir_wat,
                                 mir_wasm_encoder_bytes,
                                 vec![hir_mir_comparison_unavailable_diagnostic(&error)],
+                                false,
                             )
                         }
                     }
@@ -229,17 +234,18 @@ fn build_file_impl(
                         options.host_deny,
                         &type_aliases,
                         &interface_definitions,
+                        None,
                     )?;
                     let mut diagnostics = vec![hir_mir_fallback_diagnostic(&error)];
                     diagnostics.extend(legacy.diagnostics);
-                    (legacy.wat, legacy.wasm_bytes, diagnostics)
+                    (legacy.wat, legacy.wasm_bytes, diagnostics, false)
                 }
                 Err(error) => return Err(error),
             }
         }
     };
-    let abi_meta = abi_metadata_for_target(options.target);
-    io::write_output::write_wasm_bytes_with_abi(&wasm_bytes, output, Some(&abi_meta))
+    let abi_for_writer = if abi_embedded { None } else { Some(&abi_meta) };
+    io::write_output::write_wasm_bytes_with_abi(&wasm_bytes, output, abi_for_writer)
         .map_err(|d| d.with_phase("backend"))?;
     Ok(CompileReport {
         value: (),
@@ -288,6 +294,7 @@ fn emit_legacy_wat_for_resolved(
     host_deny: bool,
     type_aliases: &HashMap<String, ts2wasm_syntax::TypeRef>,
     interface_definitions: &HashMap<String, Vec<(String, ts2wasm_syntax::TypeRef)>>,
+    abi_metadata: Option<&AbiMetadata>,
 ) -> Result<LegacyWat, Diagnostic> {
     // Build specifier-to-module-id map from the module graph so that dynamic
     // import() expressions in function bodies get correct module graph IDs
@@ -338,7 +345,12 @@ fn emit_legacy_wat_for_resolved(
     }
 
     let wat = backend::emit_wat(&validated).map_err(|d| d.with_phase("backend"))?;
-    let wasm_bytes = backend::emit_wasm_binary(&validated).map_err(|d| d.with_phase("backend"))?;
+    let wasm_bytes = if let Some(abi_metadata) = abi_metadata {
+        backend::emit_wasm_binary_with_abi(&validated, abi_metadata)
+    } else {
+        backend::emit_wasm_binary(&validated)
+    }
+    .map_err(|d| d.with_phase("backend"))?;
     Ok(LegacyWat {
         wat,
         wasm_bytes,
