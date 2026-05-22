@@ -11,6 +11,6 @@ pub use ast::{
     Expr, FunctionExprOrigin, ImportAttribute, ImportDefaultSpecifier, ImportNamedSpecifier,
     ImportNamespaceSpecifier, ImportPhase, LogicalAssignOp, ModuleSpecifier,
     OBJECT_SPREAD_SENTINEL, ObjectProp, ReExportNamedSpecifier, ReExportNamespaceSpecifier,
-    SYMBOL_ITERATOR_OBJECT_KEY, Stmt, UnaryOp,
+    SYMBOL_ITERATOR_OBJECT_KEY, Stmt, TypeRef, UnaryOp,
 };
 pub use token::{SpannedToken, Token, TokenKind};

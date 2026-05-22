@@ -219,6 +219,16 @@ pub(crate) fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
         Stmt::EnumDecl { name, .. } => {
             let _ = writeln!(out, "enum {name} {{}}");
         }
+        Stmt::TypeAlias {
+            name,
+            underlying_type,
+            ..
+        } => {
+            let _ = writeln!(out, "type {name} = {underlying_type:?};");
+        }
+        Stmt::InterfaceDecl { name, .. } => {
+            let _ = writeln!(out, "interface {name} {{}}");
+        }
         Stmt::ClassDecl {
             name,
             extends,

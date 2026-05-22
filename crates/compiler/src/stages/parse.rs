@@ -195,7 +195,10 @@ fn validate_stmt(
         }
         Stmt::ClassDecl { body, .. } => validate_class_body(body),
         Stmt::Expr { .. } => Ok(()),
-        Stmt::AmbientValueDecl { .. } | Stmt::EnumDecl { .. } => Ok(()),
+        Stmt::AmbientValueDecl { .. }
+        | Stmt::EnumDecl { .. }
+        | Stmt::TypeAlias { .. }
+        | Stmt::InterfaceDecl { .. } => Ok(()),
         Stmt::Function { body, .. } => validate_block(body),
         Stmt::Throw { .. } => Ok(()),
         Stmt::Labeled { body, .. } => validate_stmt(body, in_top_level, scope, top_functions),

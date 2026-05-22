@@ -2,7 +2,7 @@ use crate::{
     BinaryOp, DiagCode, Diagnostic, ExportNamedSpecifier, Expr, ImportAttribute,
     ImportDefaultSpecifier, ImportNamedSpecifier, ImportNamespaceSpecifier, ImportPhase,
     LogicalAssignOp, ModuleSpecifier, OBJECT_SPREAD_SENTINEL, ObjectProp, ReExportNamedSpecifier,
-    SYMBOL_ITERATOR_OBJECT_KEY, Span, SpannedToken, Stmt, Token, TokenKind, UnaryOp,
+    SYMBOL_ITERATOR_OBJECT_KEY, Span, SpannedToken, Stmt, Token, TokenKind, TypeRef, UnaryOp,
     ast::{ClassPrivateElement, ClassStaticBlock, ReExportNamespaceSpecifier},
 };
 use std::collections::{HashMap, HashSet};
@@ -67,6 +67,32 @@ struct ParsedBindingPattern {
     text: String,
     span: Span,
     is_identifier: bool,
+}
+
+fn desugar_destructured_params(
+    params: &mut Vec<(String, Option<Expr>, bool)>,
+    body: &mut Vec<Stmt>,
+) {
+    let mut stmts_to_add: Vec<Stmt> = Vec::new();
+    for (i, (name, _default, _is_rest)) in params.iter_mut().enumerate() {
+        if name.starts_with('{') || name.starts_with('[') {
+            let pattern_text = name.clone();
+            let temp_name = format!("_p{i}");
+            *name = temp_name.clone();
+            stmts_to_add.push(Stmt::Let {
+                name: pattern_text,
+                expr: Expr::Ident {
+                    name: temp_name,
+                    span: Span::generated("param_destructure"),
+                },
+                span: Span::generated("param_destructure"),
+                is_var: false,
+            });
+        }
+    }
+    for stmt in stmts_to_add.into_iter().rev() {
+        body.insert(0, stmt);
+    }
 }
 
 impl Parser {

@@ -92,6 +92,18 @@ fn collect_from_stmt(
                 span: to_span_record(*span),
             });
         }
+        Stmt::TypeAlias { span, .. } => {
+            erased.push(ErasedSyntax {
+                kind: ErasureKind::TypeAliasDecl,
+                span: to_span_record(*span),
+            });
+        }
+        Stmt::InterfaceDecl { span, .. } => {
+            erased.push(ErasedSyntax {
+                kind: ErasureKind::InterfaceDecl,
+                span: to_span_record(*span),
+            });
+        }
         Stmt::AmbientValueDecl { span, .. } => {
             erased.push(ErasedSyntax {
                 kind: ErasureKind::AmbientDecl,

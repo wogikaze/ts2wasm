@@ -1,6 +1,6 @@
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
-use ts2wasm_syntax::{ArrayLiteralElement, BinaryOp, Expr, ObjectProp, Stmt, UnaryOp};
+use ts2wasm_syntax::{ArrayLiteralElement, BinaryOp, Expr, ObjectProp, Stmt, TypeRef, UnaryOp};
 
 use crate::binding_pattern::parse_binding_pattern;
 use crate::direct_eval_source::eval_var_and_function_names;
@@ -51,6 +51,10 @@ struct NameResolver {
     /// Global identifiers that are allowed (builtins like console, require, etc.)
     allowed_globals: std::collections::HashSet<String>,
     predeclared_names: Vec<std::collections::HashSet<String>>,
+    /// Type alias names mapped to their underlying runtime types.
+    type_aliases: std::collections::HashMap<String, TypeRef>,
+    /// Interface names mapped to their property signatures.
+    interface_definitions: std::collections::HashMap<String, Vec<(String, TypeRef)>>,
     /// Active ECMAScript labels and whether their target is an iteration statement.
     labels: Vec<LabelBinding>,
     loop_depth: usize,
@@ -209,6 +213,8 @@ impl NameResolver {
             functions: std::collections::HashMap::new(),
             classes: std::collections::HashMap::new(),
             allowed_globals: default_allowed_globals(),
+            type_aliases: std::collections::HashMap::new(),
+            interface_definitions: std::collections::HashMap::new(),
             labels: Vec::new(),
             loop_depth: 0,
             breakable_depth: 0,
@@ -359,6 +365,29 @@ impl NameResolver {
         for stmt in program {
             if let Stmt::EnumDecl { name, span } = unwrapped_stmt(stmt) {
                 self.declare_variable(name, Some(*span), false)?;
+            }
+        }
+
+        // First pass: collect type alias and interface definitions for the
+        // type-to-runtime bridge. These are type-level declarations that need
+        // to be visible for IR lowering (e.g., resolving property types on
+        // typed variables).
+        for stmt in program {
+            if let Stmt::TypeAlias {
+                name,
+                underlying_type,
+                ..
+            } = unwrapped_stmt(stmt)
+            {
+                self.type_aliases
+                    .insert(name.clone(), underlying_type.clone());
+            }
+            if let Stmt::InterfaceDecl {
+                name, properties, ..
+            } = unwrapped_stmt(stmt)
+            {
+                self.interface_definitions
+                    .insert(name.clone(), properties.clone());
             }
         }
 
@@ -665,6 +694,24 @@ impl NameResolver {
             }
             Stmt::EnumDecl { name, span } => Ok(Stmt::EnumDecl {
                 name: name.clone(),
+                span: *span,
+            }),
+            Stmt::TypeAlias {
+                name,
+                underlying_type,
+                span,
+            } => Ok(Stmt::TypeAlias {
+                name: name.clone(),
+                underlying_type: underlying_type.clone(),
+                span: *span,
+            }),
+            Stmt::InterfaceDecl {
+                name,
+                properties,
+                span,
+            } => Ok(Stmt::InterfaceDecl {
+                name: name.clone(),
+                properties: properties.clone(),
                 span: *span,
             }),
             Stmt::TryCatch {
@@ -2695,6 +2742,8 @@ fn collect_static_direct_eval_declarations_from_stmt(stmt: &Stmt, names: &mut Ve
         Stmt::Function { .. }
         | Stmt::ClassDecl { .. }
         | Stmt::EnumDecl { .. }
+        | Stmt::TypeAlias { .. }
+        | Stmt::InterfaceDecl { .. }
         | Stmt::Break { .. }
         | Stmt::Continue { .. }
         | Stmt::AmbientValueDecl { .. }

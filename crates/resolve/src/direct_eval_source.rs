@@ -249,6 +249,8 @@ fn collect_eval_declaration_names_from_stmt(
         | Stmt::ExportDefault { .. }
         | Stmt::ExportAssignment { .. }
         | Stmt::AmbientValueDecl { .. }
+        | Stmt::TypeAlias { .. }
+        | Stmt::InterfaceDecl { .. }
         | Stmt::Assign { .. }
         | Stmt::Break { .. }
         | Stmt::Continue { .. }

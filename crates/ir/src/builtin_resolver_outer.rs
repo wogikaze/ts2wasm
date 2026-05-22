@@ -36,6 +36,7 @@ pub(super) fn collect_stmt_declared_bindings(
         | Stmt::EnumDecl { name, .. } => {
             bindings.insert(name.clone());
         }
+        Stmt::TypeAlias { .. } | Stmt::InterfaceDecl { .. } => {}
         Stmt::TryCatch {
             catch_param,
             try_block,
@@ -414,7 +415,9 @@ pub(super) fn first_outer_local_reference_in_stmt(
         Stmt::Function { .. }
         | Stmt::ClassDecl { .. }
         | Stmt::EnumDecl { .. }
-        | Stmt::AmbientValueDecl { .. } => None,
+        | Stmt::AmbientValueDecl { .. }
+        | Stmt::TypeAlias { .. }
+        | Stmt::InterfaceDecl { .. } => None,
         Stmt::ImportSideEffect { .. }
         | Stmt::ImportNamed { .. }
         | Stmt::ImportDefault { .. }

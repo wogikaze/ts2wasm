@@ -303,6 +303,20 @@ pub enum Stmt {
         name: String,
         span: Span,
     },
+    /// TypeScript `type Foo = ...` declaration. The underlying_type captures
+    /// the resolved runtime type for IR lowering.
+    TypeAlias {
+        name: String,
+        underlying_type: TypeRef,
+        span: Span,
+    },
+    /// TypeScript `interface Foo { ... }` declaration. The properties vector
+    /// maps property names to their declared runtime types.
+    InterfaceDecl {
+        name: String,
+        properties: Vec<(String, TypeRef)>,
+        span: Span,
+    },
     TryCatch {
         try_block: Vec<Stmt>,
         catch_param: Option<String>,
@@ -365,6 +379,30 @@ pub enum Stmt {
     Block {
         statements: Vec<Stmt>,
         span: Span,
+    },
+}
+
+/// Represents the underlying runtime type that a TypeScript type alias or
+/// interface property resolves to.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TypeRef {
+    String,
+    Number,
+    Boolean,
+    BigInt,
+    Symbol,
+    Undefined,
+    Null,
+    Void,
+    Any,
+    Never,
+    Object,
+    Array(Box<TypeRef>),
+    Union(Vec<TypeRef>),
+    Named(String),
+    Function {
+        params: Vec<TypeRef>,
+        return_type: Box<TypeRef>,
     },
 }
 
@@ -636,6 +674,8 @@ impl Stmt {
             | Self::Return { span, .. }
             | Self::ClassDecl { span, .. }
             | Self::EnumDecl { span, .. }
+            | Self::TypeAlias { span, .. }
+            | Self::InterfaceDecl { span, .. }
             | Self::TryCatch { span, .. }
             | Self::Throw { span, .. }
             | Self::Switch { span, .. }

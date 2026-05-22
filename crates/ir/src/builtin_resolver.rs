@@ -749,6 +749,8 @@ impl BigIntStaticBuiltinFolder {
             | Stmt::ExportAssignment { .. }
             | Stmt::AmbientValueDecl { .. }
             | Stmt::EnumDecl { .. }
+            | Stmt::TypeAlias { .. }
+            | Stmt::InterfaceDecl { .. }
             | Stmt::Break { .. }
             | Stmt::Continue { .. } => stmt.clone(),
         }
@@ -1487,6 +1489,9 @@ fn resolve_stmt_with_outer_bindings(
             })
         }
         Stmt::EnumDecl { name, .. } => Ok(ResolvedStmt::AmbientValue(name.clone())),
+        Stmt::TypeAlias { .. } | Stmt::InterfaceDecl { .. } => Ok(ResolvedStmt::Block {
+            statements: Vec::new(),
+        }),
         Stmt::ClassDecl {
             name,
             extends,

@@ -13,7 +13,7 @@ pub use ast::{
     ArrayLiteralElement, BinaryOp, ClassPrivateElement, ClassStaticBlock, ExportNamedSpecifier,
     Expr, ImportAttribute, ImportDefaultSpecifier, ImportNamedSpecifier, ImportNamespaceSpecifier,
     ImportPhase, LogicalAssignOp, ModuleSpecifier, OBJECT_SPREAD_SENTINEL, ObjectProp,
-    ReExportNamedSpecifier, SYMBOL_ITERATOR_OBJECT_KEY, Stmt, UnaryOp,
+    ReExportNamedSpecifier, SYMBOL_ITERATOR_OBJECT_KEY, Stmt, TypeRef, UnaryOp,
 };
 pub use diagnostic::{DiagCode, Diagnostic, Span};
 pub use lexer::{Lexer, SpannedToken, Token, TokenKind};

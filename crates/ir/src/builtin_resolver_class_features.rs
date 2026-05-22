@@ -325,7 +325,9 @@ pub(super) fn stmt_contains_return_stmt(stmt: &Stmt) -> bool {
         Stmt::Function { .. }
         | Stmt::ClassDecl { .. }
         | Stmt::AmbientValueDecl { .. }
-        | Stmt::EnumDecl { .. } => false,
+        | Stmt::EnumDecl { .. }
+        | Stmt::TypeAlias { .. }
+        | Stmt::InterfaceDecl { .. } => false,
         Stmt::ImportSideEffect { .. }
         | Stmt::ImportNamed { .. }
         | Stmt::ImportDefault { .. }
@@ -468,7 +470,9 @@ pub(super) fn validate_static_block_stmt(stmt: &Stmt) -> Result<(), Diagnostic> 
         Stmt::Break { .. }
         | Stmt::Continue { .. }
         | Stmt::AmbientValueDecl { .. }
-        | Stmt::EnumDecl { .. } => Ok(()),
+        | Stmt::EnumDecl { .. }
+        | Stmt::TypeAlias { .. }
+        | Stmt::InterfaceDecl { .. } => Ok(()),
         Stmt::ImportSideEffect { span, .. }
         | Stmt::ImportNamed { span, .. }
         | Stmt::ImportDefault { span, .. }

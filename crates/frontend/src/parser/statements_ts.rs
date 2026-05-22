@@ -205,6 +205,13 @@ impl Parser {
                 phase: None,});
         }
 
+        // Emit InterfaceDecl with empty properties (body parsing deferred).
+        // The interface body is still consumed by skip_balanced_brace_block.
+        self.pending_statements.push(Stmt::InterfaceDecl {
+            name: interface_name.map(|(n, _)| n).unwrap_or_default(),
+            properties: Vec::new(),
+            span: interface_span,
+        });
         self.skip_balanced_brace_block(interface_span)?;
         self.consume(TokenKind::Semicolon);
         Ok(())
@@ -247,11 +254,17 @@ impl Parser {
         &mut self,
         type_span: Span,
     ) -> Result<(), Diagnostic> {
-        self.expect_ident()?;
+        let (alias_name, _name_span) = self.expect_ident()?;
         self.consume_typescript_generic_parameter_list()?;
         self.expect(TokenKind::Equal)?;
+        let underlying_type = self.try_parse_type_ref();
         self.skip_typescript_type_alias_body(type_span)?;
         self.consume(TokenKind::Semicolon);
+        self.pending_statements.push(Stmt::TypeAlias {
+            name: alias_name,
+            underlying_type,
+            span: type_span,
+        });
         Ok(())
     }
 
@@ -932,6 +945,71 @@ impl Parser {
         });
         self.skip_balanced_brace_block(span)?;
         Ok(())
+    }
+
+    /// Parse a simple type reference from the current token stream.
+    /// Returns a best-effort TypeRef, falling back to TypeRef::Any for complex types.
+    fn try_parse_type_ref(&self) -> TypeRef {
+        let Some(token) = self.peek() else {
+            return TypeRef::Any;
+        };
+        match token {
+            Token::Ident(name) => match name.as_str() {
+                "string" => TypeRef::String,
+                "number" => TypeRef::Number,
+                "boolean" => TypeRef::Boolean,
+                "bigint" => TypeRef::BigInt,
+                "symbol" => TypeRef::Symbol,
+                "undefined" => TypeRef::Undefined,
+                "null" => TypeRef::Null,
+                "void" => TypeRef::Void,
+                "any" => TypeRef::Any,
+                "never" => TypeRef::Never,
+                "object" => TypeRef::Object,
+                _ => TypeRef::Named(name.clone()),
+            },
+            _ => TypeRef::Any,
+        }
+    }
+
+    /// Try to parse a single interface member of the form `name: type`.
+    fn try_parse_interface_member(&mut self) -> Option<(String, TypeRef)> {
+        let start = self.cursor;
+        let name = match self.peek() {
+            Some(Token::Ident(name)) => name.clone(),
+            _ => return None,
+        };
+        self.advance();
+        if !self.consume(TokenKind::Colon) {
+            self.cursor = start;
+            return None;
+        }
+        let type_ref = self.try_parse_type_ref();
+        // Consume up to comma or closing brace
+        while !self.is_at_end()
+            && !matches!(self.peek(), Some(Token::Comma | Token::RightBrace))
+        {
+            self.advance();
+        }
+        if self.consume(TokenKind::Comma) {
+            // optional trailing comma
+        }
+        Some((name, type_ref))
+    }
+
+    /// Scan forward through an interface body, collecting property signatures.
+    /// This does NOT consume tokens — it only scans between braces.
+    fn try_parse_interface_body(&mut self) -> Vec<(String, TypeRef)> {
+        let mut properties = Vec::new();
+        while !self.is_at_end() && !matches!(self.peek(), Some(Token::RightBrace)) {
+            if let Some(member) = self.try_parse_interface_member() {
+                properties.push(member);
+            } else {
+                // Skip unknown tokens
+                self.advance();
+            }
+        }
+        properties
     }
 
     fn unsupported_typescript_syntax(&self, span: Span, message: &str) -> Diagnostic {

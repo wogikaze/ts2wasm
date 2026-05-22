@@ -5,5 +5,6 @@ pub use ts2wasm_syntax::ast::{
     ArrayLiteralElement, BinaryOp, ClassPrivateElement, ClassStaticBlock, ExportNamedSpecifier,
     Expr, ImportAttribute, ImportDefaultSpecifier, ImportNamedSpecifier, ImportNamespaceSpecifier,
     ImportPhase, LogicalAssignOp, ModuleSpecifier, OBJECT_SPREAD_SENTINEL, ObjectProp,
-    ReExportNamedSpecifier, ReExportNamespaceSpecifier, SYMBOL_ITERATOR_OBJECT_KEY, Stmt, UnaryOp,
+    ReExportNamedSpecifier, ReExportNamespaceSpecifier, SYMBOL_ITERATOR_OBJECT_KEY, Stmt, TypeRef,
+    UnaryOp,
 };

@@ -624,7 +624,9 @@ fn collect_dynamic_import_specifiers_stmt(stmt: &Stmt, specifiers: &mut Vec<Modu
         | Stmt::Break { .. }
         | Stmt::Continue { .. }
         | Stmt::AmbientValueDecl { .. }
-        | Stmt::EnumDecl { .. } => {}
+        | Stmt::EnumDecl { .. }
+        | Stmt::TypeAlias { .. }
+        | Stmt::InterfaceDecl { .. } => {}
     }
 }
 
@@ -1041,7 +1043,6 @@ fn format_candidate_list(candidates: &[PathBuf]) -> String {
         .join(", ")
 }
 
-#[path = "module_graph_tests.rs"]
 #[cfg(test)]
 #[path = "tests.rs"]
 mod tests;
