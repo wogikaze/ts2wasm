@@ -686,6 +686,13 @@ impl<'a> NativeLoweredEmitter<'a> {
             LoweredExpr::LogicalAssign {
                 local, op, expr, ..
             } => self.emit_logical_assign(*local, *op, expr, ctx, out),
+            LoweredExpr::LogicalPropertyAssign {
+                object,
+                key,
+                op,
+                expr,
+                ..
+            } => self.emit_logical_property_assign(*object, key, *op, expr, ctx, out),
             LoweredExpr::Binary {
                 left, op, right, ..
             } => {
@@ -904,6 +911,73 @@ impl<'a> NativeLoweredEmitter<'a> {
         self.emit_expr(expr, ctx, out)?;
         out.push(WasmInstr::LocalTee(local));
         Ok(())
+    }
+
+    fn emit_logical_property_assign(
+        &mut self,
+        object: LocalId,
+        key: &str,
+        op: LoweredLogicalAssignOp,
+        expr: &LoweredExpr,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<(), Diagnostic> {
+        let Some(slot) = ctx
+            .static_objects
+            .get(&object)
+            .and_then(|slots| slots.get(key))
+            .copied()
+        else {
+            return Err(unsupported(
+                "native LoweredProgram emitter does not support this logical property assign",
+            ));
+        };
+
+        match op {
+            LoweredLogicalAssignOp::And => {
+                out.push(WasmInstr::LocalGet(slot));
+                out.push(WasmInstr::If {
+                    result_ty: Some("i32".to_owned()),
+                });
+                out.push(WasmInstr::Then);
+                self.emit_logical_assign_rhs(slot, expr, ctx, out)?;
+                out.push(WasmInstr::Else);
+                out.push(WasmInstr::LocalGet(slot));
+                out.push(WasmInstr::End);
+                Ok(())
+            }
+            LoweredLogicalAssignOp::Or => {
+                out.push(WasmInstr::LocalGet(slot));
+                out.push(WasmInstr::I32Eqz);
+                out.push(WasmInstr::If {
+                    result_ty: Some("i32".to_owned()),
+                });
+                out.push(WasmInstr::Then);
+                self.emit_logical_assign_rhs(slot, expr, ctx, out)?;
+                out.push(WasmInstr::Else);
+                out.push(WasmInstr::LocalGet(slot));
+                out.push(WasmInstr::End);
+                Ok(())
+            }
+            LoweredLogicalAssignOp::Nullish => {
+                out.push(WasmInstr::LocalGet(slot));
+                out.push(WasmInstr::I32Const(ValueTag::NULL));
+                out.push(WasmInstr::I32Eq);
+                out.push(WasmInstr::LocalGet(slot));
+                out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
+                out.push(WasmInstr::I32Eq);
+                out.push(WasmInstr::I32Or);
+                out.push(WasmInstr::If {
+                    result_ty: Some("i32".to_owned()),
+                });
+                out.push(WasmInstr::Then);
+                self.emit_logical_assign_rhs(slot, expr, ctx, out)?;
+                out.push(WasmInstr::Else);
+                out.push(WasmInstr::LocalGet(slot));
+                out.push(WasmInstr::End);
+                Ok(())
+            }
+        }
     }
 
     fn try_emit_console_log(
@@ -1490,12 +1564,23 @@ fn collect_static_objects_from_expr(expr: &LoweredExpr, plan: &mut StaticObjectP
         LoweredExpr::Assign { expr, .. } | LoweredExpr::LogicalAssign { expr, .. } => {
             collect_static_objects_from_expr(expr, plan);
         }
+        LoweredExpr::LogicalPropertyAssign {
+            object, key, expr, ..
+        } => {
+            collect_static_objects_from_expr(expr, plan);
+            add_static_object_key(plan, *object, key);
+        }
         LoweredExpr::PropertyGet { obj, .. } | LoweredExpr::OptionalPropertyGet { obj, .. } => {
             collect_static_objects_from_expr(obj, plan);
         }
-        LoweredExpr::PropertySet { object, value, .. } => {
+        LoweredExpr::PropertySet {
+            object, key, value, ..
+        } => {
             collect_static_objects_from_expr(object, plan);
             collect_static_objects_from_expr(value, plan);
+            if let LoweredExpr::Local(local, _) = object.as_ref() {
+                add_static_object_key(plan, *local, key);
+            }
         }
         LoweredExpr::PropertyGetDynamic { obj, key, .. }
         | LoweredExpr::OptionalIndex {
@@ -1522,6 +1607,18 @@ fn collect_static_objects_from_expr(expr: &LoweredExpr, plan: &mut StaticObjectP
             collect_static_objects_from_expr(value, plan);
         }
         _ => {}
+    }
+}
+
+fn add_static_object_key(plan: &mut StaticObjectPlan, local: LocalId, key: &str) {
+    let Some(group) = plan.local_groups.get(&local).copied() else {
+        return;
+    };
+    let Some(keys) = plan.group_keys.get_mut(group) else {
+        return;
+    };
+    if !keys.iter().any(|existing| existing == key) {
+        keys.push(key.to_owned());
     }
 }
 
@@ -1570,6 +1667,9 @@ fn collect_static_locals_from_expr(expr: &LoweredExpr, locals: &mut HashMap<Loca
         }
         LoweredExpr::Unary { expr, .. } => collect_static_locals_from_expr(expr, locals),
         LoweredExpr::Assign { expr, .. } | LoweredExpr::LogicalAssign { expr, .. } => {
+            collect_static_locals_from_expr(expr, locals);
+        }
+        LoweredExpr::LogicalPropertyAssign { expr, .. } => {
             collect_static_locals_from_expr(expr, locals);
         }
         LoweredExpr::PropertyGet { obj, .. } | LoweredExpr::OptionalPropertyGet { obj, .. } => {

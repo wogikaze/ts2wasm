@@ -919,6 +919,10 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "../../fixtures/core-expressions/logical-assign.ts",
             "42\n99\n7\n",
         ),
+        (
+            "../../fixtures/core-expressions/logical-property-assign.ts",
+            "42\n",
+        ),
         ("../../fixtures/core-expressions/member.ts", "42\n"),
         ("../../fixtures/core-expressions/number.ts", "42\n"),
         ("../../fixtures/core-expressions/object.ts", "1\n2\n"),
