@@ -66,6 +66,7 @@ struct NativeLoweredEmitter<'a> {
 #[derive(Clone)]
 struct FunctionCtx {
     locals: HashMap<LocalId, usize>,
+    switch_value_local: usize,
     returns_value: bool,
     module_id: Option<usize>,
     controls: Vec<ControlFrame>,
@@ -207,9 +208,12 @@ impl<'a> NativeLoweredEmitter<'a> {
                 wasm = wasm.local(WasmValType::I32);
             }
         }
+        let switch_value_local = function.params.len() + wasm.locals.len();
+        wasm = wasm.local(WasmValType::I32);
 
         let ctx = FunctionCtx {
             locals,
+            switch_value_local,
             returns_value,
             module_id: None,
             controls: Vec::new(),
@@ -230,8 +234,11 @@ impl<'a> NativeLoweredEmitter<'a> {
             locals.insert(*local, index);
             wasm = wasm.local(WasmValType::I32);
         }
+        let switch_value_local = wasm.locals.len();
+        wasm = wasm.local(WasmValType::I32);
         let ctx = FunctionCtx {
             locals,
+            switch_value_local,
             returns_value: false,
             module_id: None,
             controls: Vec::new(),
@@ -251,8 +258,11 @@ impl<'a> NativeLoweredEmitter<'a> {
             locals.insert(LocalId(index), index);
             wasm = wasm.local(WasmValType::I32);
         }
+        let switch_value_local = wasm.locals.len();
+        wasm = wasm.local(WasmValType::I32);
         let ctx = FunctionCtx {
             locals,
+            switch_value_local,
             returns_value: false,
             module_id: Some(module_info.id),
             controls: Vec::new(),
@@ -338,6 +348,7 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out,
                 active_label,
             ),
+            LoweredStmt::Switch { expr, cases, .. } => self.emit_switch(expr, cases, ctx, out),
             LoweredStmt::Return(expr, _) => {
                 if ctx.returns_value {
                     self.emit_expr(expr, ctx, out)?;
@@ -470,6 +481,52 @@ impl<'a> NativeLoweredEmitter<'a> {
         }
         out.push(WasmInstr::BrDepth(0));
         out.push(WasmInstr::End);
+        out.push(WasmInstr::End);
+        Ok(())
+    }
+
+    fn emit_switch(
+        &mut self,
+        expr: &LoweredExpr,
+        cases: &[(Option<LoweredExpr>, Vec<LoweredStmt>)],
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<(), Diagnostic> {
+        if cases.is_empty() {
+            self.emit_expr(expr, ctx, out)?;
+            if expr_produces_value(expr, &self.function_results) {
+                out.push(WasmInstr::Drop);
+            }
+            return Ok(());
+        }
+
+        out.push(WasmInstr::Block(switch_break_symbol()));
+        for index in (0..cases.len()).rev() {
+            out.push(WasmInstr::Block(switch_case_symbol(index)));
+        }
+
+        self.emit_expr(expr, ctx, out)?;
+        out.push(WasmInstr::LocalSet(ctx.switch_value_local));
+
+        let default_index = cases.iter().position(|(cond, _)| cond.is_none());
+        for (index, (cond, _)) in cases.iter().enumerate() {
+            if let Some(cond) = cond {
+                out.push(WasmInstr::LocalGet(ctx.switch_value_local));
+                self.emit_expr(cond, ctx, out)?;
+                out.push(WasmInstr::I32Eq);
+                out.push(WasmInstr::BrIfDepth(index as u32));
+            }
+        }
+        out.push(WasmInstr::BrDepth(
+            default_index.unwrap_or(cases.len()) as u32
+        ));
+
+        let switch_ctx = push_control(ctx, ControlFrame::break_target(None, true));
+        for (index, (_, body)) in cases.iter().enumerate() {
+            out.push(WasmInstr::End);
+            let body_ctx = push_plain_controls(&switch_ctx, cases.len() - index - 1);
+            self.emit_stmts(body, &body_ctx, out)?;
+        }
         out.push(WasmInstr::End);
         Ok(())
     }
@@ -781,9 +838,25 @@ fn loop_continue_symbol(label: Option<&str>, kind: &str) -> String {
     }
 }
 
+fn switch_break_symbol() -> String {
+    "$native_switch_break".to_owned()
+}
+
+fn switch_case_symbol(index: usize) -> String {
+    format!("$native_switch_case_{index}")
+}
+
 fn push_control(ctx: &FunctionCtx, frame: ControlFrame) -> FunctionCtx {
     let mut nested = ctx.clone();
     nested.controls.push(frame);
+    nested
+}
+
+fn push_plain_controls(ctx: &FunctionCtx, count: usize) -> FunctionCtx {
+    let mut nested = ctx.clone();
+    nested
+        .controls
+        .extend(std::iter::repeat_with(ControlFrame::plain).take(count));
     nested
 }
 
