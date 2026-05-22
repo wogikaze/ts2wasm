@@ -176,10 +176,20 @@ impl HirToMirLowerer {
                     HirRelationalOp::Greater => LoweredBinaryOp::Greater,
                     HirRelationalOp::GreaterEqual => LoweredBinaryOp::GreaterEqual,
                 };
+                // Wrap both operands with unary `+` (ToNumber) for relational
+                // comparisons, per ECMAScript Abstract Relational Comparison.
                 LoweredExpr::Binary {
-                    left: Box::new(self.lower_expr(left)),
+                    left: Box::new(LoweredExpr::Unary {
+                        op: LoweredUnaryOp::Plus,
+                        expr: Box::new(self.lower_expr(left)),
+                        span,
+                    }),
                     op: mir_op,
-                    right: Box::new(self.lower_expr(right)),
+                    right: Box::new(LoweredExpr::Unary {
+                        op: LoweredUnaryOp::Plus,
+                        expr: Box::new(self.lower_expr(right)),
+                        span,
+                    }),
                     span,
                 }
             }
