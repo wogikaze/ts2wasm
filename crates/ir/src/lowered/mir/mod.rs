@@ -8,12 +8,13 @@
 // types rather than creating separate Mir* aliases. The original type names
 // are already publicly available from `crate::lowered::*`.
 
+pub mod escape;
 mod lower;
 mod raise;
 pub mod types;
 
 pub use types::{
-    MirArraySlot, MirBinaryOp, MirBuiltinErrorConstructor, MirClassPrototypeRef,
+    EscapeStatus, MirArraySlot, MirBinaryOp, MirBuiltinErrorConstructor, MirClassPrototypeRef,
     MirClosureRepresentation, MirExpr, MirFunction, MirFunctionCallKind, MirLogicalAssignOp,
     MirModuleInfo, MirProgram, MirStmt, MirUnaryOp,
 };
@@ -360,6 +361,7 @@ mod tests {
             top_level_locals: vec![],
             functions: vec![],
             modules: vec![],
+            escape_status: vec![],
         };
         let lowered = LoweredProgram {
             top_level_statements: vec![],

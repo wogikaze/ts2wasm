@@ -541,6 +541,7 @@ pub(super) fn lower_function_to_mir(func: &LoweredFunction) -> MirFunction {
         is_async: func.is_async,
         is_generator: func.is_generator,
         generator_state: func.generator_state.clone(),
+        escape_status: vec![None; func.locals.len()],
     }
 }
 
@@ -552,13 +553,14 @@ impl From<LoweredProgram> for MirProgram {
                 .iter()
                 .map(lower_stmt_to_mir)
                 .collect(),
-            top_level_locals: program.top_level_locals,
+            top_level_locals: program.top_level_locals.clone(),
             functions: program
                 .functions
                 .iter()
                 .map(lower_function_to_mir)
                 .collect(),
             modules: program.modules,
+            escape_status: vec![None; program.top_level_locals.len()],
         }
     }
 }

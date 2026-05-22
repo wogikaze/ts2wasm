@@ -5,6 +5,24 @@ use crate::lowered::{
 };
 use ts2wasm_source::Span;
 
+// ---------------------------------------------------------------------------
+// Escape analysis types
+// ---------------------------------------------------------------------------
+
+/// Result of escape analysis for a single local variable.
+///
+/// Determines whether the value held by a local (e.g., an object or array)
+/// can be referenced from outside the current function scope.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EscapeStatus {
+    /// Object/array escapes — must be heap-allocated.
+    Escaped,
+    /// Object/array does not escape current function.
+    NotEscaped,
+    /// Not yet analyzed.
+    Unknown,
+}
+
 pub type MirBinaryOp = LoweredBinaryOp;
 pub type MirBuiltinErrorConstructor = BuiltinErrorConstructor;
 pub type MirClassPrototypeRef = ClassPrototypeRef;
@@ -374,6 +392,9 @@ pub struct MirFunction {
     pub is_async: bool,
     pub is_generator: bool,
     pub generator_state: Option<GeneratorState>,
+    /// Per-local escape analysis result. Indexed by `LocalId.0`.
+    /// `None` means not yet analyzed (Unknown).
+    pub escape_status: Vec<Option<EscapeStatus>>,
 }
 
 // ---------------------------------------------------------------------------
@@ -395,4 +416,7 @@ pub struct MirProgram {
     pub functions: Vec<MirFunction>,
     /// Module graph lowering information.
     pub modules: Vec<ModuleInfo>,
+    /// Per-local escape analysis result for top-level locals.
+    /// Indexed by `top_level_locals` order.
+    pub escape_status: Vec<Option<EscapeStatus>>,
 }
