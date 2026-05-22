@@ -1003,12 +1003,20 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "Hello test\n42\n",
         ),
         (
+            "../../fixtures/core-expressions/object-literal-getter-descriptor.ts",
+            "has_getter\nno_setter\nenumerable\nconfigurable\n7\n",
+        ),
+        (
             "../../fixtures/core-expressions/object-literal-numeric-keys.ts",
             "zero\none\ntwo\n",
         ),
         (
             "../../fixtures/core-expressions/object-literal-proto.ts",
             "7\n3\ntrue\n",
+        ),
+        (
+            "../../fixtures/core-expressions/object-literal-setter-descriptor.ts",
+            "no_getter\nhas_setter\nenumerable\nconfigurable\n1\n",
         ),
         (
             "../../fixtures/core-expressions/object-shorthand-computed-method.ts",
