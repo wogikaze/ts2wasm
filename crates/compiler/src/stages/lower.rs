@@ -797,11 +797,22 @@ pub(crate) fn populate_static_module_exports_for_build(
                 span: None,
                 phase: None,
             })?;
-        if lowered
+        // Replace any existing placeholder module (e.g., auto-vivified by
+        // lowered resolver for dynamic import ModuleLoad) with real content.
+        // This handles the case where module_id_for_specifier created an
+        // entry before the module graph's dependency initialization.
+        if let Some(pos) = lowered
             .modules
             .iter()
-            .any(|existing| existing.id == module.id())
+            .position(|existing| existing.id == module.id())
         {
+            if let Some(module_info) = lower_static_module_body_for_build(
+                module.path(),
+                module.id(),
+                module_specifier(module_graph, module.id()),
+            )? {
+                lowered.modules[pos] = module_info;
+            }
             continue;
         }
 
@@ -876,8 +887,8 @@ pub(crate) fn build_multi_section_file(
         let manifest = backend::emit_canonical_manifest_json(&validated_plan);
         crate::io::write_manifest::write_manifest_json(path, &manifest)?;
     }
-    let wat = backend::emit_wat(&validated).map_err(|d| d.with_phase("backend"))?;
-    crate::io::write_output::write_wasm_from_wat(&wat, output)
+    let wasm = backend::emit_wasm_binary(&validated).map_err(|d| d.with_phase("backend"))?;
+    crate::io::write_output::write_wasm_bytes_with_abi(&wasm, output, None)
         .map_err(|d| d.with_phase("backend"))?;
     Ok(crate::CompileReport {
         value: (),
@@ -1527,82 +1538,27 @@ fn process_collected_export_stmt(
     literal_locals: &mut BTreeMap<String, Expr>,
     stmt: &Stmt,
 ) -> Result<(), Diagnostic> {
-if let Stmt::ExportDecl {
-            declaration,
-            specifier,
-            ..
-        } = stmt
-        {
-            if let Stmt::Let { expr, .. } = declaration.as_ref() {
-                if !is_static_export_literal(expr) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-233: export `{}` in {} uses an initializer outside the current static named import build slice",
-                            specifier.exported,
-                            path.display()
-                        ),
-                        span: Some(specifier.local_span),
-                        phase: None,
-                    });
-                }
-                exports.insert(specifier.exported.clone(), expr.clone());
-                literal_locals.insert(specifier.local.clone(), expr.clone());
-            } else if let Stmt::Function {
-                name,
-                params,
-                body,
-                is_generator: false,
-                is_async: false,
-                is_ambient: false,
-                span,
-                ..
-            } = declaration.as_ref()
-            {
-                let func_expr = named_function_export_expr(name, params, body, *span);
-                exports.insert(specifier.exported.clone(), func_expr.clone());
-                literal_locals.insert(name.clone(), func_expr);
-            } else if let Stmt::ClassDecl {
-                name,
-                extends,
-                body,
-                static_blocks,
-                private_elements,
-                ts_private_field_names,
-                interface_heritage,
-                span,
-            } = declaration.as_ref()
-            {
-                let class_expr = named_class_export_expr(
-                    name,
-                    extends,
-                    body,
-                    static_blocks,
-                    private_elements,
-                    ts_private_field_names,
-                    interface_heritage,
-                    *span,
-                );
-                exports.insert(specifier.exported.clone(), class_expr.clone());
-                literal_locals.insert(name.clone(), class_expr);
-            }
-        } else if let Stmt::ExportDefault { expr, .. } = stmt {
+    if let Stmt::ExportDecl {
+        declaration,
+        specifier,
+        ..
+    } = stmt
+    {
+        if let Stmt::Let { expr, .. } = declaration.as_ref() {
             if !is_static_export_literal(expr) {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: format!(
-                        "issue-233: default export in {} uses a non-literal; only literal default exports are supported",
+                        "issue-233: export `{}` in {} uses an initializer outside the current static named import build slice",
+                        specifier.exported,
                         path.display()
                     ),
-                    span: None,
+                    span: Some(specifier.local_span),
                     phase: None,
                 });
             }
-            exports.insert("default".to_owned(), expr.clone());
-        } else if let Stmt::Let { name, expr, .. } = stmt {
-            if is_static_export_literal(expr) {
-                literal_locals.insert(name.clone(), expr.clone());
-            }
+            exports.insert(specifier.exported.clone(), expr.clone());
+            literal_locals.insert(specifier.local.clone(), expr.clone());
         } else if let Stmt::Function {
             name,
             params,
@@ -1612,12 +1568,11 @@ if let Stmt::ExportDecl {
             is_ambient: false,
             span,
             ..
-        } = stmt
+        } = declaration.as_ref()
         {
-            literal_locals.insert(
-                name.clone(),
-                named_function_export_expr(name, params, body, *span),
-            );
+            let func_expr = named_function_export_expr(name, params, body, *span);
+            exports.insert(specifier.exported.clone(), func_expr.clone());
+            literal_locals.insert(name.clone(), func_expr);
         } else if let Stmt::ClassDecl {
             name,
             extends,
@@ -1627,24 +1582,80 @@ if let Stmt::ExportDecl {
             ts_private_field_names,
             interface_heritage,
             span,
-        } = stmt
+        } = declaration.as_ref()
         {
-            literal_locals.insert(
-                name.clone(),
-                named_class_export_expr(
-                    name,
-                    extends,
-                    body,
-                    static_blocks,
-                    private_elements,
-                    ts_private_field_names,
-                    interface_heritage,
-                    *span,
-                ),
+            let class_expr = named_class_export_expr(
+                name,
+                extends,
+                body,
+                static_blocks,
+                private_elements,
+                ts_private_field_names,
+                interface_heritage,
+                *span,
             );
-        } else if let Stmt::ExportNamed { specifiers, .. } = stmt {
-            for specifier in specifiers {
-                let expr = literal_locals.get(&specifier.local).ok_or_else(|| Diagnostic {
+            exports.insert(specifier.exported.clone(), class_expr.clone());
+            literal_locals.insert(name.clone(), class_expr);
+        }
+    } else if let Stmt::ExportDefault { expr, .. } = stmt {
+        if !is_static_export_literal(expr) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-233: default export in {} uses a non-literal; only literal default exports are supported",
+                    path.display()
+                ),
+                span: None,
+                phase: None,
+            });
+        }
+        exports.insert("default".to_owned(), expr.clone());
+    } else if let Stmt::Let { name, expr, .. } = stmt {
+        if is_static_export_literal(expr) {
+            literal_locals.insert(name.clone(), expr.clone());
+        }
+    } else if let Stmt::Function {
+        name,
+        params,
+        body,
+        is_generator: false,
+        is_async: false,
+        is_ambient: false,
+        span,
+        ..
+    } = stmt
+    {
+        literal_locals.insert(
+            name.clone(),
+            named_function_export_expr(name, params, body, *span),
+        );
+    } else if let Stmt::ClassDecl {
+        name,
+        extends,
+        body,
+        static_blocks,
+        private_elements,
+        ts_private_field_names,
+        interface_heritage,
+        span,
+    } = stmt
+    {
+        literal_locals.insert(
+            name.clone(),
+            named_class_export_expr(
+                name,
+                extends,
+                body,
+                static_blocks,
+                private_elements,
+                ts_private_field_names,
+                interface_heritage,
+                *span,
+            ),
+        );
+    } else if let Stmt::ExportNamed { specifiers, .. } = stmt {
+        for specifier in specifiers {
+            let expr = literal_locals.get(&specifier.local).ok_or_else(|| Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: format!(
                         "issue-5005: dependency module `export {{ {} }}` references unknown or non-literal local binding `{}`",
@@ -1653,52 +1664,49 @@ if let Stmt::ExportDecl {
                     span: Some(specifier.span),
                     phase: None,
                 })?;
-                exports.insert(specifier.exported.clone(), expr.clone());
-            }
-        } else if let Stmt::ExportAllFrom { source, .. } = stmt {
-            let source_path =
-                resolve_static_re_export_source_path(path, &source.value, source.span)?;
-            for (name, expr) in collect_literal_named_exports(&source_path)? {
-                exports.insert(name, expr);
-            }
-        } else if let Stmt::ExportNamedFrom {
-            specifiers, source, ..
-        } = stmt
-        {
-            let source_path =
-                resolve_static_re_export_source_path(path, &source.value, source.span)?;
-            let source_exports = collect_literal_named_exports(&source_path)?;
-            for specifier in specifiers {
-                let expr = source_exports
-                    .get(&specifier.imported)
-                    .ok_or_else(|| Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-233: module `{}` does not export named binding `{}`",
-                            source.value, specifier.imported
-                        ),
-                        span: Some(specifier.imported_span),
-                        phase: None,
-                    })?;
-                exports.insert(specifier.exported.clone(), expr.clone());
-            }
-        } else if let Stmt::ExportNamespaceFrom {
-            namespace,
-            source,
-            span,
-        } = stmt
-        {
-            let source_path =
-                resolve_static_re_export_source_path(path, &source.value, source.span)?;
-            let props = collect_literal_named_exports(&source_path)?
-                .into_iter()
-                .map(|(key, value)| ObjectProp::KeyValue { key, value })
-                .collect();
-            exports.insert(
-                namespace.exported.clone(),
-                Expr::Object { props, span: *span },
-            );
+            exports.insert(specifier.exported.clone(), expr.clone());
         }
+    } else if let Stmt::ExportAllFrom { source, .. } = stmt {
+        let source_path = resolve_static_re_export_source_path(path, &source.value, source.span)?;
+        for (name, expr) in collect_literal_named_exports(&source_path)? {
+            exports.insert(name, expr);
+        }
+    } else if let Stmt::ExportNamedFrom {
+        specifiers, source, ..
+    } = stmt
+    {
+        let source_path = resolve_static_re_export_source_path(path, &source.value, source.span)?;
+        let source_exports = collect_literal_named_exports(&source_path)?;
+        for specifier in specifiers {
+            let expr = source_exports
+                .get(&specifier.imported)
+                .ok_or_else(|| Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-233: module `{}` does not export named binding `{}`",
+                        source.value, specifier.imported
+                    ),
+                    span: Some(specifier.imported_span),
+                    phase: None,
+                })?;
+            exports.insert(specifier.exported.clone(), expr.clone());
+        }
+    } else if let Stmt::ExportNamespaceFrom {
+        namespace,
+        source,
+        span,
+    } = stmt
+    {
+        let source_path = resolve_static_re_export_source_path(path, &source.value, source.span)?;
+        let props = collect_literal_named_exports(&source_path)?
+            .into_iter()
+            .map(|(key, value)| ObjectProp::KeyValue { key, value })
+            .collect();
+        exports.insert(
+            namespace.exported.clone(),
+            Expr::Object { props, span: *span },
+        );
+    }
 
     Ok(())
 }

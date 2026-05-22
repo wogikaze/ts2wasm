@@ -33,6 +33,28 @@ pub fn lower_program_with_module_url(
     program: &[ResolvedStmt],
     module_url: impl Into<String>,
 ) -> Result<LoweredProgram, Diagnostic> {
+    lower_program_inner(program, module_url, None)
+}
+
+/// Like `lower_program_with_module_url`, but pre-populates the module environment
+/// with known specifier-to-module-id mappings from the module graph.
+///
+/// This ensures dynamic `import()` expressions in function bodies are assigned
+/// the correct module graph IDs during lowering, rather than getting synthetic
+/// placeholder IDs that conflict with `populate_static_module_exports_for_build`.
+pub fn lower_program_with_module_specs(
+    program: &[ResolvedStmt],
+    module_url: impl Into<String>,
+    module_specs: HashMap<String, usize>,
+) -> Result<LoweredProgram, Diagnostic> {
+    lower_program_inner(program, module_url, Some(module_specs))
+}
+
+fn lower_program_inner(
+    program: &[ResolvedStmt],
+    module_url: impl Into<String>,
+    module_specs: Option<HashMap<String, usize>>,
+) -> Result<LoweredProgram, Diagnostic> {
     let module_url = module_url.into();
     let program_is_strict = block_has_use_strict_directive(program);
     let function_ids = collect_function_ids(program, program_is_strict)?;
@@ -441,6 +463,15 @@ pub fn lower_program_with_module_url(
         module_url.as_str(),
         program_is_strict,
     );
+    // Pre-populate module IDs from the module graph so that dynamic import()
+    // expressions during lowering get the correct module graph IDs, not
+    // synthetic placeholder IDs that conflict with populate_static_module_exports_for_build.
+    if let Some(specs) = module_specs {
+        for (specifier, id) in specs {
+            resolver.ctx.modules.module_ids.insert(specifier, id);
+        }
+    }
+
     resolver.ctx.facts.generator_function_yields = generator_function_yields;
     resolver.ctx.facts.generator_function_steps = generator_function_steps;
     resolver.ctx.facts.generator_function_completion_steps = generator_function_completion_steps;

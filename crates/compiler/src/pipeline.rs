@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::path::Path;
 
 use ts2wasm_backend_wasm as backend;
@@ -139,7 +140,7 @@ fn build_file_impl(
     semantic_validate::validate_semantics(input, &resolved)
         .map_err(|d| d.with_phase("semantic-validator"))?;
 
-    let (wat, pipeline_diagnostics) = match options.hir_mir_mode {
+    let (wat, wasm_encoder_bytes, pipeline_diagnostics) = match options.hir_mir_mode {
         HirMirBuildMode::Disabled => {
             let legacy = emit_legacy_wat_for_resolved(
                 &resolved,
@@ -148,11 +149,13 @@ fn build_file_impl(
                 capability_manifest_output,
                 options.host_deny,
             )?;
-            (legacy.wat, legacy.diagnostics)
+            (legacy.wat, legacy.wasm_encoder_bytes, legacy.diagnostics)
         }
         HirMirBuildMode::Strict | HirMirBuildMode::CompatFallback => {
             match emit_hir_mir_wat_for_resolved(&resolved) {
                 Ok(mir_wat) => {
+                    let mir_wasm_encoder_bytes =
+                        emit_hir_mir_wasm_binary_for_resolved(&resolved).ok();
                     match emit_legacy_wat_for_resolved(
                         &resolved,
                         &static_module_binding,
@@ -166,8 +169,11 @@ fn build_file_impl(
                                 mir_wat.len(),
                                 legacy.wat == mir_wat,
                             )];
+                            if let Some(bytes) = &mir_wasm_encoder_bytes {
+                                diagnostics.push(hir_mir_wasm_encoder_diagnostic(bytes.len()));
+                            }
                             diagnostics.extend(legacy.diagnostics);
-                            (mir_wat, diagnostics)
+                            (mir_wat, mir_wasm_encoder_bytes, diagnostics)
                         }
                         Err(error) => {
                             if capability_manifest_output.is_some() {
@@ -175,6 +181,7 @@ fn build_file_impl(
                             }
                             (
                                 mir_wat,
+                                mir_wasm_encoder_bytes,
                                 vec![hir_mir_comparison_unavailable_diagnostic(&error)],
                             )
                         }
@@ -190,15 +197,18 @@ fn build_file_impl(
                     )?;
                     let mut diagnostics = vec![hir_mir_fallback_diagnostic(&error)];
                     diagnostics.extend(legacy.diagnostics);
-                    (legacy.wat, diagnostics)
+                    (legacy.wat, None, diagnostics)
                 }
                 Err(error) => return Err(error),
             }
         }
     };
     let abi_meta = abi_metadata_for_target(options.target);
-    io::write_output::write_wasm_from_wat_with_abi(&wat, output, Some(&abi_meta))
-        .map_err(|d| d.with_phase("backend"))?;
+    match wasm_encoder_bytes {
+        Some(bytes) => io::write_output::write_wasm_bytes_with_abi(&bytes, output, Some(&abi_meta)),
+        None => io::write_output::write_wasm_from_wat_with_abi(&wat, output, Some(&abi_meta)),
+    }
+    .map_err(|d| d.with_phase("backend"))?;
     Ok(CompileReport {
         value: (),
         diagnostics: pipeline_diagnostics,
@@ -219,6 +229,7 @@ fn abi_metadata_for_target(target: ExecutionTarget) -> AbiMetadata {
 
 struct LegacyWat {
     wat: String,
+    wasm_encoder_bytes: Option<Vec<u8>>,
     diagnostics: Vec<Diagnostic>,
 }
 
@@ -229,7 +240,28 @@ fn emit_legacy_wat_for_resolved(
     capability_manifest_output: Option<&Path>,
     host_deny: bool,
 ) -> Result<LegacyWat, Diagnostic> {
-    let lowered = lowered::lower_program(resolved).map_err(|d| d.with_phase("lowering"))?;
+    // Build specifier-to-module-id map from the module graph so that dynamic
+    // import() expressions in function bodies get correct module graph IDs
+    // during lowering (not synthetic placeholder IDs).
+    let module_specs: HashMap<String, usize> = {
+        let mut specs = HashMap::new();
+        // Collect all dependencies' specifier-to-id mappings from the entry module.
+        for dep in module_graph.entry().dependencies() {
+            specs.insert(dep.specifier().to_owned(), dep.resolved_module_id());
+        }
+        // Also include all modules' own specifier mappings for non-entry modules.
+        for module in module_graph.modules() {
+            for dep in module.dependencies() {
+                specs
+                    .entry(dep.specifier().to_owned())
+                    .or_insert(dep.resolved_module_id());
+            }
+        }
+        specs
+    };
+
+    let lowered = lowered::lower_program_with_module_specs(resolved, "<entry>", module_specs)
+        .map_err(|d| d.with_phase("lowering"))?;
 
     let lowered = static_imports::lower_static_named_import_reads_for_build(
         lowered,
@@ -254,7 +286,12 @@ fn emit_legacy_wat_for_resolved(
     }
 
     let wat = backend::emit_wat(&validated).map_err(|d| d.with_phase("backend"))?;
-    Ok(LegacyWat { wat, diagnostics })
+    let wasm_encoder_bytes = backend::emit_wasm_binary_direct(&validated).ok();
+    Ok(LegacyWat {
+        wat,
+        wasm_encoder_bytes,
+        diagnostics,
+    })
 }
 
 fn emit_hir_mir_wat_for_resolved(
@@ -266,6 +303,17 @@ fn emit_hir_mir_wat_for_resolved(
     let mir = ts2wasm_ir::lowered::lower_hir_to_mir_native(validated_hir.program());
     let (validated_mir, _) = Validated::new_mir(mir).map_err(|d| d.with_phase("mir-validate"))?;
     backend::emit_mir_wat(&validated_mir).map_err(|d| d.with_phase("mir-backend"))
+}
+
+fn emit_hir_mir_wasm_binary_for_resolved(
+    resolved: &[ts2wasm_ir::builtin_resolved::ResolvedStmt],
+) -> Result<Vec<u8>, Diagnostic> {
+    let hir =
+        ts2wasm_ir::semantic::lower_to_hir(resolved).map_err(|d| d.with_phase("hir-lowering"))?;
+    let (validated_hir, _) = Validated::new_hir(hir).map_err(|d| d.with_phase("hir-validate"))?;
+    let mir = ts2wasm_ir::lowered::lower_hir_to_mir_native(validated_hir.program());
+    let (validated_mir, _) = Validated::new_mir(mir).map_err(|d| d.with_phase("mir-validate"))?;
+    backend::emit_mir_wasm_binary(&validated_mir).map_err(|d| d.with_phase("mir-backend"))
 }
 
 fn hir_mir_comparison_diagnostic(
@@ -280,6 +328,15 @@ fn hir_mir_comparison_diagnostic(
         ),
         span: None,
         phase: Some("hir-mir-compare"),
+    }
+}
+
+fn hir_mir_wasm_encoder_diagnostic(wasm_bytes: usize) -> Diagnostic {
+    Diagnostic {
+        code: ts2wasm_frontend::DiagCode::UnsupportedRuntimeSubset,
+        message: format!("HIR/MIR opt-in wasm-encoder output used: wasm_bytes={wasm_bytes}"),
+        span: None,
+        phase: Some("hir-mir-wasm-encoder"),
     }
 }
 

@@ -31,7 +31,7 @@ pub use mir::{
 pub use mir_dump::dump_mir;
 pub use mir_validate::validate_mir;
 pub(crate) use program::*;
-pub use program::{lower_program, lower_program_with_module_url};
+pub use program::{lower_program, lower_program_with_module_specs, lower_program_with_module_url};
 pub(crate) use symbols::FunctionSignature;
 pub use ts2wasm_runtime_catalog::RuntimeFn;
 pub(crate) use types::*;
