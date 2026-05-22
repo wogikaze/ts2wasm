@@ -928,6 +928,10 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
         ("../../fixtures/core-expressions/number.ts", "42\n"),
         ("../../fixtures/core-expressions/object.ts", "1\n2\n"),
         (
+            "../../fixtures/core-expressions/object-literal-bigint-keys.ts",
+            "large\nhex\nbinary\ndestructured\n",
+        ),
+        (
             "../../fixtures/core-expressions/object-literal-mixed-types.ts",
             "42\nhello\ntrue\nundefined\nnull\n",
         ),
@@ -944,8 +948,20 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "subtract\nsubtract\nsubtract\nbitwise or\n",
         ),
         (
+            "../../fixtures/core-expressions/object-literal-computed-identity-method-call.ts",
+            "A\nD\n",
+        ),
+        (
             "../../fixtures/core-expressions/object-literal-computed-keys.ts",
             "Alice\n30\n",
+        ),
+        (
+            "../../fixtures/core-expressions/object-literal-computed-method-call.ts",
+            "A\n2\nC\n",
+        ),
+        (
+            "../../fixtures/core-expressions/object-literal-computed-number-method-call.ts",
+            "A\nB\nC\nD\n",
         ),
         (
             "../../fixtures/core-expressions/object-literal-computed-number-sentinel-keys.ts",

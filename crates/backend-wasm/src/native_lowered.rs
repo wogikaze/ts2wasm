@@ -363,6 +363,9 @@ impl<'a> NativeLoweredEmitter<'a> {
                 if self.try_emit_static_string_init(*local, expr, ctx, out)? {
                     return Ok(());
                 }
+                if self.try_emit_static_primitive_init(*local, expr, ctx, out)? {
+                    return Ok(());
+                }
                 self.emit_expr(expr, ctx, out)?;
                 out.push(WasmInstr::LocalSet(local_index(ctx, *local)?));
                 Ok(())
@@ -420,7 +423,9 @@ impl<'a> NativeLoweredEmitter<'a> {
             LoweredStmt::Switch { expr, cases, .. } => self.emit_switch(expr, cases, ctx, out),
             LoweredStmt::Return(expr, _) => {
                 if ctx.returns_value {
-                    self.emit_expr(expr, ctx, out)?;
+                    if !self.try_emit_static_primitive_value(expr, ctx, out)? {
+                        self.emit_expr(expr, ctx, out)?;
+                    }
                 }
                 out.push(WasmInstr::Return);
                 Ok(())
@@ -699,6 +704,54 @@ impl<'a> NativeLoweredEmitter<'a> {
         out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
         out.push(WasmInstr::LocalSet(local_index(ctx, local)?));
         Ok(true)
+    }
+
+    fn try_emit_static_primitive_init(
+        &mut self,
+        local: LocalId,
+        expr: &LoweredExpr,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<bool, Diagnostic> {
+        let Some(StaticValue::Primitive(value)) = static_value_from_expr(expr, &ctx.static_locals)
+        else {
+            return Ok(false);
+        };
+        match value {
+            LoweredExpr::String(_, _)
+            | LoweredExpr::DecimalNumber(_, _)
+            | LoweredExpr::BigIntLiteral { .. } => {
+                self.emit_static_primitive_token(&value, out);
+                out.push(WasmInstr::LocalSet(local_index(ctx, local)?));
+                Ok(true)
+            }
+            _ => Ok(false),
+        }
+    }
+
+    fn try_emit_static_primitive_value(
+        &mut self,
+        expr: &LoweredExpr,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<bool, Diagnostic> {
+        let Some(StaticValue::Primitive(value)) = static_value_from_expr(expr, &ctx.static_locals)
+        else {
+            return Ok(false);
+        };
+        match value {
+            LoweredExpr::String(_, _)
+            | LoweredExpr::DecimalNumber(_, _)
+            | LoweredExpr::BigIntLiteral { .. } => {
+                self.emit_static_primitive_token(&value, out);
+                Ok(true)
+            }
+            _ => Ok(false),
+        }
+    }
+
+    fn emit_static_primitive_token(&mut self, _expr: &LoweredExpr, out: &mut Vec<WasmInstr>) {
+        out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
     }
 
     fn emit_expr(
@@ -1125,7 +1178,40 @@ impl<'a> NativeLoweredEmitter<'a> {
             }
             return Ok(None);
         }
+        if let LoweredExpr::Call {
+            kind: FunctionCallKind::User(func_id),
+            args,
+            ..
+        } = expr
+            && args.iter().all(static_console_call_arg_is_effect_free)
+        {
+            return Ok(self.static_user_function_return_bytes(*func_id));
+        }
         Ok(static_console_arg_bytes(expr, ctx))
+    }
+
+    fn static_user_function_return_bytes(&self, func_id: FuncId) -> Option<Vec<u8>> {
+        let function = self
+            .program
+            .functions
+            .iter()
+            .find(|function| function.id == func_id)?;
+        let returns = function.body.iter().find_map(|stmt| match stmt {
+            LoweredStmt::Return(expr, _) => Some(expr),
+            _ => None,
+        })?;
+        let ctx = FunctionCtx {
+            locals: HashMap::new(),
+            local_types: infer_local_types(&function.body),
+            static_locals: infer_static_locals(&function.body),
+            static_arrays: HashMap::new(),
+            static_objects: HashMap::new(),
+            switch_value_local: 0,
+            returns_value: true,
+            module_id: None,
+            controls: Vec::new(),
+        };
+        static_console_arg_bytes(returns, &ctx)
     }
 
     fn emit_static_bytes(&mut self, bytes: &[u8], out: &mut Vec<WasmInstr>) {
@@ -1552,6 +1638,37 @@ fn static_console_arg_bytes(expr: &LoweredExpr, ctx: &FunctionCtx) -> Option<Vec
             static_object_known(ctx, obj).then(|| b"undefined".to_vec())
         }
         _ => None,
+    }
+}
+
+fn static_console_call_arg_is_effect_free(expr: &LoweredExpr) -> bool {
+    match expr {
+        LoweredExpr::Local(_, _)
+        | LoweredExpr::Number(_, _)
+        | LoweredExpr::DecimalNumber(_, _)
+        | LoweredExpr::BigIntLiteral { .. }
+        | LoweredExpr::String(_, _)
+        | LoweredExpr::Bool(_, _)
+        | LoweredExpr::Null(_)
+        | LoweredExpr::Undefined(_) => true,
+        LoweredExpr::PropertyGet { obj, .. } | LoweredExpr::OptionalPropertyGet { obj, .. } => {
+            static_console_call_arg_is_effect_free(obj)
+        }
+        LoweredExpr::PropertyGetDynamic { obj, key, .. }
+        | LoweredExpr::OptionalIndex {
+            object: obj,
+            index: key,
+            ..
+        }
+        | LoweredExpr::Index {
+            object: obj,
+            index: key,
+            ..
+        } => {
+            static_console_call_arg_is_effect_free(obj)
+                && static_console_call_arg_is_effect_free(key)
+        }
+        _ => false,
     }
 }
 
