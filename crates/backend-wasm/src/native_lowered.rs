@@ -318,6 +318,8 @@ impl<'a> NativeLoweredEmitter<'a> {
                 LoweredExpr::Bool(value, _) => {
                     self.emit_static_bytes(if *value { b"true" } else { b"false" }, out)
                 }
+                LoweredExpr::Null(_) => self.emit_static_bytes(b"null", out),
+                LoweredExpr::Undefined(_) => self.emit_static_bytes(b"undefined", out),
                 _ => {
                     self.emit_expr(arg, ctx, out)?;
                     out.push(WasmInstr::Call(WRITE_I32_SYMBOL.to_owned()));
@@ -381,49 +383,79 @@ impl<'a> NativeLoweredEmitter<'a> {
     }
 
     fn build_write_i32_small(&self) -> WasmFunction {
+        let scratch_end = Layout::SCRATCH_OFFSET as i32 + 16;
         WasmFunction::new(WRITE_I32_SYMBOL)
             .param(WasmValType::I32)
+            .local(WasmValType::I32)
+            .local(WasmValType::I32)
             .body(vec![
                 WasmInstr::LocalGet(0),
-                WasmInstr::I32Const(10),
-                WasmInstr::I32GeS,
+                WasmInstr::I32Eqz,
                 WasmInstr::If { result_ty: None },
                 WasmInstr::Then,
                 WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32),
-                WasmInstr::LocalGet(0),
-                WasmInstr::I32Const(10),
-                WasmInstr::I32DivS,
                 WasmInstr::I32Const(b'0' as i32),
-                WasmInstr::I32Add,
-                WasmInstr::I32Store8 {
-                    align: 0,
-                    offset: 0,
-                },
-                WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32 + 1),
-                WasmInstr::LocalGet(0),
-                WasmInstr::I32Const(10),
-                WasmInstr::I32RemS,
-                WasmInstr::I32Const(b'0' as i32),
-                WasmInstr::I32Add,
-                WasmInstr::I32Store8 {
-                    align: 0,
-                    offset: 0,
-                },
-                WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32),
-                WasmInstr::I32Const(2),
-                WasmInstr::Call(WRITE_BUF_SYMBOL.to_owned()),
-                WasmInstr::Return,
-                WasmInstr::End,
-                WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32),
-                WasmInstr::LocalGet(0),
-                WasmInstr::I32Const(b'0' as i32),
-                WasmInstr::I32Add,
                 WasmInstr::I32Store8 {
                     align: 0,
                     offset: 0,
                 },
                 WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32),
                 WasmInstr::I32Const(1),
+                WasmInstr::Call(WRITE_BUF_SYMBOL.to_owned()),
+                WasmInstr::Return,
+                WasmInstr::End,
+                WasmInstr::I32Const(scratch_end),
+                WasmInstr::LocalSet(2),
+                WasmInstr::LocalGet(0),
+                WasmInstr::LocalSet(1),
+                WasmInstr::LocalGet(0),
+                WasmInstr::I32Const(0),
+                WasmInstr::I32LtS,
+                WasmInstr::If { result_ty: None },
+                WasmInstr::Then,
+                WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32),
+                WasmInstr::I32Const(b'-' as i32),
+                WasmInstr::I32Store8 {
+                    align: 0,
+                    offset: 0,
+                },
+                WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32),
+                WasmInstr::I32Const(1),
+                WasmInstr::Call(WRITE_BUF_SYMBOL.to_owned()),
+                WasmInstr::I32Const(0),
+                WasmInstr::LocalGet(0),
+                WasmInstr::I32Sub,
+                WasmInstr::LocalSet(1),
+                WasmInstr::End,
+                WasmInstr::Block("$native_i32_digits_done".to_owned()),
+                WasmInstr::Loop("$native_i32_digits_loop".to_owned()),
+                WasmInstr::LocalGet(1),
+                WasmInstr::I32Eqz,
+                WasmInstr::BrIfDepth(1),
+                WasmInstr::LocalGet(2),
+                WasmInstr::I32Const(1),
+                WasmInstr::I32Sub,
+                WasmInstr::LocalTee(2),
+                WasmInstr::LocalGet(1),
+                WasmInstr::I32Const(10),
+                WasmInstr::I32RemU,
+                WasmInstr::I32Const(b'0' as i32),
+                WasmInstr::I32Add,
+                WasmInstr::I32Store8 {
+                    align: 0,
+                    offset: 0,
+                },
+                WasmInstr::LocalGet(1),
+                WasmInstr::I32Const(10),
+                WasmInstr::I32DivU,
+                WasmInstr::LocalSet(1),
+                WasmInstr::BrDepth(0),
+                WasmInstr::End,
+                WasmInstr::End,
+                WasmInstr::LocalGet(2),
+                WasmInstr::I32Const(scratch_end),
+                WasmInstr::LocalGet(2),
+                WasmInstr::I32Sub,
                 WasmInstr::Call(WRITE_BUF_SYMBOL.to_owned()),
             ])
     }

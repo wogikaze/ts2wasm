@@ -342,8 +342,14 @@ fn build_single_function(
             WasmInstr::I32DivS => {
                 func.instruction(&I::I32DivS);
             }
+            WasmInstr::I32DivU => {
+                func.instruction(&I::I32DivU);
+            }
             WasmInstr::I32RemS => {
                 func.instruction(&I::I32RemS);
+            }
+            WasmInstr::I32RemU => {
+                func.instruction(&I::I32RemU);
             }
             WasmInstr::I32And => {
                 func.instruction(&I::I32And);

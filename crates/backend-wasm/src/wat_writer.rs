@@ -329,8 +329,14 @@ impl WatWriter {
     pub fn i32_div_s(&mut self, indent: usize) {
         self.line(indent, "(i32.div_s)");
     }
+    pub fn i32_div_u(&mut self, indent: usize) {
+        self.line(indent, "(i32.div_u)");
+    }
     pub fn i32_rem_s(&mut self, indent: usize) {
         self.line(indent, "(i32.rem_s)");
+    }
+    pub fn i32_rem_u(&mut self, indent: usize) {
+        self.line(indent, "(i32.rem_u)");
     }
     pub fn i32_and(&mut self, indent: usize) {
         self.line(indent, "(i32.and)");
@@ -551,7 +557,9 @@ impl WatWriter {
             WasmInstr::I32Sub => self.i32_sub(indent),
             WasmInstr::I32Mul => self.i32_mul(indent),
             WasmInstr::I32DivS => self.i32_div_s(indent),
+            WasmInstr::I32DivU => self.i32_div_u(indent),
             WasmInstr::I32RemS => self.i32_rem_s(indent),
+            WasmInstr::I32RemU => self.i32_rem_u(indent),
             WasmInstr::I32And => self.i32_and(indent),
             WasmInstr::I32Or => self.i32_or(indent),
             WasmInstr::I32Xor => self.i32_xor(indent),

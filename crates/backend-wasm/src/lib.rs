@@ -96,9 +96,20 @@ pub fn emit_wasm_binary_native(program: &Validated<LoweredProgram>) -> Result<Ve
 
 /// Emit a validated lowered program to WASM binary.
 ///
-/// This is the high-level entry point: emits WAT text, then converts to binary
-/// using the pure-Rust `wat` crate (no subprocess, no wat2wasm dependency).
+/// This is the high-level entry point: it uses the native `WasmModule`
+/// backend for supported `LoweredProgram` shapes and keeps the WAT parser
+/// path as the explicit compatibility fallback while native coverage grows.
 pub fn emit_wasm_binary(program: &Validated<LoweredProgram>) -> Result<Vec<u8>, Diagnostic> {
+    match emit_wasm_binary_native(program) {
+        Ok(bytes) => return Ok(bytes),
+        Err(err)
+            if matches!(
+                err.code,
+                DiagCode::UnsupportedSyntax | DiagCode::UnsupportedModule
+            ) => {}
+        Err(err) => return Err(err),
+    }
+
     let wat = emit_wat(program)?;
     wat::parse_str(&wat).map_err(|err| Diagnostic {
         code: DiagCode::BackendIo,
@@ -147,8 +158,9 @@ pub(crate) fn wat_bytes(bytes: &[u8]) -> String {
 mod tests {
     use super::runtime_link_plan::build_validated_runtime_link_plan;
     use super::{
-        emit_canonical_manifest_json, emit_wasm_binary_mvp, emit_wasm_binary_native,
-        emit_wasm_module_binary, emit_wasm_module_native, emit_wat, emitter::LocalFrame,
+        emit_canonical_manifest_json, emit_wasm_binary, emit_wasm_binary_mvp,
+        emit_wasm_binary_native, emit_wasm_module_binary, emit_wasm_module_native, emit_wat,
+        emitter::LocalFrame,
     };
     use std::fs;
     use std::path::Path;
@@ -594,6 +606,91 @@ mod tests {
 
         assert_eq!(run_iwasm(&wasm_path), "7\n");
         let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_i32_writer_handles_multi_digit_and_negative_values() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Number(12345, span)],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Number(-42, span)],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native binary should emit");
+        let temp_dir = unique_temp_dir("native-lowered-i32-writer");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "12345\n-42\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn emit_wasm_binary_uses_native_lowered_subset_when_supported() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::Number(12345, span)],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let native = emit_wasm_binary_native(&v).expect("native binary should emit");
+        let main = emit_wasm_binary(&v).expect("main binary should emit");
+
+        assert_eq!(main, native);
+    }
+
+    #[test]
+    fn emit_wasm_binary_falls_back_to_wat_for_unsupported_native_shape() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::String("side-effect-free".to_owned(), span),
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let native_err = emit_wasm_binary_native(&v).expect_err("native subset should reject");
+        assert_eq!(native_err.code, DiagCode::UnsupportedSyntax);
+        assert!(
+            wasmparser::Validator::new()
+                .validate_all(&emit_wasm_binary(&v).expect("main binary should fall back"))
+                .is_ok()
+        );
     }
 
     #[test]
