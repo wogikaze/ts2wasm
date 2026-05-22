@@ -1427,9 +1427,10 @@ impl Parser {
         }
         self.check_duplicate_params(&params)?;
         self.fn_depth += 1;
-        let body = self.block()?;
+        let mut body = self.block()?;
         self.fn_depth -= 1;
         self.strict_mode = prev_strict_mode;
+        desugar_destructured_params(&mut params, &mut body);
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
         let source_end = self.prev_span().map(|s| s.end).unwrap_or(end);
         Ok(Stmt::Function {
@@ -1481,10 +1482,11 @@ impl Parser {
             self.strict_mode = true;
         }
         self.fn_depth += 1;
-        let body = self.block()?;
+        let mut body = self.block()?;
         self.fn_depth -= 1;
         self.strict_mode = prev_strict_mode;
         self.in_generator_fn = prev_in_generator_fn;
+        desugar_destructured_params(&mut params, &mut body);
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
         let source_end = self.prev_span().map(|s| s.end).unwrap_or(end);
         Ok(Stmt::Function {
@@ -1588,10 +1590,11 @@ impl Parser {
             self.strict_mode = true;
         }
         self.fn_depth += 1;
-        let body = self.block()?;
+        let mut body = self.block()?;
         self.fn_depth -= 1;
         self.strict_mode = prev_strict_mode;
         self.in_async_fn = prev_in_async_fn;
+        desugar_destructured_params(&mut params, &mut body);
         let end = body
             .last()
             .map(|stmt| stmt.span().end)
@@ -2298,17 +2301,33 @@ impl Parser {
         let try_block = self.block()?;
 
         let (catch_param, catch_block) = if self.consume(TokenKind::Catch) {
-            let param = if self.consume(TokenKind::LeftParen) {
-                let (name, _) = self.expect_binding_ident()?;
+            let (param_name, mut block) = if self.consume(TokenKind::LeftParen) {
+                let binding = self.parse_binding_pattern()?;
                 if self.consume(TokenKind::Colon) {
                     self.skip_type_annotation_until(&[TokenKind::RightParen])?;
                 }
                 self.expect(TokenKind::RightParen)?;
-                Some(name)
+                let block = self.block()?;
+                (binding.text, block)
             } else {
-                None
+                (String::new(), self.block()?)
             };
-            let block = self.block()?;
+            // Desugar destructuring patterns in catch clause parameter
+            let param = if param_name.starts_with('{') || param_name.starts_with('[') {
+                let temp_name = format!("_catch_err_{}", start.start);
+                block.insert(0, Stmt::Let {
+                    name: param_name,
+                    expr: Expr::Ident {
+                        name: temp_name.clone(),
+                        span: Span::generated("catch_destructure"),
+                    },
+                    span: Span::generated("catch_destructure"),
+                    is_var: false,
+                });
+                Some(temp_name)
+            } else {
+                if param_name.is_empty() { None } else { Some(param_name) }
+            };
             (param, Some(block))
         } else {
             (None, None)

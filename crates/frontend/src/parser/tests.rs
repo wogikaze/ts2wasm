@@ -2783,10 +2783,15 @@ b /* parameter b */,
         .unwrap();
 
         match &program[0] {
-            Stmt::Function { params, .. } => {
+            Stmt::Function { params, body, .. } => {
                 assert_eq!(params.len(), 2);
-                assert_eq!(params[0].0, "[a]");
-                assert_eq!(params[1].0, "{x}");
+                assert_eq!(params[0].0, "_p0");
+                assert_eq!(params[1].0, "_p1");
+                // Verify desugared let bindings are prepended to the body
+                // Reverse insert: index 0 goes last, index 1 goes first
+                assert_eq!(body.len(), 3);
+                assert!(matches!(&body[0], Stmt::Let { name, .. } if name == "[a]"));
+                assert!(matches!(&body[1], Stmt::Let { name, .. } if name == "{x}"));
             }
             other => panic!("unexpected function statement: {other:?}"),
         }

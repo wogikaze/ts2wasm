@@ -562,6 +562,7 @@ impl Parser {
                     extends.is_some(),
                 )?;
             }
+            desugar_destructured_params(&mut params, &mut method_body);
             let method_end = method_body
                 .last()
                 .map(|s| s.span().end)
@@ -738,13 +739,30 @@ impl Parser {
             let param = self.parse_param(false, false)?;
             self.expect(TokenKind::RightParen)?;
             self.fn_depth += 1;
-            let body = self.block()?;
+            let mut body = self.block()?;
             self.fn_depth -= 1;
+            // Desugar destructured setter parameter
+            let param_name = if param.name.starts_with('{') || param.name.starts_with('[') {
+                let pattern_text = param.name;
+                let temp_name = "_setter_p0".to_owned();
+                body.insert(0, Stmt::Let {
+                    name: pattern_text,
+                    expr: Expr::Ident {
+                        name: temp_name.clone(),
+                        span: Span::generated("setter_destructure"),
+                    },
+                    span: Span::generated("setter_destructure"),
+                    is_var: false,
+                });
+                temp_name
+            } else {
+                param.name
+            };
             let end = self.prev_span().map(|span| span.end).unwrap_or(name_span.end);
             return Ok(ClassPrivateElement::Setter {
                 name,
                 name_span,
-                param: param.name,
+                param: param_name,
                 body,
                 is_static,
                 span: Span {
@@ -779,8 +797,9 @@ impl Parser {
                 self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
             }
             self.fn_depth += 1;
-            let body = self.block()?;
+            let mut body = self.block()?;
             self.fn_depth -= 1;
+            desugar_destructured_params(&mut params, &mut body);
             let end = self.prev_span().map(|span| span.end).unwrap_or(name_span.end);
             return Ok(ClassPrivateElement::Method {
                 name,

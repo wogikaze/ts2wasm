@@ -2536,9 +2536,10 @@ impl Parser {
         let prev_in_generator_fn = self.in_generator_fn;
         self.in_generator_fn = is_generator;
         self.fn_depth += 1;
-        let body = self.block()?;
+        let mut body = self.block()?;
         self.fn_depth -= 1;
         self.in_generator_fn = prev_in_generator_fn;
+        desugar_destructured_params(&mut params, &mut body);
         let end = body
             .last()
             .map(|stmt| stmt.span().end)
@@ -2623,9 +2624,10 @@ impl Parser {
         let ns = name_span.unwrap_or(Span { start: start.start, end: start.start });
         self.validate_strict_mode_fn_params(&name, ns, &params)?;
         self.fn_depth += 1;
-        let body = self.block()?;
+        let mut body = self.block()?;
         self.fn_depth -= 1;
         self.strict_mode = prev_strict_mode;
+        desugar_destructured_params(&mut params, &mut body);
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
         let source_end = self.prev_span().map(|s| s.end).unwrap_or(end);
         Ok(Expr::FunctionExpr {
