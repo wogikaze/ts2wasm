@@ -30,6 +30,7 @@ impl<'a> Lexer<'a> {
         let mut escaped = false;
         let mut in_class = false;
         let mut terminated = false;
+        let mut named_capture_groups: Vec<String> = Vec::new();
 
         /// Tracks position within a character class for proper `-` handling.
         /// Inside `[...]`, `-` is a range operator between two characters but a
@@ -82,6 +83,16 @@ impl<'a> Lexer<'a> {
                 if let Some(ref mut s) = class_state {
                     *s = ClassState::AfterChar;
                 }
+            } else if !in_class && self.starts_with("(?<") {
+                // Named capture group (?<name>...) or lookbehind (?<=...)/(?<!...)
+                if let Some(rest) = self.source.get(self.cursor + 3..) {
+                    if !rest.starts_with(['=', '!']) {
+                        if let Some(end) = rest.find('>') {
+                            named_capture_groups.push(rest[..end].to_owned());
+                        }
+                    }
+                }
+                pattern.push(ch);
             } else if ch == '\\' {
                 pattern.push(ch);
                 escaped = true;
@@ -234,6 +245,7 @@ impl<'a> Lexer<'a> {
                 pattern,
                 flags,
                 raw,
+                named_capture_groups,
             },
             span: Span {
                 start,

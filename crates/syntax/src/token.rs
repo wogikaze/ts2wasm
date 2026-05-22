@@ -13,6 +13,7 @@ pub enum Token {
         pattern: String,
         flags: String,
         raw: String,
+        named_capture_groups: Vec<String>,
     },
     True,
     False,
