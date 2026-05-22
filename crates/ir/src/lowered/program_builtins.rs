@@ -259,6 +259,11 @@ pub(crate) fn resolve_method_to_runtime_fn(
         "push" => Some(RuntimeFn::ArrayPush),
         "pop" => Some(RuntimeFn::ArrayPop),
         "reverse" => Some(RuntimeFn::ArrayReverse),
+        // ES2023 Array immutable methods for untyped receiver fallback
+        "toReversed" => Some(RuntimeFn::ArrayToReversed),
+        "toSorted" => Some(RuntimeFn::ArrayToSorted),
+        "toSpliced" => Some(RuntimeFn::ArrayToSpliced),
+        "with" => Some(RuntimeFn::ArrayWith),
         "toFixed" => Some(RuntimeFn::NumberToFixed),
         "toExponential" => Some(RuntimeFn::NumberToExponential),
         "toPrecision" => Some(RuntimeFn::NumberToPrecision),
