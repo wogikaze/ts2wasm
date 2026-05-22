@@ -6,6 +6,159 @@ use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 use ts2wasm_syntax::BinaryOp;
 
+/// Helper: convert a ResolvedExpr numeric literal to f64, if possible.
+fn resolved_expr_to_f64(expr: &ResolvedExpr) -> Option<f64> {
+    match expr {
+        ResolvedExpr::Number(n) => Some(*n as f64),
+        ResolvedExpr::DecimalNumber(s) => s.parse::<f64>().ok(),
+        _ => None,
+    }
+}
+
+/// Returns true if the operator is a relational comparison (<, >, <=, >=)
+/// that requires ToNumber coercion per ECMAScript Abstract Relational Comparison.
+fn is_relational_op(op: &BinaryOp) -> bool {
+    matches!(
+        op,
+        BinaryOp::Less | BinaryOp::LessEqual | BinaryOp::Greater | BinaryOp::GreaterEqual
+    )
+}
+
+/// Wrap an expression in unary `+` (ToNumber) to ensure proper numeric
+/// coercion before comparison. The WAT runtime functions do not perform
+/// string-to-number or boolean-to-number conversion internally.
+fn wrap_to_number(expr: LoweredExpr, span: Span) -> LoweredExpr {
+    LoweredExpr::Unary {
+        op: LoweredUnaryOp::Plus,
+        expr: Box::new(expr),
+        span,
+    }
+}
+
+/// Format an f64 as a JavaScript number string (e.g. for DecimalNumber).
+/// Handles NaN, Infinity, -Infinity with correct JS casing.
+fn f64_to_js_string(value: f64) -> String {
+    if value.is_nan() {
+        return "NaN".to_string();
+    }
+    if value == f64::INFINITY {
+        return "Infinity".to_string();
+    }
+    if value == f64::NEG_INFINITY {
+        return "-Infinity".to_string();
+    }
+    value.to_string()
+}
+
+/// Constant-fold `===` / `!==` when both operands are same-type literals.
+///
+/// Eliminates the runtime StrictEqual/StrictNotEqual call for patterns like
+/// `x === null`, `typeof x === "string"`, `1 === 2`, etc.
+fn try_constant_fold_strict_compare(
+    left: &ResolvedExpr,
+    op: BinaryOp,
+    right: &ResolvedExpr,
+) -> Option<LoweredExpr> {
+    if !matches!(op, BinaryOp::StrictEqual | BinaryOp::StrictNotEqual) {
+        return None;
+    }
+    let equal = match (left, right) {
+        (ResolvedExpr::Number(l), ResolvedExpr::Number(r)) => l == r,
+        (ResolvedExpr::DecimalNumber(l), ResolvedExpr::DecimalNumber(r)) => {
+            // f64::NAN == f64::NAN is false, matching JS NaN !== NaN semantics.
+            l.parse::<f64>().ok()? == r.parse::<f64>().ok()?
+        }
+        (ResolvedExpr::String(l), ResolvedExpr::String(r)) => l == r,
+        (ResolvedExpr::Bool(l), ResolvedExpr::Bool(r)) => l == r,
+        (ResolvedExpr::Null, ResolvedExpr::Null) => true,
+        (ResolvedExpr::Undefined, ResolvedExpr::Undefined) => true,
+        (ResolvedExpr::Null, ResolvedExpr::Undefined)
+        | (ResolvedExpr::Undefined, ResolvedExpr::Null) => false,
+        _ => return None,
+    };
+    let value = if matches!(op, BinaryOp::StrictNotEqual) {
+        !equal
+    } else {
+        equal
+    };
+    Some(LoweredExpr::Bool(value, Span::generated("const_fold")))
+}
+
+/// Constant-fold `>` / `<` / `>=` / `<=` when both operands are numeric literals.
+///
+/// Avoids the runtime ToNumber coercion and comparison call for
+/// compile-time-known numeric values.
+fn try_constant_fold_numeric_compare(
+    left: &ResolvedExpr,
+    op: &BinaryOp,
+    right: &ResolvedExpr,
+) -> Option<LoweredExpr> {
+    if !matches!(
+        op,
+        BinaryOp::Less | BinaryOp::LessEqual | BinaryOp::Greater | BinaryOp::GreaterEqual
+    ) {
+        return None;
+    }
+    let l = resolved_expr_to_f64(left)?;
+    let r = resolved_expr_to_f64(right)?;
+    let result = match op {
+        BinaryOp::Less => l < r,
+        BinaryOp::LessEqual => l <= r,
+        BinaryOp::Greater => l > r,
+        BinaryOp::GreaterEqual => l >= r,
+        _ => unreachable!(),
+    };
+    Some(LoweredExpr::Bool(result, Span::generated("const_fold")))
+}
+
+/// Constant-fold `-` / `*` / `/` / `%` / `**` when both operands are numeric literals.
+///
+/// Avoids the runtime arithmetic call (even the backend Fast paths) for
+/// compile-time-known numeric values.
+fn try_constant_fold_numeric_arithmetic(
+    left: &ResolvedExpr,
+    op: &BinaryOp,
+    right: &ResolvedExpr,
+) -> Option<LoweredExpr> {
+    if !matches!(
+        op,
+        BinaryOp::Subtract
+            | BinaryOp::Multiply
+            | BinaryOp::Divide
+            | BinaryOp::Modulo
+            | BinaryOp::Power
+    ) {
+        return None;
+    }
+    let l = resolved_expr_to_f64(left)?;
+    let r = resolved_expr_to_f64(right)?;
+    let result: f64 = match op {
+        BinaryOp::Subtract => l - r,
+        BinaryOp::Multiply => l * r,
+        BinaryOp::Divide => l / r,
+        BinaryOp::Modulo => l % r,
+        BinaryOp::Power => l.powf(r),
+        _ => unreachable!(),
+    };
+    // Produce Number(i32) when the result is an integer in i32 range,
+    // otherwise DecimalNumber with correct JS number string.
+    if result.fract() == 0.0
+        && result.is_finite()
+        && result >= i32::MIN as f64
+        && result <= i32::MAX as f64
+    {
+        Some(LoweredExpr::Number(
+            result as i32,
+            Span::generated("const_fold"),
+        ))
+    } else {
+        Some(LoweredExpr::DecimalNumber(
+            f64_to_js_string(result),
+            Span::generated("const_fold"),
+        ))
+    }
+}
+
 impl super::super::Resolver {
     pub(super) fn lower_binary_expr(
         &mut self,
@@ -22,6 +175,23 @@ impl super::super::Resolver {
         if let Some(result) = self.lower_bigint_binary_expr(left, op, right)? {
             return Ok(result);
         }
+        // --- String concatenation optimizations ---
+
+        // Both operands are string literals: fold at compile time.
+        if *op == BinaryOp::Add
+            && matches!(left, ResolvedExpr::String(_))
+            && matches!(right, ResolvedExpr::String(_))
+        {
+            if let (ResolvedExpr::String(l), ResolvedExpr::String(r)) = (left, right) {
+                let mut result = l.clone();
+                result.push_str(r);
+                return Ok(LoweredExpr::String(
+                    result,
+                    Span::generated("const_fold"),
+                ));
+            }
+        }
+
         // Per ECMAScript spec (13.15.3, 7.2.21):
         // The `+` operator: If either operand is a String, the result is string concatenation.
         // For literal string operands, emit $concat directly (which handles ToString conversion
@@ -37,10 +207,40 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             });
         }
+
+        // --- Constant folding for literal operands ---
+
+        if let Some(result) = try_constant_fold_strict_compare(left, *op, right) {
+            return Ok(result);
+        }
+        if let Some(result) = try_constant_fold_numeric_compare(left, op, right) {
+            return Ok(result);
+        }
+        if let Some(result) = try_constant_fold_numeric_arithmetic(left, op, right) {
+            return Ok(result);
+        }
+
+        // Generic binary expression fallthrough.
+        let lowered_left = self.lower_expr(left)?;
+        let lowered_right = self.lower_expr(right)?;
+        // Relational comparisons (<, >, <=, >=) require ToNumber coercion
+        // per ECMAScript Abstract Relational Comparison algorithm.
+        // The WAT runtime functions ($less, $greater, etc.) do not perform
+        // string-to-number or boolean-to-number conversion, so we wrap
+        // non-BigInt operands with unary `+` (ToNumber) here in the IR.
+        let (coerced_left, coerced_right) = if is_relational_op(op)
+            && !crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, left)
+            && !crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, right)
+        {
+            let span = Span::generated("unary_plus_to_number");
+            (wrap_to_number(lowered_left, span), wrap_to_number(lowered_right, span))
+        } else {
+            (lowered_left, lowered_right)
+        };
         Ok(LoweredExpr::Binary {
-            left: Box::new(self.lower_expr(left)?),
+            left: Box::new(coerced_left),
             op: lower_binary_op(*op)?,
-            right: Box::new(self.lower_expr(right)?),
+            right: Box::new(coerced_right),
             span: Span::generated("binary"),
         })
     }
