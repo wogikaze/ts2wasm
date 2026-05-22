@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use ts2wasm_ir::builtin::BuiltinId;
 use ts2wasm_ir::lowered::{
@@ -206,8 +206,11 @@ impl<'a> NativeLoweredEmitter<'a> {
         module = module.function(self.build_write_newline());
         module = module.function(self.build_write_i32_small());
 
+        let runtime_required_functions = collect_runtime_required_functions(self.program);
         for function in &self.program.functions {
-            module = module.function(self.emit_function(function)?);
+            if runtime_required_functions.contains(&function.id) {
+                module = module.function(self.emit_function(function)?);
+            }
         }
         for module_info in &self.program.modules {
             module = module.function(self.emit_module_init(module_info)?);
@@ -1409,7 +1412,9 @@ impl<'a> NativeLoweredEmitter<'a> {
         } = expr
             && args.iter().all(static_console_call_arg_is_effect_free)
         {
-            return Ok(self.static_user_function_return_bytes(*func_id));
+            if let Some(bytes) = self.static_user_function_return_bytes(*func_id) {
+                return Ok(Some(bytes));
+            }
         }
         Ok(static_console_arg_bytes_with_functions(
             expr,
@@ -2468,6 +2473,19 @@ fn static_value_from_expr_with_functions(
                 .collect(),
         )),
         LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::Concat,
+            args,
+            span,
+            ..
+        } if args.len() == 2 => {
+            let mut value =
+                static_string_value_from_expr_with_functions(&args[0], locals, functions)?;
+            value.push_str(&static_string_value_from_expr_with_functions(
+                &args[1], locals, functions,
+            )?);
+            Some(StaticValue::Primitive(LoweredExpr::String(value, *span)))
+        }
+        LoweredExpr::RuntimeCall {
             intrinsic: RuntimeFn::DateNew,
             args,
             ..
@@ -2662,6 +2680,31 @@ fn static_numeric_value_with_functions(
         StaticValue::Primitive(LoweredExpr::Number(value, _)) => Some(value as f64),
         StaticValue::Primitive(LoweredExpr::DecimalNumber(value, _)) => value.parse().ok(),
         _ => None,
+    }
+}
+
+fn static_string_value_from_expr_with_functions(
+    expr: &LoweredExpr,
+    locals: &HashMap<LocalId, StaticValue>,
+    functions: &[LoweredFunction],
+) -> Option<String> {
+    match static_value_from_expr_with_functions(expr, locals, functions)? {
+        StaticValue::Primitive(LoweredExpr::String(value, _)) => Some(value),
+        StaticValue::Primitive(LoweredExpr::Number(value, _)) => Some(value.to_string()),
+        StaticValue::Primitive(LoweredExpr::DecimalNumber(value, _)) => Some(value),
+        StaticValue::Primitive(LoweredExpr::BigIntLiteral { decimal, sign, .. }) => {
+            let mut value = String::new();
+            if sign < 0 {
+                value.push('-');
+            }
+            value.push_str(&decimal);
+            Some(value)
+        }
+        StaticValue::Primitive(LoweredExpr::Bool(value, _)) => Some(value.to_string()),
+        StaticValue::Primitive(LoweredExpr::Null(_)) => Some("null".to_owned()),
+        StaticValue::Primitive(LoweredExpr::Undefined(_)) => Some("undefined".to_owned()),
+        StaticValue::Object(_) | StaticValue::Array(_) | StaticValue::DateObject(_) => None,
+        StaticValue::Primitive(_) => None,
     }
 }
 
@@ -2969,6 +3012,335 @@ fn static_array_element_from_locals<'a>(
         return None;
     };
     elements.get(*index as usize)
+}
+
+fn collect_runtime_required_functions(program: &LoweredProgram) -> HashSet<FuncId> {
+    let mut required = HashSet::new();
+    let mut visiting = HashSet::new();
+
+    let mut top_level_locals = HashMap::new();
+    collect_runtime_required_from_stmts(
+        &program.top_level_statements,
+        &program.functions,
+        &mut top_level_locals,
+        &mut required,
+        &mut visiting,
+    );
+
+    for module in &program.modules {
+        let mut module_locals = HashMap::new();
+        collect_runtime_required_from_stmts(
+            &module.statements,
+            &program.functions,
+            &mut module_locals,
+            &mut required,
+            &mut visiting,
+        );
+    }
+
+    required
+}
+
+fn collect_runtime_required_from_stmts(
+    stmts: &[LoweredStmt],
+    functions: &[LoweredFunction],
+    static_locals: &mut HashMap<LocalId, StaticValue>,
+    required: &mut HashSet<FuncId>,
+    visiting: &mut HashSet<FuncId>,
+) {
+    for stmt in stmts {
+        collect_runtime_required_from_stmt(stmt, functions, static_locals, required, visiting);
+        collect_static_locals_with_functions(std::slice::from_ref(stmt), static_locals, functions);
+    }
+}
+
+fn collect_runtime_required_from_stmt(
+    stmt: &LoweredStmt,
+    functions: &[LoweredFunction],
+    static_locals: &HashMap<LocalId, StaticValue>,
+    required: &mut HashSet<FuncId>,
+    visiting: &mut HashSet<FuncId>,
+) {
+    match stmt {
+        LoweredStmt::Let(_, expr, _)
+        | LoweredStmt::Assign(_, expr, _)
+        | LoweredStmt::Yield(expr, _)
+        | LoweredStmt::Return(expr, _) => {
+            if static_value_from_expr_with_functions(expr, static_locals, functions).is_none() {
+                collect_runtime_required_from_expr(
+                    expr,
+                    functions,
+                    static_locals,
+                    required,
+                    visiting,
+                );
+            }
+        }
+        LoweredStmt::Expr(expr, _) => {
+            if static_stmt_expr_folded(expr, functions, static_locals) {
+                return;
+            }
+            collect_runtime_required_from_expr(expr, functions, static_locals, required, visiting);
+        }
+        LoweredStmt::Block(stmts, _) => {
+            let mut nested = static_locals.clone();
+            collect_runtime_required_from_stmts(stmts, functions, &mut nested, required, visiting);
+        }
+        LoweredStmt::If {
+            condition,
+            then_body,
+            else_body,
+            ..
+        } => {
+            collect_runtime_required_from_expr(
+                condition,
+                functions,
+                static_locals,
+                required,
+                visiting,
+            );
+            let mut then_locals = static_locals.clone();
+            collect_runtime_required_from_stmts(
+                then_body,
+                functions,
+                &mut then_locals,
+                required,
+                visiting,
+            );
+            let mut else_locals = static_locals.clone();
+            collect_runtime_required_from_stmts(
+                else_body,
+                functions,
+                &mut else_locals,
+                required,
+                visiting,
+            );
+        }
+        LoweredStmt::While {
+            condition, body, ..
+        }
+        | LoweredStmt::DoWhile {
+            condition, body, ..
+        } => {
+            collect_runtime_required_from_expr(
+                condition,
+                functions,
+                static_locals,
+                required,
+                visiting,
+            );
+            let mut nested = static_locals.clone();
+            collect_runtime_required_from_stmts(body, functions, &mut nested, required, visiting);
+        }
+        LoweredStmt::For {
+            init,
+            condition,
+            update,
+            body,
+            ..
+        } => {
+            let mut nested = static_locals.clone();
+            if let Some(init) = init {
+                collect_runtime_required_from_stmt(init, functions, &nested, required, visiting);
+                collect_static_locals_with_functions(
+                    std::slice::from_ref(init),
+                    &mut nested,
+                    functions,
+                );
+            }
+            if let Some(condition) = condition {
+                collect_runtime_required_from_expr(
+                    condition, functions, &nested, required, visiting,
+                );
+            }
+            if let Some(update) = update {
+                collect_runtime_required_from_expr(update, functions, &nested, required, visiting);
+            }
+            collect_runtime_required_from_stmts(body, functions, &mut nested, required, visiting);
+        }
+        LoweredStmt::Export { expr, .. } | LoweredStmt::ModuleExportsAssign { expr, .. } => {
+            collect_runtime_required_from_expr(expr, functions, static_locals, required, visiting);
+        }
+        LoweredStmt::ModuleExportsUpdate { .. } => {}
+        _ => {}
+    }
+}
+
+fn static_stmt_expr_folded(
+    expr: &LoweredExpr,
+    functions: &[LoweredFunction],
+    static_locals: &HashMap<LocalId, StaticValue>,
+) -> bool {
+    match expr {
+        LoweredExpr::Call {
+            kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+            args,
+            ..
+        } => {
+            let ctx = static_analysis_ctx(static_locals.clone());
+            args.iter()
+                .all(|arg| static_console_arg_bytes_with_functions(arg, &ctx, functions).is_some())
+        }
+        _ => static_value_from_expr_with_functions(expr, static_locals, functions).is_some(),
+    }
+}
+
+fn collect_runtime_required_from_expr(
+    expr: &LoweredExpr,
+    functions: &[LoweredFunction],
+    static_locals: &HashMap<LocalId, StaticValue>,
+    required: &mut HashSet<FuncId>,
+    visiting: &mut HashSet<FuncId>,
+) {
+    match expr {
+        LoweredExpr::Call { kind, args, .. } => {
+            for arg in args {
+                collect_runtime_required_from_expr(
+                    arg,
+                    functions,
+                    static_locals,
+                    required,
+                    visiting,
+                );
+            }
+            if let FunctionCallKind::User(func_id) = kind {
+                mark_runtime_required_function(*func_id, functions, required, visiting);
+            }
+        }
+        LoweredExpr::RuntimeCall { args, .. } => {
+            for arg in args {
+                collect_runtime_required_from_expr(
+                    arg,
+                    functions,
+                    static_locals,
+                    required,
+                    visiting,
+                );
+            }
+        }
+        LoweredExpr::Block { stmts, result, .. } => {
+            let mut nested = static_locals.clone();
+            collect_runtime_required_from_stmts(stmts, functions, &mut nested, required, visiting);
+            collect_runtime_required_from_expr(result, functions, &nested, required, visiting);
+        }
+        LoweredExpr::Binary { left, right, .. } => {
+            collect_runtime_required_from_expr(left, functions, static_locals, required, visiting);
+            collect_runtime_required_from_expr(right, functions, static_locals, required, visiting);
+        }
+        LoweredExpr::Unary { expr, .. }
+        | LoweredExpr::Assign { expr, .. }
+        | LoweredExpr::LogicalAssign { expr, .. }
+        | LoweredExpr::PromiseGetValue { promise: expr, .. } => {
+            collect_runtime_required_from_expr(expr, functions, static_locals, required, visiting);
+        }
+        LoweredExpr::LogicalPropertyAssign { expr, .. } => {
+            collect_runtime_required_from_expr(expr, functions, static_locals, required, visiting);
+        }
+        LoweredExpr::PropertyGet { obj, .. } | LoweredExpr::OptionalPropertyGet { obj, .. } => {
+            collect_runtime_required_from_expr(obj, functions, static_locals, required, visiting);
+        }
+        LoweredExpr::PropertySet { object, value, .. } => {
+            collect_runtime_required_from_expr(
+                object,
+                functions,
+                static_locals,
+                required,
+                visiting,
+            );
+            collect_runtime_required_from_expr(value, functions, static_locals, required, visiting);
+        }
+        LoweredExpr::PropertyGetDynamic { obj, key, .. }
+        | LoweredExpr::OptionalIndex {
+            object: obj,
+            index: key,
+            ..
+        }
+        | LoweredExpr::Index {
+            object: obj,
+            index: key,
+            ..
+        } => {
+            collect_runtime_required_from_expr(obj, functions, static_locals, required, visiting);
+            collect_runtime_required_from_expr(key, functions, static_locals, required, visiting);
+        }
+        LoweredExpr::PropertySetDynamic {
+            object,
+            index,
+            value,
+            ..
+        } => {
+            collect_runtime_required_from_expr(
+                object,
+                functions,
+                static_locals,
+                required,
+                visiting,
+            );
+            collect_runtime_required_from_expr(index, functions, static_locals, required, visiting);
+            collect_runtime_required_from_expr(value, functions, static_locals, required, visiting);
+        }
+        LoweredExpr::ObjectNew { props, .. } => {
+            for (_, value) in props {
+                collect_runtime_required_from_expr(
+                    value,
+                    functions,
+                    static_locals,
+                    required,
+                    visiting,
+                );
+            }
+        }
+        LoweredExpr::ArrayNew { elements, .. } => {
+            for element in elements {
+                collect_runtime_required_from_expr(
+                    element,
+                    functions,
+                    static_locals,
+                    required,
+                    visiting,
+                );
+            }
+        }
+        _ => {}
+    }
+}
+
+fn mark_runtime_required_function(
+    func_id: FuncId,
+    functions: &[LoweredFunction],
+    required: &mut HashSet<FuncId>,
+    visiting: &mut HashSet<FuncId>,
+) {
+    if !required.insert(func_id) || !visiting.insert(func_id) {
+        return;
+    }
+    let Some(function) = functions.iter().find(|function| function.id == func_id) else {
+        visiting.remove(&func_id);
+        return;
+    };
+    let mut static_locals = HashMap::new();
+    collect_runtime_required_from_stmts(
+        &function.body,
+        functions,
+        &mut static_locals,
+        required,
+        visiting,
+    );
+    visiting.remove(&func_id);
+}
+
+fn static_analysis_ctx(static_locals: HashMap<LocalId, StaticValue>) -> FunctionCtx {
+    FunctionCtx {
+        locals: HashMap::new(),
+        local_types: HashMap::new(),
+        static_locals,
+        static_arrays: HashMap::new(),
+        static_objects: HashMap::new(),
+        switch_value_local: 0,
+        returns_value: false,
+        module_id: None,
+        controls: Vec::new(),
+    }
 }
 
 fn static_array_slot(ctx: &FunctionCtx, obj: &LoweredExpr, key: &LoweredExpr) -> Option<usize> {

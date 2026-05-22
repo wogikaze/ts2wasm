@@ -995,6 +995,14 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "100\n200\n25\nundefined\n42\n",
         ),
         (
+            "../../fixtures/core-expressions/object-literal-method.ts",
+            "7\n15\n",
+        ),
+        (
+            "../../fixtures/core-expressions/object-literal-method-shorthand.ts",
+            "Hello test\n42\n",
+        ),
+        (
             "../../fixtures/core-expressions/object-literal-numeric-keys.ts",
             "zero\none\ntwo\n",
         ),
@@ -1008,6 +1016,7 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
         ("../../fixtures/core-expressions/spread.ts", "1\n2\n3\n"),
         ("../../fixtures/core-expressions/string.ts", "hello\n"),
         ("../../fixtures/core-expressions/ternary.ts", "1\n"),
+        ("../../fixtures/core-expressions/this.ts", "42\n"),
         (
             "../../fixtures/core-expressions/typeof.ts",
             "number\nstring\n",
