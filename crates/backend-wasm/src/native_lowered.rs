@@ -360,6 +360,9 @@ impl<'a> NativeLoweredEmitter<'a> {
                 if self.try_emit_static_object_value_init(*local, expr, ctx, out)? {
                     return Ok(());
                 }
+                if self.try_emit_static_string_init(*local, expr, ctx, out)? {
+                    return Ok(());
+                }
                 self.emit_expr(expr, ctx, out)?;
                 out.push(WasmInstr::LocalSet(local_index(ctx, *local)?));
                 Ok(())
@@ -677,6 +680,21 @@ impl<'a> NativeLoweredEmitter<'a> {
                 }
                 out.push(WasmInstr::LocalSet(*slot));
             }
+        }
+        out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
+        out.push(WasmInstr::LocalSet(local_index(ctx, local)?));
+        Ok(true)
+    }
+
+    fn try_emit_static_string_init(
+        &mut self,
+        local: LocalId,
+        expr: &LoweredExpr,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<bool, Diagnostic> {
+        if !matches!(expr, LoweredExpr::String(_, _)) {
+            return Ok(false);
         }
         out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
         out.push(WasmInstr::LocalSet(local_index(ctx, local)?));

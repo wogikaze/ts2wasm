@@ -952,12 +952,24 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "negative zero\ninfinity\nnegative infinity\nnan\n",
         ),
         (
+            "../../fixtures/core-expressions/object-literal-computed-spread.ts",
+            "0\n1\n2\n3\n",
+        ),
+        (
+            "../../fixtures/core-expressions/object-literal-computed-variable-key.ts",
+            "Alice\n30\n",
+        ),
+        (
             "../../fixtures/core-expressions/object-literal-inline-access.ts",
             "100\n200\n25\nundefined\n42\n",
         ),
         (
             "../../fixtures/core-expressions/object-literal-numeric-keys.ts",
             "zero\none\ntwo\n",
+        ),
+        (
+            "../../fixtures/core-expressions/object-shorthand-computed-method.ts",
+            "7\n11\n",
         ),
         ("../../fixtures/core-expressions/optional-index.ts", "20\n"),
         ("../../fixtures/core-expressions/optional-member.ts", "42\n"),
