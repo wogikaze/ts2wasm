@@ -931,6 +931,18 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "42\nhello\ntrue\nundefined\nnull\n",
         ),
         (
+            "../../fixtures/core-expressions/object-literal-computed-conditional-key.ts",
+            "one\none\ntwo\ntwo\n",
+        ),
+        (
+            "../../fixtures/core-expressions/object-literal-computed-constant-number-expression-key.ts",
+            "subtract\nsubtract\nsubtract\nbitwise or\n",
+        ),
+        (
+            "../../fixtures/core-expressions/object-literal-computed-keys.ts",
+            "Alice\n30\n",
+        ),
+        (
             "../../fixtures/core-expressions/object-literal-numeric-keys.ts",
             "zero\none\ntwo\n",
         ),

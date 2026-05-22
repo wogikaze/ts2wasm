@@ -794,7 +794,14 @@ impl<'a> NativeLoweredEmitter<'a> {
                     out.push(WasmInstr::LocalGet(slot));
                     return Ok(());
                 }
+                if let Some(slot) = static_object_dynamic_slot(ctx, obj, key) {
+                    out.push(WasmInstr::LocalGet(slot));
+                    return Ok(());
+                }
                 if let Some(expr) = static_array_element(ctx, obj, key) {
+                    return self.emit_expr(expr, ctx, out);
+                }
+                if let Some(expr) = static_object_dynamic_property(ctx, obj, key) {
                     return self.emit_expr(expr, ctx, out);
                 }
                 Err(unsupported(
@@ -1439,6 +1446,29 @@ fn static_console_arg_bytes(expr: &LoweredExpr, ctx: &FunctionCtx) -> Option<Vec
             }
             static_object_known(ctx, obj).then(|| b"undefined".to_vec())
         }
+        LoweredExpr::PropertyGetDynamic { obj, key, .. }
+        | LoweredExpr::OptionalIndex {
+            object: obj,
+            index: key,
+            ..
+        }
+        | LoweredExpr::Index {
+            object: obj,
+            index: key,
+            ..
+        } => {
+            if static_array_slot(ctx, obj, key).is_some()
+                || static_object_dynamic_slot(ctx, obj, key).is_some()
+            {
+                return None;
+            }
+            if let Some(value) = static_array_element(ctx, obj, key)
+                .or_else(|| static_object_dynamic_property(ctx, obj, key))
+            {
+                return static_console_arg_bytes(value, ctx);
+            }
+            static_object_known(ctx, obj).then(|| b"undefined".to_vec())
+        }
         _ => None,
     }
 }
@@ -1789,11 +1819,28 @@ fn static_object_property<'a>(
     props.get(key)
 }
 
+fn static_object_dynamic_property<'a>(
+    ctx: &'a FunctionCtx,
+    obj: &'a LoweredExpr,
+    key: &'a LoweredExpr,
+) -> Option<&'a LoweredExpr> {
+    let key = static_property_key(key)?;
+    static_object_property(ctx, obj, &key)
+}
+
 fn static_object_known(ctx: &FunctionCtx, obj: &LoweredExpr) -> bool {
     let LoweredExpr::Local(local, _) = obj else {
         return false;
     };
     matches!(ctx.static_locals.get(local), Some(StaticValue::Object(_)))
+}
+
+fn static_property_key(key: &LoweredExpr) -> Option<String> {
+    match key {
+        LoweredExpr::String(value, _) => Some(value.clone()),
+        LoweredExpr::Number(value, _) => Some(value.to_string()),
+        _ => None,
+    }
 }
 
 fn static_array_element<'a>(
@@ -1829,6 +1876,15 @@ fn static_object_slot(ctx: &FunctionCtx, obj: &LoweredExpr, key: &str) -> Option
         return None;
     };
     ctx.static_objects.get(local)?.get(key).copied()
+}
+
+fn static_object_dynamic_slot(
+    ctx: &FunctionCtx,
+    obj: &LoweredExpr,
+    key: &LoweredExpr,
+) -> Option<usize> {
+    let key = static_property_key(key)?;
+    static_object_slot(ctx, obj, &key)
 }
 
 fn module_export_global(ctx: &FunctionCtx, name: &str) -> Result<String, Diagnostic> {
