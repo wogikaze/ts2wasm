@@ -1330,6 +1330,14 @@ impl Parser {
                 self.advance(); // consume '.'
                 self.advance(); // consume 'target' ident
                 let end = self.prev_span().map(|s| s.end).unwrap_or(new_span.end);
+                if self.fn_depth == 0 {
+                    return Err(Diagnostic {
+                        code: DiagCode::SyntaxError,
+                        message: "'new.target' is only valid inside functions and class constructors".to_owned(),
+                        span: Some(Span { start: new_span.start, end }),
+                        phase: None,
+                    });
+                }
                 let expr = Expr::NewTarget {
                     span: Span {
                         start: new_span.start,
@@ -1873,7 +1881,10 @@ impl Parser {
             Some(SpannedToken {
                 kind: Token::Number(value),
                 span,
-            }) => Ok(Expr::Number { value, span }),
+            }) => {
+                self.check_legacy_octal_literal(span)?;
+                Ok(Expr::Number { value, span })
+            }
             Some(SpannedToken {
                 kind: Token::DecimalNumber(value),
                 span,
@@ -2542,8 +2553,10 @@ impl Parser {
 
     fn function_expression(&mut self, start: Span) -> Result<Expr, Diagnostic> {
         let is_generator = self.consume(TokenKind::Star);
+        let mut name_span = None;
         let name = if matches!(self.peek(), Some(Token::Ident(_))) {
-            let (name, _) = self.expect_binding_ident()?;
+            let (name, ns) = self.expect_binding_ident()?;
+            name_span = Some(ns);
             let has_generic_params = self.consume_typescript_generic_parameter_list()?;
             if has_generic_params {
                 self.typescript_generic_functions.insert(name.clone());
@@ -2577,6 +2590,10 @@ impl Parser {
             self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
         }
         if is_generator {
+            if self.strict_mode {
+                let ns = name_span.unwrap_or(Span { start: start.start, end: start.start });
+                self.validate_strict_mode_fn_params(&name, ns, &params)?;
+            }
             self.skip_balanced_brace_block(start)?;
             let end = self.prev_span().map(|span| span.end).unwrap_or(start.end);
             return Ok(Expr::FunctionExpr {
@@ -2596,6 +2613,8 @@ impl Parser {
         if self.peek_function_body_use_strict() {
             self.strict_mode = true;
         }
+        let ns = name_span.unwrap_or(Span { start: start.start, end: start.start });
+        self.validate_strict_mode_fn_params(&name, ns, &params)?;
         let body = self.block()?;
         self.strict_mode = prev_strict_mode;
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);

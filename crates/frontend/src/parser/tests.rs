@@ -1452,6 +1452,69 @@ mod tests {
     }
 
     #[test]
+    fn rejects_legacy_octal_literal_in_strict_mode_top_level() {
+        let err = parse_program("\"use strict\"; let x = 0123;").unwrap_err();
+
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.to_lowercase().contains("legacy octal"));
+    }
+
+    #[test]
+    fn rejects_legacy_octal_literal_in_strict_mode_function_body() {
+        let err =
+            parse_program("function f() { \"use strict\"; return 0123; }").unwrap_err();
+
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.to_lowercase().contains("legacy octal"));
+    }
+
+    #[test]
+    fn rejects_legacy_octal_literal_in_strict_mode_async_function_body() {
+        let err =
+            parse_program("async function f() { \"use strict\"; return 0123; }").unwrap_err();
+
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.to_lowercase().contains("legacy octal"));
+    }
+
+    #[test]
+    fn rejects_legacy_octal_literal_in_strict_mode_generator_body() {
+        let err =
+            parse_program("function* f() { \"use strict\"; return 0123; }").unwrap_err();
+
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.to_lowercase().contains("legacy octal"));
+    }
+
+    #[test]
+    fn rejects_legacy_octal_literal_in_strict_mode_function_expression() {
+        let err =
+            parse_program("let f = function() { \"use strict\"; return 0123; };").unwrap_err();
+
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.to_lowercase().contains("legacy octal"));
+    }
+
+    #[test]
+    fn allows_legacy_octal_literal_in_sloppy_mode() {
+        let stmts = parse_program("let x = 0123;").unwrap();
+
+        // In sloppy mode, 0123 is parsed as decimal 123 (the actual octal semantics
+        // are not preserved, but it should not produce a SyntaxError).
+        assert_eq!(stmts.len(), 1);
+    }
+
+    #[test]
+    fn allows_0o_prefix_octal_literals_in_strict_mode() {
+        // 0o77 is ES2015+ syntax, NOT legacy octal; allowed in strict mode.
+        // The "use strict" is an expression statement, plus the let = 2 statements.
+        let stmts = parse_program("\"use strict\"; let x = 0o77;").unwrap();
+
+        assert!(!stmts.is_empty());
+        // Verify no SyntaxError
+    }
+
+    #[test]
     fn parses_keyword_tokens_as_object_literal_property_names() {
         let stmts = parse_program("var obj = { if: 0, break: 3, function: 4, class: 5 };").unwrap();
 

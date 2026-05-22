@@ -111,6 +111,25 @@ impl Parser {
         matches!(self.tokens.get(cursor).map(|t| &t.kind), Some(Token::String(v)) if v == "use strict")
     }
 
+    /// Check if a numeric literal at the given span is a legacy octal literal and
+    /// should be rejected in strict mode. Only the raw source text is examined, so
+    /// `0e2`, `0x1F`, `0o77`, `0b101` etc. are not flagged.
+    fn check_legacy_octal_literal(&self, span: Span) -> Result<(), Diagnostic> {
+        if !self.strict_mode {
+            return Ok(());
+        }
+        let raw = &self.source[span.start..span.end];
+        if raw.len() > 1 && raw.starts_with('0') && raw.chars().all(|c| c.is_ascii_digit()) {
+            return Err(Diagnostic {
+                code: DiagCode::SyntaxError,
+                message: "Legacy octal literals are not allowed in strict mode".to_owned(),
+                span: Some(span),
+                phase: Some("parser"),
+            });
+        }
+        Ok(())
+    }
+
     /// Expect a module specifier name: identifier or string literal.
     /// TypeScript allows string-literal names in import/export specifiers,
     /// e.g., `export { foo as "0n" }`.
@@ -145,7 +164,10 @@ impl Parser {
             Some(SpannedToken {
                 kind: Token::Number(n),
                 span,
-            }) => Ok((n.to_string(), span)),
+            }) => {
+                self.check_legacy_octal_literal(span)?;
+                Ok((n.to_string(), span))
+            }
             Some(SpannedToken {
                 kind: Token::DecimalNumber(n),
                 span,
@@ -307,6 +329,7 @@ impl Parser {
                 let key = value.to_string();
                 let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
                 self.advance();
+                self.check_legacy_octal_literal(span)?;
                 Ok(ParsedObjectKey::Static { key, span })
             }
             Some(Token::DecimalNumber(value)) => {
@@ -385,7 +408,9 @@ impl Parser {
             && matches!(self.peek_n(1), Some(Token::RightBracket))
         {
             let key = value.to_string();
+            let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
             self.advance();
+            self.check_legacy_octal_literal(span)?;
             let end = self.expect(TokenKind::RightBracket)?;
             return Ok(ParsedObjectKey::Static {
                 key,
