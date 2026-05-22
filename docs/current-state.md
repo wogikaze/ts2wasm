@@ -65,7 +65,7 @@ Known but unimplemented targets: `wasm32-wasi-gc`, `wasm32-component`.
 ## Current Implementation Notes
 
 - The default compiler path still lowers through legacy `LoweredProgram`, but build writes backend-provided wasm bytes and no longer uses a `wat2wasm` CLI fallback.
-- `backend-wasm` has an explicit native `LoweredProgram -> WasmModule -> wasm bytes` subset API for simple numeric/string console output, locals, arithmetic, `if`, `while`, and direct user-function calls. The public `emit_wasm_binary` entrypoint tries this native subset first and falls back to WAT conversion for unsupported shapes; native coverage still does not cover the full runtime helper catalog.
+- `backend-wasm` has an explicit native `LoweredProgram -> WasmModule -> wasm bytes` subset API for simple numeric/string console output, locals, arithmetic, `if`, `while`, direct user-function calls, and ABI custom-section emission. The public `emit_wasm_binary` entrypoint tries this native subset first and falls back to WAT conversion for unsupported shapes; native coverage still does not cover the full runtime helper catalog.
 - `--experimental-hir-mir` and `--experimental-hir-mir-compat-fallback` are migration modes and must not be described as default parity.
 - Static named ES module import/export has a narrow local differential slice; broader module semantics are not complete.
 - Class, Node API, and broader module fixtures include build-smoke coverage that must not be reported as semantic parity.

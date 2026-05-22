@@ -35,6 +35,7 @@ pub mod wat_writer;
 
 pub use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_ir::lowered::{LoweredProgram, MirProgram, Validated};
+use ts2wasm_shared::abi::{ABI_CUSTOM_SECTION_NAME, AbiMetadata};
 
 pub use runtime_fn::{RuntimeFn, runtime_fn_from_name};
 pub use runtime_link_plan::{
@@ -44,6 +45,14 @@ pub use runtime_link_plan::{
 
 // Re-export binary helpers used by the compiler pipeline.
 pub use wasm_binary::append_custom_section;
+
+pub fn append_abi_custom_section(wasm_bytes: &[u8], abi_metadata: &AbiMetadata) -> Vec<u8> {
+    append_custom_section(
+        wasm_bytes,
+        ABI_CUSTOM_SECTION_NAME,
+        &abi_metadata.to_custom_section_payload(),
+    )
+}
 
 pub fn emit_canonical_manifest_json(plan: &ValidatedRuntimeLinkPlan) -> String {
     capability_manifest::emit_canonical_manifest_json(plan.as_ref())
@@ -90,8 +99,22 @@ pub fn emit_wasm_module_native(
     native_lowered::emit_wasm_module_native(program)
 }
 
+pub fn emit_wasm_module_native_with_abi(
+    program: &Validated<LoweredProgram>,
+    abi_metadata: &AbiMetadata,
+) -> Result<wasm_ir::WasmModule, Diagnostic> {
+    native_lowered::emit_wasm_module_native_with_abi(program, abi_metadata)
+}
+
 pub fn emit_wasm_binary_native(program: &Validated<LoweredProgram>) -> Result<Vec<u8>, Diagnostic> {
     native_lowered::emit_wasm_binary_native(program)
+}
+
+pub fn emit_wasm_binary_native_with_abi(
+    program: &Validated<LoweredProgram>,
+    abi_metadata: &AbiMetadata,
+) -> Result<Vec<u8>, Diagnostic> {
+    native_lowered::emit_wasm_binary_native_with_abi(program, abi_metadata)
 }
 
 /// Emit a validated lowered program to WASM binary.
@@ -117,6 +140,23 @@ pub fn emit_wasm_binary(program: &Validated<LoweredProgram>) -> Result<Vec<u8>, 
         span: None,
         phase: None,
     })
+}
+
+pub fn emit_wasm_binary_with_abi(
+    program: &Validated<LoweredProgram>,
+    abi_metadata: &AbiMetadata,
+) -> Result<Vec<u8>, Diagnostic> {
+    match emit_wasm_binary_native_with_abi(program, abi_metadata) {
+        Ok(bytes) => return Ok(bytes),
+        Err(err)
+            if matches!(
+                err.code,
+                DiagCode::UnsupportedSyntax | DiagCode::UnsupportedModule
+            ) => {}
+        Err(err) => return Err(err),
+    }
+
+    emit_wasm_binary(program).map(|bytes| append_abi_custom_section(&bytes, abi_metadata))
 }
 
 pub fn program_requires_read_stdin_bytes_runtime(program: &LoweredProgram) -> bool {
@@ -159,8 +199,9 @@ mod tests {
     use super::runtime_link_plan::build_validated_runtime_link_plan;
     use super::{
         emit_canonical_manifest_json, emit_wasm_binary, emit_wasm_binary_mvp,
-        emit_wasm_binary_native, emit_wasm_module_binary, emit_wasm_module_native, emit_wat,
-        emitter::LocalFrame,
+        emit_wasm_binary_native, emit_wasm_binary_native_with_abi, emit_wasm_binary_with_abi,
+        emit_wasm_module_binary, emit_wasm_module_native, emit_wasm_module_native_with_abi,
+        emit_wat, emitter::LocalFrame,
     };
     use std::fs;
     use std::path::Path;
@@ -173,11 +214,54 @@ mod tests {
         Validated,
     };
     use ts2wasm_runtime_abi::{Layout, ValueTag};
+    use ts2wasm_shared::abi::{ABI_CUSTOM_SECTION_NAME, AbiMetadata};
     use ts2wasm_shared::test_helpers::unique_temp_dir;
     use ts2wasm_source::Span;
 
     fn wat_words(wat: &str) -> String {
         wat.split_whitespace().collect::<Vec<_>>().join(" ")
+    }
+
+    fn wasm_custom_section_payload<'a>(
+        wasm_bytes: &'a [u8],
+        section_name: &str,
+    ) -> Option<&'a [u8]> {
+        let mut offset = 8;
+        while offset < wasm_bytes.len() {
+            let section_id = wasm_bytes[offset];
+            offset += 1;
+            let (payload_len, len_size) = read_leb128_u32(&wasm_bytes[offset..]);
+            offset += len_size;
+            let section_end = offset + payload_len as usize;
+            if section_end > wasm_bytes.len() {
+                return None;
+            }
+            if section_id == 0 {
+                let (name_len, name_len_size) = read_leb128_u32(&wasm_bytes[offset..]);
+                let name_start = offset + name_len_size;
+                let name_end = name_start + name_len as usize;
+                if name_end <= section_end
+                    && &wasm_bytes[name_start..name_end] == section_name.as_bytes()
+                {
+                    return Some(&wasm_bytes[name_end..section_end]);
+                }
+            }
+            offset = section_end;
+        }
+        None
+    }
+
+    fn read_leb128_u32(bytes: &[u8]) -> (u32, usize) {
+        let mut result = 0u32;
+        let mut shift = 0;
+        for (i, byte) in bytes.iter().enumerate() {
+            result |= ((byte & 0x7f) as u32) << shift;
+            if byte & 0x80 == 0 {
+                return (result, i + 1);
+            }
+            shift += 7;
+        }
+        (result, bytes.len())
     }
 
     #[test]
@@ -498,6 +582,47 @@ mod tests {
     }
 
     #[test]
+    fn native_lowered_module_with_abi_carries_custom_section() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::String(
+                        "hello".to_owned(),
+                        Span::generated("test"),
+                    )],
+                    span: Span::generated("test"),
+                },
+                Span::generated("test"),
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let abi_metadata = AbiMetadata::default();
+        let expected_payload = abi_metadata.to_custom_section_payload();
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module =
+            emit_wasm_module_native_with_abi(&v, &abi_metadata).expect("native module should emit");
+
+        assert!(
+            module
+                .custom_sections
+                .iter()
+                .any(|section| section.name == ABI_CUSTOM_SECTION_NAME
+                    && section.payload == expected_payload),
+            "native module should carry ABI custom section"
+        );
+
+        let wasm = emit_wasm_module_binary(&module);
+        assert_eq!(
+            wasm_custom_section_payload(&wasm, ABI_CUSTOM_SECTION_NAME),
+            Some(expected_payload.as_slice())
+        );
+    }
+
+    #[test]
     fn native_lowered_binary_runs_locals_arithmetic_if_while_and_function_call() {
         let span = Span::generated("test");
         let program = LoweredProgram {
@@ -690,6 +815,55 @@ mod tests {
             wasmparser::Validator::new()
                 .validate_all(&emit_wasm_binary(&v).expect("main binary should fall back"))
                 .is_ok()
+        );
+    }
+
+    #[test]
+    fn emit_wasm_binary_with_abi_embeds_section_for_native_and_fallback_paths() {
+        let span = Span::generated("test");
+        let native_program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::String("hello".to_owned(), span)],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let fallback_program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::String("side-effect-free".to_owned(), span),
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let (native, _) = Validated::new(native_program).expect("native program should validate");
+        let (fallback, _) =
+            Validated::new(fallback_program).expect("fallback program should validate");
+        let abi_metadata = AbiMetadata::default();
+        let expected_payload = abi_metadata.to_custom_section_payload();
+
+        let native_wasm =
+            emit_wasm_binary_native_with_abi(&native, &abi_metadata).expect("native should emit");
+        let public_native_wasm =
+            emit_wasm_binary_with_abi(&native, &abi_metadata).expect("public native should emit");
+        let public_fallback_wasm =
+            emit_wasm_binary_with_abi(&fallback, &abi_metadata).expect("fallback should emit");
+
+        assert_eq!(public_native_wasm, native_wasm);
+        assert_eq!(
+            wasm_custom_section_payload(&public_native_wasm, ABI_CUSTOM_SECTION_NAME),
+            Some(expected_payload.as_slice())
+        );
+        assert_eq!(
+            wasm_custom_section_payload(&public_fallback_wasm, ABI_CUSTOM_SECTION_NAME),
+            Some(expected_payload.as_slice())
         );
     }
 

@@ -7,12 +7,13 @@ use ts2wasm_ir::lowered::{
 };
 use ts2wasm_runtime_abi::consts::RuntimeConst;
 use ts2wasm_runtime_abi::{Layout, ValueTag};
+use ts2wasm_shared::abi::{ABI_CUSTOM_SECTION_NAME, AbiMetadata};
 
 use crate::runtime_fn::HostImport;
 use crate::wasm_encoder_backend::WasmEncoderBackendExt;
 use crate::wasm_ir::{
-    WasmDataSegment, WasmExport, WasmFunction, WasmGlobal, WasmInstr, WasmMemory, WasmModule,
-    WasmValType, wasm_import_from_host_spec,
+    WasmCustomSection, WasmDataSegment, WasmExport, WasmFunction, WasmGlobal, WasmInstr,
+    WasmMemory, WasmModule, WasmValType, wasm_import_from_host_spec,
 };
 use crate::{DiagCode, Diagnostic, emitter::function_symbol};
 
@@ -27,8 +28,29 @@ pub fn emit_wasm_module_native(
     NativeLoweredEmitter::new(program.as_ref()).emit()
 }
 
+pub fn emit_wasm_module_native_with_abi(
+    program: &Validated<LoweredProgram>,
+    abi_metadata: &AbiMetadata,
+) -> Result<WasmModule, Diagnostic> {
+    emit_wasm_module_native(program).map(|module| add_abi_custom_section(module, abi_metadata))
+}
+
 pub fn emit_wasm_binary_native(program: &Validated<LoweredProgram>) -> Result<Vec<u8>, Diagnostic> {
     emit_wasm_module_native(program).map(|module| module.to_wasm_encoder())
+}
+
+pub fn emit_wasm_binary_native_with_abi(
+    program: &Validated<LoweredProgram>,
+    abi_metadata: &AbiMetadata,
+) -> Result<Vec<u8>, Diagnostic> {
+    emit_wasm_module_native_with_abi(program, abi_metadata).map(|module| module.to_wasm_encoder())
+}
+
+fn add_abi_custom_section(module: WasmModule, abi_metadata: &AbiMetadata) -> WasmModule {
+    module.custom_section(WasmCustomSection::new(
+        ABI_CUSTOM_SECTION_NAME,
+        abi_metadata.to_custom_section_payload(),
+    ))
 }
 
 struct NativeLoweredEmitter<'a> {

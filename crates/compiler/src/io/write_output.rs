@@ -2,9 +2,9 @@ use std::fs;
 use std::path::Path;
 use std::sync::atomic::AtomicUsize;
 
-use ts2wasm_backend_wasm::append_custom_section;
+use ts2wasm_backend_wasm::append_abi_custom_section;
 use ts2wasm_frontend::{DiagCode, Diagnostic};
-use ts2wasm_shared::abi::{ABI_CUSTOM_SECTION_NAME, AbiMetadata};
+use ts2wasm_shared::abi::AbiMetadata;
 
 /// Tracks how many times the removed wat2wasm CLI fallback was used.
 ///
@@ -41,8 +41,7 @@ pub fn write_wasm_bytes_with_abi(
     abi_metadata: Option<&AbiMetadata>,
 ) -> Result<(), Diagnostic> {
     let final_bytes = if let Some(meta) = abi_metadata {
-        let payload = meta.to_custom_section_payload();
-        append_custom_section(wasm_bytes, ABI_CUSTOM_SECTION_NAME, &payload)
+        append_abi_custom_section(wasm_bytes, meta)
     } else {
         wasm_bytes.to_vec()
     };
