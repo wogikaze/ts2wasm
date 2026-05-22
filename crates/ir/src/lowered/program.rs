@@ -5123,7 +5123,13 @@ fn lower_function_with_resolved_params(
     }
     body_with_defaults.extend(resolver.lower_block(body)?);
     let generator_state = if is_generator {
-        Some(generator_state_for_body(&body_with_defaults))
+        let state = generator_state_for_body(&body_with_defaults);
+        // Only desugar when there are suspend points and all yields are at the top level
+        if !state.suspend_points.is_empty() && !has_nested_yield(&body_with_defaults) {
+            let state_local = resolver.ctx.alloc_temp();
+            desugar_generator_body(&mut body_with_defaults, state_local, &state);
+        }
+        Some(state)
     } else {
         None
     };
@@ -5237,6 +5243,195 @@ fn collect_suspend_points(stmts: &[LoweredStmt], suspend_points: &mut Vec<Suspen
             | LoweredStmt::ClassDecl { .. } => {}
         }
     }
+}
+
+/// Check if a single statement recursively contains a `Yield`.
+fn contains_yield_stmt(stmt: &LoweredStmt) -> bool {
+    match stmt {
+        LoweredStmt::Yield(_, _) => true,
+        LoweredStmt::Block(stmts, _) => contains_yield_slice(stmts),
+        LoweredStmt::If {
+            then_body,
+            else_body,
+            ..
+        } => contains_yield_slice(then_body) || contains_yield_slice(else_body),
+        LoweredStmt::While { body, .. }
+        | LoweredStmt::DoWhile { body, .. }
+        | LoweredStmt::ForIn { body, .. }
+        | LoweredStmt::ForOf { body, .. }
+        | LoweredStmt::ForAwaitOfLower { body, .. } => contains_yield_slice(body),
+        LoweredStmt::For { init, body, .. } => {
+            init.as_ref()
+                .map_or(false, |i| contains_yield_stmt(i))
+                || contains_yield_slice(body)
+        }
+        LoweredStmt::TryFinally {
+            try_body,
+            finally_body,
+            ..
+        } => contains_yield_slice(try_body) || contains_yield_slice(finally_body),
+        LoweredStmt::TryCatch {
+            try_body,
+            catch_body,
+            finally_body,
+            ..
+        } => {
+            contains_yield_slice(try_body)
+                || catch_body
+                    .as_ref()
+                    .map_or(false, |b| contains_yield_slice(b))
+                || finally_body
+                    .as_ref()
+                    .map_or(false, |b| contains_yield_slice(b))
+        }
+        LoweredStmt::Switch { cases, .. } => {
+            cases.iter().any(|(_, body)| contains_yield_slice(body))
+        }
+        LoweredStmt::Labeled { body, .. } => contains_yield_stmt(body),
+        LoweredStmt::Let(_, _, _)
+        | LoweredStmt::Assign(_, _, _)
+        | LoweredStmt::Expr(_, _)
+        | LoweredStmt::Return(_, _)
+        | LoweredStmt::Throw(_, _)
+        | LoweredStmt::Break { .. }
+        | LoweredStmt::Continue { .. }
+        | LoweredStmt::Export { .. }
+        | LoweredStmt::ModuleExportsUpdate { .. }
+        | LoweredStmt::ModuleExportsAssign { .. }
+        | LoweredStmt::ClassDecl { .. } => false,
+    }
+}
+
+/// Check if any statement in a slice recursively contains a `Yield`.
+fn contains_yield_slice(stmts: &[LoweredStmt]) -> bool {
+    stmts.iter().any(|s| contains_yield_stmt(s))
+}
+
+/// Check if any yield is nested inside control flow (i.e., not at the top level).
+fn has_nested_yield(body: &[LoweredStmt]) -> bool {
+    body.iter().any(|stmt| match stmt {
+        LoweredStmt::Yield(_, _) => false,
+        LoweredStmt::Block(_, _)
+        | LoweredStmt::If { .. }
+        | LoweredStmt::While { .. }
+        | LoweredStmt::DoWhile { .. }
+        | LoweredStmt::ForIn { .. }
+        | LoweredStmt::ForOf { .. }
+        | LoweredStmt::ForAwaitOfLower { .. }
+        | LoweredStmt::For { .. }
+        | LoweredStmt::TryFinally { .. }
+        | LoweredStmt::TryCatch { .. }
+        | LoweredStmt::Switch { .. }
+        | LoweredStmt::Labeled { .. } => contains_yield_stmt(stmt),
+        LoweredStmt::Let(_, _, _)
+        | LoweredStmt::Assign(_, _, _)
+        | LoweredStmt::Expr(_, _)
+        | LoweredStmt::Return(_, _)
+        | LoweredStmt::Throw(_, _)
+        | LoweredStmt::Break { .. }
+        | LoweredStmt::Continue { .. }
+        | LoweredStmt::Export { .. }
+        | LoweredStmt::ModuleExportsUpdate { .. }
+        | LoweredStmt::ModuleExportsAssign { .. }
+        | LoweredStmt::ClassDecl { .. } => false,
+    })
+}
+
+/// Transform a generator function body into a while-switch state machine.
+///
+/// Takes a body like:
+/// ```ignore
+/// yield 1;
+/// yield 2;
+/// return 3;
+/// ```
+///
+/// And produces:
+/// ```ignore
+/// let state = 0;
+/// while (true) {
+///   switch (state) {
+///     case 0: yield 1; state = 1;
+///     case 1: yield 2; state = 2;
+///     case 2: return 3;
+///   }
+/// }
+/// ```
+///
+/// Only call this when all yields are at the top level (no nested control flow).
+fn desugar_generator_body(
+    body: &mut Vec<LoweredStmt>,
+    state_local: LocalId,
+    generator_state: &GeneratorState,
+) {
+    let original_body = std::mem::take(body);
+    let mut cases: Vec<Vec<LoweredStmt>> = Vec::new();
+    let mut current_case: Vec<LoweredStmt> = Vec::new();
+    let suspend_count = generator_state.suspend_points.len();
+
+    for stmt in original_body {
+        match stmt {
+            LoweredStmt::Yield(expr, span) => {
+                current_case.push(LoweredStmt::Yield(expr, span));
+                // Set next state and break so the while loop can re-evaluate
+                // the switch with the new state.
+                let next_state = (cases.len() + 1) as i32;
+                current_case.push(LoweredStmt::Assign(
+                    state_local,
+                    LoweredExpr::Number(next_state, Span::generated("gen")),
+                    Span::generated("gen"),
+                ));
+                if cases.len() < suspend_count {
+                    current_case.push(LoweredStmt::Break {
+                        label: None,
+                        span: Span::generated("gen"),
+                    });
+                }
+                cases.push(std::mem::take(&mut current_case));
+            }
+            other_stmt => {
+                current_case.push(other_stmt);
+            }
+        }
+    }
+
+    // If there are remaining statements after the last yield, add as the final case
+    if !current_case.is_empty() {
+        cases.push(std::mem::take(&mut current_case));
+    }
+
+    // Ensure at least one case exists
+    if cases.is_empty() {
+        cases.push(vec![]);
+    }
+
+    let switch_cases: Vec<(Option<LoweredExpr>, Vec<LoweredStmt>)> = cases
+        .into_iter()
+        .enumerate()
+        .map(|(i, stmts)| {
+            (
+                Some(LoweredExpr::Number(i as i32, Span::generated("gen"))),
+                stmts,
+            )
+        })
+        .collect();
+
+    *body = vec![
+        LoweredStmt::Let(
+            state_local,
+            LoweredExpr::Number(0, Span::generated("gen")),
+            Span::generated("gen"),
+        ),
+        LoweredStmt::While {
+            condition: LoweredExpr::Bool(true, Span::generated("gen")),
+            body: vec![LoweredStmt::Switch {
+                expr: LoweredExpr::Local(state_local, Span::generated("gen")),
+                cases: switch_cases,
+                span: Span::generated("gen"),
+            }],
+            span: Span::generated("gen"),
+        },
+    ];
 }
 
 pub(super) fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnostic> {

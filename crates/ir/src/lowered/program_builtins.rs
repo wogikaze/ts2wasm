@@ -144,8 +144,8 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "isFinite" => Some(RuntimeFn::NumberIsFinite),
                 "isInteger" => Some(RuntimeFn::NumberIsInteger),
                 "isSafeInteger" => Some(RuntimeFn::NumberIsSafeInteger),
-                "parseInt" => Some(RuntimeFn::ParseInt),
-                "parseFloat" => Some(RuntimeFn::ParseFloat),
+                "parseInt" => Some(RuntimeFn::GlobalParseInt),
+                "parseFloat" => Some(RuntimeFn::GlobalParseFloat),
                 _ => None,
             };
         }
