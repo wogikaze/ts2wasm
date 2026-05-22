@@ -429,25 +429,25 @@ fn cook_template_segment(raw: &str, span: Span) -> Result<String, Diagnostic> {
                 '0' => {
                     if matches!(next_char_at(raw, cursor), Some((_, '0'..='9'))) {
                         return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
+                            code: DiagCode::SyntaxError,
                             message:
-                                "issue-229: legacy octal escapes are not allowed in template literal text"
+                                "legacy octal escape sequences are not allowed in template literal text"
                                     .to_owned(),
                             span: Some(span),
 
-                            phase: None,});
+                            phase: Some("parser")});
                     }
                     '\0'
                 }
                 '1'..='9' => {
                     return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
+                        code: DiagCode::SyntaxError,
                         message:
-                            "issue-229: legacy octal escapes are not allowed in template literal text"
+                            "legacy octal escape sequences are not allowed in template literal text"
                                 .to_owned(),
                         span: Some(span),
 
-                        phase: None,});
+                        phase: Some("parser")});
                 }
                 other => other,
             });

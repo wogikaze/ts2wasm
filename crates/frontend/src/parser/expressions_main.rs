@@ -1220,6 +1220,15 @@ impl Parser {
         } else if let Some(delete_span) = self.consume_span(TokenKind::Delete) {
             let expr = self.unary()?;
             let end = expr.span().end;
+            // ES5.1 §11.4.1: In strict mode, deleting an unqualified identifier is a SyntaxError
+            if self.strict_mode && matches!(&expr, Expr::Ident { .. }) {
+                return Err(Diagnostic {
+                    code: DiagCode::SyntaxError,
+                    message: "cannot delete an unqualified identifier in strict mode".to_owned(),
+                    span: Some(Span { start: delete_span.start, end }),
+                    phase: Some("parser"),
+                });
+            }
             Ok(Expr::Unary {
                 op: UnaryOp::Delete,
                 expr: Box::new(expr),
@@ -1996,6 +2005,7 @@ impl Parser {
                 span: start,
             }) => {
                 let mut props = Vec::new();
+                let mut seen_proto = false;
                 if !self.consume(TokenKind::RightBrace) {
                     loop {
                         if self.consume(TokenKind::DotDotDot) {
@@ -2057,6 +2067,28 @@ impl Parser {
                         } else {
                             let parsed_key = self.parse_object_key()?;
                             self.parse_object_literal_property_after_key(parsed_key, &mut props)?;
+                        }
+                        // Check for duplicate __proto__ keys in strict mode
+                        if self.strict_mode {
+                            if let Some(Some(key)) = props.last().map(|p| p.static_key()) {
+                                if key == "__proto__" {
+                                    if seen_proto {
+                                        return Err(Diagnostic {
+                                            code: DiagCode::SyntaxError,
+                                            message: "duplicate '__proto__' key is not allowed in strict mode".to_owned(),
+                                            span: None,
+                                            phase: Some("parser"),
+                                        });
+                                    }
+                                    seen_proto = true;
+                                }
+                            }
+                        } else if !seen_proto {
+                            if let Some(Some(key)) = props.last().map(|p| p.static_key()) {
+                                if key == "__proto__" {
+                                    seen_proto = true;
+                                }
+                            }
                         }
                         if self.consume(TokenKind::RightBrace) {
                             break;
