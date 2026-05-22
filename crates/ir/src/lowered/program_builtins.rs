@@ -230,6 +230,7 @@ pub(crate) fn resolve_method_to_runtime_fn(
         "replace" => Some(RuntimeFn::StringReplace),
         "replaceAll" => Some(RuntimeFn::StringReplaceAll),
         "match" => Some(RuntimeFn::StringMatch),
+        "matchAll" => Some(RuntimeFn::StringMatchAll),
         "search" => Some(RuntimeFn::StringSearch),
         "substr" => Some(RuntimeFn::StringSubstr),
         "trim" => Some(RuntimeFn::StringTrim),
@@ -249,6 +250,7 @@ pub(crate) fn resolve_method_to_runtime_fn(
         "codePointAt" => Some(RuntimeFn::StringCodePointAt),
         "isWellFormed" => Some(RuntimeFn::StringIsWellFormed),
         "toWellFormed" => Some(RuntimeFn::StringToWellFormed),
+        "normalize" => Some(RuntimeFn::StringNormalize),
         "hasOwnProperty" => Some(RuntimeFn::ObjectHasOwnProperty),
         "propertyIsEnumerable" => Some(RuntimeFn::PropertyIsEnumerable),
         "isPrototypeOf" => Some(RuntimeFn::IsPrototypeOf),
@@ -416,6 +418,7 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("String", "toLowerCase") => Some(RuntimeFn::StringToLowerCase),
         ("String", "localeCompare") => Some(RuntimeFn::StringLocaleCompare),
         ("String", "match") => Some(RuntimeFn::StringMatch),
+        ("String", "matchAll") => Some(RuntimeFn::StringMatchAll),
         ("String", "search") => Some(RuntimeFn::StringSearch),
         ("String", "replace") => Some(RuntimeFn::StringReplace),
         ("String", "replaceAll") => Some(RuntimeFn::StringReplaceAll),
@@ -1335,16 +1338,25 @@ pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
                     | b'r' | b'f' | b'v'
                     // Escaped metacharacters
                     | b'\\' | b'/' | b'.' | b'^' | b'$' | b'+' | b'*' | b'?' | b'(' | b')'
-                    | b'[' | b']' | b'{' | b'}' | b'|'
-                    // Backreferences \1..\9
-                    | b'1'..=b'9'
-                    // Named backreferences \k<name>
-                    | b'k' => {
+                    | b'[' | b']' | b'{' | b'}' | b'|' => {
                         i += 2;
                     }
+                    // Decimal backreference \1 through \9
                     b'1'..=b'9' => {
-                        // Decimal backreference \1 through \9
                         i += 2;
+                    }
+                    // Unicode property escape: \p{...} or \P{...}
+                    b'p' | b'P' => {
+                        i += 2; // skip past \p or \P
+                        if i < bytes.len() && bytes[i] == b'{' {
+                            i += 1; // skip {
+                            while i < bytes.len() && bytes[i] != b'}' {
+                                i += 1;
+                            }
+                            if i < bytes.len() {
+                                i += 1; // skip }
+                            }
+                        }
                     }
                     b'k' => {
                         // Named backreference: \k<name>

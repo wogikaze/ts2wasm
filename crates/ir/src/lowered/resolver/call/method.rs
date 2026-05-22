@@ -1394,9 +1394,18 @@ impl super::super::Resolver {
             return Err(private_storage_observable_access_diagnostic(Some(span)));
         }
         if method == "matchAll" {
-            return Ok(Some(
-                self.lower_string_match_all_literal(object, args, span)?,
-            ));
+            // Use compile-time expansion for static string receivers; fall through to
+            // class-dispatched RuntimeFn::StringMatchAll for dynamic receivers.
+            if crate::lowered::resolver::string::resolved_expr_static_string_value(
+                &self.ctx,
+                object,
+            )
+            .is_some()
+            {
+                return Ok(Some(
+                    self.lower_string_match_all_literal(object, args, span)?,
+                ));
+            }
         }
         if let Some(result) = self.try_lower_regexp_ident_local(object, method, args, span)? {
             return Ok(Some(result));
