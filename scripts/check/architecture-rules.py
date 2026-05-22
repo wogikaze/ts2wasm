@@ -929,10 +929,10 @@ def check_diagnostic_span_none() -> list[str]:
     """
     violations = []
     diag_re = re.compile(
-        r'Diagnostic\s*\{[^}]*?span:\s*None[^}]*?\}',
+        r'(?<!\w)Diagnostic\s*\{[^}]*?span:\s*None[^}]*?\}',
         re.DOTALL,
     )
-    invariant_code_re = re.compile(r'code:\s*DiagCode::InvariantViolation')
+    invariant_code_re = re.compile(r'code:\s*(?:ts2wasm_frontend::)?DiagCode::InvariantViolation')
     backend_io_code_re = re.compile(r'code:\s*DiagCode::BackendIo')
 
     for path in sorted(iter_repo_files(".rs")):

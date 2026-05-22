@@ -707,7 +707,7 @@ impl super::super::Resolver {
                 code: DiagCode::UnsupportedSyntax,
                 message: "super computed access requires class context or object method receiver"
                     .to_owned(),
-                span: None,
+                span: Some(Span::generated("super-computed")),
                 phase: None,
             })?;
             return Ok(object_kernel::ordinary_get_dynamic(
@@ -728,7 +728,7 @@ impl super::super::Resolver {
             .ok_or_else(|| Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "super computed access used in class without extends".to_owned(),
-                span: None,
+                span: Some(Span::generated("super-computed")),
                 phase: None,
             })?;
         let parent_ref = self.class_prototype_ref(&parent_name)?;

@@ -1396,6 +1396,7 @@ impl Parser {
         if self.peek_function_body_use_strict() {
             self.strict_mode = true;
         }
+        self.check_duplicate_params(&params)?;
         let body = self.block()?;
         self.strict_mode = prev_strict_mode;
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);

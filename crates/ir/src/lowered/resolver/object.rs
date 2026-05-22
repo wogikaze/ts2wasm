@@ -19,7 +19,7 @@ impl super::Resolver {
                     message:
                         "issue-410: computed keys in statically spread object literals are not supported"
                             .to_owned(),
-                    span: None,
+                    span: Some(Span::generated("issue-410")),
 
                     phase: None,
                 });
@@ -32,7 +32,7 @@ impl super::Resolver {
                         message:
                             "issue-274: object literal spread is only supported for object literals and known static object-literal locals in this milestone"
                                 .to_owned(),
-                        span: None,
+                        span: Some(Span::generated("issue-274")),
 
                         phase: None,}
                 })?;
@@ -68,7 +68,7 @@ impl super::Resolver {
                     message:
                         "issue-67ZV8S: object literal getter/setter accessors are not supported"
                             .to_owned(),
-                    span: None,
+                    span: Some(Span::generated("issue-67ZV8S")),
                     phase: None,
                 });
             }

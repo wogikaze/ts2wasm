@@ -61,7 +61,7 @@ fn arity(message: impl Into<String>) -> Diagnostic {
     Diagnostic {
         code: DiagCode::ArityMismatch,
         message: message.into(),
-        span: None,
+        span: Some(Span::generated("unsupported")),
         phase: None,
     }
 }

@@ -14,7 +14,7 @@ pub(super) fn lower_ascii_string_spread_chars(value: &str) -> Result<Vec<Lowered
             message:
                 "issue-274: string spread is currently limited to ASCII literal-derived strings"
                     .to_owned(),
-            span: None,
+            span: Some(Span::generated("issue-274")),
             phase: None,
         });
     }

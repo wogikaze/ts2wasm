@@ -577,7 +577,7 @@ impl super::super::Resolver {
             .ok_or_else(|| Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "super property assignment requires class context".to_owned(),
-                span: None,
+                span: Some(Span::generated("super-assign")),
                 phase: None,
             })?;
         let _parent_name = self
@@ -589,7 +589,7 @@ impl super::super::Resolver {
             .ok_or_else(|| Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "super property assignment used in class without extends".to_owned(),
-                span: None,
+                span: Some(Span::generated("super-assign")),
                 phase: None,
             })?;
         Ok(object_kernel::ordinary_set(
@@ -614,7 +614,7 @@ impl super::super::Resolver {
             .ok_or_else(|| Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "super computed assignment requires class context".to_owned(),
-                span: None,
+                span: Some(Span::generated("super-computed")),
                 phase: None,
             })?;
         let _parent_name = self
@@ -626,7 +626,7 @@ impl super::super::Resolver {
             .ok_or_else(|| Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "super computed assignment used in class without extends".to_owned(),
-                span: None,
+                span: Some(Span::generated("super-computed")),
                 phase: None,
             })?;
         Ok(object_kernel::ordinary_set_dynamic(

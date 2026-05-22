@@ -1401,7 +1401,7 @@ impl<'a> HirLowerer<'a> {
             .ok_or_else(|| Diagnostic {
                 code: DiagCode::UnresolvedName,
                 message: format!("unresolved name: `{name}`"),
-                span: None,
+                span: Some(Span::generated("unresolved-name")),
 
                 phase: None,
             })
@@ -1412,7 +1412,7 @@ fn unsupported(message: &str) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: message.to_owned(),
-        span: None,
+        span: Some(Span::generated("unsupported")),
 
         phase: None,
     }

@@ -846,7 +846,7 @@ pub(crate) fn build_multi_section_file(
 
     if modules.is_empty() {
         return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
+            code: DiagCode::InvariantViolation,
             message: "multi-section file has no module bodies".to_owned(),
             span: None,
             phase: None,

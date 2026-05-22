@@ -1496,7 +1496,7 @@ impl Parser {
                         message:
                             "issue-5150: empty element access `expr[]` requires an index expression"
                                 .to_owned(),
-                        span: None,
+                        span: Some(self.prev_span().unwrap_or(Span::generated("parser"))),
 
                         phase: None,});
                 }

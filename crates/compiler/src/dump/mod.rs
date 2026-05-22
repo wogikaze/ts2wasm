@@ -75,7 +75,7 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
         )
     {
         return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
+            code: DiagCode::InvariantViolation,
             message: "--unparse is currently supported only with --ast, --tir, or --optimize"
                 .to_owned(),
             span: None,

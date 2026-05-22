@@ -108,7 +108,7 @@ impl super::Resolver {
                         message:
                             "issue-274: array literal spread is only supported for literal arrays, known dense array locals, and known Set locals in this milestone"
                                 .to_owned(),
-                        span: None,
+                        span: Some(Span::generated("issue-274")),
 
                         phase: None,});
                 }
@@ -682,7 +682,7 @@ impl super::Resolver {
                             message:
                                 "issue-274: array literal spread is only supported for literal arrays and ASCII literal-derived strings in this milestone"
                                     .to_owned(),
-                            span: None,
+                            span: Some(Span::generated("issue-274")),
 
                             phase: None,});
                     }
@@ -958,7 +958,7 @@ impl super::Resolver {
                     message:
                         "issue-270: Array.prototype.reduce without initialValue is not yet supported"
                             .to_owned(),
-                    span: None,
+                    span: Some(Span::generated("issue-270")),
 
                     phase: None,});
             };
@@ -2328,7 +2328,7 @@ impl super::Resolver {
                 message:
                     "issue-270: Array.prototype.reduce without initialValue is not yet supported"
                         .to_owned(),
-                span: None,
+                span: Some(Span::generated("issue-270")),
 
                 phase: None,
             });

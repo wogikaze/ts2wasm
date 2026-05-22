@@ -4,7 +4,7 @@ impl<'a> Lexer<'a> {
         let quote = self.advance_char().ok_or(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: "expected string delimiter".to_owned(),
-            span: None,
+            span: Some(Span { start, end: self.cursor }),
 
             phase: None,})?;
         let mut value = String::new();

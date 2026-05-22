@@ -1513,7 +1513,7 @@ fn resolve_stmt_with_outer_bindings(
                             code: DiagCode::UnsupportedSyntax,
                             message: "only simple inheritance (extends ClassName) is supported"
                                 .to_owned(),
-                            span: None,
+                            span: Some(Span::generated("issue-066")),
 
                             phase: None,});
                     }
@@ -1551,7 +1551,7 @@ fn resolve_stmt_with_outer_bindings(
                             return Err(Diagnostic {
                                 code: DiagCode::DuplicateFunction,
                                 message: "duplicate constructor definition".to_owned(),
-                                span: None,
+                                span: Some(Span::generated("duplicate-constructor")),
 
                                 phase: None,});
                         }
@@ -1637,7 +1637,7 @@ fn resolve_stmt_with_outer_bindings(
                             code: DiagCode::UnsupportedSyntax,
                             message: "class body may only contain methods and constructors"
                                 .to_owned(),
-                            span: None,
+                            span: Some(Span::generated("class-body")),
 
                             phase: None,});
                     }
@@ -1839,7 +1839,7 @@ fn resolve_stmt_with_outer_bindings(
             message:
                 "issue-055: internal — static module declaration reached resolver without compiler rewrite"
                     .to_owned(),
-            span: None,
+            span: Some(Span::generated("issue-055")),
 
             phase: None,}),
     }
@@ -2121,7 +2121,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "require() expects a string literal argument".to_owned(),
-                    span: None,
+                    span: Some(Span::generated("require-literal")),
 
                     phase: None,
                 })
@@ -2546,7 +2546,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "only new ClassName(...) is supported".to_owned(),
-                    span: None,
+                    span: Some(Span::generated("new-classname")),
 
                     phase: None,
                 })

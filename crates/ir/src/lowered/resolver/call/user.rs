@@ -351,7 +351,7 @@ impl super::super::Resolver {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "super(...) is only supported in constructors".to_owned(),
-                    span: None,
+                    span: Some(Span::generated("super-spread")),
 
                     phase: None,
                 });
@@ -364,7 +364,7 @@ impl super::super::Resolver {
                 .ok_or_else(|| Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "super(...) requires class context".to_owned(),
-                    span: None,
+                    span: Some(Span::generated("super-spread")),
 
                     phase: None,
                 })?;
@@ -377,7 +377,7 @@ impl super::super::Resolver {
                 .ok_or_else(|| Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "super(...) used in class without extends".to_owned(),
-                    span: None,
+                    span: Some(Span::generated("super-spread")),
 
                     phase: None,
                 })?;

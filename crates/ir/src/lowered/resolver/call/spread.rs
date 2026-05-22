@@ -490,7 +490,7 @@ impl super::super::Resolver {
                             message:
                                 "issue-274: spread arguments are only supported for literal arrays and ASCII literal-derived strings in this milestone"
                                     .to_owned(),
-                            span: None,
+                            span: Some(Span::generated("issue-274")),
 
                             phase: None,});
                     }

@@ -650,7 +650,7 @@ impl super::super::Resolver {
                 code: DiagCode::UnsupportedSyntax,
                 message: "generator method iterator binding points at an unknown function"
                     .to_owned(),
-                span: None,
+                span: Some(Span::generated("generator-method")),
                 phase: None,
             })?;
         let result_local = self.alloc_temp();
@@ -4728,7 +4728,7 @@ impl super::super::Resolver {
                 let lowered_arg = self.lower_expr(args.first().ok_or_else(|| Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "Intl.NumberFormat.format requires an argument".to_owned(),
-                    span: None,
+                    span: Some(Span::generated("intl")),
                     phase: None,
                 })?)?;
                 let options_json = serialize_intl_options(options);
@@ -4762,7 +4762,7 @@ impl super::super::Resolver {
                 let lowered_arg = self.lower_expr(args.first().ok_or_else(|| Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "Intl.NumberFormat.formatToParts requires an argument".to_owned(),
-                    span: None,
+                    span: Some(Span::generated("intl")),
                     phase: None,
                 })?)?;
                 let options_json = serialize_intl_options(options);
@@ -4903,7 +4903,7 @@ impl super::super::Resolver {
                 let lowered_arg = self.lower_expr(args.first().ok_or_else(|| Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "Intl.DateTimeFormat.format requires an argument".to_owned(),
-                    span: None,
+                    span: Some(Span::generated("intl-dtf")),
                     phase: None,
                 })?)?;
                 let options_json = serialize_intl_date_time_options(options);

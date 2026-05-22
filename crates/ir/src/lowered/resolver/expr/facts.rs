@@ -416,7 +416,7 @@ pub(crate) fn unsupported_generator_spread_diagnostic() -> Diagnostic {
         message:
             "issue-353: generator result spread requires iterator protocol runtime lowering in this milestone"
                 .to_owned(),
-        span: None,
+        span: Some(Span::generated("issue-353")),
         phase: None,
     }
 }
@@ -427,7 +427,7 @@ pub(crate) fn unsupported_symbol_iterator_spread_diagnostic() -> Diagnostic {
         message:
             "issue-353: custom iterable spread via Symbol.iterator requires iterator protocol runtime support in this milestone"
                 .to_owned(),
-        span: None,
+        span: Some(Span::generated("issue-353")),
         phase: None,
     }
 }

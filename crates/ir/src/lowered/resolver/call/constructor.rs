@@ -203,7 +203,7 @@ impl super::super::Resolver {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-5243: string-based Date parsing like new Date(\"2024-01-01\") is not supported in this slice".to_owned(),
-                    span: None,
+                    span: Some(Span::generated("issue-5243")),
 
                     phase: None,
                 });
@@ -227,7 +227,7 @@ impl super::super::Resolver {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-405: new Array(length) currently supports exactly one length argument".to_owned(),
-                    span: None,
+                    span: Some(Span::generated("issue-405")),
 
                     phase: None,
                 });
@@ -285,7 +285,7 @@ impl super::super::Resolver {
                     message:
                         "issue-276: new Set(iterable) currently supports only known dense array inputs"
                             .to_owned(),
-                    span: None,
+                    span: Some(Span::generated("issue-276")),
 
                     phase: None,
                 });
@@ -337,7 +337,7 @@ impl super::super::Resolver {
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-5422: new Promise() without executor is not supported"
                         .to_owned(),
-                    span: None,
+                    span: Some(Span::generated("issue-5422")),
 
                     phase: None,
                 });

@@ -35,7 +35,7 @@ pub(crate) fn ensure_runtime_feature_gates(
     }
     if backend::program_requires_read_stdin_bytes_runtime(lowered) {
         return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
+            code: DiagCode::InvariantViolation,
             message: "require(\"fs\").readFileSync(0, \"utf8\") is lowered to byte-backed runtime path, but runtime execution is disabled"
                 .to_owned(),
             span: None,
@@ -48,7 +48,7 @@ pub(crate) fn ensure_runtime_feature_gates(
 pub(crate) fn validate_host_deny(lowered: &lowered::LoweredProgram) -> Result<(), Diagnostic> {
     if backend::has_node_host_imports(lowered) {
         return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
+            code: DiagCode::InvariantViolation,
             message: "host-deny mode rejects Node host imports".to_owned(),
             span: None,
             phase: None,

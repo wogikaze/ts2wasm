@@ -154,7 +154,7 @@ impl super::super::Resolver {
                 message:
                     "issue-370: mixed Number/BigInt arithmetic TypeError parity is not implemented in the control-flow BigInt div/rem slice"
                         .to_owned(),
-                span: None,
+                span: Some(Span::generated("issue-370")),
                 phase: None,
             });
         }

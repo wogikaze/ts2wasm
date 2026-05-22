@@ -164,7 +164,7 @@ impl super::super::Resolver {
                 code: DiagCode::UnsupportedSyntax,
                 message: "issue-5255: super property access is not supported in this milestone"
                     .to_owned(),
-                span: None,
+                span: Some(Span::generated("issue-5255")),
                 phase: None,
             });
         }
@@ -178,7 +178,7 @@ impl super::super::Resolver {
                 message:
                     "issue-062d: `arguments` is only supported inside non-arrow functions in this milestone"
                         .to_owned(),
-                span: None,
+                span: Some(Span::generated("issue-062d")),
                 phase: None,
             }),
             Err(_) if self.ctx.classes.class_constructor_ids.contains_key(name) => {
@@ -217,7 +217,7 @@ impl super::super::Resolver {
             message:
                 "issue-274: spread expressions are only supported in call arguments over literal arrays in this milestone"
                     .to_owned(),
-            span: None,
+            span: Some(Span::generated("issue-274")),
             phase: None,
         })
     }
