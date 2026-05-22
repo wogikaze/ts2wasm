@@ -207,6 +207,12 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 _ => None,
             };
         }
+        if name == "Iterator" {
+            return match method {
+                "from" => Some(RuntimeFn::IteratorFrom),
+                _ => None,
+            };
+        }
     }
     match method {
         "concat" => Some(RuntimeFn::Concat),
