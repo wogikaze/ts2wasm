@@ -1780,10 +1780,6 @@ impl Parser {
 
         // Try to parse a simple identifier or variable declaration
         let is_for_in_of = if matches!(self.peek(), Some(Token::Var | Token::Let | Token::Const)) {
-            eprintln!(
-                "DBG: var/let/const lookahead START, saved_cursor={}",
-                saved_cursor
-            );
             self.advance();
             match self.peek() {
                 Some(Token::Ident(_) | Token::LeftBracket | Token::LeftBrace) => {
@@ -1915,13 +1911,8 @@ impl Parser {
 
         self.cursor = saved_cursor;
 
-        eprintln!("DBG: is_for_in_of={}", is_for_in_of);
-
         if is_for_in_of {
             // Parse for-in or for-of
-            if matches!(self.peek(), Some(Token::Var | Token::Let | Token::Const)) {
-                self.advance();
-            }
             // Check if we have a var/let/const declaration
             let has_decl = matches!(self.peek(), Some(Token::Var | Token::Let | Token::Const));
             if has_decl {

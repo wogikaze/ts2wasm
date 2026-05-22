@@ -1677,6 +1677,205 @@ mod tests {
     }
 
     #[test]
+    fn parses_for_in_no_decl_identifier() {
+        // `for (x in y)` with simple identifier (no var/let/const)
+        let stmts = parse_program("var obj;\nfor (x in obj) {}").unwrap();
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForIn { var, body, .. } = &stmts[1] else {
+            panic!("expected ForIn statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "x");
+        assert!(body.is_empty());
+    }
+
+    #[test]
+    fn parses_for_of_no_decl_identifier() {
+        // `for (x of y)` with simple identifier (no var/let/const)
+        let stmts = parse_program("var arr;\nfor (x of arr) {}").unwrap();
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForOf { var, body, .. } = &stmts[1] else {
+            panic!("expected ForOf statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "x");
+        assert!(body.is_empty());
+    }
+
+    #[test]
+    fn parses_for_in_member_expression_lhs() {
+        // `for (x.y in obj)` — member expression LHS
+        let stmts = parse_program("var x = {};\nfor (x.y in obj) {}").unwrap();
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForIn { var, body, .. } = &stmts[1] else {
+            panic!("expected ForIn statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "_binding");
+        assert!(matches!(
+            body.first(),
+            Some(Stmt::Expr {
+                expr: Expr::PropertyAssign { property, .. },
+                ..
+            }) if property == "y"
+        ));
+    }
+
+    #[test]
+    fn parses_for_of_member_expression_lhs() {
+        // `for (x.y of iter)` — member expression LHS in for-of
+        let stmts = parse_program("var x = {};\nfor (x.y of iter) {}").unwrap();
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForOf { var, body, .. } = &stmts[1] else {
+            panic!("expected ForOf statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "_binding");
+        assert!(matches!(
+            body.first(),
+            Some(Stmt::Expr {
+                expr: Expr::PropertyAssign { property, .. },
+                ..
+            }) if property == "y"
+        ));
+    }
+
+    #[test]
+    fn parses_for_in_paren_identifier_lhs() {
+        // `for ((x) in obj)` — parenthesized identifier
+        let stmts = parse_program("var obj;\nfor ((x) in obj) {}").unwrap();
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForIn { var, .. } = &stmts[1] else {
+            panic!("expected ForIn statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "x");
+    }
+
+    #[test]
+    fn parses_for_in_var_declaration() {
+        // `for (var x in y)` — valid var declaration without initializer
+        let stmts = parse_program("var obj;\nfor (var x in obj) {}").unwrap();
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForIn { var, .. } = &stmts[1] else {
+            panic!("expected ForIn statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "x");
+    }
+
+    #[test]
+    fn parses_for_in_let_declaration() {
+        // `for (let x in y)` — valid let declaration without initializer
+        let stmts = parse_program("var obj;\nfor (let x in obj) {}").unwrap();
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForIn { var, .. } = &stmts[1] else {
+            panic!("expected ForIn statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "x");
+    }
+
+    #[test]
+    fn parses_for_in_const_declaration() {
+        // `for (const x in y)` — valid const declaration without initializer
+        let stmts = parse_program("var obj;\nfor (const x in obj) {}").unwrap();
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForIn { var, .. } = &stmts[1] else {
+            panic!("expected ForIn statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "x");
+    }
+
+    #[test]
+    fn rejects_for_in_var_with_initializer() {
+        // `for (var x = 1 in obj)` — SyntaxError for initializer in var declaration
+        let result = parse_program("for (var x = 1 in obj) {}");
+        let msg = format!("expected SyntaxError, got {:?}", result);
+        assert!(result.is_err(), "{}", msg);
+        if let Err(err) = &result {
+            assert_eq!(err.code, DiagCode::SyntaxError, "wrong error code: {}", msg);
+            assert!(err.message.contains("initializer"), "wrong error message: {}", err.message);
+        }
+    }
+
+    #[test]
+    fn rejects_for_in_const_with_initializer() {
+        // `for (const x = 1 in y)` — SyntaxError for initializer in const declaration
+        let result = parse_program("for (const x = 1 in obj) {}");
+        let msg = format!("expected SyntaxError, got {:?}", result);
+        assert!(result.is_err(), "{}", msg);
+        if let Err(err) = &result {
+            assert_eq!(err.code, DiagCode::SyntaxError, "wrong error code: {}", msg);
+            assert!(err.message.contains("initializer"), "wrong error message: {}", err.message);
+        }
+    }
+
+    #[test]
+    fn rejects_for_in_non_assignment_target() {
+        // `for (1 in obj)` — literal is not a valid assignment target
+        let result = parse_program("for (1 in {}) {}");
+        assert!(result.is_err(), "expected SyntaxError for literal in for-in");
+        if let Err(err) = result {
+            assert_eq!(err.code, DiagCode::SyntaxError);
+        }
+    }
+
+    #[test]
+    fn rejects_for_of_non_assignment_target() {
+        // `for (1 of arr)` — literal is not a valid assignment target
+        let result = parse_program("for (1 of []) {}");
+        assert!(result.is_err(), "expected SyntaxError for literal in for-of");
+        if let Err(err) = result {
+            assert_eq!(err.code, DiagCode::SyntaxError);
+        }
+    }
+
+    #[test]
+    fn parses_for_in_destructuring_array() {
+        // `for ([x] in obj)` — array destructuring pattern
+        let stmts = parse_program("var obj;\nfor ([x] in obj) {}").unwrap();
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForIn { var, .. } = &stmts[1] else {
+            panic!("expected ForIn statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "_binding");
+    }
+
+    #[test]
+    fn parses_for_of_destructuring_array() {
+        // `for ([x] of arr)` — array destructuring in for-of
+        let stmts = parse_program("var arr;\nfor ([x] of arr) {}").unwrap();
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForOf { var, .. } = &stmts[1] else {
+            panic!("expected ForOf statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "_binding");
+    }
+
+    #[test]
+    fn parses_for_in_let_destructuring() {
+        // `for (let[x] in obj)` — `let` keyword with array destructuring
+        let stmts = parse_program("var obj;\nfor (let[x] in obj) {}").unwrap();
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForIn { var, .. } = &stmts[1] else {
+            panic!("expected ForIn statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "_binding");
+    }
+
+    #[test]
+    fn parses_for_in_index_expression_lhs() {
+        // `for (a[b] in obj)` — computed member expression LHS
+        let stmts = parse_program("var a = {};\nfor (a[b] in obj) {}").unwrap();
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForIn { var, body, .. } = &stmts[1] else {
+            panic!("expected ForIn statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "_binding");
+        assert!(matches!(
+            body.first(),
+            Some(Stmt::Expr {
+                expr: Expr::IndexAssign { .. },
+                ..
+            })
+        ));
+    }
+
+    #[test]
     fn skips_class_index_signature() {
         let stmts = parse_program("class Foo { [key: string]: number; }").unwrap();
         assert_eq!(stmts.len(), 1);

@@ -14,6 +14,7 @@ use crate::name_resolver::{
 };
 use std::collections::HashSet;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
+use ts2wasm_source::Span;
 use ts2wasm_syntax::{BinaryOp, OBJECT_SPREAD_SENTINEL, SYMBOL_ITERATOR_OBJECT_KEY, UnaryOp};
 
 pub(crate) fn update_bigint_local(ctx: &mut LoweringCtx, local_id: LocalId, expr: &ResolvedExpr) {

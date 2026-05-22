@@ -28,12 +28,7 @@ pub(crate) enum AmdPattern {
 pub(crate) fn detect_amd_define(stmt: &Stmt) -> Option<AmdPattern> {
     let (callee, args, span) = match stmt {
         Stmt::Expr {
-            expr:
-                Expr::Call {
-                    callee,
-                    args,
-                    span,
-                },
+            expr: Expr::Call { callee, args, span },
             ..
         } => (callee, args, *span),
         _ => return None,
@@ -72,13 +67,9 @@ pub(crate) fn detect_amd_define(stmt: &Stmt) -> Option<AmdPattern> {
         }
 
         // Second arg should be a function expression
-        if let Expr::FunctionExpr {
-            params,
-            body,
-            ..
-        } = &args[1]
-        {
-            let factory_params: Vec<String> = params.iter().map(|(name, _, _)| name.clone()).collect();
+        if let Expr::FunctionExpr { params, body, .. } = &args[1] {
+            let factory_params: Vec<String> =
+                params.iter().map(|(name, _, _)| name.clone()).collect();
             let has_return_export = has_top_level_return(body);
 
             return Some(AmdPattern::WithDependencyArray {
@@ -93,12 +84,7 @@ pub(crate) fn detect_amd_define(stmt: &Stmt) -> Option<AmdPattern> {
     }
 
     // Form 2: define(function(require, exports, module) { ... })
-    if let Expr::FunctionExpr {
-        params,
-        body,
-        ..
-    } = &args[0]
-    {
+    if let Expr::FunctionExpr { params, body, .. } = &args[0] {
         let param_names: Vec<String> = params.iter().map(|(name, _, _)| name.clone()).collect();
         let has_require = param_names.iter().any(|n| n == "require");
         let has_exports = param_names.iter().any(|n| n == "exports");
@@ -179,10 +165,7 @@ pub fn transform_amd_program(program: Vec<Stmt>) -> Result<Vec<Stmt>, Diagnostic
 }
 
 /// Rewrite a single AMD pattern into ES module statements.
-fn rewrite_amd_pattern(
-    pattern: AmdPattern,
-    output: &mut Vec<Stmt>,
-) -> Result<(), Diagnostic> {
+fn rewrite_amd_pattern(pattern: AmdPattern, output: &mut Vec<Stmt>) -> Result<(), Diagnostic> {
     match pattern {
         AmdPattern::WithDependencyArray {
             deps,
@@ -475,7 +458,13 @@ fn collect_require_dependencies(body: &[Stmt]) -> Vec<String> {
             Stmt::While { body, .. } | Stmt::DoWhile { body, .. } => {
                 deps.extend(collect_require_dependencies(body));
             }
-            Stmt::For { init, condition, update, body, .. } => {
+            Stmt::For {
+                init,
+                condition,
+                update,
+                body,
+                ..
+            } => {
                 if let Some(init_stmt) = init {
                     deps.extend(collect_require_dependencies(&[init_stmt.as_ref().clone()]));
                 }
@@ -532,11 +521,7 @@ fn collect_require_dependencies(body: &[Stmt]) -> Vec<String> {
 /// Check if an expression is a `require("...")` call and return the string argument.
 fn extract_require_call(expr: &Expr) -> Option<String> {
     match expr {
-        Expr::Call {
-            callee,
-            args,
-            ..
-        } => {
+        Expr::Call { callee, args, .. } => {
             if let Expr::Ident { name, .. } = callee.as_ref() {
                 if name == "require" && args.len() == 1 {
                     if let Expr::String { value, .. } = &args[0] {
@@ -574,7 +559,8 @@ fn extract_require_call(expr: &Expr) -> Option<String> {
         Expr::Array { elements, .. } => {
             for elem in elements {
                 match elem {
-                    crate::ArrayLiteralElement::Present(e) | crate::ArrayLiteralElement::Spread(e) => {
+                    crate::ArrayLiteralElement::Present(e)
+                    | crate::ArrayLiteralElement::Spread(e) => {
                         if let Some(dep) = extract_require_call(e) {
                             return Some(dep);
                         }
@@ -591,9 +577,9 @@ fn extract_require_call(expr: &Expr) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::Parser;
     use crate::Lexer;
     use crate::diagnostic::DiagCode;
+    use crate::parser::Parser;
 
     /// Parse source WITHOUT applying the AMD transform (raw parse).
     fn parse_raw(source: &str) -> Vec<Stmt> {
@@ -631,7 +617,8 @@ mod tests {
 
     #[test]
     fn detect_amd_simplified() {
-        let stmts = parse_raw(r#"define(function(require, exports, module) { exports.foo = 1; });"#);
+        let stmts =
+            parse_raw(r#"define(function(require, exports, module) { exports.foo = 1; });"#);
         let pattern = detect_amd_define(&stmts[0]);
         assert!(pattern.is_some(), "should detect simplified AMD define");
 
@@ -650,9 +637,7 @@ mod tests {
 
     #[test]
     fn detect_amd_simplified_exports_only() {
-        let stmts = parse_raw(
-            r#"define(function(exports, module) { exports.foo = 1; });"#,
-        );
+        let stmts = parse_raw(r#"define(function(exports, module) { exports.foo = 1; });"#);
         let pattern = detect_amd_define(&stmts[0]);
         assert!(pattern.is_some(), "should detect simplified AMD define");
 
@@ -671,22 +656,33 @@ mod tests {
 
     #[test]
     fn transform_dependency_array_with_return() {
-        let result = parse_with_amd(
-            r#"define(["dep"], function(dep) { return { value: dep }; });"#,
+        let result =
+            parse_with_amd(r#"define(["dep"], function(dep) { return { value: dep }; });"#);
+        assert!(
+            result.is_ok(),
+            "AMD transform should succeed: {:?}",
+            result.err()
         );
-        assert!(result.is_ok(), "AMD transform should succeed: {:?}", result.err());
 
         let program = result.unwrap();
         // Should have: import namespace, let binding, and export default
         let has_import_ns = program
             .iter()
             .any(|s| matches!(s, Stmt::ImportNamespace { .. }));
-        assert!(has_import_ns, "should have namespace import: {:#?}", program);
+        assert!(
+            has_import_ns,
+            "should have namespace import: {:#?}",
+            program
+        );
 
         let has_export_default = program
             .iter()
             .any(|s| matches!(s, Stmt::ExportDefault { .. }));
-        assert!(has_export_default, "should have export default: {:#?}", program);
+        assert!(
+            has_export_default,
+            "should have export default: {:#?}",
+            program
+        );
     }
 
     #[test]
@@ -697,13 +693,17 @@ mod tests {
                 exports.foo = dep;
             });"#,
         );
-        assert!(result.is_ok(), "AMD transform should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "AMD transform should succeed: {:?}",
+            result.err()
+        );
 
         let program = result.unwrap();
         // Should have: exports initialization, then factory body, then export default
-        let has_exports_init = program.iter().any(|s| {
-            matches!(s, Stmt::Let { name, .. } if name == "exports")
-        });
+        let has_exports_init = program
+            .iter()
+            .any(|s| matches!(s, Stmt::Let { name, .. } if name == "exports"));
         assert!(has_exports_init, "should initialize exports");
 
         let has_export_default = program
@@ -731,10 +731,7 @@ define(["dep"], function(d) { return d; });"#;
         let raw_program = raw_parser.parse_raw_program_for_testing();
         let result = transform_amd_program(raw_program);
         assert!(result.is_err(), "should reject mixed AMD and ESM");
-        assert_eq!(
-            result.unwrap_err().code,
-            DiagCode::UnsupportedModule
-        );
+        assert_eq!(result.unwrap_err().code, DiagCode::UnsupportedModule);
     }
 
     #[test]
@@ -744,7 +741,11 @@ define(["dep"], function(d) { return d; });"#;
                 return { a: a, b: b, c: c };
             });"#,
         );
-        assert!(result.is_ok(), "AMD transform should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "AMD transform should succeed: {:?}",
+            result.err()
+        );
 
         let program = result.unwrap();
         // Count namespace imports: 3 deps -> 3 namespace imports
@@ -764,14 +765,22 @@ define(["dep"], function(d) { return d; });"#;
                 return a + b;
             });"#,
         );
-        assert!(result.is_ok(), "should handle require() deps: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "should handle require() deps: {:?}",
+            result.err()
+        );
         let program = result.unwrap();
         // Should have namespace imports for require() calls
         let import_count = program
             .iter()
             .filter(|s| matches!(s, Stmt::ImportNamespace { .. }))
             .count();
-        assert!(import_count >= 2, "should have imports for require() deps, got: {}", import_count);
+        assert!(
+            import_count >= 2,
+            "should have imports for require() deps, got: {}",
+            import_count
+        );
     }
 
     #[test]

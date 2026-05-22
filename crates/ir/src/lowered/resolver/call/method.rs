@@ -4282,8 +4282,14 @@ impl super::super::Resolver {
                 // These methods uniquely identify Date (no other built-in has them),
                 // so they can be safely routed without knowing the receiver class.
                 let date_getter_methods = [
-                    "getFullYear", "getMonth", "getDate", "getHours",
-                    "getMinutes", "getSeconds", "getMilliseconds", "getDay",
+                    "getFullYear",
+                    "getMonth",
+                    "getDate",
+                    "getHours",
+                    "getMinutes",
+                    "getSeconds",
+                    "getMilliseconds",
+                    "getDay",
                 ];
                 if date_getter_methods.contains(&method) {
                     if !args.is_empty() {
@@ -4381,7 +4387,6 @@ impl super::super::Resolver {
                     }),
                     span: Span::generated("block"),
                 });
-
             }
         };
         let class_name = class_name_str.as_str();

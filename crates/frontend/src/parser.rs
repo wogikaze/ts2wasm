@@ -61,6 +61,65 @@ struct ParsedBindingPattern {
     is_identifier: bool,
 }
 
+impl Parser {
+    fn check_duplicate_params(
+        &self,
+        params: &[(String, Option<Expr>, bool)],
+    ) -> Result<(), Diagnostic> {
+        if !self.strict_mode {
+            return Ok(());
+        }
+        let mut seen = HashSet::new();
+        for (name, _, _) in params {
+            if !seen.insert(name.clone()) {
+                return Err(Diagnostic {
+                    code: DiagCode::SyntaxError,
+                    message: format!("duplicate parameter '{name}' not allowed in strict mode"),
+                    span: None,
+                    phase: Some("parser"),
+                });
+            }
+        }
+        Ok(())
+    }
+
+    fn validate_strict_mode_fn_params(
+        &self,
+        name: &str,
+        name_span: Span,
+        params: &[(String, Option<Expr>, bool)],
+    ) -> Result<(), Diagnostic> {
+        if !self.strict_mode {
+            return Ok(());
+        }
+        let mut seen = HashSet::new();
+        for (param_name, default, is_rest) in params {
+            if *is_rest || default.is_some() {
+                return Err(Diagnostic {
+                    code: DiagCode::SyntaxError,
+                    message: format!(
+                        "function `{}` has non-simple parameters in strict mode",
+                        if name.is_empty() { "<anonymous>" } else { name }
+                    ),
+                    span: Some(name_span),
+                    phase: Some("parser"),
+                });
+            }
+            if !seen.insert(param_name.clone()) {
+                return Err(Diagnostic {
+                    code: DiagCode::SyntaxError,
+                    message: format!(
+                        "duplicate parameter `{param_name}` not allowed in strict mode"
+                    ),
+                    span: Some(name_span),
+                    phase: Some("parser"),
+                });
+            }
+        }
+        Ok(())
+    }
+}
+
 include!("parser/statements.rs");
 include!("parser/binding_patterns.rs");
 include!("parser/expressions.rs");

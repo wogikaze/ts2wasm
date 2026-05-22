@@ -4,6 +4,7 @@ use crate::lowered::{
     RuntimeFn,
 };
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
+use ts2wasm_source::Span;
 
 /// Validate a native MIR program without converting it back to `LoweredProgram`.
 pub fn validate_mir(program: &MirProgram) -> Result<(), Vec<Diagnostic>> {
