@@ -56,6 +56,48 @@ impl Parser {
         while let Some(stmt) = self.take_pending_statement() {
             statements.push(stmt);
         }
-        Ok(statements)
+        // Apply AMD module transform: detect and rewrite define(...) calls
+        // into standard ES module import/export syntax.
+        let program = crate::amd::transform_amd_program(statements)?;
+        Ok(program)
+    }
+
+    /// Like `parse_program` but skips the AMD transform step (for testing).
+    #[doc(hidden)]
+    pub fn parse_raw_program_for_testing(&mut self) -> Vec<Stmt> {
+        let mut statements = Vec::new();
+        while !self.is_at_end() {
+            if let Some(stmt) = self.take_pending_statement() {
+                statements.push(stmt);
+                continue;
+            }
+            if self.consume(TokenKind::Semicolon) {
+                continue;
+            }
+            if self.consume_erasable_typescript_declaration().is_ok_and(|v| v) {
+                continue;
+            }
+            if matches!(self.peek(), Some(Token::LeftBrace)) {
+                let block = self.block_as_stmt().unwrap_or(Stmt::Block {
+                    statements: Vec::new(),
+                    span: Span::generated("block"),
+                });
+                if let Stmt::Block {
+                    statements: inner,
+                    ..
+                } = block
+                {
+                    statements.extend(inner);
+                }
+                continue;
+            }
+            if let Ok(stmt) = self.statement() {
+                statements.push(stmt);
+            }
+        }
+        while let Some(stmt) = self.take_pending_statement() {
+            statements.push(stmt);
+        }
+        statements
     }
 }
