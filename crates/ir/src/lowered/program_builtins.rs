@@ -254,6 +254,17 @@ pub(crate) fn resolve_method_to_runtime_fn(
         "toFixed" => Some(RuntimeFn::NumberToFixed),
         "toExponential" => Some(RuntimeFn::NumberToExponential),
         "toPrecision" => Some(RuntimeFn::NumberToPrecision),
+        // Date instance methods for untyped receiver fallback
+        "getTime" => Some(RuntimeFn::DateGetTime),
+        "getTimezoneOffset" => Some(RuntimeFn::DateGetTimezoneOffset),
+        "getUTCFullYear" => Some(RuntimeFn::DateGetUtcFullYear),
+        "getUTCMonth" => Some(RuntimeFn::DateGetUtcMonth),
+        "getUTCDate" => Some(RuntimeFn::DateGetUtcDate),
+        "getUTCHours" => Some(RuntimeFn::DateGetUtcHours),
+        "getUTCMinutes" => Some(RuntimeFn::DateGetUtcMinutes),
+        "getUTCSeconds" => Some(RuntimeFn::DateGetUtcSeconds),
+        "getUTCMilliseconds" => Some(RuntimeFn::DateGetUtcMilliseconds),
+        "getUTCDay" => Some(RuntimeFn::DateGetUtcDay),
         // Function.prototype.call/apply on any receiver: route through HeapClosureCall
         // which dispatches at runtime based on the value's tag.
         "call" => Some(RuntimeFn::HeapClosureCall),
@@ -1015,7 +1026,7 @@ pub(crate) fn regexp_constructor_literal(
             message:
                 "issue-051: RegExp constructor pattern must be a string literal in this subset"
                     .to_owned(),
-            span: None,
+            span: Some(Span::generated("issue-051")),
 
             phase: None,
         });
@@ -1039,7 +1050,7 @@ pub(crate) fn regexp_constructor_static_flags(
             code: DiagCode::UnsupportedSyntax,
             message: "issue-051: RegExp constructor flags must be a string literal in this subset"
                 .to_owned(),
-            span: None,
+            span: Some(Span::generated("issue-051")),
             phase: None,
         }
                 })?
