@@ -1324,9 +1324,16 @@ pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
         if ch == b'\\' {
             if i + 1 < bytes.len() {
                 match bytes[i + 1] {
+                    // Standard character class escapes
                     b'd' | b'D' | b'w' | b'W' | b's' | b'S' | b'b' | b'B' | b'0' | b'n' | b't'
-                    | b'r' | b'f' | b'v' | b'\\' | b'/' | b'.' | b'^' | b'$' | b'+' | b'*'
-                    | b'?' | b'(' | b')' | b'[' | b']' | b'{' | b'}' | b'|' => {
+                    | b'r' | b'f' | b'v'
+                    // Escaped metacharacters
+                    | b'\\' | b'/' | b'.' | b'^' | b'$' | b'+' | b'*' | b'?' | b'(' | b')'
+                    | b'[' | b']' | b'{' | b'}' | b'|'
+                    // Backreferences \1..\9
+                    | b'1'..=b'9'
+                    // Named backreferences \k<name>
+                    | b'k' => {
                         i += 2;
                     }
                     _ => {
@@ -1378,17 +1385,78 @@ pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
                 ));
             }
             i += 1; // skip ']'
-        } else if matches!(ch, b'(' | b')' | b'{' | b'}' | b'|') {
-            return Err(unsupported_regexp_literal(
-                context,
-                raw,
-                &format!("unsupported meta character `{}`", ch as char),
-            ));
+        } else if ch == b'(' {
+            // Groups: (...), (?:...), (?=...), (?!...), (?<=...), (?<!...), (?<name>...)
+            i += 1;
+            // Check for (?...) prefix
+            if i < bytes.len() && bytes[i] == b'?' {
+                i += 1; // skip '?'
+                if i < bytes.len() {
+                    match bytes[i] {
+                        b':' => {
+                            i += 1;
+                        } // (?:...) non-capturing group
+                        b'=' => {
+                            i += 1;
+                        } // (?=...) lookahead
+                        b'!' => {
+                            i += 1;
+                        } // (?!...) negative lookahead
+                        b'<' => {
+                            i += 1; // (?<...) lookbehind or named group
+                            if i < bytes.len() {
+                                match bytes[i] {
+                                    b'=' => {
+                                        i += 1;
+                                    } // (?<=...) lookbehind
+                                    b'!' => {
+                                        i += 1;
+                                    } // (?<!...) negative lookbehind
+                                    _ => {
+                                        // (?<name>...) named capture group — skip name
+                                        while i < bytes.len() && bytes[i] != b'>' {
+                                            i += 1;
+                                        }
+                                        if i < bytes.len() {
+                                            i += 1; // skip '>'
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        _ => {} // unknown (?...) prefix, leave i after '?'
+                    }
+                }
+            }
+        } else if ch == b')' {
+            // Closing group
+            i += 1;
+        } else if ch == b'|' {
+            // Alternation
+            i += 1;
+        } else if ch == b'{' {
+            // Quantifier: {n}, {n,}, {n,m}
+            i += 1;
+            while i < bytes.len() && bytes[i] >= b'0' && bytes[i] <= b'9' {
+                i += 1;
+            }
+            if i < bytes.len() && bytes[i] == b',' {
+                i += 1; // {n,} or {n,m}
+                while i < bytes.len() && bytes[i] >= b'0' && bytes[i] <= b'9' {
+                    i += 1;
+                }
+            }
+            if i < bytes.len() && bytes[i] == b'}' {
+                i += 1; // skip '}'
+            }
+        } else if ch == b'}' {
+            // Lone } (literal, not a quantifier)
+            i += 1;
         } else {
             // ^ and $ are allowed (anchors), also . + * ?
             i += 1;
         }
-        // Consume optional quantifier
+        // Consume optional quantifier (greedy and lazy)
         if i < bytes.len() && matches!(bytes[i], b'+' | b'*' | b'?') {
             i += 1;
         }

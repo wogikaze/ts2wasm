@@ -126,6 +126,29 @@ fn regexp_flag_d_is_now_supported() {
 }
 
 #[test]
+fn regexp_pattern_extensions_build_succeeds() {
+    let fixture = "fixtures/builtins-and-io/regexp-pattern-extensions.ts";
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        build.status.success(),
+        "RegExp pattern extensions fixture should build successfully:\n{}",
+        String::from_utf8_lossy(&build.stderr)
+    );
+}
+
+#[test]
 fn regexp_compile_fixture_reports_issue_051() {
     let fixture = "fixtures/core-semantics/regexp-compile-unsupported.ts";
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))

@@ -711,13 +711,19 @@ mod tests {
     #[test]
     fn parses_typescript_as_assertion_union_type_erasure() {
         let source = r#"
-            return 10 as number | string;
+            function f() {
+                return 10 as number | string;
+            }
             let value = 42 as number | string | boolean;
         "#;
         let program = parse_program(source).unwrap();
         assert_eq!(program.len(), 2);
 
-        let Stmt::Return { expr: ret_val, .. } = &program[0] else {
+        let Stmt::Function { body, .. } = &program[0] else {
+            panic!("expected function declaration");
+        };
+        assert_eq!(body.len(), 1, "function body should have 1 statement");
+        let Stmt::Return { expr: ret_val, .. } = &body[0] else {
             panic!("expected return statement");
         };
         assert!(matches!(ret_val, Expr::Number { value: 10, .. }));
@@ -2439,6 +2445,266 @@ b /* parameter b */,
             &private_elements[4],
             ClassPrivateElement::Setter { name, param, .. } if name == "z" && param == "value"
         ));
+    }
+
+    #[test]
+    fn parses_private_field_member_access_in_method() {
+        let program = parse_program(
+            "class C { #x = 1; getX() { return this.#x; } }",
+        )
+        .unwrap();
+
+        let Stmt::ClassDecl { private_elements, body, .. } = &program[0] else {
+            panic!("expected class declaration");
+        };
+
+        assert_eq!(private_elements.len(), 1);
+        assert!(matches!(
+            &private_elements[0],
+            ClassPrivateElement::Field { name, .. } if name == "x"
+        ));
+
+        // Method body contains return this.#x
+        let getter_method = body.iter().find(|stmt| {
+            matches!(stmt, Stmt::Function { name, .. } if name == "getX")
+        }).expect("getX method should exist");
+
+        if let Stmt::Function { body: method_body, .. } = getter_method {
+            assert!(method_body.len() == 1);
+            let return_stmt = &method_body[0];
+            assert!(matches!(return_stmt, Stmt::Return { .. }));
+            if let Stmt::Return { expr, .. } = return_stmt {
+                assert!(matches!(expr, Expr::Member { property, .. } if property == "#x"));
+            }
+        }
+    }
+
+    #[test]
+    fn parses_private_field_assignment_in_method() {
+        let program = parse_program(
+            "class C { #x = 0; setX(v) { this.#x = v; } }",
+        )
+        .unwrap();
+
+        let Stmt::ClassDecl { private_elements, body, .. } = &program[0] else {
+            panic!("expected class declaration");
+        };
+
+        assert_eq!(private_elements.len(), 1);
+        assert!(matches!(
+            &private_elements[0],
+            ClassPrivateElement::Field { name, .. } if name == "x"
+        ));
+
+        let setter_method = body.iter().find(|stmt| {
+            matches!(stmt, Stmt::Function { name, .. } if name == "setX")
+        }).expect("setX method should exist");
+
+        if let Stmt::Function { body: method_body, .. } = setter_method {
+            let expr_stmt = &method_body[0];
+            assert!(matches!(expr_stmt, Stmt::Expr { .. }));
+            if let Stmt::Expr { expr, .. } = expr_stmt {
+                assert!(matches!(expr, Expr::PropertyAssign { property, .. } if property == "#x"));
+            }
+        }
+    }
+
+    #[test]
+    fn parses_private_method_call_via_this() {
+        let program = parse_program(
+            "class C { #method() {} callIt() { this.#method(); } }",
+        )
+        .unwrap();
+
+        let Stmt::ClassDecl { private_elements, body, .. } = &program[0] else {
+            panic!("expected class declaration");
+        };
+
+        assert_eq!(private_elements.len(), 1);
+        assert!(matches!(
+            &private_elements[0],
+            ClassPrivateElement::Method { name, .. } if name == "method"
+        ));
+
+        let caller = body.iter().find(|stmt| {
+            matches!(stmt, Stmt::Function { name, .. } if name == "callIt")
+        }).expect("callIt method should exist");
+
+        if let Stmt::Function { body: method_body, .. } = caller {
+            let expr_stmt = &method_body[0];
+            assert!(matches!(expr_stmt, Stmt::Expr { .. }));
+            if let Stmt::Expr { expr, .. } = expr_stmt {
+                assert!(matches!(expr, Expr::Call { callee, .. }
+                    if matches!(callee.as_ref(), Expr::Member { property, .. } if property == "#method")));
+            }
+        }
+    }
+
+    #[test]
+    fn parses_static_private_field_and_method() {
+        let program = parse_program(
+            "class C { static #sx = 42; static #sm() {} }",
+        )
+        .unwrap();
+
+        let Stmt::ClassDecl { private_elements, .. } = &program[0] else {
+            panic!("expected class declaration");
+        };
+
+        assert_eq!(private_elements.len(), 2);
+        assert!(matches!(
+            &private_elements[0],
+            ClassPrivateElement::Field { name, is_static: true, .. } if name == "sx"
+        ));
+        assert!(matches!(
+            &private_elements[1],
+            ClassPrivateElement::Method { name, is_static: true, .. } if name == "sm"
+        ));
+    }
+
+    #[test]
+    fn parses_private_field_with_readonly_modifier() {
+        let program = parse_program(
+            "class C { readonly #rx = 10; }",
+        )
+        .unwrap();
+
+        let Stmt::ClassDecl { private_elements, .. } = &program[0] else {
+            panic!("expected class declaration");
+        };
+
+        assert_eq!(private_elements.len(), 1);
+        assert!(matches!(
+            &private_elements[0],
+            ClassPrivateElement::Field { name, .. } if name == "rx"
+        ));
+    }
+
+    #[test]
+    fn parses_private_method_with_params() {
+        let program = parse_program(
+            "class C { #add(a, b) { return a + b; } }",
+        )
+        .unwrap();
+
+        let Stmt::ClassDecl { private_elements, .. } = &program[0] else {
+            panic!("expected class declaration");
+        };
+
+        assert_eq!(private_elements.len(), 1);
+        assert!(matches!(
+            &private_elements[0],
+            ClassPrivateElement::Method { name, params, .. }
+                if name == "add" && params.len() == 2
+        ));
+    }
+
+    #[test]
+    fn parses_private_field_with_ts_type_annotation() {
+        let program = parse_program(
+            "class C { #x: number = 1; }",
+        )
+        .unwrap();
+
+        let Stmt::ClassDecl { private_elements, .. } = &program[0] else {
+            panic!("expected class declaration");
+        };
+
+        assert_eq!(private_elements.len(), 1);
+        assert!(matches!(
+            &private_elements[0],
+            ClassPrivateElement::Field { name, value: Some(_), .. } if name == "x"
+        ));
+    }
+
+    #[test]
+    fn parses_private_field_without_initializer() {
+        let program = parse_program(
+            "class C { #x; }",
+        )
+        .unwrap();
+
+        let Stmt::ClassDecl { private_elements, .. } = &program[0] else {
+            panic!("expected class declaration");
+        };
+
+        assert_eq!(private_elements.len(), 1);
+        assert!(matches!(
+            &private_elements[0],
+            ClassPrivateElement::Field { name, value: None, .. } if name == "x"
+        ));
+    }
+
+    #[test]
+    fn parses_multiple_private_fields() {
+        let program = parse_program(
+            "class C { #a = 1; #b = 2; #c = 3; }",
+        )
+        .unwrap();
+
+        let Stmt::ClassDecl { private_elements, .. } = &program[0] else {
+            panic!("expected class declaration");
+        };
+
+        assert_eq!(private_elements.len(), 3);
+        for (i, name) in ["a", "b", "c"].iter().enumerate() {
+            assert!(matches!(
+                &private_elements[i],
+                ClassPrivateElement::Field { name: n, value: Some(_), .. } if n == name
+            ));
+        }
+    }
+
+    #[test]
+    fn parses_private_accessors_in_class_expression() {
+        let program = parse_program(
+            "let C = class { #x = 1; #m() {}; get #g() { return 1; }; set #g(v) { } };",
+        )
+        .unwrap();
+
+        // The let statement with class expression
+        let has_class_expr = program.iter().any(|stmt| {
+            match stmt {
+                Stmt::Let { expr, .. } => matches!(expr, Expr::ClassExpr { private_elements, .. } if private_elements.len() == 4),
+                Stmt::Assign { expr, .. } => matches!(expr, Expr::ClassExpr { private_elements, .. } if private_elements.len() == 4),
+                Stmt::Expr { expr, .. } => matches!(expr, Expr::ClassExpr { private_elements, .. } if private_elements.len() == 4),
+                _ => false,
+            }
+        });
+
+        assert!(has_class_expr, "class expression with 4 private elements should be present");
+    }
+
+    #[test]
+    fn parses_private_ident_in_binary_in_expression() {
+        let program = parse_program(
+            "class C { #x = 1; test() { let a = #x in obj; } }",
+        )
+        .unwrap();
+
+        // PrivateIdentifier in `in` expression: produces PrivateIdent at the parser level
+        let Stmt::ClassDecl { body, .. } = &program[0] else {
+            panic!("expected class declaration");
+        };
+
+        let test_method = body.iter().find(|stmt| {
+            matches!(stmt, Stmt::Function { name, .. } if name == "test")
+        }).expect("test method should exist");
+
+        if let Stmt::Function { body: method_body, .. } = test_method {
+            assert!(matches!(&method_body[0], Stmt::Let { .. }));
+            if let Stmt::Let { expr, .. } = &method_body[0] {
+                assert!(matches!(expr, Expr::Binary { left, op: BinaryOp::In, .. }
+                    if matches!(left.as_ref(), Expr::PrivateIdent { name, .. } if name == "x")));
+            }
+        }
+    }
+
+    #[test]
+    fn rejects_private_identifier_in_object_literal() {
+        let err = parse_program("let o = { #x: 1 };").unwrap_err();
+
+        assert!(err.message.contains("issue-5168"), "{err:?}");
     }
 
     #[test]
@@ -5338,6 +5604,159 @@ b /* parameter b */,
     fn decorator_erases_without_name() {
         // `@` with no identifier is erased and the class is still parsed
         let program = parse_program("@ class MyClass {}").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    // === RegExp pattern extensions (I-20260517-88A8FY) ===
+
+    #[test]
+    fn regexp_accepts_backreference() {
+        let program = parse_program(r"let r = /(.)\1/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_multi_digit_backreference() {
+        let program = parse_program(r"let r = /\b(\w+) \2\b/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_named_backreference() {
+        let program = parse_program(r"let r = /\k<a>/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_named_capture_group() {
+        let program = parse_program(r"let r = /(?<name>abc)/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_non_capturing_group() {
+        let program = parse_program(r"let r = /(?:abc)/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_positive_lookahead() {
+        let program = parse_program(r"let r = /abc(?=def)/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_negative_lookahead() {
+        let program = parse_program(r"let r = /abc(?!def)/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_positive_lookbehind() {
+        let program = parse_program(r"let r = /(?<=abc)def/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_negative_lookbehind() {
+        let program = parse_program(r"let r = /(?<!abc)def/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_character_class_range() {
+        let program = parse_program(r"let r = /[a-z]/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_multi_character_class_range() {
+        let program = parse_program(r"let r = /[A-Za-z0-9]/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_digit_range_in_class() {
+        let program = parse_program(r"let r = /[0-9]/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_quantifier_exact() {
+        let program = parse_program(r"let r = /\d{5}/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_quantifier_range() {
+        let program = parse_program(r"let r = /\d{2,5}/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_quantifier_open_ended() {
+        let program = parse_program(r"let r = /\d{2,}/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_combined_char_class_and_quantifier() {
+        let program = parse_program(r"let r = /[\d][\12-\14]{1,}[^\d]/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_slash_inside_character_class() {
+        let program = parse_program(r"let r = /[/]/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_escaped_slash() {
+        let program = parse_program(r"let r = /\//;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_alternation() {
+        let program = parse_program(r"let r = /abc|def/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_dot_all_flag() {
+        let program = parse_program(r"let r = /abc/s;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_unicode_flag() {
+        let program = parse_program(r"let r = /abc/u;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_combined_flags() {
+        let program = parse_program(r"let r = /abc/gim;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_pattern_with_dollar_and_caret() {
+        let program = parse_program(r"let r = /^abc$/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_empty_non_capturing_pattern() {
+        // Empty regex uses /(?:)/ not // (which would be a line comment)
+        let program = parse_program(r"let r = /(?:)/;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn regexp_accepts_empty_non_capturing_with_flags() {
+        let program = parse_program(r"let r = /(?:)/g;").unwrap();
         assert_eq!(program.len(), 1);
     }
 }
