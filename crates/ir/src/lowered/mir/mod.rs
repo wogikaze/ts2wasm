@@ -117,6 +117,185 @@ pub fn run_induction_var_analysis(program: &mut MirProgram) {
 }
 
 // ---------------------------------------------------------------------------
+// Escape analysis pass
+// ---------------------------------------------------------------------------
+
+/// Run escape analysis on the entire `MirProgram`.
+///
+/// Populates `escape_status` on every `MirFunction` and on the top-level
+/// program. Must be called **before** `run_scalar_replacement` since that
+/// pass depends on escape analysis results.
+///
+/// Calling this multiple times is safe — each call recomputes the analysis
+/// from scratch.
+pub fn run_escape_analysis(program: &mut MirProgram) {
+    escape::analyze_escape(program);
+}
+
+// ---------------------------------------------------------------------------
+// Scalar replacement pass
+// ---------------------------------------------------------------------------
+
+/// Run scalar replacement on the entire `MirProgram`.
+///
+/// Replaces non-escaping objects (determined by escape analysis) with
+/// individual locals for each property. Must be called **after**
+/// `run_escape_analysis` so that `escape_status` is populated.
+pub fn run_scalar_replacement(program: &mut MirProgram) {
+    scalar_replace::scalar_replace(program);
+}
+
+// ---------------------------------------------------------------------------
+// Value representation inference pass
+// ---------------------------------------------------------------------------
+
+/// Run value representation inference on all functions in a `MirProgram`.
+///
+/// Populates `value_reps` on every `MirFunction` by examining the RHS
+/// expressions of `Let` and `Assign` statements. Locals initialized with
+/// literal expressions (numbers, booleans, strings, null) get a concrete
+/// `ValueRep`; all others remain `None` (JsVal fallback).
+///
+/// This pass is independent of escape analysis and scalar replacement.
+pub fn run_value_rep_analysis(program: &mut MirProgram) {
+    for func in &mut program.functions {
+        let local_count = func.locals.len();
+        if func.value_reps.len() < local_count {
+            func.value_reps.resize(local_count, None);
+        }
+        infer_value_reps_in_stmts(&func.body, &mut func.value_reps);
+    }
+}
+
+/// Walk a list of statements and infer value reps for locals defined via
+/// `Let` or `Assign`.
+fn infer_value_reps_in_stmts(
+    stmts: &[MirStmt],
+    value_reps: &mut Vec<Option<(ValueRep, RepProof)>>,
+) {
+    for stmt in stmts {
+        match stmt {
+            MirStmt::Let(local, expr, _) | MirStmt::Assign(local, expr, _) => {
+                let idx = local.0 as usize;
+                if idx < value_reps.len() {
+                    if let Some(rep) = value_rep::infer_expr_rep(expr) {
+                        value_reps[idx] = Some(rep);
+                    }
+                }
+            }
+            // Recurse into nested statement containers.
+            MirStmt::Block(children, _) => {
+                infer_value_reps_in_stmts(children, value_reps);
+            }
+            MirStmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                infer_value_reps_in_stmts(then_body, value_reps);
+                infer_value_reps_in_stmts(else_body, value_reps);
+            }
+            MirStmt::While { body, .. } => {
+                infer_value_reps_in_stmts(body, value_reps);
+            }
+            MirStmt::For {
+                init, body, ..
+            } => {
+                if let Some(init_stmt) = init {
+                    infer_value_reps_in_stmts(
+                        &[init_stmt.as_ref().clone()],
+                        value_reps,
+                    );
+                }
+                infer_value_reps_in_stmts(body, value_reps);
+            }
+            MirStmt::DoWhile { body, .. } => {
+                infer_value_reps_in_stmts(body, value_reps);
+            }
+            MirStmt::ForIn { body, .. }
+            | MirStmt::ForOf { body, .. }
+            | MirStmt::ForAwaitOfLower { body, .. } => {
+                infer_value_reps_in_stmts(body, value_reps);
+            }
+            MirStmt::TryFinally {
+                try_body,
+                finally_body,
+                ..
+            } => {
+                infer_value_reps_in_stmts(try_body, value_reps);
+                infer_value_reps_in_stmts(finally_body, value_reps);
+            }
+            MirStmt::TryCatch {
+                try_body,
+                catch_body,
+                finally_body,
+                ..
+            } => {
+                infer_value_reps_in_stmts(try_body, value_reps);
+                if let Some(body) = catch_body {
+                    infer_value_reps_in_stmts(body, value_reps);
+                }
+                if let Some(body) = finally_body {
+                    infer_value_reps_in_stmts(body, value_reps);
+                }
+            }
+            MirStmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    infer_value_reps_in_stmts(body, value_reps);
+                }
+            }
+            MirStmt::Labeled { body, .. } => {
+                infer_value_reps_in_stmts(
+                    &[body.as_ref().clone()],
+                    value_reps,
+                );
+            }
+            // Statements that do not introduce or modify locals.
+            MirStmt::Expr(..)
+            | MirStmt::Return(..)
+            | MirStmt::Throw(..)
+            | MirStmt::Yield(..)
+            | MirStmt::Break { .. }
+            | MirStmt::Continue { .. }
+            | MirStmt::Export { .. }
+            | MirStmt::ModuleExportsUpdate { .. }
+            | MirStmt::ModuleExportsAssign { .. }
+            | MirStmt::ClassDecl { .. } => {}
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Orchestration: run all analysis passes in the correct order
+// ---------------------------------------------------------------------------
+
+/// Run all MIR analysis passes in the correct order.
+///
+/// ## Pipeline order
+///
+/// 1. **Escape analysis** (`run_escape_analysis`) — marks which locals
+///    escape their function scope. Required by scalar replacement.
+///
+/// 2. **Scalar replacement** (`run_scalar_replacement`) — replaces
+///    non-escaping objects with per-property locals. Depends on escape
+///    analysis results.
+///
+/// 3. **Induction variable analysis** (`run_induction_var_analysis`) —
+///    detects for-loop induction variables. Independent of 1 and 2.
+///
+/// 4. **Value representation inference** (`run_value_rep_analysis`) —
+///    infers per-local value representations. Independent of 1-3.
+///
+/// Calling this function multiple times is safe — each pass is idempotent
+/// and replaces prior results rather than appending.
+pub fn run_all_mir_analyses(program: &mut MirProgram) {
+    run_escape_analysis(program);
+    run_scalar_replacement(program);
+    run_induction_var_analysis(program);
+    run_value_rep_analysis(program);
+}
+
+// ---------------------------------------------------------------------------
 // Tests: bridge conversions preserve structure
 // ---------------------------------------------------------------------------
 
