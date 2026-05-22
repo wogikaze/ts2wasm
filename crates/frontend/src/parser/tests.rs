@@ -1502,12 +1502,12 @@ mod tests {
     }
 
     #[test]
-    fn allows_legacy_octal_literal_in_sloppy_mode() {
-        let stmts = parse_program("let x = 0123;").unwrap();
+    fn rejects_legacy_octal_literal_in_sloppy_mode() {
+        let err = parse_program("let x = 0123;").unwrap_err();
 
-        // In sloppy mode, 0123 is parsed as decimal 123 (the actual octal semantics
-        // are not preserved, but it should not produce a SyntaxError).
-        assert_eq!(stmts.len(), 1);
+        // Legacy octal literals are rejected in all modes (not just strict mode).
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.contains("Legacy octal literals are not allowed"));
     }
 
     #[test]
@@ -2658,21 +2658,19 @@ b /* parameter b */,
     #[test]
     fn parses_private_accessors_in_class_expression() {
         let program = parse_program(
-            "let C = class { #x = 1; #m() {}; get #g() { return 1; }; set #g(v) { } };",
+            "let C = class { #x = 1; #m() {}; get #g() { return 1; }; set #s(v) { } };",
         )
         .unwrap();
 
-        // The let statement with class expression
-        let has_class_expr = program.iter().any(|stmt| {
-            match stmt {
-                Stmt::Let { expr, .. } => matches!(expr, Expr::ClassExpr { private_elements, .. } if private_elements.len() == 4),
-                Stmt::Assign { expr, .. } => matches!(expr, Expr::ClassExpr { private_elements, .. } if private_elements.len() == 4),
-                Stmt::Expr { expr, .. } => matches!(expr, Expr::ClassExpr { private_elements, .. } if private_elements.len() == 4),
-                _ => false,
-            }
+        // `let C = class { ... }` is parsed as ClassDecl (class_expression_statement path)
+        // with 4 private elements
+        let has_4_private_elements = program.iter().any(|stmt| {
+            matches!(stmt,
+                Stmt::ClassDecl { private_elements, .. } if private_elements.len() == 4
+            )
         });
 
-        assert!(has_class_expr, "class expression with 4 private elements should be present");
+        assert!(has_4_private_elements, "class expression should have 4 private elements");
     }
 
     #[test]

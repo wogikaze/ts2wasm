@@ -309,7 +309,9 @@ impl Parser {
                     if self.consume(TokenKind::Semicolon) {
                         continue;
                     }
+                    self.fn_depth += 1;
                     self.block()?;
+                    self.fn_depth -= 1;
                     continue;
                 }
                 if self.consume(TokenKind::Colon) {
@@ -516,7 +518,9 @@ impl Parser {
                 if self.consume(TokenKind::Semicolon) {
                     continue;
                 }
+                self.fn_depth += 1;
                 self.block()?;
+                self.fn_depth -= 1;
                 continue;
             }
 
@@ -544,7 +548,9 @@ impl Parser {
                 continue;
             }
 
+            self.fn_depth += 1;
             let mut method_body = self.block()?;
+            self.fn_depth -= 1;
 
             // issue-5183: null return in typed getter — allow for build_pass
             // (type-level error, not a runtime concern)
@@ -709,7 +715,9 @@ impl Parser {
             let (name, name_span) = self.expect_private_ident()?;
             self.expect(TokenKind::LeftParen)?;
             self.expect(TokenKind::RightParen)?;
+            self.fn_depth += 1;
             let body = self.block()?;
+            self.fn_depth -= 1;
             let end = self.prev_span().map(|span| span.end).unwrap_or(name_span.end);
             return Ok(ClassPrivateElement::Getter {
                 name,
@@ -729,7 +737,9 @@ impl Parser {
             self.expect(TokenKind::LeftParen)?;
             let param = self.parse_param(false, false)?;
             self.expect(TokenKind::RightParen)?;
+            self.fn_depth += 1;
             let body = self.block()?;
+            self.fn_depth -= 1;
             let end = self.prev_span().map(|span| span.end).unwrap_or(name_span.end);
             return Ok(ClassPrivateElement::Setter {
                 name,
@@ -768,7 +778,9 @@ impl Parser {
             if self.consume(TokenKind::Colon) {
                 self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
             }
+            self.fn_depth += 1;
             let body = self.block()?;
+            self.fn_depth -= 1;
             let end = self.prev_span().map(|span| span.end).unwrap_or(name_span.end);
             return Ok(ClassPrivateElement::Method {
                 name,

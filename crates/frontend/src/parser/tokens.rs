@@ -112,17 +112,16 @@ impl Parser {
     }
 
     /// Check if a numeric literal at the given span is a legacy octal literal and
-    /// should be rejected in strict mode. Only the raw source text is examined, so
+    /// should be rejected. Only the raw source text is examined, so
     /// `0e2`, `0x1F`, `0o77`, `0b101` etc. are not flagged.
+    /// Note: `0e2` starts with '0' but `e` is not a digit, so the `is_ascii_digit`
+    /// check correctly excludes it. The `raw.len() > 1` guard excludes bare `0`.
     fn check_legacy_octal_literal(&self, span: Span) -> Result<(), Diagnostic> {
-        if !self.strict_mode {
-            return Ok(());
-        }
         let raw = &self.source[span.start..span.end];
         if raw.len() > 1 && raw.starts_with('0') && raw.chars().all(|c| c.is_ascii_digit()) {
             return Err(Diagnostic {
                 code: DiagCode::SyntaxError,
-                message: "Legacy octal literals are not allowed in strict mode".to_owned(),
+                message: "Legacy octal literals are not allowed".to_owned(),
                 span: Some(span),
                 phase: Some("parser"),
             });

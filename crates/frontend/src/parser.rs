@@ -21,6 +21,12 @@ pub struct Parser {
     /// Whether we are inside a generator function body (for context-sensitive `yield` parsing).
     in_generator_fn: bool,
     fn_depth: u32,
+    /// How many loop levels we're nested in (for `break`/`continue` validation).
+    loop_depth: u32,
+    /// How many switch statement levels we're nested in (for `break` validation inside switch).
+    switch_depth: u32,
+    /// Whether we've already seen a `export default` declaration in this module.
+    has_default_export: bool,
     /// Maps class names to their TypeScript-`private` field names (erased at runtime).
     class_private_fields: HashMap<String, Vec<String>>,
     namespace_names_encountered: HashSet<String>,

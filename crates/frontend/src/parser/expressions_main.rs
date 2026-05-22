@@ -482,7 +482,9 @@ impl Parser {
         // Body can be an expression or a block with statements.
         let mut body_stmts = Vec::new();
         let body = if matches!(self.peek(), Some(Token::LeftBrace)) {
+            self.fn_depth += 1;
             let block_stmts = self.block()?;
+            self.fn_depth -= 1;
             match block_stmts.split_last() {
                 Some((Stmt::Return { expr, .. }, rest)) => {
                     body_stmts = rest.to_vec();
@@ -1335,7 +1337,7 @@ impl Parser {
                         code: DiagCode::SyntaxError,
                         message: "'new.target' is only valid inside functions and class constructors".to_owned(),
                         span: Some(Span { start: new_span.start, end }),
-                        phase: None,
+                        phase: Some("parser"),
                     });
                 }
                 let expr = Expr::NewTarget {
@@ -2085,7 +2087,7 @@ impl Parser {
                                                 "expected generator object method parameter list"
                                                     .to_owned(),
                                             span: self.peek_span(),
-                                            phase: None,
+                                            phase: Some("parser"),
                                         })?;
                                     props.push(ObjectProp::MethodShorthand { key, value });
                                 }
@@ -2102,7 +2104,7 @@ impl Parser {
                                                 "expected generator object method parameter list"
                                                     .to_owned(),
                                             span: self.peek_span(),
-                                            phase: None,
+                                            phase: Some("parser"),
                                         })?;
                                     props.push(ObjectProp::ComputedKey {
                                         key: Box::new(key),
@@ -2297,7 +2299,7 @@ impl Parser {
                 message: format!("unsupported expression: {other:?}"),
                 span: self.peek_span(),
 
-                phase: None,}),
+                phase: Some("parser"),}),
         }
     }
 
@@ -2428,7 +2430,10 @@ impl Parser {
                 .ok();
         }
         let body = if matches!(self.peek(), Some(Token::LeftBrace)) {
-            self.block()?
+            self.fn_depth += 1;
+            let b = self.block()?;
+            self.fn_depth -= 1;
+            b
         } else {
             Vec::new()
         };
@@ -2530,7 +2535,9 @@ impl Parser {
 
         let prev_in_generator_fn = self.in_generator_fn;
         self.in_generator_fn = is_generator;
+        self.fn_depth += 1;
         let body = self.block()?;
+        self.fn_depth -= 1;
         self.in_generator_fn = prev_in_generator_fn;
         let end = body
             .last()
@@ -2615,7 +2622,9 @@ impl Parser {
         }
         let ns = name_span.unwrap_or(Span { start: start.start, end: start.start });
         self.validate_strict_mode_fn_params(&name, ns, &params)?;
+        self.fn_depth += 1;
         let body = self.block()?;
+        self.fn_depth -= 1;
         self.strict_mode = prev_strict_mode;
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
         let source_end = self.prev_span().map(|s| s.end).unwrap_or(end);

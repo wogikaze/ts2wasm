@@ -302,6 +302,15 @@ impl Parser {
         export_span: Span,
         default_span: Span,
     ) -> Result<Stmt, Diagnostic> {
+        if self.has_default_export {
+            return Err(Diagnostic {
+                code: DiagCode::SyntaxError,
+                message: "A module cannot have multiple default exports".to_owned(),
+                span: Some(default_span),
+                phase: Some("parser"),
+            });
+        }
+        self.has_default_export = true;
         match self.peek() {
             Some(Token::Function) => {
                 let fn_span = self.expect(TokenKind::Function)?;
@@ -683,7 +692,7 @@ impl Parser {
                             "expected import assertion string literal value, got {other:?}"
                         ),
                         span: self.peek_span(),
-                        phase: None,
+                        phase: Some("parser"),
                     });
                 }
             };
@@ -838,7 +847,7 @@ impl Parser {
                 message: format!("expected module specifier string literal, got {other:?}"),
                 span: self.peek_span(),
 
-                phase: None,
+                phase: Some("parser"),
             }),
         }
     }
@@ -1329,7 +1338,9 @@ impl Parser {
         let (body, end) = if let Some(semi) = self.consume_span(TokenKind::Semicolon) {
             (Vec::new(), semi.end)
         } else {
+            self.loop_depth += 1;
             let body = self.while_statement_body()?;
+            self.loop_depth -= 1;
             let end = body
                 .last()
                 .map(|stmt| stmt.span().end)
@@ -1415,7 +1426,9 @@ impl Parser {
             self.strict_mode = true;
         }
         self.check_duplicate_params(&params)?;
+        self.fn_depth += 1;
         let body = self.block()?;
+        self.fn_depth -= 1;
         self.strict_mode = prev_strict_mode;
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
         let source_end = self.prev_span().map(|s| s.end).unwrap_or(end);
@@ -1467,7 +1480,9 @@ impl Parser {
         if self.peek_function_body_use_strict() {
             self.strict_mode = true;
         }
+        self.fn_depth += 1;
         let body = self.block()?;
+        self.fn_depth -= 1;
         self.strict_mode = prev_strict_mode;
         self.in_generator_fn = prev_in_generator_fn;
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
@@ -1572,7 +1587,9 @@ impl Parser {
         if self.peek_function_body_use_strict() {
             self.strict_mode = true;
         }
+        self.fn_depth += 1;
         let body = self.block()?;
+        self.fn_depth -= 1;
         self.strict_mode = prev_strict_mode;
         self.in_async_fn = prev_in_async_fn;
         let end = body
@@ -1597,6 +1614,14 @@ impl Parser {
     }
 
     fn return_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        if self.fn_depth == 0 {
+            return Err(Diagnostic {
+                code: DiagCode::SyntaxError,
+                message: "'return' is only valid inside a function body".to_owned(),
+                span: self.peek_span(),
+                phase: Some("parser"),
+            });
+        }
         let start = self.expect(TokenKind::Return)?;
         if matches!(self.peek(), Some(Token::Semicolon)) {
             let semi = self.expect(TokenKind::Semicolon)?;
@@ -1636,7 +1661,7 @@ impl Parser {
                 message: "expected yield statement".to_owned(),
                 span: self.peek_span(),
 
-                phase: None,
+                phase: Some("parser"),
             });
         };
         debug_assert_eq!(name, "yield");
@@ -1658,6 +1683,14 @@ impl Parser {
     }
 
     fn break_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        if self.loop_depth == 0 && self.switch_depth == 0 {
+            return Err(Diagnostic {
+                code: DiagCode::SyntaxError,
+                message: "'break' is only valid inside a loop or switch statement".to_owned(),
+                span: self.peek_span(),
+                phase: Some("parser"),
+            });
+        }
         let start = self.expect(TokenKind::Break)?;
         let (label, fallback_end) = if matches!(self.peek(), Some(Token::Ident(_))) {
             let (label, label_span) = self.expect_binding_ident()?;
@@ -1676,6 +1709,14 @@ impl Parser {
     }
 
     fn continue_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        if self.loop_depth == 0 {
+            return Err(Diagnostic {
+                code: DiagCode::SyntaxError,
+                message: "'continue' is only valid inside a loop".to_owned(),
+                span: self.peek_span(),
+                phase: Some("parser"),
+            });
+        }
         let start = self.expect(TokenKind::Continue)?;
         let (label, fallback_end) = if matches!(self.peek(), Some(Token::Ident(_))) {
             let (label, label_span) = self.expect_binding_ident()?;
@@ -1710,7 +1751,9 @@ impl Parser {
 
     fn do_while_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let start = self.expect(TokenKind::Do)?;
+        self.loop_depth += 1;
         let body = self.block()?;
+        self.loop_depth -= 1;
         self.expect(TokenKind::While)?;
         self.expect(TokenKind::LeftParen)?;
         let condition = self.expression()?;
@@ -1757,7 +1800,9 @@ impl Parser {
         self.expect(TokenKind::Of)?;
         let iter = self.expression()?;
         self.expect(TokenKind::RightParen)?;
+        self.loop_depth += 1;
         let body = self.statement_body()?;
+        self.loop_depth -= 1;
         let end = body.last().map(|s| s.span().end).unwrap_or(await_span.end);
         Ok(Stmt::ForAwaitOf {
             var: var_name,
@@ -2057,7 +2102,9 @@ impl Parser {
             if self.consume(TokenKind::In) {
                 let iter = self.expression()?;
                 self.expect(TokenKind::RightParen)?;
+                self.loop_depth += 1;
                 let mut body = self.statement_body()?;
+                self.loop_depth -= 1;
                 if let Some(binding) = &destructuring_binding {
                     body.insert(0, for_head_destructuring_let(binding, &var_name));
                 }
@@ -2084,7 +2131,9 @@ impl Parser {
             } else if self.consume(TokenKind::Of) {
                 let iter = self.expression()?;
                 self.expect(TokenKind::RightParen)?;
+                self.loop_depth += 1;
                 let mut body = self.statement_body()?;
+                self.loop_depth -= 1;
                 if let Some(binding) = &destructuring_binding {
                     body.insert(0, for_head_destructuring_let(binding, &var_name));
                 }
@@ -2168,7 +2217,9 @@ impl Parser {
                 Some(expr)
             };
 
+            self.loop_depth += 1;
             let body = self.statement_body()?;
+            self.loop_depth -= 1;
             let end = body.last().map(|s| s.span().end).unwrap_or(start.end);
 
             Ok(Stmt::For {
@@ -2191,6 +2242,7 @@ impl Parser {
         self.expect(TokenKind::RightParen)?;
         self.expect(TokenKind::LeftBrace)?;
 
+        self.switch_depth += 1;
         let mut cases = Vec::new();
 
         while !matches!(self.peek(), Some(Token::RightBrace)) && !self.is_at_end() {
@@ -2229,6 +2281,7 @@ impl Parser {
         }
 
         let end_span = self.expect(TokenKind::RightBrace)?;
+        self.switch_depth -= 1;
 
         Ok(Stmt::Switch {
             expr,
