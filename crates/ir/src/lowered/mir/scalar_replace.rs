@@ -180,9 +180,7 @@ fn collect_candidates_in_stmt(
             if idx < escape_status.len() && escape_status[idx] == Some(EscapeStatus::NotEscaped) {
                 // Only collect if all elements are literal values (no holes).
                 if elements.iter().all(|e| is_leaf_value(e)) {
-                    let keys: Vec<String> = (0..elements.len())
-                        .map(|i| i.to_string())
-                        .collect();
+                    let keys: Vec<String> = (0..elements.len()).map(|i| i.to_string()).collect();
                     candidates.insert(*local, keys);
                 }
             }
@@ -847,13 +845,15 @@ fn stmt_has_direct_intermediate_access(
             body,
             ..
         } => {
-            init.as_ref().is_some_and(|i| {
-                stmt_has_direct_intermediate_access(i, obj_local, intermediates)
-            }) || condition.as_ref().is_some_and(|c| {
-                expr_has_direct_intermediate_access(c, obj_local, intermediates)
-            }) || update.as_ref().is_some_and(|u| {
-                expr_has_direct_intermediate_access(u, obj_local, intermediates)
-            }) || has_direct_intermediate_access_in_slice(body, obj_local, intermediates)
+            init.as_ref()
+                .is_some_and(|i| stmt_has_direct_intermediate_access(i, obj_local, intermediates))
+                || condition.as_ref().is_some_and(|c| {
+                    expr_has_direct_intermediate_access(c, obj_local, intermediates)
+                })
+                || update.as_ref().is_some_and(|u| {
+                    expr_has_direct_intermediate_access(u, obj_local, intermediates)
+                })
+                || has_direct_intermediate_access_in_slice(body, obj_local, intermediates)
         }
         MirStmt::DoWhile {
             body, condition, ..
@@ -861,8 +861,7 @@ fn stmt_has_direct_intermediate_access(
             has_direct_intermediate_access_in_slice(body, obj_local, intermediates)
                 || expr_has_direct_intermediate_access(condition, obj_local, intermediates)
         }
-        MirStmt::ForIn { iter, body, .. }
-        | MirStmt::ForOf { iter, body, .. } => {
+        MirStmt::ForIn { iter, body, .. } | MirStmt::ForOf { iter, body, .. } => {
             expr_has_direct_intermediate_access(iter, obj_local, intermediates)
                 || has_direct_intermediate_access_in_slice(body, obj_local, intermediates)
         }
@@ -960,19 +959,18 @@ fn expr_has_direct_intermediate_access(
             expr_has_direct_intermediate_access(left, obj_local, intermediates)
                 || expr_has_direct_intermediate_access(right, obj_local, intermediates)
         }
-        MirExpr::Call { args, .. } | MirExpr::RuntimeCall { args, .. } => {
-            args.iter()
-                .any(|a| expr_has_direct_intermediate_access(a, obj_local, intermediates))
-        }
+        MirExpr::Call { args, .. } | MirExpr::RuntimeCall { args, .. } => args
+            .iter()
+            .any(|a| expr_has_direct_intermediate_access(a, obj_local, intermediates)),
         MirExpr::Assign { expr: e, .. } => {
             expr_has_direct_intermediate_access(e, obj_local, intermediates)
         }
         MirExpr::LogicalAssign { expr: e, .. } => {
             expr_has_direct_intermediate_access(e, obj_local, intermediates)
         }
-        MirExpr::ArrayNew { elements, .. } => elements.iter().any(|e| {
-            expr_has_direct_intermediate_access(e, obj_local, intermediates)
-        }),
+        MirExpr::ArrayNew { elements, .. } => elements
+            .iter()
+            .any(|e| expr_has_direct_intermediate_access(e, obj_local, intermediates)),
         MirExpr::ArrayNewSparse { slots, .. } => slots.iter().any(|slot| match slot {
             MirArraySlot::Present(e) => {
                 expr_has_direct_intermediate_access(e, obj_local, intermediates)
@@ -986,9 +984,9 @@ fn expr_has_direct_intermediate_access(
         MirExpr::GetLength(e, _) => {
             expr_has_direct_intermediate_access(e, obj_local, intermediates)
         }
-        MirExpr::ObjectNew { props, .. } => props.iter().any(|(_, v)| {
-            expr_has_direct_intermediate_access(v, obj_local, intermediates)
-        }),
+        MirExpr::ObjectNew { props, .. } => props
+            .iter()
+            .any(|(_, v)| expr_has_direct_intermediate_access(v, obj_local, intermediates)),
         MirExpr::ErrorNew { message, cause, .. } => {
             expr_has_direct_intermediate_access(message, obj_local, intermediates)
                 || cause.as_ref().is_some_and(|c| {
@@ -1000,7 +998,10 @@ fn expr_has_direct_intermediate_access(
                 || expr_has_direct_intermediate_access(key, obj_local, intermediates)
         }
         MirExpr::PropertySetDynamic {
-            object, index, value, ..
+            object,
+            index,
+            value,
+            ..
         } => {
             expr_has_direct_intermediate_access(object, obj_local, intermediates)
                 || expr_has_direct_intermediate_access(index, obj_local, intermediates)
@@ -1051,21 +1052,26 @@ fn expr_has_direct_intermediate_access(
             expr_has_direct_intermediate_access(object, obj_local, intermediates)
                 || expr_has_direct_intermediate_access(index, obj_local, intermediates)
         }
-        MirExpr::LogicalPropertyAssign { object, expr: e, .. } => {
-            expr_has_direct_intermediate_access(e, obj_local, intermediates)
-        }
+        MirExpr::LogicalPropertyAssign {
+            object, expr: e, ..
+        } => expr_has_direct_intermediate_access(e, obj_local, intermediates),
         MirExpr::LogicalComputedPropertyAssign { key, expr: e, .. } => {
             expr_has_direct_intermediate_access(key, obj_local, intermediates)
                 || expr_has_direct_intermediate_access(e, obj_local, intermediates)
         }
         MirExpr::LogicalComputedMemberAssign {
-            object, key, expr: e, ..
+            object,
+            key,
+            expr: e,
+            ..
         } => {
             expr_has_direct_intermediate_access(object, obj_local, intermediates)
                 || expr_has_direct_intermediate_access(key, obj_local, intermediates)
                 || expr_has_direct_intermediate_access(e, obj_local, intermediates)
         }
-        MirExpr::LogicalMemberAssign { object, expr: e, .. } => {
+        MirExpr::LogicalMemberAssign {
+            object, expr: e, ..
+        } => {
             expr_has_direct_intermediate_access(object, obj_local, intermediates)
                 || expr_has_direct_intermediate_access(e, obj_local, intermediates)
         }
@@ -1135,9 +1141,9 @@ fn stmt_has_variable_index_access(stmt: &MirStmt, arr_local: LocalId) -> bool {
         } => {
             init.as_ref()
                 .is_some_and(|i| stmt_has_variable_index_access(i, arr_local))
-                || condition.as_ref().is_some_and(|c| {
-                    expr_has_variable_index_access(c, arr_local)
-                })
+                || condition
+                    .as_ref()
+                    .is_some_and(|c| expr_has_variable_index_access(c, arr_local))
                 || update
                     .as_ref()
                     .is_some_and(|u| expr_has_variable_index_access(u, arr_local))
@@ -1187,9 +1193,7 @@ fn stmt_has_variable_index_access(stmt: &MirStmt, arr_local: LocalId) -> bool {
                         || has_variable_index_access_in_stmts(body, arr_local)
                 })
         }
-        MirStmt::Labeled { body, .. } => {
-            stmt_has_variable_index_access(body, arr_local)
-        }
+        MirStmt::Labeled { body, .. } => stmt_has_variable_index_access(body, arr_local),
         MirStmt::Export { expr, .. } => expr_has_variable_index_access(expr, arr_local),
         MirStmt::ModuleExportsAssign { expr, .. } => {
             expr_has_variable_index_access(expr, arr_local)
@@ -1215,9 +1219,7 @@ fn expr_has_variable_index_access(expr: &MirExpr, arr_local: LocalId) -> bool {
         }
         // PropertyGet chain that goes through the array local -> could be array access.
         // Only flag if it's a direct ArrayGet on the local.
-        MirExpr::PropertyGet { obj, .. } => {
-            expr_has_variable_index_access(obj, arr_local)
-        }
+        MirExpr::PropertyGet { obj, .. } => expr_has_variable_index_access(obj, arr_local),
 
         // Recursive cases
         MirExpr::Unary { expr: e, .. } => expr_has_variable_index_access(e, arr_local),
@@ -1225,9 +1227,9 @@ fn expr_has_variable_index_access(expr: &MirExpr, arr_local: LocalId) -> bool {
             expr_has_variable_index_access(left, arr_local)
                 || expr_has_variable_index_access(right, arr_local)
         }
-        MirExpr::Call { args, .. } | MirExpr::RuntimeCall { args, .. } => {
-            args.iter().any(|a| expr_has_variable_index_access(a, arr_local))
-        }
+        MirExpr::Call { args, .. } | MirExpr::RuntimeCall { args, .. } => args
+            .iter()
+            .any(|a| expr_has_variable_index_access(a, arr_local)),
         MirExpr::Assign { expr: e, .. } => expr_has_variable_index_access(e, arr_local),
         MirExpr::LogicalAssign { expr: e, .. } => expr_has_variable_index_access(e, arr_local),
         MirExpr::ArrayNew { elements, .. } => elements
@@ -1252,7 +1254,10 @@ fn expr_has_variable_index_access(expr: &MirExpr, arr_local: LocalId) -> bool {
                 || expr_has_variable_index_access(key, arr_local)
         }
         MirExpr::PropertySetDynamic {
-            object, index, value, ..
+            object,
+            index,
+            value,
+            ..
         } => {
             expr_has_variable_index_access(object, arr_local)
                 || expr_has_variable_index_access(index, arr_local)
@@ -1262,9 +1267,7 @@ fn expr_has_variable_index_access(expr: &MirExpr, arr_local: LocalId) -> bool {
             expr_has_variable_index_access(object, arr_local)
                 || expr_has_variable_index_access(value, arr_local)
         }
-        MirExpr::PropertyDelete { object, .. } => {
-            expr_has_variable_index_access(object, arr_local)
-        }
+        MirExpr::PropertyDelete { object, .. } => expr_has_variable_index_access(object, arr_local),
         MirExpr::PropertyDeleteDynamic { object, key, .. } => {
             expr_has_variable_index_access(object, arr_local)
                 || expr_has_variable_index_access(key, arr_local)
@@ -1299,27 +1302,30 @@ fn expr_has_variable_index_access(expr: &MirExpr, arr_local: LocalId) -> bool {
             expr_has_variable_index_access(object, arr_local)
                 || expr_has_variable_index_access(index, arr_local)
         }
-        MirExpr::LogicalPropertyAssign { object, expr: e, .. } => {
-            expr_has_variable_index_access(e, arr_local)
-        }
+        MirExpr::LogicalPropertyAssign {
+            object, expr: e, ..
+        } => expr_has_variable_index_access(e, arr_local),
         MirExpr::LogicalComputedPropertyAssign { key, expr: e, .. } => {
             expr_has_variable_index_access(key, arr_local)
                 || expr_has_variable_index_access(e, arr_local)
         }
         MirExpr::LogicalComputedMemberAssign {
-            object, key, expr: e, ..
+            object,
+            key,
+            expr: e,
+            ..
         } => {
             expr_has_variable_index_access(object, arr_local)
                 || expr_has_variable_index_access(key, arr_local)
                 || expr_has_variable_index_access(e, arr_local)
         }
-        MirExpr::LogicalMemberAssign { object, expr: e, .. } => {
+        MirExpr::LogicalMemberAssign {
+            object, expr: e, ..
+        } => {
             expr_has_variable_index_access(object, arr_local)
                 || expr_has_variable_index_access(e, arr_local)
         }
-        MirExpr::OptionalPropertyGet { obj, .. } => {
-            expr_has_variable_index_access(obj, arr_local)
-        }
+        MirExpr::OptionalPropertyGet { obj, .. } => expr_has_variable_index_access(obj, arr_local),
 
         // Leaves
         MirExpr::Number(..)
@@ -1401,6 +1407,7 @@ fn rewrite_stmts(
                         emit_scalar_lets_for_object(
                             props,
                             key_map,
+                            stmts,
                             replaced_set,
                             merged_set,
                             mapping,
@@ -1452,11 +1459,7 @@ fn rewrite_stmts(
                             if let Some(&scalar_local) = key_map.get(key.as_str()) {
                                 let rewritten_value =
                                     rewrite_expr(value, replaced_set, merged_set, mapping);
-                                out.push(MirStmt::Assign(
-                                    scalar_local,
-                                    rewritten_value,
-                                    *span,
-                                ));
+                                out.push(MirStmt::Assign(scalar_local, rewritten_value, *span));
                                 continue;
                             }
                         }
@@ -1479,6 +1482,7 @@ fn rewrite_stmts(
 fn emit_scalar_lets_for_object(
     props: &[(String, MirExpr)],
     key_map: &HashMap<String, LocalId>,
+    stmts: &[MirStmt],
     replaced_set: &HashSet<LocalId>,
     merged_set: &HashSet<LocalId>,
     mapping: &HashMap<LocalId, HashMap<String, LocalId>>,
@@ -1490,7 +1494,7 @@ fn emit_scalar_lets_for_object(
             props: inner_props, ..
         } = prop_expr
         {
-            // Recursively emit with prefix.
+            // Inline-nested ObjectNew: recurse with key prefix.
             emit_scalar_lets_for_nested(
                 inner_props,
                 key,
@@ -1500,7 +1504,29 @@ fn emit_scalar_lets_for_object(
                 mapping,
                 out,
             );
-        } else if let Some(&scalar_local) = key_map.get(key) {
+            continue;
+        }
+
+        // Check for separate-let nested child (merged).
+        if let MirExpr::Local(child, _) = prop_expr {
+            if merged_set.contains(child) {
+                if let Some(child_props) = find_merged_child_props(stmts, *child) {
+                    emit_scalar_lets_for_nested(
+                        child_props,
+                        key,
+                        key_map,
+                        replaced_set,
+                        merged_set,
+                        mapping,
+                        out,
+                    );
+                }
+                continue;
+            }
+        }
+
+        // Direct scalar (leaf value).
+        if let Some(&scalar_local) = key_map.get(key) {
             let span = span_of(prop_expr);
             let rewritten = rewrite_expr(prop_expr, replaced_set, merged_set, mapping);
             out.push(MirStmt::Let(scalar_local, rewritten, span));
@@ -1554,15 +1580,25 @@ fn rewrite_expr_in_stmt(
     match stmt {
         MirStmt::Block(children, span) => {
             let mut new_children = Vec::with_capacity(children.len());
-            rewrite_stmts(children, replaced_set, merged_set, mapping, &mut new_children);
+            rewrite_stmts(
+                children,
+                replaced_set,
+                merged_set,
+                mapping,
+                &mut new_children,
+            );
             MirStmt::Block(new_children, *span)
         }
-        MirStmt::Let(local, expr, span) => {
-            MirStmt::Let(*local, rewrite_expr(expr, replaced_set, merged_set, mapping), *span)
-        }
-        MirStmt::Assign(local, expr, span) => {
-            MirStmt::Assign(*local, rewrite_expr(expr, replaced_set, merged_set, mapping), *span)
-        }
+        MirStmt::Let(local, expr, span) => MirStmt::Let(
+            *local,
+            rewrite_expr(expr, replaced_set, merged_set, mapping),
+            *span,
+        ),
+        MirStmt::Assign(local, expr, span) => MirStmt::Assign(
+            *local,
+            rewrite_expr(expr, replaced_set, merged_set, mapping),
+            *span,
+        ),
         MirStmt::Expr(expr, span) => {
             MirStmt::Expr(rewrite_expr(expr, replaced_set, merged_set, mapping), *span)
         }
@@ -1614,7 +1650,13 @@ fn rewrite_expr_in_stmt(
         } => {
             let new_init = init.as_ref().map(|i| {
                 let mut buf = Vec::new();
-                rewrite_stmts(&[(**i).clone()], replaced_set, merged_set, mapping, &mut buf);
+                rewrite_stmts(
+                    &[(**i).clone()],
+                    replaced_set,
+                    merged_set,
+                    mapping,
+                    &mut buf,
+                );
                 Box::new(buf.into_iter().next().unwrap())
             });
             let mut new_body = Vec::with_capacity(body.len());
@@ -1717,7 +1759,13 @@ fn rewrite_expr_in_stmt(
             let mut new_try = Vec::with_capacity(try_body.len());
             rewrite_stmts(try_body, replaced_set, merged_set, mapping, &mut new_try);
             let mut new_finally = Vec::with_capacity(finally_body.len());
-            rewrite_stmts(finally_body, replaced_set, merged_set, mapping, &mut new_finally);
+            rewrite_stmts(
+                finally_body,
+                replaced_set,
+                merged_set,
+                mapping,
+                &mut new_finally,
+            );
             MirStmt::TryFinally {
                 try_body: new_try,
                 finally_body: new_finally,
@@ -2056,7 +2104,12 @@ fn rewrite_expr(
         } => {
             let new_props: Vec<(String, MirExpr)> = props
                 .iter()
-                .map(|(k, v)| (k.clone(), rewrite_expr(v, replaced_set, merged_set, mapping)))
+                .map(|(k, v)| {
+                    (
+                        k.clone(),
+                        rewrite_expr(v, replaced_set, merged_set, mapping),
+                    )
+                })
                 .collect();
             MirExpr::ObjectNew {
                 props: new_props,
@@ -2252,6 +2305,27 @@ fn is_leaf_value(expr: &MirExpr) -> bool {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/// Look up a merged child's ObjectNew property values from the statement list.
+fn find_merged_child_props<'a>(
+    stmts: &'a [MirStmt],
+    child: LocalId,
+) -> Option<&'a [(String, MirExpr)]> {
+    for stmt in stmts {
+        match stmt {
+            MirStmt::Let(local, MirExpr::ObjectNew { props, .. }, _) if *local == child => {
+                return Some(props);
+            }
+            MirStmt::Block(children, _) => {
+                if let result @ Some(_) = find_merged_child_props(children, child) {
+                    return result;
+                }
+            }
+            _ => {}
+        }
+    }
+    None
+}
 
 /// Extract the span from a MirExpr, defaulting to a zero-span if unavailable.
 fn span_of(expr: &MirExpr) -> ts2wasm_source::Span {
@@ -2942,7 +3016,10 @@ mod tests {
 
         // Fourth stmt: let v = scalar (chain resolved)
         assert!(
-            matches!(&result[3], MirStmt::Let(LocalId(1), MirExpr::Local(_, _), _)),
+            matches!(
+                &result[3],
+                MirStmt::Let(LocalId(1), MirExpr::Local(_, _), _)
+            ),
             "fourth stmt should be let v = scalar"
         );
     }
@@ -3140,7 +3217,11 @@ mod tests {
         let result = run_scalar_replace(body, escape_status);
 
         // Should be unchanged because of intermediate access.
-        assert_eq!(result.len(), 2, "intermediate access body should be unchanged");
+        assert_eq!(
+            result.len(),
+            2,
+            "intermediate access body should be unchanged"
+        );
         assert!(
             matches!(
                 &result[0],
@@ -3163,10 +3244,7 @@ mod tests {
             MirStmt::Let(
                 LocalId(0),
                 MirExpr::ArrayNew {
-                    elements: vec![
-                        MirExpr::Number(10, span()),
-                        MirExpr::Number(20, span()),
-                    ],
+                    elements: vec![MirExpr::Number(10, span()), MirExpr::Number(20, span())],
                     span: span(),
                 },
                 span(),
@@ -3192,7 +3270,11 @@ mod tests {
         let result = run_scalar_replace(body, escape_status);
 
         // Should be unchanged because of variable index access.
-        assert_eq!(result.len(), 3, "variable index access body should be unchanged");
+        assert_eq!(
+            result.len(),
+            3,
+            "variable index access body should be unchanged"
+        );
         assert!(
             matches!(
                 &result[0],
