@@ -2,8 +2,9 @@ use std::collections::HashMap;
 
 use ts2wasm_ir::builtin::BuiltinId;
 use ts2wasm_ir::lowered::{
-    ClosureRepresentation, FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr,
-    LoweredFunction, LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo, Validated,
+    ClosureRepresentation, FuncId, FunctionCallKind, InferredType, LocalId, LoweredBinaryOp,
+    LoweredExpr, LoweredFunction, LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo,
+    Validated,
 };
 use ts2wasm_runtime_abi::consts::RuntimeConst;
 use ts2wasm_runtime_abi::{Layout, ValueTag};
@@ -66,6 +67,7 @@ struct NativeLoweredEmitter<'a> {
 #[derive(Clone)]
 struct FunctionCtx {
     locals: HashMap<LocalId, usize>,
+    local_types: HashMap<LocalId, InferredType>,
     switch_value_local: usize,
     returns_value: bool,
     module_id: Option<usize>,
@@ -213,6 +215,7 @@ impl<'a> NativeLoweredEmitter<'a> {
 
         let ctx = FunctionCtx {
             locals,
+            local_types: infer_local_types(&function.body),
             switch_value_local,
             returns_value,
             module_id: None,
@@ -238,6 +241,7 @@ impl<'a> NativeLoweredEmitter<'a> {
         wasm = wasm.local(WasmValType::I32);
         let ctx = FunctionCtx {
             locals,
+            local_types: infer_local_types(&self.program.top_level_statements),
             switch_value_local,
             returns_value: false,
             module_id: None,
@@ -262,6 +266,7 @@ impl<'a> NativeLoweredEmitter<'a> {
         wasm = wasm.local(WasmValType::I32);
         let ctx = FunctionCtx {
             locals,
+            local_types: infer_local_types(&module_info.statements),
             switch_value_local,
             returns_value: false,
             module_id: Some(module_info.id),
@@ -571,6 +576,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                 self.emit_expr(expr, ctx, out)?;
                 match op {
                     LoweredUnaryOp::Plus => Ok(()),
+                    LoweredUnaryOp::Not => {
+                        out.push(WasmInstr::I32Eqz);
+                        Ok(())
+                    }
                     LoweredUnaryOp::Negate => {
                         out.push(WasmInstr::I32Const(-1));
                         out.push(WasmInstr::I32Mul);
@@ -673,6 +682,15 @@ impl<'a> NativeLoweredEmitter<'a> {
                 }
                 LoweredExpr::Null(_) => self.emit_static_bytes(b"null", out),
                 LoweredExpr::Undefined(_) => self.emit_static_bytes(b"undefined", out),
+                _ if native_console_arg_type(arg, ctx) == InferredType::Boolean => {
+                    self.emit_expr(arg, ctx, out)?;
+                    out.push(WasmInstr::If { result_ty: None });
+                    out.push(WasmInstr::Then);
+                    self.emit_static_bytes(b"true", out);
+                    out.push(WasmInstr::Else);
+                    self.emit_static_bytes(b"false", out);
+                    out.push(WasmInstr::End);
+                }
                 _ => {
                     self.emit_expr(arg, ctx, out)?;
                     out.push(WasmInstr::Call(WRITE_I32_SYMBOL.to_owned()));
@@ -917,6 +935,77 @@ fn stmt_accepts_continue_label(stmt: &LoweredStmt) -> bool {
         stmt,
         LoweredStmt::While { .. } | LoweredStmt::DoWhile { .. } | LoweredStmt::For { .. }
     )
+}
+
+fn infer_local_types(stmts: &[LoweredStmt]) -> HashMap<LocalId, InferredType> {
+    let mut types = HashMap::<LocalId, Option<InferredType>>::new();
+    collect_local_types(stmts, &mut types);
+    types
+        .into_iter()
+        .filter_map(|(local, ty)| ty.map(|ty| (local, ty)))
+        .collect()
+}
+
+fn collect_local_types(stmts: &[LoweredStmt], types: &mut HashMap<LocalId, Option<InferredType>>) {
+    for stmt in stmts {
+        match stmt {
+            LoweredStmt::Let(local, expr, _) | LoweredStmt::Assign(local, expr, _) => {
+                record_local_type(types, *local, expr.inferred_type());
+            }
+            LoweredStmt::Block(stmts, _) => collect_local_types(stmts, types),
+            LoweredStmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                collect_local_types(then_body, types);
+                collect_local_types(else_body, types);
+            }
+            LoweredStmt::While { body, .. }
+            | LoweredStmt::DoWhile { body, .. }
+            | LoweredStmt::For { body, .. } => collect_local_types(body, types),
+            LoweredStmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    collect_local_types(body, types);
+                }
+            }
+            LoweredStmt::Labeled { body, .. } => {
+                collect_local_types(std::slice::from_ref(body), types)
+            }
+            _ => {}
+        }
+    }
+}
+
+fn record_local_type(
+    types: &mut HashMap<LocalId, Option<InferredType>>,
+    local: LocalId,
+    ty: InferredType,
+) {
+    if ty == InferredType::Unknown {
+        types.insert(local, None);
+        return;
+    }
+    match types.get(&local).copied().flatten() {
+        None if !types.contains_key(&local) => {
+            types.insert(local, Some(ty));
+        }
+        Some(existing) if existing == ty => {}
+        _ => {
+            types.insert(local, None);
+        }
+    }
+}
+
+fn native_console_arg_type(expr: &LoweredExpr, ctx: &FunctionCtx) -> InferredType {
+    match expr {
+        LoweredExpr::Local(local, _) => ctx
+            .local_types
+            .get(local)
+            .copied()
+            .unwrap_or(InferredType::Unknown),
+        _ => expr.inferred_type(),
+    }
 }
 
 fn module_export_global(ctx: &FunctionCtx, name: &str) -> Result<String, Diagnostic> {

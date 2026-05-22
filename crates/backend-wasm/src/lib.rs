@@ -939,7 +939,7 @@ mod tests {
     }
 
     #[test]
-    fn native_lowered_numeric_unary_runs_without_wat_conversion() {
+    fn native_lowered_unary_runs_without_wat_conversion() {
         let span = Span::generated("test");
         let program = LoweredProgram {
             top_level_statements: vec![
@@ -948,6 +948,15 @@ mod tests {
                     LoweredExpr::Unary {
                         op: LoweredUnaryOp::Negate,
                         expr: Box::new(LoweredExpr::Number(5, span)),
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Let(
+                    LocalId(1),
+                    LoweredExpr::Unary {
+                        op: LoweredUnaryOp::Not,
+                        expr: Box::new(LoweredExpr::Bool(true, span)),
                         span,
                     },
                     span,
@@ -964,8 +973,16 @@ mod tests {
                     },
                     span,
                 ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Local(LocalId(1), span)],
+                        span,
+                    },
+                    span,
+                ),
             ],
-            top_level_locals: vec![LocalId(0)],
+            top_level_locals: vec![LocalId(0), LocalId(1)],
             functions: vec![],
             modules: vec![],
         };
@@ -977,7 +994,7 @@ mod tests {
         let wasm_path = temp_dir.join("native.wasm");
         fs::write(&wasm_path, wasm).expect("native wasm should be written");
 
-        assert_eq!(run_iwasm(&wasm_path), "-5\n");
+        assert_eq!(run_iwasm(&wasm_path), "-5\nfalse\n");
         let _ = fs::remove_dir_all(temp_dir);
     }
 

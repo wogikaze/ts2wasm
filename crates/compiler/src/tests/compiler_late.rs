@@ -924,6 +924,7 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "../../fixtures/core-expressions/undefined.ts",
             "undefined\n",
         ),
+        ("../../fixtures/core-expressions/unary.ts", "-5\nfalse\n"),
         ("../../fixtures/core-statements/if.ts", "1\n"),
         ("../../fixtures/core-statements/let.ts", "1\n"),
         ("../../fixtures/core-statements/while.ts", "0\n1\n2\n"),
