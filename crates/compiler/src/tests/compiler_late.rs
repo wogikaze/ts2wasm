@@ -910,6 +910,10 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
         ("../../fixtures/basics-hello/hello.ts", "hi\n"),
         ("../../fixtures/core-expressions/number.ts", "42\n"),
         ("../../fixtures/core-statements/if.ts", "1\n"),
+        ("../../fixtures/core-statements/while.ts", "0\n1\n2\n"),
+        ("../../fixtures/core-statements/for.ts", "0\n1\n2\n"),
+        ("../../fixtures/core-statements/do-while.ts", "0\n1\n2\n"),
+        ("../../fixtures/core-statements/labeled.ts", "1\n"),
     ] {
         let program = lower_fixture(fixture);
         let (validated, _) = ts2wasm_ir::lowered::Validated::new(program)

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use ts2wasm_ir::builtin::BuiltinId;
 use ts2wasm_ir::lowered::{
     FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredFunction,
-    LoweredProgram, LoweredStmt, ModuleInfo, Validated,
+    LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo, Validated,
 };
 use ts2wasm_runtime_abi::consts::RuntimeConst;
 use ts2wasm_runtime_abi::{Layout, ValueTag};
@@ -509,6 +509,20 @@ impl<'a> NativeLoweredEmitter<'a> {
                 self.emit_expr(right, ctx, out)?;
                 out.push(binary_op_instr(*op)?);
                 Ok(())
+            }
+            LoweredExpr::Unary { op, expr, .. } => {
+                self.emit_expr(expr, ctx, out)?;
+                match op {
+                    LoweredUnaryOp::Plus => Ok(()),
+                    LoweredUnaryOp::Negate => {
+                        out.push(WasmInstr::I32Const(-1));
+                        out.push(WasmInstr::I32Mul);
+                        Ok(())
+                    }
+                    _ => Err(unsupported(
+                        "native LoweredProgram emitter does not support this unary operator",
+                    )),
+                }
             }
             LoweredExpr::PropertyGet { obj, key, .. } => {
                 if let LoweredExpr::ModuleLoad { module_id, .. } = obj.as_ref() {

@@ -229,8 +229,8 @@ mod tests {
     use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{
         ClassPrototypeRef, FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr,
-        LoweredFunction, LoweredProgram, LoweredStmt, ModuleInfo, ModuleLoadKind, RuntimeFn,
-        Validated,
+        LoweredFunction, LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleInfo, ModuleLoadKind,
+        RuntimeFn, Validated,
     };
     use ts2wasm_runtime_abi::{Layout, ValueTag};
     use ts2wasm_shared::abi::{ABI_CUSTOM_SECTION_NAME, AbiMetadata};
@@ -877,6 +877,49 @@ mod tests {
         fs::write(&wasm_path, wasm).expect("native wasm should be written");
 
         assert_eq!(run_iwasm(&wasm_path), "8\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_numeric_unary_runs_without_wat_conversion() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(
+                    LocalId(0),
+                    LoweredExpr::Unary {
+                        op: LoweredUnaryOp::Negate,
+                        expr: Box::new(LoweredExpr::Number(5, span)),
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Unary {
+                            op: LoweredUnaryOp::Plus,
+                            expr: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native unary binary should emit");
+        let temp_dir = unique_temp_dir("native-lowered-numeric-unary");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "-5\n");
         let _ = fs::remove_dir_all(temp_dir);
     }
 
