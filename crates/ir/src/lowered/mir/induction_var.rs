@@ -528,6 +528,7 @@ mod tests {
             generator_state: None,
             induction_vars: vec![],
             value_reps: vec![],
+            optimization_hints: vec![],
             escape_status: vec![],
         };
 
@@ -580,6 +581,7 @@ mod tests {
             generator_state: None,
             induction_vars: vec![],
             value_reps: vec![],
+            optimization_hints: vec![],
             escape_status: vec![],
         };
 
@@ -633,6 +635,7 @@ mod tests {
             generator_state: None,
             induction_vars: vec![],
             value_reps: vec![],
+            optimization_hints: vec![],
             escape_status: vec![],
         };
 
@@ -685,6 +688,7 @@ mod tests {
             generator_state: None,
             induction_vars: vec![],
             value_reps: vec![],
+            optimization_hints: vec![],
             escape_status: vec![],
         };
 
@@ -740,6 +744,7 @@ mod tests {
             generator_state: None,
             induction_vars: vec![],
             value_reps: vec![],
+            optimization_hints: vec![],
             escape_status: vec![],
         };
 
@@ -793,6 +798,7 @@ mod tests {
             generator_state: None,
             induction_vars: vec![],
             value_reps: vec![],
+            optimization_hints: vec![],
             escape_status: vec![],
         };
 
@@ -839,6 +845,7 @@ mod tests {
             generator_state: None,
             induction_vars: vec![],
             value_reps: vec![],
+            optimization_hints: vec![],
             escape_status: vec![],
         };
 
@@ -885,6 +892,7 @@ mod tests {
             generator_state: None,
             induction_vars: vec![],
             value_reps: vec![],
+            optimization_hints: vec![],
             escape_status: vec![],
         };
 
@@ -908,6 +916,7 @@ mod tests {
             generator_state: None,
             induction_vars: vec![],
             value_reps: vec![],
+            optimization_hints: vec![],
             escape_status: vec![],
         };
 
@@ -975,6 +984,7 @@ mod tests {
             generator_state: None,
             induction_vars: vec![],
             value_reps: vec![],
+            optimization_hints: vec![],
             escape_status: vec![],
         };
 
@@ -1036,6 +1046,7 @@ mod tests {
             generator_state: None,
             induction_vars: vec![],
             value_reps: vec![],
+            optimization_hints: vec![],
             escape_status: vec![],
         };
 
@@ -1086,6 +1097,7 @@ mod tests {
             generator_state: None,
             induction_vars: vec![],
             value_reps: vec![],
+            optimization_hints: vec![],
             escape_status: vec![],
         };
 

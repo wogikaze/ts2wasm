@@ -20,7 +20,7 @@ pub use induction_var::{InductionVarDirection, InductionVarInfo};
 pub use types::{
     EscapeStatus, MirArraySlot, MirBinaryOp, MirBuiltinErrorConstructor, MirClassPrototypeRef,
     MirClosureRepresentation, MirExpr, MirFunction, MirFunctionCallKind, MirLogicalAssignOp,
-    MirModuleInfo, MirProgram, MirStmt, MirUnaryOp, RepProof, ValueRep,
+    MirModuleInfo, MirProgram, MirStmt, MirUnaryOp, OptimizationHint, RepProof, ValueRep,
 };
 
 // ---------------------------------------------------------------------------
@@ -198,14 +198,9 @@ fn infer_value_reps_in_stmts(
             MirStmt::While { body, .. } => {
                 infer_value_reps_in_stmts(body, value_reps);
             }
-            MirStmt::For {
-                init, body, ..
-            } => {
+            MirStmt::For { init, body, .. } => {
                 if let Some(init_stmt) = init {
-                    infer_value_reps_in_stmts(
-                        &[init_stmt.as_ref().clone()],
-                        value_reps,
-                    );
+                    infer_value_reps_in_stmts(&[init_stmt.as_ref().clone()], value_reps);
                 }
                 infer_value_reps_in_stmts(body, value_reps);
             }
@@ -245,10 +240,7 @@ fn infer_value_reps_in_stmts(
                 }
             }
             MirStmt::Labeled { body, .. } => {
-                infer_value_reps_in_stmts(
-                    &[body.as_ref().clone()],
-                    value_reps,
-                );
+                infer_value_reps_in_stmts(&[body.as_ref().clone()], value_reps);
             }
             // Statements that do not introduce or modify locals.
             MirStmt::Expr(..)
@@ -269,6 +261,36 @@ fn infer_value_reps_in_stmts(
 // Orchestration: run all analysis passes in the correct order
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Value representation consumer pass
+// ---------------------------------------------------------------------------
+
+/// Consume value representation inference results and produce optimization hints.
+pub fn run_value_rep_consumer(program: &mut MirProgram) {
+    for func in &mut program.functions {
+        let local_count = func.locals.len();
+        if func.optimization_hints.len() < local_count {
+            func.optimization_hints
+                .resize(local_count, OptimizationHint::None);
+        }
+        for (i, hint) in func.optimization_hints.iter_mut().enumerate() {
+            if i >= func.value_reps.len() {
+                *hint = OptimizationHint::None;
+                continue;
+            }
+            *hint = match func.value_reps[i] {
+                Some((ValueRep::SmiI32, _)) => OptimizationHint::UnboxedSmi,
+                Some((ValueRep::BoolI32, _)) => OptimizationHint::UnboxedBool,
+                Some((ValueRep::StringRef, _)) => OptimizationHint::DirectStringRef,
+                Some((ValueRep::ObjectRef, _)) => OptimizationHint::DirectObjectRef,
+                Some((ValueRep::ArrayRef, _)) => OptimizationHint::DirectArrayRef,
+                Some((ValueRep::RawI32, _)) => OptimizationHint::UnboxedRawI32,
+                Some((ValueRep::JsVal, _)) | None => OptimizationHint::None,
+            };
+        }
+    }
+}
+
 /// Run all MIR analysis passes in the correct order.
 ///
 /// ## Pipeline order
@@ -286,13 +308,15 @@ fn infer_value_reps_in_stmts(
 /// 4. **Value representation inference** (`run_value_rep_analysis`) —
 ///    infers per-local value representations. Independent of 1-3.
 ///
-/// Calling this function multiple times is safe — each pass is idempotent
-/// and replaces prior results rather than appending.
+/// 5. **Value representation consumer** (`run_value_rep_consumer`) —
+///    reads value_reps and produces optimization_hints per local.
+///    Must run after step 4.
 pub fn run_all_mir_analyses(program: &mut MirProgram) {
     run_escape_analysis(program);
     run_scalar_replacement(program);
     run_induction_var_analysis(program);
     run_value_rep_analysis(program);
+    run_value_rep_consumer(program);
 }
 
 // ---------------------------------------------------------------------------

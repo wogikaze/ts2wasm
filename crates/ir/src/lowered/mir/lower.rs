@@ -1,4 +1,4 @@
-use super::types::{MirArraySlot, MirExpr, MirFunction, MirProgram, MirStmt};
+use super::types::{MirArraySlot, MirExpr, MirFunction, MirProgram, MirStmt, OptimizationHint};
 use crate::lowered::{LoweredArraySlot, LoweredExpr, LoweredFunction, LoweredProgram, LoweredStmt};
 
 pub(super) fn lower_expr_to_mir(expr: &LoweredExpr) -> MirExpr {
@@ -544,6 +544,7 @@ pub(super) fn lower_function_to_mir(func: &LoweredFunction) -> MirFunction {
         induction_vars: vec![], // populated by analyze_function() after lowering
         escape_status: vec![None; func.locals.len()],
         value_reps: vec![None; func.locals.len()],
+        optimization_hints: vec![OptimizationHint::None; func.locals.len()],
     }
 }
 

@@ -77,6 +77,61 @@ pub enum RepProof {
     GuardedRuntimeCheck,
 }
 
+// ---------------------------------------------------------------------------
+// Optimization hint types
+// ---------------------------------------------------------------------------
+
+/// Optimization hint for a local variable, derived from its inferred ValueRep.
+///
+/// These hints tell the backend how to efficiently represent and operate on
+/// the local's value without requiring re-analysis of the expression tree.
+/// The hint is computed by `run_value_rep_consumer` after value rep inference.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum OptimizationHint {
+    /// Default no optimization hint available; use full JsVal.
+    None,
+    /// Value is a small signed integer fitting in SMI range ([-2^30, 2^30-1]).
+    /// Can be stored and operated on as plain i32 without tagged-value boxing.
+    UnboxedSmi,
+    /// Value is a boolean encoded as 0/1 i32.
+    /// Can be stored as plain i32; branches can use i32.eqz directly.
+    UnboxedBool,
+    /// Value is a non-null string reference.
+    /// Can use direct string reference operations without null checks.
+    DirectStringRef,
+    /// Value is a non-null object reference.
+    /// Can use direct object reference operations without null checks.
+    DirectObjectRef,
+    /// Value is a non-null array reference.
+    /// Can use direct array reference operations without null checks.
+    DirectArrayRef,
+    /// Value is a raw untagged i32 (e.g., a non-SMI integer literal).
+    /// Can be stored as plain i32; skip tagged-value encoding/decoding.
+    UnboxedRawI32,
+}
+
+impl OptimizationHint {
+    /// Returns true if this hint indicates an unboxed (non-reference) value.
+    pub fn is_unboxed(self) -> bool {
+        matches!(
+            self,
+            OptimizationHint::UnboxedSmi
+                | OptimizationHint::UnboxedBool
+                | OptimizationHint::UnboxedRawI32
+        )
+    }
+
+    /// Returns true if this hint indicates a reference type (string/object/array).
+    pub fn is_direct_ref(self) -> bool {
+        matches!(
+            self,
+            OptimizationHint::DirectStringRef
+                | OptimizationHint::DirectObjectRef
+                | OptimizationHint::DirectArrayRef
+        )
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MirArraySlot {
     Present(MirExpr),
@@ -445,6 +500,9 @@ pub struct MirFunction {
     /// Per-local value representation inference. Indexed by `LocalId.0`.
     /// `None` means not yet inferred (JsVal fallback).
     pub value_reps: Vec<Option<(ValueRep, RepProof)>>,
+    /// Per-local optimization hints derived from value representation inference.
+    /// Indexed by `LocalId.0`. Populated by `run_value_rep_consumer`.
+    pub optimization_hints: Vec<OptimizationHint>,
 }
 
 // ---------------------------------------------------------------------------
