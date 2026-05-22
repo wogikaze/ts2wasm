@@ -54,7 +54,16 @@ enum ParsedObjectKey {
 pub(super) fn is_strict_reserved_word(name: &str) -> bool {
     matches!(
         name,
-        "implements" | "interface" | "package" | "private" | "protected" | "public" | "yield"
+        "implements"
+            | "interface"
+            | "let"
+            | "package"
+            | "private"
+            | "protected"
+            | "public"
+            | "static"
+            | "yield"
+            | "enum"
     )
 }
 

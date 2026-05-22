@@ -170,11 +170,26 @@ let binding = self.parse_binding_pattern()?;
                     Token::Static => "static",
                     _ => unreachable!("only contextual binding tokens are matched"),
                 };
-                // reject let/static as binding identifiers in strict mode
-                if self.strict_mode && matches!(token.kind, Token::Let | Token::Static) {
+                // reject let/static/await as binding identifiers in strict mode
+                if self.strict_mode
+                    && matches!(token.kind, Token::Let | Token::Static | Token::Await)
+                {
                     return Err(Diagnostic {
                         code: DiagCode::SyntaxError,
                         message: format!("`{text}` is a reserved word in strict mode"),
+                        span: Some(token.span),
+                        phase: Some("parser"),
+                    });
+                }
+                // reject `await` as binding identifier in non-async function bodies
+                if matches!(token.kind, Token::Await)
+                    && self.fn_depth > 0
+                    && !self.in_async_fn
+                {
+                    return Err(Diagnostic {
+                        code: DiagCode::SyntaxError,
+                        message: "`await` is a reserved word in non-async function bodies"
+                            .to_owned(),
                         span: Some(token.span),
                         phase: Some("parser"),
                     });

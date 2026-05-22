@@ -1920,6 +1920,31 @@ impl Parser {
             }) if self.in_generator_fn && name == "yield" => {
                 self.yield_expression_after_keyword(span)
             }
+            // `yield` as identifier reference in non-generator functions — always a SyntaxError
+            Some(SpannedToken {
+                kind: Token::Ident(name),
+                span,
+            }) if !self.in_generator_fn && name == "yield" && self.strict_mode => {
+                return Err(Diagnostic {
+                    code: DiagCode::SyntaxError,
+                    message: "`yield` is a reserved word in non-generator function bodies"
+                        .to_owned(),
+                    span: Some(span),
+                    phase: Some("parser"),
+                });
+            }
+            // Strict reserved words used as identifier references in strict mode
+            Some(SpannedToken {
+                kind: Token::Ident(name),
+                span,
+            }) if self.strict_mode && is_strict_reserved_word(&name) => {
+                return Err(Diagnostic {
+                    code: DiagCode::SyntaxError,
+                    message: format!("`{name}` is a reserved word in strict mode"),
+                    span: Some(span),
+                    phase: Some("parser"),
+                });
+            }
             Some(SpannedToken {
                 kind: Token::Ident(name),
                 span,
@@ -1935,10 +1960,23 @@ impl Parser {
             Some(SpannedToken {
                 kind: Token::Super,
                 span,
-            }) => Ok(Expr::Ident {
-                name: "super".to_owned(),
-                span,
-            }),
+            }) => {
+                // `super` outside a class/object method context is a SyntaxError.
+                // At the top level (fn_depth == 0), super is always invalid.
+                if self.fn_depth == 0 {
+                    return Err(Diagnostic {
+                        code: DiagCode::SyntaxError,
+                        message: "`super` is only valid inside a class or object method"
+                            .to_owned(),
+                        span: Some(span),
+                        phase: Some("parser"),
+                    });
+                }
+                Ok(Expr::Ident {
+                    name: "super".to_owned(),
+                    span,
+                })
+            }
             Some(SpannedToken {
                 kind: Token::LeftParen,
                 span: left_span,
