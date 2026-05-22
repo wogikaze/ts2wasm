@@ -1043,6 +1043,10 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
         ("../../fixtures/core-expressions/property-assign.ts", "2\n"),
         ("../../fixtures/core-expressions/spread.ts", "1\n2\n3\n"),
         ("../../fixtures/core-expressions/string.ts", "hello\n"),
+        (
+            "../../fixtures/core-expressions/symbol-key-dynamic-property-identity.ts",
+            "first\nsecond\ndifferent\n",
+        ),
         ("../../fixtures/core-expressions/ternary.ts", "1\n"),
         ("../../fixtures/core-expressions/this.ts", "42\n"),
         (
