@@ -47,6 +47,8 @@ pub struct ClassEnv {
     pub class_static_private_fields: ClassStaticPrivateFields,
     /// Map from local ID to the class name it was inferred to be (e.g., for `any`-typed vars initialized with class instances).
     pub local_classes: HashMap<LocalId, String>,
+    /// Map from local ID to its inferred type alias or interface name.
+    pub local_type_aliases: HashMap<LocalId, String>,
     /// Function-valued properties known on the singleton globalThis object.
     pub global_object_function_props: HashMap<ObjectAccessorKey, FuncId>,
     /// Map from local ID to function-valued properties on object literals.
@@ -76,6 +78,7 @@ impl ClassEnv {
             class_private_fields: HashMap::new(),
             class_static_private_fields: HashMap::new(),
             local_classes: HashMap::new(),
+            local_type_aliases: HashMap::new(),
             global_object_function_props: HashMap::new(),
             object_function_props: HashMap::new(),
             object_accessor_props: HashMap::new(),
@@ -104,6 +107,7 @@ impl ClassEnv {
             class_private_fields,
             class_static_private_fields,
             local_classes: HashMap::new(),
+            local_type_aliases: HashMap::new(),
             global_object_function_props: HashMap::new(),
             object_function_props: HashMap::new(),
             object_accessor_props: HashMap::new(),
