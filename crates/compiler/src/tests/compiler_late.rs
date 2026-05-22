@@ -881,6 +881,32 @@ fn direct_wasm_binary_mvp_runs_basics_hello_without_wat_conversion() {
 }
 
 #[test]
+fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
+    for (fixture, expected_stdout) in [
+        ("../../fixtures/basics-hello/hello.ts", "hi\n"),
+        ("../../fixtures/core-expressions/number.ts", "42\n"),
+        ("../../fixtures/core-statements/if.ts", "1\n"),
+    ] {
+        let program = lower_fixture(fixture);
+        let (validated, _) = ts2wasm_ir::lowered::Validated::new(program)
+            .unwrap_or_else(|_| panic!("{fixture} should pass validation"));
+        let direct_wasm = backend::emit_wasm_binary_native(&validated)
+            .unwrap_or_else(|err| panic!("{fixture} should emit native wasm binary: {err}"));
+        assert_binary_imports_fd_write(&direct_wasm);
+
+        let temp_dir = unique_temp_dir("native-lowered-focused-fixtures");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("fixture-native.wasm");
+        fs::write(&wasm_path, direct_wasm).expect("native wasm should be written");
+
+        let direct_out = run_iwasm(&wasm_path);
+        assert_eq!(direct_out, expected_stdout, "stdout mismatch for {fixture}");
+
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+}
+
+#[test]
 fn heap_closure_allocation_and_dispatch_emit_abi_payload_and_roots() {
     let program =
         lower_fixture("../../fixtures/core-semantics/ordinary-function-closure-make-adder.ts");
