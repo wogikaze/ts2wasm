@@ -16,6 +16,7 @@ impl Parser {
             strict_mode,
             typescript_generic_functions: HashSet::new(),
             parenthesized_expr_spans: HashSet::new(),
+            labels_in_scope: Vec::new(),
             pending_statements: Vec::new(),
             has_preceding_newline,
             in_async_fn: false,

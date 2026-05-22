@@ -36,6 +36,8 @@ pub struct Parser {
     namespace_stub_counter: u32,
     /// The original source text (used for Function.prototype.toString etc.).
     source: String,
+    /// Labels declared in the current function scope (for duplicate label detection).
+    labels_in_scope: Vec<String>,
 }
 
 /// For each token, check if there is a line terminator between the previous

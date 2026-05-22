@@ -1433,7 +1433,7 @@ mod tests {
     fn template_interpolation_inherits_strict_legacy_octal_rejection() {
         let err = parse_program("\"use strict\"; let message = `${'\\07'}`;").unwrap_err();
 
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert_eq!(err.code, DiagCode::SyntaxError);
         assert!(err.message.contains("Legacy octal escape"));
     }
 
@@ -5114,5 +5114,93 @@ b /* parameter b */,
     fn parses_regexp_with_named_backreference() {
         let program = parse_program("let a = /(?<word>\\w+)\\s+\\k<word>/;").unwrap();
         assert_eq!(program.len(), 1);
+    }
+
+    // === Label validation (SyntaxError edge cases) ===
+
+    #[test]
+    fn rejects_reserved_word_as_label() {
+        // ES2015 §13.13: LabelIdentifier cannot be a reserved word.
+        // NOTE: `interface` and `enum` are excluded because the program-level
+        // TS erasure layer (`consume_erasable_typescript_declaration`) intercepts
+        // them before `labeled_statement()` is reached, producing a different
+        // diagnostic (UnsupportedSyntax or SyntaxError with a different message).
+        for reserved in ["implements", "package", "private", "protected", "public"] {
+            let source = format!("function f() {{ {reserved}: while (true) {{}} }}");
+            let err = parse_program(&source).unwrap_err();
+            assert_eq!(
+                err.code, DiagCode::SyntaxError,
+                "expected SyntaxError for label `{reserved}`, got {err:?}"
+            );
+            assert!(
+                err.message.contains(reserved),
+                "message should mention the reserved word, got: {}",
+                err.message
+            );
+            assert_eq!(err.phase, Some("parser"));
+        }
+    }
+
+    #[test]
+    fn accepts_valid_identifiers_as_labels() {
+        for label in ["myLabel", "loop1", "_private", "$$"] {
+            let source = format!("{label}: while (true) {{}}");
+            let program = parse_program(&source).unwrap();
+            assert_eq!(program.len(), 1);
+            match &program[0] {
+                Stmt::Labeled { label: l, .. } => assert_eq!(l, label),
+                other => panic!("expected Labeled statement, got {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn rejects_duplicate_label_in_same_scope() {
+        let err = parse_program(
+            "label: while (true) { label: while (false) { } }",
+        )
+        .unwrap_err();
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.contains("duplicate label"));
+        assert!(err.message.contains("label"));
+        assert_eq!(err.phase, Some("parser"));
+    }
+
+    #[test]
+    fn accepts_duplicate_label_in_nested_functions() {
+        let program = parse_program(
+            "function outer() { label: while (true) { } } function inner() { label: while (false) { } }",
+        )
+        .unwrap();
+        assert_eq!(program.len(), 2);
+    }
+
+    #[test]
+    fn rejects_duplicate_label_in_same_function_top_level() {
+        let err = parse_program(
+            "function f() { label: while (true) {} label: while (false) {} }",
+        )
+        .unwrap_err();
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.contains("duplicate label"));
+        assert!(err.message.contains("label"));
+        assert_eq!(err.phase, Some("parser"));
+    }
+
+    #[test]
+    fn rejects_yield_as_label_in_strict_mode() {
+        let err = parse_program("\"use strict\"; yield: while (true) { }").unwrap_err();
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.contains("yield"));
+        assert!(err.message.contains("reserved word"));
+    }
+
+    // === Octal escape validation (SyntaxError edge cases) ===
+
+    #[test]
+    fn rejects_legacy_octal_string_escape_in_strict_mode_from_parser() {
+        let err = parse_program("\"use strict\"; let x = '\\07';").unwrap_err();
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.contains("Legacy octal escape"));
     }
 }
