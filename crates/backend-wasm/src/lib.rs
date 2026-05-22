@@ -1502,6 +1502,40 @@ mod tests {
     }
 
     #[test]
+    fn native_lowered_bigint_literal_console_log_runs_without_wat_conversion() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::BigIntLiteral {
+                        decimal: "42".to_owned(),
+                        sign: 1,
+                        limb_low: 42,
+                        limb_high: 0,
+                        span,
+                    }],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native bigint console log should emit");
+        let temp_dir = unique_temp_dir("native-lowered-bigint-console-log");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "42n\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
     fn native_lowered_block_expr_runs_without_wat_conversion() {
         let span = Span::generated("test");
         let program = LoweredProgram {

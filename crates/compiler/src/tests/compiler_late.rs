@@ -909,6 +909,7 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
     for (fixture, expected_stdout) in [
         ("../../fixtures/basics-hello/hello.ts", "hi\n"),
         ("../../fixtures/core-expressions/assign.ts", "2\n"),
+        ("../../fixtures/core-expressions/bigint.ts", "42n\n"),
         ("../../fixtures/core-expressions/binary.ts", "3\n"),
         ("../../fixtures/core-expressions/bool.ts", "true\nfalse\n"),
         ("../../fixtures/core-expressions/call.ts", "hi\n"),

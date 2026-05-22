@@ -1445,6 +1445,15 @@ fn native_console_arg_type(expr: &LoweredExpr, ctx: &FunctionCtx) -> InferredTyp
 fn static_console_arg_bytes(expr: &LoweredExpr, ctx: &FunctionCtx) -> Option<Vec<u8>> {
     match expr {
         LoweredExpr::Number(value, _) => Some(value.to_string().into_bytes()),
+        LoweredExpr::BigIntLiteral { decimal, sign, .. } => {
+            let mut value = String::new();
+            if *sign < 0 {
+                value.push('-');
+            }
+            value.push_str(decimal);
+            value.push('n');
+            Some(value.into_bytes())
+        }
         LoweredExpr::String(value, _) => Some(value.as_bytes().to_vec()),
         LoweredExpr::Bool(value, _) => {
             Some(if *value { &b"true"[..] } else { &b"false"[..] }.to_vec())
