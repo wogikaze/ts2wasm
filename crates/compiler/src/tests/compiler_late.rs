@@ -936,12 +936,20 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "one\none\ntwo\ntwo\n",
         ),
         (
+            "../../fixtures/core-expressions/object-literal-computed-await-key.ts",
+            "awaited\nawaited\n",
+        ),
+        (
             "../../fixtures/core-expressions/object-literal-computed-constant-number-expression-key.ts",
             "subtract\nsubtract\nsubtract\nbitwise or\n",
         ),
         (
             "../../fixtures/core-expressions/object-literal-computed-keys.ts",
             "Alice\n30\n",
+        ),
+        (
+            "../../fixtures/core-expressions/object-literal-computed-number-sentinel-keys.ts",
+            "negative zero\ninfinity\nnegative infinity\nnan\n",
         ),
         (
             "../../fixtures/core-expressions/object-literal-inline-access.ts",

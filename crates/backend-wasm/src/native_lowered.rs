@@ -10,7 +10,7 @@ use ts2wasm_runtime_abi::consts::RuntimeConst;
 use ts2wasm_runtime_abi::{Layout, ValueTag};
 use ts2wasm_shared::abi::{ABI_CUSTOM_SECTION_NAME, AbiMetadata};
 
-use crate::runtime_fn::HostImport;
+use crate::runtime_fn::{HostImport, RuntimeFn};
 use crate::wasm_encoder_backend::WasmEncoderBackendExt;
 use crate::wasm_ir::{
     WasmCustomSection, WasmDataSegment, WasmExport, WasmFunction, WasmGlobal, WasmInstr,
@@ -357,6 +357,9 @@ impl<'a> NativeLoweredEmitter<'a> {
                 if self.try_emit_static_array_init(*local, expr, ctx, out)? {
                     return Ok(());
                 }
+                if self.try_emit_static_object_value_init(*local, expr, ctx, out)? {
+                    return Ok(());
+                }
                 self.emit_expr(expr, ctx, out)?;
                 out.push(WasmInstr::LocalSet(local_index(ctx, *local)?));
                 Ok(())
@@ -644,6 +647,36 @@ impl<'a> NativeLoweredEmitter<'a> {
             };
             self.emit_expr(value, ctx, out)?;
             out.push(WasmInstr::LocalSet(slot));
+        }
+        out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
+        out.push(WasmInstr::LocalSet(local_index(ctx, local)?));
+        Ok(true)
+    }
+
+    fn try_emit_static_object_value_init(
+        &mut self,
+        local: LocalId,
+        expr: &LoweredExpr,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<bool, Diagnostic> {
+        if !static_object_initializer_supported(expr, &ctx.static_locals) {
+            return Ok(false);
+        }
+        let Some(StaticValue::Object(props)) = static_value_from_expr(expr, &ctx.static_locals)
+        else {
+            return Ok(false);
+        };
+
+        if let Some(slots) = ctx.static_objects.get(&local) {
+            for (key, slot) in slots {
+                if let Some(value) = props.get(key) {
+                    self.emit_expr(value, ctx, out)?;
+                } else {
+                    out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
+                }
+                out.push(WasmInstr::LocalSet(*slot));
+            }
         }
         out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
         out.push(WasmInstr::LocalSet(local_index(ctx, local)?));
@@ -1445,6 +1478,7 @@ fn native_console_arg_type(expr: &LoweredExpr, ctx: &FunctionCtx) -> InferredTyp
 fn static_console_arg_bytes(expr: &LoweredExpr, ctx: &FunctionCtx) -> Option<Vec<u8>> {
     match expr {
         LoweredExpr::Number(value, _) => Some(value.to_string().into_bytes()),
+        LoweredExpr::DecimalNumber(value, _) => Some(value.as_bytes().to_vec()),
         LoweredExpr::BigIntLiteral { decimal, sign, .. } => {
             let mut value = String::new();
             if *sign < 0 {
@@ -1911,9 +1945,21 @@ fn collect_static_locals_from_expr(expr: &LoweredExpr, locals: &mut HashMap<Loca
         LoweredExpr::PropertyGet { obj, .. } | LoweredExpr::OptionalPropertyGet { obj, .. } => {
             collect_static_locals_from_expr(obj, locals);
         }
-        LoweredExpr::PropertySet { object, value, .. } => {
+        LoweredExpr::PropertySet {
+            object, key, value, ..
+        } => {
             collect_static_locals_from_expr(object, locals);
             collect_static_locals_from_expr(value, locals);
+            let value = static_primitive_expr_from_expr(value, locals);
+            if let LoweredExpr::Local(local, _) = object.as_ref()
+                && let Some(StaticValue::Object(props)) = locals.get_mut(local)
+            {
+                if let Some(value) = value {
+                    props.insert(key.clone(), value);
+                } else {
+                    locals.remove(local);
+                }
+            }
         }
         LoweredExpr::PropertyGetDynamic { obj, key, .. }
         | LoweredExpr::OptionalIndex {
@@ -1938,6 +1984,20 @@ fn collect_static_locals_from_expr(expr: &LoweredExpr, locals: &mut HashMap<Loca
             collect_static_locals_from_expr(object, locals);
             collect_static_locals_from_expr(index, locals);
             collect_static_locals_from_expr(value, locals);
+            let key = static_property_key_from_locals(locals, index);
+            let value = static_primitive_expr_from_expr(value, locals);
+            if let LoweredExpr::Local(local, _) = object.as_ref()
+                && let Some(StaticValue::Object(props)) = locals.get_mut(local)
+            {
+                match (key, value) {
+                    (Some(key), Some(value)) => {
+                        props.insert(key, value);
+                    }
+                    _ => {
+                        locals.remove(local);
+                    }
+                }
+            }
         }
         _ => {}
     }
@@ -1950,6 +2010,8 @@ fn static_value_from_expr(
     match expr {
         LoweredExpr::Local(local, _) => locals.get(local).cloned(),
         LoweredExpr::Number(_, _)
+        | LoweredExpr::DecimalNumber(_, _)
+        | LoweredExpr::BigIntLiteral { .. }
         | LoweredExpr::String(_, _)
         | LoweredExpr::Bool(_, _)
         | LoweredExpr::Null(_)
@@ -2024,7 +2086,7 @@ fn static_object_dynamic_property<'a>(
     obj: &'a LoweredExpr,
     key: &'a LoweredExpr,
 ) -> Option<&'a LoweredExpr> {
-    let key = static_property_key(key)?;
+    let key = static_property_key_from_locals(&ctx.static_locals, key)?;
     static_object_property_from_locals(&ctx.static_locals, obj, &key)
 }
 
@@ -2033,7 +2095,7 @@ fn static_object_dynamic_property_from_locals<'a>(
     obj: &'a LoweredExpr,
     key: &'a LoweredExpr,
 ) -> Option<&'a LoweredExpr> {
-    let key = static_property_key(key)?;
+    let key = static_property_key_from_locals(locals, key)?;
     static_object_property_from_locals(locals, obj, &key)
 }
 
@@ -2054,8 +2116,119 @@ fn static_object_known_in_locals(
 fn static_property_key(key: &LoweredExpr) -> Option<String> {
     match key {
         LoweredExpr::String(value, _) => Some(value.clone()),
-        LoweredExpr::Number(value, _) => Some(value.to_string()),
+        LoweredExpr::Number(value, _) => Some(static_number_property_key(*value)),
         _ => None,
+    }
+}
+
+fn static_property_key_from_locals(
+    locals: &HashMap<LocalId, StaticValue>,
+    key: &LoweredExpr,
+) -> Option<String> {
+    match key {
+        LoweredExpr::Local(local, _) => {
+            let Some(StaticValue::Primitive(value)) = locals.get(local) else {
+                return None;
+            };
+            static_property_key_from_locals(locals, value)
+        }
+        LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::ErrorMessage,
+            args,
+            ..
+        } if args.len() == 1 => static_property_key_from_locals(locals, &args[0]),
+        _ => static_property_key(key),
+    }
+}
+
+fn static_number_property_key(value: i32) -> String {
+    if value == ValueTag::encode_infinity() {
+        "Infinity".to_owned()
+    } else if value == ValueTag::encode_neg_infinity() {
+        "-Infinity".to_owned()
+    } else if value == ValueTag::encode_nan() {
+        "NaN".to_owned()
+    } else if value == ValueTag::encode_neg_zero() {
+        "0".to_owned()
+    } else {
+        value.to_string()
+    }
+}
+
+fn static_primitive_expr_from_expr(
+    expr: &LoweredExpr,
+    locals: &HashMap<LocalId, StaticValue>,
+) -> Option<LoweredExpr> {
+    match static_value_from_expr(expr, locals)? {
+        StaticValue::Primitive(expr) => Some(expr),
+        StaticValue::Object(_) | StaticValue::Array(_) => None,
+    }
+}
+
+fn static_object_initializer_supported(
+    expr: &LoweredExpr,
+    locals: &HashMap<LocalId, StaticValue>,
+) -> bool {
+    match expr {
+        LoweredExpr::ObjectNew { props, .. } => props
+            .iter()
+            .all(|(_, value)| static_primitive_expr_from_expr(value, locals).is_some()),
+        LoweredExpr::Block { stmts, result, .. } => {
+            let mut nested = locals.clone();
+            for stmt in stmts {
+                match stmt {
+                    LoweredStmt::Let(local, value, _) => {
+                        if !static_object_initializer_supported(value, &nested)
+                            && static_primitive_expr_from_expr(value, &nested).is_none()
+                        {
+                            return false;
+                        }
+                        if let Some(value) = static_value_from_expr(value, &nested) {
+                            nested.insert(*local, value);
+                        } else {
+                            return false;
+                        }
+                    }
+                    LoweredStmt::Expr(
+                        LoweredExpr::PropertySetDynamic {
+                            object,
+                            index,
+                            value,
+                            span,
+                            ..
+                        },
+                        _,
+                    ) => {
+                        if static_property_key_from_locals(&nested, index).is_none()
+                            || static_primitive_expr_from_expr(value, &nested).is_none()
+                        {
+                            return false;
+                        }
+                        let LoweredExpr::Local(local, _) = object.as_ref() else {
+                            return false;
+                        };
+                        if !matches!(nested.get(local), Some(StaticValue::Object(_))) {
+                            return false;
+                        }
+                        collect_static_locals_from_expr(
+                            &LoweredExpr::PropertySetDynamic {
+                                object: object.clone(),
+                                index: index.clone(),
+                                value: value.clone(),
+                                span: *span,
+                            },
+                            &mut nested,
+                        );
+                    }
+                    _ => return false,
+                }
+            }
+            matches!(
+                static_value_from_expr(result, &nested),
+                Some(StaticValue::Object(_))
+            )
+        }
+        _ => false,
     }
 }
 
