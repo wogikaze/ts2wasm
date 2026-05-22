@@ -3860,6 +3860,8 @@ impl super::super::Resolver {
             }));
         }
 
+        let error_msg =
+            format!("Cannot read properties of undefined (reading '{}')", method);
         let receiver_temp = self.alloc_temp();
         let receiver = LoweredExpr::Local(receiver_temp, Span::generated("local"));
         let callee = object_kernel::ordinary_get(receiver.clone(), method, span);
@@ -3870,11 +3872,39 @@ impl super::super::Resolver {
                 .collect::<Result<Vec<_>, _>>()?,
         );
         Ok(Some(LoweredExpr::Block {
-            stmts: vec![LoweredStmt::Let(
-                receiver_temp,
-                self.lower_expr(object)?,
-                Span::generated("let_stmt"),
-            )],
+            stmts: vec![
+                LoweredStmt::Let(
+                    receiver_temp,
+                    self.lower_expr(object)?,
+                    Span::generated("let_stmt"),
+                ),
+                LoweredStmt::If {
+                    condition: LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(
+                            receiver_temp,
+                            Span::generated("local"),
+                        )),
+                        op: LoweredBinaryOp::EqualEqual,
+                        right: Box::new(LoweredExpr::Null(Span::generated("null"))),
+                        span: Span::generated("null_check"),
+                    },
+                    then_body: vec![LoweredStmt::Throw(
+                        LoweredExpr::ErrorNew {
+                            constructor: BuiltinErrorConstructor::TypeError,
+                            message: Box::new(LoweredExpr::String(
+                                error_msg,
+                                Span::generated("str"),
+                            )),
+                            cause: None,
+                            errors: None,
+                            span: Span::generated("error_new"),
+                        },
+                        Span::generated("throw"),
+                    )],
+                    else_body: vec![],
+                    span: Span::generated("if"),
+                },
+            ],
             result: Box::new(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::HeapClosureCall,
                 args: call_args,
@@ -4219,25 +4249,67 @@ impl super::super::Resolver {
                             .facts
                             .is_host_external(obj_local, HostExternalKind::FunctionHandle))
                 {
+                    let error_msg = format!(
+                        "Cannot read properties of undefined (reading '{}')",
+                        method
+                    );
                     let args_array = ResolvedExpr::Array(
                         args.iter()
                             .cloned()
                             .map(ResolvedArrayElement::Present)
                             .collect(),
                     );
-                    let receiver = if self.ctx.facts.env_cell_locals.contains(&obj_local) {
+                    let host_temp = self.alloc_temp();
+                    let receiver = LoweredExpr::Local(host_temp, Span::generated("local"));
+                    let lowered_obj = if self.ctx.facts.env_cell_locals.contains(&obj_local) {
                         LoweredExpr::EnvCellGet(obj_local, Span::generated("env_cell_get"))
                     } else {
                         LoweredExpr::Local(obj_local, Span::generated("local"))
                     };
-                    return Ok(LoweredExpr::RuntimeCall {
-                        intrinsic: RuntimeFn::FunctionCallMethodHost,
-                        args: vec![
-                            object_kernel::ordinary_get(receiver.clone(), method, span),
-                            receiver,
-                            self.lower_expr(&args_array)?,
+                    return Ok(LoweredExpr::Block {
+                        stmts: vec![
+                            LoweredStmt::Let(
+                                host_temp,
+                                lowered_obj,
+                                Span::generated("let_stmt"),
+                            ),
+                            LoweredStmt::If {
+                                condition: LoweredExpr::Binary {
+                                    left: Box::new(LoweredExpr::Local(
+                                        host_temp,
+                                        Span::generated("local"),
+                                    )),
+                                    op: LoweredBinaryOp::EqualEqual,
+                                    right: Box::new(LoweredExpr::Null(Span::generated("null"))),
+                                    span: Span::generated("null_check"),
+                                },
+                                then_body: vec![LoweredStmt::Throw(
+                                    LoweredExpr::ErrorNew {
+                                        constructor: BuiltinErrorConstructor::TypeError,
+                                        message: Box::new(LoweredExpr::String(
+                                            error_msg,
+                                            Span::generated("str"),
+                                        )),
+                                        cause: None,
+                                        errors: None,
+                                        span: Span::generated("error_new"),
+                                    },
+                                    Span::generated("throw"),
+                                )],
+                                else_body: vec![],
+                                span: Span::generated("if"),
+                            },
                         ],
-                        span: Span::generated("runtime_call"),
+                        result: Box::new(LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::FunctionCallMethodHost,
+                            args: vec![
+                                object_kernel::ordinary_get(receiver.clone(), method, span),
+                                receiver,
+                                self.lower_expr(&args_array)?,
+                            ],
+                            span: Span::generated("runtime_call"),
+                        }),
+                        span: Span::generated("block"),
                     });
                 }
                 // BigInt.prototype.toString/valueOf handling
@@ -4387,6 +4459,8 @@ impl super::super::Resolver {
                     return Err(unsupported_regexp_compile_diagnostic(Some(span)));
                 }
 
+                let error_msg =
+                    format!("Cannot read properties of undefined (reading '{}')", method);
                 let recv_temp = self.alloc_temp();
                 let receiver_expr = LoweredExpr::Local(recv_temp, Span::generated("local"));
                 let callee = object_kernel::ordinary_get(receiver_expr.clone(), method, span);
@@ -4397,11 +4471,39 @@ impl super::super::Resolver {
                         .collect::<Result<Vec<_>, _>>()?,
                 );
                 return Ok(LoweredExpr::Block {
-                    stmts: vec![LoweredStmt::Let(
-                        recv_temp,
-                        LoweredExpr::Local(obj_local, Span::generated("local")),
-                        Span::generated("let_stmt"),
-                    )],
+                    stmts: vec![
+                        LoweredStmt::Let(
+                            recv_temp,
+                            LoweredExpr::Local(obj_local, Span::generated("local")),
+                            Span::generated("let_stmt"),
+                        ),
+                        LoweredStmt::If {
+                            condition: LoweredExpr::Binary {
+                                left: Box::new(LoweredExpr::Local(
+                                    recv_temp,
+                                    Span::generated("local"),
+                                )),
+                                op: LoweredBinaryOp::EqualEqual,
+                                right: Box::new(LoweredExpr::Null(Span::generated("null"))),
+                                span: Span::generated("null_check"),
+                            },
+                            then_body: vec![LoweredStmt::Throw(
+                                LoweredExpr::ErrorNew {
+                                    constructor: BuiltinErrorConstructor::TypeError,
+                                    message: Box::new(LoweredExpr::String(
+                                        error_msg,
+                                        Span::generated("str"),
+                                    )),
+                                    cause: None,
+                                    errors: None,
+                                    span: Span::generated("error_new"),
+                                },
+                                Span::generated("throw"),
+                            )],
+                            else_body: vec![],
+                            span: Span::generated("if"),
+                        },
+                    ],
                     result: Box::new(LoweredExpr::RuntimeCall {
                         intrinsic: RuntimeFn::HeapClosureCall,
                         args: heap_args,
