@@ -459,6 +459,7 @@ impl super::super::Resolver {
         for arg in args {
             match arg {
                 ResolvedExpr::Spread(spread_expr) => {
+                    // 1. Literal array: inline each element as a separate arg
                     if let ResolvedExpr::Array(elements) = spread_expr.as_ref() {
                         for elem in elements {
                             match elem {
@@ -471,15 +472,38 @@ impl super::super::Resolver {
                                 }
                             }
                         }
+                    // 2. Known local with static array slots: expand inline
+                    } else if let Some(slots) =
+                        crate::lowered::resolver::expr::facts::resolved_expr_static_array_slots(
+                            &self.ctx,
+                            spread_expr.as_ref(),
+                        )
+                    {
+                        for slot in slots {
+                            match slot {
+                                ResolvedArrayElement::Present(expr) => {
+                                    lowered_args.push(self.lower_expr(&expr)?);
+                                }
+                                ResolvedArrayElement::Hole => {
+                                    lowered_args.push(LoweredExpr::Undefined(
+                                        Span::generated("undef"),
+                                    ));
+                                }
+                            }
+                        }
+                    // 3. Static string: spread characters as individual args
                     } else if let Some(value) =
                         crate::lowered::resolver::string::static_string_spread_value(&self.ctx, spread_expr.as_ref())
                     {
                         lowered_args.extend(crate::lowered::resolver::string::lower_ascii_string_spread_chars(&value)?);
+                    // 4. Generator call: diagnostic
                     } else if crate::lowered::resolver::expr::facts::is_generator_call_spread_operand(&self.ctx, spread_expr.as_ref()) {
                         return Err(crate::lowered::resolver::expr::facts::unsupported_generator_spread_diagnostic());
+                    // 5. Known Symbol.iterator object: diagnostic (call spread needs per-arg expansion, not a single array)
                     } else if crate::lowered::resolver::expr::facts::resolved_expr_has_symbol_iterator_property(&self.ctx, spread_expr.as_ref())
                     {
                         return Err(crate::lowered::resolver::expr::facts::unsupported_symbol_iterator_spread_diagnostic());
+                    // 6. Known Map local: emit MapValuesArray as a single expression (mixed-arg call spread)
                     } else if let Some(map_array) =
                         self.lower_map_spread_operand(spread_expr.as_ref())?
                     {
@@ -488,7 +512,7 @@ impl super::super::Resolver {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message:
-                                "issue-274: spread arguments are only supported for literal arrays and ASCII literal-derived strings in this milestone"
+                                "issue-274: spread arguments are only supported for literal arrays, known static array locals, and ASCII literal-derived strings in this milestone"
                                     .to_owned(),
                             span: Some(Span::generated("issue-274")),
 

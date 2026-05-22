@@ -669,6 +669,24 @@ impl super::Resolver {
                 ResolvedArrayElement::Present(ResolvedExpr::Spread(spread_expr)) => {
                     if let ResolvedExpr::Array(spread_elements) = spread_expr.as_ref() {
                         lowered.extend(self.lower_array_literal_elements(spread_elements)?);
+                    } else if let Some(slots) =
+                        crate::lowered::resolver::expr::facts::resolved_expr_static_array_slots(
+                            &self.ctx,
+                            spread_expr.as_ref(),
+                        )
+                    {
+                        for slot in slots {
+                            match slot {
+                                ResolvedArrayElement::Present(expr) => {
+                                    lowered.push(self.lower_expr(&expr)?);
+                                }
+                                ResolvedArrayElement::Hole => {
+                                    lowered.push(LoweredExpr::Undefined(
+                                        Span::generated("undef"),
+                                    ));
+                                }
+                            }
+                        }
                     } else if let Some(value) =
                         crate::lowered::resolver::string::static_string_spread_value(&self.ctx, spread_expr.as_ref())
                     {
@@ -682,7 +700,7 @@ impl super::Resolver {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message:
-                                "issue-274: array literal spread is only supported for literal arrays and ASCII literal-derived strings in this milestone"
+                                "issue-274: array literal spread is only supported for literal arrays, known static array locals, and ASCII literal-derived strings in this milestone"
                                     .to_owned(),
                             span: Some(Span::generated("issue-274")),
 
