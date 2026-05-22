@@ -312,6 +312,15 @@ pub enum Stmt {
     },
     /// TypeScript `interface Foo { ... }` declaration. The properties vector
     /// maps property names to their declared runtime types.
+    ///
+    /// LIMITATION: Generic interfaces (e.g. `interface Array<T> { ... }`) have
+    /// their type parameters consumed by the parser but discarded — there is no
+    /// `type_params` field here. Likewise, property types referencing type
+    /// parameters (e.g. `push(item: T): number`) remain as `TypeRef::Named("T")`
+    /// which cannot be resolved to concrete types. The type alias bridge's
+    /// `lookup_interface_properties` uses property NAME matching only, so it
+    /// works for non-generic interfaces. Full generic resolution (parameter
+    /// storage + substitution) is future work.
     InterfaceDecl {
         name: String,
         properties: Vec<(String, TypeRef)>,

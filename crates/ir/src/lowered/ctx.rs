@@ -62,6 +62,12 @@ pub struct LoweringCtx {
     /// Type alias map (name → TypeRef) carried from name resolution.
     pub type_aliases: HashMap<String, TypeRef>,
     /// Interface definition map (name → property list) carried from name resolution.
+    ///
+    /// LIMITATION: Generic type parameters (e.g. `T` in `interface Array<T>`)
+    /// are discarded by the parser. Property types may reference
+    /// `TypeRef::Named("T")` which cannot be resolved. The type alias bridge
+    /// uses only property NAME matching, so non-generic interfaces work.
+    /// Generic resolution (parameter storage + substitution) is future work.
     pub interface_definitions: HashMap<String, Vec<(String, TypeRef)>>,
 }
 
@@ -273,12 +279,21 @@ impl LoweringCtx {
 
     /// Resolve a type alias name to its underlying TypeRef, if it exists.
     /// Returns `None` if the name is not a known type alias.
+    ///
+    /// NOTE: This returns the raw TypeRef which may contain
+    /// `TypeRef::Named("T")` references for generic type parameters that were
+    /// discarded by the parser. The type alias bridge uses property NAME
+    /// matching only, so generic parameter resolution is not yet supported.
     pub fn resolve_type_alias(&self, name: &str) -> Option<&TypeRef> {
         self.type_aliases.get(name)
     }
 
     /// Look up the property signatures of an interface by name.
     /// Returns `None` if the name is not a known interface definition.
+    ///
+    /// NOTE: Property types may reference `TypeRef::Named("T")` for generic
+    /// type parameters that were discarded by the parser. Only property NAME
+    /// matching is reliable. Full generic resolution is future work.
     pub fn lookup_interface_properties(&self, name: &str) -> Option<&[(String, TypeRef)]> {
         self.interface_definitions.get(name).map(|v| v.as_slice())
     }

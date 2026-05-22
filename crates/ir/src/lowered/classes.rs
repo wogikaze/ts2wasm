@@ -48,6 +48,12 @@ pub struct ClassEnv {
     /// Map from local ID to the class name it was inferred to be (e.g., for `any`-typed vars initialized with class instances).
     pub local_classes: HashMap<LocalId, String>,
     /// Map from local ID to its inferred type alias or interface name.
+    ///
+    /// LIMITATION: This stores only the base name (e.g. `"Array"` for
+    /// `Array<string>`), not the generic instantiation info. The type alias
+    /// bridge can use this to look up interface property names for name-based
+    /// matching, but cannot resolve generic parameter types (e.g. element type
+    /// of `Array<string>`). Full generic instantiation tracking is future work.
     pub local_type_aliases: HashMap<LocalId, String>,
     /// Function-valued properties known on the singleton globalThis object.
     pub global_object_function_props: HashMap<ObjectAccessorKey, FuncId>,
