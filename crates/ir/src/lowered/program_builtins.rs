@@ -317,6 +317,7 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("DataView", "buffer") => Some(RuntimeFn::DataViewGetBuffer),
         ("DataView", "byteOffset") => Some(RuntimeFn::DataViewGetByteOffset),
         ("ArrayBuffer", "transfer") => Some(RuntimeFn::ArrayBufferTransfer),
+        ("ArrayBuffer", "slice") => Some(RuntimeFn::ArrayBufferSlice),
         ("SharedArrayBuffer", "slice") => Some(RuntimeFn::ArrayBufferSlice),
         ("Map", "get") => Some(RuntimeFn::MapGet),
         ("Map", "set") => Some(RuntimeFn::MapSet),
