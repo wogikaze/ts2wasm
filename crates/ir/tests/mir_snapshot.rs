@@ -55,6 +55,7 @@ fn dump_native_mir_runtime_call_is_distinct_from_hir_and_lowered_debug() {
         top_level_locals: vec![],
         functions: vec![],
         modules: vec![],
+        escape_status: vec![],
     };
 
     let dump = dump_mir(&mir);

@@ -541,6 +541,7 @@ pub(super) fn lower_function_to_mir(func: &LoweredFunction) -> MirFunction {
         is_async: func.is_async,
         is_generator: func.is_generator,
         generator_state: func.generator_state.clone(),
+        induction_vars: vec![], // populated by analyze_function() after lowering
         escape_status: vec![None; func.locals.len()],
     }
 }

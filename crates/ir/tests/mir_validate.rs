@@ -15,6 +15,7 @@ fn empty_mir() -> MirProgram {
         top_level_locals: vec![],
         functions: vec![],
         modules: vec![],
+        escape_status: vec![],
     }
 }
 
@@ -31,6 +32,8 @@ fn function(id: usize) -> MirFunction {
         is_async: false,
         is_generator: false,
         generator_state: None,
+        induction_vars: vec![],
+        escape_status: vec![],
     }
 }
 
@@ -66,6 +69,7 @@ fn native_mir_validate_accepts_valid_program() {
             statements: vec![],
             locals_count: 0,
         }],
+        escape_status: vec![],
     };
 
     validate_mir(&program).expect("valid native MIR should pass");

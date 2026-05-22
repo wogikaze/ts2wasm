@@ -5,6 +5,8 @@ use crate::lowered::{
 };
 use ts2wasm_source::Span;
 
+use super::induction_var::InductionVarInfo;
+
 // ---------------------------------------------------------------------------
 // Escape analysis types
 // ---------------------------------------------------------------------------
@@ -392,6 +394,8 @@ pub struct MirFunction {
     pub is_async: bool,
     pub is_generator: bool,
     pub generator_state: Option<GeneratorState>,
+    /// Induction variables detected by `induction_var::analyze_function`.
+    pub induction_vars: Vec<InductionVarInfo>,
     /// Per-local escape analysis result. Indexed by `LocalId.0`.
     /// `None` means not yet analyzed (Unknown).
     pub escape_status: Vec<Option<EscapeStatus>>,

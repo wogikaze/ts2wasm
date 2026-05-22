@@ -9,10 +9,12 @@
 // are already publicly available from `crate::lowered::*`.
 
 pub mod escape;
+pub mod induction_var;
 mod lower;
 mod raise;
 pub mod types;
 
+pub use induction_var::{InductionVarDirection, InductionVarInfo};
 pub use types::{
     EscapeStatus, MirArraySlot, MirBinaryOp, MirBuiltinErrorConstructor, MirClassPrototypeRef,
     MirClosureRepresentation, MirExpr, MirFunction, MirFunctionCallKind, MirLogicalAssignOp,
@@ -94,6 +96,23 @@ impl MirExpr {
 }
 
 use crate::lowered::{LoweredBinaryOp, LoweredUnaryOp};
+
+// ---------------------------------------------------------------------------
+// Induction variable analysis pass
+// ---------------------------------------------------------------------------
+
+/// Run induction variable analysis on all functions in a `MirProgram`.
+///
+/// This is an idempotent pass that populates `induction_vars` on every
+/// `MirFunction` that contains detectable for-loop induction variables.
+///
+/// Calling it multiple times is safe — each call replaces the previous
+/// results rather than appending.
+pub fn run_induction_var_analysis(program: &mut MirProgram) {
+    for func in &mut program.functions {
+        func.induction_vars = induction_var::analyze_function(func);
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Tests: bridge conversions preserve structure
