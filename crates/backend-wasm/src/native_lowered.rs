@@ -524,6 +524,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                     )),
                 }
             }
+            LoweredExpr::Block { stmts, result, .. } => {
+                self.emit_stmts(stmts, ctx, out)?;
+                self.emit_expr(result, ctx, out)
+            }
             LoweredExpr::PropertyGet { obj, key, .. } => {
                 if let LoweredExpr::ModuleLoad { module_id, .. } = obj.as_ref() {
                     let symbol = self

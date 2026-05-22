@@ -924,6 +924,54 @@ mod tests {
     }
 
     #[test]
+    fn native_lowered_block_expr_runs_without_wat_conversion() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::Block {
+                        stmts: vec![
+                            LoweredStmt::Let(LocalId(0), LoweredExpr::Undefined(span), span),
+                            LoweredStmt::If {
+                                condition: LoweredExpr::Bool(true, span),
+                                then_body: vec![LoweredStmt::Assign(
+                                    LocalId(0),
+                                    LoweredExpr::Number(1, span),
+                                    span,
+                                )],
+                                else_body: vec![LoweredStmt::Assign(
+                                    LocalId(0),
+                                    LoweredExpr::Number(2, span),
+                                    span,
+                                )],
+                                span,
+                            },
+                        ],
+                        result: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                        span,
+                    }],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native block expr binary should emit");
+        let temp_dir = unique_temp_dir("native-lowered-block-expr");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "1\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
     fn native_lowered_labeled_do_while_break_continue_runs_without_wat_conversion() {
         let span = Span::generated("test");
         let program = LoweredProgram {

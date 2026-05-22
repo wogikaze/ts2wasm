@@ -909,6 +909,7 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
     for (fixture, expected_stdout) in [
         ("../../fixtures/basics-hello/hello.ts", "hi\n"),
         ("../../fixtures/core-expressions/number.ts", "42\n"),
+        ("../../fixtures/core-expressions/ternary.ts", "1\n"),
         ("../../fixtures/core-statements/if.ts", "1\n"),
         ("../../fixtures/core-statements/while.ts", "0\n1\n2\n"),
         ("../../fixtures/core-statements/for.ts", "0\n1\n2\n"),
