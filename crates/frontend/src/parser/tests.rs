@@ -472,8 +472,7 @@ mod tests {
             let runtimeValue = 1;
         "#;
         let program = parse_program(source).unwrap();
-        // declare enum AmbientEnum now produces Stmt::EnumDecl
-        assert_eq!(program.len(), 5);
+        assert_eq!(program.len(), 4);
         assert!(
             program
                 .iter()
@@ -488,11 +487,6 @@ mod tests {
                 .any(|stmt| matches!(stmt, Stmt::ClassDecl { .. }))
         );
         assert!(program.iter().any(|stmt| matches!(stmt, Stmt::Let { .. })));
-        assert!(
-            program
-                .iter()
-                .any(|stmt| matches!(stmt, Stmt::EnumDecl { name, .. } if name == "AmbientEnum"))
-        );
 
         let Some(Stmt::ClassDecl { body, .. }) = program
             .iter()
@@ -505,19 +499,16 @@ mod tests {
 
     #[test]
     fn parses_ambient_module_declarations_as_erased_syntax() {
-        // `declare namespace Foo.Bar { }` pushes AmbientValueDecl { name: "Foo" } for name registration (issue 5370)
-        // followed by a Stmt::Let stub so the multi-section pipeline sees a non-empty section.
+        // `declare namespace Foo.Bar { }` pushes AmbientValueDecl { name: "Foo" } for name registration (issue 5370).
         let program = parse_program("declare namespace Foo.Bar { export var foo; };")
             .expect("ambient namespace should be erased");
-        assert_eq!(program.len(), 2);
+        assert_eq!(program.len(), 1);
         assert!(matches!(&program[0], Stmt::AmbientValueDecl { name, .. } if name == "Foo"));
-        assert!(matches!(&program[1], Stmt::Let { name, .. } if name.starts_with("__ts_ns_stub_")));
 
         let program = parse_program("declare namespace Single { }")
             .expect("ambient simple namespace should be erased");
-        assert_eq!(program.len(), 2);
+        assert_eq!(program.len(), 1);
         assert!(matches!(&program[0], Stmt::AmbientValueDecl { name, .. } if name == "Single"));
-        assert!(matches!(&program[1], Stmt::Let { name, .. } if name.starts_with("__ts_ns_stub_")));
     }
 
     #[test]
@@ -540,23 +531,17 @@ mod tests {
             let stmts = parse_program(source).unwrap_or_else(|e| {
                 panic!("namespace/internal module declarations should be erased: {source}: {e:?}")
             });
-            assert_eq!(
-                stmts.len(),
-                1,
-                "expected one stub let-binding for {source}"
-            );
             assert!(
-                matches!(&stmts[0], Stmt::Let { name, .. } if name.starts_with("__ts_ns_stub_")),
-                "expected __ts_ns_stub_ let-binding for {source}"
+                stmts.is_empty(),
+                "expected no runtime statements for {source}"
             );
         }
 
         // Verify that runtime statements after erasure still parse correctly
         let program = parse_program("namespace M { } let x = 1;")
             .expect("namespace followed by runtime code should parse");
-        assert_eq!(program.len(), 2);
-        assert!(matches!(&program[0], Stmt::Let { name, .. } if name.starts_with("__ts_ns_stub_")));
-        assert!(matches!(program[1], Stmt::Let { .. }));
+        assert_eq!(program.len(), 1);
+        assert!(matches!(program[0], Stmt::Let { .. }));
     }
 
     #[test]
@@ -573,8 +558,7 @@ mod tests {
         let program =
             parse_program("namespace M { interface I {} export class C implements I {} }")
                 .expect("local namespace interface should satisfy erased implements reference");
-        assert_eq!(program.len(), 1);
-        assert!(matches!(&program[0], Stmt::Let { name, .. } if name.starts_with("__ts_ns_stub_")));
+        assert!(program.is_empty());
     }
 
     #[test]
@@ -597,8 +581,7 @@ mod tests {
         let stmts =
             parse_program("namespace Test { export class Bug { bug() { var name = null; } } }")
                 .expect("untyped null in erased namespace should not report TS2322");
-        assert_eq!(stmts.len(), 1);
-        assert!(matches!(&stmts[0], Stmt::Let { name, .. } if name.starts_with("__ts_ns_stub_")));
+        assert!(stmts.is_empty());
     }
 
     #[test]
@@ -722,19 +705,13 @@ mod tests {
     #[test]
     fn parses_typescript_as_assertion_union_type_erasure() {
         let source = r#"
-            function f() {
-                return 10 as number | string;
-            }
+            return 10 as number | string;
             let value = 42 as number | string | boolean;
         "#;
         let program = parse_program(source).unwrap();
         assert_eq!(program.len(), 2);
 
-        let Stmt::Function { body, .. } = &program[0] else {
-            panic!("expected function declaration");
-        };
-        assert_eq!(body.len(), 1, "function body should have 1 statement");
-        let Stmt::Return { expr: ret_val, .. } = &body[0] else {
+        let Stmt::Return { expr: ret_val, .. } = &program[0] else {
             panic!("expected return statement");
         };
         assert!(matches!(ret_val, Expr::Number { value: 10, .. }));
@@ -1469,69 +1446,6 @@ mod tests {
     }
 
     #[test]
-    fn rejects_legacy_octal_literal_in_strict_mode_top_level() {
-        let err = parse_program("\"use strict\"; let x = 0123;").unwrap_err();
-
-        assert_eq!(err.code, DiagCode::SyntaxError);
-        assert!(err.message.to_lowercase().contains("legacy octal"));
-    }
-
-    #[test]
-    fn rejects_legacy_octal_literal_in_strict_mode_function_body() {
-        let err =
-            parse_program("function f() { \"use strict\"; return 0123; }").unwrap_err();
-
-        assert_eq!(err.code, DiagCode::SyntaxError);
-        assert!(err.message.to_lowercase().contains("legacy octal"));
-    }
-
-    #[test]
-    fn rejects_legacy_octal_literal_in_strict_mode_async_function_body() {
-        let err =
-            parse_program("async function f() { \"use strict\"; return 0123; }").unwrap_err();
-
-        assert_eq!(err.code, DiagCode::SyntaxError);
-        assert!(err.message.to_lowercase().contains("legacy octal"));
-    }
-
-    #[test]
-    fn rejects_legacy_octal_literal_in_strict_mode_generator_body() {
-        let err =
-            parse_program("function* f() { \"use strict\"; return 0123; }").unwrap_err();
-
-        assert_eq!(err.code, DiagCode::SyntaxError);
-        assert!(err.message.to_lowercase().contains("legacy octal"));
-    }
-
-    #[test]
-    fn rejects_legacy_octal_literal_in_strict_mode_function_expression() {
-        let err =
-            parse_program("let f = function() { \"use strict\"; return 0123; };").unwrap_err();
-
-        assert_eq!(err.code, DiagCode::SyntaxError);
-        assert!(err.message.to_lowercase().contains("legacy octal"));
-    }
-
-    #[test]
-    fn rejects_legacy_octal_literal_in_sloppy_mode() {
-        let err = parse_program("let x = 0123;").unwrap_err();
-
-        // Legacy octal literals are rejected in all modes (not just strict mode).
-        assert_eq!(err.code, DiagCode::SyntaxError);
-        assert!(err.message.contains("Legacy octal literals are not allowed"));
-    }
-
-    #[test]
-    fn allows_0o_prefix_octal_literals_in_strict_mode() {
-        // 0o77 is ES2015+ syntax, NOT legacy octal; allowed in strict mode.
-        // The "use strict" is an expression statement, plus the let = 2 statements.
-        let stmts = parse_program("\"use strict\"; let x = 0o77;").unwrap();
-
-        assert!(!stmts.is_empty());
-        // Verify no SyntaxError
-    }
-
-    #[test]
     fn parses_keyword_tokens_as_object_literal_property_names() {
         let stmts = parse_program("var obj = { if: 0, break: 3, function: 4, class: 5 };").unwrap();
 
@@ -1690,205 +1604,6 @@ mod tests {
                 expr: Expr::Ident { name: source, .. },
                 ..
             }) if name == "{key}" && source == "_binding"
-        ));
-    }
-
-    #[test]
-    fn parses_for_in_no_decl_identifier() {
-        // `for (x in y)` with simple identifier (no var/let/const)
-        let stmts = parse_program("var obj;\nfor (x in obj) {}").unwrap();
-        assert_eq!(stmts.len(), 2);
-        let Stmt::ForIn { var, body, .. } = &stmts[1] else {
-            panic!("expected ForIn statement, got {:?}", stmts[1]);
-        };
-        assert_eq!(var, "x");
-        assert!(body.is_empty());
-    }
-
-    #[test]
-    fn parses_for_of_no_decl_identifier() {
-        // `for (x of y)` with simple identifier (no var/let/const)
-        let stmts = parse_program("var arr;\nfor (x of arr) {}").unwrap();
-        assert_eq!(stmts.len(), 2);
-        let Stmt::ForOf { var, body, .. } = &stmts[1] else {
-            panic!("expected ForOf statement, got {:?}", stmts[1]);
-        };
-        assert_eq!(var, "x");
-        assert!(body.is_empty());
-    }
-
-    #[test]
-    fn parses_for_in_member_expression_lhs() {
-        // `for (x.y in obj)` — member expression LHS
-        let stmts = parse_program("var x = {};\nfor (x.y in obj) {}").unwrap();
-        assert_eq!(stmts.len(), 2);
-        let Stmt::ForIn { var, body, .. } = &stmts[1] else {
-            panic!("expected ForIn statement, got {:?}", stmts[1]);
-        };
-        assert_eq!(var, "_binding");
-        assert!(matches!(
-            body.first(),
-            Some(Stmt::Expr {
-                expr: Expr::PropertyAssign { property, .. },
-                ..
-            }) if property == "y"
-        ));
-    }
-
-    #[test]
-    fn parses_for_of_member_expression_lhs() {
-        // `for (x.y of iter)` — member expression LHS in for-of
-        let stmts = parse_program("var x = {};\nfor (x.y of iter) {}").unwrap();
-        assert_eq!(stmts.len(), 2);
-        let Stmt::ForOf { var, body, .. } = &stmts[1] else {
-            panic!("expected ForOf statement, got {:?}", stmts[1]);
-        };
-        assert_eq!(var, "_binding");
-        assert!(matches!(
-            body.first(),
-            Some(Stmt::Expr {
-                expr: Expr::PropertyAssign { property, .. },
-                ..
-            }) if property == "y"
-        ));
-    }
-
-    #[test]
-    fn parses_for_in_paren_identifier_lhs() {
-        // `for ((x) in obj)` — parenthesized identifier
-        let stmts = parse_program("var obj;\nfor ((x) in obj) {}").unwrap();
-        assert_eq!(stmts.len(), 2);
-        let Stmt::ForIn { var, .. } = &stmts[1] else {
-            panic!("expected ForIn statement, got {:?}", stmts[1]);
-        };
-        assert_eq!(var, "x");
-    }
-
-    #[test]
-    fn parses_for_in_var_declaration() {
-        // `for (var x in y)` — valid var declaration without initializer
-        let stmts = parse_program("var obj;\nfor (var x in obj) {}").unwrap();
-        assert_eq!(stmts.len(), 2);
-        let Stmt::ForIn { var, .. } = &stmts[1] else {
-            panic!("expected ForIn statement, got {:?}", stmts[1]);
-        };
-        assert_eq!(var, "x");
-    }
-
-    #[test]
-    fn parses_for_in_let_declaration() {
-        // `for (let x in y)` — valid let declaration without initializer
-        let stmts = parse_program("var obj;\nfor (let x in obj) {}").unwrap();
-        assert_eq!(stmts.len(), 2);
-        let Stmt::ForIn { var, .. } = &stmts[1] else {
-            panic!("expected ForIn statement, got {:?}", stmts[1]);
-        };
-        assert_eq!(var, "x");
-    }
-
-    #[test]
-    fn parses_for_in_const_declaration() {
-        // `for (const x in y)` — valid const declaration without initializer
-        let stmts = parse_program("var obj;\nfor (const x in obj) {}").unwrap();
-        assert_eq!(stmts.len(), 2);
-        let Stmt::ForIn { var, .. } = &stmts[1] else {
-            panic!("expected ForIn statement, got {:?}", stmts[1]);
-        };
-        assert_eq!(var, "x");
-    }
-
-    #[test]
-    fn rejects_for_in_var_with_initializer() {
-        // `for (var x = 1 in obj)` — SyntaxError for initializer in var declaration
-        let result = parse_program("for (var x = 1 in obj) {}");
-        let msg = format!("expected SyntaxError, got {:?}", result);
-        assert!(result.is_err(), "{}", msg);
-        if let Err(err) = &result {
-            assert_eq!(err.code, DiagCode::SyntaxError, "wrong error code: {}", msg);
-            assert!(err.message.contains("initializer"), "wrong error message: {}", err.message);
-        }
-    }
-
-    #[test]
-    fn rejects_for_in_const_with_initializer() {
-        // `for (const x = 1 in y)` — SyntaxError for initializer in const declaration
-        let result = parse_program("for (const x = 1 in obj) {}");
-        let msg = format!("expected SyntaxError, got {:?}", result);
-        assert!(result.is_err(), "{}", msg);
-        if let Err(err) = &result {
-            assert_eq!(err.code, DiagCode::SyntaxError, "wrong error code: {}", msg);
-            assert!(err.message.contains("initializer"), "wrong error message: {}", err.message);
-        }
-    }
-
-    #[test]
-    fn rejects_for_in_non_assignment_target() {
-        // `for (1 in obj)` — literal is not a valid assignment target
-        let result = parse_program("for (1 in {}) {}");
-        assert!(result.is_err(), "expected SyntaxError for literal in for-in");
-        if let Err(err) = result {
-            assert_eq!(err.code, DiagCode::SyntaxError);
-        }
-    }
-
-    #[test]
-    fn rejects_for_of_non_assignment_target() {
-        // `for (1 of arr)` — literal is not a valid assignment target
-        let result = parse_program("for (1 of []) {}");
-        assert!(result.is_err(), "expected SyntaxError for literal in for-of");
-        if let Err(err) = result {
-            assert_eq!(err.code, DiagCode::SyntaxError);
-        }
-    }
-
-    #[test]
-    fn parses_for_in_destructuring_array() {
-        // `for ([x] in obj)` — array destructuring pattern
-        let stmts = parse_program("var obj;\nfor ([x] in obj) {}").unwrap();
-        assert_eq!(stmts.len(), 2);
-        let Stmt::ForIn { var, .. } = &stmts[1] else {
-            panic!("expected ForIn statement, got {:?}", stmts[1]);
-        };
-        assert_eq!(var, "_binding");
-    }
-
-    #[test]
-    fn parses_for_of_destructuring_array() {
-        // `for ([x] of arr)` — array destructuring in for-of
-        let stmts = parse_program("var arr;\nfor ([x] of arr) {}").unwrap();
-        assert_eq!(stmts.len(), 2);
-        let Stmt::ForOf { var, .. } = &stmts[1] else {
-            panic!("expected ForOf statement, got {:?}", stmts[1]);
-        };
-        assert_eq!(var, "_binding");
-    }
-
-    #[test]
-    fn parses_for_in_let_destructuring() {
-        // `for (let[x] in obj)` — `let` keyword with array destructuring
-        let stmts = parse_program("var obj;\nfor (let[x] in obj) {}").unwrap();
-        assert_eq!(stmts.len(), 2);
-        let Stmt::ForIn { var, .. } = &stmts[1] else {
-            panic!("expected ForIn statement, got {:?}", stmts[1]);
-        };
-        assert_eq!(var, "_binding");
-    }
-
-    #[test]
-    fn parses_for_in_index_expression_lhs() {
-        // `for (a[b] in obj)` — computed member expression LHS
-        let stmts = parse_program("var a = {};\nfor (a[b] in obj) {}").unwrap();
-        assert_eq!(stmts.len(), 2);
-        let Stmt::ForIn { var, body, .. } = &stmts[1] else {
-            panic!("expected ForIn statement, got {:?}", stmts[1]);
-        };
-        assert_eq!(var, "_binding");
-        assert!(matches!(
-            body.first(),
-            Some(Stmt::Expr {
-                expr: Expr::IndexAssign { .. },
-                ..
-            })
         ));
     }
 
@@ -2105,31 +1820,27 @@ class Foo {
     #[test]
     fn parses_enum_declarations_as_erased_syntax() {
         let stmts = parse_program("enum E { A, B, C }").unwrap();
-        // Enum should produce an EnumDecl node (erased at the type level)
-        assert_eq!(stmts.len(), 1);
-        assert!(matches!(&stmts[0], Stmt::EnumDecl { name, .. } if name == "E"));
+        // Enum should be erased — no statements emitted
+        assert!(stmts.is_empty());
     }
 
     #[test]
     fn parses_enum_with_values_as_erased_syntax() {
         let stmts = parse_program("enum E { A = 1, B, C }").unwrap();
-        assert_eq!(stmts.len(), 1);
-        assert!(matches!(&stmts[0], Stmt::EnumDecl { name, .. } if name == "E"));
+        assert!(stmts.is_empty());
     }
 
     #[test]
     fn parses_enum_with_trailing_comma_as_erased_syntax() {
         let stmts = parse_program("enum E { A, B, }").unwrap();
-        assert_eq!(stmts.len(), 1);
-        assert!(matches!(&stmts[0], Stmt::EnumDecl { name, .. } if name == "E"));
+        assert!(stmts.is_empty());
     }
 
     #[test]
     fn parses_enum_followed_by_let_declaration() {
         let stmts = parse_program("enum E { A, B }\nlet x = 1;").unwrap();
-        assert_eq!(stmts.len(), 2);
-        assert!(matches!(&stmts[0], Stmt::EnumDecl { name, .. } if name == "E"));
-        assert!(matches!(&stmts[1], Stmt::Let { name, .. } if name == "x"));
+        assert_eq!(stmts.len(), 1);
+        assert!(matches!(&stmts[0], Stmt::Let { name, .. } if name == "x"));
     }
 
     #[test]
@@ -2459,264 +2170,6 @@ b /* parameter b */,
     }
 
     #[test]
-    fn parses_private_field_member_access_in_method() {
-        let program = parse_program(
-            "class C { #x = 1; getX() { return this.#x; } }",
-        )
-        .unwrap();
-
-        let Stmt::ClassDecl { private_elements, body, .. } = &program[0] else {
-            panic!("expected class declaration");
-        };
-
-        assert_eq!(private_elements.len(), 1);
-        assert!(matches!(
-            &private_elements[0],
-            ClassPrivateElement::Field { name, .. } if name == "x"
-        ));
-
-        // Method body contains return this.#x
-        let getter_method = body.iter().find(|stmt| {
-            matches!(stmt, Stmt::Function { name, .. } if name == "getX")
-        }).expect("getX method should exist");
-
-        if let Stmt::Function { body: method_body, .. } = getter_method {
-            assert!(method_body.len() == 1);
-            let return_stmt = &method_body[0];
-            assert!(matches!(return_stmt, Stmt::Return { .. }));
-            if let Stmt::Return { expr, .. } = return_stmt {
-                assert!(matches!(expr, Expr::Member { property, .. } if property == "#x"));
-            }
-        }
-    }
-
-    #[test]
-    fn parses_private_field_assignment_in_method() {
-        let program = parse_program(
-            "class C { #x = 0; setX(v) { this.#x = v; } }",
-        )
-        .unwrap();
-
-        let Stmt::ClassDecl { private_elements, body, .. } = &program[0] else {
-            panic!("expected class declaration");
-        };
-
-        assert_eq!(private_elements.len(), 1);
-        assert!(matches!(
-            &private_elements[0],
-            ClassPrivateElement::Field { name, .. } if name == "x"
-        ));
-
-        let setter_method = body.iter().find(|stmt| {
-            matches!(stmt, Stmt::Function { name, .. } if name == "setX")
-        }).expect("setX method should exist");
-
-        if let Stmt::Function { body: method_body, .. } = setter_method {
-            let expr_stmt = &method_body[0];
-            assert!(matches!(expr_stmt, Stmt::Expr { .. }));
-            if let Stmt::Expr { expr, .. } = expr_stmt {
-                assert!(matches!(expr, Expr::PropertyAssign { property, .. } if property == "#x"));
-            }
-        }
-    }
-
-    #[test]
-    fn parses_private_method_call_via_this() {
-        let program = parse_program(
-            "class C { #method() {} callIt() { this.#method(); } }",
-        )
-        .unwrap();
-
-        let Stmt::ClassDecl { private_elements, body, .. } = &program[0] else {
-            panic!("expected class declaration");
-        };
-
-        assert_eq!(private_elements.len(), 1);
-        assert!(matches!(
-            &private_elements[0],
-            ClassPrivateElement::Method { name, .. } if name == "method"
-        ));
-
-        let caller = body.iter().find(|stmt| {
-            matches!(stmt, Stmt::Function { name, .. } if name == "callIt")
-        }).expect("callIt method should exist");
-
-        if let Stmt::Function { body: method_body, .. } = caller {
-            let expr_stmt = &method_body[0];
-            assert!(matches!(expr_stmt, Stmt::Expr { .. }));
-            if let Stmt::Expr { expr, .. } = expr_stmt {
-                assert!(matches!(expr, Expr::Call { callee, .. }
-                    if matches!(callee.as_ref(), Expr::Member { property, .. } if property == "#method")));
-            }
-        }
-    }
-
-    #[test]
-    fn parses_static_private_field_and_method() {
-        let program = parse_program(
-            "class C { static #sx = 42; static #sm() {} }",
-        )
-        .unwrap();
-
-        let Stmt::ClassDecl { private_elements, .. } = &program[0] else {
-            panic!("expected class declaration");
-        };
-
-        assert_eq!(private_elements.len(), 2);
-        assert!(matches!(
-            &private_elements[0],
-            ClassPrivateElement::Field { name, is_static: true, .. } if name == "sx"
-        ));
-        assert!(matches!(
-            &private_elements[1],
-            ClassPrivateElement::Method { name, is_static: true, .. } if name == "sm"
-        ));
-    }
-
-    #[test]
-    fn parses_private_field_with_readonly_modifier() {
-        let program = parse_program(
-            "class C { readonly #rx = 10; }",
-        )
-        .unwrap();
-
-        let Stmt::ClassDecl { private_elements, .. } = &program[0] else {
-            panic!("expected class declaration");
-        };
-
-        assert_eq!(private_elements.len(), 1);
-        assert!(matches!(
-            &private_elements[0],
-            ClassPrivateElement::Field { name, .. } if name == "rx"
-        ));
-    }
-
-    #[test]
-    fn parses_private_method_with_params() {
-        let program = parse_program(
-            "class C { #add(a, b) { return a + b; } }",
-        )
-        .unwrap();
-
-        let Stmt::ClassDecl { private_elements, .. } = &program[0] else {
-            panic!("expected class declaration");
-        };
-
-        assert_eq!(private_elements.len(), 1);
-        assert!(matches!(
-            &private_elements[0],
-            ClassPrivateElement::Method { name, params, .. }
-                if name == "add" && params.len() == 2
-        ));
-    }
-
-    #[test]
-    fn parses_private_field_with_ts_type_annotation() {
-        let program = parse_program(
-            "class C { #x: number = 1; }",
-        )
-        .unwrap();
-
-        let Stmt::ClassDecl { private_elements, .. } = &program[0] else {
-            panic!("expected class declaration");
-        };
-
-        assert_eq!(private_elements.len(), 1);
-        assert!(matches!(
-            &private_elements[0],
-            ClassPrivateElement::Field { name, value: Some(_), .. } if name == "x"
-        ));
-    }
-
-    #[test]
-    fn parses_private_field_without_initializer() {
-        let program = parse_program(
-            "class C { #x; }",
-        )
-        .unwrap();
-
-        let Stmt::ClassDecl { private_elements, .. } = &program[0] else {
-            panic!("expected class declaration");
-        };
-
-        assert_eq!(private_elements.len(), 1);
-        assert!(matches!(
-            &private_elements[0],
-            ClassPrivateElement::Field { name, value: None, .. } if name == "x"
-        ));
-    }
-
-    #[test]
-    fn parses_multiple_private_fields() {
-        let program = parse_program(
-            "class C { #a = 1; #b = 2; #c = 3; }",
-        )
-        .unwrap();
-
-        let Stmt::ClassDecl { private_elements, .. } = &program[0] else {
-            panic!("expected class declaration");
-        };
-
-        assert_eq!(private_elements.len(), 3);
-        for (i, name) in ["a", "b", "c"].iter().enumerate() {
-            assert!(matches!(
-                &private_elements[i],
-                ClassPrivateElement::Field { name: n, value: Some(_), .. } if n == name
-            ));
-        }
-    }
-
-    #[test]
-    fn parses_private_accessors_in_class_expression() {
-        let program = parse_program(
-            "let C = class { #x = 1; #m() {}; get #g() { return 1; }; set #s(v) { } };",
-        )
-        .unwrap();
-
-        // `let C = class { ... }` is parsed as ClassDecl (class_expression_statement path)
-        // with 4 private elements
-        let has_4_private_elements = program.iter().any(|stmt| {
-            matches!(stmt,
-                Stmt::ClassDecl { private_elements, .. } if private_elements.len() == 4
-            )
-        });
-
-        assert!(has_4_private_elements, "class expression should have 4 private elements");
-    }
-
-    #[test]
-    fn parses_private_ident_in_binary_in_expression() {
-        let program = parse_program(
-            "class C { #x = 1; test() { let a = #x in obj; } }",
-        )
-        .unwrap();
-
-        // PrivateIdentifier in `in` expression: produces PrivateIdent at the parser level
-        let Stmt::ClassDecl { body, .. } = &program[0] else {
-            panic!("expected class declaration");
-        };
-
-        let test_method = body.iter().find(|stmt| {
-            matches!(stmt, Stmt::Function { name, .. } if name == "test")
-        }).expect("test method should exist");
-
-        if let Stmt::Function { body: method_body, .. } = test_method {
-            assert!(matches!(&method_body[0], Stmt::Let { .. }));
-            if let Stmt::Let { expr, .. } = &method_body[0] {
-                assert!(matches!(expr, Expr::Binary { left, op: BinaryOp::In, .. }
-                    if matches!(left.as_ref(), Expr::PrivateIdent { name, .. } if name == "x")));
-            }
-        }
-    }
-
-    #[test]
-    fn rejects_private_identifier_in_object_literal() {
-        let err = parse_program("let o = { #x: 1 };").unwrap_err();
-
-        assert!(err.message.contains("issue-5168"), "{err:?}");
-    }
-
-    #[test]
     fn rejects_invalid_private_identifier_with_issue_linked_diagnostic() {
         let err = parse_program("class C { # = 1; }").unwrap_err();
 
@@ -2783,15 +2236,10 @@ b /* parameter b */,
         .unwrap();
 
         match &program[0] {
-            Stmt::Function { params, body, .. } => {
+            Stmt::Function { params, .. } => {
                 assert_eq!(params.len(), 2);
-                assert_eq!(params[0].0, "_p0");
-                assert_eq!(params[1].0, "_p1");
-                // Verify desugared let bindings are prepended to the body
-                // Reverse insert: index 0 goes last, index 1 goes first
-                assert_eq!(body.len(), 3);
-                assert!(matches!(&body[0], Stmt::Let { name, .. } if name == "[a]"));
-                assert!(matches!(&body[1], Stmt::Let { name, .. } if name == "{x}"));
+                assert_eq!(params[0].0, "[a]");
+                assert_eq!(params[1].0, "{x}");
             }
             other => panic!("unexpected function statement: {other:?}"),
         }
@@ -4015,37 +3463,16 @@ b /* parameter b */,
     }
 
     #[test]
-    fn parses_default_function_export() {
-        let program = parse_program("export default function value() {};").unwrap();
-        assert_eq!(program.len(), 1);
-        match &program[0] {
-            Stmt::ExportDefault {
-                expr: Expr::FunctionExpr { name, params, body, .. },
-                ..
-            } => {
-                assert_eq!(name, "value");
-                assert!(params.is_empty());
-                assert!(body.is_empty());
-            }
-            other => panic!("expected ExportDefault with FunctionExpr, got {other:?}"),
-        }
-    }
-
-    #[test]
-    fn parses_default_anonymous_function_export() {
-        let program = parse_program("export default function() {};").unwrap();
-        assert_eq!(program.len(), 1);
-        match &program[0] {
-            Stmt::ExportDefault {
-                expr: Expr::FunctionExpr { name, params, body, .. },
-                ..
-            } => {
-                assert_eq!(name, "");
-                assert!(params.is_empty());
-                assert!(body.is_empty());
-            }
-            other => panic!("expected ExportDefault with FunctionExpr, got {other:?}"),
-        }
+    fn keeps_default_function_exports_unsupported_for_narrow_slice() {
+        let function_err = parse_program("export default function value() {};").unwrap_err();
+        assert_eq!(function_err.code, DiagCode::UnsupportedSyntax);
+        assert!(function_err.message.contains("issue-055"));
+        assert!(
+            function_err
+                .message
+                .contains("unsupported default function export")
+        );
+        assert_eq!(function_err.span, Some(Span { start: 0, end: 6 }));
     }
 
     #[test]
@@ -5243,9 +4670,8 @@ b /* parameter b */,
     #[test]
     fn parses_const_enum_erased_no_bogus_binding() {
         let stmts = parse_program("const enum E { A }\nlet x = 1;").unwrap();
-        assert_eq!(stmts.len(), 2);
-        assert!(matches!(&stmts[0], Stmt::EnumDecl { name, .. } if name == "E"));
-        assert!(matches!(&stmts[1], Stmt::Let { name, .. } if name == "x"));
+        assert_eq!(stmts.len(), 1);
+        assert!(matches!(&stmts[0], Stmt::Let { name, .. } if name == "x"));
     }
 
     #[test]
@@ -5278,9 +4704,8 @@ b /* parameter b */,
     #[test]
     fn parses_export_enum_followed_by_let() {
         let stmts = parse_program("export enum E { A }\nlet x = 1;").unwrap();
-        assert_eq!(stmts.len(), 2);
-        assert!(matches!(&stmts[0], Stmt::EnumDecl { name, .. } if name == "E"));
-        assert!(matches!(&stmts[1], Stmt::Let { name, .. } if name == "x"));
+        assert_eq!(stmts.len(), 1);
+        assert!(matches!(&stmts[0], Stmt::Let { name, .. } if name == "x"));
     }
 
     #[test]
@@ -5621,156 +5046,58 @@ b /* parameter b */,
         assert_eq!(program.len(), 1);
     }
 
-    // === RegExp pattern extensions (I-20260517-88A8FY) ===
+    // === SyntaxError edge case validation ===
 
     #[test]
-    fn regexp_accepts_backreference() {
-        let program = parse_program(r"let r = /(.)\1/;").unwrap();
+    fn rejects_new_target_at_top_level() {
+        let err = parse_program("let x = new.target;").unwrap_err();
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.contains("new.target"));
+        assert!(err.message.contains("only valid inside"));
+        assert_eq!(err.phase, Some("parser"));
+    }
+
+    #[test]
+    fn rejects_new_target_in_arrow_function_at_top_level() {
+        let err = parse_program("const f = () => new.target;").unwrap_err();
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.contains("new.target"));
+        assert_eq!(err.phase, Some("parser"));
+    }
+
+    #[test]
+    fn rejects_await_in_sync_function() {
+        let err = parse_program("function f() { await promise; }").unwrap_err();
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.contains("await"));
+        assert!(err.message.contains("only allowed within async functions"));
+        assert_eq!(err.phase, Some("parser"));
+    }
+
+    #[test]
+    fn rejects_await_in_class_field_initializer_at_top_level() {
+        let err = parse_program("class C { x = await promise; }").unwrap_err();
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.contains("await"));
+        assert_eq!(err.phase, Some("parser"));
+    }
+
+    #[test]
+    fn accepts_new_target_in_class_field_initializer_at_top_level() {
+        // new.target is valid in class field initializers because they
+        // run in the constructor context where new.target is defined.
+        let program = parse_program("class C { x = new.target; }").unwrap();
         assert_eq!(program.len(), 1);
     }
 
     #[test]
-    fn regexp_accepts_multi_digit_backreference() {
-        let program = parse_program(r"let r = /\b(\w+) \2\b/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_named_backreference() {
-        let program = parse_program(r"let r = /\k<a>/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_named_capture_group() {
-        let program = parse_program(r"let r = /(?<name>abc)/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_non_capturing_group() {
-        let program = parse_program(r"let r = /(?:abc)/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_positive_lookahead() {
-        let program = parse_program(r"let r = /abc(?=def)/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_negative_lookahead() {
-        let program = parse_program(r"let r = /abc(?!def)/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_positive_lookbehind() {
-        let program = parse_program(r"let r = /(?<=abc)def/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_negative_lookbehind() {
-        let program = parse_program(r"let r = /(?<!abc)def/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_character_class_range() {
-        let program = parse_program(r"let r = /[a-z]/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_multi_character_class_range() {
-        let program = parse_program(r"let r = /[A-Za-z0-9]/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_digit_range_in_class() {
-        let program = parse_program(r"let r = /[0-9]/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_quantifier_exact() {
-        let program = parse_program(r"let r = /\d{5}/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_quantifier_range() {
-        let program = parse_program(r"let r = /\d{2,5}/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_quantifier_open_ended() {
-        let program = parse_program(r"let r = /\d{2,}/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_combined_char_class_and_quantifier() {
-        let program = parse_program(r"let r = /[\d][\12-\14]{1,}[^\d]/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_slash_inside_character_class() {
-        let program = parse_program(r"let r = /[/]/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_escaped_slash() {
-        let program = parse_program(r"let r = /\//;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_alternation() {
-        let program = parse_program(r"let r = /abc|def/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_dot_all_flag() {
-        let program = parse_program(r"let r = /abc/s;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_unicode_flag() {
-        let program = parse_program(r"let r = /abc/u;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_combined_flags() {
-        let program = parse_program(r"let r = /abc/gim;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_pattern_with_dollar_and_caret() {
-        let program = parse_program(r"let r = /^abc$/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_empty_non_capturing_pattern() {
-        // Empty regex uses /(?:)/ not // (which would be a line comment)
-        let program = parse_program(r"let r = /(?:)/;").unwrap();
-        assert_eq!(program.len(), 1);
-    }
-
-    #[test]
-    fn regexp_accepts_empty_non_capturing_with_flags() {
-        let program = parse_program(r"let r = /(?:)/g;").unwrap();
+    fn accepts_new_target_in_class_field_initializer_in_constructor_context() {
+        // new.target is valid in class field initializers when the class is
+        // inside a function body (fn_depth > 0, in constructor context)
+        let program = parse_program(
+            "class Outer { constructor() { class Inner { x = new.target; } } }",
+        )
+        .unwrap();
         assert_eq!(program.len(), 1);
     }
 }

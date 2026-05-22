@@ -359,7 +359,10 @@ impl Parser {
                     ts_private_field_names.push(method_name.clone());
                 }
                 let value = if self.consume(TokenKind::Equal) {
-                    self.expression()?
+                    self.in_class_field_init = true;
+                    let expr = self.expression()?;
+                    self.in_class_field_init = false;
+                    expr
                 } else {
                     Expr::Undefined { span: method_span }
                 };
@@ -386,7 +389,9 @@ impl Parser {
                     ts_private_field_names.push(method_name.clone());
                 }
                 self.expect(TokenKind::Equal)?;
+                self.in_class_field_init = true;
                 let value = self.expression()?;
+                self.in_class_field_init = false;
                 if is_static {
                     static_field_initializers.push(class_static_field_initializer(
                         &name,

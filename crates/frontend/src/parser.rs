@@ -27,6 +27,8 @@ pub struct Parser {
     switch_depth: u32,
     /// Whether we've already seen a `export default` declaration in this module.
     has_default_export: bool,
+    /// Whether we are inside a class field initializer expression.
+    in_class_field_init: bool,
     /// Maps class names to their TypeScript-`private` field names (erased at runtime).
     class_private_fields: HashMap<String, Vec<String>>,
     namespace_names_encountered: HashSet<String>,
