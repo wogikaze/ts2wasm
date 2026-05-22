@@ -1854,15 +1854,15 @@ def main():
             "discover_ms": 0,           # file discovery + filtering
             "prepare_ms": 0,            # metadata parse + build_source
             "server_check_ms": 0,       # server check-mode compile (no wasm emit)
-            "server_wasm_emit_ms": 0,   # server wasm-emit+wat2wasm wall time
+            "server_wasm_emit_ms": 0,   # server wasm emission wall time
             "iwasm_wall_ms": 0,         # cumulative iwasm execution wall time
             "wamr_wall_ms": 0,          # cumulative WAMR runner wall time (subset of iwasm_wall_ms)
             "node_wall_ms": 0,          # cumulative node oracle wall time
             "iwasm_processes": 0,       # number of iwasm invocations (total, including fallback)
             "wamr_jobs_sent": 0,        # number of WAMR runner jobs dispatched
             "node_processes": 0,        # number of node invocations
-            "wasm_emit_count": 0,       # successful wasm emissions (via wat crate)
-            "wat2wasm_fallback_count": 0,  # actual wat2wasm CLI fallback invocations
+            "wasm_emit_count": 0,       # successful wasm emissions
+            "wat2wasm_fallback_count": 0,  # legacy compatibility counter; should remain zero
             "jsonl_canonicalize_ms": 0,
             "dashboard_ms": 0,
             "server_fallback_batches": 0,
@@ -3228,12 +3228,12 @@ def main():
             profile_rec["wall_clock_ms"] = wall_duration_ms
         profile_rec["_timer_meta"] = {
             "prepare_ms": "wall-clock: metadata parse + build_source",
-            "server_wasm_emit_ms": "wall-clock: server wasm-emit + wat2wasm",
+            "server_wasm_emit_ms": "wall-clock: server wasm emission",
             "iwasm_wall_ms": "cumulative: sum of all iwasm invocation durations",
             "wamr_wall_ms": "cumulative: sum of all WAMR runner durations (subset of iwasm_wall_ms)",
             "node_wall_ms": "cumulative: sum of all node oracle invocation durations",
             "non_sample_ms": "wall-clock: non-sampled skip record writing",
-            "wasm_emit_count": "count: successful wasm emissions (via wat crate)",
+            "wasm_emit_count": "count: successful wasm emissions",
             "iwasm_processes": "count: iwasm invocations (total, including fallback)",
             "node_processes": "count: node oracle invocations",
             "wall_clock_ms": "wall-clock: total JSONL run duration from start to summary",

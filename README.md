@@ -77,7 +77,7 @@ Workspace crates:
 | `runtime-abi` | tagged value and linear-memory ABI |
 | `runtime-catalog` | runtime function registry and link plans |
 | `backend-core` | backend-independent Wasm IR shell |
-| `backend-wasm` | WAT/WASM emission and runtime templates |
+| `backend-wasm` | wasm binary emission, WAT debug emission, and runtime templates |
 | `compiler` | end-to-end pipeline and server |
 | `cli` | command-line interface |
 | `shared` | compatibility re-exports and manifest types |

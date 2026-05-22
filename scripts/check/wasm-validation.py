@@ -40,10 +40,8 @@ def load_catalog(path):
 def get_validator():
     """Detect available wasm validator for binary wasm.
 
-    wat2wasm reads WAT text, not binary wasm, so we prefer tools that can
-    validate binary wasm directly: wasm-tools validate, wasm-validate.
-
-    If only wat2wasm is available, we use wasm-tools print + wat2wasm pipe.
+    The build/test path validates wasm binaries directly. WAT conversion tools
+    are intentionally not accepted as validators for this check.
 
     Returns (tool_name, command_args_or_fn) or None if none found.
     """
@@ -51,9 +49,6 @@ def get_validator():
         return "wasm-tools", ["wasm-tools", "validate"]
     if shutil.which("wasm-validate"):
         return "wasm-validate", ["wasm-validate"]
-    # wat2wasm accepts only WAT text; use wasm-tools print to convert first
-    if shutil.which("wat2wasm") and shutil.which("wasm-tools"):
-        return "wat2wasm(pipe)", ["wasm-tools", "print"]
     return None
 
 
@@ -99,32 +94,16 @@ def validate_wasm(validator, wasm_path):
     Handles:
       wasm-tools validate  -- direct binary validation (text output)
       wasm-validate        -- direct binary validation (text output)
-      wat2wasm(pipe)       -- binary to WAT via wasm-tools print, validate via wat2wasm
     """
     tool_name, cmd_base = validator
     cmd = cmd_base + [str(wasm_path)]
 
-    if tool_name.startswith("wat2wasm"):
-        # Pipe: binary -> WAT text via wasm-tools print -> wat2wasm
-        print_proc = subprocess.run(cmd, capture_output=True)
-        if print_proc.returncode != 0:
-            err = print_proc.stderr.decode("utf-8", errors="replace").strip()[:300]
-            return False, f"wasm-tools print: {err}"
-        wat_result = subprocess.run(
-            ["wat2wasm"], input=print_proc.stdout,
-            stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
-        )
-        if wat_result.returncode != 0:
-            err = wat_result.stderr.decode("utf-8", errors="replace").strip()[:300]
-            return False, f"wat2wasm: {err}"
-        return True, ""
-    else:
-        # wasm-tools validate, wasm-validate: direct binary validation
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            err = result.stderr.strip() or result.stdout.strip()
-            return False, err[:300]
-        return True, ""
+    # wasm-tools validate, wasm-validate: direct binary validation
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        err = result.stderr.strip() or result.stdout.strip()
+        return False, err[:300]
+    return True, ""
 
 
 def main():
@@ -164,13 +143,12 @@ def main():
     validator = get_validator()
     if validator is None:
         print("check_wasm_validation: no wasm validator found on PATH", file=sys.stderr)
-        print("  Install one of: wasm-tools, wasm-validate, wat2wasm", file=sys.stderr)
+        print("  Install one of: wasm-tools, wasm-validate", file=sys.stderr)
         print("check_wasm_validation: SKIP (no validator available)", file=sys.stderr)
         sys.exit(0)
 
     validator_name = validator[0]
-    display_name = {"wat2wasm(pipe)": "wat2wasm (via pipe)"}.get(validator_name, validator_name)
-    print(f"check_wasm_validation: using {display_name}", file=sys.stderr)
+    print(f"check_wasm_validation: using {validator_name}", file=sys.stderr)
 
     # Load catalog
     if not CATALOG_PATH.exists():
@@ -266,7 +244,7 @@ def main():
     print("=" * 70, file=sys.stderr)
     print("WASM VALIDATION REPORT", file=sys.stderr)
     print("=" * 70, file=sys.stderr)
-    print(f"  Validator:           {display_name}", file=sys.stderr)
+    print(f"  Validator:           {validator_name}", file=sys.stderr)
     print(f"  Fixtures attempted:  {len(fixture_list)}", file=sys.stderr)
     print(f"  Passed:              {passed}", file=sys.stderr)
     print(f"  Failed:              {failed}", file=sys.stderr)

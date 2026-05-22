@@ -466,7 +466,7 @@ fn standalone_wasi_array_operations() {
 #[test]
 fn standalone_wasi_set_operations() {
     // Set operations — WASI-only
-    // Note: set-constructor-array.ts has a pre-existing wat2wasm issue (unknown token)
+    // set-constructor-array.ts remains outside this focused WASI-only slice.
     let fixtures = [
         "builtins-and-io/set-identity-number-string.ts",
         "builtins-and-io/set-size-clear.ts",
