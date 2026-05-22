@@ -17,7 +17,6 @@ use ts2wasm_ir::name_resolver;
 
 use crate::module_graph;
 use crate::stages::eval_expand::expand_static_eval_fragments;
-use crate::write_wasm_from_wat;
 use crate::{
     ensure_runtime_feature_gates, lower_static_named_import_bindings_for_build,
     lower_static_named_import_reads_for_build, populate_static_module_exports_for_build,
@@ -514,13 +513,15 @@ fn compile_source_text_with_emit(
                 ts2wasm_ir::lowered::Validated::new(lowered).map_err(|d| d.with_phase("backend"))?
             };
             let output = tmpdir.join(format!("{}.wasm", id));
-            let wat = {
-                crate::source_profile_scope!("server.backend_emit_wat");
-                ts2wasm_backend_wasm::emit_wat(&validated).map_err(|d| d.with_phase("backend"))?
+            let wasm_bytes = {
+                crate::source_profile_scope!("server.backend_emit_wasm_binary");
+                ts2wasm_backend_wasm::emit_wasm_binary(&validated)
+                    .map_err(|d| d.with_phase("backend"))?
             };
             {
-                crate::source_profile_scope!("server.write_wasm_from_wat");
-                write_wasm_from_wat(&wat, &output).map_err(|d| d.with_phase("backend"))?;
+                crate::source_profile_scope!("server.write_wasm_bytes");
+                crate::io::write_output::write_wasm_bytes_with_abi(&wasm_bytes, &output, None)
+                    .map_err(|d| d.with_phase("backend"))?;
             }
             Ok(Some(output))
         }
@@ -789,6 +790,32 @@ mod tests {
         assert!(
             !dump.contains("EvalDirectHost") && !dump.contains("EvalIndirectHost"),
             "static eval expansion should not leave host eval runtime calls in server lowering:\n{dump}"
+        );
+
+        let _ = fs::remove_dir_all(tmpdir);
+    }
+
+    #[test]
+    fn wasm_emit_uses_backend_binary_without_wat2wasm_fallback() {
+        crate::io::write_output::WAT2WASM_FALLBACK_COUNT.store(0, Ordering::Relaxed);
+
+        let tmpdir = test_tmpdir("wasm-binary-emit");
+        let path = tmpdir.join("entry.js");
+        let output = compile_source_text_with_emit(
+            r#"console.log("hi");"#,
+            &path,
+            &tmpdir,
+            7,
+            EmitMode::Wasm,
+        )
+        .expect("server wasm emit should succeed")
+        .expect("wasm emit mode should return an output path");
+
+        let bytes = fs::read(output).expect("server wasm output should be readable");
+        assert_eq!(&bytes[..4], b"\0asm");
+        assert_eq!(
+            crate::io::write_output::WAT2WASM_FALLBACK_COUNT.load(Ordering::Relaxed),
+            0
         );
 
         let _ = fs::remove_dir_all(tmpdir);

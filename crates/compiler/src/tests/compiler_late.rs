@@ -89,6 +89,29 @@ declare namespace A {
 }
 
 #[test]
+fn build_file_writes_binary_without_wat2wasm_fallback() {
+    use std::sync::atomic::Ordering;
+
+    crate::io::write_output::WAT2WASM_FALLBACK_COUNT.store(0, Ordering::Relaxed);
+
+    let dir = unique_temp_dir("build-no-wat2wasm-fallback");
+    std::fs::create_dir_all(&dir).expect("temp dir should be created");
+    let input = dir.join("entry.ts");
+    let output = dir.join("out.wasm");
+    std::fs::write(&input, "console.log(\"hi\");\n").expect("source should be written");
+
+    build_file(&input, &output).expect("hello-style fixture should build");
+    let bytes = std::fs::read(&output).expect("wasm output should be written");
+    assert_eq!(&bytes[..4], b"\0asm");
+    assert_eq!(
+        crate::io::write_output::WAT2WASM_FALLBACK_COUNT.load(Ordering::Relaxed),
+        0
+    );
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn parses_program_with_line_comment_prefix() {
     let program = parse_program("// lead comment\nconsole.log(1);").unwrap();
     assert_eq!(program.len(), 1);
@@ -824,7 +847,7 @@ fn run_iwasm(wasm_path: &Path) -> String {
 }
 
 #[test]
-fn direct_wasm_binary_mvp_runs_basics_hello_like_wat_path() {
+fn direct_wasm_binary_mvp_runs_basics_hello_without_wat_conversion() {
     let program = lower_fixture("../../fixtures/basics-hello/hello.ts");
     let (validated, _) =
         ts2wasm_ir::lowered::Validated::new(program).expect("hello fixture should pass validation");
@@ -846,32 +869,13 @@ fn direct_wasm_binary_mvp_runs_basics_hello_like_wat_path() {
             .any(|reason| reason == "console.log")
     );
 
-    let wat = backend::emit_wat(&validated).expect("hello fixture should still emit WAT");
     let temp_dir = unique_temp_dir("direct-wasm-binary-mvp");
     fs::create_dir_all(&temp_dir).expect("temp dir should be created");
     let direct_path = temp_dir.join("hello-direct.wasm");
-    let wat_path = temp_dir.join("hello-wat.wat");
-    let wat_wasm_path = temp_dir.join("hello-wat.wasm");
     fs::write(&direct_path, direct_wasm).expect("direct wasm should be written");
-    fs::write(&wat_path, wat).expect("wat should be written");
-
-    let wat2wasm = Command::new("wat2wasm")
-        .arg(&wat_path)
-        .arg("-o")
-        .arg(&wat_wasm_path)
-        .output()
-        .expect("wat2wasm should run");
-    assert!(
-        wat2wasm.status.success(),
-        "wat2wasm failed\nstdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&wat2wasm.stdout),
-        String::from_utf8_lossy(&wat2wasm.stderr)
-    );
 
     let direct_out = run_iwasm(&direct_path);
-    let wat_out = run_iwasm(&wat_wasm_path);
     assert_eq!(direct_out, "hi\n");
-    assert_eq!(direct_out, wat_out);
 
     let _ = fs::remove_dir_all(temp_dir);
 }
@@ -996,24 +1000,6 @@ fn array_push_grow_emits_dedicated_helper_boundary() {
     assert!(wat.contains("(call $alloc_heap"));
     assert!(wat.contains("(call $copy"));
 
-    let temp_dir = unique_temp_dir("array-push-grow-helper");
-    fs::create_dir_all(&temp_dir).expect("temp dir should be created");
-    let wat_path = temp_dir.join("array-push-grow-helper.wat");
-    let wasm_path = temp_dir.join("array-push-grow-helper.wasm");
-    fs::write(&wat_path, wat).expect("wat should be written");
-
-    let wat2wasm = Command::new("wat2wasm")
-        .arg(&wat_path)
-        .arg("-o")
-        .arg(&wasm_path)
-        .output()
-        .expect("wat2wasm should run");
-    assert!(
-        wat2wasm.status.success(),
-        "wat2wasm failed\nstdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&wat2wasm.stdout),
-        String::from_utf8_lossy(&wat2wasm.stderr)
-    );
-
-    let _ = fs::remove_dir_all(temp_dir);
+    let wasm_bytes = backend::emit_wasm_binary(&v).expect("array push helper should emit wasm");
+    assert_eq!(&wasm_bytes[..4], b"\0asm");
 }

@@ -68,6 +68,16 @@ pub fn emit_mir_wat(program: &Validated<MirProgram>) -> Result<String, Diagnosti
     mir_emit::emit_mir_wat_validated(program)
 }
 
+pub fn emit_mir_wasm_binary(program: &Validated<MirProgram>) -> Result<Vec<u8>, Diagnostic> {
+    let wat = emit_mir_wat(program)?;
+    wat::parse_str(&wat).map_err(|err| Diagnostic {
+        code: DiagCode::BackendIo,
+        message: format!("MIR WAT-to-binary conversion failed: {err}"),
+        span: None,
+        phase: None,
+    })
+}
+
 pub fn emit_wasm_binary_mvp(program: &Validated<LoweredProgram>) -> Result<Vec<u8>, Diagnostic> {
     // Validated guarantees no fatal InvariantViolation errors.
     binary_mvp::emit_wasm_binary_mvp(program.as_ref())

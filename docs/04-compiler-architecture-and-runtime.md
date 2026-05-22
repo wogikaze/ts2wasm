@@ -18,8 +18,8 @@ read_source_file
   -> legacy LoweredProgram or experimental HIR/MIR
   -> lowered_validate / runtime_gate
   -> runtime link plan / capability manifest
-  -> backend::emit_wat or backend::emit_mir_wat
-  -> write_wasm_from_wat_with_abi
+  -> backend::emit_wasm_binary or backend::emit_mir_wasm_binary
+  -> write_wasm_bytes_with_abi
 ```
 
 The canonical implementation anchor is `crates/compiler/src/pipeline.rs`.
@@ -40,9 +40,10 @@ The canonical implementation anchor is `crates/compiler/src/pipeline.rs`.
 
 ## Legacy and HIR/MIR paths
 
-- Default build path lowers builtin-resolved statements to legacy `LoweredProgram` and emits WAT.
+- Default build path lowers builtin-resolved statements to legacy `LoweredProgram` and requires wasm bytes from the backend.
 - Strict HIR/MIR path uses `lower_to_hir`, validates HIR, lowers to native MIR, validates MIR, then calls MIR emission.
-- Compat fallback tries HIR/MIR first and falls back to legacy when unsupported.
+- Compat fallback tries HIR/MIR first and falls back to legacy when unsupported, but the final build artifact still comes from wasm bytes rather than an external WAT conversion command.
+- WAT remains available through dump/debug APIs.
 - Docs and tests should identify which path a behavior uses.
 
 ## Runtime shape

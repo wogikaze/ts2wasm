@@ -655,8 +655,13 @@ mod tests {
                 is_async: false,
                 is_generator: false,
                 generator_state: None,
+                induction_vars: vec![],
+                escape_status: vec![],
+                value_reps: vec![],
+                optimization_hints: vec![],
             }],
             modules: vec![],
+            escape_status: vec![],
         }
     }
 
@@ -718,6 +723,7 @@ mod tests {
             top_level_locals: vec![],
             functions: vec![],
             modules: vec![],
+            escape_status: vec![],
         };
 
         let err = emit_mir_wat_native_subset(&program).expect_err("string needs compat fallback");
@@ -736,6 +742,7 @@ mod tests {
             top_level_locals: vec![],
             functions: vec![],
             modules: vec![],
+            escape_status: vec![],
         };
 
         let wat = emit_mir_wat(&program).expect("compatibility fallback WAT");

@@ -147,7 +147,7 @@ fn build_file_impl(
     semantic_validate::validate_semantics(input, &resolved)
         .map_err(|d| d.with_phase("semantic-validator"))?;
 
-    let (wat, wasm_encoder_bytes, pipeline_diagnostics) = match options.hir_mir_mode {
+    let (_debug_wat, wasm_bytes, pipeline_diagnostics) = match options.hir_mir_mode {
         HirMirBuildMode::Disabled => {
             let legacy = emit_legacy_wat_for_resolved(
                 &resolved,
@@ -158,13 +158,35 @@ fn build_file_impl(
                 &type_aliases,
                 &interface_definitions,
             )?;
-            (legacy.wat, legacy.wasm_encoder_bytes, legacy.diagnostics)
+            (legacy.wat, legacy.wasm_bytes, legacy.diagnostics)
         }
         HirMirBuildMode::Strict | HirMirBuildMode::CompatFallback => {
             match emit_hir_mir_wat_for_resolved(&resolved) {
                 Ok(mir_wat) => {
                     let mir_wasm_encoder_bytes =
-                        emit_hir_mir_wasm_binary_for_resolved(&resolved).ok();
+                        match emit_hir_mir_wasm_binary_for_resolved(&resolved) {
+                            Ok(bytes) => bytes,
+                            Err(error) if options.hir_mir_mode.allows_compat_fallback() => {
+                                let legacy = emit_legacy_wat_for_resolved(
+                                    &resolved,
+                                    &static_module_binding,
+                                    &module_graph,
+                                    capability_manifest_output,
+                                    options.host_deny,
+                                    &type_aliases,
+                                    &interface_definitions,
+                                )?;
+                                let mut diagnostics = vec![hir_mir_fallback_diagnostic(&error)];
+                                diagnostics.extend(legacy.diagnostics);
+                                return write_build_bytes(
+                                    output,
+                                    options.target,
+                                    &legacy.wasm_bytes,
+                                    diagnostics,
+                                );
+                            }
+                            Err(error) => return Err(error),
+                        };
                     match emit_legacy_wat_for_resolved(
                         &resolved,
                         &static_module_binding,
@@ -180,9 +202,9 @@ fn build_file_impl(
                                 mir_wat.len(),
                                 legacy.wat == mir_wat,
                             )];
-                            if let Some(bytes) = &mir_wasm_encoder_bytes {
-                                diagnostics.push(hir_mir_wasm_encoder_diagnostic(bytes.len()));
-                            }
+                            diagnostics.push(hir_mir_wasm_encoder_diagnostic(
+                                mir_wasm_encoder_bytes.len(),
+                            ));
                             diagnostics.extend(legacy.diagnostics);
                             (mir_wat, mir_wasm_encoder_bytes, diagnostics)
                         }
@@ -210,21 +232,33 @@ fn build_file_impl(
                     )?;
                     let mut diagnostics = vec![hir_mir_fallback_diagnostic(&error)];
                     diagnostics.extend(legacy.diagnostics);
-                    (legacy.wat, None, diagnostics)
+                    (legacy.wat, legacy.wasm_bytes, diagnostics)
                 }
                 Err(error) => return Err(error),
             }
         }
     };
     let abi_meta = abi_metadata_for_target(options.target);
-    match wasm_encoder_bytes {
-        Some(bytes) => io::write_output::write_wasm_bytes_with_abi(&bytes, output, Some(&abi_meta)),
-        None => io::write_output::write_wasm_from_wat_with_abi(&wat, output, Some(&abi_meta)),
-    }
-    .map_err(|d| d.with_phase("backend"))?;
+    io::write_output::write_wasm_bytes_with_abi(&wasm_bytes, output, Some(&abi_meta))
+        .map_err(|d| d.with_phase("backend"))?;
     Ok(CompileReport {
         value: (),
         diagnostics: pipeline_diagnostics,
+    })
+}
+
+fn write_build_bytes(
+    output: &Path,
+    target: ExecutionTarget,
+    wasm_bytes: &[u8],
+    diagnostics: Vec<Diagnostic>,
+) -> Result<CompileReport<()>, Diagnostic> {
+    let abi_meta = abi_metadata_for_target(target);
+    io::write_output::write_wasm_bytes_with_abi(wasm_bytes, output, Some(&abi_meta))
+        .map_err(|d| d.with_phase("backend"))?;
+    Ok(CompileReport {
+        value: (),
+        diagnostics,
     })
 }
 
@@ -242,7 +276,7 @@ fn abi_metadata_for_target(target: ExecutionTarget) -> AbiMetadata {
 
 struct LegacyWat {
     wat: String,
-    wasm_encoder_bytes: Option<Vec<u8>>,
+    wasm_bytes: Vec<u8>,
     diagnostics: Vec<Diagnostic>,
 }
 
@@ -304,10 +338,10 @@ fn emit_legacy_wat_for_resolved(
     }
 
     let wat = backend::emit_wat(&validated).map_err(|d| d.with_phase("backend"))?;
-    let wasm_encoder_bytes = backend::emit_wasm_binary_direct(&validated).ok();
+    let wasm_bytes = backend::emit_wasm_binary(&validated).map_err(|d| d.with_phase("backend"))?;
     Ok(LegacyWat {
         wat,
-        wasm_encoder_bytes,
+        wasm_bytes,
         diagnostics,
     })
 }

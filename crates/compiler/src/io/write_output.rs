@@ -1,86 +1,25 @@
 use std::fs;
 use std::path::Path;
-use std::process::Command;
 use std::sync::atomic::AtomicUsize;
 
 use ts2wasm_backend_wasm::append_custom_section;
 use ts2wasm_frontend::{DiagCode, Diagnostic};
 use ts2wasm_shared::abi::{ABI_CUSTOM_SECTION_NAME, AbiMetadata};
 
-/// Tracks how many times the wat2wasm CLI fallback was used.
+/// Tracks how many times the removed wat2wasm CLI fallback was used.
+///
+/// Kept for server/status compatibility. The binary writer no longer shells
+/// out to WABT, so this counter should remain zero.
 pub static WAT2WASM_FALLBACK_COUNT: AtomicUsize = AtomicUsize::new(0);
 
-fn truncate_wat_for_error(wat: &str, max_len: usize) -> String {
-    if wat.len() <= max_len {
-        wat.to_owned()
-    } else {
-        let truncated_len = max_len.saturating_sub(30);
-        format!(
-            "{}... (truncated, total {} bytes)",
-            &wat[..truncated_len],
-            wat.len()
-        )
-    }
-}
-
 /// Convert WAT text to WASM binary using the `wat` crate (pure Rust, no subprocess).
-///
-/// Falls back to `wat2wasm` CLI if the `wat` crate fails to parse (defense in depth).
 fn wat_to_binary(wat: &str) -> Result<Vec<u8>, Diagnostic> {
-    match wat::parse_str(wat) {
-        Ok(bytes) => Ok(bytes),
-        Err(parse_err) => {
-            // Fallback: try wat2wasm CLI
-            use std::sync::atomic::{AtomicU32, Ordering};
-            static WAT_COUNTER: AtomicU32 = AtomicU32::new(0);
-            let unique = WAT_COUNTER.fetch_add(1, Ordering::Relaxed);
-            let temp_wat =
-                std::env::temp_dir().join(format!("ts2wasm-{}-{}.wat", std::process::id(), unique));
-            let _ = fs::write(&temp_wat, wat);
-            WAT2WASM_FALLBACK_COUNT.fetch_add(1, Ordering::Relaxed);
-            let temp_wasm = std::env::temp_dir().join(format!(
-                "ts2wasm-{}-{}.wasm",
-                std::process::id(),
-                unique
-            ));
-            let result = Command::new("wat2wasm")
-                .arg(&temp_wat)
-                .arg("-o")
-                .arg(&temp_wasm)
-                .output()
-                .map_err(|error| Diagnostic {
-                    code: DiagCode::BackendIo,
-                    message: format!(
-                        "wat2wasm fallback failed: {error} (wat crate error: {parse_err})"
-                    ),
-                    span: None,
-                    phase: None,
-                });
-            let output = result?;
-            let wasm_bytes = if output.status.success() {
-                fs::read(&temp_wasm).map_err(|error| Diagnostic {
-                    code: DiagCode::BackendIo,
-                    message: format!("wat2wasm fallback: failed to read output: {error}"),
-                    span: None,
-                    phase: None,
-                })
-            } else {
-                Err(Diagnostic {
-                    code: DiagCode::BackendIo,
-                    message: format!(
-                        "wat2wasm fallback failed\nstderr:\n{}\nwat crate error: {parse_err}\nwat:\n{}",
-                        String::from_utf8_lossy(&output.stderr),
-                        truncate_wat_for_error(wat, 2000),
-                    ),
-                    span: None,
-                    phase: None,
-                })
-            }?;
-            let _ = fs::remove_file(&temp_wat);
-            let _ = fs::remove_file(&temp_wasm);
-            Ok(wasm_bytes)
-        }
-    }
+    wat::parse_str(wat).map_err(|error| Diagnostic {
+        code: DiagCode::BackendIo,
+        message: format!("WAT-to-binary conversion failed: {error}"),
+        span: None,
+        phase: None,
+    })
 }
 
 pub fn write_wasm_from_wat(wat: &str, output: &Path) -> Result<(), Diagnostic> {
@@ -93,11 +32,19 @@ pub fn write_wasm_from_wat_with_abi(
     abi_metadata: Option<&AbiMetadata>,
 ) -> Result<(), Diagnostic> {
     let wasm_bytes = wat_to_binary(wat)?;
+    write_wasm_bytes_with_abi(&wasm_bytes, output, abi_metadata)
+}
+
+pub fn write_wasm_bytes_with_abi(
+    wasm_bytes: &[u8],
+    output: &Path,
+    abi_metadata: Option<&AbiMetadata>,
+) -> Result<(), Diagnostic> {
     let final_bytes = if let Some(meta) = abi_metadata {
         let payload = meta.to_custom_section_payload();
-        append_custom_section(&wasm_bytes, ABI_CUSTOM_SECTION_NAME, &payload)
+        append_custom_section(wasm_bytes, ABI_CUSTOM_SECTION_NAME, &payload)
     } else {
-        wasm_bytes
+        wasm_bytes.to_vec()
     };
     fs::write(output, &final_bytes).map_err(|error| Diagnostic {
         code: DiagCode::BackendIo,
@@ -105,4 +52,32 @@ pub fn write_wasm_from_wat_with_abi(
         span: None,
         phase: None,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::atomic::Ordering;
+
+    use super::*;
+
+    #[test]
+    fn wat_parse_failure_does_not_invoke_wat2wasm_fallback() {
+        WAT2WASM_FALLBACK_COUNT.store(0, Ordering::Relaxed);
+
+        let dir = ts2wasm_shared::test_helpers::unique_temp_dir("no-wat2wasm-fallback");
+        std::fs::create_dir_all(&dir).expect("temp dir should be created");
+        let output = dir.join("out.wasm");
+        let err = write_wasm_from_wat("(module (func", &output)
+            .expect_err("invalid WAT should fail in the Rust parser");
+
+        assert_eq!(err.code, DiagCode::BackendIo);
+        assert!(
+            err.message.contains("WAT-to-binary conversion failed"),
+            "unexpected diagnostic: {err:?}"
+        );
+        assert_eq!(WAT2WASM_FALLBACK_COUNT.load(Ordering::Relaxed), 0);
+        assert!(!output.exists());
+
+        let _ = std::fs::remove_dir_all(dir);
+    }
 }
