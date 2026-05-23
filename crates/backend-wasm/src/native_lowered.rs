@@ -85,6 +85,10 @@ enum StaticValue {
     ObjectAlias(LocalId),
     Array(Vec<LoweredExpr>),
     Primitive(LoweredExpr),
+    Closure {
+        func_id: FuncId,
+        captures: Vec<StaticValue>,
+    },
     DateObject(Option<i32>),
     Symbol(LocalId),
 }
@@ -912,8 +916,14 @@ impl<'a> NativeLoweredEmitter<'a> {
             out.push(WasmInstr::LocalSet(local_index(ctx, local)?));
             return Ok(true);
         }
-        match static_value_from_expr(expr, &ctx.static_locals) {
-            Some(StaticValue::DateObject(_) | StaticValue::Symbol(_)) => {
+        match static_value_from_expr_with_functions(
+            expr,
+            &ctx.static_locals,
+            &self.program.functions,
+        ) {
+            Some(
+                StaticValue::Closure { .. } | StaticValue::DateObject(_) | StaticValue::Symbol(_),
+            ) => {
                 out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
                 out.push(WasmInstr::LocalSet(local_index(ctx, local)?));
                 Ok(true)
@@ -922,8 +932,25 @@ impl<'a> NativeLoweredEmitter<'a> {
         }
     }
 
-    fn emit_static_primitive_token(&mut self, _expr: &LoweredExpr, out: &mut Vec<WasmInstr>) {
-        out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
+    fn emit_static_primitive_token(&mut self, expr: &LoweredExpr, out: &mut Vec<WasmInstr>) {
+        match expr {
+            LoweredExpr::DecimalNumber(value, _) if value == "NaN" => {
+                out.push(WasmInstr::I32Const(
+                    ValueTag::NAN_PAYLOAD << ValueTag::NUMBER_SHIFT | ValueTag::NUMBER,
+                ));
+            }
+            LoweredExpr::DecimalNumber(value, _) if value == "Infinity" => {
+                out.push(WasmInstr::I32Const(
+                    ValueTag::INFINITY_PAYLOAD << ValueTag::NUMBER_SHIFT | ValueTag::NUMBER,
+                ));
+            }
+            LoweredExpr::DecimalNumber(value, _) if value == "-Infinity" => {
+                out.push(WasmInstr::I32Const(
+                    ValueTag::NEG_INFINITY_PAYLOAD << ValueTag::NUMBER_SHIFT | ValueTag::NUMBER,
+                ));
+            }
+            _ => out.push(WasmInstr::I32Const(STATIC_REF_TOKEN)),
+        }
     }
 
     fn emit_expr(
@@ -1060,6 +1087,19 @@ impl<'a> NativeLoweredEmitter<'a> {
                     out.push(WasmInstr::LocalTee(slot));
                     return Ok(());
                 }
+                if static_object_known(ctx, object)
+                    && static_value_from_expr_with_functions(
+                        value,
+                        &ctx.static_locals,
+                        &self.program.functions,
+                    )
+                    .is_some()
+                {
+                    if !self.try_emit_static_value_expr(value, ctx, out)? {
+                        self.emit_expr(value, ctx, out)?;
+                    }
+                    return Ok(());
+                }
                 Err(unsupported(
                     "native LoweredProgram emitter does not support this property set",
                 ))
@@ -1167,9 +1207,11 @@ impl<'a> NativeLoweredEmitter<'a> {
         ctx: &FunctionCtx,
         out: &mut Vec<WasmInstr>,
     ) -> Result<bool, Diagnostic> {
-        let Some(value) =
-            static_value_from_expr_with_functions(expr, &ctx.static_locals, &self.program.functions)
-        else {
+        let Some(value) = static_value_from_expr_with_functions(
+            expr,
+            &ctx.static_locals,
+            &self.program.functions,
+        ) else {
             return Ok(false);
         };
         match value {
@@ -1181,12 +1223,15 @@ impl<'a> NativeLoweredEmitter<'a> {
                 | LoweredExpr::ArrowFn { .. } => self.emit_expr(&value, ctx, out)?,
                 LoweredExpr::String(_, _)
                 | LoweredExpr::DecimalNumber(_, _)
-                | LoweredExpr::BigIntLiteral { .. } => self.emit_static_primitive_token(&value, out),
+                | LoweredExpr::BigIntLiteral { .. } => {
+                    self.emit_static_primitive_token(&value, out)
+                }
                 _ => return Ok(false),
             },
             StaticValue::Object(_)
             | StaticValue::ObjectAlias(_)
             | StaticValue::Array(_)
+            | StaticValue::Closure { .. }
             | StaticValue::DateObject(_)
             | StaticValue::Symbol(_) => out.push(WasmInstr::I32Const(STATIC_REF_TOKEN)),
         }
@@ -2278,6 +2323,20 @@ fn collect_static_objects_from_assignment(
             );
             plan.local_groups.insert(local, group);
         }
+        LoweredExpr::ArrowFn { .. } => {
+            let group = plan.group_keys.len();
+            plan.group_keys.push(Vec::new());
+            plan.local_groups.insert(local, group);
+        }
+        LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::GlobalThis,
+            args,
+            ..
+        } if args.is_empty() => {
+            let group = plan.group_keys.len();
+            plan.group_keys.push(Vec::new());
+            plan.local_groups.insert(local, group);
+        }
         LoweredExpr::Local(source, _) => {
             if let Some(group) = plan.local_groups.get(source).copied() {
                 plan.local_groups.insert(local, group);
@@ -2657,7 +2716,8 @@ fn collect_static_locals_from_expr_with_functions(
         } => {
             collect_static_locals_from_expr_with_functions(object, locals, functions);
             collect_static_locals_from_expr_with_functions(value, locals, functions);
-            let value = static_primitive_expr_from_expr_with_functions(value, locals, functions);
+            let value = static_value_from_expr_with_functions(value, locals, functions)
+                .map(|_| value.as_ref().clone());
             if let LoweredExpr::Local(local, _) = object.as_ref() {
                 if let Some(value) = value {
                     if let Some(root) = resolve_static_object_root(locals, *local)
@@ -2694,7 +2754,8 @@ fn collect_static_locals_from_expr_with_functions(
             collect_static_locals_from_expr_with_functions(index, locals, functions);
             collect_static_locals_from_expr_with_functions(value, locals, functions);
             let key = static_property_key_from_locals_with_functions(locals, index, functions);
-            let value = static_primitive_expr_from_expr_with_functions(value, locals, functions);
+            let value = static_value_from_expr_with_functions(value, locals, functions)
+                .map(|_| value.as_ref().clone());
             if let LoweredExpr::Local(local, _) = object.as_ref() {
                 let object = resolve_static_object_root(locals, *local);
                 match (
@@ -2747,6 +2808,21 @@ fn static_value_from_expr_with_functions(
 ) -> Option<StaticValue> {
     match expr {
         LoweredExpr::Local(local, _) => locals.get(local).cloned(),
+        LoweredExpr::ArrowFn {
+            func_id,
+            captures,
+            representation: ClosureRepresentation::HeapObject,
+            ..
+        } => {
+            let captures = captures
+                .iter()
+                .map(|capture| locals.get(capture).cloned())
+                .collect::<Option<Vec<_>>>()?;
+            Some(StaticValue::Closure {
+                func_id: *func_id,
+                captures,
+            })
+        }
         LoweredExpr::Number(_, _)
         | LoweredExpr::DecimalNumber(_, _)
         | LoweredExpr::BigIntLiteral { .. }
@@ -2807,6 +2883,12 @@ fn static_value_from_expr_with_functions(
                 .map(|key| LoweredExpr::String(key, *span))
                 .collect(),
         )),
+        LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::HeapClosureCall,
+            args,
+            span,
+            ..
+        } => static_heap_closure_call_value(functions, args, *span, locals),
         LoweredExpr::RuntimeCall {
             intrinsic: RuntimeFn::ObjectGetOwnPropertyDescriptor,
             args,
@@ -2986,6 +3068,38 @@ fn static_user_function_call_value(
     Some(StaticValue::Primitive(LoweredExpr::Undefined(span)))
 }
 
+fn static_heap_closure_call_value(
+    functions: &[LoweredFunction],
+    args: &[LoweredExpr],
+    span: Span,
+    locals: &HashMap<LocalId, StaticValue>,
+) -> Option<StaticValue> {
+    let (closure, call_args) = args.split_first()?;
+    let StaticValue::Closure { func_id, captures } =
+        static_value_from_expr_with_functions(closure, locals, functions)?
+    else {
+        return None;
+    };
+    let mut lowered_args = Vec::with_capacity(captures.len() + call_args.len());
+    for capture in captures {
+        lowered_args.push(static_value_to_expr(capture)?);
+    }
+    lowered_args.extend(call_args.iter().cloned());
+    static_user_function_call_value(functions, func_id, &lowered_args, span, locals)
+}
+
+fn static_value_to_expr(value: StaticValue) -> Option<LoweredExpr> {
+    match value {
+        StaticValue::Primitive(expr) => Some(expr),
+        StaticValue::Object(_)
+        | StaticValue::ObjectAlias(_)
+        | StaticValue::Array(_)
+        | StaticValue::Closure { .. }
+        | StaticValue::DateObject(_)
+        | StaticValue::Symbol(_) => None,
+    }
+}
+
 fn apply_static_user_function_env_effects(
     functions: &[LoweredFunction],
     func_id: FuncId,
@@ -3137,6 +3251,7 @@ fn static_string_value_from_expr_with_functions(
         StaticValue::Object(_)
         | StaticValue::ObjectAlias(_)
         | StaticValue::Array(_)
+        | StaticValue::Closure { .. }
         | StaticValue::DateObject(_)
         | StaticValue::Symbol(_) => None,
         StaticValue::Primitive(_) => None,
@@ -3251,6 +3366,7 @@ fn static_array_from_expr_with_functions(
         StaticValue::Object(_)
         | StaticValue::ObjectAlias(_)
         | StaticValue::Primitive(_)
+        | StaticValue::Closure { .. }
         | StaticValue::DateObject(_)
         | StaticValue::Symbol(_) => None,
     }
@@ -3268,6 +3384,7 @@ fn static_object_keys_from_expr_with_functions(
         }
         StaticValue::Array(_)
         | StaticValue::Primitive(_)
+        | StaticValue::Closure { .. }
         | StaticValue::DateObject(_)
         | StaticValue::Symbol(_) => None,
     }
@@ -3451,21 +3568,6 @@ fn static_number_property_key(value: i32) -> String {
         "0".to_owned()
     } else {
         value.to_string()
-    }
-}
-
-fn static_primitive_expr_from_expr_with_functions(
-    expr: &LoweredExpr,
-    locals: &HashMap<LocalId, StaticValue>,
-    functions: &[LoweredFunction],
-) -> Option<LoweredExpr> {
-    match static_value_from_expr_with_functions(expr, locals, functions)? {
-        StaticValue::Primitive(expr) => Some(expr),
-        StaticValue::Object(_)
-        | StaticValue::ObjectAlias(_)
-        | StaticValue::Array(_)
-        | StaticValue::DateObject(_)
-        | StaticValue::Symbol(_) => None,
     }
 }
 

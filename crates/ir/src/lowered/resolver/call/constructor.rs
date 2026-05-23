@@ -3,6 +3,7 @@ use crate::lowered::facts::{HostExternalKind, ProxyTrapKind};
 use crate::lowered::*;
 use crate::name_resolver::INTRINSIC_FUNCTION_CONSTRUCTOR_NEW;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
+use ts2wasm_runtime_abi::ValueTag;
 use ts2wasm_source::Span;
 
 impl super::super::Resolver {
@@ -152,7 +153,10 @@ impl super::super::Resolver {
             if is_invalid_date {
                 return Ok(LoweredExpr::RuntimeCall {
                     intrinsic: RuntimeFn::DateNew,
-                    args: vec![LoweredExpr::Number(0, Span::generated("num"))],
+                    args: vec![LoweredExpr::Number(
+                        ValueTag::NAN_PAYLOAD << ValueTag::NUMBER_SHIFT | ValueTag::NUMBER,
+                        Span::generated("nan"),
+                    )],
 
                     span: Span::generated("runtime_call"),
                 });

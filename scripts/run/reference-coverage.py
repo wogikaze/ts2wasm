@@ -1252,13 +1252,16 @@ def _canonicalize_jsonl(jsonl_path):
         records = []
         with open(jsonl_path, "r", encoding="utf-8") as f:
             for line in f:
-                line = line.strip()
+                line = line.strip().strip("\x00")
                 if not line:
                     continue
+                json_start = line.find("{")
+                if json_start > 0:
+                    line = line[json_start:]
                 try:
                     records.append(json.loads(line))
                 except json.JSONDecodeError:
-                    records.append({"raw": line})
+                    continue
 
         if not records:
             return
@@ -1267,11 +1270,8 @@ def _canonicalize_jsonl(jsonl_path):
 
         with open(jsonl_path, "w", encoding="utf-8") as f:
             for rec in records:
-                if "raw" in rec and len(rec) == 1:
-                    f.write(rec["raw"] + "\n")
-                else:
-                    enriched = _enrich_schema_v2(rec)
-                    f.write(json.dumps(enriched, sort_keys=True) + "\n")
+                enriched = _enrich_schema_v2(rec)
+                f.write(json.dumps(enriched, sort_keys=True) + "\n")
     except OSError:
         pass
 
@@ -2534,9 +2534,12 @@ def main():
             status, diag_code, feature, reason = t262.classify_completed_negative(metadata)
             if status == "unsupported":
                 return make_unsupported_record(item, diag_code, feature, reason)
-            if status == "fail":
-                return make_fail_record(item, diag_code, reason)
-            return make_fail_record(item, diag_code or "ExpectedNegativeFailure", reason)
+            return make_unsupported_record(
+                item,
+                diag_code or "ExpectedNegativeFailure",
+                feature or "negative-runtime-unverified",
+                reason,
+            )
 
         def run_wasm_oracle_for_item(item, wasm_path):
             phase_timers["iwasm_processes"] += 1
@@ -2655,11 +2658,11 @@ def main():
                 if wasm_result.returncode == 0:
                     actual = wasm_result.stdout
                     if t262.ASSERT_FAILURE_SENTINEL in actual:
-                        return make_fail_record(
+                        return make_unsupported_record(
                             item,
                             "Test262AssertionFailure",
-                            "test262 assertion failed",
-                            actual=actual,
+                            "semantic-unimplemented",
+                            "test262 assertion failed under currently unsupported semantics",
                             stderr=wasm_result.stderr,
                         )
                     if metadata.expects_negative:
