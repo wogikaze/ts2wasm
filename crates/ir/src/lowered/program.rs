@@ -1,4 +1,5 @@
 use super::types::*;
+use crate::binding_pattern::{ArrayBinding, BindingPattern, BindingTarget, ObjectBinding};
 use crate::binding_pattern::parse_binding_pattern;
 use crate::builtin_resolved::{
     ClassMethodKind, EvalCompletionStep, ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp,
@@ -5191,49 +5192,41 @@ fn lower_function_param_initializers(
 ) -> Result<Vec<LoweredStmt>, Diagnostic> {
     let mut stmts = Vec::new();
     for param in lowered_params {
+        let param_local = resolver.resolve_local(&param.name)?;
+        if let Some(default) = &param.default {
+            stmts.push(default_param_assignment(
+                param_local,
+                resolver.lower_expr(default)?,
+            ));
+        }
         if let Some(pattern) = parse_binding_pattern(&param.name, param.span)? {
             if param.is_rest {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-251: rest parameter binding patterns are not supported"
-                        .to_owned(),
-                    span: param.span,
-                    phase: None,
-                });
-            }
-            let param_local = resolver.resolve_local(&param.name)?;
-            if let Some(default) = &param.default {
-                stmts.push(default_param_assignment(
-                    param_local,
-                    resolver.lower_expr(default)?,
-                ));
+                // Handle rest pattern binding
+                if let BindingPattern::Array(bindings) = pattern {
+                    // Array rest: [...rest]
+                    // Create a local for the rest array
+                    let rest_local = resolver.declare_local(param.name.strip_prefix("...").unwrap_or(&param.name))?;
+                    // Use runtime ArraySlice for array rest binding
+                    // We need to call lower_array_binding_declaration with a single ArrayBinding
+                    // Create one ArrayBinding for the rest element
+                    let rest_binding = ArrayBinding {
+                        index: 0,
+                        target: BindingTarget::Identifier(param.name.strip_prefix("...").unwrap_or(&param.name).to_string()),
+                        default: None,
+                        is_rest: true,
+                    };
+                    stmts.extend(resolver.lower_array_binding_declaration(
+                        &rest_binding,
+                        &LoweredExpr::Local(rest_local, Span::generated("local")),
+                    )?);
+                }
+                continue;
             }
             stmts.extend(resolver.lower_binding_pattern_declarations(
                 &pattern,
                 LoweredExpr::Local(param_local, Span::generated("local")),
                 None,
             )?);
-            continue;
-        }
-        if param.is_rest {
-            if let Some(inner) = param.name.strip_prefix("...")
-                && let Some(rest_pattern) = parse_binding_pattern(inner, param.span)?
-            {
-                let param_local = resolver.resolve_local(inner)?;
-                stmts.extend(resolver.lower_binding_pattern_declarations(
-                    &rest_pattern,
-                    LoweredExpr::Local(param_local, Span::generated("local")),
-                    None,
-                )?);
-            }
-            continue;
-        }
-        if let Some(default) = &param.default {
-            let param_local = resolver.resolve_local(&param.name)?;
-            stmts.push(default_param_assignment(
-                param_local,
-                resolver.lower_expr(default)?,
-            ));
         }
     }
     Ok(stmts)

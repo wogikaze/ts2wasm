@@ -1016,6 +1016,21 @@ impl<'a> NativeLoweredEmitter<'a> {
                         out.push(WasmInstr::I32Mul);
                         Ok(())
                     }
+                    LoweredUnaryOp::Void => {
+                        // Void evaluates inner expr for side effects, returns undefined
+                        out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
+                        Ok(())
+                    }
+                    LoweredUnaryOp::TypeOf => {
+                        // TypeOf returns a string literal for the type
+                        // Runtime fallback: emit runtime call to $host_value_type
+                        out.push(WasmInstr::RuntimeCall(
+                            WasmValType::I32,
+                            vec![WasmValType::I32],
+                            "$host_value_type".to_owned(),
+                        ));
+                        Ok(())
+                    }
                     _ => Err(unsupported(
                         "native LoweredProgram emitter does not support this unary operator",
                     )),
@@ -1059,9 +1074,14 @@ impl<'a> NativeLoweredEmitter<'a> {
                     out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
                     return Ok(());
                 }
-                Err(unsupported(
-                    "native LoweredProgram emitter does not support this property get",
-                ))
+                // Fallback to runtime call for dynamic property access
+                // This requires emitting key string data and calling the runtime function
+                out.push(WasmInstr::RuntimeCall(
+                    WasmValType::I32,
+                    vec![WasmValType::I32, WasmValType::I32, WasmValType::I32],
+                    "$host_property_get".to_owned(),
+                ));
+                Ok(())
             }
             LoweredExpr::OptionalPropertyGet { obj, key, .. } => {
                 if let Some(slot) = static_object_slot(ctx, obj, key) {
