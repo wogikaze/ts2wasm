@@ -530,6 +530,7 @@ fn collect_dynamic_import_specifiers_stmt(stmt: &Stmt, specifiers: &mut Vec<Modu
             }
         }
         Stmt::Let { expr, .. }
+        | Stmt::Using { expr, .. }
         | Stmt::Assign { expr, .. }
         | Stmt::Expr { expr, .. }
         | Stmt::ExportDefault { expr, .. }
@@ -815,6 +816,7 @@ fn collect_dynamic_import_specifiers_expr(expr: &Expr, specifiers: &mut Vec<Modu
         | Expr::This { .. }
         | Expr::NewTarget { .. }
         | Expr::ImportMeta { .. } => {}
+        Expr::Topic { .. } => {}
     }
 }
 

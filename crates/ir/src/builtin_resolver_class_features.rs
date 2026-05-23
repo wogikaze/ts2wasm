@@ -346,7 +346,8 @@ pub(super) fn stmt_contains_return_stmt(stmt: &Stmt) -> bool {
         | Stmt::Expr { .. }
         | Stmt::Throw { .. }
         | Stmt::Break { .. }
-        | Stmt::Continue { .. } => false,
+        | Stmt::Continue { .. }
+        | Stmt::Using { .. } => false,
     }
 }
 
@@ -466,6 +467,7 @@ pub(super) fn validate_static_block_stmt(stmt: &Stmt) -> Result<(), Diagnostic> 
             validate_static_block_expr(iter)?;
             validate_static_block_stmts(body)
         }
+        Stmt::Using { expr, .. } => validate_static_block_expr(expr),
         Stmt::Labeled { body, .. } => validate_static_block_stmt(body),
         Stmt::Break { .. }
         | Stmt::Continue { .. }
@@ -626,7 +628,8 @@ pub(super) fn validate_static_block_expr(expr: &Expr) -> Result<(), Diagnostic> 
         | Expr::Null { .. }
         | Expr::Undefined { .. }
         | Expr::PrivateIdent { .. }
-        | Expr::Ident { .. } => Ok(()),
+        | Expr::Ident { .. }
+        | Expr::Topic { .. } => Ok(()),
     }
 }
 

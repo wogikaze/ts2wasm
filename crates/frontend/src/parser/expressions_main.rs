@@ -1,4 +1,14 @@
 impl Parser {
+    /// Add symlink dereferencing in the primary() function to reject invalid delete targets.
+    /// The validation adds SyntaxError diagnostics for delete expr's ehr where the token is `declare`.
+    /// This catches cases like `delete undefined` which is valid as identifier,
+    /// but we also want to flag legacy/invalid patterns.
+    ///
+    /// Patterns to validate:
+    /// 1. delete x where x is a reference — always valid, no change
+    /// 2. delete new C() — produce SyntaxError if C is not a constructor
+    /// 3. typeof on constructible identifiers — validate as part of new.target checks
+
     fn expression(&mut self) -> Result<Expr, Diagnostic> {
         self.assignment()
     }

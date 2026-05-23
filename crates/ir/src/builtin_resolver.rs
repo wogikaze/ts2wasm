@@ -1442,6 +1442,7 @@ impl BigIntStaticBuiltinFolder {
             | Expr::This { .. }
             | Expr::NewTarget { .. }
             | Expr::PrivateIdent { .. }
+            | Expr::Topic { .. }
             | Expr::Ident { .. } => expr.clone(),
         }
     }
@@ -1672,6 +1673,16 @@ fn resolve_stmt_with_outer_bindings(
         // (lower_static_named_import_bindings_for_build) before reaching the resolver.
         // They are still listed in the catch-all below for exhaustive matching and dump paths.
         Stmt::Let { name, expr, span, is_var: _ } => {
+            if let Some(pattern) = parse_binding_pattern(name, Some(*span))? {
+                Ok(ResolvedStmt::DestructureLet {
+                    pattern,
+                    expr: resolve_expr(expr)?,
+                })
+            } else {
+                Ok(ResolvedStmt::Let(name.clone(), resolve_expr(expr)?))
+            }
+        }
+        Stmt::Using { name, expr, span, .. } => {
             if let Some(pattern) = parse_binding_pattern(name, Some(*span))? {
                 Ok(ResolvedStmt::DestructureLet {
                     pattern,
@@ -2178,6 +2189,12 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             delegate: *delegate,
         }),
         Expr::Ident { name, .. } => Ok(ResolvedExpr::Ident(name.clone())),
+        Expr::Topic { span } => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "pipeline topic references are not supported in this milestone".to_owned(),
+            span: Some(*span),
+            phase: None,
+        }),
         Expr::InstanceOf {
             expr, type_expr, ..
         } => Ok(ResolvedExpr::Binary {

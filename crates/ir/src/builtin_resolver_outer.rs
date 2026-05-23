@@ -36,6 +36,9 @@ pub(super) fn collect_stmt_declared_bindings(
         | Stmt::EnumDecl { name, .. } => {
             bindings.insert(name.clone());
         }
+        Stmt::Using { name, span, .. } => {
+            collect_binding_names(name, Some(*span), bindings)?;
+        }
         Stmt::TypeAlias { .. } | Stmt::InterfaceDecl { .. } => {}
         Stmt::TryCatch {
             catch_param,
@@ -353,6 +356,16 @@ pub(super) fn first_outer_local_reference_in_stmt(
                     )
                 })
         }
+        Stmt::Using { name, expr, span, .. } => {
+            reference_if_outer(name, *span, outer_bindings, method_locals).or_else(|| {
+                first_outer_local_reference_in_expr(
+                    expr,
+                    outer_bindings,
+                    method_locals,
+                    class_names,
+                )
+            })
+        }
         Stmt::TryCatch {
             try_block,
             catch_block,
@@ -660,7 +673,10 @@ pub(super) fn first_outer_local_reference_in_expr(
         | Expr::Null { .. }
         | Expr::Undefined { .. }
         | Expr::This { .. } => None,
-        Expr::NewTarget { .. } | Expr::ImportMeta { .. } | Expr::PrivateIdent { .. } => None,
+        Expr::NewTarget { .. }
+        | Expr::ImportMeta { .. }
+        | Expr::PrivateIdent { .. }
+        | Expr::Topic { .. } => None,
     }
 }
 

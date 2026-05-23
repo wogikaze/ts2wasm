@@ -405,6 +405,10 @@ var NaN = 0/0;
 var Infinity = 1/0;
 """
 
+WASM_HARNESS_GLOBAL_PATTERN = re.compile(
+    r"(\$262\b|\$DONE\b|\$DETACHBUFFER\b|\bassert\b|\bTest262Error\b|\bprint\s*\(|\bfnGlobalObject\b|\bisPrimitive\b)"
+)
+
 INLINE_DETACHARRAYBUFFER_JS = r"""
 function $DETACHBUFFER(buffer) {
   if (!$262 || typeof $262.detachArrayBuffer !== "function") {
@@ -609,6 +613,25 @@ def build_test262_source(test_file, source_code, metadata, target="wasm"):
     if metadata.raw:
         return source_code
     case_source = source_code
+
+    if (
+        target == "wasm"
+        and not metadata.includes
+        and not metadata.expects_negative
+        and not WASM_HARNESS_GLOBAL_PATTERN.search(case_source)
+    ):
+        chunks = []
+        if "onlyStrict" in metadata.flags:
+            chunks.append('"use strict";')
+        chunks.append("\n/* standard globals shim */\n")
+        chunks.append(WASM_GLOBALS)
+        try:
+            display_path = test_file.resolve().relative_to(REPO_ROOT)
+        except ValueError:
+            display_path = test_file
+        chunks.append(f"\n/* test262 case: {display_path} */\n")
+        chunks.append(case_source)
+        return "\n".join(chunks)
 
     chunks = []
     if "onlyStrict" in metadata.flags:

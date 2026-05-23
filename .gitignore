@@ -60,3 +60,4 @@ issue-views/
 
 # APM dependencies
 apm_modules/
+target-main-check/

@@ -153,6 +153,15 @@ pub(crate) fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
         Stmt::Let { name, expr, .. } => {
             let _ = writeln!(out, "let {name} = {};", unparse_expr(expr));
         }
+        Stmt::Using {
+            name,
+            expr,
+            is_async,
+            ..
+        } => {
+            let keyword = if *is_async { "await using" } else { "using" };
+            let _ = writeln!(out, "{keyword} {name} = {};", unparse_expr(expr));
+        }
         Stmt::AmbientValueDecl { .. } => {}
         Stmt::Assign { name, expr, .. } => {
             let _ = writeln!(out, "{name} = {};", unparse_expr(expr));
@@ -645,6 +654,7 @@ pub(crate) fn unparse_expr(expr: &Expr) -> String {
             let parts: Vec<String> = exprs.iter().map(unparse_expr).collect();
             parts.join(", ")
         }
+        Expr::Topic { .. } => "%".to_owned(),
     }
 }
 
@@ -724,6 +734,7 @@ fn binary_op_text(op: BinaryOp) -> &'static str {
         BinaryOp::LeftShift => "<<",
         BinaryOp::RightShift => ">>",
         BinaryOp::UnsignedRightShift => ">>>",
+        BinaryOp::Pipeline => "|>",
         BinaryOp::In => "in",
         BinaryOp::InstanceOf => "instanceof",
     }

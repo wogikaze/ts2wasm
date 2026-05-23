@@ -150,6 +150,35 @@ fn validate_stmt(
             }
             Ok(())
         }
+        Stmt::Using {
+            name, span, is_async: _, ..
+        } => {
+            let is_empty_pattern = name == "{}" || name == "[]";
+            if !is_empty_pattern {
+                if in_top_level && top_functions.contains_key(name) {
+                    return Err(Diagnostic {
+                        code: DiagCode::DuplicateLocal,
+                        message: format!(
+                            "top-level lexical binding `{name}` conflicts with function declaration (TS2300: duplicate identifier)"
+                        ),
+                        span: Some(*span),
+                        phase: None,
+                    });
+                }
+                if scope.contains_key(name) {
+                    return Err(Diagnostic {
+                        code: DiagCode::DuplicateLocal,
+                        message: format!(
+                            "duplicate identifier: `{name}` (TS2300: duplicate identifier)"
+                        ),
+                        span: Some(*span),
+                        phase: None,
+                    });
+                }
+                scope.insert(name.clone(), false);
+            }
+            Ok(())
+        }
         Stmt::Return { span, .. } if in_top_level => Err(Diagnostic {
             code: DiagCode::InvalidTopLevelReturn,
             message: "top-level return is not supported".to_owned(),

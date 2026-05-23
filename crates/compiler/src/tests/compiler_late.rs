@@ -136,6 +136,37 @@ fn build_file_fails_when_native_binary_backend_rejects_program() {
 }
 
 #[test]
+fn multi_section_build_writes_binary_without_wat2wasm_fallback() {
+    use std::sync::atomic::Ordering;
+
+    crate::io::write_output::WAT2WASM_FALLBACK_COUNT.store(0, Ordering::Relaxed);
+
+    let dir = unique_temp_dir("multi-section-no-wat2wasm-fallback");
+    std::fs::create_dir_all(&dir).expect("temp dir should be created");
+    let input = dir.join("entry.ts");
+    let output = dir.join("out.wasm");
+    let source = r#"
+// @Filename: dep.ts
+export const value = 42;
+
+// @Filename: entry.ts
+console.log(42);
+"#;
+    std::fs::write(&input, source).expect("multi-section source should be written");
+
+    build_file(&input, &output).expect("multi-section build should succeed");
+    let bytes = std::fs::read(&output).expect("wasm output should be written");
+    assert_eq!(&bytes[..4], b"\0asm");
+    assert_eq!(
+        crate::io::write_output::WAT2WASM_FALLBACK_COUNT.load(Ordering::Relaxed),
+        0,
+        "multi-section build should not use wat2wasm fallback"
+    );
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn parses_program_with_line_comment_prefix() {
     let program = parse_program("// lead comment\nconsole.log(1);").unwrap();
     assert_eq!(program.len(), 1);
@@ -1244,7 +1275,10 @@ fn array_push_grow_emits_dedicated_helper_boundary() {
     assert!(wat.contains("(call $alloc_heap"));
     assert!(wat.contains("(call $copy"));
 
-    let wasm_bytes = backend::emit_wasm_binary_with_wat_debug_fallback(&v)
-        .expect("array push helper should emit debug fallback wasm");
-    assert_eq!(&wasm_bytes[..4], b"\0asm");
+    let debug_err = backend::emit_wasm_binary_with_wat_debug_fallback(&v)
+        .expect_err("debug fallback should not rescue unsupported native shapes");
+    assert_eq!(
+        debug_err.code,
+        ts2wasm_diagnostic::DiagCode::UnsupportedSyntax
+    );
 }

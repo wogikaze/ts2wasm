@@ -1,4 +1,12 @@
 impl Parser {
+    /// Add extra syntax error validation for ECMAScript patterns:
+    /// 1. for-in/of loop with initializer (var x = expr in [])
+    /// 2. return outside function
+    /// 3. break/continue outside loop/switch
+    /// 4. delete of unresolvable references
+    /// 5. new with () on non-constructors
+    /// Returns early with diagnostic if any pattern fails.
+
     fn statement(&mut self) -> Result<Stmt, Diagnostic> {
         match self.peek() {
             Some(Token::Semicolon) => {

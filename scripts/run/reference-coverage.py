@@ -2453,6 +2453,8 @@ def main():
                 return True
             if node_oracle_policy in ("never", "0", "false", "no"):
                 return False
+            if paths_file:
+                return True
             if actual:
                 return True
             source = item.get("source_code", "")
