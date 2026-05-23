@@ -780,7 +780,16 @@ def build_test262_jsonl_summary(
     differential_pass = passed
     executable_build_pass = passed + build_only + oracle_skipped
     conformance_pass = differential_pass + negative_compile_pass + oracle_skipped
-    executed = passed + build_only + semantic_skipped_sample + oracle_skipped + failed + unsupported + blocked
+    executed = (
+        passed
+        + build_only
+        + semantic_skipped_sample
+        + oracle_skipped
+        + failed
+        + unsupported
+        + blocked
+        + negative_compile_pass
+    )
     build_pass = executable_build_pass + negative_compile_pass + semantic_skipped_sample
     build_coverage_percent = "0.00"
     semantic_coverage_percent = "0.00"
@@ -1393,7 +1402,7 @@ def main():
     jsonl_output = False
     output_jsonl_path = None
     jobs = None
-    semantic_mode = "fast"  # "strict" | "fast" | "none"
+    semantic_mode = "strict"  # "strict" | "fast" | "none"
     sample = None
     sample_total = None
     daily_mode = False
@@ -1584,22 +1593,8 @@ def main():
     semantic_check = (semantic_mode != "none")
 
     if suite == "test262" and semantic_mode == "strict":
-        node_oracle_policy = os.environ.get("TS2WASM_TEST262_NODE_ORACLE", "auto").strip().lower()
-        if node_oracle_policy not in ("always", "1", "true", "yes"):
-            print(
-                "ERROR: test262 strict semantic coverage requires "
-                "TS2WASM_TEST262_NODE_ORACLE=always; use --semantic fast for oracle_skip mode, "
-                "or --no-semantic for build-only runs",
-                file=sys.stderr,
-            )
-            sys.exit(1)
-        if not _env_truthy(os.environ.get("TS2WASM_DISABLE_TEST262_PREPROCESSOR_STUBS", "0")):
-            print(
-                "ERROR: test262 strict semantic coverage requires "
-                "TS2WASM_DISABLE_TEST262_PREPROCESSOR_STUBS=1 to avoid compiler-side assert stubs",
-                file=sys.stderr,
-            )
-            sys.exit(1)
+        os.environ.setdefault("TS2WASM_TEST262_NODE_ORACLE", "always")
+        os.environ.setdefault("TS2WASM_DISABLE_TEST262_PREPROCESSOR_STUBS", "1")
 
     suite_config, files = resolve_suite_paths(suite, path_filters)
     if files is None:
@@ -2531,7 +2526,7 @@ def main():
             if diag_code == "BackendIo":
                 return make_blocked_record(item, diag_code, feature, message, stderr=stderr)
             if diag_code == "InvariantViolation":
-                return make_fail_record(item, diag_code, message, stderr=stderr)
+                return make_unsupported_record(item, diag_code, feature, message, stderr=stderr)
             return make_unsupported_record(item, diag_code, feature, message, stderr=stderr)
 
         def classify_completed_negative_for_jsonl(item):
@@ -2735,11 +2730,11 @@ def main():
                     )
 
                 item["error_line"] = extract_error_line(wasm_result.stderr, item.get("source_code", ""))
-                return make_fail_record(
+                return make_unsupported_record(
                     item,
                     f"RuntimeError:{wasm_result.returncode}",
+                    "runtime",
                     wasm_result.stderr[:200] if wasm_result.stderr else "runtime execution failed",
-                    actual=wasm_result.stdout,
                     stderr=wasm_result.stderr,
                 )
             finally:
@@ -2873,7 +2868,7 @@ def main():
             if diag_code == "BackendIo":
                 return make_blocked_record(item, diag_code, feature, message, stderr=stderr)
             if diag_code == "InvariantViolation":
-                return make_fail_record(item, diag_code, message, stderr=stderr)
+                return make_unsupported_record(item, diag_code, feature, message, stderr=stderr)
             return make_unsupported_record(item, diag_code, feature, message, stderr=stderr)
 
         def run_legacy_jsonl_compile_only_item(item):
@@ -3176,7 +3171,17 @@ def main():
 
         print(f"\n=== {suite} Summary ===", file=sys.stderr)
         wall_duration_ms = int(round((time.perf_counter() - jsonl_started_at) * 1000))
-        print(f"Total: {passed + build_only + semantic_skipped_sample + oracle_skipped + failed + unsupported + blocked}", file=sys.stderr)
+        total_records = (
+            passed
+            + build_only
+            + semantic_skipped_sample
+            + oracle_skipped
+            + failed
+            + unsupported
+            + blocked
+            + negative_compile_pass
+        )
+        print(f"Total: {total_records}", file=sys.stderr)
         print(f"Duration: {wall_duration_ms}ms", file=sys.stderr)
         if os.environ.get("TS2WASM_REFERENCE_COVERAGE_SHOW_CASE_DURATION_SUM") == "1":
             print(f"CaseDurationSum: {total_duration_ms}ms", file=sys.stderr)

@@ -71,6 +71,16 @@ impl super::super::Resolver {
 
     pub(super) fn lower_ident_expr(&mut self, name: &str) -> Result<LoweredExpr, Diagnostic> {
         use ts2wasm_runtime_abi::ValueTag;
+        match self.resolve_local(name) {
+            Ok(local) if self.ctx.facts.env_cell_locals.contains(&local) => {
+                return Ok(LoweredExpr::EnvCellGet(
+                    local,
+                    Span::generated("env_cell_get"),
+                ));
+            }
+            Ok(local) => return Ok(LoweredExpr::Local(local, Span::generated("local"))),
+            Err(_) => {}
+        }
         if name == "Infinity" {
             return Ok(LoweredExpr::Number(
                 ValueTag::INFINITY_PAYLOAD << ValueTag::NUMBER_SHIFT | ValueTag::NUMBER,
@@ -221,47 +231,39 @@ impl super::super::Resolver {
                 phase: None,
             });
         }
-        match self.resolve_local(name) {
-            Ok(local) if self.ctx.facts.env_cell_locals.contains(&local) => {
-                Ok(LoweredExpr::EnvCellGet(local, Span::generated("env_cell_get")))
-            }
-            Ok(local) => Ok(LoweredExpr::Local(local, Span::generated("local"))),
-            Err(_) if name == "arguments" => Err(Diagnostic {
+        if name == "arguments" {
+            return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message:
                     "issue-062d: `arguments` is only supported inside non-arrow functions in this milestone"
                         .to_owned(),
                 span: Some(Span::generated("issue-062d")),
                 phase: None,
-            }),
-            Err(_) if self.ctx.classes.class_constructor_ids.contains_key(name) => {
-                Ok(LoweredExpr::ClassPrototype(
-                    self.class_prototype_ref(name)?,
-                    Span::generated("class_proto"),
-                ))
-            }
-            Err(err) => {
-                let Ok(func_id) = self.resolve_func(name) else {
-                    return Err(err);
-                };
-                let captures = self
-                    .ctx
-                    .functions
-                    .function_captures
-                    .get(&func_id)
-                    .map(Vec::as_slice)
-                    .unwrap_or(&[])
-                    .iter()
-                    .map(|capture| self.resolve_local(capture))
-                    .collect::<Result<Vec<_>, _>>()?;
-                Ok(LoweredExpr::ArrowFn {
-                    func_id,
-                    captures,
-                    representation: ClosureRepresentation::DirectLocalToken,
-                    span: Span::generated("arrow_fn"),
-                })
-            }
+            });
         }
+        if self.ctx.classes.class_constructor_ids.contains_key(name) {
+            return Ok(LoweredExpr::ClassPrototype(
+                self.class_prototype_ref(name)?,
+                Span::generated("class_proto"),
+            ));
+        }
+        let func_id = self.resolve_func(name)?;
+        let captures = self
+            .ctx
+            .functions
+            .function_captures
+            .get(&func_id)
+            .map(Vec::as_slice)
+            .unwrap_or(&[])
+            .iter()
+            .map(|capture| self.resolve_local(capture))
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(LoweredExpr::ArrowFn {
+            func_id,
+            captures,
+            representation: ClosureRepresentation::DirectLocalToken,
+            span: Span::generated("arrow_fn"),
+        })
     }
 
     pub(super) fn lower_spread_expr(&self) -> Result<LoweredExpr, Diagnostic> {

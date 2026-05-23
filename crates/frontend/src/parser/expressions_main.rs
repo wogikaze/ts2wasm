@@ -530,7 +530,7 @@ impl Parser {
                 start: start_span.start,
                 end,
             },
-            source_text: self.source[start_span.start..end].to_owned(),
+            source_text: self.source_text_slice(start_span.start, end),
         })
     }
 
@@ -704,7 +704,7 @@ impl Parser {
             body: Box::new(body),
             body_stmts,
             span: Span::generated("arrow"),
-            source_text: self.source[start_span.start..end].to_owned(),
+            source_text: self.source_text_slice(start_span.start, end),
         })
     }
 
@@ -2487,7 +2487,7 @@ impl Parser {
                         start: accessor_start,
                         end,
                     },
-                    source_text: self.source[accessor_start..end].to_owned(),
+                    source_text: self.source_text_slice(accessor_start, end),
                 };
                 ObjectProp::MethodShorthand { key, value: expr }
             }
@@ -2502,7 +2502,7 @@ impl Parser {
                         start: accessor_start,
                         end,
                     },
-                    source_text: self.source[accessor_start..end].to_owned(),
+                    source_text: self.source_text_slice(accessor_start, end),
                 };
                 ObjectProp::ComputedKey {
                     key: Box::new(key),
@@ -2590,7 +2590,7 @@ impl Parser {
                 start: method_start,
                 end,
             },
-            source_text: self.source[method_start..end].to_owned(),
+            source_text: self.source_text_slice(method_start, end),
         }))
     }
 
@@ -2649,7 +2649,7 @@ impl Parser {
                     start: start.start,
                     end,
                 },
-                source_text: self.source[start.start..end].to_owned(),
+                source_text: self.source_text_slice(start.start, end),
             });
         }
         let prev_strict_mode = self.strict_mode;
@@ -2677,7 +2677,7 @@ impl Parser {
                 start: start.start,
                 end,
             },
-            source_text: self.source[start.start..source_end].to_owned(),
+            source_text: self.source_text_slice(start.start, source_end),
         })
     }
 

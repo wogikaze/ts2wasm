@@ -543,12 +543,12 @@ impl Parser {
                     is_generator,
                     is_async,
                     is_ambient: false,
-                overload_signature: false,
+                    overload_signature: false,
                     span: Span {
                         start: method_span.start,
                         end: method_span.end,
                     },
-                    source_text: self.source[method_span.start..method_span.end].to_owned(),
+                    source_text: self.source_text_slice(method_span.start, method_span.end),
                 });
                 continue;
             }
@@ -585,7 +585,7 @@ impl Parser {
                     start: method_span.start,
                     end: method_end,
                 },
-                source_text: self.source[method_span.start..method_end].to_owned(),
+                source_text: self.source_text_slice(method_span.start, method_end),
             });
         }
 

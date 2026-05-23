@@ -100,6 +100,18 @@ fn desugar_destructured_params(
 }
 
 impl Parser {
+    fn source_text_slice(&self, start: usize, end: usize) -> String {
+        if start <= end
+            && end <= self.source.len()
+            && self.source.is_char_boundary(start)
+            && self.source.is_char_boundary(end)
+        {
+            self.source[start..end].to_owned()
+        } else {
+            String::new()
+        }
+    }
+
     fn check_duplicate_params(
         &self,
         params: &[(String, Option<Expr>, bool)],

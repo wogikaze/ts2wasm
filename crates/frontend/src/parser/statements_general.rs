@@ -1456,7 +1456,7 @@ impl Parser {
                     start: start.start,
                     end: start.end,
                 },
-                source_text: self.source[start.start..start.end].to_owned(),
+                source_text: self.source_text_slice(start.start, start.end),
             });
         }
         let prev_strict_mode = self.strict_mode;
@@ -1485,7 +1485,7 @@ impl Parser {
                 start: start.start,
                 end,
             },
-            source_text: self.source[start.start..source_end].to_owned(),
+            source_text: self.source_text_slice(start.start, source_end),
         })
     }
 
@@ -1543,7 +1543,7 @@ impl Parser {
                 start: start.start,
                 end,
             },
-            source_text: self.source[start.start..source_end].to_owned(),
+            source_text: self.source_text_slice(start.start, source_end),
         })
     }
 
@@ -1594,7 +1594,7 @@ impl Parser {
                     start: async_span.start,
                     end,
                 },
-                source_text: self.source[async_span.start..end].to_owned(),
+                source_text: self.source_text_slice(async_span.start, end),
             });
         }
         let (name, _) = self.expect_binding_ident()?;
@@ -1656,7 +1656,7 @@ impl Parser {
                 start: async_span.start,
                 end,
             },
-            source_text: self.source[async_span.start..source_end].to_owned(),
+            source_text: self.source_text_slice(async_span.start, source_end),
         })
     }
 

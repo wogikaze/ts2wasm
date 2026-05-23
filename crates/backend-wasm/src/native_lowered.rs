@@ -1126,6 +1126,14 @@ impl<'a> NativeLoweredEmitter<'a> {
                     "native LoweredProgram emitter does not support this dynamic property set",
                 ))
             }
+            LoweredExpr::RuntimeCall { .. } | LoweredExpr::PromiseGetValue { .. } => {
+                if self.try_emit_static_value_expr(expr, ctx, out)? {
+                    return Ok(());
+                }
+                Err(unsupported(
+                    "native LoweredProgram emitter does not support this expression",
+                ))
+            }
             LoweredExpr::Call { kind, args, .. } => {
                 match kind {
                     FunctionCallKind::User(id) => {
@@ -1151,6 +1159,38 @@ impl<'a> NativeLoweredEmitter<'a> {
                 "native LoweredProgram emitter does not support this expression",
             )),
         }
+    }
+
+    fn try_emit_static_value_expr(
+        &mut self,
+        expr: &LoweredExpr,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<bool, Diagnostic> {
+        let Some(value) =
+            static_value_from_expr_with_functions(expr, &ctx.static_locals, &self.program.functions)
+        else {
+            return Ok(false);
+        };
+        match value {
+            StaticValue::Primitive(value) => match value {
+                LoweredExpr::Number(_, _)
+                | LoweredExpr::Bool(_, _)
+                | LoweredExpr::Null(_)
+                | LoweredExpr::Undefined(_)
+                | LoweredExpr::ArrowFn { .. } => self.emit_expr(&value, ctx, out)?,
+                LoweredExpr::String(_, _)
+                | LoweredExpr::DecimalNumber(_, _)
+                | LoweredExpr::BigIntLiteral { .. } => self.emit_static_primitive_token(&value, out),
+                _ => return Ok(false),
+            },
+            StaticValue::Object(_)
+            | StaticValue::ObjectAlias(_)
+            | StaticValue::Array(_)
+            | StaticValue::DateObject(_)
+            | StaticValue::Symbol(_) => out.push(WasmInstr::I32Const(STATIC_REF_TOKEN)),
+        }
+        Ok(true)
     }
 
     fn emit_logical_assign(
@@ -2740,6 +2780,11 @@ fn static_value_from_expr_with_functions(
             args,
             span,
         } => static_user_function_call_value(functions, *func_id, args, *span, locals),
+        LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::GlobalThis,
+            args,
+            ..
+        } if args.is_empty() => Some(StaticValue::Object(StaticObjectValue::from_props(&[]))),
         LoweredExpr::RuntimeCall {
             intrinsic: RuntimeFn::ArrayConcat,
             args,
