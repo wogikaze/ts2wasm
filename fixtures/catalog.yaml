@@ -225,8 +225,8 @@ directories:
     - console-complete.ts
     - console-log.ts
     - date-annexb-get-year.ts
-    - date-annexb-set-year-unsupported.ts
-    - date-annexb-to-gmt-string-unsupported.ts
+    - date-annexb-set-year.ts
+    - date-annexb-to-gmt-string.ts
     - date-complete.ts
     - date-epoch-constructor.ts
     - date-epoch-get-time.ts
@@ -445,11 +445,14 @@ directories:
     - string-at.ts
     - string-charcode-tostring-radix.ts
     - string-char-at.ts
+    - string-char-code-at-dynamic.ts
+    - string-char-code-at-dynamic-print.ts
     - string-char-code-at.ts
     - string-concat.ts
     - string-constructor-call.ts
     - string-ends-with.ts
     - string-from-char-code.ts
+    - string-from-code-point-dynamic.ts
     - string-from-code-point.ts
     - string-html-wrappers.ts
     - string-includes.ts
@@ -485,6 +488,7 @@ directories:
     - symbol-constructor-basic.ts
     - symbol-registry.ts
     - symbol-registry-identity.ts
+    - symbol-to-string.ts
     - test-math-pow.ts
     - test-set-samevaluezero.ts
     - typedarray-basic.ts
@@ -537,6 +541,7 @@ directories:
     - set-values.ts
     - shadowrealm-basic.ts
     - strict-mode-basic.ts
+    - string-code-point-at-dynamic.ts
     - string-code-point-at.ts
     - string-static.ts
     - temporal-now.ts
