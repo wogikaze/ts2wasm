@@ -16,6 +16,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "scripts" / "lib"))
+from native_runtime_builder_coverage import summarize_native_runtime_builder_coverage
 from path_env import resolve_env_path
 
 DEFAULT_COVERAGE_DIR = REPO_ROOT / "artifacts" / "coverage" / "results"
@@ -501,6 +502,7 @@ def build_coverage(artifacts):
         "unimplemented": unimplemented,
         "future": future,
         "byPriority": by_priority,
+        "native_runtime_builder_coverage": summarize_native_runtime_builder_coverage(),
         "suites": suites,
     }
 
@@ -634,6 +636,7 @@ def build_metadata(artifacts, jsonl_paths, generated_at, out_dir):
         "notes": [
             "Coverage totals are derived from artifacts/coverage/results/*.json.",
             "Per-case rows use artifacts/coverage/results/*-results.jsonl by default when available.",
+            "Native runtime builder coverage is derived from the RuntimeFn catalog and native emitter registry.",
         ],
     }
 

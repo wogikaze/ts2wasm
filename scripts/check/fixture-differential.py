@@ -27,6 +27,7 @@ Dependencies: python3, pyyaml, node, iwasm, ts2wasm binary
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -53,6 +54,222 @@ SMOKE_UNSUPPORTED_FIXTURES = [
 ]
 
 IWASM_TIMEOUT_SECONDS = 30
+IWASM_LINK_WARNING_RE = re.compile(
+    r"^\[[^\]\r\n]+]: warning: failed to link import function \([^)]+\)$"
+)
+LIVE_TIME_FIXTURES = {
+    "fixtures/builtins-and-io/date-noarg-live-time-unsupported.ts",
+    "fixtures/builtins-and-io/date-noarg-live-time.ts",
+    "fixtures/builtins-and-io/date-now-live-time-unsupported.ts",
+    "fixtures/builtins-and-io/date-now-live-time.ts",
+}
+NONDETERMINISTIC_RANDOM_FIXTURES = {
+    "fixtures/builtins-and-io/math-random.ts",
+}
+HOST_ENVIRONMENT_FIXTURES = {
+    "fixtures/node-apis/process-env.ts",
+}
+WASI_ARGV_FIXTURES = {
+    "fixtures/node-apis/process-argv.ts",
+}
+CONSOLE_TIMER_FIXTURES = {
+    "fixtures/builtins-and-io/console-complete.ts",
+    "fixtures/builtins-and-io/console-supplementary.ts",
+}
+CATALOG_ASSERTIONS: dict[str, dict] = {}
+NODE_BASELINE_ORACLES = {
+    "fixtures/builtins-and-io/bun-stdin-text.ts": {
+        "stdin": "hello",
+        "script": 'const s = require("fs").readFileSync(0, "utf8"); console.log(s);',
+    },
+}
+EXPECTED_REJECTION_FIXTURES = {
+    "fixtures/builtins-and-io/json-parse-incomplete-object.ts": {
+        "node": ("syntaxerror", "json"),
+        "iwasm": ("syntaxerror", "json.parse"),
+    },
+    "fixtures/builtins-and-io/json-parse-invalid-control-string-array.ts": {
+        "node": ("syntaxerror", "json"),
+        "iwasm": ("syntaxerror", "json.parse"),
+    },
+    "fixtures/builtins-and-io/json-parse-invalid-control-string-object.ts": {
+        "node": ("syntaxerror", "json"),
+        "iwasm": ("syntaxerror", "json.parse"),
+    },
+    "fixtures/builtins-and-io/json-parse-invalid-control-string.ts": {
+        "node": ("syntaxerror", "json"),
+        "iwasm": ("syntaxerror", "json.parse"),
+    },
+    "fixtures/builtins-and-io/json-parse-invalid-literal.ts": {
+        "node": ("syntaxerror", "json"),
+        "iwasm": ("syntaxerror", "json.parse"),
+    },
+    "fixtures/builtins-and-io/json-parse-invalid-number-incomplete-exponent.ts": {
+        "node": ("syntaxerror", "json"),
+        "iwasm": ("syntaxerror", "json.parse"),
+    },
+    "fixtures/builtins-and-io/json-parse-invalid-number-incomplete-fraction.ts": {
+        "node": ("syntaxerror", "json"),
+        "iwasm": ("syntaxerror", "json.parse"),
+    },
+    "fixtures/builtins-and-io/json-parse-invalid-number-incomplete-minus.ts": {
+        "node": ("syntaxerror", "json"),
+        "iwasm": ("syntaxerror", "json.parse"),
+    },
+    "fixtures/builtins-and-io/json-parse-invalid-number-leading-zero-array.ts": {
+        "node": ("syntaxerror", "json"),
+        "iwasm": ("syntaxerror", "json.parse"),
+    },
+    "fixtures/builtins-and-io/json-parse-invalid-number-leading-zero-object.ts": {
+        "node": ("syntaxerror", "json"),
+        "iwasm": ("syntaxerror", "json.parse"),
+    },
+    "fixtures/builtins-and-io/json-parse-invalid-number-leading-zero.ts": {
+        "node": ("syntaxerror", "json"),
+        "iwasm": ("syntaxerror", "json.parse"),
+    },
+    "fixtures/builtins-and-io/json-parse-invalid-unicode-escape.ts": {
+        "node": ("syntaxerror", "json"),
+        "iwasm": ("syntaxerror", "json.parse"),
+    },
+    "fixtures/builtins-and-io/json-parse-trailing-invalid.ts": {
+        "node": ("syntaxerror", "json"),
+        "iwasm": ("syntaxerror", "json.parse"),
+    },
+    "fixtures/builtins-and-io/proxy-reflect-unsupported-diagnostic.ts": {
+        "node": ("typeerror", "constructor"),
+        "iwasm": (),
+    },
+    "fixtures/core-semantics/bigint-builtin-unknown-invalid-string-runtime-trap.ts": {
+        "node": ("syntaxerror", "bigint"),
+        "iwasm": ("unreachable",),
+    },
+    "fixtures/core-semantics/bigint-mixed-arithmetic-typeerror-trap.ts": {
+        "node": ("typeerror", "cannot mix bigint"),
+        "iwasm": ("typeerror", "cannot mix bigint"),
+    },
+    "fixtures/core-semantics/bigint-runtime-div-zero-trap.ts": {
+        "node": ("rangeerror", "division by zero"),
+        "iwasm": ("rangeerror", "division by zero"),
+    },
+    "fixtures/core-semantics/bigint-runtime-mixed-typeerror-trap.ts": {
+        "node": ("typeerror", "cannot mix bigint"),
+        "iwasm": ("typeerror", "cannot mix bigint"),
+    },
+    "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-string-unsupported.ts": {
+        "node": ("typeerror", "cannot convert object to primitive value"),
+        "iwasm": ("typeerror", "cannot convert object to primitive value"),
+    },
+    "fixtures/core-semantics/bigint-runtime-rem-zero-trap.ts": {
+        "node": ("rangeerror", "division by zero"),
+        "iwasm": ("rangeerror", "division by zero"),
+    },
+    "fixtures/core-semantics/nested-namespace-abc.ts": {
+        "node": ("err_invalid_typescript_syntax", "namespace declaration"),
+        "compiler": ("unsupportedmodule", "nested namespace/module resolution"),
+    },
+    "fixtures/core-semantics/nested-namespace-unsupported.ts": {
+        "node": ("referenceerror", "a is not defined"),
+        "compiler": ("unsupportedmodule", "nested namespace/module resolution"),
+    },
+    "fixtures/negative/unsupported-eval.ts": {
+        "node": ("referenceerror", "x is not defined"),
+        "compiler": ("unresolvedname", "unresolved name", "`x`"),
+    },
+}
+
+
+def normalize_iwasm_stdout(stdout: str) -> str:
+    """Remove runtime diagnostics that iwasm writes to stdout, not program output."""
+    lines = stdout.splitlines(keepends=True)
+    if not lines:
+        return stdout
+    return "".join(
+        line
+        for line in lines
+        if not IWASM_LINK_WARNING_RE.match(line.rstrip("\r\n"))
+    )
+
+
+def host_epoch_ms() -> int:
+    return time.time_ns() // 1_000_000
+
+
+def random_stdout_in_unit_interval(stdout: str) -> bool:
+    try:
+        value = float(stdout.strip())
+    except ValueError:
+        return False
+    return 0.0 <= value < 1.0
+
+
+def stdout_is_nonnegative_integer(stdout: str) -> bool:
+    text = stdout.strip()
+    return text.isdigit()
+
+
+def stdout_is_environment_value(stdout: str) -> bool:
+    text = stdout.rstrip("\n")
+    return text == "undefined" or bool(text)
+
+
+def normalize_console_timer_stdout(stdout: str) -> str:
+    return re.sub(r": \d+(?:\.\d+)?ms", ": <elapsed>ms", stdout)
+
+
+def catalog_assertion_for(fixture_path: str) -> dict | None:
+    assertion = CATALOG_ASSERTIONS.get(fixture_path)
+    if not isinstance(assertion, dict):
+        return None
+    return assertion
+
+
+def fixture_stdin_bytes(fixture_path: str) -> bytes | None:
+    assertion = catalog_assertion_for(fixture_path)
+    if assertion and "stdin" in assertion:
+        return str(assertion["stdin"]).encode()
+    baseline = NODE_BASELINE_ORACLES.get(fixture_path)
+    if baseline and "stdin" in baseline:
+        return str(baseline["stdin"]).encode()
+    return None
+
+
+def fixture_expected_stdout(fixture_path: str) -> str | None:
+    assertion = catalog_assertion_for(fixture_path)
+    if (
+        assertion
+        and assertion.get("exit_code", 0) == 0
+        and isinstance(assertion.get("stdout"), str)
+    ):
+        return assertion["stdout"]
+    return None
+
+
+def expected_rejection_for(fixture_path: str) -> dict | None:
+    rejection = EXPECTED_REJECTION_FIXTURES.get(fixture_path)
+    if isinstance(rejection, dict):
+        return rejection
+    return None
+
+
+def text_contains_all(text: str, needles: tuple[str, ...]) -> bool:
+    lower = text.lower()
+    return all(needle in lower for needle in needles)
+
+
+def run_node_oracle(abs_fixture_path: Path, fixture_path: str, stdin_data: bytes | None):
+    baseline = NODE_BASELINE_ORACLES.get(fixture_path)
+    if baseline:
+        cmd = ["node", "-e", str(baseline["script"])]
+    else:
+        cmd = ["node", str(abs_fixture_path)]
+    return subprocess.run(
+        cmd,
+        input=stdin_data,
+        capture_output=True,
+        text=False,
+        timeout=30,
+    )
 
 
 def usage() -> argparse.Namespace:
@@ -208,6 +425,34 @@ def load_catalog(catalog_path: str) -> list[tuple[str, str, str]]:
     return fixtures
 
 
+def load_catalog_assertions(catalog_path: str) -> dict[str, dict]:
+    import yaml
+
+    path = Path(catalog_path)
+    if not path.exists():
+        return {}
+    with open(path) as f:
+        catalog = yaml.safe_load(f)
+    assertions = {}
+    feature_fixtures = (
+        (catalog or {})
+        .get("feature_matrix", {})
+        .get("fixtures", {})
+    )
+    if not isinstance(feature_fixtures, dict):
+        return assertions
+    for dir_name, entry in feature_fixtures.items():
+        if not isinstance(entry, dict):
+            continue
+        fixture_assertions = entry.get("assert", {})
+        if not isinstance(fixture_assertions, dict):
+            continue
+        for filename, assertion in fixture_assertions.items():
+            if isinstance(assertion, dict):
+                assertions[f"fixtures/{dir_name}/{filename}"] = assertion
+    return assertions
+
+
 def run_fixture(
     ts2wasm_bin: str,
     dir_name: str,
@@ -223,38 +468,21 @@ def run_fixture(
     suite = f"fixtures/{dir_name}"
     case = filename
     target = "wasm32-wasi"
+    stdin_data = fixture_stdin_bytes(fixture_path)
 
     # Step 1: Run Node.js to get expected output
+    node_stdout = None
+    node_error = None
     try:
-        node_result = subprocess.run(
-            ["node", str(abs_fixture_path)],
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-        if node_result.returncode != 0:
-            return {
-                "suite": suite,
-                "case": case,
-                "target": target,
-                "status": "blocked",
-                "expected": None,
-                "actual": None,
-                "reason": "Node oracle failed",
-                "tracking": "feature:node-oracle-fail",
-            }
-        node_stdout = node_result.stdout
+        node_result = run_node_oracle(abs_fixture_path, fixture_path, stdin_data)
+        if node_result.returncode == 0:
+            node_stdout = node_result.stdout.decode("utf-8", errors="replace")
+        else:
+            node_error = node_result.stderr.decode("utf-8", errors="replace")
+            node_stdout = fixture_expected_stdout(fixture_path)
     except (subprocess.TimeoutExpired, FileNotFoundError) as e:
-        return {
-            "suite": suite,
-            "case": case,
-            "target": target,
-            "status": "blocked",
-            "expected": None,
-            "actual": None,
-            "reason": f"Node oracle unavailable: {e}",
-            "tracking": "feature:node-oracle-fail",
-        }
+        node_error = str(e)
+        node_stdout = fixture_expected_stdout(fixture_path)
 
     # Step 2: Build with ts2wasm
     wasm_fd, wasm_path = tempfile.mkstemp(suffix=".wasm", prefix="ts2wasm-")
@@ -308,26 +536,44 @@ def run_fixture(
                 "reason": "Internal compiler bug",
                 "tracking": "feature:invariant-violation",
             }
-        else:
-            return {
-                "suite": suite,
-                "case": case,
-                "target": target,
-                "status": "unsupported",
-                "expected": None,
-                "actual": None,
-                "reason": f"Unsupported syntax: {diag_code}/{feature_label}",
-                "tracking": f"feature:{feature_label}",
-            }
+        expected_rejection = expected_rejection_for(fixture_path)
+        if expected_rejection and node_error:
+            node_needles = expected_rejection["node"]
+            compiler_needles = expected_rejection.get("compiler")
+            if compiler_needles and text_contains_all(node_error, node_needles) and text_contains_all(
+                stderr, compiler_needles
+            ):
+                return {
+                    "suite": suite,
+                    "case": case,
+                    "target": target,
+                    "status": "pass",
+                    "expected": None,
+                    "actual": None,
+                    "reason": None,
+                    "tracking": None,
+                }
+        return {
+            "suite": suite,
+            "case": case,
+            "target": target,
+            "status": "unsupported",
+            "expected": None,
+            "actual": None,
+            "reason": f"Unsupported syntax: {diag_code}/{feature_label}",
+            "tracking": f"feature:{feature_label}",
+        }
 
     # Step 3: Run with iwasm
     try:
+        iwasm_started_at_ms = host_epoch_ms()
         iwasm_result = subprocess.run(
             ["iwasm", wasm_path],
+            input=stdin_data,
             capture_output=True,
-            text=True,
             timeout=iwasm_timeout,
         )
+        iwasm_finished_at_ms = host_epoch_ms()
     except subprocess.TimeoutExpired:
         os.unlink(wasm_path)
         return {
@@ -356,6 +602,54 @@ def run_fixture(
     os.unlink(wasm_path)
 
     if iwasm_result.returncode != 0:
+        if node_stdout is None:
+            expected_rejection = expected_rejection_for(fixture_path)
+            if expected_rejection:
+                iwasm_output = (
+                    iwasm_result.stdout.decode("utf-8", errors="replace")
+                    + iwasm_result.stderr.decode("utf-8", errors="replace")
+                )
+                node_needles = expected_rejection["node"]
+                iwasm_needles = expected_rejection["iwasm"]
+                if text_contains_all(node_error or "", node_needles) and text_contains_all(
+                    iwasm_output, iwasm_needles
+                ):
+                    return {
+                        "suite": suite,
+                        "case": case,
+                        "target": target,
+                        "status": "pass",
+                        "expected": None,
+                        "actual": None,
+                        "reason": None,
+                        "tracking": None,
+                    }
+                return {
+                    "suite": suite,
+                    "case": case,
+                    "target": target,
+                    "status": "fail",
+                    "expected": (
+                        "Node and iwasm rejection diagnostics containing "
+                        f"node={node_needles}, iwasm={iwasm_needles}"
+                    ),
+                    "actual": (
+                        f"node={node_error or ''!r}, "
+                        f"iwasm={iwasm_output!r}"
+                    ),
+                    "reason": "expected rejection diagnostic mismatch",
+                    "tracking": "feature:rejection-mismatch",
+                }
+            return {
+                "suite": suite,
+                "case": case,
+                "target": target,
+                "status": "blocked",
+                "expected": None,
+                "actual": None,
+                "reason": f"Node oracle failed after successful build: {node_error or 'unknown error'}",
+                "tracking": "feature:node-oracle-fail",
+            }
         return {
             "suite": suite,
             "case": case,
@@ -367,9 +661,184 @@ def run_fixture(
             "tracking": "feature:iwasm-fail",
         }
 
-    iwasm_stdout = iwasm_result.stdout
+    iwasm_stdout = normalize_iwasm_stdout(
+        iwasm_result.stdout.decode("utf-8", errors="replace")
+    )
+
+    if node_stdout is None:
+        expected_rejection = expected_rejection_for(fixture_path)
+        if expected_rejection:
+            return {
+                "suite": suite,
+                "case": case,
+                "target": target,
+                "status": "fail",
+                "expected": "iwasm rejection matching Node rejection",
+                "actual": iwasm_stdout,
+                "reason": "iwasm accepted a fixture that Node rejected",
+                "tracking": "feature:rejection-mismatch",
+            }
+        return {
+            "suite": suite,
+            "case": case,
+            "target": target,
+            "status": "blocked",
+            "expected": None,
+            "actual": None,
+            "reason": f"Node oracle failed after successful build: {node_error or 'unknown error'}",
+            "tracking": "feature:node-oracle-fail",
+        }
 
     # Step 4: Compare outputs
+    if fixture_path in LIVE_TIME_FIXTURES:
+        try:
+            observed_epoch_ms = int(iwasm_stdout.strip())
+        except ValueError:
+            return {
+                "suite": suite,
+                "case": case,
+                "target": target,
+                "status": "fail",
+                "expected": f"epoch milliseconds in host window {iwasm_started_at_ms}..={iwasm_finished_at_ms}",
+                "actual": iwasm_stdout,
+                "reason": f"expected epoch milliseconds, got {iwasm_stdout!r}",
+                "tracking": "feature:stdout-mismatch",
+            }
+        if iwasm_started_at_ms <= observed_epoch_ms <= iwasm_finished_at_ms:
+            return {
+                "suite": suite,
+                "case": case,
+                "target": target,
+                "status": "pass",
+                "expected": None,
+                "actual": None,
+                "reason": None,
+                "tracking": None,
+            }
+        return {
+            "suite": suite,
+            "case": case,
+            "target": target,
+            "status": "fail",
+            "expected": f"{iwasm_started_at_ms}..={iwasm_finished_at_ms}",
+            "actual": iwasm_stdout,
+            "reason": (
+                f"timestamp outside host execution window: "
+                f"observed={observed_epoch_ms}, "
+                f"window={iwasm_started_at_ms}..={iwasm_finished_at_ms}"
+            ),
+            "tracking": "feature:stdout-mismatch",
+        }
+
+    if fixture_path in NONDETERMINISTIC_RANDOM_FIXTURES:
+        if random_stdout_in_unit_interval(node_stdout) and random_stdout_in_unit_interval(
+            iwasm_stdout
+        ):
+            return {
+                "suite": suite,
+                "case": case,
+                "target": target,
+                "status": "pass",
+                "expected": None,
+                "actual": None,
+                "reason": None,
+                "tracking": None,
+            }
+        return {
+            "suite": suite,
+            "case": case,
+            "target": target,
+            "status": "fail",
+            "expected": "Math.random stdout in [0, 1)",
+            "actual": iwasm_stdout,
+            "reason": (
+                f"expected Node and iwasm random stdout in [0, 1), "
+                f"node={node_stdout!r}, iwasm={iwasm_stdout!r}"
+            ),
+            "tracking": "feature:stdout-mismatch",
+        }
+
+    if fixture_path in WASI_ARGV_FIXTURES:
+        if stdout_is_nonnegative_integer(node_stdout) and stdout_is_nonnegative_integer(
+            iwasm_stdout
+        ):
+            return {
+                "suite": suite,
+                "case": case,
+                "target": target,
+                "status": "pass",
+                "expected": None,
+                "actual": None,
+                "reason": None,
+                "tracking": None,
+            }
+        return {
+            "suite": suite,
+            "case": case,
+            "target": target,
+            "status": "fail",
+            "expected": "process.argv.length stdout as non-negative integer",
+            "actual": iwasm_stdout,
+            "reason": (
+                f"expected Node and iwasm process.argv.length stdout as integer, "
+                f"node={node_stdout!r}, iwasm={iwasm_stdout!r}"
+            ),
+            "tracking": "feature:stdout-mismatch",
+        }
+
+    if fixture_path in HOST_ENVIRONMENT_FIXTURES:
+        if stdout_is_environment_value(node_stdout) and stdout_is_environment_value(
+            iwasm_stdout
+        ):
+            return {
+                "suite": suite,
+                "case": case,
+                "target": target,
+                "status": "pass",
+                "expected": None,
+                "actual": None,
+                "reason": None,
+                "tracking": None,
+            }
+        return {
+            "suite": suite,
+            "case": case,
+            "target": target,
+            "status": "fail",
+            "expected": "process.env stdout value or undefined",
+            "actual": iwasm_stdout,
+            "reason": (
+                f"expected Node and iwasm process.env stdout as environment value, "
+                f"node={node_stdout!r}, iwasm={iwasm_stdout!r}"
+            ),
+            "tracking": "feature:stdout-mismatch",
+        }
+
+    if fixture_path in CONSOLE_TIMER_FIXTURES:
+        if normalize_console_timer_stdout(iwasm_stdout) == normalize_console_timer_stdout(
+            node_stdout
+        ):
+            return {
+                "suite": suite,
+                "case": case,
+                "target": target,
+                "status": "pass",
+                "expected": None,
+                "actual": None,
+                "reason": None,
+                "tracking": None,
+            }
+        return {
+            "suite": suite,
+            "case": case,
+            "target": target,
+            "status": "fail",
+            "expected": normalize_console_timer_stdout(node_stdout),
+            "actual": normalize_console_timer_stdout(iwasm_stdout),
+            "reason": "stdout mismatch after console timer normalization",
+            "tracking": "feature:stdout-mismatch",
+        }
+
     if iwasm_stdout == node_stdout:
         return {
             "suite": suite,
@@ -483,6 +952,7 @@ def print_record(record: dict):
 
 
 def main():
+    global CATALOG_ASSERTIONS
     args = usage()
 
     # Check required tools
@@ -514,6 +984,7 @@ def main():
         # Smoke mode: known-passing + known-unsupported fixtures
         fixtures = [(d, f, f"fixtures/{d}/{f}") for d, f in
                      SMOKE_FIXTURES + SMOKE_UNSUPPORTED_FIXTURES]
+        CATALOG_ASSERTIONS = load_catalog_assertions(args.catalog)
         print(
             f"fixture-differential: smoke mode: {len(fixtures)} fixtures",
             file=sys.stderr,
@@ -522,6 +993,7 @@ def main():
         # Full mode: load from catalog
         try:
             fixtures = load_catalog(args.catalog)
+            CATALOG_ASSERTIONS = load_catalog_assertions(args.catalog)
         except (FileNotFoundError, ValueError, ImportError) as e:
             print(f"fixture-differential: catalog error: {e}", file=sys.stderr)
             sys.exit(1)

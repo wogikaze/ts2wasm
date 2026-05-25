@@ -44,6 +44,31 @@ VARIANT_TO_CAPABILITY = {
     "DateGetTimezoneOffset": "host.dateGetTimezoneOffset",
     "DateToDateString": "host.dateToDateString", "DateToTimeString": "host.dateToTimeString",
     "DateParse": "host.dateParse", "DateUTC": "host.dateUTC",
+    "MathAcos": "host.mathAcos", "MathAcosh": "host.mathAcosh",
+    "MathAsin": "host.mathAsin", "MathAsinh": "host.mathAsinh",
+    "MathAtan": "host.mathAtan", "MathAtanh": "host.mathAtanh",
+    "MathCos": "host.mathCos", "MathCosh": "host.mathCosh",
+    "MathExp": "host.mathExp", "MathExpm1": "host.mathExpm1",
+    "MathLog": "host.mathLog", "MathLog10": "host.mathLog10",
+    "MathLog1p": "host.mathLog1p", "MathLog2": "host.mathLog2",
+    "MathSin": "host.mathSin", "MathSinh": "host.mathSinh",
+    "MathTan": "host.mathTan", "MathTanh": "host.mathTanh",
+    "MathAtan2": "host.mathAtan2", "MathHypot": "host.mathHypot",
+    "JsonStringify": "host.json.stringify", "JsonParse": "host.json.parse",
+    "StringNormalize": "host.stringNormalize",
+    "IntlNumberFormatFormat": "host.intlNumberFormatFormat",
+    "IntlDateTimeFormatFormat": "host.intlDateTimeFormatFormat",
+    "ReflectApply": "host.reflectApply", "ReflectConstruct": "host.reflectConstruct",
+    "GetIterator": "host.getIterator", "IteratorNext": "host.iteratorNext",
+    "IteratorMap": "host.iterator.map", "IteratorFilter": "host.iterator.filter",
+    "IteratorTake": "host.iterator.take", "IteratorDrop": "host.iterator.drop",
+    "IteratorToArray": "host.iterator.toArray", "IteratorReduce": "host.iterator.reduce",
+    "IteratorForEach": "host.iterator.forEach", "IteratorSome": "host.iterator.some",
+    "IteratorEvery": "host.iterator.every", "IteratorFind": "host.iterator.find",
+    "EvalDirect": "host.eval.direct", "EvalIndirect": "host.eval.indirect",
+    "FunctionCompile": "host.function.compile", "FunctionCall": "host.function.call",
+    "FunctionCallMethod": "host.function.callMethod",
+    "FunctionConstruct": "host.function.construct",
 }
 
 
@@ -56,7 +81,7 @@ def collect_catalog_imports():
     content = host_import_path.read_text()
     imports = []
     spec_pattern = re.compile(
-        r'Self::(\w+)\s*=>\s*HostImportSpec\s*\{'
+        r'HostImport::(\w+)\s*,\s*HostImportSpec\s*\{'
         r'[^}]*?module:\s*"([^"]+)"'
         r'[^}]*?name:\s*"([^"]+)"'
         r'[^}]*?wat_symbol:\s*"([^"]+)"'

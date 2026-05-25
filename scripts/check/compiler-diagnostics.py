@@ -37,10 +37,9 @@ FIXTURE_DIAG_MAP: dict[str, str] = {
     "duplicate-local": "DuplicateLocal",
     "arity-mismatch": "ArityMismatch",
     "invalid-top-level-return": "InvalidTopLevelReturn",
-    "unsupported-builtin": "UnsupportedBuiltin",
     "unsupported-date": "UnsupportedDate",
     "unsupported-module": "UnsupportedModule",
-    "unsupported-eval": "UnsupportedEval",
+    "unsupported-eval": "UnresolvedName",
     "unsupported-typescript-syntax": "UnsupportedTypeScriptSyntax",
     "typescript-type-check": "TypeScriptTypeCheck",
 }
@@ -49,6 +48,7 @@ FIXTURE_DIAG_MAP: dict[str, str] = {
 UNTRIGGERABLE_FIXTURES: set[str] = {
     "number-out-of-range",  # Number literals > i32 range are now supported as heap numbers
     "duplicate-parameter",  # Non-strict mode allows duplicate parameter names per ES spec
+    "unsupported-builtin",  # Array.sort(function(a, b) { return a - b; }) is now supported
 }
 
 # Diagnostic codes that can only be triggered via `ts2wasm check` (TypeScript oracle).
